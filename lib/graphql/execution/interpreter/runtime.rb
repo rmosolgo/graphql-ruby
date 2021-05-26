@@ -21,6 +21,14 @@ module GraphQL
           attr_accessor :graphql_merged_into
 
           def []=(key, value)
+            # This is a hack.
+            # Basically, this object is merged into the root-level result at some point.
+            # But the problem is, some lazies are created whose closures retain reference to _this_
+            # object. When those lazies are resolved, they cause an update to this object.
+            #
+            # In order to return a proper top-level result, we have to update that top-level result object.
+            # In order to return a proper partial result (eg, for a directive), we have to update this object, too.
+            # Yowza.
             if (t = @graphql_merged_into)
               t[key] = value
             end
@@ -56,6 +64,7 @@ module GraphQL
           @multiplex_context = query.multiplex.context
           @interpreter_context = @context.namespace(:interpreter)
           @response = GraphQLResultHash.new
+          # Identify runtime directives by checking which of this schema's directives have overridden `def self.resolve`
           @runtime_directive_names = []
           noop_resolve_owner = GraphQL::Schema::Directive.singleton_class
           schema.directives.each do |name, dir_defn|
@@ -230,7 +239,7 @@ module GraphQL
         NO_ARGS = {}.freeze
 
         # @return [void]
-        def evaluate_selections(path, scoped_context, owner_object, owner_type, is_eager_selection, gathered_selections, selections_result, target_result)
+        def evaluate_selections(path, scoped_context, owner_object, owner_type, is_eager_selection, gathered_selections, selections_result, target_result) # rubocop:disable Metrics/ParameterLists
           set_all_interpreter_context(owner_object, nil, nil, path)
 
           finished_jobs = 0

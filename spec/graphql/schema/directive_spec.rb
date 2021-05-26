@@ -102,34 +102,31 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
 
     class Thing < GraphQL::Schema::Object
       field :name, String, null: false
+    end
 
-      def name
-        -> { object[:name] }
+    module HasThings
+      include GraphQL::Schema::Interface
+      field :thing, Thing, null: false, extras: [:ast_node]
+
+      def thing(ast_node:)
+        { name: ast_node.alias || ast_node.name }
       end
 
-      field :thing, Thing, null: false
+      field :lazy_thing, Thing, null: false, extras: [:ast_node]
+      def lazy_thing(ast_node:)
+        -> { thing(ast_node: ast_node) }
+      end
 
-      def thing
-        { name: "thing" }
+      field :dataloaded_thing, Thing, null: false, extras: [:ast_node]
+      def dataloaded_thing(ast_node:)
+        dataloader.with(ThingSource).load(ast_node.alias || ast_node.name)
       end
     end
 
+    Thing.implements(HasThings)
+
     class Query < GraphQL::Schema::Object
-      field :thing, Thing, null: false
-
-      def thing
-        { name: "thing" }
-      end
-
-      field :lazy_thing, Thing, null: false
-      def lazy_thing
-        -> { thing }
-      end
-
-      field :dataloaded_thing, Thing, null: false
-      def dataloaded_thing
-        dataloader.with(ThingSource).load("something")
-      end
+      implements HasThings
     end
 
     class ThingSource < GraphQL::Dataloader::Source
@@ -150,15 +147,22 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
     it "works with fragment spreads, inline fragments, and fields" do
       query_str = <<-GRAPHQL
       {
-        t1: thing {
-          cn: name @countFields
+        t1: dataloadedThing {
+          t1n: name @countFields
         }
         ... @countFields {
           t2: thing { t2n: name }
           t3: thing { t3n: name }
         }
-        lazyThing {
+        t4: lazyThing {
           ...Thing @countFields
+        }
+
+        t5: thing {
+          n5: name
+          t5d: dataloadedThing {
+            t5dl: lazyThing { t5dln: name @countFields }
+          }
         }
       }
 
@@ -172,22 +176,24 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
       res = RuntimeDirectiveTest::Schema.execute(query_str)
       expected_data = {
         "t1" => {
-          "cn" => "thing",
+          "t1n" => "t1",
         },
-        "lazyThing" => {
-          "n1" => "thing",
-          "n2" => "thing",
-          "n3" => "thing",
+        "t2"=>{"t2n"=>"t2"},
+        "t3"=>{"t3n"=>"t3"},
+        "t4" => {
+          "n1" => "t4",
+          "n2" => "t4",
+          "n3" => "t4",
         },
-        "t2"=>{"t2n"=>"thing"},
-        "t3"=>{"t3n"=>"thing"},
+        "t5"=>{"n5"=>"t5", "t5d"=>{"t5dl"=>{"t5dln"=>"t5dl"}}},
       }
       assert_equal expected_data, res["data"]
 
       expected_counts = {
-        ["t1", "cn"] => [1],
+        ["t1", "t1n"] => [1],
         [] => [2],
-        ["lazyThing"] => [3],
+        ["t4"] => [3],
+        ["t5", "t5d", "t5dl", "t5dln"] => [1],
       }
       assert_equal expected_counts, res.context[:count_fields]
     end
