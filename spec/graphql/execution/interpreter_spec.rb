@@ -546,4 +546,36 @@ describe GraphQL::Execution::Interpreter do
       assert_equal({ sym: "RAW", name: "Raw expansion", always_cached_value: 42 }, res["data"]["expansionRaw"])
     end
   end
+
+  describe "GraphQL::ExecutionErrors from non-null list fields" do
+    module ListErrorTest
+      class BaseField < GraphQL::Schema::Field
+        def authorized?(*)
+          raise GraphQL::ExecutionError, "#{name} is not authorized"
+        end
+      end
+
+      class Thing < GraphQL::Schema::Object
+        field_class BaseField
+        field :title, String, null: false
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :things, [Thing], null: false
+
+        def things
+          [{title: "a"}, {title: "b"}, {title: "c"}]
+        end
+      end
+
+      class Schema < GraphQL::Schema
+        query Query
+      end
+    end
+
+    it "returns only 1 error" do
+      res = ListErrorTest::Schema.execute("{ things { title } }")
+      assert_equal 1, res["errors"].size
+    end
+  end
 end
