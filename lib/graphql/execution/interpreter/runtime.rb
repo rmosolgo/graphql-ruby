@@ -321,8 +321,20 @@ module GraphQL
           end
         end
 
+        def dead_result?(selection_result)
+          r = selection_result
+          while r
+            if r.graphql_dead
+              return true
+            else
+              r = r.graphql_parent
+            end
+          end
+          false
+        end
+
         def set_result(selection_result, result_name, value)
-          if !selection_result.graphql_dead
+          if !dead_result?(selection_result)
             if value.nil? &&
                 (nn = selection_result.graphql_non_null) &&
                 (nn == true || nn.include?(result_name))
@@ -333,6 +345,9 @@ module GraphQL
                 @response = nil
               else
                 set_result(parent, name_in_parent, nil)
+                # This is odd, but it's how it used to work. Even if `parent` _would_ accept
+                # a `nil`, it's marked dead. TODO: check the spec, is there a reason for this?
+                parent.graphql_dead = true
               end
             else
               selection_result[result_name] = value
@@ -346,7 +361,7 @@ module GraphQL
           when nil
             if is_non_null
               err = parent_type::InvalidNullError.new(parent_type, field, value)
-              if !selection_result.graphql_dead
+              if !dead_result?(selection_result)
                 schema.type_error(err, context)
                 set_result(selection_result, result_name, nil)
                 selection_result.graphql_dead = true
@@ -360,11 +375,12 @@ module GraphQL
             # to avoid the overhead of checking three different classes
             # every time.
             if value.is_a?(GraphQL::ExecutionError)
-              if !selection_result.graphql_dead
+              if !dead_result?(selection_result)
                 value.path ||= path
                 value.ast_node ||= ast_node
                 context.errors << value
                 set_result(selection_result, result_name, nil)
+                selection_result.graphql_dead = true
               end
               HALT
             elsif value.is_a?(GraphQL::UnauthorizedError)
@@ -376,7 +392,6 @@ module GraphQL
                 err
               end
               continue_value(path, next_value, parent_type, field, is_non_null, ast_node, result_name, selection_result)
-              HALT
             elsif GraphQL::Execution::Execute::SKIP == value
               HALT
             else
@@ -387,7 +402,7 @@ module GraphQL
           when Array
             # It's an array full of execution errors; add them all.
             if value.any? && value.all? { |v| v.is_a?(GraphQL::ExecutionError) }
-              if !selection_result.graphql_dead
+              if !dead_result?(selection_result)
                 value.each_with_index do |error, index|
                   error.ast_node ||= ast_node
                   error.path ||= path + (field.type.list? ? [index] : [])
