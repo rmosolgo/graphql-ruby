@@ -12,7 +12,14 @@ module GraphQL
         module GraphQLResult
           # These methods are private concerns of GraphQL-Ruby,
           # they aren't guaranteed to continue working in the future.
-          attr_accessor :graphql_dead, :graphql_non_null, :graphql_parent, :graphql_result_name
+          attr_accessor :graphql_dead, :graphql_parent, :graphql_result_name
+          # Although these are used by only one of the Result classes,
+          # it's handy to have the methods implemented on both (even though they just return `nil`)
+          # because it makes it easy to check if anything is assigned.
+          # @return [nil, Array<String>]
+          attr_accessor :graphql_non_null_field_names
+          # @return [nil, true]
+          attr_accessor :graphql_non_null_list_items
         end
 
         class GraphQLResultHash < Hash
@@ -204,7 +211,7 @@ module GraphQL
           # the field's return type at this path in order
           # to propagate `null`
           if return_type.non_null?
-            (selections_result.graphql_non_null ||= []).push(result_name)
+            (selections_result.graphql_non_null_field_names ||= []).push(result_name)
           end
           # Set this before calling `run_with_directives`, so that the directive can have the latest path
           set_all_interpreter_context(nil, field_defn, nil, next_path)
@@ -336,8 +343,10 @@ module GraphQL
         def set_result(selection_result, result_name, value)
           if !dead_result?(selection_result)
             if value.nil? &&
-                (nn = selection_result.graphql_non_null) &&
-                (nn == true || nn.include?(result_name))
+                ( # there are two conditions under which `nil` is not allowed in the response:
+                  (selection_result.graphql_non_null_list_items) || # this value would be written into a list that doesn't allow nils
+                  ((nn = selection_result.graphql_non_null_field_names) && nn.include?(result_name)) # this value would be written into a field that doesn't allow nils
+                )
               # This is an invalid nil that should be propagated
               parent = selection_result.graphql_parent
               name_in_parent = selection_result.graphql_result_name
@@ -480,7 +489,7 @@ module GraphQL
           when "LIST"
             inner_type = current_type.of_type
             response_list = GraphQLResultArray.new
-            response_list.graphql_non_null = inner_type.non_null?
+            response_list.graphql_non_null_list_items = inner_type.non_null?
             response_list.graphql_parent = selection_result
             response_list.graphql_result_name = result_name
             set_result(selection_result, result_name, response_list)
