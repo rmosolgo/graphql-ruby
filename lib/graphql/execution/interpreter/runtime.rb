@@ -348,6 +348,13 @@ module GraphQL
                   ((nn = selection_result.graphql_non_null_field_names) && nn.include?(result_name)) # this value would be written into a field that doesn't allow nils
                 )
               # This is an invalid nil that should be propagated
+              # One caller of this method passes a block,
+              # namely when application code returns a `nil` to GraphQL and it doesn't belong there.
+              # The other possibility for reaching here is when a field returns an ExecutionError, so we write
+              # `nil` to the response, not knowing whether it's an invalid `nil` or not.
+              # (And in that case, we don't have to call the schema's handler, since it's not a bug in the application.)
+              # TODO the code is trying to tell me something.
+              yield if block_given?
               parent = selection_result.graphql_parent
               name_in_parent = selection_result.graphql_result_name
               if parent.nil? # This is a top-level result hash
@@ -369,11 +376,10 @@ module GraphQL
           case value
           when nil
             if is_non_null
-              err = parent_type::InvalidNullError.new(parent_type, field, value)
-              if !dead_result?(selection_result)
+              set_result(selection_result, result_name, nil) do
+                # This block is called if `result_name` is not dead. (Maybe a previous invalid nil caused it be marked dead.)
+                err = parent_type::InvalidNullError.new(parent_type, field, value)
                 schema.type_error(err, context)
-                set_result(selection_result, result_name, nil)
-                selection_result.graphql_dead = true
               end
             else
               set_result(selection_result, result_name, nil)
