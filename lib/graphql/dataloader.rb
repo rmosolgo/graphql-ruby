@@ -78,7 +78,7 @@ module GraphQL
     end
 
     # Use a self-contained queue for the work in the block.
-    def run_contained
+    def run_isolated
       prev_queue = @pending_jobs
       @pending_jobs = []
       res = yield

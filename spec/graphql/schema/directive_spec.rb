@@ -88,7 +88,7 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
       def self.resolve(obj, args, ctx)
         path = ctx[:current_path]
         result = nil
-        ctx.dataloader.run_contained do
+        ctx.dataloader.run_isolated do
           result = yield
           GraphQL::Execution::Interpreter::Resolve.resolve_all([result], ctx.dataloader)
         end
