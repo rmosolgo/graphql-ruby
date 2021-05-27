@@ -380,7 +380,6 @@ module GraphQL
                 value.ast_node ||= ast_node
                 context.errors << value
                 set_result(selection_result, result_name, nil)
-                selection_result.graphql_dead = true
               end
               HALT
             elsif value.is_a?(GraphQL::UnauthorizedError)
@@ -600,7 +599,7 @@ module GraphQL
             if eager
               lazy.value
             else
-              result[result_name] = lazy
+              set_result(result, result_name, lazy)
               lazy
             end
           else
