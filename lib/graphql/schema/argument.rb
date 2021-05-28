@@ -297,7 +297,12 @@ module GraphQL
 
       # @api private
       def validate_default_value
-        coerced_default_value = type.coerce_isolated_result(default_value) unless default_value.nil?
+        coerced_default_value = begin
+          type.coerce_isolated_result(default_value) unless default_value.nil?
+        rescue GraphQL::Schema::Enum::UnresolvedValueError
+          # It raises this, which is helpful at runtime, but not here...
+          default_value
+        end
         res = type.valid_isolated_input?(coerced_default_value)
         if !res
           raise InvalidDefaultValueError.new(self)
