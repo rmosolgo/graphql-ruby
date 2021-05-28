@@ -8,6 +8,15 @@
 
 ### Bug fixes
 
+# 1.12.11 (28 May 2021)
+
+### Bug fixes
+
+- Validate argument default values when adding them to the schema #3496
+- Resolvers inherit extensions from superclasses #3500
+- Greatly reduce runtime overhead #3494, #3505
+- Remove hidden directives from introspection #3488
+
 # 1.12.10 (18 May 2021)
 
 ### New features
