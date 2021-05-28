@@ -167,6 +167,8 @@ module GraphQL
               else
                 # We have to assume that, since this passed the `fields_will_merge` selection,
                 # that the old and new values are the same.
+                # There's no special handling of arrays because currently, there's no way to split the execution
+                # of a list over several concurrent flows.
                 into_result[key] = value
               end
             end
@@ -182,8 +184,7 @@ module GraphQL
               next
             end
 
-            case node
-            when GraphQL::Language::Nodes::Field
+            if node.is_a?(GraphQL::Language::Nodes::Field)
               response_key = node.alias || node.name
               selections = selections_by_name[response_key]
               # if there was already a selection of this field,
@@ -199,7 +200,8 @@ module GraphQL
                 # No selection was found for this field yet
                 selections_by_name[response_key] = node
               end
-            when GraphQL::Language::Nodes::InlineFragment
+            else
+              # This is an InlineFragment or a FragmentSpread
               if @runtime_directive_names.any? && node.directives.any? { |d| @runtime_directive_names.include?(d.name) }
                 next_selections = GraphQLSelectionSet.new
                 next_selections.graphql_directives = node.directives
@@ -214,47 +216,35 @@ module GraphQL
                 next_selections = selections_by_name
               end
 
-              if node.type
-                type_defn = schema.get_type(node.type.name)
+              case node
+              when GraphQL::Language::Nodes::InlineFragment
+                if node.type
+                  type_defn = schema.get_type(node.type.name)
 
-                # Faster than .map{}.include?()
-                query.warden.possible_types(type_defn).each do |t|
+                  # Faster than .map{}.include?()
+                  query.warden.possible_types(type_defn).each do |t|
+                    if t == owner_type
+                      gather_selections(owner_object, owner_type, node.selections, selections_to_run, next_selections)
+                      break
+                    end
+                  end
+                else
+                  # it's an untyped fragment, definitely continue
+                  gather_selections(owner_object, owner_type, node.selections, selections_to_run, next_selections)
+                end
+              when GraphQL::Language::Nodes::FragmentSpread
+                fragment_def = query.fragments[node.name]
+                type_defn = schema.get_type(fragment_def.type.name)
+                possible_types = query.warden.possible_types(type_defn)
+                possible_types.each do |t|
                   if t == owner_type
-                    gather_selections(owner_object, owner_type, node.selections, selections_to_run, next_selections)
+                    gather_selections(owner_object, owner_type, fragment_def.selections, selections_to_run, next_selections)
                     break
                   end
                 end
               else
-                # it's an untyped fragment, definitely continue
-                gather_selections(owner_object, owner_type, node.selections, selections_to_run, next_selections)
+                raise "Invariant: unexpected selection class: #{node.class}"
               end
-            when GraphQL::Language::Nodes::FragmentSpread
-              fragment_def = query.fragments[node.name]
-              type_defn = schema.get_type(fragment_def.type.name)
-              if @runtime_directive_names.any? && node.directives.any? { |d| @runtime_directive_names.include?(d.name) }
-                next_selections = GraphQLSelectionSet.new
-                next_selections.graphql_directives = node.directives
-                if selections_to_run
-                  selections_to_run << next_selections
-                else
-                  selections_to_run = []
-                  selections_to_run << selections_by_name
-                  selections_to_run << next_selections
-                end
-              else
-                next_selections = selections_by_name
-              end
-
-
-              possible_types = query.warden.possible_types(type_defn)
-              possible_types.each do |t|
-                if t == owner_type
-                  gather_selections(owner_object, owner_type, fragment_def.selections, selections_to_run, next_selections)
-                  break
-                end
-              end
-            else
-              raise "Invariant: unexpected selection class: #{node.class}"
             end
           end
           selections_to_run || selections_by_name
