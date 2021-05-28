@@ -396,4 +396,119 @@ describe GraphQL::Schema::Argument do
       assert_equal expected_message, err.message
     end
   end
+
+  describe "validating default values" do
+    it "raises when field argument default values are invalid" do
+      query_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Query"
+        field :f1, Integer, null: false do
+          argument :arg1, Integer, default_value: nil, required: true
+        end
+      end
+
+      err = assert_raises GraphQL::Schema::Argument::InvalidDefaultValueError do
+        Class.new(GraphQL::Schema) do
+          query(query_type)
+        end
+      end
+      expected_message = "`Query.f1.arg1` has an invalid default value: `nil` isn't accepted by `Int!`; update the default value or the argument type."
+      assert_equal expected_message, err.message
+    end
+
+    it "raises when input argument default values are invalid" do
+      input_obj = Class.new(GraphQL::Schema::InputObject) do
+        graphql_name "InputObj"
+        argument :arg1, [String, null: false], default_value: [nil], required: false
+      end
+
+      query_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Query"
+        field :f1, Integer, null: false do
+          argument :input, input_obj, required: true
+        end
+      end
+
+      err = assert_raises GraphQL::Schema::Argument::InvalidDefaultValueError do
+        Class.new(GraphQL::Schema) do
+          query(query_type)
+        end
+      end
+
+      expected_message = "`InputObj.arg1` has an invalid default value: `[nil]` isn't accepted by `[String!]`; update the default value or the argument type."
+      assert_equal expected_message, err.message
+    end
+
+    it "raises when directive argument default values are invalid" do
+      lang = Class.new(GraphQL::Schema::Enum) do
+        graphql_name "Language"
+        value "EN"
+        value "JA"
+      end
+
+      localize = Class.new(GraphQL::Schema::Directive) do
+        graphql_name "localize"
+        locations GraphQL::Schema::Directive::FIELD
+        argument :lang, lang, default_value: "ZH", required: false
+      end
+
+      err = assert_raises GraphQL::Schema::Argument::InvalidDefaultValueError do
+        Class.new(GraphQL::Schema) do
+          directive(localize)
+        end
+      end
+
+      expected_message = "`@localize.lang` has an invalid default value: `\"ZH\"` isn't accepted by `Language`; update the default value or the argument type."
+      assert_equal expected_message, err.message
+    end
+
+    it "raises when parsing a schema from a string" do
+      schema_str = <<-GRAPHQL
+      type Query {
+        f1(arg1: Int! = null): Int!
+      }
+      GRAPHQL
+
+      err = assert_raises GraphQL::Schema::Argument::InvalidDefaultValueError do
+        GraphQL::Schema.from_definition(schema_str)
+      end
+      expected_message = "`Query.f1.arg1` has an invalid default value: `nil` isn't accepted by `Int!`; update the default value or the argument type."
+      assert_equal expected_message, err.message
+
+      directive_schema_str = <<-GRAPHQL
+      enum Language {
+        EN
+        JA
+      }
+      directive @localize(lang: Language = "ZH") on FIELD
+
+      type Query {
+        f1: Int
+      }
+      GRAPHQL
+
+
+      err2 = assert_raises GraphQL::Schema::Argument::InvalidDefaultValueError do
+        GraphQL::Schema.from_definition(directive_schema_str)
+      end
+      expected_message = "`@localize.lang` has an invalid default value: `\"ZH\"` isn't accepted by `Language`; update the default value or the argument type."
+      assert_equal expected_message, err2.message
+
+      input_obj_schema_str = <<-GRAPHQL
+      input InputObj {
+        arg1: [String!] = [null]
+      }
+
+      type Query {
+        f1(arg1: InputObj): Int
+      }
+      GRAPHQL
+
+
+      err3 = assert_raises GraphQL::Schema::Argument::InvalidDefaultValueError do
+        GraphQL::Schema.from_definition(input_obj_schema_str)
+      end
+      expected_message = "`InputObj.arg1` has an invalid default value: `[nil]` isn't accepted by `[String!]`; update the default value or the argument type."
+      assert_equal expected_message, err3.message
+    end
+  end
 end
