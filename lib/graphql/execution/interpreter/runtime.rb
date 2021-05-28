@@ -109,7 +109,13 @@ module GraphQL
           else
             resolve_with_directives(object_proxy, root_operation.directives) do # execute query level directives
               gathered_selections = gather_selections(object_proxy, root_type, root_operation.selections)
-              # Make the first fiber which will begin execution
+              # This is kind of a hack -- `gathered_selections` is an Array if any of the selections
+              # require isolation during execution (because of runtime directives). In that case,
+              # make a new, isolated result hash for writing the result into. (That isolated response
+              # is eventually merged back into the main response)
+              #
+              # Otherwise, `gathered_selections` is a hash of selections which can be
+              # directly evaluated and the results can be written right into the main response hash.
               if gathered_selections.is_a?(Array)
                 gathered_selections.each do |selections|
                   selection_response = GraphQLResultHash.new
@@ -593,6 +599,15 @@ module GraphQL
                 response_hash.graphql_result_name = result_name
                 set_result(selection_result, result_name, response_hash)
                 gathered_selections = gather_selections(continue_value, current_type, next_selections)
+                # I wish I could figure out how to DRY this...
+                # Basically, there are two possibilities:
+                # 1. All selections of this object should be evaluated together (there are no runtime directives modifying execution).
+                #    This case is handled below, and the result can be written right into the main `response_hash` above.
+                #    In this case, `gathered_selections` is a hash of selections.
+                # 2. Some selections of this object have runtime directives that may or may not modify execution.
+                #    That part of the selection is evaluated in an isolated way, writing into a sub-response object which is
+                #    eventually merged into the final response. In this case, `gathered_selections` is an array of things to run in isolation.
+                #    (Technically, it's possible that one of those entries _doesn't_ require isolation.)
                 if gathered_selections.is_a?(Array)
                   gathered_selections.each do |selections|
                     this_result = GraphQLResultHash.new
