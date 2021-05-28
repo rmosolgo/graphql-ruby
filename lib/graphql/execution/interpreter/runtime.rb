@@ -12,7 +12,14 @@ module GraphQL
         module GraphQLResult
           # These methods are private concerns of GraphQL-Ruby,
           # they aren't guaranteed to continue working in the future.
-          attr_accessor :graphql_dead, :graphql_non_null, :graphql_parent, :graphql_result_name
+          attr_accessor :graphql_dead, :graphql_parent, :graphql_result_name
+          # Although these are used by only one of the Result classes,
+          # it's handy to have the methods implemented on both (even though they just return `nil`)
+          # because it makes it easy to check if anything is assigned.
+          # @return [nil, Array<String>]
+          attr_accessor :graphql_non_null_field_names
+          # @return [nil, true]
+          attr_accessor :graphql_non_null_list_items
         end
 
         class GraphQLResultHash < Hash
@@ -317,7 +324,7 @@ module GraphQL
           # the field's return type at this path in order
           # to propagate `null`
           if return_type.non_null?
-            (selections_result.graphql_non_null ||= []).push(result_name)
+            (selections_result.graphql_non_null_field_names ||= []).push(result_name)
           end
           # Set this before calling `run_with_directives`, so that the directive can have the latest path
           set_all_interpreter_context(nil, field_defn, nil, next_path)
@@ -434,18 +441,42 @@ module GraphQL
           end
         end
 
+        def dead_result?(selection_result)
+          r = selection_result
+          while r
+            if r.graphql_dead
+              return true
+            else
+              r = r.graphql_parent
+            end
+          end
+          false
+        end
+
         def set_result(selection_result, result_name, value)
-          if !selection_result.graphql_dead
+          if !dead_result?(selection_result)
             if value.nil? &&
-                (nn = selection_result.graphql_non_null) &&
-                (nn == true || nn.include?(result_name))
+                ( # there are two conditions under which `nil` is not allowed in the response:
+                  (selection_result.graphql_non_null_list_items) || # this value would be written into a list that doesn't allow nils
+                  ((nn = selection_result.graphql_non_null_field_names) && nn.include?(result_name)) # this value would be written into a field that doesn't allow nils
+                )
               # This is an invalid nil that should be propagated
+              # One caller of this method passes a block,
+              # namely when application code returns a `nil` to GraphQL and it doesn't belong there.
+              # The other possibility for reaching here is when a field returns an ExecutionError, so we write
+              # `nil` to the response, not knowing whether it's an invalid `nil` or not.
+              # (And in that case, we don't have to call the schema's handler, since it's not a bug in the application.)
+              # TODO the code is trying to tell me something.
+              yield if block_given?
               parent = selection_result.graphql_parent
               name_in_parent = selection_result.graphql_result_name
               if parent.nil? # This is a top-level result hash
                 @response = nil
               else
                 set_result(parent, name_in_parent, nil)
+                # This is odd, but it's how it used to work. Even if `parent` _would_ accept
+                # a `nil`, it's marked dead. TODO: check the spec, is there a reason for this?
+                parent.graphql_dead = true
               end
             else
               selection_result[result_name] = value
@@ -458,11 +489,10 @@ module GraphQL
           case value
           when nil
             if is_non_null
-              err = parent_type::InvalidNullError.new(parent_type, field, value)
-              if !selection_result.graphql_dead
+              set_result(selection_result, result_name, nil) do
+                # This block is called if `result_name` is not dead. (Maybe a previous invalid nil caused it be marked dead.)
+                err = parent_type::InvalidNullError.new(parent_type, field, value)
                 schema.type_error(err, context)
-                set_result(selection_result, result_name, nil)
-                selection_result.graphql_dead = true
               end
             else
               set_result(selection_result, result_name, nil)
@@ -473,7 +503,7 @@ module GraphQL
             # to avoid the overhead of checking three different classes
             # every time.
             if value.is_a?(GraphQL::ExecutionError)
-              if !selection_result.graphql_dead
+              if !dead_result?(selection_result)
                 value.path ||= path
                 value.ast_node ||= ast_node
                 context.errors << value
@@ -489,7 +519,6 @@ module GraphQL
                 err
               end
               continue_value(path, next_value, parent_type, field, is_non_null, ast_node, result_name, selection_result)
-              HALT
             elsif GraphQL::Execution::Execute::SKIP == value
               HALT
             else
@@ -500,7 +529,7 @@ module GraphQL
           when Array
             # It's an array full of execution errors; add them all.
             if value.any? && value.all? { |v| v.is_a?(GraphQL::ExecutionError) }
-              if !selection_result.graphql_dead
+              if !dead_result?(selection_result)
                 value.each_with_index do |error, index|
                   error.ast_node ||= ast_node
                   error.path ||= path + (field.type.list? ? [index] : [])
@@ -615,7 +644,7 @@ module GraphQL
           when "LIST"
             inner_type = current_type.of_type
             response_list = GraphQLResultArray.new
-            response_list.graphql_non_null = inner_type.non_null?
+            response_list.graphql_non_null_list_items = inner_type.non_null?
             response_list.graphql_parent = selection_result
             response_list.graphql_result_name = result_name
             set_result(selection_result, result_name, response_list)
@@ -734,7 +763,7 @@ module GraphQL
             if eager
               lazy.value
             else
-              result[result_name] = lazy
+              set_result(result, result_name, lazy)
               lazy
             end
           else

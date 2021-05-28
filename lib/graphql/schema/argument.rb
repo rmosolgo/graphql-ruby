@@ -295,6 +295,27 @@ module GraphQL
         end
       end
 
+      # @api private
+      def validate_default_value
+        coerced_default_value = begin
+          type.coerce_isolated_result(default_value) unless default_value.nil?
+        rescue GraphQL::Schema::Enum::UnresolvedValueError
+          # It raises this, which is helpful at runtime, but not here...
+          default_value
+        end
+        res = type.valid_isolated_input?(coerced_default_value)
+        if !res
+          raise InvalidDefaultValueError.new(self)
+        end
+      end
+
+      class InvalidDefaultValueError < GraphQL::Error
+        def initialize(argument)
+          message = "`#{argument.path}` has an invalid default value: `#{argument.default_value.inspect}` isn't accepted by `#{argument.type.to_type_signature}`; update the default value or the argument type."
+          super(message)
+        end
+      end
+
       private
 
       def validate_input_type(input_type)
