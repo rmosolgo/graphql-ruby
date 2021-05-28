@@ -10,7 +10,7 @@ module GraphQL
       # These are all no-ops because code was
       # executed sychronously.
       def run; end
-      def run_contained; yield; end
+      def run_isolated; yield; end
       def yield; end
 
       def append_job

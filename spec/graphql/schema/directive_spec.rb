@@ -109,6 +109,8 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
       field :thing, Thing, null: false, extras: [:ast_node]
 
       def thing(ast_node:)
+        context[:name_resolved_count] ||= 0
+        context[:name_resolved_count] += 1
         { name: ast_node.alias || ast_node.name }
       end
 
@@ -154,6 +156,9 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
           t2: thing { t2n: name }
           t3: thing { t3n: name }
         }
+
+        t3: thing { t3n: name }
+
         t4: lazyThing {
           ...Thing @countFields
         }
@@ -196,6 +201,35 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
         ["t5", "t5d", "t5dl", "t5dln"] => [1],
       }
       assert_equal expected_counts, res.context[:count_fields]
+    end
+
+    it "runs things twice when they're in with-directive and without-directive parts of the query" do
+      query_str = <<-GRAPHQL
+      {
+        t1: thing { name }      # name_resolved_count = 1
+        t2: thing { name }      # name_resolved_count = 2
+
+        ... @countFields {
+          t1: thing { name }    # name_resolved_count = 3
+          t3: thing { name }    # name_resolved_count = 4
+        }
+
+        t3: thing { name }      # name_resolved_count = 5
+        ... {
+          t2: thing { name @countFields } # This is merged back into `t2` above
+        }
+      }
+      GRAPHQL
+      res = RuntimeDirectiveTest::Schema.execute(query_str)
+      expected_data = { "t1" => { "name" => "t1"}, "t2" => { "name" => "t2" }, "t3" => { "name" => "t3" } }
+      assert_equal expected_data, res["data"]
+
+      expected_counts = {
+        [] => [2],
+        ["t2", "name"] => [1],
+       }
+      assert_equal expected_counts, res.context[:count_fields]
+      assert_equal 5, res.context[:name_resolved_count]
     end
   end
 end

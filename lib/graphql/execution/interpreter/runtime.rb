@@ -48,7 +48,7 @@ module GraphQL
         end
 
         class GraphQLSelectionSet < Hash
-          attr_accessor :graphql_ast_node
+          attr_accessor :graphql_directives
         end
 
         # @return [GraphQL::Query]
@@ -107,7 +107,7 @@ module GraphQL
             # Root .authorized? returned false.
             @response = nil
           else
-            resolve_with_directives(object_proxy, root_operation) do # execute query level directives
+            resolve_with_directives(object_proxy, root_operation.directives) do # execute query level directives
               gathered_selections = gather_selections(object_proxy, root_type, root_operation.selections)
               # Make the first fiber which will begin execution
               if gathered_selections.is_a?(Array)
@@ -115,7 +115,7 @@ module GraphQL
                   selection_response = GraphQLResultHash.new
                   @dataloader.append_job {
                     set_all_interpreter_context(query.root_value, nil, nil, path)
-                    resolve_with_directives(object_proxy, selections.graphql_ast_node) do
+                    resolve_with_directives(object_proxy, selections.graphql_directives) do
                       evaluate_selections(
                         path,
                         context.scoped_context,
@@ -132,7 +132,7 @@ module GraphQL
               else
                 @dataloader.append_job {
                   set_all_interpreter_context(query.root_value, nil, nil, path)
-                  resolve_with_directives(object_proxy, gathered_selections.graphql_ast_node) do
+                  resolve_with_directives(object_proxy, gathered_selections.graphql_directives) do
                     evaluate_selections(
                       path,
                       context.scoped_context,
@@ -164,11 +164,10 @@ module GraphQL
               case value
               when Hash
                 deep_merge_selection_result(value, into_result[key])
-              when Array
-                raise "Haven't implemented this yet?"
               else
-                # This is a scalar conflict?!
-                raise "Invariant: conflict merging results on #{key.inspect}. Old: #{into_result[key].inspect}, New: #{value.inspect}.\n Old result: #{into_result.inspect}\n New result: #{from_result.inspect}"
+                # We have to assume that, since this passed the `fields_will_merge` selection,
+                # that the old and new values are the same.
+                into_result[key] = value
               end
             end
           end
@@ -203,7 +202,7 @@ module GraphQL
             when GraphQL::Language::Nodes::InlineFragment
               if @runtime_directive_names.any? && node.directives.any? { |d| @runtime_directive_names.include?(d.name) }
                 next_selections = GraphQLSelectionSet.new
-                next_selections.graphql_ast_node = node
+                next_selections.graphql_directives = node.directives
                 if selections_to_run
                   selections_to_run << next_selections
                 else
@@ -234,7 +233,7 @@ module GraphQL
               type_defn = schema.get_type(fragment_def.type.name)
               if @runtime_directive_names.any? && node.directives.any? { |d| @runtime_directive_names.include?(d.name) }
                 next_selections = GraphQLSelectionSet.new
-                next_selections.graphql_ast_node = node
+                next_selections.graphql_directives = node.directives
                 if selections_to_run
                   selections_to_run << next_selections
                 else
@@ -276,8 +275,6 @@ module GraphQL
               )
               finished_jobs += 1
               if target_result && finished_jobs == enqueued_jobs
-                # TODO the problem here is that `selections_result` will be updated later (eg, lazies)
-                # but `target_result` is what gets returned to the caller. So the updates are lost in thin air.
                 deep_merge_selection_result(selections_result, target_result)
               end
             }
@@ -405,12 +402,17 @@ module GraphQL
             # Optimize for the case that field is selected only once
             if field_ast_nodes.nil? || field_ast_nodes.size == 1
               next_selections = ast_node.selections
+              directives = ast_node.directives
             else
               next_selections = []
-              field_ast_nodes.each { |f| next_selections.concat(f.selections) }
+              directives = []
+              field_ast_nodes.each { |f|
+                next_selections.concat(f.selections)
+                directives.concat(f.directives)
+              }
             end
 
-            field_result = resolve_with_directives(object, ast_node) do
+            field_result = resolve_with_directives(object, directives) do
               # Actually call the field resolver and capture the result
               app_result = begin
                 query.with_error_handling do
@@ -608,7 +610,7 @@ module GraphQL
                     this_result.graphql_result_name = result_name
 
                     set_all_interpreter_context(continue_value, nil, nil, path) # reset this mutable state
-                    resolve_with_directives(continue_value, selections.graphql_ast_node) do
+                    resolve_with_directives(continue_value, selections.graphql_directives) do
                       evaluate_selections(
                         path,
                         context.scoped_context,
@@ -624,7 +626,7 @@ module GraphQL
                   end
                 else
                   set_all_interpreter_context(continue_value, nil, nil, path) # reset this mutable state
-                  resolve_with_directives(continue_value, gathered_selections.graphql_ast_node) do
+                  resolve_with_directives(continue_value, gathered_selections.graphql_directives) do
                     evaluate_selections(
                       path,
                       context.scoped_context,
@@ -683,13 +685,13 @@ module GraphQL
           end
         end
 
-        def resolve_with_directives(object, ast_node, &block)
-          return yield if ast_node.nil? || ast_node.directives.empty?
-          run_directive(object, ast_node, 0, &block)
+        def resolve_with_directives(object, directives, &block)
+          return yield if directives.nil? || directives.empty?
+          run_directive(object, directives, 0, &block)
         end
 
-        def run_directive(object, ast_node, idx, &block)
-          dir_node = ast_node.directives[idx]
+        def run_directive(object, directives, idx, &block)
+          dir_node = directives[idx]
           if !dir_node
             yield
           else
@@ -699,7 +701,7 @@ module GraphQL
             end
             dir_args = arguments(nil, dir_defn, dir_node)
             dir_defn.resolve(object, dir_args, context) do
-              run_directive(object, ast_node, idx + 1, &block)
+              run_directive(object, directives, idx + 1, &block)
             end
           end
         end
