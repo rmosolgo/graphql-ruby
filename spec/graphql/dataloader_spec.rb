@@ -757,10 +757,10 @@ describe GraphQL::Dataloader do
       assert_equal({ d: 4 }, result)
 
       dl.run_isolated {
-        r1 = dl.with(RunIsolated::CountSource).request(1)
-        r2 = dl.with(RunIsolated::CountSource).request(2)
+        _r1 = dl.with(RunIsolated::CountSource).request(1)
+        _r2 = dl.with(RunIsolated::CountSource).request(2)
         r3 = dl.with(RunIsolated::CountSource).request(3)
-        # This is going to Fiber.yield
+        # This is going to `Fiber.yield`
         result[:e] = r3.load
       }
 
