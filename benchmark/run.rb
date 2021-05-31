@@ -3,7 +3,7 @@ TESTING_INTERPRETER = true
 require "graphql"
 require "jazz"
 require "benchmark/ips"
-require "ruby-prof"
+require "stackprof"
 require "memory_profiler"
 require "graphql/batch"
 
@@ -46,15 +46,11 @@ module GraphQLBenchmark
     SCHEMA.execute(document: DOCUMENT)
     # CARD_SCHEMA.validate(ABSTRACT_FRAGMENTS)
     res = nil
-    result = RubyProf.profile do
+    result = StackProf.run(mode: :wall) do
       # CARD_SCHEMA.validate(ABSTRACT_FRAGMENTS)
       res = SCHEMA.execute(document: DOCUMENT)
     end
-    # printer = RubyProf::FlatPrinter.new(result)
-    # printer = RubyProf::GraphHtmlPrinter.new(result)
-    printer = RubyProf::FlatPrinterWithLineNumbers.new(result)
-
-    printer.print(STDOUT, {})
+    StackProf::Report.new(result).print_text
   end
 
   # Adapted from https://github.com/rmosolgo/graphql-ruby/issues/861
@@ -67,13 +63,10 @@ module GraphQLBenchmark
       }
     end
 
-    result = RubyProf.profile do
+    result = StackProf.run(mode: :wall) do
       schema.execute(document: document)
     end
-    printer = RubyProf::FlatPrinter.new(result)
-    # printer = RubyProf::GraphHtmlPrinter.new(result)
-    # printer = RubyProf::FlatPrinterWithLineNumbers.new(result)
-    printer.print(STDOUT, {})
+    StackProf::Report.new(result).print_text
 
     report = MemoryProfiler.report do
       schema.execute(document: document)
