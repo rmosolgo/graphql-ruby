@@ -91,6 +91,16 @@ module GraphQL
           "#<#{self.class.name} response=#{@response.inspect}>"
         end
 
+        def tap_or_each(obj_or_array)
+          if obj_or_array.is_a?(Array)
+            obj_or_array.each do |item|
+              yield(item, true)
+            end
+          else
+            yield(obj_or_array, false)
+          end
+        end
+
         # This _begins_ the execution. Some deferred work
         # might be stored up in lazies.
         # @return [void]
@@ -116,38 +126,27 @@ module GraphQL
               #
               # Otherwise, `gathered_selections` is a hash of selections which can be
               # directly evaluated and the results can be written right into the main response hash.
-              if gathered_selections.is_a?(Array)
-                gathered_selections.each do |selections|
+              tap_or_each(gathered_selections) do |selections, is_selection_array|
+                if is_selection_array
                   selection_response = GraphQLResultHash.new
-                  @dataloader.append_job {
-                    set_all_interpreter_context(query.root_value, nil, nil, path)
-                    resolve_with_directives(object_proxy, selections.graphql_directives) do
-                      evaluate_selections(
-                        path,
-                        context.scoped_context,
-                        object_proxy,
-                        root_type,
-                        root_op_type == "mutation",
-                        selections,
-                        selection_response,
-                        @response,
-                      )
-                    end
-                  }
+                  final_response = @response
+                else
+                  selection_response = @response
+                  final_response = nil
                 end
-              else
+
                 @dataloader.append_job {
                   set_all_interpreter_context(query.root_value, nil, nil, path)
-                  resolve_with_directives(object_proxy, gathered_selections.graphql_directives) do
+                  resolve_with_directives(object_proxy, selections.graphql_directives) do
                     evaluate_selections(
                       path,
                       context.scoped_context,
                       object_proxy,
                       root_type,
                       root_op_type == "mutation",
-                      gathered_selections,
-                      @response,
-                      nil,
+                      selections,
+                      selection_response,
+                      final_response,
                     )
                   end
                 }
@@ -599,8 +598,7 @@ module GraphQL
                 response_hash.graphql_result_name = result_name
                 set_result(selection_result, result_name, response_hash)
                 gathered_selections = gather_selections(continue_value, current_type, next_selections)
-                # I wish I could figure out how to DRY this...
-                # Basically, there are two possibilities:
+                # There are two possibilities for `gathered_selections`:
                 # 1. All selections of this object should be evaluated together (there are no runtime directives modifying execution).
                 #    This case is handled below, and the result can be written right into the main `response_hash` above.
                 #    In this case, `gathered_selections` is a hash of selections.
@@ -608,44 +606,31 @@ module GraphQL
                 #    That part of the selection is evaluated in an isolated way, writing into a sub-response object which is
                 #    eventually merged into the final response. In this case, `gathered_selections` is an array of things to run in isolation.
                 #    (Technically, it's possible that one of those entries _doesn't_ require isolation.)
-                if gathered_selections.is_a?(Array)
-                  gathered_selections.each do |selections|
+                tap_or_each(gathered_selections) do |selections, is_selection_array|
+                  if is_selection_array
                     this_result = GraphQLResultHash.new
                     this_result.graphql_parent = selection_result
                     this_result.graphql_result_name = result_name
-
-                    set_all_interpreter_context(continue_value, nil, nil, path) # reset this mutable state
-                    resolve_with_directives(continue_value, selections.graphql_directives) do
-                      evaluate_selections(
-                        path,
-                        context.scoped_context,
-                        continue_value,
-                        current_type,
-                        false,
-                        selections,
-                        this_result,
-                        response_hash,
-                      )
-                      this_result
-                    end
+                    final_result = response_hash
+                  else
+                    this_result = response_hash
+                    final_result = nil
                   end
-                else
                   set_all_interpreter_context(continue_value, nil, nil, path) # reset this mutable state
-                  resolve_with_directives(continue_value, gathered_selections.graphql_directives) do
+                  resolve_with_directives(continue_value, selections.graphql_directives) do
                     evaluate_selections(
                       path,
                       context.scoped_context,
                       continue_value,
                       current_type,
                       false,
-                      gathered_selections,
-                      response_hash,
-                      nil,
+                      selections,
+                      this_result,
+                      final_result,
                     )
-                    response_hash
+                    this_result
                   end
                 end
-                response_hash
               end
             end
           when "LIST"
