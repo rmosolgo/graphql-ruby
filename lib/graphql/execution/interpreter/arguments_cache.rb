@@ -28,11 +28,12 @@ module GraphQL
         end
 
         def fetch(ast_node, argument_owner, parent_object)
-          @storage[ast_node][argument_owner][parent_object]
           # If any jobs were enqueued, run them now,
           # since this might have been called outside of execution.
           # (The jobs are responsible for updating `result` in-place.)
-          @dataloader.run
+          @dataloader.run_isolated do
+            @storage[ast_node][argument_owner][parent_object]
+          end
           # Ack, the _hash_ is updated, but the key is eventually
           # overridden with an immutable arguments instance.
           # The first call queues up the job,

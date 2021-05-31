@@ -77,6 +77,21 @@ module GraphQL
       nil
     end
 
+    # Use a self-contained queue for the work in the block.
+    def run_isolated
+      prev_queue = @pending_jobs
+      @pending_jobs = []
+      res = nil
+      # Make sure the block is inside a Fiber, so it can `Fiber.yield`
+      append_job {
+        res = yield
+      }
+      run
+      res
+    ensure
+      @pending_jobs = prev_queue
+    end
+
     # @api private Move along, move along
     def run
       # At a high level, the algorithm is:

@@ -24,10 +24,31 @@ module GraphQL
 
         class GraphQLResultHash < Hash
           include GraphQLResult
+
+          attr_accessor :graphql_merged_into
+
+          def []=(key, value)
+            # This is a hack.
+            # Basically, this object is merged into the root-level result at some point.
+            # But the problem is, some lazies are created whose closures retain reference to _this_
+            # object. When those lazies are resolved, they cause an update to this object.
+            #
+            # In order to return a proper top-level result, we have to update that top-level result object.
+            # In order to return a proper partial result (eg, for a directive), we have to update this object, too.
+            # Yowza.
+            if (t = @graphql_merged_into)
+              t[key] = value
+            end
+            super
+          end
         end
 
         class GraphQLResultArray < Array
           include GraphQLResult
+        end
+
+        class GraphQLSelectionSet < Hash
+          attr_accessor :graphql_directives
         end
 
         # @return [GraphQL::Query]
@@ -50,6 +71,14 @@ module GraphQL
           @multiplex_context = query.multiplex.context
           @interpreter_context = @context.namespace(:interpreter)
           @response = GraphQLResultHash.new
+          # Identify runtime directives by checking which of this schema's directives have overridden `def self.resolve`
+          @runtime_directive_names = []
+          noop_resolve_owner = GraphQL::Schema::Directive.singleton_class
+          schema.directives.each do |name, dir_defn|
+            if dir_defn.method(:resolve).owner != noop_resolve_owner
+              @runtime_directive_names << name
+            end
+          end
           # A cache of { Class => { String => Schema::Field } }
           # Which assumes that MyObject.get_field("myField") will return the same field
           # during the lifetime of a query
@@ -60,6 +89,16 @@ module GraphQL
 
         def inspect
           "#<#{self.class.name} response=#{@response.inspect}>"
+        end
+
+        def tap_or_each(obj_or_array)
+          if obj_or_array.is_a?(Array)
+            obj_or_array.each do |item|
+              yield(item, true)
+            end
+          else
+            yield(obj_or_array, false)
+          end
         end
 
         # This _begins_ the execution. Some deferred work
@@ -78,20 +117,40 @@ module GraphQL
             # Root .authorized? returned false.
             @response = nil
           else
-            resolve_with_directives(object_proxy, root_operation) do # execute query level directives
+            resolve_with_directives(object_proxy, root_operation.directives) do # execute query level directives
               gathered_selections = gather_selections(object_proxy, root_type, root_operation.selections)
-              # Make the first fiber which will begin execution
-              @dataloader.append_job {
-                evaluate_selections(
-                  path,
-                  context.scoped_context,
-                  object_proxy,
-                  root_type,
-                  root_op_type == "mutation",
-                  gathered_selections,
-                  @response,
-                )
-              }
+              # This is kind of a hack -- `gathered_selections` is an Array if any of the selections
+              # require isolation during execution (because of runtime directives). In that case,
+              # make a new, isolated result hash for writing the result into. (That isolated response
+              # is eventually merged back into the main response)
+              #
+              # Otherwise, `gathered_selections` is a hash of selections which can be
+              # directly evaluated and the results can be written right into the main response hash.
+              tap_or_each(gathered_selections) do |selections, is_selection_array|
+                if is_selection_array
+                  selection_response = GraphQLResultHash.new
+                  final_response = @response
+                else
+                  selection_response = @response
+                  final_response = nil
+                end
+
+                @dataloader.append_job {
+                  set_all_interpreter_context(query.root_value, nil, nil, path)
+                  resolve_with_directives(object_proxy, selections.graphql_directives) do
+                    evaluate_selections(
+                      path,
+                      context.scoped_context,
+                      object_proxy,
+                      root_type,
+                      root_op_type == "mutation",
+                      selections,
+                      selection_response,
+                      final_response,
+                    )
+                  end
+                }
+              end
             end
           end
           delete_interpreter_context(:current_path)
@@ -101,15 +160,36 @@ module GraphQL
           nil
         end
 
-        def gather_selections(owner_object, owner_type, selections, selections_by_name = {})
+        # @return [void]
+        def deep_merge_selection_result(from_result, into_result)
+          from_result.each do |key, value|
+            if !into_result.key?(key)
+              into_result[key] = value
+            else
+              case value
+              when Hash
+                deep_merge_selection_result(value, into_result[key])
+              else
+                # We have to assume that, since this passed the `fields_will_merge` selection,
+                # that the old and new values are the same.
+                # There's no special handling of arrays because currently, there's no way to split the execution
+                # of a list over several concurrent flows.
+                into_result[key] = value
+              end
+            end
+          end
+          from_result.graphql_merged_into = into_result
+          nil
+        end
+
+        def gather_selections(owner_object, owner_type, selections, selections_to_run = nil, selections_by_name = GraphQLSelectionSet.new)
           selections.each do |node|
             # Skip gathering this if the directive says so
             if !directives_include?(node, owner_object, owner_type)
               next
             end
 
-            case node
-            when GraphQL::Language::Nodes::Field
+            if node.is_a?(GraphQL::Language::Nodes::Field)
               response_key = node.alias || node.name
               selections = selections_by_name[response_key]
               # if there was already a selection of this field,
@@ -125,52 +205,77 @@ module GraphQL
                 # No selection was found for this field yet
                 selections_by_name[response_key] = node
               end
-            when GraphQL::Language::Nodes::InlineFragment
-              if node.type
-                type_defn = schema.get_type(node.type.name)
-                # Faster than .map{}.include?()
-                query.warden.possible_types(type_defn).each do |t|
+            else
+              # This is an InlineFragment or a FragmentSpread
+              if @runtime_directive_names.any? && node.directives.any? { |d| @runtime_directive_names.include?(d.name) }
+                next_selections = GraphQLSelectionSet.new
+                next_selections.graphql_directives = node.directives
+                if selections_to_run
+                  selections_to_run << next_selections
+                else
+                  selections_to_run = []
+                  selections_to_run << selections_by_name
+                  selections_to_run << next_selections
+                end
+              else
+                next_selections = selections_by_name
+              end
+
+              case node
+              when GraphQL::Language::Nodes::InlineFragment
+                if node.type
+                  type_defn = schema.get_type(node.type.name)
+
+                  # Faster than .map{}.include?()
+                  query.warden.possible_types(type_defn).each do |t|
+                    if t == owner_type
+                      gather_selections(owner_object, owner_type, node.selections, selections_to_run, next_selections)
+                      break
+                    end
+                  end
+                else
+                  # it's an untyped fragment, definitely continue
+                  gather_selections(owner_object, owner_type, node.selections, selections_to_run, next_selections)
+                end
+              when GraphQL::Language::Nodes::FragmentSpread
+                fragment_def = query.fragments[node.name]
+                type_defn = schema.get_type(fragment_def.type.name)
+                possible_types = query.warden.possible_types(type_defn)
+                possible_types.each do |t|
                   if t == owner_type
-                    gather_selections(owner_object, owner_type, node.selections, selections_by_name)
+                    gather_selections(owner_object, owner_type, fragment_def.selections, selections_to_run, next_selections)
                     break
                   end
                 end
               else
-                # it's an untyped fragment, definitely continue
-                gather_selections(owner_object, owner_type, node.selections, selections_by_name)
+                raise "Invariant: unexpected selection class: #{node.class}"
               end
-            when GraphQL::Language::Nodes::FragmentSpread
-              fragment_def = query.fragments[node.name]
-              type_defn = schema.get_type(fragment_def.type.name)
-              possible_types = query.warden.possible_types(type_defn)
-              possible_types.each do |t|
-                if t == owner_type
-                  gather_selections(owner_object, owner_type, fragment_def.selections, selections_by_name)
-                  break
-                end
-              end
-            else
-              raise "Invariant: unexpected selection class: #{node.class}"
             end
           end
-          selections_by_name
+          selections_to_run || selections_by_name
         end
 
         NO_ARGS = {}.freeze
 
         # @return [void]
-        def evaluate_selections(path, scoped_context, owner_object, owner_type, is_eager_selection, gathered_selections, selections_result)
+        def evaluate_selections(path, scoped_context, owner_object, owner_type, is_eager_selection, gathered_selections, selections_result, target_result) # rubocop:disable Metrics/ParameterLists
           set_all_interpreter_context(owner_object, nil, nil, path)
 
+          finished_jobs = 0
+          enqueued_jobs = gathered_selections.size
           gathered_selections.each do |result_name, field_ast_nodes_or_ast_node|
             @dataloader.append_job {
               evaluate_selection(
                 path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, is_eager_selection, selections_result
               )
+              finished_jobs += 1
+              if target_result && finished_jobs == enqueued_jobs
+                deep_merge_selection_result(selections_result, target_result)
+              end
             }
           end
 
-          nil
+          selections_result
         end
 
         attr_reader :progress_path
@@ -292,12 +397,17 @@ module GraphQL
             # Optimize for the case that field is selected only once
             if field_ast_nodes.nil? || field_ast_nodes.size == 1
               next_selections = ast_node.selections
+              directives = ast_node.directives
             else
               next_selections = []
-              field_ast_nodes.each { |f| next_selections.concat(f.selections) }
+              directives = []
+              field_ast_nodes.each { |f|
+                next_selections.concat(f.selections)
+                directives.concat(f.directives)
+              }
             end
 
-            field_result = resolve_with_directives(object, ast_node) do
+            field_result = resolve_with_directives(object, directives) do
               # Actually call the field resolver and capture the result
               app_result = begin
                 query.with_error_handling do
@@ -488,8 +598,39 @@ module GraphQL
                 response_hash.graphql_result_name = result_name
                 set_result(selection_result, result_name, response_hash)
                 gathered_selections = gather_selections(continue_value, current_type, next_selections)
-                evaluate_selections(path, context.scoped_context, continue_value, current_type, false, gathered_selections, response_hash)
-                response_hash
+                # There are two possibilities for `gathered_selections`:
+                # 1. All selections of this object should be evaluated together (there are no runtime directives modifying execution).
+                #    This case is handled below, and the result can be written right into the main `response_hash` above.
+                #    In this case, `gathered_selections` is a hash of selections.
+                # 2. Some selections of this object have runtime directives that may or may not modify execution.
+                #    That part of the selection is evaluated in an isolated way, writing into a sub-response object which is
+                #    eventually merged into the final response. In this case, `gathered_selections` is an array of things to run in isolation.
+                #    (Technically, it's possible that one of those entries _doesn't_ require isolation.)
+                tap_or_each(gathered_selections) do |selections, is_selection_array|
+                  if is_selection_array
+                    this_result = GraphQLResultHash.new
+                    this_result.graphql_parent = selection_result
+                    this_result.graphql_result_name = result_name
+                    final_result = response_hash
+                  else
+                    this_result = response_hash
+                    final_result = nil
+                  end
+                  set_all_interpreter_context(continue_value, nil, nil, path) # reset this mutable state
+                  resolve_with_directives(continue_value, selections.graphql_directives) do
+                    evaluate_selections(
+                      path,
+                      context.scoped_context,
+                      continue_value,
+                      current_type,
+                      false,
+                      selections,
+                      this_result,
+                      final_result,
+                    )
+                    this_result
+                  end
+                end
               end
             end
           when "LIST"
@@ -534,13 +675,13 @@ module GraphQL
           end
         end
 
-        def resolve_with_directives(object, ast_node, &block)
-          return yield if ast_node.directives.empty?
-          run_directive(object, ast_node, 0, &block)
+        def resolve_with_directives(object, directives, &block)
+          return yield if directives.nil? || directives.empty?
+          run_directive(object, directives, 0, &block)
         end
 
-        def run_directive(object, ast_node, idx, &block)
-          dir_node = ast_node.directives[idx]
+        def run_directive(object, directives, idx, &block)
+          dir_node = directives[idx]
           if !dir_node
             yield
           else
@@ -548,9 +689,9 @@ module GraphQL
             if !dir_defn.is_a?(Class)
               dir_defn = dir_defn.type_class || raise("Only class-based directives are supported (not `@#{dir_node.name}`)")
             end
-            dir_args = arguments(nil, dir_defn, dir_node).keyword_arguments
+            dir_args = arguments(nil, dir_defn, dir_node)
             dir_defn.resolve(object, dir_args, context) do
-              run_directive(object, ast_node, idx + 1, &block)
+              run_directive(object, directives, idx + 1, &block)
             end
           end
         end
@@ -559,7 +700,7 @@ module GraphQL
         def directives_include?(node, graphql_object, parent_type)
           node.directives.each do |dir_node|
             dir_defn = schema.directives.fetch(dir_node.name).type_class || raise("Only class-based directives are supported (not #{dir_node.name.inspect})")
-            args = arguments(graphql_object, dir_defn, dir_node).keyword_arguments
+            args = arguments(graphql_object, dir_defn, dir_node)
             if !dir_defn.include?(graphql_object, args, context)
               return false
             end

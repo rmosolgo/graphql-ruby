@@ -36,6 +36,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "racc", "~> 1.4"
   s.add_development_dependency "rake", "~> 12"
   s.add_development_dependency "rubocop", "0.68" # for Ruby 2.2 enforcement
+  s.add_development_dependency "stackprof"
   # required for upgrader
   s.add_development_dependency "parser"
   # website stuff
