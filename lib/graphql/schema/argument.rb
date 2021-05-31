@@ -240,62 +240,79 @@ module GraphQL
       def coerce_into_values(parent_object, values, context, argument_values)
         arg_name = graphql_name
         arg_key = keyword
-        has_value = false
         default_used = false
+
         if values.key?(arg_name)
-          has_value = true
           value = values[arg_name]
         elsif values.key?(arg_key)
-          has_value = true
           value = values[arg_key]
         elsif default_value?
-          has_value = true
           value = default_value
           default_used = true
+        else
+          # no value at all
+          owner.validate_directive_argument(self, nil)
+          return
         end
 
-        if has_value
-          loaded_value = nil
-          coerced_value = context.schema.error_handler.with_error_handling(context) do
-            type.coerce_input(value, context)
-          end
+        loaded_value = nil
+        coerced_value = context.schema.error_handler.with_error_handling(context) do
+          type.coerce_input(value, context)
+        end
 
-          # TODO this should probably be inside after_lazy
-          if loads && !from_resolver?
-            loaded_value = if type.list?
-              loaded_values = coerced_value.map { |val| owner.load_application_object(self, loads, val, context) }
-              context.schema.after_any_lazies(loaded_values) { |result| result }
-            else
-              context.query.with_error_handling do
-                owner.load_application_object(self, loads, coerced_value, context)
-              end
-            end
-          end
-
-          coerced_value = if loaded_value
-            loaded_value
+        # TODO this should probably be inside after_lazy
+        if loads && !from_resolver?
+          loaded_value = if type.list?
+            loaded_values = coerced_value.map { |val| owner.load_application_object(self, loads, val, context) }
+            context.schema.after_any_lazies(loaded_values) { |result| result }
           else
-            coerced_value
-          end
-
-          # If this isn't lazy, then the block returns eagerly and assigns the result here
-          # If it _is_ lazy, then we write the lazy to the hash, then update it later
-          argument_values[arg_key] = context.schema.after_lazy(coerced_value) do |coerced_value|
-            owner.validate_directive_argument(self, coerced_value)
-            prepared_value = context.schema.error_handler.with_error_handling(context) do
-              prepare_value(parent_object, coerced_value, context: context)
+            context.query.with_error_handling do
+              owner.load_application_object(self, loads, coerced_value, context)
             end
-
-            # TODO code smell to access such a deeply-nested constant in a distant module
-            argument_values[arg_key] = GraphQL::Execution::Interpreter::ArgumentValue.new(
-              value: prepared_value,
-              definition: self,
-              default_used: default_used,
-            )
           end
+        end
+
+        coerced_value = if loaded_value
+          loaded_value
         else
-          # has_value is false
-          owner.validate_directive_argument(self, nil)
+          coerced_value
+        end
+
+        # If this isn't lazy, then the block returns eagerly and assigns the result here
+        # If it _is_ lazy, then we write the lazy to the hash, then update it later
+        argument_values[arg_key] = context.schema.after_lazy(coerced_value) do |coerced_value|
+          owner.validate_directive_argument(self, coerced_value)
+          prepared_value = context.schema.error_handler.with_error_handling(context) do
+            prepare_value(parent_object, coerced_value, context: context)
+          end
+
+          # TODO code smell to access such a deeply-nested constant in a distant module
+          argument_values[arg_key] = GraphQL::Execution::Interpreter::ArgumentValue.new(
+            value: prepared_value,
+            definition: self,
+            default_used: default_used,
+          )
+        end
+      end
+
+      # @api private
+      def validate_default_value
+        coerced_default_value = begin
+          type.coerce_isolated_result(default_value) unless default_value.nil?
+        rescue GraphQL::Schema::Enum::UnresolvedValueError
+          # It raises this, which is helpful at runtime, but not here...
+          default_value
+        end
+        res = type.valid_isolated_input?(coerced_default_value)
+        if !res
+          raise InvalidDefaultValueError.new(self)
+        end
+      end
+
+      class InvalidDefaultValueError < GraphQL::Error
+        def initialize(argument)
+          message = "`#{argument.path}` has an invalid default value: `#{argument.default_value.inspect}` isn't accepted by `#{argument.type.to_type_signature}`; update the default value or the argument type."
+          super(message)
         end
       end
 

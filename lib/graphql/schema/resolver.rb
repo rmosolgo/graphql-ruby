@@ -333,30 +333,32 @@ module GraphQL
           arg_defn = super(*args, from_resolver: true, **kwargs)
           own_arguments_loads_as_type[arg_defn.keyword] = loads if loads
 
-          if loads && arg_defn.type.list?
-            class_eval <<-RUBY, __FILE__, __LINE__ + 1
-            def load_#{arg_defn.keyword}(values)
-              argument = @arguments_by_keyword[:#{arg_defn.keyword}]
-              lookup_as_type = @arguments_loads_as_type[:#{arg_defn.keyword}]
-              context.schema.after_lazy(values) do |values2|
-                GraphQL::Execution::Lazy.all(values2.map { |value| load_application_object(argument, lookup_as_type, value, context) })
+          if !method_defined?(:"load_#{arg_defn.keyword}")
+            if loads && arg_defn.type.list?
+              class_eval <<-RUBY, __FILE__, __LINE__ + 1
+              def load_#{arg_defn.keyword}(values)
+                argument = @arguments_by_keyword[:#{arg_defn.keyword}]
+                lookup_as_type = @arguments_loads_as_type[:#{arg_defn.keyword}]
+                context.schema.after_lazy(values) do |values2|
+                  GraphQL::Execution::Lazy.all(values2.map { |value| load_application_object(argument, lookup_as_type, value, context) })
+                end
               end
+              RUBY
+            elsif loads
+              class_eval <<-RUBY, __FILE__, __LINE__ + 1
+              def load_#{arg_defn.keyword}(value)
+                argument = @arguments_by_keyword[:#{arg_defn.keyword}]
+                lookup_as_type = @arguments_loads_as_type[:#{arg_defn.keyword}]
+                load_application_object(argument, lookup_as_type, value, context)
+              end
+              RUBY
+            else
+              class_eval <<-RUBY, __FILE__, __LINE__ + 1
+              def load_#{arg_defn.keyword}(value)
+                value
+              end
+              RUBY
             end
-            RUBY
-          elsif loads
-            class_eval <<-RUBY, __FILE__, __LINE__ + 1
-            def load_#{arg_defn.keyword}(value)
-              argument = @arguments_by_keyword[:#{arg_defn.keyword}]
-              lookup_as_type = @arguments_loads_as_type[:#{arg_defn.keyword}]
-              load_application_object(argument, lookup_as_type, value, context)
-            end
-            RUBY
-          else
-            class_eval <<-RUBY, __FILE__, __LINE__ + 1
-            def load_#{arg_defn.keyword}(value)
-              value
-            end
-            RUBY
           end
 
           arg_defn
@@ -372,15 +374,35 @@ module GraphQL
         # @param extension [Class] Extension class
         # @param options [Hash] Optional extension options
         def extension(extension, **options)
-          extensions << {extension => options}
+          @own_extensions ||= []
+          @own_extensions << {extension => options}
         end
 
         # @api private
         def extensions
-          @extensions ||= []
+          own_exts = @own_extensions
+          # Jump through some hoops to avoid creating arrays when we don't actually need them
+          if superclass.respond_to?(:extensions)
+            s_exts = superclass.extensions
+            if own_exts
+              if s_exts.any?
+                own_exts + s_exts
+              else
+                own_exts
+              end
+            else
+              s_exts
+            end
+          else
+            own_exts || EMPTY_ARRAY
+          end
         end
 
         private
+
+        def own_extensions
+          @own_extensions
+        end
 
         def own_arguments_loads_as_type
           @own_arguments_loads_as_type ||= {}

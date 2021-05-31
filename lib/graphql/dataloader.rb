@@ -77,6 +77,21 @@ module GraphQL
       nil
     end
 
+    # Use a self-contained queue for the work in the block.
+    def run_isolated
+      prev_queue = @pending_jobs
+      @pending_jobs = []
+      res = nil
+      # Make sure the block is inside a Fiber, so it can `Fiber.yield`
+      append_job {
+        res = yield
+      }
+      run
+      res
+    ensure
+      @pending_jobs = prev_queue
+    end
+
     # @api private Move along, move along
     def run
       # At a high level, the algorithm is:
@@ -136,26 +151,24 @@ module GraphQL
           # This is where an evented approach would be even better -- can we tell which
           # fibers are ready to continue, and continue execution there?
           #
-          source_fiber_stack = if (first_source_fiber = create_source_fiber)
+          source_fiber_queue = if (first_source_fiber = create_source_fiber)
             [first_source_fiber]
           else
             nil
           end
 
-          if source_fiber_stack
-            # Use a stack with `.pop` here so that when a source causes another source to become pending,
-            # that newly-pending source will run _before_ the one that depends on it.
-            # (See below where the old fiber is pushed to the stack, then the new fiber is pushed on the stack.)
-            while (outer_source_fiber = source_fiber_stack.pop)
+          if source_fiber_queue
+            while (outer_source_fiber = source_fiber_queue.shift)
               resume(outer_source_fiber)
 
-              if outer_source_fiber.alive?
-                source_fiber_stack << outer_source_fiber
-              end
               # If this source caused more sources to become pending, run those before running this one again:
               next_source_fiber = create_source_fiber
               if next_source_fiber
-                source_fiber_stack << next_source_fiber
+                source_fiber_queue << next_source_fiber
+              end
+
+              if outer_source_fiber.alive?
+                source_fiber_queue << outer_source_fiber
               end
             end
           end

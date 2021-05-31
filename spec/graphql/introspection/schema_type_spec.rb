@@ -146,4 +146,52 @@ describe GraphQL::Introspection::SchemaType do
       assert_equal(expected_types, types)
     end
   end
+
+  describe "when the schema has hidden directives" do
+    let(:schema) do
+      invisible_directive = Class.new(GraphQL::Schema::Directive) do
+        graphql_name 'invisibleDirective'
+        locations(GraphQL::Schema::Directive::QUERY)
+        argument(:val, Integer, "Initial integer value.", required: false)
+
+        def self.visible?(context)
+          false
+        end
+      end
+
+      visible_directive = Class.new(GraphQL::Schema::Directive) do
+        graphql_name 'visibleDirective'
+        locations(GraphQL::Schema::Directive::QUERY)
+        argument(:val, Integer, "Initial integer value.", required: false)
+
+        def self.visible?(context)
+          true
+        end
+      end
+
+      query_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name 'Query'
+        field :foo, String, null: false
+      end
+
+      Class.new(GraphQL::Schema) do
+        query query_type
+        directives invisible_directive, visible_directive
+      end
+    end
+
+    let(:query_string) {%|
+      query getSchema {
+        __schema {
+          directives { name }
+        }
+      }
+    |}
+
+    it "only returns visible directives" do
+      expected_dirs = ['deprecated', 'include', 'skip', 'visibleDirective']
+      directives = result['data']['__schema']['directives'].map { |dir| dir.fetch('name') }
+      assert_equal(expected_dirs.sort, directives.sort)
+    end
+  end
 end

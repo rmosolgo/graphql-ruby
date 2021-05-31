@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require "graphql/schema/addition"
 require "graphql/schema/base_64_encoder"
 require "graphql/schema/catchall_middleware"
 require "graphql/schema/default_parse_error"
@@ -1582,10 +1583,7 @@ module GraphQL
       # @param new_directive [Class]
       # @return void
       def directive(new_directive)
-        own_directives[new_directive.graphql_name] ||= begin
-          add_type_and_traverse(new_directive, root: false)
-          new_directive
-        end
+        add_type_and_traverse(new_directive, root: false)
       end
 
       def default_directives
@@ -1709,6 +1707,30 @@ module GraphQL
 
       private
 
+      # @param t [Module, Array<Module>]
+      # @return [void]
+      def add_type_and_traverse(t, root:)
+        if root
+          @root_types ||= []
+          @root_types << t
+        end
+        new_types = Array(t)
+        addition = Schema::Addition.new(schema: self, own_types: own_types, new_types: new_types)
+        own_types.merge!(addition.types)
+        own_possible_types.merge!(addition.possible_types) { |key, old_val, new_val| old_val + new_val }
+        own_union_memberships.merge!(addition.union_memberships)
+
+        addition.references.each { |thing, pointers|
+          pointers.each { |pointer| references_to(thing, from: pointer) }
+        }
+
+        addition.directives.each { |dir_class| own_directives[dir_class.graphql_name] = dir_class }
+
+        addition.arguments_with_default_values.each do |arg|
+          arg.validate_default_value
+        end
+      end
+
       def lazy_methods
         if !defined?(@lazy_methods)
           if inherited_map = find_inherited_value(:lazy_methods)
@@ -1773,202 +1795,6 @@ module GraphQL
 
       def own_multiplex_analyzers
         @own_multiplex_analyzers ||= []
-      end
-
-      # @param t [Module, Array<Module>]
-      # @return [void]
-      def add_type_and_traverse(t, root:)
-        if root
-          @root_types ||= []
-          @root_types << t
-        end
-        late_types = []
-        new_types = Array(t)
-        new_types.each { |t| add_type(t, owner: nil, late_types: late_types, path: [t.graphql_name]) }
-        missed_late_types = 0
-        while (late_type_vals = late_types.shift)
-          type_owner, lt = late_type_vals
-          if lt.is_a?(String)
-            type = Member::BuildType.constantize(lt)
-            # Reset the counter, since we might succeed next go-round
-            missed_late_types = 0
-            update_type_owner(type_owner, type)
-            add_type(type, owner: type_owner, late_types: late_types, path: [type.graphql_name])
-          elsif lt.is_a?(LateBoundType)
-            if (type = get_type(lt.graphql_name))
-              # Reset the counter, since we might succeed next go-round
-              missed_late_types = 0
-              update_type_owner(type_owner, type)
-              add_type(type, owner: type_owner, late_types: late_types, path: [type.graphql_name])
-            else
-              missed_late_types += 1
-              # Add it back to the list, maybe we'll be able to resolve it later.
-              late_types << [type_owner, lt]
-              if missed_late_types == late_types.size
-                # We've looked at all of them and haven't resolved one.
-                raise UnresolvedLateBoundTypeError.new(type: lt)
-              else
-                # Try the next one
-              end
-            end
-          else
-            raise ArgumentError, "Unexpected late type: #{lt.inspect}"
-          end
-        end
-        nil
-      end
-
-      def update_type_owner(owner, type)
-        case owner
-        when Class
-          if owner.kind.union?
-            # It's a union with possible_types
-            # Replace the item by class name
-            owner.assign_type_membership_object_type(type)
-            own_possible_types[owner.graphql_name] = owner.possible_types
-          elsif type.kind.interface? && owner.kind.object?
-            new_interfaces = []
-            owner.interfaces.each do |int_t|
-              if int_t.is_a?(String) && int_t == type.graphql_name
-                new_interfaces << type
-              elsif int_t.is_a?(LateBoundType) && int_t.graphql_name == type.graphql_name
-                new_interfaces << type
-              else
-                # Don't re-add proper interface definitions,
-                # they were probably already added, maybe with options.
-              end
-            end
-            owner.implements(*new_interfaces)
-            new_interfaces.each do |int|
-              pt = own_possible_types[int.graphql_name] ||= []
-              if !pt.include?(owner)
-                pt << owner
-              end
-            end
-          end
-
-        when nil
-          # It's a root type
-          own_types[type.graphql_name] = type
-        when GraphQL::Schema::Field, GraphQL::Schema::Argument
-          orig_type = owner.type
-          # Apply list/non-null wrapper as needed
-          if orig_type.respond_to?(:of_type)
-            transforms = []
-            while (orig_type.respond_to?(:of_type))
-              if orig_type.kind.non_null?
-                transforms << :to_non_null_type
-              elsif orig_type.kind.list?
-                transforms << :to_list_type
-              else
-                raise "Invariant: :of_type isn't non-null or list"
-              end
-              orig_type = orig_type.of_type
-            end
-            transforms.reverse_each { |t| type = type.public_send(t) }
-          end
-          owner.type = type
-        else
-          raise "Unexpected update: #{owner.inspect} #{type.inspect}"
-        end
-      end
-
-      def add_type(type, owner:, late_types:, path:)
-        if type.respond_to?(:metadata) && type.metadata.is_a?(Hash)
-          type_class = type.metadata[:type_class]
-          if type_class.nil?
-            raise ArgumentError, "Can't add legacy type: #{type} (#{type.class})"
-          else
-            type = type_class
-          end
-        elsif type.is_a?(String) || type.is_a?(GraphQL::Schema::LateBoundType)
-          late_types << [owner, type]
-          return
-        end
-
-        if owner.is_a?(Class) && owner < GraphQL::Schema::Union
-          um = own_union_memberships[type.graphql_name] ||= []
-          um << owner
-        end
-
-        if (prev_type = own_types[type.graphql_name])
-          if prev_type != type
-            raise DuplicateTypeNamesError.new(
-              type_name: type.graphql_name,
-              first_definition: prev_type,
-              second_definition: type,
-              path: path,
-            )
-          else
-            # This type was already added
-          end
-        elsif type.is_a?(Class) && type < GraphQL::Schema::Directive
-          type.arguments.each do |name, arg|
-            arg_type = arg.type.unwrap
-            references_to(arg_type, from: arg)
-            add_type(arg_type, owner: arg, late_types: late_types, path: path + [name])
-          end
-        else
-          own_types[type.graphql_name] = type
-          add_directives_from(type)
-          if type.kind.fields?
-            type.fields.each do |name, field|
-              field_type = field.type.unwrap
-              references_to(field_type, from: field)
-              field_path = path + [name]
-              add_type(field_type, owner: field, late_types: late_types, path: field_path)
-              add_directives_from(field)
-              field.arguments.each do |arg_name, arg|
-                add_directives_from(arg)
-                arg_type = arg.type.unwrap
-                references_to(arg_type, from: arg)
-                add_type(arg_type, owner: arg, late_types: late_types, path: field_path + [arg_name])
-              end
-            end
-          end
-          if type.kind.input_object?
-            type.arguments.each do |arg_name, arg|
-              add_directives_from(arg)
-              arg_type = arg.type.unwrap
-              references_to(arg_type, from: arg)
-              add_type(arg_type, owner: arg, late_types: late_types, path: path + [arg_name])
-            end
-          end
-          if type.kind.union?
-            own_possible_types[type.graphql_name] = type.possible_types
-            type.possible_types.each do |t|
-              add_type(t, owner: type, late_types: late_types, path: path + ["possible_types"])
-            end
-          end
-          if type.kind.interface?
-            type.orphan_types.each do |t|
-              add_type(t, owner: type, late_types: late_types, path: path + ["orphan_types"])
-            end
-          end
-          if type.kind.object?
-            own_possible_types[type.graphql_name] = [type]
-            type.interface_type_memberships.each do |interface_type_membership|
-              case interface_type_membership
-              when Schema::TypeMembership
-                interface_type = interface_type_membership.abstract_type
-                # We can get these now; we'll have to get late-bound types later
-                if interface_type.is_a?(Module)
-                  implementers = own_possible_types[interface_type.graphql_name] ||= []
-                  implementers << type
-                end
-              when String, Schema::LateBoundType
-                interface_type = interface_type_membership
-              else
-                raise ArgumentError, "Invariant: unexpected type membership for #{type.graphql_name}: #{interface_type_membership.class} (#{interface_type_membership.inspect})"
-              end
-              add_type(interface_type, owner: type, late_types: late_types, path: path + ["implements"])
-            end
-          end
-        end
-      end
-
-      def add_directives_from(owner)
-        owner.directives.each { |dir| directive(dir.class) }
       end
     end
 

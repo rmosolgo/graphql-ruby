@@ -55,7 +55,14 @@ module GraphQL
         # @return [Object] An object that load Global::Identification recursive
         def load_value(value)
           if value.is_a?(Array)
-            value.map{|item| load_value(item)}
+            is_gids = (v1 = value[0]).is_a?(Hash) && v1.size == 1 && v1[GLOBALID_KEY]
+            if is_gids
+              # Assume it's an array of global IDs
+              ids = value.map { |v| v[GLOBALID_KEY] }
+              GlobalID::Locator.locate_many(ids)
+            else
+              value.map { |item| load_value(item) }
+            end
           elsif value.is_a?(Hash)
             if value.size == 1
               case value.keys.first # there's only 1 key

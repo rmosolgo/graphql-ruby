@@ -23,7 +23,7 @@ module GraphQL
         defn = if arg_defn && arg_defn.type.unwrap.kind.input_object?
           arg_defn.type.unwrap
         else
-          context.field_definition
+          context.directive_definition || context.field_definition
         end
 
         parent_type = context.warden.get_argument(defn, parent_name(parent, defn))

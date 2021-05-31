@@ -8,6 +8,36 @@
 
 ### Bug fixes
 
+# 1.12.12 (31 May 2021)
+
+### Bug fixes
+
+- Directives on inline fragments and fragment spreads receive `.resolve(...)` calls #3499
+
+# 1.12.11 (28 May 2021)
+
+### Bug fixes
+
+- Validate argument default values when adding them to the schema #3496
+- Resolvers inherit extensions from superclasses #3500
+- Greatly reduce runtime overhead #3494, #3505
+- Remove hidden directives from introspection #3488
+
+# 1.12.10 (18 May 2021)
+
+### New features
+
+- Use `GlobalID::Locator.locate_many` for arrays of global Ids #3481
+- Support runtime directives (call `.resolve`) on `QUERY` #3474
+
+### Bug fixes
+
+- Don't override Resolver `#load_*` methods when they're inherited #3486
+- Fix validation of runtime directive arguments that have input objects #3485
+- Add a final newline to rake task output
+- Don't add connection arguments to fields loaded from introspection responses #3470
+- Fix `rescue_from` on loading arguments #3471
+
 # 1.12.9 (7 May 2021)
 
 ### New features

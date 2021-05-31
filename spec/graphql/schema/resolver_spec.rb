@@ -733,6 +733,19 @@ describe GraphQL::Schema::Resolver do
       end
     end
 
+    describe "load_* argument methods" do
+      it "doesn't override inherited methods" do
+        r1 = Class.new(GraphQL::Schema::Resolver) do
+          def load_input(input); end
+        end
+        r2 = Class.new(r1) do
+          argument :input, Integer, required: false
+        end
+
+        assert_equal r1.instance_method(:load_input).source_location, r2.instance_method(:load_input).source_location
+      end
+    end
+
     describe "Loading inputs" do
       it "calls object_from_id" do
         res = exec_query('{ prepResolver9(intId: "5") { value } }')
@@ -797,6 +810,20 @@ describe GraphQL::Schema::Resolver do
       it "uses extension to build response" do
         res = exec_query " { resolverWithExtension } "
         assert_equal "Hi, Robert!", res["data"]["resolverWithExtension"]
+      end
+
+      it "inherits extensions" do
+        r1 = Class.new(GraphQL::Schema::Resolver) do
+          extension(ResolverTest::GreetingExtension)
+        end
+
+        e2 = Class.new(GraphQL::Schema::FieldExtension)
+        r2 = Class.new(r1) do
+          extension(e2)
+        end
+
+        assert_equal 1, r1.extensions.size
+        assert_equal 2, r2.extensions.size
       end
     end
 

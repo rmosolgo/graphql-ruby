@@ -255,7 +255,6 @@ describe "GraphQL::Execution::Errors" do
     describe "errors raised when loading objects from ID" do
       it "rescues them" do
         res1 = ErrorsTestSchema.execute("{ f9(thingId: \"abc\") }")
-        pp res1
         assert_equal "abc", res1["data"]["f9"]
 
         res2 = ErrorsTestSchema.execute("{ f9(thingId: \"boom\") }")
