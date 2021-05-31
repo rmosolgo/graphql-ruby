@@ -125,7 +125,7 @@
 
 <ul>
   <li><code class="language-plaintext highlighter-rouge">def self.include?(obj, args, ctx)</code>: If this hook returns <code class="language-plaintext highlighter-rouge">false</code>, the nodes flagged by this directive will be skipped at runtime.</li>
-  <li><code class="language-plaintext highlighter-rouge">def self.resolve(obj, args, ctx)</code>: Wraps the resolution of flagged nodes. Resolution is passed as a <strong>block</strong>, so <code class="language-plaintext highlighter-rouge">yield</code> will continue resolution. The return value of this method will be treated as the return value of the flagged field.</li>
+  <li><code class="language-plaintext highlighter-rouge">def self.resolve(obj, args, ctx)</code>: Wraps the resolution of flagged nodes. Resolution is passed as a <strong>block</strong>, so <code class="language-plaintext highlighter-rouge">yield</code> will continue resolution.</li>
 </ul>
 
 <p>Looking for a runtime hook that isn’t listed here? <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=New directive hook: @something&amp;body=&lt;!-- Describe how the directive would be used and then how you might implement it --&gt; " target="_blank">open an issue</a> to start the conversation!</p>
