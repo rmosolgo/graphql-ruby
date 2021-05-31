@@ -8,6 +8,16 @@
 
 ### Bug Fix
 
+# 1.18.0 (31 May 2021)
+
+### New Features
+
+- Ably subscriptions: send `quickAck: true` for a faster response from Ably
+
+### Bug Fix
+
+- Defer: support dataloader inside deferred blocks
+
 # 1.17.15 (29 Apr 2021)
 
 ### New Features
