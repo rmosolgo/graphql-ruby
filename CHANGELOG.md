@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+# 1.12.12 (31 May 2021)
+
+### Bug fixes
+
+- Directives on inline fragments and fragment spreads receive `.resolve(...)` calls #3499
+
 # 1.12.11 (28 May 2021)
 
 ### Bug fixes
