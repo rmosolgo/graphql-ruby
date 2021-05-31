@@ -734,6 +734,42 @@ describe GraphQL::Dataloader do
     assert :world, value
   end
 
+  describe "#run_isolated" do
+    module RunIsolated
+      class CountSource < GraphQL::Dataloader::Source
+        def fetch(ids)
+          @count ||= 0
+          @count += ids.size
+          ids.map { |_id| @count }
+        end
+      end
+    end
+
+    it "uses its own queue" do
+      dl = GraphQL::Dataloader.new
+      result = {}
+      dl.append_job { result[:a] = 1 }
+      dl.append_job { result[:b] = 2 }
+      dl.append_job { result[:c] = 3 }
+
+      dl.run_isolated { result[:d] = 4 }
+
+      assert_equal({ d: 4 }, result)
+
+      dl.run_isolated {
+        r1 = dl.with(RunIsolated::CountSource).request(1)
+        r2 = dl.with(RunIsolated::CountSource).request(2)
+        r3 = dl.with(RunIsolated::CountSource).request(3)
+        # This is going to Fiber.yield
+        result[:e] = r3.load
+      }
+
+      assert_equal({ d: 4, e: 3 }, result)
+      dl.run
+      assert_equal({ a: 1, b: 2, c: 3, d: 4, e: 3 }, result)
+    end
+  end
+
   describe "thread local variables" do
     module ThreadVariable
       class Type < GraphQL::Schema::Object

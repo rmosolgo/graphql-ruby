@@ -81,7 +81,11 @@ module GraphQL
     def run_isolated
       prev_queue = @pending_jobs
       @pending_jobs = []
-      res = yield
+      res = nil
+      # Make sure the block is inside a Fiber, so it can `Fiber.yield`
+      append_job {
+        res = yield
+      }
       run
       res
     ensure
