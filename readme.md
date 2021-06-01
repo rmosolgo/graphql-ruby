@@ -2,9 +2,6 @@
 
 [![CI Suite](https://github.com/rmosolgo/graphql-ruby/actions/workflows/ci.yaml/badge.svg)](https://github.com/rmosolgo/graphql-ruby/actions/workflows/ci.yaml)
 [![Gem Version](https://badge.fury.io/rb/graphql.svg)](https://rubygems.org/gems/graphql)
-[![Code Climate](https://codeclimate.com/github/rmosolgo/graphql-ruby/badges/gpa.svg)](https://codeclimate.com/github/rmosolgo/graphql-ruby)
-[![Test Coverage](https://codeclimate.com/github/rmosolgo/graphql-ruby/badges/coverage.svg)](https://codeclimate.com/github/rmosolgo/graphql-ruby)
-[![built with love](https://cloud.githubusercontent.com/assets/2231765/6766607/d07992c6-cfc9-11e4-813f-d9240714dd50.png)](https://rmosolgo.github.io/react-badges/)
 
 A Ruby implementation of [GraphQL](https://graphql.org/).
 

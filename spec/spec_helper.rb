@@ -9,9 +9,6 @@ ENV["BACKTRACE"] = "1"
 # Set this env var to use legacy runtime for fixture schemas.
 TESTING_INTERPRETER = !ENV["TESTING_LEGACY"]
 
-require "codeclimate-test-reporter"
-CodeClimate::TestReporter.start
-
 require "graphql"
 require "rake"
 require "graphql/rake_task"
