@@ -36,7 +36,7 @@ Some Relay configurations must be updated too. For example:
 
 ```diff
 - field :node, field: GraphQL::Relay::Node.field
-+ add_field(GraphQL::Types::Relay::NodeField)
++ include GraphQL::Types::Relay::HasNodeField
 ```
 
 (Alternatively, consider implementing `Query.node` in your own app, using `NodeField` as inspiration.)
