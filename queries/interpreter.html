@@ -75,7 +75,7 @@
 <p>Some Relay configurations must be updated too. For example:</p>
 
 <div class="language-diff highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gd">- field :node, field: GraphQL::Relay::Node.field
-</span><span class="gi">+ add_field(GraphQL::Types::Relay::NodeField)
+</span><span class="gi">+ include GraphQL::Types::Relay::HasNodeField
 </span></code></pre></div></div>
 
 <p>(Alternatively, consider implementing <code class="language-plaintext highlighter-rouge">Query.node</code> in your own app, using <code class="language-plaintext highlighter-rouge">NodeField</code> as inspiration.)</p>
