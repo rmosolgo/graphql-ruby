@@ -564,6 +564,17 @@ describe GraphQL::Execution::Interpreter do
         def lazy_skip
           -> { context.skip }
         end
+
+        field :mixed_skips, [String], null: true
+        def mixed_skips
+          [
+            "a",
+            context.skip,
+            "c",
+            -> { context.skip },
+            "e",
+          ]
+        end
       end
 
       class NothingSubscription < GraphQL::Schema::Subscription
@@ -590,6 +601,10 @@ describe GraphQL::Execution::Interpreter do
     it "skips properly" do
       res = LazySkipSchema.execute("{ skip }")
       assert_equal({}, res["data"])
+      refute res.key?("errors")
+
+      res = LazySkipSchema.execute("{ mixedSkips }")
+      assert_equal({ "mixedSkips" => ["a", "c", "e"] }, res["data"])
       refute res.key?("errors")
 
       res = LazySkipSchema.execute("{ lazySkip }")
