@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require "spec_helper"
+require_relative "../subscriptions_spec"
 
 describe GraphQL::Execution::Interpreter do
   module InterpreterTest
@@ -544,6 +545,66 @@ describe GraphQL::Execution::Interpreter do
 
       res = InterpreterTest::Schema.execute(query_str)
       assert_equal({ sym: "RAW", name: "Raw expansion", always_cached_value: 42 }, res["data"]["expansionRaw"])
+    end
+  end
+
+  describe "Lazy skips" do
+    class LazySkipSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        def self.authorized?(obj, ctx)
+          -> { true }
+        end
+        field :skip, String, null: true
+
+        def skip
+          context.skip
+        end
+
+        field :lazy_skip, String, null: true
+        def lazy_skip
+          -> { context.skip }
+        end
+      end
+
+      class NothingSubscription < GraphQL::Schema::Subscription
+        field :nothing, String, null: true
+        def authorized?(*)
+          -> { true }
+        end
+
+        def update
+          { nothing: object }
+        end
+      end
+
+      class Subscription < GraphQL::Schema::Object
+        field :nothing, subscription: NothingSubscription
+      end
+
+      query Query
+      subscription Subscription
+      use InMemoryBackend::Subscriptions, extra: nil
+      lazy_resolve Proc, :call
+    end
+
+    focus
+    it "skips properly" do
+      res = LazySkipSchema.execute("{ skip }")
+      assert_equal({}, res["data"])
+      refute res.key?("errors")
+      # This failed on 1.12.10, too
+      # res = LazySkipSchema.execute("{ lazySkip }")
+      # pp res
+      # assert_equal({}, res["data"])
+      # refute res.key?("errors")
+
+      res = LazySkipSchema.execute("subscription { nothing { nothing } }")
+      pp res
+      assert_equal({}, res["data"])
+      refute res.key?("errors")
+      LazySkipSchema.subscriptions.trigger(:nothing, {}, :nothing_at_all)
+      key, updates = LazySkipSchema.subscriptions.deliveries.first
+      assert_equal "nothing_at_all", updates[0]["data"]["nothing"]["nothing"]
     end
   end
 
