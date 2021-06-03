@@ -45,6 +45,25 @@ module GraphQL
 
         class GraphQLResultArray < Array
           include GraphQLResult
+
+          def skip_at(index)
+            # Mark this index as dead. It's tricky because some indices may already be storing
+            # `Lazy`s. So the runtime is still holding indexes _before_ skipping,
+            # this object has to coordinate incoming writes to account for any already-skipped indices.
+            @skip_indices ||= []
+            @skip_indices << index
+            offset_by = @skip_indices.count { |skipped_idx| skipped_idx < index}
+            delete_at_index = index - offset_by
+            delete_at(delete_at_index)
+          end
+
+          def []=(idx, value)
+            if @skip_indices
+              offset_by = @skip_indices.count { |skipped_idx| skipped_idx < idx }
+              idx -= offset_by
+            end
+            super(idx, value)
+          end
         end
 
         class GraphQLSelectionSet < Hash
@@ -517,6 +536,15 @@ module GraphQL
               end
               continue_value(path, next_value, parent_type, field, is_non_null, ast_node, result_name, selection_result)
             elsif GraphQL::Execution::Execute::SKIP == value
+              # It's possible a lazy was already written here
+              case selection_result
+              when Hash
+                selection_result.delete(result_name)
+              when Array
+                selection_result.skip_at(result_name)
+              else
+                raise "Invariant: unexpected result class #{selection_result.class} (#{selection_result.inspect})"
+              end
               HALT
             else
               # What could this actually _be_? Anyhow,

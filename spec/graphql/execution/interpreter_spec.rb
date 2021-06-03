@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require "spec_helper"
+require_relative "../subscriptions_spec"
 
 describe GraphQL::Execution::Interpreter do
   module InterpreterTest
@@ -544,6 +545,79 @@ describe GraphQL::Execution::Interpreter do
 
       res = InterpreterTest::Schema.execute(query_str)
       assert_equal({ sym: "RAW", name: "Raw expansion", always_cached_value: 42 }, res["data"]["expansionRaw"])
+    end
+  end
+
+  describe "Lazy skips" do
+    class LazySkipSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        def self.authorized?(obj, ctx)
+          -> { true }
+        end
+        field :skip, String, null: true
+
+        def skip
+          context.skip
+        end
+
+        field :lazy_skip, String, null: true
+        def lazy_skip
+          -> { context.skip }
+        end
+
+        field :mixed_skips, [String], null: true
+        def mixed_skips
+          [
+            "a",
+            context.skip,
+            "c",
+            -> { context.skip },
+            "e",
+          ]
+        end
+      end
+
+      class NothingSubscription < GraphQL::Schema::Subscription
+        field :nothing, String, null: true
+        def authorized?(*)
+          -> { true }
+        end
+
+        def update
+          { nothing: object }
+        end
+      end
+
+      class Subscription < GraphQL::Schema::Object
+        field :nothing, subscription: NothingSubscription
+      end
+
+      query Query
+      subscription Subscription
+      use InMemoryBackend::Subscriptions, extra: nil
+      lazy_resolve Proc, :call
+    end
+
+    it "skips properly" do
+      res = LazySkipSchema.execute("{ skip }")
+      assert_equal({}, res["data"])
+      refute res.key?("errors")
+
+      res = LazySkipSchema.execute("{ mixedSkips }")
+      assert_equal({ "mixedSkips" => ["a", "c", "e"] }, res["data"])
+      refute res.key?("errors")
+
+      res = LazySkipSchema.execute("{ lazySkip }")
+      assert_equal({}, res["data"])
+      refute res.key?("errors")
+
+      res = LazySkipSchema.execute("subscription { nothing { nothing } }")
+      assert_equal({}, res["data"])
+      refute res.key?("errors")
+      # Make sure an update works properly
+      LazySkipSchema.subscriptions.trigger(:nothing, {}, :nothing_at_all)
+      _key, updates = LazySkipSchema.subscriptions.deliveries.first
+      assert_equal "nothing_at_all", updates[0]["data"]["nothing"]["nothing"]
     end
   end
 
