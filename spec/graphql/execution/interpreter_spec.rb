@@ -616,7 +616,7 @@ describe GraphQL::Execution::Interpreter do
       refute res.key?("errors")
       # Make sure an update works properly
       LazySkipSchema.subscriptions.trigger(:nothing, {}, :nothing_at_all)
-      key, updates = LazySkipSchema.subscriptions.deliveries.first
+      _key, updates = LazySkipSchema.subscriptions.deliveries.first
       assert_equal "nothing_at_all", updates[0]["data"]["nothing"]["nothing"]
     end
   end
