@@ -517,6 +517,15 @@ module GraphQL
               end
               continue_value(path, next_value, parent_type, field, is_non_null, ast_node, result_name, selection_result)
             elsif GraphQL::Execution::Execute::SKIP == value
+              # It's possible a lazy was already written here
+              case selection_result
+              when Hash
+                selection_result.delete(result_name)
+              when Array
+                selection_result.delete_at(result_name)
+              else
+                raise "Invariant: unexpected result class #{selection_result.class} (#{selection_result.inspect})"
+              end
               HALT
             else
               # What could this actually _be_? Anyhow,

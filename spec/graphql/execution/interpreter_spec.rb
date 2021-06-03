@@ -587,21 +587,19 @@ describe GraphQL::Execution::Interpreter do
       lazy_resolve Proc, :call
     end
 
-    focus
     it "skips properly" do
       res = LazySkipSchema.execute("{ skip }")
       assert_equal({}, res["data"])
       refute res.key?("errors")
-      # This failed on 1.12.10, too
-      # res = LazySkipSchema.execute("{ lazySkip }")
-      # pp res
-      # assert_equal({}, res["data"])
-      # refute res.key?("errors")
 
-      res = LazySkipSchema.execute("subscription { nothing { nothing } }")
-      pp res
+      res = LazySkipSchema.execute("{ lazySkip }")
       assert_equal({}, res["data"])
       refute res.key?("errors")
+
+      res = LazySkipSchema.execute("subscription { nothing { nothing } }")
+      assert_equal({}, res["data"])
+      refute res.key?("errors")
+      # Make sure an update works properly
       LazySkipSchema.subscriptions.trigger(:nothing, {}, :nothing_at_all)
       key, updates = LazySkipSchema.subscriptions.deliveries.first
       assert_equal "nothing_at_all", updates[0]["data"]["nothing"]["nothing"]
