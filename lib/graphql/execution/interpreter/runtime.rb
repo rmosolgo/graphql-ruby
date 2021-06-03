@@ -439,15 +439,10 @@ module GraphQL
         end
 
         def dead_result?(selection_result)
-          r = selection_result
-          while r
-            if r.graphql_dead
-              return true
-            else
-              r = r.graphql_parent
-            end
-          end
-          false
+          # When a result is marked dead, any of its existing children are marked dead
+          # and it accepts no more writes. But this result might have been initialized,
+          # but not yet assigned to a key in its parent. So check the parent too.
+          selection_result.graphql_dead || ((parent = selection_result.graphql_parent) && parent.graphql_dead)
         end
 
         def set_result(selection_result, result_name, value)
@@ -473,11 +468,26 @@ module GraphQL
                 set_result(parent, name_in_parent, nil)
                 # This is odd, but it's how it used to work. Even if `parent` _would_ accept
                 # a `nil`, it's marked dead. TODO: check the spec, is there a reason for this?
-                parent.graphql_dead = true
+                set_graphql_dead(parent)
               end
             else
               selection_result[result_name] = value
             end
+          end
+        end
+
+        # Mark this node and any already-registered children as dead,
+        # so that it accepts no more writes.
+        def set_graphql_dead(selection_result)
+          case selection_result
+          when Array
+            selection_result.graphql_dead = true
+            selection_result.each { |res| set_graphql_dead(res) }
+          when Hash
+            selection_result.graphql_dead = true
+            selection_result.each { |k, v| set_graphql_dead(v) }
+          else
+            # It's a scalar, no way to mark it dead.
           end
         end
 
