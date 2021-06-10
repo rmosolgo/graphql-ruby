@@ -64,8 +64,8 @@ module GraphQL
       def_delegators :@ruby_style_hash, :keys, :values, :each, :map, :any?, :empty?
 
       def to_h
-        @ruby_style_hash.inject({}) do |h, (key, value)|
-          h.merge(key => unwrap_value(value))
+        @ruby_style_hash.reduce({}) do |h, (key, value)|
+          h.merge!(key => unwrap_value(value))
         end
       end
 
@@ -91,8 +91,8 @@ module GraphQL
         when Array
           value.map { |item| unwrap_value(item) }
         when Hash
-          value.inject({}) do |h, (key, value)|
-            h.merge(key => unwrap_value(value))
+          value.reduce({}) do |h, (key, value)|
+            h.merge!(key => unwrap_value(value))
           end
         when InputObject
           value.to_h
