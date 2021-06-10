@@ -62,7 +62,7 @@ module GraphQL
       "#{of_type.to_s}!"
     end
     alias_method :inspect, :to_s
-    alias :to_type_signature :to_s
+    alias_method :to_type_signature, :to_s
 
     def non_null?
       true

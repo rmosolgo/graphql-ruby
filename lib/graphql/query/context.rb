@@ -13,7 +13,7 @@ module GraphQL
 
         # @return [Boolean] were any fields of this selection skipped?
         attr_reader :skipped
-        alias :skipped? :skipped
+        alias_method :skipped?, :skipped
 
         # @api private
         attr_writer :skipped
@@ -98,8 +98,8 @@ module GraphQL
           @context.add_error(err)
         end
 
-        alias :>> :add
-        alias :push :add
+        alias_method :>>, :add
+        alias_method :push, :add
       end
 
       include SharedMethods
@@ -215,7 +215,7 @@ module GraphQL
       def to_h
         @provided_values.merge(@scoped_context)
       end
-      alias :to_hash :to_h
+      alias_method :to_hash, :to_h
 
       def key?(key)
         @scoped_context.key?(key) || @provided_values.key?(key)
@@ -258,7 +258,7 @@ module GraphQL
         extend Forwardable
 
         attr_reader :irep_node, :field, :parent_type, :query, :schema, :parent, :key, :type
-        alias :selection :irep_node
+        alias_method :selection, :irep_node
 
         def initialize(context, key, irep_node, parent, object)
           @context = context

@@ -8,7 +8,7 @@ module GraphQL
     attr_accessor :description, :name, :as, :deprecation_reason
     attr_accessor :ast_node
     attr_accessor :method_access
-    alias :graphql_name :name
+    alias_method :graphql_name, :name
 
     ensure_defined(:name, :description, :default_value, :type=, :type, :as, :expose_as, :prepare, :method_access, :deprecation_reason)
 
