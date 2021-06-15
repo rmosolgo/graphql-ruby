@@ -11,6 +11,14 @@ module GraphQL
 
       include GraphQL::Dig
 
+      # @return [GraphQL::Query::Context] The context for this query
+      attr_reader :context
+      # @return [GraphQL::Query::Arguments, GraphQL::Execution::Interpereter::Arguments] The underlying arguments instance
+      attr_reader :arguments
+
+      # Ruby-like hash behaviors, read-only
+      def_delegators :@ruby_style_hash, :keys, :values, :each, :map, :any?, :empty?
+
       def initialize(arguments = nil, ruby_kwargs: nil, context:, defaults_used:)
         @context = context
         if ruby_kwargs
@@ -54,24 +62,11 @@ module GraphQL
         @maybe_lazies = maybe_lazies
       end
 
-      # @return [GraphQL::Query::Context] The context for this query
-      attr_reader :context
-
-      # @return [GraphQL::Query::Arguments, GraphQL::Execution::Interpereter::Arguments] The underlying arguments instance
-      attr_reader :arguments
-
-      # Ruby-like hash behaviors, read-only
-      def_delegators :@ruby_style_hash, :keys, :values, :each, :map, :any?, :empty?
-
       def to_h
-        @ruby_style_hash.inject({}) do |h, (key, value)|
-          h.merge(key => unwrap_value(value))
-        end
+        unwrap_value(@ruby_style_hash)
       end
 
-      def to_hash
-        to_h
-      end
+      alias_method :to_hash, :to_h
 
       def prepare
         if context
@@ -91,8 +86,8 @@ module GraphQL
         when Array
           value.map { |item| unwrap_value(item) }
         when Hash
-          value.inject({}) do |h, (key, value)|
-            h.merge(key => unwrap_value(value))
+          value.reduce({}) do |h, (key, value)|
+            h.merge!(key => unwrap_value(value))
           end
         when InputObject
           value.to_h

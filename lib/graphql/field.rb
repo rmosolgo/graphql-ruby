@@ -82,7 +82,7 @@ module GraphQL
 
     # Future-compatible alias
     # @see {GraphQL::SchemaMember}
-    alias :graphql_definition :itself
+    alias_method :graphql_definition, :itself
 
     # @return [Boolean]
     def connection?

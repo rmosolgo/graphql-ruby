@@ -18,11 +18,11 @@ module GraphQL
 
     # Future-compatible alias
     # @see {GraphQL::SchemaMember}
-    alias :graphql_name :name
+    alias_method :graphql_name, :name
 
     # Future-compatible alias
     # @see {GraphQL::SchemaMember}
-    alias :graphql_definition :itself
+    alias_method :graphql_definition, :itself
 
     LOCATIONS = [
       QUERY =                  :QUERY,

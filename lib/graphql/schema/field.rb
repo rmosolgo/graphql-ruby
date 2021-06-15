@@ -22,7 +22,7 @@ module GraphQL
 
       # @return [String] the GraphQL name for this field, camelized unless `camelize: false` is provided
       attr_reader :name
-      alias :graphql_name :name
+      alias_method :graphql_name, :name
 
       attr_writer :description
 
@@ -64,7 +64,7 @@ module GraphQL
         "#<#{self.class} #{path}#{arguments.any? ? "(...)" : ""}: #{type.to_type_signature}>"
       end
 
-      alias :mutation :resolver
+      alias_method :mutation, :resolver
 
       # @return [Boolean] Apply tracing to this field? (Default: skip scalars, this is the override value)
       attr_reader :trace

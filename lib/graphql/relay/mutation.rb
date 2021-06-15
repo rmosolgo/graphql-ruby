@@ -26,8 +26,8 @@ module GraphQL
         :field, :result_class, :input_type
       )
       # For backwards compat, but do we need this separate API?
-      alias :return_fields :fields
-      alias :input_fields :arguments
+      alias_method :return_fields, :fields
+      alias_method :input_fields, :arguments
 
       def initialize
         GraphQL::Deprecation.warn "GraphQL::Relay::Mutation will be removed from GraphQL-Ruby 2.0, use GraphQL::Schema::RelayClassicMutation instead: https://graphql-ruby.org/mutations/mutation_classes"

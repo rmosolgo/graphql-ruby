@@ -22,7 +22,7 @@ module GraphQL
         @prev_token = prev_token
       end
 
-      alias to_s value
+      alias_method :to_s, :value
       def to_i; @value.to_i; end
       def to_f; @value.to_f; end
 

@@ -40,7 +40,7 @@ module GraphQL
       @table.to_table
     end
 
-    alias :to_s :inspect
+    alias_method :to_s, :inspect
 
     def to_a
       @table.to_backtrace

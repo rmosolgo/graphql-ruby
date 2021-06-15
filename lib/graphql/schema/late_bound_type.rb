@@ -6,7 +6,7 @@ module GraphQL
     # @api Private
     class LateBoundType
       attr_reader :name
-      alias :graphql_name :name
+      alias_method :graphql_name, :name
       def initialize(local_name)
         @name = local_name
       end
@@ -27,7 +27,7 @@ module GraphQL
         "#<LateBoundType @name=#{name}>"
       end
 
-      alias :to_s :inspect
+      alias_method :to_s, :inspect
     end
   end
 end
