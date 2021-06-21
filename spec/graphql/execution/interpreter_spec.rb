@@ -454,6 +454,9 @@ describe GraphQL::Execution::Interpreter do
       assert_equal nil, res["data"]["findMany"][1]
       assert_equal nil, res["data"]["findMany"][2]
       assert_equal false, res.key?("errors")
+
+      assert_equal Hash, res["data"].class
+      assert_equal Array, res["data"]["findMany"].class
     end
 
     it "works with union lists that have members of different kinds, with different nullabilities" do

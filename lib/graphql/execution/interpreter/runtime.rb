@@ -41,12 +41,24 @@ module GraphQL
             end
             super
           end
+
+          def graphql_to_built_in_data
+            plain_hash = {}
+            each do |k, v|
+              if v.respond_to?(:graphql_to_built_in_data)
+                plain_hash[k] = v.graphql_to_built_in_data
+              else
+                plain_hash[k] = v
+              end
+            end
+            plain_hash
+          end
         end
 
         class GraphQLResultArray < Array
           include GraphQLResult
 
-          def skip_at(index)
+          def graphql_skip_at(index)
             # Mark this index as dead. It's tricky because some indices may already be storing
             # `Lazy`s. So the runtime is still holding indexes _before_ skipping,
             # this object has to coordinate incoming writes to account for any already-skipped indices.
@@ -64,6 +76,10 @@ module GraphQL
             end
             super(idx, value)
           end
+
+          def graphql_to_built_in_data
+            map { |item| item.respond_to?(:graphql_to_built_in_data) ? item.graphql_to_built_in_data : item }
+          end
         end
 
         class GraphQLSelectionSet < Hash
@@ -78,9 +94,6 @@ module GraphQL
 
         # @return [GraphQL::Query::Context]
         attr_reader :context
-
-        # @return [Hash]
-        attr_reader :response
 
         def initialize(query:)
           @query = query
@@ -104,6 +117,10 @@ module GraphQL
           @fields_cache = Hash.new { |h, k| h[k] = {} }
           # { Class => Boolean }
           @lazy_cache = {}
+        end
+
+        def final_result
+          @response && @response.graphql_to_built_in_data
         end
 
         def inspect
@@ -541,7 +558,7 @@ module GraphQL
               when Hash
                 selection_result.delete(result_name)
               when Array
-                selection_result.skip_at(result_name)
+                selection_result.graphql_skip_at(result_name)
               else
                 raise "Invariant: unexpected result class #{selection_result.class} (#{selection_result.inspect})"
               end
