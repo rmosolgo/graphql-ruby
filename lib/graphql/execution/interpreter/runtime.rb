@@ -20,9 +20,16 @@ module GraphQL
           attr_accessor :graphql_non_null_field_names
           # @return [nil, true]
           attr_accessor :graphql_non_null_list_items
+
+          attr_accessor :graphql_result_data
         end
 
-        class GraphQLResultHash < Hash
+        class GraphQLResultHash
+          def initialize
+            @graphql_metadata = {}
+            @graphql_result_data = {}
+          end
+
           include GraphQLResult
 
           attr_accessor :graphql_merged_into
@@ -39,24 +46,39 @@ module GraphQL
             if (t = @graphql_merged_into)
               t[key] = value
             end
-            super
+            @graphql_result_data[key] = value.respond_to?(:graphql_result_data) ? value.graphql_result_data : value
+            @graphql_metadata[key] = value
           end
 
-          def graphql_to_built_in_data
-            plain_hash = {}
-            each do |k, v|
-              if v.respond_to?(:graphql_to_built_in_data)
-                plain_hash[k] = v.graphql_to_built_in_data
-              else
-                plain_hash[k] = v
-              end
-            end
-            plain_hash
+          def delete(key)
+            @graphql_metadata.delete(key)
+            @graphql_result_data.delete(key)
+          end
+
+          def each
+            @graphql_metadata.each { |k, v| yield(k, v) }
+          end
+
+          def values
+            @graphql_metadata.values
+          end
+
+          def key?(k)
+            @graphql_metadata.key?(k)
+          end
+
+          def [](k)
+            @graphql_metadata[k]
           end
         end
 
-        class GraphQLResultArray < Array
+        class GraphQLResultArray
           include GraphQLResult
+
+          def initialize
+            @graphql_metadata = []
+            @graphql_result_data = []
+          end
 
           def graphql_skip_at(index)
             # Mark this index as dead. It's tricky because some indices may already be storing
@@ -66,7 +88,7 @@ module GraphQL
             @skip_indices << index
             offset_by = @skip_indices.count { |skipped_idx| skipped_idx < index}
             delete_at_index = index - offset_by
-            delete_at(delete_at_index)
+            @graphql_result_data.delete_at(delete_at_index)
           end
 
           def []=(idx, value)
@@ -74,11 +96,12 @@ module GraphQL
               offset_by = @skip_indices.count { |skipped_idx| skipped_idx < idx }
               idx -= offset_by
             end
-            super(idx, value)
+            @graphql_result_data[idx] = value.respond_to?(:graphql_result_data) ? value.graphql_result_data : value
+            @graphql_metadata[idx] = value
           end
 
-          def graphql_to_built_in_data
-            map { |item| item.respond_to?(:graphql_to_built_in_data) ? item.graphql_to_built_in_data : item }
+          def values
+            @graphql_metadata
           end
         end
 
@@ -120,7 +143,7 @@ module GraphQL
         end
 
         def final_result
-          @response && @response.graphql_to_built_in_data
+          @response && @response.graphql_result_data
         end
 
         def inspect
@@ -203,7 +226,7 @@ module GraphQL
               into_result[key] = value
             else
               case value
-              when Hash
+              when GraphQLResultHash
                 deep_merge_selection_result(value, into_result[key])
               else
                 # We have to assume that, since this passed the `fields_will_merge` selection,
@@ -555,9 +578,9 @@ module GraphQL
             elsif GraphQL::Execution::Execute::SKIP == value
               # It's possible a lazy was already written here
               case selection_result
-              when Hash
+              when GraphQLResultHash
                 selection_result.delete(result_name)
-              when Array
+              when GraphQLResultArray
                 selection_result.graphql_skip_at(result_name)
               else
                 raise "Invariant: unexpected result class #{selection_result.class} (#{selection_result.inspect})"
