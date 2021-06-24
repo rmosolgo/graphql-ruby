@@ -10,8 +10,6 @@ module GraphQL
       class Runtime
 
         module GraphQLResult
-          # These methods are private concerns of GraphQL-Ruby,
-          # they aren't guaranteed to continue working in the future.
           attr_accessor :graphql_dead, :graphql_parent, :graphql_result_name
           # Although these are used by only one of the Result classes,
           # it's handy to have the methods implemented on both (even though they just return `nil`)
@@ -21,6 +19,7 @@ module GraphQL
           # @return [nil, true]
           attr_accessor :graphql_non_null_list_items
 
+          # @return [Hash] Plain-Ruby result data (`@graphql_metadata` contains Result wrapper objects)
           attr_accessor :graphql_result_data
         end
 
