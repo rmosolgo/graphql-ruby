@@ -26,7 +26,8 @@ module GraphQL
 
         class GraphQLResultHash
           def initialize
-            @graphql_metadata = {}
+            # Jump through some hoops to avoid creating this duplicate hash if at all possible.
+            @graphql_metadata = nil
             @graphql_result_data = {}
           end
 
@@ -46,29 +47,40 @@ module GraphQL
             if (t = @graphql_merged_into)
               t[key] = value
             end
-            @graphql_result_data[key] = value.respond_to?(:graphql_result_data) ? value.graphql_result_data : value
-            @graphql_metadata[key] = value
+
+            if value.respond_to?(:graphql_result_data)
+              @graphql_result_data[key] = value.graphql_result_data
+              # If we encounter some part of this response that requires metadata tracking,
+              # then create the metadata hash if necessary. It will be kept up-to-date after this.
+              (@graphql_metadata ||= @graphql_result_data.dup)[key] = value
+            else
+              @graphql_result_data[key] = value
+              # keep this up-to-date if it's been initialized
+              @graphql_metadata && @graphql_metadata[key] = value
+            end
+
+            value
           end
 
           def delete(key)
-            @graphql_metadata.delete(key)
+            @graphql_metadata && @graphql_metadata.delete(key)
             @graphql_result_data.delete(key)
           end
 
           def each
-            @graphql_metadata.each { |k, v| yield(k, v) }
+            (@graphql_metadata || @graphql_result_data).each { |k, v| yield(k, v) }
           end
 
           def values
-            @graphql_metadata.values
+            (@graphql_metadata || @graphql_result_data).values
           end
 
           def key?(k)
-            @graphql_metadata.key?(k)
+            @graphql_result_data.key?(k)
           end
 
           def [](k)
-            @graphql_metadata[k]
+            (@graphql_metadata || @graphql_result_data)[k]
           end
         end
 
@@ -76,7 +88,9 @@ module GraphQL
           include GraphQLResult
 
           def initialize
-            @graphql_metadata = []
+            # Avoid this duplicate allocation if possible -
+            # but it will require some work to keep it up-to-date if it's created.
+            @graphql_metadata = nil
             @graphql_result_data = []
           end
 
@@ -88,6 +102,7 @@ module GraphQL
             @skip_indices << index
             offset_by = @skip_indices.count { |skipped_idx| skipped_idx < index}
             delete_at_index = index - offset_by
+            @graphql_metadata && @graphql_metadata.delete_at(delete_at_index)
             @graphql_result_data.delete_at(delete_at_index)
           end
 
@@ -96,12 +111,19 @@ module GraphQL
               offset_by = @skip_indices.count { |skipped_idx| skipped_idx < idx }
               idx -= offset_by
             end
-            @graphql_result_data[idx] = value.respond_to?(:graphql_result_data) ? value.graphql_result_data : value
-            @graphql_metadata[idx] = value
+            if value.respond_to?(:graphql_result_data)
+              @graphql_result_data[idx] = value.graphql_result_data
+              (@graphql_metadata ||= @graphql_result_data.dup)[idx] = value
+            else
+              @graphql_result_data[idx] = value
+              @graphql_metadata && @graphql_metadata[idx] = value
+            end
+
+            value
           end
 
           def values
-            @graphql_metadata
+            (@graphql_metadata || @graphql_result_data)
           end
         end
 
