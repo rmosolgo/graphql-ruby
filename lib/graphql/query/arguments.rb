@@ -124,7 +124,7 @@ module GraphQL
         ruby_kwargs
       end
 
-      alias_method :to_hash, :to_kwargs
+      alias :to_hash :to_kwargs
 
       private
 

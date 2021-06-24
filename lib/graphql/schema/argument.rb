@@ -19,7 +19,7 @@ module GraphQL
 
       # @return [String] the GraphQL name for this argument, camelized unless `camelize: false` is provided
       attr_reader :name
-      alias_method :graphql_name, :name
+      alias :graphql_name :name
 
       # @return [GraphQL::Schema::Field, Class] The field or input object this argument belongs to
       attr_reader :owner

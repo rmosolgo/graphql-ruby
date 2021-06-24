@@ -99,7 +99,7 @@ module GraphQL
           raise GraphQL::RequiredImplementationMissingError
         end
 
-        alias_method :unwrap, :itself
+        alias :unwrap :itself
 
         # Creates the default name for a schema member.
         # The default name is the Ruby constant name,
