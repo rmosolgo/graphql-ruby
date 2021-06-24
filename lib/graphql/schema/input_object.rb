@@ -65,9 +65,7 @@ module GraphQL
 
 
       def to_h
-        @ruby_style_hash.reduce({}) do |h, (key, value)|
-          h.merge!(key => unwrap_value(value))
-        end
+        unwrap_value(@ruby_style_hash)
       end
 
       def prepare
