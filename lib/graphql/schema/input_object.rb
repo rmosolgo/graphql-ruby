@@ -15,6 +15,7 @@ module GraphQL
       attr_reader :context
       # @return [GraphQL::Query::Arguments, GraphQL::Execution::Interpereter::Arguments] The underlying arguments instance
       attr_reader :arguments
+      alias :to_hash, :to_h
 
       # Ruby-like hash behaviors, read-only
       def_delegators :@ruby_style_hash, :keys, :values, :each, :map, :any?, :empty?
@@ -62,12 +63,12 @@ module GraphQL
         @maybe_lazies = maybe_lazies
       end
 
+
       def to_h
         @ruby_style_hash.reduce({}) do |h, (key, value)|
           h.merge!(key => unwrap_value(value))
         end
       end
-      alias to_hash to_h
 
       def prepare
         if context
