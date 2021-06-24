@@ -63,10 +63,11 @@ module GraphQL
       end
 
       def to_h
-        unwrap_value(@ruby_style_hash)
+        @ruby_style_hash.reduce({}) do |h, (key, value)|
+          h.merge!(key => unwrap_value(value))
+        end
       end
-
-      alias_method :to_hash, :to_h
+      alias to_hash to_h
 
       def prepare
         if context
