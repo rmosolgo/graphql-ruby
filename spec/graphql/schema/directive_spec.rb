@@ -94,7 +94,7 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
         end
 
         ctx[:count_fields] ||= Hash.new { |h, k| h[k] = [] }
-        field_count = result.is_a?(Hash) ? result.size : 1
+        field_count = result.respond_to?(:graphql_result_data) ? result.graphql_result_data.size : 1
         ctx[:count_fields][path] << field_count
         nil # this does nothing
       end
