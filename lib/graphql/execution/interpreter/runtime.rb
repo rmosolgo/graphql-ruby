@@ -10,8 +10,6 @@ module GraphQL
       class Runtime
 
         module GraphQLResult
-          # These methods are private concerns of GraphQL-Ruby,
-          # they aren't guaranteed to continue working in the future.
           attr_accessor :graphql_dead, :graphql_parent, :graphql_result_name
           # Although these are used by only one of the Result classes,
           # it's handy to have the methods implemented on both (even though they just return `nil`)
@@ -20,9 +18,18 @@ module GraphQL
           attr_accessor :graphql_non_null_field_names
           # @return [nil, true]
           attr_accessor :graphql_non_null_list_items
+
+          # @return [Hash] Plain-Ruby result data (`@graphql_metadata` contains Result wrapper objects)
+          attr_accessor :graphql_result_data
         end
 
-        class GraphQLResultHash < Hash
+        class GraphQLResultHash
+          def initialize
+            # Jump through some hoops to avoid creating this duplicate hash if at all possible.
+            @graphql_metadata = nil
+            @graphql_result_data = {}
+          end
+
           include GraphQLResult
 
           attr_accessor :graphql_merged_into
@@ -39,12 +46,84 @@ module GraphQL
             if (t = @graphql_merged_into)
               t[key] = value
             end
-            super
+
+            if value.respond_to?(:graphql_result_data)
+              @graphql_result_data[key] = value.graphql_result_data
+              # If we encounter some part of this response that requires metadata tracking,
+              # then create the metadata hash if necessary. It will be kept up-to-date after this.
+              (@graphql_metadata ||= @graphql_result_data.dup)[key] = value
+            else
+              @graphql_result_data[key] = value
+              # keep this up-to-date if it's been initialized
+              @graphql_metadata && @graphql_metadata[key] = value
+            end
+
+            value
+          end
+
+          def delete(key)
+            @graphql_metadata && @graphql_metadata.delete(key)
+            @graphql_result_data.delete(key)
+          end
+
+          def each
+            (@graphql_metadata || @graphql_result_data).each { |k, v| yield(k, v) }
+          end
+
+          def values
+            (@graphql_metadata || @graphql_result_data).values
+          end
+
+          def key?(k)
+            @graphql_result_data.key?(k)
+          end
+
+          def [](k)
+            (@graphql_metadata || @graphql_result_data)[k]
           end
         end
 
-        class GraphQLResultArray < Array
+        class GraphQLResultArray
           include GraphQLResult
+
+          def initialize
+            # Avoid this duplicate allocation if possible -
+            # but it will require some work to keep it up-to-date if it's created.
+            @graphql_metadata = nil
+            @graphql_result_data = []
+          end
+
+          def graphql_skip_at(index)
+            # Mark this index as dead. It's tricky because some indices may already be storing
+            # `Lazy`s. So the runtime is still holding indexes _before_ skipping,
+            # this object has to coordinate incoming writes to account for any already-skipped indices.
+            @skip_indices ||= []
+            @skip_indices << index
+            offset_by = @skip_indices.count { |skipped_idx| skipped_idx < index}
+            delete_at_index = index - offset_by
+            @graphql_metadata && @graphql_metadata.delete_at(delete_at_index)
+            @graphql_result_data.delete_at(delete_at_index)
+          end
+
+          def []=(idx, value)
+            if @skip_indices
+              offset_by = @skip_indices.count { |skipped_idx| skipped_idx < idx }
+              idx -= offset_by
+            end
+            if value.respond_to?(:graphql_result_data)
+              @graphql_result_data[idx] = value.graphql_result_data
+              (@graphql_metadata ||= @graphql_result_data.dup)[idx] = value
+            else
+              @graphql_result_data[idx] = value
+              @graphql_metadata && @graphql_metadata[idx] = value
+            end
+
+            value
+          end
+
+          def values
+            (@graphql_metadata || @graphql_result_data)
+          end
         end
 
         class GraphQLSelectionSet < Hash
@@ -59,9 +138,6 @@ module GraphQL
 
         # @return [GraphQL::Query::Context]
         attr_reader :context
-
-        # @return [Hash]
-        attr_reader :response
 
         def initialize(query:)
           @query = query
@@ -85,6 +161,10 @@ module GraphQL
           @fields_cache = Hash.new { |h, k| h[k] = {} }
           # { Class => Boolean }
           @lazy_cache = {}
+        end
+
+        def final_result
+          @response && @response.graphql_result_data
         end
 
         def inspect
@@ -167,7 +247,7 @@ module GraphQL
               into_result[key] = value
             else
               case value
-              when Hash
+              when GraphQLResultHash
                 deep_merge_selection_result(value, into_result[key])
               else
                 # We have to assume that, since this passed the `fields_will_merge` selection,
@@ -439,9 +519,6 @@ module GraphQL
         end
 
         def dead_result?(selection_result)
-          # When a result is marked dead, any of its existing children are marked dead
-          # and it accepts no more writes. But this result might have been initialized,
-          # but not yet assigned to a key in its parent. So check the parent too.
           selection_result.graphql_dead || ((parent = selection_result.graphql_parent) && parent.graphql_dead)
         end
 
@@ -466,9 +543,7 @@ module GraphQL
                 @response = nil
               else
                 set_result(parent, name_in_parent, nil)
-                # This is odd, but it's how it used to work. Even if `parent` _would_ accept
-                # a `nil`, it's marked dead. TODO: check the spec, is there a reason for this?
-                set_graphql_dead(parent)
+                set_graphql_dead(selection_result)
               end
             else
               selection_result[result_name] = value
@@ -480,10 +555,10 @@ module GraphQL
         # so that it accepts no more writes.
         def set_graphql_dead(selection_result)
           case selection_result
-          when Array
+          when GraphQLResultArray
             selection_result.graphql_dead = true
-            selection_result.each { |res| set_graphql_dead(res) }
-          when Hash
+            selection_result.values.each { |v| set_graphql_dead(v) }
+          when GraphQLResultHash
             selection_result.graphql_dead = true
             selection_result.each { |k, v| set_graphql_dead(v) }
           else
@@ -527,6 +602,15 @@ module GraphQL
               end
               continue_value(path, next_value, parent_type, field, is_non_null, ast_node, result_name, selection_result)
             elsif GraphQL::Execution::Execute::SKIP == value
+              # It's possible a lazy was already written here
+              case selection_result
+              when GraphQLResultHash
+                selection_result.delete(result_name)
+              when GraphQLResultArray
+                selection_result.graphql_skip_at(result_name)
+              else
+                raise "Invariant: unexpected result class #{selection_result.class} (#{selection_result.inspect})"
+              end
               HALT
             else
               # What could this actually _be_? Anyhow,

@@ -825,6 +825,12 @@ describe GraphQL::Schema::Resolver do
         assert_equal 1, r1.extensions.size
         assert_equal 2, r2.extensions.size
       end
+
+      it "doesn't pass anything when there are no extensions" do
+        r1 = Class.new(GraphQL::Schema::Resolver)
+        assert_equal [], r1.extensions
+        refute r1.field_options.key?(:extensions)
+      end
     end
 
     describe "max_page_size" do
