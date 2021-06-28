@@ -519,15 +519,7 @@ module GraphQL
         end
 
         def dead_result?(selection_result)
-          r = selection_result
-          while r
-            if r.graphql_dead
-              return true
-            else
-              r = r.graphql_parent
-            end
-          end
-          false
+          selection_result.graphql_dead || ((parent = selection_result.graphql_parent) && parent.graphql_dead)
         end
 
         def set_result(selection_result, result_name, value)
@@ -551,11 +543,26 @@ module GraphQL
                 @response = nil
               else
                 set_result(parent, name_in_parent, nil)
-                selection_result.graphql_dead = true
+                set_graphql_dead(selection_result)
               end
             else
               selection_result[result_name] = value
             end
+          end
+        end
+
+        # Mark this node and any already-registered children as dead,
+        # so that it accepts no more writes.
+        def set_graphql_dead(selection_result)
+          case selection_result
+          when GraphQLResultArray
+            selection_result.graphql_dead = true
+            selection_result.values.each { |v| set_graphql_dead(v) }
+          when GraphQLResultHash
+            selection_result.graphql_dead = true
+            selection_result.each { |k, v| set_graphql_dead(v) }
+          else
+            # It's a scalar, no way to mark it dead.
           end
         end
 
