@@ -39,10 +39,15 @@ describe GraphQL::Backtrace do
         "field1" => Proc.new { :something },
         "field2" => Proc.new { :something },
         "nilInspect" => Proc.new { NilInspectObject.new },
+        "nestedList" => Proc.new { [ { thing: { name: "abc" } }, { thing: { name: :boom } } ] },
       },
       "Thing" => {
+        "name" => Proc.new { |obj| obj[:name] == :boom ? raise("Boom!") : obj[:name] },
         "listField" => Proc.new { :not_a_list },
         "raiseField" => Proc.new { |o, a| raise("This is broken: #{a[:message]}") },
+      },
+      "ThingWrapper" => {
+        "thing" => Proc.new { |obj| obj[:thing] },
       },
       "OtherThing" => {
         "strField" => Proc.new { LazyError.new },
@@ -55,11 +60,17 @@ describe GraphQL::Backtrace do
       field1: Thing
       field2: OtherThing
       nilInspect: Thing
+      nestedList: [ThingWrapper]
     }
 
     type Thing {
+      name: String
       listField: [OtherThing]
       raiseField(message: String!): Int
+    }
+
+    type ThingWrapper {
+      thing: Thing
     }
 
     type OtherThing {
@@ -89,6 +100,12 @@ describe GraphQL::Backtrace do
       assert_raises(GraphQL::Execution::Interpreter::ListResultFailedError) {
         schema.execute("query BrokenList { field1 { listField { strField } } }")
       }
+    end
+
+    it "works for objects inside lists" do
+      assert_raises(GraphQL::Backtrace::TracedError) do
+        backtrace_schema.execute("{ nestedList { thing { name } } }")
+      end
     end
 
     it "annotates crashes from user code" do
@@ -129,7 +146,7 @@ describe GraphQL::Backtrace do
       assert_includes err.message, "\n" + rendered_table
       # The message includes the original error message
       assert_includes err.message, "This is broken: Boom"
-      assert_includes err.message, "spec/graphql/backtrace_spec.rb:45", "It includes the original backtrace"
+      assert_includes err.message, "spec/graphql/backtrace_spec.rb:47", "It includes the original backtrace"
       assert_includes err.message, "more lines"
     end
 
