@@ -38,10 +38,10 @@ module GraphQL
     attr_reader :name
     # Future-compatible alias
     # @see {GraphQL::SchemaMember}
-    alias_method :graphql_name, :name
+    alias :graphql_name :name
     # Future-compatible alias
     # @see {GraphQL::SchemaMember}
-    alias_method :graphql_definition, :itself
+    alias :graphql_definition :itself
 
     def type_class
       metadata[:type_class]
@@ -117,8 +117,8 @@ module GraphQL
       name
     end
 
-    alias_method :inspect, :to_s
-    alias_method :to_type_signature, :to_s
+    alias :inspect :to_s
+    alias :to_type_signature :to_s
 
     def valid_isolated_input?(value)
       valid_input?(value, GraphQL::Query::NullContext)

@@ -144,7 +144,7 @@ module GraphQL
       end
 
       def value_at(runtime, path)
-        response = runtime.response
+        response = runtime.final_result
         path.each do |key|
           if response && (response = response[key])
             next

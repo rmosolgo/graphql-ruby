@@ -66,7 +66,9 @@ module GraphQL
         unwrap_value(@ruby_style_hash)
       end
 
-      alias_method :to_hash, :to_h
+      def to_hash
+        to_h
+      end
 
       def prepare
         if context
@@ -156,7 +158,6 @@ module GraphQL
 
         # @api private
         INVALID_OBJECT_MESSAGE = "Expected %{object} to be a key-value object responding to `to_h` or `to_unsafe_h`."
-
 
         def validate_non_null_input(input, ctx)
           result = GraphQL::Query::InputValidationResult.new
