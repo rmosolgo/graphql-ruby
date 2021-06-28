@@ -490,9 +490,7 @@ module GraphQL
                 @response = nil
               else
                 set_result(parent, name_in_parent, nil)
-                # This is odd, but it's how it used to work. Even if `parent` _would_ accept
-                # a `nil`, it's marked dead. TODO: check the spec, is there a reason for this?
-                parent.graphql_dead = true
+                selection_result.graphql_dead = true
               end
             else
               selection_result[result_name] = value

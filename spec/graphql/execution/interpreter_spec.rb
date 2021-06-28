@@ -652,4 +652,83 @@ describe GraphQL::Execution::Interpreter do
       assert_equal 1, res["errors"].size
     end
   end
+
+  describe "Invalid null from raised execution error doesn't halt parent fields" do
+    class RaisedErrorSchema < GraphQL::Schema
+      module Iface
+        include GraphQL::Schema::Interface
+
+        field :bar, String, null: false
+      end
+
+      class Txn < GraphQL::Schema::Object
+        field :fails, String, null: false
+
+        def fails
+          raise GraphQL::ExecutionError, "boom"
+        end
+      end
+
+      class Concrete < GraphQL::Schema::Object
+        implements Iface
+
+        field :txn, Txn, null: true
+
+        def txn
+          {}
+        end
+
+        field :msg, String, null: true
+
+        def msg
+          "THIS SHOULD SHOW UP"
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :iface, Iface, null: true
+
+        def iface
+          {}
+        end
+      end
+
+      query(Query)
+      orphan_types([Concrete])
+
+      def self.resolve_type(type, obj, ctx)
+        Concrete
+      end
+    end
+
+    it "resolves fields on the parent object" do
+      querystring = """
+      {
+        iface {
+          ... on Concrete {
+            txn {
+              fails
+            }
+            msg
+          }
+        }
+      }
+      """
+
+      result = RaisedErrorSchema.execute(querystring)
+      expected_result = {
+        "data" => {
+          "iface" => { "txn" => nil, "msg" => "THIS SHOULD SHOW UP" },
+        },
+        "errors" => [
+          {
+            "message"=>"boom",
+            "locations"=>[{"line"=>6, "column"=>15}],
+            "path"=>["iface", "txn", "fails"]
+          },
+        ],
+      }
+      assert_equal expected_result, result.to_h
+    end
+  end
 end
