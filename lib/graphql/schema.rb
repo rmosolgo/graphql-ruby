@@ -354,7 +354,7 @@ module GraphQL
     end
 
     # For forwards-compatibility with Schema classes
-    alias_method :graphql_definition, :itself
+    alias :graphql_definition :itself
 
     def deprecated_define(**kwargs, &block)
       super
@@ -692,7 +692,7 @@ module GraphQL
     end
 
     # Can't delegate to `class`
-    alias_method :_schema_class, :class
+    alias :_schema_class :class
     def_delegators :_schema_class, :unauthorized_object, :unauthorized_field, :inaccessible_fields
     def_delegators :_schema_class, :directive
     def_delegators :_schema_class, :error_handler

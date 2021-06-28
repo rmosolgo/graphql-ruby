@@ -14,21 +14,21 @@ module GraphQL
         nil
       end
 
-      alias_method :on_directive_definition, :on_invalid_node
-      alias_method :on_schema_definition, :on_invalid_node
-      alias_method :on_scalar_type_definition, :on_invalid_node
-      alias_method :on_object_type_definition, :on_invalid_node
-      alias_method :on_input_object_type_definition, :on_invalid_node
-      alias_method :on_interface_type_definition, :on_invalid_node
-      alias_method :on_union_type_definition, :on_invalid_node
-      alias_method :on_enum_type_definition, :on_invalid_node
-      alias_method :on_schema_extension, :on_invalid_node
-      alias_method :on_scalar_type_extension, :on_invalid_node
-      alias_method :on_object_type_extension, :on_invalid_node
-      alias_method :on_input_object_type_extension, :on_invalid_node
-      alias_method :on_interface_type_extension, :on_invalid_node
-      alias_method :on_union_type_extension, :on_invalid_node
-      alias_method :on_enum_type_extension, :on_invalid_node
+      alias :on_directive_definition :on_invalid_node
+      alias :on_schema_definition :on_invalid_node
+      alias :on_scalar_type_definition :on_invalid_node
+      alias :on_object_type_definition :on_invalid_node
+      alias :on_input_object_type_definition :on_invalid_node
+      alias :on_interface_type_definition :on_invalid_node
+      alias :on_union_type_definition :on_invalid_node
+      alias :on_enum_type_definition :on_invalid_node
+      alias :on_schema_extension :on_invalid_node
+      alias :on_scalar_type_extension :on_invalid_node
+      alias :on_object_type_extension :on_invalid_node
+      alias :on_input_object_type_extension :on_invalid_node
+      alias :on_interface_type_extension :on_invalid_node
+      alias :on_union_type_extension :on_invalid_node
+      alias :on_enum_type_extension :on_invalid_node
 
       def on_document(node, parent)
         super

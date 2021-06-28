@@ -20,8 +20,8 @@ module GraphQL
           @payload_type ||= generate_payload_type
         end
 
-        alias_method :type, :payload_type
-        alias_method :type_expr, :payload_type
+        alias :type :payload_type
+        alias :type_expr :payload_type
 
         def field_class(new_class = nil)
           if new_class
