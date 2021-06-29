@@ -255,7 +255,7 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
     end
 
     it "halts execution and adds an error to the error key" do
-      result = DirectiveErrorSchema.execute(<<~GQL)
+      result = DirectiveErrorSchema.execute(<<-GQL)
       query @myDirective(input: "hi") {
         hello
       }
@@ -265,7 +265,7 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
       assert_equal ["invalid argument"], result["errors"].map { |e| e["message"] }
       assert_equal [[{"line"=>1, "column"=>7}]], result["errors"].map { |e| e["locations"] }
 
-      result2 = DirectiveErrorSchema.execute(<<~GQL)
+      result2 = DirectiveErrorSchema.execute(<<-GQL)
       query {
         hello
         hello2: hello @myDirective(input: "hi")
