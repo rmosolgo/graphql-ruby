@@ -4,37 +4,32 @@ module GraphQL
     # Used to convert your {GraphQL::Schema} to a GraphQL schema string
     #
     # @example print your schema to standard output (via helper)
-    #   MySchema = GraphQL::Schema.define(query: QueryType)
     #   puts GraphQL::Schema::Printer.print_schema(MySchema)
     #
     # @example print your schema to standard output
-    #   MySchema = GraphQL::Schema.define(query: QueryType)
     #   puts GraphQL::Schema::Printer.new(MySchema).print_schema
     #
     # @example print a single type to standard output
-    #   query_root = GraphQL::ObjectType.define do
-    #     name "Query"
+    #   class Types::Query < GraphQL::Schema::Object
     #     description "The query root of this schema"
     #
-    #     field :post do
-    #       type post_type
-    #       resolve ->(obj, args, ctx) { Post.find(args["id"]) }
-    #     end
+    #     field :post, Types::Post, null: true
     #   end
     #
-    #   post_type = GraphQL::ObjectType.define do
-    #     name "Post"
+    #   class Types::Post < GraphQL::Schema::Object
     #     description "A blog post"
     #
-    #     field :id, !types.ID
-    #     field :title, !types.String
-    #     field :body, !types.String
+    #     field :id, ID, null: false
+    #     field :title, String, null: false
+    #     field :body, String, null: false
     #   end
     #
-    #   MySchema = GraphQL::Schema.define(query: query_root)
+    #   class MySchema < GraphQL::Schema
+    #     query(Types::Query)
+    #   end
     #
     #   printer = GraphQL::Schema::Printer.new(MySchema)
-    #   puts printer.print_type(post_type)
+    #   puts printer.print_type(Types::Post)
     #
     class Printer < GraphQL::Language::Printer
       attr_reader :schema, :warden
@@ -87,7 +82,7 @@ module GraphQL
 
       # Return a GraphQL schema string for the defined types in the schema
       def print_schema
-        print(@document)
+        print(@document) + "\n"
       end
 
       def print_type(type)

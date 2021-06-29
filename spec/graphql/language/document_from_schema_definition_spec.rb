@@ -60,7 +60,7 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
     let(:expected_document) { GraphQL.parse(expected_idl) }
 
     describe "when schemas have enums and directives" do
-      let(:schema_idl) { <<-GRAPHQL.chomp
+      let(:schema_idl) { <<-GRAPHQL
 directive @locale(lang: LangEnum!) on FIELD
 
 directive @secret(top: Boolean = false) on FIELD_DEFINITION

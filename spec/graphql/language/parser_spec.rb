@@ -157,7 +157,7 @@ describe GraphQL::Language::Parser do
     schema = Dummy::Schema
     schema_string = GraphQL::Schema::Printer.print_schema(schema)
     document = subject.parse(schema_string)
-    assert_equal schema_string, document.to_query_string
+    assert_equal schema_string.chomp, document.to_query_string
   end
 
   describe "parse errors" do
