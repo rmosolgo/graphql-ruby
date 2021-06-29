@@ -263,7 +263,7 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
 
       assert_equal({}, result["data"])
       assert_equal ["invalid argument"], result["errors"].map { |e| e["message"] }
-      assert_equal [[{"line"=>1, "column"=>7}]], result["errors"].map { |e| e["locations"] }
+      assert_equal [[{"line"=>1, "column"=>13}]], result["errors"].map { |e| e["locations"] }
 
       result2 = DirectiveErrorSchema.execute(<<-GQL)
       query {
@@ -274,7 +274,7 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
 
       assert_equal({ "hello" => "Hello World!" }, result2["data"])
       assert_equal ["invalid argument"], result2["errors"].map { |e| e["message"] }
-      assert_equal [[{"line"=>3, "column"=>17}]], result2["errors"].map { |e| e["locations"] }
+      assert_equal [[{"line"=>3, "column"=>23}]], result2["errors"].map { |e| e["locations"] }
     end
   end
 end
