@@ -1,6 +1,7 @@
 name: CI Suite
 on:
-  push
+  - push
+  - pull_request
 
 jobs:
   lint:
