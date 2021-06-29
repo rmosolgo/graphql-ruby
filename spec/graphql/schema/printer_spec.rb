@@ -577,7 +577,7 @@ input Varied {
 }
 SCHEMA
 
-      assert_equal expected.chomp, GraphQL::Schema::Printer.print_schema(schema)
+      assert_equal expected, GraphQL::Schema::Printer.print_schema(schema)
     end
 
     it 'prints a schema without directives' do
@@ -595,7 +595,7 @@ SCHEMA
         query query_type
       end
 
-      expected = "type Query {\n  foobar: Int!\n}"
+      expected = "type Query {\n  foobar: Int!\n}\n"
       assert_equal expected, GraphQL::Schema::Printer.new(schema).print_schema
     end
   end
@@ -644,7 +644,7 @@ SCHEMA
     }
 
     context = { names: ["Query", "Post"] }
-    assert_equal expected.chomp, schema.to_definition(context: context, only: only_filter)
+    assert_equal expected, schema.to_definition(context: context, only: only_filter)
   end
 
 
@@ -740,7 +740,7 @@ SCHEMA
     }
 
     context = { names: ["Varied", "Image", "Sub"] }
-    assert_equal expected.chomp, schema.to_definition(context: context, except: except_filter)
+    assert_equal expected, schema.to_definition(context: context, except: except_filter)
   end
 
   describe "#print_type" do
@@ -847,7 +847,7 @@ SCHEMA
 
 
     str = GraphQL::Schema::Printer.print_schema TestPrintSchema
-    assert_equal "schema {\n  query: OddlyNamedQuery\n}\n\ntype OddlyNamedQuery {\n  int: Int!\n}", str
+    assert_equal "schema {\n  query: OddlyNamedQuery\n}\n\ntype OddlyNamedQuery {\n  int: Int!\n}\n", str
   end
 
   it "prints directives parsed from IDL" do
@@ -889,6 +889,6 @@ enum Thing {
     GRAPHQL
 
     schema = GraphQL::Schema.from_definition(input)
-    assert_equal input.chomp, GraphQL::Schema::Printer.print_schema(schema)
+    assert_equal input, GraphQL::Schema::Printer.print_schema(schema)
   end
 end

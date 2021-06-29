@@ -39,8 +39,8 @@ describe GraphQL::RakeTask do
       assert_equal(JSON.parse(expected_json), JSON.parse(dumped_json))
 
       dumped_idl = File.read("./schema.graphql")
-      expected_idl = rake_task_schema_defn.chomp
-      assert_equal(expected_idl + "\n", dumped_idl)
+      expected_idl = RakeTaskSchema.to_definition
+      assert_equal(expected_idl, dumped_idl, "The rake task output and #to_definition output match")
     end
   end
 
