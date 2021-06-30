@@ -8,6 +8,24 @@
 
 ### Bug fixes
 
+# 1.12.13 (20 June 2021)
+
+### Breaking changes
+
+- Add a trailing newline to the `Schema.to_definition` output sstring #3541
+
+### Bug fixes
+
+- Properly handled list results in GraphQL::Backtrace #3540
+- Return plain `Hash`es and `Array`s from queries instead of customized subclasses #3533
+- Fix errors raised from non-null fields #3537
+- Resolver: don't pass frozen array of extensions when none were configured #3515
+- Configure the right `owner` for `node` and `nodes` fields #3509
+- Improve error message for invalid enum value #3507
+- Properly halt on lazily-returned `context.skip`s #3514
+- Fix: call overridden `to_h` methods on InputObject classes #3539
+- Halt execution when a runtime directive argument raises a `GraphQL::ExecutionError` #3542
+
 # 1.12.12 (31 May 2021)
 
 ### Bug fixes
