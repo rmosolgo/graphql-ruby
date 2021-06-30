@@ -585,11 +585,13 @@ module GraphQL
             # to avoid the overhead of checking three different classes
             # every time.
             if value.is_a?(GraphQL::ExecutionError)
-              if !dead_result?(selection_result)
+              if selection_result.nil? || !dead_result?(selection_result)
                 value.path ||= path
                 value.ast_node ||= ast_node
                 context.errors << value
-                set_result(selection_result, result_name, nil)
+                if selection_result
+                  set_result(selection_result, result_name, nil)
+                end
               end
               HALT
             elsif value.is_a?(GraphQL::UnauthorizedError)
@@ -608,6 +610,8 @@ module GraphQL
                 selection_result.delete(result_name)
               when GraphQLResultArray
                 selection_result.graphql_skip_at(result_name)
+              when nil
+                # this can happen with directives
               else
                 raise "Invariant: unexpected result class #{selection_result.class} (#{selection_result.inspect})"
               end
@@ -620,13 +624,15 @@ module GraphQL
           when Array
             # It's an array full of execution errors; add them all.
             if value.any? && value.all? { |v| v.is_a?(GraphQL::ExecutionError) }
-              if !dead_result?(selection_result)
+              if selection_result.nil? || !dead_result?(selection_result)
                 value.each_with_index do |error, index|
                   error.ast_node ||= ast_node
-                  error.path ||= path + (field.type.list? ? [index] : [])
+                  error.path ||= path + ((field && field.type.list?) ? [index] : [])
                   context.errors << error
                 end
-                set_result(selection_result, result_name, nil)
+                if selection_result
+                  set_result(selection_result, result_name, nil)
+                end
               end
               HALT
             else
@@ -783,9 +789,24 @@ module GraphQL
             if !dir_defn.is_a?(Class)
               dir_defn = dir_defn.type_class || raise("Only class-based directives are supported (not `@#{dir_node.name}`)")
             end
-            dir_args = arguments(nil, dir_defn, dir_node)
-            dir_defn.resolve(object, dir_args, context) do
-              run_directive(object, directives, idx + 1, &block)
+            raw_dir_args = arguments(nil, dir_defn, dir_node)
+            dir_args = continue_value(
+              @context[:current_path], # path
+              raw_dir_args, # value
+              dir_defn, # parent_type
+              nil, # field
+              false, # is_non_null
+              dir_node, # ast_node
+              nil, # result_name
+              nil, # selection_result
+            )
+
+            if dir_args == HALT
+              nil
+            else
+              dir_defn.resolve(object, dir_args, context) do
+                run_directive(object, directives, idx + 1, &block)
+              end
             end
           end
         end

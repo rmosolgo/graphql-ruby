@@ -80,7 +80,6 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
     assert_equal "@secret.topSecret is required, but no value was given", err2.message
   end
 
-
   module RuntimeDirectiveTest
     class CountFields < GraphQL::Schema::Directive
       locations(FIELD, FRAGMENT_SPREAD, INLINE_FRAGMENT)
@@ -230,6 +229,52 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
        }
       assert_equal expected_counts, res.context[:count_fields]
       assert_equal 5, res.context[:name_resolved_count]
+    end
+  end
+
+  describe "raising an error from an argument" do
+    class DirectiveErrorSchema < GraphQL::Schema
+      class MyDirective < GraphQL::Schema::Directive
+        locations GraphQL::Schema::Directive::QUERY, GraphQL::Schema::Directive::FIELD
+
+        argument :input, String, required: true, prepare: ->(input, ctx) {
+          raise GraphQL::ExecutionError, "invalid argument"
+        }
+      end
+
+      class QueryType < GraphQL::Schema::Object
+        field :hello, String, null: false
+
+        def hello
+          "Hello World!"
+        end
+      end
+      query QueryType
+
+      directive MyDirective
+    end
+
+    it "halts execution and adds an error to the error key" do
+      result = DirectiveErrorSchema.execute(<<-GQL)
+      query @myDirective(input: "hi") {
+        hello
+      }
+      GQL
+
+      assert_equal({}, result["data"])
+      assert_equal ["invalid argument"], result["errors"].map { |e| e["message"] }
+      assert_equal [[{"line"=>1, "column"=>13}]], result["errors"].map { |e| e["locations"] }
+
+      result2 = DirectiveErrorSchema.execute(<<-GQL)
+      query {
+        hello
+        hello2: hello @myDirective(input: "hi")
+      }
+      GQL
+
+      assert_equal({ "hello" => "Hello World!" }, result2["data"])
+      assert_equal ["invalid argument"], result2["errors"].map { |e| e["message"] }
+      assert_equal [[{"line"=>3, "column"=>23}]], result2["errors"].map { |e| e["locations"] }
     end
   end
 end
