@@ -33,6 +33,13 @@ module GraphQL
               list_type = true
               # List members are required by default
               parse_type(type_expr[1..-2], null: false)
+            when /.*\.connection_type\Z/
+              parsed_type = parse_type(type_expr[0..-17], null: true)
+              if parsed_type.respond_to?(:connection_type)
+                parsed_type.connection_type
+              else
+                raise ArgumentError, "Expected #{type_expr} to implement connection_type"
+              end
             when /.*!\Z/
               null = false
               parse_type(type_expr[0..-2], null: true)
