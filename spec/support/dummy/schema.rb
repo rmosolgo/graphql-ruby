@@ -364,6 +364,8 @@ module Dummy
       description "Find dairy products matching a description"
       # This is a list just for testing 😬
       argument :product, [DairyProductInput, null: true], required: false, default_value: [{source: "SHEEP"}]
+      argument :old_product, [DairyProductInput], required: false, deprecation_reason: "No longer supported"
+      argument :single_product, DairyProductInput, required: false
       argument :expires_after, Time, required: false
     end
 
