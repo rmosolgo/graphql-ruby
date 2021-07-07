@@ -165,4 +165,19 @@ describe GraphQL::Analysis::AST::FieldUsage do
       assert_equal ['searchDairy#oldProduct'], result[:used_deprecated_arguments]
     end
   end
+
+  describe "query with scalar arguments nested in a deprecated argument" do
+    let(:query_string) {%|
+      query {
+        searchDairy(productIds: ["123"]) {
+          __typename
+        }
+      }
+    |}
+
+    focus
+    it "keeps track of top-level deprecated arguments" do
+      assert_equal ['searchDairy#productIds'], result[:used_deprecated_arguments]
+    end
+  end
 end
