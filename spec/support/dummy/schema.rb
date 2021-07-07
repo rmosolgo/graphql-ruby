@@ -366,6 +366,7 @@ module Dummy
       argument :product, [DairyProductInput, null: true], required: false, default_value: [{source: "SHEEP"}]
       argument :old_product, [DairyProductInput], required: false, deprecation_reason: "No longer supported"
       argument :single_product, DairyProductInput, required: false
+      argument :product_ids, [String], required: false, deprecation_reason: "No longer supported"
       argument :expires_after, Time, required: false
     end
 
