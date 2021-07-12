@@ -55,7 +55,7 @@ class Types::BaseField < GraphQL::Field
 
   def authorized?(obj, args, ctx)
     # if `require_admin:` was given, then require the current user to be an admin
-    @require_admin ? ctx[:viewer]&.admin? : true
+    super && (@require_admin ? ctx[:viewer]&.admin? : true)
   end
 end
 ```
@@ -74,7 +74,7 @@ class Types::BaseArgument < GraphQL::Field
   end
 
   def authorized?(obj, arg_value, ctx)
-    if @require_logged_in
+    super && if @require_logged_in
       ctx[:viewer].present?
     else
       true
