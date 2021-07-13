@@ -6,8 +6,38 @@ module GraphQL
       # Shared code for Object and Interface
       module HasFields
         # Add a field to this object or interface with the given definition
-        # @see {GraphQL::Schema::Field#initialize} for method signature
+        # @param name [Symbol] The underscore-cased version of this field name (will be camelized for the GraphQL API)
+        # @param type [Class, GraphQL::BaseType, Array] The return type of this field
+        # @param owner [Class] The type that this field belongs to
+        # @param null [Boolean] `true` if this field may return `null`, `false` if it is never `null`
+        # @param description [String] Field description
+        # @param deprecation_reason [String] If present, the field is marked "deprecated" with this message
+        # @param method [Symbol] The method to call on the underlying object to resolve this field (defaults to `name`)
+        # @param hash_key [String, Symbol] The hash key to lookup on the underlying object (if its a Hash) to resolve this field (defaults to `name` or `name.to_s`)
+        # @param resolver_method [Symbol] The method on the type to call to resolve this field (defaults to `name`)
+        # @param connection [Boolean] `true` if this field should get automagic connection behavior; default is to infer by `*Connection` in the return type name
+        # @param connection_extension [Class] The extension to add, to implement connections. If `nil`, no extension is added.
+        # @param max_page_size [Integer, nil] For connections, the maximum number of items to return from this field, or `nil` to allow unlimited results.
+        # @param introspection [Boolean] If true, this field will be marked as `#introspection?` and the name may begin with `__`
+        # @param resolve [<#call(obj, args, ctx)>] **deprecated** for compatibility with <1.8.0
+        # @param field [GraphQL::Field, GraphQL::Schema::Field] **deprecated** for compatibility with <1.8.0
+        # @param function [GraphQL::Function] **deprecated** for compatibility with <1.8.0
+        # @param resolver_class [Class] (Private) A {Schema::Resolver} which this field was derived from. Use `resolver:` to create a field with a resolver.
+        # @param arguments [{String=>GraphQL::Schema::Argument, Hash}] Arguments for this field (may be added in the block, also)
+        # @param camelize [Boolean] If true, the field name will be camelized when building the schema
+        # @param complexity [Numeric] When provided, set the complexity for this field
+        # @param scope [Boolean] If true, the return type's `.scope_items` method will be called on the return value
+        # @param subscription_scope [Symbol, String] A key in `context` which will be used to scope subscription payloads
+        # @param extensions [Array<Class, Hash<Class => Object>>] Named extensions to apply to this field (see also {#extension})
+        # @param directives [Hash{Class => Hash}] Directives to apply to this field
+        # @param trace [Boolean] If true, a {GraphQL::Tracing} tracer will measure this scalar field
+        # @param broadcastable [Boolean] Whether or not this field can be distributed in subscription broadcasts
+        # @param ast_node [Language::Nodes::FieldDefinition, nil] If this schema was parsed from definition, this AST node defined the field
+        # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
+        # @param validates [Array<Hash>] Configurations for validating this field
+        # @param legacy_edge_class [Class, nil] (DEPRECATED) If present, pass this along to the legacy field definition
         # @return [GraphQL::Schema::Field]
+        # @note Keep this type definition in sync with GraphQL::Schema::Field#initialize
         def field(*args, **kwargs, &block)
           field_defn = field_class.from_options(*args, owner: self, **kwargs, &block)
           add_field(field_defn)
