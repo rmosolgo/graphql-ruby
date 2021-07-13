@@ -250,3 +250,5 @@ module GraphQL
     end
   end
 end
+
+require "graphql/dataloader/async_dataloader"
