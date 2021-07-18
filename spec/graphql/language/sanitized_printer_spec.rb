@@ -66,6 +66,11 @@ describe GraphQL::Language::SanitizedPrinter do
         "<#{argument.graphql_name}-redacted>"
       end
     end
+
+    class CustomSanitizedPrinterSchema < GraphQL::Schema
+      query(Query)
+      sanitized_printer(CustomSanitizedPrinter)
+    end
   end
 
   def sanitize_string(query_string, inline_variables: true, **options)
@@ -307,6 +312,37 @@ describe GraphQL::Language::SanitizedPrinter do
     query = GraphQL::Query.new(SanitizeTest::Schema, query_str)
     sanitized_query = SanitizeTest::CustomSanitizedPrinter.new(query).sanitized_query_string
     assert_equal expected_query_string, sanitized_query
+  end
+
+  it 'configure a custom printer from the schema' do
+    query_str = '
+    {
+      inputs(
+        string: "string",
+        id: "id",
+        int: 1,
+        float: 2.0,
+        url: "http://graphqliscool.com",
+        enum: RED
+        inputObject: {
+          string: "string"
+          id: "id"
+          int: 1
+          float: 2.0
+          url: "http://graphqliscool.com"
+          enum: RED
+        }
+      )
+    }
+    '
+
+    expected_query_string = 'query {
+  inputs(' +
+      'string: <string-redacted>, id: <id-redacted>, int: <int-redacted>, float: <float-redacted>, url: <url-redacted>, enum: RED, inputObject: {' +
+      'string: <string-redacted>, id: <id-redacted>, int: <int-redacted>, float: <float-redacted>, url: <url-redacted>, enum: RED})
+}'
+    query = GraphQL::Query.new(SanitizeTest::CustomSanitizedPrinterSchema, query_str)
+    assert_equal expected_query_string, query.sanitized_query_string
   end
 end
 
