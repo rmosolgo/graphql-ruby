@@ -60,4 +60,21 @@ describe GraphQL::Schema::Member::BuildType do
       assert_equal "T", GraphQL::Schema::Member::BuildType.to_type_name(list_req_t)
     end
   end
+
+  describe ".camelize" do
+    it "keeps a string that does not contain underscore intact" do
+      s = "graphQL"
+      assert_equal s, GraphQL::Schema::Member::BuildType.camelize(s)
+    end
+
+    it "keeps an underscore itself intact" do
+      s = "_"
+      assert_equal s, GraphQL::Schema::Member::BuildType.camelize(s)
+    end
+
+    it "converts a string that contains underscore into a camelized one" do
+      s = "graph_ql"
+      assert_equal "graphQl", GraphQL::Schema::Member::BuildType.camelize(s)
+    end
+  end
 end
