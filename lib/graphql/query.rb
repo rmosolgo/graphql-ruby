@@ -270,7 +270,7 @@ module GraphQL
     # @return [String, nil] Returns nil if the query is invalid.
     def sanitized_query_string(inline_variables: true)
       with_prepared_ast {
-        GraphQL::Language::SanitizedPrinter.new(self, inline_variables: inline_variables).sanitized_query_string
+        schema.sanitized_printer.new(self, inline_variables: inline_variables).sanitized_query_string
       }
     end
 

@@ -1631,6 +1631,14 @@ module GraphQL
         find_inherited_value(:multiplex_analyzers, EMPTY_ARRAY) + own_multiplex_analyzers
       end
 
+      def sanitized_printer(new_sanitized_printer = nil)
+        if new_sanitized_printer
+          @own_sanitized_printer = new_sanitized_printer
+        else
+          @own_sanitized_printer || GraphQL::Language::SanitizedPrinter
+        end
+      end
+
       # Execute a query on itself.
       # @see {Query#initialize} for arguments.
       # @return [Hash] query result, ready to be serialized as JSON
