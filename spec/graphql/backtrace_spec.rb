@@ -259,4 +259,18 @@ describe GraphQL::Backtrace do
     result = GraphQL::Analysis::AST.analyze_multiplex(multiplex, [example_analyzer])
     assert_equal [:finished], result
   end
+
+  it "works with multiplex queries" do
+    res = backtrace_schema.multiplex([
+      { query: 'query { __typename }' },
+      { query: 'query { __typename }' },
+    ])
+
+    expected_res = [
+      {"data" => { "__typename" => "Query" }},
+      {"data" => { "__typename" => "Query" }},
+    ]
+
+    assert_equal expected_res, res
+  end
 end
