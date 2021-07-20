@@ -8,6 +8,13 @@
 
 ### Bug Fix
 
+# 1.18.1 (20 July 2021)
+
+### Bug Fix
+
+- Stable connections: improve handling of `SELECT` with `CASE` #3558
+- Defer: fix to support runtime wrapper objects in graphql-ruby 1.12.13
+
 # 1.18.0 (31 May 2021)
 
 ### New Features
