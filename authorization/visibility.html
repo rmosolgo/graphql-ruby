@@ -74,7 +74,7 @@
   <li>In normal queries, if a query references that member, it will return a validation error, since that member doesn’t exist</li>
 </ul>
 
-<h2 id="for-example">For Example</h2>
+<h2 id="object-visibility">Object Visibility</h2>
 
 <p>Let’s say you’re working on a new feature which should remain secret for a while. You can implement <code class="language-plaintext highlighter-rouge">.visible?</code> in a type:</p>
 
@@ -103,6 +103,41 @@
   <li>Any interfaces or unions which normally include <code class="language-plaintext highlighter-rouge">SecretFeature</code> will <em>not</em> include it</li>
   <li>Any fields that return <code class="language-plaintext highlighter-rouge">SecretFeature</code> will be excluded from introspection</li>
 </ul>
+
+<h2 id="field-visibility">Field Visibility</h2>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::BaseField</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Field</span>
+  <span class="c1"># Pass `field ..., require_admin: true` to hide this field from non-admin users</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="ss">require_admin: </span><span class="kp">false</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="vi">@require_admin</span> <span class="o">=</span> <span class="n">require_admin</span>
+    <span class="k">super</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">visible?</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
+    <span class="c1"># if `require_admin:` was given, then require the current user to be an admin</span>
+    <span class="k">super</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="vi">@require_admin</span> <span class="p">?</span> <span class="n">ctx</span><span class="p">[</span><span class="ss">:viewer</span><span class="p">]</span><span class="o">&amp;</span><span class="p">.</span><span class="nf">admin?</span> <span class="p">:</span> <span class="kp">true</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>For this to work, the base field class must be <a href="/type_definitions/extensions.html#customizing-fields">configured with other GraphQL types</a>.</p>
+
+<h2 id="argument-visibility">Argument Visibility</h2>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::BaseArgument</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Field</span>
+  <span class="c1"># If `require_logged_in: true` is given, then this argument will be hidden from logged-out viewers</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="ss">require_logged_in: </span><span class="kp">false</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="vi">@require_logged_in</span> <span class="o">=</span> <span class="n">require_logged_in</span>
+    <span class="k">super</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">authorized?</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
+    <span class="k">super</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="vi">@require_logged_in</span> <span class="p">?</span> <span class="n">ctx</span><span class="p">[</span><span class="ss">:viewer</span><span class="p">].</span><span class="nf">present?</span> <span class="p">:</span> <span class="kp">true</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>For this to work, the base argument class must be <a href="/type_definitions/extensions.html#customizing-arguments">configured with other GraphQL types</a>.</p>
 
 </div>
 <p class="guide-footer">

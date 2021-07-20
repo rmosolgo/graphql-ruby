@@ -67,6 +67,8 @@
   <li><code class="language-plaintext highlighter-rouge">context</code>: the query context, based on the hash passed as <code class="language-plaintext highlighter-rouge">context:</code></li>
 </ul>
 
+<h4 id="object-authorization">Object Authorization</h4>
+
 <p>When you implement this method to return <code class="language-plaintext highlighter-rouge">false</code>, the query will be halted, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::Friendship</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
@@ -81,6 +83,48 @@
 <p>(Always call <code class="language-plaintext highlighter-rouge">super</code> to get the default checks, too.)</p>
 
 <p>Now, whenever an object of type <code class="language-plaintext highlighter-rouge">Friendship</code> is going to be returned to the client, it will first go through the <code class="language-plaintext highlighter-rouge">.authorized?</code> method. If that method returns false, the field will get <code class="language-plaintext highlighter-rouge">nil</code> instead of the original object, and you may handle that case with an error (see below).</p>
+
+<h4 id="field-authorization">Field Authorization</h4>
+
+<p>Field <code class="language-plaintext highlighter-rouge">#authorized?</code> methods are called before resolving a field, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::BaseField</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Field</span>
+  <span class="c1"># Pass `field ..., require_admin: true` to reject non-admin users from a given field</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="ss">require_admin: </span><span class="kp">false</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="vi">@require_admin</span> <span class="o">=</span> <span class="n">require_admin</span>
+    <span class="k">super</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">authorized?</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+    <span class="c1"># if `require_admin:` was given, then require the current user to be an admin</span>
+    <span class="k">super</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="vi">@require_admin</span> <span class="p">?</span> <span class="n">ctx</span><span class="p">[</span><span class="ss">:viewer</span><span class="p">]</span><span class="o">&amp;</span><span class="p">.</span><span class="nf">admin?</span> <span class="p">:</span> <span class="kp">true</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>For this to work, the base field class must be <a href="/type_definitions/extensions.html#customizing-fields">configured with other GraphQL types</a>.</p>
+
+<h4 id="argument-authorization">Argument Authorization</h4>
+
+<p>Argument <code class="language-plaintext highlighter-rouge">#authorized?</code> hooks are called before resolving the field that the argument belongs to. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::BaseArgument</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Field</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="ss">require_logged_in: </span><span class="kp">false</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="vi">@require_logged_in</span> <span class="o">=</span> <span class="n">require_logged_in</span>
+    <span class="k">super</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">authorized?</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">arg_value</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+    <span class="k">super</span> <span class="o">&amp;&amp;</span> <span class="k">if</span> <span class="vi">@require_logged_in</span>
+      <span class="n">ctx</span><span class="p">[</span><span class="ss">:viewer</span><span class="p">].</span><span class="nf">present?</span>
+    <span class="k">else</span>
+      <span class="kp">true</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>For this to work, the base argument class must be <a href="/type_definitions/extensions.html#customizing-arguments">configured with other GraphQL types</a>.</p>
 
 <h2 id="handling-unauthorized-objects">Handling Unauthorized Objects</h2>
 
