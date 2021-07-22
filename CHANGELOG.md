@@ -8,11 +8,20 @@
 
 ### Bug fixes
 
+# 1.12.14 (22 July 2021)
+
+### Bug fixes
+
+- SDL: support directive arguments referencing overridden built-in scalars #3564
+- Use `"_"` as the name for `field :_, ...` fields #3560
+- Support `sanitized_printer(...)` in the schema definition for `Query#sanitized_query_string`
+- `GraphQL::Backtrace`: fix multiplex support
+
 # 1.12.13 (20 June 2021)
 
 ### Breaking changes
 
-- Add a trailing newline to the `Schema.to_definition` output sstring #3541
+- Add a trailing newline to the `Schema.to_definition` output string #3541
 
 ### Bug fixes
 
