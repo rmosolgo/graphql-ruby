@@ -1400,6 +1400,23 @@ type ThingEdge {
     end
   end
 
+  it "works when a directive argument uses a redefined scalar" do
+    schema_str = <<-GRAPHQL
+      schema {
+        query: QueryRoot
+      }
+
+      directive @myDirective(id: ID) on MUTATION | QUERY
+
+      scalar ID
+
+      type QueryRoot {}
+    GRAPHQL
+
+    schema = GraphQL::Schema.from_definition(schema_str)
+    assert_equal schema.directives["myDirective"].get_argument("id").type, schema.find("ID")
+  end
+
   describe "orphan types" do
     it "only puts unreachable types in orphan types" do
       schema = GraphQL::Schema.from_definition <<-GRAPHQL
