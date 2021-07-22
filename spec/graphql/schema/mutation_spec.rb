@@ -186,4 +186,32 @@ describe GraphQL::Schema::Mutation do
       mutation.payload_type
     end
   end
+
+  class InterfaceMutationSchema < GraphQL::Schema
+    class SignIn < GraphQL::Schema::Mutation
+      argument :login, String, required: true
+      argument :password, String, required: true
+      field :success, Boolean, null: false
+      def resolve(login:, password:)
+        { success: login == password }
+      end
+    end
+
+    module Auth
+      include GraphQL::Schema::Interface
+      field :sign_in, mutation: SignIn
+    end
+
+    class Mutation < GraphQL::Schema::Object
+      implements Auth
+    end
+
+    mutation(Mutation)
+    query(Mutation)
+  end
+
+  it "works when mutations are added via interfaces" do
+    result = InterfaceMutationSchema.execute("mutation { signIn(login: \"abc\", password: \"abc\") { success } }")
+    assert_equal true, result["data"]["signIn"]["success"]
+  end
 end
