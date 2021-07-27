@@ -13,6 +13,10 @@ module GraphQL
         def with_error_handling
           yield
         end
+
+        def trace(_key, _data)
+          yield
+        end
       end
 
       attr_reader :schema, :query, :warden, :dataloader
