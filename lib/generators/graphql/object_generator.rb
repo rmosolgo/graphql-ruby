@@ -38,7 +38,7 @@ module Graphql
       end
 
       def self.normalize_type_expression(type_expression, mode:, null: true)
-        case type_expression
+        case type_expression.camelize
         when "Text", "Citext"
           ["String", null]
         when "Decimal"
