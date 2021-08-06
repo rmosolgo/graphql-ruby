@@ -82,7 +82,7 @@ RUBY
   end
 
   test "it generates objects based on ActiveRecord schema with additional custom fields" do
-    run_generator(["TestUser", "name:!String"])
+    run_generator(["TestUser", "name:!String", "email:!Citext", "settings:Jsonb"])
     assert_file "app/graphql/types/test_user_type.rb", <<-RUBY
 module Types
   class TestUserType < Types::BaseObject
@@ -92,6 +92,8 @@ module Types
     field :points, Integer, null: false
     field :rating, Float, null: false
     field :name, String, null: false
+    field :email, String, null: false
+    field :settings, GraphQL::Types::JSON, null: true
   end
 end
 RUBY
