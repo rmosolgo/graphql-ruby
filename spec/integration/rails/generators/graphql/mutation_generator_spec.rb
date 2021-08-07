@@ -48,6 +48,37 @@ module Types
 end
 RUBY
 
+  NAMESPACED_UPDATE_NAME_MUTATION = <<-RUBY
+module Mutations
+  class Names::UpdateName < BaseMutation
+    # TODO: define return fields
+    # field :post, Types::PostType, null: false
+
+    # TODO: define arguments
+    # argument :name, String, required: true
+
+    # TODO: define resolve method
+    # def resolve(name:)
+    #   { post: ... }
+    # end
+  end
+end
+RUBY
+
+  NAMESPACED_EXPECTED_MUTATION_TYPE = <<-RUBY
+module Types
+  class MutationType < Types::BaseObject
+    field :update_name, mutation: Mutations::Names::UpdateName
+    # TODO: remove me
+    field :test_field, String, null: false,
+      description: "An example field added by the generator"
+    def test_field
+      "Hello World"
+    end
+  end
+end
+RUBY
+
   test "it generates an empty resolver by name" do
     setup
     run_generator(["UpdateName"])
@@ -58,6 +89,13 @@ RUBY
     setup
     run_generator(["UpdateName"])
     assert_file "app/graphql/types/mutation_type.rb", EXPECTED_MUTATION_TYPE
+  end
+
+  test "it generates and inserts a namespaced resolver" do
+    setup
+    run_generator(["names/update_name"])
+    assert_file "app/graphql/mutations/names/update_name.rb", NAMESPACED_UPDATE_NAME_MUTATION
+    assert_file "app/graphql/types/mutation_type.rb", NAMESPACED_EXPECTED_MUTATION_TYPE
   end
 
   test "it allows for user-specified directory" do
