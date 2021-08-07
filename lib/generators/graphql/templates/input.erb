@@ -1,5 +1,5 @@
 <% module_namespacing_when_supported do -%>
-module Types
+module Types::Inputs
   class <%= type_ruby_name.split('::')[-1] %> < Types::BaseInputObject
 <% normalized_fields.each do |f| %>    <%= f.to_input_argument %>
 <% end %>  end

@@ -13,7 +13,7 @@ module Graphql
       source_root File.expand_path('../templates', __FILE__)
 
       def create_type_file
-        template "scalar.erb", "#{options[:directory]}/types/#{type_file_name}.rb"
+        template "scalar.erb", "#{options[:directory]}/types/scalars/#{type_file_name}.rb"
       end
     end
   end

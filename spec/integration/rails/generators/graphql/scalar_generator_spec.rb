@@ -7,7 +7,7 @@ class GraphQLGeneratorsScalarGeneratorTest < BaseGeneratorTest
 
   test "it generates scalar class" do
     expected_content = <<-RUBY
-module Types
+module Types::Scalars
   class DateType < Types::BaseScalar
     def self.coerce_input(input_value, context)
       # Override this to prepare a client-provided GraphQL value for your Ruby code
@@ -23,6 +23,6 @@ end
 RUBY
 
     run_generator(["Date"])
-    assert_file "app/graphql/types/date_type.rb", expected_content
+    assert_file "app/graphql/types/scalars/date_type.rb", expected_content
   end
 end

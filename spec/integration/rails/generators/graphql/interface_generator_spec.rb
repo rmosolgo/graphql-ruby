@@ -16,7 +16,7 @@ class GraphQLGeneratorsInterfaceGeneratorTest < BaseGeneratorTest
     ]
 
     expected_content = <<-RUBY
-module Types
+module Types::Interfaces
   module BirdType
     include Types::BaseInterface
     field :wingspan, Integer, null: false
@@ -28,7 +28,7 @@ RUBY
     commands.each do |c|
       prepare_destination
       run_generator(c)
-      assert_file "app/graphql/types/bird_type.rb", expected_content
+      assert_file "app/graphql/types/interfaces/bird_type.rb", expected_content
     end
   end
 end

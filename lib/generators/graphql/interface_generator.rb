@@ -20,7 +20,7 @@ module Graphql
         desc: "Fields for this interface (type may be expressed as Ruby or GraphQL)"
 
       def create_type_file
-        template "interface.erb", "#{options[:directory]}/types/#{type_file_name}.rb"
+        template "interface.erb", "#{options[:directory]}/types/interfaces/#{type_file_name}.rb"
       end
     end
   end

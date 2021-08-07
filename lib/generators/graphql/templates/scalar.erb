@@ -1,5 +1,5 @@
 <% module_namespacing_when_supported do -%>
-module Types
+module Types::Scalars
   class <%= type_ruby_name.split('::')[-1] %> < Types::BaseScalar
     def self.coerce_input(input_value, context)
       # Override this to prepare a client-provided GraphQL value for your Ruby code

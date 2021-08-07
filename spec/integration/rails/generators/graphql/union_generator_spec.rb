@@ -14,7 +14,7 @@ class GraphQLGeneratorsUnionGeneratorTest < BaseGeneratorTest
     ]
 
     expected_content = <<-RUBY
-module Types
+module Types::Unions
   class WingedCreatureType < Types::BaseUnion
     possible_types Types::InsectType, Types::BirdType
   end
@@ -24,7 +24,7 @@ RUBY
     commands.each do |c|
       prepare_destination
       run_generator(c)
-      assert_file "app/graphql/types/winged_creature_type.rb", expected_content
+      assert_file "app/graphql/types/unions/winged_creature_type.rb", expected_content
     end
   end
 
@@ -37,7 +37,7 @@ RUBY
     ]
 
     expected_content = <<-RUBY
-module Types
+module Types::Unions
   class WingedCreatureType < Types::BaseUnion
   end
 end
@@ -46,7 +46,7 @@ RUBY
     commands.each do |c|
       prepare_destination
       run_generator(c)
-      assert_file "app/graphql/types/winged_creature_type.rb", expected_content
+      assert_file "app/graphql/types/unions/winged_creature_type.rb", expected_content
     end
   end
 
@@ -54,7 +54,7 @@ RUBY
     command = ["WingedCreature", "--directory", "app/mydirectory"]
 
     expected_content = <<-RUBY
-module Types
+module Types::Unions
   class WingedCreatureType < Types::BaseUnion
   end
 end
@@ -62,6 +62,6 @@ RUBY
 
     prepare_destination
     run_generator(command)
-    assert_file "app/mydirectory/types/winged_creature_type.rb", expected_content
+    assert_file "app/mydirectory/types/unions/winged_creature_type.rb", expected_content
   end
 end

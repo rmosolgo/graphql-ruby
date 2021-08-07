@@ -7,7 +7,7 @@ class GraphQLGeneratorsEnumGeneratorTest < BaseGeneratorTest
 
   test "it generate enums with values" do
     expected_content = <<-RUBY
-module Types
+module Types::Enums
   class FamilyType < Types::BaseEnum
     value "NIGHTSHADE"
     value "BRASSICA", value: Family::COLE
@@ -25,6 +25,6 @@ RUBY
       'LEGUME:"bean & friends"',
       "CURCURBITS:5"
     ])
-    assert_file "app/graphql/types/family_type.rb", expected_content
+    assert_file "app/graphql/types/enums/family_type.rb", expected_content
   end
 end

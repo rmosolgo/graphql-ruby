@@ -28,7 +28,7 @@ module Graphql
                    desc: "Include the Relay Node interface"
 
       def create_type_file
-        template "object.erb", "#{options[:directory]}/types/#{type_file_name}.rb"
+        template "object.erb", "#{options[:directory]}/types/objects/#{type_file_name}.rb"
       end
 
       def fields

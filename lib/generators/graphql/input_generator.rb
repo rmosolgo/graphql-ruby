@@ -22,7 +22,7 @@ module Graphql
                desc: "Fields for this object (type may be expressed as Ruby or GraphQL)"
 
       def create_type_file
-        template "input.erb", "#{options[:directory]}/types/#{type_file_name}.rb"
+        template "input.erb", "#{options[:directory]}/types/inputs/#{type_file_name}.rb"
       end
 
       def fields

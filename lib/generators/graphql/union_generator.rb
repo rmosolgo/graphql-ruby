@@ -20,7 +20,7 @@ module Graphql
         desc: "Possible types for this union (expressed as Ruby or GraphQL)"
 
       def create_type_file
-        template "union.erb", "#{options[:directory]}/types/#{type_file_name}.rb"
+        template "union.erb", "#{options[:directory]}/types/unions/#{type_file_name}.rb"
       end
 
       private

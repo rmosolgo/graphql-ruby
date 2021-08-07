@@ -20,7 +20,7 @@ module Graphql
         desc: "Values for this enum (if present, ruby_value will be inserted verbatim)"
 
       def create_type_file
-        template "enum.erb", "#{options[:directory]}/types/#{type_file_name}.rb"
+        template "enum.erb", "#{options[:directory]}/types/enums/#{type_file_name}.rb"
       end
 
       private

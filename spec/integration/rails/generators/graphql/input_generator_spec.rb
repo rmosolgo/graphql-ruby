@@ -31,7 +31,7 @@ class GraphQLGeneratorsInputGeneratorTest < BaseGeneratorTest
     ]
 
     expected_content = <<-RUBY
-module Types
+module Types::Inputs
   class BirdInputType < Types::BaseInputObject
     argument :wingspan, Integer, required: false
     argument :foliage, [Types::ColorType], required: false
@@ -42,14 +42,14 @@ RUBY
     commands.each do |c|
       prepare_destination
       run_generator(c)
-      assert_file "app/graphql/types/bird_input_type.rb", expected_content
+      assert_file "app/graphql/types/inputs/bird_input_type.rb", expected_content
     end
   end
 
   test "it generates classifed file" do
     run_generator(["page"])
-    assert_file "app/graphql/types/page_input_type.rb", <<-RUBY
-module Types
+    assert_file "app/graphql/types/inputs/page_input_type.rb", <<-RUBY
+module Types::Inputs
   class PageInputType < Types::BaseInputObject
   end
 end
@@ -58,8 +58,8 @@ RUBY
 
   test "it generates objects based on ActiveRecord schema" do
     run_generator(["TestUser"])
-    assert_file "app/graphql/types/test_user_input_type.rb", <<-RUBY
-module Types
+    assert_file "app/graphql/types/inputs/test_user_input_type.rb", <<-RUBY
+module Types::Inputs
   class TestUserInputType < Types::BaseInputObject
     argument :id, ID, required: false
     argument :created_at, GraphQL::Types::ISO8601DateTime, required: false
@@ -74,8 +74,8 @@ RUBY
 
   test "it generates objects based on ActiveRecord schema with additional custom arguments" do
     run_generator(["TestUser", "name:!String", "email:!Citext", "settings:jsonb"])
-    assert_file "app/graphql/types/test_user_input_type.rb", <<-RUBY
-module Types
+    assert_file "app/graphql/types/inputs/test_user_input_type.rb", <<-RUBY
+module Types::Inputs
   class TestUserInputType < Types::BaseInputObject
     argument :id, ID, required: false
     argument :created_at, GraphQL::Types::ISO8601DateTime, required: false
