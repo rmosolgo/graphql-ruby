@@ -89,8 +89,12 @@ module Graphql
           @null = null
         end
 
-        def to_ruby
+        def to_object_field
           "field :#{@name}, #{@type_expr}, null: #{@null}"
+        end
+
+        def to_input_argument
+          "argument :#{@name}, #{@type_expr}, required: false"
         end
       end
     end

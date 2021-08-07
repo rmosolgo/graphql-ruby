@@ -1,0 +1,93 @@
+# frozen_string_literal: true
+require "spec_helper"
+require "generators/graphql/input_generator"
+
+class GraphQLGeneratorsInputGeneratorTest < BaseGeneratorTest
+  tests Graphql::Generators::InputGenerator
+
+  ActiveRecord::Schema.define do
+    create_table :test_users do |t|
+      t.datetime :created_at
+      t.date :birthday
+      t.integer :points, required: false
+      t.decimal :rating, required: false
+      t.references :friend, required: false, foreign_key: { to_table: :test_users} 
+    end
+  end
+
+  # rubocop:disable Style/ClassAndModuleChildren
+  class ::TestUser < ActiveRecord::Base
+  end
+  # rubocop:enable Style/ClassAndModuleChildren
+
+  test "it generates arguments with types" do
+    commands = [
+      # GraphQL-style:
+      ["Bird", "wingspan:Int!", "foliage:[Color]"],
+      # Ruby-style:
+      ["BirdType", "wingspan:!Integer", "foliage:[Types::ColorType]"],
+      # Mixed
+      ["BirdType", "wingspan:!Int", "foliage:[Color]"],
+    ]
+
+    expected_content = <<-RUBY
+module Types
+  class BirdInputType < Types::BaseInputObject
+    argument :wingspan, Integer, required: false
+    argument :foliage, [Types::ColorType], required: false
+  end
+end
+RUBY
+
+    commands.each do |c|
+      prepare_destination
+      run_generator(c)
+      assert_file "app/graphql/types/bird_input_type.rb", expected_content
+    end
+  end
+
+  test "it generates classifed file" do
+    run_generator(["page"])
+    assert_file "app/graphql/types/page_input_type.rb", <<-RUBY
+module Types
+  class PageInputType < Types::BaseInputObject
+  end
+end
+RUBY
+  end
+
+  test "it generates objects based on ActiveRecord schema" do
+    run_generator(["TestUser"])
+    assert_file "app/graphql/types/test_user_input_type.rb", <<-RUBY
+module Types
+  class TestUserInputType < Types::BaseInputObject
+    argument :id, ID, required: false
+    argument :created_at, GraphQL::Types::ISO8601DateTime, required: false
+    argument :birthday, GraphQL::Types::ISO8601Date, required: false
+    argument :points, Integer, required: false
+    argument :rating, Float, required: false
+    argument :friend_id, Integer, required: false
+  end
+end
+RUBY
+  end
+
+  test "it generates objects based on ActiveRecord schema with additional custom arguments" do
+    run_generator(["TestUser", "name:!String", "email:!Citext", "settings:jsonb"])
+    assert_file "app/graphql/types/test_user_input_type.rb", <<-RUBY
+module Types
+  class TestUserInputType < Types::BaseInputObject
+    argument :id, ID, required: false
+    argument :created_at, GraphQL::Types::ISO8601DateTime, required: false
+    argument :birthday, GraphQL::Types::ISO8601Date, required: false
+    argument :points, Integer, required: false
+    argument :rating, Float, required: false
+    argument :friend_id, Integer, required: false
+    argument :name, String, required: false
+    argument :email, String, required: false
+    argument :settings, GraphQL::Types::JSON, required: false
+  end
+end
+RUBY
+  end
+end

@@ -2,7 +2,7 @@
 module Types
   module <%= type_ruby_name.split('::')[-1] %>
     include Types::BaseInterface
-<% normalized_fields.each do |f| %>    <%= f.to_ruby %>
+<% normalized_fields.each do |f| %>    <%= f.to_object_field %>
 <% end %>  end
 end
 <% end -%>
