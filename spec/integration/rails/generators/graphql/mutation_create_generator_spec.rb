@@ -1,0 +1,75 @@
+# frozen_string_literal: true
+require "spec_helper"
+require "generators/graphql/mutation_create_generator"
+
+class GraphQLGeneratorsMutationCreateGeneratorTest < BaseGeneratorTest
+  tests Graphql::Generators::MutationCreateGenerator
+
+  destination File.expand_path("../../../tmp/dummy", File.dirname(__FILE__))
+
+  def setup(directory = "app/graphql")
+    prepare_destination
+    FileUtils.cd(File.expand_path("../../../tmp", File.dirname(__FILE__))) do
+      `rm -rf dummy`
+      `rails new dummy --skip-active-record --skip-test-unit --skip-spring --skip-bundle --skip-webpack-install`
+    end
+
+    FileUtils.cd(destination_root) do
+      `rails g graphql:install --directory #{directory}`
+    end
+  end
+
+  CREATE_NAME_MUTATION = <<-RUBY
+# frozen_string_literal: true
+
+module Mutations
+  class Names::NameCreate < BaseMutation
+    description "Creates a new name"
+
+    field :name, Types::Objects::Names::NameType, null: false
+
+    argument :name_input, Types::Inputs::Names::NameInputType, required: true
+
+    def resolve(name_input:)
+      names_name = Names::Name.new(**name_input)
+      raise GraphQL::ExecutionError.new "Error creating name", extensions: names_name.errors.to_h unless names_name.save
+
+      { name: names_name }
+    end
+  end
+end
+RUBY
+
+  EXPECTED_MUTATION_TYPE = <<-RUBY
+module Types
+  class MutationType < Types::BaseObject
+    field :name_create, mutation: Mutations::Names::NameCreate
+    # TODO: remove me
+    field :test_field, String, null: false,
+      description: "An example field added by the generator"
+    def test_field
+      "Hello World"
+    end
+  end
+end
+RUBY
+
+  test "it generates an create resolver by name" do
+    setup
+    run_generator(["names/name"])
+    assert_file "app/graphql/mutations/names/name_create.rb", CREATE_NAME_MUTATION
+  end
+
+  test "it inserts the field into the MutationType" do
+    setup
+    run_generator(["names/name"])
+    assert_file "app/graphql/types/mutation_type.rb", EXPECTED_MUTATION_TYPE
+  end
+
+  test "it allows for user-specified directory" do
+    setup "app/mydirectory"
+    run_generator(["names/name", "--directory", "app/mydirectory"])
+
+    assert_file "app/mydirectory/mutations/names/name_create.rb", CREATE_NAME_MUTATION
+  end
+end
