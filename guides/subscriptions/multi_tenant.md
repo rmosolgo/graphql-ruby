@@ -10,6 +10,20 @@ index: 8
 
 In a multi-tenant system, data from many different accounts is stored on the same server. (An account might be an organization, a customer, a namespace, a domain, etc -- these are all _tenants_.) Gems like [Apartment](https://github.com/influitive/apartment) assist with this arrangement, but it can also be implemented in the application. Here are a few considerations for this architecture when using GraphQL subscriptions.
 
+#### Add Tenant to `context`
+
+All the approaches below will use `context[:tenant]` to identify the tenant during GraphQL execution, so make sure to assign it before executing a query:
+
+```ruby
+context = {
+  viewer: current_user,
+  tenant: current_user.tenant,
+  # ...
+}
+
+MySchema.execute(query_str, context: context, ...)
+```
+
 #### Tenant-based `subscription_scope`
 
 When subscriptions are delivered, {% internal_link "`subscription_scope`",  "subscriptions/subscription_classes#scope" %} is one element used to route data to the right subscriber. In short, it's the _implicit_ identifier for the receiver. In a multi-tenant architecture, `subscription_scope` should reference the context key that names the tenant, for example:
