@@ -406,7 +406,10 @@ rule
     | union_members PIPE name { val[0] << make_node(:TypeName, name: val[2], position_source: val[2]) }
 
   union_type_definition:
-      description_opt UNION name directives_list_opt EQUALS union_members {
+      description_opt UNION name directives_list_opt {
+        result = make_node(:UnionTypeDefinition, name: val[2], directives: val[3], types: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+      }
+    |  description_opt UNION name directives_list_opt EQUALS union_members {
         result = make_node(:UnionTypeDefinition, name: val[2], directives: val[3], types: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       }
 
