@@ -32,8 +32,7 @@ module GraphQL
         def extract_deprecated_arguments(argument_values)
           argument_values.each_pair do |_argument_name, argument|
             if argument.definition.deprecation_reason
-              field = "#{argument.definition.owner.graphql_name}##{argument.definition.graphql_name}"
-              @used_deprecated_arguments << field
+              @used_deprecated_arguments << argument.definition.path
             end
 
             if argument.definition.type.kind.input_object?

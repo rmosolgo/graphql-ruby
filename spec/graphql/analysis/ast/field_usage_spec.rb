@@ -102,7 +102,7 @@ describe GraphQL::Analysis::AST::FieldUsage do
     |}
 
     it "keeps track of deprecated arguments" do
-      assert_equal ['fromSource#oldSource'], result[:used_deprecated_arguments]
+      assert_equal ['Query.fromSource.oldSource'], result[:used_deprecated_arguments]
     end
   end
 
@@ -120,7 +120,7 @@ describe GraphQL::Analysis::AST::FieldUsage do
     |}
 
     it "omits duplicate usage of a deprecated argument" do
-      assert_equal ['fromSource#oldSource'], result[:used_deprecated_arguments]
+      assert_equal ['Query.fromSource.oldSource'], result[:used_deprecated_arguments]
     end
   end
 
@@ -134,7 +134,7 @@ describe GraphQL::Analysis::AST::FieldUsage do
     |}
 
     it "keeps track of nested deprecated arguments" do
-      assert_equal ['DairyProductInput#oldSource'], result[:used_deprecated_arguments]
+      assert_equal ['DairyProductInput.oldSource'], result[:used_deprecated_arguments]
     end
   end
 
@@ -148,7 +148,7 @@ describe GraphQL::Analysis::AST::FieldUsage do
     |}
 
     it "keeps track of nested deprecated arguments" do
-      assert_equal ['DairyProductInput#oldSource'], result[:used_deprecated_arguments]
+      assert_equal ['DairyProductInput.oldSource'], result[:used_deprecated_arguments]
     end
   end
 
@@ -162,7 +162,7 @@ describe GraphQL::Analysis::AST::FieldUsage do
     |}
 
     it "keeps track of top-level deprecated arguments" do
-      assert_equal ['searchDairy#oldProduct'], result[:used_deprecated_arguments]
+      assert_equal ['Query.searchDairy.oldProduct'], result[:used_deprecated_arguments]
     end
   end
 
@@ -175,9 +175,8 @@ describe GraphQL::Analysis::AST::FieldUsage do
       }
     |}
 
-    focus
     it "keeps track of top-level deprecated arguments" do
-      assert_equal ['searchDairy#productIds'], result[:used_deprecated_arguments]
+      assert_equal ['Query.searchDairy.productIds'], result[:used_deprecated_arguments]
     end
   end
 end
