@@ -214,6 +214,40 @@ describe GraphQL::Language::Parser do
     end
   end
 
+  describe ".from_definition" do
+    # Correctly parsing this schema requires two features
+    # - the ability to parse a memberless union (_Entity)
+    # - the "repeatable" keyword on directive.
+    #
+    # https://www.apollographql.com/docs/federation/federation-spec/#federation-schema-specification
+    it "is able to parse an Apollo Federated schema" do
+      document = GraphQL::Schema.from_definition <<-GRAPHQL
+        scalar _Any
+        scalar _FieldSet
+        
+        # a union of all types that use the @key directive
+        union _Entity
+        
+        type _Service {
+          sdl: String
+        }
+        
+        extend type Query {
+          _entities(representations: [_Any!]!): [_Entity]!
+          _service: _Service!
+        }
+        
+        directive @external on FIELD_DEFINITION
+        directive @requires(fields: _FieldSet!) on FIELD_DEFINITION
+        directive @provides(fields: _FieldSet!) on FIELD_DEFINITION
+        directive @key(fields: _FieldSet!) repeatable on OBJECT | INTERFACE
+        
+        # this is an optional directive discussed below
+        directive @extends on OBJECT | INTERFACE
+      GRAPHQL
+    end
+  end
+
   it "serves traces" do
     TestTracing.clear
     GraphQL.parse("{ t: __typename }", tracer: TestTracing)
