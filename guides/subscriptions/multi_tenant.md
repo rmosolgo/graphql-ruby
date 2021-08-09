@@ -79,12 +79,12 @@ For __deserializing ActionCable messages__, provide a `serializer:` object that 
 ```ruby
 class MultiTenantSerializer
   def self.dump(obj)
-    GraphQL::Subscriptions::Serializer.dump(obj)
+    GraphQL::Subscriptions::Serialize.dump(obj)
   end
 
   def self.load(string, context)
     MultiTenancy.select_tenant(context[:tenant]) do
-      GraphQL::Subscriptions::Serializer.load(string)
+      GraphQL::Subscriptions::Serialize.load(string)
     end
   end
 end
