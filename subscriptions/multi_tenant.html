@@ -1,0 +1,197 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Multi-Tenant</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.12.14/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#subscriptions-guides">Subscriptions</a>
+  &raquo; Multi-Tenant
+</p>
+
+
+<h1 class="guide-header">Multi-Tenant</h1>
+<div class="guide-container">
+  <p>In a multi-tenant system, data from many different accounts is stored on the same server. (An account might be an organization, a customer, a namespace, a domain, etc – these are all <em>tenants</em>.) Gems like <a href="https://github.com/influitive/apartment">Apartment</a> assist with this arrangement, but it can also be implemented in the application. Here are a few considerations for this architecture when using GraphQL subscriptions.</p>
+
+<h4 id="add-tenant-to-context">Add Tenant to <code class="language-plaintext highlighter-rouge">context</code></h4>
+
+<p>All the approaches below will use <code class="language-plaintext highlighter-rouge">context[:tenant]</code> to identify the tenant during GraphQL execution, so make sure to assign it before executing a query:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="ss">viewer: </span><span class="n">current_user</span><span class="p">,</span>
+  <span class="ss">tenant: </span><span class="n">current_user</span><span class="p">.</span><span class="nf">tenant</span><span class="p">,</span>
+  <span class="c1"># ...</span>
+<span class="p">}</span>
+
+<span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_str</span><span class="p">,</span> <span class="ss">context: </span><span class="n">context</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h4 id="tenant-based-subscription_scope">Tenant-based <code class="language-plaintext highlighter-rouge">subscription_scope</code></h4>
+
+<p>When subscriptions are delivered, <a href="/subscriptions/subscription_classes#scope"><code class="language-plaintext highlighter-rouge">subscription_scope</code></a> is one element used to route data to the right subscriber. In short, it’s the <em>implicit</em> identifier for the receiver. In a multi-tenant architecture, <code class="language-plaintext highlighter-rouge">subscription_scope</code> should reference the context key that names the tenant, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BudgetWasApproved</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Subscription</span>
+  <span class="n">subscription_scope</span> <span class="ss">:tenant</span> <span class="c1"># This would work with `context[:tenant] =&gt; "acme-corp"`</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+
+<span class="c1"># Include the scope when `.trigger`ing:</span>
+<span class="no">BudgetSchema</span><span class="p">.</span><span class="nf">subscriptions</span><span class="p">.</span><span class="nf">trigger</span><span class="p">(</span><span class="ss">:budget_was_approved</span><span class="p">,</span> <span class="p">{},</span> <span class="p">{</span> <span class="o">...</span> <span class="p">},</span> <span class="ss">scope: </span><span class="s2">"acme-corp"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Alternatively, <code class="language-plaintext highlighter-rouge">subscription_scope</code> might name something that <em>belongs</em> to the tenant:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BudgetWasApproved</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Subcription</span>
+  <span class="n">subscription_scope</span> <span class="ss">:project_id</span> <span class="c1"># This would work with `context[:project_id] = 1234`</span>
+<span class="k">end</span>
+
+<span class="c1"># Include the scope when `.trigger`ing:</span>
+<span class="no">BudgetSchema</span><span class="p">.</span><span class="nf">subscriptions</span><span class="p">.</span><span class="nf">trigger</span><span class="p">(</span><span class="ss">:budget_was_approved</span><span class="p">,</span> <span class="p">{},</span> <span class="p">{</span> <span class="o">...</span> <span class="p">},</span> <span class="ss">scope: </span><span class="mi">1234</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>As long as <code class="language-plaintext highlighter-rouge">project_id</code> is unique among <em>all</em> tenants, that would work fine too. But <em>some</em> scope is required so that subscriptions can be disambiguated between tenants.</p>
+
+<h4 id="choosing-a-tenant-for-execution">Choosing a tenant for execution</h4>
+
+<p>There are a few places where subscriptions might need to load data:</p>
+
+<ul>
+  <li>When building the payload for the subscription (fetching data to prepare the result)</li>
+  <li><code class="language-plaintext highlighter-rouge">ActionCableSubscriptions</code>: when deserializing the JSON string broadcasted by <code class="language-plaintext highlighter-rouge">ActionCable</code></li>
+  <li><code class="language-plaintext highlighter-rouge">PusherSubscriptions</code> and <code class="language-plaintext highlighter-rouge">AblySubscriptions</code>: when deserializing query context</li>
+</ul>
+
+<p>Each of these operations will need to select the right tenant in order to load data properly.</p>
+
+<p>For <strong>building the payload</strong>, use a <a href="/queries/tracing">Tracer</a>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">TenantSelectionTracer</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">trace</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+    <span class="k">case</span> <span class="n">event</span>
+    <span class="k">when</span> <span class="s2">"execute_multiplex"</span> <span class="c1"># this is the top-level, umbrella event</span>
+      <span class="n">context</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="ss">:multiplex</span><span class="p">].</span><span class="nf">queries</span><span class="p">.</span><span class="nf">first</span><span class="p">.</span><span class="nf">context</span> <span class="c1"># This assumes that all queries in a multiplex have the same tenant</span>
+      <span class="no">MultiTenancy</span><span class="p">.</span><span class="nf">select_tenant</span><span class="p">(</span><span class="n">context</span><span class="p">[</span><span class="ss">:tenant</span><span class="p">])</span> <span class="k">do</span>
+      <span class="c1"># ^^ your multi-tenancy implementation here</span>
+        <span class="k">yield</span>
+      <span class="k">end</span>
+    <span class="k">else</span>
+      <span class="k">yield</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># ...</span>
+<span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="n">tracer</span><span class="p">(</span><span class="no">TenantSelectionTracer</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>The tracer above will use <code class="language-plaintext highlighter-rouge">context[:tenant]</code> to select a tenant for the duration of execution for <em>all</em> queries, mutations, and subscriptions.</p>
+
+<p>For <strong>deserializing ActionCable messages</strong>, provide a <code class="language-plaintext highlighter-rouge">serializer:</code> object that implements <code class="language-plaintext highlighter-rouge">.dump(obj)</code> and <code class="language-plaintext highlighter-rouge">.load(string, context)</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MultiTenantSerializer</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">dump</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+    <span class="no">GraphQL</span><span class="o">::</span><span class="no">Subscriptions</span><span class="o">::</span><span class="no">Serialize</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">load</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+    <span class="no">MultiTenancy</span><span class="p">.</span><span class="nf">select_tenant</span><span class="p">(</span><span class="n">context</span><span class="p">[</span><span class="ss">:tenant</span><span class="p">])</span> <span class="k">do</span>
+      <span class="no">GraphQL</span><span class="o">::</span><span class="no">Subscriptions</span><span class="o">::</span><span class="no">Serialize</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># ...</span>
+<span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="c1"># ...</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Subscriptions</span><span class="o">::</span><span class="no">ActionCableSubscriptions</span><span class="p">,</span> <span class="ss">serializer: </span><span class="no">MultiTenantSerializer</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>The implementation above will use the built-in serialization algorithms, but it will do so <em>in the context of</em> the selected tenant.</p>
+
+<p>For <strong>loading query context in Pusher and Ably</strong>, add tenant selection to your <code class="language-plaintext highlighter-rouge">load_context</code> method, if required:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">CustomSubscriptions</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">PusherSubscriptions</span> <span class="c1"># or `GraphQL::Pro::AblySubscriptions`</span>
+  <span class="k">def</span> <span class="nf">dump_context</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
+    <span class="no">JSON</span><span class="p">.</span><span class="nf">dump</span><span class="p">(</span><span class="n">ctx</span><span class="p">.</span><span class="nf">to_h</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">load_context</span><span class="p">(</span><span class="n">ctx_string</span><span class="p">)</span>
+    <span class="n">ctx_data</span> <span class="o">=</span> <span class="no">JSON</span><span class="p">.</span><span class="nf">parse</span><span class="p">(</span><span class="n">ctx_string</span><span class="p">)</span>
+    <span class="no">MultiTenancy</span><span class="p">.</span><span class="nf">select_tenant</span><span class="p">(</span><span class="n">ctx_data</span><span class="p">[</span><span class="s2">"tenant"</span><span class="p">])</span> <span class="k">do</span>
+      <span class="c1"># Build a symbol-keyed hash, loading objects from the database if necessary</span>
+      <span class="c1"># to use a `context: ...`</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>With that approach, the selected tenant will be active when building the context hash, in case any objects need to be loaded from the database.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/subscriptions/multi_tenant.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Multi-Tenant">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>
