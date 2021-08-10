@@ -47,3 +47,7 @@ Read more in the {% internal_link "Implementation guide", "subscriptions/impleme
 ### Broadcasts
 
 By default, the subscription implementations listed above handle each subscription in total isolation. However, this behavior can be optimized by setting up broadcasts. Read more in the {% internal_link "Broadcast guide", "subscriptions/broadcast" %}.
+
+### Multi-Tenant
+
+See the {% internal_link "Multi-tenant guide", "subscriptions/multi_tenant" %} for supporting multi-tenancy in GraphQL subscriptions.

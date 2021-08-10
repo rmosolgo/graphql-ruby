@@ -95,6 +95,14 @@ module GraphQL
         @action_cable = action_cable
         @action_cable_coder = action_cable_coder
         @serializer = serializer
+        @serialize_with_context = case @serializer.method(:load).arity
+        when 1
+          false
+        when 2
+          true
+        else
+          raise ArgumentError, "#{@serializer} must repond to `.load` accepting one or two arguments"
+        end
         @transmit_ns = namespace
         super
       end
@@ -154,7 +162,7 @@ module GraphQL
               # so just run it once, then deliver the result to every subscriber
               first_event = events.first
               first_subscription_id = first_event.context.fetch(:subscription_id)
-              object ||= @serializer.load(message)
+              object ||= load_action_cable_message(message, first_event.context)
               result = execute_update(first_subscription_id, first_event, object)
               # Having calculated the result _once_, send the same payload to all subscribers
               events.each do |event|
@@ -164,6 +172,18 @@ module GraphQL
             end
           end
           nil
+        end
+      end
+
+      # This is called to turn an ActionCable-broadcasted string (JSON)
+      # into a query-ready application object.
+      # @param message [String] n ActionCable-broadcasted string (JSON)
+      # @param context [GraphQL::Query::Context] the context of the first event for a given subscription fingerprint
+      def load_action_cable_message(message, context)
+        if @serialize_with_context
+          @serializer.load(message, context)
+        else
+          @serializer.load(message)
         end
       end
 
