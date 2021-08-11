@@ -62,7 +62,7 @@ This way, you can handle this _particular_ `relation` with custom code.
 
 ## Max Page Size
 
-You can apply `max_page_size` to limit the number of items returned, regardless of what the client requests.
+You can apply `max_page_size` to limit the number of items returned and queried from the database, regardless of what the client requests.
 
 - __For the whole schema__, you can add it to your schema definition:
 
