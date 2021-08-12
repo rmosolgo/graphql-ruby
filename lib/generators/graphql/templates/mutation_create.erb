@@ -5,9 +5,9 @@ module Mutations
   class <%= class_name %>Create < BaseMutation
     description "Creates a new <%= file_name %>"
 
-    field :<%= file_name %>, Types::Objects::<%= class_name %>Type, null: false
+    field :<%= file_name %>, Types::<%= options[:namespaced_types] ? 'Objects::' : '' %><%= class_name %>Type, null: false
 
-    argument :<%= file_name %>_input, Types::Inputs::<%= class_name %>InputType, required: true
+    argument :<%= file_name %>_input, Types::<%= options[:namespaced_types] ? 'Inputs::' : '' %><%= class_name %>InputType, required: true
 
     def resolve(<%= file_name %>_input:)
       <%= singular_table_name %> = <%= orm_class.build(class_name, "**#{file_name}_input") %>

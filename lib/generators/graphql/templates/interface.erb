@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 <% module_namespacing_when_supported do -%>
-module Types::Interfaces
-  module <%= type_ruby_name.split('::')[-1] %>
+module Types
+  module <%= ruby_class_name %>
     include Types::BaseInterface
 <% normalized_fields.each do |f| %>    <%= f.to_object_field %>
 <% end %>  end

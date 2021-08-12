@@ -30,8 +30,38 @@ class GraphQLGeneratorsObjectGeneratorTest < BaseGeneratorTest
     ]
 
     expected_content = <<-RUBY
-module Types::Objects
+# frozen_string_literal: true
+
+module Types
   class BirdType < Types::BaseObject
+    field :wingspan, Integer, null: false
+    field :foliage, [Types::ColorType], null: true
+  end
+end
+RUBY
+
+    commands.each do |c|
+      prepare_destination
+      run_generator(c)
+      assert_file "app/graphql/types/bird_type.rb", expected_content
+    end
+  end
+
+  test "it generates fields with namespaced types" do
+    commands = [
+      # GraphQL-style:
+      ["Bird", "wingspan:Int!", "foliage:[Color]"],
+      # Ruby-style:
+      ["BirdType", "wingspan:!Integer", "foliage:[Types::ColorType]"],
+      # Mixed
+      ["BirdType", "wingspan:!Int", "foliage:[Color]"],
+    ].map { |c| c + ["--namespaced-types"]}
+
+    expected_content = <<-RUBY
+# frozen_string_literal: true
+
+module Types
+  class Objects::BirdType < Types::BaseObject
     field :wingspan, Integer, null: false
     field :foliage, [Types::ColorType], null: true
   end
@@ -45,11 +75,13 @@ RUBY
     end
   end
 
-  test "it generates classifed file" do
-    run_generator(["page"])
-    assert_file "app/graphql/types/objects/page_type.rb", <<-RUBY
-module Types::Objects
-  class PageType < Types::BaseObject
+  test "it generates namespaced classifed file" do
+    run_generator(["books/page"])
+    assert_file "app/graphql/types/books/page_type.rb", <<-RUBY
+# frozen_string_literal: true
+
+module Types
+  class Books::PageType < Types::BaseObject
   end
 end
 RUBY
@@ -57,8 +89,10 @@ RUBY
 
   test "it makes Relay nodes" do
     run_generator(["Page", "--node"])
-    assert_file "app/graphql/types/objects/page_type.rb", <<-RUBY
-module Types::Objects
+    assert_file "app/graphql/types/page_type.rb", <<-RUBY
+# frozen_string_literal: true
+
+module Types
   class PageType < Types::BaseObject
     implements GraphQL::Types::Relay::Node
   end
@@ -66,11 +100,13 @@ end
 RUBY
   end
 
-  test "it generates objects based on ActiveRecord schema" do
-    run_generator(["TestUser"])
+  test "it generates objects based on ActiveRecord schema, with namespaced types" do
+    run_generator(["TestUser", "--namespaced-types"])
     assert_file "app/graphql/types/objects/test_user_type.rb", <<-RUBY
-module Types::Objects
-  class TestUserType < Types::BaseObject
+# frozen_string_literal: true
+
+module Types
+  class Objects::TestUserType < Types::BaseObject
     field :id, ID, null: false
     field :created_at, GraphQL::Types::ISO8601DateTime, null: true
     field :birthday, GraphQL::Types::ISO8601Date, null: true
@@ -83,8 +119,10 @@ RUBY
 
   test "it generates objects based on ActiveRecord schema with additional custom fields" do
     run_generator(["TestUser", "name:!String", "email:!Citext", "settings:jsonb"])
-    assert_file "app/graphql/types/objects/test_user_type.rb", <<-RUBY
-module Types::Objects
+    assert_file "app/graphql/types/test_user_type.rb", <<-RUBY
+# frozen_string_literal: true
+
+module Types
   class TestUserType < Types::BaseObject
     field :id, ID, null: false
     field :created_at, GraphQL::Types::ISO8601DateTime, null: true

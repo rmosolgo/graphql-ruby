@@ -8,8 +8,14 @@ require_relative 'core'
 
 module Graphql
   module Generators
-    class TypeGeneratorBase < Rails::Generators::NamedBase
+    class TypeGeneratorBase < Rails::Generators::Base
       include Core
+
+      argument :type_name,
+        type: :string,
+        required: true,
+        banner: "TypeName",
+        desc: "Name of this object type (expressed as Ruby or GraphQL)"
 
       class_option 'namespaced_types',
         type: :boolean,
@@ -17,19 +23,6 @@ module Graphql
         default: false,
         banner: "Namespaced",
         desc: "If the generated types will be namespaced"
-
-      argument :custom_fields,
-                type: :array,
-                default: [],
-                banner: "name:type name:type ...",
-                desc: "Fields for this object (type may be expressed as Ruby or GraphQL)"
-
-      
-      attr_accessor :graphql_type
-
-      def create_type_file
-        template "#{graphql_type}.erb", "#{options[:directory]}/types#{subdirectory}/#{type_file_name}.rb"
-      end
 
       # Take a type expression in any combination of GraphQL or Ruby styles
       # and return it in a specified output style
@@ -75,12 +68,12 @@ module Graphql
 
       # @return [String] The user-provided type name, normalized to Ruby code
       def type_ruby_name
-        @type_ruby_name ||= self.class.normalize_type_expression(name, mode: :ruby)[0]
+        @type_ruby_name ||= self.class.normalize_type_expression(type_name, mode: :ruby)[0]
       end
 
       # @return [String] The user-provided type name, as a GraphQL name
       def type_graphql_name
-        @type_graphql_name ||= self.class.normalize_type_expression(name, mode: :graphql)[0]
+        @type_graphql_name ||= self.class.normalize_type_expression(type_name, mode: :graphql)[0]
       end
 
       # @return [String] The user-provided type name, as a file name (without extension)
@@ -90,32 +83,11 @@ module Graphql
 
       # @return [Array<NormalizedField>] User-provided fields, in `(name, Ruby type name)` pairs
       def normalized_fields
-        pp "enter normalized fields"
-        pp fields
         @normalized_fields ||= fields.map { |f|
           name, raw_type = f.split(":", 2)
           type_expr, null = self.class.normalize_type_expression(raw_type, mode: :ruby)
           NormalizedField.new(name, type_expr, null)
         }
-      end
-
-      def ruby_class_name
-        class_prefix = 
-          if options[:namespaced_types]
-            "#{graphql_type.pluralize.camelize}::"
-          else
-            ""
-          end
-          pp type_ruby_name
-        @ruby_class_name || class_prefix + type_ruby_name.delete_prefix("Types::")
-      end
-
-      def subdirectory
-        if options[:namespaced_types]
-          "/#{graphql_type.pluralize}"
-        else
-          ""
-        end
       end
 
       class NormalizedField

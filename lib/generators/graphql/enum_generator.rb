@@ -13,20 +13,14 @@ module Graphql
       desc "Create a GraphQL::EnumType with the given name and values"
       source_root File.expand_path('../templates', __FILE__)
 
-      argument :values,
-        type: :array,
-        default: [],
-        banner: "value{:ruby_value} value{:ruby_value} ...",
-        desc: "Values for this enum (if present, ruby_value will be inserted verbatim)"
-
-      def create_type_file
-        template "enum.erb", "#{options[:directory]}/types/enums/#{type_file_name}.rb"
-      end
-
       private
 
+      def graphql_type
+        "enum"
+      end
+
       def prepared_values
-        values.map { |v| v.split(":", 2) }
+        custom_fields.map { |v| v.split(":", 2) }
       end
     end
   end

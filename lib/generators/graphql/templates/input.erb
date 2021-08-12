@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 <% module_namespacing_when_supported do -%>
-module Types::Inputs
-  class <%= type_ruby_name.split('::')[-1] %> < Types::BaseInputObject
+module Types
+  class <%= ruby_class_name %> < Types::BaseInputObject
 <% normalized_fields.each do |f| %>    <%= f.to_input_argument %>
 <% end %>  end
 end

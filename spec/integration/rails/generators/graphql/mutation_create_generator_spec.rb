@@ -19,7 +19,7 @@ class GraphQLGeneratorsMutationCreateGeneratorTest < BaseGeneratorTest
     end
   end
 
-  CREATE_NAME_MUTATION = <<-RUBY
+  NAMESPACED_CREATE_NAME_MUTATION = <<-RUBY
 # frozen_string_literal: true
 
 module Mutations
@@ -29,6 +29,27 @@ module Mutations
     field :name, Types::Objects::Names::NameType, null: false
 
     argument :name_input, Types::Inputs::Names::NameInputType, required: true
+
+    def resolve(name_input:)
+      names_name = Names::Name.new(**name_input)
+      raise GraphQL::ExecutionError.new "Error creating name", extensions: names_name.errors.to_h unless names_name.save
+
+      { name: names_name }
+    end
+  end
+end
+RUBY
+
+  CREATE_NAME_MUTATION = <<-RUBY
+# frozen_string_literal: true
+
+module Mutations
+  class Names::NameCreate < BaseMutation
+    description "Creates a new name"
+
+    field :name, Types::Names::NameType, null: false
+
+    argument :name_input, Types::Names::NameInputType, required: true
 
     def resolve(name_input:)
       names_name = Names::Name.new(**name_input)
@@ -54,10 +75,16 @@ module Types
 end
 RUBY
 
-  test "it generates an create resolver by name" do
+  test "it generates a create resolver by name" do
     setup
     run_generator(["names/name"])
     assert_file "app/graphql/mutations/names/name_create.rb", CREATE_NAME_MUTATION
+  end
+
+  test "it generates a namespaced create resolver by name" do
+    setup
+    run_generator(["names/name", "--namespaced-types"])
+    assert_file "app/graphql/mutations/names/name_create.rb", NAMESPACED_CREATE_NAME_MUTATION
   end
 
   test "it inserts the field into the MutationType" do

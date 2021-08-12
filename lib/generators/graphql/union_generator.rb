@@ -19,14 +19,14 @@ module Graphql
         banner: "type type ...",
         desc: "Possible types for this union (expressed as Ruby or GraphQL)"
 
-      def create_type_file
-        template "union.erb", "#{options[:directory]}/types/unions/#{type_file_name}.rb"
-      end
-
       private
 
+      def graphql_type
+        "union"
+      end
+
       def normalized_possible_types
-        possible_types.map { |t| self.class.normalize_type_expression(t, mode: :ruby)[0] }
+        custom_fields.map { |t| self.class.normalize_type_expression(t, mode: :ruby)[0] }
       end
     end
   end
