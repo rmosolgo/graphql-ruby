@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 require "spec_helper"
-require "generators/graphql/mutation_create_generator"
+require "generators/graphql/mutation_update_generator"
 
 class GraphQLGeneratorsMutationCreateGeneratorTest < BaseGeneratorTest
-  tests Graphql::Generators::MutationCreateGenerator
+  tests Graphql::Generators::MutationUpdateGenerator
 
   destination File.expand_path("../../../tmp/dummy", File.dirname(__FILE__))
 
@@ -21,20 +21,21 @@ class GraphQLGeneratorsMutationCreateGeneratorTest < BaseGeneratorTest
     end
   end
 
-  NAMESPACED_CREATE_NAME_MUTATION = <<-RUBY
+  NAMESPACED_UPDATE_NAME_MUTATION = <<-RUBY
 # frozen_string_literal: true
 
 module Mutations
-  class Names::NameCreate < BaseMutation
-    description "Creates a new name"
+  class Names::NameUpdate < BaseMutation
+    description "Updates a name by id"
 
     field :name, Types::Objects::Names::NameType, null: false
 
+    argument :id, ID, required: true
     argument :name_input, Types::Inputs::Names::NameInputType, required: true
 
-    def resolve(name_input:)
-      names_name = Names::Name.new(**name_input)
-      raise GraphQL::ExecutionError.new "Error creating name", extensions: names_name.errors.to_h unless names_name.save
+    def resolve(id:, name_input:)
+      names_name = Names::Name.find(id)
+      raise GraphQL::ExecutionError.new "Error updating name", extensions: names_name.errors.to_h unless names_name.update(**name_input)
 
       { name: names_name }
     end
@@ -42,20 +43,21 @@ module Mutations
 end
 RUBY
 
-  CREATE_NAME_MUTATION = <<-RUBY
+  UPDATE_NAME_MUTATION = <<-RUBY
 # frozen_string_literal: true
 
 module Mutations
-  class Names::NameCreate < BaseMutation
-    description "Creates a new name"
+  class Names::NameUpdate < BaseMutation
+    description "Updates a name by id"
 
     field :name, Types::Names::NameType, null: false
 
+    argument :id, ID, required: true
     argument :name_input, Types::Names::NameInputType, required: true
 
-    def resolve(name_input:)
-      names_name = Names::Name.new(**name_input)
-      raise GraphQL::ExecutionError.new "Error creating name", extensions: names_name.errors.to_h unless names_name.save
+    def resolve(id:, name_input:)
+      names_name = Names::Name.find(id)
+      raise GraphQL::ExecutionError.new "Error updating name", extensions: names_name.errors.to_h unless names_name.update(**name_input)
 
       { name: names_name }
     end
@@ -66,7 +68,7 @@ RUBY
   EXPECTED_MUTATION_TYPE = <<-RUBY
 module Types
   class MutationType < Types::BaseObject
-    field :name_create, mutation: Mutations::Names::NameCreate
+    field :name_update, mutation: Mutations::Names::NameUpdate
     # TODO: remove me
     field :test_field, String, null: false,
       description: "An example field added by the generator"
@@ -77,23 +79,23 @@ module Types
 end
 RUBY
 
-  test "it generates a create resolver by name, and inserts the field into the MutationType" do
+  test "it generates an update resolver by name, and inserts the field into the MutationType" do
     setup
     run_generator(["names/name"])
-    assert_file "app/graphql/mutations/names/name_create.rb", CREATE_NAME_MUTATION
+    assert_file "app/graphql/mutations/names/name_update.rb", UPDATE_NAME_MUTATION
     assert_file "app/graphql/types/mutation_type.rb", EXPECTED_MUTATION_TYPE
   end
 
-  test "it generates a namespaced create resolver by name" do
+  test "it generates a namespaced update resolver by name" do
     setup
     run_generator(["names/name", "--namespaced-types"])
-    assert_file "app/graphql/mutations/names/name_create.rb", NAMESPACED_CREATE_NAME_MUTATION
+    assert_file "app/graphql/mutations/names/name_update.rb", NAMESPACED_UPDATE_NAME_MUTATION
   end
 
   test "it allows for user-specified directory" do
     setup "app/mydirectory"
     run_generator(["names/name", "--directory", "app/mydirectory"])
 
-    assert_file "app/mydirectory/mutations/names/name_create.rb", CREATE_NAME_MUTATION
+    assert_file "app/mydirectory/mutations/names/name_update.rb", UPDATE_NAME_MUTATION
   end
 end
