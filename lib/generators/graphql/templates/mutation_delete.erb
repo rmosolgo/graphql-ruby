@@ -11,7 +11,7 @@ module Mutations
 
     def resolve(id:)
       <%= singular_table_name %> = <%= orm_class.find(class_name, "id") %>
-      raise GraphQL::ExecutionError.new "Error creating <%= file_name %>", extensions: <%= singular_table_name %>.errors.to_h unless <%= orm_instance.destroy %>
+      raise GraphQL::ExecutionError.new "Error deleting <%= file_name %>", extensions: <%= singular_table_name %>.errors.to_h unless <%= orm_instance.destroy %>
 
       { <%= file_name %>: <%= singular_table_name %> }
     end
