@@ -2,7 +2,7 @@
 require "spec_helper"
 require "generators/graphql/mutation_update_generator"
 
-class GraphQLGeneratorsMutationCreateGeneratorTest < BaseGeneratorTest
+class GraphQLGeneratorsMutationUpdateGeneratorTest < BaseGeneratorTest
   tests Graphql::Generators::MutationUpdateGenerator
 
   destination File.expand_path("../../../tmp/dummy", File.dirname(__FILE__))
@@ -65,7 +65,7 @@ module Mutations
 end
 RUBY
 
-  EXPECTED_MUTATION_TYPE = <<-RUBY
+  EXPECTED_UPDATE_MUTATION_TYPE = <<-RUBY
 module Types
   class MutationType < Types::BaseObject
     field :name_update, mutation: Mutations::Names::NameUpdate
@@ -83,7 +83,7 @@ RUBY
     setup
     run_generator(["names/name"])
     assert_file "app/graphql/mutations/names/name_update.rb", UPDATE_NAME_MUTATION
-    assert_file "app/graphql/types/mutation_type.rb", EXPECTED_MUTATION_TYPE
+    assert_file "app/graphql/types/mutation_type.rb", EXPECTED_UPDATE_MUTATION_TYPE
   end
 
   test "it generates a namespaced update resolver by name" do
@@ -92,7 +92,7 @@ RUBY
     assert_file "app/graphql/mutations/names/name_update.rb", NAMESPACED_UPDATE_NAME_MUTATION
   end
 
-  test "it allows for user-specified directory" do
+  test "it allows for user-specified directory, update" do
     setup "app/mydirectory"
     run_generator(["names/name", "--directory", "app/mydirectory"])
 

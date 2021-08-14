@@ -2,7 +2,7 @@
 require "spec_helper"
 require "generators/graphql/mutation_delete_generator"
 
-class GraphQLGeneratorsMutationCreateGeneratorTest < BaseGeneratorTest
+class GraphQLGeneratorsMutationDeleteGeneratorTest < BaseGeneratorTest
   tests Graphql::Generators::MutationDeleteGenerator
 
   destination File.expand_path("../../../tmp/dummy", File.dirname(__FILE__))
@@ -63,7 +63,7 @@ module Mutations
 end
 RUBY
 
-  EXPECTED_MUTATION_TYPE = <<-RUBY
+  EXPECTED_DELETE_MUTATION_TYPE = <<-RUBY
 module Types
   class MutationType < Types::BaseObject
     field :name_delete, mutation: Mutations::Names::NameDelete
@@ -81,7 +81,7 @@ RUBY
     setup
     run_generator(["names/name"])
     assert_file "app/graphql/mutations/names/name_delete.rb", DELETE_NAME_MUTATION
-    assert_file "app/graphql/types/mutation_type.rb", EXPECTED_MUTATION_TYPE
+    assert_file "app/graphql/types/mutation_type.rb", EXPECTED_DELETE_MUTATION_TYPE
   end
 
   test "it generates a namespaced delete resolver by name" do
@@ -90,7 +90,7 @@ RUBY
     assert_file "app/graphql/mutations/names/name_delete.rb", NAMESPACED_DELETE_NAME_MUTATION
   end
 
-  test "it allows for user-specified directory" do
+  test "it allows for user-specified directory, delete" do
     setup "app/mydirectory"
     run_generator(["names/name", "--directory", "app/mydirectory"])
 
