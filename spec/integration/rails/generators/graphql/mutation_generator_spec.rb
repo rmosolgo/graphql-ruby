@@ -14,7 +14,14 @@ class GraphQLGeneratorsMutationGeneratorTest < BaseGeneratorTest
       `rails new dummy --skip-active-record --skip-test-unit --skip-spring --skip-bundle --skip-webpack-install`
     end
 
+<<<<<<< HEAD
     Graphql::Generators::InstallGenerator.start(["--directory", directory], { destination_root: destination_root })
+=======
+    FileUtils.cd(destination_root) do
+      `mkdir #{directory}`
+      `touch #{directory}/dummy_schema.rb`
+    end
+>>>>>>> test: don't generate complete GraphQL install for faster tests
   end
 
   UPDATE_NAME_MUTATION = <<-RUBY
