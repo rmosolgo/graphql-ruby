@@ -90,8 +90,6 @@ module Graphql
 
       # @return [Array<NormalizedField>] User-provided fields, in `(name, Ruby type name)` pairs
       def normalized_fields
-        pp "enter normalized fields"
-        pp fields
         @normalized_fields ||= fields.map { |f|
           name, raw_type = f.split(":", 2)
           type_expr, null = self.class.normalize_type_expression(raw_type, mode: :ruby)
@@ -106,7 +104,6 @@ module Graphql
           else
             ""
           end
-          pp type_ruby_name
         @ruby_class_name || class_prefix + type_ruby_name.delete_prefix("Types::")
       end
 
