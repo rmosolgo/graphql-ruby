@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1,18.2 (16 August 2021
+
+### Bug Fix
+
+- Stable connections: nicely handle incoming cursors with too many sort values #3581
+
 # 1.18.1 (20 July 2021)
 
 ### Bug Fix
