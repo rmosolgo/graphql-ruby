@@ -8,6 +8,13 @@
 
 ### Bug fixes
 
+# 1.12.15 (23 August 2021)
+
+### New Features
+
+- Subscriptions: add support for multi-tenant setups when deserializing context #3574
+- Analyzers: also track deprecated arguments #3549
+
 # 1.12.14 (22 July 2021)
 
 ### Bug fixes
