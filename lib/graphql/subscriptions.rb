@@ -151,16 +151,6 @@ module GraphQL
     # @param object [Object]
     # @return [void]
     def execute_all(event, object)
-      each_subscription_id(event) do |subscription_id|
-        execute(subscription_id, event, object)
-      end
-    end
-
-    # Get each `subscription_id` subscribed to `event.topic` and yield them
-    # @param event [GraphQL::Subscriptions::Event]
-    # @yieldparam subscription_id [String]
-    # @return [void]
-    def each_subscription_id(event)
       raise GraphQL::RequiredImplementationMissingError
     end
 
