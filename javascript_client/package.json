@@ -18,6 +18,7 @@
     "@types/pako": "^1.0.1",
     "@types/pusher-js": "^4.2.2",
     "@types/react": "^17.0.0",
+    "@types/relay-runtime": "11.0.3",
     "@types/zen-observable": "^0.8.2",
     "ably": "1.2.6",
     "graphql": "^15.0.0",
@@ -26,6 +27,7 @@
     "pako": "^2.0.3",
     "prettier": "^1.19.1",
     "pusher-js": "^7.0.3",
+    "relay-runtime": "11.0.2",
     "ts-jest": "^25.2.0",
     "typescript": "^3.7.5"
   },
