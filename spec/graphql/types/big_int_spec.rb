@@ -25,4 +25,9 @@ describe GraphQL::Types::BigInt do
   it 'returns `nil` for nil' do
     assert_equal nil, GraphQL::Types::BigInt.coerce_input(nil, nil)
   end
+
+  it 'parses integers with base 10' do
+    number_string = "01000"
+    assert_equal 1000, GraphQL::Types::BigInt.coerce_input(number_string, nil)
+  end
 end
