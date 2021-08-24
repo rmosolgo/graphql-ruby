@@ -10,8 +10,8 @@ module Mutations
     argument :<%= file_name %>_input, Types::<%= options[:namespaced_types] ? 'Inputs::' : '' %><%= class_name %>InputType, required: true
 
     def resolve(<%= file_name %>_input:)
-      <%= singular_table_name %> = <%= orm_class.build(class_name, "**#{file_name}_input") %>
-      raise GraphQL::ExecutionError.new "Error creating <%= file_name %>", extensions: <%= singular_table_name %>.errors.to_h unless <%= orm_instance.save %>
+      <%= singular_table_name %> = ::<%= orm_class.build(class_name, "**#{file_name}_input") %>
+      raise GraphQL::ExecutionError.new "Error creating <%= file_name %>", extensions: <%= singular_table_name %>.errors.to_hash unless <%= orm_instance.save %>
 
       { <%= file_name %>: <%= singular_table_name %> }
     end
