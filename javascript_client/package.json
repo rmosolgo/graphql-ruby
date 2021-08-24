@@ -35,8 +35,7 @@
   },
   "dependencies": {
     "glob": "^7.1.4",
-    "minimist": "^1.2.0",
-    "request": "^2.88.2"
+    "minimist": "^1.2.0"
   },
   "peerDependencies": {
     "@apollo/client": "^3.3.6",
