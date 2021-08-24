@@ -34,8 +34,8 @@ module Mutations
     argument :id, ID, required: true
 
     def resolve(id:)
-      names_name = Names::Name.find(id)
-      raise GraphQL::ExecutionError.new "Error deleting name", extensions: names_name.errors.to_h unless names_name.destroy
+      names_name = ::Names::Name.find(id)
+      raise GraphQL::ExecutionError.new "Error deleting name", extensions: names_name.errors.to_hash unless names_name.destroy
 
       { name: names_name }
     end
@@ -55,8 +55,8 @@ module Mutations
     argument :id, ID, required: true
 
     def resolve(id:)
-      names_name = Names::Name.find(id)
-      raise GraphQL::ExecutionError.new "Error deleting name", extensions: names_name.errors.to_h unless names_name.destroy
+      names_name = ::Names::Name.find(id)
+      raise GraphQL::ExecutionError.new "Error deleting name", extensions: names_name.errors.to_hash unless names_name.destroy
 
       { name: names_name }
     end

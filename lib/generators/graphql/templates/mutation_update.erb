@@ -12,7 +12,7 @@ module Mutations
 
     def resolve(id:, <%= file_name %>_input:)
       <%= singular_table_name %> = ::<%= orm_class.find(class_name, "id") %>
-      raise GraphQL::ExecutionError.new "Error updating <%= file_name %>", extensions: ::<%= singular_table_name %>.errors.to_hash unless <%= orm_instance.update("**#{file_name}_input") %>
+      raise GraphQL::ExecutionError.new "Error updating <%= file_name %>", extensions: <%= singular_table_name %>.errors.to_hash unless <%= orm_instance.update("**#{file_name}_input") %>
 
       { <%= file_name %>: <%= singular_table_name %> }
     end

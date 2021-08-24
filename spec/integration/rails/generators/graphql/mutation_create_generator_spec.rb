@@ -34,8 +34,8 @@ module Mutations
     argument :name_input, Types::Inputs::Names::NameInputType, required: true
 
     def resolve(name_input:)
-      names_name = Names::Name.new(**name_input)
-      raise GraphQL::ExecutionError.new "Error creating name", extensions: names_name.errors.to_h unless names_name.save
+      names_name = ::Names::Name.new(**name_input)
+      raise GraphQL::ExecutionError.new "Error creating name", extensions: names_name.errors.to_hash unless names_name.save
 
       { name: names_name }
     end
@@ -55,8 +55,8 @@ module Mutations
     argument :name_input, Types::Names::NameInputType, required: true
 
     def resolve(name_input:)
-      names_name = Names::Name.new(**name_input)
-      raise GraphQL::ExecutionError.new "Error creating name", extensions: names_name.errors.to_h unless names_name.save
+      names_name = ::Names::Name.new(**name_input)
+      raise GraphQL::ExecutionError.new "Error creating name", extensions: names_name.errors.to_hash unless names_name.save
 
       { name: names_name }
     end
