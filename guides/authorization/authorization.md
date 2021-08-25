@@ -46,7 +46,7 @@ Now, whenever an object of type `Friendship` is going to be returned to the clie
 Field `#authorized?` methods are called before resolving a field, for example:
 
 ```ruby
-class Types::BaseField < GraphQL::Field
+class Types::BaseField < GraphQL::Schema::Field
   # Pass `field ..., require_admin: true` to reject non-admin users from a given field
   def initialize(*args, **kwargs, require_admin: false, &block)
     @require_admin = require_admin
@@ -67,7 +67,7 @@ For this to work, the base field class must be {% internal_link "configured with
 Argument `#authorized?` hooks are called before resolving the field that the argument belongs to. For example:
 
 ```ruby
-class Types::BaseArgument < GraphQL::Field
+class Types::BaseArgument < GraphQL::Schema::Argument
   def initialize(*args, **kwargs, require_logged_in: false, &block)
     @require_logged_in = require_logged_in
     super(*args, **kwargs, &block)
