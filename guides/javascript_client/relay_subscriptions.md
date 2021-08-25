@@ -14,7 +14,10 @@ index: 3
 - [Ably](#ably)
 - [ActionCable](#actioncable)
 
-To use it, require `subscriptions/createHandler` and call the function with your client and optionally, your OperationStoreClient.
+To use it, require `graphql-ruby-client/subscriptions/createRelaySubscriptionHandler` and call the function with your client and optionally, your OperationStoreClient.
+
+__Note:__ For Relay <11, use `import { createLegacyRelaySubscriptionHandler } from "graphql-ruby-client/subscriptions/createRelaySubscriptionHandler"` instead; the signature changed in Relay 11.
+
 
 See the {% internal_link "Subscriptions guide", "/subscriptions/overview" %} for information about server-side setup.
 
