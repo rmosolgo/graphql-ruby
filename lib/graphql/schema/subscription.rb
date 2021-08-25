@@ -116,6 +116,28 @@ module GraphQL
         end
       end
 
+      def self.topic_for(arguments:, field:, scope:)
+        normalized_args = case arguments
+        when GraphQL::Query::Arguments
+          arguments
+        when Hash
+          if field.is_a?(GraphQL::Schema::Field)
+            Subscriptions::Event.stringify_args(field, arguments)
+          else
+            GraphQL::Query::LiteralInput.from_arguments(
+              arguments,
+              field,
+              nil,
+            )
+          end
+        else
+          raise ArgumentError, "Unexpected arguments: #{arguments}, must be Hash or GraphQL::Arguments"
+        end
+
+        sorted_h = Subscriptions::Event.stringify_args(field, normalized_args.to_h)
+        Subscriptions::Serialize.dump_recursive([scope, field.graphql_name, sorted_h])
+      end
+
       # Overriding Resolver#field_options to include subscription_scope
       def self.field_options
         super.merge(
