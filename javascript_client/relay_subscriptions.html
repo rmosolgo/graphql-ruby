@@ -55,7 +55,9 @@
   <li><a href="#actioncable">ActionCable</a></li>
 </ul>
 
-<p>To use it, require <code class="language-plaintext highlighter-rouge">subscriptions/createHandler</code> and call the function with your client and optionally, your OperationStoreClient.</p>
+<p>To use it, require <code class="language-plaintext highlighter-rouge">graphql-ruby-client/subscriptions/createRelaySubscriptionHandler</code> and call the function with your client and optionally, your OperationStoreClient.</p>
+
+<p><strong>Note:</strong> For Relay &lt;11, use <code class="language-plaintext highlighter-rouge">import { createLegacyRelaySubscriptionHandler } from "graphql-ruby-client/subscriptions/createRelaySubscriptionHandler"</code> instead; the signature changed in Relay 11.</p>
 
 <p>See the <a href="/subscriptions/overview">Subscriptions guide</a> for information about server-side setup.</p>
 
