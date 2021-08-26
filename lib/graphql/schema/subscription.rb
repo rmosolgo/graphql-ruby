@@ -116,6 +116,22 @@ module GraphQL
         end
       end
 
+      # This is called during initial subscription to get a "name" for this subscription.
+      # Later, when `.trigger` is called, this will be called again to build another "name".
+      # Any subscribers with matching topic will begin the update flow.
+      #
+      # The default implementation creates a string using the field name, subscription scope, and argument keys and values.
+      # In that implementation, only `.trigger` calls with _exact matches_ result in updates to subscribers.
+      #
+      # To implement a filtered stream-type subscription flow, override this method to return a string with field name and subscription scope.
+      # Then, implement {#update} to compare its arguments to the current `object` and return `:no_update` when an
+      # update should be filtered out.
+      #
+      # @see {#update} for how to skip updates when an event comes with a matching topic.
+      # @param arguments [GraphQL::Execution::Interpreter::Arguments]
+      # @param field [GraphQL::Schema::Field]
+      # @param scope [Object, nil] A value corresponding to `.trigger(... scope:)` (for updates) or the `subscription_scope` found in `context` (for initial subscriptions).
+      # @return [String] An identifier corresponding to a stream of updates
       def self.topic_for(arguments:, field:, scope:)
         normalized_args = case arguments
         when GraphQL::Query::Arguments
