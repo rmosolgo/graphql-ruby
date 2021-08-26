@@ -319,7 +319,7 @@ describe GraphQL::Subscriptions do
         end
       end
 
-      if schema != FromDefinitionInMemoryBackend::Schema # No way to specify this when using IDL
+      if in_memory_backend_class != FromDefinitionInMemoryBackend # No way to specify this when using IDL
         it "supports filtering in the subscription class" do
           query_str = "subscription($channel: Int) { filteredStream(channel: $channel) { message } }"
 
