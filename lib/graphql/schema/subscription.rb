@@ -128,30 +128,12 @@ module GraphQL
       # update should be filtered out.
       #
       # @see {#update} for how to skip updates when an event comes with a matching topic.
-      # @param arguments [GraphQL::Execution::Interpreter::Arguments]
+      # @param arguments [Hash<String => Object>] The arguments for this topic, in GraphQL-style (camelized strings)
       # @param field [GraphQL::Schema::Field]
       # @param scope [Object, nil] A value corresponding to `.trigger(... scope:)` (for updates) or the `subscription_scope` found in `context` (for initial subscriptions).
       # @return [String] An identifier corresponding to a stream of updates
       def self.topic_for(arguments:, field:, scope:)
-        normalized_args = case arguments
-        when GraphQL::Query::Arguments
-          arguments
-        when Hash
-          if field.is_a?(GraphQL::Schema::Field)
-            Subscriptions::Event.stringify_args(field, arguments)
-          else
-            GraphQL::Query::LiteralInput.from_arguments(
-              arguments,
-              field,
-              nil,
-            )
-          end
-        else
-          raise ArgumentError, "Unexpected arguments: #{arguments}, must be Hash or GraphQL::Arguments"
-        end
-
-        sorted_h = Subscriptions::Event.stringify_args(field, normalized_args.to_h)
-        Subscriptions::Serialize.dump_recursive([scope, field.graphql_name, sorted_h])
+        Subscriptions::Serialize.dump_recursive([scope, field.graphql_name, arguments])
       end
 
       # Overriding Resolver#field_options to include subscription_scope

@@ -31,7 +31,8 @@ module GraphQL
       # @return [String] an identifier for this unit of subscription
       def self.serialize(_name, arguments, field, scope:)
         subscription = field.resolver || GraphQL::Schema::Subscription
-        subscription.topic_for(arguments: arguments, field: field, scope: scope)
+        normalized_args = stringify_args(field, arguments.to_h)
+        subscription.topic_for(arguments: normalized_args, field: field, scope: scope)
       end
 
       # @return [String] a logical identifier for this event. (Stable when the query is broadcastable.)
@@ -51,7 +52,7 @@ module GraphQL
       end
 
       class << self
-        # TODO implement this another way?
+        private
         def stringify_args(arg_owner, args)
           case args
           when Hash
