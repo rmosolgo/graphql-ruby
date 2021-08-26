@@ -624,6 +624,42 @@ describe GraphQL::Execution::Interpreter do
     end
   end
 
+  describe "GraphQL::ExecutionErrors from connection fields" do
+    module ConnectionErrorTest
+      class BaseField < GraphQL::Schema::Field
+        def authorized?(obj, args, ctx)
+          puts "raising error @ #{ctx[:current_path]}"
+          raise GraphQL::ExecutionError, "#{name} is not authorized"
+        end
+      end
+
+      class Thing < GraphQL::Schema::Object
+        field_class BaseField
+        field :title, String, null: false
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :things, Thing.connection_type, null: false
+
+        def things
+          [{title: "a"}, {title: "b"}, {title: "c"}]
+        end
+      end
+
+      class Schema < GraphQL::Schema
+        query Query
+      end
+    end
+
+    it "returns only 1 error" do
+      res = ConnectionErrorTest::Schema.execute("{ things { nodes { title } } }")
+      assert_equal 1, res["errors"].size
+
+      res = ConnectionErrorTest::Schema.execute("{ things { edges { node { title } } } }")
+      assert_equal 1, res["errors"].size
+    end
+  end
+
   describe "GraphQL::ExecutionErrors from non-null list fields" do
     module ListErrorTest
       class BaseField < GraphQL::Schema::Field
