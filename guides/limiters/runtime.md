@@ -4,16 +4,16 @@ doc_stub: false
 search: true
 enterprise: true
 section: GraphQL Enterprise - Rate Limiters
-title: Active Operation Limiter
-desc: Limit the number of concurrent GraphQL operations
+title: Runtime Limiter
+desc: Limit the total runtime of a client's GraphQL Operations
 index: 2
 ---
 
-`GraphQL::Enterprise::ActiveOperationLimiter` prevents clients from running too many GraphQL operations at the same time. It uses {% internal_link "Redis", "limiters/redis" %} to track currently-running operations.
+`GraphQL::Enterprise::RuntimeLimiter` applies an upper bound to processing time consumed by a single client. It uses {% internal_link "Redis", "limiters/redis" %} track time with a [token bucket](https://en.wikipedia.org/wiki/Token_bucket) algorithm.
 
 ### Why?
 
-Some clients may suddently swamp a server with tons of requests, occupying all available Ruby processes and therefore interrupting service for other clients. This limiter aims to prevent that at the GraphQL level by halting queries when a client already has lots of queries running. That way, server processes will remain available for other clients' requests.
+This limiter prevents a single client from consuming too much processing time, regardless of whether it comes a burst of short-lived queries (which the {% internal_link "Active Operation Limiter", "/limiters/active_operations" %} can prevent) or a small number of long-running queries. Unlike request counters or complexity calculations, the runtime limiter pays no attention to the structure of the incoming request. Instead, it simply measures the time spent on the request _as a whole_ and halts queries when a client consumes more than the limit.
 
 ### Setup
 
@@ -21,20 +21,20 @@ To use this limiter, update the schema configuration and include `context[:limit
 
 ##### Schema Setup
 
-To setup the schema, add `use GraphQL::Enterprise::ActiveOperationLimiter` with a default `limit:` value:
+To setup the schema, add `use GraphQL::Enterprise::RuntimeLimiter` with a default `limit_ms:` value:
 
 ```ruby
 class MySchema < GraphQL::Schema
   # ...
-  use GraphQL::Enterprise::ActiveOperationLimiter,
+  use GraphQL::Enterprise::RuntimeLimiter,
     redis: Redis.new(...),
-    limit: 5
+    limit_ms: 90 * 1000 # 90 seconds per minute
 end
 ```
 
-`limit: false` may also be given, which defaults to _no limit_ for this limiter.
+`limit_ms: false` may also be given, which defaults to _no limit_ for this limiter.
 
-It also accepts a `stale_request_seconds:` option. The limiter uses that value to clean up request data in case of a crash or other unexpected scenario.
+It also accepts a `window_ms:` option, which is the duration over which `limit_ms:` is added to a client's bucket. It defaults to `60_000` (one minute).
 
 Before requests will actually be halted, ["soft mode"](#soft-limits) must be disabled as described below.
 
@@ -69,15 +69,16 @@ This mode is for assessing the impact of the limiter before it's applied to prod
 To disable "soft mode" and start limiting, use the [Dashboard](#dashboard) or [customize the limiter](#customization). You can also disable "soft mode" in Ruby:
 
 ```ruby
-# Turn "soft mode" off for the ActiveOperationLimiter
-MySchema.enterprise_active_operation_limiter.set_soft_limit(false)
+# Turn "soft mode" off for the RuntimeLimiter
+MySchema.enterprise_runtime_limiter.set_soft_limit(false)
 ```
+
 
 ### Dashboard
 
 Once installed, your {% internal_link "GraphQL-Pro dashboard", "/pro/dashboard" %} will include a simple metrics view:
 
-{{ "/limiters/active_operation_limiter_dashboard.png" | link_to_img:"GraphQL Active Operation Limiter Dashboard" }}
+{{ "/limiters/runtime_limiter_dashboard.png" | link_to_img:"GraphQL Runtime Limiter Dashboard" }}
 
 See [Instrumentation](#instrumentation) below for more details on limiter metrics.
 
@@ -89,11 +90,11 @@ When "soft mode" is enabled, limited requests are _not_ actually halted (althoug
 
 ### Customization
 
-`GraphQL::Enterprise::ActiveOperationLimiter` provides several hooks for customizing its behavior. To use these, make a subclass of the limiter and override methods as described:
+`GraphQL::Enterprise::RuntimeLimiter` provides several hooks for customizing its behavior. To use these, make a subclass of the limiter and override methods as described:
 
 ```ruby
-# app/graphql/limiters/active_operations.rb
-class Limiters::ActiveOperations < GraphQL::Enterprise::ActiveOperationsLimiter
+# app/graphql/limiters/runtime.rb
+class Limiters::Runtime < GraphQL::Enterprise::RuntimeLimiter
   # override methods here
 end
 ```
@@ -107,24 +108,36 @@ The hooks are:
 
 ### Instrumentation
 
-While the limiter is installed, it adds some information to the query context about its operation. It can be acccessed at `context[:active_operation_limiter]`:
+While the limiter is installed, it adds some information to the query context about its operation. It can be acccessed at `context[:runtime_limiter]`:
+
 
 ```ruby
 result = MySchema.execute(...)
 
-pp result.context[:active_operation_limiter]
-# {:key=>"user:123", :limit=>2, :soft=>false, :limited=>true}
+pp result.context[:runtime_limiter]
+# {:key=>"custom-key-9",
+#  :limit_ms=>800,
+#  :remaining_ms=>0,
+#  :soft=>true,
+#  :limited=>true}
 ```
 
 It returns a Hash containing:
 
 - `key: [String]`, the limiter key used for this query
-- `limit: [Integer, nil]`, the limit applied to this query
+- `limit_ms: [Integer, nil]`, the limit applied to this query
+- `remaining_ms: [Integer, nil]`, the amount of time remaining in this client's bucket
 - `soft: [Boolean]`, `true` if the query was run in "soft mode"
 - `limited: [Boolean]`, `true` if the query exceeded the rate limit (but if `soft:` was also `true`, then the query was _not_ halted)
 
 You could use this to add detailed metrics to your application monitoring system, for example:
 
 ```ruby
-MyMetrics.increment("graphql.active_operation_limiter", tags: result.context[:active_operation_limiter])
+MyMetrics.increment("graphql.runtime_limiter", tags: result.context[:runtime_limiter])
 ```
+
+### Some Caveats
+
+The limiter will not _interrupt_ a long-running field. Instead, it stops executing new fields after a client exceeds its allowed processing time. This is because interrupting arbitrary code may have unintended consequences for I/O operations, see ["Timeout: Ruby's most dangerous API"](https://www.mikeperham.com/2015/05/08/timeout-rubys-most-dangerous-api/).
+
+Also, the limiter only checks remaining time at the _start_ of a query and it only decreases the remaining time at the _end_ of a query. This means that simulaneous queries may consume the remainder at the same time. Use the {% internal_link "Active Operation Limiter", "/limiters/active_operations" %} to limit behavior in this regard. This implementation is basically a trade-off: more granular updates would require more communication with Redis which would add overhead to each request.

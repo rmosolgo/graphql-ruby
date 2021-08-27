@@ -8,10 +8,10 @@ $brand-color-light:  #ed8090;
 $brand-color-extralight:  #f9e8ee;
 $experimental-background: #fff7cf;
 $experimental-color: #655400;
-$class-based-background: #c1f6ff;
-$class-based-color: #003a58;
 $pro-color: #406db5;
 $pro-background: #f1f4f9;
+$enterprise-color: #238c44;
+$enterprise-background: #ebf7ee;
 $faint-color: #f0f0f0;
 $code-border: #d6d6d6;
 $code-background: #fafafa;
@@ -235,14 +235,14 @@ a:hover, a:hover code {
   @include doc-header($experimental-color, $experimental-background);
 }
 
-
-.class-based-header {
-  @include doc-header($class-based-color, $class-based-background);
-}
-
 .pro-header {
   @include doc-header($pro-color, $pro-background);
 }
+
+.enterprise-header {
+  @include doc-header($enterprise-color, $enterprise-background);
+}
+
 .guide-footer {
   background: $brand-color-extralight;
   margin: 25px 0px 0px 0px;

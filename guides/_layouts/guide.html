@@ -28,6 +28,16 @@ layout: default
     </p>
   </div>
 {% endif %}
+{% if page.enterprise %}
+  <div class="enterprise-header">
+    <p>
+      <strong>🌟 Enterprise Feature 🌟</strong>
+      <span style="font-style: italic;">
+        This feature is bundled with <a href="https://graphql.pro/enterprise">GraphQL-Enterprise</a>.
+      </span>
+    </p>
+  </div>
+{% endif %}
 <h1 class="guide-header">{{ page.title }}</h1>
 <div class="guide-container">
   {{ content }}

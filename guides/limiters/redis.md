@@ -2,6 +2,7 @@
 layout: guide
 doc_stub: false
 search: true
+enterprise: true
 section: GraphQL Enterprise - Rate Limiters
 title: Configuring Redis
 desc: Preparing the rate limiter backend
