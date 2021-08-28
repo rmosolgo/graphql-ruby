@@ -62,7 +62,7 @@ And in introspection:
 ```ruby
 class Types::BaseField < GraphQL::Schema::Field
   # Pass `field ..., require_admin: true` to hide this field from non-admin users
-  def initialize(*args, **kwargs, require_admin: false, &block)
+  def initialize(*args, require_admin: false, **kwargs, &block)
     @require_admin = require_admin
     super(*args, **kwargs, &block)
   end
@@ -81,7 +81,7 @@ For this to work, the base field class must be {% internal_link "configured with
 ```ruby
 class Types::BaseArgument < GraphQL::Schema::Argument
   # If `require_logged_in: true` is given, then this argument will be hidden from logged-out viewers
-  def initialize(*args, **kwargs, require_logged_in: false, &block)
+  def initialize(*args, require_logged_in: false, **kwargs, &block)
     @require_logged_in = require_logged_in
     super(*args, **kwargs, &block)
   end
