@@ -12,9 +12,11 @@ module GraphQL
         module GraphQLResult
           def initialize(result_name, parent_result)
             @graphql_parent = parent_result
-            @graphql_dead = parent_result && parent_result.graphql_dead
+            if parent_result && parent_result.graphql_dead
+              @graphql_dead = true
+            end
             @graphql_result_name = result_name
-            # Jump through some hoops to avoid creating this duplicate hash if at all possible.
+            # Jump through some hoops to avoid creating this duplicate storage if at all possible.
             @graphql_metadata = nil
           end
 
@@ -34,7 +36,7 @@ module GraphQL
         end
 
         class GraphQLResultHash
-          def initialize(*)
+          def initialize(_result_name, _parent_result)
             super
             @graphql_result_data = {}
           end
@@ -95,7 +97,7 @@ module GraphQL
         class GraphQLResultArray
           include GraphQLResult
 
-          def initialize(*)
+          def initialize(_result_name, _parent_result)
             super
             @graphql_result_data = []
           end
