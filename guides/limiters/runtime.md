@@ -6,7 +6,7 @@ enterprise: true
 section: GraphQL Enterprise - Rate Limiters
 title: Runtime Limiter
 desc: Limit the total runtime of a client's GraphQL Operations
-index: 2
+index: 3
 ---
 
 `GraphQL::Enterprise::RuntimeLimiter` applies an upper bound to processing time consumed by a single client. It uses {% internal_link "Redis", "limiters/redis" %} track time with a [token bucket](https://en.wikipedia.org/wiki/Token_bucket) algorithm.
