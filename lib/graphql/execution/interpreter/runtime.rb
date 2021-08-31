@@ -10,7 +10,17 @@ module GraphQL
       class Runtime
 
         module GraphQLResult
-          attr_accessor :graphql_dead, :graphql_parent, :graphql_result_name
+          def initialize(result_name, parent_result)
+            @graphql_parent = parent_result
+            @graphql_dead = parent_result && parent_result.graphql_dead
+            @graphql_result_name = result_name
+            # Jump through some hoops to avoid creating this duplicate hash if at all possible.
+            @graphql_metadata = nil
+          end
+
+          attr_accessor :graphql_dead
+          attr_reader :graphql_parent, :graphql_result_name
+
           # Although these are used by only one of the Result classes,
           # it's handy to have the methods implemented on both (even though they just return `nil`)
           # because it makes it easy to check if anything is assigned.
@@ -24,9 +34,8 @@ module GraphQL
         end
 
         class GraphQLResultHash
-          def initialize
-            # Jump through some hoops to avoid creating this duplicate hash if at all possible.
-            @graphql_metadata = nil
+          def initialize(*)
+            super
             @graphql_result_data = {}
           end
 
@@ -86,10 +95,8 @@ module GraphQL
         class GraphQLResultArray
           include GraphQLResult
 
-          def initialize
-            # Avoid this duplicate allocation if possible -
-            # but it will require some work to keep it up-to-date if it's created.
-            @graphql_metadata = nil
+          def initialize(*)
+            super
             @graphql_result_data = []
           end
 
@@ -146,7 +153,7 @@ module GraphQL
           @context = query.context
           @multiplex_context = query.multiplex.context
           @interpreter_context = @context.namespace(:interpreter)
-          @response = GraphQLResultHash.new
+          @response = GraphQLResultHash.new(nil, nil)
           # Identify runtime directives by checking which of this schema's directives have overridden `def self.resolve`
           @runtime_directive_names = []
           noop_resolve_owner = GraphQL::Schema::Directive.singleton_class
@@ -208,7 +215,7 @@ module GraphQL
               # directly evaluated and the results can be written right into the main response hash.
               tap_or_each(gathered_selections) do |selections, is_selection_array|
                 if is_selection_array
-                  selection_response = GraphQLResultHash.new
+                  selection_response = GraphQLResultHash.new(nil, nil)
                   final_response = @response
                 else
                   selection_response = @response
@@ -693,9 +700,7 @@ module GraphQL
             after_lazy(object_proxy, owner: current_type, path: path, ast_node: ast_node, scoped_context: context.scoped_context, field: field, owner_object: owner_object, arguments: arguments, trace: false, result_name: result_name, result: selection_result) do |inner_object|
               continue_value = continue_value(path, inner_object, owner_type, field, is_non_null, ast_node, result_name, selection_result)
               if HALT != continue_value
-                response_hash = GraphQLResultHash.new
-                response_hash.graphql_parent = selection_result
-                response_hash.graphql_result_name = result_name
+                response_hash = GraphQLResultHash.new(result_name, selection_result)
                 set_result(selection_result, result_name, response_hash)
                 gathered_selections = gather_selections(continue_value, current_type, next_selections)
                 # There are two possibilities for `gathered_selections`:
@@ -708,9 +713,7 @@ module GraphQL
                 #    (Technically, it's possible that one of those entries _doesn't_ require isolation.)
                 tap_or_each(gathered_selections) do |selections, is_selection_array|
                   if is_selection_array
-                    this_result = GraphQLResultHash.new
-                    this_result.graphql_parent = selection_result
-                    this_result.graphql_result_name = result_name
+                    this_result = GraphQLResultHash.new(result_name, selection_result)
                     final_result = response_hash
                   else
                     this_result = response_hash
@@ -735,16 +738,15 @@ module GraphQL
             end
           when "LIST"
             inner_type = current_type.of_type
-            response_list = GraphQLResultArray.new
+            response_list = GraphQLResultArray.new(result_name, selection_result)
             response_list.graphql_non_null_list_items = inner_type.non_null?
-            response_list.graphql_parent = selection_result
-            response_list.graphql_result_name = result_name
             set_result(selection_result, result_name, response_list)
 
             idx = 0
             scoped_context = context.scoped_context
             begin
               value.each do |inner_value|
+                break if dead_result?(response_list)
                 next_path = path.dup
                 next_path << idx
                 this_idx = idx

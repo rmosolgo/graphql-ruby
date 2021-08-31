@@ -628,13 +628,26 @@ describe GraphQL::Execution::Interpreter do
     module ConnectionErrorTest
       class BaseField < GraphQL::Schema::Field
         def authorized?(obj, args, ctx)
-          puts "raising error @ #{ctx[:current_path]}"
+          ctx[:authorized_calls] ||= 0
+          ctx[:authorized_calls] += 1
           raise GraphQL::ExecutionError, "#{name} is not authorized"
         end
       end
 
+      class BaseConnection < GraphQL::Types::Relay::BaseConnection
+        node_nullable(false)
+        edge_nullable(false)
+        edges_nullable(false)
+      end
+
+      class BaseEdge < GraphQL::Types::Relay::BaseEdge
+        node_nullable(false)
+      end
+
       class Thing < GraphQL::Schema::Object
         field_class BaseField
+        connection_type_class BaseConnection
+        edge_type_class BaseEdge
         field :title, String, null: false
       end
 
@@ -651,12 +664,14 @@ describe GraphQL::Execution::Interpreter do
       end
     end
 
-    it "returns only 1 error" do
+    it "returns only 1 error and stops resolving fields after that" do
       res = ConnectionErrorTest::Schema.execute("{ things { nodes { title } } }")
       assert_equal 1, res["errors"].size
+      assert_equal 1, res.context[:authorized_calls]
 
       res = ConnectionErrorTest::Schema.execute("{ things { edges { node { title } } } }")
       assert_equal 1, res["errors"].size
+      assert_equal 1, res.context[:authorized_calls]
     end
   end
 
