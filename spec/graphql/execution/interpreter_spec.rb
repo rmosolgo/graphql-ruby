@@ -649,6 +649,7 @@ describe GraphQL::Execution::Interpreter do
         connection_type_class BaseConnection
         edge_type_class BaseEdge
         field :title, String, null: false
+        field :body, String, null: false
       end
 
       class Query < GraphQL::Schema::Object
@@ -656,6 +657,15 @@ describe GraphQL::Execution::Interpreter do
 
         def things
           [{title: "a"}, {title: "b"}, {title: "c"}]
+        end
+
+        field :thing, Thing, null: false
+
+        def thing
+          {
+            title: "a",
+            body: "b",
+          }
         end
       end
 
@@ -670,6 +680,10 @@ describe GraphQL::Execution::Interpreter do
       assert_equal 1, res.context[:authorized_calls]
 
       res = ConnectionErrorTest::Schema.execute("{ things { edges { node { title } } } }")
+      assert_equal 1, res["errors"].size
+      assert_equal 1, res.context[:authorized_calls]
+
+      res = ConnectionErrorTest::Schema.execute("{ thing { title body } }")
       assert_equal 1, res["errors"].size
       assert_equal 1, res.context[:authorized_calls]
     end
