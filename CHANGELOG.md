@@ -8,6 +8,20 @@
 
 ### Bug fixes
 
+# 1.12.16 (31 August 2021)
+
+### New features
+
+- Connections: automatically support Mongoid 7.3 #3599
+- Support `def self.topic_for` in Subscription classes for server-filtered streams #3597
+- When a list item or object field has an invalid null, stop executing that list or
+
+### Bug fixes
+
+- Perf: don't refine String when unnecessary #3593
+- BigInt: always parse as base 10 #3586
+- Errors: only return one error when a node in a non-null connection has an invalid null #3601
+
 # 1.12.15 (23 August 2021)
 
 ### New Features
