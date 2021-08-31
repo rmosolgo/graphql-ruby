@@ -624,6 +624,71 @@ describe GraphQL::Execution::Interpreter do
     end
   end
 
+  describe "GraphQL::ExecutionErrors from connection fields" do
+    module ConnectionErrorTest
+      class BaseField < GraphQL::Schema::Field
+        def authorized?(obj, args, ctx)
+          ctx[:authorized_calls] ||= 0
+          ctx[:authorized_calls] += 1
+          raise GraphQL::ExecutionError, "#{name} is not authorized"
+        end
+      end
+
+      class BaseConnection < GraphQL::Types::Relay::BaseConnection
+        node_nullable(false)
+        edge_nullable(false)
+        edges_nullable(false)
+      end
+
+      class BaseEdge < GraphQL::Types::Relay::BaseEdge
+        node_nullable(false)
+      end
+
+      class Thing < GraphQL::Schema::Object
+        field_class BaseField
+        connection_type_class BaseConnection
+        edge_type_class BaseEdge
+        field :title, String, null: false
+        field :body, String, null: false
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :things, Thing.connection_type, null: false
+
+        def things
+          [{title: "a"}, {title: "b"}, {title: "c"}]
+        end
+
+        field :thing, Thing, null: false
+
+        def thing
+          {
+            title: "a",
+            body: "b",
+          }
+        end
+      end
+
+      class Schema < GraphQL::Schema
+        query Query
+      end
+    end
+
+    it "returns only 1 error and stops resolving fields after that" do
+      res = ConnectionErrorTest::Schema.execute("{ things { nodes { title } } }")
+      assert_equal 1, res["errors"].size
+      assert_equal 1, res.context[:authorized_calls]
+
+      res = ConnectionErrorTest::Schema.execute("{ things { edges { node { title } } } }")
+      assert_equal 1, res["errors"].size
+      assert_equal 1, res.context[:authorized_calls]
+
+      res = ConnectionErrorTest::Schema.execute("{ thing { title body } }")
+      assert_equal 1, res["errors"].size
+      assert_equal 1, res.context[:authorized_calls]
+    end
+  end
+
   describe "GraphQL::ExecutionErrors from non-null list fields" do
     module ListErrorTest
       class BaseField < GraphQL::Schema::Field
