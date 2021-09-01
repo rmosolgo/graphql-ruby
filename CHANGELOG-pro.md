@@ -8,7 +8,17 @@
 
 ### Bug Fix
 
-# 1,18.2 (16 August 2021
+# 1.18.3 (1 Sept 2021)
+
+### Breaking Changes
+
+- Stable cursors: raise an error on unrecognized orderings instead of ignoring them #3605
+
+### Bug Fix
+
+- Stable cursors: Handle `Arel::Attributes::Attribute` and `Arel::SqlLiteral` #3605
+
+# 1.18.2 (16 August 2021)
 
 ### Bug Fix
 
