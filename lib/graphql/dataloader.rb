@@ -29,9 +29,6 @@ module GraphQL
 
     # Call the block with a Dataloader instance,
     # then run all enqueued jobs and return the result of the block.
-    #
-    # TODO here:
-    #   - reconsider `#append_job`'s name if that's going to be a public API
     def self.with_dataloading(&block)
       dataloader = self.new
       result = nil
