@@ -23,17 +23,21 @@ module GraphQL
 
           attr_reader :field_definition, :response_path, :query
 
-          # @param node [Language::Nodes::Field] The AST node; used for providing argument values when necessary
+          # @param parent_type [Class] The owner of `field_definition`
           # @param field_definition [GraphQL::Field, GraphQL::Schema::Field] Used for getting the `.complexity` configuration
           # @param query [GraphQL::Query] Used for `query.possible_types`
           # @param response_path [Array<String>] The path to the response key for the field
-          def initialize(node, field_definition, query, response_path)
-            @node = node
+          def initialize(parent_type, field_definition, query, response_path)
+            @parent_type = parent_type
             @field_definition = field_definition
             @query = query
             @response_path = response_path
             @scoped_children = nil
+            @nodes = []
           end
+
+          # @return [Array<GraphQL::Language::Nodes::Field>]
+          attr_reader :nodes
 
           # Returns true if this field has no selections, ie, it's a scalar.
           # We need a quick way to check whether we should continue traversing.
@@ -50,16 +54,7 @@ module GraphQL
           end
 
           def own_complexity(child_complexity)
-            defined_complexity = @field_definition.complexity
-            case defined_complexity
-            when Proc
-              arguments = @query.arguments_for(@node, @field_definition)
-              defined_complexity.call(@query.context, arguments.keyword_arguments, child_complexity)
-            when Numeric
-              defined_complexity + child_complexity
-            else
-              raise("Invalid complexity: #{defined_complexity.inspect} on #{@field_definition.name}")
-            end
+            @field_definition.calculate_complexity(query: @query, nodes: @nodes, child_complexity: child_complexity)
           end
         end
 
@@ -79,7 +74,8 @@ module GraphQL
           # then the query would have been rejected as invalid.
           complexities_on_type = @complexities_on_type_by_query[visitor.query] ||= [ScopedTypeComplexity.new(nil, nil, query, visitor.response_path)]
 
-          complexity = complexities_on_type.last.scoped_children[parent_type][field_key] ||= ScopedTypeComplexity.new(node, visitor.field_definition, visitor.query, visitor.response_path)
+          complexity = complexities_on_type.last.scoped_children[parent_type][field_key] ||= ScopedTypeComplexity.new(parent_type, visitor.field_definition, visitor.query, visitor.response_path)
+          complexity.nodes.push(node)
           # Push it on the stack.
           complexities_on_type.push(complexity)
         end

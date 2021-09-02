@@ -77,6 +77,48 @@ class MySchema < GraphQL::Schema
 end
 ```
 
+#### Connection fields
+
+By default, GraphQL-Ruby calculates a complexity value for connection fields by:
+
+- adding `1` for `pageInfo` and each of its subselections
+- adding `1` for `count`, `totalCount`, or `total`
+- adding `1` for the connection field itself
+- multiplying the complexity of other fields by the largest possible page size, which is the greater of `first:` or `last:`, or if neither of those is given, the field's `max_page_size` or the schema's `default_max_page_size`.
+
+For example, this query has complexity `26`:
+
+```graphql
+query {
+  author {              # +1
+    name                # +1
+    books(first: 10) {  # +1
+      nodes {           # +10 (+1, multiplied by `first:` above)
+        title           # +10 (ditto)
+      }
+      pageInfo {        # +1
+        endCursor       # +1
+      }
+      totalCount        # +1
+    }
+  }
+}
+```
+
+To customize this behavior, implement `def calculate_complexity?(query:, nodes:, child_complexity:)` in your base field class, handling the case where `self.connection?` is `true`:
+
+```ruby
+class Types::BaseField < GraphQL::Schema::Field
+  def calculate_complexity(query:, nodes:, child_complexity:)
+    if connection?
+      # Custom connection calculation goes here
+    else
+      super
+    end
+  end
+end
+```
+
 ## Prevent deeply-nested queries
 
 You can also reject queries based on the depth of their nesting. You can define `max_depth` at schema-level or query-level:
