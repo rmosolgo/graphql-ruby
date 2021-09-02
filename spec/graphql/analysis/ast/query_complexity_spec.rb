@@ -481,7 +481,6 @@ describe GraphQL::Analysis::AST::QueryComplexity do
     |}
 
     it "sums the complexity" do
-      field = CustomComplexityByMethodSchema::Query.fields["complexity"]
       complexity = reduce_result.first
       # 10 from `complexity`, `0.3` from `value`
       assert_equal 10.3, complexity
