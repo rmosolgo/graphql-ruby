@@ -15,7 +15,15 @@ index: 0
 
 `ObjectCache` can greatly reduce GraphQL response times by serving cached responses when the underlying data for a query hasn't changed.
 
-![GraphQL-Ruby profile, with and without caching](#todo)
+By default, a GraphQL query alternates between data fetching and calling application logic:
+
+![GraphQL-Ruby profile, without caching](#todo)
+
+But with `ObjectCache`, it checks the cache first, returning a cached response if possible:
+
+![GraphQL-Ruby profile, with ObjectCache](#todo)
+
+This reduces latency for clients and reduces the load on your backend.
 
 ## How
 
@@ -28,5 +36,5 @@ If there is no cached response or if the fingerprints don't match, then the inco
 To get started with the object cache, you need to:
 
 - Add it to your schema
-- Prepare Redis to store
 - Configure your object types for caching
+- Prepare Redis to store
