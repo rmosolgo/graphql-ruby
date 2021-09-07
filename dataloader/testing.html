@@ -1,0 +1,149 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Testing</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.12.16/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#dataloader-guides">Dataloader</a>
+  &raquo; Testing
+</p>
+
+  <div class="experimental-header">
+    <p>
+      <strong>⚠ Experimental ⚠</strong>
+    </p>
+    <p>
+      This feature may get big changes in future releases.
+      Check the <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/CHANGELOG.md">changelog</a> for update notes.
+    </p>
+  </div>
+
+
+<h1 class="guide-header">Testing</h1>
+<div class="guide-container">
+  <p>There are a few techniques for testing your <a href="/api-doc/1.12.16/GraphQL/Dataloader" target="_blank" title="API docs for GraphQL::Dataloader"><code>GraphQL::Dataloader</code></a> setup.</p>
+
+<h2 id="integration-tests">Integration Tests</h2>
+
+<p>One important feature of <code class="language-plaintext highlighter-rouge">Dataloader</code> is how it manages database access while GraphQL runs queries. You can test that by listening for database queries while running queries, for example, with ActiveRecord:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">test_active_record_queries_are_batched_and_cached</span>
+  <span class="c1"># set up a listener function</span>
+  <span class="n">database_queries</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="n">callback</span> <span class="o">=</span> <span class="nb">lambda</span> <span class="p">{</span><span class="o">|</span><span class="n">_name</span><span class="p">,</span> <span class="n">_started</span><span class="p">,</span> <span class="n">_finished</span><span class="p">,</span> <span class="n">_unique_id</span><span class="p">,</span> <span class="n">_payload</span><span class="o">|</span> <span class="n">database_queries</span> <span class="o">+=</span> <span class="mi">1</span> <span class="p">}</span>
+
+  <span class="n">query_str</span> <span class="o">=</span> <span class="o">&lt;&lt;-</span><span class="no">GRAPHQL</span><span class="sh">
+  {
+    a1: author(id: 1) { name }
+    a2: author(id: 2) { name }
+    b1: book(id: 1) { author { name } }
+    b2: book(id: 2) { author { name } }
+  }
+</span><span class="no">  GRAPHQL</span>
+
+  <span class="c1"># Run the query with the listener</span>
+  <span class="no">ActiveSupport</span><span class="o">::</span><span class="no">Notifications</span><span class="p">.</span><span class="nf">subscribed</span><span class="p">(</span><span class="n">callback</span><span class="p">,</span> <span class="s2">"sql.active_record"</span><span class="p">)</span> <span class="k">do</span>
+    <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_str</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="c1"># One query for authors, one query for books</span>
+  <span class="n">assert_equal</span> <span class="mi">2</span><span class="p">,</span> <span class="n">database_queries</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>You could also make specific assertions on the queries that are run (see the <a href="https://edgeguides.rubyonrails.org/active_support_instrumentation.html#active-record"><code class="language-plaintext highlighter-rouge">sql.active_record</code> docs</a>). For other frameworks and databases, check your ORM or library for instrumentation options.</p>
+
+<h2 id="testing-dataloader-sources">Testing Dataloader Sources</h2>
+
+<p>You can also test <code class="language-plaintext highlighter-rouge">Dataloader</code> behavior outside of GraphQL using <a href="/api-doc/1.12.16/GraphQL/Dataloader#with_dataloading-class_method" target="_blank" title="API docs for GraphQL::Dataloader.with_dataloading"><code>GraphQL::Dataloader.with_dataloading</code></a>. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">test_it_fetches_objects_by_id</span>
+  <span class="n">user_1</span><span class="p">,</span> <span class="n">user_2</span><span class="p">,</span> <span class="n">user_3</span> <span class="o">=</span> <span class="mi">3</span><span class="p">.</span><span class="nf">times</span> <span class="p">{</span> <span class="no">User</span><span class="p">.</span><span class="nf">create!</span> <span class="p">}</span>
+
+  <span class="n">database_queries</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="n">callback</span> <span class="o">=</span> <span class="nb">lambda</span> <span class="p">{</span><span class="o">|</span><span class="n">_name</span><span class="p">,</span> <span class="n">_started</span><span class="p">,</span> <span class="n">_finished</span><span class="p">,</span> <span class="n">_unique_id</span><span class="p">,</span> <span class="n">_payload</span><span class="o">|</span> <span class="n">database_queries</span> <span class="o">+=</span> <span class="mi">1</span> <span class="p">}</span>
+
+  <span class="no">ActiveSupport</span><span class="o">::</span><span class="no">Notifications</span><span class="p">.</span><span class="nf">subscribed</span><span class="p">(</span><span class="n">callback</span><span class="p">,</span> <span class="s2">"sql.active_record"</span><span class="p">)</span> <span class="k">do</span>
+    <span class="no">GraphQL</span><span class="o">::</span><span class="no">Dataloader</span><span class="p">.</span><span class="nf">with_dataloading</span> <span class="k">do</span> <span class="o">|</span><span class="n">dataloader</span><span class="o">|</span>
+      <span class="n">req1</span> <span class="o">=</span> <span class="n">dataloader</span><span class="p">.</span><span class="nf">with</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">ActiveRecord</span><span class="p">).</span><span class="nf">request</span><span class="p">(</span><span class="n">user_1</span><span class="p">.</span><span class="nf">id</span><span class="p">)</span>
+      <span class="n">req2</span> <span class="o">=</span> <span class="n">dataloader</span><span class="p">.</span><span class="nf">with</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">ActiveRecord</span><span class="p">).</span><span class="nf">request</span><span class="p">(</span><span class="n">user_3</span><span class="p">.</span><span class="nf">id</span><span class="p">)</span>
+      <span class="n">req3</span> <span class="o">=</span> <span class="n">dataloader</span><span class="p">.</span><span class="nf">with</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">ActiveRecord</span><span class="p">).</span><span class="nf">request</span><span class="p">(</span><span class="n">user_2</span><span class="p">.</span><span class="nf">id</span><span class="p">)</span>
+      <span class="n">req4</span> <span class="o">=</span> <span class="n">dataloader</span><span class="p">.</span><span class="nf">with</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">ActiveRecord</span><span class="p">).</span><span class="nf">request</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+      <span class="c1"># Validate source's matching up of records</span>
+      <span class="n">expect</span><span class="p">(</span><span class="n">req1</span><span class="p">.</span><span class="nf">load</span><span class="p">).</span><span class="nf">to</span> <span class="n">eq</span><span class="p">(</span><span class="n">user_1</span><span class="p">)</span>
+      <span class="n">expect</span><span class="p">(</span><span class="n">req2</span><span class="p">.</span><span class="nf">load</span><span class="p">).</span><span class="nf">to</span> <span class="n">eq</span><span class="p">(</span><span class="n">user_3</span><span class="p">)</span>
+      <span class="n">expect</span><span class="p">(</span><span class="n">req3</span><span class="p">.</span><span class="nf">load</span><span class="p">).</span><span class="nf">to</span> <span class="n">eq</span><span class="p">(</span><span class="n">user_2</span><span class="p">)</span>
+      <span class="n">expect</span><span class="p">(</span><span class="n">req4</span><span class="p">.</span><span class="nf">load</span><span class="p">).</span><span class="nf">to</span> <span class="n">be_nil</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="n">assert_equal</span> <span class="mi">1</span><span class="p">,</span> <span class="n">database_queries</span><span class="p">,</span> <span class="s2">"All users were looked up at once"</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/dataloader/testing.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Testing">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>
