@@ -820,4 +820,35 @@ describe GraphQL::Dataloader do
       assert_equal expected_result, result.to_h
     end
   end
+
+  it "supports general usage" do
+    a = b = c = nil
+
+    res = GraphQL::Dataloader.with_dataloading { |dataloader|
+      dataloader.append_job {
+        a = dataloader.with(FiberSchema::DataObject).load("1")
+      }
+
+      dataloader.append_job {
+        b = dataloader.with(FiberSchema::DataObject).load("1")
+      }
+
+      dataloader.append_job {
+        r1 = dataloader.with(FiberSchema::DataObject).request("2")
+        r2 = dataloader.with(FiberSchema::DataObject).request("3")
+        c = [
+          r1.load,
+          r2.load
+        ]
+      }
+
+      :finished
+    }
+
+    assert_equal :finished, res
+    assert_equal [[:mget, ["1", "2", "3"]]], database_log
+    assert_equal "Wheat", a[:name]
+    assert_equal "Wheat", b[:name]
+    assert_equal ["Corn", "Butter"], c.map { |d| d[:name] }
+  end
 end
