@@ -29,7 +29,7 @@ module ValidatorHelpers
 
     query_type = Class.new(GraphQL::Schema::Object) do
       graphql_name "Query"
-      field :validated, arg_type, null: true do
+      field :validated, arg_type do
         argument :value, arg_type, required: false, validates: validates_config
       end
 
@@ -37,7 +37,7 @@ module ValidatorHelpers
         value
       end
 
-      field :multi_validated, arg_type, null: true, validates: validates_config do
+      field :multi_validated, arg_type, validates: validates_config do
         argument :a, arg_type, required: false
         argument :b, arg_type, required: false
         argument :c, arg_type, required: false
@@ -47,8 +47,8 @@ module ValidatorHelpers
         a + b + c
       end
 
-      field :validated_input, arg_type, null: true do
-        argument :input, validated_input, required: true
+      field :validated_input, arg_type do
+        argument :input, validated_input
       end
 
       def validated_input(input:)

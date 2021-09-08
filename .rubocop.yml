@@ -6,6 +6,7 @@ require:
 
 AllCops:
   DisabledByDefault: true
+  SuggestExtensions: false
   TargetRubyVersion: 2.5
   Exclude:
     - 'lib/graphql/language/lexer.rb'
@@ -14,6 +15,7 @@ AllCops:
     - 'tmp/**/*'
     - 'vendor/**/*'
     - 'spec/integration/tmp/**/*'
+    - 'spec/fixtures/cop/*.rb'
 
 # def ...
 # end

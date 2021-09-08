@@ -56,7 +56,7 @@ module GraphQL
       def self.print_introspection_schema
         query_root = Class.new(GraphQL::Schema::Object) do
           graphql_name "Root"
-          field :throwaway_field, String, null: true
+          field :throwaway_field, String
         end
         schema = Class.new(GraphQL::Schema) { query(query_root) }
 

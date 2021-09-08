@@ -42,7 +42,7 @@ describe GraphQL::Schema::Field do
       assert_equal 'inspectInput', field.name
 
       underscored_field = GraphQL::Schema::Field.from_options(:underscored_field, String, null: false, camelize: false, owner: nil) do
-        argument :underscored_arg, String, required: true, camelize: false
+        argument :underscored_arg, String, camelize: false
       end
 
       assert_equal 'underscored_field', underscored_field.to_graphql.name
@@ -69,8 +69,8 @@ describe GraphQL::Schema::Field do
       object = Class.new(Jazz::BaseObject) do
         graphql_name "JustAName"
 
-        field :test, String, null: true do
-          argument :test, String, required: true
+        field :test, String do
+          argument :test, String
           description "A Description."
         end
       end.to_graphql
@@ -83,7 +83,7 @@ describe GraphQL::Schema::Field do
       object = Class.new(Jazz::BaseObject) do
         graphql_name "JustAName"
 
-        field :test, String, null: true do |field|
+        field :test, String do |field|
           field.argument :test, String, required: true
           field.description "A Description."
         end
@@ -155,7 +155,7 @@ describe GraphQL::Schema::Field do
         object = Class.new(Jazz::BaseObject) do
           graphql_name "JustAName"
 
-          field :test, String, null: true, extras: [:lookahead]
+          field :test, String, extras: [:lookahead]
         end
 
         field = object.fields['test']
@@ -228,7 +228,7 @@ describe GraphQL::Schema::Field do
         object = Class.new(Jazz::BaseObject) do
           graphql_name "complexityKeyword"
 
-          field :complexityTest, String, null: true, complexity: 25
+          field :complexityTest, String, complexity: 25
         end.to_graphql
 
         assert_equal 25, object.fields["complexityTest"].complexity
@@ -238,7 +238,7 @@ describe GraphQL::Schema::Field do
         object = Class.new(Jazz::BaseObject) do
           graphql_name "complexityKeyword"
 
-          field :complexityTest, String, null: true do
+          field :complexityTest, String do
             complexity ->(_ctx, _args, _child_complexity) { 52 }
           end
         end.to_graphql
@@ -250,7 +250,7 @@ describe GraphQL::Schema::Field do
         object = Class.new(Jazz::BaseObject) do
           graphql_name "complexityKeyword"
 
-          field :complexityTest, String, null: true do
+          field :complexityTest, String do
             complexity 38
           end
         end.to_graphql
@@ -263,7 +263,7 @@ describe GraphQL::Schema::Field do
           Class.new(Jazz::BaseObject) do
             graphql_name "complexityKeyword"
 
-            field :complexityTest, String, null: true do
+            field :complexityTest, String do
               complexity 'One hundred and eighty'
             end
           end.to_graphql
@@ -277,7 +277,7 @@ describe GraphQL::Schema::Field do
           Class.new(Jazz::BaseObject) do
             graphql_name "complexityKeyword"
 
-            field :complexityTest, String, null: true do
+            field :complexityTest, String do
               complexity ->(one, two) { 52 }
             end
           end.to_graphql
@@ -373,8 +373,8 @@ describe GraphQL::Schema::Field do
       class Query < GraphQL::Schema::Object
         field_class BaseField
 
-        field :company, Company, null: true do
-          argument :id, ID, required: true
+        field :company, Company do
+          argument :id, ID
         end
 
         def company(id:)

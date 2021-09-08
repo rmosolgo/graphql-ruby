@@ -108,7 +108,7 @@ describe GraphQL::Introspection::SchemaType do
         field :visible, visible_type, null: false
         field :with_invisible_args, String, null: false do
           argument :invisible, invisible_input_type, required: false
-          argument :visible, visible_input_type, required: true
+          argument :visible, visible_input_type
         end
       end
 

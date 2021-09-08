@@ -8,14 +8,14 @@ describe GraphQL::Schema::Timeout do
     nested_sleep_type = Class.new(GraphQL::Schema::Object) do
       graphql_name "NestedSleep"
 
-      field :seconds, Float, null: true
+      field :seconds, Float
 
       def seconds
         object
       end
 
-      field :nested_sleep, GraphQL::Schema::LateBoundType.new(graphql_name), null: true do
-        argument :seconds, Float, required: true
+      field :nested_sleep, GraphQL::Schema::LateBoundType.new(graphql_name) do
+        argument :seconds, Float
       end
 
       def nested_sleep(seconds:)
@@ -27,8 +27,8 @@ describe GraphQL::Schema::Timeout do
     query_type = Class.new(GraphQL::Schema::Object) do
       graphql_name "Query"
 
-      field :sleep_for, Float, null: true do
-        argument :seconds, Float, required: true
+      field :sleep_for, Float do
+        argument :seconds, Float
       end
 
       def sleep_for(seconds:)
@@ -36,8 +36,8 @@ describe GraphQL::Schema::Timeout do
         seconds
       end
 
-      field :nested_sleep, nested_sleep_type, null: true do
-        argument :seconds, Float, required: true
+      field :nested_sleep, nested_sleep_type do
+        argument :seconds, Float
       end
 
       def nested_sleep(seconds:)

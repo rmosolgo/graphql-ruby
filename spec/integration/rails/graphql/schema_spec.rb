@@ -198,7 +198,7 @@ type Query {
 
       query_root = Class.new(GraphQL::Schema::Object) do
         graphql_name 'Query'
-        field :str, String, null: true
+        field :str, String
         field :db, db_connection, null: false, connection: false
       end
 
@@ -255,7 +255,7 @@ type Query {
       Class.new(GraphQL::Schema) do
         query_type = Class.new(GraphQL::Schema::Object) do
           graphql_name "Query"
-          field :int, Integer, null: true do
+          field :int, Integer do
             argument :value, Integer, required: false
           end
 

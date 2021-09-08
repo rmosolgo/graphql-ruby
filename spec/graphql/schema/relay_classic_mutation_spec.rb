@@ -308,12 +308,12 @@ describe GraphQL::Schema::RelayClassicMutation do
         module ResultInterface
           include GraphQL::Schema::Interface
           field :success, Boolean, null: false
-          field :notice, String, null: true
+          field :notice, String
         end
 
         module ErrorInterface
           include GraphQL::Schema::Interface
-          field :error, String, null: true
+          field :error, String
         end
 
         class BaseReturnType < GraphQL::Schema::Object
@@ -321,7 +321,7 @@ describe GraphQL::Schema::RelayClassicMutation do
         end
 
         class ReturnTypeWithInterfaceTest < GraphQL::Schema::RelayClassicMutation
-          field :name, String, null: true
+          field :name, String
           object_class BaseReturnType
 
           def resolve

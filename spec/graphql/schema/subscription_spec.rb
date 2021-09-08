@@ -34,7 +34,7 @@ describe GraphQL::Schema::Subscription do
     end
 
     class TootWasTooted < BaseSubscription
-      argument :handle, String, required: true, loads: User, as: :user, camelize: false
+      argument :handle, String, loads: User, as: :user, camelize: false
 
       field :toot, Toot, null: false
       field :user, User, null: false
@@ -78,7 +78,7 @@ describe GraphQL::Schema::Subscription do
     # Test initial response, which returns all users
     class UsersJoined < BaseSubscription
       class UsersJoinedManualPayload < GraphQL::Schema::Object
-        field :users, [User], null: true,
+        field :users, [User],
           description: "Includes newly-created users, or all users on the initial load"
       end
 
@@ -97,7 +97,7 @@ describe GraphQL::Schema::Subscription do
     # Like above, but doesn't override #subscription,
     # to make sure it works without arguments
     class NewUsersJoined < BaseSubscription
-      field :users, [User], null: true,
+      field :users, [User],
         description: "Includes newly-created users, or all users on the initial load"
     end
 
@@ -110,7 +110,7 @@ describe GraphQL::Schema::Subscription do
 
     class Mutation < GraphQL::Schema::Object
       field :toot, Toot, null: false do
-        argument :body, String, required: true
+        argument :body, String
       end
 
       def toot(body:)
@@ -134,7 +134,6 @@ describe GraphQL::Schema::Subscription do
     def self.object_from_id(id, ctx)
       USERS[id]
     end
-
 
     class InMemorySubscriptions < GraphQL::Subscriptions
       SUBSCRIPTION_REGISTRY = {}

@@ -31,10 +31,10 @@ module GraphQL
 
         def on_send(node)
           argument_config_with_required_true?(node) do |required_config|
-          add_offense(required_config) do |corrector|
-              cleaned_node_source = source_without_keyword_argument(node, required_config)
-              corrector.replace(node, cleaned_node_source)
-            end
+            add_offense(required_config) do |corrector|
+                cleaned_node_source = source_without_keyword_argument(node, required_config)
+                corrector.replace(node, cleaned_node_source)
+              end
           end
         end
       end

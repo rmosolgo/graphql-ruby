@@ -66,7 +66,7 @@ describe GraphQL::Subscriptions::ActionCableSubscriptions do
 
   class ActionCableTestSchema < GraphQL::Schema
     class Query < GraphQL::Schema::Object
-      field :int, Integer, null: true
+      field :int, Integer
     end
 
     class NewsFlash < GraphQL::Schema::Subscription

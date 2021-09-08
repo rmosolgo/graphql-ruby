@@ -467,7 +467,6 @@ module GraphQL
         end
       end
 
-
       # A list type definition, denoted with `[...]` (used for variable type definitions)
       class ListType < WrapperType
       end
