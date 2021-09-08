@@ -151,7 +151,7 @@ module GraphQL
             input_obj_arg = input_obj_arg.type_class
             # TODO: this skips input objects whose values were alread replaced with application objects.
             # See: https://github.com/rmosolgo/graphql-ruby/issues/2633
-            if value.respond_to?(:key?) && value.key?(input_obj_arg.keyword) && !input_obj_arg.authorized?(obj, value[input_obj_arg.keyword], ctx)
+            if value.is_a?(InputObject) && value.key?(input_obj_arg.keyword) && !input_obj_arg.authorized?(obj, value[input_obj_arg.keyword], ctx)
               return false
             end
           end
