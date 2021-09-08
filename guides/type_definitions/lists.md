@@ -56,7 +56,7 @@ To define a list type in Ruby use `[...]` (a Ruby array with one member, the inn
 ```ruby
 # A field returning a list type:
 # Equivalent to `aliases: [String!]` above
-field :aliases, [String], null: true
+field :aliases, [String]
 
 # An argument which accepts a list type:
 argument :categories, [Types::PostCategory], required: false
@@ -137,7 +137,7 @@ Valid | Invalid
 Here's an example field:
 
 ```ruby
-field :scores, [Integer, null: true], null: true
+field :scores, [Integer, null: true]
 # In GraphQL,
 #   scores: [Int]
 ```
@@ -160,7 +160,7 @@ Valid | Invalid
 Here's an example field:
 
 ```ruby
-field :scores, [Integer], null: true
+field :scores, [Integer]
 # In GraphQL,
 #   scores: [Int!]
 ```

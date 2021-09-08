@@ -13,7 +13,7 @@ Fields (and their arguments, and input object arguments) can be validated at run
 Validations are configured in `field(...)` or `argument(...)` calls:
 
 ```ruby
-argument :home_phone, String, required: true,
+argument :home_phone, String,
   description: "A US phone number",
   validates: { format: { with: /\d{3}-\d{3}-\d{4}/ } }
 ```
@@ -21,7 +21,7 @@ argument :home_phone, String, required: true,
 or:
 
 ```ruby
-field :comments, [Comment], null: true,
+field :comments, [Comment],
   description: "Find comments by author ID or author name" do
   argument :author_id, ID, required: false
   argument :author_name, String, required: false
@@ -43,7 +43,7 @@ All the validators below accept the following options:
 For example:
 
 ```ruby
-field :comments, [Comment], null: true,
+field :comments, [Comment],
   description: "Find comments by author ID or author name" do
   argument :author_id, ID, required: false
   argument :author_name, String, required: false
@@ -80,5 +80,3 @@ Then, custom validators can be attached either:
 - by keyword, if the keyword is registered with `GraphQL::Schema::Validator.install(:custom, MyCustomValidator)`. (That would support `validates: { custom: { some: :options }})`.)
 
 Validators are initialized when the schema is constructed (at application boot), and `validate(...)` is called while executing the query. There's one `Validator` instance for each configuration on each field, argument, or input object. (`Validator` instances aren't shared.)
-
-

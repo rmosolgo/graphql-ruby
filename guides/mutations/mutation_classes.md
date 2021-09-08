@@ -57,10 +57,10 @@ Then extend it for your mutations:
 class Mutations::CreateComment < Mutations::BaseMutation
   null true
 
-  argument :body, String, required: true
-  argument :post_id, ID, required: true
+  argument :body, String
+  argument :post_id, ID
 
-  field :comment, Types::Comment, null: true
+  field :comment, Types::Comment
   field :errors, [String], null: false
 
   def resolve(body:, post_id:)
@@ -105,9 +105,9 @@ An alternative approach is to use the `loads:` argument when defining the argume
 
 ```ruby
 class Mutations::AddStar < Mutations::BaseMutation
-  argument :post_id, ID, required: true, loads: Types::Post
+  argument :post_id, ID, loads: Types::Post
 
-  field :post, Types::Post, null: true
+  field :post, Types::Post
 
   def resolve(post:)
     post.star
@@ -127,9 +127,9 @@ The `loads:` option also works with list of IDs, for example:
 
 ```ruby
 class Mutations::AddStars < Mutations::BaseMutation
-  argument :post_ids, [ID], required: true, loads: Types::Post
+  argument :post_ids, [ID], loads: Types::Post
 
-  field :posts, [Types::Post], null: true
+  field :posts, [Types::Post]
 
   def resolve(posts:)
     posts.map(&:star)
@@ -147,9 +147,9 @@ In some cases, you may want to control the resulting argument name. This can be 
 
 ```ruby
 class Mutations::AddStar < Mutations::BaseMutation
-  argument :post_id, ID, required: true, loads: Types::Post, as: :something
+  argument :post_id, ID, loads: Types::Post, as: :something
 
-  field :post, Types::Post, null: true
+  field :post, Types::Post
 
   def resolve(something:)
     something.star

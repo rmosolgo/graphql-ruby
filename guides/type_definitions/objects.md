@@ -48,7 +48,7 @@ The same object can be defined using Ruby:
 
 ```ruby
 class Types::User < GraphQL::Schema::Object
-  field :email, String, null: true
+  field :email, String
   field :handle, String, null: false
   field :friends, [User], null: false
 end
