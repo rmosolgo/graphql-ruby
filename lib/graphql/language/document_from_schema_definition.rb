@@ -87,6 +87,7 @@ module GraphQL
       def build_interface_type_node(interface_type)
         GraphQL::Language::Nodes::InterfaceTypeDefinition.new(
           name: interface_type.graphql_name,
+          interfaces: warden.interfaces(interface_type).sort_by(&:graphql_name).map { |type| build_type_name_node(type) },
           description: interface_type.description,
           fields: build_field_nodes(warden.fields(interface_type)),
           directives: directives(interface_type),

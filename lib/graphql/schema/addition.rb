@@ -77,13 +77,13 @@ module GraphQL
 
       def update_type_owner(owner, type)
         case owner
-        when Class
+        when Module
           if owner.kind.union?
             # It's a union with possible_types
             # Replace the item by class name
             owner.assign_type_membership_object_type(type)
             @possible_types[owner.graphql_name] = owner.possible_types
-          elsif type.kind.interface? && owner.kind.object?
+          elsif type.kind.interface? && (owner.kind.object? || owner.kind.interface?)
             new_interfaces = []
             owner.interfaces.each do |int_t|
               if int_t.is_a?(String) && int_t == type.graphql_name
@@ -98,12 +98,11 @@ module GraphQL
             owner.implements(*new_interfaces)
             new_interfaces.each do |int|
               pt = @possible_types[int.graphql_name] ||= []
-              if !pt.include?(owner)
+              if !pt.include?(owner) && owner.is_a?(Class)
                 pt << owner
               end
             end
           end
-
         when nil
           # It's a root type
           @types[type.graphql_name] = type
@@ -214,12 +213,15 @@ module GraphQL
           end
           if type.kind.object?
             @possible_types[type.graphql_name] = [type]
+          end
+
+          if type.respond_to?(:interfaces)
             type.interface_type_memberships.each do |interface_type_membership|
               case interface_type_membership
               when Schema::TypeMembership
                 interface_type = interface_type_membership.abstract_type
                 # We can get these now; we'll have to get late-bound types later
-                if interface_type.is_a?(Module)
+                if interface_type.is_a?(Module) && type.is_a?(Class)
                   implementers = @possible_types[interface_type.graphql_name] ||= []
                   implementers << type
                 end
