@@ -257,6 +257,11 @@ describe GraphQL::Schema::Interface do
       assert_equal "b", result2["data"]["f2"]
     end
 
+    it "shows up in introspection" do
+      result = InterfaceImplementsSchema.execute("{ __type(name: \"InterfaceB\") { interfaces { name } } }")
+      assert_equal ["InterfaceA"], result["data"]["__type"]["interfaces"].map { |i| i["name"] }
+    end
+
     it "has the right structure" do
       expected_schema = <<-SCHEMA
 interface InterfaceA {
