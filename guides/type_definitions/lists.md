@@ -84,7 +84,7 @@ Here's how those combinations play out:
 
  &nbsp;  | nullable field | non-null field
 nullable items  | <code>[Integer, null: true], null: true</code><br><code># => [Int]</code> | <code>[Integer, null: true], null: false</code><br><code># => [Int]!</code>
-non-null items   | <code>[Integer], null: true</code><br><code># => [Int!]</code> | <code>[Integer], null: false</code><br><code># => [Int!]!</code>
+non-null items   | <code>[Integer]</code><br><code># => [Int!]</code> | <code>[Integer], null: false</code><br><code># => [Int!]!</code>
 
 (The first line is GraphQL-Ruby code. The second line, beginning with `# =>`, is the corresponding GraphQL SDL code.)
 
