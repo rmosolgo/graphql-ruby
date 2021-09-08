@@ -1,8 +1,8 @@
 # frozen_string_literal: true
-require "rubocop"
+require_relative "./base_cop"
 
 module GraphQL
-  module Cop
+  module Rubocop
     module GraphQL
       # Identify (and auto-correct) any argument configuration which duplicates
       # the default `required: true` property.
@@ -20,20 +20,20 @@ module GraphQL
       #   # good
       #   argument :id, ID
       #
-      class DefaultRequiredTrue < RuboCop::Cop::Base
-        extend RuboCop::Cop::AutoCorrector
+      class DefaultRequiredTrue < BaseCop
         MSG = "`required: true` is the default and can be removed."
 
         def_node_matcher :argument_config_with_required_true?, <<-Pattern
         (
-          send nil? :argument ... (hash $(pair (sym :required) (true)) ...)
+          send nil? :argument ... (hash <$(pair (sym :required) (true)) ...>)
         )
         Pattern
 
         def on_send(node)
           argument_config_with_required_true?(node) do |required_config|
-            add_offense(required_config) do |corrector|
-              corrector.replace(node.source_range, node.source_range.source.sub(/,\s+required:\s+true/m, ""))
+          add_offense(required_config) do |corrector|
+              cleaned_node_source = source_without_keyword_argument(node, required_config)
+              corrector.replace(node, cleaned_node_source)
             end
           end
         end

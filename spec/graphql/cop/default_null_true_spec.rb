@@ -19,8 +19,8 @@ describe "GraphQL::Cop::DefaultNullFalse" do
     RUBY
 
     assert_includes result, <<-RUBY
-  field :described, String, null: true, description: "Something"
-                            ^^^^^^^^^^
+  field :described, [String, null: true], null: true, description: "Something"
+                                          ^^^^^^^^^^
     RUBY
 
     assert_rubocop_autocorrects_all("spec/fixtures/cop/null_true.rb")

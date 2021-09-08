@@ -19,8 +19,8 @@ describe "GraphQL::Cop::DefaultRequiredTrue" do
     RUBY
 
     assert_includes result, <<-RUBY
-    argument :id_3, ID, required: true, description: \"Something\"
-                        ^^^^^^^^^^^^^^
+    argument :id_3, ID, other_config: { something: false, required: true }, required: true, description: \"Something\"
+                                                                            ^^^^^^^^^^^^^^
     RUBY
 
     assert_rubocop_autocorrects_all("spec/fixtures/cop/required_true.rb")
