@@ -3,7 +3,7 @@
 module GraphQL
   class Schema
     class Member
-      # Shared code for Object and Interface
+      # Shared code for Objects, Interfaces, Mutations, Subscriptions
       module HasFields
         # Add a field to this object or interface with the given definition
         # @see {GraphQL::Schema::Field#initialize} for method signature
