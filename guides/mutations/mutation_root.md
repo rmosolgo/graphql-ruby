@@ -13,7 +13,7 @@ GraphQL mutations all begin with the `mutation` keyword:
 ```graphql
 mutation($accountNumber: ID!, $newBalance: Int!) {
 # ^^^^ here
-  setAccountBalance(accountNumber: $accountNumber, newBalance: $newBalance) {
+  setAccountBalance(input: {accountNumber: $accountNumber, newBalance: $newBalance}) {
     # ...
   }
 }
