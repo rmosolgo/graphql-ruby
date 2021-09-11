@@ -41,15 +41,15 @@ Only _queries_ are cached. `ObjectCache` skips mutations and subscriptions altog
 
 ## `cacheable(true|false)`
 
-`cacheable(true)` means that the configured type or field may be stored in the cache until its cache fingerprint changes. It also defaults to `public: true`, meaning that cached values may be shared among all clients. See [`public: false`](#public-false) below to cache different values for each client.
+`cacheable(true)` means that the configured type or field may be stored in the cache until its cache fingerprint changes. It also defaults to `public: false`, meaning that clients will _not_ share cached responses. See [`public:`](#public) below for more about this option.
 
 `cacheable(false)` disables caching for the configured type or field. Any query that includes this type or field will neither check for an already-cached value nor update the cache with its result.
 
-## `public: false`
+## `public:`
 
-`cacheable(public: false)` means that a type or field may be _cached_, but {% internal_link "`Schema.private_context_fingerprint_for(ctx)`", "/object_cache/schema_setup#context-fingerprint" %} should be included in its cache key. In practice, this means that each client can have its own cached responses.
+`cacheable(public: false)` means that a type or field may be _cached_, but {% internal_link "`Schema.private_context_fingerprint_for(ctx)`", "/object_cache/schema_setup#context-fingerprint" %} should be included in its cache key. In practice, this means that each client can have its own cached responses. Any query that contains a `cacheable(public: false)` type or field will use a private cache key.
 
-Any query that contains a `cacheable(public: false)` type or field will use a private cache key.
+`cacheable(public: true)` means that cached values from this type or field may be shared by _all_ clients. Use this for public-facing data which is the same for all viewers. Queries that include _only_ `public: true` types and fields will not include `Schema.private_context_fingerprint_for(ctx)` in their cache keys. That way their responses will be shared by all clients who request them.
 
 ## `ttl:`
 

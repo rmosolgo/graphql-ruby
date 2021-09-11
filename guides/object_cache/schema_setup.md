@@ -25,12 +25,12 @@ See the {% internal_link "Redis guide", "/object_cache/redis" %} for details abo
 
 Additionally, it accepts some options for customizing how introspection is cached:
 
-- `cache_introspection: { public: false }` to use {% internal_link "`public: false`", "/object_cache/caching#public-false" %} for all introspection fields. Use this if you hide schema members for some clients.
+- `cache_introspection: { public: false }` to use {% internal_link "`public: false`", "/object_cache/caching#public" %} for all introspection fields. Use this if you hide schema members for some clients.
 - `cache_introspection: false` to completely disable caching on introspection fields.
 
 ### Context Fingerprint
 
-Additionally, you should implement `def self.private_context_fingerprint_for(context)` to return a string identifying the private scope of the given context. This method will be called whenever a query includes a [`public: false` type or field](/object_cache/caching#public-false). For example:
+Additionally, you should implement `def self.private_context_fingerprint_for(context)` to return a string identifying the private scope of the given context. This method will be called whenever a query includes a {% internal_link "`public: false` type or field", "/object_cache/caching#public" %}. For example:
 
 ```ruby
 class MySchema < GraphQL::Schema
