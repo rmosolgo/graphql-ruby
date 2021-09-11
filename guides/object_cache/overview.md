@@ -40,3 +40,4 @@ To get started with the object cache:
 - {% internal_link "Prepare the schema", "/object_cache/schema_setup" %}
 - {% internal_link "Set up a Redis backend", "/object_cache/redis" %}
 - {% internal_link "Configure types and fields for caching", "/object_cache/caching" %}
+- Check out the {% internal_link "runtime considerations", "/object_cache/runtime_considerations" %}
