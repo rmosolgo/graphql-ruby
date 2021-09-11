@@ -21,16 +21,16 @@ class MySchema < GraphQL::Schema
 end
 ```
 
-See the {% internal_link "Redis guide", "/cache/redis" %} for details about configuring cache storage.
+See the {% internal_link "Redis guide", "/object_cache/redis" %} for details about configuring cache storage.
 
 Additionally, it accepts some options for customizing how introspection is cached:
 
-- `cache_introspection: { public: false }` to use `public: false` for all introspection fields. Use this if you hide schema members for some clients.
+- `cache_introspection: { public: false }` to use {% internal_link "`public: false`", "/object_cache/caching#public-false" %} for all introspection fields. Use this if you hide schema members for some clients.
 - `cache_introspection: false` to completely disable caching on introspection fields.
 
 ### Context Fingerprint
 
-Additionally, you should implement `def self.private_context_fingerprint_for(context)` to return a string identifying the private scope of the given context. This method will be called whenever a query includes a `public: false` field. For example:
+Additionally, you should implement `def self.private_context_fingerprint_for(context)` to return a string identifying the private scope of the given context. This method will be called whenever a query includes a [`public: false` type or field](/object_cache/caching#public-false). For example:
 
 ```ruby
 class MySchema < GraphQL::Schema
@@ -54,6 +54,30 @@ Whenever queries including `public: false` are cached, the private context finge
 
 The returned String should reflect any aspects of `context` that, if changed, should invalidate the cache. For example, if a user's permission level or team memberships change, then any previously-cached responses should be ignored.
 
+### Object Fingerprint
+
+In order to determine whether cached results should be returned or invalidated, GraphQL needs a way to determine the "version" of each object in the query. It uses `Schema.object_fingerprint_for(object)` to do this. By default, it checks `.cache_key_with_version` (implemented by Rails), then `.to_param`, then it returns `nil`. Returning `nil` tells the cache not to use the cache _at all_. To customize this behavior, you can implement `def self.object_fingerprint_for(object)` in your schema:
+
+```ruby
+class MySchema < GraphQL::Schema
+  # ...
+
+  # For example, if you defined `.custom_cache_key` and `.uncacheable?`
+  # on objects in your application:
+  def self.object_fingerprint_for(object)
+    if object.respond_to?(:custom_cache_key)
+      object.custom_cache_key
+    elsif object.respond_to?(:uncacheable?) && object.uncacheable?
+      nil # don't cache queries containing this object
+    else
+      super
+    end
+  end
+end
+```
+
+The returned strings are used as cache keys in the database -- whenever they change, stale data is left to be {% internal_link "cleaned up by Redis", "/object_cache/redis#memory-management" %}.
+
 ### Object Identification
 
 `ObjectCache` depends on object identification hooks used elsewhere in GraphQL-Ruby:
@@ -62,4 +86,4 @@ The returned String should reflect any aspects of `context` that, if changed, sh
 - `def self.object_from_id(id, context)` which returns the application object for the given globally-unique `id`
 - `def self.resolve_type(abstract_type, object, context)` which returns a GraphQL object type definition to use for `object`
 
-Additionally, `ObjectCache` uses `def self.object_fingerprint_for(object, context)`, which returns a string for `object`, to use as a cache key. If the method returns `nil`, `ObjectCache` doesn't cache the object (or the query it's part of). The default implementation tries `.cache_key_with_version` and `.to_param` (following Rails conventions) or returns `nil` if those aren't implemented.
+After your schema is setup, you can {% internal_link "configure caching on your types and fields", "/object_cache/caching", %}.
