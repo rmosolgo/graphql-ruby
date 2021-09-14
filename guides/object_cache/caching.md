@@ -53,9 +53,26 @@ Only _queries_ are cached. `ObjectCache` skips mutations and subscriptions altog
 
 ## `ttl:`
 
-`cacheable(ttl: seconds)` expires any cached value after the given number of seconds, regardless of cache fingerprint. `ttl:` shines in two cases:
+`cacheable(ttl: seconds)` expires any cached value after the given number of seconds, regardless of cache fingerprint. `ttl:` shines in a few cases:
 
-- objects that can't reliably generate a fingerprint value (for example, they have no `.updated_at` timestamp). In this case, a conservative `ttl` may be the only option for cache expiration.
-- or, root-level fields that should be expired after a certain amount of time. The root-level `Query` often has _no_ backing object, so it won't have a cache fingerprint, either. Adding `cacheable: { ttl: ... }` to root level fields will provide some caching along with a guarantee about when they'll be expired.
+- Objects that can't reliably generate a fingerprint value (for example, they have no `.updated_at` timestamp). In this case, a conservative `ttl` may be the only option for cache expiration.
+- Or, root-level fields that should be expired after a certain amount of time. The root-level `Query` often has _no_ backing object, so it won't have a cache fingerprint, either. Adding `cacheable: { ttl: ... }` to root level fields will provide some caching along with a guarantee about when they'll be expired.
+- Or, list responses that may be difficult to invalidate properly (see below).
 
 Under the hood, `ttl:` is implemented with Redis's `EXPIRE`.
+
+## Caching lists and connections
+
+Lists and connections require a little extra consideration. In order to effectively bust the cache, items that belong to the list of "parent" object should update the parent whenever they're modified in a way that changes the state of the list. For example, if there's a list of players on a team:
+
+```graphql
+{
+  team { players { totalCount } }
+}
+```
+
+None of the _specific_ `Player`s will be part of the cached response, but the `Team` will be. To properly invalidate the cache, the `Team`'s `updated_at` (or other cache key) should be updated whenever a `Player` is added or removed from the `Team`.
+
+If a list may be sorted, then updates to `Player`s should also update the `Team` so that any sorted results in the cache are invalidated, too. Alternatively (or additionally), you could use a `ttl:` to expire cached results after a certain duration, just to be sure that results are eventually expired.
+
+By default, connection-related objects (like `*Connection` and `*Edge` types) "inherit" cacheability from their node types. You can override this in your base classes as long as `GraphQL::Enterprise::ObjectCache::ObjectIntegration` is included in the inheritance chain somewhere.
