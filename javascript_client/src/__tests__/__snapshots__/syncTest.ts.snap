@@ -452,6 +452,32 @@ fragment Todo_user on User {
 ]
 `;
 
+exports[`sync operations Relay support Uses Apollo Codegen JSON files 1`] = `
+Array [
+  Object {
+    "alias": "22cc98c61c1402c92b230b7c515e07eb793a5152c388b015e86df4652ec58156",
+    "body": "mutation UpdateSomething($name: String!) {
+  updateSomething(name: $name) {
+    __typename
+    name
+  }
+}",
+    "name": "UpdateSomething",
+  },
+  Object {
+    "alias": "688df2ea182541c70a34c55ca056dc249014bf9f33c64eee527120c714e936fc",
+    "body": "query getHelloWorld {
+  helloWorld
+  ...MoreFields
+}
+fragment MoreFields on Query {
+  __typename
+}",
+    "name": "getHelloWorld",
+  },
+]
+`;
+
 exports[`sync operations Relay support Uses Relay generated .js files 1`] = `
 Array [
   Object {
