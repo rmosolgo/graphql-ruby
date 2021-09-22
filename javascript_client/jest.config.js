@@ -4,7 +4,7 @@ module.exports = {
   ],
   verbose: true,
   testMatch: [
-    "**/__tests__/**/[^.]+.ts",
+    "**/__tests__/**/[^.]+Test.ts",
   ],
   transform: {
     "^.+\\.ts$": "ts-jest"

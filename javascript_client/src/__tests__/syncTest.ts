@@ -166,6 +166,23 @@ describe("sync operations", () => {
         return expect(payload.operations).toMatchSnapshot()
       })
     })
+
+    it("Uses Apollo Codegen JSON files", () => {
+      var payload: MockPayload
+      var options = {
+        client: "test-1",
+        quiet: true,
+        apolloCodegenJsonOutput: "./src/__tests__/apolloExample/gen/output.json",
+        url: "bogus",
+        send: (sendPayload: MockPayload, _opts: object) => {
+          payload = sendPayload
+        },
+      }
+      return sync(options).then(function () {
+        expect(payload.operations[0].alias).toEqual("22cc98c61c1402c92b230b7c515e07eb793a5152c388b015e86df4652ec58156")
+        return expect(payload.operations).toMatchSnapshot()
+      })
+    })
   })
 
   describe("Input files", () => {
@@ -342,7 +359,7 @@ describe("sync operations", () => {
 
       var syncPromise = sync(options)
 
-      return syncPromise.catch((errmsg) => {
+      return syncPromise.catch((errmsg: string) => {
         expect(errmsg).toEqual("Sync failed: GetStuff: something")
         expect(spyConsoleLog.mock.calls).toMatchSnapshot()
         expect(spyConsoleError.mock.calls).toMatchSnapshot()
