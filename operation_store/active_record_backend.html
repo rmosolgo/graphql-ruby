@@ -83,7 +83,7 @@
     <span class="n">t</span><span class="p">.</span><span class="nf">references</span> <span class="ss">:graphql_operation</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
     <span class="n">t</span><span class="p">.</span><span class="nf">column</span> <span class="ss">:alias</span><span class="p">,</span> <span class="ss">:string</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
     <span class="n">t</span><span class="p">.</span><span class="nf">column</span> <span class="ss">:last_used_at</span><span class="p">,</span> <span class="ss">:datetime</span>
-    <span class="n">t</span><span class="p">.</span><span class="nf">column</span> <span class="ss">:is_archived</span><span class="p">,</span> <span class="ss">:boolean</span>
+    <span class="n">t</span><span class="p">.</span><span class="nf">column</span> <span class="ss">:is_archived</span><span class="p">,</span> <span class="ss">:boolean</span><span class="p">,</span> <span class="ss">default: </span><span class="kp">false</span>
     <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
   <span class="k">end</span>
   <span class="n">add_index</span> <span class="ss">:graphql_client_operations</span><span class="p">,</span> <span class="p">[</span><span class="ss">:graphql_client_id</span><span class="p">,</span> <span class="ss">:alias</span><span class="p">],</span> <span class="ss">unique: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">name: </span><span class="s2">"graphql_client_operations_pairs"</span>

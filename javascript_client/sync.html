@@ -55,6 +55,7 @@
   <li><a href="#use-with-relay-persisted-output">Relay 2+ support</a></li>
   <li><a href="#use-with-apollo-client">Apollo Client support</a></li>
   <li><a href="#use-with-apollo-link">Apollo Link support</a></li>
+  <li><a href="#use-with-apollo-codegen">Apollo Codegen Support</a></li>
   <li><a href="#use-with-apollo-android">Apollo Android support</a></li>
   <li><a href="#use-with-plain-javascript">Plain JS support</a></li>
   <li><a href="#authorization">Authorization</a></li>
@@ -97,6 +98,10 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
     <tr>
       <td><code class="language-plaintext highlighter-rouge">--relay-persisted-output</code></td>
       <td>Path to a <code class="language-plaintext highlighter-rouge">.json</code> file from <code class="language-plaintext highlighter-rouge">relay-compiler ... --persist-output</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">--apollo-codegen-json-output</code></td>
+      <td>Path to a <code class="language-plaintext highlighter-rouge">.json</code> file from <code class="language-plaintext highlighter-rouge">apollo client:codegen ... --target json</code></td>
     </tr>
     <tr>
       <td><code class="language-plaintext highlighter-rouge">--apollo-android-operation-output</code></td>
@@ -272,6 +277,24 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 </code></pre></div></div>
 
 <p>Now, <code class="language-plaintext highlighter-rouge">context[:operation_id]</code> will be used to fetch a query from the database.</p>
+
+<h2 id="use-with-apollo-codegen">Use with Apollo Codegen</h2>
+
+<p>Use <code class="language-plaintext highlighter-rouge">apollo client:codegen ... --target json</code> to build a JSON artifact containing your app’s queries. Then, pass the path to that artifact to <code class="language-plaintext highlighter-rouge">graphql-ruby-client sync --apollo-codegen-json-output path/to/output.json ...</code>. <code class="language-plaintext highlighter-rouge">sync</code> will use Apollo-generated <code class="language-plaintext highlighter-rouge">operationId</code>s to populate the <code class="language-plaintext highlighter-rouge">OperationStore</code>.</p>
+
+<p>Then, to use Apollo-style persisted query IDs, hook up the <strong>Persisted Queries Link</strong> as described in <a href="https://www.apollographql.com/docs/react/api/link/persisted-queries/">Apollo’s documentation</a></p>
+
+<p>Finally, <strong>update the controller</strong> to pass the Apollo-style persisted query ID as the operation ID:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/controllers/graphql_controller.rb</span>
+<span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="c1"># ...</span>
+  <span class="c1"># Support already-synced Apollo Persisted Queries:</span>
+  <span class="ss">operation_id: </span><span class="n">params</span><span class="p">[</span><span class="ss">:extensions</span><span class="p">][</span><span class="ss">:operationId</span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Now, Apollo-style persisted query IDs will be used to fetch operations from the server’s <code class="language-plaintext highlighter-rouge">OperationStore</code>.</p>
 
 <h2 id="use-with-apollo-android">Use with Apollo Android</h2>
 
