@@ -58,11 +58,9 @@ module GraphQL
         end
       end
 
-      # Default implementation returns the root object.
+      # The default implementation returns nothing on subscribe.
       # Override it to return an object or
-      # `:no_response` to return nothing.
-      #
-      # The default is `:no_response`.
+      # `:no_response` to (explicitly) return nothing.
       def subscribe(args = {})
         :no_response
       end
