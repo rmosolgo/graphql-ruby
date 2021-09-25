@@ -83,6 +83,8 @@ module GraphQL
         end
 
         def get_arg_definition(arg_owner, arg_name)
+          return unless arg_owner.respond_to?(:arguments)
+
           arg_owner.arguments[arg_name] || arg_owner.arguments[arg_name.to_s]
         end
       end
