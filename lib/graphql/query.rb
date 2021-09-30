@@ -117,6 +117,10 @@ module GraphQL
         raise ArgumentError, "Query should only be provided a query string or a document, not both."
       end
 
+      if @query_string && !@query_string.is_a?(String)
+        raise ArgumentError, "Query string argument should be a String, got #{@query_string.class.name} instead."
+      end
+
       # A two-layer cache of type resolution:
       # { abstract_type => { value => resolved_type } }
       @resolved_types_cache = Hash.new do |h1, k1|

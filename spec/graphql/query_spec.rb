@@ -86,6 +86,22 @@ describe GraphQL::Query do
     end
   end
 
+  describe "when passed a query_string with an invalid type" do
+    it "returns an error to the client" do
+      assert_raises(ArgumentError) {
+        GraphQL::Query.new(schema, {"default" => "{ fromSource(source: COW) { id } }"})
+      }
+    end
+  end
+
+  describe "when passed a query with an invalid type" do
+    it "returns an error to the client" do
+      assert_raises(ArgumentError) {
+        GraphQL::Query.new(schema, query: {"default" => "{ fromSource(source: COW) { id } }"})
+      }
+    end
+  end
+
   describe "#operation_name" do
     describe "when provided" do
       let(:query_string) { <<-GRAPHQL
