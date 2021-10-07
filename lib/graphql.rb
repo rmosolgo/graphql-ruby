@@ -55,31 +55,6 @@ module GraphQL
   def self.scan_with_ragel(graphql_string)
     GraphQL::Language::Lexer.tokenize(graphql_string)
   end
-
-  # Support Ruby 2.2 by implementing `-"str"`. If we drop 2.2 support, we can remove this backport.
-  if !String.method_defined?(:-@)
-    module StringDedupBackport
-      refine String do
-        def -@
-          if frozen?
-            self
-          else
-            self.dup.freeze
-          end
-        end
-      end
-    end
-  end
-
-  if !String.method_defined?(:match?)
-    module StringMatchBackport
-      refine String do
-        def match?(pattern)
-          self =~ pattern
-        end
-      end
-    end
-  end
 end
 
 # Order matters for these:
