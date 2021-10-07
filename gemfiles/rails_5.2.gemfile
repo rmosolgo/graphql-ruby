@@ -7,7 +7,8 @@ gem "ruby-prof", platform: :ruby
 gem "pry"
 gem "pry-stack_explorer", platform: :ruby
 gem "rails", "~> 5.2.0", require: "rails/all"
-gem "pg", platform: :ruby
+gem "sqlite3", "~> 1.4", platform: :ruby
+gem "activerecord-jdbcsqlite3-adapter", platform: :jruby
 gem "sequel"
 
 gemspec path: "../"

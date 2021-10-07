@@ -4,7 +4,7 @@ require:
 
 AllCops:
   DisabledByDefault: true
-  TargetRubyVersion: 2.2
+  TargetRubyVersion: 2.4
   Exclude:
     - 'lib/graphql/language/lexer.rb'
     - 'lib/graphql/language/parser.rb'
@@ -39,6 +39,7 @@ Style/ClassAndModuleChildren:
 
 Layout/EmptyLineBetweenDefs:
   AllowAdjacentOneLineDefs: true
+  NumberOfEmptyLines: [0, 1, 2]
 
 Style/FrozenStringLiteralComment:
   Enabled: true
