@@ -336,6 +336,9 @@ module GraphQL
         if text
           @description = text
         else
+          if @description.is_a?(Proc)
+            @description = @description.call
+          end
           @description
         end
       end

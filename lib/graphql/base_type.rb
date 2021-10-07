@@ -52,8 +52,15 @@ module GraphQL
       @name = name
     end
 
+    attr_writer :description
+
     # @return [String, nil] a description for this type
-    attr_accessor :description
+    def description
+      if @description.is_a?(Proc)
+        @description = @description.call
+      end
+      @description
+    end
 
     # @return [Boolean] Is this type a predefined introspection type?
     def introspection?

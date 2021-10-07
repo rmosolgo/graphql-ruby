@@ -65,7 +65,19 @@ describe GraphQL::Schema::Object do
       assert_equal "NewSubclass", new_subclass_2.graphql_name
       assert_equal object_class.description, new_subclass_2.description
     end
-
+    
+    it "allows a lambda for descriptions" do
+      # Manually assign a name since `.name` isn't populated for dynamic classes
+      new_subclass_1 = Class.new(object_class) do
+        graphql_name "NewSubclass"
+        TYPE = "musicians"
+        description -> { "A group of #{TYPE} playing together"}
+      end
+      new_subclass_2 = Class.new(new_subclass_1)
+      assert_equal "NewSubclass", new_subclass_1.graphql_name
+      assert_equal "NewSubclass", new_subclass_2.graphql_name
+      assert_equal object_class.description, new_subclass_2.description
+    end
     it "implements visibility constrained interface when context is private" do
       found_interfaces = object_class.interfaces({ private: true })
       assert_equal 5, found_interfaces.count

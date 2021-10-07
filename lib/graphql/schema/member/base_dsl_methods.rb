@@ -48,6 +48,9 @@ module GraphQL
           if new_description
             @description = new_description
           elsif defined?(@description)
+            if @description.is_a?(Proc)
+              @description = @description.call
+            end
             @description
           else
             nil

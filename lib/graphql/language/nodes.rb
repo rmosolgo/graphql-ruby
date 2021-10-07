@@ -308,7 +308,14 @@ module GraphQL
 
       class DirectiveDefinition < AbstractNode
         include DefinitionNode
-        attr_reader :description
+
+        def description
+          if @description.is_a?(Proc)
+            @description = @description.call
+          end
+          @description
+        end
+
         scalar_methods :name
         children_methods(
           locations: Nodes::DirectiveLocation,
@@ -546,7 +553,14 @@ module GraphQL
 
       class ScalarTypeDefinition < AbstractNode
         include DefinitionNode
-        attr_reader :description
+
+        def description
+          if @description.is_a?(Proc)
+            @description = @description.call
+          end
+          @description
+        end
+
         scalar_methods :name
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
@@ -564,7 +578,14 @@ module GraphQL
 
       class InputValueDefinition < AbstractNode
         include DefinitionNode
-        attr_reader :description
+
+        def description
+          if @description.is_a?(Proc)
+            @description = @description.call
+          end
+          @description
+        end
+
         scalar_methods :name, :type, :default_value
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
@@ -574,7 +595,14 @@ module GraphQL
 
       class FieldDefinition < AbstractNode
         include DefinitionNode
-        attr_reader :description
+
+        def description
+          if @description.is_a?(Proc)
+            @description = @description.call
+          end
+          @description
+        end
+
         scalar_methods :name, :type
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
@@ -595,7 +623,14 @@ module GraphQL
 
       class ObjectTypeDefinition < AbstractNode
         include DefinitionNode
-        attr_reader :description
+
+        def description
+          if @description.is_a?(Proc)
+            @description = @description.call
+          end
+          @description
+        end
+
         scalar_methods :name, :interfaces
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
@@ -615,7 +650,14 @@ module GraphQL
 
       class InterfaceTypeDefinition < AbstractNode
         include DefinitionNode
-        attr_reader :description
+
+        def description
+          if @description.is_a?(Proc)
+            @description = @description.call
+          end
+          @description
+        end
+
         scalar_methods :name
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
@@ -635,7 +677,16 @@ module GraphQL
 
       class UnionTypeDefinition < AbstractNode
         include DefinitionNode
-        attr_reader :description, :types
+        # @return [String, nil] The client-facing description of this field
+
+        def description
+          if @description.is_a?(Proc)
+            @description = @description.call
+          end
+          @description
+        end
+
+        attr_reader :types
         scalar_methods :name
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
@@ -654,7 +705,14 @@ module GraphQL
 
       class EnumValueDefinition < AbstractNode
         include DefinitionNode
-        attr_reader :description
+
+        def description
+          if @description.is_a?(Proc)
+            @description = @description.call
+          end
+          @description
+        end
+
         scalar_methods :name
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
@@ -664,7 +722,14 @@ module GraphQL
 
       class EnumTypeDefinition < AbstractNode
         include DefinitionNode
-        attr_reader :description
+
+        def description
+          if @description.is_a?(Proc)
+            @description = @description.call
+          end
+          @description
+        end
+
         scalar_methods :name
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
@@ -684,7 +749,14 @@ module GraphQL
 
       class InputObjectTypeDefinition < AbstractNode
         include DefinitionNode
-        attr_reader :description
+
+        def description
+          if @description.is_a?(Proc)
+            @description = @description.call
+          end
+          @description
+        end
+
         scalar_methods :name
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,

@@ -43,8 +43,15 @@ module GraphQL
     attr_reader :name
     alias :graphql_name :name
 
+    attr_writer :description
+
     # @return [String, nil] The client-facing description of this field
-    attr_accessor :description
+    def description
+      if @description.is_a?(Proc)
+        @description = @description.call
+      end
+      @description
+    end
 
     # @return [String, nil] The client-facing reason why this field is deprecated (if present, the field is deprecated)
     attr_accessor :deprecation_reason

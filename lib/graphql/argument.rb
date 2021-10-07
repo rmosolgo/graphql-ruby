@@ -5,7 +5,7 @@ module GraphQL
     include GraphQL::Define::InstanceDefinable
     accepts_definitions :name, :type, :description, :default_value, :as, :prepare, :method_access, :deprecation_reason
     attr_reader :default_value
-    attr_accessor :description, :name, :as, :deprecation_reason
+    attr_accessor :name, :as, :deprecation_reason
     attr_accessor :ast_node
     attr_accessor :method_access
     alias :graphql_name :name
@@ -84,6 +84,17 @@ module GraphQL
     def type_class
       metadata[:type_class]
     end
+
+    attr_writer :description
+
+    # @return [String, nil] The client-facing description of this field
+    def description
+      if @description.is_a?(Proc)
+        @description = @description.call
+      end
+      @description
+    end
+
 
     NO_DEFAULT_VALUE = Object.new
     # @api private
