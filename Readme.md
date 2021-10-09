@@ -1,4 +1,4 @@
-graphql graphql-ruby
+ graphql graphql-ruby
 Suite CI Versión de gema
 
 Una implementación Ruby de GraphQL .
