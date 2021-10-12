@@ -50,15 +50,25 @@ module GraphQL
     # @param batch_parameters [Array<Object>]
     # @return [GraphQL::Dataloader::Source] An instance of {source_class}, initialized with `self, *batch_parameters`,
     #   and cached for the lifetime of this {Multiplex}.
-    def with(source_class, *batch_args, **batch_kwargs)
-      batch_key = source_class.batch_key_for(*batch_args, **batch_kwargs)
-      @source_cache[source_class][batch_key] ||= begin
-        source = source_class.new(*batch_args, **batch_kwargs)
-        source.setup(self)
-        source
+    if RUBY_VERSION < "3"
+      def with(source_class, *batch_args)
+        batch_key = source_class.batch_key_for(*batch_args)
+        @source_cache[source_class][batch_key] ||= begin
+          source = source_class.new(*batch_args)
+          source.setup(self)
+          source
+        end
+      end
+    else
+      def with(source_class, *batch_args, **batch_kwargs)
+        batch_key = source_class.batch_key_for(*batch_args, **batch_kwargs)
+        @source_cache[source_class][batch_key] ||= begin
+          source = source_class.new(*batch_args, **batch_kwargs)
+          source.setup(self)
+          source
+        end
       end
     end
-
     # Tell the dataloader that this fiber is waiting for data.
     #
     # Dataloader will resume the fiber after the requested data has been loaded (by another Fiber).
