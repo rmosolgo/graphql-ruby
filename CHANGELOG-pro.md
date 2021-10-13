@@ -8,7 +8,18 @@
 
 ### Bug Fix
 
-# 1,18.2 (16 August 2021
+# 1.19.0 (13 October 2021)
+
+### New Features
+
+- Dashboard: add a component for GraphQL-Enterprise rate limiters
+
+# 1.18.3 (1 Sept 2021)
+
+###  Bug Fix
+
+- Stable connections: handle more arel sorts, raise on unknown ordering #3605
+# 1.18.2 (16 August 2021
 
 ### Bug Fix
 
