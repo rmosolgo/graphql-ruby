@@ -89,6 +89,24 @@ module GraphQL
         nil
       end
 
+      # These arguments are given to `dataloader.with(source_class, ...)`. The object
+      # returned from this method is used to de-duplicate batch loads under the hood
+      # by using it as a Hash key.
+      #
+      # By default, the arguments are all put in an Array. To customize how this source's
+      # batches are merged, override this method to return something else.
+      #
+      # For example, if you pass `ActiveRecord::Relation`s to `.with(...)`, you could override
+      # this method to call `.to_sql` on them, thus merging `.load(...)` calls when they apply
+      # to equivalent relations.
+      #
+      # @param batch_args [Array<Object>]
+      # @param batch_kwargs [Hash]
+      # @return [Object]
+      def self.batch_key_for(*batch_args, **batch_kwargs)
+        [*batch_args, **batch_kwargs]
+      end
+
       private
 
       # Reads and returns the result for the key from the internal cache, or raises an error if the result was an error
