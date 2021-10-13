@@ -1,0 +1,168 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL Enterprise - Object Cache - Schema Setup</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.12.16/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#graphql-enterprise-object-cache-guides">GraphQL Enterprise - Object Cache</a>
+  &raquo; Schema Setup
+</p>
+
+
+
+  <div class="enterprise-header">
+    <p>
+      <strong>🌟 Enterprise Feature 🌟</strong>
+      <span style="font-style: italic;">
+        This feature is bundled with <a href="https://graphql.pro/enterprise">GraphQL-Enterprise</a>.
+      </span>
+    </p>
+  </div>
+
+<h1 class="guide-header">Schema Setup</h1>
+<div class="guide-container">
+  <p>To prepare the schema to serve cached responses, you have to add <code class="language-plaintext highlighter-rouge">GraphQL::Enterprise::ObjectCache</code> and implement a few hooks.</p>
+
+<h3 id="add-the-cache">Add the Cache</h3>
+
+<p>In your schema, add <code class="language-plaintext highlighter-rouge">use GraphQL::Enterprise::ObjectCache, redis: ...</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">ObjectCache</span><span class="p">,</span> <span class="ss">redis: </span><span class="no">CACHE_REDIS</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>See the <a href="/object_cache/redis">Redis guide</a> for details about configuring cache storage.</p>
+
+<p>Additionally, it accepts some options for customizing how introspection is cached:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">cache_introspection: { public: false }</code> to use <a href="/object_cache/caching#public"><code class="language-plaintext highlighter-rouge">public: false</code></a> for all introspection fields. Use this if you hide schema members for some clients.</li>
+  <li><code class="language-plaintext highlighter-rouge">cache_introspection: false</code> to completely disable caching on introspection fields.</li>
+</ul>
+
+<h3 id="context-fingerprint">Context Fingerprint</h3>
+
+<p>Additionally, you should implement <code class="language-plaintext highlighter-rouge">def self.private_context_fingerprint_for(context)</code> to return a string identifying the private scope of the given context. This method will be called whenever a query includes a <a href="/object_cache/caching#public"><code class="language-plaintext highlighter-rouge">public: false</code> type or field</a>. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="c1"># ...</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">private_context_fingerprint_for</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+    <span class="n">viewer</span> <span class="o">=</span> <span class="n">context</span><span class="p">[</span><span class="ss">:viewer</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">viewer</span><span class="p">.</span><span class="nf">nil?</span>
+      <span class="c1"># This should never happen, but just in case:</span>
+      <span class="k">raise</span><span class="p">(</span><span class="s2">"Invariant: No viewer in context! Can't create a private context fingerprint"</span> <span class="p">)</span>
+    <span class="k">end</span>
+
+    <span class="c1"># include permissions in the fingerprint so that if the viewer's permissions change, the cache will be invalidated</span>
+    <span class="n">permission_fingerprint</span> <span class="o">=</span> <span class="n">viewer</span><span class="p">.</span><span class="nf">team_memberships</span><span class="p">.</span><span class="nf">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">tm</span><span class="o">|</span> <span class="s2">"</span><span class="si">#{</span><span class="n">tm</span><span class="p">.</span><span class="nf">team_id</span><span class="si">}</span><span class="s2">/</span><span class="si">#{</span><span class="n">tm</span><span class="p">.</span><span class="nf">permission</span><span class="si">}</span><span class="s2">"</span> <span class="p">}.</span><span class="nf">join</span><span class="p">(</span><span class="s2">":"</span><span class="p">)</span>
+
+    <span class="s2">"user:</span><span class="si">#{</span><span class="n">viewer</span><span class="p">.</span><span class="nf">id</span><span class="si">}</span><span class="s2">:</span><span class="si">#{</span><span class="n">permission_fingerprint</span><span class="si">}</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Whenever queries including <code class="language-plaintext highlighter-rouge">public: false</code> are cached, the private context fingerprint will be part of the cache key, preventing responses from being shared between different viewers.</p>
+
+<p>The returned String should reflect any aspects of <code class="language-plaintext highlighter-rouge">context</code> that, if changed, should invalidate the cache. For example, if a user’s permission level or team memberships change, then any previously-cached responses should be ignored.</p>
+
+<h3 id="object-fingerprint">Object Fingerprint</h3>
+
+<p>In order to determine whether cached results should be returned or invalidated, GraphQL needs a way to determine the “version” of each object in the query. It uses <code class="language-plaintext highlighter-rouge">Schema.object_fingerprint_for(object)</code> to do this. By default, it checks <code class="language-plaintext highlighter-rouge">.cache_key_with_version</code> (implemented by Rails), then <code class="language-plaintext highlighter-rouge">.to_param</code>, then it returns <code class="language-plaintext highlighter-rouge">nil</code>. Returning <code class="language-plaintext highlighter-rouge">nil</code> tells the cache not to use the cache <em>at all</em>. To customize this behavior, you can implement <code class="language-plaintext highlighter-rouge">def self.object_fingerprint_for(object)</code> in your schema:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="c1"># ...</span>
+
+  <span class="c1"># For example, if you defined `.custom_cache_key` and `.uncacheable?`</span>
+  <span class="c1"># on objects in your application:</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">object_fingerprint_for</span><span class="p">(</span><span class="n">object</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">object</span><span class="p">.</span><span class="nf">respond_to?</span><span class="p">(</span><span class="ss">:custom_cache_key</span><span class="p">)</span>
+      <span class="n">object</span><span class="p">.</span><span class="nf">custom_cache_key</span>
+    <span class="k">elsif</span> <span class="n">object</span><span class="p">.</span><span class="nf">respond_to?</span><span class="p">(</span><span class="ss">:uncacheable?</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">object</span><span class="p">.</span><span class="nf">uncacheable?</span>
+      <span class="kp">nil</span> <span class="c1"># don't cache queries containing this object</span>
+    <span class="k">else</span>
+      <span class="k">super</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>The returned strings are used as cache keys in the database – whenever they change, stale data is left to be <a href="/object_cache/redis#memory-management">cleaned up by Redis</a>.</p>
+
+<h3 id="object-identification">Object Identification</h3>
+
+<p><code class="language-plaintext highlighter-rouge">ObjectCache</code> depends on object identification hooks used elsewhere in GraphQL-Ruby:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">def self.id_from_object(object, type, context)</code> which returns a globally-unique String id for <code class="language-plaintext highlighter-rouge">object</code></li>
+  <li><code class="language-plaintext highlighter-rouge">def self.object_from_id(id, context)</code> which returns the application object for the given globally-unique <code class="language-plaintext highlighter-rouge">id</code></li>
+  <li><code class="language-plaintext highlighter-rouge">def self.resolve_type(abstract_type, object, context)</code> which returns a GraphQL object type definition to use for <code class="language-plaintext highlighter-rouge">object</code></li>
+</ul>
+
+<p>After your schema is setup, you can <a href="/object_cache/caching">configure caching on your types and fields</a>.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/object_cache/schema_setup.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Schema Setup">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

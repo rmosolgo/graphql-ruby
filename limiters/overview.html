@@ -1,0 +1,107 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL Enterprise - Rate Limiters - Rate Limiters for GraphQL</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.12.16/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#graphql-enterprise-rate-limiters-guides">GraphQL Enterprise - Rate Limiters</a>
+  &raquo; Rate Limiters for GraphQL
+</p>
+
+
+
+  <div class="enterprise-header">
+    <p>
+      <strong>🌟 Enterprise Feature 🌟</strong>
+      <span style="font-style: italic;">
+        This feature is bundled with <a href="https://graphql.pro/enterprise">GraphQL-Enterprise</a>.
+      </span>
+    </p>
+  </div>
+
+<h1 class="guide-header">Rate Limiters for GraphQL</h1>
+<div class="guide-container">
+  <p><code class="language-plaintext highlighter-rouge">GraphQL::Enterprise</code> includes rate limiters built especially for GraphQL.</p>
+
+<p>For REST APIs, rate limiters often count <em>requests</em> and block clients when they exceed their limit over a certain period of time. However, this paradigm doesn’t translate well to GraphQL because the cost of serving a request may vary dramatically depending on the GraphQL query contained in the request. Instead, <code class="language-plaintext highlighter-rouge">GraphQL::Enterprise</code> implements two other kinds of limiters:</p>
+
+<ul>
+  <li>An <strong>active operation limiter</strong> which allows clients to run a certain number of operations <em>at a time</em>. For example, if the limit is five concurrent operations, and a client sends six requests simultaneously, then only five of those incoming operations will be executed; the sixth will be returned with an error and it may be retried when one of the five others finishes.</li>
+  <li>A <strong>runtime limiter</strong> which limits the amount of processing time a client may consume during a given window. For example, a limit of 120 seconds per minute would allow two concurrent requests on average – although in practice, it might be spiky: perhaps five concurrent, 20-second-long requests, followed by 40 seconds of no requests.</li>
+</ul>
+
+<p>There’s some overlap in these limiters; both of them constrain the amount of <em>time</em> a client may force the server to spend in handling requests. The active operation limiter puts an upper bound on how <em>many</em> processes a client may occupy while the runtime limiter puts a bound on total processing time (regardless of the number of concurrent operations at a given moment).</p>
+
+<p>To get started, read on:</p>
+
+<ul>
+  <li><a href="/limiters/redis">Configure Redis</a> for the limiters’ backend</li>
+  <li><a href="/limiters/active_operations">Active Operation Limiter</a></li>
+  <li><a href="/limiters/runtime">Runtime Limiter</a></li>
+</ul>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/limiters/overview.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Rate Limiters for GraphQL">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

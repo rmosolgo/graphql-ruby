@@ -1,0 +1,212 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL Enterprise - Rate Limiters - Active Operation Limiter</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.12.16/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#graphql-enterprise-rate-limiters-guides">GraphQL Enterprise - Rate Limiters</a>
+  &raquo; Active Operation Limiter
+</p>
+
+
+
+  <div class="enterprise-header">
+    <p>
+      <strong>🌟 Enterprise Feature 🌟</strong>
+      <span style="font-style: italic;">
+        This feature is bundled with <a href="https://graphql.pro/enterprise">GraphQL-Enterprise</a>.
+      </span>
+    </p>
+  </div>
+
+<h1 class="guide-header">Active Operation Limiter</h1>
+<div class="guide-container">
+  <p><code class="language-plaintext highlighter-rouge">GraphQL::Enterprise::ActiveOperationLimiter</code> prevents clients from running too many GraphQL operations at the same time. It uses <a href="/limiters/redis">Redis</a> to track currently-running operations.</p>
+
+<h3 id="why">Why?</h3>
+
+<p>Some clients may suddently swamp a server with tons of requests, occupying all available Ruby processes and therefore interrupting service for other clients. This limiter aims to prevent that at the GraphQL level by halting queries when a client already has lots of queries running. That way, server processes will remain available for other clients’ requests.</p>
+
+<h3 id="setup">Setup</h3>
+
+<p>To use this limiter, update the schema configuration and include <code class="language-plaintext highlighter-rouge">context[:limiter_key]</code> in your queries.</p>
+
+<h5 id="schema-setup">Schema Setup</h5>
+
+<p>To setup the schema, add <code class="language-plaintext highlighter-rouge">use GraphQL::Enterprise::ActiveOperationLimiter</code> with a default <code class="language-plaintext highlighter-rouge">limit:</code> value:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="c1"># ...</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">ActiveOperationLimiter</span><span class="p">,</span>
+    <span class="ss">redis: </span><span class="no">Redis</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
+    <span class="ss">limit: </span><span class="mi">5</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">limit: false</code> may also be given, which defaults to <em>no limit</em> for this limiter.</p>
+
+<p>It also accepts a <code class="language-plaintext highlighter-rouge">stale_request_seconds:</code> option. The limiter uses that value to clean up request data in case of a crash or other unexpected scenario.</p>
+
+<p>Before requests will actually be halted, <a href="#soft-limits">“soft mode”</a> must be disabled as described below.</p>
+
+<h5 id="query-setup">Query Setup</h5>
+
+<p>In order to limit clients, the limiter needs a client identifier for each GraphQL operation. By default, it checks <code class="language-plaintext highlighter-rouge">context[:limiter_key]</code> to find it:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="ss">viewer: </span><span class="n">current_user</span><span class="p">,</span>
+  <span class="c1"># for example:</span>
+  <span class="ss">limiter_key: </span><span class="n">logged_in?</span> <span class="p">?</span> <span class="s2">"user:</span><span class="si">#{</span><span class="n">current_user</span><span class="p">.</span><span class="nf">id</span><span class="si">}</span><span class="s2">"</span> <span class="p">:</span> <span class="s2">"anon-ip:</span><span class="si">#{</span><span class="n">request</span><span class="p">.</span><span class="nf">remote_ip</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+  <span class="c1"># ...</span>
+<span class="p">}</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_str</span><span class="p">,</span> <span class="ss">context: </span><span class="n">context</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Operations with the same <code class="language-plaintext highlighter-rouge">context[:limiter_key]</code> will rate limited in the same buckets. A limiter key is required; if a query is run without one, the limiter will raise an error.</p>
+
+<p>To provide a client identifier another way, see <a href="#customization">Customization</a>.</p>
+
+<h3 id="soft-limits">Soft Limits</h3>
+
+<p>By default, the limiter doesn’t actually halt queries; instead, it starts out in “soft mode”. In this mode:</p>
+
+<ul>
+  <li>limited/unlimited requests are counted in the <a href="#dashboard">Dashboard</a></li>
+  <li>but, no requests are actually halted</li>
+</ul>
+
+<p>This mode is for assessing the impact of the limiter before it’s applied to production traffic. Additionally, if you release the limiter but find that it’s affecting production traffic adversely, you can re-enable “soft mode” to stop blocking traffic.</p>
+
+<p>To disable “soft mode” and start limiting, use the <a href="#dashboard">Dashboard</a> or <a href="#customization">customize the limiter</a>. You can also disable “soft mode” in Ruby:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Turn "soft mode" off for the ActiveOperationLimiter</span>
+<span class="no">MySchema</span><span class="p">.</span><span class="nf">enterprise_active_operation_limiter</span><span class="p">.</span><span class="nf">set_soft_limit</span><span class="p">(</span><span class="kp">false</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="dashboard">Dashboard</h3>
+
+<p>Once installed, your <a href="/pro/dashboard">GraphQL-Pro dashboard</a> will include a simple metrics view:</p>
+
+<p><a href="/limiters/active_operation_limiter_dashboard.png" target="_blank" class="img-link">
+  <img src="/limiters/active_operation_limiter_dashboard.png" title="GraphQL Active Operation Limiter Dashboard" alt="GraphQL Active Operation Limiter Dashboard" />
+</a></p>
+
+<p>See <a href="#instrumentation">Instrumentation</a> below for more details on limiter metrics.</p>
+
+<p>Also, the dashboard includes a link to enable or disable “soft mode”:</p>
+
+<p><a href="/limiters/soft_button.png" target="_blank" class="img-link">
+  <img src="/limiters/soft_button.png" title="GraphQL Rate Limiter Soft Mode Button" alt="GraphQL Rate Limiter Soft Mode Button" />
+</a></p>
+
+<p>When “soft mode” is enabled, limited requests are <em>not</em> actually halted (although they are <em>counted</em>). When “soft mode” is disabled, any over-limit requests are halted.</p>
+
+<h3 id="customization">Customization</h3>
+
+<p><code class="language-plaintext highlighter-rouge">GraphQL::Enterprise::ActiveOperationLimiter</code> provides several hooks for customizing its behavior. To use these, make a subclass of the limiter and override methods as described:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/limiters/active_operations.rb</span>
+<span class="k">class</span> <span class="nc">Limiters::ActiveOperations</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">ActiveOperationsLimiter</span>
+  <span class="c1"># override methods here</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>The hooks are:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">def limiter_key(query)</code> should return a string which identifies the current client for <code class="language-plaintext highlighter-rouge">query</code>.</li>
+  <li><code class="language-plaintext highlighter-rouge">def limit_for(key, query)</code> should return an integer or <code class="language-plaintext highlighter-rouge">nil</code>. If an integer is returned, that limit is applied for the current query. If <code class="language-plaintext highlighter-rouge">nil</code> is returned, no limit is applied to the current query.</li>
+  <li><code class="language-plaintext highlighter-rouge">def soft_limit?(key, query)</code> can be implemented to customize the application of “soft mode”. By default, it checks a setting in redis.</li>
+  <li><code class="language-plaintext highlighter-rouge">def handle_redis_error(err)</code> is called when the limit rescues an error from Redis. By default, it’s passed to <code class="language-plaintext highlighter-rouge">warn</code> and the query is <em>not</em> halted.</li>
+</ul>
+
+<h3 id="instrumentation">Instrumentation</h3>
+
+<p>While the limiter is installed, it adds some information to the query context about its operation. It can be acccessed at <code class="language-plaintext highlighter-rouge">context[:active_operation_limiter]</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">result</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+<span class="n">pp</span> <span class="n">result</span><span class="p">.</span><span class="nf">context</span><span class="p">[</span><span class="ss">:active_operation_limiter</span><span class="p">]</span>
+<span class="c1"># {:key=&gt;"user:123", :limit=&gt;2, :soft=&gt;false, :limited=&gt;true}</span>
+</code></pre></div></div>
+
+<p>It returns a Hash containing:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">key: [String]</code>, the limiter key used for this query</li>
+  <li><code class="language-plaintext highlighter-rouge">limit: [Integer, nil]</code>, the limit applied to this query</li>
+  <li><code class="language-plaintext highlighter-rouge">soft: [Boolean]</code>, <code class="language-plaintext highlighter-rouge">true</code> if the query was run in “soft mode”</li>
+  <li><code class="language-plaintext highlighter-rouge">limited: [Boolean]</code>, <code class="language-plaintext highlighter-rouge">true</code> if the query exceeded the rate limit (but if <code class="language-plaintext highlighter-rouge">soft:</code> was also <code class="language-plaintext highlighter-rouge">true</code>, then the query was <em>not</em> halted)</li>
+</ul>
+
+<p>You could use this to add detailed metrics to your application monitoring system, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MyMetrics</span><span class="p">.</span><span class="nf">increment</span><span class="p">(</span><span class="s2">"graphql.active_operation_limiter"</span><span class="p">,</span> <span class="ss">tags: </span><span class="n">result</span><span class="p">.</span><span class="nf">context</span><span class="p">[</span><span class="ss">:active_operation_limiter</span><span class="p">])</span>
+</code></pre></div></div>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/limiters/active_operations.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Active Operation Limiter">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

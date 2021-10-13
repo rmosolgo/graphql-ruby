@@ -1,0 +1,154 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL Enterprise - Object Cache - Caching Results</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.12.16/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#graphql-enterprise-object-cache-guides">GraphQL Enterprise - Object Cache</a>
+  &raquo; Caching Results
+</p>
+
+
+
+  <div class="enterprise-header">
+    <p>
+      <strong>🌟 Enterprise Feature 🌟</strong>
+      <span style="font-style: italic;">
+        This feature is bundled with <a href="https://graphql.pro/enterprise">GraphQL-Enterprise</a>.
+      </span>
+    </p>
+  </div>
+
+<h1 class="guide-header">Caching Results</h1>
+<div class="guide-container">
+  <p><code class="language-plaintext highlighter-rouge">GraphQL::Enterprise::ObjectCache</code> supports several different caching configurations for objects and fields. To get started, include the extension in your base object class and base field class and use <code class="language-plaintext highlighter-rouge">cacheable(...)</code> to set up the default cache behavior:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/types/base_object.rb</span>
+<span class="k">class</span> <span class="nc">Types::BaseObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+  <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">ObjectCache</span><span class="o">::</span><span class="no">ObjectIntegration</span>
+  <span class="n">cacheable</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="c1"># see below</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/types/base_field.rb</span>
+<span class="k">class</span> <span class="nc">Types::BaseField</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Field</span>
+  <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">ObjectCache</span><span class="o">::</span><span class="no">FieldIntegration</span>
+  <span class="n">cacheable</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="c1"># see below</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Field caching can be configured per-field, too, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:latest_update</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Update</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">cacheable: </span><span class="p">{</span> <span class="ss">ttl: </span><span class="mi">60</span> <span class="p">}</span>
+
+<span class="n">field</span> <span class="ss">:random_number</span><span class="p">,</span> <span class="no">Int</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">cacheable: </span><span class="kp">false</span>
+</code></pre></div></div>
+
+<p>Only <em>queries</em> are cached. <code class="language-plaintext highlighter-rouge">ObjectCache</code> skips mutations and subscriptions altogether.</p>
+
+<h2 id="cacheabletruefalse"><code class="language-plaintext highlighter-rouge">cacheable(true|false)</code></h2>
+
+<p><code class="language-plaintext highlighter-rouge">cacheable(true)</code> means that the configured type or field may be stored in the cache until its cache fingerprint changes. It also defaults to <code class="language-plaintext highlighter-rouge">public: false</code>, meaning that clients will <em>not</em> share cached responses. See <a href="#public"><code class="language-plaintext highlighter-rouge">public:</code></a> below for more about this option.</p>
+
+<p><code class="language-plaintext highlighter-rouge">cacheable(false)</code> disables caching for the configured type or field. Any query that includes this type or field will neither check for an already-cached value nor update the cache with its result.</p>
+
+<h2 id="public"><code class="language-plaintext highlighter-rouge">public:</code></h2>
+
+<p><code class="language-plaintext highlighter-rouge">cacheable(public: false)</code> means that a type or field may be <em>cached</em>, but <a href="/object_cache/schema_setup#context-fingerprint"><code class="language-plaintext highlighter-rouge">Schema.private_context_fingerprint_for(ctx)</code></a> should be included in its cache key. In practice, this means that each client can have its own cached responses. Any query that contains a <code class="language-plaintext highlighter-rouge">cacheable(public: false)</code> type or field will use a private cache key.</p>
+
+<p><code class="language-plaintext highlighter-rouge">cacheable(public: true)</code> means that cached values from this type or field may be shared by <em>all</em> clients. Use this for public-facing data which is the same for all viewers. Queries that include <em>only</em> <code class="language-plaintext highlighter-rouge">public: true</code> types and fields will not include <code class="language-plaintext highlighter-rouge">Schema.private_context_fingerprint_for(ctx)</code> in their cache keys. That way their responses will be shared by all clients who request them.</p>
+
+<h2 id="ttl"><code class="language-plaintext highlighter-rouge">ttl:</code></h2>
+
+<p><code class="language-plaintext highlighter-rouge">cacheable(ttl: seconds)</code> expires any cached value after the given number of seconds, regardless of cache fingerprint. <code class="language-plaintext highlighter-rouge">ttl:</code> shines in a few cases:</p>
+
+<ul>
+  <li>Objects that can’t reliably generate a fingerprint value (for example, they have no <code class="language-plaintext highlighter-rouge">.updated_at</code> timestamp). In this case, a conservative <code class="language-plaintext highlighter-rouge">ttl</code> may be the only option for cache expiration.</li>
+  <li>Or, root-level fields that should be expired after a certain amount of time. The root-level <code class="language-plaintext highlighter-rouge">Query</code> often has <em>no</em> backing object, so it won’t have a cache fingerprint, either. Adding <code class="language-plaintext highlighter-rouge">cacheable: { ttl: ... }</code> to root level fields will provide some caching along with a guarantee about when they’ll be expired.</li>
+  <li>Or, list responses that may be difficult to invalidate properly (see below).</li>
+</ul>
+
+<p>Under the hood, <code class="language-plaintext highlighter-rouge">ttl:</code> is implemented with Redis’s <code class="language-plaintext highlighter-rouge">EXPIRE</code>.</p>
+
+<h2 id="caching-lists-and-connections">Caching lists and connections</h2>
+
+<p>Lists and connections require a little extra consideration. In order to effectively bust the cache, items that belong to the list of “parent” object should update the parent whenever they’re modified in a way that changes the state of the list. For example, if there’s a list of players on a team:</p>
+
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="n">team</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">players</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">totalCount</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>None of the <em>specific</em> <code class="language-plaintext highlighter-rouge">Player</code>s will be part of the cached response, but the <code class="language-plaintext highlighter-rouge">Team</code> will be. To properly invalidate the cache, the <code class="language-plaintext highlighter-rouge">Team</code>’s <code class="language-plaintext highlighter-rouge">updated_at</code> (or other cache key) should be updated whenever a <code class="language-plaintext highlighter-rouge">Player</code> is added or removed from the <code class="language-plaintext highlighter-rouge">Team</code>.</p>
+
+<p>If a list may be sorted, then updates to <code class="language-plaintext highlighter-rouge">Player</code>s should also update the <code class="language-plaintext highlighter-rouge">Team</code> so that any sorted results in the cache are invalidated, too. Alternatively (or additionally), you could use a <code class="language-plaintext highlighter-rouge">ttl:</code> to expire cached results after a certain duration, just to be sure that results are eventually expired.</p>
+
+<p>By default, connection-related objects (like <code class="language-plaintext highlighter-rouge">*Connection</code> and <code class="language-plaintext highlighter-rouge">*Edge</code> types) “inherit” cacheability from their node types. You can override this in your base classes as long as <code class="language-plaintext highlighter-rouge">GraphQL::Enterprise::ObjectCache::ObjectIntegration</code> is included in the inheritance chain somewhere.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/object_cache/caching.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Caching Results">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

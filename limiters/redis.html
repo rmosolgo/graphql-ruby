@@ -1,0 +1,96 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL Enterprise - Rate Limiters - Configuring Redis</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.12.16/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#graphql-enterprise-rate-limiters-guides">GraphQL Enterprise - Rate Limiters</a>
+  &raquo; Configuring Redis
+</p>
+
+
+
+  <div class="enterprise-header">
+    <p>
+      <strong>🌟 Enterprise Feature 🌟</strong>
+      <span style="font-style: italic;">
+        This feature is bundled with <a href="https://graphql.pro/enterprise">GraphQL-Enterprise</a>.
+      </span>
+    </p>
+  </div>
+
+<h1 class="guide-header">Configuring Redis</h1>
+<div class="guide-container">
+  <p>Rate limiting requires persistent Redis instance, just like <a href="https://github.com/mperham/sidekiq/wiki/Using-Redis">Sidekiq</a> or the <a href="/operation_store/redis_backend">Operation Store</a>. Set <code class="language-plaintext highlighter-rouge">maxmemory-policy noeviction</code> in <code class="language-plaintext highlighter-rouge">redis.conf</code> to ensure that Redis doesn’t silently drop keys when it reaches its memory limit.</p>
+
+<h3 id="memory-usage">Memory Usage</h3>
+
+<p>Estimating memory usage depends on the string used to identify clients, since those are used in the Redis keys. Using 100-character client keys, the runtime limiter uses 400 bytes per client (two keys). Memory usage by the active operation limiter depends on the limit because each concurrent operation uses some memory; a higher limit permits more concurrent operations. With 10 active operations and a 100-character client key, the active operation limiter uses 350 bytes per client. Additionally, the limiters use up to 35kb for dashboards (2 limiters, for each one: 2x 60 per-minute keys, 24 hourly keys, and 30 daily keys @ 72 bytes per key).</p>
+
+<p>By those estimates, 1 gigabyte of memory would support both rate limiters for over 1.4 million active clients.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/limiters/redis.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Configuring Redis">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>
