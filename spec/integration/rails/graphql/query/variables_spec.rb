@@ -15,13 +15,7 @@ describe GraphQL::Query::Variables do
   }
   |}
   let(:ast_variables) { GraphQL.parse(query_string).definitions.first.variables }
-  let(:schema) {
-    Class.new(Dummy::Schema) {
-      # This tests coercion behavior which only happens when `.interpreter?` is false
-      use GraphQL::Execution::Execute
-      use GraphQL::Analysis
-    }
-  }
+  let(:schema) { Dummy::Schema }
   let(:query_context) { GraphQL::Query.new(schema, "{ __typename }").context }
   let(:variables) {
     GraphQL::Query::Variables.new(
@@ -35,7 +29,7 @@ describe GraphQL::Query::Variables do
 
     it "returns a hash representation including default values" do
       expected_hash = {
-        "animals" => ["YAK"],
+        "animals" => "YAK", # This is converted to a single-item list later on
         "intDefaultNull" => nil,
         "intWithDefault" => 10,
       }
@@ -44,55 +38,6 @@ describe GraphQL::Query::Variables do
   end
 
   describe "#initialize" do
-    describe "coercing inputs" do
-      let(:provided_variables) { { "animals" => "YAK" } }
-
-      it "coerces single items into one-element lists" do
-        assert_equal ["YAK"], variables["animals"]
-      end
-    end
-
-    describe "symbol keys" do
-      let(:query_string) { <<-GRAPHQL
-        query testVariables(
-          $dairy_product_1: DairyProductInput!
-          $dairy_product_2: DairyProductInput!
-        ) {
-          __typename
-        }
-      GRAPHQL
-      }
-
-      let(:provided_variables) {
-        {
-          dairy_product_1: { source: "COW", fatContent: 0.99 },
-          "dairy_product_2" => { source: "DONKEY", "fatContent": 0.89 },
-        }
-      }
-
-      it "checks for string matches" do
-        # These get merged into all the values above
-        default_values = {
-          origin_dairy: "Sugar Hollow Dairy",
-          organic: false,
-          order_by: { direction: "ASC" },
-        }
-
-        expected_input_1 = {
-          source: 1,
-          fat_content: 0.99,
-        }.merge(default_values)
-
-        assert_equal(expected_input_1.sort.to_h, variables["dairy_product_1"].to_h.sort.to_h)
-
-        expected_input_2 = {
-          source: :donkey,
-          fat_content: 0.89,
-        }.merge(default_values)
-        assert_equal(expected_input_2.sort.to_h, variables["dairy_product_2"].to_h.sort.to_h)
-      end
-    end
-
     describe "validating input objects" do
       let(:query_string) {%|
       query searchMyDairy (
@@ -227,22 +172,8 @@ describe GraphQL::Query::Variables do
           class << self
             attr_accessor :args_cache
           end
-          # Work around the fact that:
-          # - These tests check for `!intepreter?` behavior
-          # - Previously, these tests used an OpenStruct instead of a real context
-          # - But, now, the context requires `.dataloader.append_job`
-          # - At first I used NullContext, but that doesn't have the `.schema` reference that Variables needs.
-          # - So I built a _real_ context, but that started returning `.interpreter? => true`
-          # - So, update the schema to _really_ be `.interpreter? => false`
-          # When the legacy runtime is removed, so can the tests for that behavior (and the behavior itself.)
-          def args_cache
-            self.class.args_cache
-          end
 
           self.args_cache = args_cache
-          # This tests some coercion behavior that only applies to the legacy runtime:
-          use GraphQL::Execution::Execute
-          use GraphQL::Analysis
         end
       }
 
@@ -290,9 +221,7 @@ describe GraphQL::Query::Variables do
       }
 
       let(:run_query) {
-        GraphQL::Deprecation.stub(:warn, nil) do
-          schema.execute(query_string, variables: provided_variables)
-        end
+        schema.execute(query_string, variables: provided_variables)
       }
 
       let(:variables) { GraphQL::Query::Variables.new(
@@ -395,9 +324,7 @@ describe GraphQL::Query::Variables do
       end
 
       it "works" do
-        res = GraphQL::Deprecation.stub(:warn, nil) do
-          schema.execute(query_string, variables: params["variables"])
-        end
+        res = schema.execute(query_string, variables: params["variables"])
         assert_equal 1, res["data"]["searchDairy"].length
       end
     end
