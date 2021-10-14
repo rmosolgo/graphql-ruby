@@ -376,6 +376,11 @@ module GraphQL
         end
       end
 
+      # TODO use this to pick between multi-definitions
+      def applies?(context)
+        true
+      end
+
       # Add `extension` to this field, initialized with `options` if provided.
       #
       # @example adding an extension

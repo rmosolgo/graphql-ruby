@@ -15,27 +15,48 @@ module GraphQL
         end
 
         # @return [Hash<String => GraphQL::Schema::Field>] Fields on this object, keyed by name, including inherited fields
-        def fields
+        def fields(context = GraphQL::Query::NullContext)
           # Local overrides take precedence over inherited fields
-          all_fields = {}
-          ancestors.reverse_each do |ancestor|
+          applicable_fields = {}
+          for ancestor in ancestors
             if ancestor.respond_to?(:own_fields)
-              all_fields.merge!(ancestor.own_fields)
-            end
-          end
-          all_fields
-        end
-
-        def get_field(field_name)
-          if (f = own_fields[field_name])
-            f
-          else
-            for ancestor in ancestors
-              if ancestor.respond_to?(:own_fields) && f = ancestor.own_fields[field_name]
-                return f
+              ancestor.own_fields.each do |field_name, fields_entry|
+                # Choose the most local definition that passes `.applies?` --
+                # stop checking for fields by name once one has been found.
+                if !applicable_fields.key?(field_name) && (f = field_applies?(fields_entry, context))
+                  applicable_fields[field_name] = f
+                end
               end
             end
-            nil
+          end
+          applicable_fields
+        end
+
+        def get_field(field_name, context = GraphQL::Query::NullContext)
+          for ancestor in ancestors
+            if ancestor.respond_to?(:own_fields) &&
+                (f_entry = ancestor.own_fields[field_name])
+                (f = field_applies?(f_entry, context))
+              return f
+            end
+          end
+          nil
+        end
+
+        # @param fields_entry [GraphQL::Schema::Field, Array<GraphQL::Schema::Field>]
+        # @return [GraphQL::Schema::Field, nil]
+        def field_applies?(fields_entry, context)
+          case fields_entry
+          when GraphQL::Schema::Field
+            if fields_entry.applies?(context)
+              fields_entry
+            else
+              nil
+            end
+          when Array
+            fields_entry.find { |f| field_applies?(f, context) }
+          else
+            raise "Invariant: unexpected fields entry: #{fields_entry.inspect}"
           end
         end
 
@@ -64,7 +85,19 @@ module GraphQL
           if method_conflict_warning && CONFLICT_FIELD_NAMES.include?(field_defn.resolver_method) && field_defn.original_name == field_defn.resolver_method && field_defn.original_name == field_defn.method_sym
             warn(conflict_field_name_warning(field_defn))
           end
-          own_fields[field_defn.name] = field_defn
+          prev_defn = own_fields[field_defn.name]
+
+          case prev_defn
+          when nil
+            own_fields[field_defn.name] = field_defn
+          when Array
+            prev_defn << field_defn
+          when GraphQL::Schema::Field
+            own_fields[field_defn.name] = [prev_defn, field_defn]
+          else
+            raise "Invariant: unexpected previous field definition for #{field_defn.name.inspect}: #{prev_defn.inspect}"
+          end
+
           nil
         end
 
@@ -87,7 +120,7 @@ module GraphQL
           end
         end
 
-        # @return [Array<GraphQL::Schema::Field>] Fields defined on this class _specifically_, not parent classes
+        # @return [Hash<String => GraphQL::Schema::Field, Array<GraphQL::Schema::Field>>] Fields defined on this class _specifically_, not parent classes
         def own_fields
           @own_fields ||= {}
         end
