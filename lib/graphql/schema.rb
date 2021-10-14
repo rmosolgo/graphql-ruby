@@ -1181,7 +1181,7 @@ module GraphQL
         GraphQL::Schema::TypeExpression.build_type(type_owner, ast_node)
       end
 
-      def get_field(type_or_name, field_name)
+      def get_field(type_or_name, field_name, context = GraphQL::Query::NullContext)
         parent_type = case type_or_name
         when LateBoundType
           get_type(type_or_name.name)
@@ -1193,7 +1193,7 @@ module GraphQL
           raise ArgumentError, "unexpected field owner for #{field_name.inspect}: #{type_or_name.inspect} (#{type_or_name.class})"
         end
 
-        if parent_type.kind.fields? && (field = parent_type.get_field(field_name))
+        if parent_type.kind.fields? && (field = parent_type.get_field(field_name, context))
           field
         elsif parent_type == query && (entry_point_field = introspection_system.entry_point(name: field_name))
           entry_point_field
@@ -1204,8 +1204,8 @@ module GraphQL
         end
       end
 
-      def get_fields(type)
-        type.fields
+      def get_fields(type, context = GraphQL::Query::NullContext)
+        type.fields(context)
       end
 
       def introspection(new_introspection_namespace = nil)

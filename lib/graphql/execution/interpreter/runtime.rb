@@ -384,7 +384,9 @@ module GraphQL
             ast_node = field_ast_nodes_or_ast_node
           end
           field_name = ast_node.name
-          field_defn = @fields_cache[owner_type][field_name] ||= owner_type.get_field(field_name)
+          # TODO: why can't this use `query.get_field`? It gets confused on introspection below if `field_defn` isn't `nil`,#
+          # because of how `is_introspection` is used to call `.authorized_new` later on.
+          field_defn = @fields_cache[owner_type][field_name] ||= owner_type.get_field(field_name, @context)
           is_introspection = false
           if field_defn.nil?
             field_defn = if owner_type == schema.query && (entry_point_field = schema.introspection_system.entry_point(name: field_name))

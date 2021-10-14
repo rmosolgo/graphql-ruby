@@ -174,8 +174,9 @@ module GraphQL
 
         # @return [Hash<String => GraphQL::Schema::Field>] All of this object's fields, indexed by name
         # @see get_field A faster way to find one field by name ({#fields} merges hashes of inherited fields; {#get_field} just looks up one field.)
-        def fields
+        def fields(context = GraphQL::Query::NullContext)
           all_fields = super
+          # Todo update this
           interfaces.each do |int|
             # Include legacy-style interfaces, too
             if int.is_a?(GraphQL::InterfaceType)

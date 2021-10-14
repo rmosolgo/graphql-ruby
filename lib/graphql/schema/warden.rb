@@ -92,7 +92,7 @@ module GraphQL
       def get_field(parent_type, field_name)
         @visible_parent_fields ||= read_through do |type|
           read_through do |f_name|
-            field_defn = @schema.get_field(type, f_name)
+            field_defn = @schema.get_field(type, f_name, @context)
             if field_defn && visible_field?(type, field_defn)
               field_defn
             else
@@ -122,7 +122,7 @@ module GraphQL
       # @param type_defn [GraphQL::ObjectType, GraphQL::InterfaceType]
       # @return [Array<GraphQL::Field>] Fields on `type_defn`
       def fields(type_defn)
-        @visible_fields ||= read_through { |t| @schema.get_fields(t).each_value.select { |f| visible_field?(t, f) } }
+        @visible_fields ||= read_through { |t| @schema.get_fields(t, @context).each_value.select { |f| visible_field?(t, f) } }
         @visible_fields[type_defn]
       end
 
