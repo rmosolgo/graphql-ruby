@@ -108,9 +108,9 @@ module GraphQL
         # @see get_field A faster way to find one field by name ({#fields} merges hashes of inherited fields; {#get_field} just looks up one field.)
         def fields(context = GraphQL::Query::NullContext)
           all_fields = super
-          # Todo update this
+          # This adds fields from legacy-style interfaces only.
+          # Multi-fields are not supported here.
           interfaces.each do |int|
-            # Include legacy-style interfaces, too
             if int.is_a?(GraphQL::InterfaceType)
               int_f = {}
               int.fields.each do |name, legacy_field|
