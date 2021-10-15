@@ -24,7 +24,13 @@ module GraphQL
       end
 
       def get_type(name)
-        @types[name] || @schema.get_type(name)
+        local_type = @types[name]
+        # This isn't really sophisticated, but
+        # I think it's good enough to support the current usage of LateBoundTypes
+        if local_type.is_a?(Array)
+          local_type = local_type.first
+        end
+        local_type || @schema.get_type(name)
       end
 
       # Lookup using `own_types` here because it's ok to override
@@ -129,6 +135,15 @@ module GraphQL
         end
       end
 
+      def add_duplicate_type(type)
+        prev_type = @types[type.graphql_name]
+        if prev_type.is_a?(Array)
+          prev_type << type
+        else
+          @types[type.graphql_name] = [prev_type, type]
+        end
+      end
+
       def add_type(type, owner:, late_types:, path:)
         if type.respond_to?(:metadata) && type.metadata.is_a?(Hash)
           type_class = type.metadata[:type_class]
@@ -149,14 +164,7 @@ module GraphQL
 
         if (prev_type = get_local_type(type.graphql_name))
           if prev_type != type
-            raise DuplicateTypeNamesError.new(
-              type_name: type.graphql_name,
-              first_definition: prev_type,
-              second_definition: type,
-              path: path,
-            )
-          else
-            # This type was already added
+            add_duplicate_type(type)
           end
         elsif type.is_a?(Class) && type < GraphQL::Schema::Directive
           @directives << type
@@ -172,7 +180,8 @@ module GraphQL
           @types[type.graphql_name] = type
           add_directives_from(type)
           if type.kind.fields?
-            type.fields.each do |name, field|
+            type.all_field_definitions.each do |field|
+              name = field.graphql_name
               field_type = field.type.unwrap
               references_to(field_type, from: field)
               field_path = path + [name]

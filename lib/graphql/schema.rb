@@ -995,16 +995,28 @@ module GraphQL
       # Build a map of `{ name => type }` and return it
       # @return [Hash<String => Class>] A dictionary of type classes by their GraphQL name
       # @see get_type Which is more efficient for finding _one type_ by name, because it doesn't merge hashes.
-      def types
+      def types(context = GraphQL::Query::NullContext)
         non_introspection_types.merge(introspection_system.types)
       end
 
       # @param type_name [String]
       # @return [Module, nil] A type, or nil if there's no type called `type_name`
-      def get_type(type_name)
-        own_types[type_name] ||
-          introspection_system.types[type_name] ||
-          find_inherited_value(:types, EMPTY_HASH)[type_name]
+      def get_type(type_name, context = GraphQL::Query::NullContext)
+        local_entry = own_types[type_name]
+        type_defn = case local_entry
+        when nil
+          nil
+        when Array
+          local_entry.find { |type_defn| type_defn.applies?(context) }
+        when Module
+          local_entry
+        else
+          raise "Invariant: unexpected own_types[#{type_name.inspect}]: #{local_entry.inspect}"
+        end
+
+        type_defn ||
+          introspection_system.types[type_name] || # todo context-specific introspection?
+          (superclass.respond_to?(:get_type) ? superclass.get_type(type_name, context) : nil)
       end
 
       # @api private
@@ -1184,9 +1196,9 @@ module GraphQL
       def get_field(type_or_name, field_name, context = GraphQL::Query::NullContext)
         parent_type = case type_or_name
         when LateBoundType
-          get_type(type_or_name.name)
+          get_type(type_or_name.name, context)
         when String
-          get_type(type_or_name)
+          get_type(type_or_name, context)
         when Module
           type_or_name
         else
@@ -1724,7 +1736,30 @@ module GraphQL
         end
         new_types = Array(t)
         addition = Schema::Addition.new(schema: self, own_types: own_types, new_types: new_types)
-        own_types.merge!(addition.types)
+        addition.types.each do |name, types_entry|
+          if (prev_entry = own_types[name])
+            prev_entries = case prev_entry
+            when Array
+              prev_entry
+            when Module
+              own_types[name] = [prev_entry]
+            else
+              raise "Invariant: unexpected prev_entry at #{name.inspect} when adding #{t.inspect}"
+            end
+
+            case types_entry
+            when Array
+              prev_entries.concat(types_entry)
+            when Module
+              prev_entries << types_entry
+            else
+              raise "Invariant: unexpected types_entry at #{name} when adding #{t.inspect}"
+            end
+          else
+            own_types[name] = types_entry
+          end
+        end
+
         own_possible_types.merge!(addition.possible_types) { |key, old_val, new_val| old_val + new_val }
         own_union_memberships.merge!(addition.union_memberships)
 

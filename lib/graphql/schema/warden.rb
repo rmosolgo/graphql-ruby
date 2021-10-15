@@ -54,7 +54,7 @@ module GraphQL
       def types
         @types ||= begin
           vis_types = {}
-          @schema.types.each do |n, t|
+          @schema.types(@context).each do |n, t|
             if visible_type?(t)
               vis_types[n] = t
             end
@@ -66,7 +66,7 @@ module GraphQL
       # @return [GraphQL::BaseType, nil] The type named `type_name`, if it exists (else `nil`)
       def get_type(type_name)
         @visible_types ||= read_through do |name|
-          type_defn = @schema.get_type(name)
+          type_defn = @schema.get_type(name, @context)
           if type_defn && visible_type?(type_defn)
             type_defn
           else

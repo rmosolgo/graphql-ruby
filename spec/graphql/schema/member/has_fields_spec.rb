@@ -4,18 +4,26 @@ require "spec_helper"
 describe GraphQL::Schema::Member::HasFields do
   class MultifieldSchema < GraphQL::Schema
     class BaseField < GraphQL::Schema::Field
-      def initialize(*args, applies_if: nil, **kwargs, &block)
-        @applies_if = applies_if
+      def initialize(*args, future_schema: nil, **kwargs, &block)
+        @future_schema = future_schema
         super(*args, **kwargs, &block)
       end
 
       def applies?(context)
-        @applies_if.nil? || context[@applies_if]
+        @future_schema.nil? || @future_schema == context[:future_schema]
       end
     end
 
     class BaseObject < GraphQL::Schema::Object
       field_class BaseField
+
+      class << self
+        attr_writer :future_schema
+      end
+
+      def self.applies?(context)
+        @future_schema == context[:future_schema]
+      end
     end
 
     module BaseInterface
@@ -23,22 +31,46 @@ describe GraphQL::Schema::Member::HasFields do
       field_class BaseField
     end
 
+    class BaseScalar < GraphQL::Schema::Scalar
+      class << self
+        attr_writer :future_schema
+      end
+
+      def self.applies?(context)
+        @future_schema == context[:future_schema]
+      end
+    end
+
     module Node
       include BaseInterface
 
-      field :id, Int, null: false, applies_if: :future_schema, deprecation_reason: "Use databaseId instead"
+      field :id, Int, null: false, future_schema: true, deprecation_reason: "Use databaseId instead"
       field :id, Int, null: false
 
-      field :database_id, Int, null: false, applies_if: :future_schema
-      field :uuid, ID, null: false, applies_if: :future_schema
+      field :database_id, Int, null: false, future_schema: true
+      field :uuid, ID, null: false, future_schema: true
+    end
+
+    class LegacyMoney < BaseScalar
+      graphql_name "Money"
+    end
+
+    class Money < BaseObject
+      field :amount, Integer, null: false
+      field :currency, String, null: false
+
+      self.future_schema = true
     end
 
     class Thing < BaseObject
       implements Node
+
+      field :price, Money, null: true, future_schema: true
+      field :price, LegacyMoney, null: true, method: :legacy_price
     end
 
     class Query < BaseObject
-      field :f1, String, null: true, applies_if: :future_schema
+      field :f1, String, null: true, future_schema: true
       field :f1, Int, null: true
 
       def f1
@@ -54,7 +86,7 @@ describe GraphQL::Schema::Member::HasFields do
       end
 
       def thing(id:)
-        { id: id, database_id: id, uuid: "thing-#{id}" }
+        { id: id, database_id: id, uuid: "thing-#{id}", legacy_price: "⚛︎100", price: { amount: 100, currency: "⚛︎" }}
       end
     end
 
@@ -113,5 +145,32 @@ GRAPHQL
       MultifieldSchema.execute(query_str)["errors"].map { |e| e["message"] }
     res = MultifieldSchema.execute(query_str, context: { future_schema: true })
     assert_equal({ "thing" => { "databaseId" => 15, "id" => 15, "uuid" => "thing-15"} }, res["data"])
+  end
+
+  it "can migrate scalars to objects" do
+    # Schema dump
+    assert_includes MultifieldSchema.to_definition, "scalar Money"
+    refute_includes MultifieldSchema.to_definition, "type Money"
+
+    assert_includes MultifieldSchema.to_definition(context: { future_schema: true }), <<-GRAPHQL
+type Money {
+  amount: Int!
+  currency: String!
+}
+GRAPHQL
+    refute_includes MultifieldSchema.to_definition(context: { future_schema: true }), "scalar Money"
+
+
+    assert_equal MultifieldSchema::LegacyMoney, MultifieldSchema.get_type("Money")
+    assert_equal MultifieldSchema::Money, MultifieldSchema.get_type("Money", { future_schema: true })
+
+    assert_equal "⚛︎100", MultifieldSchema.execute("{ thing(id: 1) { price } }")["data"]["thing"]["price"]
+    res = MultifieldSchema.execute("{ __type(name: \"Money\") { kind name } }")
+    assert_equal "SCALAR", res["data"]["__type"]["kind"]
+    assert_equal "Money", res["data"]["__type"]["name"]
+    assert_equal({ "amount" => 100, "currency" => "⚛︎" }, MultifieldSchema.execute("{ thing(id: 1) { price { amount currency } } }", context: { future_schema: true })["data"]["thing"]["price"])
+    res = MultifieldSchema.execute("{ __type(name: \"Money\") { name kind } }", context: { future_schema: true })
+    assert_equal "OBJECT", res["data"]["__type"]["kind"]
+    assert_equal "Money", res["data"]["__type"]["name"]
   end
 end

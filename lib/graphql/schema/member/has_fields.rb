@@ -35,7 +35,7 @@ module GraphQL
         def get_field(field_name, context = GraphQL::Query::NullContext)
           for ancestor in ancestors
             if ancestor.respond_to?(:own_fields) &&
-                (f_entry = ancestor.own_fields[field_name])
+                (f_entry = ancestor.own_fields[field_name]) &&
                 (f = field_applies?(f_entry, context))
               return f
             end
@@ -123,6 +123,25 @@ module GraphQL
         # @return [Hash<String => GraphQL::Schema::Field, Array<GraphQL::Schema::Field>>] Fields defined on this class _specifically_, not parent classes
         def own_fields
           @own_fields ||= {}
+        end
+
+        def all_field_definitions
+          all_fields = Hash.new { |h, k| h[k] = [] }
+          for ancestor in ancestors
+            if ancestor.respond_to?(:own_fields)
+              ancestor.own_fields.each do |field_name, fields_entry|
+                if fields_entry.is_a?(Array)
+                  all_fields[field_name].concat(fields_entry)
+                else
+                  all_fields[field_name] << fields_entry
+                end
+              end
+            end
+          end
+          all_fields = all_fields.values
+          all_fields.flatten!
+          all_fields.uniq!
+          all_fields
         end
 
         private
