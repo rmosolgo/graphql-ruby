@@ -164,9 +164,13 @@ module GraphQL
       def print_object_type_definition(object_type)
         out = print_description(object_type)
         out << "type #{object_type.name}"
-        out << " implements " << object_type.interfaces.map(&:name).join(" & ") unless object_type.interfaces.empty?
+        out << print_implements(object_type) unless object_type.interfaces.empty?
         out << print_directives(object_type.directives)
         out << print_field_definitions(object_type.fields)
+      end
+
+      def print_implements(type)
+        " implements #{type.interfaces.map(&:name).join(" & ")}"
       end
 
       def print_input_value_definition(input_value)
@@ -200,6 +204,7 @@ module GraphQL
       def print_interface_type_definition(interface_type)
         out = print_description(interface_type)
         out << "interface #{interface_type.name}"
+        out << print_implements(interface_type) if interface_type.interfaces.any?
         out << print_directives(interface_type.directives)
         out << print_field_definitions(interface_type.fields)
       end

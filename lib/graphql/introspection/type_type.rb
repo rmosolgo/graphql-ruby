@@ -50,7 +50,7 @@ module GraphQL
       end
 
       def interfaces
-        if @object.kind == GraphQL::TypeKinds::OBJECT
+        if @object.kind.object? || @object.kind.interface?
           @context.warden.interfaces(@object)
         else
           nil

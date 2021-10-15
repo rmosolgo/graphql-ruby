@@ -325,8 +325,9 @@ rule
     | EXTEND TYPE name implements { result = make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: [], fields: [], position_source: val[0]) }
 
   interface_type_extension:
-      EXTEND INTERFACE name directives_list_opt LCURLY field_definition_list RCURLY { result = make_node(:InterfaceTypeExtension, name: val[2], directives: val[3], fields: val[5], position_source: val[0]) }
-    | EXTEND INTERFACE name directives_list { result = make_node(:InterfaceTypeExtension, name: val[2], directives: val[3], fields: [], position_source: val[0]) }
+      EXTEND INTERFACE name implements_opt directives_list_opt LCURLY field_definition_list RCURLY { result = make_node(:InterfaceTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: val[6], position_source: val[0]) }
+    | EXTEND INTERFACE name implements_opt directives_list { result = make_node(:InterfaceTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: [], position_source: val[0]) }
+    | EXTEND INTERFACE name implements { result = make_node(:InterfaceTypeExtension, name: val[2], interfaces: val[3], directives: [], fields: [], position_source: val[0]) }
 
   union_type_extension:
       EXTEND UNION name directives_list_opt EQUALS union_members { result = make_node(:UnionTypeExtension, name: val[2], directives: val[3], types: val[5], position_source: val[0]) }
@@ -397,8 +398,8 @@ rule
     | field_definition_list field_definition { val[0] << val[1] }
 
   interface_type_definition:
-      description_opt INTERFACE name directives_list_opt LCURLY field_definition_list RCURLY {
-        result = make_node(:InterfaceTypeDefinition, name: val[2], directives: val[3], fields: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+      description_opt INTERFACE name implements_opt directives_list_opt LCURLY field_definition_list RCURLY {
+        result = make_node(:InterfaceTypeDefinition, name: val[2], interfaces: val[3], directives: val[4], fields: val[6], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       }
 
   union_members:
