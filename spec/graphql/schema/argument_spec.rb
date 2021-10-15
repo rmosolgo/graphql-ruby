@@ -9,6 +9,10 @@ describe GraphQL::Schema::Argument do
       end
     end
 
+    class ContextInput < GraphQL::Schema::InputObject
+      argument :context, String, required: true
+    end
+
     class Query < GraphQL::Schema::Object
       field :field, String, null: true do
         argument :arg, String, description: "test", required: false
@@ -53,6 +57,14 @@ describe GraphQL::Schema::Argument do
 
       def multiply(val)
         context[:multiply_by] * val
+      end
+
+      field :context_arg_test, [String], null: false do
+        argument :input, ContextInput, required: true
+      end
+
+      def context_arg_test(input:)
+        [input.context, input.context.class, self.context.class]
       end
     end
 
@@ -510,5 +522,10 @@ describe GraphQL::Schema::Argument do
       expected_message = "`InputObj.arg1` has an invalid default value: `[nil]` isn't accepted by `[String!]`; update the default value or the argument type."
       assert_equal expected_message, err3.message
     end
+  end
+
+  it "works with arguments named context" do
+    res = SchemaArgumentTest::Schema.execute("{ contextArgTest(input: { context: \"abc\" }) }")
+    assert_equal ["abc", "String", "GraphQL::Query::Context"], res["data"]["contextArgTest"]
   end
 end
