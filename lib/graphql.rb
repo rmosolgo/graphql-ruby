@@ -57,22 +57,26 @@ module GraphQL
   end
 
   # Support Ruby 2.2 by implementing `-"str"`. If we drop 2.2 support, we can remove this backport.
-  module StringDedupBackport
-    refine String do
-      def -@
-        if frozen?
-          self
-        else
-          self.dup.freeze
+  if !String.method_defined?(:-@)
+    module StringDedupBackport
+      refine String do
+        def -@
+          if frozen?
+            self
+          else
+            self.dup.freeze
+          end
         end
       end
     end
   end
 
-  module StringMatchBackport
-    refine String do
-      def match?(pattern)
-        self =~ pattern
+  if !String.method_defined?(:match?)
+    module StringMatchBackport
+      refine String do
+        def match?(pattern)
+          self =~ pattern
+        end
       end
     end
   end

@@ -10,9 +10,19 @@ module GraphQL
       class Runtime
 
         module GraphQLResult
-          # These methods are private concerns of GraphQL-Ruby,
-          # they aren't guaranteed to continue working in the future.
-          attr_accessor :graphql_dead, :graphql_parent, :graphql_result_name
+          def initialize(result_name, parent_result)
+            @graphql_parent = parent_result
+            if parent_result && parent_result.graphql_dead
+              @graphql_dead = true
+            end
+            @graphql_result_name = result_name
+            # Jump through some hoops to avoid creating this duplicate storage if at all possible.
+            @graphql_metadata = nil
+          end
+
+          attr_accessor :graphql_dead
+          attr_reader :graphql_parent, :graphql_result_name
+
           # Although these are used by only one of the Result classes,
           # it's handy to have the methods implemented on both (even though they just return `nil`)
           # because it makes it easy to check if anything is assigned.
@@ -20,9 +30,17 @@ module GraphQL
           attr_accessor :graphql_non_null_field_names
           # @return [nil, true]
           attr_accessor :graphql_non_null_list_items
+
+          # @return [Hash] Plain-Ruby result data (`@graphql_metadata` contains Result wrapper objects)
+          attr_accessor :graphql_result_data
         end
 
-        class GraphQLResultHash < Hash
+        class GraphQLResultHash
+          def initialize(_result_name, _parent_result)
+            super
+            @graphql_result_data = {}
+          end
+
           include GraphQLResult
 
           attr_accessor :graphql_merged_into
@@ -39,12 +57,82 @@ module GraphQL
             if (t = @graphql_merged_into)
               t[key] = value
             end
-            super
+
+            if value.respond_to?(:graphql_result_data)
+              @graphql_result_data[key] = value.graphql_result_data
+              # If we encounter some part of this response that requires metadata tracking,
+              # then create the metadata hash if necessary. It will be kept up-to-date after this.
+              (@graphql_metadata ||= @graphql_result_data.dup)[key] = value
+            else
+              @graphql_result_data[key] = value
+              # keep this up-to-date if it's been initialized
+              @graphql_metadata && @graphql_metadata[key] = value
+            end
+
+            value
+          end
+
+          def delete(key)
+            @graphql_metadata && @graphql_metadata.delete(key)
+            @graphql_result_data.delete(key)
+          end
+
+          def each
+            (@graphql_metadata || @graphql_result_data).each { |k, v| yield(k, v) }
+          end
+
+          def values
+            (@graphql_metadata || @graphql_result_data).values
+          end
+
+          def key?(k)
+            @graphql_result_data.key?(k)
+          end
+
+          def [](k)
+            (@graphql_metadata || @graphql_result_data)[k]
           end
         end
 
-        class GraphQLResultArray < Array
+        class GraphQLResultArray
           include GraphQLResult
+
+          def initialize(_result_name, _parent_result)
+            super
+            @graphql_result_data = []
+          end
+
+          def graphql_skip_at(index)
+            # Mark this index as dead. It's tricky because some indices may already be storing
+            # `Lazy`s. So the runtime is still holding indexes _before_ skipping,
+            # this object has to coordinate incoming writes to account for any already-skipped indices.
+            @skip_indices ||= []
+            @skip_indices << index
+            offset_by = @skip_indices.count { |skipped_idx| skipped_idx < index}
+            delete_at_index = index - offset_by
+            @graphql_metadata && @graphql_metadata.delete_at(delete_at_index)
+            @graphql_result_data.delete_at(delete_at_index)
+          end
+
+          def []=(idx, value)
+            if @skip_indices
+              offset_by = @skip_indices.count { |skipped_idx| skipped_idx < idx }
+              idx -= offset_by
+            end
+            if value.respond_to?(:graphql_result_data)
+              @graphql_result_data[idx] = value.graphql_result_data
+              (@graphql_metadata ||= @graphql_result_data.dup)[idx] = value
+            else
+              @graphql_result_data[idx] = value
+              @graphql_metadata && @graphql_metadata[idx] = value
+            end
+
+            value
+          end
+
+          def values
+            (@graphql_metadata || @graphql_result_data)
+          end
         end
 
         class GraphQLSelectionSet < Hash
@@ -60,9 +148,6 @@ module GraphQL
         # @return [GraphQL::Query::Context]
         attr_reader :context
 
-        # @return [Hash]
-        attr_reader :response
-
         def initialize(query:)
           @query = query
           @dataloader = query.multiplex.dataloader
@@ -70,7 +155,7 @@ module GraphQL
           @context = query.context
           @multiplex_context = query.multiplex.context
           @interpreter_context = @context.namespace(:interpreter)
-          @response = GraphQLResultHash.new
+          @response = GraphQLResultHash.new(nil, nil)
           # Identify runtime directives by checking which of this schema's directives have overridden `def self.resolve`
           @runtime_directive_names = []
           noop_resolve_owner = GraphQL::Schema::Directive.singleton_class
@@ -85,6 +170,10 @@ module GraphQL
           @fields_cache = Hash.new { |h, k| h[k] = {} }
           # { Class => Boolean }
           @lazy_cache = {}
+        end
+
+        def final_result
+          @response && @response.graphql_result_data
         end
 
         def inspect
@@ -128,7 +217,7 @@ module GraphQL
               # directly evaluated and the results can be written right into the main response hash.
               tap_or_each(gathered_selections) do |selections, is_selection_array|
                 if is_selection_array
-                  selection_response = GraphQLResultHash.new
+                  selection_response = GraphQLResultHash.new(nil, nil)
                   final_response = @response
                 else
                   selection_response = @response
@@ -147,6 +236,7 @@ module GraphQL
                       selections,
                       selection_response,
                       final_response,
+                      nil,
                     )
                   end
                 }
@@ -167,7 +257,7 @@ module GraphQL
               into_result[key] = value
             else
               case value
-              when Hash
+              when GraphQLResultHash
                 deep_merge_selection_result(value, into_result[key])
               else
                 # We have to assume that, since this passed the `fields_will_merge` selection,
@@ -258,7 +348,7 @@ module GraphQL
         NO_ARGS = {}.freeze
 
         # @return [void]
-        def evaluate_selections(path, scoped_context, owner_object, owner_type, is_eager_selection, gathered_selections, selections_result, target_result) # rubocop:disable Metrics/ParameterLists
+        def evaluate_selections(path, scoped_context, owner_object, owner_type, is_eager_selection, gathered_selections, selections_result, target_result, parent_object) # rubocop:disable Metrics/ParameterLists
           set_all_interpreter_context(owner_object, nil, nil, path)
 
           finished_jobs = 0
@@ -266,7 +356,7 @@ module GraphQL
           gathered_selections.each do |result_name, field_ast_nodes_or_ast_node|
             @dataloader.append_job {
               evaluate_selection(
-                path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, is_eager_selection, selections_result
+                path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, is_eager_selection, selections_result, parent_object
               )
               finished_jobs += 1
               if target_result && finished_jobs == enqueued_jobs
@@ -281,7 +371,8 @@ module GraphQL
         attr_reader :progress_path
 
         # @return [void]
-        def evaluate_selection(path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, is_eager_field, selections_result) # rubocop:disable Metrics/ParameterLists
+        def evaluate_selection(path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, is_eager_field, selections_result, parent_object) # rubocop:disable Metrics/ParameterLists
+          return if dead_result?(selections_result)
           # As a performance optimization, the hash key will be a `Node` if
           # there's only one selection of the field. But if there are multiple
           # selections of the field, it will be an Array of nodes
@@ -331,16 +422,16 @@ module GraphQL
           total_args_count = field_defn.arguments.size
           if total_args_count == 0
             kwarg_arguments = GraphQL::Execution::Interpreter::Arguments::EMPTY
-            evaluate_selection_with_args(kwarg_arguments, field_defn, next_path, ast_node, field_ast_nodes, scoped_context, owner_type, object, is_eager_field, result_name, selections_result)
+            evaluate_selection_with_args(kwarg_arguments, field_defn, next_path, ast_node, field_ast_nodes, scoped_context, owner_type, object, is_eager_field, result_name, selections_result, parent_object)
           else
             # TODO remove all arguments(...) usages?
             @query.arguments_cache.dataload_for(ast_node, field_defn, object) do |resolved_arguments|
-              evaluate_selection_with_args(resolved_arguments, field_defn, next_path, ast_node, field_ast_nodes, scoped_context, owner_type, object, is_eager_field, result_name, selections_result)
+              evaluate_selection_with_args(resolved_arguments, field_defn, next_path, ast_node, field_ast_nodes, scoped_context, owner_type, object, is_eager_field, result_name, selections_result, parent_object)
             end
           end
         end
 
-        def evaluate_selection_with_args(kwarg_arguments, field_defn, next_path, ast_node, field_ast_nodes, scoped_context, owner_type, object, is_eager_field, result_name, selection_result)  # rubocop:disable Metrics/ParameterLists
+        def evaluate_selection_with_args(kwarg_arguments, field_defn, next_path, ast_node, field_ast_nodes, scoped_context, owner_type, object, is_eager_field, result_name, selection_result, parent_object)  # rubocop:disable Metrics/ParameterLists
           context.scoped_context = scoped_context
           return_type = field_defn.type
           after_lazy(kwarg_arguments, owner: owner_type, field: field_defn, path: next_path, ast_node: ast_node, scoped_context: context.scoped_context, owner_object: object, arguments: kwarg_arguments, result_name: result_name, result: selection_result) do |resolved_arguments|
@@ -382,6 +473,8 @@ module GraphQL
                   # This is used by `__typename` in order to support the legacy runtime,
                   # but it has no use here (and it's always `nil`).
                   # Stop adding it here to avoid the overhead of `.merge_extras` below.
+                when :parent
+                  extra_args[:parent] = parent_object
                 else
                   extra_args[extra] = field_defn.fetch_extra(extra, context)
                 end
@@ -439,15 +532,7 @@ module GraphQL
         end
 
         def dead_result?(selection_result)
-          r = selection_result
-          while r
-            if r.graphql_dead
-              return true
-            else
-              r = r.graphql_parent
-            end
-          end
-          false
+          selection_result.graphql_dead || ((parent = selection_result.graphql_parent) && parent.graphql_dead)
         end
 
         def set_result(selection_result, result_name, value)
@@ -471,13 +556,26 @@ module GraphQL
                 @response = nil
               else
                 set_result(parent, name_in_parent, nil)
-                # This is odd, but it's how it used to work. Even if `parent` _would_ accept
-                # a `nil`, it's marked dead. TODO: check the spec, is there a reason for this?
-                parent.graphql_dead = true
+                set_graphql_dead(selection_result)
               end
             else
               selection_result[result_name] = value
             end
+          end
+        end
+
+        # Mark this node and any already-registered children as dead,
+        # so that it accepts no more writes.
+        def set_graphql_dead(selection_result)
+          case selection_result
+          when GraphQLResultArray
+            selection_result.graphql_dead = true
+            selection_result.values.each { |v| set_graphql_dead(v) }
+          when GraphQLResultHash
+            selection_result.graphql_dead = true
+            selection_result.each { |k, v| set_graphql_dead(v) }
+          else
+            # It's a scalar, no way to mark it dead.
           end
         end
 
@@ -500,11 +598,13 @@ module GraphQL
             # to avoid the overhead of checking three different classes
             # every time.
             if value.is_a?(GraphQL::ExecutionError)
-              if !dead_result?(selection_result)
+              if selection_result.nil? || !dead_result?(selection_result)
                 value.path ||= path
                 value.ast_node ||= ast_node
                 context.errors << value
-                set_result(selection_result, result_name, nil)
+                if selection_result
+                  set_result(selection_result, result_name, nil)
+                end
               end
               HALT
             elsif value.is_a?(GraphQL::UnauthorizedError)
@@ -517,6 +617,17 @@ module GraphQL
               end
               continue_value(path, next_value, parent_type, field, is_non_null, ast_node, result_name, selection_result)
             elsif GraphQL::Execution::Execute::SKIP == value
+              # It's possible a lazy was already written here
+              case selection_result
+              when GraphQLResultHash
+                selection_result.delete(result_name)
+              when GraphQLResultArray
+                selection_result.graphql_skip_at(result_name)
+              when nil
+                # this can happen with directives
+              else
+                raise "Invariant: unexpected result class #{selection_result.class} (#{selection_result.inspect})"
+              end
               HALT
             else
               # What could this actually _be_? Anyhow,
@@ -526,13 +637,15 @@ module GraphQL
           when Array
             # It's an array full of execution errors; add them all.
             if value.any? && value.all? { |v| v.is_a?(GraphQL::ExecutionError) }
-              if !dead_result?(selection_result)
+              if selection_result.nil? || !dead_result?(selection_result)
                 value.each_with_index do |error, index|
                   error.ast_node ||= ast_node
-                  error.path ||= path + (field.type.list? ? [index] : [])
+                  error.path ||= path + ((field && field.type.list?) ? [index] : [])
                   context.errors << error
                 end
-                set_result(selection_result, result_name, nil)
+                if selection_result
+                  set_result(selection_result, result_name, nil)
+                end
               end
               HALT
             else
@@ -593,9 +706,7 @@ module GraphQL
             after_lazy(object_proxy, owner: current_type, path: path, ast_node: ast_node, scoped_context: context.scoped_context, field: field, owner_object: owner_object, arguments: arguments, trace: false, result_name: result_name, result: selection_result) do |inner_object|
               continue_value = continue_value(path, inner_object, owner_type, field, is_non_null, ast_node, result_name, selection_result)
               if HALT != continue_value
-                response_hash = GraphQLResultHash.new
-                response_hash.graphql_parent = selection_result
-                response_hash.graphql_result_name = result_name
+                response_hash = GraphQLResultHash.new(result_name, selection_result)
                 set_result(selection_result, result_name, response_hash)
                 gathered_selections = gather_selections(continue_value, current_type, next_selections)
                 # There are two possibilities for `gathered_selections`:
@@ -608,9 +719,7 @@ module GraphQL
                 #    (Technically, it's possible that one of those entries _doesn't_ require isolation.)
                 tap_or_each(gathered_selections) do |selections, is_selection_array|
                   if is_selection_array
-                    this_result = GraphQLResultHash.new
-                    this_result.graphql_parent = selection_result
-                    this_result.graphql_result_name = result_name
+                    this_result = GraphQLResultHash.new(result_name, selection_result)
                     final_result = response_hash
                   else
                     this_result = response_hash
@@ -627,6 +736,7 @@ module GraphQL
                       selections,
                       this_result,
                       final_result,
+                      owner_object.object,
                     )
                     this_result
                   end
@@ -635,16 +745,15 @@ module GraphQL
             end
           when "LIST"
             inner_type = current_type.of_type
-            response_list = GraphQLResultArray.new
+            response_list = GraphQLResultArray.new(result_name, selection_result)
             response_list.graphql_non_null_list_items = inner_type.non_null?
-            response_list.graphql_parent = selection_result
-            response_list.graphql_result_name = result_name
             set_result(selection_result, result_name, response_list)
 
             idx = 0
             scoped_context = context.scoped_context
             begin
               value.each do |inner_value|
+                break if dead_result?(response_list)
                 next_path = path.dup
                 next_path << idx
                 this_idx = idx
@@ -689,9 +798,24 @@ module GraphQL
             if !dir_defn.is_a?(Class)
               dir_defn = dir_defn.type_class || raise("Only class-based directives are supported (not `@#{dir_node.name}`)")
             end
-            dir_args = arguments(nil, dir_defn, dir_node)
-            dir_defn.resolve(object, dir_args, context) do
-              run_directive(object, directives, idx + 1, &block)
+            raw_dir_args = arguments(nil, dir_defn, dir_node)
+            dir_args = continue_value(
+              @context[:current_path], # path
+              raw_dir_args, # value
+              dir_defn, # parent_type
+              nil, # field
+              false, # is_non_null
+              dir_node, # ast_node
+              nil, # result_name
+              nil, # selection_result
+            )
+
+            if dir_args == HALT
+              nil
+            else
+              dir_defn.resolve(object, dir_args, context) do
+                run_directive(object, directives, idx + 1, &block)
+              end
             end
           end
         end

@@ -33,6 +33,7 @@ Want to add something? Please open a pull request [on GitHub](https://github.com
 - [`graphql-ruby-fragment_cache`](https://github.com/DmitryTsepelev/graphql-ruby-fragment_cache), a tool for caching response fragments.
 - [`graphql-ruby-persisted_queries`](https://github.com/DmitryTsepelev/graphql-ruby-persisted_queries), the implementation of [Apollo persisted queries](https://github.com/apollographql/apollo-link-persisted-queries).
 - [`rubocop-graphql`](https://github.com/DmitryTsepelev/rubocop-graphql), [rubocop](https://github.com/rubocop-hq/rubocop) extension for enforcing best practices.
+- [`apollo-federation-ruby`](https://github.com/Gusto/apollo-federation-ruby), a Ruby implementation of Apollo Federation.
 
 ## Blog Posts
 

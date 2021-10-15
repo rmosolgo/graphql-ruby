@@ -34,7 +34,10 @@ module GraphQL
           next_results = []
           while results.any?
             result_value = results.shift
-            if result_value.is_a?(Hash)
+            if result_value.is_a?(Runtime::GraphQLResultHash) || result_value.is_a?(Hash)
+              results.concat(result_value.values)
+              next
+            elsif result_value.is_a?(Runtime::GraphQLResultArray)
               results.concat(result_value.values)
               next
             elsif result_value.is_a?(Array)
@@ -46,7 +49,8 @@ module GraphQL
                 # Since this field returned another lazy,
                 # add it to the same queue
                 results << loaded_value
-              elsif loaded_value.is_a?(Hash) || loaded_value.is_a?(Array)
+              elsif loaded_value.is_a?(Runtime::GraphQLResultHash) || loaded_value.is_a?(Runtime::GraphQLResultArray) ||
+                  loaded_value.is_a?(Hash) || loaded_value.is_a?(Array)
                 # Add these values in wholesale --
                 # they might be modified by later work in the dataloader.
                 next_results << loaded_value

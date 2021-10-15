@@ -33,8 +33,6 @@ GraphQL-Ruby includes two classes to help you write mutations:
 
 Besides those, you can also use the plain {% internal_link "field API", "/type_definitions/objects#fields" %} to write mutation fields.
 
-An additional `null` helper method is provided on classes inheriting from `GraphQL::Schema::Mutation` to allow setting the nullability of the mutation. This is not required and defaults to `true`.
-
 ## Example mutation class
 
 If you used the {% internal_link "install generator", "/schema/generators#graphqlinstall" %}, a base mutation class will already have been generated for you. If that's not the case, you should add a base class to your application, for example:
@@ -55,8 +53,6 @@ Then extend it for your mutations:
 
 ```ruby
 class Mutations::CreateComment < Mutations::BaseMutation
-  null true
-
   argument :body, String, required: true
   argument :post_id, ID, required: true
 
@@ -86,6 +82,8 @@ end
 The `#resolve` method should return a hash whose symbols match the `field` names.
 
 (See {% internal_link "Mutation Errors", "/mutations/mutation_errors" %} for more information about returning errors.)
+
+Also, you can configure `null(false)` in your mutation class to make the generated payload class non-null.
 
 ## Hooking up mutations
 

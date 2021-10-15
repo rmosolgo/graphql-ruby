@@ -8,6 +8,34 @@
 
 ### Bug Fix
 
+# 1.19.0 (13 October 2021)
+
+### New Features
+
+- Dashboard: add a component for GraphQL-Enterprise rate limiters
+# 1.18.3 (1 Sept 2021)
+
+### Breaking Changes
+
+- Stable cursors: raise an error on unrecognized orderings instead of ignoring them #3605
+
+### Bug Fix
+
+- Stable cursors: Handle `Arel::Attributes::Attribute` and `Arel::SqlLiteral` #3605
+
+# 1.18.2 (16 August 2021)
+
+### Bug Fix
+
+- Stable connections: nicely handle incoming cursors with too many sort values #3581
+
+# 1.18.1 (20 July 2021)
+
+### Bug Fix
+
+- Stable connections: improve handling of `SELECT` with `CASE` #3558
+- Defer: fix to support runtime wrapper objects in graphql-ruby 1.12.13
+
 # 1.18.0 (31 May 2021)
 
 ### New Features

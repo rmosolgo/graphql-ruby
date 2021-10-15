@@ -25,7 +25,6 @@ Gem::Specification.new do |s|
   s.files = Dir["{lib}/**/*", "MIT-LICENSE", "readme.md", ".yardopts"]
 
   s.add_development_dependency "benchmark-ips"
-  s.add_development_dependency "codeclimate-test-reporter", "~>0.4"
   s.add_development_dependency "concurrent-ruby", "~>1.0"
   s.add_development_dependency "memory_profiler"
   # Remove this limit when minitest-reports is compatible
@@ -36,7 +35,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency "racc", "~> 1.4"
   s.add_development_dependency "rake", "~> 12"
   s.add_development_dependency "rubocop", "0.68" # for Ruby 2.2 enforcement
-  s.add_development_dependency "stackprof"
   # required for upgrader
   s.add_development_dependency "parser"
   # website stuff

@@ -177,7 +177,7 @@ type Query {
       SCHEMA
 
       built_schema = GraphQL::Schema.from_definition(schema)
-      assert_equal schema.chop, GraphQL::Schema::Printer.print_schema(built_schema)
+      assert_equal schema, GraphQL::Schema::Printer.print_schema(built_schema)
     end
 
     it "builds from a file" do

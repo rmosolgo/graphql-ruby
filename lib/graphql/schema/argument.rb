@@ -151,7 +151,7 @@ module GraphQL
             input_obj_arg = input_obj_arg.type_class
             # TODO: this skips input objects whose values were alread replaced with application objects.
             # See: https://github.com/rmosolgo/graphql-ruby/issues/2633
-            if value.respond_to?(:key?) && value.key?(input_obj_arg.keyword) && !input_obj_arg.authorized?(obj, value[input_obj_arg.keyword], ctx)
+            if value.is_a?(InputObject) && value.key?(input_obj_arg.keyword) && !input_obj_arg.authorized?(obj, value[input_obj_arg.keyword], ctx)
               return false
             end
           end
@@ -298,7 +298,21 @@ module GraphQL
       # @api private
       def validate_default_value
         coerced_default_value = begin
-          type.coerce_isolated_result(default_value) unless default_value.nil?
+          # This is weird, but we should accept single-item default values for list-type arguments.
+          # If we used `coerce_isolated_input` below, it would do this for us, but it's not really
+          # the right thing here because we expect default values in application format (Ruby values)
+          # not GraphQL format (scalar values).
+          #
+          # But I don't think Schema::List#coerce_result should apply wrapping to single-item lists.
+          prepped_default_value = if default_value.nil?
+            nil
+          elsif (type.kind.list? || (type.kind.non_null? && type.of_type.list?)) && !default_value.respond_to?(:map)
+            [default_value]
+          else
+            default_value
+          end
+
+          type.coerce_isolated_result(prepped_default_value) unless prepped_default_value.nil?
         rescue GraphQL::Schema::Enum::UnresolvedValueError
           # It raises this, which is helpful at runtime, but not here...
           default_value

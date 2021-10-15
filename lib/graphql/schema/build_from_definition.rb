@@ -47,10 +47,16 @@ module GraphQL
           # _while_ building the schema.
           # It will dig for a type if it encounters a custom type. This could be a problem if there are cycles.
           directive_type_resolver = nil
-          directive_type_resolver = build_resolve_type(GraphQL::Schema::BUILT_IN_TYPES, directives, ->(type_name) {
+          directive_type_resolver = build_resolve_type(types, directives, ->(type_name) {
             types[type_name] ||= begin
               defn = document.definitions.find { |d| d.respond_to?(:name) && d.name == type_name }
-              build_definition_from_node(defn, directive_type_resolver, default_resolve)
+              if defn
+                build_definition_from_node(defn, directive_type_resolver, default_resolve)
+              elsif (built_in_defn = GraphQL::Schema::BUILT_IN_TYPES[type_name])
+                built_in_defn
+              else
+                raise "No definition for #{type_name.inspect} found in schema document or built-in types. Add a definition for it or remove it."
+              end
             end
           })
 

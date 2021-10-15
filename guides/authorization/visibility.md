@@ -30,7 +30,7 @@ These methods are called with the query context, based on the hash you pass as `
 - In introspection, the member will _not_ be included in the result
 - In normal queries, if a query references that member, it will return a validation error, since that member doesn't exist
 
-## For Example
+## Object Visibility
 
 Let's say you're working on a new feature which should remain secret for a while. You can implement `.visible?` in a type:
 
@@ -56,3 +56,40 @@ And in introspection:
 - `__type(name: "SecretFeature")` will return `nil`
 - Any interfaces or unions which normally include `SecretFeature` will _not_ include it
 - Any fields that return `SecretFeature` will be excluded from introspection
+
+## Field Visibility
+
+```ruby
+class Types::BaseField < GraphQL::Schema::Field
+  # Pass `field ..., require_admin: true` to hide this field from non-admin users
+  def initialize(*args, require_admin: false, **kwargs, &block)
+    @require_admin = require_admin
+    super(*args, **kwargs, &block)
+  end
+
+  def visible?(ctx)
+    # if `require_admin:` was given, then require the current user to be an admin
+    super && (@require_admin ? ctx[:viewer]&.admin? : true)
+  end
+end
+```
+
+For this to work, the base field class must be {% internal_link "configured with other GraphQL types", "/type_definitions/extensions.html#customizing-fields" %}.
+
+## Argument Visibility
+
+```ruby
+class Types::BaseArgument < GraphQL::Schema::Argument
+  # If `require_logged_in: true` is given, then this argument will be hidden from logged-out viewers
+  def initialize(*args, require_logged_in: false, **kwargs, &block)
+    @require_logged_in = require_logged_in
+    super(*args, **kwargs, &block)
+  end
+
+  def authorized?(ctx)
+    super && (@require_logged_in ? ctx[:viewer].present? : true)
+  end
+end
+```
+
+For this to work, the base argument class must be {% internal_link "configured with other GraphQL types", "/type_definitions/extensions.html#customizing-arguments" %}.

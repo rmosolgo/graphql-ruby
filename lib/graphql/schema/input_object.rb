@@ -11,6 +11,14 @@ module GraphQL
 
       include GraphQL::Dig
 
+      # @return [GraphQL::Query::Context] The context for this query
+      attr_reader :context
+      # @return [GraphQL::Query::Arguments, GraphQL::Execution::Interpereter::Arguments] The underlying arguments instance
+      attr_reader :arguments
+
+      # Ruby-like hash behaviors, read-only
+      def_delegators :@ruby_style_hash, :keys, :values, :each, :map, :any?, :empty?
+
       def initialize(arguments = nil, ruby_kwargs: nil, context:, defaults_used:)
         @context = context
         if ruby_kwargs
@@ -54,19 +62,8 @@ module GraphQL
         @maybe_lazies = maybe_lazies
       end
 
-      # @return [GraphQL::Query::Context] The context for this query
-      attr_reader :context
-
-      # @return [GraphQL::Query::Arguments, GraphQL::Execution::Interpereter::Arguments] The underlying arguments instance
-      attr_reader :arguments
-
-      # Ruby-like hash behaviors, read-only
-      def_delegators :@ruby_style_hash, :keys, :values, :each, :map, :any?, :empty?
-
       def to_h
-        @ruby_style_hash.inject({}) do |h, (key, value)|
-          h.merge(key => unwrap_value(value))
-        end
+        unwrap_value(@ruby_style_hash)
       end
 
       def to_hash
@@ -74,11 +71,11 @@ module GraphQL
       end
 
       def prepare
-        if context
-          context.schema.after_any_lazies(@maybe_lazies) do
-            object = context[:current_object]
+        if @context
+          @context.schema.after_any_lazies(@maybe_lazies) do
+            object = @context[:current_object]
             # Pass this object's class with `as` so that messages are rendered correctly from inherited validators
-            Schema::Validator.validate!(self.class.validators, object, context, @ruby_style_hash, as: self.class)
+            Schema::Validator.validate!(self.class.validators, object, @context, @ruby_style_hash, as: self.class)
             self
           end
         else
@@ -91,8 +88,8 @@ module GraphQL
         when Array
           value.map { |item| unwrap_value(item) }
         when Hash
-          value.inject({}) do |h, (key, value)|
-            h.merge(key => unwrap_value(value))
+          value.reduce({}) do |h, (key, value)|
+            h.merge!(key => unwrap_value(value))
           end
         when InputObject
           value.to_h
@@ -161,7 +158,6 @@ module GraphQL
 
         # @api private
         INVALID_OBJECT_MESSAGE = "Expected %{object} to be a key-value object responding to `to_h` or `to_unsafe_h`."
-
 
         def validate_non_null_input(input, ctx)
           result = GraphQL::Query::InputValidationResult.new

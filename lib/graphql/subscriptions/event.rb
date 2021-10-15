@@ -29,26 +29,10 @@ module GraphQL
       end
 
       # @return [String] an identifier for this unit of subscription
-      def self.serialize(name, arguments, field, scope:)
-        normalized_args = case arguments
-        when GraphQL::Query::Arguments
-          arguments
-        when Hash
-          if field.is_a?(GraphQL::Schema::Field)
-            stringify_args(field, arguments)
-          else
-            GraphQL::Query::LiteralInput.from_arguments(
-              arguments,
-              field,
-              nil,
-            )
-          end
-        else
-          raise ArgumentError, "Unexpected arguments: #{arguments}, must be Hash or GraphQL::Arguments"
-        end
-
-        sorted_h = stringify_args(field, normalized_args.to_h)
-        Serialize.dump_recursive([scope, name, sorted_h])
+      def self.serialize(_name, arguments, field, scope:)
+        subscription = field.resolver || GraphQL::Schema::Subscription
+        normalized_args = stringify_args(field, arguments.to_h)
+        subscription.topic_for(arguments: normalized_args, field: field, scope: scope)
       end
 
       # @return [String] a logical identifier for this event. (Stable when the query is broadcastable.)

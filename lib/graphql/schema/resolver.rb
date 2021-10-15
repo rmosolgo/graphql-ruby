@@ -218,8 +218,10 @@ module GraphQL
           own_extras + (superclass.respond_to?(:extras) ? superclass.extras : [])
         end
 
-        # Specifies whether or not the field is nullable. Defaults to `true`
-        # TODO unify with {#type}
+        # If `true` (default), then the return type for this resolver will be nullable.
+        # If `false`, then the return type is non-null.
+        #
+        # @see #type which sets the return type of this field and accepts a `null:` option
         # @param allow_null [Boolean] Whether or not the response can be null
         def null(allow_null = nil)
           if !allow_null.nil?
@@ -307,9 +309,14 @@ module GraphQL
             arguments: arguments,
             null: null,
             complexity: complexity,
-            extensions: extensions,
             broadcastable: broadcastable?,
           }
+
+          # If there aren't any, then the returned array is `[].freeze`,
+          # but passing that along breaks some user code.
+          if (exts = extensions).any?
+            field_opts[:extensions] = exts
+          end
 
           if has_max_page_size?
             field_opts[:max_page_size] = max_page_size

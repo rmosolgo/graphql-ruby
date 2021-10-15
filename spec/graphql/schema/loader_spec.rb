@@ -301,7 +301,7 @@ describe GraphQL::Schema::Loader do
     end
 
     it "works with underscored names" do
-      schema_sdl = <<-GRAPHQL.chomp
+      schema_sdl = <<-GRAPHQL
 type A_Type {
   f(argument_1: Int, argument_two: Int): Int
 }

@@ -15,14 +15,17 @@ module GraphQL
           # No query context yet
           nil
         when "validate", "analyze_query", "execute_query", "execute_query_lazy"
-          query = metadata[:query] || metadata[:queries].first
           push_key = []
-          push_data = query
-          multiplex = query.multiplex
+          if (query = metadata[:query]) || ((queries = metadata[:queries]) && (query = queries.first))
+            push_data = query
+            multiplex = query.multiplex
+          elsif (multiplex = metadata[:multiplex])
+            push_data = multiplex.queries.first
+          end
         when "execute_field", "execute_field_lazy"
           query = metadata[:query] || raise(ArgumentError, "Add `legacy: true` to use GraphQL::Backtrace without the interpreter runtime.")
           multiplex = query.multiplex
-          push_key = metadata[:path].reject { |i| i.is_a?(Integer) }
+          push_key = metadata[:path]
           parent_frame = multiplex.context[:graphql_backtrace_contexts][push_key[0..-2]]
 
           if parent_frame.is_a?(GraphQL::Query)

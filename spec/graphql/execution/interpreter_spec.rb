@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require "spec_helper"
+require_relative "../subscriptions_spec"
 
 describe GraphQL::Execution::Interpreter do
   module InterpreterTest
@@ -63,6 +64,12 @@ describe GraphQL::Execution::Interpreter do
       field :null_union_field_test, Integer, null: true
       def null_union_field_test
         nil
+      end
+
+      field :parent_class_name, String, null: false, extras: [:parent]
+
+      def parent_class_name(parent:)
+        parent.class.name
       end
     end
 
@@ -182,16 +189,19 @@ describe GraphQL::Execution::Interpreter do
         EXPANSIONS
       end
 
+      class ExpansionData < OpenStruct
+      end
+
       CARDS = [
         OpenStruct.new(name: "Dark Confidant", colors: ["BLACK"], expansion_sym: "RAV"),
       ]
 
       EXPANSIONS = [
-        OpenStruct.new(name: "Ravnica, City of Guilds", sym: "RAV"),
+        ExpansionData.new(name: "Ravnica, City of Guilds", sym: "RAV"),
         # This data has an error, for testing null propagation
-        OpenStruct.new(name: nil, sym: "XYZ"),
+        ExpansionData.new(name: nil, sym: "XYZ"),
         # This is not allowed by .authorized?,
-        OpenStruct.new(name: nil, sym: "NOPE"),
+        ExpansionData.new(name: nil, sym: "NOPE"),
       ]
 
       field :find, [Entity], null: false do
@@ -453,6 +463,9 @@ describe GraphQL::Execution::Interpreter do
       assert_equal nil, res["data"]["findMany"][1]
       assert_equal nil, res["data"]["findMany"][2]
       assert_equal false, res.key?("errors")
+
+      assert_equal Hash, res["data"].class
+      assert_equal Array, res["data"]["findMany"].class
     end
 
     it "works with union lists that have members of different kinds, with different nullabilities" do
@@ -547,6 +560,144 @@ describe GraphQL::Execution::Interpreter do
     end
   end
 
+  describe "Lazy skips" do
+    class LazySkipSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        def self.authorized?(obj, ctx)
+          -> { true }
+        end
+        field :skip, String, null: true
+
+        def skip
+          context.skip
+        end
+
+        field :lazy_skip, String, null: true
+        def lazy_skip
+          -> { context.skip }
+        end
+
+        field :mixed_skips, [String], null: true
+        def mixed_skips
+          [
+            "a",
+            context.skip,
+            "c",
+            -> { context.skip },
+            "e",
+          ]
+        end
+      end
+
+      class NothingSubscription < GraphQL::Schema::Subscription
+        field :nothing, String, null: true
+        def authorized?(*)
+          -> { true }
+        end
+
+        def update
+          { nothing: object }
+        end
+      end
+
+      class Subscription < GraphQL::Schema::Object
+        field :nothing, subscription: NothingSubscription
+      end
+
+      query Query
+      subscription Subscription
+      use InMemoryBackend::Subscriptions, extra: nil
+      lazy_resolve Proc, :call
+    end
+
+    it "skips properly" do
+      res = LazySkipSchema.execute("{ skip }")
+      assert_equal({}, res["data"])
+      refute res.key?("errors")
+
+      res = LazySkipSchema.execute("{ mixedSkips }")
+      assert_equal({ "mixedSkips" => ["a", "c", "e"] }, res["data"])
+      refute res.key?("errors")
+
+      res = LazySkipSchema.execute("{ lazySkip }")
+      assert_equal({}, res["data"])
+      refute res.key?("errors")
+
+      res = LazySkipSchema.execute("subscription { nothing { nothing } }")
+      assert_equal({}, res["data"])
+      refute res.key?("errors")
+      # Make sure an update works properly
+      LazySkipSchema.subscriptions.trigger(:nothing, {}, :nothing_at_all)
+      _key, updates = LazySkipSchema.subscriptions.deliveries.first
+      assert_equal "nothing_at_all", updates[0]["data"]["nothing"]["nothing"]
+    end
+  end
+
+  describe "GraphQL::ExecutionErrors from connection fields" do
+    module ConnectionErrorTest
+      class BaseField < GraphQL::Schema::Field
+        def authorized?(obj, args, ctx)
+          ctx[:authorized_calls] ||= 0
+          ctx[:authorized_calls] += 1
+          raise GraphQL::ExecutionError, "#{name} is not authorized"
+        end
+      end
+
+      class BaseConnection < GraphQL::Types::Relay::BaseConnection
+        node_nullable(false)
+        edge_nullable(false)
+        edges_nullable(false)
+      end
+
+      class BaseEdge < GraphQL::Types::Relay::BaseEdge
+        node_nullable(false)
+      end
+
+      class Thing < GraphQL::Schema::Object
+        field_class BaseField
+        connection_type_class BaseConnection
+        edge_type_class BaseEdge
+        field :title, String, null: false
+        field :body, String, null: false
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :things, Thing.connection_type, null: false
+
+        def things
+          [{title: "a"}, {title: "b"}, {title: "c"}]
+        end
+
+        field :thing, Thing, null: false
+
+        def thing
+          {
+            title: "a",
+            body: "b",
+          }
+        end
+      end
+
+      class Schema < GraphQL::Schema
+        query Query
+      end
+    end
+
+    it "returns only 1 error and stops resolving fields after that" do
+      res = ConnectionErrorTest::Schema.execute("{ things { nodes { title } } }")
+      assert_equal 1, res["errors"].size
+      assert_equal 1, res.context[:authorized_calls]
+
+      res = ConnectionErrorTest::Schema.execute("{ things { edges { node { title } } } }")
+      assert_equal 1, res["errors"].size
+      assert_equal 1, res.context[:authorized_calls]
+
+      res = ConnectionErrorTest::Schema.execute("{ thing { title body } }")
+      assert_equal 1, res["errors"].size
+      assert_equal 1, res.context[:authorized_calls]
+    end
+  end
+
   describe "GraphQL::ExecutionErrors from non-null list fields" do
     module ListErrorTest
       class BaseField < GraphQL::Schema::Field
@@ -577,5 +728,103 @@ describe GraphQL::Execution::Interpreter do
       res = ListErrorTest::Schema.execute("{ things { title } }")
       assert_equal 1, res["errors"].size
     end
+  end
+
+  describe "Invalid null from raised execution error doesn't halt parent fields" do
+    class RaisedErrorSchema < GraphQL::Schema
+      module Iface
+        include GraphQL::Schema::Interface
+
+        field :bar, String, null: false
+      end
+
+      class Txn < GraphQL::Schema::Object
+        field :fails, String, null: false
+
+        def fails
+          raise GraphQL::ExecutionError, "boom"
+        end
+      end
+
+      class Concrete < GraphQL::Schema::Object
+        implements Iface
+
+        field :txn, Txn, null: true
+
+        def txn
+          {}
+        end
+
+        field :msg, String, null: true
+
+        def msg
+          "THIS SHOULD SHOW UP"
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :iface, Iface, null: true
+
+        def iface
+          {}
+        end
+      end
+
+      query(Query)
+      orphan_types([Concrete])
+
+      def self.resolve_type(type, obj, ctx)
+        Concrete
+      end
+    end
+
+    it "resolves fields on the parent object" do
+      querystring = """
+      {
+        iface {
+          ... on Concrete {
+            txn {
+              fails
+            }
+            msg
+          }
+        }
+      }
+      """
+
+      result = RaisedErrorSchema.execute(querystring)
+      expected_result = {
+        "data" => {
+          "iface" => { "txn" => nil, "msg" => "THIS SHOULD SHOW UP" },
+        },
+        "errors" => [
+          {
+            "message"=>"boom",
+            "locations"=>[{"line"=>6, "column"=>15}],
+            "path"=>["iface", "txn", "fails"]
+          },
+        ],
+      }
+      assert_equal expected_result, result.to_h
+    end
+  end
+
+  it "supports extras: [:parent]" do
+    query_str = <<-GRAPHQL
+    {
+      card(name: "Dark Confidant") {
+        parentClassName
+      }
+      expansion(sym: "RAV") {
+        cards {
+          parentClassName
+        }
+      }
+    }
+    GRAPHQL
+    res = InterpreterTest::Schema.execute(query_str, context: { calls: 0 })
+
+    assert_equal "NilClass", res["data"]["card"].fetch("parentClassName")
+    assert_equal "InterpreterTest::Query::ExpansionData", res["data"]["expansion"]["cards"].first["parentClassName"]
   end
 end

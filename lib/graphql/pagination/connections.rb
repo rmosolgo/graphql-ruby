@@ -130,6 +130,11 @@ module GraphQL
         if defined?(Mongoid::Association::Referenced::HasMany::Targets::Enumerable)
           add(Mongoid::Association::Referenced::HasMany::Targets::Enumerable, Pagination::MongoidRelationConnection)
         end
+
+        # Mongoid 7.3+
+        if defined?(Mongoid::Association::Referenced::HasMany::Enumerable)
+          add(Mongoid::Association::Referenced::HasMany::Enumerable, Pagination::MongoidRelationConnection)
+        end
       end
     end
   end

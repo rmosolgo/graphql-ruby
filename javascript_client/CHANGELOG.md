@@ -1,5 +1,14 @@
 # graphql-ruby-client
 
+# 1.10.1 (22 Sept 2021)
+
+- Sync: Add `--apollo-codegen-json-output=...` option #3616
+
+# 1.10.0 (25 Aug 2021)
+
+- Remove direct dependency on `request` #3594
+- Update `createRelaySubscriptionHandler` to support Relay 11. Use `createLegacyRelaySubscriptionHandler` to get the old behavior. #3594
+
 # 1.9.3 (31 Mar 2021)
 
 - Move `graphql` and `@apollo/client` to `peerDeps` for more flexible versions #3395

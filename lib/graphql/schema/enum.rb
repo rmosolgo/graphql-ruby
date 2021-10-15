@@ -24,6 +24,15 @@ module GraphQL
       extend GraphQL::Schema::Member::ValidatesInput
 
       class UnresolvedValueError < GraphQL::EnumType::UnresolvedValueError
+        def initialize(value:, enum:, context:)
+          fix_message = ", but this isn't a valid value for `#{enum.graphql_name}`. Update the field or resolver to return one of `#{enum.graphql_name}`'s values instead."
+          message = if (cp = context[:current_path]) && (cf = context[:current_field])
+            "`#{cf.path}` returned `#{value.inspect}` at `#{cp.join(".")}`#{fix_message}"
+          else
+            "`#{value.inspect}` was returned for `#{enum.graphql_name}`#{fix_message}"
+          end
+          super(message)
+        end
       end
 
       class << self
@@ -100,7 +109,7 @@ module GraphQL
           if enum_value
             enum_value.graphql_name
           else
-            raise(self::UnresolvedValueError, "Can't resolve enum #{graphql_name} for #{value.inspect}")
+            raise self::UnresolvedValueError.new(enum: self, value: value, context: ctx)
           end
         end
 

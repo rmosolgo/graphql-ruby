@@ -67,6 +67,22 @@ describe GraphQL::Dataloader do
       end
     end
 
+    class CustomBatchKeySource < GraphQL::Dataloader::Source
+      def initialize(batch_key)
+        @batch_key = batch_key
+      end
+
+      def self.batch_key_for(batch_key)
+        Database.log << [:batch_key_for, batch_key]
+        # Ignore it altogether
+        :all_the_same
+      end
+
+      def fetch(keys)
+        Database.mget(keys)
+      end
+    end
+
     class KeywordArgumentSource < GraphQL::Dataloader::Source
       def initialize(column:)
         @column = column
@@ -220,6 +236,15 @@ describe GraphQL::Dataloader do
         recipe_2 = input[:recipe_2]
         common_ids = recipe_1[:ingredient_ids] & recipe_2[:ingredient_ids]
         dataloader.with(DataObject).load_all(common_ids)
+      end
+
+      field :ingredient_with_custom_batch_key, Ingredient, null: true do
+        argument :id, ID, required: true
+        argument :batch_key, String, required: true
+      end
+
+      def ingredient_with_custom_batch_key(id:, batch_key:)
+        dataloader.with(CustomBatchKeySource, batch_key).load(id)
       end
     end
 
@@ -819,5 +844,60 @@ describe GraphQL::Dataloader do
 
       assert_equal expected_result, result.to_h
     end
+  end
+
+  it "supports general usage" do
+    a = b = c = nil
+
+    res = GraphQL::Dataloader.with_dataloading { |dataloader|
+      dataloader.append_job {
+        a = dataloader.with(FiberSchema::DataObject).load("1")
+      }
+
+      dataloader.append_job {
+        b = dataloader.with(FiberSchema::DataObject).load("1")
+      }
+
+      dataloader.append_job {
+        r1 = dataloader.with(FiberSchema::DataObject).request("2")
+        r2 = dataloader.with(FiberSchema::DataObject).request("3")
+        c = [
+          r1.load,
+          r2.load
+        ]
+      }
+
+      :finished
+    }
+
+    assert_equal :finished, res
+    assert_equal [[:mget, ["1", "2", "3"]]], database_log
+    assert_equal "Wheat", a[:name]
+    assert_equal "Wheat", b[:name]
+    assert_equal ["Corn", "Butter"], c.map { |d| d[:name] }
+  end
+
+  it "uses .batch_key_for in source classes" do
+    query_str = <<-GRAPHQL
+    {
+      i1: ingredientWithCustomBatchKey(id: 1, batchKey: "abc") { name }
+      i2: ingredientWithCustomBatchKey(id: 2, batchKey: "def") { name }
+      i3: ingredientWithCustomBatchKey(id: 3, batchKey: "ghi") { name }
+    }
+    GRAPHQL
+
+    res = FiberSchema.execute(query_str)
+    expected_data = { "i1" => { "name" => "Wheat" }, "i2" => { "name" => "Corn" }, "i3" => { "name" => "Butter" } }
+    assert_equal expected_data, res["data"]
+    expected_log = [
+      # Each batch key is given to the source class:
+      [:batch_key_for, "abc"],
+      [:batch_key_for, "def"],
+      [:batch_key_for, "ghi"],
+      # But since they return the same value,
+      # all keys are fetched in the same call:
+      [:mget, ["1", "2", "3"]]
+    ]
+    assert_equal expected_log, database_log
   end
 end

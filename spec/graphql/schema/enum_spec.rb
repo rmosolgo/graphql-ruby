@@ -111,10 +111,18 @@ describe GraphQL::Schema::Enum do
       assert_equal("DONKEY", enum.coerce_isolated_result(:donkey))
     end
 
-    it "raises when a result value can't be coerced" do
-      assert_raises(GraphQL::EnumType::UnresolvedValueError) {
+    it "raises a helpful error when a result value can't be coerced" do
+      err = assert_raises(GraphQL::EnumType::UnresolvedValueError) {
+        enum.coerce_result(:nonsense, OpenStruct.new(current_path: ["thing", 0, "name"], current_field: OpenStruct.new(path: "Thing.name")))
+      }
+      expected_context_message = "`Thing.name` returned `:nonsense` at `thing.0.name`, but this isn't a valid value for `DairyAnimal`. Update the field or resolver to return one of `DairyAnimal`'s values instead."
+      assert_equal expected_context_message, err.message
+
+      err2 = assert_raises(GraphQL::EnumType::UnresolvedValueError) {
         enum.coerce_isolated_result(:nonsense)
       }
+      expected_isolated_message = "`:nonsense` was returned for `DairyAnimal`, but this isn't a valid value for `DairyAnimal`. Update the field or resolver to return one of `DairyAnimal`'s values instead."
+      assert_equal expected_isolated_message, err2.message
     end
 
     describe "resolving with a warden" do

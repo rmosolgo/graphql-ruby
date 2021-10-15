@@ -48,7 +48,11 @@ module GraphQL
           end
         end
 
-        if @value.is_a?(StandardError)
+        # `SKIP` was made into a subclass of `GraphQL::Error` to improve runtime performance
+        # (fewer clauses in a hot `case` block), but now it requires special handling here.
+        # I think it's still worth it for the performance win, but if the number of special
+        # cases grows, then maybe it's worth rethinking somehow.
+        if @value.is_a?(StandardError) && @value != GraphQL::Execution::Execute::SKIP
           raise @value
         else
           @value

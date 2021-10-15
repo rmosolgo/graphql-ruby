@@ -6,7 +6,7 @@ module GraphQL
       # or use it for inspiration for your own field definition.
       #
       # @example Adding this field directly
-      #   add_field(GraphQL::Types::Relay::NodesField)
+      #   include GraphQL::Types::Relay::HasNodesField
       #
       # @example Implementing a similar field in your own Query root
       #
@@ -21,7 +21,7 @@ module GraphQL
       #     end
       #   end
       #
-      NodesField = GraphQL::Schema::Field.new(**HasNodesField.field_options, &HasNodesField.field_block)
+      NodesField = GraphQL::Schema::Field.new(owner: nil, **HasNodesField.field_options, &HasNodesField.field_block)
     end
   end
 end

@@ -117,6 +117,10 @@ module GraphQL
         raise ArgumentError, "Query should only be provided a query string or a document, not both."
       end
 
+      if @query_string && !@query_string.is_a?(String)
+        raise ArgumentError, "Query string argument should be a String, got #{@query_string.class.name} instead."
+      end
+
       # A two-layer cache of type resolution:
       # { abstract_type => { value => resolved_type } }
       @resolved_types_cache = Hash.new do |h1, k1|
@@ -270,7 +274,7 @@ module GraphQL
     # @return [String, nil] Returns nil if the query is invalid.
     def sanitized_query_string(inline_variables: true)
       with_prepared_ast {
-        GraphQL::Language::SanitizedPrinter.new(self, inline_variables: inline_variables).sanitized_query_string
+        schema.sanitized_printer.new(self, inline_variables: inline_variables).sanitized_query_string
       }
     end
 

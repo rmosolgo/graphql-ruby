@@ -8,6 +8,54 @@
 
 ### Bug fixes
 
+# 1.12.16 (31 August 2021)
+
+### New features
+
+- Connections: automatically support Mongoid 7.3 #3599
+- Support `def self.topic_for` in Subscription classes for server-filtered streams #3597
+- When a list item or object field has an invalid null, stop executing that list or
+
+### Bug fixes
+
+- Perf: don't refine String when unnecessary #3593
+- BigInt: always parse as base 10 #3586
+- Errors: only return one error when a node in a non-null connection has an invalid null #3601
+
+# 1.12.15 (23 August 2021)
+
+### New Features
+
+- Subscriptions: add support for multi-tenant setups when deserializing context #3574
+- Analyzers: also track deprecated arguments #3549
+
+# 1.12.14 (22 July 2021)
+
+### Bug fixes
+
+- SDL: support directive arguments referencing overridden built-in scalars #3564
+- Use `"_"` as the name for `field :_, ...` fields #3560
+- Support `sanitized_printer(...)` in the schema definition for `Query#sanitized_query_string`
+- `GraphQL::Backtrace`: fix multiplex support
+
+# 1.12.13 (20 June 2021)
+
+### Breaking changes
+
+- Add a trailing newline to the `Schema.to_definition` output string #3541
+
+### Bug fixes
+
+- Properly handled list results in GraphQL::Backtrace #3540
+- Return plain `Hash`es and `Array`s from queries instead of customized subclasses #3533
+- Fix errors raised from non-null fields #3537
+- Resolver: don't pass frozen array of extensions when none were configured #3515
+- Configure the right `owner` for `node` and `nodes` fields #3509
+- Improve error message for invalid enum value #3507
+- Properly halt on lazily-returned `context.skip`s #3514
+- Fix: call overridden `to_h` methods on InputObject classes #3539
+- Halt execution when a runtime directive argument raises a `GraphQL::ExecutionError` #3542
+
 # 1.12.12 (31 May 2021)
 
 ### Bug fixes

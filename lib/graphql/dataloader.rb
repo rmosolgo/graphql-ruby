@@ -27,18 +27,20 @@ module GraphQL
       schema.dataloader_class = self
     end
 
-    def initialize
-      @source_cache = Hash.new { |h, source_class| h[source_class] = Hash.new { |h2, batch_parameters|
-          source = if RUBY_VERSION < "3"
-            source_class.new(*batch_parameters)
-          else
-            batch_args, batch_kwargs = batch_parameters
-            source_class.new(*batch_args, **batch_kwargs)
-          end
-          source.setup(self)
-          h2[batch_parameters] = source
-        }
+    # Call the block with a Dataloader instance,
+    # then run all enqueued jobs and return the result of the block.
+    def self.with_dataloading(&block)
+      dataloader = self.new
+      result = nil
+      dataloader.append_job {
+        result = block.call(dataloader)
       }
+      dataloader.run
+      result
+    end
+
+    def initialize
+      @source_cache = Hash.new { |h, k| h[k] = {} }
       @pending_jobs = []
     end
 
@@ -49,16 +51,24 @@ module GraphQL
     # @return [GraphQL::Dataloader::Source] An instance of {source_class}, initialized with `self, *batch_parameters`,
     #   and cached for the lifetime of this {Multiplex}.
     if RUBY_VERSION < "3"
-      def with(source_class, *batch_parameters)
-        @source_cache[source_class][batch_parameters]
+      def with(source_class, *batch_args)
+        batch_key = source_class.batch_key_for(*batch_args)
+        @source_cache[source_class][batch_key] ||= begin
+          source = source_class.new(*batch_args)
+          source.setup(self)
+          source
+        end
       end
     else
       def with(source_class, *batch_args, **batch_kwargs)
-        batch_parameters = [batch_args, batch_kwargs]
-        @source_cache[source_class][batch_parameters]
+        batch_key = source_class.batch_key_for(*batch_args, **batch_kwargs)
+        @source_cache[source_class][batch_key] ||= begin
+          source = source_class.new(*batch_args, **batch_kwargs)
+          source.setup(self)
+          source
+        end
       end
     end
-
     # Tell the dataloader that this fiber is waiting for data.
     #
     # Dataloader will resume the fiber after the requested data has been loaded (by another Fiber).

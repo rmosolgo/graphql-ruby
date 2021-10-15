@@ -23,6 +23,8 @@ These methods are called with:
 - `args`/`arg_value`: The arguments for a field, or the value of an argument
 - `context`: the query context, based on the hash passed as `context:`
 
+#### Object Authorization
+
 When you implement this method to return `false`, the query will be halted, for example:
 
 ```ruby
@@ -38,6 +40,50 @@ end
 (Always call `super` to get the default checks, too.)
 
 Now, whenever an object of type `Friendship` is going to be returned to the client, it will first go through the `.authorized?` method. If that method returns false, the field will get `nil` instead of the original object, and you may handle that case with an error (see below).
+
+#### Field Authorization
+
+Field `#authorized?` methods are called before resolving a field, for example:
+
+```ruby
+class Types::BaseField < GraphQL::Schema::Field
+  # Pass `field ..., require_admin: true` to reject non-admin users from a given field
+  def initialize(*args, **kwargs, require_admin: false, &block)
+    @require_admin = require_admin
+    super(*args, **kwargs, &block)
+  end
+
+  def authorized?(obj, args, ctx)
+    # if `require_admin:` was given, then require the current user to be an admin
+    super && (@require_admin ? ctx[:viewer]&.admin? : true)
+  end
+end
+```
+
+For this to work, the base field class must be {% internal_link "configured with other GraphQL types", "/type_definitions/extensions.html#customizing-fields" %}.
+
+#### Argument Authorization
+
+Argument `#authorized?` hooks are called before resolving the field that the argument belongs to. For example:
+
+```ruby
+class Types::BaseArgument < GraphQL::Schema::Argument
+  def initialize(*args, require_logged_in: false, **kwargs, &block)
+    @require_logged_in = require_logged_in
+    super(*args, **kwargs, &block)
+  end
+
+  def authorized?(obj, arg_value, ctx)
+    super && if @require_logged_in
+      ctx[:viewer].present?
+    else
+      true
+    end
+  end
+end
+```
+
+For this to work, the base argument class must be {% internal_link "configured with other GraphQL types", "/type_definitions/extensions.html#customizing-arguments" %}.
 
 ## Handling Unauthorized Objects
 
