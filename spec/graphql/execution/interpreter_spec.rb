@@ -65,6 +65,12 @@ describe GraphQL::Execution::Interpreter do
       def null_union_field_test
         nil
       end
+
+      field :parent_class_name, String, null: false, extras: [:parent]
+
+      def parent_class_name(parent:)
+        parent.class.name
+      end
     end
 
     class Color < GraphQL::Schema::Enum
@@ -183,16 +189,19 @@ describe GraphQL::Execution::Interpreter do
         EXPANSIONS
       end
 
+      class ExpansionData < OpenStruct
+      end
+
       CARDS = [
         OpenStruct.new(name: "Dark Confidant", colors: ["BLACK"], expansion_sym: "RAV"),
       ]
 
       EXPANSIONS = [
-        OpenStruct.new(name: "Ravnica, City of Guilds", sym: "RAV"),
+        ExpansionData.new(name: "Ravnica, City of Guilds", sym: "RAV"),
         # This data has an error, for testing null propagation
-        OpenStruct.new(name: nil, sym: "XYZ"),
+        ExpansionData.new(name: nil, sym: "XYZ"),
         # This is not allowed by .authorized?,
-        OpenStruct.new(name: nil, sym: "NOPE"),
+        ExpansionData.new(name: nil, sym: "NOPE"),
       ]
 
       field :find, [Entity], null: false do
@@ -798,5 +807,24 @@ describe GraphQL::Execution::Interpreter do
       }
       assert_equal expected_result, result.to_h
     end
+  end
+
+  it "supports extras: [:parent]" do
+    query_str = <<-GRAPHQL
+    {
+      card(name: "Dark Confidant") {
+        parentClassName
+      }
+      expansion(sym: "RAV") {
+        cards {
+          parentClassName
+        }
+      }
+    }
+    GRAPHQL
+    res = InterpreterTest::Schema.execute(query_str, context: { calls: 0 })
+
+    assert_equal "NilClass", res["data"]["card"].fetch("parentClassName")
+    assert_equal "InterpreterTest::Query::ExpansionData", res["data"]["expansion"]["cards"].first["parentClassName"]
   end
 end

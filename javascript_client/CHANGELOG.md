@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.10.1 (22 Sept 2021)
+
+- Sync: Add `--apollo-codegen-json-output=...` option #3616
+
 # 1.10.0 (25 Aug 2021)
 
 - Remove direct dependency on `request` #3594

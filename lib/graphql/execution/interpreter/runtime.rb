@@ -236,6 +236,7 @@ module GraphQL
                       selections,
                       selection_response,
                       final_response,
+                      nil,
                     )
                   end
                 }
@@ -347,7 +348,7 @@ module GraphQL
         NO_ARGS = {}.freeze
 
         # @return [void]
-        def evaluate_selections(path, scoped_context, owner_object, owner_type, is_eager_selection, gathered_selections, selections_result, target_result) # rubocop:disable Metrics/ParameterLists
+        def evaluate_selections(path, scoped_context, owner_object, owner_type, is_eager_selection, gathered_selections, selections_result, target_result, parent_object) # rubocop:disable Metrics/ParameterLists
           set_all_interpreter_context(owner_object, nil, nil, path)
 
           finished_jobs = 0
@@ -355,7 +356,7 @@ module GraphQL
           gathered_selections.each do |result_name, field_ast_nodes_or_ast_node|
             @dataloader.append_job {
               evaluate_selection(
-                path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, is_eager_selection, selections_result
+                path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, is_eager_selection, selections_result, parent_object
               )
               finished_jobs += 1
               if target_result && finished_jobs == enqueued_jobs
@@ -370,7 +371,7 @@ module GraphQL
         attr_reader :progress_path
 
         # @return [void]
-        def evaluate_selection(path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, is_eager_field, selections_result) # rubocop:disable Metrics/ParameterLists
+        def evaluate_selection(path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, is_eager_field, selections_result, parent_object) # rubocop:disable Metrics/ParameterLists
           return if dead_result?(selections_result)
           # As a performance optimization, the hash key will be a `Node` if
           # there's only one selection of the field. But if there are multiple
@@ -421,16 +422,16 @@ module GraphQL
           total_args_count = field_defn.arguments.size
           if total_args_count == 0
             kwarg_arguments = GraphQL::Execution::Interpreter::Arguments::EMPTY
-            evaluate_selection_with_args(kwarg_arguments, field_defn, next_path, ast_node, field_ast_nodes, scoped_context, owner_type, object, is_eager_field, result_name, selections_result)
+            evaluate_selection_with_args(kwarg_arguments, field_defn, next_path, ast_node, field_ast_nodes, scoped_context, owner_type, object, is_eager_field, result_name, selections_result, parent_object)
           else
             # TODO remove all arguments(...) usages?
             @query.arguments_cache.dataload_for(ast_node, field_defn, object) do |resolved_arguments|
-              evaluate_selection_with_args(resolved_arguments, field_defn, next_path, ast_node, field_ast_nodes, scoped_context, owner_type, object, is_eager_field, result_name, selections_result)
+              evaluate_selection_with_args(resolved_arguments, field_defn, next_path, ast_node, field_ast_nodes, scoped_context, owner_type, object, is_eager_field, result_name, selections_result, parent_object)
             end
           end
         end
 
-        def evaluate_selection_with_args(kwarg_arguments, field_defn, next_path, ast_node, field_ast_nodes, scoped_context, owner_type, object, is_eager_field, result_name, selection_result)  # rubocop:disable Metrics/ParameterLists
+        def evaluate_selection_with_args(kwarg_arguments, field_defn, next_path, ast_node, field_ast_nodes, scoped_context, owner_type, object, is_eager_field, result_name, selection_result, parent_object)  # rubocop:disable Metrics/ParameterLists
           context.scoped_context = scoped_context
           return_type = field_defn.type
           after_lazy(kwarg_arguments, owner: owner_type, field: field_defn, path: next_path, ast_node: ast_node, scoped_context: context.scoped_context, owner_object: object, arguments: kwarg_arguments, result_name: result_name, result: selection_result) do |resolved_arguments|
@@ -472,6 +473,8 @@ module GraphQL
                   # This is used by `__typename` in order to support the legacy runtime,
                   # but it has no use here (and it's always `nil`).
                   # Stop adding it here to avoid the overhead of `.merge_extras` below.
+                when :parent
+                  extra_args[:parent] = parent_object
                 else
                   extra_args[extra] = field_defn.fetch_extra(extra, context)
                 end
@@ -733,6 +736,7 @@ module GraphQL
                       selections,
                       this_result,
                       final_result,
+                      owner_object.object,
                     )
                     this_result
                   end

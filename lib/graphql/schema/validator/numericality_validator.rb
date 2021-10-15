@@ -24,12 +24,13 @@ module GraphQL
         # @param other_than [Integer]
         # @param odd [Boolean]
         # @param even [Boolean]
+        # @param within [Range]
         # @param message [String] used for all validation failures
         def initialize(
             greater_than: nil, greater_than_or_equal_to: nil,
             less_than: nil, less_than_or_equal_to: nil,
             equal_to: nil, other_than: nil,
-            odd: nil, even: nil,
+            odd: nil, even: nil, within: nil,
             message: "%{validated} must be %{comparison} %{target}",
             **default_options
           )
@@ -42,6 +43,7 @@ module GraphQL
           @other_than = other_than
           @odd = odd
           @even = even
+          @within = within
           @message = message
           super(**default_options)
         end
@@ -63,6 +65,8 @@ module GraphQL
             (partial_format(@message, { comparison: "even", target: "" })).strip
           elsif @odd && !value.odd?
             (partial_format(@message, { comparison: "odd", target: "" })).strip
+          elsif @within && !@within.include?(value)
+            partial_format(@message, { comparison: "within", target: @within })
           end
         end
       end
