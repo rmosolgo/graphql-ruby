@@ -51,8 +51,12 @@ describe GraphQL::Schema::Member::HasFields do
       field :uuid, ID, null: false, future_schema: true
     end
 
-    class LegacyMoney < BaseScalar
+    class MoneyScalar < BaseScalar
       graphql_name "Money"
+    end
+
+    class LegacyMoney < MoneyScalar
+      graphql_name "LegacyMoney"
     end
 
     class Money < BaseObject
@@ -62,11 +66,14 @@ describe GraphQL::Schema::Member::HasFields do
       self.future_schema = true
     end
 
-    class Thing < BaseObject
+    class LegacyThing < BaseObject
       implements Node
+      field :price, LegacyMoney, null: true
+    end
 
+    class Thing < LegacyThing
       field :price, Money, null: true, future_schema: true
-      field :price, LegacyMoney, null: true, method: :legacy_price
+      field :price, MoneyScalar, null: true, method: :legacy_price
     end
 
     class Query < BaseObject
@@ -86,8 +93,17 @@ describe GraphQL::Schema::Member::HasFields do
       end
 
       def thing(id:)
-        { id: id, database_id: id, uuid: "thing-#{id}", legacy_price: "⚛︎100", price: { amount: 100, currency: "⚛︎" }}
+        { id: id, database_id: id, uuid: "thing-#{id}", legacy_price: "⚛︎#{id}00", price: { amount: id.to_i * 100, currency: "⚛︎" }}
       end
+
+      field :legacy_thing, LegacyThing, null: false do
+        argument :id, ID, required: true
+      end
+
+      def legacy_thing(id:)
+        { id: id, database_id: id, uuid: "thing-#{id}", price: "⚛︎#{id}00" }
+      end
+
     end
 
     query(Query)
@@ -112,6 +128,7 @@ describe GraphQL::Schema::Member::HasFields do
     assert_includes MultifieldSchema.to_definition, <<-GRAPHQL
 type Query {
   f1: Int
+  legacyThing(id: ID!): LegacyThing!
   thing(id: ID!): Thing
 }
 GRAPHQL
@@ -119,6 +136,7 @@ GRAPHQL
     assert_includes MultifieldSchema.to_definition(context: { future_schema: true }), <<-GRAPHQL
 type Query {
   f1: String
+  legacyThing(id: ID!): LegacyThing!
   thing(id: ID!): Thing
 }
 GRAPHQL
@@ -161,16 +179,27 @@ GRAPHQL
     refute_includes MultifieldSchema.to_definition(context: { future_schema: true }), "scalar Money"
 
 
-    assert_equal MultifieldSchema::LegacyMoney, MultifieldSchema.get_type("Money")
+    assert_equal MultifieldSchema::MoneyScalar, MultifieldSchema.get_type("Money")
     assert_equal MultifieldSchema::Money, MultifieldSchema.get_type("Money", { future_schema: true })
 
     assert_equal "⚛︎100", MultifieldSchema.execute("{ thing(id: 1) { price } }")["data"]["thing"]["price"]
     res = MultifieldSchema.execute("{ __type(name: \"Money\") { kind name } }")
     assert_equal "SCALAR", res["data"]["__type"]["kind"]
     assert_equal "Money", res["data"]["__type"]["name"]
-    assert_equal({ "amount" => 100, "currency" => "⚛︎" }, MultifieldSchema.execute("{ thing(id: 1) { price { amount currency } } }", context: { future_schema: true })["data"]["thing"]["price"])
+    assert_equal({ "amount" => 200, "currency" => "⚛︎" }, MultifieldSchema.execute("{ thing(id: 2) { price { amount currency } } }", context: { future_schema: true })["data"]["thing"]["price"])
     res = MultifieldSchema.execute("{ __type(name: \"Money\") { name kind } }", context: { future_schema: true })
     assert_equal "OBJECT", res["data"]["__type"]["kind"]
     assert_equal "Money", res["data"]["__type"]["name"]
+  end
+
+  it "works with subclasses" do
+    res = MultifieldSchema.execute("{ legacyThing(id: 1) { price } thing(id: 3) { price } }")
+    assert_equal "⚛︎100", res["data"]["legacyThing"]["price"]
+    assert_equal "⚛︎300", res["data"]["thing"]["price"]
+
+    future_res = MultifieldSchema.execute("{ legacyThing(id: 1) { price } thing(id: 3) { price { amount } } }", context: { future_schema: true })
+
+    assert_equal "⚛︎100", future_res["data"]["legacyThing"]["price"]
+    assert_equal 300, future_res["data"]["thing"]["price"]["amount"]
   end
 end
