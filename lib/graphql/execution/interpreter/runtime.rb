@@ -637,14 +637,20 @@ module GraphQL
           when Array
             # It's an array full of execution errors; add them all.
             if value.any? && value.all? { |v| v.is_a?(GraphQL::ExecutionError) }
+              list_type_at_all = (field && (field.type.list?))
               if selection_result.nil? || !dead_result?(selection_result)
                 value.each_with_index do |error, index|
                   error.ast_node ||= ast_node
-                  error.path ||= path + ((field && field.type.list?) ? [index] : [])
+                  error.path ||= path + (list_type_at_all ? [index] : [])
                   context.errors << error
                 end
                 if selection_result
-                  set_result(selection_result, result_name, nil)
+                  if list_type_at_all
+                    result_without_errors = value.map { |v| v.is_a?(GraphQL::ExecutionError) ? nil : v }
+                    set_result(selection_result, result_name, result_without_errors)
+                  else
+                    set_result(selection_result, result_name, nil)
+                  end
                 end
               end
               HALT
