@@ -150,9 +150,9 @@ describe GraphQL::Schema::Subscription do
         SUBSCRIPTION_REGISTRY[subscription_id] = [query, events]
       end
 
-      def each_subscription_id(event)
+      def execute_all(event, object)
         EVENT_REGISTRY[event.topic].each do |sub_id|
-          yield(sub_id)
+          execute(sub_id, event, object)
         end
       end
 

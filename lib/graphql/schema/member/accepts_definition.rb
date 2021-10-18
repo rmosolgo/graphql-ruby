@@ -85,8 +85,15 @@ module GraphQL
                 define_method(name) do |*args|
                   if args.any?
                     instance_variable_set(ivar_name, args)
+                  else
+                    if (v = instance_variable_get(ivar_name))
+                      v
+                    elsif (ancestor = ancestors.find { |i| i.respond_to?(name) && i != self })
+                      ancestor.public_send(name)
+                    else
+                      nil
+                    end
                   end
-                  instance_variable_get(ivar_name) || ((int = interfaces.first { |i| i.respond_to?()}) && int.public_send(name))
                 end
               end
             end
