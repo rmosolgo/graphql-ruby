@@ -8,6 +8,22 @@
 
 ### Bug fixes
 
+# 1.12.17 (15 October 2021)
+
+### New features
+
+- Support `extras: [:parent]` #3645
+- Support ranges in `NumericalityValidator` #3635
+- Add some Dataloader methods for testing #3335
+
+### Bug fixes
+
+- Support input object arguments called `context` #3654
+- Support single-item default values for list arguments #3652
+- Ensure query strings are strings before running a query #3628
+- Fix empty hash kwargs for Ruby 3 #3610
+- Fix wrongly detecting Ipnut objects in authorization #3606
+
 # 1.12.16 (31 August 2021)
 
 ### New features
