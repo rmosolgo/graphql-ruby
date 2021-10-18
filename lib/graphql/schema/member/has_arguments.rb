@@ -66,7 +66,7 @@ module GraphQL
           own_arguments_that_apply = {}
           own_arguments.each do |name, args_entry|
             if (applicable_defn = argument_applies?(args_entry, context))
-              own_arguments_that_apply[applicable_defn] = applicable_defn
+              own_arguments_that_apply[applicable_defn.graphql_name] = applicable_defn
             end
           end
 

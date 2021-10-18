@@ -195,7 +195,7 @@ module GraphQL
         when "INPUT_OBJECT"
           GraphQL::Language::Nodes::InputObject.new(
             arguments: default_value.to_h.map do |arg_name, arg_value|
-              arg_type = @warden.arguments(type).fetch(arg_name.to_s).type
+              arg_type = @warden.arguments(type).find { |a| a.graphql_name == arg_name.to_s }.type
               GraphQL::Language::Nodes::Argument.new(
                 name: arg_name.to_s,
                 value: build_default_value(arg_value, arg_type)
