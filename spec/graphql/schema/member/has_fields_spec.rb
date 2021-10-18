@@ -12,6 +12,8 @@ describe GraphQL::Schema::Member::HasFields do
       def applies?(context)
         @future_schema.nil? || @future_schema == context[:future_schema]
       end
+
+      attr_accessor :future_schema
     end
 
     class BaseArgument < GraphQL::Schema::Argument
@@ -25,14 +27,7 @@ describe GraphQL::Schema::Member::HasFields do
 
     class BaseObject < GraphQL::Schema::Object
       field_class BaseField
-
-      class << self
-        attr_writer :future_schema
-      end
-
-      def self.applies?(context)
-        @future_schema == context[:future_schema]
-      end
+      extend AppliesToFutureSchema
     end
 
     module BaseInterface
@@ -41,13 +36,7 @@ describe GraphQL::Schema::Member::HasFields do
     end
 
     class BaseScalar < GraphQL::Schema::Scalar
-      class << self
-        attr_writer :future_schema
-      end
-
-      def self.applies?(context)
-        @future_schema == context[:future_schema]
-      end
+      extend AppliesToFutureSchema
     end
 
     module Node
