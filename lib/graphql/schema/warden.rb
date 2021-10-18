@@ -106,7 +106,7 @@ module GraphQL
 
       # @return [GraphQL::Argument, nil] The argument named `argument_name` on `parent_type`, if it exists and is visible
       def get_argument(parent_type, argument_name)
-        argument = parent_type.get_argument(argument_name)
+        argument = parent_type.get_argument(argument_name, @context)
         return argument if argument && visible_argument?(argument)
       end
 
@@ -129,7 +129,7 @@ module GraphQL
       # @param argument_owner [GraphQL::Field, GraphQL::InputObjectType]
       # @return [Array<GraphQL::Argument>] Visible arguments on `argument_owner`
       def arguments(argument_owner)
-        @visible_arguments ||= read_through { |o| o.arguments.each_value.select { |a| visible_argument?(a) } }
+        @visible_arguments ||= read_through { |o| o.arguments(@context).each_value.select { |a| visible_argument?(a) } }
         @visible_arguments[argument_owner]
       end
 

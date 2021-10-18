@@ -421,7 +421,7 @@ module GraphQL
             object = authorized_new(field_defn.owner, object, context)
           end
 
-          total_args_count = field_defn.arguments.size
+          total_args_count = field_defn.arguments(context).size
           if total_args_count == 0
             kwarg_arguments = GraphQL::Execution::Interpreter::Arguments::EMPTY
             evaluate_selection_with_args(kwarg_arguments, field_defn, next_path, ast_node, field_ast_nodes, scoped_context, owner_type, object, is_eager_field, result_name, selections_result, parent_object)

@@ -24,6 +24,8 @@ module GraphQL
       attr_reader :name
       alias :graphql_name :name
 
+      attr_reader :source_location # TODO implement (check memory performance) or remove
+
       attr_writer :description
 
       # @return [Symbol] Method or hash key on the underlying object to look up

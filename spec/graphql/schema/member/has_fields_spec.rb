@@ -3,7 +3,7 @@ require "spec_helper"
 
 describe GraphQL::Schema::Member::HasFields do
   class MultifieldSchema < GraphQL::Schema
-    class BaseField < GraphQL::Schema::Field
+    module AppliesToFutureSchema
       def initialize(*args, future_schema: nil, **kwargs, &block)
         @future_schema = future_schema
         super(*args, **kwargs, &block)
@@ -12,6 +12,15 @@ describe GraphQL::Schema::Member::HasFields do
       def applies?(context)
         @future_schema.nil? || @future_schema == context[:future_schema]
       end
+    end
+
+    class BaseArgument < GraphQL::Schema::Argument
+      include AppliesToFutureSchema
+    end
+
+    class BaseField < GraphQL::Schema::Field
+      include AppliesToFutureSchema
+      argument_class BaseArgument
     end
 
     class BaseObject < GraphQL::Schema::Object
@@ -89,7 +98,13 @@ describe GraphQL::Schema::Member::HasFields do
       end
 
       field :thing, Thing, null: true do
-        argument :id, ID, required: true
+        # TODO: here's a place where priority matters in the source.
+        # If these arguments are reordered, a test below fails
+        # because the "legacy" argument passes .applies? first.
+        # Consider making the code assert that only one among the
+        # possible definitions passes.
+        argument :id, ID, required: true, future_schema: true
+        argument :id, Int, required: true
       end
 
       def thing(id:)
@@ -129,7 +144,7 @@ describe GraphQL::Schema::Member::HasFields do
 type Query {
   f1: Int
   legacyThing(id: ID!): LegacyThing!
-  thing(id: ID!): Thing
+  thing(id: Int!): Thing
 }
 GRAPHQL
 
@@ -163,6 +178,21 @@ GRAPHQL
       MultifieldSchema.execute(query_str)["errors"].map { |e| e["message"] }
     res = MultifieldSchema.execute(query_str, context: { future_schema: true })
     assert_equal({ "thing" => { "databaseId" => 15, "id" => 15, "uuid" => "thing-15"} }, res["data"])
+  end
+
+  it "supports different versions of field arguments" do
+    res = MultifieldSchema.execute("{ thing(id: \"15\") { id } }", context: { future_schema: true })
+    assert_equal 15, res["data"]["thing"]["id"]
+    # On legacy, `"15"` is parsed as an int, which makes it null:
+    res = MultifieldSchema.execute("{ thing(id: \"15\") { id } }")
+    assert_equal ["Cannot return null for non-nullable field Thing.id"], res["errors"].map { |e| e["message"] }
+
+    introspection_query = "{ __type(name: \"Query\") { fields { name args { name type { name ofType { name } } } } } }"
+    introspection_res = MultifieldSchema.execute(introspection_query)
+    assert_equal "Int", introspection_res["data"]["__type"]["fields"].find { |f| f["name"] == "thing" }["args"].first["type"]["ofType"]["name"]
+
+    introspection_res = MultifieldSchema.execute(introspection_query, context: { future_schema: true })
+    assert_equal "ID", introspection_res["data"]["__type"]["fields"].find { |f| f["name"] == "thing" }["args"].first["type"]["ofType"]["name"]
   end
 
   it "can migrate scalars to objects" do

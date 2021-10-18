@@ -33,6 +33,8 @@ module GraphQL
       # @return [Class, Module, nil] If this argument should load an application object, this is the type of object to load
       attr_reader :loads
 
+      attr_reader :source_location
+
       # @return [Boolean] true if a resolver defined this argument
       def from_resolver?
         @from_resolver
@@ -52,7 +54,8 @@ module GraphQL
       # @param directives [Hash{Class => Hash}]
       # @param deprecation_reason [String]
       # @param validates [Hash, nil] Options for building validators, if any should be applied
-      def initialize(arg_name = nil, type_expr = nil, desc = nil, required:, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NO_DEFAULT, as: nil, from_resolver: false, camelize: true, prepare: nil, method_access: true, owner:, validates: nil, directives: nil, deprecation_reason: nil, &definition_block)
+      # @param source_location [String, nil]
+      def initialize(arg_name = nil, type_expr = nil, desc = nil, required:, type: nil, source_location: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NO_DEFAULT, as: nil, from_resolver: false, camelize: true, prepare: nil, method_access: true, owner:, validates: nil, directives: nil, deprecation_reason: nil, &definition_block)
         arg_name ||= name
         @name = -(camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s)
         @type_expr = type_expr || type
@@ -67,6 +70,7 @@ module GraphQL
         @ast_node = ast_node
         @from_resolver = from_resolver
         @method_access = method_access
+        @source_location = source_location
         self.deprecation_reason = deprecation_reason
 
         if directives
@@ -307,6 +311,11 @@ module GraphQL
         if !res
           raise InvalidDefaultValueError.new(self)
         end
+      end
+
+
+      def applies?(context)
+        true
       end
 
       class InvalidDefaultValueError < GraphQL::Error

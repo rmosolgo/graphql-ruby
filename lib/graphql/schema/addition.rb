@@ -168,6 +168,7 @@ module GraphQL
           end
         elsif type.is_a?(Class) && type < GraphQL::Schema::Directive
           @directives << type
+          # TODO entries
           type.arguments.each do |name, arg|
             arg_type = arg.type.unwrap
             references_to(arg_type, from: arg)
@@ -187,11 +188,11 @@ module GraphQL
               field_path = path + [name]
               add_type(field_type, owner: field, late_types: late_types, path: field_path)
               add_directives_from(field)
-              field.arguments.each do |arg_name, arg|
+              field.all_argument_definitions.each do |arg|
                 add_directives_from(arg)
                 arg_type = arg.type.unwrap
                 references_to(arg_type, from: arg)
-                add_type(arg_type, owner: arg, late_types: late_types, path: field_path + [arg_name])
+                add_type(arg_type, owner: arg, late_types: late_types, path: field_path + [arg.graphql_name])
                 if arg.default_value?
                   @arguments_with_default_values << arg
                 end
@@ -199,13 +200,16 @@ module GraphQL
             end
           end
           if type.kind.input_object?
-            type.arguments.each do |arg_name, arg|
-              add_directives_from(arg)
-              arg_type = arg.type.unwrap
-              references_to(arg_type, from: arg)
-              add_type(arg_type, owner: arg, late_types: late_types, path: path + [arg_name])
-              if arg.default_value?
-                @arguments_with_default_values << arg
+            # TODO should not filter out inapplicable ones
+            type.arguments.each do |arg_name, args_entry|
+              Array(args_entry).each do |arg|
+                add_directives_from(arg)
+                arg_type = arg.type.unwrap
+                references_to(arg_type, from: arg)
+                add_type(arg_type, owner: arg, late_types: late_types, path: path + [arg_name])
+                if arg.default_value?
+                  @arguments_with_default_values << arg
+                end
               end
             end
           end

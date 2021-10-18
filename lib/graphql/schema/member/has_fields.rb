@@ -126,6 +126,7 @@ module GraphQL
         end
 
         def all_field_definitions
+          # TODO can this be an array?
           all_fields = Hash.new { |h, k| h[k] = [] }
           for ancestor in ancestors
             if ancestor.respond_to?(:own_fields)

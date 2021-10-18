@@ -17,6 +17,7 @@ module GraphQL
         # @return [GraphQL::Schema::Argument] An instance of {arguments_class}, created from `*args`
         def argument(*args, **kwargs, &block)
           kwargs[:owner] = self
+          kwargs[:source_location] = caller(1, 1).first
           loads = kwargs[:loads]
           if loads
             name = args[0]
@@ -44,30 +45,82 @@ module GraphQL
         # @return [GraphQL::Schema::Argument]
         def add_argument(arg_defn)
           @own_arguments ||= {}
-          own_arguments[arg_defn.name] = arg_defn
+          prev_defn = own_arguments[arg_defn.name]
+          case prev_defn
+          when nil
+            own_arguments[arg_defn.name] = arg_defn
+          when Array
+            prev_defn << arg_defn
+          when GraphQL::Schema::Argument
+            own_arguments[arg_defn.name] = [prev_defn, arg_defn]
+          else
+            raise "Invariant: unexpected `@own_arguments[#{arg_defn.name.inspect}]`: #{prev_defn.inspect}"
+          end
           arg_defn
         end
 
         # @return [Hash<String => GraphQL::Schema::Argument] Arguments defined on this thing, keyed by name. Includes inherited definitions
-        def arguments
-          inherited_arguments = ((self.is_a?(Class) && superclass.respond_to?(:arguments)) ? superclass.arguments : nil)
+        def arguments(context = GraphQL::Query::NullContext)
+          inherited_arguments = ((self.is_a?(Class) && superclass.respond_to?(:arguments)) ? superclass.arguments(context) : nil)
           # Local definitions override inherited ones
+          own_arguments_that_apply = {}
+          own_arguments.each do |name, args_entry|
+            if (applicable_defn = argument_applies?(args_entry, context))
+              own_arguments_that_apply[applicable_defn] = applicable_defn
+            end
+          end
+
           if inherited_arguments
-            inherited_arguments.merge(own_arguments)
+            inherited_arguments.merge(own_arguments_that_apply)
           else
-            own_arguments
+            own_arguments_that_apply
+          end
+        end
+
+        def all_argument_definitions
+          all_defns = []
+          if self.is_a?(Class)
+            for ancestor in ancestors
+              all_defns.concat(ancestor.own_arguments.values)
+            end
+          else
+            all_defns = own_arguments.values
+          end
+          all_defns.flatten!
+          all_defns.uniq!
+          all_defns
+        end
+
+        # TODO private
+        # @param arguments_entry [GraphQL::Schema::Argument, Array<GraphQL::Schema::Argument>]
+        # @return [GraphQL::Schema::Argument, nil]
+        def argument_applies?(arguments_entry, context)
+          case arguments_entry
+          when GraphQL::Schema::Argument
+            if arguments_entry.applies?(context)
+              arguments_entry
+            else
+              nil
+            end
+          when Array
+            arguments_entry.find { |a| argument_applies?(a, context) }
+          else
+            raise "Invariant: unexpected arguments entry: #{arguments_entry.inspect}"
           end
         end
 
         # @return [GraphQL::Schema::Argument, nil] Argument defined on this thing, fetched by name.
-        def get_argument(argument_name)
+        def get_argument(argument_name, context = GraphQL::Query::NullContext)
           a = own_arguments[argument_name]
+          a = a && argument_applies?(a, context)
 
           if a || !self.is_a?(Class)
             a
           else
             for ancestor in ancestors
-              if ancestor.respond_to?(:own_arguments) && a = ancestor.own_arguments[argument_name]
+              if ancestor.respond_to?(:own_arguments) &&
+                (a = ancestor.own_arguments[argument_name]) &&
+                (a = argument_applies?(a, context))
                 return a
               end
             end
@@ -91,7 +144,7 @@ module GraphQL
         # @return [Interpreter::Arguments, Execution::Lazy<Interpeter::Arguments>]
         def coerce_arguments(parent_object, values, context, &block)
           # Cache this hash to avoid re-merging it
-          arg_defns = self.arguments
+          arg_defns = self.arguments(context)
           total_args_count = arg_defns.size
 
           if total_args_count == 0
