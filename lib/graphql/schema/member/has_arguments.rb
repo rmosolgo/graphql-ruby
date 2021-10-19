@@ -81,7 +81,9 @@ module GraphQL
           all_defns = []
           if self.is_a?(Class)
             for ancestor in ancestors
-              all_defns.concat(ancestor.own_arguments.values)
+              if ancestor.respond_to?(:own_arguments)
+                all_defns.concat(ancestor.own_arguments.values)
+              end
             end
           else
             all_defns = own_arguments.values

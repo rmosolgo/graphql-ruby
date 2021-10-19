@@ -34,7 +34,7 @@ module GraphQL
         parent_type = get_parent_type(context, parent)
         return unless parent_type && parent_type.kind.input_object?
 
-        required_fields = warden.arguments(parent_type)
+        required_fields = context.warden.arguments(parent_type)
           .select{|arg| arg.type.kind.non_null?}
           .map(&:graphql_name)
 
