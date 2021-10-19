@@ -174,7 +174,7 @@ GRAPHQL
     assert_equal 15, res["data"]["thing"]["id"]
     # On legacy, `"15"` is parsed as an int, which makes it null:
     res = MultifieldSchema.execute("{ thing(id: \"15\") { id } }")
-    assert_equal ["Cannot return null for non-nullable field Thing.id"], res["errors"].map { |e| e["message"] }
+    assert_equal ["Argument 'id' on Field 'thing' has an invalid value (\"15\"). Expected type 'Int!'."], res["errors"].map { |e| e["message"] }
 
     introspection_query = "{ __type(name: \"Query\") { fields { name args { name type { name ofType { name } } } } } }"
     introspection_res = MultifieldSchema.execute(introspection_query)

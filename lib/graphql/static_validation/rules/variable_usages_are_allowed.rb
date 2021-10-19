@@ -24,13 +24,13 @@ module GraphQL
         if node_values.any?
           arguments = case parent
           when GraphQL::Language::Nodes::Field
-            context.field_definition.arguments
+            context.warden.arguments(context.field_definition)
           when GraphQL::Language::Nodes::Directive
-            context.directive_definition.arguments
+            context.warden.arguments(context.directive_definition)
           when GraphQL::Language::Nodes::InputObject
             arg_type = context.argument_definition.type.unwrap
             if arg_type.kind.input_object?
-              arguments = arg_type.arguments
+              context.warden.arguments(arg_type)
             else
               # This is some kind of error
               nil

@@ -120,14 +120,14 @@ module GraphQL
           argument_defn = if (arg = @argument_definitions.last)
             arg_type = arg.type.unwrap
             if arg_type.kind.input_object?
-              arg_type.arguments[node.name]
+              @context.warden.get_argument(arg_type, node.name)
             else
               nil
             end
           elsif (directive_defn = @directive_definitions.last)
-            directive_defn.arguments[node.name]
+            @context.warden.get_argument(directive_definition, node.name)
           elsif (field_defn = @field_definitions.last)
-            field_defn.arguments[node.name]
+            @context.warden.get_argument(field_defn, node.name)
           else
             nil
           end

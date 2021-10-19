@@ -607,7 +607,7 @@ module GraphQL
           @resolver_class.authorized?(object, context)
         else
           # Faster than `.any?`
-          arguments.each_value do |arg|
+          arguments(context).each_value do |arg|
             if args.key?(arg.keyword) && !arg.authorized?(object, args[arg.keyword], context)
               return false
             end
