@@ -138,6 +138,20 @@ describe GraphQL::Analysis::AST::FieldUsage do
     end
   end
 
+  describe "query with an array argument sent as null" do
+    let(:query_string) {%|
+      query {
+        searchDairy(product: null) {
+          __typename
+        }
+      }
+    |}
+
+    it "tolerates null for array argument" do
+      result
+    end
+  end
+
   describe "query with deprecated arguments nested in an argument" do
     let(:query_string) {%|
       query {
