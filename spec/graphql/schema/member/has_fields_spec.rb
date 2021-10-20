@@ -90,6 +90,20 @@ describe GraphQL::Schema::Member::HasFields do
       value "COFFEE_SCRIPT", future_schema: false
     end
 
+    class Place < BaseObject
+      implements Node
+      self.future_schema = true
+      field :future_place_field, String, null: true
+    end
+
+    class LegacyPlace < BaseObject
+      implements Node
+      graphql_name "Place"
+      self.future_schema = false
+
+      field :legacy_place_field, String, null: true
+    end
+
     class Query < BaseObject
       field :f1, String, null: true, future_schema: true
       field :f1, Int, null: true
@@ -157,6 +171,7 @@ describe GraphQL::Schema::Member::HasFields do
 
     query(Query)
     mutation(Mutation)
+    orphan_types(Place, LegacyPlace)
   end
 
   def exec_query(*args, **kwargs)
@@ -329,5 +344,16 @@ GRAPHQL
     end
     assert_equal "RAKU", exec_future_query("{ favoriteLanguage(lang: RAKU) }")["data"]["favoriteLanguage"]
     assert_equal ["Argument 'lang' on Field 'favoriteLanguage' has an invalid value (RAKU). Expected type 'Language'."], exec_query("{ favoriteLanguage(lang: RAKU) }")["errors"].map { |e| e["message"] }
+  end
+
+  it "supports multiple types with the same name in orphan_types" do
+    legacy_schema = MultifieldSchema.to_definition
+    assert_includes legacy_schema, "legacyPlaceField"
+    refute_includes legacy_schema, "futurePlaceField"
+    assert_equal ["type Place"], legacy_schema.scan("type Place")
+    future_schema = MultifieldSchema.to_definition(context: { future_schema: true })
+    refute_includes future_schema, "legacyPlaceField"
+    assert_includes future_schema, "futurePlaceField"
+    assert_equal ["type Place"], future_schema.scan("type Place")
   end
 end

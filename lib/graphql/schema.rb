@@ -1116,9 +1116,10 @@ module GraphQL
             stored_possible_types = own_possible_types[type.graphql_name]
             visible_possible_types = if stored_possible_types && type.kind.interface?
               stored_possible_types.select do |possible_type|
-                # Use `.graphql_name` comparison to match legacy vs class-based types.
-                # When we don't need to support legacy `.define` types, use `.include?(type)` instead.
-                possible_type.interfaces(context).any? { |interface| interface.graphql_name == type.graphql_name }
+                possible_type.applies?(context) &&
+                  # Use `.graphql_name` comparison to match legacy vs class-based types.
+                  # When we don't need to support legacy `.define` types, use `.include?(type)` instead.
+                  possible_type.interfaces(context).any? { |interface| interface.graphql_name == type.graphql_name }
               end
             else
               stored_possible_types
@@ -1404,7 +1405,6 @@ module GraphQL
         if new_orphan_types.any?
           new_orphan_types = new_orphan_types.flatten
           add_type_and_traverse(new_orphan_types, root: false)
-          @orphan_types = new_orphan_types
           own_orphan_types.concat(new_orphan_types.flatten)
         end
 

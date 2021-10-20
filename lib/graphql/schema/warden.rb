@@ -292,7 +292,7 @@ module GraphQL
         end
 
         @schema.orphan_types.each do |orphan_type|
-          if get_type(orphan_type.graphql_name)
+          if get_type(orphan_type.graphql_name) == orphan_type
             unvisited_types << orphan_type
           end
         end

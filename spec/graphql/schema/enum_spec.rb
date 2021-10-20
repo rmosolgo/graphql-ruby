@@ -213,21 +213,5 @@ describe GraphQL::Schema::Enum do
         )
       end
     end
-
-    describe "validates enum value name uniqueness" do
-      it "raises an exception when adding a duplicate enum value name" do
-        expected_message = "X is already defined for SomeEnum, please remove one of the definitions."
-
-        exception = assert_raises(ArgumentError) do
-          Class.new(GraphQL::Schema::Enum) do
-            graphql_name "SomeEnum"
-            value "X"
-            value "X"
-          end
-        end
-
-        assert_equal(expected_message, exception.message)
-      end
-    end
   end
 end

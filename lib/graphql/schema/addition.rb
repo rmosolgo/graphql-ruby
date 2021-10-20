@@ -135,15 +135,6 @@ module GraphQL
         end
       end
 
-      def add_duplicate_type(type)
-        prev_type = @types[type.graphql_name]
-        if prev_type.is_a?(Array)
-          prev_type << type
-        else
-          @types[type.graphql_name] = [prev_type, type]
-        end
-      end
-
       def add_type(type, owner:, late_types:, path:)
         if type.respond_to?(:metadata) && type.metadata.is_a?(Hash)
           type_class = type.metadata[:type_class]
@@ -162,10 +153,8 @@ module GraphQL
           um << owner
         end
 
-        if (prev_type = get_local_type(type.graphql_name))
-          if prev_type != type
-            add_duplicate_type(type)
-          end
+        if (prev_type = get_local_type(type.graphql_name)) && prev_type == type
+          # No need to re-visit
         elsif type.is_a?(Class) && type < GraphQL::Schema::Directive
           @directives << type
           # TODO entries
@@ -178,7 +167,15 @@ module GraphQL
             end
           end
         else
-          @types[type.graphql_name] = type
+          prev_type = @types[type.graphql_name]
+          if prev_type.nil?
+            @types[type.graphql_name] = type
+          elsif prev_type.is_a?(Array)
+            prev_type << type
+          else
+            @types[type.graphql_name] = [prev_type, type]
+          end
+
           add_directives_from(type)
           if type.kind.fields?
             type.all_field_definitions.each do |field|
