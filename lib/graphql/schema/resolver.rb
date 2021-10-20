@@ -28,7 +28,7 @@ module GraphQL
       include Schema::Member::HasPath
       extend Schema::Member::HasPath
 
-      # @param object [Object] the initialize object, pass to {Query.initialize} as `root_value`
+      # @param object [Object] The application object that this field is being resolved on
       # @param context [GraphQL::Query::Context]
       # @param field [GraphQL::Schema::Field]
       def initialize(object:, context:, field:)
@@ -110,7 +110,7 @@ module GraphQL
                     public_send(self.class.resolve_method)
                   end
                 else
-                  nil
+                  raise GraphQL::UnauthorizedFieldError.new(context: context, object: object, type: field.owner, field: field)
                 end
               end
             end
