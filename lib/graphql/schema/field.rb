@@ -608,8 +608,7 @@ module GraphQL
             if is_authorized
               public_send_field(object, args, ctx)
             else
-              err = GraphQL::UnauthorizedFieldError.new(object: application_object, type: object.class, context: ctx, field: self)
-              ctx.schema.unauthorized_field(err)
+              raise GraphQL::UnauthorizedFieldError.new(object: application_object, type: object.class, context: ctx, field: self)
             end
           end
         rescue GraphQL::UnauthorizedFieldError => err
