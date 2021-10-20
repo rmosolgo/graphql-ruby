@@ -41,7 +41,8 @@ describe GraphQL::Schema::Subscription do
       # Can't subscribe to private users
       def authorized?(user:, path:, query:)
         if user[:private]
-          raise GraphQL::ExecutionError, "Can't subscribe to private user (#{path})"
+          context[:last_path] = path
+          false
         else
           true
         end
@@ -133,6 +134,11 @@ describe GraphQL::Schema::Subscription do
 
     def self.object_from_id(id, ctx)
       USERS[id]
+    end
+
+    def self.unauthorized_field(err)
+      path = err.context[:last_path]
+      raise GraphQL::ExecutionError, "Can't subscribe to private user (#{path})"
     end
 
 
