@@ -46,18 +46,49 @@ module GraphQL
         def value(*args, **kwargs, &block)
           kwargs[:owner] = self
           value = enum_value_class.new(*args, **kwargs, &block)
-          if own_values.key?(value.graphql_name)
-            raise ArgumentError, "#{value.graphql_name} is already defined for #{self.graphql_name}, please remove one of the definitions."
+          key = value.graphql_name
+          prev_value = own_values[key]
+          case prev_value
+          when nil
+            own_values[key] = value
+          when GraphQL::Schema::EnumValue
+            own_values[key] = [prev_value, value]
+          when Array
+            prev_value << value
+          else
+            raise "Invariant: Unexpected enum value for #{key.inspect}: #{prev_value.inspect}"
           end
-          own_values[value.graphql_name] = value
           nil
         end
 
         # @return [Hash<String => GraphQL::Schema::Enum::Value>] Possible values of this enum, keyed by name
-        def values
-          inherited_values = superclass <= GraphQL::Schema::Enum ? superclass.values : {}
-          # Local values take precedence over inherited ones
-          inherited_values.merge(own_values)
+        def values(context = GraphQL::Query::NullContext)
+          inherited_values = superclass.respond_to?(:values) ? superclass.values(context) : nil
+          visible_values = {}
+          own_values.each do |key, values_entry|
+            if (v = applicable_entry?(context, values_entry))
+              visible_values[key] = v
+            end
+          end
+
+          if inherited_values
+            # Local values take precedence over inherited ones
+            inherited_values.merge(visible_values)
+          else
+            visible_values
+          end
+        end
+
+        # TODO private
+        def applicable_entry?(context, values_entry)
+          case values_entry
+          when GraphQL::Schema::EnumValue
+            values_entry.applies?(context) && values_entry
+          when Array
+            values_entry.find { |v| v.applies?(context) }
+          else
+            raise "Invariant: Unexpected enum values entry: #{values_entry.inspect}"
+          end
         end
 
         # @return [GraphQL::EnumType]

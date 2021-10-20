@@ -10,7 +10,7 @@ describe GraphQL::Schema::Member::HasFields do
       end
 
       def applies?(context)
-        @future_schema.nil? || @future_schema == context[:future_schema]
+        @future_schema.nil? || (@future_schema == !!context[:future_schema])
       end
 
       attr_accessor :future_schema
@@ -74,6 +74,22 @@ describe GraphQL::Schema::Member::HasFields do
       field :price, MoneyScalar, null: true, method: :legacy_price
     end
 
+    class BaseEnumValue < GraphQL::Schema::EnumValue
+      include AppliesToFutureSchema
+    end
+
+    class BaseEnum < GraphQL::Schema::Enum
+      enum_value_class BaseEnumValue
+    end
+
+    class Language < BaseEnum
+      value "RUBY"
+      value "PERL6", deprecation_reason: "Use RAKU instead", future_schema: true
+      value "PERL6"
+      value "RAKU", future_schema: true
+      value "COFFEE_SCRIPT", future_schema: false
+    end
+
     class Query < BaseObject
       field :f1, String, null: true, future_schema: true
       field :f1, Int, null: true
@@ -106,6 +122,14 @@ describe GraphQL::Schema::Member::HasFields do
 
       def legacy_thing(id:)
         { id: id, database_id: id, uuid: "thing-#{id}", price: "⚛︎#{id}00" }
+      end
+
+      field :favorite_language, Language, null: false do
+        argument :lang, Language, required: false
+      end
+
+      def favorite_language(lang: nil)
+        lang || context[:favorite_language] || "RUBY"
       end
     end
 
@@ -164,6 +188,7 @@ describe GraphQL::Schema::Member::HasFields do
     assert_includes MultifieldSchema.to_definition, <<-GRAPHQL
 type Query {
   f1: Int
+  favoriteLanguage(lang: Language): Language!
   legacyThing(id: ID!): LegacyThing!
   thing(id: Int!): Thing
 }
@@ -172,6 +197,7 @@ GRAPHQL
     assert_includes MultifieldSchema.to_definition(context: { future_schema: true }), <<-GRAPHQL
 type Query {
   f1: String
+  favoriteLanguage(lang: Language): Language!
   legacyThing(id: ID!): LegacyThing!
   thing(id: ID!): Thing
 }
@@ -266,5 +292,42 @@ GRAPHQL
     future_res = exec_future_query("{ legacyThing(id: 1) { price } thing(id: 3) { price { amount } } }")
     assert_equal "⚛︎100", future_res["data"]["legacyThing"]["price"]
     assert_equal 300, future_res["data"]["thing"]["price"]["amount"]
+  end
+
+
+  it "supports different enum value definitions" do
+    # Schema dump:
+    legacy_schema = MultifieldSchema.to_definition
+    assert_includes legacy_schema, "COFFEE_SCRIPT"
+    refute_includes legacy_schema, "RAKU"
+    future_schema = MultifieldSchema.to_definition(context: { future_schema: true })
+    assert_includes future_schema, "RAKU\n"
+    assert_includes future_schema, "\"Use RAKU instead\""
+    refute_includes future_schema, "COFFEE_SCRIPT"
+
+    # Introspection:
+    query_str = "{ __type(name: \"Language\") { enumValues(includeDeprecated: true) { name deprecationReason } } }"
+    legacy_res = exec_query(query_str)
+    assert_equal ["RUBY", "PERL6", "COFFEE_SCRIPT"], legacy_res["data"]["__type"]["enumValues"].map { |v| v["name"] }
+    assert_equal [nil, nil, nil], legacy_res["data"]["__type"]["enumValues"].map { |v| v["deprecationReason"] }
+
+    future_res = exec_future_query(query_str)
+    assert_equal ["RUBY", "PERL6", "RAKU"], future_res["data"]["__type"]["enumValues"].map { |v| v["name"] }
+    assert_equal [nil, "Use RAKU instead", nil], future_res["data"]["__type"]["enumValues"].map { |v| v["deprecationReason"] }
+
+    # Runtime return values and inputs:
+    assert_equal "COFFEE_SCRIPT", exec_query("{ favoriteLanguage }", context: { favorite_language: "COFFEE_SCRIPT"})["data"]["favoriteLanguage"]
+    assert_raises MultifieldSchema::Language::UnresolvedValueError do
+      exec_future_query("{ favoriteLanguage }", context: { favorite_language: "COFFEE_SCRIPT"})
+    end
+    assert_equal "COFFEE_SCRIPT", exec_query("{ favoriteLanguage(lang: COFFEE_SCRIPT) }")["data"]["favoriteLanguage"]
+    assert_equal ["Argument 'lang' on Field 'favoriteLanguage' has an invalid value (COFFEE_SCRIPT). Expected type 'Language'."], exec_future_query("{ favoriteLanguage(lang: COFFEE_SCRIPT) }")["errors"].map { |e| e["message"] }
+
+    assert_equal "RAKU", exec_future_query("{ favoriteLanguage }", context: { favorite_language: "RAKU"})["data"]["favoriteLanguage"]
+    assert_raises MultifieldSchema::Language::UnresolvedValueError do
+      exec_query("{ favoriteLanguage }", context: { favorite_language: "RAKU"})
+    end
+    assert_equal "RAKU", exec_future_query("{ favoriteLanguage(lang: RAKU) }")["data"]["favoriteLanguage"]
+    assert_equal ["Argument 'lang' on Field 'favoriteLanguage' has an invalid value (RAKU). Expected type 'Language'."], exec_query("{ favoriteLanguage(lang: RAKU) }")["errors"].map { |e| e["message"] }
   end
 end

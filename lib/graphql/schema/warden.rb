@@ -135,7 +135,7 @@ module GraphQL
 
       # @return [Array<GraphQL::EnumType::EnumValue>] Visible members of `enum_defn`
       def enum_values(enum_defn)
-        @visible_enum_values ||= read_through { |e| e.values.each_value.select { |enum_value_defn| visible?(enum_value_defn) } }
+        @visible_enum_values ||= read_through { |e| e.values(@context).each_value.select { |enum_value_defn| visible?(enum_value_defn) } }
         @visible_enum_values[enum_defn]
       end
 
