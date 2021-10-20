@@ -313,7 +313,6 @@ module GraphQL
         end
       end
 
-
       def applies?(context)
         true
       end

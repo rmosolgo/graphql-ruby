@@ -125,7 +125,7 @@ module GraphQL
               nil
             end
           elsif (directive_defn = @directive_definitions.last)
-            @context.warden.get_argument(directive_definition, node.name)
+            @context.warden.get_argument(directive_defn, node.name)
           elsif (field_defn = @field_definitions.last)
             @context.warden.get_argument(field_defn, node.name)
           else
