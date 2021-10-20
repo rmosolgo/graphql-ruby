@@ -54,6 +54,7 @@ module GraphQL
       class << self
         private
         def stringify_args(arg_owner, args)
+          arg_owner = arg_owner.respond_to?(:unwrap) ? arg_owner.unwrap : arg_owner # remove list and non-null wrappers
           case args
           when Hash
             next_args = {}
@@ -67,8 +68,9 @@ module GraphQL
                 next_args[normalized_arg_name] = stringify_args(arg_defn.type, v)
               else
                 normalized_arg_name = arg_name
-                next_args[normalized_arg_name] = v
+                arg_defn = get_arg_definition(arg_owner, normalized_arg_name)
               end
+              next_args[normalized_arg_name] = stringify_args(arg_defn.type, v)
             end
             # Make sure they're deeply sorted
             next_args.sort.to_h
@@ -82,8 +84,6 @@ module GraphQL
         end
 
         def get_arg_definition(arg_owner, arg_name)
-          return unless arg_owner.respond_to?(:arguments)
-
           arg_owner.arguments[arg_name] || arg_owner.arguments.each_value.find { |v| v.keyword.to_s == arg_name }
         end
       end
