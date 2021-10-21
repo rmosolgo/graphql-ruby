@@ -144,7 +144,7 @@ class ClassBasedInMemoryBackend < InMemoryBackend
 
     def update(channel: nil)
       if channel && object.channel != channel
-        :no_update
+        NO_UPDATE
       else
         super
       end

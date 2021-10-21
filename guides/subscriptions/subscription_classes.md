@@ -278,20 +278,20 @@ After a client has registered a subscription, the application may trigger subscr
 
 - Unsubscribe the client with `unsubscribe`
 - Return a value with `super` (which returns `object`) or by returning a different value.
-- Return `:no_update` to skip this update
+- Return `NO_UPDATE` to skip this update
 
 ### Skipping subscription updates
 
 (__Note__: only supported when using the new {% internal_link "Interpreter runtime", "/queries/interpreter#installation" %})
 
-Perhaps you don't want to send updates to a certain subscriber. For example, if someone leaves a comment, you might want to push the new comment to _other_ subscribers, but not the commenter, who already has that comment data. You can accomplish this by returning `:no_update`.
+Perhaps you don't want to send updates to a certain subscriber. For example, if someone leaves a comment, you might want to push the new comment to _other_ subscribers, but not the commenter, who already has that comment data. You can accomplish this by returning `NO_UPDATE`.
 
 ```ruby
 class Subscriptions::CommentWasAdded < Subscriptions::BaseSubscription
   def update(post_id:)
     comment = object # #<Comment ...>
     if comment.author == context[:viewer]
-      :no_update
+      NO_UPDATE
     else
       # Continue updating this client, since it's not the commenter
       super
