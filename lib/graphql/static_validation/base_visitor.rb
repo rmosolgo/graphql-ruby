@@ -187,7 +187,7 @@ module GraphQL
 
         def on_fragment_with_type(node)
           object_type = if node.type
-            @schema.get_type(node.type.name)
+            @context.warden.get_type(node.type.name)
           else
             @object_types.last
           end

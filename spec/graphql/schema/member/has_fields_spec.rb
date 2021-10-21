@@ -35,6 +35,9 @@ describe GraphQL::Schema::Member::HasFields do
       field_class BaseField
     end
 
+    class BaseUnion < GraphQL::Schema::Union
+    end
+
     class BaseScalar < GraphQL::Schema::Scalar
       extend AppliesToFutureSchema
     end
@@ -104,6 +107,34 @@ describe GraphQL::Schema::Member::HasFields do
       field :legacy_place_field, String, null: true
     end
 
+    class LegacyBot < BaseObject
+      description "Legacy bot"
+      graphql_name "Bot"
+      field :handle, String, null: false
+      field :verified, Boolean, null: false
+      self.future_schema = false
+    end
+
+    class Bot < BaseObject
+      description "Future bot"
+      field :name, String, null: false
+      field :is_verified, Boolean, null: false
+      self.future_schema = true
+    end
+
+    class Actor < BaseUnion
+      possible_types Bot, LegacyBot
+
+
+      def self.resolve_type(obj, ctx)
+        if ctx[:future_schema]
+          Bot
+        else
+          LegacyBot
+        end
+      end
+    end
+
     class BaseResolver < GraphQL::Schema::Resolver
       argument_class BaseArgument
     end
@@ -164,6 +195,11 @@ describe GraphQL::Schema::Member::HasFields do
       end
 
       field :add, resolver: Add
+
+      field :actor, Actor, null: true
+      def actor
+        { handle: "bot1", verified: false, name: "bot2", is_verified: true }
+      end
     end
 
     class BaseMutation < GraphQL::Schema::RelayClassicMutation
@@ -237,6 +273,7 @@ describe GraphQL::Schema::Member::HasFields do
     # Schema dump
     assert_includes legacy_schema_sdl, <<-GRAPHQL
 type Query {
+  actor: Actor
   add(left: Int!, right: Int!): String!
   f1: Int
   favoriteLanguage(lang: Language): Language!
@@ -247,6 +284,7 @@ GRAPHQL
 
     assert_includes future_schema_sdl, <<-GRAPHQL
 type Query {
+  actor: Actor
   add(left: Float!, right: Float!): String!
   f1: String
   favoriteLanguage(lang: Language): Language!
@@ -425,5 +463,28 @@ GRAPHQL
     assert_equal ["Int", "Int"], legacy_res["data"]["__type"]["fields"].find { |f| f["name"] == "add" }["args"].map { |a| a["type"]["ofType"]["name"] }
     future_res = exec_future_query(introspection_query_str)
     assert_equal ["Float", "Float"], future_res["data"]["__type"]["fields"].find { |f| f["name"] == "add" }["args"].map { |a| a["type"]["ofType"]["name"] }
+  end
+
+  it "supports unions with possible types of the same name" do
+    assert_includes future_schema_sdl, "union Actor = Bot\n"
+    assert_includes future_schema_sdl, "type Bot {\n  isVerified: Boolean!\n  name: String!\n}\n"
+    assert_equal 1, future_schema_sdl.scan("type Bot").size
+    assert_includes legacy_schema_sdl, "union Actor = Bot\n"
+    assert_includes legacy_schema_sdl, "type Bot {\n  handle: String!\n  verified: Boolean!\n}\n"
+    assert_equal 1, legacy_schema_sdl.scan("type Bot").size
+
+    legacy_res = exec_query("{ actor { ... on Bot { handle } } }")
+    assert_equal "bot1", legacy_res["data"]["actor"]["handle"]
+    legacy_res2 = exec_query("{ actor { ... on Bot { name } } }")
+    assert_equal ["Field 'name' doesn't exist on type 'Bot'"], legacy_res2["errors"].map { |e| e["message"] }
+
+    future_res = exec_future_query("{ actor { ... on Bot { name } } }")
+    assert_equal "bot2", future_res["data"]["actor"]["name"]
+    future_res2 = exec_future_query("{ actor { ... on Bot { handle } } }")
+    assert_equal ["Field 'handle' doesn't exist on type 'Bot'"], future_res2["errors"].map { |e| e["message"] }
+
+    introspection_query_str = "{ __type(name: \"Actor\") { possibleTypes { description } } }"
+    assert_equal ["Legacy bot"], exec_query(introspection_query_str)["data"]["__type"]["possibleTypes"].map { |t| t["description"] }
+    assert_equal ["Future bot"], exec_future_query(introspection_query_str)["data"]["__type"]["possibleTypes"].map { |t| t["description"] }
   end
 end

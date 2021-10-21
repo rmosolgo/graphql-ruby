@@ -28,6 +28,10 @@ module GraphQL
           end
         end
 
+        def all_possible_types
+          type_memberships.map(&:object_type)
+        end
+
         def to_graphql
           type_defn = GraphQL::UnionType.new
           type_defn.name = graphql_name

@@ -211,8 +211,8 @@ module GraphQL
             end
           end
           if type.kind.union?
-            @possible_types[type.graphql_name] = type.possible_types
-            type.possible_types.each do |t|
+            @possible_types[type.graphql_name] = type.all_possible_types
+            type.all_possible_types.each do |t|
               add_type(t, owner: type, late_types: late_types, path: path + ["possible_types"])
             end
           end
@@ -222,7 +222,9 @@ module GraphQL
             end
           end
           if type.kind.object?
-            @possible_types[type.graphql_name] = [type]
+            # TODO what if unions, interfaces, ando object types share a name?
+            possible_types_for_this_name = @possible_types[type.graphql_name] ||= []
+            possible_types_for_this_name << type
           end
 
           if type.respond_to?(:interfaces)
