@@ -300,13 +300,27 @@ module GraphQL
         end
 
         def field_options
+
+          all_args = {}
+          all_argument_definitions.each do |arg|
+            if (prev_entry = all_args[arg.graphql_name])
+              if prev_entry.is_a?(Array)
+                prev_entry << arg
+              else
+                all_args[arg.graphql_name] = [prev_entry, arg]
+              end
+            else
+              all_args[arg.graphql_name] = arg
+            end
+          end
+
           field_opts = {
             type: type_expr,
             description: description,
             extras: extras,
             resolver_method: :resolve_with_support,
             resolver_class: self,
-            arguments: arguments,
+            arguments: all_args,
             null: null,
             complexity: complexity,
             broadcastable: broadcastable?,

@@ -104,6 +104,23 @@ describe GraphQL::Schema::Member::HasFields do
       field :legacy_place_field, String, null: true
     end
 
+    class BaseResolver < GraphQL::Schema::Resolver
+      argument_class BaseArgument
+    end
+
+    class Add < BaseResolver
+      argument :left, Float, required: true, future_schema: true
+      argument :left, Int, required: true
+      argument :right, Float, required: true, future_schema: true
+      argument :right, Int, required: true
+
+      type String, null: false
+
+      def resolve(left:, right:)
+        "#{left + right}"
+      end
+    end
+
     class Query < BaseObject
       field :f1, String, null: true, future_schema: true
       field :f1, Int, null: true
@@ -145,6 +162,8 @@ describe GraphQL::Schema::Member::HasFields do
       def favorite_language(lang: nil)
         lang || context[:favorite_language] || "RUBY"
       end
+
+      field :add, resolver: Add
     end
 
     class BaseMutation < GraphQL::Schema::RelayClassicMutation
@@ -355,5 +374,13 @@ GRAPHQL
     refute_includes future_schema, "legacyPlaceField"
     assert_includes future_schema, "futurePlaceField"
     assert_equal ["type Place"], future_schema.scan("type Place")
+  end
+
+  it "supports different resolver arguments" do
+    assert_equal "4", exec_query("{ add(left: 1, right: 3) }")["data"]["add"]
+    assert_equal ["Argument 'left' on Field 'add' has an invalid value (1.2). Expected type 'Int!'."], exec_query("{ add(left: 1.2, right: 3) }")["errors"].map { |e| e["message"] }
+
+    assert_equal "4.5", exec_future_query("{ add(left: 1.2, right: 3.3) }")["data"]["add"]
+    assert_equal "4.2", exec_future_query("{ add(left: 1.2, right: 3) }")["data"]["add"]
   end
 end
