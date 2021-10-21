@@ -21,9 +21,9 @@ module GraphQL
           for ancestor in ancestors
             if ancestor.respond_to?(:own_fields)
               ancestor.own_fields.each do |field_name, fields_entry|
-                # Choose the most local definition that passes `.applies?` --
+                # Choose the most local definition that passes `.visible?` --
                 # stop checking for fields by name once one has been found.
-                if !applicable_fields.key?(field_name) && (f = field_applies?(fields_entry, context))
+                if !applicable_fields.key?(field_name) && (f = field_visible?(fields_entry, context))
                   applicable_fields[field_name] = f
                 end
               end
@@ -36,7 +36,7 @@ module GraphQL
           for ancestor in ancestors
             if ancestor.respond_to?(:own_fields) &&
                 (f_entry = ancestor.own_fields[field_name]) &&
-                (f = field_applies?(f_entry, context))
+                (f = field_visible?(f_entry, context))
               return f
             end
           end
@@ -45,16 +45,16 @@ module GraphQL
 
         # @param fields_entry [GraphQL::Schema::Field, Array<GraphQL::Schema::Field>]
         # @return [GraphQL::Schema::Field, nil]
-        def field_applies?(fields_entry, context)
+        def field_visible?(fields_entry, context)
           case fields_entry
           when GraphQL::Schema::Field
-            if fields_entry.applies?(context)
+            if fields_entry.visible?(context)
               fields_entry
             else
               nil
             end
           when Array
-            fields_entry.find { |f| field_applies?(f, context) }
+            fields_entry.find { |f| f.visible?(context) }
           else
             raise "Invariant: unexpected fields entry: #{fields_entry.inspect}"
           end

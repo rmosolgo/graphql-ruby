@@ -9,7 +9,7 @@ describe GraphQL::Schema::Member::HasFields do
         super(*args, **kwargs, &block)
       end
 
-      def applies?(context)
+      def visible?(context)
         @future_schema.nil? || (@future_schema == !!context[:future_schema])
       end
 

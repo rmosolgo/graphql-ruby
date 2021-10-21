@@ -65,7 +65,7 @@ module GraphQL
           # Local definitions override inherited ones
           own_arguments_that_apply = {}
           own_arguments.each do |name, args_entry|
-            if (applicable_defn = argument_applies?(args_entry, context))
+            if (applicable_defn = argument_visible?(args_entry, context))
               own_arguments_that_apply[applicable_defn.graphql_name] = applicable_defn
             end
           end
@@ -96,16 +96,16 @@ module GraphQL
         # TODO private
         # @param arguments_entry [GraphQL::Schema::Argument, Array<GraphQL::Schema::Argument>]
         # @return [GraphQL::Schema::Argument, nil]
-        def argument_applies?(arguments_entry, context)
+        def argument_visible?(arguments_entry, context)
           case arguments_entry
           when GraphQL::Schema::Argument
-            if arguments_entry.applies?(context)
+            if arguments_entry.visible?(context)
               arguments_entry
             else
               nil
             end
           when Array
-            arguments_entry.find { |a| argument_applies?(a, context) }
+            arguments_entry.find { |a| a.visible?(context) }
           else
             raise "Invariant: unexpected arguments entry: #{arguments_entry.inspect}"
           end
@@ -114,7 +114,7 @@ module GraphQL
         # @return [GraphQL::Schema::Argument, nil] Argument defined on this thing, fetched by name.
         def get_argument(argument_name, context = GraphQL::Query::NullContext)
           a = own_arguments[argument_name]
-          a = a && argument_applies?(a, context)
+          a = a && argument_visible?(a, context)
 
           if a || !self.is_a?(Class)
             a
@@ -122,7 +122,7 @@ module GraphQL
             for ancestor in ancestors
               if ancestor.respond_to?(:own_arguments) &&
                 (a = ancestor.own_arguments[argument_name]) &&
-                (a = argument_applies?(a, context))
+                (a = argument_visible?(a, context))
                 return a
               end
             end

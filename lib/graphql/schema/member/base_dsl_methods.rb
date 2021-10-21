@@ -54,10 +54,6 @@ module GraphQL
           end
         end
 
-        def applies?(context)
-          true
-        end
-
         # This pushes some configurations _down_ the inheritance tree,
         # in order to prevent repetitive lookups at runtime.
         module ConfigurationExtension

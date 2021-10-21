@@ -73,10 +73,6 @@ module GraphQL
         @value
       end
 
-      def applies?(ctx)
-        true
-      end
-
       # @return [GraphQL::EnumType::EnumValue] A runtime-ready object derived from this object
       def to_graphql
         enum_value = GraphQL::EnumType::EnumValue.new

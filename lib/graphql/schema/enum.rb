@@ -66,7 +66,7 @@ module GraphQL
           inherited_values = superclass.respond_to?(:values) ? superclass.values(context) : nil
           visible_values = {}
           own_values.each do |key, values_entry|
-            if (v = applicable_entry?(context, values_entry))
+            if (v = visible_entry?(context, values_entry))
               visible_values[key] = v
             end
           end
@@ -80,12 +80,14 @@ module GraphQL
         end
 
         # TODO private
-        def applicable_entry?(context, values_entry)
+        # TODO call `.visible?` here _or_ in warden, but not both?
+        def visible_entry?(context, values_entry)
           case values_entry
           when GraphQL::Schema::EnumValue
-            values_entry.applies?(context) && values_entry
+            values_entry.visible?(context) && values_entry
           when Array
-            values_entry.find { |v| v.applies?(context) }
+            # TODO assert that only one matches?
+            values_entry.find { |v| v.visible?(context) }
           else
             raise "Invariant: Unexpected enum values entry: #{values_entry.inspect}"
           end

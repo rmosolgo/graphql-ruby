@@ -313,10 +313,6 @@ module GraphQL
         end
       end
 
-      def applies?(context)
-        true
-      end
-
       class InvalidDefaultValueError < GraphQL::Error
         def initialize(argument)
           message = "`#{argument.path}` has an invalid default value: `#{argument.default_value.inspect}` isn't accepted by `#{argument.type.to_type_signature}`; update the default value or the argument type."

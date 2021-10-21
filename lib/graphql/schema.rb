@@ -1007,7 +1007,7 @@ module GraphQL
         when nil
           nil
         when Array
-          local_entry.find { |type_defn| type_defn.applies?(context) }
+          local_entry.find { |type_defn| type_defn.visible?(context) }
         when Module
           local_entry
         else
@@ -1116,10 +1116,9 @@ module GraphQL
             stored_possible_types = own_possible_types[type.graphql_name]
             visible_possible_types = if stored_possible_types && type.kind.interface?
               stored_possible_types.select do |possible_type|
-                possible_type.applies?(context) &&
-                  # Use `.graphql_name` comparison to match legacy vs class-based types.
-                  # When we don't need to support legacy `.define` types, use `.include?(type)` instead.
-                  possible_type.interfaces(context).any? { |interface| interface.graphql_name == type.graphql_name }
+                # Use `.graphql_name` comparison to match legacy vs class-based types.
+                # When we don't need to support legacy `.define` types, use `.include?(type)` instead.
+                possible_type.interfaces(context).any? { |interface| interface.graphql_name == type.graphql_name }
               end
             else
               stored_possible_types
