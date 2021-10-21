@@ -203,6 +203,14 @@ describe GraphQL::Schema::Member::HasFields do
     exec_query(*args, **kwargs)
   end
 
+  def future_schema_sdl
+    MultifieldSchema.to_definition(context: { future_schema: true })
+  end
+
+  def legacy_schema_sdl
+    MultifieldSchema.to_definition
+  end
+
   it "returns different fields according context for Ruby methods, runtime, introspection, and to_definition" do
     # Accessing in Ruby
     assert_equal GraphQL::Types::Int, MultifieldSchema::Query.get_field("f1").type
@@ -214,13 +222,14 @@ describe GraphQL::Schema::Member::HasFields do
     assert_equal "abcdef", exec_future_query(query_str)["data"]["f1"]
 
     # GraphQL Introspection
-    introspection_query_str = '{ __type(name: "Query") { fields { type { name } } } }'
-    assert_equal "Int", exec_query(introspection_query_str)["data"]["__type"]["fields"].first["type"]["name"]
-    assert_equal "String", exec_future_query(introspection_query_str)["data"]["__type"]["fields"].first["type"]["name"]
+    introspection_query_str = '{ __type(name: "Query") { fields { name type { name } } } }'
+    assert_equal "Int", exec_query(introspection_query_str)["data"]["__type"]["fields"].find { |f| f["name"] == "f1" }["type"]["name"]
+    assert_equal "String", exec_future_query(introspection_query_str)["data"]["__type"]["fields"].find { |f| f["name"] == "f1" }["type"]["name"]
 
     # Schema dump
-    assert_includes MultifieldSchema.to_definition, <<-GRAPHQL
+    assert_includes legacy_schema_sdl, <<-GRAPHQL
 type Query {
+  add(left: Int!, right: Int!): String!
   f1: Int
   favoriteLanguage(lang: Language): Language!
   legacyThing(id: ID!): LegacyThing!
@@ -228,8 +237,9 @@ type Query {
 }
 GRAPHQL
 
-    assert_includes MultifieldSchema.to_definition(context: { future_schema: true }), <<-GRAPHQL
+    assert_includes future_schema_sdl, <<-GRAPHQL
 type Query {
+  add(left: Float!, right: Float!): String!
   f1: String
   favoriteLanguage(lang: Language): Language!
   legacyThing(id: ID!): LegacyThing!
@@ -240,13 +250,13 @@ GRAPHQL
 
   it "serves interface fields according to the per-query version" do
     # Schema dump
-    assert_includes MultifieldSchema.to_definition, <<-GRAPHQL
+    assert_includes legacy_schema_sdl, <<-GRAPHQL
 interface Node {
   id: Int!
 }
 GRAPHQL
 
-    assert_includes MultifieldSchema.to_definition(context: { future_schema: true }), <<-GRAPHQL
+    assert_includes future_schema_sdl, <<-GRAPHQL
 interface Node {
   databaseId: Int!
   id: Int! @deprecated(reason: "Use databaseId instead")
@@ -294,16 +304,16 @@ GRAPHQL
 
   it "can migrate scalars to objects" do
     # Schema dump
-    assert_includes MultifieldSchema.to_definition, "scalar Money"
-    refute_includes MultifieldSchema.to_definition, "type Money"
+    assert_includes legacy_schema_sdl, "scalar Money"
+    refute_includes legacy_schema_sdl, "type Money"
 
-    assert_includes MultifieldSchema.to_definition(context: { future_schema: true }), <<-GRAPHQL
+    assert_includes future_schema_sdl, <<-GRAPHQL
 type Money {
   amount: Int!
   currency: String!
 }
 GRAPHQL
-    refute_includes MultifieldSchema.to_definition(context: { future_schema: true }), "scalar Money"
+    refute_includes future_schema_sdl, "scalar Money"
 
     assert_equal MultifieldSchema::MoneyScalar, MultifieldSchema.get_type("Money")
     assert_equal MultifieldSchema::Money, MultifieldSchema.get_type("Money", { future_schema: true })
@@ -331,10 +341,10 @@ GRAPHQL
 
   it "supports different enum value definitions" do
     # Schema dump:
-    legacy_schema = MultifieldSchema.to_definition
+    legacy_schema = legacy_schema_sdl
     assert_includes legacy_schema, "COFFEE_SCRIPT"
     refute_includes legacy_schema, "RAKU"
-    future_schema = MultifieldSchema.to_definition(context: { future_schema: true })
+    future_schema = future_schema_sdl
     assert_includes future_schema, "RAKU\n"
     assert_includes future_schema, "\"Use RAKU instead\""
     refute_includes future_schema, "COFFEE_SCRIPT"
@@ -366,11 +376,11 @@ GRAPHQL
   end
 
   it "supports multiple types with the same name in orphan_types" do
-    legacy_schema = MultifieldSchema.to_definition
+    legacy_schema = legacy_schema_sdl
     assert_includes legacy_schema, "legacyPlaceField"
     refute_includes legacy_schema, "futurePlaceField"
     assert_equal ["type Place"], legacy_schema.scan("type Place")
-    future_schema = MultifieldSchema.to_definition(context: { future_schema: true })
+    future_schema = future_schema_sdl
     refute_includes future_schema, "legacyPlaceField"
     assert_includes future_schema, "futurePlaceField"
     assert_equal ["type Place"], future_schema.scan("type Place")
@@ -382,5 +392,11 @@ GRAPHQL
 
     assert_equal "4.5", exec_future_query("{ add(left: 1.2, right: 3.3) }")["data"]["add"]
     assert_equal "4.2", exec_future_query("{ add(left: 1.2, right: 3) }")["data"]["add"]
+
+    introspection_query_str = "{ __type(name: \"Query\") { fields { name args { type { ofType { name } } } } } }"
+    legacy_res = exec_query(introspection_query_str)
+    assert_equal ["Int", "Int"], legacy_res["data"]["__type"]["fields"].find { |f| f["name"] == "add" }["args"].map { |a| a["type"]["ofType"]["name"] }
+    future_res = exec_future_query(introspection_query_str)
+    assert_equal ["Float", "Float"], future_res["data"]["__type"]["fields"].find { |f| f["name"] == "add" }["args"].map { |a| a["type"]["ofType"]["name"] }
   end
 end
