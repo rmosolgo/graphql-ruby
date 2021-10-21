@@ -176,10 +176,18 @@ describe GraphQL::Schema::Member::HasFields do
       argument :thing_id, Int, required: true
       argument :price, Int, required: true
 
-      field :thing, Thing, null: false
+      field :thing, Thing, null: false, future_schema: true
+      field :thing, LegacyThing, null: false, hash_key: :legacy_thing
+
       def resolve(thing_id:, price:)
+        thing = { id: thing_id, uuid: thing_id, legacy_price: "£#{price}", future_price: { amount: price, currency: "£"} }
+        thing[:price] = thing[:future_price]
+
+        legacy_thing = thing.merge(price: thing[:legacy_price])
+
         {
-          thing: { id: thing_id, uuid: thing_id, legacy_price: "£#{price}", price: { amount: price, currency: "£"} }
+          thing: thing,
+          legacy_thing: legacy_thing,
         }
       end
     end
@@ -300,6 +308,25 @@ GRAPHQL
     assert_equal "Int", res["data"]["__type"]["inputFields"].find { |f| f["name"] == "thingId" }["type"]["ofType"]["name"]
     res = exec_future_query(introspection_query_str)
     assert_equal "ID", res["data"]["__type"]["inputFields"].find { |f| f["name"] == "thingId" }["type"]["ofType"]["name"]
+
+    introspection_query_str = "{ __type(name: \"UpdateThingPayload\") { fields { name type { name ofType { name } } } } }"
+    res = exec_query(introspection_query_str)
+    assert_equal "LegacyThing", res["data"]["__type"]["fields"].find { |f| f["name"] == "thing" }["type"]["ofType"]["name"]
+    res = exec_future_query(introspection_query_str)
+    assert_equal "Thing", res["data"]["__type"]["fields"].find { |f| f["name"] == "thing" }["type"]["ofType"]["name"]
+
+    update_thing_payload_sdl = <<-GRAPHQL
+type UpdateThingPayload {
+  """
+  A unique identifier for the client performing the mutation.
+  """
+  clientMutationId: String
+  thing: %{typename}!
+}
+GRAPHQL
+
+    assert_includes legacy_schema_sdl, update_thing_payload_sdl % { typename: "LegacyThing"}
+    assert_includes future_schema_sdl, update_thing_payload_sdl % { typename: "Thing"}
   end
 
   it "can migrate scalars to objects" do
