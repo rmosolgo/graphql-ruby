@@ -561,20 +561,18 @@ module GraphQL
             arg_key = arg.keyword
             if arg_values.key?(arg_key)
               arg_value = arg_values[arg_key]
-              application_arg_value = if using_arg_values
+              if using_arg_values
                 if arg_value.default_used?
                   # pass -- no auth required for default used
                   next
                 else
-                  v = arg_value.value
-                  if v.is_a?(GraphQL::Execution::Interpreter::Arguments)
-                    v.keyword_arguments
-                  else
-                    v
+                  application_arg_value = arg_value.value
+                  if application_arg_value.is_a?(GraphQL::Execution::Interpreter::Arguments)
+                    application_arg_value.keyword_arguments
                   end
                 end
               else
-                arg_value
+                application_arg_value = arg_value
               end
 
               if !arg.authorized?(object, application_arg_value, context)
