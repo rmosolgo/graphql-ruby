@@ -17,19 +17,19 @@ module GraphQL
         # @return [Hash<String => GraphQL::Schema::Field>] Fields on this object, keyed by name, including inherited fields
         def fields(context = GraphQL::Query::NullContext)
           # Local overrides take precedence over inherited fields
-          applicable_fields = {}
+          visible_fields = {}
           for ancestor in ancestors
             if ancestor.respond_to?(:own_fields)
               ancestor.own_fields.each do |field_name, fields_entry|
                 # Choose the most local definition that passes `.visible?` --
                 # stop checking for fields by name once one has been found.
-                if !applicable_fields.key?(field_name) && (f = field_visible?(fields_entry, context))
-                  applicable_fields[field_name] = f
+                if !visible_fields.key?(field_name) && (f = field_visible?(fields_entry, context))
+                  visible_fields[field_name] = f
                 end
               end
             end
           end
-          applicable_fields
+          visible_fields
         end
 
         def get_field(field_name, context = GraphQL::Query::NullContext)

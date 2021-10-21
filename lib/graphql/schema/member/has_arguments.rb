@@ -65,8 +65,8 @@ module GraphQL
           # Local definitions override inherited ones
           own_arguments_that_apply = {}
           own_arguments.each do |name, args_entry|
-            if (applicable_defn = argument_visible?(args_entry, context))
-              own_arguments_that_apply[applicable_defn.graphql_name] = applicable_defn
+            if (visible_defn = argument_visible?(args_entry, context))
+              own_arguments_that_apply[visible_defn.graphql_name] = visible_defn
             end
           end
 
