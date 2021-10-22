@@ -94,54 +94,52 @@ module GraphQL
           arg_defns = self.arguments
           total_args_count = arg_defns.size
 
-          if total_args_count == 0
-            final_args = GraphQL::Execution::Interpreter::Arguments::EMPTY
-            if block_given?
-              block.call(final_args)
-              nil
+          finished_args = nil
+          prepare_finished_args = -> {
+            if total_args_count == 0
+              finished_args = GraphQL::Execution::Interpreter::Arguments::EMPTY
+              if block_given?
+                block.call(finished_args)
+              end
             else
-              final_args
-            end
-          else
-            finished_args = nil
-            argument_values = {}
-            resolved_args_count = 0
-            raised_error = false
-            arg_defns.each do |arg_name, arg_defn|
-              context.dataloader.append_job do
-                begin
-                  arg_defn.coerce_into_values(parent_object, values, context, argument_values)
-                rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
-                  raised_error = true
-                  if block_given?
-                    block.call(err)
-                  else
+              argument_values = {}
+              resolved_args_count = 0
+              raised_error = false
+              arg_defns.each do |arg_name, arg_defn|
+                context.dataloader.append_job do
+                  begin
+                    arg_defn.coerce_into_values(parent_object, values, context, argument_values)
+                  rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
+                    raised_error = true
                     finished_args = err
+                    if block_given?
+                      block.call(finished_args)
+                    end
                   end
-                end
 
-                resolved_args_count += 1
-                if resolved_args_count == total_args_count && !raised_error
-                  finished_args = context.schema.after_any_lazies(argument_values.values) {
-                    GraphQL::Execution::Interpreter::Arguments.new(
-                      argument_values: argument_values,
-                    )
-                  }
-
-                  if block_given?
-                    block.call(finished_args)
+                  resolved_args_count += 1
+                  if resolved_args_count == total_args_count && !raised_error
+                    finished_args = context.schema.after_any_lazies(argument_values.values) {
+                      GraphQL::Execution::Interpreter::Arguments.new(
+                        argument_values: argument_values,
+                      )
+                    }
+                    if block_given?
+                      block.call(finished_args)
+                    end
                   end
                 end
               end
             end
+          }
 
-            if block_given?
-              nil
-            else
-              # This API returns eagerly, gotta run it now
-              context.dataloader.run
-              finished_args
-            end
+          if block_given?
+            prepare_finished_args.call
+            nil
+          else
+            # This API returns eagerly, gotta run it now
+            context.dataloader.run_isolated(&prepare_finished_args)
+            finished_args
           end
         end
 

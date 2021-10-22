@@ -90,6 +90,8 @@ module GraphQL
     # Use a self-contained queue for the work in the block.
     def run_isolated
       prev_queue = @pending_jobs
+      prev_sources = @source_cache
+      @source_cache = Hash.new { |h, k| h[k] = {} }
       @pending_jobs = []
       res = nil
       # Make sure the block is inside a Fiber, so it can `Fiber.yield`
@@ -99,6 +101,7 @@ module GraphQL
       run
       res
     ensure
+      @source_cache = prev_sources
       @pending_jobs = prev_queue
     end
 

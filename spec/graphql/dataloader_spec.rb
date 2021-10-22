@@ -187,14 +187,19 @@ describe GraphQL::Dataloader do
         dataloader.with(KeywordArgumentSource, column: :id).load(id)
       end
 
-      field :recipe_ingredient, Ingredient, null: true do
-        argument :recipe_id, ID, required: true
+      class RecipeIngredientInput < GraphQL::Schema::InputObject
+        argument :id, ID, required: true
         argument :ingredient_number, Int, required: true
       end
 
-      def recipe_ingredient(recipe_id:, ingredient_number:)
-        recipe = dataloader.with(DataObject).load(recipe_id)
-        ingredient_id = recipe[:ingredient_ids][ingredient_number - 1]
+      field :recipe_ingredient, Ingredient, null: true do
+        argument :recipe, RecipeIngredientInput, required: true
+      end
+
+      def recipe_ingredient(recipe:)
+        recipe_object = dataloader.with(DataObject).load(recipe[:id])
+        ingredient_idx = recipe[:ingredient_number] - 1
+        ingredient_id = recipe_object[:ingredient_ids][ingredient_idx]
         dataloader.with(DataObject).load(ingredient_id)
       end
 
@@ -303,7 +308,7 @@ describe GraphQL::Dataloader do
       r1: recipe(id: 5) {
         ingredients { name }
       }
-      ri1: recipeIngredient(recipeId: 6, ingredientNumber: 3) {
+      ri1: recipeIngredient(recipe: { id: 6, ingredientNumber: 3 }) {
         name
       }
     }
@@ -345,7 +350,7 @@ describe GraphQL::Dataloader do
     result = FiberSchema.multiplex([
       { query: "{ i1: ingredient(id: 1) { name } i2: ingredient(id: 2) { name } }", },
       { query: "{ i2: ingredient(id: 2) { name } r1: recipe(id: 5) { ingredients { name } } }", },
-      { query: "{ i1: ingredient(id: 1) { name } ri1: recipeIngredient(recipeId: 5, ingredientNumber: 2) { name } }", },
+      { query: "{ i1: ingredient(id: 1) { name } ri1: recipeIngredient(recipe: { id: 5, ingredientNumber: 2 }) { name } }", },
     ], context: context)
 
     expected_result = [
