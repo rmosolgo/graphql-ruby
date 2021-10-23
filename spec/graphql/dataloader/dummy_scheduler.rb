@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # From the Ruby source (https://github.com/ruby/ruby/blob/master/test/fiber/scheduler.rb)
 #
 # This is an example and simplified scheduler for test purposes.
@@ -6,7 +7,12 @@
 
 require 'fiber'
 require 'socket'
-require 'io/nonblock'
+
+begin
+  require 'io/nonblock'
+rescue LoadError
+  # Ignore.
+end
 
 class DummyScheduler
   def initialize
@@ -53,7 +59,7 @@ class DummyScheduler
 
       selected = {}
 
-      readable && readable.each do |io|
+      readable&.each do |io|
         if fiber = @readable.delete(io)
           selected[fiber] = IO::READABLE
         elsif io == @urgent.first
@@ -61,7 +67,7 @@ class DummyScheduler
         end
       end
 
-      writable && writable.each do |io|
+      writable&.each do |io|
         if fiber = @writable.delete(io)
           selected[fiber] |= IO::WRITABLE
         end
@@ -130,7 +136,7 @@ class DummyScheduler
     self.fiber do
       sleep(duration)
 
-      if fiber && fiber.alive?
+      if fiber&.alive?
         fiber.raise(klass, message)
       end
     end
@@ -217,5 +223,11 @@ class DummyScheduler
     fiber.resume
 
     return fiber
+  end
+
+  def address_resolve(hostname)
+    Thread.new do
+      Addrinfo.getaddrinfo(hostname, nil).map(&:ip_address).uniq
+    end.value
   end
 end

@@ -11,6 +11,7 @@ gem 'graphql-batch'
 if RUBY_VERSION >= "2.4"
   gem 'pry-byebug'
 end
+gem "libev_scheduler"
 
 # Required for running `jekyll algolia ...` (via `rake site:update_search_index`)
 group :jekyll_plugins do
