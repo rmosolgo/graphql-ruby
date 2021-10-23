@@ -19,9 +19,9 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
 
         def fetch(waits)
           max_wait = waits.max
-          puts "[#{Time.now.to_f}] Waiting #{max_wait} for #{@tag}"
+          # puts "[#{Time.now.to_f}] Waiting #{max_wait} for #{@tag}"
           `sleep #{max_wait}`
-          puts "[#{Time.now.to_f}] Finished for #{@tag}"
+          # puts "[#{Time.now.to_f}] Finished for #{@tag}"
           waits.map { |_w| @tag }
         end
       end
@@ -226,24 +226,29 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
               "w4" => { "tag" => "e" }
             }
             assert_equal expected_data, res["data"]
-            # TODO: currently, it's not resuming execution _until_ all dataloaders are finished.
-            # The two calls to scheduler.run have to be united into one, called at the very end of `#run`
-            assert_in_delta 0.6, ended_at - started_at, 0.05, "Sources were executed in parallel"
+            # We've basically got two options here:
+            # - Put all jobs in the same queue (fields and sources), but then you don't get predictable batching.
+            # - Work one-layer-at-a-time, but then layers can get stuck behind one another. That's what's implemented here.
+            assert_in_delta 1.0, ended_at - started_at, 0.05, "Sources were executed in parallel"
           end
         end
       end
     end
 
     describe "With the toy scheduler from Ruby's tests" do
-      require_relative "./dummy_scheduler"
       let(:scheduler_class) { ::DummyScheduler }
       include AsyncDataloaderAssertions
     end
 
-
     describe "With libev_scheduler" do
       require "libev_scheduler"
       let(:scheduler_class) { Libev::Scheduler }
+      include AsyncDataloaderAssertions
+    end
+
+    describe "with evt" do
+      require "evt"
+      let(:scheduler_class) { Evt::Scheduler }
       include AsyncDataloaderAssertions
     end
   end

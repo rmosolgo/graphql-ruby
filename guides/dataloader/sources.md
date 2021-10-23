@@ -5,7 +5,6 @@ section: Dataloader
 title: Sources
 desc: Batch-loading objects for GraphQL::Dataloader
 index: 1
-experimental: true
 ---
 
 _Sources_ are what {{ "GraphQL::Dataloader" | api_doc }} uses to fetch data from external services.
