@@ -9,7 +9,7 @@ module GraphQL
       SYMBOL_KEY = "__sym__"
       SYMBOL_KEYS_KEY = "__sym_keys__"
       TIMESTAMP_KEY = "__timestamp__"
-      TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%N%Z" # eg '2020-01-01 23:59:59.123456789+05:00'
+      TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%N%z" # eg '2020-01-01 23:59:59.123456789+05:00'
       OPEN_STRUCT_KEY = "__ostruct__"
 
       module_function
