@@ -207,6 +207,13 @@ describe GraphQL::Subscriptions::ActionCableSubscriptions do
     assert_nil res
   end
 
+  it "raise ExecutionError for a missing context.channel" do
+    error = assert_raises GraphQL::ExecutionError do
+      ActionCableTestSchema.execute("subscription { newsFlash { text } }", context: {})
+    end
+    assert_includes error.message, "Failed to write this subscription to ActionCable because required argument 'channel' is missing from query context."
+  end
+
   if defined?(GlobalID)
     class MultiTenantSchema < GraphQL::Schema
       module Data
