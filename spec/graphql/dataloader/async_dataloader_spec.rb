@@ -2,6 +2,8 @@
 require "spec_helper"
 
 if Fiber.respond_to?(:scheduler) # Ruby 3+
+  require_relative "./dummy_scheduler"
+
   describe GraphQL::Dataloader::AsyncDataloader do
     class AsyncSchema < GraphQL::Schema
       class SleepSource < GraphQL::Dataloader::Source
@@ -84,6 +86,14 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
       use GraphQL::Dataloader::AsyncDataloader
     end
 
+    def with_scheduler
+      prev_scheduler = Fiber.scheduler
+      Fiber.set_scheduler(DummyScheduler.new)
+      yield
+    ensure
+      Fiber.set_scheduler(prev_scheduler)
+    end
+
     it "runs IO in parallel by default" do
       dataloader = GraphQL::Dataloader::AsyncDataloader.new
       results = {}
@@ -93,7 +103,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
 
       assert_equal({}, results, "Nothing ran yet")
       started_at = Time.now
-      dataloader.run
+      with_scheduler { dataloader.run }
       ended_at = Time.now
 
       assert_equal({ a: 1, b: 2, c: 3 }, results, "All the jobs ran")
@@ -111,7 +121,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
         v1 = r1.load
       }
       started_at = Time.now
-      dataloader.run
+      with_scheduler { dataloader.run }
       ended_at = Time.now
       assert_equal 0.3, v1
       started_at_2 = Time.now
@@ -129,7 +139,9 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
 
     it "works with GraphQL" do
       started_at = Time.now
-      res = AsyncSchema.execute("{ s1: sleep(duration: 0.1) s2: sleep(duration: 0.2) s3: sleep(duration: 0.3) }")
+      res = with_scheduler {
+        AsyncSchema.execute("{ s1: sleep(duration: 0.1) s2: sleep(duration: 0.2) s3: sleep(duration: 0.3) }")
+      }
       ended_at = Time.now
       assert_equal({"s1"=>0.1, "s2"=>0.2, "s3"=>0.3}, res["data"])
       assert_in_delta 0.3, ended_at - started_at, 0.05, "IO ran in parallel"
@@ -156,7 +168,9 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
       }
       GRAPHQL
       started_at = Time.now
-      res = AsyncSchema.execute(query_str)
+      res = with_scheduler {
+        AsyncSchema.execute(query_str)
+      }
       ended_at = Time.now
 
       expected_data = {
@@ -199,7 +213,9 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
       }
       GRAPHQL
       started_at = Time.now
-      res = AsyncSchema.execute(query_str)
+      res = with_scheduler do
+        AsyncSchema.execute(query_str)
+      end
       ended_at = Time.now
 
       expected_data = {
