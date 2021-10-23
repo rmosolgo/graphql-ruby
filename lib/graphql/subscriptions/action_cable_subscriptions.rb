@@ -127,7 +127,12 @@ module GraphQL
       # It will receive notifications when events come in
       # and re-evaluate the query locally.
       def write_subscription(query, events)
-        channel = query.context.fetch(:channel)
+        unless (channel = query.context[:channel])
+          raise GraphQL::ExecutionError, "Failed to write this subscription to ActionCable because required argument 'channel' is missing from query context. "\
+                                         'Perhaps your GraphQL client is not supported (e.g. GraphiQL) or not configured properly for this GraphQL Subscription server ? '\
+                                         'See following links about set up graphql-ruby-client for subscription: '\
+                                         'https://graphql-ruby.org/javascript_client/relay_subscriptions , https://graphql-ruby.org/javascript_client/apollo_subscriptions'
+        end
         subscription_id = query.context[:subscription_id] ||= build_id
         stream = stream_subscription_name(subscription_id)
         channel.stream_from(stream)
