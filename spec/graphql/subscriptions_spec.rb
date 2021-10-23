@@ -23,14 +23,6 @@ class InMemoryBackend
       end
     end
 
-    def each_subscription_id(event)
-      @events[event.topic].each do |fp, sub_ids|
-        sub_ids.each do |sub_id|
-          yield(sub_id)
-        end
-      end
-    end
-
     def read_subscription(subscription_id)
       query = @queries[subscription_id]
       if query

@@ -7,6 +7,7 @@ module GraphQL
     class Object < GraphQL::Schema::Member
       extend GraphQL::Schema::Member::AcceptsDefinition
       extend GraphQL::Schema::Member::HasFields
+      extend GraphQL::Schema::Member::HasInterfaces
 
       # @return [Object] the application object this type is wrapping
       attr_reader :object
@@ -101,75 +102,6 @@ module GraphQL
         def inherited(child_class)
           child_class.const_set(:InvalidNullError, GraphQL::InvalidNullError.subclass_for(child_class))
           super
-        end
-
-        def implements(*new_interfaces, **options)
-          new_memberships = []
-          new_interfaces.each do |int|
-            if int.is_a?(Module)
-              unless int.include?(GraphQL::Schema::Interface)
-                raise "#{int} cannot be implemented since it's not a GraphQL Interface. Use `include` for plain Ruby modules."
-              end
-
-              new_memberships << int.type_membership_class.new(int, self, **options)
-
-              # Include the methods here,
-              # `.fields` will use the inheritance chain
-              # to find inherited fields
-              include(int)
-            elsif int.is_a?(GraphQL::InterfaceType)
-              new_memberships << int.type_membership_class.new(int, self, **options)
-            elsif int.is_a?(String) || int.is_a?(GraphQL::Schema::LateBoundType)
-              if options.any?
-                raise ArgumentError, "`implements(...)` doesn't support options with late-loaded types yet. Remove #{options} and open an issue to request this feature."
-              end
-              new_memberships << int
-            else
-              raise ArgumentError, "Unexpected interface definition (expected module): #{int} (#{int.class})"
-            end
-          end
-
-          # Remove any interfaces which are being replaced (late-bound types are updated in place this way)
-          own_interface_type_memberships.reject! { |old_i_m|
-            old_int_type = old_i_m.respond_to?(:abstract_type) ? old_i_m.abstract_type : old_i_m
-            old_name = Schema::Member::BuildType.to_type_name(old_int_type)
-
-            new_memberships.any? { |new_i_m|
-              new_int_type = new_i_m.respond_to?(:abstract_type) ? new_i_m.abstract_type : new_i_m
-              new_name = Schema::Member::BuildType.to_type_name(new_int_type)
-
-              new_name == old_name
-            }
-          }
-          own_interface_type_memberships.concat(new_memberships)
-        end
-
-        def own_interface_type_memberships
-          @own_interface_type_memberships ||= []
-        end
-
-        def interface_type_memberships
-          own_interface_type_memberships + (superclass.respond_to?(:interface_type_memberships) ? superclass.interface_type_memberships : [])
-        end
-
-        # param context [Query::Context] If omitted, skip filtering.
-        def interfaces(context = GraphQL::Query::NullContext)
-          visible_interfaces = []
-          unfiltered = context == GraphQL::Query::NullContext
-          own_interface_type_memberships.each do |type_membership|
-            # During initialization, `type_memberships` can hold late-bound types
-            case type_membership
-            when String, Schema::LateBoundType
-              visible_interfaces << type_membership
-            when Schema::TypeMembership
-              if unfiltered || type_membership.visible?(context)
-                visible_interfaces << type_membership.abstract_type
-              end
-            else
-              raise "Invariant: Unexpected type_membership #{type_membership.class}: #{type_membership.inspect}"
-            end
-          end
-          visible_interfaces + (superclass <= GraphQL::Schema::Object ? superclass.interfaces(context) : [])
         end
 
         # @return [Hash<String => GraphQL::Schema::Field>] All of this object's fields, indexed by name

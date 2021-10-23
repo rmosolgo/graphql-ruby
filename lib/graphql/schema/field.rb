@@ -408,6 +408,57 @@ module GraphQL
         end
       end
 
+      def calculate_complexity(query:, nodes:, child_complexity:)
+        if respond_to?(:complexity_for)
+          lookahead = GraphQL::Execution::Lookahead.new(query: query, field: self, ast_nodes: nodes, owner_type: owner)
+          complexity_for(child_complexity: child_complexity, query: query, lookahead: lookahead)
+        elsif connection?
+          arguments = query.arguments_for(nodes.first, self)
+          max_possible_page_size = nil
+          if arguments[:first]
+            max_possible_page_size = arguments[:first]
+          end
+          if arguments[:last] && (max_possible_page_size.nil? || arguments[:last] > max_possible_page_size)
+            max_possible_page_size = arguments[:last]
+          end
+
+          if max_possible_page_size.nil?
+            max_possible_page_size = max_page_size || query.schema.default_max_page_size
+          end
+
+          if max_possible_page_size.nil?
+            raise GraphQL::Error, "Can't calculate complexity for #{path}, no `first:`, `last:`, `max_page_size` or `default_max_page_size`"
+          else
+            metadata_complexity = 0
+            lookahead = GraphQL::Execution::Lookahead.new(query: query, field: self, ast_nodes: nodes, owner_type: owner)
+
+            if (page_info_lookahead = lookahead.selection(:page_info)).selected?
+              metadata_complexity += 1 # pageInfo
+              metadata_complexity += page_info_lookahead.selections.size # subfields
+            end
+
+            if lookahead.selects?(:total) || lookahead.selects?(:total_count) || lookahead.selects?(:count)
+              metadata_complexity += 1
+            end
+            # Possible bug: selections on `edges` and `nodes` are _both_ multiplied here. Should they be?
+            items_complexity = child_complexity - metadata_complexity
+            # Add 1 for _this_ field
+            1 + (max_possible_page_size * items_complexity) + metadata_complexity
+          end
+        else
+          defined_complexity = complexity
+          case defined_complexity
+          when Proc
+            arguments = query.arguments_for(nodes.first, self)
+            defined_complexity.call(query.context, arguments.keyword_arguments, child_complexity)
+          when Numeric
+            defined_complexity + child_complexity
+          else
+            raise("Invalid complexity: #{defined_complexity.inspect} on #{path} (#{inspect})")
+          end
+        end
+      end
+
       def complexity(new_complexity = nil)
         case new_complexity
         when Proc
