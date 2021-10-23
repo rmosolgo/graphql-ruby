@@ -10,5 +10,7 @@ gem "rails", "~> 6.1.0", require: "rails/all"
 gem "sqlite3", "~> 1.4", platform: :ruby
 gem "activerecord-jdbcsqlite3-adapter", platform: :jruby
 gem "sequel"
+gem "libev_scheduler"
+gem "evt"
 
 gemspec path: "../"
