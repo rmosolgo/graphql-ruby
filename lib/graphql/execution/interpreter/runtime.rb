@@ -314,7 +314,7 @@ module GraphQL
               case node
               when GraphQL::Language::Nodes::InlineFragment
                 if node.type
-                  type_defn = schema.get_type(node.type.name)
+                  type_defn = schema.get_type(node.type.name, context)
 
                   # Faster than .map{}.include?()
                   query.warden.possible_types(type_defn).each do |t|

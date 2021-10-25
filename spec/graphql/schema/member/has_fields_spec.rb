@@ -487,4 +487,172 @@ GRAPHQL
     assert_equal ["Legacy bot"], exec_query(introspection_query_str)["data"]["__type"]["possibleTypes"].map { |t| t["description"] }
     assert_equal ["Future bot"], exec_future_query(introspection_query_str)["data"]["__type"]["possibleTypes"].map { |t| t["description"] }
   end
+
+  describe "A schema with every possible type having the same name" do
+    class NameConflictSchema < GraphQL::Schema
+      module ConflictingThing
+        def visible?(context)
+          super && kind.name == context[:thing_kind]
+        end
+      end
+
+      class ThingScalar < GraphQL::Schema::Scalar
+        graphql_name "Thing"
+        extend ConflictingThing
+      end
+
+      class ThingEnum < GraphQL::Schema::Enum
+        graphql_name "Thing"
+        value "T"
+        extend ConflictingThing
+      end
+
+      class ThingInput < GraphQL::Schema::InputObject
+        graphql_name "Thing"
+        argument :t, Int, required: true
+        extend ConflictingThing
+      end
+
+      module ThingInterface
+        include GraphQL::Schema::Interface
+        graphql_name "Thing"
+        field :t, String, null: false
+        extend ConflictingThing
+
+        def self.resolve_type(_obj, _ctx)
+          OtherObject
+        end
+      end
+
+      class ThingObject < GraphQL::Schema::Object
+        graphql_name "Thing"
+        field :t, String, null: false
+        extend ConflictingThing
+      end
+
+      class OtherObject < GraphQL::Schema::Object
+        implements ThingInterface
+        field :f, Int, null: false
+      end
+
+      class ThingUnion < GraphQL::Schema::Union
+        graphql_name "Thing"
+        possible_types OtherObject
+        extend ConflictingThing
+
+        def self.resolve_type(obj, ctx)
+          OtherObject
+        end
+      end
+
+      class BaseField < GraphQL::Schema::Field
+        def visible?(context)
+          if graphql_name == "thing"
+            type.kind.name == context[:thing_kind] && super
+          else
+            super
+          end
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field_class BaseField
+        field :f1, Int, null: false do
+          argument :thing, ThingInput, required: false
+        end
+
+        def f1(thing: nil)
+          5 * thing[:t]
+        end
+
+        field :thing, ThingScalar, null: true
+        field :thing, ThingEnum, null: true
+        field :thing, ThingObject, null: true
+        field :thing, ThingUnion, null: true
+        field :thing, ThingInterface, null: true
+
+        def thing
+          type_kind = context[:current_field].type.kind.name
+          case type_kind
+          when "ENUM"
+            "T"
+          when "SCALAR"
+            "T2"
+          when "UNION"
+            { f: 12 }
+          when "OBJECT"
+            { t: "object" }
+          when "INTERFACE"
+            { f: 22 }
+          else
+            raise ArgumentError, "Unhandled type kind: #{type_kind.inspect}"
+          end
+        end
+      end
+
+      query(Query)
+      orphan_types(ThingScalar, ThingEnum, ThingInput, ThingObject, ThingUnion, ThingInterface)
+    end
+  end
+
+  def check_thing_type_is_kind(type_kind)
+    context = { thing_kind: type_kind }
+
+    all_types_query_str = "{ __schema { types { name kind } } }"
+    all_types_res = NameConflictSchema.execute(all_types_query_str, context: context)
+    thing_types = all_types_res["data"]["__schema"]["types"].select { |t| t["name"] == "Thing" }
+    assert_equal 1, thing_types.size, "Only one type called Thing (#{thing_types})"
+
+    query_str = "{ __type(name: \"Thing\") { name kind } }"
+    res = NameConflictSchema.execute(query_str, context: context)
+    type_res = res["data"]["__type"]
+    assert_equal thing_types.first, type_res, "The introspection results match"
+
+    schema_dump = NameConflictSchema.to_definition(context: context)
+    return schema_dump, context
+  end
+
+  it "returns one type at a time for the given name" do
+    schema_dump, context = check_thing_type_is_kind("ENUM")
+    assert_equal 2, schema_dump.scan("Thing").size, "The schema dump contains a type definition and field definition: #{schema_dump}"
+    assert_includes schema_dump, "enum Thing {\n"
+    res = NameConflictSchema.execute("{ thing }", context: context)
+    assert_equal "T", res["data"]["thing"]
+
+    schema_dump, context = check_thing_type_is_kind("SCALAR")
+    assert_equal 2, schema_dump.scan("Thing").size, "The schema dump contains a type definition and field definition: #{schema_dump}"
+    assert_includes schema_dump, "scalar Thing\n"
+    res = NameConflictSchema.execute("{ thing }", context: context)
+    assert_equal "T2", res["data"]["thing"]
+
+    schema_dump, context = check_thing_type_is_kind("INPUT_OBJECT")
+    assert_equal 2, schema_dump.scan("Thing").size, "input defn, argument defn: #{schema_dump}"
+    assert_includes schema_dump, "input Thing {\n"
+    assert_includes schema_dump, "f1(thing: Thing): Int!"
+    res = NameConflictSchema.execute("{ f1(thing: { t: 100 } ) }", context: context)
+    assert_equal 500, res["data"]["f1"]
+
+    schema_dump, context = check_thing_type_is_kind("OBJECT")
+    assert_equal 2, schema_dump.scan("Thing").size, "The schema dump contains a type definition and field definition: #{schema_dump}"
+    assert_includes schema_dump, "type Thing {\n"
+    assert_includes schema_dump, "\n  thing: Thing\n"
+    assert_includes schema_dump, "f1: Int!\n"
+    res = NameConflictSchema.execute("{ thing { t } }", context: context)
+    assert_equal "object", res["data"]["thing"]["t"]
+
+    schema_dump, context = check_thing_type_is_kind("UNION")
+    assert_equal 2, schema_dump.scan("Thing").size, "The schema dump contains a type definition and field definition: #{schema_dump}"
+    assert_includes schema_dump, "union Thing = OtherObject\n"
+    res = NameConflictSchema.execute("{ thing { ... on Thing { __typename  } ... on OtherObject { f } } }", context: context)
+    assert_equal "OtherObject", res["data"]["thing"]["__typename"]
+    assert_equal 12, res["data"]["thing"]["f"]
+
+    schema_dump, context = check_thing_type_is_kind("INTERFACE")
+    assert_equal 3, schema_dump.scan("Thing").size, "Interface definition, interface field, object field: #{schema_dump}"
+    assert_includes schema_dump, "interface Thing {\n"
+    assert_includes schema_dump, "type OtherObject implements Thing {\n"
+    res = NameConflictSchema.execute("{ thing { ... on Thing { __typename  } ... on OtherObject { f } } }", context: context)
+    assert_equal "OtherObject", res["data"]["thing"]["__typename"]
+    assert_equal 22, res["data"]["thing"]["f"]
+  end
 end
