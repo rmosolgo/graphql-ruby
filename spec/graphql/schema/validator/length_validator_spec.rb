@@ -18,7 +18,7 @@ describe GraphQL::Schema::Validator::LengthValidator do
   end
 
   it "allows blank and null" do
-    schema = build_schema(String, {length: { minimum: 5, allow_blank: true}})
+    schema = build_schema(String, {length: { minimum: 5 }, allow_blank: true})
 
     blank_string = BlankString.new("")
     assert blank_string.blank?
@@ -30,14 +30,14 @@ describe GraphQL::Schema::Validator::LengthValidator do
     refute result.key?("data")
     assert_equal ["Variable $str of type String! was provided invalid value"],  result["errors"].map { |e| e["message"] }
 
-    schema = build_schema(String, {length: { minimum: 5, allow_null: true}})
+    schema = build_schema(String, {length: { minimum: 5 }, allow_null: true, allow_blank: false})
     result = schema.execute("{ validated(value: null) }")
     assert_equal nil, result["data"]["validated"]
     refute result.key?("errors")
 
     result = schema.execute("query($str: String!) { validated(value: $str) }", variables: { str: blank_string })
     assert_nil result["data"].fetch("validated")
-    assert_equal ["value can't be blank"], result["errors"].map { |e| e["message"] }
+    assert_equal ["value is too short (minimum is 5), value can't be blank"], result["errors"].map { |e| e["message"] }
 
     # This string doesn't respond to blank:
     non_blank_string = NonBlankString.new("")

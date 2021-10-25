@@ -7,7 +7,6 @@ module GraphQL
       # @return [GraphQL::Schema::Argument, GraphQL::Schema::Field, GraphQL::Schema::Resolver, Class<GraphQL::Schema::InputObject>]
       attr_reader :validated
 
-      # TODO should this implement `if:` and `unless:` ?
       # @param validated [GraphQL::Schema::Argument, GraphQL::Schema::Field, GraphQL::Schema::Resolver, Class<GraphQL::Schema::InputObject>] The argument or argument owner this validator is attached to
       # @param allow_blank [Boolean] if `true`, then objects that respond to `.blank?` and return true for `.blank?` will skip this validation
       # @param allow_null [Boolean] if `true`, then incoming `null`s will skip this validation
@@ -15,6 +14,10 @@ module GraphQL
         @validated = validated
         @allow_blank = allow_blank
         @allow_null = allow_null
+      end
+
+      def validates_null?
+        false
       end
 
       # @param object [Object] The application object that this argument's field is being resolved for
@@ -28,19 +31,7 @@ module GraphQL
       # This is called by the validation system and eventually calls {#validate}.
       # @api private
       def apply(object, context, value)
-        if value.nil?
-          if @allow_null
-            nil # skip this
-          else
-            "%{validated} can't be null"
-          end
-        elsif value.respond_to?(:blank?) && value.blank?
-          if @allow_blank
-            nil # skip this
-          else
-            "%{validated} can't be blank"
-          end
-        else
+        if value || validates_null?
           validate(object, context, value)
         end
       end
@@ -69,7 +60,11 @@ module GraphQL
             else
               all_validators[validator_name] || raise(ArgumentError, "unknown validation: #{validator_name.inspect}")
             end
-            validator_class.new(validated: schema_member, **options)
+            if options.is_a?(Hash)
+              validator_class.new(validated: schema_member, **options)
+            else
+              validator_class.new(options, validated: schema_member)
+            end
           end
         end
       end
@@ -98,6 +93,8 @@ module GraphQL
 
       self.all_validators = {}
 
+      PASSES_VALIDATION = Object.new
+
       include Schema::FindInheritedValue::EmptyObjects
 
       class ValidationFailedError < GraphQL::ExecutionError
@@ -123,18 +120,24 @@ module GraphQL
         validators.each do |validator|
           validated = as || validator.validated
           errors = validator.apply(object, context, value)
-          if errors &&
-            (errors.is_a?(Array) && errors != EMPTY_ARRAY) ||
-            (errors.is_a?(String))
-            if all_errors.frozen? # It's empty
-              all_errors = []
-            end
-            interpolation_vars = { validated: validated.graphql_name }
-            if errors.is_a?(String)
-              all_errors << (errors % interpolation_vars)
-            else
-              errors = errors.map { |e| e % interpolation_vars }
-              all_errors.concat(errors)
+          if errors
+            if (errors.is_a?(Array) && errors != EMPTY_ARRAY) ||
+              (errors.is_a?(String))
+              if all_errors.frozen? # It's empty
+                all_errors = []
+              end
+              interpolation_vars = { validated: validated.graphql_name }
+              if errors.is_a?(String)
+                all_errors << (errors % interpolation_vars)
+              else
+                errors = errors.map { |e| e % interpolation_vars }
+                all_errors.concat(errors)
+              end
+            elsif errors == PASSES_VALIDATION
+              if all_errors.any?
+                all_errors.clear
+              end
+              break
             end
           end
         end
@@ -161,3 +164,7 @@ require "graphql/schema/validator/exclusion_validator"
 GraphQL::Schema::Validator.install(:exclusion, GraphQL::Schema::Validator::ExclusionValidator)
 require "graphql/schema/validator/required_validator"
 GraphQL::Schema::Validator.install(:required, GraphQL::Schema::Validator::RequiredValidator)
+require "graphql/schema/validator/allow_null_validator"
+GraphQL::Schema::Validator.install(:allow_null, GraphQL::Schema::Validator::AllowNullValidator)
+require "graphql/schema/validator/allow_blank_validator"
+GraphQL::Schema::Validator.install(:allow_blank, GraphQL::Schema::Validator::AllowBlankValidator)
