@@ -187,14 +187,19 @@ describe GraphQL::Dataloader do
         dataloader.with(KeywordArgumentSource, column: :id).load(id)
       end
 
-      field :recipe_ingredient, Ingredient, null: true do
-        argument :recipe_id, ID, required: true
+      class RecipeIngredientInput < GraphQL::Schema::InputObject
+        argument :id, ID, required: true
         argument :ingredient_number, Int, required: true
       end
 
-      def recipe_ingredient(recipe_id:, ingredient_number:)
-        recipe = dataloader.with(DataObject).load(recipe_id)
-        ingredient_id = recipe[:ingredient_ids][ingredient_number - 1]
+      field :recipe_ingredient, Ingredient, null: true do
+        argument :recipe, RecipeIngredientInput, required: true
+      end
+
+      def recipe_ingredient(recipe:)
+        recipe_object = dataloader.with(DataObject).load(recipe[:id])
+        ingredient_idx = recipe[:ingredient_number] - 1
+        ingredient_id = recipe_object[:ingredient_ids][ingredient_idx]
         dataloader.with(DataObject).load(ingredient_id)
       end
 
@@ -303,7 +308,7 @@ describe GraphQL::Dataloader do
       r1: recipe(id: 5) {
         ingredients { name }
       }
-      ri1: recipeIngredient(recipeId: 6, ingredientNumber: 3) {
+      ri1: recipeIngredient(recipe: { id: 6, ingredientNumber: 3 }) {
         name
       }
     }
@@ -345,7 +350,7 @@ describe GraphQL::Dataloader do
     result = FiberSchema.multiplex([
       { query: "{ i1: ingredient(id: 1) { name } i2: ingredient(id: 2) { name } }", },
       { query: "{ i2: ingredient(id: 2) { name } r1: recipe(id: 5) { ingredients { name } } }", },
-      { query: "{ i1: ingredient(id: 1) { name } ri1: recipeIngredient(recipeId: 5, ingredientNumber: 2) { name } }", },
+      { query: "{ i1: ingredient(id: 1) { name } ri1: recipeIngredient(recipe: { id: 5, ingredientNumber: 2 }) { name } }", },
     ], context: context)
 
     expected_result = [
@@ -792,6 +797,31 @@ describe GraphQL::Dataloader do
       assert_equal({ d: 4, e: 3 }, result)
       dl.run
       assert_equal({ a: 1, b: 2, c: 3, d: 4, e: 3 }, result)
+    end
+
+    it "shares a cache" do
+      dl = GraphQL::Dataloader.new
+      result = {}
+      dl.run_isolated {
+        _r1 = dl.with(RunIsolated::CountSource).request(1)
+        _r2 = dl.with(RunIsolated::CountSource).request(2)
+        r3 = dl.with(RunIsolated::CountSource).request(3)
+        # Run all three of the above requests:
+        result[:a] = r3.load
+      }
+
+      dl.append_job {
+        # This should return cached from above
+        result[:b] = dl.with(RunIsolated::CountSource).load(1)
+      }
+      dl.append_job {
+        # This one is run by itself
+        result[:c] = dl.with(RunIsolated::CountSource).load(4)
+      }
+
+      assert_equal({ a: 3 }, result)
+      dl.run
+      assert_equal({ a: 3, b: 3, c: 4 }, result)
     end
   end
 
