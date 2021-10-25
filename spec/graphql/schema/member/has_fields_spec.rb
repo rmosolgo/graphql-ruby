@@ -67,6 +67,29 @@ describe GraphQL::Schema::Member::HasFields do
       self.future_schema = true
     end
 
+    class LegacyScream < BaseScalar
+      graphql_name "Scream"
+      description "An all-uppercase saying"
+      def self.coerce_input(value, ctx)
+        if value.upcase != value
+          raise GraphQL::CoercionError, "scream must be SCREAMING"
+        end
+        value
+      end
+    end
+
+    class Scream < BaseScalar
+      description "A saying ending with at least four exclamation points"
+      def self.coerce_input(value, ctx)
+        if !value.end_with?("!!!!")
+          raise GraphQL::CoercionError, "scream must be screaming!!!!"
+        end
+        value
+      end
+
+      self.future_schema = true
+    end
+
     class LegacyThing < BaseObject
       implements Node
       field :price, LegacyMoney, null: true
@@ -200,6 +223,16 @@ describe GraphQL::Schema::Member::HasFields do
       def actor
         { handle: "bot1", verified: false, name: "bot2", is_verified: true }
       end
+
+      field :yell, String, null: false do
+        # TODO: can I get rid of the requirement for `future_schema: true` here since `Scream.future_schema` is true?
+        argument :scream, Scream, required: true, future_schema: true
+        argument :scream, LegacyScream, required: true
+      end
+
+      def yell(scream:)
+        scream
+      end
     end
 
     class BaseMutation < GraphQL::Schema::RelayClassicMutation
@@ -279,6 +312,7 @@ type Query {
   favoriteLanguage(lang: Language): Language!
   legacyThing(id: ID!): LegacyThing!
   thing(id: Int!): Thing
+  yell(scream: Scream!): String!
 }
 GRAPHQL
 
@@ -290,6 +324,7 @@ type Query {
   favoriteLanguage(lang: Language): Language!
   legacyThing(id: ID!): LegacyThing!
   thing(id: ID!): Thing
+  yell(scream: Scream!): String!
 }
 GRAPHQL
   end
@@ -486,6 +521,22 @@ GRAPHQL
     introspection_query_str = "{ __type(name: \"Actor\") { possibleTypes { description } } }"
     assert_equal ["Legacy bot"], exec_query(introspection_query_str)["data"]["__type"]["possibleTypes"].map { |t| t["description"] }
     assert_equal ["Future bot"], exec_future_query(introspection_query_str)["data"]["__type"]["possibleTypes"].map { |t| t["description"] }
+  end
+
+  it "supports different types connected by argument definitions" do
+    future_description = "A saying ending with at least four exclamation points"
+    legacy_description = "An all-uppercase saying"
+    assert_includes future_schema_sdl, future_description
+    refute_includes future_schema_sdl, legacy_description
+
+    assert_includes legacy_schema_sdl, legacy_description
+    refute_includes legacy_schema_sdl, future_description
+
+    query_str = "query($scream: Scream!) { yell(scream: $scream) }"
+    assert_equal "YIKES", exec_query(query_str, variables: { scream: "YIKES" })["data"]["yell"]
+    assert_equal ["scream must be SCREAMING"], exec_query(query_str, variables: { scream: "yikes!!!!" })["errors"].map { |e| e["extensions"]["problems"].first["explanation"] }
+    assert_equal "yikes!!!!", exec_future_query(query_str, variables: { scream: "yikes!!!!" })["data"]["yell"]
+    assert_equal ["scream must be screaming!!!!"], exec_future_query(query_str, variables: { scream: "YIKES" })["errors"].map { |e| e["extensions"]["problems"].first["explanation"] }
   end
 
   describe "A schema with every possible type having the same name" do
