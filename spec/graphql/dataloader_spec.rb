@@ -798,6 +798,31 @@ describe GraphQL::Dataloader do
       dl.run
       assert_equal({ a: 1, b: 2, c: 3, d: 4, e: 3 }, result)
     end
+
+    it "shares a cache" do
+      dl = GraphQL::Dataloader.new
+      result = {}
+      dl.run_isolated {
+        _r1 = dl.with(RunIsolated::CountSource).request(1)
+        _r2 = dl.with(RunIsolated::CountSource).request(2)
+        r3 = dl.with(RunIsolated::CountSource).request(3)
+        # Run all three of the above requests:
+        result[:a] = r3.load
+      }
+
+      dl.append_job {
+        # This should return cached from above
+        result[:b] = dl.with(RunIsolated::CountSource).load(1)
+      }
+      dl.append_job {
+        # This one is run by itself
+        result[:c] = dl.with(RunIsolated::CountSource).load(4)
+      }
+
+      assert_equal({ a: 3 }, result)
+      dl.run
+      assert_equal({ a: 3, b: 3, c: 4 }, result)
+    end
   end
 
   describe "thread local variables" do
