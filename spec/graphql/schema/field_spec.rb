@@ -285,6 +285,23 @@ describe GraphQL::Schema::Field do
 
         assert_match /^A complexity proc should always accept 3 parameters/, err.message
       end
+
+      it 'fails if second argument is a mutation instead of a type' do
+        mutation_class = Class.new(GraphQL::Schema::Mutation) do
+          graphql_name "Thing"
+          field :stuff, String, null: false
+        end
+
+        err = assert_raises(ArgumentError) do
+          Class.new(Jazz::BaseObject) do
+            graphql_name "complexityKeyword"
+
+            field :complexityTest, mutation_class
+          end
+        end
+
+        assert_match /^Use `field :complexityTest, mutation: Mutation, ...` to provide a mutation to this field instead/, err.message
+      end
     end
   end
 

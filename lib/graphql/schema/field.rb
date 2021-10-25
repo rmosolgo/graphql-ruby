@@ -122,6 +122,9 @@ module GraphQL
           else
             kwargs[:type] = type
           end
+          if type.is_a?(Class) && type < GraphQL::Schema::Mutation
+            raise ArgumentError, "Use `field #{name.inspect}, mutation: Mutation, ...` to provide a mutation to this field instead"
+          end
         end
         new(**kwargs, &block)
       end
