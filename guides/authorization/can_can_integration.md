@@ -46,6 +46,7 @@ And read on about the different features of the integration:
 - [Authorizing Fields](#authorizing-fields)
 - [Authorizing Arguments](#authorizing-arguments)
 - [Authorizing Mutations](#authorizing-mutations)
+- [Authorizing Resolvers](#authorizing-resolvers)
 - [Custom Abilities Class](#custom-abilities-class)
 
 ## Authorizing Objects
@@ -351,6 +352,21 @@ class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation
   end
 end
 ```
+
+## Authorizing Resolvers
+
+Resolvers are authorized just like [mutations](#authorizing-mutations), and require similar setup:
+
+```ruby
+# app/graphql/resolvers/base_resolver.rb
+class Resolvers::BaseResolver < GraphQL::Schema::Resolver
+  include GraphQL::Pro::CanCanIntegration::ResolverIntegration
+  argument_class BaseArgument
+  # can_can_action(nil) # to disable authorization by default
+end
+```
+
+Beyond that, see [Authorizing Mutations](#authorizing-mutations) above for further details.
 
 ## Custom Abilities Class
 
