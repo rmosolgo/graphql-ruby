@@ -207,6 +207,13 @@ describe GraphQL::Subscriptions::ActionCableSubscriptions do
     assert_nil res
   end
 
+  it "raise ExecutionError for a missing context.channel" do
+    error = assert_raises GraphQL::Error do
+      ActionCableTestSchema.execute("subscription { newsFlash { text } }", context: {})
+    end
+    assert_includes error.message, "This GraphQL Subscription client does not support the transport protocol expected"
+  end
+
   if defined?(GlobalID)
     class MultiTenantSchema < GraphQL::Schema
       module Data
