@@ -130,7 +130,6 @@ module GraphQL
                 errors = errors.map { |e| e % interpolation_vars }
                 all_errors.concat(errors)
               end
-              break
             end
           end
         end
@@ -151,7 +150,7 @@ module GraphQL
             # don't want `nil` to fall to the `elsif` below, so handle it here
             validate_present_value(object, context, value)
           end
-        elsif @allow_blank && @value.respond_to?(:blank?) && value.blank?
+        elsif @allow_blank && value.respond_to?(:blank?) && value.blank?
           # pass
         else
           validate_present_value(object, context, value)
