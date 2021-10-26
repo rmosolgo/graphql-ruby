@@ -245,7 +245,7 @@ describe GraphQL::Schema::Member::HasFields do
       argument :thing_id, Int, required: true
       argument :price, Int, required: true
 
-      field :thing, Thing, null: false, future_schema: true
+      field :thing, Thing, null: false, future_schema: true, method: :custom_thing
       field :thing, LegacyThing, null: false, hash_key: :legacy_thing
 
       def resolve(thing_id:, price:)
@@ -255,7 +255,7 @@ describe GraphQL::Schema::Member::HasFields do
         legacy_thing = thing.merge(price: thing[:legacy_price])
 
         {
-          thing: thing,
+          custom_thing: thing,
           legacy_thing: legacy_thing,
         }
       end
