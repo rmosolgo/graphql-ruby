@@ -13,17 +13,12 @@ module GraphQL
 
         def validate(_object, _context, value)
           if value.respond_to?(:blank?) && value.blank?
-            if @allow_blank
-              # TODO how does this work in rails? Should `allow_null` have the same escape hatch?
-              PASSES_VALIDATION
+            if (value.nil? && @allow_null) || @allow_blank
+              # pass
             else
               @message
             end
           end
-        end
-
-        def validates_null?
-          true
         end
       end
     end

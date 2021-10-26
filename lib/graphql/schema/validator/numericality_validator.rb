@@ -15,7 +15,7 @@ module GraphQL
       #
       #   argument :items_count, Integer, required: true, validates: { numericality: { greater_than_or_equal_to: 0 } }
       #
-      class NumericalityValidator < Validator
+      class NumericalityValidator < PresentValueValidator
         # @param greater_than [Integer]
         # @param greater_than_or_equal_to [Integer]
         # @param less_than [Integer]
@@ -32,6 +32,7 @@ module GraphQL
             equal_to: nil, other_than: nil,
             odd: nil, even: nil, within: nil,
             message: "%{validated} must be %{comparison} %{target}",
+            null_message: Validator::AllowNullValidator::MESSAGE,
             **default_options
           )
 
@@ -45,11 +46,14 @@ module GraphQL
           @even = even
           @within = within
           @message = message
+          @null_message = null_message
           super(**default_options)
         end
 
-        def validate(object, context, value)
-          if @greater_than && value <= @greater_than
+        def validate_present_value(object, context, value)
+          if value.nil? # @allow_null is handled in the parent class
+            @null_message
+          elsif @greater_than && value <= @greater_than
             partial_format(@message, { comparison: "greater than", target: @greater_than })
           elsif @greater_than_or_equal_to && value < @greater_than_or_equal_to
             partial_format(@message, { comparison: "greater than or equal to", target: @greater_than_or_equal_to })

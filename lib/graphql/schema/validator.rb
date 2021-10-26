@@ -16,24 +16,12 @@ module GraphQL
         @allow_null = allow_null
       end
 
-      def validates_null?
-        false
-      end
-
       # @param object [Object] The application object that this argument's field is being resolved for
       # @param context [GraphQL::Query::Context]
       # @param value [Object] The client-provided value for this argument (after parsing and coercing by the input type)
       # @return [nil, Array<String>, String] Error message or messages to add
       def validate(object, context, value)
         raise GraphQL::RequiredImplementationMissingError, "Validator classes should implement #validate"
-      end
-
-      # This is called by the validation system and eventually calls {#validate}.
-      # @api private
-      def apply(object, context, value)
-        if value || validates_null?
-          validate(object, context, value)
-        end
       end
 
       # This is like `String#%`, but it supports the case that only some of `string`'s
@@ -53,6 +41,17 @@ module GraphQL
         if validates_hash.nil? || validates_hash.empty?
           EMPTY_ARRAY
         else
+          validates_hash = validates_hash.dup
+          default_options = {
+            allow_null: validates_hash.delete(:allow_null),
+            allow_blank: validates_hash.delete(:allow_blank),
+          }.compact
+
+          # allow_nil or allow_blank are the _only_ validations:
+          if validates_hash.empty?
+            validates_hash = default_options
+          end
+
           validates_hash.map do |validator_name, options|
             validator_class = case validator_name
             when Class
@@ -61,9 +60,9 @@ module GraphQL
               all_validators[validator_name] || raise(ArgumentError, "unknown validation: #{validator_name.inspect}")
             end
             if options.is_a?(Hash)
-              validator_class.new(validated: schema_member, **options)
+              validator_class.new(validated: schema_member, **(default_options.merge(options)))
             else
-              validator_class.new(options, validated: schema_member)
+              validator_class.new(options, validated: schema_member, **default_options)
             end
           end
         end
@@ -93,8 +92,6 @@ module GraphQL
 
       self.all_validators = {}
 
-      PASSES_VALIDATION = Object.new
-
       include Schema::FindInheritedValue::EmptyObjects
 
       class ValidationFailedError < GraphQL::ExecutionError
@@ -119,7 +116,7 @@ module GraphQL
 
         validators.each do |validator|
           validated = as || validator.validated
-          errors = validator.apply(object, context, value)
+          errors = validator.validate(object, context, value)
           if errors
             if (errors.is_a?(Array) && errors != EMPTY_ARRAY) ||
               (errors.is_a?(String))
@@ -133,10 +130,6 @@ module GraphQL
                 errors = errors.map { |e| e % interpolation_vars }
                 all_errors.concat(errors)
               end
-            elsif errors == PASSES_VALIDATION
-              if all_errors.any?
-                all_errors.clear
-              end
               break
             end
           end
@@ -146,6 +139,23 @@ module GraphQL
           raise ValidationFailedError.new(errors: all_errors)
         end
         nil
+      end
+    end
+
+    class PresentValueValidator < Validator
+      def validate(object, context, value)
+        if value.nil?
+          if @allow_null
+            # pass
+          else
+            # don't want `nil` to fall to the `elsif` below, so handle it here
+            validate_present_value(object, context, value)
+          end
+        elsif @allow_blank && @value.respond_to?(:blank?) && value.blank?
+          # pass
+        else
+          validate_present_value(object, context, value)
+        end
       end
     end
   end

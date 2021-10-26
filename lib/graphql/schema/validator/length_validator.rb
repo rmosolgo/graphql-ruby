@@ -13,7 +13,7 @@ module GraphQL
       #
       #   argument :ice_cream_preferences, [ICE_CREAM_FLAVOR], required: true, validates: { length: { is: 3 } }
       #
-      class LengthValidator < Validator
+      class LengthValidator < PresentValueValidator
         # @param maximum [Integer]
         # @param too_long [String] Used when `maximum` is exceeded or value is greater than `within`
         # @param minimum [Integer]
@@ -42,12 +42,13 @@ module GraphQL
           super(**default_options)
         end
 
-        def validate(_object, _context, value)
-          if @maximum && value.length > @maximum
+        def validate_present_value(_object, _context, value)
+          length = value.nil? ? 0 : value.length
+          if @maximum && length > @maximum
             partial_format(@too_long, { count: @maximum })
-          elsif @minimum && value.length < @minimum
+          elsif @minimum && length < @minimum
             partial_format(@too_short, { count: @minimum })
-          elsif @is && value.length != @is
+          elsif @is && length != @is
             partial_format(@wrong_length, { count: @is })
           end
         end

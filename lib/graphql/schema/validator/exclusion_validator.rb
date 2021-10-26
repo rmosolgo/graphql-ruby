@@ -10,7 +10,7 @@ module GraphQL
       #   argument :favorite_non_prime, Integer, required: true,
       #     validates: { exclusion: { in: [2, 3, 5, 7, ... ]} }
       #
-      class ExclusionValidator < Validator
+      class ExclusionValidator < PresentValueValidator
         # @param message [String]
         # @param in [Array] The values to reject
         def initialize(message: "%{validated} is reserved", in:, **default_options)
@@ -20,7 +20,7 @@ module GraphQL
           super(**default_options)
         end
 
-        def validate(_object, _context, value)
+        def validate_present_value(_object, _context, value)
           if @in_list.include?(value)
             @message
           end
