@@ -208,7 +208,7 @@ describe GraphQL::Subscriptions::ActionCableSubscriptions do
   end
 
   it "raise ExecutionError for a missing context.channel" do
-    error = assert_raises GraphQL::ExecutionError do
+    error = assert_raises GraphQL::Error do
       ActionCableTestSchema.execute("subscription { newsFlash { text } }", context: {})
     end
     assert_includes error.message, "This GraphQL Subscription client does not support the transport protocol expected"
