@@ -128,7 +128,7 @@ module GraphQL
       # and re-evaluate the query locally.
       def write_subscription(query, events)
         unless (channel = query.context[:channel])
-          raise GraphQL::ExecutionError, "This GraphQL Subscription client does not support the transport protocol expected"\
+          raise GraphQL::Error, "This GraphQL Subscription client does not support the transport protocol expected"\
             "by the backend Subscription Server implementation (graphql-ruby ActionCableSubscriptions in this case)."\
             "Some official client implementation including Apollo (https://graphql-ruby.org/javascript_client/apollo_subscriptions.html), "\
             "Relay Modern (https://graphql-ruby.org/javascript_client/relay_subscriptions.html#actioncable)."\
