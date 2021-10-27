@@ -185,4 +185,41 @@ describe GraphQL::StaticValidation::UniqueDirectivesPerLocation do
       }
     end
   end
+
+  describe "with error limiting" do
+    let(:query_string) {"
+      {
+        type @A @A {
+          field @A @A
+        }
+      }
+    "}
+
+    describe("disabled") do
+      let(:args) {
+        { max_errors: -1 }
+      }
+
+      it "does not limit the number of errors" do
+        assert_equal(error_messages.length, 2)
+        assert_equal(error_messages, [
+          "The directive \"A\" can only be used once at this location.",
+          "The directive \"A\" can only be used once at this location."
+        ])
+      end
+    end
+
+    describe("enabled") do
+      let(:args) {
+        { max_errors: 1 }
+      }
+
+      it "does limit the number of errors" do
+        assert_equal(error_messages.length, 1)
+        assert_equal(error_messages, [
+          "The directive \"A\" can only be used once at this location."
+        ])
+      end
+    end
+  end
 end

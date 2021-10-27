@@ -176,6 +176,7 @@ module GraphQL
           # find conflicts within nodes
           for i in 0..fields.size - 1
             for j in i + 1..fields.size - 1
+              break if @context.too_many_errors?
               find_conflict(key, fields[i], fields[j])
             end
           end
@@ -201,6 +202,8 @@ module GraphQL
               conflicts: errored_nodes
             )
           end
+
+          return if @context.too_many_errors?
 
           if !same_arguments?(node1, node2)
             args = [serialize_field_args(node1), serialize_field_args(node2)]
@@ -285,7 +288,9 @@ module GraphQL
           fields2 = response_keys2[key]
           if fields2
             fields.each do |field|
+              break if @context.too_many_errors?
               fields2.each do |field2|
+                break if @context.too_many_errors?
                 find_conflict(
                   key,
                   field,

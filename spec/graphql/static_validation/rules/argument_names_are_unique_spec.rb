@@ -41,4 +41,38 @@ describe GraphQL::StaticValidation::ArgumentNamesAreUnique do
       assert_equal ["query GetStuff", "c1"], error["path"]
     end
   end
+
+  describe "with error limiting" do
+    let(:query_string) { <<-GRAPHQL
+    query GetStuff {
+      c1: cheese(id: 1, id: 2) @include(if: true, if: true) { flavor }
+      c2: cheese(id: 3, id: 3) @include(if: true) { flavor }
+    }
+    GRAPHQL
+    }
+
+    describe("disabled") do
+      let(:args) {
+        { max_errors: -1 }
+      }
+
+      it "does not limit the number of errors" do
+        assert_equal(error_messages, [
+          "There can be only one argument named \"id\"",
+          "There can be only one argument named \"if\"",
+          "There can be only one argument named \"id\""
+        ])
+      end
+    end
+
+    describe("enabled") do
+      let(:args) {
+        { max_errors: 1 }
+      }
+
+      it "does limit the number of errors" do
+        assert_equal(error_messages, [ "There can be only one argument named \"id\"" ])
+      end
+    end
+  end
 end

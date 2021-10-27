@@ -118,5 +118,32 @@ describe GraphQL::StaticValidation::FragmentsAreFinite do
       assert_equal("Fragment frag1 contains an infinite loop", errors[0]["message"])
       assert_equal("Operation name \"frag1\" must be unique", errors[1]["message"])
     end
+
+    describe "with error limiting" do
+      describe("disabled") do
+        let(:args) {
+          { max_errors: -1 }
+        }
+
+        it "does not limit the number of errors" do
+          assert_equal(error_messages, [
+            "Fragment frag1 contains an infinite loop",
+            "Operation name \"frag1\" must be unique"
+          ])
+        end
+      end
+
+      describe("enabled") do
+        let(:args) {
+          { max_errors: 1 }
+        }
+
+        it "does limit the number of errors" do
+          assert_equal(error_messages, [
+            "Fragment frag1 contains an infinite loop",
+          ])
+        end
+      end
+    end
   end
 end
