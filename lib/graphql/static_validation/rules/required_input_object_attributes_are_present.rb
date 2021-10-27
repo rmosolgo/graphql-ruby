@@ -42,6 +42,7 @@ module GraphQL
         missing_fields = required_fields - present_fields
 
         missing_fields.each do |missing_field|
+          break if @context.too_many_errors?
           path = [*context.path, missing_field]
           missing_field_type = parent_type.arguments[missing_field].type
           add_error(RequiredInputObjectAttributesArePresentError.new(

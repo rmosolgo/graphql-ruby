@@ -368,6 +368,33 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
         "Field 'name' has a field conflict: name or nickname?"
       ], error_messages
     end
+
+    describe "with error limiting" do
+      describe("disabled") do
+        let(:args) {
+          { max_errors: -1 }
+        }
+
+        it "does not limit the number of errors" do
+          assert_equal(error_messages, [
+            "Field 'x' has a field conflict: name or nickname?",
+            "Field 'name' has a field conflict: name or nickname?"
+          ])
+        end
+      end
+
+      describe("enabled") do
+        let(:args) {
+          { max_errors: 1 }
+        }
+
+        it "does limit the number of errors" do
+          assert_equal(error_messages, [
+            "Field 'x' has a field conflict: name or nickname?",
+          ])
+        end
+      end
+    end
   end
 
 
@@ -420,6 +447,33 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
         "Field 'x' has a field conflict: name or nickname?",
         "Field 'y' has a field conflict: barkVolume or doesKnowCommand?",
       ], error_messages
+    end
+
+    describe "with error limiting" do
+      describe("disabled") do
+        let(:args) {
+          { max_errors: -1 }
+        }
+
+        it "does not limit the number of errors" do
+          assert_equal(error_messages, [
+            "Field 'x' has a field conflict: name or nickname?",
+            "Field 'y' has a field conflict: barkVolume or doesKnowCommand?",
+          ])
+        end
+      end
+
+      describe("enabled") do
+        let(:args) {
+          { max_errors: 1 }
+        }
+
+        it "does limit the number of errors" do
+          assert_equal(error_messages, [
+            "Field 'x' has a field conflict: name or nickname?",
+          ])
+        end
+      end
     end
   end
 
@@ -830,4 +884,5 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       end
     end
   end
+
 end

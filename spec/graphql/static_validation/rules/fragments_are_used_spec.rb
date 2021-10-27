@@ -48,4 +48,51 @@ describe GraphQL::StaticValidation::FragmentsAreUsed do
       })
     end
   end
+
+  describe "with error limiting" do
+    let(:query_string) {"
+      query getCheese {
+        ...cheeseFields
+        ...undefinedFields
+      }
+      fragment cheeseFields on Cheese { fatContent }
+      fragment unusedFields on Cheese { not_used }
+      fragment yetMoreUnusedFields on Cheese { must_be_vegan }
+    "}
+
+    describe("disabled") do
+      let(:args) {
+        { max_errors: -1 }
+      }
+
+      it "does not limit the number of errors" do
+        assert_equal(error_messages.length, 6)
+        assert_equal(error_messages,[
+          "Field 'not_used' doesn't exist on type 'Cheese'",
+          "Field 'must_be_vegan' doesn't exist on type 'Cheese'",
+          "Fragment cheeseFields on Cheese can't be spread inside Query",
+          "Fragment undefinedFields was used, but not defined",
+          "Fragment yetMoreUnusedFields was defined, but not used",
+          "Fragment unusedFields was defined, but not used"
+        ])
+      end
+    end
+
+    describe("enabled") do
+      let(:args) {
+        { max_errors: 5 }
+      }
+
+      it "does limit the number of errors" do
+        assert_equal(error_messages.length, 5)
+        assert_equal(error_messages, [
+          "Field 'not_used' doesn't exist on type 'Cheese'",
+          "Field 'must_be_vegan' doesn't exist on type 'Cheese'",
+          "Fragment cheeseFields on Cheese can't be spread inside Query",
+          "Fragment undefinedFields was used, but not defined",
+          "Fragment yetMoreUnusedFields was defined, but not used",
+        ])
+      end
+    end
+  end
 end

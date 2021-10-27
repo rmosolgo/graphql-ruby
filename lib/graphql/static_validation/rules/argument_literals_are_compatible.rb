@@ -3,6 +3,8 @@ module GraphQL
   module StaticValidation
     module ArgumentLiteralsAreCompatible
       def on_argument(node, parent)
+        return if @context.too_many_errors?
+
         # Check the child arguments first;
         # don't add a new error if one of them reports an error
         super
@@ -17,7 +19,7 @@ module GraphQL
 
           if parent_defn && (arg_defn = parent_defn.arguments[node.name])
             validation_result = context.validate_literal(node.value, arg_defn.type)
-            if !validation_result.valid?
+            if !validation_result.valid? && !@context.too_many_errors?
               kind_of_node = node_type(parent)
               error_arg_name = parent_name(parent, parent_defn)
               string_value = if node.value == Float::INFINITY

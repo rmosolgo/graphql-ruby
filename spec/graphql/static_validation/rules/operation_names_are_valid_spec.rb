@@ -79,4 +79,52 @@ describe GraphQL::StaticValidation::OperationNamesAreValid do
       assert_includes(errors, name_uniqueness_error)
     end
   end
+
+  describe "with error limiting" do
+    let(:query_string) { <<-GRAPHQL
+    query getCheese {
+      cheese(id: 1) { flavor }
+    }
+    query getCheese {
+      cheese(id: 2) { flavor }
+    }
+    query getCheeses{
+      searchDairy(product: [{ source: COW }]) {
+        __typename
+      }
+    }
+    query getCheeses{
+      searchDairy(product: [{ source: COW }]) {
+        __typename
+      }
+    }
+    GRAPHQL
+    }
+    describe("disabled") do
+      let(:args) {
+        { max_errors: -1 }
+      }
+
+      it "does not limit the number of errors" do
+        assert_equal(error_messages.length, 2)
+        assert_equal(error_messages, [
+          "Operation name \"getCheese\" must be unique",
+          "Operation name \"getCheeses\" must be unique"
+        ])
+      end
+    end
+
+    describe("enabled") do
+      let(:args) {
+        { max_errors: 1 }
+      }
+
+      it "does limit the number of errors" do
+        assert_equal(error_messages.length, 1)
+        assert_equal(error_messages, [
+          "Operation name \"getCheese\" must be unique",
+        ])
+      end
+    end
+  end
 end

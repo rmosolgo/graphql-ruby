@@ -110,4 +110,34 @@ describe GraphQL::StaticValidation::VariablesAreUsedAndDefined do
       assert_equal([], errors)
     end
   end
+
+  describe "with error limiting" do
+    describe("disabled") do
+      let(:args) {
+        { max_errors: -1 }
+      }
+
+      it "does not limit the number of errors" do
+        assert_equal(error_messages.length, 3)
+        assert_equal(error_messages, [
+          "Variable $notUsedVar is declared by getCheese but not used",
+          "Variable $undefinedVar is used by getCheese but not declared",
+          "Variable $undefinedFragmentVar is used by innerCheeseFields but not declared"
+        ])
+      end
+    end
+
+    describe("enabled") do
+      let(:args) {
+        { max_errors: 1 }
+      }
+
+      it "does limit the number of errors" do
+        assert_equal(error_messages.length, 1)
+        assert_equal(error_messages, [
+          "Variable $notUsedVar is declared by getCheese but not used"
+        ])
+      end
+    end
+  end
 end
