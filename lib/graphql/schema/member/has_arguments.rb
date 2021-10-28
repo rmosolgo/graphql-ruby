@@ -37,6 +37,42 @@ module GraphQL
           end
           arg_defn = self.argument_class.new(*args, **kwargs, &block)
           add_argument(arg_defn)
+
+          if self.is_a?(Class) && !method_defined?(:"load_#{arg_defn.keyword}")
+            method_owner = if self < GraphQL::Schema::InputObject || self < GraphQL::Schema::Directive
+              "self."
+            elsif self < GraphQL::Schema::Resolver
+              ""
+            else
+              raise "Unexpected argument owner: #{self}"
+            end
+            if loads && arg_defn.type.list?
+              class_eval <<-RUBY, __FILE__, __LINE__ + 1
+              def #{method_owner}load_#{arg_defn.keyword}(values, context = nil)
+                argument = get_argument("#{arg_defn.graphql_name}")
+                lookup_as_type = argument.loads
+                (context || self.context).schema.after_lazy(values) do |values2|
+                  GraphQL::Execution::Lazy.all(values2.map { |value| load_application_object(argument, lookup_as_type, value, context || self.context) })
+                end
+              end
+              RUBY
+            elsif loads
+              class_eval <<-RUBY, __FILE__, __LINE__ + 1
+              def #{method_owner}load_#{arg_defn.keyword}(value, context = nil)
+                argument = get_argument("#{arg_defn.graphql_name}")
+                lookup_as_type = argument.loads
+                load_application_object(argument, lookup_as_type, value, context || self.context)
+              end
+              RUBY
+            else
+              class_eval <<-RUBY, __FILE__, __LINE__ + 1
+              def #{method_owner}load_#{arg_defn.keyword}(value, _context = nil)
+                value
+              end
+              RUBY
+            end
+          end
+          arg_defn
         end
 
         # Register this argument with the class.

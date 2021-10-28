@@ -198,6 +198,10 @@ module GraphQL
         public_send("load_#{name}", value)
       end
 
+      def get_argument(name)
+        self.class.get_argument(name)
+      end
+
       class << self
         # Default `:resolve` set below.
         # @return [Symbol] The method to call on instances of this object to resolve the field
@@ -339,35 +343,6 @@ module GraphQL
           # so that we can support `#load_{x}` methods below.
           arg_defn = super(*args, from_resolver: true, **kwargs)
           own_arguments_loads_as_type[arg_defn.keyword] = loads if loads
-
-          if !method_defined?(:"load_#{arg_defn.keyword}")
-            if loads && arg_defn.type.list?
-              class_eval <<-RUBY, __FILE__, __LINE__ + 1
-              def load_#{arg_defn.keyword}(values)
-                argument = @arguments_by_keyword[:#{arg_defn.keyword}]
-                lookup_as_type = @arguments_loads_as_type[:#{arg_defn.keyword}]
-                context.schema.after_lazy(values) do |values2|
-                  GraphQL::Execution::Lazy.all(values2.map { |value| load_application_object(argument, lookup_as_type, value, context) })
-                end
-              end
-              RUBY
-            elsif loads
-              class_eval <<-RUBY, __FILE__, __LINE__ + 1
-              def load_#{arg_defn.keyword}(value)
-                argument = @arguments_by_keyword[:#{arg_defn.keyword}]
-                lookup_as_type = @arguments_loads_as_type[:#{arg_defn.keyword}]
-                load_application_object(argument, lookup_as_type, value, context)
-              end
-              RUBY
-            else
-              class_eval <<-RUBY, __FILE__, __LINE__ + 1
-              def load_#{arg_defn.keyword}(value)
-                value
-              end
-              RUBY
-            end
-          end
-
           arg_defn
         end
 

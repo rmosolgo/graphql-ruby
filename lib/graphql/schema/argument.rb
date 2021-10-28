@@ -262,7 +262,14 @@ module GraphQL
 
         # TODO this should probably be inside after_lazy
         if loads && !from_resolver?
-          loaded_value = if type.list?
+          arg_load_method = "load_#{keyword}"
+          loaded_value = if owner.respond_to?(arg_load_method)
+            if owner.is_a?(Class)
+              owner.public_send(arg_load_method, coerced_value, context)
+            else
+              owner.public_send(arg_load_method, coerced_value)
+            end
+          elsif type.list?
             loaded_values = coerced_value.map { |val| owner.load_application_object(self, loads, val, context) }
             context.schema.after_any_lazies(loaded_values) { |result| result }
           else
