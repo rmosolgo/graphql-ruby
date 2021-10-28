@@ -15,7 +15,6 @@ module GraphQL
         input_field_defns.each { |a| input_fields_by_name[a.name] << a }
 
         input_fields_by_name.each do |name, defns|
-          break if @context.too_many_errors?
           if defns.size > 1
             error = GraphQL::StaticValidation::InputObjectNamesAreUniqueError.new(
               "There can be only one input field named \"#{name}\"",

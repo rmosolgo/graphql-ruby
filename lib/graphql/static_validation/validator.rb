@@ -41,20 +41,21 @@ module GraphQL
               # CAUTION: Usage of the timeout module makes the assumption that validation rules are stateless Ruby code that requires no cleanup if process was interrupted. This means no blocking IO calls, native gems, locks, or `rescue` clauses that must be reached.
               # A timeout value of 0 or nil will execute the block without any timeout.
               Timeout::timeout(timeout) do
-                # Attach legacy-style rules.
-                # Only loop through rules if it has legacy-style rules
-                unless (legacy_rules = rules_to_use - GraphQL::StaticValidation::ALL_RULES).empty?
-                  legacy_rules.each do |rule_class_or_module|
-                    break if context.too_many_errors?
-                    if rule_class_or_module.method_defined?(:validate)
-                      GraphQL::Deprecation.warn "Legacy validator rules will be removed from GraphQL-Ruby 2.0, use a module instead (see the built-in rules: https://github.com/rmosolgo/graphql-ruby/tree/master/lib/graphql/static_validation/rules)"
-                      GraphQL::Deprecation.warn "  -> Legacy validator: #{rule_class_or_module}"
-                      rule_class_or_module.new.validate(context)
+                catch(:too_many_validation_errors) do
+                  # Attach legacy-style rules.
+                  # Only loop through rules if it has legacy-style rules
+                  unless (legacy_rules = rules_to_use - GraphQL::StaticValidation::ALL_RULES).empty?
+                    legacy_rules.each do |rule_class_or_module|
+                      if rule_class_or_module.method_defined?(:validate)
+                        GraphQL::Deprecation.warn "Legacy validator rules will be removed from GraphQL-Ruby 2.0, use a module instead (see the built-in rules: https://github.com/rmosolgo/graphql-ruby/tree/master/lib/graphql/static_validation/rules)"
+                        GraphQL::Deprecation.warn "  -> Legacy validator: #{rule_class_or_module}"
+                        rule_class_or_module.new.validate(context)
+                      end
                     end
                   end
-                end
 
-                context.visitor.visit
+                  context.visitor.visit
+                end
               end
             rescue Timeout::Error
               handle_timeout(query, context)

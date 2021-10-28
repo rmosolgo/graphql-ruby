@@ -81,7 +81,6 @@ module GraphQL
         operation_definitions = @variable_usages_for_context.select { |key, value| key.is_a?(GraphQL::Language::Nodes::OperationDefinition) }
 
         operation_definitions.each do |node, node_variables|
-          break if @context.too_many_errors?
           follow_spreads(node, node_variables, @spreads_for_context, fragment_definitions, [])
           create_errors(node_variables)
         end
@@ -127,7 +126,6 @@ module GraphQL
         node_variables
           .select { |name, usage| usage.declared? && !usage.used? }
           .each { |var_name, usage|
-            break if @context.too_many_errors?
             declared_by_error_name = usage.declared_by.name || "anonymous #{usage.declared_by.operation_type}"
             add_error(GraphQL::StaticValidation::VariablesAreUsedAndDefinedError.new(
               "Variable $#{var_name} is declared by #{declared_by_error_name} but not used",
@@ -142,7 +140,6 @@ module GraphQL
         node_variables
           .select { |name, usage| usage.used? && !usage.declared? }
           .each { |var_name, usage|
-            break if @context.too_many_errors?
             used_by_error_name = usage.used_by.name || "anonymous #{usage.used_by.operation_type}"
             add_error(GraphQL::StaticValidation::VariablesAreUsedAndDefinedError.new(
               "Variable $#{var_name} is used by #{used_by_error_name} but not declared",

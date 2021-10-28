@@ -40,7 +40,6 @@ module GraphQL
           end
 
           node_values.each do |node_value|
-            break if @context.too_many_errors?
             var_defn_ast = @declared_variables[node_value.name]
             # Might be undefined :(
             # VariablesAreUsedAndDefined can't finalize its search until the end of the document.

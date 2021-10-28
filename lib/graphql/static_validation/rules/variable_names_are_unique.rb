@@ -8,7 +8,6 @@ module GraphQL
           vars_by_name = Hash.new { |h, k| h[k] = [] }
           var_defns.each { |v| vars_by_name[v.name] << v }
           vars_by_name.each do |name, defns|
-            break if @context.too_many_errors?
             if defns.size > 1
               add_error(GraphQL::StaticValidation::VariableNamesAreUniqueError.new(
                 "There can only be one variable named \"#{name}\"",

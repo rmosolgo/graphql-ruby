@@ -17,7 +17,6 @@ module GraphQL
         op_count = @operation_names.values.inject(0) { |m, v| m + v.size }
 
         @operation_names.each do |name, nodes|
-          break if @context.too_many_errors?
           if name.nil? && op_count > 1
             add_error(GraphQL::StaticValidation::OperationNamesAreValidError.new(
               %|Operation name is required when multiple operations are present|,
