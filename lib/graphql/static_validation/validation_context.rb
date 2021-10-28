@@ -23,7 +23,7 @@ module GraphQL
         @query = query
         @literal_validator = LiteralValidator.new(context: query.context)
         @errors = []
-        @max_errors = max_errors.nil? ? -1 : max_errors
+        @max_errors = max_errors || Float::INFINITY
         @on_dependency_resolve_handlers = []
         @visitor = visitor_class.new(document, self)
       end
@@ -41,7 +41,7 @@ module GraphQL
       end
 
       def too_many_errors?
-        @max_errors > -1 && @errors.length >= @max_errors
+        @errors.length >= @max_errors
       end
     end
   end

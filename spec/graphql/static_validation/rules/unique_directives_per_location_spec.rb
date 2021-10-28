@@ -197,7 +197,7 @@ describe GraphQL::StaticValidation::UniqueDirectivesPerLocation do
 
     describe("disabled") do
       let(:args) {
-        { max_errors: -1 }
+        { max_errors: nil }
       }
 
       it "does not limit the number of errors" do
