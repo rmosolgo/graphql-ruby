@@ -40,7 +40,6 @@ module GraphQL
         self.class.arguments.each do |name, arg|
           @arguments_by_keyword[arg.keyword] = arg
         end
-        @arguments_loads_as_type = self.class.arguments_loads_as_type
         @prepared_arguments = nil
       end
 
@@ -338,18 +337,9 @@ module GraphQL
         # also add some preparation hook methods which will be used for this argument
         # @see {GraphQL::Schema::Argument#initialize} for the signature
         def argument(*args, **kwargs, &block)
-          loads = kwargs[:loads]
           # Use `from_resolver: true` to short-circuit the InputObject's own `loads:` implementation
           # so that we can support `#load_{x}` methods below.
-          arg_defn = super(*args, from_resolver: true, **kwargs)
-          own_arguments_loads_as_type[arg_defn.keyword] = loads if loads
-          arg_defn
-        end
-
-        # @api private
-        def arguments_loads_as_type
-          inherited_lookups = superclass.respond_to?(:arguments_loads_as_type) ? superclass.arguments_loads_as_type : {}
-          inherited_lookups.merge(own_arguments_loads_as_type)
+          super(*args, from_resolver: true, **kwargs)
         end
 
         # Registers new extension
@@ -384,10 +374,6 @@ module GraphQL
 
         def own_extensions
           @own_extensions
-        end
-
-        def own_arguments_loads_as_type
-          @own_arguments_loads_as_type ||= {}
         end
       end
     end
