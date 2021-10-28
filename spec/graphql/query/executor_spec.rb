@@ -147,7 +147,7 @@ describe GraphQL::Query::Executor do
           "data" => { "cow" => nil },
           "errors" => [
             {
-              "message" => "Cannot return null for non-nullable field Cow.cantBeNullButIs"
+              "message" => "Failed null on Cow.cantBeNullButIs"
             }
           ]
         }

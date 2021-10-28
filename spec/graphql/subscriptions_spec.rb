@@ -106,7 +106,16 @@ end
 class ClassBasedInMemoryBackend < InMemoryBackend
   class Payload < GraphQL::Schema::Object
     field :str, String, null: false
+
+    def str
+      object.str || raise(GraphQL::ExecutionError, "Invalid null #{__method__}")
+    end
+
     field :int, Integer, null: false
+
+    def int
+      object.int || raise(GraphQL::ExecutionError, "Invalid null #{__method__}")
+    end
   end
 
   class PayloadType < GraphQL::Schema::Enum
@@ -236,6 +245,10 @@ class FromDefinitionInMemoryBackend < InMemoryBackend
       "event" => DEFAULT_SUBSCRIPTION_RESOLVE,
       "eventSubscription" => ->(o,a,c) { nil },
       "failedEvent" => ->(o,a,c) { raise GraphQL::ExecutionError.new("unauthorized") },
+    },
+    "Payload" => {
+      "str" => ->(obj, args, ctx) { obj.str || raise(GraphQL::ExecutionError.new("invalid null str")) },
+      "int" => ->(obj, args, ctx) { obj.int || raise(GraphQL::ExecutionError.new("invalid null int")) },
     },
   }
   Schema = GraphQL::Schema.from_definition(SchemaDefinition, default_resolve: Resolvers, using: {InMemoryBackend::Subscriptions => { extra: 123 }})

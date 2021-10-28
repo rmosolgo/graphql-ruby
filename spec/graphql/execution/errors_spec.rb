@@ -172,6 +172,14 @@ describe "GraphQL::Execution::Errors" do
     def self.resolve_type(type, obj, ctx)
       Thing
     end
+
+    def self.type_error(err, ctx)
+      if err.is_a?(GraphQL::InvalidNullError)
+        ctx.errors << err
+      else
+        super
+      end
+    end
   end
 
   class ErrorsTestSchemaWithoutInterpreter < GraphQL::Schema
@@ -183,6 +191,14 @@ describe "GraphQL::Execution::Errors" do
     end
 
     query(Query)
+
+    def self.type_error(err, ctx)
+      if err.is_a?(GraphQL::InvalidNullError)
+        ctx.errors << err
+      else
+        super
+      end
+    end
   end
 
   describe "rescue_from handling" do

@@ -179,6 +179,14 @@ module LazyHelpers
         super
       end
     end
+
+    def self.type_error(err, ctx)
+      if err.is_a?(GraphQL::InvalidNullError)
+        ctx.errors << err
+      else
+        super
+      end
+    end
   end
 
   def run_query(query_str, **rest)

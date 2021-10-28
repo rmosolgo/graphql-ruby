@@ -526,6 +526,9 @@ module Dummy
     def self.type_error(err, ctx)
       if err.is_a?(GraphQL::IntegerEncodingError) && err.integer_value == 99**99
         MAGIC_INT_COERCE_VALUE
+      elsif err.is_a?(GraphQL::InvalidNullError) && err.field.graphql_name == "cantBeNullButIs"
+        ctx.errors << GraphQL::ExecutionError.new("Failed null on #{err.field.path}")
+        nil
       else
         super
       end

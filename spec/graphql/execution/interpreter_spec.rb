@@ -269,6 +269,14 @@ describe GraphQL::Execution::Interpreter do
       def self.resolve_type(type, obj, ctx)
         FieldCounter
       end
+
+      def self.type_error(err, ctx)
+        if err.is_a?(GraphQL::InvalidNullError)
+          errs = ctx[:invalid_null_errors] ||= []
+          errs << err.message
+        end
+        super
+      end
     end
   end
 
@@ -415,7 +423,7 @@ describe GraphQL::Execution::Interpreter do
       # Although the expansion was found, its name of `nil`
       # propagated to here
       assert_nil res["data"].fetch("expansion")
-      assert_equal ["Cannot return null for non-nullable field Expansion.name"], res["errors"].map { |e| e["message"] }
+      assert_equal ["Cannot return null for non-nullable field Expansion.name"], res.context[:invalid_null_errors]
     end
 
     it "propagates nulls in lists" do
@@ -444,7 +452,8 @@ describe GraphQL::Execution::Interpreter do
         }
       }
       GRAPHQL
-      assert_equal ["Cannot return null for non-nullable field Query.find"], res["errors"].map { |e| e["message"] }
+      assert_equal nil, res.fetch("data")
+      assert_equal ["Cannot return null for non-nullable field Query.find"], res.context[:invalid_null_errors]
     end
 
     it "works with lists of unions" do

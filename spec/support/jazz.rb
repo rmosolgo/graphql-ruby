@@ -945,6 +945,14 @@ module Jazz
     use GraphQL::Dataloader
 
     use MetadataPlugin, value: "xyz"
+
+    def self.type_error(err, ctx)
+      if err.is_a?(GraphQL::InvalidNullError)
+        ctx.errors << err
+      else
+        super
+      end
+    end
   end
 
   class SchemaWithoutIntrospection < GraphQL::Schema
