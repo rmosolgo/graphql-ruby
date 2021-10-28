@@ -33,7 +33,6 @@ module GraphQL
       def validate_directive_location(node)
         used_directives = {}
         node.directives.each do |ast_directive|
-          break if @context.too_many_errors?
           directive_name = ast_directive.name
           if used_directives[directive_name]
             add_error(GraphQL::StaticValidation::UniqueDirectivesPerLocationError.new(
