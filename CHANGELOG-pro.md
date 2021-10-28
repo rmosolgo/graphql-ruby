@@ -8,7 +8,7 @@
 
 ### Bug Fix
 
-# 1.19.1 (15 October 2021)
+# 1.19.2 (26 October 2021)
 
 ### New Features
 
