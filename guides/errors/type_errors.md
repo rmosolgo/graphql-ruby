@@ -35,4 +35,5 @@ If you don't specify a hook, you get the default behavior ({{ "GraphQL::Schema::
 - Application-returned integers beyond the GraphQL specification's limit raise {{ "GraphQL::IntegerEncodingError" | api_doc }}s and halt the query
 - Client-provided integers beyond the GraphQL specification's limit pass {{ "GraphQL::IntegerDecodingError" | api_docs }}s to this method, and they're replaced with `nil`
 - An application-returned `nil` for a field configured with `null: false` passes a {{ "GraphQL::InvalidNullError" | api_doc }} to this method, but it's silently ignored
+
 An object that fails type resolution is treated as `nil`.
