@@ -225,6 +225,44 @@ describe GraphQL::Analysis::AST do
       assert_equal expected_node_counts, node_counts
     end
 
+    class FinishedSchema < GraphQL::Schema
+      class FinishedAnalyzer < GraphQL::Analysis::AST::Analyzer
+        def on_enter_field(node, parent, visitor)
+          if query.context[:force_prepare]
+            visitor.arguments_for(node, visitor.field_definition)
+          end
+        end
+
+        def result
+          query.context[:analysis_finished] = true
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :f1, Int, null: true do
+          argument :arg, String, required: true, prepare: ->(val, ctx) {
+            ctx[:analysis_finished] ? val.to_i : raise("Prepared too soon!")
+          }
+        end
+        def f1(arg:)
+          arg
+        end
+      end
+
+      query(Query)
+
+      query_analyzer(FinishedAnalyzer)
+    end
+
+    it "doesn't call prepare hooks by default" do
+      res = FinishedSchema.execute("{ f1(arg: \"5\") }")
+      assert_equal 5, res["data"]["f1"]
+      err = assert_raises RuntimeError do
+        FinishedSchema.execute("{ f1(arg: \"5\") }", context: { force_prepare: true })
+      end
+      assert_equal "Prepared too soon!", err.message
+    end
+
     describe "tracing" do
       let(:query_string) { "{ t: __typename }"}
 
