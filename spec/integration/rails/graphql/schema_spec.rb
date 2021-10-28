@@ -345,7 +345,7 @@ type Query {
     describe "with error limiting" do
       describe("disabled") do
         it "does not limit errors when not enabled" do
-          schema.define(validate_max_errors: -1) do
+          schema.define(validate_max_errors: nil) do
             errors = schema.validate("{ cheese(id: 1) { flavor flavor: id, cow } }")
             messages = errors.map { |e| e.message }
             assert_equal([

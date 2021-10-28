@@ -24,7 +24,7 @@ module GraphQL
       # @param query [GraphQL::Query]
       # @param validate [Boolean]
       # @param timeout [Float] Number of seconds to wait before aborting validation. Any positive number may be used, including Floats to specify fractional seconds.
-      # @param max_errors [Integer] Maximum number of errors before aborting validation. Any positive number will limit the number of errors.
+      # @param max_errors [Integer] Maximum number of errors before aborting validation. Any positive number will limit the number of errors. Defaults to nil for no limit.
       # @return [Array<Hash>]
       def validate(query, validate: true, timeout: nil, max_errors: nil)
         query.trace("validate", { validate: validate, query: query }) do
