@@ -552,7 +552,7 @@ module GraphQL
       end
     end
 
-    # @see [GraphQL::Schema::Warden] Resticted access to root types
+    # @see [GraphQL::Schema::Warden] Restricted access to root types
     # @return [GraphQL::ObjectType, nil]
     def root_type_for_operation(operation)
       case operation
@@ -1073,7 +1073,7 @@ module GraphQL
         end
       end
 
-      # @see [GraphQL::Schema::Warden] Resticted access to root types
+      # @see [GraphQL::Schema::Warden] Restricted access to root types
       # @return [GraphQL::ObjectType, nil]
       def root_type_for_operation(operation)
         case operation
