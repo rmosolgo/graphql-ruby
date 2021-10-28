@@ -513,6 +513,7 @@ module GraphQL
         field_defn
       end
 
+      class MissingReturnTypeError < GraphQL::Error; end
       attr_writer :type
 
       def type
@@ -520,14 +521,21 @@ module GraphQL
           Member::BuildType.parse_type(@function.type, null: false)
         elsif @field
           Member::BuildType.parse_type(@field.type, null: false)
+        elsif @return_type_expr.nil?
+          # Not enough info to determine type
+          message = "Can't determine the return type for #{self.path}"
+          if @resolver_class
+            message << " (it has `resolver: #{@resolver_class}`, consider configuration a `type ...` for that class)"
+          end
+          raise MissingReturnTypeError, message
         else
           Member::BuildType.parse_type(@return_type_expr, null: @return_type_null)
         end
-      rescue GraphQL::Schema::InvalidDocumentError => err
+      rescue GraphQL::Schema::InvalidDocumentError, MissingReturnTypeError => err
         # Let this propagate up
         raise err
       rescue StandardError => err
-        raise ArgumentError, "Failed to build return type for #{@owner.graphql_name}.#{name} from #{@return_type_expr.inspect}: (#{err.class}) #{err.message}", err.backtrace
+        raise MissingReturnTypeError, "Failed to build return type for #{@owner.graphql_name}.#{name} from #{@return_type_expr.inspect}: (#{err.class}) #{err.message}", err.backtrace
       end
 
       def visible?(context)
