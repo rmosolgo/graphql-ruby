@@ -176,6 +176,41 @@ describe GraphQL::Schema::Scalar do
     end
   end
 
+  describe ".coerce_input" do
+    class CoerceInputSchema < GraphQL::Schema
+      class OneTimeScalar < GraphQL::Schema::Scalar
+        def self.coerce_input(val, ctx)
+          if ctx[:already_called]
+            raise "Already coerced #{val.inspect} at \n#{ctx[:already_called].join("\n")}"
+          else
+            ctx[:already_called] = caller
+            val.to_i
+          end
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :f, Int, null: false do
+          argument :arg, OneTimeScalar, required: true
+        end
+
+        def f(arg:)
+          arg
+        end
+      end
+
+      query(Query)
+    end
+
+    it "is called only once during a query" do
+      res = CoerceInputSchema.execute("{ f(arg: \"3\") }")
+      assert_equal 3, res["data"]["f"]
+
+      res = CoerceInputSchema.execute("query($arg: OneTimeScalar!) { f(arg: $arg) }", variables: { arg: "6" })
+      assert_equal 6, res["data"]["f"]
+    end
+  end
+
   describe "Custom scalars" do
     let(:custom_scalar) {
       Class.new(GraphQL::Schema::Scalar) do
