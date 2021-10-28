@@ -313,7 +313,7 @@ describe GraphQL::Schema::Field do
         field :stuff, Set, null: false
       end
 
-      err = assert_raises ArgumentError do
+      err = assert_raises GraphQL::Schema::Field::MissingReturnTypeError do
         thing.fields["stuff"].type
       end
 
@@ -322,7 +322,7 @@ describe GraphQL::Schema::Field do
     end
 
     it "makes a suggestion when the type is false" do
-      err = assert_raises ArgumentError do
+      err = assert_raises GraphQL::Schema::Field::MissingReturnTypeError do
         Class.new(GraphQL::Schema::Object) do
           graphql_name "Thing"
           # False might come from an invalid `!`
