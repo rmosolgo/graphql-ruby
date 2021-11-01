@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+# 1.11.9
+
+### New Features
+
+- `Schema.max_validation_errors(val)` limits the number of errors that can be added during static validation #3675
+
 # 1.11.8 (12 Feb 2021)
 
 ### Bug fixes
