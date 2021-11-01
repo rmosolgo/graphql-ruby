@@ -225,7 +225,15 @@ module GraphQL
             if id.nil?
               return nil
             end
-            loaded_application_object = object_from_id(lookup_as_type, id, context)
+            object_from_id(lookup_as_type, id, context)
+          end
+
+          def load_and_authorize_application_object(argument, lookup_as_type, id, context)
+            loaded_application_object = load_application_object(argument, lookup_as_type, id, context)
+            authorize_application_object(argument, lookup_as_type, id, context, loaded_application_object)
+          end
+
+          def authorize_application_object(argument, lookup_as_type, id, context, loaded_application_object)
             context.schema.after_lazy(loaded_application_object) do |application_object|
               if application_object.nil?
                 err = GraphQL::LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)

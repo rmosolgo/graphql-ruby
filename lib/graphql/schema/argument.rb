@@ -260,45 +260,55 @@ module GraphQL
           type.coerce_input(value, context)
         end
 
-        # TODO this should probably be inside after_lazy
-        if loads && !from_resolver?
-          arg_load_method = "load_#{keyword}"
-          loaded_value = if owner.respond_to?(arg_load_method)
-            if owner.is_a?(Class)
-              owner.public_send(arg_load_method, coerced_value, context)
-            else
-              owner.public_send(arg_load_method, coerced_value)
-            end
-          elsif type.list?
-            loaded_values = coerced_value.map { |val| owner.load_application_object(self, loads, val, context) }
-            context.schema.after_any_lazies(loaded_values) { |result| result }
-          else
-            context.query.with_error_handling do
-              owner.load_application_object(self, loads, coerced_value, context)
-            end
-          end
-        end
-
-        coerced_value = if loaded_value
-          loaded_value
-        else
-          coerced_value
-        end
-
         # If this isn't lazy, then the block returns eagerly and assigns the result here
         # If it _is_ lazy, then we write the lazy to the hash, then update it later
-        argument_values[arg_key] = context.schema.after_lazy(coerced_value) do |coerced_value|
-          owner.validate_directive_argument(self, coerced_value)
-          prepared_value = context.schema.error_handler.with_error_handling(context) do
-            prepare_value(parent_object, coerced_value, context: context)
+        argument_values[arg_key] = context.schema.after_lazy(coerced_value) do |resolved_coerced_value|
+          # TODO this should probably be inside after_lazy
+          if loads && !from_resolver?
+            arg_load_method = "load_#{keyword}"
+            loaded_value = if owner.respond_to?(arg_load_method)
+              custom_loaded_value = if owner.is_a?(Class)
+                owner.public_send(arg_load_method, resolved_coerced_value, context)
+              else
+                owner.public_send(arg_load_method, resolved_coerced_value)
+              end
+              context.schema.after_lazy(custom_loaded_value) do |custom_value|
+                if type.list?
+                  loaded_values = custom_value.each_with_index.map { |custom_val, idx|
+                    id = resolved_coerced_value[idx]
+                    owner.authorize_application_object(self, loads, id, context, custom_val)
+                  }
+                  context.schema.after_any_lazies(loaded_values, &:itself)
+                else
+                  context.query.with_error_handling do
+                    owner.authorize_application_object(self, loads, resolved_coerced_value, context, custom_loaded_value)
+                  end
+                end
+              end
+            elsif type.list?
+              loaded_values = resolved_coerced_value.map { |val| owner.load_and_authorize_application_object(self, loads, val, context) }
+              context.schema.after_any_lazies(loaded_values, &:itself)
+            else
+              context.query.with_error_handling do
+                owner.load_and_authorize_application_object(self, loads, resolved_coerced_value, context)
+              end
+            end
           end
 
-          # TODO code smell to access such a deeply-nested constant in a distant module
-          argument_values[arg_key] = GraphQL::Execution::Interpreter::ArgumentValue.new(
-            value: prepared_value,
-            definition: self,
-            default_used: default_used,
-          )
+          maybe_loaded_value = loaded_value || resolved_coerced_value
+          context.schema.after_lazy(maybe_loaded_value) do |resolved_loaded_value|
+            owner.validate_directive_argument(self, resolved_loaded_value)
+            prepared_value = context.schema.error_handler.with_error_handling(context) do
+              prepare_value(parent_object, resolved_loaded_value, context: context)
+            end
+
+            # TODO code smell to access such a deeply-nested constant in a distant module
+            argument_values[arg_key] = GraphQL::Execution::Interpreter::ArgumentValue.new(
+              value: prepared_value,
+              definition: self,
+              default_used: default_used,
+            )
+          end
         end
       end
 
