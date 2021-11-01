@@ -255,6 +255,33 @@ describe GraphQL::Dataloader do
 
     query(Query)
 
+    class Mutation1 < GraphQL::Schema::Mutation
+      argument :argument_1, String, required: true, prepare: -> (val, ctx) {
+        raise FieldTestError
+      }
+
+      def resolve(argument_1:)
+        argument_1
+      end
+    end
+
+    class Mutation2 < GraphQL::Schema::Mutation
+      argument :argument_2, String, required: true, prepare: -> (val, ctx) {
+        raise FieldTestError
+      }
+
+      def resolve(argument_2:)
+        argument_2
+      end
+    end
+
+    class Mutation < GraphQL::Schema::Object
+      field :mutation_1, mutation: Mutation1
+      field :mutation_2, mutation: Mutation2
+    end
+
+    mutation(Mutation)
+
     def self.object_from_id(id, ctx)
       if ctx[:use_request]
         ctx.dataloader.with(DataObject).request(id)
@@ -269,6 +296,14 @@ describe GraphQL::Dataloader do
 
     orphan_types(Grain, Dairy, Recipe, LeaveningAgent)
     use GraphQL::Dataloader
+
+    class FieldTestError < StandardError; end
+
+    rescue_from(FieldTestError) do |err, obj, args, ctx, field|
+      errs = ctx[:errors] ||= []
+      errs << "FieldTestError @ #{ctx[:current_path]}, #{field.path} / #{ctx[:current_field].path}"
+      nil
+    end
   end
 
   def database_log
@@ -750,6 +785,16 @@ describe GraphQL::Dataloader do
 
     assert_equal(nil, res["data"])
     assert_equal(expected_errors, context[:errors].sort)
+  end
+
+  it "has proper context[:current_field]" do
+    res = FiberSchema.execute("mutation { mutation1(argument1: \"abc\") { __typename } mutation2(argument2: \"def\") { __typename } }")
+    assert_equal({"mutation1"=>nil, "mutation2"=>nil}, res["data"])
+    expected_errors = [
+      "FieldTestError @ [\"mutation2\"], Mutation.mutation2 / Mutation.mutation2",
+      "FieldTestError @ [\"mutation1\"], Mutation.mutation1 / Mutation.mutation1",
+    ]
+    assert_equal expected_errors, res.context[:errors]
   end
 
   it "passes along throws" do
