@@ -263,7 +263,6 @@ module GraphQL
         # If this isn't lazy, then the block returns eagerly and assigns the result here
         # If it _is_ lazy, then we write the lazy to the hash, then update it later
         argument_values[arg_key] = context.schema.after_lazy(coerced_value) do |resolved_coerced_value|
-          # TODO this should probably be inside after_lazy
           if loads && !from_resolver?
             arg_load_method = "load_#{keyword}"
             loaded_value = if owner.respond_to?(arg_load_method)

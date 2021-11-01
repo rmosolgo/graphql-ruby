@@ -172,7 +172,22 @@ module GraphQL
             if value.nil?
               prepared_args[key] = value
             else
-              prepped_value = prepared_args[key] = load_argument(arg_defn, value)
+              loaded_value = public_send("load_#{arg_defn.keyword}", value)
+              prepped_value = prepared_args[key] = if arg_defn.loads
+                if arg_defn.type.list?
+                  context.schema.after_lazy(loaded_value) do |resolved_value|
+                    rv = resolved_value.each_with_index.map do |resolved_item, idx|
+                      id = value[idx]
+                      authorize_application_object(arg_defn, arg_defn.loads, id, context, resolved_item)
+                    end
+                    context.schema.after_any_lazies(rv, &:itself)
+                  end
+                else
+                  authorize_application_object(arg_defn, arg_defn.loads, value, context, loaded_value)
+                end
+              else
+                loaded_value
+              end
               if context.schema.lazy?(prepped_value)
                 prepare_lazies << context.schema.after_lazy(prepped_value) do |finished_prepped_value|
                   prepared_args[key] = finished_prepped_value
@@ -190,25 +205,6 @@ module GraphQL
           GraphQL::Execution::Lazy.all(prepare_lazies).then { prepared_args }
         else
           prepared_args
-        end
-      end
-
-      def load_argument(arg_defn, value)
-        loaded_value = public_send("load_#{arg_defn.keyword}", value)
-        if arg_defn.loads
-          if arg_defn.type.list?
-            context.schema.after_lazy(loaded_value) do |resolved_value|
-              rv = resolved_value.each_with_index.map do |resolved_item, idx|
-                id = value[idx]
-                authorize_application_object(arg_defn, arg_defn.loads, id, context, resolved_item)
-              end
-              context.schema.after_any_lazies(rv, &:itself)
-            end
-          else
-            authorize_application_object(arg_defn, arg_defn.loads, value, context, loaded_value)
-          end
-        else
-          loaded_value
         end
       end
 
