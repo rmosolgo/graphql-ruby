@@ -704,13 +704,10 @@ GRAPHQL
   describe "duplicate values for a given name" do
     class DuplicateFieldObject < GraphQL::Schema::Object
       class BaseField < GraphQL::Schema::Field
-        def initialize(*args, allow_for: nil, nickname: nil, **kwargs, &block)
+        def initialize(*args, allow_for: nil, **kwargs, &block)
           super(*args, **kwargs, &block)
           @allow_for = allow_for
-          @nickname = nickname
         end
-
-        attr_reader :nickname
 
         def visible?(context)
           super && @allow_for ? @allow_for.include?(context[:allowed_for]) : true
@@ -718,13 +715,17 @@ GRAPHQL
       end
       field_class(BaseField)
 
-      field :f, String, null: true, allow_for: [1, 2], nickname: "first definition"
-      field :f, Int, null: true, allow_for: [2, 3], nickname: "second definition"
+      field :f, String, null: true, allow_for: [1, 2], description: "first definition"
+      field :f, Int, null: true, allow_for: [2, 3], description: "second definition"
     end
 
     it "raises when a given context would permit multiple definitions" do
-      assert_equal "first definition", DuplicateFieldObject.get_field("f", { allowed_for: 1 }).nickname
-      assert_equal "second definition", DuplicateFieldObject.fields({ allowed_for: 3 })["f"].nickname
+      schema = Class.new(GraphQL::Schema) { query(DuplicateFieldObject) }
+      assert_equal "first definition", DuplicateFieldObject.get_field("f", { allowed_for: 1 }).description
+      assert_equal "second definition", DuplicateFieldObject.fields({ allowed_for: 3 })["f"].description
+      assert_includes schema.to_definition(context: { allowed_for: 1 }), "first definition"
+      assert_includes schema.to_definition(context: { allowed_for: 3 }), "second definition"
+
       err = assert_raises GraphQL::Schema::DuplicateNamesError do
         DuplicateFieldObject.fields({ allowed_for: 2 })
       end
@@ -736,6 +737,16 @@ GRAPHQL
       end
 
       assert_equal expected_message, err2.message
+
+      err3 = assert_raises GraphQL::Schema::DuplicateNamesError do
+        schema.to_definition(context: { allowed_for: 2 })
+      end
+      assert_equal expected_message, err3.message
+
+      err4 = assert_raises GraphQL::Schema::DuplicateNamesError do
+        schema.to_json(context: { allowed_for: 2 })
+      end
+      assert_equal expected_message, err4.message
     end
   end
 end
