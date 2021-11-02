@@ -256,7 +256,7 @@ describe GraphQL::Dataloader do
     query(Query)
 
     class Mutation1 < GraphQL::Schema::Mutation
-      argument :argument_1, String, required: true, prepare: -> (val, ctx) {
+      argument :argument_1, String, required: true, prepare: ->(val, ctx) {
         raise FieldTestError
       }
 
@@ -266,7 +266,7 @@ describe GraphQL::Dataloader do
     end
 
     class Mutation2 < GraphQL::Schema::Mutation
-      argument :argument_2, String, required: true, prepare: -> (val, ctx) {
+      argument :argument_2, String, required: true, prepare: ->(val, ctx) {
         raise FieldTestError
       }
 
