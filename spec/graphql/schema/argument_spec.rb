@@ -13,6 +13,20 @@ describe GraphQL::Schema::Argument do
       argument :context, String, required: true
     end
 
+    class LoadUnauthorizedInstruments < GraphQL::Schema::Resolver
+      argument :ids, [ID], as: :instruments, required: false, loads: UnauthorizedInstrumentType
+
+      def load_instruments(ids)
+        ids.map { |id| context.schema.object_from_id(id, context).call }
+      end
+
+      type Integer, null: true
+
+      def resolve(instruments:)
+        instruments.size
+      end
+    end
+
     class Query < GraphQL::Schema::Object
       field :field, String, null: true do
         argument :arg, String, description: "test", required: false
@@ -66,6 +80,8 @@ describe GraphQL::Schema::Argument do
       def context_arg_test(input:)
         [input.context, input.context.class, self.context.class]
       end
+
+      field :other_unauthorized_instruments, resolver: LoadUnauthorizedInstruments
     end
 
     class Schema < GraphQL::Schema
@@ -304,6 +320,16 @@ describe GraphQL::Schema::Argument do
       res = SchemaArgumentTest::Schema.execute(query_str)
       assert_nil res["errors"]
       assert_nil res["data"].fetch("field")
+    end
+
+    it "handles applies authorization even when a custom load method is provided" do
+      query_str = <<-GRAPHQL
+      query { otherUnauthorizedInstruments(ids: ["Instrument/Drum Kit"]) }
+      GRAPHQL
+
+      res = SchemaArgumentTest::Schema.execute(query_str)
+      assert_nil res["errors"]
+      assert_nil res["data"].fetch("otherUnauthorizedInstruments")
     end
   end
 

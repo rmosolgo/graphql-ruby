@@ -881,4 +881,25 @@ describe GraphQL::Schema::Resolver do
       end
     end
   end
+
+  describe "When the type is forgotten" do
+    class ResolverWithoutTypeSchema < GraphQL::Schema
+      class WithoutType < GraphQL::Schema::Resolver
+        def resolve
+          "OK"
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+      end
+    end
+
+    it "raises a nice error" do
+      err = assert_raises GraphQL::Schema::Field::MissingReturnTypeError do
+        ResolverWithoutTypeSchema::Query.field(:without_type, resolver: ResolverWithoutTypeSchema::WithoutType)
+      end
+      expected_message = "Can't determine the return type for Query.withoutType (it has `resolver: ResolverWithoutTypeSchema::WithoutType`, consider configuration a `type ...` for that class)"
+      assert_equal expected_message, err.message
+    end
+  end
 end

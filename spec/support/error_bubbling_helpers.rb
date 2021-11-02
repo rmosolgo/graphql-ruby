@@ -4,7 +4,7 @@
 # Some schemas are made with `.define`, others are `class`, so we have to support both.
 module ErrorBubblingHelpers
   def without_error_bubbling(schema)
-    original_error_bubbling = schema.error_bubbling
+    original_error_bubbling = !!schema.error_bubbling
     begin
       if schema.is_a?(Class)
         schema.error_bubbling(false)
@@ -20,7 +20,7 @@ module ErrorBubblingHelpers
   end
 
   def with_error_bubbling(schema)
-    original_error_bubbling = schema.error_bubbling
+    original_error_bubbling = !!schema.error_bubbling
     begin
       if schema.is_a?(Class)
         schema.error_bubbling(true)

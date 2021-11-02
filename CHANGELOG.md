@@ -8,6 +8,28 @@
 
 ### Bug fixes
 
+# 1.12.18 (2 November 2021)
+
+### New features
+
+- Subscriptions: Add `NO_UPDATE` constant for skipping subscription updates #3664
+- Validation: Add `Schema.max_validation_errors(integer)` for halting validation when it reaches a certain number #3683
+- Call `self.load_...` methods on Input objects for loading arguments #3682
+- Use `import_methods` in Refinements when available #3674
+- `AppsignalTracing`: Add `set_action_name` #3659
+
+### Bug fixes
+
+- Authorize objects returned from custom `def load_...` methods #3682
+- Fix `context[:current_field]` when argument `prepare:` hooks raise an error #3666
+- Raise a helpful error when a Resolver doesn't have a configured `type(...)` #3679
+- Better error message when subscription clients are using ActionCable #3668
+- Dataloader: Fix dataloading of input object arguments #3666
+- Subscriptions: Fix parsing time zones #3667
+- Subscriptions: Fix parsing with non-null arguments #3620
+- Authorization: Call `schema.unauthorized_field` for unauthorized resolvers
+- Fix when literal `null` is used as a value for a list argument #3660
+
 # 1.12.17 (15 October 2021)
 
 ### New features
