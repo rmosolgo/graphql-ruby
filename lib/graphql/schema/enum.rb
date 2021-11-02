@@ -86,8 +86,17 @@ module GraphQL
           when GraphQL::Schema::EnumValue
             values_entry.visible?(context) && values_entry
           when Array
-            # TODO assert that only one matches?
-            values_entry.find { |v| v.visible?(context) }
+            visible_entry = nil
+            values_entry.each do |v|
+              if v.visible?(context)
+                if visible_entry.nil?
+                  visible_entry = v
+                else
+                  raise Schema::DuplicateNamesError, "Found two visible enum value defintions for `#{v.path}`: #{visible_entry.inspect}, #{v.inspect}"
+                end
+              end
+            end
+            visible_entry
           else
             raise "Invariant: Unexpected enum values entry: #{values_entry.inspect}"
           end

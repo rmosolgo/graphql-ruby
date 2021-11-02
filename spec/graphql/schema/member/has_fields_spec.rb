@@ -111,7 +111,7 @@ describe GraphQL::Schema::Member::HasFields do
     class Language < BaseEnum
       value "RUBY"
       value "PERL6", deprecation_reason: "Use RAKU instead", future_schema: true
-      value "PERL6"
+      value "PERL6", future_schema: false
       value "RAKU", future_schema: true
       value "COFFEE_SCRIPT", future_schema: false
     end
@@ -723,6 +723,16 @@ GRAPHQL
         argument_class(BaseArgument)
       end
 
+      class BaseEnumValue < GraphQL::Schema::EnumValue
+        include HasAllowedFor
+      end
+
+      class DuplicateEnumValue < GraphQL::Schema::Enum
+        enum_value_class(BaseEnumValue)
+        value "ONE", description: "second definition", allow_for: [2, 3]
+        value "ONE", description: "first definition", allow_for: [1, 2]
+      end
+
       class DuplicateFieldObject < GraphQL::Schema::Object
         field_class(BaseField)
         field :f, String, null: true, allow_for: [1, 2], description: "first definition"
@@ -737,6 +747,42 @@ GRAPHQL
           argument :a, Int, required: false, allow_for: [2, 3], description: "second definition"
         end
       end
+    end
+
+    it "raises when a given context would permit multiple enum values with the same name" do
+      enum_type = DuplicateNames::DuplicateEnumValue
+      query_type = Class.new(GraphQL::Schema::Object) { graphql_name("Query"); field(:f, enum_type, null: false) }
+      schema = Class.new(GraphQL::Schema) { query(query_type) }
+
+      assert_equal "first definition", enum_type.values({ allowed_for: 1 })["ONE"].description
+      assert_equal "second definition", enum_type.values({ allowed_for: 3 })["ONE"].description
+      assert_includes schema.to_definition(context: { allowed_for: 1 }), "first definition"
+      refute_includes schema.to_definition(context: { allowed_for: 1 }), "second definition"
+      assert_includes schema.to_definition(context: { allowed_for: 3 }), "second definition"
+      refute_includes schema.to_definition(context: { allowed_for: 3 }), "first definition"
+
+      assert_includes schema.to_json(context: { allowed_for: 1 }), "first definition"
+      refute_includes schema.to_json(context: { allowed_for: 1 }), "second definition"
+      assert_includes schema.to_json(context: { allowed_for: 3 }), "second definition"
+      refute_includes schema.to_json(context: { allowed_for: 3 }), "first definition"
+
+      err = assert_raises GraphQL::Schema::DuplicateNamesError do
+        enum_type.values({ allowed_for: 2 })
+      end
+      expected_message ="Found two visible enum value defintions for `DuplicateEnumValue.ONE`: #<DuplicateNames::BaseEnumValue DuplicateEnumValue.ONE (\"second definition\")>, #<DuplicateNames::BaseEnumValue DuplicateEnumValue.ONE (\"first definition\")>"
+      assert_equal expected_message, err.message
+
+      # no get_value method ... yet ...
+
+      err3 = assert_raises GraphQL::Schema::DuplicateNamesError do
+        schema.to_definition(context: { allowed_for: 2 })
+      end
+      assert_equal expected_message, err3.message
+
+      err4 = assert_raises GraphQL::Schema::DuplicateNamesError do
+        schema.to_json(context: { allowed_for: 2 })
+      end
+      assert_equal expected_message, err4.message
     end
 
     it "raises when a given context would permit multiple argument definitions" do

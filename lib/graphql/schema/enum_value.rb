@@ -85,6 +85,10 @@ module GraphQL
         enum_value
       end
 
+      def inspect
+        "#<#{self.class} #{path} #{description ? "(#{description.inspect})" : ""}>"
+      end
+
       def visible?(_ctx); true; end
       def accessible?(_ctx); true; end
       def authorized?(_ctx); true; end
