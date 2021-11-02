@@ -38,6 +38,40 @@ module GraphQL
           end
           arg_defn = self.argument_class.new(*args, **kwargs, &block)
           add_argument(arg_defn)
+
+          if self.is_a?(Class) && !method_defined?(:"load_#{arg_defn.keyword}")
+            method_owner = if self < GraphQL::Schema::InputObject || self < GraphQL::Schema::Directive
+              "self."
+            elsif self < GraphQL::Schema::Resolver
+              ""
+            else
+              raise "Unexpected argument owner: #{self}"
+            end
+            if loads && arg_defn.type.list?
+              class_eval <<-RUBY, __FILE__, __LINE__ + 1
+              def #{method_owner}load_#{arg_defn.keyword}(values, context = nil)
+                argument = get_argument("#{arg_defn.graphql_name}")
+                (context || self.context).schema.after_lazy(values) do |values2|
+                  GraphQL::Execution::Lazy.all(values2.map { |value| load_application_object(argument, value, context || self.context) })
+                end
+              end
+              RUBY
+            elsif loads
+              class_eval <<-RUBY, __FILE__, __LINE__ + 1
+              def #{method_owner}load_#{arg_defn.keyword}(value, context = nil)
+                argument = get_argument("#{arg_defn.graphql_name}")
+                load_application_object(argument, value, context || self.context)
+              end
+              RUBY
+            else
+              class_eval <<-RUBY, __FILE__, __LINE__ + 1
+              def #{method_owner}load_#{arg_defn.keyword}(value, _context = nil)
+                value
+              end
+              RUBY
+            end
+          end
+          arg_defn
         end
 
         # Register this argument with the class.
@@ -159,54 +193,52 @@ module GraphQL
           arg_defns = self.arguments(context)
           total_args_count = arg_defns.size
 
-          if total_args_count == 0
-            final_args = GraphQL::Execution::Interpreter::Arguments::EMPTY
-            if block_given?
-              block.call(final_args)
-              nil
+          finished_args = nil
+          prepare_finished_args = -> {
+            if total_args_count == 0
+              finished_args = GraphQL::Execution::Interpreter::Arguments::EMPTY
+              if block_given?
+                block.call(finished_args)
+              end
             else
-              final_args
-            end
-          else
-            finished_args = nil
-            argument_values = {}
-            resolved_args_count = 0
-            raised_error = false
-            arg_defns.each do |arg_name, arg_defn|
-              context.dataloader.append_job do
-                begin
-                  arg_defn.coerce_into_values(parent_object, values, context, argument_values)
-                rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
-                  raised_error = true
-                  if block_given?
-                    block.call(err)
-                  else
+              argument_values = {}
+              resolved_args_count = 0
+              raised_error = false
+              arg_defns.each do |arg_name, arg_defn|
+                context.dataloader.append_job do
+                  begin
+                    arg_defn.coerce_into_values(parent_object, values, context, argument_values)
+                  rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
+                    raised_error = true
                     finished_args = err
+                    if block_given?
+                      block.call(finished_args)
+                    end
                   end
-                end
 
-                resolved_args_count += 1
-                if resolved_args_count == total_args_count && !raised_error
-                  finished_args = context.schema.after_any_lazies(argument_values.values) {
-                    GraphQL::Execution::Interpreter::Arguments.new(
-                      argument_values: argument_values,
-                    )
-                  }
-
-                  if block_given?
-                    block.call(finished_args)
+                  resolved_args_count += 1
+                  if resolved_args_count == total_args_count && !raised_error
+                    finished_args = context.schema.after_any_lazies(argument_values.values) {
+                      GraphQL::Execution::Interpreter::Arguments.new(
+                        argument_values: argument_values,
+                      )
+                    }
+                    if block_given?
+                      block.call(finished_args)
+                    end
                   end
                 end
               end
             end
+          }
 
-            if block_given?
-              nil
-            else
-              # This API returns eagerly, gotta run it now
-              context.dataloader.run
-              finished_args
-            end
+          if block_given?
+            prepare_finished_args.call
+            nil
+          else
+            # This API returns eagerly, gotta run it now
+            context.dataloader.run_isolated(&prepare_finished_args)
+            finished_args
           end
         end
 
@@ -251,12 +283,20 @@ module GraphQL
             context.schema.object_from_id(id, context)
           end
 
-          def load_application_object(argument, lookup_as_type, id, context)
+          def load_application_object(argument, id, context)
             # See if any object can be found for this ID
             if id.nil?
               return nil
             end
-            loaded_application_object = object_from_id(lookup_as_type, id, context)
+            object_from_id(argument.loads, id, context)
+          end
+
+          def load_and_authorize_application_object(argument, id, context)
+            loaded_application_object = load_application_object(argument, id, context)
+            authorize_application_object(argument, id, context, loaded_application_object)
+          end
+
+          def authorize_application_object(argument, id, context, loaded_application_object)
             context.schema.after_lazy(loaded_application_object) do |application_object|
               if application_object.nil?
                 err = GraphQL::LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
@@ -264,9 +304,9 @@ module GraphQL
               end
               # Double-check that the located object is actually of this type
               # (Don't want to allow arbitrary access to objects this way)
-              resolved_application_object_type = context.schema.resolve_type(lookup_as_type, application_object, context)
+              resolved_application_object_type = context.schema.resolve_type(argument.loads, application_object, context)
               context.schema.after_lazy(resolved_application_object_type) do |application_object_type|
-                possible_object_types = context.warden.possible_types(lookup_as_type)
+                possible_object_types = context.warden.possible_types(argument.loads)
                 if !possible_object_types.include?(application_object_type)
                   err = GraphQL::LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
                   load_application_object_failed(err)

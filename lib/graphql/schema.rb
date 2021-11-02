@@ -163,7 +163,7 @@ module GraphQL
 
     accepts_definitions \
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
-      :validate_timeout, :max_depth, :max_complexity, :default_max_page_size,
+      :validate_timeout, :validate_max_errors, :max_depth, :max_complexity, :default_max_page_size,
       :orphan_types, :resolve_type, :type_error, :parse_error,
       :error_bubbling,
       :raise_definition_error,
@@ -202,7 +202,7 @@ module GraphQL
     attr_accessor \
       :query, :mutation, :subscription,
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
-      :validate_timeout, :max_depth, :max_complexity, :default_max_page_size,
+      :validate_timeout, :validate_max_errors, :max_depth, :max_complexity, :default_max_page_size,
       :orphan_types, :directives,
       :query_analyzers, :multiplex_analyzers, :instrumenters, :lazy_methods,
       :cursor_encoder,
@@ -554,7 +554,7 @@ module GraphQL
       end
     end
 
-    # @see [GraphQL::Schema::Warden] Resticted access to root types
+    # @see [GraphQL::Schema::Warden] Restricted access to root types
     # @return [GraphQL::ObjectType, nil]
     def root_type_for_operation(operation)
       case operation
@@ -936,6 +936,7 @@ module GraphQL
         schema_defn.mutation = mutation && mutation.graphql_definition
         schema_defn.subscription = subscription && subscription.graphql_definition
         schema_defn.validate_timeout = validate_timeout
+        schema_defn.validate_max_errors = validate_max_errors
         schema_defn.max_complexity = max_complexity
         schema_defn.error_bubbling = error_bubbling
         schema_defn.max_depth = max_depth
@@ -1116,7 +1117,7 @@ module GraphQL
         end
       end
 
-      # @see [GraphQL::Schema::Warden] Resticted access to root types
+      # @see [GraphQL::Schema::Warden] Restricted access to root types
       # @return [GraphQL::ObjectType, nil]
       def root_type_for_operation(operation)
         case operation
@@ -1333,8 +1334,20 @@ module GraphQL
         validator_opts = { schema: self }
         rules && (validator_opts[:rules] = rules)
         validator = GraphQL::StaticValidation::Validator.new(**validator_opts)
-        res = validator.validate(query, timeout: validate_timeout)
+        res = validator.validate(query, timeout: validate_timeout, max_errors: validate_max_errors)
         res[:errors]
+      end
+
+      attr_writer :validate_max_errors
+
+      def validate_max_errors(new_validate_max_errors = nil)
+        if new_validate_max_errors
+          @validate_max_errors = new_validate_max_errors
+        elsif defined?(@validate_max_errors)
+          @validate_max_errors
+        else
+          find_inherited_value(:validate_max_errors)
+        end
       end
 
       attr_writer :max_complexity

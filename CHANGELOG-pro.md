@@ -8,6 +8,22 @@
 
 ### Bug Fix
 
+# 1.19.2 (26 October 2021)
+
+### New Features
+
+- Pundit and CanCan integrations: Add `ResolverIntegration` modules for plain resolvers #3392
+
+### Bug Fix
+
+- OperationStore Redis backend: pipeline updates to last_used_at values #3672
+
+# 1.19.1 (15 October 2021)
+
+### Bug Fix
+
+- OperationStore: fix a stack overflow error on GraphQL 1.9 #3653
+
 # 1.19.0 (13 October 2021)
 
 ### New Features

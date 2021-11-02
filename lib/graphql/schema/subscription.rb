@@ -14,7 +14,7 @@ module GraphQL
     class Subscription < GraphQL::Schema::Resolver
       extend GraphQL::Schema::Resolver::HasPayloadType
       extend GraphQL::Schema::Member::HasFields
-
+      NO_UPDATE = :no_update
       # The generated payload type is required; If there's no payload,
       # propagate null.
       null false
@@ -68,7 +68,7 @@ module GraphQL
       # Wrap the user-provided `#update` hook
       def resolve_update(**args)
         ret_val = args.any? ? update(**args) : update
-        if ret_val == :no_update
+        if ret_val == NO_UPDATE
           context.namespace(:subscriptions)[:no_update] = true
           context.skip
         else
@@ -77,7 +77,7 @@ module GraphQL
       end
 
       # The default implementation returns the root object.
-      # Override it to return `:no_update` if you want to
+      # Override it to return {NO_UPDATE} if you want to
       # skip updates sometimes. Or override it to return a different object.
       def update(args = {})
         object
@@ -122,7 +122,7 @@ module GraphQL
       # In that implementation, only `.trigger` calls with _exact matches_ result in updates to subscribers.
       #
       # To implement a filtered stream-type subscription flow, override this method to return a string with field name and subscription scope.
-      # Then, implement {#update} to compare its arguments to the current `object` and return `:no_update` when an
+      # Then, implement {#update} to compare its arguments to the current `object` and return {NO_UPDATE} when an
       # update should be filtered out.
       #
       # @see {#update} for how to skip updates when an event comes with a matching topic.

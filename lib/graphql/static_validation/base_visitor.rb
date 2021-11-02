@@ -205,6 +205,9 @@ module GraphQL
       private
 
       def add_error(error, path: nil)
+        if @context.too_many_errors?
+          throw :too_many_validation_errors
+        end
         error.path ||= (path || @path.dup)
         context.errors << error
       end

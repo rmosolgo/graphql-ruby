@@ -340,7 +340,7 @@ describe GraphQL::ExecutionError do
       let(:query_string) { %|{ multipleErrorsOnNonNullableListField} |}
       it "the errors are inserted into the errors key and the data is nil even for a NonNullable field" do
         expected_result = {
-          "data"=>nil,
+          "data"=>{"multipleErrorsOnNonNullableListField"=>[nil, nil]},
           "errors"=>
             [{"message"=>"The first error message for a field defined to return a list of strings.",
               "locations"=>[{"line"=>1, "column"=>3}],
@@ -352,5 +352,47 @@ describe GraphQL::ExecutionError do
         assert_equal(expected_result, result)
       end
     end
+  end
+
+  it "supports arrays containing only execution errors for list fields" do
+    schema = GraphQL::Schema.from_definition <<-GRAPHQL
+      type Query {
+        testArray: [String]!
+      }
+    GRAPHQL
+
+    root_value = OpenStruct.new(testArray: [GraphQL::ExecutionError.new("boom!"), GraphQL::ExecutionError.new("bang!"), "OK"])
+    result = schema.execute("{ testArray }", root_value: root_value)
+    assert_equal({ "testArray" => [nil, nil, "OK"]}, result["data"])
+    expected_errors = [
+      {
+        "message"=>"boom!",
+        "locations"=>[{"line"=>1, "column"=>3}],
+        "path"=>["testArray", 0]
+      },
+      {
+        "message"=>"bang!",
+        "locations"=>[{"line"=>1, "column"=>3}],
+        "path"=>["testArray", 1]
+      }
+    ]
+    assert_equal(expected_errors, result["errors"])
+
+    root_value_errors_only = OpenStruct.new(testArray: [GraphQL::ExecutionError.new("zing!"), GraphQL::ExecutionError.new("fizz!")])
+    result = schema.execute("{ testArray }", root_value: root_value_errors_only)
+    assert_equal({ "testArray" => [nil, nil] }, result["data"])
+    expected_errors = [
+      {
+        "message"=>"zing!",
+        "locations"=>[{"line"=>1, "column"=>3}],
+        "path"=>["testArray", 0]
+      },
+      {
+        "message"=>"fizz!",
+        "locations"=>[{"line"=>1, "column"=>3}],
+        "path"=>["testArray", 1]
+      }
+    ]
+    assert_equal(expected_errors, result["errors"])
   end
 end

@@ -159,7 +159,23 @@ describe GraphQL::Schema::InputObject do
           end
         end
 
+        class InstrumentByNameInput < GraphQL::Schema::InputObject
+          argument :instrument_name, ID, required: true, loads: Jazz::InstrumentType, as: :instrument
+
+          def self.load_instrument(instrument_name, context)
+            -> {
+              instruments = Jazz::Models.data["Instrument"]
+              instruments.find { |i| i.name == instrument_name }
+            }
+          end
+        end
+
+        class TouchInstrumentByName < TouchInstrument
+          argument :input_obj, InstrumentByNameInput, required: true
+        end
+
         field :touch_instrument, mutation: TouchInstrument
+        field :touch_instrument_by_name, mutation: TouchInstrumentByName
 
         class ListInstruments < GraphQL::Schema::Mutation
           argument :list, [InstrumentInput], required: true
@@ -202,6 +218,21 @@ describe GraphQL::Schema::InputObject do
       res = InputObjectPrepareTest::Schema.execute(query_str, context: { multiply_by: 3 })
       expected_obj = [{ a: 1, b2: 2, c: 9, d2: 12, e2: 30, instrument: Jazz::Models::Instrument.new("Drum Kit", "PERCUSSION") }.inspect, "Drum Kit"]
       assert_equal expected_obj, res["data"]["inputs"]
+    end
+
+    it "calls load_ methods for arguments when they're present" do
+      query_str = <<-GRAPHQL
+      mutation {
+        touchInstrumentByName(inputObj: { instrumentName: "Flute" }) {
+          instrumentNameMethod
+          instrumentNameKey
+        }
+      }
+      GRAPHQL
+
+      res = InputObjectPrepareTest::Schema.execute(query_str)
+      assert_equal "Flute", res["data"]["touchInstrumentByName"]["instrumentNameMethod"]
+      assert_equal "Flute", res["data"]["touchInstrumentByName"]["instrumentNameKey"]
     end
 
     it "handles exceptions preparing variable input objects" do

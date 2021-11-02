@@ -40,11 +40,7 @@ module GraphQL
             # With the interpreter, it's done during `coerce_arguments`
             if loads && !arg_defn.from_resolver? && !context.interpreter?
               value = @ruby_style_hash[ruby_kwargs_key]
-              loaded_value = if arg_defn.type.list?
-                value.map { |val| load_application_object(arg_defn, loads, val, context) }
-              else
-                load_application_object(arg_defn, loads, value, context)
-              end
+              loaded_value = arg_defn.load_and_authorize_value(self, value, context)
               maybe_lazies << context.schema.after_lazy(loaded_value) do |loaded_value|
                 overwrite_argument(ruby_kwargs_key, loaded_value)
               end
@@ -71,11 +67,11 @@ module GraphQL
       end
 
       def prepare
-        if context
-          context.schema.after_any_lazies(@maybe_lazies) do
-            object = context[:current_object]
+        if @context
+          @context.schema.after_any_lazies(@maybe_lazies) do
+            object = @context[:current_object]
             # Pass this object's class with `as` so that messages are rendered correctly from inherited validators
-            Schema::Validator.validate!(self.class.validators, object, context, @ruby_style_hash, as: self.class)
+            Schema::Validator.validate!(self.class.validators, object, @context, @ruby_style_hash, as: self.class)
             self
           end
         else
