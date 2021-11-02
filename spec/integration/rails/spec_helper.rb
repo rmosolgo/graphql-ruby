@@ -24,4 +24,6 @@ ensure
   ActiveRecord::Base.logger = prev_logger
 end
 
-ActiveSupport.test_order = :random
+if ActiveSupport.respond_to?(:test_order=)
+  ActiveSupport.test_order = :random
+end
