@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.10.2 (25 Oct 2021)
+
+- Pusher Link: Properly forward network errors to subscribers #3638
+
 # 1.10.1 (22 Sept 2021)
 
 - Sync: Add `--apollo-codegen-json-output=...` option #3616

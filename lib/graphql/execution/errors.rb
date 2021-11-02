@@ -111,6 +111,7 @@ module GraphQL
           runtime_info = ctx.namespace(:interpreter) || {}
           obj = runtime_info[:current_object]
           args = runtime_info[:current_arguments]
+          args = args && args.keyword_arguments
           field = runtime_info[:current_field]
           if obj.is_a?(GraphQL::Schema::Object)
             obj = obj.object

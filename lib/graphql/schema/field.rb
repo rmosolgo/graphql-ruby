@@ -122,6 +122,9 @@ module GraphQL
           else
             kwargs[:type] = type
           end
+          if type.is_a?(Class) && type < GraphQL::Schema::Mutation
+            raise ArgumentError, "Use `field #{name.inspect}, mutation: Mutation, ...` to provide a mutation to this field instead"
+          end
         end
         new(**kwargs, &block)
       end
@@ -561,6 +564,7 @@ module GraphQL
         field_defn
       end
 
+      class MissingReturnTypeError < GraphQL::Error; end
       attr_writer :type
 
       def type
@@ -568,14 +572,21 @@ module GraphQL
           Member::BuildType.parse_type(@function.type, null: false)
         elsif @field
           Member::BuildType.parse_type(@field.type, null: false)
+        elsif @return_type_expr.nil?
+          # Not enough info to determine type
+          message = "Can't determine the return type for #{self.path}"
+          if @resolver_class
+            message += " (it has `resolver: #{@resolver_class}`, consider configuration a `type ...` for that class)"
+          end
+          raise MissingReturnTypeError, message
         else
           Member::BuildType.parse_type(@return_type_expr, null: @return_type_null)
         end
-      rescue GraphQL::Schema::InvalidDocumentError => err
+      rescue GraphQL::Schema::InvalidDocumentError, MissingReturnTypeError => err
         # Let this propagate up
         raise err
       rescue StandardError => err
-        raise ArgumentError, "Failed to build return type for #{@owner.graphql_name}.#{name} from #{@return_type_expr.inspect}: (#{err.class}) #{err.message}", err.backtrace
+        raise MissingReturnTypeError, "Failed to build return type for #{@owner.graphql_name}.#{name} from #{@return_type_expr.inspect}: (#{err.class}) #{err.message}", err.backtrace
       end
 
       def visible?(context)
@@ -599,10 +610,36 @@ module GraphQL
           # The resolver will check itself during `resolve()`
           @resolver_class.authorized?(object, context)
         else
+          if (arg_values = context[:current_arguments])
+            # ^^ that's provided by the interpreter at runtime, and includes info about whether the default value was used or not.
+            using_arg_values = true
+            arg_values = arg_values.argument_values
+          else
+            arg_values = args
+            using_arg_values = false
+          end
           # Faster than `.any?`
           arguments.each_value do |arg|
-            if args.key?(arg.keyword) && !arg.authorized?(object, args[arg.keyword], context)
-              return false
+            arg_key = arg.keyword
+            if arg_values.key?(arg_key)
+              arg_value = arg_values[arg_key]
+              if using_arg_values
+                if arg_value.default_used?
+                  # pass -- no auth required for default used
+                  next
+                else
+                  application_arg_value = arg_value.value
+                  if application_arg_value.is_a?(GraphQL::Execution::Interpreter::Arguments)
+                    application_arg_value.keyword_arguments
+                  end
+                end
+              else
+                application_arg_value = arg_value
+              end
+
+              if !arg.authorized?(object, application_arg_value, context)
+                return false
+              end
             end
           end
           true
@@ -659,8 +696,7 @@ module GraphQL
             if is_authorized
               public_send_field(object, args, ctx)
             else
-              err = GraphQL::UnauthorizedFieldError.new(object: application_object, type: object.class, context: ctx, field: self)
-              ctx.schema.unauthorized_field(err)
+              raise GraphQL::UnauthorizedFieldError.new(object: application_object, type: object.class, context: ctx, field: self)
             end
           end
         rescue GraphQL::UnauthorizedFieldError => err

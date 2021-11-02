@@ -107,6 +107,8 @@ module GraphQL
         [*batch_args, **batch_kwargs]
       end
 
+      attr_reader :pending_keys
+
       private
 
       # Reads and returns the result for the key from the internal cache, or raises an error if the result was an error
