@@ -302,21 +302,23 @@ module GraphQL
               if type.list?
                 loaded_values = custom_value.each_with_index.map { |custom_val, idx|
                   id = coerced_value[idx]
-                  load_method_owner.authorize_application_object(self, loads, id, context, custom_val)
+                  load_method_owner.authorize_application_object(self, id, context, custom_val)
                 }
                 context.schema.after_any_lazies(loaded_values, &:itself)
               else
-                load_method_owner.authorize_application_object(self, loads, coerced_value, context, custom_loaded_value)
+                load_method_owner.authorize_application_object(self, coerced_value, context, custom_loaded_value)
               end
             else
               custom_value
             end
           end
-        elsif loads && type.list?
-          loaded_values = coerced_value.map { |val| load_method_owner.load_and_authorize_application_object(self, loads, val, context) }
-          context.schema.after_any_lazies(loaded_values, &:itself)
         elsif loads
-          load_method_owner.load_and_authorize_application_object(self, loads, coerced_value, context)
+          if type.list?
+            loaded_values = coerced_value.map { |val| load_method_owner.load_and_authorize_application_object(self, val, context) }
+            context.schema.after_any_lazies(loaded_values, &:itself)
+          else
+            load_method_owner.load_and_authorize_application_object(self, coerced_value, context)
+          end
         else
           coerced_value
         end

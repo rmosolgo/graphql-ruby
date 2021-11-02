@@ -50,9 +50,8 @@ module GraphQL
               class_eval <<-RUBY, __FILE__, __LINE__ + 1
               def #{method_owner}load_#{arg_defn.keyword}(values, context = nil)
                 argument = get_argument("#{arg_defn.graphql_name}")
-                lookup_as_type = argument.loads
                 (context || self.context).schema.after_lazy(values) do |values2|
-                  GraphQL::Execution::Lazy.all(values2.map { |value| load_application_object(argument, lookup_as_type, value, context || self.context) })
+                  GraphQL::Execution::Lazy.all(values2.map { |value| load_application_object(argument, value, context || self.context) })
                 end
               end
               RUBY
@@ -60,8 +59,7 @@ module GraphQL
               class_eval <<-RUBY, __FILE__, __LINE__ + 1
               def #{method_owner}load_#{arg_defn.keyword}(value, context = nil)
                 argument = get_argument("#{arg_defn.graphql_name}")
-                lookup_as_type = argument.loads
-                load_application_object(argument, lookup_as_type, value, context || self.context)
+                load_application_object(argument, value, context || self.context)
               end
               RUBY
             else
@@ -220,21 +218,20 @@ module GraphQL
             context.schema.object_from_id(id, context)
           end
 
-          def load_application_object(argument, lookup_as_type, id, context)
+          def load_application_object(argument, id, context)
             # See if any object can be found for this ID
             if id.nil?
               return nil
             end
-            object_from_id(lookup_as_type, id, context)
+            object_from_id(argument.loads, id, context)
           end
 
-          def load_and_authorize_application_object(argument, lookup_as_type, id, context)
-            loaded_application_object = load_application_object(argument, lookup_as_type, id, context)
-            authorize_application_object(argument, lookup_as_type, id, context, loaded_application_object)
+          def load_and_authorize_application_object(argument, id, context)
+            loaded_application_object = load_application_object(argument, id, context)
+            authorize_application_object(argument, id, context, loaded_application_object)
           end
 
-          # TODO refactor away lookup_as_type ?
-          def authorize_application_object(argument, lookup_as_type, id, context, loaded_application_object)
+          def authorize_application_object(argument, id, context, loaded_application_object)
             context.schema.after_lazy(loaded_application_object) do |application_object|
               if application_object.nil?
                 err = GraphQL::LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
@@ -242,9 +239,9 @@ module GraphQL
               end
               # Double-check that the located object is actually of this type
               # (Don't want to allow arbitrary access to objects this way)
-              resolved_application_object_type = context.schema.resolve_type(lookup_as_type, application_object, context)
+              resolved_application_object_type = context.schema.resolve_type(argument.loads, application_object, context)
               context.schema.after_lazy(resolved_application_object_type) do |application_object_type|
-                possible_object_types = context.warden.possible_types(lookup_as_type)
+                possible_object_types = context.warden.possible_types(argument.loads)
                 if !possible_object_types.include?(application_object_type)
                   err = GraphQL::LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
                   load_application_object_failed(err)

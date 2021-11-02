@@ -41,9 +41,9 @@ module GraphQL
             if loads && !arg_defn.from_resolver? && !context.interpreter?
               value = @ruby_style_hash[ruby_kwargs_key]
               loaded_value = if arg_defn.type.list?
-                value.map { |val| load_application_object(arg_defn, loads, val, context) }
+                value.map { |val| load_application_object(arg_defn, val, context) }
               else
-                load_application_object(arg_defn, loads, value, context)
+                load_application_object(arg_defn, value, context)
               end
               maybe_lazies << context.schema.after_lazy(loaded_value) do |loaded_value|
                 overwrite_argument(ruby_kwargs_key, loaded_value)
