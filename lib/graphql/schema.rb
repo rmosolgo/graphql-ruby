@@ -998,7 +998,26 @@ module GraphQL
       # @return [Hash<String => Class>] A dictionary of type classes by their GraphQL name
       # @see get_type Which is more efficient for finding _one type_ by name, because it doesn't merge hashes.
       def types(context = GraphQL::Query::NullContext)
-        non_introspection_types.merge(introspection_system.types)
+        all_types = non_introspection_types.merge(introspection_system.types)
+        visible_types = {}
+        all_types.each do |k, v|
+          visible_types[k] =if v.is_a?(Array)
+            visible_t = nil
+            v.each do |t|
+              if t.visible?(context)
+                if visible_t.nil?
+                  visible_t = t
+                else
+                  raise DuplicateNamesError, "Found two visible type defintions for `#{k}`: #{visible_t.inspect}, #{t.inspect}"
+                end
+              end
+            end
+            visible_t
+          else
+            v
+          end
+        end
+        visible_types
       end
 
       # @param type_name [String]
@@ -1009,7 +1028,17 @@ module GraphQL
         when nil
           nil
         when Array
-          local_entry.find { |type_defn| type_defn.visible?(context) }
+          visible_t = nil
+          local_entry.each do |t|
+            if t.visible?(context)
+              if visible_t.nil?
+                visible_t = t
+              else
+                raise DuplicateNamesError, "Found two visible type defintions for `#{type_name}`: #{visible_t.inspect}, #{t.inspect}"
+              end
+            end
+          end
+          visible_t
         when Module
           local_entry
         else
@@ -1751,8 +1780,11 @@ module GraphQL
             case types_entry
             when Array
               prev_entries.concat(types_entry)
+              prev_entries.uniq! # in case any are being re-visited
             when Module
-              prev_entries << types_entry
+              if !prev_entries.include?(types_entry)
+                prev_entries << types_entry
+              end
             else
               raise "Invariant: unexpected types_entry at #{name} when adding #{t.inspect}"
             end

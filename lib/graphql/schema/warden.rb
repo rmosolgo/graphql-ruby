@@ -274,6 +274,7 @@ module GraphQL
         return @reachable_type_set if defined?(@reachable_type_set)
 
         @reachable_type_set = Set.new
+        rt_hash = {}
 
         unvisited_types = []
         ['query', 'mutation', 'subscription'].each do |op_name|
@@ -300,6 +301,10 @@ module GraphQL
         until unvisited_types.empty?
           type = unvisited_types.pop
           if @reachable_type_set.add?(type)
+            type_by_name = rt_hash[type.graphql_name] ||= type
+            if type_by_name != type
+              raise DuplicateNamesError, "Found two visible type defintions for `#{type.graphql_name}`: #{type.inspect}, #{type_by_name.inspect}"
+            end
             if type.kind.input_object?
               # recurse into visible arguments
               arguments(type).each do |argument|

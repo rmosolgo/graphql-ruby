@@ -54,6 +54,8 @@ describe GraphQL::Schema::Member::HasFields do
 
     class MoneyScalar < BaseScalar
       graphql_name "Money"
+
+      self.future_schema = false
     end
 
     class LegacyMoney < MoneyScalar
@@ -76,6 +78,8 @@ describe GraphQL::Schema::Member::HasFields do
         end
         value
       end
+
+      self.future_schema = false
     end
 
     class Scream < BaseScalar
@@ -747,6 +751,71 @@ GRAPHQL
           argument :a, Int, required: false, allow_for: [2, 3], description: "second definition"
         end
       end
+
+      class DuplicateNameObject1 < GraphQL::Schema::Object
+        graphql_name("DuplicateNameObject")
+        description "first definition"
+
+        field :f, String, null: false
+
+        def self.visible?(context)
+          (context[:allowed_for] == 1 || context[:allowed_for] == 2) && super
+        end
+      end
+
+      class DuplicateNameObject2 < GraphQL::Schema::Object
+        graphql_name("DuplicateNameObject")
+        description "second definition"
+
+        field :f, String, null: false
+
+        def self.visible?(context)
+          (context[:allowed_for] == 2 || context[:allowed_for] == 3) && super
+        end
+      end
+    end
+
+    it "raises when a given context would permit multiple types with the same name" do
+      query_type = Class.new(GraphQL::Schema::Object) {
+        graphql_name("Query")
+        field(:f1, DuplicateNames::DuplicateNameObject1, null: false)
+        field(:f2, DuplicateNames::DuplicateNameObject2, null: false)
+      }
+      schema = Class.new(GraphQL::Schema) { query(query_type) }
+      assert_equal "first definition", schema.types({ allowed_for: 1 })["DuplicateNameObject"].description
+      assert_equal "second definition", schema.get_type("DuplicateNameObject", { allowed_for: 3 }).description
+      assert_includes schema.to_definition(context: { allowed_for: 1 }), "first definition"
+      refute_includes schema.to_definition(context: { allowed_for: 1 }), "second definition"
+      assert_includes schema.to_definition(context: { allowed_for: 3 }), "second definition"
+      refute_includes schema.to_definition(context: { allowed_for: 3 }), "first definition"
+
+      assert_includes schema.to_json(context: { allowed_for: 1 }), "first definition"
+      refute_includes schema.to_json(context: { allowed_for: 1 }), "second definition"
+      assert_includes schema.to_json(context: { allowed_for: 3 }), "second definition"
+      refute_includes schema.to_json(context: { allowed_for: 3 }), "first definition"
+
+
+      err = assert_raises GraphQL::Schema::DuplicateNamesError do
+        schema.types({ allowed_for: 2 })
+      end
+      expected_message = "Found two visible type defintions for `DuplicateNameObject`: DuplicateNames::DuplicateNameObject1, DuplicateNames::DuplicateNameObject2"
+      assert_equal expected_message, err.message
+
+      err2 = assert_raises GraphQL::Schema::DuplicateNamesError do
+        schema.get_type("DuplicateNameObject", { allowed_for: 2 })
+      end
+
+      assert_equal expected_message, err2.message
+
+      err3 = assert_raises GraphQL::Schema::DuplicateNamesError do
+        schema.to_definition(context: { allowed_for: 2 })
+      end
+      assert_equal expected_message, err3.message
+
+      err4 = assert_raises GraphQL::Schema::DuplicateNamesError do
+        schema.to_json(context: { allowed_for: 2 })
+      end
+      assert_equal expected_message, err4.message
     end
 
     it "raises when a given context would permit multiple enum values with the same name" do
