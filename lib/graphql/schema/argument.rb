@@ -264,33 +264,8 @@ module GraphQL
         # If it _is_ lazy, then we write the lazy to the hash, then update it later
         argument_values[arg_key] = context.schema.after_lazy(coerced_value) do |resolved_coerced_value|
           if loads && !from_resolver?
-            arg_load_method = "load_#{keyword}"
-            loaded_value = if owner.respond_to?(arg_load_method)
-              custom_loaded_value = if owner.is_a?(Class)
-                owner.public_send(arg_load_method, resolved_coerced_value, context)
-              else
-                owner.public_send(arg_load_method, resolved_coerced_value)
-              end
-              context.schema.after_lazy(custom_loaded_value) do |custom_value|
-                if type.list?
-                  loaded_values = custom_value.each_with_index.map { |custom_val, idx|
-                    id = resolved_coerced_value[idx]
-                    owner.authorize_application_object(self, loads, id, context, custom_val)
-                  }
-                  context.schema.after_any_lazies(loaded_values, &:itself)
-                else
-                  context.query.with_error_handling do
-                    owner.authorize_application_object(self, loads, resolved_coerced_value, context, custom_loaded_value)
-                  end
-                end
-              end
-            elsif type.list?
-              loaded_values = resolved_coerced_value.map { |val| owner.load_and_authorize_application_object(self, loads, val, context) }
-              context.schema.after_any_lazies(loaded_values, &:itself)
-            else
-              context.query.with_error_handling do
-                owner.load_and_authorize_application_object(self, loads, resolved_coerced_value, context)
-              end
+            loaded_value = context.query.with_error_handling do
+              load_and_authorize_value(owner, coerced_value, context)
             end
           end
 
@@ -308,6 +283,42 @@ module GraphQL
               default_used: default_used,
             )
           end
+        end
+      end
+
+      def load_and_authorize_value(load_method_owner, coerced_value, context)
+        if coerced_value.nil?
+          return nil
+        end
+        arg_load_method = "load_#{keyword}"
+        if load_method_owner.respond_to?(arg_load_method)
+          custom_loaded_value = if load_method_owner.is_a?(Class)
+            load_method_owner.public_send(arg_load_method, coerced_value, context)
+          else
+            load_method_owner.public_send(arg_load_method, coerced_value)
+          end
+          context.schema.after_lazy(custom_loaded_value) do |custom_value|
+            if loads
+              if type.list?
+                loaded_values = custom_value.each_with_index.map { |custom_val, idx|
+                  id = coerced_value[idx]
+                  load_method_owner.authorize_application_object(self, loads, id, context, custom_val)
+                }
+                context.schema.after_any_lazies(loaded_values, &:itself)
+              else
+                load_method_owner.authorize_application_object(self, loads, coerced_value, context, custom_loaded_value)
+              end
+            else
+              custom_value
+            end
+          end
+        elsif loads && type.list?
+          loaded_values = coerced_value.map { |val| load_method_owner.load_and_authorize_application_object(self, loads, val, context) }
+          context.schema.after_any_lazies(loaded_values, &:itself)
+        elsif loads
+          load_method_owner.load_and_authorize_application_object(self, loads, coerced_value, context)
+        else
+          coerced_value
         end
       end
 

@@ -233,6 +233,7 @@ module GraphQL
             authorize_application_object(argument, lookup_as_type, id, context, loaded_application_object)
           end
 
+          # TODO refactor away lookup_as_type ?
           def authorize_application_object(argument, lookup_as_type, id, context, loaded_application_object)
             context.schema.after_lazy(loaded_application_object) do |application_object|
               if application_object.nil?

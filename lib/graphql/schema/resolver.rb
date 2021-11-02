@@ -169,33 +169,14 @@ module GraphQL
         args.each do |key, value|
           arg_defn = @arguments_by_keyword[key]
           if arg_defn
-            if value.nil?
-              prepared_args[key] = value
-            else
-              loaded_value = public_send("load_#{arg_defn.keyword}", value)
-              prepped_value = prepared_args[key] = if arg_defn.loads
-                if arg_defn.type.list?
-                  context.schema.after_lazy(loaded_value) do |resolved_value|
-                    rv = resolved_value.each_with_index.map do |resolved_item, idx|
-                      id = value[idx]
-                      authorize_application_object(arg_defn, arg_defn.loads, id, context, resolved_item)
-                    end
-                    context.schema.after_any_lazies(rv, &:itself)
-                  end
-                else
-                  authorize_application_object(arg_defn, arg_defn.loads, value, context, loaded_value)
-                end
-              else
-                loaded_value
-              end
-              if context.schema.lazy?(prepped_value)
-                prepare_lazies << context.schema.after_lazy(prepped_value) do |finished_prepped_value|
-                  prepared_args[key] = finished_prepped_value
-                end
+            prepped_value = prepared_args[key] = arg_defn.load_and_authorize_value(self, value, context)
+            if context.schema.lazy?(prepped_value)
+              prepare_lazies << context.schema.after_lazy(prepped_value) do |finished_prepped_value|
+                prepared_args[key] = finished_prepped_value
               end
             end
           else
-            # These are `extras: [...]`
+            # these are `extras:`
             prepared_args[key] = value
           end
         end
