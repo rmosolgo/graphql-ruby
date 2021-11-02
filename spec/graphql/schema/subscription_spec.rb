@@ -61,7 +61,7 @@ describe GraphQL::Schema::Subscription do
         if context[:viewer] == user
           # don't update for one's own toots.
           # (IRL it would make more sense to implement this in `#subscribe`)
-          :no_update
+          NO_UPDATE
         else
           # This assumes that trigger object can fulfill `{toot:, user:}`,
           # for testing that the default implementation is `return object`
@@ -385,7 +385,7 @@ describe GraphQL::Schema::Subscription do
       assert_equal [{"handle" => "eileencodes"}, {"handle" => "tenderlove"}], update["data"]["usersJoined"]["users"]
     end
 
-    it "skips the update if `:no_update` is returned, but updates other subscribers" do
+    it "skips the update if `NO_UPDATE` is returned, but updates other subscribers" do
       query_str = <<-GRAPHQL
       subscription {
         tootWasTooted(handle: "matz") {
@@ -407,7 +407,7 @@ describe GraphQL::Schema::Subscription do
       assert_equal "Merry Christmas, here's a new Ruby version", mailbox1.first["data"]["tootWasTooted"]["toot"]["body"]
       # But not matz:
       assert_equal [], mailbox2
-      # `:no_update` doesn't cause an unsubscribe
+      # `NO_UPDATE` doesn't cause an unsubscribe
       assert_equal 2, in_memory_subscription_count
     end
 
