@@ -40,7 +40,6 @@ module GraphQL
         self.class.arguments.each do |name, arg|
           @arguments_by_keyword[arg.keyword] = arg
         end
-        @arguments_loads_as_type = self.class.arguments_loads_as_type
         @prepared_arguments = nil
       end
 
@@ -170,18 +169,14 @@ module GraphQL
         args.each do |key, value|
           arg_defn = @arguments_by_keyword[key]
           if arg_defn
-            if value.nil?
-              prepared_args[key] = value
-            else
-              prepped_value = prepared_args[key] = load_argument(key, value)
-              if context.schema.lazy?(prepped_value)
-                prepare_lazies << context.schema.after_lazy(prepped_value) do |finished_prepped_value|
-                  prepared_args[key] = finished_prepped_value
-                end
+            prepped_value = prepared_args[key] = arg_defn.load_and_authorize_value(self, value, context)
+            if context.schema.lazy?(prepped_value)
+              prepare_lazies << context.schema.after_lazy(prepped_value) do |finished_prepped_value|
+                prepared_args[key] = finished_prepped_value
               end
             end
           else
-            # These are `extras: [...]`
+            # these are `extras:`
             prepared_args[key] = value
           end
         end
@@ -194,8 +189,8 @@ module GraphQL
         end
       end
 
-      def load_argument(name, value)
-        public_send("load_#{name}", value)
+      def get_argument(name)
+        self.class.get_argument(name)
       end
 
       class << self
@@ -334,47 +329,9 @@ module GraphQL
         # also add some preparation hook methods which will be used for this argument
         # @see {GraphQL::Schema::Argument#initialize} for the signature
         def argument(*args, **kwargs, &block)
-          loads = kwargs[:loads]
           # Use `from_resolver: true` to short-circuit the InputObject's own `loads:` implementation
           # so that we can support `#load_{x}` methods below.
-          arg_defn = super(*args, from_resolver: true, **kwargs)
-          own_arguments_loads_as_type[arg_defn.keyword] = loads if loads
-
-          if !method_defined?(:"load_#{arg_defn.keyword}")
-            if loads && arg_defn.type.list?
-              class_eval <<-RUBY, __FILE__, __LINE__ + 1
-              def load_#{arg_defn.keyword}(values)
-                argument = @arguments_by_keyword[:#{arg_defn.keyword}]
-                lookup_as_type = @arguments_loads_as_type[:#{arg_defn.keyword}]
-                context.schema.after_lazy(values) do |values2|
-                  GraphQL::Execution::Lazy.all(values2.map { |value| load_application_object(argument, lookup_as_type, value, context) })
-                end
-              end
-              RUBY
-            elsif loads
-              class_eval <<-RUBY, __FILE__, __LINE__ + 1
-              def load_#{arg_defn.keyword}(value)
-                argument = @arguments_by_keyword[:#{arg_defn.keyword}]
-                lookup_as_type = @arguments_loads_as_type[:#{arg_defn.keyword}]
-                load_application_object(argument, lookup_as_type, value, context)
-              end
-              RUBY
-            else
-              class_eval <<-RUBY, __FILE__, __LINE__ + 1
-              def load_#{arg_defn.keyword}(value)
-                value
-              end
-              RUBY
-            end
-          end
-
-          arg_defn
-        end
-
-        # @api private
-        def arguments_loads_as_type
-          inherited_lookups = superclass.respond_to?(:arguments_loads_as_type) ? superclass.arguments_loads_as_type : {}
-          inherited_lookups.merge(own_arguments_loads_as_type)
+          super(*args, from_resolver: true, **kwargs)
         end
 
         # Registers new extension
@@ -409,10 +366,6 @@ module GraphQL
 
         def own_extensions
           @own_extensions
-        end
-
-        def own_arguments_loads_as_type
-          @own_arguments_loads_as_type ||= {}
         end
       end
     end
