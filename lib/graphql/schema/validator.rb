@@ -34,6 +34,12 @@ module GraphQL
         string
       end
 
+      # @return [Boolean] `true` if `value` is `nil` and this validator has `allow_null: true` or if value is `.blank?` and this validator has `allow_blank: true`
+      def permitted_empty_value?(value)
+        (value.nil? && @allow_null) ||
+          (@allow_blank && value.respond_to?(:blank?) && value.blank?)
+      end
+
       # @param schema_member [GraphQL::Schema::Field, GraphQL::Schema::Argument, Class<GraphQL::Schema::InputObject>]
       # @param validates_hash [Hash{Symbol => Hash}, Hash{Class => Hash} nil] A configuration passed as `validates:`
       # @return [Array<Validator>]
@@ -117,19 +123,18 @@ module GraphQL
         validators.each do |validator|
           validated = as || validator.validated
           errors = validator.validate(object, context, value)
-          if errors
-            if (errors.is_a?(Array) && errors != EMPTY_ARRAY) ||
+          if errors &&
+              (errors.is_a?(Array) && errors != EMPTY_ARRAY) ||
               (errors.is_a?(String))
-              if all_errors.frozen? # It's empty
-                all_errors = []
-              end
-              interpolation_vars = { validated: validated.graphql_name }
-              if errors.is_a?(String)
-                all_errors << (errors % interpolation_vars)
-              else
-                errors = errors.map { |e| e % interpolation_vars }
-                all_errors.concat(errors)
-              end
+            if all_errors.frozen? # It's empty
+              all_errors = []
+            end
+            interpolation_vars = { validated: validated.graphql_name }
+            if errors.is_a?(String)
+              all_errors << (errors % interpolation_vars)
+            else
+              errors = errors.map { |e| e % interpolation_vars }
+              all_errors.concat(errors)
             end
           end
         end
@@ -138,23 +143,6 @@ module GraphQL
           raise ValidationFailedError.new(errors: all_errors)
         end
         nil
-      end
-    end
-
-    class PresentValueValidator < Validator
-      def validate(object, context, value)
-        if value.nil?
-          if @allow_null
-            # pass
-          else
-            # don't want `nil` to fall to the `elsif` below, so handle it here
-            validate_present_value(object, context, value)
-          end
-        elsif @allow_blank && value.respond_to?(:blank?) && value.blank?
-          # pass
-        else
-          validate_present_value(object, context, value)
-        end
       end
     end
   end

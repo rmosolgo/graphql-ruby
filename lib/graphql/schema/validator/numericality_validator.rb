@@ -15,7 +15,7 @@ module GraphQL
       #
       #   argument :items_count, Integer, required: true, validates: { numericality: { greater_than_or_equal_to: 0 } }
       #
-      class NumericalityValidator < PresentValueValidator
+      class NumericalityValidator < Validator
         # @param greater_than [Integer]
         # @param greater_than_or_equal_to [Integer]
         # @param less_than [Integer]
@@ -50,8 +50,10 @@ module GraphQL
           super(**default_options)
         end
 
-        def validate_present_value(object, context, value)
-          if value.nil? # @allow_null is handled in the parent class
+        def validate(object, context, value)
+          if permitted_empty_value?(value)
+            # pass in this case
+          elsif value.nil? # @allow_null is handled in the parent class
             @null_message
           elsif @greater_than && value <= @greater_than
             partial_format(@message, { comparison: "greater than", target: @greater_than })
