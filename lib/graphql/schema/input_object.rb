@@ -40,11 +40,7 @@ module GraphQL
             # With the interpreter, it's done during `coerce_arguments`
             if loads && !arg_defn.from_resolver? && !context.interpreter?
               value = @ruby_style_hash[ruby_kwargs_key]
-              loaded_value = if arg_defn.type.list?
-                value.map { |val| load_application_object(arg_defn, val, context) }
-              else
-                load_application_object(arg_defn, value, context)
-              end
+              loaded_value = arg_defn.load_and_authorize_value(self, value, context)
               maybe_lazies << context.schema.after_lazy(loaded_value) do |loaded_value|
                 overwrite_argument(ruby_kwargs_key, loaded_value)
               end
