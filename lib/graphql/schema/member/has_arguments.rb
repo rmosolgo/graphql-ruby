@@ -78,18 +78,18 @@ module GraphQL
         end
 
         def all_argument_definitions
-          all_defns = []
           if self.is_a?(Class)
-            for ancestor in ancestors
+            all_defns = {}
+            ancestors.reverse_each do |ancestor|
               if ancestor.respond_to?(:own_arguments)
-                all_defns.concat(ancestor.own_arguments.values)
+                all_defns.merge!(ancestor.own_arguments)
               end
             end
           else
-            all_defns = own_arguments.values
+            all_defns = own_arguments
           end
+          all_defns = all_defns.values
           all_defns.flatten!
-          all_defns.uniq!
           all_defns
         end
 
@@ -105,7 +105,17 @@ module GraphQL
               nil
             end
           when Array
-            arguments_entry.find { |a| a.visible?(context) }
+            visible_arg = nil
+            arguments_entry.each do |a|
+              if a.visible?(context)
+                if visible_arg.nil?
+                  visible_arg = a
+                else
+                  raise Schema::DuplicateNamesError, "Found two visible argument defintions for `#{a.path}`: #{visible_arg.inspect}, #{a.inspect}"
+                end
+              end
+            end
+            visible_arg
           else
             raise "Invariant: unexpected arguments entry: #{arguments_entry.inspect}"
           end

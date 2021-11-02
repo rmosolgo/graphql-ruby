@@ -164,9 +164,9 @@ describe GraphQL::Schema::Member::HasFields do
 
     class Add < BaseResolver
       argument :left, Float, required: true, future_schema: true
-      argument :left, Int, required: true
+      argument :left, Int, required: true, future_schema: false
       argument :right, Float, required: true, future_schema: true
-      argument :right, Int, required: true
+      argument :right, Int, required: true, future_schema: false
 
       type String, null: false
 
@@ -189,7 +189,7 @@ describe GraphQL::Schema::Member::HasFields do
 
       field :thing, Thing, null: true do
         argument :id, ID, required: true, future_schema: true
-        argument :id, Int, required: true
+        argument :id, Int, required: true, future_schema: false
       end
 
       def thing(id:)
@@ -222,7 +222,7 @@ describe GraphQL::Schema::Member::HasFields do
       field :yell, String, null: false do
         # TODO: can I get rid of the requirement for `future_schema: true` here since `Scream.future_schema` is true?
         argument :scream, Scream, required: true, future_schema: true
-        argument :scream, LegacyScream, required: true
+        argument :scream, LegacyScream, required: true, future_schema: false
       end
 
       def yell(scream:)
@@ -237,7 +237,7 @@ describe GraphQL::Schema::Member::HasFields do
 
     class UpdateThing < BaseMutation
       argument :thing_id, ID, required: true, future_schema: true
-      argument :thing_id, Int, required: true
+      argument :thing_id, Int, required: true, future_schema: false
       argument :price, Int, required: true
 
       field :thing, Thing, null: false, future_schema: true, method: :custom_thing
@@ -702,8 +702,8 @@ GRAPHQL
   end
 
   describe "duplicate values for a given name" do
-    class DuplicateFieldObject < GraphQL::Schema::Object
-      class BaseField < GraphQL::Schema::Field
+    module DuplicateNames
+      module HasAllowedFor
         def initialize(*args, allow_for: nil, **kwargs, &block)
           super(*args, **kwargs, &block)
           @allow_for = allow_for
@@ -713,27 +713,93 @@ GRAPHQL
           super && @allow_for ? @allow_for.include?(context[:allowed_for]) : true
         end
       end
-      field_class(BaseField)
 
-      field :f, String, null: true, allow_for: [1, 2], description: "first definition"
-      field :f, Int, null: true, allow_for: [2, 3], description: "second definition"
+      class BaseArgument < GraphQL::Schema::Argument
+        include HasAllowedFor
+      end
+
+      class BaseField < GraphQL::Schema::Field
+        include HasAllowedFor
+        argument_class(BaseArgument)
+      end
+
+      class DuplicateFieldObject < GraphQL::Schema::Object
+        field_class(BaseField)
+        field :f, String, null: true, allow_for: [1, 2], description: "first definition"
+        field :f, Int, null: true, allow_for: [2, 3], description: "second definition"
+      end
+
+      class DuplicateArgumentObject < GraphQL::Schema::Object
+        field_class BaseField
+
+        field :multi_arg, String, null: true do
+          argument :a, String, required: false, allow_for: [1, 2], description: "first definition"
+          argument :a, Int, required: false, allow_for: [2, 3], description: "second definition"
+        end
+      end
     end
 
-    it "raises when a given context would permit multiple definitions" do
-      schema = Class.new(GraphQL::Schema) { query(DuplicateFieldObject) }
-      assert_equal "first definition", DuplicateFieldObject.get_field("f", { allowed_for: 1 }).description
-      assert_equal "second definition", DuplicateFieldObject.fields({ allowed_for: 3 })["f"].description
+    it "raises when a given context would permit multiple argument definitions" do
+      schema = Class.new(GraphQL::Schema) { query(DuplicateNames::DuplicateArgumentObject) }
+      field = DuplicateNames::DuplicateArgumentObject.get_field("multiArg")
+
+      assert_equal "first definition", field.get_argument("a", { allowed_for: 1 }).description
+      assert_equal "second definition", field.arguments({ allowed_for: 3 })["a"].description
       assert_includes schema.to_definition(context: { allowed_for: 1 }), "first definition"
+      refute_includes schema.to_definition(context: { allowed_for: 1 }), "second definition"
       assert_includes schema.to_definition(context: { allowed_for: 3 }), "second definition"
+      refute_includes schema.to_definition(context: { allowed_for: 3 }), "first definition"
+
+      assert_includes schema.to_json(context: { allowed_for: 1 }), "first definition"
+      refute_includes schema.to_json(context: { allowed_for: 1 }), "second definition"
+      assert_includes schema.to_json(context: { allowed_for: 3 }), "second definition"
+      refute_includes schema.to_json(context: { allowed_for: 3 }), "first definition"
 
       err = assert_raises GraphQL::Schema::DuplicateNamesError do
-        DuplicateFieldObject.fields({ allowed_for: 2 })
+        field.arguments({ allowed_for: 2 })
       end
-      expected_message = "Found two visible field defintions for `DuplicateFieldObject.f`: #<DuplicateFieldObject::BaseField DuplicateFieldObject.f: String>, #<DuplicateFieldObject::BaseField DuplicateFieldObject.f: Int>"
+      expected_message = "Found two visible argument defintions for `DuplicateArgumentObject.multiArg.a`: #<DuplicateNames::BaseArgument DuplicateArgumentObject.multiArg.a: String (\"first definition\")>, #<DuplicateNames::BaseArgument DuplicateArgumentObject.multiArg.a: Int (\"second definition\")>"
       assert_equal expected_message, err.message
 
       err2 = assert_raises GraphQL::Schema::DuplicateNamesError do
-        DuplicateFieldObject.get_field("f", { allowed_for: 2 })
+        field.get_argument("a", { allowed_for: 2 })
+      end
+
+      assert_equal expected_message, err2.message
+
+      err3 = assert_raises GraphQL::Schema::DuplicateNamesError do
+        schema.to_definition(context: { allowed_for: 2 })
+      end
+      assert_equal expected_message, err3.message
+
+      err4 = assert_raises GraphQL::Schema::DuplicateNamesError do
+        schema.to_json(context: { allowed_for: 2 })
+      end
+      assert_equal expected_message, err4.message
+    end
+
+    it "raises when a given context would permit multiple field definitions" do
+      schema = Class.new(GraphQL::Schema) { query(DuplicateNames::DuplicateFieldObject) }
+      assert_equal "first definition", DuplicateNames::DuplicateFieldObject.get_field("f", { allowed_for: 1 }).description
+      assert_equal "second definition", DuplicateNames::DuplicateFieldObject.fields({ allowed_for: 3 })["f"].description
+      assert_includes schema.to_definition(context: { allowed_for: 1 }), "first definition"
+      refute_includes schema.to_definition(context: { allowed_for: 1 }), "second definition"
+      assert_includes schema.to_definition(context: { allowed_for: 3 }), "second definition"
+      refute_includes schema.to_definition(context: { allowed_for: 3 }), "first definition"
+
+      assert_includes schema.to_json(context: { allowed_for: 1 }), "first definition"
+      refute_includes schema.to_json(context: { allowed_for: 1 }), "second definition"
+      assert_includes schema.to_json(context: { allowed_for: 3 }), "second definition"
+      refute_includes schema.to_json(context: { allowed_for: 3 }), "first definition"
+
+      err = assert_raises GraphQL::Schema::DuplicateNamesError do
+        DuplicateNames::DuplicateFieldObject.fields({ allowed_for: 2 })
+      end
+      expected_message = "Found two visible field defintions for `DuplicateFieldObject.f`: #<DuplicateNames::BaseField DuplicateFieldObject.f: String>, #<DuplicateNames::BaseField DuplicateFieldObject.f: Int>"
+      assert_equal expected_message, err.message
+
+      err2 = assert_raises GraphQL::Schema::DuplicateNamesError do
+        DuplicateNames::DuplicateFieldObject.get_field("f", { allowed_for: 2 })
       end
 
       assert_equal expected_message, err2.message

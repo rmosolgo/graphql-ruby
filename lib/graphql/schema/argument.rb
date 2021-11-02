@@ -90,6 +90,10 @@ module GraphQL
         end
       end
 
+      def inspect
+        "#<#{self.class} #{path}: #{type.to_type_signature} #{description ? "(#{description.inspect})" : ""}>"
+      end
+
       # @return [Object] the value used when the client doesn't provide a value for this argument
       attr_reader :default_value
 
