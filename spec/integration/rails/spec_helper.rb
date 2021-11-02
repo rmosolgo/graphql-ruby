@@ -23,3 +23,5 @@ def with_active_record_log
 ensure
   ActiveRecord::Base.logger = prev_logger
 end
+
+ActiveSupport.test_order = :random
