@@ -48,10 +48,17 @@ module GraphQL
           EMPTY_ARRAY
         else
           validates_hash = validates_hash.dup
-          default_options = {
-            allow_null: validates_hash.delete(:allow_null),
-            allow_blank: validates_hash.delete(:allow_blank),
-          }.compact
+          allow_null = validates_hash.delete(:allow_null)
+          allow_blank = validates_hash.delete(:allow_blank)
+
+          # This could be {...}.compact on Ruby 2.4+
+          default_options = {}
+          if !allow_null.nil?
+            default_options[:allow_null] = allow_null
+          end
+          if !allow_blank.nil?
+            default_options[:allow_blank] = allow_blank
+          end
 
           # allow_nil or allow_blank are the _only_ validations:
           if validates_hash.empty?
