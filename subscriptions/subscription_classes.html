@@ -306,20 +306,20 @@
 <ul>
   <li>Unsubscribe the client with <code class="language-plaintext highlighter-rouge">unsubscribe</code></li>
   <li>Return a value with <code class="language-plaintext highlighter-rouge">super</code> (which returns <code class="language-plaintext highlighter-rouge">object</code>) or by returning a different value.</li>
-  <li>Return <code class="language-plaintext highlighter-rouge">:no_update</code> to skip this update</li>
+  <li>Return <code class="language-plaintext highlighter-rouge">NO_UPDATE</code> to skip this update</li>
 </ul>
 
 <h3 id="skipping-subscription-updates">Skipping subscription updates</h3>
 
 <p>(<strong>Note</strong>: only supported when using the new <a href="/queries/interpreter#installation">Interpreter runtime</a>)</p>
 
-<p>Perhaps you don’t want to send updates to a certain subscriber. For example, if someone leaves a comment, you might want to push the new comment to <em>other</em> subscribers, but not the commenter, who already has that comment data. You can accomplish this by returning <code class="language-plaintext highlighter-rouge">:no_update</code>.</p>
+<p>Perhaps you don’t want to send updates to a certain subscriber. For example, if someone leaves a comment, you might want to push the new comment to <em>other</em> subscribers, but not the commenter, who already has that comment data. You can accomplish this by returning <code class="language-plaintext highlighter-rouge">NO_UPDATE</code>.</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Subscriptions::CommentWasAdded</span> <span class="o">&lt;</span> <span class="no">Subscriptions</span><span class="o">::</span><span class="no">BaseSubscription</span>
   <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">post_id</span><span class="p">:)</span>
     <span class="n">comment</span> <span class="o">=</span> <span class="n">object</span> <span class="c1"># #&lt;Comment ...&gt;</span>
     <span class="k">if</span> <span class="n">comment</span><span class="p">.</span><span class="nf">author</span> <span class="o">==</span> <span class="n">context</span><span class="p">[</span><span class="ss">:viewer</span><span class="p">]</span>
-      <span class="ss">:no_update</span>
+      <span class="no">NO_UPDATE</span>
     <span class="k">else</span>
       <span class="c1"># Continue updating this client, since it's not the commenter</span>
       <span class="k">super</span>
