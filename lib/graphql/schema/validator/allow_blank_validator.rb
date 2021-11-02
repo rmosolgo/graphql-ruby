@@ -4,6 +4,9 @@ module GraphQL
   class Schema
     class Validator
       # Use this to specifically reject values that respond to `.blank?` and respond truthy for that method.
+      #
+      # @example Require a non-empty string for an argument
+      #   argument :name, String, required: true, validate: { allow_blank: false }
       class AllowBlankValidator < Validator
         def initialize(allow_blank_positional, allow_blank: nil, message: "%{validated} can't be blank", **default_options)
           @message = message

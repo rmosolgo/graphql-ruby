@@ -46,7 +46,7 @@ module ValidatorHelpers
         argument :value, arg_type, required: false, validates: validates_config
       end
 
-      def validated(value:)
+      def validated(value: nil)
         value
       end
 

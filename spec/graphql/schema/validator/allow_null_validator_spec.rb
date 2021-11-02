@@ -25,4 +25,15 @@ describe GraphQL::Schema::Validator::AllowNullValidator do
     assert_equal nil, result["data"]["validated"]
     assert_equal ["value can't be null"], result["errors"].map { |e| e["message"] }
   end
+
+  it "allows nil when no validations are configured" do
+    schema = build_schema(String, {})
+    result = schema.execute("query($str: String) { validated(value: $str) }", variables: { str: nil })
+    assert_equal nil, result["data"]["validated"]
+    refute result.key?("errors")
+
+    result = schema.execute("query { validated }")
+    assert_equal nil, result["data"]["validated"]
+    refute result.key?("errors")
+  end
 end
