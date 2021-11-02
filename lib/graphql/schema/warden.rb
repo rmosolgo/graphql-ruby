@@ -195,7 +195,7 @@ module GraphQL
           any_interface_has_visible_field = false
           ints = unfiltered_interfaces(type_defn)
           ints.each do |interface_type|
-            if (iface_field_defn = interface_type.get_field(field_defn.graphql_name))
+            if (iface_field_defn = interface_type.get_field(field_defn.graphql_name, @context))
               any_interface_has_field = true
 
               if interfaces(type_defn).include?(interface_type) && visible_field?(interface_type, iface_field_defn)

@@ -46,7 +46,7 @@ describe GraphQL::Schema::Member::HasFields do
       include BaseInterface
 
       field :id, Int, null: false, future_schema: true, deprecation_reason: "Use databaseId instead"
-      field :id, Int, null: false
+      field :id, Int, null: false, future_schema: false
 
       field :database_id, Int, null: false, future_schema: true
       field :uuid, ID, null: false, future_schema: true
@@ -97,7 +97,7 @@ describe GraphQL::Schema::Member::HasFields do
 
     class Thing < LegacyThing
       field :price, Money, null: true, future_schema: true
-      field :price, MoneyScalar, null: true, method: :legacy_price
+      field :price, MoneyScalar, null: true, method: :legacy_price, future_schema: false
     end
 
     class BaseEnumValue < GraphQL::Schema::EnumValue
@@ -177,7 +177,7 @@ describe GraphQL::Schema::Member::HasFields do
 
     class Query < BaseObject
       field :f1, String, null: true, future_schema: true
-      field :f1, Int, null: true
+      field :f1, Int, null: true, future_schema: false
 
       def f1
         if context[:future_schema]
@@ -188,11 +188,6 @@ describe GraphQL::Schema::Member::HasFields do
       end
 
       field :thing, Thing, null: true do
-        # TODO: here's a place where priority matters in the source.
-        # If these arguments are reordered, a test below fails
-        # because the "legacy" argument passes .applies? first.
-        # Consider making the code assert that only one among the
-        # possible definitions passes.
         argument :id, ID, required: true, future_schema: true
         argument :id, Int, required: true
       end
@@ -246,7 +241,7 @@ describe GraphQL::Schema::Member::HasFields do
       argument :price, Int, required: true
 
       field :thing, Thing, null: false, future_schema: true, method: :custom_thing
-      field :thing, LegacyThing, null: false, hash_key: :legacy_thing
+      field :thing, LegacyThing, null: false, hash_key: :legacy_thing, future_schema: false
 
       def resolve(thing_id:, price:)
         thing = { id: thing_id, uuid: thing_id, legacy_price: "£#{price}", future_price: { amount: price, currency: "£"} }
@@ -346,8 +341,7 @@ interface Node {
 GRAPHQL
 
     query_str = "{ thing(id: 15) { databaseId id uuid } }"
-    assert_equal ["Field 'databaseId' doesn't exist on type 'Thing'", "Field 'uuid' doesn't exist on type 'Thing'"],
-    exec_query(query_str)["errors"].map { |e| e["message"] }
+    assert_equal ["Field 'databaseId' doesn't exist on type 'Thing'", "Field 'uuid' doesn't exist on type 'Thing'"], exec_query(query_str)["errors"].map { |e| e["message"] }
     res = exec_future_query(query_str)
     assert_equal({ "thing" => { "databaseId" => 15, "id" => 15, "uuid" => "thing-15"} }, res["data"])
   end
@@ -705,5 +699,43 @@ GRAPHQL
     res = NameConflictSchema.execute("{ thing { ... on Thing { __typename  } ... on OtherObject { f } } }", context: context)
     assert_equal "OtherObject", res["data"]["thing"]["__typename"]
     assert_equal 22, res["data"]["thing"]["f"]
+  end
+
+  describe "duplicate values for a given name" do
+    class DuplicateFieldObject < GraphQL::Schema::Object
+      class BaseField < GraphQL::Schema::Field
+        def initialize(*args, allow_for: nil, nickname: nil, **kwargs, &block)
+          super(*args, **kwargs, &block)
+          @allow_for = allow_for
+          @nickname = nickname
+        end
+
+        attr_reader :nickname
+
+        def visible?(context)
+          super && @allow_for ? @allow_for.include?(context[:allowed_for]) : true
+        end
+      end
+      field_class(BaseField)
+
+      field :f, String, null: true, allow_for: [1, 2], nickname: "first definition"
+      field :f, Int, null: true, allow_for: [2, 3], nickname: "second definition"
+    end
+
+    it "raises when a given context would permit multiple definitions" do
+      assert_equal "first definition", DuplicateFieldObject.get_field("f", { allowed_for: 1 }).nickname
+      assert_equal "second definition", DuplicateFieldObject.fields({ allowed_for: 3 })["f"].nickname
+      err = assert_raises GraphQL::Schema::DuplicateNamesError do
+        DuplicateFieldObject.fields({ allowed_for: 2 })
+      end
+      expected_message = "Found two visible field defintions for `DuplicateFieldObject.f`: #<DuplicateFieldObject::BaseField DuplicateFieldObject.f: String>, #<DuplicateFieldObject::BaseField DuplicateFieldObject.f: Int>"
+      assert_equal expected_message, err.message
+
+      err2 = assert_raises GraphQL::Schema::DuplicateNamesError do
+        DuplicateFieldObject.get_field("f", { allowed_for: 2 })
+      end
+
+      assert_equal expected_message, err2.message
+    end
   end
 end

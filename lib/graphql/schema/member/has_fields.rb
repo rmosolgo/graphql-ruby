@@ -54,7 +54,17 @@ module GraphQL
               nil
             end
           when Array
-            fields_entry.find { |f| f.visible?(context) }
+            visible_field = nil
+            fields_entry.each do |f|
+              if f.visible?(context)
+                if visible_field.nil?
+                  visible_field = f
+                else
+                  raise Schema::DuplicateNamesError, "Found two visible field defintions for `#{f.path}`: #{visible_field.inspect}, #{f.inspect}"
+                end
+              end
+            end
+            visible_field
           else
             raise "Invariant: unexpected fields entry: #{fields_entry.inspect}"
           end

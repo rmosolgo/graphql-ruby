@@ -92,6 +92,8 @@ module GraphQL
       end
     end
 
+    class DuplicateNamesError < GraphQL::Error; end
+
     class UnresolvedLateBoundTypeError < GraphQL::Error
       attr_reader :type
       def initialize(type:)
