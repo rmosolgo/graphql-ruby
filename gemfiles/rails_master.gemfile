@@ -11,6 +11,8 @@ gem 'sqlite3', "~> 1.4", platform: :ruby
 gem "activerecord-jdbcsqlite3-adapter", platform: :jruby
 gem "sequel"
 gem "libev_scheduler"
-gem "evt"
+if RUBY_ENGINE == "ruby" # This doesn't work on truffle-ruby becuase there's no `IO::READABLE`
+  gem "evt"
+end
 
 gemspec path: "../"
