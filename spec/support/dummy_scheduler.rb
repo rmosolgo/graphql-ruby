@@ -7,12 +7,7 @@
 
 require 'fiber'
 require 'socket'
-
-begin
-  require 'io/nonblock'
-rescue LoadError
-  # Ignore.
-end
+require 'io/nonblock'
 
 class DummyScheduler
   def initialize
@@ -67,7 +62,7 @@ class DummyScheduler
         end
       end
 
-      writable && writeable.each do |io|
+      writable && writable.each do |io|
         if fiber = @writable.delete(io)
           selected[fiber] |= IO::WRITABLE
         end

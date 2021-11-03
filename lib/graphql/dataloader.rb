@@ -23,9 +23,15 @@ module GraphQL
   #   end
   #
   class Dataloader
+    class << self
+      attr_accessor :default_nonblocking
+    end
+
+    AsyncDataloader = Class.new(self) { self.default_nonblocking = true }
+
     def self.use(schema, nonblocking: nil)
       schema.dataloader_class = if nonblocking
-        Dataloader::AsyncDataloader
+        AsyncDataloader
       else
         self
       end
@@ -43,7 +49,7 @@ module GraphQL
       result
     end
 
-    def initialize(nonblocking: nil)
+    def initialize(nonblocking: self.class.default_nonblocking)
       @source_cache = Hash.new { |h, k| h[k] = {} }
       @pending_jobs = []
       if !nonblocking.nil?
@@ -300,5 +306,3 @@ module GraphQL
     end
   end
 end
-
-require "graphql/dataloader/async_dataloader"
