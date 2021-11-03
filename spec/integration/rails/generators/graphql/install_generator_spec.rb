@@ -124,7 +124,7 @@ RUBY
 
     # Run it again and make sure the gemfile only contains graphiql-rails once
     FileUtils.cd(File.join(destination_root)) do
-      `rails g graphql:install --relay false`
+      `rails g graphql:install --relay false --force`
     end
     assert_file "Gemfile" do |contents|
       assert_equal 1, contents.scan(/graphiql-rails/).length
