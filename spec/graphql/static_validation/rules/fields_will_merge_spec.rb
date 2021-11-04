@@ -207,6 +207,48 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     end
   end
 
+  describe "multiple conflicting args value and var" do
+    let(:query_string) {%|
+      query ($dogCommand: PetCommand) {
+        dog {
+          doesKnowCommand(dogCommand: SIT)
+          doesKnowCommand(dogCommand: HEEL)
+          doesKnowCommand(dogCommand: $dogCommand)
+        }
+      }
+    |}
+
+    it "fails rule" do
+      message = %Q(Field 'doesKnowCommand' has an argument conflict: {dogCommand:"SIT"} or {dogCommand:"HEEL"} or {dogCommand:"$dogCommand"}?)
+
+      assert_equal [message], error_messages
+    end
+  end
+
+  describe "very large multiple conflicting args value and var" do
+    let(:query_string) {%|
+      query ($a: PetCommand, $b: PetCommand, $c: PetCommand, $d: PetCommand, $e: PetCommand, $f: PetCommand) {
+        dog {
+          doesKnowCommand(dogCommand: SIT)
+          doesKnowCommand(dogCommand: HEEL)
+          doesKnowCommand(dogCommand: JUMP)
+          doesKnowCommand(dogCommand: DOWN)
+          doesKnowCommand(dogCommand: $a)
+          doesKnowCommand(dogCommand: $b)
+          doesKnowCommand(dogCommand: $c)
+          doesKnowCommand(dogCommand: $d)
+          doesKnowCommand(dogCommand: $e)
+          doesKnowCommand(dogCommand: $f)
+        }
+      }
+    |}
+
+    it "fails rule" do
+      assert_equal 1, error_messages.size # instead of n**2 = 100
+      assert_match %r/SIT.*HEEL.*JUMP.*DOWN.*\$a.*\$b.*\$c.*\$d.*\$e.*\$f/, error_messages.first
+    end
+  end
+
   describe "conflicting args value and var" do
     let(:query_string) {%|
       query ($varOne: PetCommand, $varTwo: PetCommand) {
@@ -267,6 +309,22 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     end
   end
 
+  describe "multiple aliases with different field targets" do
+    let(:query_string) {%|
+      {
+        dog {
+          fido: name
+          fido: nickname
+          fido: barkVolume
+        }
+      }
+    |}
+
+    it "fails rule" do
+      assert_equal ["Field 'fido' has a field conflict: name or nickname or barkVolume?"], error_messages
+    end
+  end
+
   describe "alias masking direct field access" do
     let(:query_string) {%|
       {
@@ -278,7 +336,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     |}
 
     it "fails rule" do
-      assert_equal ["Field 'name' has a field conflict: name or nickname?"], error_messages
+      assert_equal ["Field 'name' has a field conflict: nickname or name?"], error_messages
     end
   end
 

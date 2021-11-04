@@ -20,16 +20,38 @@ module GraphQL
       end
 
       def on_operation_definition(node, _parent)
-        conflicts_within_selection_set(node, type_definition)
+        setting_errors { conflicts_within_selection_set(node, type_definition) }
         super
       end
 
       def on_field(node, _parent)
-        conflicts_within_selection_set(node, type_definition)
+        setting_errors { conflicts_within_selection_set(node, type_definition) }
         super
       end
 
       private
+
+      def field_conflicts
+        @field_conflicts ||= Hash.new do |errors, field|
+          errors[field] = GraphQL::StaticValidation::FieldsWillMergeError.new(kind: :field, field_name: field)
+        end
+      end
+
+      def arg_conflicts
+        @arg_conflicts ||= Hash.new do |errors, field|
+          errors[field] = GraphQL::StaticValidation::FieldsWillMergeError.new(kind: :argument, field_name: field)
+        end
+      end
+
+      def setting_errors
+        @field_conflicts = nil
+        @arg_conflicts = nil
+
+        yield
+
+        field_conflicts.each_value { |error| add_error(error) }
+        arg_conflicts.each_value { |error| add_error(error) }
+      end
 
       def conflicts_within_selection_set(node, parent_type)
         return if parent_type.nil?
@@ -191,28 +213,17 @@ module GraphQL
 
         if !are_mutually_exclusive
           if node1.name != node2.name
-            errored_nodes = [node1.name, node2.name].sort.join(" or ")
-            msg = "Field '#{response_key}' has a field conflict: #{errored_nodes}?"
-            add_error(GraphQL::StaticValidation::FieldsWillMergeError.new(
-              msg,
-              nodes: [node1, node2],
-              path: [],
-              field_name: response_key,
-              conflicts: errored_nodes
-            ))
+            conflict = field_conflicts[response_key]
+
+            conflict.add_conflict(node1, node1.name)
+            conflict.add_conflict(node2, node2.name)
           end
 
           if !same_arguments?(node1, node2)
-            args = [serialize_field_args(node1), serialize_field_args(node2)]
-            conflicts = args.map { |arg| GraphQL::Language.serialize(arg) }.join(" or ")
-            msg = "Field '#{response_key}' has an argument conflict: #{conflicts}?"
-            add_error(GraphQL::StaticValidation::FieldsWillMergeError.new(
-              msg,
-              nodes: [node1, node2],
-              path: [],
-              field_name: response_key,
-              conflicts: conflicts
-            ))
+            conflict = arg_conflicts[response_key]
+
+            conflict.add_conflict(node1, GraphQL::Language.serialize(serialize_field_args(node1)))
+            conflict.add_conflict(node2, GraphQL::Language.serialize(serialize_field_args(node2)))
           end
         end
 
