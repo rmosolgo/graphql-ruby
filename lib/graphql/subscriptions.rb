@@ -16,6 +16,13 @@ module GraphQL
     class InvalidTriggerError < GraphQL::Error
     end
 
+    # Raised when either:
+    # - An initial subscription didn't have a value for `context[subscription_scope]`
+    # - Or, an update didn't pass `.trigger(..., scope:)`
+    # When raised, the initial subscription or update fails completely.
+    class SubscriptionScopeMissingError < GraphQL::Error
+    end
+
     # @see {Subscriptions#initialize} for options, concrete implementations may add options.
     def self.use(defn, options = {})
       schema = defn.is_a?(Class) ? defn : defn.target
