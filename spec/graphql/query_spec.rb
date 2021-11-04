@@ -45,7 +45,6 @@ describe GraphQL::Query do
   it "applies the max validation errors config" do
     limited_schema = Class.new(schema) { validate_max_errors(2) }
     res = limited_schema.execute("{ a b c d }")
-    pp res
     assert_equal 2, res["errors"].size
     refute res.key?("data")
   end
