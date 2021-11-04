@@ -943,4 +943,27 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     end
   end
 
+  describe "conflicts exceeding the max_errors count" do
+    signature = (1..20).map { |n| "$arg#{n}: PetCommand" }.join(', ')
+    fields = (1..20).map { |n| "doesKnowCommand(dogCommand: $arg#{n})" }.join(" ")
+
+    let(:args) do
+      { max_errors: 10 }
+    end
+
+    let(:query_string) {%|
+      query (#{signature}) {
+        dog { #{fields} }
+      }
+    |}
+
+    it "fails rule" do
+      assert_equal 1, error_messages.size
+      (1..11).each do |n|
+        assert_match %r/\$arg#{n}/, error_messages.first
+      end
+
+      refute_match %r/\$arg12/, error_messages.first
+    end
+  end
 end

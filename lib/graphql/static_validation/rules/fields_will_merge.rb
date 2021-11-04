@@ -10,6 +10,7 @@ module GraphQL
       #
       # Original Algorithm: https://github.com/graphql/graphql-js/blob/master/src/validation/rules/OverlappingFieldsCanBeMerged.js
       NO_ARGS = {}.freeze
+
       Field = Struct.new(:node, :definition, :owner_type, :parents)
       FragmentSpread = Struct.new(:name, :parents)
 
@@ -17,6 +18,7 @@ module GraphQL
         super
         @visited_fragments = {}
         @compared_fragments = {}
+        @conflict_count = 0
       end
 
       def on_operation_definition(node, _parent)
@@ -205,6 +207,8 @@ module GraphQL
       end
 
       def find_conflict(response_key, field1, field2, mutually_exclusive: false)
+        return if @conflict_count >= context.max_errors
+
         node1 = field1.node
         node2 = field2.node
 
@@ -217,6 +221,8 @@ module GraphQL
 
             conflict.add_conflict(node1, node1.name)
             conflict.add_conflict(node2, node2.name)
+
+            @conflict_count += 1
           end
 
           if !same_arguments?(node1, node2)
@@ -224,6 +230,8 @@ module GraphQL
 
             conflict.add_conflict(node1, GraphQL::Language.serialize(serialize_field_args(node1)))
             conflict.add_conflict(node2, GraphQL::Language.serialize(serialize_field_args(node2)))
+
+            @conflict_count += 1
           end
         end
 
