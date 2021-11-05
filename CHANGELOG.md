@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+# 1.11.10 (5 Nov 2021)
+
+### Bug fixes
+
+- Properly hook up `Schema.max_validation_errors` at query runtime #3690
+
 # 1.11.9
 
 ### New Features
