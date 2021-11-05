@@ -509,7 +509,7 @@ describe GraphQL::Schema::Subscription do
       assert_equal expected_message, err.message
       assert_equal 0, in_memory_subscription_count
 
-      res = exec_query <<-GRAPHQL, context: { viewer: :me }
+      exec_query <<-GRAPHQL, context: { viewer: :me }
         subscription {
           directTootWasTooted {
             toot { body }
