@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.20.0 (5 November 2021)
+
+### New Features
+
+- Operation Store: Use Rails `insert_all` for better performance when adding new operations
+
 # 1.19.2 (26 October 2021)
 
 ### New Features
