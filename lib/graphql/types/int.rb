@@ -25,7 +25,7 @@ module GraphQL
         if value >= MIN && value <= MAX
           value
         else
-          err = GraphQL::IntegerEncodingError.new(value)
+          err = GraphQL::IntegerEncodingError.new(value, context: ctx)
           ctx.schema.type_error(err, ctx)
         end
       end
