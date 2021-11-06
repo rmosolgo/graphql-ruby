@@ -329,4 +329,42 @@ describe GraphQL::Analysis::AST do
       end
     end
   end
+
+  describe "Detecting all-introspection queries" do
+    class AllIntrospectionSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        field :int, Int, null: true
+      end
+      query(Query)
+    end
+
+    class AllIntrospectionAnalyzer < GraphQL::Analysis::AST::Analyzer
+      def initialize(query)
+        @is_introspection = true
+        super
+      end
+
+      def on_enter_field(node, parent, visitor)
+        @is_introspection &= (visitor.field_definition.introspection? || ((owner = visitor.field_definition.owner) && owner.introspection?))
+      end
+
+      def result
+        @is_introspection
+      end
+    end
+
+    def is_introspection?(query_str)
+      query = GraphQL::Query.new(AllIntrospectionSchema, query_str)
+      result = GraphQL::Analysis::AST.analyze_query(query, [AllIntrospectionAnalyzer])
+      result.first
+    end
+
+    it "returns true for queries containing only introspection types and fields" do
+      assert is_introspection?("{ __typename }")
+      refute is_introspection?("{ int }")
+      assert is_introspection?(GraphQL::Introspection::INTROSPECTION_QUERY)
+      assert is_introspection?("{ __type(name: \"Something\") { fields { name } } }")
+      refute is_introspection?("{ int __type(name: \"Thing\") { name } }")
+    end
+  end
 end
