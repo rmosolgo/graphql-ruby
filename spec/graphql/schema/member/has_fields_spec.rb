@@ -100,6 +100,8 @@ describe GraphQL::Schema::Member::HasFields do
     end
 
     class Thing < LegacyThing
+      # TODO can I get rid of `future_schema: ...` here in a way that
+      # still only requires one call to `visible?` at runtime?
       field :price, Money, null: true, future_schema: true
       field :price, MoneyScalar, null: true, method: :legacy_price, future_schema: false
     end
