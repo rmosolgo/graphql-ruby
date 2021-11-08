@@ -15,7 +15,8 @@ module GraphQL
       extend Forwardable
 
       attr_reader :query, :errors, :visitor,
-        :on_dependency_resolve_handlers
+        :on_dependency_resolve_handlers,
+        :max_errors
 
       def_delegators :@query, :schema, :document, :fragments, :operations, :warden
 
