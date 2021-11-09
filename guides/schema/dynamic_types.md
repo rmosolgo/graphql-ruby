@@ -12,6 +12,8 @@ You can use different versions of your GraphQL schema for each operation. To do 
 
 At runtime, ensure that only one object is visible per name (type name, field name, etc.). (If `.visible?(context)` returns false, then that part of the schema will be hidden for the current operation.)
 
+When using dynamic schema members, be sure to include the relevant `context: ...` when [generating schema definition files](#schema-dumps).
+
 ### Different fields
 
 You can customize which field definitions are used for each operation.
@@ -282,3 +284,21 @@ end
 ```
 
 Input types (like input objects, scalars, and enums) work the same way with argument definitions.
+
+### Schema Dumps
+
+To dump a certain _version_ of the schema, provide the applicable `context: ...` to {{ "Schema.to_definition" | api_doc }}. For example:
+
+```ruby
+# Legacy money schema:
+MySchema.to_definition(context: { requests_legacy_money: true })
+```
+
+or
+
+```ruby
+# Staff-only schema:
+MySchema.to_definition(context: { current_user: OpenStruct.new(staff?: true) })
+```
+
+That way, the given `context` will be passed to `visible?(context)` calls and other relevant methods.

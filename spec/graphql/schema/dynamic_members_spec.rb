@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::Schema::Member::HasFields do
+describe "Dynamic types, fields, arguments, and enum values" do
   class MultifieldSchema < GraphQL::Schema
     module AppliesToFutureSchema
       def initialize(*args, future_schema: nil, **kwargs, &block)
