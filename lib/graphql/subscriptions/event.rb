@@ -69,11 +69,20 @@ module GraphQL
                 normalized_arg_name = arg_name
                 arg_defn = get_arg_definition(arg_owner, normalized_arg_name)
               end
-              if arg_defn.type <= GraphQL::Types::JSON
-                next_args[normalized_arg_name] = v
-              else
-                next_args[normalized_arg_name] = stringify_args(arg_defn.type, v)
+              arg_base_type = arg_defn.type
+              while arg_base_type.respond_to?(:of_type)
+                arg_base_type = arg_base_type.of_type
               end
+              # In the case where the value being emitted is seen as a "JSON"
+              # type, treat the value as one atomic unit of serialization
+              is_json_definition = arg_base_type && arg_base_type <= GraphQL::Types::JSON
+              if is_json_definition
+                next_args[normalized_arg_name] = v.respond_to?(:to_json) ? v.to_json : v
+              else
+                next_args[normalized_arg_name] = stringify_args(arg_base_type, v)
+              end
+
+
             end
             # Make sure they're deeply sorted
             next_args.sort.to_h
