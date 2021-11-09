@@ -278,7 +278,9 @@ describe "Dynamic types, fields, arguments, and enum values" do
     context = kwargs[:context] ||= {}
     context[:visible_calls] = Hash.new(0)
     res = MultifieldSchema.execute(*args, **kwargs)
-    assert_equal [1], context[:visible_calls].values.uniq, "Only one visible call per schema member (#{context[:visible_calls]})"
+    if [1] != context[:visible_calls].values.uniq
+      raise "Should be only one visible call per schema member (#{context[:visible_calls]})"
+    end
     res
   end
 

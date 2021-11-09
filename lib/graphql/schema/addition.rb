@@ -157,11 +157,10 @@ module GraphQL
           # No need to re-visit
         elsif type.is_a?(Class) && type < GraphQL::Schema::Directive
           @directives << type
-          # TODO entries
-          type.arguments.each do |name, arg|
+          type.all_argument_definitions.each do |arg|
             arg_type = arg.type.unwrap
             references_to(arg_type, from: arg)
-            add_type(arg_type, owner: arg, late_types: late_types, path: path + [name])
+            add_type(arg_type, owner: arg, late_types: late_types, path: path + [arg.graphql_name])
             if arg.default_value?
               @arguments_with_default_values << arg
             end

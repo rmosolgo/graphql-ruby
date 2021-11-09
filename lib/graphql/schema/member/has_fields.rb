@@ -16,6 +16,7 @@ module GraphQL
 
         # @return [Hash<String => GraphQL::Schema::Field>] Fields on this object, keyed by name, including inherited fields
         def fields(context = GraphQL::Query::NullContext)
+          warden = context.respond_to?(:warden) ? context.warden : nil
           # Local overrides take precedence over inherited fields
           visible_fields = {}
           for ancestor in ancestors
@@ -23,7 +24,7 @@ module GraphQL
               ancestor.own_fields.each do |field_name, fields_entry|
                 # Choose the most local definition that passes `.visible?` --
                 # stop checking for fields by name once one has been found.
-                if !visible_fields.key?(field_name) && (f = field_visible?(fields_entry, context))
+                if !visible_fields.key?(field_name) && (f = field_visible?(fields_entry, context, warden))
                   visible_fields[field_name] = f
                 end
               end
@@ -33,10 +34,11 @@ module GraphQL
         end
 
         def get_field(field_name, context = GraphQL::Query::NullContext)
+          warden = context.respond_to?(:warden) ? context.warden : nil
           for ancestor in ancestors
             if ancestor.respond_to?(:own_fields) &&
                 (f_entry = ancestor.own_fields[field_name]) &&
-                (f = field_visible?(f_entry, context))
+                (f = field_visible?(f_entry, context, warden))
               return f
             end
           end
@@ -45,10 +47,10 @@ module GraphQL
 
         # @param fields_entry [GraphQL::Schema::Field, Array<GraphQL::Schema::Field>]
         # @return [GraphQL::Schema::Field, nil]
-        def field_visible?(fields_entry, context)
+        def field_visible?(fields_entry, context, warden)
           case fields_entry
           when GraphQL::Schema::Field
-            if fields_entry.visible?(context)
+            if (warden && warden.visible_field?(fields_entry)) || fields_entry.visible?(context)
               fields_entry
             else
               nil
@@ -56,7 +58,7 @@ module GraphQL
           when Array
             visible_field = nil
             fields_entry.each do |f|
-              if f.visible?(context)
+              if (warden && warden.visible_field?(f)) || f.visible?(context)
                 if visible_field.nil?
                   visible_field = f
                 else

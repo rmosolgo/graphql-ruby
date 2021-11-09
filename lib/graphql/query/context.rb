@@ -223,7 +223,7 @@ module GraphQL
 
       # @return [GraphQL::Schema::Warden]
       def warden
-        @warden ||= @query.warden
+        @warden ||= (@query && @query.warden)
       end
 
       # Get an isolated hash for `ns`. Doesn't affect user-provided storage.

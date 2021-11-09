@@ -93,7 +93,7 @@ module GraphQL
         @visible_parent_fields ||= read_through do |type|
           read_through do |f_name|
             field_defn = @schema.get_field(type, f_name, @context)
-            if field_defn && visible_field?(type, field_defn)
+            if field_defn && visible_field?(field_defn, type)
               field_defn
             else
               nil
@@ -122,7 +122,7 @@ module GraphQL
       # @param type_defn [GraphQL::ObjectType, GraphQL::InterfaceType]
       # @return [Array<GraphQL::Field>] Fields on `type_defn`
       def fields(type_defn)
-        @visible_fields ||= read_through { |t| @schema.get_fields(t, @context).each_value.select { |f| visible_field?(t, f) } }
+        @visible_fields ||= read_through { |t| @schema.get_fields(t, @context).each_value.select { |f| visible_field?(f, t) } }
         @visible_fields[type_defn]
       end
 
@@ -158,18 +158,7 @@ module GraphQL
         end
       end
 
-      private
-
-      def union_memberships(obj_type)
-        @unions ||= read_through { |obj_type| @schema.union_memberships(obj_type).select { |u| visible?(u) } }
-        @unions[obj_type]
-      end
-
-      def visible_argument?(arg_defn)
-        visible?(arg_defn) && visible_type?(arg_defn.type.unwrap)
-      end
-
-      def visible_field?(owner_type, field_defn)
+      def visible_field?(field_defn, owner_type = field_defn.owner)
         # This field is visible in its own right
         visible?(field_defn) &&
           # This field's return type is visible
@@ -177,6 +166,17 @@ module GraphQL
           # This field is either defined on this object type,
           # or the interface it's inherited from is also visible
           ((field_defn.respond_to?(:owner) && field_defn.owner == owner_type) || field_on_visible_interface?(field_defn, owner_type))
+      end
+
+      def visible_argument?(arg_defn)
+        visible?(arg_defn) && visible_type?(arg_defn.type.unwrap)
+      end
+
+      private
+
+      def union_memberships(obj_type)
+        @unions ||= read_through { |obj_type| @schema.union_memberships(obj_type).select { |u| visible?(u) } }
+        @unions[obj_type]
       end
 
       # We need this to tell whether a field was inherited by an interface
@@ -198,7 +198,7 @@ module GraphQL
             if (iface_field_defn = interface_type.get_field(field_defn.graphql_name, @context))
               any_interface_has_field = true
 
-              if interfaces(type_defn).include?(interface_type) && visible_field?(interface_type, iface_field_defn)
+              if interfaces(type_defn).include?(interface_type) && visible_field?(iface_field_defn, interface_type)
                 any_interface_has_visible_field = true
               end
             end
