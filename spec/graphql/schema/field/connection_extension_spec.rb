@@ -46,4 +46,39 @@ describe GraphQL::Schema::Field::ConnectionExtension do
     # This come through as symbols
     assert_equal ["Hash", ":first", ":starting_with"], res["data"]["names"]["argumentData"]
   end
+
+  class LegacyConnectionSchema < GraphQL::Schema
+    Thing = Struct.new(:name)
+    class ThingList < SimpleDelegator
+    end
+
+    class ThingType < GraphQL::Schema::Object
+      field :name, String, null: false
+    end
+
+    class Query < GraphQL::Schema::Object
+      field :things, ThingType.connection_type, null: false
+
+      def things
+        ThingList.new([Thing.new("A"), Thing.new("B"), Thing.new("C")])
+      end
+    end
+
+    class ThingConnection < GraphQL::Relay::ArrayConnection
+    end
+
+    GraphQL::Relay::BaseConnection.register_connection_implementation(ThingList, ThingConnection)
+
+    query(Query)
+  end
+
+  it "falls back to legacy connections" do
+    res = nil
+    _stdout, stderr = capture_io do
+      res = LegacyConnectionSchema.execute("{ things { edges { node { name } } } }")
+    end
+    assert_includes stderr, "will be removed from GraphQL-Ruby 2.0"
+    thing_names = res["data"]["things"]["edges"].map { |e| e["node"]["name"] }
+    assert_equal ["A", "B", "C"], thing_names
+  end
 end
