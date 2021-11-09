@@ -31,7 +31,7 @@ module GraphQL
         end
         # Apply prepares, not great to have it duplicated here.
         maybe_lazies = []
-        self.class.arguments.each_value do |arg_defn|
+        self.class.arguments(context).each_value do |arg_defn|
           ruby_kwargs_key = arg_defn.keyword
 
           if @ruby_style_hash.key?(ruby_kwargs_key)

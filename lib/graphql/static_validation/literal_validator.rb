@@ -95,7 +95,7 @@ module GraphQL
       def required_input_fields_are_present(type, ast_node)
         # TODO - would be nice to use these to create an error message so the caller knows
         # that required fields are missing
-        required_field_names = type.arguments.each_value
+        required_field_names = @warden.arguments(type)
           .select { |argument| argument.type.kind.non_null? && @warden.get_argument(type, argument.name) }
           .map(&:name)
 

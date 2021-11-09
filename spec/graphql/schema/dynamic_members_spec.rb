@@ -10,6 +10,9 @@ describe "Dynamic types, fields, arguments, and enum values" do
       end
 
       def visible?(context)
+        if context[:visible_calls]
+          context[:visible_calls][path] += 1
+        end
         @future_schema.nil? || (@future_schema == !!context[:future_schema])
       end
 
@@ -272,7 +275,11 @@ describe "Dynamic types, fields, arguments, and enum values" do
   end
 
   def exec_query(*args, **kwargs)
-    MultifieldSchema.execute(*args, **kwargs)
+    context = kwargs[:context] ||= {}
+    context[:visible_calls] = Hash.new(0)
+    res = MultifieldSchema.execute(*args, **kwargs)
+    assert_equal [1], context[:visible_calls].values.uniq, "Only one visible call per schema member (#{context[:visible_calls]})"
+    res
   end
 
   def exec_future_query(*args, **kwargs)
@@ -282,11 +289,17 @@ describe "Dynamic types, fields, arguments, and enum values" do
   end
 
   def future_schema_sdl
-    MultifieldSchema.to_definition(context: { future_schema: true })
+    ctx = { future_schema: true, visible_calls: Hash.new(0) }
+    sdl = MultifieldSchema.to_definition(context: ctx)
+    assert_equal [1], ctx[:visible_calls].values.uniq, "Only one visible call per schema member (#{ctx[:visible_calls]})"
+    sdl
   end
 
   def legacy_schema_sdl
-    MultifieldSchema.to_definition
+    ctx = { visible_calls: Hash.new(0) }
+    sdl = MultifieldSchema.to_definition(context: ctx)
+    assert_equal [1], ctx[:visible_calls].values.uniq, "Only one visible call per schema member (#{ctx[:visible_calls]})"
+    sdl
   end
 
   it "returns different fields according context for Ruby methods, runtime, introspection, and to_definition" do

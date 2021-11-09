@@ -314,7 +314,7 @@ module GraphQL
         selections.each do |node|
           case node
           when GraphQL::Language::Nodes::Field
-            definition = context.schema.get_field(owner_type, node.name)
+            definition = context.query.get_field(owner_type, node.name)
             fields << Field.new(node, definition, owner_type, parents)
           when GraphQL::Language::Nodes::InlineFragment
             fragment_type = node.type ? context.warden.get_type(node.type.name) : owner_type

@@ -198,15 +198,13 @@ module GraphQL
           end
           if type.kind.input_object?
             # TODO should not filter out inapplicable ones
-            type.arguments.each do |arg_name, args_entry|
-              Array(args_entry).each do |arg|
-                add_directives_from(arg)
-                arg_type = arg.type.unwrap
-                references_to(arg_type, from: arg)
-                add_type(arg_type, owner: arg, late_types: late_types, path: path + [arg_name])
-                if arg.default_value?
-                  @arguments_with_default_values << arg
-                end
+            type.all_argument_definitions do |arg|
+              add_directives_from(arg)
+              arg_type = arg.type.unwrap
+              references_to(arg_type, from: arg)
+              add_type(arg_type, owner: arg, late_types: late_types, path: path + [arg_name])
+              if arg.default_value?
+                @arguments_with_default_values << arg
               end
             end
           end
