@@ -69,7 +69,11 @@ module GraphQL
                 normalized_arg_name = arg_name
                 arg_defn = get_arg_definition(arg_owner, normalized_arg_name)
               end
-              next_args[normalized_arg_name] = stringify_args(arg_defn.type, v)
+              if arg_defn.type <= GraphQL::Types::JSON
+                next_args[normalized_arg_name] = v
+              else
+                next_args[normalized_arg_name] = stringify_args(arg_defn.type, v)
+              end
             end
             # Make sure they're deeply sorted
             next_args.sort.to_h
