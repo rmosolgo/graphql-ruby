@@ -17,4 +17,12 @@ describe GraphQL::Dataloader::Source do
     expected_message = "FailsToLoadSource#sync tried 1000 times to load pending keys ([1]), but they still weren't loaded. There is likely a circular dependency."
     assert_equal expected_message, err.message
   end
+
+  it "is pending when waiting for false and nil" do
+    dl = GraphQL::Dataloader.new
+    dl.with(FailsToLoadSource).request(nil)
+
+    source_cache = dl.instance_variable_get(:@source_cache)
+    assert source_cache[FailsToLoadSource][[{}]].pending?
+  end
 end

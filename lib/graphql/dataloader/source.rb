@@ -83,14 +83,14 @@ module GraphQL
 
       # @return [Boolean] True if this source has any pending requests for data.
       def pending?
-        @pending_keys.any?
+        !@pending_keys.empty?
       end
 
       # Called by {GraphQL::Dataloader} to resolve and pending requests to this source.
       # @api private
       # @return [void]
       def run_pending_keys
-        if @fetching_keys.any?
+        if !@fetching_keys.empty?
           @pending_keys -= @fetching_keys
         end
         return if @pending_keys.empty?
