@@ -54,6 +54,9 @@ module GraphQL
       class << self
         private
 
+        # This method does not support cyclic references in the Hash,
+        # nor does it support Hashes whose keys are not sortable
+        # with respect to their peers ( cases where a <=> b might throw an error )
         def deep_sort_hash_keys(hash_to_sort)
           raise ArgumentError("Argument must be a Hash") unless hash_to_sort.is_a?(Hash)
           hash_to_sort.keys.sort.map do |k|
