@@ -12,7 +12,7 @@ module GraphQL
     attr_reader :type
 
     # @return [GraphQL::Query::Context] the context for the current query
-    attr_reader :context
+    attr_accessor :context
 
     def initialize(message = nil, object: nil, type: nil, context: nil)
       if message.nil? && object.nil? && type.nil?

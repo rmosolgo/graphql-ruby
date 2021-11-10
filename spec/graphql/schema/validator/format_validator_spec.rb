@@ -17,6 +17,7 @@ describe GraphQL::Schema::Validator::FormatValidator do
       config: { without: /[a-z]/ },
       cases: [
         { query: "{ validated(value: \"abcd\") }", result: nil, error_messages: ["value is invalid"] },
+        { query: "{ validated(value: null) }", result: nil, error_messages: ["value is invalid"] },
         { query: "{ validated(value: \"ABC\") }", result: "ABC", error_messages: [] },
       ]
     },
