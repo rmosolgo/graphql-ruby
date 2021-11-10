@@ -73,6 +73,8 @@ module GraphQL
           array_to_inspect.map do |v|
             if v.is_a?(Hash)
               deep_sort_hash_keys(v)
+            elsif v.is_a?(Array)
+              deep_sort_array_hashes(v)
             else
               v
             end
