@@ -26,4 +26,11 @@ describe GraphQL::Subscriptions::Event do
     event = GraphQL::Subscriptions::Event.new(name: "test", arguments: { "someJson" => { "b" => 1, "a" => 0 } }, field: field, context: nil, scope: nil)
     assert_equal event.topic, %Q{:jsonSubscription:someJson:{"b":1,"a":0}}
   end
+
+  it "should serialize two eqivalent JSON hashes with different key orderings into different topic names" do
+    field = EventSchema.subscription.fields["jsonSubscription"]
+    event_a = GraphQL::Subscriptions::Event.new(name: "test", arguments: { "someJson" => { "b" => 1, "a" => 0 } }, field: field, context: nil, scope: nil)
+    event_b = GraphQL::Subscriptions::Event.new(name: "test", arguments: { "someJson" => { "a" => 0, "b" => 1 } }, field: field, context: nil, scope: nil)
+    refute_equal event_a.topic, event_b.topic
+  end
 end
