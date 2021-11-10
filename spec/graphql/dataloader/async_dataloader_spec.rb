@@ -236,8 +236,8 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
     end
 
     describe "With the toy scheduler from Ruby's tests" do
-      let(:scheduler_class) { ::DummyScheduler }
-      include AsyncDataloaderAssertions
+      # let(:scheduler_class) { ::DummyScheduler }
+      # include AsyncDataloaderAssertions
     end
 
     if RUBY_ENGINE == "ruby"
