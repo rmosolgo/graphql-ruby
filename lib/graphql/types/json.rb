@@ -10,11 +10,6 @@ module GraphQL
     #
     #     argument :template_parameters, GraphQL::Types::JSON, null: false
     #
-    # Note that when the JSON scalar is used an argument for subscriptions, its value will be used to construct
-    # a topic name. You are responsible to ensure that any values provided by the client and the server are
-    # ordered identically such that both the client and the server agree on the correct topic name.
-    #
-    #
     class JSON < GraphQL::Schema::Scalar
       description "Represents untyped JSON"
 
