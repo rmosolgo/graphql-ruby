@@ -241,17 +241,17 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
     end
 
     if RUBY_ENGINE == "ruby"
-      describe "With libev_scheduler" do
-        require "libev_scheduler"
-        let(:scheduler_class) { Libev::Scheduler }
-        include AsyncDataloaderAssertions
-      end
+      # describe "With libev_scheduler" do
+      #   require "libev_scheduler"
+      #   let(:scheduler_class) { Libev::Scheduler }
+      #   include AsyncDataloaderAssertions
+      # end
     end
 
-    describe "with evt" do
-      require "evt"
-      let(:scheduler_class) { Evt::Scheduler }
-      include AsyncDataloaderAssertions
-    end
+    # describe "with evt" do
+    #   require "evt"
+    #   let(:scheduler_class) { Evt::Scheduler }
+    #   include AsyncDataloaderAssertions
+    # end
   end
 end
