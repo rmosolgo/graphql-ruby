@@ -39,7 +39,7 @@ jobs:
       matrix:
         include:
           - gemfile: Gemfile
-            ruby: 2.6
+            ruby: 3.0
           - gemfile: gemfiles/rails_3.2.gemfile
             ruby: 2.3
             bundler: "1"
