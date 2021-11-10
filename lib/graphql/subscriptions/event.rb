@@ -69,10 +69,7 @@ module GraphQL
                 normalized_arg_name = arg_name
                 arg_defn = get_arg_definition(arg_owner, normalized_arg_name)
               end
-              arg_base_type = arg_defn.type
-              while arg_base_type.respond_to?(:of_type)
-                arg_base_type = arg_base_type.of_type
-              end
+              arg_base_type = arg_defn.type.unwrap
               # In the case where the value being emitted is seen as a "JSON"
               # type, treat the value as one atomic unit of serialization
               is_json_definition = arg_base_type && arg_base_type <= GraphQL::Types::JSON
