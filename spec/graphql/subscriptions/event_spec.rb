@@ -39,4 +39,10 @@ describe GraphQL::Subscriptions::Event do
     event = GraphQL::Subscriptions::Event.new(name: "test", arguments: { "someJson" => [{ "b" => 1, "a" => 0 }] }, field: field, context: nil, scope: nil)
     assert_equal %Q{:jsonSubscription:someJson:[{"a":0,"b":1}]}, event.topic
   end
+
+  it "should serialize a hash inside an array of an array as a sorted hash" do
+    field = EventSchema.subscription.fields["jsonSubscription"]
+    event = GraphQL::Subscriptions::Event.new(name: "test", arguments: { "someJson" => [[{ "b" => 1, "a" => 0 }]] }, field: field, context: nil, scope: nil)
+    assert_equal %Q{:jsonSubscription:someJson:[[{"a":0,"b":1}]]}, event.topic
+  end
 end
