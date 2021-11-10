@@ -747,7 +747,7 @@ describe GraphQL::Dataloader do
         Fiber.set_scheduler(nil)
       end
 
-      # include DataloaderAssertions
+      include DataloaderAssertions
     end
   end
 
@@ -892,30 +892,30 @@ describe GraphQL::Dataloader do
     assert :world, value
   end
 
-  # it "uses context[:dataloader] when given" do
-  #   res = Class.new(GraphQL::Schema) do
-  #     query_type = Class.new(GraphQL::Schema::Object) do
-  #       graphql_name "Query"
-  #     end
-  #     query(query_type)
-  #   end.execute("{ __typename }")
-  #   assert_instance_of GraphQL::Dataloader::NullDataloader, res.context.dataloader
-  #   res = FiberSchema.execute("{ __typename }")
-  #   assert_instance_of GraphQL::Dataloader, res.context.dataloader
-  #   refute res.context.dataloader.nonblocking?
-  #   res = FiberSchema.execute("{ __typename }", context: { dataloader: :blah } )
-  #   assert_equal :blah, res.context.dataloader
+  it "uses context[:dataloader] when given" do
+    res = Class.new(GraphQL::Schema) do
+      query_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Query"
+      end
+      query(query_type)
+    end.execute("{ __typename }")
+    assert_instance_of GraphQL::Dataloader::NullDataloader, res.context.dataloader
+    res = FiberSchema.execute("{ __typename }")
+    assert_instance_of GraphQL::Dataloader, res.context.dataloader
+    refute res.context.dataloader.nonblocking?
+    res = FiberSchema.execute("{ __typename }", context: { dataloader: :blah } )
+    assert_equal :blah, res.context.dataloader
 
-  #   if Fiber.respond_to?(:scheduler)
-  #     Fiber.set_scheduler(::DummyScheduler.new)
-  #     res = FiberSchema.execute("{ __typename }", context: { dataloader: GraphQL::Dataloader.new(nonblocking: true) })
-  #     assert res.context.dataloader.nonblocking?
+    if Fiber.respond_to?(:scheduler)
+      Fiber.set_scheduler(::DummyScheduler.new)
+      res = FiberSchema.execute("{ __typename }", context: { dataloader: GraphQL::Dataloader.new(nonblocking: true) })
+      assert res.context.dataloader.nonblocking?
 
-  #     res = FiberSchema.multiplex([{ query: "{ __typename }" }], context: { dataloader: GraphQL::Dataloader.new(nonblocking: true) })
-  #     assert res[0].context.dataloader.nonblocking?
-  #     Fiber.set_scheduler(nil)
-  #   end
-  # end
+      res = FiberSchema.multiplex([{ query: "{ __typename }" }], context: { dataloader: GraphQL::Dataloader.new(nonblocking: true) })
+      assert res[0].context.dataloader.nonblocking?
+      Fiber.set_scheduler(nil)
+    end
+  end
 
   describe "#run_isolated" do
     module RunIsolated
