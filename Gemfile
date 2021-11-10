@@ -13,7 +13,7 @@ if RUBY_VERSION >= "2.4"
 end
 
 if RUBY_VERSION >= "3.0"
-  # gem "libev_scheduler"
+  gem "libev_scheduler"
   gem "evt"
 end
 

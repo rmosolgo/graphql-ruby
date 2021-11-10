@@ -11,7 +11,7 @@ gem "sqlite3", "~> 1.4", platform: :ruby
 gem "activerecord-jdbcsqlite3-adapter", platform: :jruby
 gem "sequel"
 if RUBY_VERSION >= "3.0"
-  # gem "libev_scheduler"
+  gem "libev_scheduler"
   gem "evt"
 end
 

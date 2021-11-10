@@ -35,6 +35,6 @@ MySchema.execute(...)
 
 The scheduler must implement [`Fiber::SchedulerImplementation`](https://ruby-doc.org/core-3.0.2/Fiber/SchedulerInterface.html). Some implementations are available off-the-shelf:
 
-- [`digital-fabric/libev_scheduler`](https://github.com/digital-fabric/libev_scheduler) contains `Libev::Scheduler`, built on [`libev`](http://pod.tst.eu/http://cvs.schmorp.de/libev/ev.pod), an event loop written in C.
 - [`dsh0416/evt`](https://github.com/dsh0416/evt) supports several backends in `Evt::Scheduler`.
+-  [`digital-fabric/libev_scheduler`](https://github.com/digital-fabric/libev_scheduler) contains `Libev::Scheduler`, built on [`libev`](http://pod.tst.eu/http://cvs.schmorp.de/libev/ev.pod), an event loop written in C. ⚠️ This _works_, but it was failing oddly on GitHub actions, so CI is turned off for it.
 - ⚠️ [`socketry/async`](https://github.com/socketry/async) contains `Async::Scheduler`, but I haven't figured out how to make it work with `GraphQL::Dataloader` yet. Please update this doc if you know how to!
