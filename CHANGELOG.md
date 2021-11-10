@@ -8,6 +8,18 @@
 
 ### Bug fixes
 
+# 1.12.19 (5 November 2021)
+
+### New Features
+
+- Argument validation: Make `allow_null` and `allow_blank` work standalone #3671
+- Add field and path info to Encoding errors #3697
+- Add `Resolver#unauthorized_object` for handling loaded but unauthorized objects #3689
+
+### Bug fixes
+
+- Properly hook up `Schema.validate_max_errors` at runtime #3691
+
 # 1.12.18 (2 November 2021)
 
 ### New features

@@ -23,7 +23,15 @@ module GraphQL
         @arguments = arguments
         @context = context
         field ||= context.field
-        scope_val = scope || (context && field.subscription_scope && context[field.subscription_scope])
+        scope_key = field.subscription_scope
+        scope_val = scope || (context && scope_key && context[scope_key])
+        if scope_key &&
+            (subscription = field.resolver) &&
+            (subscription.respond_to?(:subscription_scope_optional?)) &&
+            !subscription.subscription_scope_optional? &&
+            scope_val.nil?
+          raise Subscriptions::SubscriptionScopeMissingError, "#{field.path} (#{subscription}) requires a `scope:` value to trigger updates (Set `subscription_scope ..., optional: true` to disable this requirement)"
+        end
 
         @topic = self.class.serialize(name, arguments, field, scope: scope_val)
       end

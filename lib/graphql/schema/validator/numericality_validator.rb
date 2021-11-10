@@ -32,6 +32,7 @@ module GraphQL
             equal_to: nil, other_than: nil,
             odd: nil, even: nil, within: nil,
             message: "%{validated} must be %{comparison} %{target}",
+            null_message: Validator::AllowNullValidator::MESSAGE,
             **default_options
           )
 
@@ -45,11 +46,16 @@ module GraphQL
           @even = even
           @within = within
           @message = message
+          @null_message = null_message
           super(**default_options)
         end
 
         def validate(object, context, value)
-          if @greater_than && value <= @greater_than
+          if permitted_empty_value?(value)
+            # pass in this case
+          elsif value.nil? # @allow_null is handled in the parent class
+            @null_message
+          elsif @greater_than && value <= @greater_than
             partial_format(@message, { comparison: "greater than", target: @greater_than })
           elsif @greater_than_or_equal_to && value < @greater_than_or_equal_to
             partial_format(@message, { comparison: "greater than or equal to", target: @greater_than_or_equal_to })

@@ -103,14 +103,24 @@ module GraphQL
       # Call this method to provide a new subscription_scope; OR
       # call it without an argument to get the subscription_scope
       # @param new_scope [Symbol]
+      # @param optional [Boolean] If true, then don't require `scope:` to be provided to updates to this subscription.
       # @return [Symbol]
-      def self.subscription_scope(new_scope = READING_SCOPE)
+      def self.subscription_scope(new_scope = READING_SCOPE, optional: false)
         if new_scope != READING_SCOPE
           @subscription_scope = new_scope
+          @subscription_scope_optional = optional
         elsif defined?(@subscription_scope)
           @subscription_scope
         else
           find_inherited_value(:subscription_scope)
+        end
+      end
+
+      def self.subscription_scope_optional?
+        if defined?(@subscription_scope_optional)
+          @subscription_scope_optional
+        else
+          find_inherited_value(:subscription_scope_optional, false)
         end
       end
 

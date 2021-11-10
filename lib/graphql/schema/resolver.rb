@@ -160,6 +160,16 @@ module GraphQL
         end
       end
 
+      # Called when an object loaded by `loads:` fails the `.authorized?` check for its resolved GraphQL object type.
+      #
+      # By default, the error is re-raised and passed along to {{Schema.unauthorized_object}}.
+      #
+      # Any value returned here will be used _instead of_ of the loaded object.
+      # @param err [GraphQL::UnauthorizedError]
+      def unauthorized_object(err)
+        raise err
+      end
+
       private
 
       def load_arguments(args)

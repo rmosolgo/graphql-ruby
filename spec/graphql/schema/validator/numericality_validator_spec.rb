@@ -50,6 +50,7 @@ describe GraphQL::Schema::Validator::NumericalityValidator do
       config: { other_than: 9 },
       cases: [
         { query: "{ validated(value: 8) }", result: 8, error_messages: [] },
+        { query: "{ validated(value: null) }", result: nil, error_messages: ["value can't be null"] },
         { query: "{ validated(value: 9) }", result: nil, error_messages: ["value must be something other than 9"] },
       ]
     },

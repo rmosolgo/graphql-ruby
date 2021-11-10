@@ -254,11 +254,17 @@ module GraphQL
                       if authed
                         application_object
                       else
-                        raise GraphQL::UnauthorizedError.new(
+                        err = GraphQL::UnauthorizedError.new(
                           object: application_object,
                           type: class_based_type,
                           context: context,
                         )
+                        if self.respond_to?(:unauthorized_object)
+                          err.set_backtrace(caller)
+                          unauthorized_object(err)
+                        else
+                          raise err
+                        end
                       end
                     end
                   else

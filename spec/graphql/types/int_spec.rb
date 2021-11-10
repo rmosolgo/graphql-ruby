@@ -32,7 +32,14 @@ describe GraphQL::Types::Int do
 
       it "raises on values out of bounds" do
         assert_raises(GraphQL::IntegerEncodingError) { GraphQL::Types::Int.coerce_result(2**31, context) }
-        assert_raises(GraphQL::IntegerEncodingError) { GraphQL::Types::Int.coerce_result(-(2**31 + 1), context) }
+        err = assert_raises(GraphQL::IntegerEncodingError) { GraphQL::Types::Int.coerce_result(-(2**31 + 1), context) }
+        assert_equal "Integer out of bounds: -2147483649. Consider using ID or GraphQL::Types::BigInt instead.", err.message
+
+        err = assert_raises GraphQL::IntegerEncodingError do
+          Dummy::Schema.execute("{ hugeInteger }")
+        end
+        expected_err = "Integer out of bounds: 2147483648 @ hugeInteger (Query.hugeInteger). Consider using ID or GraphQL::Types::BigInt instead."
+        assert_equal expected_err, err.message
       end
     end
   end
