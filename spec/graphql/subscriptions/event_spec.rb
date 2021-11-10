@@ -34,6 +34,20 @@ describe GraphQL::Subscriptions::Event do
     assert_equal event_a.topic, event_b.topic
   end
 
+  it "should serialize nested hashes into their sorted key forms" do
+    field = EventSchema.subscription.fields["jsonSubscription"]
+    nested_hash = {
+      "b" => 1,
+      "c" => {
+        "z" => 100,
+        "y" => 99
+      },
+      "a" => 0
+    }
+    event = GraphQL::Subscriptions::Event.new(name: "test", arguments: { "someJson" => nested_hash }, field: field, context: nil, scope: nil)
+    assert_equal %Q{:jsonSubscription:someJson:{"a":0,"b":1,"c":{"y":99,"z":100}}}, event.topic
+  end
+
   it "should serialize a hash inside an array as a sorted hash" do
     field = EventSchema.subscription.fields["jsonSubscription"]
     event = GraphQL::Subscriptions::Event.new(name: "test", arguments: { "someJson" => [{ "b" => 1, "a" => 0 }] }, field: field, context: nil, scope: nil)
