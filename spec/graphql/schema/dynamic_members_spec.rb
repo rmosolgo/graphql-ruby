@@ -11,7 +11,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
 
       def visible?(context)
         if context[:visible_calls]
-          context[:visible_calls][path] += 1
+          context[:visible_calls][self] << caller
         end
         @future_schema.nil? || (@future_schema == !!context[:future_schema])
       end
@@ -275,30 +275,49 @@ describe "Dynamic types, fields, arguments, and enum values" do
   end
 
   def check_for_multiple_visible_calls(context)
-    if [1] != context[:visible_calls].values.uniq
+    if [1] != context[:visible_calls].values.map(&:size).uniq
       ok_visible_calls = []
       not_ok_visible_calls = {}
-      context[:visible_calls].each do |path, calls|
-        if calls == 1
-          ok_visible_calls << path
+      context[:visible_calls].each do |object, calls|
+        if calls.size == 1
+          ok_visible_calls << object.path
         else
-          not_ok_visible_calls[path] = calls
+          not_ok_visible_calls[object] = calls
         end
+      end
+
+      bad_calls_text = "".dup
+      not_ok_visible_calls.each do |object, calls|
+        bad_calls_text << "- #{object.path}[#{object.object_id}] -> #{calls.size}\n"
+        calls_count = Hash.new(0)
+        calls.each do |call|
+          calls_count[call] += 1
+        end
+        calls_count.each do |call, count|
+          bad_calls_text << "  #{count}x:\n"
+          call.each do |line|
+            bad_calls_text << "    #{line}\n"
+          end
+          bad_calls_text << "\n"
+        end
+        bad_calls_text << "\n\n"
       end
 
       raise <<-ERR
 Should be only one visible call per schema member:
 
-#{not_ok_visible_calls.map {|k, v| "- #{k} => #{v}" }.join("\n")}
+#{bad_calls_text}
 
 OK: #{ok_visible_calls}
 ERR
     end
   end
 
+  VISIBLE_CALLS = Hash.new { |h, k| h[k] = [] }
+
   def exec_query(*args, **kwargs)
     context = kwargs[:context] ||= {}
-    context[:visible_calls] = Hash.new(0)
+    context[:visible_calls] = VISIBLE_CALLS.dup
     res = MultifieldSchema.execute(*args, **kwargs)
     check_for_multiple_visible_calls(res.context)
     res
@@ -311,14 +330,14 @@ ERR
   end
 
   def future_schema_sdl
-    ctx = { future_schema: true, visible_calls: Hash.new(0) }
+    ctx = { future_schema: true, visible_calls: VISIBLE_CALLS.dup }
     sdl = MultifieldSchema.to_definition(context: ctx)
     check_for_multiple_visible_calls(ctx)
     sdl
   end
 
   def legacy_schema_sdl
-    ctx = { visible_calls: Hash.new(0) }
+    ctx = { visible_calls: VISIBLE_CALLS.dup }
     sdl = MultifieldSchema.to_definition(context: ctx)
     check_for_multiple_visible_calls(ctx)
     sdl
@@ -401,6 +420,10 @@ GRAPHQL
     introspection_res = exec_future_query(introspection_query)
     assert_equal "ID", introspection_res["data"]["__type"]["fields"].find { |f| f["name"] == "thing" }["args"].first["type"]["ofType"]["name"]
   end
+
+  it "hides fields from hidden interfaces"
+  it "hides hidden interface implementations"
+  it "hides hidden union memberships"
 
   it "supports different versions of input object arguments" do
     res = exec_query("mutation { updateThing(input: { thingId: 12, price: 100 }) { thing { price id } } }")

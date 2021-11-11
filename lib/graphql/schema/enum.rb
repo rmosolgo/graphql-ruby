@@ -89,15 +89,19 @@ module GraphQL
         end
 
         # TODO private
-        # TODO call `.visible?` here _or_ in warden, but not both?
         def visible_entry?(context, values_entry)
+          warden = context.respond_to?(:warden) ? context.warden : nil
           case values_entry
           when GraphQL::Schema::EnumValue
-            values_entry.visible?(context) && values_entry
+            if (warden ? warden.visible_enum_value?(values_entry) : values_entry.visible?(context))
+              values_entry
+            else
+              nil
+            end
           when Array
             visible_entry = nil
             values_entry.each do |v|
-              if v.visible?(context)
+              if (warden ? warden.visible_enum_value?(v) : v.visible?(context))
                 if visible_entry.nil?
                   visible_entry = v
                 else

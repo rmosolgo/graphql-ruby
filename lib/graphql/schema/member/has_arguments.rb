@@ -142,7 +142,7 @@ module GraphQL
           when Array
             visible_arg = nil
             arguments_entry.each do |a|
-              if (warden && warden.visible_argument?(a)) || a.visible?(context)
+              if (warden ? warden.visible_argument?(a) : a.visible?(context))
                 if visible_arg.nil?
                   visible_arg = a
                 else

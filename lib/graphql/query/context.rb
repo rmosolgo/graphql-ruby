@@ -226,6 +226,9 @@ module GraphQL
         @warden ||= (@query && @query.warden)
       end
 
+      # @api private
+      attr_writer :warden
+
       # Get an isolated hash for `ns`. Doesn't affect user-provided storage.
       # @param ns [Object] a usage-specific namespace identifier
       # @return [Hash] namespaced storage

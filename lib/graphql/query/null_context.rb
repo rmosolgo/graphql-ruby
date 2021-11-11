@@ -7,7 +7,8 @@ module GraphQL
         def visible?(t); true; end
         def visible_field?(field); field.visible?(NullContext); end
         def visible_argument?(arg); arg.visible?(NullContext); end
-        def visible_type?(t); true; end
+        def visible_type?(type); type.is_a?(Schema::LateBoundType) ? true : type.visible?(NullContext); end
+        def visible_enum_value?(ev); ev.visible?(NullContext); end
       end
 
       class NullQuery

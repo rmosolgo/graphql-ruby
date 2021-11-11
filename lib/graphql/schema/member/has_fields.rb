@@ -20,7 +20,8 @@ module GraphQL
           # Local overrides take precedence over inherited fields
           visible_fields = {}
           for ancestor in ancestors
-            if ancestor.respond_to?(:own_fields)
+            if ancestor.respond_to?(:own_fields) &&
+                ((ancestor.respond_to?(:kind) && ancestor.kind.interface?) ? (warden ? warden.visible_type?(ancestor) : ancestor.visible?(context)) : true)
               ancestor.own_fields.each do |field_name, fields_entry|
                 # Choose the most local definition that passes `.visible?` --
                 # stop checking for fields by name once one has been found.
@@ -37,6 +38,7 @@ module GraphQL
           warden = context.respond_to?(:warden) ? context.warden : nil
           for ancestor in ancestors
             if ancestor.respond_to?(:own_fields) &&
+                (ancestor.kind.interface? ? (warden ? warden.visible_type?(ancestor) : ancestor.visible?(context)) : true) &&
                 (f_entry = ancestor.own_fields[field_name]) &&
                 (f = field_visible?(f_entry, context, warden))
               return f
@@ -50,7 +52,7 @@ module GraphQL
         def field_visible?(fields_entry, context, warden)
           case fields_entry
           when GraphQL::Schema::Field
-            if (warden && warden.visible_field?(fields_entry)) || fields_entry.visible?(context)
+            if (warden ? warden.visible_field?(fields_entry) : fields_entry.visible?(context))
               fields_entry
             else
               nil
@@ -58,7 +60,7 @@ module GraphQL
           when Array
             visible_field = nil
             fields_entry.each do |f|
-              if (warden && warden.visible_field?(f)) || f.visible?(context)
+              if (warden ? warden.visible_field?(f) : f.visible?(context))
                 if visible_field.nil?
                   visible_field = f
                 else

@@ -34,6 +34,7 @@ module GraphQL
           schema: @schema,
           context: schema_context,
         )
+        schema_context.warden = @warden
       end
 
       def document

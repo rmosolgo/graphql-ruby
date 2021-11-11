@@ -1030,8 +1030,9 @@ module GraphQL
           nil
         when Array
           visible_t = nil
+          warden = context.respond_to?(:warden) && context.warden
           local_entry.each do |t|
-            if t.visible?(context)
+            if (warden ? warden.visible_type?(t) : t.visible?(context))
               if visible_t.nil?
                 visible_t = t
               else
