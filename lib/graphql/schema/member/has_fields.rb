@@ -21,6 +21,9 @@ module GraphQL
           visible_fields = {}
           for ancestor in ancestors
             if ancestor.respond_to?(:own_fields) &&
+                # TODO:
+                # - check if type membership is visible
+                # - copy this to `get_field`
                 ((ancestor.respond_to?(:kind) && ancestor.kind.interface?) ? (warden ? warden.visible_type?(ancestor) : ancestor.visible?(context)) : true)
               ancestor.own_fields.each do |field_name, fields_entry|
                 # Choose the most local definition that passes `.visible?` --

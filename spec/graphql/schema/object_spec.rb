@@ -7,7 +7,7 @@ describe GraphQL::Schema::Object do
     it "tells type data" do
       assert_equal "Ensemble", object_class.graphql_name
       assert_equal "A group of musicians playing together", object_class.description
-      assert_equal 9, object_class.fields({private: true}).size
+      assert_equal 9, object_class.fields.size
       assert_equal [
           "GloballyIdentifiable",
           "HasMusicians",
@@ -39,7 +39,7 @@ describe GraphQL::Schema::Object do
       end
 
       # one more than the parent class
-      assert_equal 10, new_object_class.fields({private: true}).size
+      assert_equal 10, new_object_class.fields.size
       # inherited interfaces are present
       assert_equal [
           "GloballyIdentifiable",

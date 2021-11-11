@@ -61,14 +61,13 @@ module GraphQL
         # param context [Query::Context] If omitted, skip filtering.
         def interfaces(context = GraphQL::Query::NullContext)
           visible_interfaces = []
-          unfiltered = context == GraphQL::Query::NullContext
           own_interface_type_memberships.each do |type_membership|
             # During initialization, `type_memberships` can hold late-bound types
             case type_membership
             when String, Schema::LateBoundType
               visible_interfaces << type_membership
             when Schema::TypeMembership
-              if unfiltered || type_membership.visible?(context)
+              if context == GraphQL::Query::NullContext || type_membership.visible?(context)
                 visible_interfaces << type_membership.abstract_type
               end
             else
