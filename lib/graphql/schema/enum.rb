@@ -61,22 +61,31 @@ module GraphQL
           nil
         end
 
-        # @return [Hash<String => GraphQL::Schema::Enum::Value>] Possible values of this enum, keyed by name
-        def values(context = GraphQL::Query::NullContext)
-          inherited_values = superclass.respond_to?(:values) ? superclass.values(context) : nil
-          visible_values = {}
+        # @return [Array<GraphQL::Schema::EnumValue>] Possible values of this enum
+        def enum_values(context = GraphQL::Query::NullContext)
+          inherited_values = superclass.respond_to?(:enum_values) ? superclass.enum_values(context) : nil
+          visible_values = []
           own_values.each do |key, values_entry|
             if (v = visible_entry?(context, values_entry))
-              visible_values[key] = v
+              visible_values << v
             end
           end
 
           if inherited_values
             # Local values take precedence over inherited ones
-            inherited_values.merge(visible_values)
-          else
-            visible_values
+            inherited_values.each do |i_val|
+              if !visible_values.any? { |v| v.graphql_name == i_val.graphql_name }
+                visible_values << i_val
+              end
+            end
           end
+
+          visible_values
+        end
+
+        # @return [Hash<String => GraphQL::Schema::EnumValue>] Possible values of this enum, keyed by name.
+        def values(context = GraphQL::Query::NullContext)
+          enum_values(context).each_with_object({}) { |val, obj| obj[val.graphql_name] = val }
         end
 
         # TODO private

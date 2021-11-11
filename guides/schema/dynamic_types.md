@@ -175,23 +175,21 @@ class AccountStatus < Types::BaseEnum
 end
 ```
 
-#### Using `.values(context)`
+#### Using `.enum_values(context)`
 
-Alternatively, you can implement `def self.values(context)` in your enum types to return a Hash of `{String => GraphQL::Schema::EnumValue }`. For example, to return a dynamic set of enum values:
+Alternatively, you can implement `def self.enum_values(context)` in your enum types to return an Array of {{ "GraphQL::Schema::EnumValue" | api_doc }}s. For example, to return a dynamic set of enum values:
 
 ```ruby
 class ProjectStatus < Types::BaseEnum
-  def self.values(context = {})
+  def self.enum_values(context = {})
     # Fetch the values from the database
     status_names = context[:tenant].project_statuses.pluck("name")
 
-    # Then build a hash of Enum values
-    enum_values = {}
-    status_names.each do |name|
+    # Then build an Array of Enum values
+    status_names.map do |name|
       # Be sure to include `owner: self`, the back-reference from the EnumValue to its parent Enum
-      enum_values[name] = GraphQL::Schema::EnumValue.new(name, owner: self)
+      GraphQL::Schema::EnumValue.new(name, owner: self)
     end
-    enum_values
   end
 end
 ```

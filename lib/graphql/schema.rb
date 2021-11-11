@@ -1757,7 +1757,7 @@ module GraphQL
           if subscription.singleton_class.ancestors.include?(Subscriptions::SubscriptionRoot)
             GraphQL::Deprecation.warn("`extend Subscriptions::SubscriptionRoot` is no longer required; you may remove it from #{self}'s `subscription` root type (#{subscription}).")
           else
-            subscription.fields.each do |name, field|
+            subscription.all_field_definitions.each do |field|
               field.extension(Subscriptions::DefaultSubscriptionResolveExtension)
             end
           end
@@ -1779,7 +1779,7 @@ module GraphQL
         end
         new_types = Array(t)
         addition = Schema::Addition.new(schema: self, own_types: own_types, new_types: new_types)
-        addition.types.each do |name, types_entry|
+        addition.types.each do |name, types_entry| # rubocop:disable Cop/ContextIsPassedCop -- build-time, not query-time
           if (prev_entry = own_types[name])
             prev_entries = case prev_entry
             when Array

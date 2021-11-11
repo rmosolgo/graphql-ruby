@@ -38,7 +38,7 @@ module GraphQL
 
           find_in_directive(directive, path: path)
         else
-          type = schema.get_type(type_or_directive)
+          type = schema.get_type(type_or_directive) # rubocop:disable Cop/ContextIsPassedCop -- build-time
 
           if type.nil?
             raise MemberNotFoundError, "Could not find type `#{type_or_directive}` in schema."
@@ -136,7 +136,7 @@ module GraphQL
 
       def find_in_enum_type(enum_type, path:)
         value_name = path.shift
-        enum_value = enum_type.values[value_name]
+        enum_value = enum_type.enum_values.find { |v| v.graphql_name == value_name }
 
         if enum_value.nil?
           raise MemberNotFoundError, "Could not find enum value `#{value_name}` on enum type `#{enum_type.graphql_name}`."

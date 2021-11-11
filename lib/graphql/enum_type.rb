@@ -38,6 +38,10 @@ module GraphQL
       @values_by_name
     end
 
+    def enum_values(_context = nil)
+      values.values
+    end
+
     def kind
       GraphQL::TypeKinds::ENUM
     end

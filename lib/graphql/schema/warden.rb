@@ -84,7 +84,7 @@ module GraphQL
 
       # @return Boolean True if the type is visible and reachable in the schema
       def reachable_type?(type_name)
-        type = get_type(type_name)
+        type = get_type(type_name) # rubocop:disable Cop/ContextIsPassedCop -- `self` is query-aware
         type && reachable_type_set.include?(type)
       end
 
@@ -135,7 +135,7 @@ module GraphQL
 
       # @return [Array<GraphQL::EnumType::EnumValue>] Visible members of `enum_defn`
       def enum_values(enum_defn)
-        @visible_enum_values ||= read_through { |e| e.values(@context).each_value.select { |enum_value_defn| visible?(enum_value_defn) } }
+        @visible_enum_values ||= read_through { |e| e.enum_values(@context).select { |enum_value_defn| visible?(enum_value_defn) } }
         @visible_enum_values[enum_defn]
       end
 
@@ -286,14 +286,14 @@ module GraphQL
         directives.each do |dir_class|
           dir_class.arguments.values.each do |arg_defn|
             arg_t = arg_defn.type.unwrap
-            if get_type(arg_t.graphql_name)
+            if get_type(arg_t.graphql_name) # rubocop:disable Cop/ContextIsPassedCop -- `self` is query-aware
               unvisited_types << arg_t
             end
           end
         end
 
         @schema.orphan_types.each do |orphan_type|
-          if get_type(orphan_type.graphql_name) == orphan_type
+          if get_type(orphan_type.graphql_name) == orphan_type # rubocop:disable Cop/ContextIsPassedCop -- `self` is query-aware
             unvisited_types << orphan_type
           end
         end

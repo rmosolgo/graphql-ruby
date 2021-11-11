@@ -107,9 +107,9 @@ module GraphQL
           type_defn.orphan_types = orphan_types
           type_defn.type_membership_class = self.type_membership_class
           type_defn.ast_node = ast_node
-          fields.each do |field_name, field_inst|
+          fields.each do |field_name, field_inst| # rubocop:disable Cop/ContextIsPassedCop -- legacy-related
             field_defn = field_inst.graphql_definition
-            type_defn.fields[field_defn.name] = field_defn
+            type_defn.fields[field_defn.name] = field_defn # rubocop:disable Cop/ContextIsPassedCop -- legacy-related
           end
           type_defn.metadata[:type_class] = self
           if respond_to?(:resolve_type)

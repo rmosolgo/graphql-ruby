@@ -189,8 +189,8 @@ module GraphQL
         end
       end
 
-      def get_argument(name)
-        self.class.get_argument(name)
+      def get_argument(name, context = GraphQL::Query::NullContext)
+        self.class.get_argument(name, context)
       end
 
       class << self

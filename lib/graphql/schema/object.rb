@@ -113,7 +113,7 @@ module GraphQL
           interfaces.each do |int|
             if int.is_a?(GraphQL::InterfaceType)
               int_f = {}
-              int.fields.each do |name, legacy_field|
+              int.fields.each do |name, legacy_field| # rubocop:disable Cop/ContextIsPassedCop -- legacy-related
                 int_f[name] = field_class.from_options(name, field: legacy_field)
               end
               all_fields = int_f.merge(all_fields)
@@ -131,9 +131,9 @@ module GraphQL
           obj_type.introspection = introspection
           obj_type.mutation = mutation
           obj_type.ast_node = ast_node
-          fields.each do |field_name, field_inst|
+          fields.each do |field_name, field_inst| # rubocop:disable Cop/ContextIsPassedCop -- legacy-related
             field_defn = field_inst.to_graphql
-            obj_type.fields[field_defn.name] = field_defn
+            obj_type.fields[field_defn.name] = field_defn # rubocop:disable Cop/ContextIsPassedCop -- legacy-related
           end
 
           obj_type.metadata[:type_class] = self

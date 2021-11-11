@@ -329,7 +329,7 @@ module GraphQL
                 end
               when GraphQL::Language::Nodes::FragmentSpread
                 fragment_def = query.fragments[node.name]
-                type_defn = schema.get_type(fragment_def.type.name)
+                type_defn = query.get_type(fragment_def.type.name)
                 possible_types = query.warden.possible_types(type_defn)
                 possible_types.each do |t|
                   if t == owner_type

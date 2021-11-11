@@ -137,7 +137,7 @@ module GraphQL
 
       def print_fragment_definition(fragment_def, indent: "")
         old_type = @current_type
-        @current_type = query.schema.types[fragment_def.type.name]
+        @current_type = query.get_type(fragment_def.type.name)
 
         res = super
 
