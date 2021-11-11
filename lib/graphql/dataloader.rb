@@ -23,8 +23,18 @@ module GraphQL
   #   end
   #
   class Dataloader
-    def self.use(schema)
-      schema.dataloader_class = self
+    class << self
+      attr_accessor :default_nonblocking
+    end
+
+    AsyncDataloader = Class.new(self) { self.default_nonblocking = true }
+
+    def self.use(schema, nonblocking: nil)
+      schema.dataloader_class = if nonblocking
+        AsyncDataloader
+      else
+        self
+      end
     end
 
     # Call the block with a Dataloader instance,
@@ -39,9 +49,16 @@ module GraphQL
       result
     end
 
-    def initialize
+    def initialize(nonblocking: self.class.default_nonblocking)
       @source_cache = Hash.new { |h, k| h[k] = {} }
       @pending_jobs = []
+      if !nonblocking.nil?
+        @nonblocking = nonblocking
+      end
+    end
+
+    def nonblocking?
+      @nonblocking
     end
 
     # Get a Source instance from this dataloader, for calling `.load(...)` or `.request(...)` on.
@@ -117,6 +134,9 @@ module GraphQL
 
     # @api private Move along, move along
     def run
+      if @nonblocking && !Fiber.scheduler
+        raise "`nonblocking: true` requires `Fiber.scheduler`, assign one with `Fiber.set_scheduler(...)` before executing GraphQL."
+      end
       # At a high level, the algorithm is:
       #
       #  A) Inside Fibers, run jobs from the queue one-by-one
@@ -137,6 +157,8 @@ module GraphQL
       #
       pending_fibers = []
       next_fibers = []
+      pending_source_fibers = []
+      next_source_fibers = []
       first_pass = true
 
       while first_pass || (f = pending_fibers.shift)
@@ -174,31 +196,27 @@ module GraphQL
           # This is where an evented approach would be even better -- can we tell which
           # fibers are ready to continue, and continue execution there?
           #
-          source_fiber_queue = if (first_source_fiber = create_source_fiber)
-            [first_source_fiber]
-          else
-            nil
+          if (first_source_fiber = create_source_fiber)
+            pending_source_fibers << first_source_fiber
           end
 
-          if source_fiber_queue
-            while (outer_source_fiber = source_fiber_queue.shift)
+          while pending_source_fibers.any?
+            while (outer_source_fiber = pending_source_fibers.pop)
               resume(outer_source_fiber)
-
-              # If this source caused more sources to become pending, run those before running this one again:
-              next_source_fiber = create_source_fiber
-              if next_source_fiber
-                source_fiber_queue << next_source_fiber
-              end
-
               if outer_source_fiber.alive?
-                source_fiber_queue << outer_source_fiber
+                next_source_fibers << outer_source_fiber
+              end
+              if (next_source_fiber = create_source_fiber)
+                pending_source_fibers << next_source_fiber
               end
             end
+            join_queues(pending_source_fibers, next_source_fibers)
+            next_source_fibers.clear
           end
           # Move newly-enqueued Fibers on to the list to be resumed.
           # Clear out the list of next-round Fibers, so that
           # any Fibers that pause can be put on it.
-          pending_fibers.concat(next_fibers)
+          join_queues(pending_fibers, next_fibers)
           next_fibers.clear
         end
       end
@@ -211,6 +229,14 @@ module GraphQL
         raise "Invariant: #{next_fibers.size} next fibers"
       end
       nil
+    end
+
+    def join_queues(previous_queue, next_queue)
+      if @nonblocking
+        Fiber.scheduler.run
+        next_queue.select!(&:alive?)
+      end
+      previous_queue.concat(next_queue)
     end
 
     private
@@ -266,9 +292,16 @@ module GraphQL
         fiber_locals[fiber_var_key] = Thread.current[fiber_var_key]
       end
 
-      Fiber.new do
-        fiber_locals.each { |k, v| Thread.current[k] = v }
-        yield
+      if @nonblocking
+        Fiber.new(blocking: false) do
+          fiber_locals.each { |k, v| Thread.current[k] = v }
+          yield
+        end
+      else
+        Fiber.new do
+          fiber_locals.each { |k, v| Thread.current[k] = v }
+          yield
+        end
       end
     end
   end

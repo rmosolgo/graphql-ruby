@@ -5,7 +5,6 @@ section: Dataloader
 title: Dataloader
 desc: The Dataloader orchestrates Fibers and Sources
 index: 2
-experimental: true
 ---
 
 {{ "GraphQL::Dataloader" | api_doc }} instances are created for each query (or multiplex) and they:

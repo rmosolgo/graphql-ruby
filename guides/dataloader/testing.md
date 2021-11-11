@@ -5,7 +5,6 @@ section: Dataloader
 title: Testing
 desc: Tips for testing Dataloader implementation
 index: 4
-experimental: true
 ---
 
 There are a few techniques for testing your {{ "GraphQL::Dataloader" | api_doc }} setup.
