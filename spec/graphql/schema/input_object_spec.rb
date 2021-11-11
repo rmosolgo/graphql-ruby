@@ -582,9 +582,19 @@ describe GraphQL::Schema::InputObject do
     before do
       arg_values = {a: 1, b: 2, c: { d: 3, e: 4, instrumentId: "Instrument/Drum Kit"}}
 
+      query = GraphQL::Query.new(Jazz::Schema, "{ __typename }")
+      # This is because a test below expects `instrument:` to have been loaded
+      # during `InputObject#initialize`, which only happens when `!context.interpreter?`.
+      # Maybe that test could be updated instead.
+      context_without_interpreter = Class.new(SimpleDelegator) do
+        def interpreter?
+          false
+        end
+      end
+
       @input_object = InputObjectToHTest::TestInput2.new(
         arg_values,
-        context: OpenStruct.new(warden: Jazz::Schema, schema: Jazz::Schema),
+        context: context_without_interpreter.new(query.context),
         defaults_used: Set.new
       )
     end
