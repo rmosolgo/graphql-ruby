@@ -274,13 +274,33 @@ describe "Dynamic types, fields, arguments, and enum values" do
     orphan_types(Place, LegacyPlace)
   end
 
+  def check_for_multiple_visible_calls(context)
+    if [1] != context[:visible_calls].values.uniq
+      ok_visible_calls = []
+      not_ok_visible_calls = {}
+      context[:visible_calls].each do |path, calls|
+        if calls == 1
+          ok_visible_calls << path
+        else
+          not_ok_visible_calls[path] = calls
+        end
+      end
+
+      raise <<-ERR
+Should be only one visible call per schema member:
+
+#{not_ok_visible_calls.map {|k, v| "- #{k} => #{v}" }.join("\n")}
+
+OK: #{ok_visible_calls}
+ERR
+    end
+  end
+
   def exec_query(*args, **kwargs)
     context = kwargs[:context] ||= {}
     context[:visible_calls] = Hash.new(0)
     res = MultifieldSchema.execute(*args, **kwargs)
-    if [1] != context[:visible_calls].values.uniq
-      raise "Should be only one visible call per schema member (#{context[:visible_calls]})"
-    end
+    check_for_multiple_visible_calls(res.context)
     res
   end
 
@@ -293,14 +313,14 @@ describe "Dynamic types, fields, arguments, and enum values" do
   def future_schema_sdl
     ctx = { future_schema: true, visible_calls: Hash.new(0) }
     sdl = MultifieldSchema.to_definition(context: ctx)
-    assert_equal [1], ctx[:visible_calls].values.uniq, "Only one visible call per schema member (#{ctx[:visible_calls]})"
+    check_for_multiple_visible_calls(ctx)
     sdl
   end
 
   def legacy_schema_sdl
     ctx = { visible_calls: Hash.new(0) }
     sdl = MultifieldSchema.to_definition(context: ctx)
-    assert_equal [1], ctx[:visible_calls].values.uniq, "Only one visible call per schema member (#{ctx[:visible_calls]})"
+    check_for_multiple_visible_calls(ctx)
     sdl
   end
 
