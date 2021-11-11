@@ -136,7 +136,7 @@ module GraphQL
 
       def find_in_enum_type(enum_type, path:)
         value_name = path.shift
-        enum_value = enum_type.enum_values.find { |v| v.graphql_name == value_name }
+        enum_value = enum_type.enum_values.find { |v| v.graphql_name == value_name } # rubocop:disable Cop/ContextIsPassedCop -- build-time, not runtime
 
         if enum_value.nil?
           raise MemberNotFoundError, "Could not find enum value `#{value_name}` on enum type `#{enum_type.graphql_name}`."
