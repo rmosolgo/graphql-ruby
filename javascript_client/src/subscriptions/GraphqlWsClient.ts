@@ -1,16 +1,14 @@
 import GraphqlWs from 'graphql-ws'
 
 class GraphqlWsClient implements GraphqlWs.Client {
-  on(event: GraphqlWs.Event) {
-    return () => {
-      console.error('Subclass responsibility')
-    }
+  on(_event: GraphqlWs.Event) {
+    console.error('Subclass responsibility')
+    return () => {}
   }
 
-  subscribe(payload: GraphqlWs.SubscribePayload, sink: GraphqlWs.Sink) {
-    return () => {
-      console.error('Subclass responsibility')
-    }
+  subscribe(_payload: GraphqlWs.SubscribePayload, _sink: GraphqlWs.Sink) {
+    console.error('Subclass responsibility')
+    return () => {}
   }
 
   dispose() {

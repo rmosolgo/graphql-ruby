@@ -22,6 +22,7 @@
     "@types/zen-observable": "^0.8.2",
     "ably": "1.2.6",
     "graphql": "^15.0.0",
+    "graphql-ws": "^5.5.5",
     "jest": "^25.0.0",
     "nock": "^11.0.0",
     "pako": "^2.0.3",
@@ -41,7 +42,8 @@
   },
   "peerDependencies": {
     "@apollo/client": "^3.3.6",
-    "graphql": "^14.3.1 || ^15.0.0"
+    "graphql": "^14.3.1 || ^15.0.0",
+    "graphql-ws": "^5.5.5"
   },
   "prettier": {
     "semi": false,
