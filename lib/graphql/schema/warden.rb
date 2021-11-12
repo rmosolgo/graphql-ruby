@@ -41,6 +41,32 @@ module GraphQL
         (context.respond_to?(:warden) && context.warden) || PassThruWarden
       end
 
+      # @param visibility_method [Symbol] a Warden method to call for this entry
+      # @param entry [Object, Array<Object>] One or more definitions for a given name in a GraphQL Schema
+      # @param context [GraphQL::Query::Context]
+      # @param warden [Warden]
+      # @return [Object] `entry` or one of `entry`'s items if exactly one of them is visible for this context
+      # @return [nil] If neither `entry` nor any of `entry`'s items are visible for this context
+      def self.visible_entry?(visibility_method, entry, context, warden = Warden.from_context(context))
+        if entry.is_a?(Array)
+          visible_item = nil
+          entry.each do |item|
+            if warden.public_send(visibility_method, item, context)
+              if visible_item.nil?
+                visible_item = item
+              else
+                raise Schema::DuplicateNamesError, "Found two visible definitions for `#{item.path}`: #{visible_item.inspect}, #{item.inspect}"
+              end
+            end
+          end
+          visible_item
+        elsif warden.public_send(visibility_method, entry, context)
+          entry
+        else
+          nil
+        end
+      end
+
       # This is used when a caller provides a Hash for context.
       # We want to call the schema's hooks, but we don't have a full-blown warden.
       # The `context` arguments to these methods exist purely to simplify the code that

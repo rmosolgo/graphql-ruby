@@ -27,7 +27,7 @@ module GraphQL
               ancestor.own_fields.each do |field_name, fields_entry|
                 # Choose the most local definition that passes `.visible?` --
                 # stop checking for fields by name once one has been found.
-                if !visible_fields.key?(field_name) && (f = field_visible?(fields_entry, context, warden))
+                if !visible_fields.key?(field_name) && (f = Warden.visible_entry?(:visible_field?, fields_entry, context, warden))
                   visible_fields[field_name] = f
                 end
               end
@@ -43,7 +43,7 @@ module GraphQL
             if ancestor.respond_to?(:own_fields) &&
                 (is_object ? visible_interface_implementation?(ancestor, context, warden) : true) &&
                 (f_entry = ancestor.own_fields[field_name]) &&
-                (f = field_visible?(f_entry, context, warden))
+                (f = Warden.visible_entry?(:visible_field?, f_entry, context, warden))
               return f
             end
           end
@@ -144,33 +144,6 @@ module GraphQL
           else
             # If there's no implementation, then we're looking at Ruby-style inheritance instead
             true
-          end
-        end
-
-        # @param fields_entry [GraphQL::Schema::Field, Array<GraphQL::Schema::Field>]
-        # @return [GraphQL::Schema::Field, nil]
-        def field_visible?(fields_entry, context, warden)
-          case fields_entry
-          when GraphQL::Schema::Field
-            if warden.visible_field?(fields_entry, context)
-              fields_entry
-            else
-              nil
-            end
-          when Array
-            visible_field = nil
-            fields_entry.each do |f|
-              if warden.visible_field?(f, context)
-                if visible_field.nil?
-                  visible_field = f
-                else
-                  raise Schema::DuplicateNamesError, "Found two visible field definitions for `#{f.path}`: #{visible_field.inspect}, #{f.inspect}"
-                end
-              end
-            end
-            visible_field
-          else
-            raise "Invariant: unexpected fields entry: #{fields_entry.inspect}"
           end
         end
 

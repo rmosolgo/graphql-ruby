@@ -94,12 +94,11 @@ module GraphQL
 
         # @return [Hash<String => GraphQL::Schema::Argument] Arguments defined on this thing, keyed by name. Includes inherited definitions
         def arguments(context = GraphQL::Query::NullContext)
-          warden = Warden.from_context(context)
           inherited_arguments = ((self.is_a?(Class) && superclass.respond_to?(:arguments)) ? superclass.arguments(context) : nil)
           # Local definitions override inherited ones
           own_arguments_that_apply = {}
           own_arguments.each do |name, args_entry|
-            if (visible_defn = argument_visible?(args_entry, context, warden))
+            if (visible_defn = Warden.visible_entry?(:visible_argument?, args_entry, context))
               own_arguments_that_apply[visible_defn.graphql_name] = visible_defn
             end
           end
@@ -132,12 +131,12 @@ module GraphQL
           warden = Warden.from_context(context)
           if !self.is_a?(Class)
             a = own_arguments[argument_name]
-            a && argument_visible?(a, context, warden)
+            a && Warden.visible_entry?(:visible_argument?, a, context, warden)
           else
             for ancestor in ancestors
               if ancestor.respond_to?(:own_arguments) &&
                 (a = ancestor.own_arguments[argument_name]) &&
-                (a = argument_visible?(a, context, warden))
+                (a = Warden.visible_entry?(:visible_argument?, a, context, warden))
                 return a
               end
             end
@@ -313,35 +312,6 @@ module GraphQL
         NO_ARGUMENTS = {}.freeze
         def own_arguments
           @own_arguments || NO_ARGUMENTS
-        end
-
-        private
-
-        # @param arguments_entry [GraphQL::Schema::Argument, Array<GraphQL::Schema::Argument>]
-        # @return [GraphQL::Schema::Argument, nil]
-        def argument_visible?(arguments_entry, context, warden)
-          case arguments_entry
-          when GraphQL::Schema::Argument
-            if warden.visible_argument?(arguments_entry, context)
-              arguments_entry
-            else
-              nil
-            end
-          when Array
-            visible_arg = nil
-            arguments_entry.each do |a|
-              if warden.visible_argument?(a, context)
-                if visible_arg.nil?
-                  visible_arg = a
-                else
-                  raise Schema::DuplicateNamesError, "Found two visible argument definitions for `#{a.path}`: #{visible_arg.inspect}, #{a.inspect}"
-                end
-              end
-            end
-            visible_arg
-          else
-            raise "Invariant: unexpected arguments entry: #{arguments_entry.inspect}"
-          end
         end
       end
     end

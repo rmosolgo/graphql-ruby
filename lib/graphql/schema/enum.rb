@@ -65,8 +65,9 @@ module GraphQL
         def enum_values(context = GraphQL::Query::NullContext)
           inherited_values = superclass.respond_to?(:enum_values) ? superclass.enum_values(context) : nil
           visible_values = []
+          warden = Warden.from_context(context)
           own_values.each do |key, values_entry|
-            if (v = visible_entry?(context, values_entry))
+            if (v = Warden.visible_entry?(:visible_enum_value?, values_entry, context, warden))
               visible_values << v
             end
           end
@@ -164,32 +165,6 @@ module GraphQL
 
         def own_values
           @own_values ||= {}
-        end
-
-        def visible_entry?(context, values_entry)
-          warden = Warden.from_context(context)
-          case values_entry
-          when GraphQL::Schema::EnumValue
-            if warden.visible_enum_value?(values_entry, context)
-              values_entry
-            else
-              nil
-            end
-          when Array
-            visible_entry = nil
-            values_entry.each do |v|
-              if warden.visible_enum_value?(v, context)
-                if visible_entry.nil?
-                  visible_entry = v
-                else
-                  raise Schema::DuplicateNamesError, "Found two visible enum value definitions for `#{v.path}`: #{visible_entry.inspect}, #{v.inspect}"
-                end
-              end
-            end
-            visible_entry
-          else
-            raise "Invariant: Unexpected enum values entry: #{values_entry.inspect}"
-          end
         end
       end
 

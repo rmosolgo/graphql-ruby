@@ -420,7 +420,7 @@ ERR
       MultifieldSchema::Query.get_field("f1")
     end
 
-    expected_message = "Found two visible field definitions for `Query.f1`: #<MultifieldSchema::BaseField Query.f1: String>, #<MultifieldSchema::BaseField Query.f1: Int>"
+    expected_message = "Found two visible definitions for `Query.f1`: #<MultifieldSchema::BaseField Query.f1: String>, #<MultifieldSchema::BaseField Query.f1: Int>"
     assert_equal expected_message, err.message
 
     # GraphQL usage
@@ -1033,7 +1033,7 @@ GRAPHQL
       err = assert_raises GraphQL::Schema::DuplicateNamesError do
         enum_type.values({ allowed_for: 2 })
       end
-      expected_message ="Found two visible enum value definitions for `DuplicateEnumValue.ONE`: #<DuplicateNames::BaseEnumValue DuplicateEnumValue.ONE (\"second definition\")>, #<DuplicateNames::BaseEnumValue DuplicateEnumValue.ONE (\"first definition\")>"
+      expected_message ="Found two visible definitions for `DuplicateEnumValue.ONE`: #<DuplicateNames::BaseEnumValue DuplicateEnumValue.ONE (\"second definition\")>, #<DuplicateNames::BaseEnumValue DuplicateEnumValue.ONE (\"first definition\")>"
       assert_equal expected_message, err.message
 
       # no get_value method ... yet ...
@@ -1068,7 +1068,7 @@ GRAPHQL
       err = assert_raises GraphQL::Schema::DuplicateNamesError do
         field.arguments({ allowed_for: 2 })
       end
-      expected_message = "Found two visible argument definitions for `DuplicateArgumentObject.multiArg.a`: #<DuplicateNames::BaseArgument DuplicateArgumentObject.multiArg.a: String (\"first definition\")>, #<DuplicateNames::BaseArgument DuplicateArgumentObject.multiArg.a: Int (\"second definition\")>"
+      expected_message = "Found two visible definitions for `DuplicateArgumentObject.multiArg.a`: #<DuplicateNames::BaseArgument DuplicateArgumentObject.multiArg.a: String (\"first definition\")>, #<DuplicateNames::BaseArgument DuplicateArgumentObject.multiArg.a: Int (\"second definition\")>"
       assert_equal expected_message, err.message
 
       err2 = assert_raises GraphQL::Schema::DuplicateNamesError do
@@ -1105,7 +1105,7 @@ GRAPHQL
       err = assert_raises GraphQL::Schema::DuplicateNamesError do
         DuplicateNames::DuplicateFieldObject.fields({ allowed_for: 2 })
       end
-      expected_message = "Found two visible field definitions for `DuplicateFieldObject.f`: #<DuplicateNames::BaseField DuplicateFieldObject.f: String>, #<DuplicateNames::BaseField DuplicateFieldObject.f: Int>"
+      expected_message = "Found two visible definitions for `DuplicateFieldObject.f`: #<DuplicateNames::BaseField DuplicateFieldObject.f: String>, #<DuplicateNames::BaseField DuplicateFieldObject.f: Int>"
       assert_equal expected_message, err.message
 
       err2 = assert_raises GraphQL::Schema::DuplicateNamesError do
