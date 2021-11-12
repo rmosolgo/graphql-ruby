@@ -30,13 +30,24 @@ describe "Dynamic types, fields, arguments, and enum values" do
 
       # Make sure these methods are only called once at runtime:
       [:fields, :get_field, :arguments, :get_argument, :enum_values, :interfaces, :possible_types].each do |dynamic_members_method_name|
-        define_method(dynamic_members_method_name) do |*args, &block|
-          context = args.last
-          if context && (context.is_a?(Hash) || context.is_a?(GraphQL::Query::Context)) && context[:visible_calls]
-            method_obj = self.method(dynamic_members_method_name)
-            context[:visible_calls][MethodInspection.new(method_obj)] << caller
+        if RUBY_VERSION > "3"
+          define_method(dynamic_members_method_name) do |*args, **kwargs, &block|
+            context = args.last
+            if context && (context.is_a?(Hash) || context.is_a?(GraphQL::Query::Context)) && context[:visible_calls]
+              method_obj = self.method(dynamic_members_method_name)
+              context[:visible_calls][MethodInspection.new(method_obj)] << caller
+            end
+            super(*args, **kwargs, &block)
           end
-          super(*args, &block)
+        else
+          define_method(dynamic_members_method_name) do |*args, &block|
+            context = args.last
+            if context && (context.is_a?(Hash) || context.is_a?(GraphQL::Query::Context)) && context[:visible_calls]
+              method_obj = self.method(dynamic_members_method_name)
+              context[:visible_calls][MethodInspection.new(method_obj)] << caller
+            end
+            super(*args, &block)
+          end
         end
       end
     end

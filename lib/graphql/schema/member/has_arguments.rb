@@ -132,7 +132,7 @@ module GraphQL
           warden = context.respond_to?(:warden) ? context.warden : nil
           if !self.is_a?(Class)
             a = own_arguments[argument_name]
-            a = a && argument_visible?(a, context, warden)
+            a && argument_visible?(a, context, warden)
           else
             for ancestor in ancestors
               if ancestor.respond_to?(:own_arguments) &&
