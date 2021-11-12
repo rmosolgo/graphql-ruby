@@ -37,6 +37,24 @@ module GraphQL
     #
     # @api private
     class Warden
+      def self.from_context(context)
+        (context.respond_to?(:warden) && context.warden) || PassThruWarden
+      end
+
+      # This is used when a caller provides a Hash for context.
+      # We want to call the schema's hooks, but we don't have a full-blown warden.
+      # The `context` arguments to these methods exist purely to simplify the code that
+      # calls methods on this object, so it will have everything it needs.
+      class PassThruWarden
+        class << self
+          def visible_field?(field, ctx); field.visible?(ctx); end
+          def visible_argument?(arg, ctx); arg.visible?(ctx); end
+          def visible_type?(type, ctx); type.visible?(ctx); end
+          def visible_enum_value?(ev, ctx); ev.visible?(ctx); end
+          def visible_type_membership?(tm, ctx); tm.visible?(ctx); end
+        end
+      end
+
       # @param filter [<#call(member)>] Objects are hidden when `.call(member, ctx)` returns true
       # @param context [GraphQL::Query::Context]
       # @param schema [GraphQL::Schema]
@@ -93,7 +111,7 @@ module GraphQL
         @visible_parent_fields ||= read_through do |type|
           read_through do |f_name|
             field_defn = @schema.get_field(type, f_name, @context)
-            if field_defn && visible_field?(field_defn, type)
+            if field_defn && visible_field?(field_defn, nil, type)
               field_defn
             else
               nil
@@ -107,7 +125,7 @@ module GraphQL
       # @return [GraphQL::Argument, nil] The argument named `argument_name` on `parent_type`, if it exists and is visible
       def get_argument(parent_type, argument_name)
         argument = parent_type.get_argument(argument_name, @context)
-        return argument if argument && visible_argument?(argument)
+        return argument if argument && visible_argument?(argument, @context)
       end
 
       # @return [Array<GraphQL::BaseType>] The types which may be member of `type_defn`
@@ -139,7 +157,7 @@ module GraphQL
         @visible_enum_arrays[enum_defn]
       end
 
-      def visible_enum_value?(enum_value)
+      def visible_enum_value?(enum_value, _ctx = nil)
         @visible_enum_values ||= read_through { |ev| visible?(ev) }
         @visible_enum_values[enum_value]
       end
@@ -163,26 +181,27 @@ module GraphQL
         end
       end
 
-      def visible_field?(field_defn, owner_type = field_defn.owner)
+      # @param owner [Class, Module] If provided, confirm that field has the given owner.
+      def visible_field?(field_defn, _ctx = nil, owner = field_defn.owner)
         # This field is visible in its own right
         visible?(field_defn) &&
           # This field's return type is visible
           visible_and_reachable_type?(field_defn.type.unwrap) &&
           # This field is either defined on this object type,
           # or the interface it's inherited from is also visible
-          ((field_defn.respond_to?(:owner) && field_defn.owner == owner_type) || field_on_visible_interface?(field_defn, owner_type))
+          ((field_defn.respond_to?(:owner) && field_defn.owner == owner) || field_on_visible_interface?(field_defn, owner))
       end
 
-      def visible_argument?(arg_defn)
+      def visible_argument?(arg_defn, _ctx = nil)
         visible?(arg_defn) && visible_and_reachable_type?(arg_defn.type.unwrap)
       end
 
-      def visible_type?(type_defn)
+      def visible_type?(type_defn, _ctx = nil)
         @type_visibility ||= read_through { |type_defn| visible?(type_defn) }
         @type_visibility[type_defn]
       end
 
-      def visible_type_membership?(type_membership)
+      def visible_type_membership?(type_membership, _ctx = nil)
         visible?(type_membership)
       end
 
@@ -229,7 +248,7 @@ module GraphQL
             if (iface_field_defn = interface_type.get_field(field_defn.graphql_name, @context))
               any_interface_has_field = true
 
-              if interfaces(type_defn).include?(interface_type) && visible_field?(iface_field_defn, interface_type)
+              if interfaces(type_defn).include?(interface_type) && visible_field?(iface_field_defn, nil, interface_type)
                 any_interface_has_visible_field = true
               end
             end

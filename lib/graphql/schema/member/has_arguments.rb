@@ -94,7 +94,7 @@ module GraphQL
 
         # @return [Hash<String => GraphQL::Schema::Argument] Arguments defined on this thing, keyed by name. Includes inherited definitions
         def arguments(context = GraphQL::Query::NullContext)
-          warden = context.respond_to?(:warden) ? context.warden : nil
+          warden = Warden.from_context(context)
           inherited_arguments = ((self.is_a?(Class) && superclass.respond_to?(:arguments)) ? superclass.arguments(context) : nil)
           # Local definitions override inherited ones
           own_arguments_that_apply = {}
@@ -129,7 +129,7 @@ module GraphQL
 
         # @return [GraphQL::Schema::Argument, nil] Argument defined on this thing, fetched by name.
         def get_argument(argument_name, context = GraphQL::Query::NullContext)
-          warden = context.respond_to?(:warden) ? context.warden : nil
+          warden = Warden.from_context(context)
           if !self.is_a?(Class)
             a = own_arguments[argument_name]
             a && argument_visible?(a, context, warden)
@@ -322,7 +322,7 @@ module GraphQL
         def argument_visible?(arguments_entry, context, warden)
           case arguments_entry
           when GraphQL::Schema::Argument
-            if (warden && warden.visible_argument?(arguments_entry)) || arguments_entry.visible?(context)
+            if warden.visible_argument?(arguments_entry, context)
               arguments_entry
             else
               nil
@@ -330,7 +330,7 @@ module GraphQL
           when Array
             visible_arg = nil
             arguments_entry.each do |a|
-              if (warden ? warden.visible_argument?(a) : a.visible?(context))
+              if warden.visible_argument?(a, context)
                 if visible_arg.nil?
                   visible_arg = a
                 else

@@ -4,11 +4,11 @@ module GraphQL
     # This object can be `ctx` in places where there is no query
     class NullContext
       class NullWarden < GraphQL::Schema::Warden
-        def visible?(t); true; end
-        def visible_field?(field); true; end
-        def visible_argument?(arg); true; end
-        def visible_type?(type); true; end
-        def visible_enum_value?(ev); true; end
+        def visible_field?(field, ctx); true; end
+        def visible_argument?(arg, ctx); true; end
+        def visible_type?(type, ctx); true; end
+        def visible_enum_value?(ev, ctx); true; end
+        def visible_type_membership?(tm, ctx); true; end
       end
 
       class NullQuery

@@ -16,7 +16,7 @@ module GraphQL
 
         # @return [Hash<String => GraphQL::Schema::Field>] Fields on this object, keyed by name, including inherited fields
         def fields(context = GraphQL::Query::NullContext)
-          warden = context.respond_to?(:warden) ? context.warden : nil
+          warden = Warden.from_context(context)
           is_object = self.respond_to?(:kind) && self.kind.object?
           # Local overrides take precedence over inherited fields
           visible_fields = {}
@@ -37,7 +37,7 @@ module GraphQL
         end
 
         def get_field(field_name, context = GraphQL::Query::NullContext)
-          warden = context.respond_to?(:warden) ? context.warden : nil
+          warden = Warden.from_context(context)
           is_object = self.respond_to?(:kind) && self.kind.object?
           for ancestor in ancestors
             if ancestor.respond_to?(:own_fields) &&
@@ -140,11 +140,7 @@ module GraphQL
         # If `type` is an interface, and `self` has a type membership for `type`, then make sure it's visible.
         def visible_interface_implementation?(type, context, warden)
           if type.respond_to?(:kind) && type.kind.interface? && (type_membership = type_membership_for(type))
-            if warden
-              warden.visible_type_membership?(type_membership)
-            else
-              type_membership.visible?(context)
-            end
+            warden.visible_type_membership?(type_membership, context)
           else
             # If there's no implementation, then we're looking at Ruby-style inheritance instead
             true
@@ -156,7 +152,7 @@ module GraphQL
         def field_visible?(fields_entry, context, warden)
           case fields_entry
           when GraphQL::Schema::Field
-            if (warden ? warden.visible_field?(fields_entry) : fields_entry.visible?(context))
+            if warden.visible_field?(fields_entry, context)
               fields_entry
             else
               nil
@@ -164,7 +160,7 @@ module GraphQL
           when Array
             visible_field = nil
             fields_entry.each do |f|
-              if (warden ? warden.visible_field?(f) : f.visible?(context))
+              if warden.visible_field?(f, context)
                 if visible_field.nil?
                   visible_field = f
                 else

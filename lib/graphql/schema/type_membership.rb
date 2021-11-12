@@ -25,13 +25,9 @@ module GraphQL
 
       # @return [Boolean] if false, {#object_type} will be treated as _not_ a member of {#abstract_type}
       def visible?(ctx)
-        if (warden = (ctx.respond_to?(:warden) && ctx.warden))
-          warden.visible_type?(@object_type) && warden.visible_type?(@abstract_type)
-        elsif @object_type.respond_to?(:visible?)
-          @object_type.visible?(ctx) && (@abstract_type.respond_to?(:visible?) ? @abstract_type.visible?(ctx) : true)
-        else
-          true
-        end
+        warden = Warden.from_context(ctx)
+        (@object_type.respond_to?(:visible?) ? warden.visible_type?(@object_type, ctx) : true) &&
+          (@abstract_type.respond_to?(:visible?) ? warden.visible_type?(@abstract_type, ctx) : true)
       end
 
       def graphql_name

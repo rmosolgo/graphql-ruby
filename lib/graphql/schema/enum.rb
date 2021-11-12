@@ -167,10 +167,10 @@ module GraphQL
         end
 
         def visible_entry?(context, values_entry)
-          warden = context.respond_to?(:warden) ? context.warden : nil
+          warden = Warden.from_context(context)
           case values_entry
           when GraphQL::Schema::EnumValue
-            if (warden ? warden.visible_enum_value?(values_entry) : values_entry.visible?(context))
+            if warden.visible_enum_value?(values_entry, context)
               values_entry
             else
               nil
@@ -178,7 +178,7 @@ module GraphQL
           when Array
             visible_entry = nil
             values_entry.each do |v|
-              if (warden ? warden.visible_enum_value?(v) : v.visible?(context))
+              if warden.visible_enum_value?(v, context)
                 if visible_entry.nil?
                   visible_entry = v
                 else
