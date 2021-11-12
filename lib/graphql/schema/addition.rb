@@ -196,7 +196,6 @@ module GraphQL
             end
           end
           if type.kind.input_object?
-            # TODO should not filter out inapplicable ones
             type.all_argument_definitions.each do |arg|
               add_directives_from(arg)
               arg_type = arg.type.unwrap
@@ -219,7 +218,6 @@ module GraphQL
             end
           end
           if type.kind.object?
-            # TODO what if unions, interfaces, ando object types share a name?
             possible_types_for_this_name = @possible_types[type.graphql_name] ||= []
             possible_types_for_this_name << type
           end

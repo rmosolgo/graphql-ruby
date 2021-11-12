@@ -22,10 +22,8 @@ module GraphQL
           visible_fields = {}
           for ancestor in ancestors
             if ancestor.respond_to?(:own_fields) &&
-                (
-                  (is_object && ancestor.respond_to?(:kind) && ancestor.kind.interface?) ?
-                    visible_interface_implementation?(ancestor, context, warden) : true
-                )
+                (is_object ? visible_interface_implementation?(ancestor, context, warden) : true)
+
               ancestor.own_fields.each do |field_name, fields_entry|
                 # Choose the most local definition that passes `.visible?` --
                 # stop checking for fields by name once one has been found.
@@ -38,57 +36,18 @@ module GraphQL
           visible_fields
         end
 
-        # TODO private
-        def visible_interface_implementation?(inteface_type, context, warden)
-          if (type_membership = type_membership_for(inteface_type))
-            if warden
-              warden.visible_type_membership?(type_membership)
-            else
-              type_membership.visible?(context)
-            end
-          else
-            false
-          end
-        end
-
         def get_field(field_name, context = GraphQL::Query::NullContext)
           warden = context.respond_to?(:warden) ? context.warden : nil
+          is_object = self.respond_to?(:kind) && self.kind.object?
           for ancestor in ancestors
             if ancestor.respond_to?(:own_fields) &&
-                ((ancestor.respond_to?(:kind) && ancestor.kind.interface?) ? visible_interface_implementation?(ancestor, context, warden) : true) &&
+                (is_object ? visible_interface_implementation?(ancestor, context, warden) : true) &&
                 (f_entry = ancestor.own_fields[field_name]) &&
                 (f = field_visible?(f_entry, context, warden))
               return f
             end
           end
           nil
-        end
-
-        # @param fields_entry [GraphQL::Schema::Field, Array<GraphQL::Schema::Field>]
-        # @return [GraphQL::Schema::Field, nil]
-        def field_visible?(fields_entry, context, warden)
-          case fields_entry
-          when GraphQL::Schema::Field
-            if (warden ? warden.visible_field?(fields_entry) : fields_entry.visible?(context))
-              fields_entry
-            else
-              nil
-            end
-          when Array
-            visible_field = nil
-            fields_entry.each do |f|
-              if (warden ? warden.visible_field?(f) : f.visible?(context))
-                if visible_field.nil?
-                  visible_field = f
-                else
-                  raise Schema::DuplicateNamesError, "Found two visible field defintions for `#{f.path}`: #{visible_field.inspect}, #{f.inspect}"
-                end
-              end
-            end
-            visible_field
-          else
-            raise "Invariant: unexpected fields entry: #{fields_entry.inspect}"
-          end
         end
 
         # A list of Ruby keywords.
@@ -177,6 +136,47 @@ module GraphQL
         end
 
         private
+
+        # If `type` is an interface, and `self` has a type membership for `type`, then make sure it's visible.
+        def visible_interface_implementation?(type, context, warden)
+          if type.respond_to?(:kind) && type.kind.interface? && (type_membership = type_membership_for(type))
+            if warden
+              warden.visible_type_membership?(type_membership)
+            else
+              type_membership.visible?(context)
+            end
+          else
+            # If there's no implementation, then we're looking at Ruby-style inheritance instead
+            true
+          end
+        end
+
+        # @param fields_entry [GraphQL::Schema::Field, Array<GraphQL::Schema::Field>]
+        # @return [GraphQL::Schema::Field, nil]
+        def field_visible?(fields_entry, context, warden)
+          case fields_entry
+          when GraphQL::Schema::Field
+            if (warden ? warden.visible_field?(fields_entry) : fields_entry.visible?(context))
+              fields_entry
+            else
+              nil
+            end
+          when Array
+            visible_field = nil
+            fields_entry.each do |f|
+              if (warden ? warden.visible_field?(f) : f.visible?(context))
+                if visible_field.nil?
+                  visible_field = f
+                else
+                  raise Schema::DuplicateNamesError, "Found two visible field defintions for `#{f.path}`: #{visible_field.inspect}, #{f.inspect}"
+                end
+              end
+            end
+            visible_field
+          else
+            raise "Invariant: unexpected fields entry: #{fields_entry.inspect}"
+          end
+        end
 
         # @param [GraphQL::Schema::Field]
         # @return [String] A warning to give when this field definition might conflict with a built-in method

@@ -128,34 +128,6 @@ module GraphQL
           all_defns
         end
 
-        # TODO private
-        # @param arguments_entry [GraphQL::Schema::Argument, Array<GraphQL::Schema::Argument>]
-        # @return [GraphQL::Schema::Argument, nil]
-        def argument_visible?(arguments_entry, context, warden)
-          case arguments_entry
-          when GraphQL::Schema::Argument
-            if (warden && warden.visible_argument?(arguments_entry)) || arguments_entry.visible?(context)
-              arguments_entry
-            else
-              nil
-            end
-          when Array
-            visible_arg = nil
-            arguments_entry.each do |a|
-              if (warden ? warden.visible_argument?(a) : a.visible?(context))
-                if visible_arg.nil?
-                  visible_arg = a
-                else
-                  raise Schema::DuplicateNamesError, "Found two visible argument defintions for `#{a.path}`: #{visible_arg.inspect}, #{a.inspect}"
-                end
-              end
-            end
-            visible_arg
-          else
-            raise "Invariant: unexpected arguments entry: #{arguments_entry.inspect}"
-          end
-        end
-
         # @return [GraphQL::Schema::Argument, nil] Argument defined on this thing, fetched by name.
         def get_argument(argument_name, context = GraphQL::Query::NullContext)
           warden = context.respond_to?(:warden) ? context.warden : nil
@@ -344,6 +316,35 @@ module GraphQL
         NO_ARGUMENTS = {}.freeze
         def own_arguments
           @own_arguments || NO_ARGUMENTS
+        end
+
+        private
+
+        # @param arguments_entry [GraphQL::Schema::Argument, Array<GraphQL::Schema::Argument>]
+        # @return [GraphQL::Schema::Argument, nil]
+        def argument_visible?(arguments_entry, context, warden)
+          case arguments_entry
+          when GraphQL::Schema::Argument
+            if (warden && warden.visible_argument?(arguments_entry)) || arguments_entry.visible?(context)
+              arguments_entry
+            else
+              nil
+            end
+          when Array
+            visible_arg = nil
+            arguments_entry.each do |a|
+              if (warden ? warden.visible_argument?(a) : a.visible?(context))
+                if visible_arg.nil?
+                  visible_arg = a
+                else
+                  raise Schema::DuplicateNamesError, "Found two visible argument defintions for `#{a.path}`: #{visible_arg.inspect}, #{a.inspect}"
+                end
+              end
+            end
+            visible_arg
+          else
+            raise "Invariant: unexpected arguments entry: #{arguments_entry.inspect}"
+          end
         end
       end
     end

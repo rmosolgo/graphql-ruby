@@ -88,33 +88,6 @@ module GraphQL
           enum_values(context).each_with_object({}) { |val, obj| obj[val.graphql_name] = val }
         end
 
-        # TODO private
-        def visible_entry?(context, values_entry)
-          warden = context.respond_to?(:warden) ? context.warden : nil
-          case values_entry
-          when GraphQL::Schema::EnumValue
-            if (warden ? warden.visible_enum_value?(values_entry) : values_entry.visible?(context))
-              values_entry
-            else
-              nil
-            end
-          when Array
-            visible_entry = nil
-            values_entry.each do |v|
-              if (warden ? warden.visible_enum_value?(v) : v.visible?(context))
-                if visible_entry.nil?
-                  visible_entry = v
-                else
-                  raise Schema::DuplicateNamesError, "Found two visible enum value defintions for `#{v.path}`: #{visible_entry.inspect}, #{v.inspect}"
-                end
-              end
-            end
-            visible_entry
-          else
-            raise "Invariant: Unexpected enum values entry: #{values_entry.inspect}"
-          end
-        end
-
         # @return [GraphQL::EnumType]
         def to_graphql
           enum_type = GraphQL::EnumType.new
@@ -191,6 +164,32 @@ module GraphQL
 
         def own_values
           @own_values ||= {}
+        end
+
+        def visible_entry?(context, values_entry)
+          warden = context.respond_to?(:warden) ? context.warden : nil
+          case values_entry
+          when GraphQL::Schema::EnumValue
+            if (warden ? warden.visible_enum_value?(values_entry) : values_entry.visible?(context))
+              values_entry
+            else
+              nil
+            end
+          when Array
+            visible_entry = nil
+            values_entry.each do |v|
+              if (warden ? warden.visible_enum_value?(v) : v.visible?(context))
+                if visible_entry.nil?
+                  visible_entry = v
+                else
+                  raise Schema::DuplicateNamesError, "Found two visible enum value defintions for `#{v.path}`: #{visible_entry.inspect}, #{v.inspect}"
+                end
+              end
+            end
+            visible_entry
+          else
+            raise "Invariant: Unexpected enum values entry: #{values_entry.inspect}"
+          end
         end
       end
 

@@ -19,7 +19,6 @@ describe GraphQL::Schema::Object do
       assert_equal [
           "GloballyIdentifiable",
           "HasMusicians",
-          "InvisibleNameEntity",
           "NamedEntity"
         ], object_class.interfaces({}).map(&:graphql_name).sort
       # Compatibility methods are delegated to the underlying BaseType

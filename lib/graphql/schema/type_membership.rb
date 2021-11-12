@@ -4,8 +4,6 @@ module GraphQL
   class Schema
     # This class joins an object type to an abstract type (interface or union) of which
     # it is a member.
-    #
-    # TODO: Not yet implemented for interfaces.
     class TypeMembership
       # @return [Class<GraphQL::Schema::Object>]
       attr_accessor :object_type
@@ -36,8 +34,12 @@ module GraphQL
         end
       end
 
+      def graphql_name
+        "#{@object_type.graphql_name}.#{@abstract_type.kind.interface? ? "implements" : "belongsTo" }.#{@abstract_type.graphql_name}"
+      end
+
       def path
-        "#{@object_type.graphql_name}.typeMembership.#{@abstract_type.graphql_name}"
+        graphql_name
       end
 
       def inspect
