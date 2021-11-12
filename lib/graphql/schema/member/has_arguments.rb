@@ -17,7 +17,6 @@ module GraphQL
         # @return [GraphQL::Schema::Argument] An instance of {arguments_class}, created from `*args`
         def argument(*args, **kwargs, &block)
           kwargs[:owner] = self
-          kwargs[:source_location] = caller(1, 1).first
           loads = kwargs[:loads]
           if loads
             name = args[0]
