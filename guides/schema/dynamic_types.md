@@ -10,7 +10,7 @@ index: 8
 
 You can use different versions of your GraphQL schema for each operation. To do this, implement `visible?(context)` on the parts of your schema that will be conditionally accessible. Additionally, many schema elements have definition methods which are called at runtime by GraphQL-Ruby. You can re-implement those to return any valid schema objects. GraphQL-Ruby caches schema elements for the duration of the operation, but if you're making external service calls to implement the methods below, consider adding a cache layer to improve the client experience and reduce load on your backend.
 
-At runtime, ensure that only one object is visible per name (type name, field name, etc.). (If `.visible?(context)` returns false, then that part of the schema will be hidden for the current operation.)
+At runtime, ensure that only one object is visible per name (type name, field name, etc.). (If `.visible?(context)` returns `false`, then that part of the schema will be hidden for the current operation.)
 
 When using dynamic schema members, be sure to include the relevant `context: ...` when [generating schema definition files](#schema-dumps).
 

@@ -182,7 +182,7 @@ module GraphQL
                 if visible_entry.nil?
                   visible_entry = v
                 else
-                  raise Schema::DuplicateNamesError, "Found two visible enum value defintions for `#{v.path}`: #{visible_entry.inspect}, #{v.inspect}"
+                  raise Schema::DuplicateNamesError, "Found two visible enum value definitions for `#{v.path}`: #{visible_entry.inspect}, #{v.inspect}"
                 end
               end
             end

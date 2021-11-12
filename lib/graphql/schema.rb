@@ -1009,7 +1009,7 @@ module GraphQL
                 if visible_t.nil?
                   visible_t = t
                 else
-                  raise DuplicateNamesError, "Found two visible type defintions for `#{k}`: #{visible_t.inspect}, #{t.inspect}"
+                  raise DuplicateNamesError, "Found two visible type definitions for `#{k}`: #{visible_t.inspect}, #{t.inspect}"
                 end
               end
             end
@@ -1036,7 +1036,7 @@ module GraphQL
               if visible_t.nil?
                 visible_t = t
               else
-                raise DuplicateNamesError, "Found two visible type defintions for `#{type_name}`: #{visible_t.inspect}, #{t.inspect}"
+                raise DuplicateNamesError, "Found two visible type definitions for `#{type_name}`: #{visible_t.inspect}, #{t.inspect}"
               end
             end
           end

@@ -131,11 +131,9 @@ module GraphQL
         # @return [GraphQL::Schema::Argument, nil] Argument defined on this thing, fetched by name.
         def get_argument(argument_name, context = GraphQL::Query::NullContext)
           warden = context.respond_to?(:warden) ? context.warden : nil
-          a = own_arguments[argument_name]
-          a = a && argument_visible?(a, context, warden)
-
-          if a || !self.is_a?(Class)
-            a
+          if !self.is_a?(Class)
+            a = own_arguments[argument_name]
+            a = a && argument_visible?(a, context, warden)
           else
             for ancestor in ancestors
               if ancestor.respond_to?(:own_arguments) &&
@@ -337,7 +335,7 @@ module GraphQL
                 if visible_arg.nil?
                   visible_arg = a
                 else
-                  raise Schema::DuplicateNamesError, "Found two visible argument defintions for `#{a.path}`: #{visible_arg.inspect}, #{a.inspect}"
+                  raise Schema::DuplicateNamesError, "Found two visible argument definitions for `#{a.path}`: #{visible_arg.inspect}, #{a.inspect}"
                 end
               end
             end

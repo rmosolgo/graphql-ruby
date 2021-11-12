@@ -317,7 +317,7 @@ module GraphQL
           if @reachable_type_set.add?(type)
             type_by_name = rt_hash[type.graphql_name] ||= type
             if type_by_name != type
-              raise DuplicateNamesError, "Found two visible type defintions for `#{type.graphql_name}`: #{type.inspect}, #{type_by_name.inspect}"
+              raise DuplicateNamesError, "Found two visible type definitions for `#{type.graphql_name}`: #{type.inspect}, #{type_by_name.inspect}"
             end
             if type.kind.input_object?
               # recurse into visible arguments

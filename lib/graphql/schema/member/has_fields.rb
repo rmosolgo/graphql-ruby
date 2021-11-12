@@ -168,7 +168,7 @@ module GraphQL
                 if visible_field.nil?
                   visible_field = f
                 else
-                  raise Schema::DuplicateNamesError, "Found two visible field defintions for `#{f.path}`: #{visible_field.inspect}, #{f.inspect}"
+                  raise Schema::DuplicateNamesError, "Found two visible field definitions for `#{f.path}`: #{visible_field.inspect}, #{f.inspect}"
                 end
               end
             end

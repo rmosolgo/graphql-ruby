@@ -222,7 +222,7 @@ module GraphQL
             possible_types_for_this_name << type
           end
 
-          if type.respond_to?(:interfaces)
+          if type.kind.object? || type.kind.interface?
             type.interface_type_memberships.each do |interface_type_membership|
               case interface_type_membership
               when Schema::TypeMembership
