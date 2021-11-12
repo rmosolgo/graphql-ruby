@@ -215,7 +215,11 @@ describe "Dynamic types, fields, arguments, and enum values" do
       self.future_schema = false
     end
 
-    class Bot < BaseObject
+    class AbstractNamedThing < BaseObject
+      field :name, String, null: false
+    end
+
+    class Bot < AbstractNamedThing
       description "Future bot"
       field :name, String, null: false
       field :is_verified, Boolean, null: false

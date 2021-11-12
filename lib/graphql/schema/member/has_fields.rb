@@ -116,22 +116,14 @@ module GraphQL
         end
 
         def all_field_definitions
-          # TODO can this be an array?
-          all_fields = Hash.new { |h, k| h[k] = [] }
-          for ancestor in ancestors
+          all_fields = {}
+          ancestors.reverse_each do |ancestor|
             if ancestor.respond_to?(:own_fields)
-              ancestor.own_fields.each do |field_name, fields_entry|
-                if fields_entry.is_a?(Array)
-                  all_fields[field_name].concat(fields_entry)
-                else
-                  all_fields[field_name] << fields_entry
-                end
-              end
+              all_fields.merge!(ancestor.own_fields)
             end
           end
           all_fields = all_fields.values
           all_fields.flatten!
-          all_fields.uniq!
           all_fields
         end
 
