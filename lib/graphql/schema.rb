@@ -1803,6 +1803,9 @@ module GraphQL
               raise "Invariant: unexpected types_entry at #{name} when adding #{t.inspect}"
             end
           else
+            if types_entry.is_a?(Array)
+              types_entry.uniq!
+            end
             own_types[name] = types_entry
           end
         end

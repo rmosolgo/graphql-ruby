@@ -17,14 +17,15 @@ module GraphQL
         # @return [Hash<String => GraphQL::Schema::Field>] Fields on this object, keyed by name, including inherited fields
         def fields(context = GraphQL::Query::NullContext)
           warden = context.respond_to?(:warden) ? context.warden : nil
+          is_object = self.respond_to?(:kind) && self.kind.object?
           # Local overrides take precedence over inherited fields
           visible_fields = {}
           for ancestor in ancestors
             if ancestor.respond_to?(:own_fields) &&
-                # TODO:
-                # - check if type membership is visible
-                # - copy this to `get_field`
-                ((ancestor.respond_to?(:kind) && ancestor.kind.interface?) ? (warden ? warden.visible_type?(ancestor) : ancestor.visible?(context)) : true)
+                (
+                  (is_object && ancestor.respond_to?(:kind) && ancestor.kind.interface?) ?
+                    visible_interface_implementation?(ancestor, context, warden) : true
+                )
               ancestor.own_fields.each do |field_name, fields_entry|
                 # Choose the most local definition that passes `.visible?` --
                 # stop checking for fields by name once one has been found.
@@ -37,11 +38,24 @@ module GraphQL
           visible_fields
         end
 
+        # TODO private
+        def visible_interface_implementation?(inteface_type, context, warden)
+          if (type_membership = type_membership_for(inteface_type))
+            if warden
+              warden.visible_type_membership?(type_membership)
+            else
+              type_membership.visible?(context)
+            end
+          else
+            false
+          end
+        end
+
         def get_field(field_name, context = GraphQL::Query::NullContext)
           warden = context.respond_to?(:warden) ? context.warden : nil
           for ancestor in ancestors
             if ancestor.respond_to?(:own_fields) &&
-                (ancestor.kind.interface? ? (warden ? warden.visible_type?(ancestor) : ancestor.visible?(context)) : true) &&
+                ((ancestor.respond_to?(:kind) && ancestor.kind.interface?) ? visible_interface_implementation?(ancestor, context, warden) : true) &&
                 (f_entry = ancestor.own_fields[field_name]) &&
                 (f = field_visible?(f_entry, context, warden))
               return f

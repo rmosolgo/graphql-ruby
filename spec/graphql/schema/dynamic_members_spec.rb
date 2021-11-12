@@ -13,7 +13,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
         if context[:visible_calls]
           context[:visible_calls][self] << caller
         end
-        @future_schema.nil? || (@future_schema == !!context[:future_schema])
+        super && (@future_schema.nil? || (@future_schema == !!context[:future_schema]))
       end
 
       attr_accessor :future_schema
@@ -35,10 +35,20 @@ describe "Dynamic types, fields, arguments, and enum values" do
 
     module BaseInterface
       include GraphQL::Schema::Interface
+      class TypeMembership < GraphQL::Schema::TypeMembership
+        include AppliesToFutureSchema
+      end
+
       field_class BaseField
+      type_membership_class TypeMembership
+      definition_methods do
+        include AppliesToFutureSchema
+      end
     end
 
     class BaseUnion < GraphQL::Schema::Union
+      extend AppliesToFutureSchema
+      type_membership_class BaseInterface::TypeMembership
     end
 
     class BaseScalar < GraphQL::Schema::Scalar
@@ -65,7 +75,14 @@ describe "Dynamic types, fields, arguments, and enum values" do
       graphql_name "LegacyMoney"
     end
 
+    module HasCurrency
+      include BaseInterface
+      field :currency, String, null: false
+      self.future_schema = true
+    end
+
     class Money < BaseObject
+      implements HasCurrency
       field :amount, Integer, null: false
       field :currency, String, null: false
 
@@ -125,6 +142,20 @@ describe "Dynamic types, fields, arguments, and enum values" do
       value "COFFEE_SCRIPT", future_schema: false
     end
 
+    module HasCapital
+      include BaseInterface
+      field :capital_name, String, null: false
+    end
+
+    class Country < BaseObject
+      implements HasCurrency
+      implements HasCapital, future_schema: true
+    end
+
+    class Locale < BaseUnion
+      possible_types Country, future_schema: true
+    end
+
     class Place < BaseObject
       implements Node
       self.future_schema = true
@@ -135,8 +166,12 @@ describe "Dynamic types, fields, arguments, and enum values" do
       implements Node
       graphql_name "Place"
       self.future_schema = false
-
       field :legacy_place_field, String, null: true
+    end
+
+    class Region < BaseUnion
+      self.future_schema = true
+      possible_types Country, Place, LegacyPlace
     end
 
     class LegacyBot < BaseObject
@@ -271,7 +306,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
 
     query(Query)
     mutation(Mutation)
-    orphan_types(Place, LegacyPlace)
+    orphan_types(Place, LegacyPlace, Locale, Region)
   end
 
   def check_for_multiple_visible_calls(context)
@@ -345,8 +380,15 @@ ERR
 
   it "returns different fields according context for Ruby methods, runtime, introspection, and to_definition" do
     # Accessing in Ruby
-    assert_equal GraphQL::Types::Int, MultifieldSchema::Query.get_field("f1").type
+    assert_equal GraphQL::Types::Int, MultifieldSchema::Query.get_field("f1", { future_schema: nil }).type
+    assert_equal GraphQL::Types::Int, MultifieldSchema::Query.get_field("f1", { future_schema: false }).type
     assert_equal GraphQL::Types::String, MultifieldSchema::Query.get_field("f1", { future_schema: true }).type
+    err = assert_raises GraphQL::Schema::DuplicateNamesError do
+      MultifieldSchema::Query.get_field("f1")
+    end
+
+    expected_message = "Found two visible field defintions for `Query.f1`: #<MultifieldSchema::BaseField Query.f1: String>, #<MultifieldSchema::BaseField Query.f1: Int>"
+    assert_equal expected_message, err.message
 
     # GraphQL usage
     query_str = "{ f1 }"
@@ -421,9 +463,63 @@ GRAPHQL
     assert_equal "ID", introspection_res["data"]["__type"]["fields"].find { |f| f["name"] == "thing" }["args"].first["type"]["ofType"]["name"]
   end
 
-  it "hides fields from hidden interfaces"
-  it "hides hidden interface implementations"
-  it "hides hidden union memberships"
+  it "hides fields from hidden interfaces" do
+    # in this case, the whole interface is hidden
+    assert MultifieldSchema::HasCurrency.visible?({ future_schema: true })
+    refute MultifieldSchema::HasCurrency.visible?({ future_schema: false })
+
+    refute MultifieldSchema::Country.fields({ future_schema: false }).key?("currency")
+    assert MultifieldSchema::Country.fields({ future_schema: true }).key?("currency")
+    assert_nil MultifieldSchema::Country.get_field("currency", { future_schema: false })
+    refute_nil MultifieldSchema::Country.get_field("currency", { future_schema: true })
+
+    refute_includes MultifieldSchema::Country.interfaces({ future_schema: false }), MultifieldSchema::HasCurrency
+    assert_includes MultifieldSchema::Country.interfaces({ future_schema: true }), MultifieldSchema::HasCurrency
+    assert_includes MultifieldSchema::Country.interfaces, MultifieldSchema::HasCurrency
+  end
+
+  it "hides hidden interface implementations" do
+    # in this case, the interface is always visible:
+    assert MultifieldSchema::HasCapital.visible?({ future_schema: true })
+    assert MultifieldSchema::HasCapital.visible?({ future_schema: false })
+
+    # but the field is sometimes hidden:
+    refute_includes MultifieldSchema::Country.fields({ future_schema: false }), "capitalName"
+    assert_includes MultifieldSchema::Country.fields({ future_schema: true }), "capitalName"
+
+    assert_nil MultifieldSchema::Country.get_field("capitalName", { future_schema: false })
+    refute_nil MultifieldSchema::Country.get_field("capitalName", { future_schema: true })
+
+    # and the interface relationship is sometimes hidden:
+    refute_includes MultifieldSchema::Country.interfaces({ future_schema: false }), MultifieldSchema::HasCapital
+    refute_includes MultifieldSchema.possible_types(MultifieldSchema::HasCapital, { future_schema: false }), MultifieldSchema::Country
+    assert_includes MultifieldSchema::Country.interfaces({ future_schema: true }), MultifieldSchema::HasCapital
+    assert_includes MultifieldSchema.possible_types(MultifieldSchema::HasCapital, { future_schema: true }), MultifieldSchema::Country
+    assert_includes MultifieldSchema::Country.interfaces, MultifieldSchema::HasCapital
+    assert_includes MultifieldSchema.possible_types(MultifieldSchema::HasCapital), MultifieldSchema::Country
+  end
+
+  it "hides hidden union memberships" do
+    # in this case, the union is always visible:
+    assert MultifieldSchema::Locale.visible?({ future_schema: true })
+    assert MultifieldSchema::Locale.visible?({ future_schema: false })
+
+    # and the possible types relationship is sometimes hidden:
+    refute_includes MultifieldSchema.possible_types(MultifieldSchema::Locale, { future_schema: false }), MultifieldSchema::Country
+    assert_includes MultifieldSchema.possible_types(MultifieldSchema::Locale, { future_schema: true }), MultifieldSchema::Country
+    assert_includes MultifieldSchema.possible_types(MultifieldSchema::Locale), MultifieldSchema::Country
+  end
+
+  it "hides hidden unions" do
+    # in this case, the union is only sometimes visible:
+    assert MultifieldSchema::Region.visible?({ future_schema: true })
+    refute MultifieldSchema::Region.visible?({ future_schema: false })
+
+    # and the possible types relationship is sometimes hidden:
+    assert_equal [], MultifieldSchema.possible_types(MultifieldSchema::Region, { future_schema: false })
+    assert_equal [MultifieldSchema::Country, MultifieldSchema::Place], MultifieldSchema.possible_types(MultifieldSchema::Region, { future_schema: true })
+    assert_equal [MultifieldSchema::Country, MultifieldSchema::Place, MultifieldSchema::LegacyPlace], MultifieldSchema.possible_types(MultifieldSchema::Region)
+  end
 
   it "supports different versions of input object arguments" do
     res = exec_query("mutation { updateThing(input: { thingId: 12, price: 100 }) { thing { price id } } }")
@@ -466,15 +562,21 @@ GRAPHQL
     refute_includes legacy_schema_sdl, "type Money"
 
     assert_includes future_schema_sdl, <<-GRAPHQL
-type Money {
+type Money implements HasCurrency {
   amount: Int!
   currency: String!
 }
 GRAPHQL
     refute_includes future_schema_sdl, "scalar Money"
 
-    assert_equal MultifieldSchema::MoneyScalar, MultifieldSchema.get_type("Money")
+    assert_equal MultifieldSchema::MoneyScalar, MultifieldSchema.get_type("Money", { future_schema: nil })
+    assert_equal MultifieldSchema::MoneyScalar, MultifieldSchema.get_type("Money", { future_schema: false })
     assert_equal MultifieldSchema::Money, MultifieldSchema.get_type("Money", { future_schema: true })
+    err = assert_raises GraphQL::Schema::DuplicateNamesError do
+      MultifieldSchema.get_type("Money")
+    end
+    expected_message = "Found two visible type defintions for `Money`: MultifieldSchema::Money, MultifieldSchema::MoneyScalar"
+    assert_equal expected_message, err.message
 
     assert_equal "⚛︎100",exec_query("{ thing(id: 1) { price } }")["data"]["thing"]["price"]
     res = exec_query("{ __type(name: \"Money\") { kind name } }")

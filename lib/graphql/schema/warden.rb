@@ -182,6 +182,10 @@ module GraphQL
         @type_visibility[type_defn]
       end
 
+      def visible_type_membership?(type_membership)
+        visible?(type_membership)
+      end
+
       private
 
       def visible_and_reachable_type?(type_defn)
