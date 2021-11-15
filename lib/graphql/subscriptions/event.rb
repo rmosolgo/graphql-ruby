@@ -69,7 +69,7 @@ module GraphQL
         end
 
         def deep_sort_array_hashes(array_to_inspect)
-          raise ArgumentError("Argument must be an Array") unless array_to_inspect.is_a?(Array)
+          raise ArgumentError.new("Argument must be an Array") unless array_to_inspect.is_a?(Array)
           array_to_inspect.map do |v|
             if v.is_a?(Hash)
               deep_sort_hash_keys(v)
