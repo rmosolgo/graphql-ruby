@@ -62,6 +62,8 @@ module GraphQL
           hash_to_sort.keys.sort.map do |k|
             if hash_to_sort[k].is_a?(Hash)
               [k, deep_sort_hash_keys(hash_to_sort[k])]
+            elsif hash_to_sort[k].is_a?(Array)
+              [k, deep_sort_array_hashes(hash_to_sort[k])]
             else
               [k, hash_to_sort[k]]
             end
