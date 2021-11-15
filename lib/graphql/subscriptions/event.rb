@@ -58,7 +58,7 @@ module GraphQL
         # nor does it support Hashes whose keys are not sortable
         # with respect to their peers ( cases where a <=> b might throw an error )
         def deep_sort_hash_keys(hash_to_sort)
-          raise ArgumentError("Argument must be a Hash") unless hash_to_sort.is_a?(Hash)
+          raise ArgumentError.new("Argument must be a Hash") unless hash_to_sort.is_a?(Hash)
           hash_to_sort.keys.sort.map do |k|
             if hash_to_sort[k].is_a?(Hash)
               [k, deep_sort_hash_keys(hash_to_sort[k])]
