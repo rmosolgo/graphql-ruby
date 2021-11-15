@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.20.2 (15 November 2021)
+
+### New Features
+
+- Operation Store: performance improvements: only validate newly-added operations, reduce allocations when normalizing incoming query strings
+
 # 1.20.1 (8 November 2021)
 
 ### Bug Fix
