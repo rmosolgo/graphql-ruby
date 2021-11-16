@@ -1028,4 +1028,48 @@ describe GraphQL::Dataloader do
       assert_equal expected_result, result.to_h
     end
   end
+
+  describe "dataloader calls from inside sources" do
+    class NestedDataloaderCallsSchema < GraphQL::Schema
+      class Echo < GraphQL::Dataloader::Source
+        def fetch(keys)
+          keys
+        end
+      end
+
+      class Nested < GraphQL::Dataloader::Source
+        def fetch(keys)
+          dataloader.with(Echo).load_all(keys)
+        end
+      end
+
+      class Nested2 < GraphQL::Dataloader::Source
+        def fetch(keys)
+          dataloader.with(Nested).load_all(keys)
+        end
+      end
+
+      class QueryType < GraphQL::Schema::Object
+        field :nested, String, null: true
+        field :nested2, String, null: true
+
+        def nested
+          dataloader.with(Nested).load("nested")
+        end
+
+        def nested2
+          dataloader.with(Nested2).load("nested2")
+        end
+      end
+
+      query QueryType
+      use GraphQL::Dataloader
+    end
+  end
+
+  it "loads data from inside source methods" do
+    assert_equal({ "data" => { "nested" => "nested" } }, NestedDataloaderCallsSchema.execute("{ nested }"))
+    assert_equal({ "data" => { "nested2" => "nested2" } }, NestedDataloaderCallsSchema.execute("{ nested2 }"))
+    assert_equal({ "data" => { "nested" => "nested", "nested2" => "nested2" } }, NestedDataloaderCallsSchema.execute("{ nested nested2 }"))
+  end
 end
