@@ -96,17 +96,24 @@ module GraphQL
         def arguments(context = GraphQL::Query::NullContext)
           inherited_arguments = ((self.is_a?(Class) && superclass.respond_to?(:arguments)) ? superclass.arguments(context) : nil)
           # Local definitions override inherited ones
-          own_arguments_that_apply = {}
-          own_arguments.each do |name, args_entry|
-            if (visible_defn = Warden.visible_entry?(:visible_argument?, args_entry, context))
-              own_arguments_that_apply[visible_defn.graphql_name] = visible_defn
+          if own_arguments.any?
+            own_arguments_that_apply = {}
+            own_arguments.each do |name, args_entry|
+              if (visible_defn = Warden.visible_entry?(:visible_argument?, args_entry, context))
+                own_arguments_that_apply[visible_defn.graphql_name] = visible_defn
+              end
             end
           end
 
           if inherited_arguments
-            inherited_arguments.merge(own_arguments_that_apply)
+            if own_arguments_that_apply
+              inherited_arguments.merge(own_arguments_that_apply)
+            else
+              inherited_arguments
+            end
           else
-            own_arguments_that_apply
+            # might be nil if there are actually no arguments
+            own_arguments_that_apply || own_arguments
           end
         end
 
