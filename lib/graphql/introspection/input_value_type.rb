@@ -54,7 +54,7 @@ module GraphQL
         elsif type.kind.input_object?
           "{" +
             value.map do |k, v|
-              arg_defn = type.arguments[k]
+              arg_defn = type.get_argument(k, context)
               "#{k}: #{serialize_default_value(v, arg_defn.type)}"
             end.join(", ") +
             "}"

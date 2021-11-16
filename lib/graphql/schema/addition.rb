@@ -24,7 +24,13 @@ module GraphQL
       end
 
       def get_type(name)
-        @types[name] || @schema.get_type(name)
+        local_type = @types[name]
+        # This isn't really sophisticated, but
+        # I think it's good enough to support the current usage of LateBoundTypes
+        if local_type.is_a?(Array)
+          local_type = local_type.first
+        end
+        local_type || @schema.get_type(name)
       end
 
       # Lookup using `own_types` here because it's ok to override
@@ -147,42 +153,42 @@ module GraphQL
           um << owner
         end
 
-        if (prev_type = get_local_type(type.graphql_name))
-          if prev_type != type
-            raise DuplicateTypeNamesError.new(
-              type_name: type.graphql_name,
-              first_definition: prev_type,
-              second_definition: type,
-              path: path,
-            )
-          else
-            # This type was already added
-          end
+        if (prev_type = get_local_type(type.graphql_name)) && prev_type == type
+          # No need to re-visit
         elsif type.is_a?(Class) && type < GraphQL::Schema::Directive
           @directives << type
-          type.arguments.each do |name, arg|
+          type.all_argument_definitions.each do |arg|
             arg_type = arg.type.unwrap
             references_to(arg_type, from: arg)
-            add_type(arg_type, owner: arg, late_types: late_types, path: path + [name])
+            add_type(arg_type, owner: arg, late_types: late_types, path: path + [arg.graphql_name])
             if arg.default_value?
               @arguments_with_default_values << arg
             end
           end
         else
-          @types[type.graphql_name] = type
+          prev_type = @types[type.graphql_name]
+          if prev_type.nil?
+            @types[type.graphql_name] = type
+          elsif prev_type.is_a?(Array)
+            prev_type << type
+          else
+            @types[type.graphql_name] = [prev_type, type]
+          end
+
           add_directives_from(type)
           if type.kind.fields?
-            type.fields.each do |name, field|
+            type.all_field_definitions.each do |field|
+              name = field.graphql_name
               field_type = field.type.unwrap
               references_to(field_type, from: field)
               field_path = path + [name]
               add_type(field_type, owner: field, late_types: late_types, path: field_path)
               add_directives_from(field)
-              field.arguments.each do |arg_name, arg|
+              field.all_argument_definitions.each do |arg|
                 add_directives_from(arg)
                 arg_type = arg.type.unwrap
                 references_to(arg_type, from: arg)
-                add_type(arg_type, owner: arg, late_types: late_types, path: field_path + [arg_name])
+                add_type(arg_type, owner: arg, late_types: late_types, path: field_path + [arg.graphql_name])
                 if arg.default_value?
                   @arguments_with_default_values << arg
                 end
@@ -190,19 +196,19 @@ module GraphQL
             end
           end
           if type.kind.input_object?
-            type.arguments.each do |arg_name, arg|
+            type.all_argument_definitions.each do |arg|
               add_directives_from(arg)
               arg_type = arg.type.unwrap
               references_to(arg_type, from: arg)
-              add_type(arg_type, owner: arg, late_types: late_types, path: path + [arg_name])
+              add_type(arg_type, owner: arg, late_types: late_types, path: path + [arg.graphql_name])
               if arg.default_value?
                 @arguments_with_default_values << arg
               end
             end
           end
           if type.kind.union?
-            @possible_types[type.graphql_name] = type.possible_types
-            type.possible_types.each do |t|
+            @possible_types[type.graphql_name] = type.all_possible_types
+            type.all_possible_types.each do |t|
               add_type(t, owner: type, late_types: late_types, path: path + ["possible_types"])
             end
           end
@@ -212,10 +218,11 @@ module GraphQL
             end
           end
           if type.kind.object?
-            @possible_types[type.graphql_name] = [type]
+            possible_types_for_this_name = @possible_types[type.graphql_name] ||= []
+            possible_types_for_this_name << type
           end
 
-          if type.respond_to?(:interfaces)
+          if type.kind.object? || type.kind.interface?
             type.interface_type_memberships.each do |interface_type_membership|
               case interface_type_membership
               when Schema::TypeMembership

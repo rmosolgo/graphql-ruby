@@ -19,7 +19,6 @@ describe GraphQL::Schema::Object do
       assert_equal [
           "GloballyIdentifiable",
           "HasMusicians",
-          "InvisibleNameEntity",
           "NamedEntity"
         ], object_class.interfaces({}).map(&:graphql_name).sort
       # Compatibility methods are delegated to the underlying BaseType
@@ -201,7 +200,7 @@ describe GraphQL::Schema::Object do
       assert_equal "A group of musicians playing together", obj_type.description
       assert_equal 9, obj_type.all_fields.size
 
-      name_field = obj_type.all_fields[3]
+      name_field = obj_type.all_fields[0]
       assert_equal "name", name_field.name
       assert_equal GraphQL::DEPRECATED_STRING_TYPE.to_non_null_type, name_field.type
       assert_equal nil, name_field.description

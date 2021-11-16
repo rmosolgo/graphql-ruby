@@ -105,7 +105,3 @@ module GraphQL
     end
   end
 end
-
-require "graphql/directive/include_directive"
-require "graphql/directive/skip_directive"
-require "graphql/directive/deprecated_directive"

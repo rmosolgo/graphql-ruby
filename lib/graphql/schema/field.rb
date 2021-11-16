@@ -281,10 +281,15 @@ module GraphQL
         @legacy_edge_class = legacy_edge_class
 
         arguments.each do |name, arg|
-          if arg.is_a?(Hash)
+          case arg
+          when Hash
             argument(name: name, **arg)
-          else
+          when GraphQL::Schema::Argument
             add_argument(arg)
+          when Array
+            arg.each { |a| add_argument(a) }
+          else
+            raise ArgumentError, "Unexpected argument config (#{arg.class}): #{arg.inspect}"
           end
         end
 
@@ -619,7 +624,7 @@ module GraphQL
             using_arg_values = false
           end
           # Faster than `.any?`
-          arguments.each_value do |arg|
+          arguments(context).each_value do |arg|
             arg_key = arg.keyword
             if arg_values.key?(arg_key)
               arg_value = arg_values[arg_key]

@@ -58,17 +58,22 @@ module GraphQL
           own_interface_type_memberships + ((self.is_a?(Class) && superclass.respond_to?(:interface_type_memberships)) ? superclass.interface_type_memberships : [])
         end
 
+        def type_membership_for(interface_type)
+          own_interface_type_memberships.find { |tm| tm.abstract_type == interface_type } ||
+            ((self.is_a?(Class) && superclass.respond_to?(:type_membership_for)) ? superclass.type_membership_for(interface_type) : nil)
+        end
+
         # param context [Query::Context] If omitted, skip filtering.
         def interfaces(context = GraphQL::Query::NullContext)
+          warden = Warden.from_context(context)
           visible_interfaces = []
-          unfiltered = context == GraphQL::Query::NullContext
           own_interface_type_memberships.each do |type_membership|
             # During initialization, `type_memberships` can hold late-bound types
             case type_membership
             when String, Schema::LateBoundType
               visible_interfaces << type_membership
             when Schema::TypeMembership
-              if unfiltered || type_membership.visible?(context)
+              if warden.visible_type_membership?(type_membership, context)
                 visible_interfaces << type_membership.abstract_type
               end
             else

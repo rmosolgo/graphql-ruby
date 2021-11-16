@@ -314,7 +314,7 @@ module GraphQL
               case node
               when GraphQL::Language::Nodes::InlineFragment
                 if node.type
-                  type_defn = schema.get_type(node.type.name)
+                  type_defn = schema.get_type(node.type.name, context)
 
                   # Faster than .map{}.include?()
                   query.warden.possible_types(type_defn).each do |t|
@@ -329,7 +329,7 @@ module GraphQL
                 end
               when GraphQL::Language::Nodes::FragmentSpread
                 fragment_def = query.fragments[node.name]
-                type_defn = schema.get_type(fragment_def.type.name)
+                type_defn = query.get_type(fragment_def.type.name)
                 possible_types = query.warden.possible_types(type_defn)
                 possible_types.each do |t|
                   if t == owner_type
@@ -384,7 +384,9 @@ module GraphQL
             ast_node = field_ast_nodes_or_ast_node
           end
           field_name = ast_node.name
-          field_defn = @fields_cache[owner_type][field_name] ||= owner_type.get_field(field_name)
+          # This can't use `query.get_field` because it gets confused on introspection below if `field_defn` isn't `nil`,
+          # because of how `is_introspection` is used to call `.authorized_new` later on.
+          field_defn = @fields_cache[owner_type][field_name] ||= owner_type.get_field(field_name, @context)
           is_introspection = false
           if field_defn.nil?
             field_defn = if owner_type == schema.query && (entry_point_field = schema.introspection_system.entry_point(name: field_name))
@@ -419,7 +421,7 @@ module GraphQL
             object = authorized_new(field_defn.owner, object, context)
           end
 
-          total_args_count = field_defn.arguments.size
+          total_args_count = field_defn.arguments(context).size
           if total_args_count == 0
             resolved_arguments = GraphQL::Execution::Interpreter::Arguments::EMPTY
             evaluate_selection_with_args(resolved_arguments, field_defn, next_path, ast_node, field_ast_nodes, scoped_context, owner_type, object, is_eager_field, result_name, selections_result, parent_object)

@@ -78,30 +78,72 @@ module GraphQL
         # @return [GraphQL::Schema::Argument]
         def add_argument(arg_defn)
           @own_arguments ||= {}
-          own_arguments[arg_defn.name] = arg_defn
+          prev_defn = own_arguments[arg_defn.name]
+          case prev_defn
+          when nil
+            own_arguments[arg_defn.name] = arg_defn
+          when Array
+            prev_defn << arg_defn
+          when GraphQL::Schema::Argument
+            own_arguments[arg_defn.name] = [prev_defn, arg_defn]
+          else
+            raise "Invariant: unexpected `@own_arguments[#{arg_defn.name.inspect}]`: #{prev_defn.inspect}"
+          end
           arg_defn
         end
 
         # @return [Hash<String => GraphQL::Schema::Argument] Arguments defined on this thing, keyed by name. Includes inherited definitions
-        def arguments
-          inherited_arguments = ((self.is_a?(Class) && superclass.respond_to?(:arguments)) ? superclass.arguments : nil)
+        def arguments(context = GraphQL::Query::NullContext)
+          inherited_arguments = ((self.is_a?(Class) && superclass.respond_to?(:arguments)) ? superclass.arguments(context) : nil)
           # Local definitions override inherited ones
+          if own_arguments.any?
+            own_arguments_that_apply = {}
+            own_arguments.each do |name, args_entry|
+              if (visible_defn = Warden.visible_entry?(:visible_argument?, args_entry, context))
+                own_arguments_that_apply[visible_defn.graphql_name] = visible_defn
+              end
+            end
+          end
+
           if inherited_arguments
-            inherited_arguments.merge(own_arguments)
+            if own_arguments_that_apply
+              inherited_arguments.merge(own_arguments_that_apply)
+            else
+              inherited_arguments
+            end
           else
-            own_arguments
+            # might be nil if there are actually no arguments
+            own_arguments_that_apply || own_arguments
           end
         end
 
-        # @return [GraphQL::Schema::Argument, nil] Argument defined on this thing, fetched by name.
-        def get_argument(argument_name)
-          a = own_arguments[argument_name]
+        def all_argument_definitions
+          if self.is_a?(Class)
+            all_defns = {}
+            ancestors.reverse_each do |ancestor|
+              if ancestor.respond_to?(:own_arguments)
+                all_defns.merge!(ancestor.own_arguments)
+              end
+            end
+          else
+            all_defns = own_arguments
+          end
+          all_defns = all_defns.values
+          all_defns.flatten!
+          all_defns
+        end
 
-          if a || !self.is_a?(Class)
-            a
+        # @return [GraphQL::Schema::Argument, nil] Argument defined on this thing, fetched by name.
+        def get_argument(argument_name, context = GraphQL::Query::NullContext)
+          warden = Warden.from_context(context)
+          if !self.is_a?(Class)
+            a = own_arguments[argument_name]
+            a && Warden.visible_entry?(:visible_argument?, a, context, warden)
           else
             for ancestor in ancestors
-              if ancestor.respond_to?(:own_arguments) && a = ancestor.own_arguments[argument_name]
+              if ancestor.respond_to?(:own_arguments) &&
+                (a = ancestor.own_arguments[argument_name]) &&
+                (a = Warden.visible_entry?(:visible_argument?, a, context, warden))
                 return a
               end
             end
@@ -125,7 +167,7 @@ module GraphQL
         # @return [Interpreter::Arguments, Execution::Lazy<Interpeter::Arguments>]
         def coerce_arguments(parent_object, values, context, &block)
           # Cache this hash to avoid re-merging it
-          arg_defns = self.arguments
+          arg_defns = self.arguments(context)
           total_args_count = arg_defns.size
 
           finished_args = nil
