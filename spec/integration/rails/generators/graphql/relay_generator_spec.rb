@@ -7,6 +7,7 @@ class GraphQLGeneratorsRelayGeneratorTest < Rails::Generators::TestCase
   destination File.expand_path("../../../tmp/dummy", File.dirname(__FILE__))
 
   setup do
+    skip_if_rails_7_alpha
     prepare_destination
 
     FileUtils.cd(File.join(destination_root, '..')) do

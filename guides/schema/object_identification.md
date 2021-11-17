@@ -4,65 +4,42 @@ doc_stub: false
 search: true
 title: Object Identification
 section: Schema
-desc: Working with Relay-style global IDs
+desc: Working with unique global IDs
 index: 8
 ---
 
-Relay uses [global object identification](https://facebook.github.io/relay/graphql/objectidentification.htm) to support some of its features:
+Some GraphQL features use unique IDs to load objects:
 
-- __Caching__: Unique IDs are used as primary keys in Relay's client-side cache.
-- __Refetching__: Relay uses unique IDs to refetch objects when it determines that its cache is stale. (It uses the `Query.node` field to refetch objects.)
+- the `node(id:)` field looks up objects by ID
+- any arguments with `loads:` configurations look up objects by ID
 
-### Defining UUIDs
-
-You must provide a function for generating UUIDs and fetching objects with them. In your schema, define `self.id_from_object` and `self.object_from_id`:
+To use these features, you must provide a function for generating UUIDs and fetching objects with them. In your schema, define `self.id_from_object` and `self.object_from_id`:
 
 ```ruby
 class MySchema < GraphQL::Schema
   def self.id_from_object(object, type_definition, query_ctx)
-    # Call your application's UUID method here
-    # It should return a string
-    MyApp::GlobalId.encrypt(object.class.name, object.id)
+    # Generate a unique string ID for `object` here
+    # For example, use Rails' GlobalID library (https://github.com/rails/globalid):
+    object_id = object.to_global_id.to_s
+    # Remove this redundant prefix to make IDs shorter:
+    object_id = object_id.sub("gid://#{GlobalID.app}/", "")
+    encoded_id = Base64.urlsafe_encode64(object_id)
+    # Remove the "=" padding
+    encoded_id = encoded_id.sub(/=+/, "")
+    # Add a type hint
+    type_hint = type_definition.graphql_name.first
+    "#{type_hint}_#{encoded_id}"
   end
 
   def self.object_from_id(id, query_ctx)
-    class_name, item_id = MyApp::GlobalId.decrypt(id)
-    # "Post" => Post.find(item_id)
-    Object.const_get(class_name).find(item_id)
-  end
-end
-```
-
-An unencrypted ID generator is provided in the gem. It uses `Base64` to encode values. You can use it like this:
-
-```ruby
-class MySchema < GraphQL::Schema
-  # Create UUIDs by joining the type name & ID, then base64-encoding it
-  def self.id_from_object(object, type_definition, query_ctx)
-    GraphQL::Schema::UniqueWithinType.encode(type_definition.graphql_name, object.id)
-  end
-
-  def self.object_from_id(id, query_ctx)
-    type_name, item_id = GraphQL::Schema::UniqueWithinType.decode(id)
-    # Now, based on `type_name` and `item_id`
-    # find an object in your application
-    # ....
-  end
-end
-```
-
-You could also use the [`GlobalID`](https://github.com/rails/globalid) gem (included in Ruby on Rails since v4.2) to achieve this:
-
-```ruby
-class MySchema < GraphQL::Schema
-  def self.id_from_object(object, type_definition, query_ctx)
-    # Generates a URI like `gid://myproject/User/1` base64-encoded.
-    object.to_gid.to_param
-  end
-
-  def self.object_from_id(id, query_ctx)
-    # Finds the object using the base64-encoded URI.
-    GlobalID.find(id)
+    # For example, use Rails' GlobalID library (https://github.com/rails/globalid):
+    # Split off the type hint
+    _type_hint, encoded_id = encoded_id_with_hint.split("_", 2)
+    # Decode the ID
+    id = Base64.urlsafe_decode64(encoded_id)
+    # Rebuild it for Rails then find the object:
+    full_global_id = "gid://#{GlobalID.app}/#{id}"
+    GlobalID::Locator.locate(full_global_id)
   end
 end
 ```
@@ -102,15 +79,13 @@ end
 
 ### UUID fields
 
-Relay Nodes must have a field named `"id"` which returns a globally unique ID.
+Nodes must have a field named `"id"` which returns a globally unique ID.
 
-To add a UUID field named `"id"`, use the `global_id_field` helper:
+To add a UUID field named `"id"`, implement the {{ "GraphQL::Types::Relay::Node" | api_doc }} interface::
 
 ```ruby
 class Types::PostType < GraphQL::Schema::Object
-  # `id` exposes the UUID
-  global_id_field :id
-  # ...
+  implements GraphQL::Types::Relay::Node
 end
 ```
 
