@@ -18,7 +18,7 @@ describe GraphQL::Query::LiteralInput do
             value
           end
 
-          field :field_with_argument_that_is_bad_by_default, Integer, null: true do
+          field :field_with_argument_that_is_bad_by_default, Integer do
             argument :value, Integer, required: false, default_value: 7,
               prepare: ->(arg, ctx) {
                 raise GraphQL::ExecutionError.new("Always bad")

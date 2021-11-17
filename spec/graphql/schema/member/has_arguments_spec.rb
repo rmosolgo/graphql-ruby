@@ -4,8 +4,8 @@ require "spec_helper"
 describe GraphQL::Schema::Member::HasArguments do
   class DefaultArgumentAuthSchema < GraphQL::Schema
     class Query < GraphQL::Schema::Object
-      field :add, Int, null: true do
-        argument :left, Int, required: true
+      field :add, Int do
+        argument :left, Int
         argument :right, Int, required: false, default_value: 1 do
           def authorized?(_object, _arg_value, context)
             !!context[:is_authorized]

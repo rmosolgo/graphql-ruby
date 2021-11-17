@@ -12,15 +12,15 @@ describe GraphQL::Schema do
     end
 
     class Query < GraphQL::Schema::Object
-      field :some_field, String, null: true
+      field :some_field, String
     end
 
     class Mutation < GraphQL::Schema::Object
-      field :some_field, String, null: true
+      field :some_field, String
     end
 
     class Subscription < GraphQL::Schema::Object
-      field :some_field, String, null: true
+      field :some_field, String
     end
 
     let(:base_schema) do
@@ -78,17 +78,17 @@ describe GraphQL::Schema do
       schema = Class.new(base_schema)
       query = Class.new(GraphQL::Schema::Object) do
         graphql_name 'Query'
-        field :some_field, String, null: true
+        field :some_field, String
       end
       schema.query(query)
       mutation = Class.new(GraphQL::Schema::Object) do
         graphql_name 'Mutation'
-        field :some_field, String, null: true
+        field :some_field, String
       end
       schema.mutation(mutation)
       subscription = Class.new(GraphQL::Schema::Object) do
         graphql_name 'Subscription'
-        field :some_field, String, null: true
+        field :some_field, String
       end
       schema.subscription(subscription)
       introspection = Module.new

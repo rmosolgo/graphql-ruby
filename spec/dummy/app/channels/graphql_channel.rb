@@ -27,7 +27,7 @@ class GraphqlChannel < ActionCable::Channel::Base
 
   class SubscriptionType < GraphQL::Schema::Object
     field :payload, PayloadType, null: false do
-      argument :id, ID, required: true
+      argument :id, ID
     end
 
     field :counter_incremented, subscription: CounterIncremented

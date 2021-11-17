@@ -35,7 +35,7 @@ module GraphQL
           GraphQL::Schema::Directive::INPUT_FIELD_DEFINITION,
         )
 
-        argument :by, [String], "Flags to check for this schema member", required: true
+        argument :by, [String], "Flags to check for this schema member"
 
         module VisibleByFlag
           def self.included(schema_class)

@@ -11,7 +11,7 @@ describe GraphQL::Schema::Directive do
 
   module DirectiveTest
     class Secret < GraphQL::Schema::Directive
-      argument :top_secret, Boolean, required: true
+      argument :top_secret, Boolean
       locations(FIELD_DEFINITION, ARGUMENT_DEFINITION)
     end
 
@@ -237,7 +237,7 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
       class MyDirective < GraphQL::Schema::Directive
         locations GraphQL::Schema::Directive::QUERY, GraphQL::Schema::Directive::FIELD
 
-        argument :input, String, required: true, prepare: ->(input, ctx) {
+        argument :input, String, prepare: ->(input, ctx) {
           raise GraphQL::ExecutionError, "invalid argument"
         }
       end

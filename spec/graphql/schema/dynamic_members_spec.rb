@@ -149,14 +149,14 @@ describe "Dynamic types, fields, arguments, and enum values" do
 
     class LegacyThing < BaseObject
       implements Node
-      field :price, LegacyMoney, null: true
+      field :price, LegacyMoney
     end
 
     class Thing < LegacyThing
       # TODO can I get rid of `future_schema: ...` here in a way that
       # still only requires one call to `visible?` at runtime?
-      field :price, Money, null: true, future_schema: true
-      field :price, MoneyScalar, null: true, method: :legacy_price, future_schema: false
+      field :price, Money, future_schema: true
+      field :price, MoneyScalar, method: :legacy_price, future_schema: false
     end
 
     class BaseEnumValue < GraphQL::Schema::EnumValue
@@ -192,14 +192,14 @@ describe "Dynamic types, fields, arguments, and enum values" do
     class Place < BaseObject
       implements Node
       self.future_schema = true
-      field :future_place_field, String, null: true
+      field :future_place_field, String
     end
 
     class LegacyPlace < BaseObject
       implements Node
       graphql_name "Place"
       self.future_schema = false
-      field :legacy_place_field, String, null: true
+      field :legacy_place_field, String
     end
 
     class Region < BaseUnion
@@ -244,10 +244,10 @@ describe "Dynamic types, fields, arguments, and enum values" do
     end
 
     class Add < BaseResolver
-      argument :left, Float, required: true, future_schema: true
-      argument :left, Int, required: true, future_schema: false
-      argument :right, Float, required: true, future_schema: true
-      argument :right, Int, required: true, future_schema: false
+      argument :left, Float, future_schema: true
+      argument :left, Int, future_schema: false
+      argument :right, Float, future_schema: true
+      argument :right, Int, future_schema: false
 
       type String, null: false
 
@@ -257,8 +257,8 @@ describe "Dynamic types, fields, arguments, and enum values" do
     end
 
     class Query < BaseObject
-      field :f1, String, null: true, future_schema: true
-      field :f1, Int, null: true, future_schema: false
+      field :f1, String, future_schema: true
+      field :f1, Int, future_schema: false
 
       def f1
         if context[:future_schema]
@@ -268,9 +268,9 @@ describe "Dynamic types, fields, arguments, and enum values" do
         end
       end
 
-      field :thing, Thing, null: true do
-        argument :id, ID, required: true, future_schema: true
-        argument :id, Int, required: true, future_schema: false
+      field :thing, Thing do
+        argument :id, ID, future_schema: true
+        argument :id, Int, future_schema: false
       end
 
       def thing(id:)
@@ -278,7 +278,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
       end
 
       field :legacy_thing, LegacyThing, null: false do
-        argument :id, ID, required: true
+        argument :id, ID
       end
 
       def legacy_thing(id:)
@@ -295,15 +295,15 @@ describe "Dynamic types, fields, arguments, and enum values" do
 
       field :add, resolver: Add
 
-      field :actor, Actor, null: true
+      field :actor, Actor
       def actor
         { handle: "bot1", verified: false, name: "bot2", is_verified: true }
       end
 
       field :yell, String, null: false do
         # TODO: can I get rid of the requirement for `future_schema: true` here since `Scream.future_schema` is true?
-        argument :scream, Scream, required: true, future_schema: true
-        argument :scream, LegacyScream, required: true, future_schema: false
+        argument :scream, Scream, future_schema: true
+        argument :scream, LegacyScream, future_schema: false
       end
 
       def yell(scream:)
@@ -317,9 +317,9 @@ describe "Dynamic types, fields, arguments, and enum values" do
     end
 
     class UpdateThing < BaseMutation
-      argument :thing_id, ID, required: true, future_schema: true
-      argument :thing_id, Int, required: true, future_schema: false
-      argument :price, Int, required: true
+      argument :thing_id, ID, future_schema: true
+      argument :thing_id, Int, future_schema: false
+      argument :price, Int
 
       field :thing, Thing, null: false, future_schema: true, method: :custom_thing
       field :thing, LegacyThing, null: false, hash_key: :legacy_thing, future_schema: false
@@ -757,7 +757,7 @@ GRAPHQL
 
       class ThingInput < GraphQL::Schema::InputObject
         graphql_name "Thing"
-        argument :t, Int, required: true
+        argument :t, Int
         extend ConflictingThing
       end
 
@@ -813,11 +813,11 @@ GRAPHQL
           5 * thing[:t]
         end
 
-        field :thing, ThingScalar, null: true
-        field :thing, ThingEnum, null: true
-        field :thing, ThingObject, null: true
-        field :thing, ThingUnion, null: true
-        field :thing, ThingInterface, null: true
+        field :thing, ThingScalar
+        field :thing, ThingEnum
+        field :thing, ThingObject
+        field :thing, ThingUnion
+        field :thing, ThingInterface
 
         def thing
           type_kind = context[:current_field].type.kind.name
@@ -938,14 +938,14 @@ GRAPHQL
 
       class DuplicateFieldObject < GraphQL::Schema::Object
         field_class(BaseField)
-        field :f, String, null: true, allow_for: [1, 2], description: "first definition"
-        field :f, Int, null: true, allow_for: [2, 3], description: "second definition"
+        field :f, String, allow_for: [1, 2], description: "first definition"
+        field :f, Int, allow_for: [2, 3], description: "second definition"
       end
 
       class DuplicateArgumentObject < GraphQL::Schema::Object
         field_class BaseField
 
-        field :multi_arg, String, null: true do
+        field :multi_arg, String do
           argument :a, String, required: false, allow_for: [1, 2], description: "first definition"
           argument :a, Int, required: false, allow_for: [2, 3], description: "second definition"
         end

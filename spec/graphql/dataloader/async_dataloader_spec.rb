@@ -28,7 +28,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
 
       class Sleeper < GraphQL::Schema::Object
         field :sleeper, Sleeper, null: false, resolver_method: :sleep do
-          argument :duration, Float, required: true
+          argument :duration, Float
         end
 
         def sleep(duration:)
@@ -42,8 +42,8 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
 
       class Waiter < GraphQL::Schema::Object
         field :wait_for, Waiter, null: false do
-          argument :tag, String, required: true
-          argument :wait, Float, required: true
+          argument :tag, String
+          argument :wait, Float
         end
 
         def wait_for(tag:, wait:)
@@ -58,11 +58,11 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
 
       class Query < GraphQL::Schema::Object
         field :sleep, Float, null: false do
-          argument :duration, Float, required: true
+          argument :duration, Float
         end
 
         field :sleeper, Sleeper, null: false, resolver_method: :sleep do
-          argument :duration, Float, required: true
+          argument :duration, Float
         end
 
         def sleep(duration:)
@@ -71,8 +71,8 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
         end
 
         field :wait_for, Waiter, null: false do
-          argument :tag, String, required: true
-          argument :wait, Float, required: true
+          argument :tag, String
+          argument :wait, Float
         end
 
         def wait_for(tag:, wait:)

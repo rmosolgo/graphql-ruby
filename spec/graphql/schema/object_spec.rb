@@ -33,7 +33,7 @@ describe GraphQL::Schema::Object do
 
     it "inherits fields and interfaces" do
       new_object_class = Class.new(object_class) do
-        field :newField, String, null: true
+        field :newField, String
         field :name, String, description: "The new description", null: true
       end
 
@@ -296,7 +296,7 @@ describe GraphQL::Schema::Object do
       assert_output "", expected_warning do
         Class.new(GraphQL::Schema::Object) do
           graphql_name "X"
-          field :method, String, null: true
+          field :method, String
         end
       end
     end
@@ -306,7 +306,7 @@ describe GraphQL::Schema::Object do
       assert_output "", expected_warning do
         Class.new(GraphQL::Schema::Object) do
           graphql_name "X"
-          field :object, String, null: true, resolver_method: :object
+          field :object, String, resolver_method: :object
         end
       end
     end
@@ -315,7 +315,7 @@ describe GraphQL::Schema::Object do
       assert_output "", "" do
         Class.new(GraphQL::Schema::Object) do
           graphql_name "X"
-          field :method, String, null: true, resolver_method: :resolve_method
+          field :method, String, resolver_method: :resolve_method
         end
       end
     end
@@ -324,7 +324,7 @@ describe GraphQL::Schema::Object do
       assert_output "", "" do
         Class.new(GraphQL::Schema::Object) do
           graphql_name "X"
-          field :module, String, null: true, method: :mod
+          field :module, String, method: :mod
         end
       end
     end
@@ -333,7 +333,7 @@ describe GraphQL::Schema::Object do
       assert_output "", "" do
         Class.new(GraphQL::Schema::Object) do
           graphql_name "X"
-          field :method, String, null: true, method_conflict_warning: false
+          field :method, String, method_conflict_warning: false
         end
       end
     end
@@ -353,7 +353,7 @@ describe GraphQL::Schema::Object do
       assert_output "", "" do
         Class.new(GraphQL::Schema::Object) do
           graphql_name "X"
-          field :thing, String, null: true, resolver_method: :object
+          field :thing, String, resolver_method: :object
         end
       end
     end

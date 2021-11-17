@@ -61,7 +61,7 @@ describe GraphQL::Execution::Interpreter do
         Query::EXPANSIONS.find { |e| e.sym == @object.expansion_sym }
       end
 
-      field :null_union_field_test, Integer, null: true
+      field :null_union_field_test, Integer
       def null_union_field_test
         nil
       end
@@ -96,7 +96,7 @@ describe GraphQL::Execution::Interpreter do
       def field_counter; self.class.generate_tag(context); end
 
       field :calls, Integer, null: false do
-        argument :expected, Integer, required: true
+        argument :expected, Integer
       end
 
       def calls(expected:)
@@ -156,16 +156,16 @@ describe GraphQL::Execution::Interpreter do
         Box.new(value: true)
       end
 
-      field :card, Card, null: true do
-        argument :name, String, required: true
+      field :card, Card do
+        argument :name, String
       end
 
       def card(name:)
         Box.new(value: CARDS.find { |c| c.name == name })
       end
 
-      field :expansion, Expansion, null: true do
-        argument :sym, String, required: true
+      field :expansion, Expansion do
+        argument :sym, String
       end
 
       def expansion(sym:)
@@ -205,7 +205,7 @@ describe GraphQL::Execution::Interpreter do
       ]
 
       field :find, [Entity], null: false do
-        argument :id, [ID], required: true
+        argument :id, [ID]
       end
 
       def find(id:)
@@ -216,7 +216,7 @@ describe GraphQL::Execution::Interpreter do
       end
 
       field :find_many, [Entity, null: true], null: false do
-        argument :ids, [ID], required: true
+        argument :ids, [ID]
       end
 
       def find_many(ids:)
@@ -245,7 +245,6 @@ describe GraphQL::Execution::Interpreter do
         object
       end
     end
-
 
     class Mutation < GraphQL::Schema::Object
       field :increment_counter, Counter, null: false
@@ -566,18 +565,18 @@ describe GraphQL::Execution::Interpreter do
         def self.authorized?(obj, ctx)
           -> { true }
         end
-        field :skip, String, null: true
+        field :skip, String
 
         def skip
           context.skip
         end
 
-        field :lazy_skip, String, null: true
+        field :lazy_skip, String
         def lazy_skip
           -> { context.skip }
         end
 
-        field :mixed_skips, [String], null: true
+        field :mixed_skips, [String]
         def mixed_skips
           [
             "a",
@@ -590,7 +589,7 @@ describe GraphQL::Execution::Interpreter do
       end
 
       class NothingSubscription < GraphQL::Schema::Subscription
-        field :nothing, String, null: true
+        field :nothing, String
         def authorized?(*)
           -> { true }
         end
@@ -749,13 +748,13 @@ describe GraphQL::Execution::Interpreter do
       class Concrete < GraphQL::Schema::Object
         implements Iface
 
-        field :txn, Txn, null: true
+        field :txn, Txn
 
         def txn
           {}
         end
 
-        field :msg, String, null: true
+        field :msg, String
 
         def msg
           "THIS SHOULD SHOW UP"
@@ -763,7 +762,7 @@ describe GraphQL::Execution::Interpreter do
       end
 
       class Query < GraphQL::Schema::Object
-        field :iface, Iface, null: true
+        field :iface, Iface
 
         def iface
           {}

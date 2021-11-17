@@ -140,48 +140,48 @@ describe GraphQL::Dataloader do
         Database.mget(["5", "6"])
       end
 
-      field :ingredient, Ingredient, null: true do
-        argument :id, ID, required: true
+      field :ingredient, Ingredient do
+        argument :id, ID
       end
 
       def ingredient(id:)
         dataloader.with(DataObject).load(id)
       end
 
-      field :ingredient_by_name, Ingredient, null: true do
-        argument :name, String, required: true
+      field :ingredient_by_name, Ingredient do
+        argument :name, String
       end
 
       def ingredient_by_name(name:)
         dataloader.with(DataObject, :name).load(name)
       end
 
-      field :nested_ingredient, Ingredient, null: true do
-        argument :id, ID, required: true
+      field :nested_ingredient, Ingredient do
+        argument :id, ID
       end
 
       def nested_ingredient(id:)
         dataloader.with(NestedDataObject).load(id)
       end
 
-      field :slow_recipe, Recipe, null: true do
-        argument :id, ID, required: true
+      field :slow_recipe, Recipe do
+        argument :id, ID
       end
 
       def slow_recipe(id:)
         dataloader.with(SlowDataObject, id).load(id)
       end
 
-      field :recipe, Recipe, null: true do
-        argument :id, ID, required: true, loads: Recipe, as: :recipe
+      field :recipe, Recipe do
+        argument :id, ID, loads: Recipe, as: :recipe
       end
 
       def recipe(recipe:)
         recipe
       end
 
-      field :key_ingredient, Ingredient, null: true do
-        argument :id, ID, required: true
+      field :key_ingredient, Ingredient do
+        argument :id, ID
       end
 
       def key_ingredient(id:)
@@ -189,12 +189,12 @@ describe GraphQL::Dataloader do
       end
 
       class RecipeIngredientInput < GraphQL::Schema::InputObject
-        argument :id, ID, required: true
-        argument :ingredient_number, Int, required: true
+        argument :id, ID
+        argument :ingredient_number, Int
       end
 
-      field :recipe_ingredient, Ingredient, null: true do
-        argument :recipe, RecipeIngredientInput, required: true
+      field :recipe_ingredient, Ingredient do
+        argument :recipe, RecipeIngredientInput
       end
 
       def recipe_ingredient(recipe:)
@@ -204,9 +204,9 @@ describe GraphQL::Dataloader do
         dataloader.with(DataObject).load(ingredient_id)
       end
 
-      field :common_ingredients, [Ingredient], null: true do
-        argument :recipe_1_id, ID, required: true
-        argument :recipe_2_id, ID, required: true
+      field :common_ingredients, [Ingredient] do
+        argument :recipe_1_id, ID
+        argument :recipe_2_id, ID
       end
 
       def common_ingredients(recipe_1_id:, recipe_2_id:)
@@ -219,8 +219,8 @@ describe GraphQL::Dataloader do
       end
 
       field :common_ingredients_with_load, [Ingredient], null: false do
-        argument :recipe_1_id, ID, required: true, loads: Recipe
-        argument :recipe_2_id, ID, required: true, loads: Recipe
+        argument :recipe_1_id, ID, loads: Recipe
+        argument :recipe_2_id, ID, loads: Recipe
       end
 
       def common_ingredients_with_load(recipe_1:, recipe_2:)
@@ -230,10 +230,10 @@ describe GraphQL::Dataloader do
 
       field :common_ingredients_from_input_object, [Ingredient], null: false do
         class CommonIngredientsInput < GraphQL::Schema::InputObject
-          argument :recipe_1_id, ID, required: true, loads: Recipe
-          argument :recipe_2_id, ID, required: true, loads: Recipe
+          argument :recipe_1_id, ID, loads: Recipe
+          argument :recipe_2_id, ID, loads: Recipe
         end
-        argument :input, CommonIngredientsInput, required: true
+        argument :input, CommonIngredientsInput
       end
 
 
@@ -244,9 +244,9 @@ describe GraphQL::Dataloader do
         dataloader.with(DataObject).load_all(common_ids)
       end
 
-      field :ingredient_with_custom_batch_key, Ingredient, null: true do
-        argument :id, ID, required: true
-        argument :batch_key, String, required: true
+      field :ingredient_with_custom_batch_key, Ingredient do
+        argument :id, ID
+        argument :batch_key, String
       end
 
       def ingredient_with_custom_batch_key(id:, batch_key:)
@@ -257,7 +257,7 @@ describe GraphQL::Dataloader do
     query(Query)
 
     class Mutation1 < GraphQL::Schema::Mutation
-      argument :argument_1, String, required: true, prepare: ->(val, ctx) {
+      argument :argument_1, String, prepare: ->(val, ctx) {
         raise FieldTestError
       }
 
@@ -267,7 +267,7 @@ describe GraphQL::Dataloader do
     end
 
     class Mutation2 < GraphQL::Schema::Mutation
-      argument :argument_2, String, required: true, prepare: ->(val, ctx) {
+      argument :argument_2, String, prepare: ->(val, ctx) {
         raise FieldTestError
       }
 
@@ -764,7 +764,7 @@ describe GraphQL::Dataloader do
       end
 
       class QueryType < GraphQL::Schema::Object
-        field :foo, Example::FooType, null: true do
+        field :foo, Example::FooType do
           argument :foo_id, GraphQL::Types::ID, required: false, loads: Example::FooType
           argument :use_load, GraphQL::Types::Boolean, required: false, default_value: false
         end
@@ -992,8 +992,8 @@ describe GraphQL::Dataloader do
       end
 
       class QueryType < GraphQL::Schema::Object
-        field :thread_var, ThreadVariable::Type, null: true do
-          argument :key, GraphQL::Types::String, required: true
+        field :thread_var, ThreadVariable::Type do
+          argument :key, GraphQL::Types::String
         end
 
         def thread_var(key:)
@@ -1050,8 +1050,8 @@ describe GraphQL::Dataloader do
       end
 
       class QueryType < GraphQL::Schema::Object
-        field :nested, String, null: true
-        field :nested2, String, null: true
+        field :nested, String
+        field :nested2, String
 
         def nested
           dataloader.with(Nested).load("nested")

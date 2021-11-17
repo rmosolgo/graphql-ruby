@@ -14,6 +14,7 @@ describe "GraphQL::Execution::Errors" do
     ErrorD = ParentErrorsTestSchema::ErrorD
     class ErrorA < RuntimeError; end
     class ErrorB < RuntimeError; end
+
     class ErrorC < RuntimeError
       attr_reader :value
       def initialize(value:)
@@ -66,7 +67,7 @@ describe "GraphQL::Execution::Errors" do
     end
 
     class ValuesInput < GraphQL::Schema::InputObject
-      argument :value, Int, required: true, loads: Thing
+      argument :value, Int, loads: Thing
 
       def self.object_from_id(type, value, ctx)
         if value == 1
@@ -88,7 +89,7 @@ describe "GraphQL::Execution::Errors" do
     end
 
     class Query < GraphQL::Schema::Object
-      field :f1, Int, null: true do
+      field :f1, Int do
         argument :a1, Int, required: false
       end
 
@@ -96,12 +97,12 @@ describe "GraphQL::Execution::Errors" do
         raise ErrorA, "f1 broke"
       end
 
-      field :f2, Int, null: true
+      field :f2, Int
       def f2
         -> { raise ErrorA, "f2 broke" }
       end
 
-      field :f3, Int, null: true
+      field :f3, Int
 
       def f3
         raise ErrorB
@@ -112,44 +113,44 @@ describe "GraphQL::Execution::Errors" do
         raise ErrorC.new(value: 20)
       end
 
-      field :f5, Int, null: true
+      field :f5, Int
       def f5
         raise ErrorASubclass, "raised subclass"
       end
 
-      field :f6, Int, null: true
+      field :f6, Int
       def f6
         -> { raise ErrorB }
       end
 
-      field :f7, String, null: true
+      field :f7, String
       def f7
         raise ErrorBGrandchildClass
       end
 
-      field :f8, String, null: true do
-        argument :input, PickyString, required: true
+      field :f8, String do
+        argument :input, PickyString
       end
 
       def f8(input:)
         input
       end
 
-      field :f9, String, null: true do
-        argument :thing_id, ID, required: true, loads: Thing
+      field :f9, String do
+        argument :thing_id, ID, loads: Thing
       end
 
       def f9(thing:)
         thing[:id]
       end
 
-      field :thing, Thing, null: true
+      field :thing, Thing
       def thing
         :thing
       end
 
-      field :input_field, Int, null: true do
-        argument :values, ValuesInput, required: true, method_access: false
+      field :input_field, Int do
+        argument :values, ValuesInput, method_access: false
       end
 
       field :non_nullable_array, [String], null: false

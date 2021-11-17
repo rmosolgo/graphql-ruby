@@ -7,11 +7,11 @@ module GraphQL
                   "InputObject are represented as Input Values which describe their type and "\
                   "optionally a default value."
       field :name, String, null: false
-      field :description, String, null: true
+      field :description, String
       field :type, GraphQL::Schema::LateBoundType.new("__Type"), null: false
-      field :default_value, String, "A GraphQL-formatted string representing the default value for this input value.", null: true
+      field :default_value, String, "A GraphQL-formatted string representing the default value for this input value."
       field :is_deprecated, Boolean, null: false
-      field :deprecation_reason, String, null: true
+      field :deprecation_reason, String
 
       def is_deprecated
         !!@object.deprecation_reason

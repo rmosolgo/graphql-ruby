@@ -106,9 +106,9 @@ module MaskHelpers
 
   class WithinInputType < BaseInputObject
     metadata :hidden_input_object_type, true
-    argument :latitude, Float, required: true
-    argument :longitude, Float, required: true
-    argument :miles, Float, required: true do
+    argument :latitude, Float
+    argument :longitude, Float
+    argument :miles, Float do
       metadata :hidden_input_field, true
     end
   end
@@ -134,9 +134,9 @@ module MaskHelpers
       end
     end
 
-    field :language, LanguageType, null: true do
+    field :language, LanguageType do
       metadata :hidden_field, true
-      argument :name, String, required: true do
+      argument :name, String do
         metadata :hidden_argument, true
       end
     end
@@ -149,25 +149,25 @@ module MaskHelpers
       argument :manners, [MannerType], required: false, description: "Filter phonemes by manner of articulation"
     end
 
-    field :phoneme, PhonemeType, null: true do
+    field :phoneme, PhonemeType do
       description "Lookup a phoneme by symbol"
-      argument :symbol, String, required: true
+      argument :symbol, String
     end
 
-    field :unit, EmicUnitType, null: true do
+    field :unit, EmicUnitType do
       description "Find an emic unit by its name"
-      argument :name, String, required: true
+      argument :name, String
     end
 
     field :manners, [MannerType], null: false
   end
 
   class MutationType < BaseObject
-    field :add_phoneme, PhonemeType, null: true do
+    field :add_phoneme, PhonemeType do
       argument :symbol, String, required: false
     end
 
-    field :add_chereme, String, null: true do
+    field :add_chereme, String do
       argument :chereme, CheremeInput, required: false do
         metadata :hidden_argument, true
       end
@@ -444,6 +444,7 @@ describe GraphQL::Schema::Warden do
         class BagOfThings < GraphQL::Schema::Union
           possible_types A, B, C
         end
+
         class Query < GraphQL::Schema::Object
           field :bag, BagOfThings, null: false
         end

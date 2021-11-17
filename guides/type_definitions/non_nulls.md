@@ -42,11 +42,11 @@ This means that the field will _never_ be `nil` (and if it is, it will be remove
 
 When `!` is used for arguments (like `followers(since: DateTime!)` above), it means that the argument is _required_ for the query to execute. Any query which doesn't have a value for that argument will be rejected immediately.
 
-To make an argument non-null in Ruby, use `required: true`, for example:
+Arguments are non-null by default. You can use `required: false` to mark arguments as optional:
 
 ```ruby
-# equivalent to `since: DateTime!` above
-argument :since, Types::DateTime, required: true
+# This will be `since: DateTime` instead of `since: DateTime!`
+argument :since, Types::DateTime, required: false
 ```
 
-This means that any query _without_ a value for `since:` will be rejected.
+Without `required: false`, any query _without_ a value for `since:` will be rejected.

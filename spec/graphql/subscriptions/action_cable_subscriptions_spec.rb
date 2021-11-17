@@ -66,7 +66,7 @@ describe GraphQL::Subscriptions::ActionCableSubscriptions do
 
   class ActionCableTestSchema < GraphQL::Schema
     class Query < GraphQL::Schema::Object
-      field :int, Integer, null: true
+      field :int, Integer
     end
 
     class Filter < GraphQL::Schema::InputObject
@@ -74,7 +74,7 @@ describe GraphQL::Subscriptions::ActionCableSubscriptions do
     end
 
     class Keyword < GraphQL::Schema::InputObject
-      argument :value, String, required: true
+      argument :value, String
       argument :fuzzy, Boolean, required: false
     end
 

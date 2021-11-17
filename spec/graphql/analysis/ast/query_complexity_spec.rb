@@ -349,12 +349,12 @@ describe GraphQL::Analysis::AST::QueryComplexity do
     class CustomComplexitySchema < GraphQL::Schema
       module ComplexityInterface
         include GraphQL::Schema::Interface
-        field :value, Int, null: true
+        field :value, Int
       end
 
       class SingleComplexity < GraphQL::Schema::Object
-        field :value, Int, null: true, complexity: 0.1
-        field :complexity, SingleComplexity, null: true do
+        field :value, Int, complexity: 0.1
+        field :complexity, SingleComplexity do
           argument :int_value, Int, required: false
           complexity(->(ctx, args, child_complexity) { args[:int_value] + child_complexity })
         end
@@ -362,17 +362,17 @@ describe GraphQL::Analysis::AST::QueryComplexity do
       end
 
       class DoubleComplexity < GraphQL::Schema::Object
-        field :value, Int, null: true, complexity: 4
+        field :value, Int, complexity: 4
         implements ComplexityInterface
       end
 
       class Query < GraphQL::Schema::Object
-        field :complexity, SingleComplexity, null: true do
+        field :complexity, SingleComplexity do
           argument :int_value, Int, required: false
           complexity ->(ctx, args, child_complexity) { args[:int_value] + child_complexity }
         end
 
-        field :inner_complexity, ComplexityInterface, null: true do
+        field :inner_complexity, ComplexityInterface do
           argument :value, Int, required: false
         end
       end
@@ -423,12 +423,12 @@ describe GraphQL::Analysis::AST::QueryComplexity do
     class CustomComplexityByMethodSchema < GraphQL::Schema
       module ComplexityInterface
         include GraphQL::Schema::Interface
-        field :value, Int, null: true
+        field :value, Int
       end
 
       class SingleComplexity < GraphQL::Schema::Object
-        field :value, Int, null: true, complexity: 0.1
-        field :complexity, SingleComplexity, null: true do
+        field :value, Int, complexity: 0.1
+        field :complexity, SingleComplexity do
           argument :int_value, Int, required: false
 
           def complexity_for(query:, child_complexity:, lookahead:)
@@ -443,21 +443,22 @@ describe GraphQL::Analysis::AST::QueryComplexity do
           4
         end
       end
+
       class DoubleComplexity < GraphQL::Schema::Object
         field_class ComplexityFourField
-        field :value, Int, null: true
+        field :value, Int
         implements ComplexityInterface
       end
 
       class Query < GraphQL::Schema::Object
-        field :complexity, SingleComplexity, null: true do
+        field :complexity, SingleComplexity do
           argument :int_value, Int, required: false
           def complexity_for(query:, child_complexity:, lookahead:)
             lookahead.arguments[:int_value] + child_complexity
           end
         end
 
-        field :inner_complexity, ComplexityInterface, null: true do
+        field :inner_complexity, ComplexityInterface do
           argument :value, Int, required: false
         end
       end

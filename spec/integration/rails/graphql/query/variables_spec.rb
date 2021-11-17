@@ -154,7 +154,7 @@ describe GraphQL::Query::Variables do
 
         query_type = Class.new(GraphQL::Schema::Object) do
           graphql_name "Query"
-          field :variables_test, Integer, null: true, extras: [:ast_node], camelize: false do
+          field :variables_test, Integer, extras: [:ast_node], camelize: false do
             argument :val, Integer, required: false
             argument :val_with_default, Integer, required: false, default_value: 13, camelize: false
             argument :complex_val, complex_val, required: false, camelize: false

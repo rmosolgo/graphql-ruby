@@ -4,15 +4,15 @@ require "spec_helper"
 describe GraphQL::Query::Context do
   class ContextTestSchema < GraphQL::Schema
     class Query < GraphQL::Schema::Object
-      field :context, String, null: true, resolver_method: :fetch_context_key do
-        argument :key, String, required: true
+      field :context, String, resolver_method: :fetch_context_key do
+        argument :key, String
       end
 
       def fetch_context_key(key:)
         context[key]
       end
 
-      field :query_name, String, null: true
+      field :query_name, String
 
       def query_name
         context.query.class.name
@@ -154,8 +154,8 @@ describe GraphQL::Query::Context do
     end
 
     class ContextQuery < GraphQL::Schema::Object
-      field :get_scoped_context, String, null: true do
-        argument :key, String, required: true
+      field :get_scoped_context, String do
+        argument :key, String
         argument :lazy, Boolean, required: false, default_value: false
       end
 
@@ -168,8 +168,8 @@ describe GraphQL::Query::Context do
       end
 
       field :set_scoped_context, ContextQuery, null: false do
-        argument :key, String, required: true
-        argument :value, String, required: true
+        argument :key, String
+        argument :value, String
         argument :lazy, Boolean, required: false, default_value: false
       end
 

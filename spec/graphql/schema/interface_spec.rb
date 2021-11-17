@@ -218,7 +218,7 @@ describe GraphQL::Schema::Interface do
     class InterfaceImplementsSchema < GraphQL::Schema
       module InterfaceA
         include GraphQL::Schema::Interface
-        field :a, String, null: true
+        field :a, String
 
         def a; "a"; end
       end
@@ -226,7 +226,7 @@ describe GraphQL::Schema::Interface do
       module InterfaceB
         include GraphQL::Schema::Interface
         implements InterfaceA
-        field :b, String, null: true
+        field :b, String
 
         def b; "b"; end
       end

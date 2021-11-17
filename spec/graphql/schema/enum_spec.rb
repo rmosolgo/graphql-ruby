@@ -170,7 +170,7 @@ describe GraphQL::Schema::Enum do
           query = Class.new(GraphQL::Schema::Object) do
             graphql_name "Query"
             field :names, [String], null: false do
-              argument :things, [plural], required: true
+              argument :things, [plural]
             end
 
             def names(things:)

@@ -239,8 +239,8 @@ describe GraphQL::Analysis::AST do
       end
 
       class Query < GraphQL::Schema::Object
-        field :f1, Int, null: true do
-          argument :arg, String, required: true, prepare: ->(val, ctx) {
+        field :f1, Int do
+          argument :arg, String, prepare: ->(val, ctx) {
             ctx[:analysis_finished] ? val.to_i : raise("Prepared too soon!")
           }
         end
@@ -333,7 +333,7 @@ describe GraphQL::Analysis::AST do
   describe "Detecting all-introspection queries" do
     class AllIntrospectionSchema < GraphQL::Schema
       class Query < GraphQL::Schema::Object
-        field :int, Int, null: true
+        field :int, Int
       end
       query(Query)
     end

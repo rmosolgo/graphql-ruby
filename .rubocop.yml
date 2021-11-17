@@ -1,11 +1,14 @@
 require:
   - ./cop/none_without_block_cop
   - ./cop/no_focus_cop
+  - ./lib/graphql/rubocop/graphql/default_null_true
+  - ./lib/graphql/rubocop/graphql/default_required_true
   - ./cop/context_is_passed_cop
 
 AllCops:
   DisabledByDefault: true
-  TargetRubyVersion: 2.2
+  SuggestExtensions: false
+  TargetRubyVersion: 2.5
   Exclude:
     - 'lib/graphql/language/lexer.rb'
     - 'lib/graphql/language/parser.rb'
@@ -13,6 +16,7 @@ AllCops:
     - 'tmp/**/*'
     - 'vendor/**/*'
     - 'spec/integration/tmp/**/*'
+    - 'spec/fixtures/cop/*.rb'
 
 ContextIsPassedCop:
   Exclude:
@@ -83,3 +87,9 @@ Style/WordArray:
 # ->(...) { ... }
 Layout/SpaceInLambdaLiteral:
   Enabled: true # Default is "require_no_space"
+
+GraphQL/DefaultNullTrue:
+  Enabled: true
+
+GraphQL/DefaultRequiredTrue:
+  Enabled: true

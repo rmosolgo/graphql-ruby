@@ -88,6 +88,7 @@ class InMemoryBackend
       @pushes.clear
     end
   end
+
   # Just a random stateful object for tracking what happens:
   class SubscriptionPayload
     attr_reader :str
@@ -118,14 +119,14 @@ class ClassBasedInMemoryBackend < InMemoryBackend
   end
 
   class StreamInput < GraphQL::Schema::InputObject
-    argument :user_id, ID, required: true, camelize: false
+    argument :user_id, ID, camelize: false
     argument :payload_type, PayloadType, required: false, default_value: "ONE", prepare: ->(e, ctx) { e ? e.downcase : e }
   end
 
   class EventSubscription < GraphQL::Schema::Subscription
-    argument :user_id, ID, required: true
+    argument :user_id, ID
     argument :payload_type, PayloadType, required: false, default_value: "ONE", prepare: ->(e, ctx) { e ? e.downcase : e }
-    field :payload, Payload, null: true
+    field :payload, Payload
   end
 
   class FilteredStream < GraphQL::Schema::Subscription
@@ -149,21 +150,21 @@ class ClassBasedInMemoryBackend < InMemoryBackend
 
   class Subscription < GraphQL::Schema::Object
     field :payload, Payload, null: false do
-      argument :id, ID, required: true
+      argument :id, ID
     end
 
-    field :event, Payload, null: true do
+    field :event, Payload do
       argument :stream, StreamInput, required: false
     end
 
     field :event_subscription, subscription: EventSubscription
 
-    field :my_event, Payload, null: true, subscription_scope: :me do
+    field :my_event, Payload, subscription_scope: :me do
       argument :payload_type, PayloadType, required: false
     end
 
     field :failed_event, Payload, null: false  do
-      argument :id, ID, required: true
+      argument :id, ID
     end
 
     def failed_event(id:)
@@ -174,7 +175,7 @@ class ClassBasedInMemoryBackend < InMemoryBackend
   end
 
   class Query < GraphQL::Schema::Object
-    field :dummy, Integer, null: true
+    field :dummy, Integer
   end
 
   class Schema < GraphQL::Schema

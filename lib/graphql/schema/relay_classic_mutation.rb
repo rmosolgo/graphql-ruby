@@ -22,7 +22,7 @@ module GraphQL
     #
     class RelayClassicMutation < GraphQL::Schema::Mutation
       # The payload should always include this field
-      field(:client_mutation_id, String, "A unique identifier for the client performing the mutation.", null: true)
+      field(:client_mutation_id, String, "A unique identifier for the client performing the mutation.")
       # Relay classic default:
       null(true)
 

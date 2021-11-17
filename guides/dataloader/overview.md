@@ -50,8 +50,8 @@ end
 Then, inside your schema, you can request batch-loaded objects by their lookup key with `dataloader.with(...).load(...)`:
 
 ```ruby
-field :user, Types::User, null: true do
-  argument :handle, String, required: true
+field :user, Types::User do
+  argument :handle, String
 end
 
 def user(handle:)
@@ -63,8 +63,8 @@ Or, load several objects by passing an array of lookup keys to `.load_all(...)`:
 
 ```ruby
 field :is_following, Boolean, null: false do
-  argument :follower_handle, String, required: true
-  argument :followed_handle, String, required: true
+  argument :follower_handle, String
+  argument :followed_handle, String
 end
 
 def is_following(follower_handle:, followed_handle:)
@@ -80,10 +80,10 @@ To prepare requests from several sources, use `.request(...)`, then call `.load`
 
 ```ruby
 class AddToList < GraphQL::Schema::Mutation
-  argument :handle, String, required: true
-  argument :list, String, required: true, as: :list_name
+  argument :handle, String
+  argument :list, String, as: :list_name
 
-  field :list, Types::UserList, null: true
+  field :list, Types::UserList
 
   def resolve(handle:, list_name:)
     # first, register the requests:
@@ -116,9 +116,9 @@ Then, any arguments with `loads:` will use that method to fetch objects. For exa
 
 ```ruby
 class FollowUser < GraphQL::Schema::Mutation
-  argument :follow_id, ID, required: true, loads: Types::User
+  argument :follow_id, ID, loads: Types::User
 
-  field :followed, Types::User, null: true
+  field :followed, Types::User
 
   def resolve(follow:)
     # `follow` was fetched using the Schema's `object_from_id` hook

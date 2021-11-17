@@ -13,7 +13,6 @@ module Graphql
 
       argument :type_name,
         type: :string,
-        required: true,
         banner: "TypeName",
         desc: "Name of this object type (expressed as Ruby or GraphQL)"
 
