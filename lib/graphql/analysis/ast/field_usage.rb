@@ -37,7 +37,7 @@ module GraphQL
 
             if argument.definition.type.kind.input_object?
               extract_deprecated_arguments(argument.value.arguments.argument_values)
-            elsif argument.definition.type.list?
+            elsif argument.definition.type.list? && !argument.value.nil?
               argument
                 .value
                 .select { |value| value.respond_to?(:arguments) }

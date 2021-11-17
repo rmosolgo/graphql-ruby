@@ -617,6 +617,7 @@ module GraphQL
         attr_reader :description
         scalar_methods :name
         children_methods({
+          interfaces: GraphQL::Language::Nodes::TypeName,
           directives: GraphQL::Language::Nodes::Directive,
           fields: GraphQL::Language::Nodes::FieldDefinition,
         })
@@ -626,6 +627,7 @@ module GraphQL
       class InterfaceTypeExtension < AbstractNode
         scalar_methods :name
         children_methods({
+          interfaces: GraphQL::Language::Nodes::TypeName,
           directives: GraphQL::Language::Nodes::Directive,
           fields: GraphQL::Language::Nodes::FieldDefinition,
         })

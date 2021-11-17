@@ -23,7 +23,15 @@ module GraphQL
         @arguments = arguments
         @context = context
         field ||= context.field
-        scope_val = scope || (context && field.subscription_scope && context[field.subscription_scope])
+        scope_key = field.subscription_scope
+        scope_val = scope || (context && scope_key && context[scope_key])
+        if scope_key &&
+            (subscription = field.resolver) &&
+            (subscription.respond_to?(:subscription_scope_optional?)) &&
+            !subscription.subscription_scope_optional? &&
+            scope_val.nil?
+          raise Subscriptions::SubscriptionScopeMissingError, "#{field.path} (#{subscription}) requires a `scope:` value to trigger updates (Set `subscription_scope ..., optional: true` to disable this requirement)"
+        end
 
         @topic = self.class.serialize(name, arguments, field, scope: scope_val)
       end
@@ -54,6 +62,7 @@ module GraphQL
       class << self
         private
         def stringify_args(arg_owner, args)
+          arg_owner = arg_owner.respond_to?(:unwrap) ? arg_owner.unwrap : arg_owner # remove list and non-null wrappers
           case args
           when Hash
             next_args = {}
@@ -64,11 +73,11 @@ module GraphQL
 
               if arg_defn
                 normalized_arg_name = camelized_arg_name
+                next_args[normalized_arg_name] = stringify_args(arg_defn.type, v)
               else
                 normalized_arg_name = arg_name
                 arg_defn = get_arg_definition(arg_owner, normalized_arg_name)
               end
-
               next_args[normalized_arg_name] = stringify_args(arg_defn.type, v)
             end
             # Make sure they're deeply sorted

@@ -15,7 +15,7 @@ module GraphQL
           str.encode!(Encoding::UTF_8)
         end
       rescue EncodingError
-        err = GraphQL::StringEncodingError.new(str)
+        err = GraphQL::StringEncodingError.new(str, context: ctx)
         ctx.schema.type_error(err, ctx)
       end
 

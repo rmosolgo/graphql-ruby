@@ -37,8 +37,33 @@ describe GraphQL::Types::String do
 
         it "raises GraphQL::StringEncodingError" do
           err = assert_raises(GraphQL::StringEncodingError) { subject }
-          assert_equal "String \"#{string}\" was encoded as ASCII-8BIT! GraphQL requires an encoding compatible with UTF-8.", err.message
+          assert_equal "String \"\\x00\\x00\\x00foo\\xAD\\xAD\\xAD\" was encoded as ASCII-8BIT. GraphQL requires an encoding compatible with UTF-8.", err.message
           assert_equal string, err.string
+        end
+      end
+
+      describe "In queries" do
+        let(:schema) {
+          query_type = Class.new(GraphQL::Schema::Object) do
+            graphql_name "Query"
+
+            field :bad_string, String
+            def bad_string
+              "\0\0\0foo\255\255\255".dup.force_encoding("BINARY")
+            end
+          end
+
+          Class.new(GraphQL::Schema) do
+            query(query_type)
+          end
+        }
+
+        it "includes location in the error message" do
+          err = assert_raises GraphQL::StringEncodingError do
+            schema.execute("{ badString }")
+          end
+          expected_err = "String \"\\x00\\x00\\x00foo\\xAD\\xAD\\xAD\" was encoded as ASCII-8BIT @ badString (Query.badString). GraphQL requires an encoding compatible with UTF-8."
+          assert_equal expected_err, err.message
         end
       end
     end

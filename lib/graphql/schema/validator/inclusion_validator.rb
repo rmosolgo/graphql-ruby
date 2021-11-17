@@ -23,7 +23,9 @@ module GraphQL
         end
 
         def validate(_object, _context, value)
-          if !@in_list.include?(value)
+          if permitted_empty_value?(value)
+            # pass
+          elsif !@in_list.include?(value)
             @message
           end
         end

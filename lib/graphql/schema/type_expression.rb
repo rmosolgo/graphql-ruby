@@ -11,7 +11,7 @@ module GraphQL
       def self.build_type(type_owner, ast_node)
         case ast_node
         when GraphQL::Language::Nodes::TypeName
-          type_owner.get_type(ast_node.name)
+          type_owner.get_type(ast_node.name) # rubocop:disable Cop/ContextIsPassedCop -- this is a `context` or `warden`, it's already query-aware
         when GraphQL::Language::Nodes::NonNullType
           ast_inner_type = ast_node.of_type
           inner_type = build_type(type_owner, ast_inner_type)

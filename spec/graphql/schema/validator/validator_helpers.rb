@@ -5,6 +5,18 @@ module ValidatorHelpers
     child_class.extend(ClassMethods)
   end
 
+  class BlankString < String
+    def blank?
+      true
+    end
+  end
+
+  class NonBlankString < String
+    if method_defined?(:blank?)
+      undef :blank?
+    end
+  end
+
   def build_schema(arg_type, validates_config)
     schema = Class.new(GraphQL::Schema)
 
@@ -17,6 +29,7 @@ module ValidatorHelpers
     end
 
     validated_resolver = Class.new(GraphQL::Schema::Resolver) do
+      graphql_name "ValidatedResolver"
       argument :a, arg_type, required: false
       argument :b, arg_type, required: false
       argument :c, arg_type, required: false
@@ -33,7 +46,7 @@ module ValidatorHelpers
         argument :value, arg_type, required: false, validates: validates_config
       end
 
-      def validated(value:)
+      def validated(value: nil)
         value
       end
 
@@ -75,7 +88,7 @@ module ValidatorHelpers
         it "#{name}#{validator_name} on #{field_type} works with #{expectation[:config]}" do
           schema = build_schema(field_type, { validator_name => expectation[:config] })
           expectation[:cases].each do |test_case|
-            result = schema.execute(test_case[:query])
+            result = schema.execute(test_case[:query], variables: test_case[:variables])
             if !result["data"]
               pp result
               refute result["errors"].map { |e| e["message"] }, test_case[:query]
@@ -94,4 +107,3 @@ module ValidatorHelpers
     end
   end
 end
-

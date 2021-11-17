@@ -65,6 +65,24 @@ describe GraphQL::Schema::List do
     end
   end
 
+  it "Accepts \"\" as a default value from introspection" do
+    schema = GraphQL::Schema.from_definition <<-GRAPHQL
+    type Query {
+      f(arg: [String] = ""): String
+    }
+    GRAPHQL
+    assert_equal "", schema.query.fields["f"].arguments["arg"].default_value
+
+    introspection_json = schema.as_json
+    assert_equal '[""]', introspection_json["data"]["__schema"]["types"].find { |t| t["name"] == "Query" }["fields"].first["args"].first["defaultValue"]
+
+    schema_2 = GraphQL::Schema.from_introspection(introspection_json)
+
+    # since this one is from introspection, it gets a wrapped list as default value:
+    assert_equal [""], schema_2.query.fields["f"].arguments["arg"].default_value
+    assert_equal '[""]', schema_2.as_json["data"]["__schema"]["types"].find { |t| t["name"] == "Query" }["fields"].first["args"].first["defaultValue"]
+  end
+
   describe "validation" do
     class ListValidationSchema < GraphQL::Schema
       class Item < GraphQL::Schema::Enum

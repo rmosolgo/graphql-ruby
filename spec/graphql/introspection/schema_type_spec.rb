@@ -35,6 +35,7 @@ describe GraphQL::Introspection::SchemaType do
             {"name"=>"executionErrorWithOptions"},
             {"name"=>"favoriteEdible"},
             {"name"=>"fromSource"},
+            {"name"=>"hugeInteger"},
             {"name"=>"maybeNull"},
             {"name"=>"milk"},
             {"name"=>"multipleErrorsOnNonNullableField"},

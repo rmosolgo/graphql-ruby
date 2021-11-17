@@ -463,6 +463,11 @@ module Dummy
 
     field :deep_non_null, DeepNonNull, null: false
     def deep_non_null; :deep_non_null; end
+
+    field :huge_integer, Integer
+    def huge_integer
+      GraphQL::Types::Int::MAX + 1
+    end
   end
 
   class AdminDairyAppQuery < BaseObject

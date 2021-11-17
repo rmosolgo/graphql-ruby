@@ -20,12 +20,22 @@ describe GraphQL::Schema::Validator do
     end
   end
 
+  class CustomErrorValidator < GraphQL::Schema::Validator
+    def validate(obj, ctx, value)
+      if value != 7
+        raise GraphQL::ExecutionError.new("#{@validated.path} must be `7`, not `#{value}`", extensions: { requiredValue: 7, actualValue: value })
+      end
+    end
+  end
+
   before do
     GraphQL::Schema::Validator.install(:custom, CustomValidator)
+    GraphQL::Schema::Validator.install(:custom_error, CustomErrorValidator)
   end
 
   after do
     GraphQL::Schema::Validator.uninstall(:custom)
+    GraphQL::Schema::Validator.uninstall(:custom_error)
   end
 
   build_tests(CustomValidator, Integer, [
@@ -49,6 +59,21 @@ describe GraphQL::Schema::Validator do
       ]
     }
   ])
+
+  it "works with custom raised errors" do
+    schema = build_schema(Integer, { custom_error: {} })
+    res = schema.execute("{ validated(value: 7) }")
+    assert_equal 7, res["data"]["validated"]
+
+    res = schema.execute("{ validated(value: 77) }")
+    expected_error = {
+      "message"=>"Query.validated.value must be `7`, not `77`",
+      "locations"=>[{"line"=>1, "column"=>3}],
+      "path"=>["validated"],
+      "extensions"=>{"requiredValue"=>7, "actualValue"=>77}
+    }
+    assert_equal [expected_error], res["errors"]
+  end
 
   it "does something with multiple validators" do
     schema = build_schema(String, { length: { minimum: 5 }, inclusion: { in: ["0", "123456", "678910"] }})

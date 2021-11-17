@@ -47,7 +47,7 @@ Parts of your schema can be converted one-by-one, so you can convert definitions
 In general, each `.define { ... }` block will be converted to a class.
 
 - Instead of a `GraphQL::{X}Type`, classes inherit from `GraphQL::Schema::{X}`. For example, instead of `GraphQL::ObjectType.define { ... }`, a definition is made by extending `GraphQL::Schema::Object`
-- Any class hierarchy is supported; It's recommended to create a base class for your application, then extend the base class for each of your types (like `ApplicationController` in Rails, see [Customizing Definitions](#customizing-defintions)).
+- Any class hierarchy is supported; It's recommended to create a base class for your application, then extend the base class for each of your types (like `ApplicationController` in Rails, see [Customizing Definitions](#customizing-definitions)).
 
 See sections below for specific information about each schema definition class.
 

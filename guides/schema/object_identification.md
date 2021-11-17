@@ -51,6 +51,22 @@ class MySchema < GraphQL::Schema
 end
 ```
 
+You could also use the [`GlobalID`](https://github.com/rails/globalid) gem (included in Ruby on Rails since v4.2) to achieve this:
+
+```ruby
+class MySchema < GraphQL::Schema
+  def self.id_from_object(object, type_definition, query_ctx)
+    # Generates a URI like `gid://myproject/User/1` base64-encoded.
+    object.to_gid.to_param
+  end
+
+  def self.object_from_id(id, query_ctx)
+    # Finds the object using the base64-encoded URI.
+    GlobalID.find(id)
+  end
+end
+```
+
 ### Node interface
 
 One requirement for Relay's object management is implementing the `"Node"` interface.

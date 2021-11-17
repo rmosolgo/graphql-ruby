@@ -5,10 +5,9 @@ section: Dataloader
 title: Overview
 desc: Getting started with the Fiber-based Dataloader
 index: 0
-experimental: true
 ---
 
-GraphQL-Ruby 1.12 includes {{ "GraphQL::Dataloader" | api_doc }}, a module for managing efficient database access in a way that's transparent to application code, backed by Ruby's `Fiber` concurrency primitive.
+GraphQL-Ruby 1.12+ includes {{ "GraphQL::Dataloader" | api_doc }}, a module for managing efficient database access in a way that's transparent to application code, backed by Ruby's `Fiber` concurrency primitive. It also {% internal_link "supports Ruby 3's non-blocking fibers", "/dataloader/nonblocking" %}.
 
 `GraphQL::Dataloader` is inspired by [`@bessey`'s proof-of-concept](https://github.com/bessey/graphql-fiber-test/tree/no-gem-changes) and [shopify/graphql-batch](https://github.com/shopify/graphql-batch).
 
@@ -34,6 +33,8 @@ At a high level, `GraphQL::Dataloader`'s usage of `Fiber` looks like this:
 - Likewise, paused Fibers are resumed, causing GraphQL execution to continue, until all paused Fibers are evaluated completely.
 
 Whenever `GraphQL::Dataloader` creates a new `Fiber`, it copies each pair from `Thread.current[...]` and reassigns them inside the new `Fiber`.
+
+See {% internal_link "Non-Blocking", "/dataloader/nonblocking" %} for information about using Ruby 3's non-blocking Fibers.
 
 ## Getting Started
 

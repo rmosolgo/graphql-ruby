@@ -228,6 +228,14 @@ describe GraphQL::Schema::Resolver do
       def resolve(int:)
         int * 3
       end
+
+      def unauthorized_object(err)
+        if context[:use_replacement]
+          context[:use_replacement]
+        else
+          raise GraphQL::ExecutionError, "Unauthorized #{err.type.graphql_name} loaded for #{err.context[:current_path].join(".")}"
+        end
+      end
     end
 
     class PrepResolver9Array < BaseResolver
@@ -722,6 +730,8 @@ describe GraphQL::Schema::Resolver do
           context = { max_value: 8 }
           res = exec_query(query_str, context: context)
           assert_nil res["data"]["prepResolver9"]
+          assert_equal ["Unauthorized IntegerWrapper loaded for prepResolver9"], res["errors"].map { |e| e["message"] }
+
           # This is OK
           context = { max_value: 900 }
           res = exec_query(query_str, context: context)
@@ -729,6 +739,12 @@ describe GraphQL::Schema::Resolver do
           # This is the transformation applied by the resolver,
           # just make sure it matches the response
           assert_equal 51, (9 + "HasValue".size) * 3
+
+          # It uses the returned value from unauthorized object
+          context = { max_value: 8, use_replacement: 2 }
+          res = exec_query(query_str, context: context)
+          assert_equal 6, res["data"]["prepResolver9"]["value"]
+          refute res.key?("errors")
         end
       end
     end
@@ -879,6 +895,27 @@ describe GraphQL::Schema::Resolver do
       it "is passed along to the field" do
         assert_equal 10, ObjectWithMaxPageSizeResolver.fields["items"].max_page_size
       end
+    end
+  end
+
+  describe "When the type is forgotten" do
+    class ResolverWithoutTypeSchema < GraphQL::Schema
+      class WithoutType < GraphQL::Schema::Resolver
+        def resolve
+          "OK"
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+      end
+    end
+
+    it "raises a nice error" do
+      err = assert_raises GraphQL::Schema::Field::MissingReturnTypeError do
+        ResolverWithoutTypeSchema::Query.field(:without_type, resolver: ResolverWithoutTypeSchema::WithoutType)
+      end
+      expected_message = "Can't determine the return type for Query.withoutType (it has `resolver: ResolverWithoutTypeSchema::WithoutType`, consider configuration a `type ...` for that class)"
+      assert_equal expected_message, err.message
     end
   end
 end

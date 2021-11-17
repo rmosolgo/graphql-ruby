@@ -194,6 +194,7 @@ A few `extras` are available:
 - `lookahead` (see {% internal_link "Lookahead", "/queries/lookahead" %})
 - `execution_errors`, whose `#add(err_or_msg)` method should be used for adding errors
 - `argument_details` (Intepreter only), an instance of {{ "GraphQL::Execution::Interpreter::Arguments" | api_doc }} with argument metadata
+- `parent` (the previous `object` in the query)
 - Custom extras, see below
 
 To inject them into your field method, first, add the `extras:` option to the field definition:

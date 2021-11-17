@@ -159,7 +159,23 @@ describe GraphQL::Schema::InputObject do
           end
         end
 
+        class InstrumentByNameInput < GraphQL::Schema::InputObject
+          argument :instrument_name, ID, loads: Jazz::InstrumentType, as: :instrument
+
+          def self.load_instrument(instrument_name, context)
+            -> {
+              instruments = Jazz::Models.data["Instrument"]
+              instruments.find { |i| i.name == instrument_name }
+            }
+          end
+        end
+
+        class TouchInstrumentByName < TouchInstrument
+          argument :input_obj, InstrumentByNameInput
+        end
+
         field :touch_instrument, mutation: TouchInstrument
+        field :touch_instrument_by_name, mutation: TouchInstrumentByName
 
         class ListInstruments < GraphQL::Schema::Mutation
           argument :list, [InstrumentInput]
@@ -201,6 +217,21 @@ describe GraphQL::Schema::InputObject do
       res = InputObjectPrepareTest::Schema.execute(query_str, context: { multiply_by: 3 })
       expected_obj = [{ a: 1, b2: 2, c: 9, d2: 12, e2: 30, instrument: Jazz::Models::Instrument.new("Drum Kit", "PERCUSSION") }.inspect, "Drum Kit"]
       assert_equal expected_obj, res["data"]["inputs"]
+    end
+
+    it "calls load_ methods for arguments when they're present" do
+      query_str = <<-GRAPHQL
+      mutation {
+        touchInstrumentByName(inputObj: { instrumentName: "Flute" }) {
+          instrumentNameMethod
+          instrumentNameKey
+        }
+      }
+      GRAPHQL
+
+      res = InputObjectPrepareTest::Schema.execute(query_str)
+      assert_equal "Flute", res["data"]["touchInstrumentByName"]["instrumentNameMethod"]
+      assert_equal "Flute", res["data"]["touchInstrumentByName"]["instrumentNameKey"]
     end
 
     it "handles exceptions preparing variable input objects" do
@@ -550,9 +581,19 @@ describe GraphQL::Schema::InputObject do
     before do
       arg_values = {a: 1, b: 2, c: { d: 3, e: 4, instrumentId: "Instrument/Drum Kit"}}
 
+      query = GraphQL::Query.new(Jazz::Schema, "{ __typename }")
+      # This is because a test below expects `instrument:` to have been loaded
+      # during `InputObject#initialize`, which only happens when `!context.interpreter?`.
+      # Maybe that test could be updated instead.
+      context_without_interpreter = Class.new(SimpleDelegator) do
+        def interpreter?
+          false
+        end
+      end
+
       @input_object = InputObjectToHTest::TestInput2.new(
         arg_values,
-        context: OpenStruct.new(warden: Jazz::Schema, schema: Jazz::Schema),
+        context: context_without_interpreter.new(query.context),
         defaults_used: Set.new
       )
     end

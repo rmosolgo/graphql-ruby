@@ -341,6 +341,30 @@ type Query {
       errors = admin_schema.validate('query { adminOnlyMessage }', context: context)
       assert_equal([], errors)
     end
+
+    describe "with error limiting" do
+      describe("disabled") do
+        it "does not limit errors when not enabled" do
+          disabled_schema = Class.new(schema) { validate_max_errors(nil) }
+          errors = disabled_schema.validate("{ cheese(id: 1) { flavor flavor: id, cow } }")
+          messages = errors.map { |e| e.message }
+          assert_equal([
+            "Field 'flavor' has a field conflict: flavor or id?",
+            "Field 'cow' doesn't exist on type 'Cheese'"
+          ], messages)
+        end
+      end
+      describe("enabled") do
+        it "does limit errors when enabled" do
+          enabled_schema = Class.new(schema) { validate_max_errors(1) }
+          errors = enabled_schema.validate("{ cheese(id: 1) { flavor flavor: id, cow } }")
+          messages = errors.map { |e| e.message }
+          assert_equal([
+            "Field 'flavor' has a field conflict: flavor or id?",
+          ], messages)
+        end
+      end
+    end
   end
 
   describe "#as_json / #to_json" do

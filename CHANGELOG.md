@@ -8,6 +8,56 @@
 
 ### Bug fixes
 
+# 1.12.19 (5 November 2021)
+
+### New Features
+
+- Argument validation: Make `allow_null` and `allow_blank` work standalone #3671
+- Add field and path info to Encoding errors #3697
+- Add `Resolver#unauthorized_object` for handling loaded but unauthorized objects #3689
+
+### Bug fixes
+
+- Properly hook up `Schema.validate_max_errors` at runtime #3691
+
+# 1.12.18 (2 November 2021)
+
+### New features
+
+- Subscriptions: Add `NO_UPDATE` constant for skipping subscription updates #3664
+- Validation: Add `Schema.max_validation_errors(integer)` for halting validation when it reaches a certain number #3683
+- Call `self.load_...` methods on Input objects for loading arguments #3682
+- Use `import_methods` in Refinements when available #3674
+- `AppsignalTracing`: Add `set_action_name` #3659
+
+### Bug fixes
+
+- Authorize objects returned from custom `def load_...` methods #3682
+- Fix `context[:current_field]` when argument `prepare:` hooks raise an error #3666
+- Raise a helpful error when a Resolver doesn't have a configured `type(...)` #3679
+- Better error message when subscription clients are using ActionCable #3668
+- Dataloader: Fix dataloading of input object arguments #3666
+- Subscriptions: Fix parsing time zones #3667
+- Subscriptions: Fix parsing with non-null arguments #3620
+- Authorization: Call `schema.unauthorized_field` for unauthorized resolvers
+- Fix when literal `null` is used as a value for a list argument #3660
+
+# 1.12.17 (15 October 2021)
+
+### New features
+
+- Support `extras: [:parent]` #3645
+- Support ranges in `NumericalityValidator` #3635
+- Add some Dataloader methods for testing #3335
+
+### Bug fixes
+
+- Support input object arguments called `context` #3654
+- Support single-item default values for list arguments #3652
+- Ensure query strings are strings before running a query #3628
+- Fix empty hash kwargs for Ruby 3 #3610
+- Fix wrongly detecting Ipnut objects in authorization #3606
+
 # 1.12.16 (31 August 2021)
 
 ### New features

@@ -68,7 +68,7 @@ Argument `#authorized?` hooks are called before resolving the field that the arg
 
 ```ruby
 class Types::BaseArgument < GraphQL::Schema::Argument
-  def initialize(*args, **kwargs, require_logged_in: false, &block)
+  def initialize(*args, require_logged_in: false, **kwargs, &block)
     @require_logged_in = require_logged_in
     super(*args, **kwargs, &block)
   end

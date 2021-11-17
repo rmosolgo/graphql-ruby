@@ -8,6 +8,45 @@
 
 ### Bug Fix
 
+# 1.20.2 (15 November 2021)
+
+### New Features
+
+- Operation Store: performance improvements: only validate newly-added operations, reduce allocations when normalizing incoming query strings
+
+# 1.20.1 (8 November 2021)
+
+### Bug Fix
+
+- Operation Store: fix when operations are re-synced with new aliases
+
+# 1.20.0 (5 November 2021)
+
+### New Features
+
+- Operation Store: Use Rails `insert_all` for better performance when adding new operations
+
+# 1.19.2 (26 October 2021)
+
+### New Features
+
+- Pundit and CanCan integrations: Add `ResolverIntegration` modules for plain resolvers #3392
+
+### Bug Fix
+
+- OperationStore Redis backend: pipeline updates to last_used_at values #3672
+
+# 1.19.1 (15 October 2021)
+
+### Bug Fix
+
+- OperationStore: fix a stack overflow error on GraphQL 1.9 #3653
+
+# 1.19.0 (13 October 2021)
+
+### New Features
+
+- Dashboard: add a component for GraphQL-Enterprise rate limiters
 # 1.18.3 (1 Sept 2021)
 
 ### Breaking Changes

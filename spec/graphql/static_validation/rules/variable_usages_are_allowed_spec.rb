@@ -280,4 +280,35 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
       assert_equal "abc", res2["data"]["fooMutation"]["foo"]
     end
   end
+
+  describe "with error limiting" do
+    describe("disabled") do
+      let(:args) {
+        { max_errors: nil }
+      }
+
+      it "does not limit the number of errors" do
+        assert_equal(error_messages.length, 4)
+        assert_equal(error_messages, [
+          "Nullability mismatch on variable $badInt and argument id (Int / Int!)",
+          "Type mismatch on variable $badStr and argument id (String! / Int!)",
+          "Nullability mismatch on variable $badAnimals and argument source ([DairyAnimal]! / [DairyAnimal!]!)",
+          "List dimension mismatch on variable $deepAnimals and argument source ([[DairyAnimal!]!]! / [DairyAnimal!]!)"
+        ])
+      end
+    end
+
+    describe("enabled") do
+      let(:args) {
+        { max_errors: 1 }
+      }
+
+      it "does limit the number of errors" do
+        assert_equal(error_messages.length, 1)
+        assert_equal(error_messages, [
+          "Nullability mismatch on variable $badInt and argument id (Int / Int!)"
+        ])
+      end
+    end
+  end
 end
