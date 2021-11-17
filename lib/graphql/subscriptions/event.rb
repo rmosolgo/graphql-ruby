@@ -115,8 +115,6 @@ module GraphQL
               else
                 next_args[normalized_arg_name] = stringify_args(arg_base_type, v)
               end
-
-
             end
             # Make sure they're deeply sorted
             next_args.sort.to_h
