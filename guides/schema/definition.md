@@ -91,26 +91,10 @@ class MySchema < GraphQL::Schema
 end
 ```
 
-__`object_from_id`__ is used by Relay's `node(id: ID!): Node` field. It receives a unique ID and must return the object for that ID, or `nil` if the object isn't found (or if it should be hidden from the current user).
+__`object_from_id`__ is used by the `node(id: ID!): Node` field and `loads:` configuration. It receives a unique ID and must return the object for that ID, or `nil` if the object isn't found (or if it should be hidden from the current user).
+__`id_from_object`__ is used to implement `Node.id`. It should return a unique ID for the given object. This ID will later be sent to `object_from_id` to refetch the object.
 
-```ruby
-class MySchema < GraphQL::Schema
-  def self.object_from_id(unique_id, context)
-    # Find and return the object for `unique_id`
-    # or `nil`
-  end
-end
-```
-
-__`id_from_object`__ is used to implement Relay's `Node.id` field. It should return a unique ID for the given object. This ID will later be sent to `object_from_id` to refetch the object.
-
-```ruby
-class MySchema < GraphQL::Schema
-  def self.id_from_object(object, type, context)
-    # Return a unique ID for `object`, whose GraphQL type is `type`
-  end
-end
-```
+See the {% internal_link "Object Identification guide", "/schema/object_identification" %} for more information about these methods.
 
 ## Execution Configuration
 
@@ -146,7 +130,7 @@ class MySchema < GraphQL::Schema
 end
 ```
 
-__`type_error`__ handles type errors at runtime, read more in the {% internal_link "Invariants guide", "/errors/type_errors" %}.
+__`type_error`__ handles type errors at runtime, read more in the {% internal_link "Type errors guide", "/errors/type_errors" %}.
 
 ```ruby
 class MySchema < GraphQL::Schema

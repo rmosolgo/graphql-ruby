@@ -48,7 +48,7 @@ module Graphql
   def self.object_from_id(encoded_id_with_hint, query_ctx)
     # For example, use Rails' GlobalID library (https://github.com/rails/globalid):
     # Split off the type hint
-    _type_hint, encoded_id = encoded_id_with_hint.split("_")
+    _type_hint, encoded_id = encoded_id_with_hint.split("_", 2)
     # Decode the ID
     id = Base64.urlsafe_decode64(encoded_id)
     # Rebuild it for Rails then find the object:
