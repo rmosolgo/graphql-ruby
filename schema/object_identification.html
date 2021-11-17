@@ -48,60 +48,39 @@
 
 <h1 class="guide-header">Object Identification</h1>
 <div class="guide-container">
-  <p>Relay uses <a href="https://facebook.github.io/relay/graphql/objectidentification.htm">global object identification</a> to support some of its features:</p>
+  <p>Some GraphQL features use unique IDs to load objects:</p>
 
 <ul>
-  <li><strong>Caching</strong>: Unique IDs are used as primary keys in Relay’s client-side cache.</li>
-  <li><strong>Refetching</strong>: Relay uses unique IDs to refetch objects when it determines that its cache is stale. (It uses the <code class="language-plaintext highlighter-rouge">Query.node</code> field to refetch objects.)</li>
+  <li>the <code class="language-plaintext highlighter-rouge">node(id:)</code> field looks up objects by ID</li>
+  <li>any arguments with <code class="language-plaintext highlighter-rouge">loads:</code> configurations look up objects by ID</li>
 </ul>
 
-<h3 id="defining-uuids">Defining UUIDs</h3>
-
-<p>You must provide a function for generating UUIDs and fetching objects with them. In your schema, define <code class="language-plaintext highlighter-rouge">self.id_from_object</code> and <code class="language-plaintext highlighter-rouge">self.object_from_id</code>:</p>
+<p>To use these features, you must provide a function for generating UUIDs and fetching objects with them. In your schema, define <code class="language-plaintext highlighter-rouge">self.id_from_object</code> and <code class="language-plaintext highlighter-rouge">self.object_from_id</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">id_from_object</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">type_definition</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span>
-    <span class="c1"># Call your application's UUID method here</span>
-    <span class="c1"># It should return a string</span>
-    <span class="no">MyApp</span><span class="o">::</span><span class="no">GlobalId</span><span class="p">.</span><span class="nf">encrypt</span><span class="p">(</span><span class="n">object</span><span class="p">.</span><span class="nf">class</span><span class="p">.</span><span class="nf">name</span><span class="p">,</span> <span class="n">object</span><span class="p">.</span><span class="nf">id</span><span class="p">)</span>
+    <span class="c1"># Generate a unique string ID for `object` here</span>
+    <span class="c1"># For example, use Rails' GlobalID library (https://github.com/rails/globalid):</span>
+    <span class="nb">object_id</span> <span class="o">=</span> <span class="n">object</span><span class="p">.</span><span class="nf">to_global_id</span><span class="p">.</span><span class="nf">to_s</span>
+    <span class="c1"># Remove this redundant prefix to make IDs shorter:</span>
+    <span class="nb">object_id</span> <span class="o">=</span> <span class="nb">object_id</span><span class="p">.</span><span class="nf">sub</span><span class="p">(</span><span class="s2">"gid://</span><span class="si">#{</span><span class="no">GlobalID</span><span class="p">.</span><span class="nf">app</span><span class="si">}</span><span class="s2">/"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+    <span class="n">encoded_id</span> <span class="o">=</span> <span class="no">Base64</span><span class="p">.</span><span class="nf">urlsafe_encode64</span><span class="p">(</span><span class="nb">object_id</span><span class="p">)</span>
+    <span class="c1"># Remove the "=" padding</span>
+    <span class="n">encoded_id</span> <span class="o">=</span> <span class="n">encoded_id</span><span class="p">.</span><span class="nf">sub</span><span class="p">(</span><span class="sr">/=+/</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+    <span class="c1"># Add a type hint</span>
+    <span class="n">type_hint</span> <span class="o">=</span> <span class="n">type_definition</span><span class="p">.</span><span class="nf">graphql_name</span><span class="p">.</span><span class="nf">first</span>
+    <span class="s2">"</span><span class="si">#{</span><span class="n">type_hint</span><span class="si">}</span><span class="s2">_</span><span class="si">#{</span><span class="n">encoded_id</span><span class="si">}</span><span class="s2">"</span>
   <span class="k">end</span>
 
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">object_from_id</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span>
-    <span class="n">class_name</span><span class="p">,</span> <span class="n">item_id</span> <span class="o">=</span> <span class="no">MyApp</span><span class="o">::</span><span class="no">GlobalId</span><span class="p">.</span><span class="nf">decrypt</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
-    <span class="c1"># "Post" =&gt; Post.find(item_id)</span>
-    <span class="no">Object</span><span class="p">.</span><span class="nf">const_get</span><span class="p">(</span><span class="n">class_name</span><span class="p">).</span><span class="nf">find</span><span class="p">(</span><span class="n">item_id</span><span class="p">)</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</code></pre></div></div>
-
-<p>An unencrypted ID generator is provided in the gem. It uses <code class="language-plaintext highlighter-rouge">Base64</code> to encode values. You can use it like this:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="c1"># Create UUIDs by joining the type name &amp; ID, then base64-encoding it</span>
-  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">id_from_object</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">type_definition</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span>
-    <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">UniqueWithinType</span><span class="p">.</span><span class="nf">encode</span><span class="p">(</span><span class="n">type_definition</span><span class="p">.</span><span class="nf">graphql_name</span><span class="p">,</span> <span class="n">object</span><span class="p">.</span><span class="nf">id</span><span class="p">)</span>
-  <span class="k">end</span>
-
-  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">object_from_id</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span>
-    <span class="n">type_name</span><span class="p">,</span> <span class="n">item_id</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">UniqueWithinType</span><span class="p">.</span><span class="nf">decode</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
-    <span class="c1"># Now, based on `type_name` and `item_id`</span>
-    <span class="c1"># find an object in your application</span>
-    <span class="c1"># ....</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</code></pre></div></div>
-
-<p>You could also use the <a href="https://github.com/rails/globalid"><code class="language-plaintext highlighter-rouge">GlobalID</code></a> gem (included in Ruby on Rails since v4.2) to achieve this:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">id_from_object</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">type_definition</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span>
-    <span class="c1"># Generates a URI like `gid://myproject/User/1` base64-encoded.</span>
-    <span class="n">object</span><span class="p">.</span><span class="nf">to_gid</span><span class="p">.</span><span class="nf">to_param</span>
-  <span class="k">end</span>
-
-  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">object_from_id</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span>
-    <span class="c1"># Finds the object using the base64-encoded URI.</span>
-    <span class="no">GlobalID</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+    <span class="c1"># For example, use Rails' GlobalID library (https://github.com/rails/globalid):</span>
+    <span class="c1"># Split off the type hint</span>
+    <span class="n">_type_hint</span><span class="p">,</span> <span class="n">encoded_id</span> <span class="o">=</span> <span class="n">encoded_id_with_hint</span><span class="p">.</span><span class="nf">split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="c1"># Decode the ID</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="no">Base64</span><span class="p">.</span><span class="nf">urlsafe_decode64</span><span class="p">(</span><span class="n">encoded_id</span><span class="p">)</span>
+    <span class="c1"># Rebuild it for Rails then find the object:</span>
+    <span class="n">full_global_id</span> <span class="o">=</span> <span class="s2">"gid://</span><span class="si">#{</span><span class="no">GlobalID</span><span class="p">.</span><span class="nf">app</span><span class="si">}</span><span class="s2">/</span><span class="si">#{</span><span class="nb">id</span><span class="si">}</span><span class="s2">"</span>
+    <span class="no">GlobalID</span><span class="o">::</span><span class="no">Locator</span><span class="p">.</span><span class="nf">locate</span><span class="p">(</span><span class="n">full_global_id</span><span class="p">)</span>
   <span class="k">end</span>
 <span class="k">end</span>
 </code></pre></div></div>
@@ -139,14 +118,12 @@
 
 <h3 id="uuid-fields">UUID fields</h3>
 
-<p>Relay Nodes must have a field named <code class="language-plaintext highlighter-rouge">"id"</code> which returns a globally unique ID.</p>
+<p>Nodes must have a field named <code class="language-plaintext highlighter-rouge">"id"</code> which returns a globally unique ID.</p>
 
-<p>To add a UUID field named <code class="language-plaintext highlighter-rouge">"id"</code>, use the <code class="language-plaintext highlighter-rouge">global_id_field</code> helper:</p>
+<p>To add a UUID field named <code class="language-plaintext highlighter-rouge">"id"</code>, implement the <a href="/api-doc/1.12.19/GraphQL/Types/Relay/Node" target="_blank" title="API docs for GraphQL::Types::Relay::Node"><code>GraphQL::Types::Relay::Node</code></a> interface::</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::PostType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
-  <span class="c1"># `id` exposes the UUID</span>
-  <span class="n">global_id_field</span> <span class="ss">:id</span>
-  <span class="c1"># ...</span>
+  <span class="n">implements</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Node</span>
 <span class="k">end</span>
 </code></pre></div></div>
 

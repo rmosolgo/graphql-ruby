@@ -128,24 +128,10 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p><strong><code class="language-plaintext highlighter-rouge">object_from_id</code></strong> is used by Relay’s <code class="language-plaintext highlighter-rouge">node(id: ID!): Node</code> field. It receives a unique ID and must return the object for that ID, or <code class="language-plaintext highlighter-rouge">nil</code> if the object isn’t found (or if it should be hidden from the current user).</p>
+<p><strong><code class="language-plaintext highlighter-rouge">object_from_id</code></strong> is used by the <code class="language-plaintext highlighter-rouge">node(id: ID!): Node</code> field and <code class="language-plaintext highlighter-rouge">loads:</code> configuration. It receives a unique ID and must return the object for that ID, or <code class="language-plaintext highlighter-rouge">nil</code> if the object isn’t found (or if it should be hidden from the current user).
+<strong><code class="language-plaintext highlighter-rouge">id_from_object</code></strong> is used to implement <code class="language-plaintext highlighter-rouge">Node.id</code>. It should return a unique ID for the given object. This ID will later be sent to <code class="language-plaintext highlighter-rouge">object_from_id</code> to refetch the object.</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">object_from_id</span><span class="p">(</span><span class="n">unique_id</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
-    <span class="c1"># Find and return the object for `unique_id`</span>
-    <span class="c1"># or `nil`</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</code></pre></div></div>
-
-<p><strong><code class="language-plaintext highlighter-rouge">id_from_object</code></strong> is used to implement Relay’s <code class="language-plaintext highlighter-rouge">Node.id</code> field. It should return a unique ID for the given object. This ID will later be sent to <code class="language-plaintext highlighter-rouge">object_from_id</code> to refetch the object.</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">id_from_object</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">type</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
-    <span class="c1"># Return a unique ID for `object`, whose GraphQL type is `type`</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</code></pre></div></div>
+<p>See the <a href="/schema/object_identification">Object Identification guide</a> for more information about these methods.</p>
 
 <h2 id="execution-configuration">Execution Configuration</h2>
 
@@ -177,7 +163,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p><strong><code class="language-plaintext highlighter-rouge">type_error</code></strong> handles type errors at runtime, read more in the <a href="/errors/type_errors">Invariants guide</a>.</p>
+<p><strong><code class="language-plaintext highlighter-rouge">type_error</code></strong> handles type errors at runtime, read more in the <a href="/errors/type_errors">Type errors guide</a>.</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">type_error</span><span class="p">(</span><span class="n">type_err</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
