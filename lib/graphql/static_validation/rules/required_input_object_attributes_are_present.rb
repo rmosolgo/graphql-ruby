@@ -34,16 +34,16 @@ module GraphQL
         parent_type = get_parent_type(context, parent)
         return unless parent_type && parent_type.kind.input_object?
 
-        required_fields = parent_type.arguments
-          .select{|k,v| v.type.kind.non_null?}
-          .keys
+        required_fields = context.warden.arguments(parent_type)
+          .select{|arg| arg.type.kind.non_null?}
+          .map(&:graphql_name)
 
         present_fields = ast_node.arguments.map(&:name)
         missing_fields = required_fields - present_fields
 
         missing_fields.each do |missing_field|
           path = [*context.path, missing_field]
-          missing_field_type = parent_type.arguments[missing_field].type
+          missing_field_type = context.warden.get_argument(parent_type, missing_field).type
           add_error(RequiredInputObjectAttributesArePresentError.new(
             "Argument '#{missing_field}' on InputObject '#{parent_type.to_type_signature}' is required. Expected type #{missing_field_type.to_type_signature}",
             argument_name: missing_field,

@@ -394,6 +394,11 @@ module GraphQL
             include GraphQL::Schema::Interface
             graphql_name(interface_type_definition.name)
             description(interface_type_definition.description)
+            interface_type_definition.interfaces.each do |interface_name|
+              "Implements: #{interface_type_definition} -> #{interface_name}"
+              interface_defn = type_resolver.call(interface_name)
+              implements(interface_defn)
+            end
             ast_node(interface_type_definition)
             builder.build_directives(self, interface_type_definition, type_resolver)
 

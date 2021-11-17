@@ -34,8 +34,12 @@ module GraphQL
     end
 
     # @return [Hash<String => EnumValue>] `{name => value}` pairs contained in this type
-    def values
+    def values(_context = nil)
       @values_by_name
+    end
+
+    def enum_values(_context = nil)
+      values.values
     end
 
     def kind

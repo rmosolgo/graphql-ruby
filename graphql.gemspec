@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.authors     = ["Robert Mosolgo"]
   s.email       = ["rdmosolgo@gmail.com"]
   s.license     = "MIT"
-  s.required_ruby_version = ">= 2.4.0" # bc `.to_sym` used on user input
+  s.required_ruby_version = ">= 2.4.0"
   s.metadata    = {
     "homepage_uri" => "https://graphql-ruby.org",
     "changelog_uri" => "https://github.com/rmosolgo/graphql-ruby/blob/master/CHANGELOG.md",

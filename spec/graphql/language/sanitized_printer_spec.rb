@@ -12,44 +12,44 @@ describe GraphQL::Language::SanitizedPrinter do
     end
 
     class SimpleInput < GraphQL::Schema::InputObject
-      argument :string, String, required: true
+      argument :string, String
     end
 
     class ExampleInput < GraphQL::Schema::InputObject
-      argument :string, String, required: true
-      argument :id, ID, required: true
-      argument :int, Int, required: true
-      argument :float, Float, required: true
-      argument :enum, Color, required: true
+      argument :string, String
+      argument :id, ID
+      argument :int, Int
+      argument :float, Float
+      argument :enum, Color
       argument :input_object, ExampleInput, required: false
-      argument :url, Url, required: true
+      argument :url, Url
     end
 
     class Query < GraphQL::Schema::Object
       field :inputs, String, null: false do
-        argument :string, String, required: true
-        argument :id, ID, required: true
-        argument :int, Int, required: true
-        argument :float, Float, required: true
-        argument :enum, Color, required: true
-        argument :input_object, ExampleInput, required: true
-        argument :url, Url, required: true
+        argument :string, String
+        argument :id, ID
+        argument :int, Int
+        argument :float, Float
+        argument :enum, Color
+        argument :input_object, ExampleInput
+        argument :url, Url
       end
 
       field :nested_array_inputs, String, null: false do
-        argument :inputs, [SimpleInput], required: true
+        argument :inputs, [SimpleInput]
       end
 
       field :colors, String, null: false do
-        argument :colors, [Color], required: true
+        argument :colors, [Color]
       end
 
       field :strings, String, null: false do
-        argument :strings, [String], required: true
+        argument :strings, [String]
       end
 
       field :custom_scalar, String, null: false do
-        argument :scalar, GraphQL::Types::JSON, required: true
+        argument :scalar, GraphQL::Types::JSON
       end
     end
 

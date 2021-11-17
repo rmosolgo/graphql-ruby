@@ -71,7 +71,7 @@ Subscription fields take {% internal_link "arguments", "/fields/arguments" %} ju
 ```ruby
 class Subscriptions::MessageWasPosted < Subscriptions::BaseSubscription
   # `room_id` loads a `room`
-  argument :room_id, ID, required: true, loads: Types::RoomType
+  argument :room_id, ID, loads: Types::RoomType
 
   # It's passed to other methods as `room`
   def subscribe(room:)
@@ -135,7 +135,7 @@ subscription($roomId: ID!) {
 }
 ```
 
-If you configure fields with `null: true`, then you can return different data in the initial subscription and the subsequent updates. (See lifecycle methods below.)
+If you remove `null: false`, then you can return different data in the initial subscription and the subsequent updates. (See lifecycle methods below.)
 
 Instead of a generated type, you can provide an already-configured type with `payload_type`:
 
@@ -243,7 +243,7 @@ By default, GraphQL-Ruby returns _nothing_ (`:no_response`) on an initial subscr
 ```ruby
 class Subscriptions::MessageWasPosted < Subscriptions::BaseSubscription
   # ...
-  field :room, Types::RoomType, null: true
+  field :room, Types::RoomType
 
   def subscribe(room:)
     # authorize, etc ...
@@ -278,20 +278,20 @@ After a client has registered a subscription, the application may trigger subscr
 
 - Unsubscribe the client with `unsubscribe`
 - Return a value with `super` (which returns `object`) or by returning a different value.
-- Return `:no_update` to skip this update
+- Return `NO_UPDATE` to skip this update
 
 ### Skipping subscription updates
 
 (__Note__: only supported when using the new {% internal_link "Interpreter runtime", "/queries/interpreter#installation" %})
 
-Perhaps you don't want to send updates to a certain subscriber. For example, if someone leaves a comment, you might want to push the new comment to _other_ subscribers, but not the commenter, who already has that comment data. You can accomplish this by returning `:no_update`.
+Perhaps you don't want to send updates to a certain subscriber. For example, if someone leaves a comment, you might want to push the new comment to _other_ subscribers, but not the commenter, who already has that comment data. You can accomplish this by returning `NO_UPDATE`.
 
 ```ruby
 class Subscriptions::CommentWasAdded < Subscriptions::BaseSubscription
   def update(post_id:)
     comment = object # #<Comment ...>
     if comment.author == context[:viewer]
-      :no_update
+      NO_UPDATE
     else
       # Continue updating this client, since it's not the commenter
       super
@@ -344,4 +344,4 @@ end
 
 `#unsubscribe` does _not_ halt the current update.
 
-Arguments with `loads:` configurations will call `unsubscribe` if they are `required: true` and their ID doesn't return a value. (It's assumed that the subscribed object was deleted.)
+Arguments with `loads:` configurations will call `unsubscribe` if they are `required: true` (which is the default) and their ID doesn't return a value. (It's assumed that the subscribed object was deleted.)

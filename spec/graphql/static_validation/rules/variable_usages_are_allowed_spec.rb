@@ -252,12 +252,12 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
   describe "for input properties" do
     class InputVariableSchema < GraphQL::Schema
       class Input < GraphQL::Schema::InputObject
-        argument(:id, String, required: true)
+        argument(:id, String)
       end
 
       class FooMutation < GraphQL::Schema::Mutation
-        field(:foo, String, null: true)
-        argument(:input, Input, required: true)
+        field(:foo, String)
+        argument(:input, Input)
 
         def resolve(input:)
           { foo: input.id }
@@ -278,6 +278,37 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
       res2 = InputVariableSchema.execute("mutation($id: String!) { fooMutation(input: { id: $id }) { foo } }", variables: { id: "abc" })
       refute res2.key?("errors")
       assert_equal "abc", res2["data"]["fooMutation"]["foo"]
+    end
+  end
+
+  describe "with error limiting" do
+    describe("disabled") do
+      let(:args) {
+        { max_errors: nil }
+      }
+
+      it "does not limit the number of errors" do
+        assert_equal(error_messages.length, 4)
+        assert_equal(error_messages, [
+          "Nullability mismatch on variable $badInt and argument id (Int / Int!)",
+          "Type mismatch on variable $badStr and argument id (String! / Int!)",
+          "Nullability mismatch on variable $badAnimals and argument source ([DairyAnimal]! / [DairyAnimal!]!)",
+          "List dimension mismatch on variable $deepAnimals and argument source ([[DairyAnimal!]!]! / [DairyAnimal!]!)"
+        ])
+      end
+    end
+
+    describe("enabled") do
+      let(:args) {
+        { max_errors: 1 }
+      }
+
+      it "does limit the number of errors" do
+        assert_equal(error_messages.length, 1)
+        assert_equal(error_messages, [
+          "Nullability mismatch on variable $badInt and argument id (Int / Int!)"
+        ])
+      end
     end
   end
 end

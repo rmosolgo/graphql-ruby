@@ -170,7 +170,7 @@ describe GraphQL::Schema::Enum do
           query = Class.new(GraphQL::Schema::Object) do
             graphql_name "Query"
             field :names, [String], null: false do
-              argument :things, [plural], required: true
+              argument :things, [plural]
             end
 
             def names(things:)
@@ -211,22 +211,6 @@ describe GraphQL::Schema::Enum do
           result.problems.first['explanation'],
           "Expected \"bad enum\" to be one of: COW, DONKEY, GOAT, REINDEER, SHEEP, YAK"
         )
-      end
-    end
-
-    describe "validates enum value name uniqueness" do
-      it "raises an exception when adding a duplicate enum value name" do
-        expected_message = "X is already defined for SomeEnum, please remove one of the definitions."
-
-        exception = assert_raises(ArgumentError) do
-          Class.new(GraphQL::Schema::Enum) do
-            graphql_name "SomeEnum"
-            value "X"
-            value "X"
-          end
-        end
-
-        assert_equal(expected_message, exception.message)
       end
     end
   end

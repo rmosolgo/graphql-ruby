@@ -19,13 +19,18 @@ module GraphQL
             end
           else
             visible_types = []
+            warden = Warden.from_context(context)
             type_memberships.each do |type_membership|
-              if type_membership.visible?(context)
+              if warden.visible_type_membership?(type_membership, context)
                 visible_types << type_membership.object_type
               end
             end
             visible_types
           end
+        end
+
+        def all_possible_types
+          type_memberships.map(&:object_type)
         end
 
         def to_graphql

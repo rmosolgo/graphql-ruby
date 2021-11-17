@@ -3,7 +3,7 @@
 module GraphQL
   class Schema
     class Member
-      # Shared code for Object and Interface
+      # Shared code for Objects, Interfaces, Mutations, Subscriptions
       module HasFields
         # Add a field to this object or interface with the given definition
         # @see {GraphQL::Schema::Field#initialize} for method signature
@@ -15,28 +15,39 @@ module GraphQL
         end
 
         # @return [Hash<String => GraphQL::Schema::Field>] Fields on this object, keyed by name, including inherited fields
-        def fields
+        def fields(context = GraphQL::Query::NullContext)
+          warden = Warden.from_context(context)
+          is_object = self.respond_to?(:kind) && self.kind.object?
           # Local overrides take precedence over inherited fields
-          all_fields = {}
-          ancestors.reverse_each do |ancestor|
-            if ancestor.respond_to?(:own_fields)
-              all_fields.merge!(ancestor.own_fields)
-            end
-          end
-          all_fields
-        end
+          visible_fields = {}
+          for ancestor in ancestors
+            if ancestor.respond_to?(:own_fields) &&
+                (is_object ? visible_interface_implementation?(ancestor, context, warden) : true)
 
-        def get_field(field_name)
-          if (f = own_fields[field_name])
-            f
-          else
-            for ancestor in ancestors
-              if ancestor.respond_to?(:own_fields) && f = ancestor.own_fields[field_name]
-                return f
+              ancestor.own_fields.each do |field_name, fields_entry|
+                # Choose the most local definition that passes `.visible?` --
+                # stop checking for fields by name once one has been found.
+                if !visible_fields.key?(field_name) && (f = Warden.visible_entry?(:visible_field?, fields_entry, context, warden))
+                  visible_fields[field_name] = f
+                end
               end
             end
-            nil
           end
+          visible_fields
+        end
+
+        def get_field(field_name, context = GraphQL::Query::NullContext)
+          warden = Warden.from_context(context)
+          is_object = self.respond_to?(:kind) && self.kind.object?
+          for ancestor in ancestors
+            if ancestor.respond_to?(:own_fields) &&
+                (is_object ? visible_interface_implementation?(ancestor, context, warden) : true) &&
+                (f_entry = ancestor.own_fields[field_name]) &&
+                (f = Warden.visible_entry?(:visible_field?, f_entry, context, warden))
+              return f
+            end
+          end
+          nil
         end
 
         # A list of Ruby keywords.
@@ -64,7 +75,19 @@ module GraphQL
           if method_conflict_warning && CONFLICT_FIELD_NAMES.include?(field_defn.resolver_method) && field_defn.original_name == field_defn.resolver_method && field_defn.original_name == field_defn.method_sym
             warn(conflict_field_name_warning(field_defn))
           end
-          own_fields[field_defn.name] = field_defn
+          prev_defn = own_fields[field_defn.name]
+
+          case prev_defn
+          when nil
+            own_fields[field_defn.name] = field_defn
+          when Array
+            prev_defn << field_defn
+          when GraphQL::Schema::Field
+            own_fields[field_defn.name] = [prev_defn, field_defn]
+          else
+            raise "Invariant: unexpected previous field definition for #{field_defn.name.inspect}: #{prev_defn.inspect}"
+          end
+
           nil
         end
 
@@ -87,12 +110,34 @@ module GraphQL
           end
         end
 
-        # @return [Array<GraphQL::Schema::Field>] Fields defined on this class _specifically_, not parent classes
+        # @return [Hash<String => GraphQL::Schema::Field, Array<GraphQL::Schema::Field>>] Fields defined on this class _specifically_, not parent classes
         def own_fields
           @own_fields ||= {}
         end
 
+        def all_field_definitions
+          all_fields = {}
+          ancestors.reverse_each do |ancestor|
+            if ancestor.respond_to?(:own_fields)
+              all_fields.merge!(ancestor.own_fields)
+            end
+          end
+          all_fields = all_fields.values
+          all_fields.flatten!
+          all_fields
+        end
+
         private
+
+        # If `type` is an interface, and `self` has a type membership for `type`, then make sure it's visible.
+        def visible_interface_implementation?(type, context, warden)
+          if type.respond_to?(:kind) && type.kind.interface? && (type_membership = type_membership_for(type))
+            warden.visible_type_membership?(type_membership, context)
+          else
+            # If there's no implementation, then we're looking at Ruby-style inheritance instead
+            true
+          end
+        end
 
         # @param [GraphQL::Schema::Field]
         # @return [String] A warning to give when this field definition might conflict with a built-in method

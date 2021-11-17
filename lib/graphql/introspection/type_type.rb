@@ -12,20 +12,20 @@ module GraphQL
                   "possible at runtime. List and NonNull types compose other types."
 
       field :kind, GraphQL::Schema::LateBoundType.new("__TypeKind"), null: false
-      field :name, String, null: true
-      field :description, String, null: true
-      field :fields, [GraphQL::Schema::LateBoundType.new("__Field")], null: true do
+      field :name, String
+      field :description, String
+      field :fields, [GraphQL::Schema::LateBoundType.new("__Field")] do
         argument :include_deprecated, Boolean, required: false, default_value: false
       end
-      field :interfaces, [GraphQL::Schema::LateBoundType.new("__Type")], null: true
-      field :possible_types, [GraphQL::Schema::LateBoundType.new("__Type")], null: true
-      field :enum_values, [GraphQL::Schema::LateBoundType.new("__EnumValue")], null: true do
+      field :interfaces, [GraphQL::Schema::LateBoundType.new("__Type")]
+      field :possible_types, [GraphQL::Schema::LateBoundType.new("__Type")]
+      field :enum_values, [GraphQL::Schema::LateBoundType.new("__EnumValue")] do
         argument :include_deprecated, Boolean, required: false, default_value: false
       end
-      field :input_fields, [GraphQL::Schema::LateBoundType.new("__InputValue")], null: true  do
+      field :input_fields, [GraphQL::Schema::LateBoundType.new("__InputValue")]  do
         argument :include_deprecated, Boolean, required: false, default_value: false
       end
-      field :of_type, GraphQL::Schema::LateBoundType.new("__Type"), null: true
+      field :of_type, GraphQL::Schema::LateBoundType.new("__Type")
 
       def name
         object.graphql_name
@@ -50,7 +50,7 @@ module GraphQL
       end
 
       def interfaces
-        if @object.kind == GraphQL::TypeKinds::OBJECT
+        if @object.kind.object? || @object.kind.interface?
           @context.warden.interfaces(@object)
         else
           nil

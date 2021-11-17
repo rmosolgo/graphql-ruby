@@ -16,7 +16,7 @@ module InstrumentationSpec
   end
 
   class Query < GraphQL::Schema::Object
-    field :some_field, [SomeInterface], null: true
+    field :some_field, [SomeInterface]
 
     def some_field
       nil

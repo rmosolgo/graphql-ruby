@@ -6,7 +6,7 @@ module Platform
 
       argument :message, String, required: false
 
-      field :data, String, null: true
+      field :data, String
 
       def resolve(**inputs)
         { data: inputs[:message] }
@@ -18,7 +18,7 @@ module Platform
 
       argument :message, String, required: false
 
-      field :data, String, null: true
+      field :data, String
 
       def resolve(**inputs)
         { data: inputs[:message] }

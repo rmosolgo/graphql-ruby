@@ -512,6 +512,30 @@ interface WorldInterface {
       assert_schema_and_compare_output(schema)
     end
 
+    it "supports interfaces that implement interfaces" do
+      schema = <<-SCHEMA
+interface Named implements Node {
+  id: ID
+  name: String
+}
+
+interface Node {
+  id: ID
+}
+
+type Query {
+  thing: Thing
+}
+
+type Thing implements Named & Node {
+  id: ID
+  name: String
+}
+      SCHEMA
+
+      assert_schema_and_compare_output(schema)
+    end
+
     it 'supports simple output enum' do
       schema = <<-SCHEMA
 schema {

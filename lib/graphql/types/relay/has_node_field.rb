@@ -22,7 +22,7 @@ module GraphQL
 
           def field_block
             Proc.new {
-              argument :id, "ID!", required: true,
+              argument :id, "ID!",
                 description: "ID of the object."
 
               def resolve(obj, args, ctx)

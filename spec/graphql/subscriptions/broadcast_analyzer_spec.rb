@@ -21,11 +21,11 @@ describe GraphQL::Subscriptions::BroadcastAnalyzer do
     end
 
     class Query < GraphQL::Schema::Object
-      field :throwable, Throwable, null: true
+      field :throwable, Throwable
     end
 
     class Mutation < GraphQL::Schema::Object
-      field :noop, String, null: true
+      field :noop, String
     end
 
     class Subscription < GraphQL::Schema::Object
@@ -58,7 +58,6 @@ describe GraphQL::Subscriptions::BroadcastAnalyzer do
     orphan_types(BroadcastTestSchema::Shot, BroadcastTestSchema::Javelin)
     use GraphQL::Subscriptions, broadcast: true, default_broadcastable: false
   end
-
 
   def broadcastable?(query_str, schema: BroadcastTestSchema)
     schema.subscriptions.broadcastable?(query_str)

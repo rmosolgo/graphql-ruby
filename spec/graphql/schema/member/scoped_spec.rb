@@ -64,7 +64,7 @@ describe GraphQL::Schema::Member::Scoped do
         scope: false,
         resolver_method: :items
 
-      field :nil_items, [Item], null: true
+      field :nil_items, [Item]
       def nil_items
         nil
       end

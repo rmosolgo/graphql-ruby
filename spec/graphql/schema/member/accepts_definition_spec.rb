@@ -53,7 +53,7 @@ describe GraphQL::Schema::Member::AcceptsDefinition do
     class SomeObject < BaseObject
       metadata :a, :aaa
 
-      field :some_field, String, null: true
+      field :some_field, String
     end
 
     class SomeObject2 < SomeObject
@@ -65,7 +65,7 @@ describe GraphQL::Schema::Member::AcceptsDefinition do
 
       field :option, Option, null: false do
         metadata :a, :def
-        argument :value, Integer, required: true, metadata: [:a, :ghi]
+        argument :value, Integer, metadata: [:a, :ghi]
       end
 
       field :thing, Thing, null: false

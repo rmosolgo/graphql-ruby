@@ -238,7 +238,7 @@ module Jazz
     implements PrivateNameEntity, visibility: { private: true }
     description "A group of musicians playing together"
     config :config, :configged
-    field :formed_at, String, null: true, hash_key: "formedAtDate"
+    field :formed_at, String, hash_key: "formedAtDate"
 
     # This overrides the visibility from PrivateNameEntity
     field :overridden_name, String, null: false
@@ -302,7 +302,7 @@ module Jazz
     field :instrument, InstrumentType, null: false do
       description "An object played in order to produce music"
     end
-    field :favorite_key, Key, null: true
+    field :favorite_key, Key
     # Test lists with nullable members:
     field :inspect_context, [String, null: true], null: false
     field :add_error, String, null: false, extras: [:execution_errors]
@@ -332,7 +332,7 @@ module Jazz
 
   # Since this is not a legacy input type, this test can be removed
   class LegacyInputType < GraphQL::Schema::InputObject
-    argument :int_value, Int, required: true
+    argument :int_value, Int
   end
 
   class FullyOptionalInput < GraphQL::Schema::InputObject
@@ -341,7 +341,7 @@ module Jazz
 
   class InspectableInput < GraphQL::Schema::InputObject
     argument :ensemble_id, ID, required: false, loads: Ensemble
-    argument :string_value, String, required: true, description: "Test description kwarg"
+    argument :string_value, String, description: "Test description kwarg"
     argument :nested_input, InspectableInput, required: false
     argument :legacy_input, LegacyInputType, required: false
 
@@ -399,23 +399,23 @@ module Jazz
   end
 
   class CamelizedBooleanInput <  GraphQL::Schema::InputObject
-    argument :camelized_boolean, Boolean, required: true
+    argument :camelized_boolean, Boolean
   end
 
   # Another new-style definition, with method overrides
   class Query < BaseObject
     field :ensembles, [Ensemble], null: false
-    field :find, GloballyIdentifiableType, null: true do
-      argument :id, ID, required: true
+    field :find, GloballyIdentifiableType do
+      argument :id, ID
     end
     field :instruments, [InstrumentType], null: false do
       argument :family, Family, required: false
     end
     field :inspect_input, [String], null: false do
-      argument :input, InspectableInput, required: true, custom: :ok
+      argument :input, InspectableInput, custom: :ok
     end
     field :inspect_key, InspectableKey, null: false do
-      argument :key, Key, required: true
+      argument :key, Key
     end
     field :now_playing, PerformingAct, null: false
 
@@ -428,14 +428,14 @@ module Jazz
     field :hashy_ensemble, Ensemble, null: false
 
     field :echo_json, GraphQL::Types::JSON, null: false do
-      argument :input, GraphQL::Types::JSON, required: true
+      argument :input, GraphQL::Types::JSON
     end
 
     field :echo_first_json, GraphQL::Types::JSON, null: false do
-      argument :input, [GraphQL::Types::JSON], required: true
+      argument :input, [GraphQL::Types::JSON]
     end
 
-    field :upcase_check_1, String, null: true, resolver_method: :upcase_check, extras: [:upcase]
+    field :upcase_check_1, String, resolver_method: :upcase_check, extras: [:upcase]
     field :upcase_check_2, String, null: false, upcase: false, resolver_method: :upcase_check, extras: [:upcase]
     field :upcase_check_3, String, null: false, upcase: true, resolver_method: :upcase_check, extras: [:upcase]
     field :upcase_check_4, String, null: false, upcase: "why not?", resolver_method: :upcase_check, extras: [:upcase]
@@ -444,7 +444,7 @@ module Jazz
     end
 
     field :input_object_camelization, String, null: false do
-      argument :input, CamelizedBooleanInput, required: true
+      argument :input, CamelizedBooleanInput
     end
 
     def input_object_camelization(input:)
@@ -557,7 +557,7 @@ module Jazz
     field :complex_hash_key, String, null: false, hash_key: :'foo bar/fizz-buzz'
 
 
-    field :nullable_ensemble, Ensemble, null: true do
+    field :nullable_ensemble, Ensemble do
       argument :ensemble_id, ID, required: false, loads: Ensemble
     end
 
@@ -567,15 +567,15 @@ module Jazz
   end
 
   class EnsembleInput < GraphQL::Schema::InputObject
-    argument :name, String, required: true
+    argument :name, String
   end
 
   class AddInstrument < GraphQL::Schema::Mutation
     null true
     description "Register a new musical instrument in the database"
 
-    argument :name, String, required: true
-    argument :family, Family, required: true
+    argument :name, String
+    argument :family, Family
 
     field :instrument, InstrumentType, null: false
     # This is meaningless, but it's to test the conflict with `Hash#entries`
@@ -593,7 +593,7 @@ module Jazz
   end
 
   class AddEnsembleRelay < GraphQL::Schema::RelayClassicMutation
-    argument :ensemble, EnsembleInput, required: true
+    argument :ensemble, EnsembleInput
     field :ensemble, Ensemble, null: false
 
     def resolve(ensemble:)
@@ -623,7 +623,7 @@ module Jazz
     extras [:ast_node]
 
     field :node_class, String, null: false
-    field :int, Integer, null: true
+    field :int, Integer
 
     def resolve(int: nil, ast_node:)
       {
@@ -640,7 +640,7 @@ module Jazz
     argument :int, Integer, required: false
 
     field :lookahead_class, String, null: false
-    field :int, Integer, null: true
+    field :int, Integer
 
     def resolve(int: nil, lookahead:)
       {
@@ -672,10 +672,9 @@ module Jazz
     end
   end
 
-
   class RenameNamedEntity < GraphQL::Schema::RelayClassicMutation
-    argument :named_entity_id, ID, required: true, loads: NamedEntity
-    argument :new_name, String, required: true
+    argument :named_entity_id, ID, loads: NamedEntity
+    argument :new_name, String
 
     field :named_entity, NamedEntity, null: false
 
@@ -691,8 +690,8 @@ module Jazz
   end
 
   class RenamePerformingAct < GraphQL::Schema::RelayClassicMutation
-    argument :performing_act_id, ID, required: true, loads: PerformingAct
-    argument :new_name, String, required: true
+    argument :performing_act_id, ID, loads: PerformingAct
+    argument :new_name, String
 
     field :performing_act, PerformingAct, null: false
 
@@ -708,8 +707,8 @@ module Jazz
   end
 
   class RenameEnsemble < GraphQL::Schema::RelayClassicMutation
-    argument :ensemble_id, ID, required: true, loads: Ensemble
-    argument :new_name, String, required: true
+    argument :ensemble_id, ID, loads: Ensemble
+    argument :new_name, String
 
     field :ensemble, Ensemble, null: false
 
@@ -724,7 +723,7 @@ module Jazz
   end
 
   class UpvoteEnsembles < GraphQL::Schema::RelayClassicMutation
-    argument :ensemble_ids, [ID], required: true, loads: Ensemble
+    argument :ensemble_ids, [ID], loads: Ensemble
 
     field :ensembles, [Ensemble], null: false
 
@@ -736,7 +735,7 @@ module Jazz
   end
 
   class UpvoteEnsemblesAsBands < GraphQL::Schema::RelayClassicMutation
-    argument :ensemble_ids, [ID], required: true, loads: Ensemble, as: :bands
+    argument :ensemble_ids, [ID], loads: Ensemble, as: :bands
 
     field :ensembles, [Ensemble], null: false
 
@@ -748,7 +747,7 @@ module Jazz
   end
 
   class UpvoteEnsemblesIds < GraphQL::Schema::RelayClassicMutation
-    argument :ensembles_ids, [ID], required: true, loads: Ensemble
+    argument :ensembles_ids, [ID], loads: Ensemble
 
     field :ensembles, [Ensemble], null: false
 
@@ -760,7 +759,7 @@ module Jazz
   end
 
   class RenameEnsembleAsBand < RenameEnsemble
-    argument :ensemble_id, ID, required: true, loads: Ensemble, as: :band
+    argument :ensemble_id, ID, loads: Ensemble, as: :band
 
     def resolve(band:, new_name:)
       super(ensemble: band, new_name: new_name)
@@ -769,7 +768,7 @@ module Jazz
 
   class LoadAndReturnEnsemble < GraphQL::Schema::RelayClassicMutation
     argument :ensemble_id, ID, required: false, loads: Ensemble
-    field :ensemble, Ensemble, null: true
+    field :ensemble, Ensemble
 
     def resolve(ensemble: nil)
       { ensemble: ensemble }
@@ -779,7 +778,7 @@ module Jazz
   class DummyOutput < GraphQL::Schema::Object
     graphql_name "DummyOutput"
 
-    field :name, String, null: true
+    field :name, String
   end
 
   class ReturnsMultipleErrors < GraphQL::Schema::Mutation
@@ -803,7 +802,7 @@ module Jazz
 
   class Mutation < BaseObject
     field :add_ensemble, Ensemble, null: false do
-      argument :input, EnsembleInput, required: true
+      argument :input, EnsembleInput
     end
 
     field :add_instrument, mutation: AddInstrument
@@ -830,7 +829,7 @@ module Jazz
     end
 
     field :prepare_input, Integer, null: false do
-      argument :input, Integer, required: true, prepare: :square, as: :squared_input
+      argument :input, Integer, prepare: :square, as: :squared_input
     end
 
     def prepare_input(squared_input:)

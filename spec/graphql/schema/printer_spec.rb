@@ -45,7 +45,7 @@ REASON
       field :id, ID, null: false
       field :title, String, null: false
       field :body, String, null: false
-      field :comments, [Comment], null: true
+      field :comments, [Comment]
       field :comments_count, Int, null: false, deprecation_reason: "Use \"comments\".", camelize: false
     end
 
@@ -70,8 +70,8 @@ REASON
     class Query < GraphQL::Schema::Object
       description "The query root of this schema"
 
-      field :post, Post, null: true do
-        argument :id, ID, required: true, description: "Post ID"
+      field :post, Post do
+        argument :id, ID, description: "Post ID"
         argument :varied, Varied, required: false, default_value: { id: "123", int: 234, float: 2.3, enum: :foo, sub: [{ string: "str" }] }
         argument :varied_with_nulls, Varied, required: false, default_value: { id: nil, int: nil, float: nil, enum: nil, sub: nil }
         argument :deprecated_arg, String, required: false, deprecation_reason: "Use something else"
@@ -80,9 +80,9 @@ REASON
 
     class CreatePost < GraphQL::Schema::RelayClassicMutation
       description "Create a blog post"
-      argument :title, String, required: true
-      argument :body, String, required: true
-      field :post, Post, null: true
+      argument :title, String
+      argument :body, String
+      field :post, Post
     end
 
     class Mutation < GraphQL::Schema::Object
@@ -90,8 +90,8 @@ REASON
     end
 
     class Subscription < GraphQL::Schema::Object
-      field :post, Post, null: true do
-        argument :id, ID, required: true
+      field :post, Post do
+        argument :id, ID
       end
     end
 
@@ -796,7 +796,7 @@ SCHEMA
 
       class Query < GraphQL::Schema::Object
         description "The query root of this schema"
-        field :example, SomeType, null: true do
+        field :example, SomeType do
           argument :input, SomeType, default_value: BackingObject.new("Howdy"), required: false
         end
 

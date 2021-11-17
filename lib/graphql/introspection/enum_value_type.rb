@@ -7,9 +7,9 @@ module GraphQL
                   "placeholder for a string or numeric value. However an Enum value is returned in "\
                   "a JSON response as a string."
       field :name, String, null: false
-      field :description, String, null: true
+      field :description, String
       field :is_deprecated, Boolean, null: false
-      field :deprecation_reason, String, null: true
+      field :deprecation_reason, String
 
       def name
         object.graphql_name

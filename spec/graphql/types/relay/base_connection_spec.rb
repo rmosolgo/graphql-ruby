@@ -4,7 +4,7 @@ require "spec_helper"
 describe GraphQL::Types::Relay::BaseConnection do
   module NonNullAbleNodeDummy
     class Node < GraphQL::Schema::Object
-      field :some_field, String, null: true
+      field :some_field, String
     end
 
     class NodeEdgeType < GraphQL::Types::Relay::BaseEdge

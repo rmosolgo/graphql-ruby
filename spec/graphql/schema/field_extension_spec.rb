@@ -100,34 +100,34 @@ describe GraphQL::Schema::FieldExtension do
     class Query < BaseObject
       field :doubled, Integer, null: false, resolver_method: :pass_thru do
         extension(DoubleFilter)
-        argument :input, Integer, required: true
+        argument :input, Integer
       end
 
       field :square, Integer, null: false, resolver_method: :pass_thru, extensions: [PowerOfFilter] do
-        argument :input, Integer, required: true
+        argument :input, Integer
       end
 
       field :cube, Integer, null: false, resolver_method: :pass_thru do
         extension(PowerOfFilter, power: 3)
-        argument :input, Integer, required: true
+        argument :input, Integer
       end
 
       field :tripled_by_option, Integer, null: false, resolver_method: :pass_thru do
         extension(MultiplyByOption, factor: 3)
-        argument :input, Integer, required: true
+        argument :input, Integer
       end
 
       field :tripled_by_option2, Integer, null: false, resolver_method: :pass_thru,
         extensions: [{ MultiplyByOption => { factor: 3 } }] do
-          argument :input, Integer, required: true
+          argument :input, Integer
         end
 
       field :multiply_input, Integer, null: false, resolver_method: :pass_thru, extensions: [MultiplyByArgument] do
-        argument :input, Integer, required: true
+        argument :input, Integer
       end
 
       field :multiply_input2, Integer, null: false, resolver_method: :pass_thru, extensions: [MultiplyByArgumentUsingResolve] do
-        argument :input, Integer, required: true
+        argument :input, Integer
       end
 
       def pass_thru(input:, **args)
@@ -135,7 +135,7 @@ describe GraphQL::Schema::FieldExtension do
       end
 
       field :multiply_input3, Integer, null: false, resolver_method: :pass_thru_without_splat, extensions: [MultiplyByArgumentUsingAfterResolve] do
-        argument :input, Integer, required: true
+        argument :input, Integer
       end
 
       # lack of kwargs splat demonstrates the extended arguments are passed to the resolver method
@@ -145,10 +145,10 @@ describe GraphQL::Schema::FieldExtension do
 
       field :multiple_extensions, Integer, null: false, resolver_method: :pass_thru,
         extensions: [DoubleFilter, { MultiplyByOption => { factor: 3 } }] do
-          argument :input, Integer, required: true
+          argument :input, Integer
         end
 
-      field :extended_then_shortcut, Integer, null: true do
+      field :extended_then_shortcut, Integer do
         extension ExtendsArguments
         extension ShortcutsResolve, shortcut_value: 3
       end

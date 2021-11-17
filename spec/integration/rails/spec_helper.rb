@@ -23,3 +23,7 @@ def with_active_record_log
 ensure
   ActiveRecord::Base.logger = prev_logger
 end
+
+if ActiveSupport.respond_to?(:test_order=)
+  ActiveSupport.test_order = :random
+end

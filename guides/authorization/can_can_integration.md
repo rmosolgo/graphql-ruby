@@ -46,6 +46,7 @@ And read on about the different features of the integration:
 - [Authorizing Fields](#authorizing-fields)
 - [Authorizing Arguments](#authorizing-arguments)
 - [Authorizing Mutations](#authorizing-mutations)
+- [Authorizing Resolvers](#authorizing-resolvers)
 - [Custom Abilities Class](#custom-abilities-class)
 
 ## Authorizing Objects
@@ -158,7 +159,7 @@ Then, you can add `can_can_action:` options to your fields:
 class Types::JobPosting < Types::BaseObject
   # Only allow `can :review_applications, JobPosting` users
   # to see who has applied
-  field :applicants, [Types::User], null: true,
+  field :applicants, [Types::User],
     can_can_action: :review_applicants
 end
 ```
@@ -171,7 +172,7 @@ CanCan 3.0 added attribute-level authorization ([pull request](https://github.co
 
 ```ruby
 # This will call `.can?(:read, user, :email_address)`
-field :email_address, String, null: true,
+field :email_address, String,
   can_can_action: :read,
   can_can_attribute: :email_address
 ```
@@ -241,7 +242,7 @@ Now, arguments accept a `can_can_action:` option, for example:
 
 ```ruby
 class Types::Company < Types::BaseObject
-  field :employees, Types::Employee.connection_type, null: true do
+  field :employees, Types::Employee.connection_type do
     # Only admins can filter employees by email:
     argument :email, String, required: false, can_can_action: :admin
   end
@@ -311,7 +312,7 @@ Beyond the normal [object reading permissions](#authorizing-objects), you can ad
 
 ```ruby
 class Mutations::FireEmployee < Mutations::BaseMutation
-  argument :employee_id, ID, required: true,
+  argument :employee_id, ID,
     loads: Types::Employee,
     can_can_action: :supervise,
 end
@@ -343,7 +344,7 @@ Whatever that method returns will be treated as an early return value for the mu
 
 ```ruby
 class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation
-  field :errors, [String], null: true
+  field :errors, [String]
 
   def unauthorized_by_can_can(owner, value)
     # Return errors as data:
@@ -351,6 +352,21 @@ class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation
   end
 end
 ```
+
+## Authorizing Resolvers
+
+Resolvers are authorized just like [mutations](#authorizing-mutations), and require similar setup:
+
+```ruby
+# app/graphql/resolvers/base_resolver.rb
+class Resolvers::BaseResolver < GraphQL::Schema::Resolver
+  include GraphQL::Pro::CanCanIntegration::ResolverIntegration
+  argument_class BaseArgument
+  # can_can_action(nil) # to disable authorization by default
+end
+```
+
+Beyond that, see [Authorizing Mutations](#authorizing-mutations) above for further details.
 
 ## Custom Abilities Class
 

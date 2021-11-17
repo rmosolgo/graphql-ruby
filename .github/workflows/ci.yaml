@@ -39,7 +39,7 @@ jobs:
       matrix:
         include:
           - gemfile: Gemfile
-            ruby: 2.6
+            ruby: 3.0
             bundler: "1"
           - gemfile: gemfiles/rails_4.2.gemfile
             ruby: 2.4
@@ -119,7 +119,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       mongodb:
-        image: mongo:3.4.23
+        image: mongo
         ports:
         - 27017:27017
     steps:

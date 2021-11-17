@@ -66,10 +66,23 @@ describe GraphQL::Subscriptions::ActionCableSubscriptions do
 
   class ActionCableTestSchema < GraphQL::Schema
     class Query < GraphQL::Schema::Object
-      field :int, Integer, null: true
+      field :int, Integer
+    end
+
+    class Filter < GraphQL::Schema::InputObject
+      argument :trending , Boolean, required: false
+    end
+
+    class Keyword < GraphQL::Schema::InputObject
+      argument :value, String
+      argument :fuzzy, Boolean, required: false
     end
 
     class NewsFlash < GraphQL::Schema::Subscription
+      argument :max_per_hour, Integer, required: false
+      argument :filter, Filter, required: false
+      argument :keywords, [Keyword], required: false
+
       field :text, String, null: false
     end
 
@@ -105,6 +118,44 @@ describe GraphQL::Subscriptions::ActionCableSubscriptions do
     mock_channel = MockActionCable.get_mock_channel
     ActionCableTestSchema.execute("subscription { newsFlash { text } }", context: { channel: mock_channel })
     ActionCableTestSchema.subscriptions.trigger(:news_flash, {}, {text: "After yesterday's rain, someone stopped on Rio Road to help a box turtle across five lanes of traffic"})
+    expected_msg = subscription_update({
+      "newsFlash" => {
+        "text" => "After yesterday's rain, someone stopped on Rio Road to help a box turtle across five lanes of traffic"
+      }
+    })
+    assert_equal [expected_msg], mock_channel.mock_broadcasted_messages
+  end
+
+  it "uses arguments to divide traffic" do
+    mock_channel = MockActionCable.get_mock_channel
+    ActionCableTestSchema.execute("subscription { newsFlash(maxPerHour: 3) { text } }", context: { channel: mock_channel })
+    ActionCableTestSchema.subscriptions.trigger(:news_flash, {}, {text: "Sunrise enjoyed over a cup of coffee"})
+    ActionCableTestSchema.subscriptions.trigger(:news_flash, {max_per_hour: 3}, {text: "Neighbor shares bumper crop of summer squash with widow next door"})
+    ActionCableTestSchema.subscriptions.trigger(:news_flash, {}, {text: "Sunset enjoyed over a cup of tea"})
+    expected_msg = subscription_update({
+                                         "newsFlash" => {
+                                           "text" => "Neighbor shares bumper crop of summer squash with widow next door"
+                                         }
+                                       })
+    assert_equal [expected_msg], mock_channel.mock_broadcasted_messages
+  end
+
+  it "handles custom argument correctly" do
+    mock_channel = MockActionCable.get_mock_channel
+    ActionCableTestSchema.execute("subscription { newsFlash(filter: { trending: true }) { text } }", context: { channel: mock_channel })
+    ActionCableTestSchema.subscriptions.trigger(:news_flash, {filter: {trending: true}}, {text: "Neighbor shares bumper crop of summer squash with widow next door"})
+    expected_msg = subscription_update({
+      "newsFlash" => {
+        "text" => "Neighbor shares bumper crop of summer squash with widow next door"
+      }
+    })
+    assert_equal [expected_msg], mock_channel.mock_broadcasted_messages
+  end
+
+  it "handles nested custom argument correctly" do
+    mock_channel = MockActionCable.get_mock_channel
+    ActionCableTestSchema.execute("subscription { newsFlash(keywords: [{ value: \"rain\", fuzzy: true }]) { text } }", context: { channel: mock_channel })
+    ActionCableTestSchema.subscriptions.trigger(:news_flash, {keywords: [{value: "rain", fuzzy: true}]}, {text: "After yesterday's rain, someone stopped on Rio Road to help a box turtle across five lanes of traffic"})
     expected_msg = subscription_update({
       "newsFlash" => {
         "text" => "After yesterday's rain, someone stopped on Rio Road to help a box turtle across five lanes of traffic"
@@ -154,6 +205,13 @@ describe GraphQL::Subscriptions::ActionCableSubscriptions do
   it "handles `execute_update` for a missing subscription ID" do
     res = ActionCableTestSchema.subscriptions.execute_update("nonsense-id", {}, {})
     assert_nil res
+  end
+
+  it "raise ExecutionError for a missing context.channel" do
+    error = assert_raises GraphQL::Error do
+      ActionCableTestSchema.execute("subscription { newsFlash { text } }", context: {})
+    end
+    assert_includes error.message, "This GraphQL Subscription client does not support the transport protocol expected"
   end
 
   if defined?(GlobalID)

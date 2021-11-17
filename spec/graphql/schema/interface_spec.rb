@@ -214,6 +214,74 @@ describe GraphQL::Schema::Interface do
     end
   end
 
+  describe "can implement other interfaces" do
+    class InterfaceImplementsSchema < GraphQL::Schema
+      module InterfaceA
+        include GraphQL::Schema::Interface
+        field :a, String
+
+        def a; "a"; end
+      end
+
+      module InterfaceB
+        include GraphQL::Schema::Interface
+        implements InterfaceA
+        field :b, String
+
+        def b; "b"; end
+      end
+
+      class Query < GraphQL::Schema::Object
+        implements InterfaceB
+      end
+
+      query(Query)
+    end
+
+    it "runs queries on inherited interfaces" do
+      result = InterfaceImplementsSchema.execute("{ a b }")
+      assert_equal "a", result["data"]["a"]
+      assert_equal "b", result["data"]["b"]
+
+      result2 = InterfaceImplementsSchema.execute(<<-GRAPHQL)
+      {
+        ... on InterfaceA {
+          ... on InterfaceB {
+            f1: a
+            f2: b
+          }
+        }
+      }
+      GRAPHQL
+      assert_equal "a", result2["data"]["f1"]
+      assert_equal "b", result2["data"]["f2"]
+    end
+
+    it "shows up in introspection" do
+      result = InterfaceImplementsSchema.execute("{ __type(name: \"InterfaceB\") { interfaces { name } } }")
+      assert_equal ["InterfaceA"], result["data"]["__type"]["interfaces"].map { |i| i["name"] }
+    end
+
+    it "has the right structure" do
+      expected_schema = <<-SCHEMA
+interface InterfaceA {
+  a: String
+}
+
+interface InterfaceB implements InterfaceA {
+  a: String
+  b: String
+}
+
+type Query implements InterfaceA & InterfaceB {
+  a: String
+  b: String
+}
+      SCHEMA
+      assert_equal expected_schema, InterfaceImplementsSchema.to_definition
+    end
+  end
+
   describe "migrated legacy tests" do
     let(:interface) { Dummy::Edible }
 

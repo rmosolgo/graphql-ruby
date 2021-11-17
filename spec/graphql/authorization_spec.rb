@@ -117,7 +117,7 @@ describe GraphQL::Authorization do
         super && !ctx[:hide]
       end
 
-      field :some_field, String, null: true
+      field :some_field, String
     end
 
     class RelayObject < BaseObject
@@ -133,7 +133,7 @@ describe GraphQL::Authorization do
         super && !ctx[:unauthorized_relay]
       end
 
-      field :some_field, String, null: true
+      field :some_field, String
     end
 
     # TODO test default behavior for abstract types,
@@ -157,7 +157,7 @@ describe GraphQL::Authorization do
         InaccessibleObject
       end
 
-      field :some_field, String, null: true
+      field :some_field, String
     end
 
     class InaccessibleObject < BaseObject
@@ -167,7 +167,7 @@ describe GraphQL::Authorization do
         super && !ctx[:hide]
       end
 
-      field :some_field, String, null: true
+      field :some_field, String
     end
 
     class UnauthorizedObject < BaseObject
@@ -269,8 +269,8 @@ describe GraphQL::Authorization do
       end
 
       field :hidden, Integer, null: false
-      field :unauthorized, Integer, null: true, method: :itself
-      field :int2, Integer, null: true do
+      field :unauthorized, Integer, method: :itself
+      field :int2, Integer do
         argument :int, Integer, required: false
         argument :hidden, Integer, required: false
         argument :inaccessible, Integer, required: false
@@ -313,7 +313,7 @@ describe GraphQL::Authorization do
       field :inaccessible_connection, RelayObject.connection_type, null: :false, resolver_method: :empty_array
       field :inaccessible_edge, RelayObject.edge_type, null: :false, resolver_method: :edge_object
 
-      field :unauthorized_object, UnauthorizedObject, null: true, resolver_method: :itself
+      field :unauthorized_object, UnauthorizedObject, resolver_method: :itself
       field :unauthorized_connection, RelayObject.connection_type, null: false, resolver_method: :array_with_item
       field :unauthorized_edge, RelayObject.edge_type, null: false, resolver_method: :edge_object
 
@@ -325,27 +325,27 @@ describe GraphQL::Authorization do
         [1]
       end
 
-      field :unauthorized_lazy_box, UnauthorizedBox, null: true do
-        argument :value, String, required: true
+      field :unauthorized_lazy_box, UnauthorizedBox do
+        argument :value, String
       end
       def unauthorized_lazy_box(value:)
         # Make it extra nested, just for good measure.
         Box.new(value: Box.new(value: value))
       end
-      field :unauthorized_list_items, [UnauthorizedObject], null: true
+      field :unauthorized_list_items, [UnauthorizedObject]
       def unauthorized_list_items
         [self, self]
       end
 
-      field :unauthorized_lazy_check_box, UnauthorizedCheckBox, null: true, resolver_method: :unauthorized_lazy_box do
-        argument :value, String, required: true
+      field :unauthorized_lazy_check_box, UnauthorizedCheckBox, resolver_method: :unauthorized_lazy_box do
+        argument :value, String
       end
 
-      field :unauthorized_interface, UnauthorizedInterface, null: true, resolver_method: :unauthorized_lazy_box do
-        argument :value, String, required: true
+      field :unauthorized_interface, UnauthorizedInterface, resolver_method: :unauthorized_lazy_box do
+        argument :value, String
       end
 
-      field :unauthorized_lazy_list_interface, [UnauthorizedInterface, null: true], null: true
+      field :unauthorized_lazy_list_interface, [UnauthorizedInterface, null: true]
 
       def unauthorized_lazy_list_interface
         ["z", Box.new(value: Box.new(value: "z2")), "a", Box.new(value: "a")]
@@ -380,7 +380,7 @@ describe GraphQL::Authorization do
         super && !ctx[:hidden_mutation]
       end
 
-      field :some_return_field, String, null: true
+      field :some_return_field, String
     end
 
     class DoInaccessibleStuff < GraphQL::Schema::RelayClassicMutation

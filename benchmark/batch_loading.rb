@@ -42,8 +42,8 @@ module BatchLoading
     end
 
     class Query < GraphQL::Schema::Object
-      field :team, Team, null: true do
-        argument :name, String, required: true
+      field :team, Team do
+        argument :name, String
       end
 
       def team(name:)
@@ -89,8 +89,8 @@ module BatchLoading
     end
 
     class Query < GraphQL::Schema::Object
-      field :team, Team, null: true do
-        argument :name, String, required: true
+      field :team, Team do
+        argument :name, String
       end
 
       def team(name:)
@@ -124,8 +124,8 @@ module BatchLoading
     end
 
     class Query < GraphQL::Schema::Object
-      field :team, Team, null: true do
-        argument :name, String, required: true
+      field :team, Team do
+        argument :name, String
       end
 
       def team(name:)

@@ -102,7 +102,7 @@ To make a custom schema directive, extend {{ "GraphQL::Schema::Directive" | api_
 ```ruby
 # app/graphql/directives/permission.rb
 class Directives::Permission < GraphQL::Schema::Directive
-  argument :level, String, required: true
+  argument :level, String
   locations FIELD_DEFINITION, OBJECT
 end
 ```
@@ -149,6 +149,6 @@ end
 Like fields, directives may have {% internal_link "arguments", "/fields/arguments" %} :
 
 ```ruby
-argument :if, Boolean, required: true,
+argument :if, Boolean,
   description: "Skips the selection if this condition is true"
 ```

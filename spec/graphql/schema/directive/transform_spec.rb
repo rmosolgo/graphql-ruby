@@ -5,7 +5,7 @@ describe GraphQL::Schema::Directive::Transform do
   class TransformSchema < GraphQL::Schema
     class Query < GraphQL::Schema::Object
       field :echo, String, null: false do
-        argument :input, String, required: true
+        argument :input, String
       end
 
       def echo(input:)

@@ -49,16 +49,16 @@ describe GraphQL::Execution::Lookahead do
     end
 
     class Query < GraphQL::Schema::Object
-      field :find_bird_species, BirdSpecies, null: true do
-        argument :by_name, String, required: true
+      field :find_bird_species, BirdSpecies do
+        argument :by_name, String
       end
 
       def find_bird_species(by_name:)
         DATA.find_by_name(by_name)
       end
 
-      field :node, Node, null: true do
-        argument :id, ID, required: true
+      field :node, Node do
+        argument :id, ID
       end
 
       def node(id:)

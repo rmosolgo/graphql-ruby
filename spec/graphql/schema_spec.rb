@@ -12,15 +12,15 @@ describe GraphQL::Schema do
     end
 
     class Query < GraphQL::Schema::Object
-      field :some_field, String, null: true
+      field :some_field, String
     end
 
     class Mutation < GraphQL::Schema::Object
-      field :some_field, String, null: true
+      field :some_field, String
     end
 
     class Subscription < GraphQL::Schema::Object
-      field :some_field, String, null: true
+      field :some_field, String
     end
 
     let(:base_schema) do
@@ -78,17 +78,17 @@ describe GraphQL::Schema do
       schema = Class.new(base_schema)
       query = Class.new(GraphQL::Schema::Object) do
         graphql_name 'Query'
-        field :some_field, String, null: true
+        field :some_field, String
       end
       schema.query(query)
       mutation = Class.new(GraphQL::Schema::Object) do
         graphql_name 'Mutation'
-        field :some_field, String, null: true
+        field :some_field, String
       end
       schema.mutation(mutation)
       subscription = Class.new(GraphQL::Schema::Object) do
         graphql_name 'Subscription'
-        field :some_field, String, null: true
+        field :some_field, String
       end
       schema.subscription(subscription)
       introspection = Module.new
@@ -329,33 +329,6 @@ describe GraphQL::Schema do
     it "returns correct types for unions based on the context" do
       assert_equal [Jazz::Musician], Jazz::Schema.possible_types(Jazz::PerformingAct, { hide_ensemble: true })
       assert_equal [Jazz::Musician, Jazz::Ensemble], Jazz::Schema.possible_types(Jazz::PerformingAct, { hide_ensemble: false })
-    end
-  end
-
-  describe "duplicate type names" do
-    it "raises a useful error" do
-      err = assert_raises GraphQL::Schema::DuplicateTypeNamesError do
-        module DuplicateTypeNames
-          class Thing < GraphQL::Schema::Object
-          end
-
-          class Thing2 < GraphQL::Schema::Object
-            graphql_name "Thing"
-          end
-
-          class Query < GraphQL::Schema::Object
-            field :t, Thing, null: false
-            field :t2, Thing2, null: false
-          end
-
-          class Schema < GraphQL::Schema
-            query(Query)
-          end
-        end
-      end
-
-      expected_message = "Multiple definitions for `Thing`. Previously found DuplicateTypeNames::Thing (Class), then found DuplicateTypeNames::Thing2 (Class) at Query.t2"
-      assert_equal expected_message, err.message
     end
   end
 

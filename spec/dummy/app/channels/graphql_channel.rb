@@ -13,7 +13,6 @@ class GraphqlChannel < ActionCable::Channel::Base
 
   class CounterIncremented < GraphQL::Schema::Subscription
     @@call_count = 0
-    subscription_scope :subscriber_id
 
     field :new_value, Integer, null: false
 
@@ -21,14 +20,14 @@ class GraphqlChannel < ActionCable::Channel::Base
       result = {
         new_value: @@call_count += 1
       }
-      puts "  -> CounterIncremented#update(#{context[:subscriber_id]}): #{result}"
+      puts "  -> CounterIncremented#update: #{result}"
       result
     end
   end
 
   class SubscriptionType < GraphQL::Schema::Object
     field :payload, PayloadType, null: false do
-      argument :id, ID, required: true
+      argument :id, ID
     end
 
     field :counter_incremented, subscription: CounterIncremented

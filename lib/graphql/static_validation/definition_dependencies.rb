@@ -70,7 +70,6 @@ module GraphQL
         @dependency_map ||= resolve_dependencies(&block)
       end
 
-
       # Map definition AST nodes to the definition AST nodes they depend on.
       # Expose circular dependencies.
       class DependencyMap

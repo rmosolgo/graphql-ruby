@@ -113,7 +113,7 @@ module GraphQL
       end
 
       def print_field(field, indent: "")
-        @current_field = query.schema.get_field(@current_type, field.name)
+        @current_field = query.get_field(@current_type, field.name)
         old_type = @current_type
         @current_type = @current_field.type.unwrap
         res = super
@@ -125,7 +125,7 @@ module GraphQL
         old_type = @current_type
 
         if inline_fragment.type
-          @current_type = query.schema.types[inline_fragment.type.name]
+          @current_type = query.get_type(inline_fragment.type.name)
         end
 
         res = super
@@ -137,7 +137,7 @@ module GraphQL
 
       def print_fragment_definition(fragment_def, indent: "")
         old_type = @current_type
-        @current_type = query.schema.types[fragment_def.type.name]
+        @current_type = query.get_type(fragment_def.type.name)
 
         res = super
 

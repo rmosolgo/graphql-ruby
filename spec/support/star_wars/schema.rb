@@ -6,7 +6,7 @@ module StarWars
   class Ship < GraphQL::Schema::Object
     implements GraphQL::Types::Relay::Node
     global_id_field :id
-    field :name, String, null: true
+    field :name, String
     # Test cyclical connection types:
     field :ships, Ship.connection_type, null: false
   end
@@ -25,9 +25,8 @@ module StarWars
         end
       }
     end
-    field :planet, String, null: true
+    field :planet, String
   end
-
 
   class BaseEdge < GraphQL::Types::Relay::BaseEdge
     node_type(BaseType)
@@ -45,7 +44,7 @@ module StarWars
     edge_type(BaseEdge, nodes_field: false)
     nodes_field
 
-    field :total_count, Integer, null: true
+    field :total_count, Integer
 
     def total_count
       object.items.count
@@ -64,9 +63,9 @@ module StarWars
 
   class CustomBaseEdgeType < GraphQL::Types::Relay::BaseEdge
     node_type(BaseType)
-    field :upcased_name, String, null: true
-    field :upcased_parent_name, String, null: true
-    field :edge_class_name, String, null: true
+    field :upcased_name, String
+    field :upcased_parent_name, String
+    field :edge_class_name, String
 
     def edge_class_name
       object.class.name
@@ -75,12 +74,12 @@ module StarWars
 
   class CustomEdgeBaseConnectionType < GraphQL::Types::Relay::BaseConnection
     edge_type(CustomBaseEdgeType, edge_class: NewCustomBaseEdge, nodes_field: true)
-    field :total_count_times_100, Integer, null: true
+    field :total_count_times_100, Integer
     def total_count_times_100
       object.items.count * 100
     end
 
-    field :field_name, String, null: true
+    field :field_name, String
     def field_name
       object.field.name
     end
@@ -124,7 +123,7 @@ module StarWars
       GraphQL::Relay::GlobalIdResolve.new(type: Faction).call(object, {}, context)
     end
 
-    field :name, String, null: true
+    field :name, String
     field :ships, ShipConnectionWithParentType, connection: true, max_page_size: 1000, null: true do
       argument :name_includes, String, required: false
     end
@@ -157,7 +156,7 @@ module StarWars
 
     field :shipsWithMaxPageSize, "Ships with max page size", max_page_size: 2, resolver: ShipsWithMaxPageSize
 
-    field :bases, BasesConnectionWithTotalCountType, null: true, connection: true do
+    field :bases, BasesConnectionWithTotalCountType, connection: true do
       argument :name_includes, String, required: false
       argument :complex_order, Boolean, required: false
     end
@@ -173,8 +172,8 @@ module StarWars
       all_bases
     end
 
-    field :bases_clone, BaseConnection, null: true
-    field :bases_by_name, BaseConnection, null: true do
+    field :bases_clone, BaseConnection
+    field :bases_by_name, BaseConnection do
       argument :order, String, default_value: "name", required: false
     end
     def bases_by_name(order: nil)
@@ -193,14 +192,14 @@ module StarWars
       all_bases.to_a
     end
 
-    field :basesWithMaxLimitRelation, BaseConnection, null: true, max_page_size: 2, resolver_method: :all_bases
-    field :basesWithMaxLimitArray, BaseConnection, null: true, max_page_size: 2, resolver_method: :all_bases_array
-    field :basesWithDefaultMaxLimitRelation, BaseConnection, null: true, resolver_method: :all_bases
-    field :basesWithDefaultMaxLimitArray, BaseConnection, null: true, resolver_method: :all_bases_array
-    field :basesWithLargeMaxLimitRelation, BaseConnection, null: true, max_page_size: 1000, resolver_method: :all_bases
-    field :basesWithoutNodes, BaseConnectionWithoutNodes, null: true, resolver_method: :all_bases_array
+    field :basesWithMaxLimitRelation, BaseConnection, max_page_size: 2, resolver_method: :all_bases
+    field :basesWithMaxLimitArray, BaseConnection, max_page_size: 2, resolver_method: :all_bases_array
+    field :basesWithDefaultMaxLimitRelation, BaseConnection, resolver_method: :all_bases
+    field :basesWithDefaultMaxLimitArray, BaseConnection, resolver_method: :all_bases_array
+    field :basesWithLargeMaxLimitRelation, BaseConnection, max_page_size: 1000, resolver_method: :all_bases
+    field :basesWithoutNodes, BaseConnectionWithoutNodes, resolver_method: :all_bases_array
 
-    field :bases_as_sequel_dataset, BasesConnectionWithTotalCountType, null: true, connection: true, max_page_size: 1000 do
+    field :bases_as_sequel_dataset, BasesConnectionWithTotalCountType, connection: true, max_page_size: 1000 do
       argument :name_includes, String, required: false
     end
 
@@ -212,7 +211,7 @@ module StarWars
       all_bases
     end
 
-    field :basesWithCustomEdge, CustomEdgeBaseConnectionType, null: true, connection: true, resolver_method: :lazy_bases
+    field :basesWithCustomEdge, CustomEdgeBaseConnectionType, connection: true, resolver_method: :lazy_bases
 
     def lazy_bases
       LazyNodesWrapper.new(object.bases)
@@ -224,11 +223,11 @@ module StarWars
 
     # Nested under `input` in the query:
     argument :ship_name, String, required: false
-    argument :faction_id, ID, required: true
+    argument :faction_id, ID
 
     # Result may have access to these fields:
-    field :ship_edge, Ship.edge_type, null: true
-    field :faction, Faction, null: true
+    field :ship_edge, Ship.edge_type
+    field :faction, Faction
     field :aliased_faction, Faction, hash_key: :aliased_faction, null: true
 
     def resolve(ship_name: nil, faction_id:)
@@ -321,23 +320,23 @@ module StarWars
   class QueryType < GraphQL::Schema::Object
     graphql_name "Query"
 
-    field :rebels, Faction, null: true
+    field :rebels, Faction
     def rebels
       StarWars::DATA["Faction"]["1"]
     end
 
-    field :empire, Faction, null: true
+    field :empire, Faction
     def empire
       StarWars::DATA["Faction"]["2"]
     end
 
-    field :largest_base, BaseType, null: true
+    field :largest_base, BaseType
 
     def largest_base
       Base.find(3)
     end
 
-    field :newest_bases_grouped_by_faction, BaseConnection, null: true
+    field :newest_bases_grouped_by_faction, BaseConnection
 
     def newest_bases_grouped_by_faction
       Base
@@ -354,8 +353,8 @@ module StarWars
 
     add_field(GraphQL::Types::Relay::NodeField)
 
-    field :node_with_custom_resolver, GraphQL::Types::Relay::Node, null: true do
-      argument :id, ID, required: true
+    field :node_with_custom_resolver, GraphQL::Types::Relay::Node do
+      argument :id, ID
     end
     def node_with_custom_resolver(id:)
       StarWars::DATA["Faction"]["1"]
@@ -364,15 +363,15 @@ module StarWars
 
     add_field(GraphQL::Types::Relay::NodesField)
 
-    field :nodes_with_custom_resolver, [GraphQL::Types::Relay::Node, null: true], null: true do
-      argument :ids, [ID], required: true
+    field :nodes_with_custom_resolver, [GraphQL::Types::Relay::Node, null: true] do
+      argument :ids, [ID]
     end
     def nodes_with_custom_resolver(ids:)
       [StarWars::DATA["Faction"]["1"], StarWars::DATA["Faction"]["2"]]
     end
 
-    field :batched_base, BaseType, null: true do
-      argument :id, ID, required: true
+    field :batched_base, BaseType do
+      argument :id, ID
     end
 
     def batched_base(id:)

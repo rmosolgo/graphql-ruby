@@ -42,7 +42,7 @@ module GraphQL
           GraphQL::Schema::Directive::INLINE_FRAGMENT
         )
 
-        argument :flag, String, required: true,
+        argument :flag, String,
           description: "The name of the feature to check before continuing"
 
         # Implement the Directive API

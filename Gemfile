@@ -10,6 +10,11 @@ gem 'pry-stack_explorer', platform: :ruby
 gem 'graphql-batch'
 gem 'pry-byebug'
 
+if RUBY_VERSION >= "3.0"
+  gem "libev_scheduler"
+  gem "evt"
+end
+
 # Required for running `jekyll algolia ...` (via `rake site:update_search_index`)
 group :jekyll_plugins do
   gem 'jekyll-algolia', '~> 1.0'

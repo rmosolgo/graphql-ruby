@@ -55,7 +55,7 @@ module Types
     # fields should be queried in camel-case (this will be `truncatedPreview`)
     field :truncated_preview, String, null: false
     # Fields can return lists of other objects:
-    field :comments, [Types::CommentType], null: true,
+    field :comments, [Types::CommentType],
       # And fields can have their own descriptions:
       description: "This post's comments, or null if this post has comments disabled."
   end
@@ -79,9 +79,8 @@ class QueryType < GraphQL::Schema::Object
   description "The query root of this schema"
 
   # First describe the field signature:
-  field :post, PostType, null: true do
-    description "Find a post by ID"
-    argument :id, ID, required: true
+  field :post, PostType, "Find a post by ID" do
+    argument :id, ID
   end
 
   # Then provide an implementation:

@@ -53,10 +53,11 @@ Then extend it for your mutations:
 
 ```ruby
 class Mutations::CreateComment < Mutations::BaseMutation
-  argument :body, String, required: true
-  argument :post_id, ID, required: true
+  null true
+  argument :body, String
+  argument :post_id, ID
 
-  field :comment, Types::Comment, null: true
+  field :comment, Types::Comment
   field :errors, [String], null: false
 
   def resolve(body:, post_id:)
@@ -103,9 +104,9 @@ An alternative approach is to use the `loads:` argument when defining the argume
 
 ```ruby
 class Mutations::AddStar < Mutations::BaseMutation
-  argument :post_id, ID, required: true, loads: Types::Post
+  argument :post_id, ID, loads: Types::Post
 
-  field :post, Types::Post, null: true
+  field :post, Types::Post
 
   def resolve(post:)
     post.star
@@ -125,9 +126,9 @@ The `loads:` option also works with list of IDs, for example:
 
 ```ruby
 class Mutations::AddStars < Mutations::BaseMutation
-  argument :post_ids, [ID], required: true, loads: Types::Post
+  argument :post_ids, [ID], loads: Types::Post
 
-  field :posts, [Types::Post], null: true
+  field :posts, [Types::Post]
 
   def resolve(posts:)
     posts.map(&:star)
@@ -145,9 +146,9 @@ In some cases, you may want to control the resulting argument name. This can be 
 
 ```ruby
 class Mutations::AddStar < Mutations::BaseMutation
-  argument :post_id, ID, required: true, loads: Types::Post, as: :something
+  argument :post_id, ID, loads: Types::Post, as: :something
 
-  field :post, Types::Post, null: true
+  field :post, Types::Post
 
   def resolve(something:)
     something.star
@@ -160,3 +161,26 @@ end
 ```
 
 In the above examples, `loads:` is provided a concrete type, but it also supports abstract types (i.e. interfaces and unions).
+
+### Handling failed loads
+
+If `loads:` fails to find an object or if the loaded object isn't resolved to the specified `loads:` type (using {{ "Schema.resolve_type" | api_doc }}), a {{ "GraphQL::LoadApplicationObjectFailedError" | api_doc }} is raised and returned to the client.
+
+You can customize this behavior by implementing `def load_application_object_failed` in your mutation class, for example:
+
+```ruby
+def load_application_object_failed(error)
+  nil # instead of returning an error, fail silently.
+end
+```
+
+### Handling unauthorized loaded objects
+
+When an object is _loaded_ but fails its {% internal_link "`.authorized?` check", "/authorization/authorization#object-authorization" %}, a {{ "GraphQL::UnauthorizedError" | api_doc }} is raised. By default, it's passed to {{ "Schema.unauthorized_object" | api_doc }} (see {% internal_link "Handling Unauthorized Objects", "/authorization/authorization.html#handling-unauthorized-objects" %}). You can customize this behavior by implementing `def unauthorized_object(err)` in your mutation, for example:
+
+```ruby
+def unauthorized_object(error)
+  # Raise a nice user-facing error instead
+  raise GraphQL::ExecutionError, "You don't have permission to modify the loaded #{error.type.graphql_name}."
+end
+```

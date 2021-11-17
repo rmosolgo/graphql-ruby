@@ -13,7 +13,7 @@ Fields (and their arguments, and input object arguments) can be validated at run
 Validations are configured in `field(...)` or `argument(...)` calls:
 
 ```ruby
-argument :home_phone, String, required: true,
+argument :home_phone, String,
   description: "A US phone number",
   validates: { format: { with: /\d{3}-\d{3}-\d{4}/ } }
 ```
@@ -21,7 +21,7 @@ argument :home_phone, String, required: true,
 or:
 
 ```ruby
-field :comments, [Comment], null: true,
+field :comments, [Comment],
   description: "Find comments by author ID or author name" do
   argument :author_id, ID, required: false
   argument :author_name, String, required: false
@@ -34,27 +34,6 @@ Validations can be provided with a keyword (`validates: { ... }`) or with a meth
 
 ## Built-In Validations
 
-All the validators below accept the following options:
-
-- `allow_blank: true` will permit any input that responds to `.blank?` and returns true for it.
-- `allow_null: true` will permit `null` (from JS) and/or `nil` (from Ruby) (bypassing the validation)
-- `message: "..."` customizes the error message when the validation fails
-
-For example:
-
-```ruby
-field :comments, [Comment], null: true,
-  description: "Find comments by author ID or author name" do
-  argument :author_id, ID, required: false
-  argument :author_name, String, required: false
-  # Include a message for the end user if the validation fails:
-  validates required: {
-    one_of: [:author_id, :author_name],
-    message: "May use either author_id or author_name, but not both."
-  }
-end
-```
-
 See each validator's API docs for details:
 
 - `length: { maximum: ..., minimum: ..., is: ..., within: ... }` {{ "Schema::Validator::LengthValidator" | api_doc }}
@@ -63,9 +42,26 @@ See each validator's API docs for details:
 - `inclusion: { in: [...] }` {{ "Schema::Validator::InclusionValidator" | api_doc }}
 - `exclusion: { in: [...] }` {{ "Schema::Validator::ExclusionValidator" | api_doc }}
 - `required: { one_of: [...] }` {{ "Schema::Validator::RequiredValidator" | api_doc }}
-
+- `allow_blank: true|false` {{  "Schema::Validator::AllowBlankValidator" | api_doc }}
+- `allow_null: true|false` {{  "Schema::Validator::AllowNullValidator" | api_doc }}
 
 Some of the validators accept customizable messages for certain validation failures; see the API docs for examples.
+
+`allow_blank:` and `allow_null:` may affect other validations, for example:
+
+```ruby
+validates: { format: { with: /\A\d{4}\Z/ }, allow_blank: true }
+```
+
+Will permit any String containing four digits, or the empty string (`""`) if Rails is loaded. (GraphQL-Ruby checks for `.blank?`, which is usually defined by Rails.)
+
+Alternatively, they can be used alone, for example:
+
+```ruby
+argument :id, ID, required: false, validates: { allow_null: true }
+```
+
+Will reject any query that passes `id: null`.
 
 ## Custom Validators
 
@@ -80,5 +76,3 @@ Then, custom validators can be attached either:
 - by keyword, if the keyword is registered with `GraphQL::Schema::Validator.install(:custom, MyCustomValidator)`. (That would support `validates: { custom: { some: :options }})`.)
 
 Validators are initialized when the schema is constructed (at application boot), and `validate(...)` is called while executing the query. There's one `Validator` instance for each configuration on each field, argument, or input object. (`Validator` instances aren't shared.)
-
-

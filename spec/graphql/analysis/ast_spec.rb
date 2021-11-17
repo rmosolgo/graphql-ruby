@@ -225,6 +225,44 @@ describe GraphQL::Analysis::AST do
       assert_equal expected_node_counts, node_counts
     end
 
+    class FinishedSchema < GraphQL::Schema
+      class FinishedAnalyzer < GraphQL::Analysis::AST::Analyzer
+        def on_enter_field(node, parent, visitor)
+          if query.context[:force_prepare]
+            visitor.arguments_for(node, visitor.field_definition)
+          end
+        end
+
+        def result
+          query.context[:analysis_finished] = true
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :f1, Int do
+          argument :arg, String, prepare: ->(val, ctx) {
+            ctx[:analysis_finished] ? val.to_i : raise("Prepared too soon!")
+          }
+        end
+        def f1(arg:)
+          arg
+        end
+      end
+
+      query(Query)
+
+      query_analyzer(FinishedAnalyzer)
+    end
+
+    it "doesn't call prepare hooks by default" do
+      res = FinishedSchema.execute("{ f1(arg: \"5\") }")
+      assert_equal 5, res["data"]["f1"]
+      err = assert_raises RuntimeError do
+        FinishedSchema.execute("{ f1(arg: \"5\") }", context: { force_prepare: true })
+      end
+      assert_equal "Prepared too soon!", err.message
+    end
+
     describe "tracing" do
       let(:query_string) { "{ t: __typename }"}
 
@@ -289,6 +327,44 @@ describe GraphQL::Analysis::AST do
         }
         assert_equal expected_connection_counts, connection_counts
       end
+    end
+  end
+
+  describe "Detecting all-introspection queries" do
+    class AllIntrospectionSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        field :int, Int
+      end
+      query(Query)
+    end
+
+    class AllIntrospectionAnalyzer < GraphQL::Analysis::AST::Analyzer
+      def initialize(query)
+        @is_introspection = true
+        super
+      end
+
+      def on_enter_field(node, parent, visitor)
+        @is_introspection &= (visitor.field_definition.introspection? || ((owner = visitor.field_definition.owner) && owner.introspection?))
+      end
+
+      def result
+        @is_introspection
+      end
+    end
+
+    def is_introspection?(query_str)
+      query = GraphQL::Query.new(AllIntrospectionSchema, query_str)
+      result = GraphQL::Analysis::AST.analyze_query(query, [AllIntrospectionAnalyzer])
+      result.first
+    end
+
+    it "returns true for queries containing only introspection types and fields" do
+      assert is_introspection?("{ __typename }")
+      refute is_introspection?("{ int }")
+      assert is_introspection?(GraphQL::Introspection::INTROSPECTION_QUERY)
+      assert is_introspection?("{ __type(name: \"Something\") { fields { name } } }")
+      refute is_introspection?("{ int __type(name: \"Thing\") { name } }")
     end
   end
 end

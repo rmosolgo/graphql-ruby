@@ -1,9 +1,13 @@
 require:
   - ./cop/none_without_block_cop
   - ./cop/no_focus_cop
+  - ./lib/graphql/rubocop/graphql/default_null_true
+  - ./lib/graphql/rubocop/graphql/default_required_true
+  - ./cop/context_is_passed_cop
 
 AllCops:
   DisabledByDefault: true
+  SuggestExtensions: false
   TargetRubyVersion: 2.4
   Exclude:
     - 'lib/graphql/language/lexer.rb'
@@ -12,6 +16,28 @@ AllCops:
     - 'tmp/**/*'
     - 'vendor/**/*'
     - 'spec/integration/tmp/**/*'
+    - 'spec/fixtures/cop/*.rb'
+
+ContextIsPassedCop:
+  Exclude:
+    - 'spec/**/*'
+    # Legacy-related:
+    - 'lib/graphql/*_type.rb'
+    - 'lib/graphql/define/**/*.rb'
+    - 'lib/graphql/relay/**/*'
+    - 'lib/graphql/schema/traversal.rb'
+    - 'lib/graphql/schema/possible_types.rb'
+    - 'lib/graphql/schema/validation.rb'
+    - 'lib/graphql/compatibility/**/*'
+    - 'lib/graphql/static_validation/type_stack.rb'
+    # AST-related:
+    - 'lib/graphql/schema/build_from_definition.rb'
+    - 'lib/graphql/language/printer.rb'
+    # Build-time, not runtime:
+    - 'lib/graphql/schema/addition.rb'
+    - 'lib/graphql/schema/introspection_system.rb'
+    # Methods from generators
+    - 'lib/generators/graphql/type_generator.rb'
 
 # def ...
 # end
@@ -62,3 +88,9 @@ Style/WordArray:
 # ->(...) { ... }
 Layout/SpaceInLambdaLiteral:
   Enabled: true # Default is "require_no_space"
+
+GraphQL/DefaultNullTrue:
+  Enabled: true
+
+GraphQL/DefaultRequiredTrue:
+  Enabled: true

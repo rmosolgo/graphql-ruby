@@ -6,7 +6,11 @@ module GraphQL
       # Called by {Dataloader} to prepare the {Source}'s internal state
       # @api private
       def setup(dataloader)
+        # These keys have been requested but haven't been fetched yet
         @pending_keys = []
+        # These keys have been passed to `fetch` but haven't been finished yet
+        @fetching_keys = []
+        # { key => result }
         @results = {}
         @dataloader = dataloader
       end
@@ -64,30 +68,67 @@ module GraphQL
       # Then run the batch and update the cache.
       # @return [void]
       def sync
+        pending_keys = @pending_keys.dup
         @dataloader.yield
+        iterations = 0
+        while pending_keys.any? { |k| !@results.key?(k) }
+          iterations += 1
+          if iterations > 1000
+            raise "#{self.class}#sync tried 1000 times to load pending keys (#{pending_keys}), but they still weren't loaded. There is likely a circular dependency."
+          end
+          @dataloader.yield
+        end
+        nil
       end
 
       # @return [Boolean] True if this source has any pending requests for data.
       def pending?
-        @pending_keys.any?
+        !@pending_keys.empty?
       end
 
       # Called by {GraphQL::Dataloader} to resolve and pending requests to this source.
       # @api private
       # @return [void]
       def run_pending_keys
+        if !@fetching_keys.empty?
+          @pending_keys -= @fetching_keys
+        end
         return if @pending_keys.empty?
         fetch_keys = @pending_keys.uniq
+        @fetching_keys.concat(fetch_keys)
         @pending_keys = []
         results = fetch(fetch_keys)
         fetch_keys.each_with_index do |key, idx|
           @results[key] = results[idx]
         end
+        nil
       rescue StandardError => error
         fetch_keys.each { |key| @results[key] = error }
       ensure
-        nil
+        if fetch_keys
+          @fetching_keys -= fetch_keys
+        end
       end
+
+      # These arguments are given to `dataloader.with(source_class, ...)`. The object
+      # returned from this method is used to de-duplicate batch loads under the hood
+      # by using it as a Hash key.
+      #
+      # By default, the arguments are all put in an Array. To customize how this source's
+      # batches are merged, override this method to return something else.
+      #
+      # For example, if you pass `ActiveRecord::Relation`s to `.with(...)`, you could override
+      # this method to call `.to_sql` on them, thus merging `.load(...)` calls when they apply
+      # to equivalent relations.
+      #
+      # @param batch_args [Array<Object>]
+      # @param batch_kwargs [Hash]
+      # @return [Object]
+      def self.batch_key_for(*batch_args, **batch_kwargs)
+        [*batch_args, **batch_kwargs]
+      end
+
+      attr_reader :pending_keys
 
       private
 
@@ -96,6 +137,13 @@ module GraphQL
       # @return [Object] The result from {#fetch} for `key`.
       # @api private
       def result_for(key)
+        if !@results.key?(key)
+          raise <<-ERR
+Invariant: fetching result for a key on #{self.class} that hasn't been loaded yet (#{key.inspect}, loaded: #{@results.keys})
+
+This key should have been loaded already. This is a bug in GraphQL::Dataloader, please report it on GitHub: https://github.com/rmosolgo/graphql-ruby/issues/new.
+ERR
+        end
         result = @results[key]
 
         raise result if result.class <= StandardError
