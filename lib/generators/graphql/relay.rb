@@ -32,20 +32,28 @@ module Graphql
 
   # Return a string UUID for `object`
   def self.id_from_object(object, type_definition, query_ctx)
-    # Here's a simple implementation which:
-    # - joins the type name & object.id
-    # - encodes it with base64:
-    # GraphQL::Schema::UniqueWithinType.encode(type_definition.name, object.id)
+    # For example, use Rails' GlobalID library (https://github.com/rails/globalid):
+    object_id = object.to_global_id.to_s
+    # Remove this redundant prefix to make IDs shorter:
+    object_id = object_id.sub("gid://\#{GlobalID.app}/", "")
+    encoded_id = Base64.urlsafe_encode64(object_id)
+    # Remove the "=" padding
+    encoded_id = encoded_id.sub(/=+/, "")
+    # Add a type hint
+    type_hint = type_definition.graphql_name.first
+    "\#{type_hint}_\#{encoded_id}"
   end
 
   # Given a string UUID, find the object
-  def self.object_from_id(id, query_ctx)
-    # For example, to decode the UUIDs generated above:
-    # type_name, item_id = GraphQL::Schema::UniqueWithinType.decode(id)
-    #
-    # Then, based on `type_name` and `id`
-    # find an object in your application
-    # ...
+  def self.object_from_id(encoded_id_with_hint, query_ctx)
+    # For example, use Rails' GlobalID library (https://github.com/rails/globalid):
+    # Split off the type hint
+    _type_hint, encoded_id = encoded_id_with_hint.split("_")
+    # Decode the ID
+    id = Base64.urlsafe_decode64(encoded_id)
+    # Rebuild it for Rails then find the object:
+    full_global_id = "gid://\#{GlobalID.app}/\#{id}"
+    GlobalID::Locator.locate(full_global_id)
   end
 RUBY
         inject_into_file schema_file_path, schema_code, before: /^end\n/m, force: false
