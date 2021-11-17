@@ -40,8 +40,6 @@ jobs:
         include:
           - gemfile: Gemfile
             ruby: 3.0
-          - gemfile: gemfiles/rails_3.2.gemfile
-            ruby: 2.3
             bundler: "1"
           - gemfile: gemfiles/rails_4.2.gemfile
             ruby: 2.4
@@ -119,7 +117,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       mongodb:
-        image: mongo:3.4.23
+        image: mongo
         ports:
         - 27017:27017
     steps:
