@@ -45,10 +45,22 @@ class DummySchema < GraphQL::Schema
   mutation(Types::MutationType)
   query(Types::QueryType)
 
+  # For batch-loading (see https://graphql-ruby.org/dataloader/overview.html)
+  use GraphQL::Dataloader
+
+  # GraphQL-Ruby calls this when something goes wrong while running a query:
+  def self.type_error(err)
+    # if err.is_a?(GraphQL::InvalidNullError)
+    #   # report to your bug tracker here
+    #   return nil
+    # end
+    super
+  end
+
   # Union and Interface Resolution
   def self.resolve_type(abstract_type, obj, ctx)
     # TODO: Implement this function
-    # to return the correct object type for `obj`
+    # to return the correct GraphQL object type for `obj`
     raise(GraphQL::RequiredImplementationMissingError)
   end
 end
@@ -283,10 +295,19 @@ class DummySchema < GraphQL::Schema
   # GraphQL::Batch setup:
   use GraphQL::Batch
 
+  # GraphQL-Ruby calls this when something goes wrong while running a query:
+  def self.type_error(err)
+    # if err.is_a?(GraphQL::InvalidNullError)
+    #   # report to your bug tracker here
+    #   return nil
+    # end
+    super
+  end
+
   # Union and Interface Resolution
   def self.resolve_type(abstract_type, obj, ctx)
     # TODO: Implement this function
-    # to return the correct object type for `obj`
+    # to return the correct GraphQL object type for `obj`
     raise(GraphQL::RequiredImplementationMissingError)
   end
 
