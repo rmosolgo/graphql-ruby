@@ -75,6 +75,12 @@ namespace :bench do
     require_relative("./benchmark/run.rb")
   end
 
+  desc "Benchmark parsing"
+  task :parse do
+    prepare_benchmark
+    GraphQLBenchmark.run("parse")
+  end
+
   desc "Benchmark the introspection query"
   task :query do
     prepare_benchmark
