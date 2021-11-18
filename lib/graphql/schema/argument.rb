@@ -2,10 +2,6 @@
 module GraphQL
   class Schema
     class Argument
-      if !String.method_defined?(:-@)
-        using GraphQL::StringDedupBackport
-      end
-
       include GraphQL::Schema::Member::CachedGraphQLDefinition
       include GraphQL::Schema::Member::AcceptsDefinition
       include GraphQL::Schema::Member::HasPath

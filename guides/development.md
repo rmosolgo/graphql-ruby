@@ -159,13 +159,13 @@ You will need Ragel to build the lexer (see above).
 
 #### Install Ragel and Colm on a Mac
 
-GraphQL Ruby requires Ragel 7.0.0.9 which is not available on Homebrew. To install it, you might have to download it from source.
+GraphQL Ruby requires Ragel 7.0.4 which is not available on Homebrew. To install it, you might have to download it from source.
 
 This is not meant to be a step by step guide and will likely not work as the documentation ages.
 
-Download colm from [http://www.colm.net/files/colm/colm-0.13.0.4.tar.gz](http://www.colm.net/files/colm/colm-0.13.0.4.tar.gz)
+Download colm from [http://www.colm.net/open-source/colm/](http://www.colm.net/open-source/colm/)
 
-Download ragel from [http://www.colm.net/files/ragel/ragel-7.0.0.9.tar.gz](http://www.colm.net/files/ragel/ragel-7.0.0.9.tar.gz)
+Download ragel from [http://www.colm.net/open-source/ragel/](http://www.colm.net/open-source/ragel/)
 
 ```sh
 # In colm directory
@@ -176,10 +176,13 @@ make
 make install
 
 # After installing colm, in ragel directory
-./configure
+which colm # figure out where colm is installed
+./configure --with-colm=/usr/local # <- your `/bin/colm` prefix here
 make
 make install
 ```
+
+Colm requires `asciidoc`, too, which can be installed with homebrew.
 
 ### Website
 
