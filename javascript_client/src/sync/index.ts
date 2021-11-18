@@ -1,7 +1,9 @@
 import sendPayload from "./sendPayload"
+
 import { generateClientCode, gatherOperations, ClientOperation } from "./generateClient"
 import Logger from "./logger"
 import fs from "fs"
+import { removeClientFieldsFromString } from "./removeClientFields"
 
 interface SyncOptions {
   path?: string,
@@ -83,8 +85,9 @@ function sync(options: SyncOptions) {
     // Structure is { operationId => { "name" => "...", "source" => "query { ... } " } }
     for (var operationId in apolloAndroidOutput) {
       operationData = apolloAndroidOutput[operationId]
+      let bodyWithoutClientFields = removeClientFieldsFromString(operationData.source)
       payload.operations.push({
-        body: operationData.source,
+        body: bodyWithoutClientFields,
         alias: operationId,
       })
     }
@@ -93,10 +96,11 @@ function sync(options: SyncOptions) {
     const jsonText = fs.readFileSync(options.apolloCodegenJsonOutput).toString()
     const jsonData = JSON.parse(jsonText)
     jsonData.operations.map(function(operation: {operationId: string, operationName: string, sourceWithFragments: string}) {
+      const bodyWithoutClientFields = removeClientFieldsFromString(operation.sourceWithFragments)
       payload.operations.push({
         alias: operation.operationId,
         name: operation.operationName,
-        body: operation.sourceWithFragments,
+        body: bodyWithoutClientFields,
       })
     })
   } else {
