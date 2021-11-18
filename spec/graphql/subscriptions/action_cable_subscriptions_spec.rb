@@ -86,8 +86,21 @@ describe GraphQL::Subscriptions::ActionCableSubscriptions do
       field :text, String, null: false
     end
 
+    class EvenCounter < GraphQL::Schema::Subscription
+      field :count, Integer, null: false
+
+      def update
+        if object[:count].even?
+          object
+        else
+          NO_UPDATE
+        end
+      end
+    end
+
     class Subscription < GraphQL::Schema::Object
       field :news_flash, subscription: NewsFlash
+      field :even_counter, subscription: EvenCounter
     end
 
     query(Query)
@@ -200,6 +213,22 @@ describe GraphQL::Subscriptions::ActionCableSubscriptions do
       "graphql-event:other::newsFlash:",
     ]
     assert_equal expected_streams, MockActionCable.mock_stream_names
+  end
+
+  it "supports no_update" do
+    mock_channel = MockActionCable.get_mock_channel
+    ctx = { channel: mock_channel }
+    ActionCableTestSchema.execute("subscription { evenCounter { count } }", context: ctx)
+
+    1.upto(4) do |c|
+      ActionCableTestSchema.subscriptions.trigger(:even_counter, {}, {count: c})
+    end
+
+    expected_messages = [
+      subscription_update("evenCounter" => { "count" => 2 }),
+      subscription_update("evenCounter" => { "count" => 4 }),
+    ]
+    assert_equal expected_messages, mock_channel.mock_broadcasted_messages
   end
 
   it "handles `execute_update` for a missing subscription ID" do
