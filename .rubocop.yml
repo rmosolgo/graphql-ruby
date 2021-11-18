@@ -1,9 +1,9 @@
 require:
-  - ./cop/none_without_block_cop
-  - ./cop/no_focus_cop
+  - ./cop/development/none_without_block_cop
+  - ./cop/development/no_focus_cop
   - ./lib/graphql/rubocop/graphql/default_null_true
   - ./lib/graphql/rubocop/graphql/default_required_true
-  - ./cop/context_is_passed_cop
+  - ./cop/development/context_is_passed_cop
 
 AllCops:
   DisabledByDefault: true
@@ -18,7 +18,7 @@ AllCops:
     - 'spec/integration/tmp/**/*'
     - 'spec/fixtures/cop/*.rb'
 
-ContextIsPassedCop:
+Development/ContextIsPassedCop:
   Exclude:
     - 'spec/**/*'
     # Legacy-related:
@@ -38,6 +38,15 @@ ContextIsPassedCop:
     - 'lib/graphql/schema/introspection_system.rb'
     # Methods from generators
     - 'lib/generators/graphql/type_generator.rb'
+
+Development/NoneWithoutBlockCop:
+  Include:
+    - "lib/**/*"
+    - "spec/**/*"
+
+Development/NoFocusCop:
+  Include:
+    - "spec/**/*"
 
 # def ...
 # end

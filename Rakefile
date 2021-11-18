@@ -61,8 +61,8 @@ ERR
     end
   end
 
-  assert_dependency_version("Ragel", "7.0.4", "ragel -v")
-  assert_dependency_version("Racc", "1.6.0", %|ruby -e "require 'racc'; puts Racc::VERSION"|)
+  assert_dependency_version("Ragel", "7.0.0.9", "ragel -v")
+  assert_dependency_version("Racc", "1.5.2", %|ruby -e "require 'racc'; puts Racc::VERSION"|)
 
   `rm -f lib/graphql/language/parser.rb lib/graphql/language/lexer.rb `
   `racc lib/graphql/language/parser.y -o lib/graphql/language/parser.rb`
