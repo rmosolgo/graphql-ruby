@@ -1037,7 +1037,7 @@ GRAPHQL
       err = assert_raises GraphQL::Schema::DuplicateNamesError do
         enum_type.values({ allowed_for: 2 })
       end
-      expected_message ="Found two visible definitions for `DuplicateEnumValue.ONE`: #<DuplicateNames::BaseEnumValue DuplicateEnumValue.ONE (\"second definition\")>, #<DuplicateNames::BaseEnumValue DuplicateEnumValue.ONE (\"first definition\")>"
+      expected_message ="Found two visible definitions for `DuplicateEnumValue.ONE`: #<DuplicateNames::BaseEnumValue DuplicateEnumValue.ONE @value=\"ONE\" @description=\"second definition\">, #<DuplicateNames::BaseEnumValue DuplicateEnumValue.ONE @value=\"ONE\" @description=\"first definition\">"
       assert_equal expected_message, err.message
 
       # no get_value method ... yet ...
