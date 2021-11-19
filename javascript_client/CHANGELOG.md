@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.10.4 (19 Nov 2021)
+
+- Sync: Also make sure documents are valid after removing `@client` fields #3715
+
 # 1.10.3 (18 Nov 2021)
 
 - Sync: Remove any fields with `@client` before sending operations to the server #3712
