@@ -1780,7 +1780,7 @@ module GraphQL
         end
         new_types = Array(t)
         addition = Schema::Addition.new(schema: self, own_types: own_types, new_types: new_types)
-        addition.types.each do |name, types_entry| # rubocop:disable Cop/ContextIsPassedCop -- build-time, not query-time
+        addition.types.each do |name, types_entry| # rubocop:disable Development/ContextIsPassedCop -- build-time, not query-time
           if (prev_entry = own_types[name])
             prev_entries = case prev_entry
             when Array

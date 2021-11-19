@@ -3,12 +3,7 @@ require "graphql/schema/build_from_definition/resolve_map"
 
 module GraphQL
   class Schema
-    # TODO Populate `.directive(...)` from here
     module BuildFromDefinition
-      if !String.method_defined?(:-@)
-        using GraphQL::StringDedupBackport
-      end
-
       class << self
         # @see {Schema.from_definition}
         def from_definition(definition_string, parser: GraphQL.default_parser, **kwargs)

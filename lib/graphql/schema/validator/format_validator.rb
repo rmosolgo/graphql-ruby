@@ -18,10 +18,6 @@ module GraphQL
       #   # It's pretty hard to come up with a legitimate use case for `without:`
       #
       class FormatValidator < Validator
-        if !String.method_defined?(:match?)
-          using GraphQL::StringMatchBackport
-        end
-
         # @param with [RegExp, nil]
         # @param without [Regexp, nil]
         # @param message [String]

@@ -5,10 +5,6 @@ require "graphql/schema/field/scope_extension"
 module GraphQL
   class Schema
     class Field
-      if !String.method_defined?(:-@)
-        using GraphQL::StringDedupBackport
-      end
-
       include GraphQL::Schema::Member::CachedGraphQLDefinition
       include GraphQL::Schema::Member::AcceptsDefinition
       include GraphQL::Schema::Member::HasArguments
