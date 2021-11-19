@@ -84,6 +84,25 @@ module GraphQL
           visible_values
         end
 
+        # @return [Array<Schema::EnumValue>] An unfiltered list of all definitions
+        def all_enum_value_definitions
+          all_defns = if superclass.respond_to?(:all_enum_value_definitions)
+            superclass.all_enum_value_definitions
+          else
+            []
+          end
+
+          @own_values && @own_values.each do |_key, value|
+            if value.is_a?(Array)
+              all_defns.concat(value)
+            else
+              all_defns << value
+            end
+          end
+
+          all_defns
+        end
+
         # @return [Hash<String => GraphQL::Schema::EnumValue>] Possible values of this enum, keyed by name.
         def values(context = GraphQL::Query::NullContext)
           enum_values(context).each_with_object({}) { |val, obj| obj[val.graphql_name] = val }

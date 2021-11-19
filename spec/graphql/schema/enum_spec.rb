@@ -92,6 +92,26 @@ describe GraphQL::Schema::Enum do
     end
   end
 
+  describe "multiple values with the same name" do
+    class MultipleNameTestEnum < GraphQL::Schema::Enum
+      value "A"
+      value "B", value: :a
+      value "B", value: :b
+    end
+
+    it "doesn't allow it from enum_values" do
+      err = assert_raises GraphQL::Schema::DuplicateNamesError do
+        MultipleNameTestEnum.enum_values
+      end
+      expected_message = "Found two visible definitions for `MultipleNameTestEnum.B`: #<GraphQL::Schema::EnumValue MultipleNameTestEnum.B @value=:a>, #<GraphQL::Schema::EnumValue MultipleNameTestEnum.B @value=:b>"
+      assert_equal expected_message, err.message
+    end
+
+    it "returns them all in all_enum_value_definitions" do
+      assert_equal 3, MultipleNameTestEnum.all_enum_value_definitions.size
+    end
+  end
+
   describe "legacy tests" do
     let(:enum) { Dummy::DairyAnimal }
 

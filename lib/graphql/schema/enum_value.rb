@@ -86,7 +86,7 @@ module GraphQL
       end
 
       def inspect
-        "#<#{self.class} #{path} #{description ? "(#{description.inspect})" : ""}>"
+        "#<#{self.class} #{path} @value=#{@value.inspect}#{description ? " @description=#{description.inspect}" : ""}>"
       end
 
       def visible?(_ctx); true; end
