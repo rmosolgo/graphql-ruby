@@ -283,7 +283,9 @@ Array [
   },
   Object {
     "alias": "67c2bc8aa3185a209d6651b4feb63c04",
-    "body": "query appQuery($userId: String) {
+    "body": "query appQuery(
+  $userId: String
+) {
   user(id: $userId) {
     ...TodoApp_user
     id
@@ -358,7 +360,9 @@ fragment Todo_user on User {
   },
   Object {
     "alias": "db9904c31d91416f21d45fe3d153884c",
-    "body": "mutation MarkAllTodosMutation($input: MarkAllTodosInput!) {
+    "body": "mutation MarkAllTodosMutation(
+  $input: MarkAllTodosInput!
+) {
   markAllTodos(input: $input) {
     changedTodos {
       id
@@ -374,7 +378,9 @@ fragment Todo_user on User {
   },
   Object {
     "alias": "2eb8c9941fdb3117fdbc08d15fab62d0",
-    "body": "mutation AddTodoMutation($input: AddTodoInput!) {
+    "body": "mutation AddTodoMutation(
+  $input: AddTodoInput!
+) {
   addTodo(input: $input) {
     todoEdge {
       __typename
@@ -395,7 +401,9 @@ fragment Todo_user on User {
   },
   Object {
     "alias": "d970fd7dbf118794415dec7324d463e3",
-    "body": "mutation RenameTodoMutation($input: RenameTodoInput!) {
+    "body": "mutation RenameTodoMutation(
+  $input: RenameTodoInput!
+) {
   renameTodo(input: $input) {
     todo {
       id
@@ -407,7 +415,9 @@ fragment Todo_user on User {
   },
   Object {
     "alias": "a49217db31a8be3f4107763b957d5fca",
-    "body": "mutation RemoveCompletedTodosMutation($input: RemoveCompletedTodosInput!) {
+    "body": "mutation RemoveCompletedTodosMutation(
+  $input: RemoveCompletedTodosInput!
+) {
   removeCompletedTodos(input: $input) {
     deletedTodoIds
     user {
@@ -421,7 +431,9 @@ fragment Todo_user on User {
   },
   Object {
     "alias": "d7dda774dcfa32fe0d9661e01cac9a4a",
-    "body": "mutation ChangeTodoStatusMutation($input: ChangeTodoStatusInput!) {
+    "body": "mutation ChangeTodoStatusMutation(
+  $input: ChangeTodoStatusInput!
+) {
   changeTodoStatus(input: $input) {
     todo {
       id
@@ -447,8 +459,7 @@ Array [
     __typename
     name
   }
-}
-",
+}",
     "name": "UpdateSomething",
   },
   Object {
@@ -457,11 +468,9 @@ Array [
   helloWorld
   ...MoreFields
 }
-
 fragment MoreFields on Query {
   __typename
-}
-",
+}",
     "name": "getHelloWorld",
   },
 ]
