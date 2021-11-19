@@ -61,6 +61,36 @@ module GraphQL
 
       class << self
         private
+
+        # This method does not support cyclic references in the Hash,
+        # nor does it support Hashes whose keys are not sortable
+        # with respect to their peers ( cases where a <=> b might throw an error )
+        def deep_sort_hash_keys(hash_to_sort)
+          raise ArgumentError.new("Argument must be a Hash") unless hash_to_sort.is_a?(Hash)
+          hash_to_sort.keys.sort.map do |k|
+            if hash_to_sort[k].is_a?(Hash)
+              [k, deep_sort_hash_keys(hash_to_sort[k])]
+            elsif hash_to_sort[k].is_a?(Array)
+              [k, deep_sort_array_hashes(hash_to_sort[k])]
+            else
+              [k, hash_to_sort[k]]
+            end
+          end.to_h
+        end
+
+        def deep_sort_array_hashes(array_to_inspect)
+          raise ArgumentError.new("Argument must be an Array") unless array_to_inspect.is_a?(Array)
+          array_to_inspect.map do |v|
+            if v.is_a?(Hash)
+              deep_sort_hash_keys(v)
+            elsif v.is_a?(Array)
+              deep_sort_array_hashes(v)
+            else
+              v
+            end
+          end
+        end
+
         def stringify_args(arg_owner, args)
           arg_owner = arg_owner.respond_to?(:unwrap) ? arg_owner.unwrap : arg_owner # remove list and non-null wrappers
           case args
@@ -73,12 +103,26 @@ module GraphQL
 
               if arg_defn
                 normalized_arg_name = camelized_arg_name
-                next_args[normalized_arg_name] = stringify_args(arg_defn.type, v)
               else
                 normalized_arg_name = arg_name
                 arg_defn = get_arg_definition(arg_owner, normalized_arg_name)
               end
-              next_args[normalized_arg_name] = stringify_args(arg_defn.type, v)
+              arg_base_type = arg_defn.type.unwrap
+              # In the case where the value being emitted is seen as a "JSON"
+              # type, treat the value as one atomic unit of serialization
+              is_json_definition = arg_base_type && arg_base_type <= GraphQL::Types::JSON
+              if is_json_definition
+                sorted_value = if v.is_a?(Hash)
+                  deep_sort_hash_keys(v)
+                elsif v.is_a?(Array)
+                  deep_sort_array_hashes(v)
+                else
+                  v
+                end
+                next_args[normalized_arg_name] = sorted_value.respond_to?(:to_json) ? sorted_value.to_json : sorted_value
+              else
+                next_args[normalized_arg_name] = stringify_args(arg_base_type, v)
+              end
             end
             # Make sure they're deeply sorted
             next_args.sort.to_h
