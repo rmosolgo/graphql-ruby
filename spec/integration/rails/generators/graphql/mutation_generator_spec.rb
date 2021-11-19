@@ -8,6 +8,8 @@ class GraphQLGeneratorsMutationGeneratorTest < BaseGeneratorTest
   destination File.expand_path("../../../tmp/dummy", File.dirname(__FILE__))
 
   def setup(directory = "app/graphql")
+    skip_if_rails_7_alpha
+
     prepare_destination
     FileUtils.cd(File.expand_path("../../../tmp", File.dirname(__FILE__))) do
       `rm -rf dummy`

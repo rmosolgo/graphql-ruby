@@ -1,7 +1,7 @@
 import fs from "fs"
 import {parse, visit, print, OperationDefinitionNode} from "graphql"
 import {addTypenameIfAbsent} from "./addTypenameToSelectionSet"
-
+import { removeClientFields } from "./removeClientFields"
 
 /**
  * Read a bunch of GraphQL files and treat them as islands.
@@ -33,6 +33,7 @@ function prepareIsolatedFiles(filenames: string[], addTypename: boolean) {
       }
     }
     ast = visit(ast, visitor)
+    ast = removeClientFields(ast)
 
     return {
       // populate alias later, when hashFunc is available

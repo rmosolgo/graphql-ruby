@@ -1,7 +1,7 @@
 {
   "aba626ea9bdf465954e89e5590eb2c1a": {
     "name": "RemoveTodoMutation",
-    "source": "mutation RemoveTodoMutation(\n  $input: RemoveTodoInput!\n) {\n  removeTodo(input: $input) {\n    deletedTodoId\n    user {\n      completedCount\n      totalCount\n      id\n    }\n  }\n}\n"
+    "source": "mutation RemoveTodoMutation(\n  $input: RemoveTodoInput!\n) {\n  removeTodo(input: $input) {\n    deletedTodoId\n    user {\n      completedCount\n      totalCount\n      thing @client\n      id\n    }\n  }\n}\n"
   },
   "67c2bc8aa3185a209d6651b4feb63c04": {
     "name": "appQuery",

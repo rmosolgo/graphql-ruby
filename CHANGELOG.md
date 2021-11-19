@@ -8,6 +8,19 @@
 
 ### Bug fixes
 
+# 1.12.20 (17 November 2021)
+
+### New Features
+
+- Static validation: improve error messages when fields won't merge #3698
+- Generators: improve id_from_object and type_error suggested implementations #3710
+- Connections: make the new connections module fall back to old connections #3704
+
+### Bug fixes
+
+- Dataloader: re-enqueue sources when one call to `yield` didn't satisfy their pending requests #3707
+- Subscriptions: Fix when JSON-typed arguments are used #3705
+
 # 1.12.19 (5 November 2021)
 
 ### New Features

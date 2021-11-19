@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.10.3 (18 Nov 2021)
+
+- Sync: Remove any fields with `@client` before sending operations to the server #3712
+
 # 1.10.2 (25 Oct 2021)
 
 - Pusher Link: Properly forward network errors to subscribers #3638
