@@ -180,9 +180,16 @@ describe "Dynamic types, fields, arguments, and enum values" do
       field :capital_name, String, null: false
     end
 
+    module HasLanguages
+      include BaseInterface
+      field :languages, [String], null: false
+    end
+
     class Country < BaseObject
       implements HasCurrency
       implements HasCapital, future_schema: true
+      implements HasLanguages, future_schema: true
+      implements HasLanguages, future_schema: false
     end
 
     class Locale < BaseUnion
@@ -343,7 +350,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
 
     query(Query)
     mutation(Mutation)
-    orphan_types(Place, LegacyPlace, Locale, Region)
+    orphan_types(Place, LegacyPlace, Locale, Region, Country)
   end
 
   def check_for_multiple_visible_calls(context)
@@ -483,6 +490,12 @@ GRAPHQL
     assert_equal ["Field 'databaseId' doesn't exist on type 'Thing'", "Field 'uuid' doesn't exist on type 'Thing'"], exec_query(query_str)["errors"].map { |e| e["message"] }
     res = exec_future_query(query_str)
     assert_equal({ "thing" => { "databaseId" => 15, "id" => 15, "uuid" => "thing-15"} }, res["data"])
+  end
+
+  it "supports multiple implementations of the same interface" do
+    query_str = '{ __type(name: "Country") { interfaces { name } } }'
+    assert_equal ["HasLanguages"], exec_query(query_str)["data"]["__type"]["interfaces"].map { |i| i["name"] }
+    assert_equal ["HasCapital", "HasCurrency", "HasLanguages"], exec_future_query(query_str)["data"]["__type"]["interfaces"].map { |i| i["name"] }
   end
 
   it "supports different versions of field arguments" do
