@@ -40,9 +40,6 @@ To add subscriptions to your system, define an `ObjectType` named `Subscription`
 ```ruby
 # app/graphql/types/subscription_type.rb
 class Types::SubscriptionType < GraphQL::Schema::Object
-  # If you're using the interpreter, also add:
-  extend GraphQL::Subscriptions::SubscriptionRoot
-
   field :post_was_published, subscription: Subscriptions::PostWasPublished
   # ...
 end
