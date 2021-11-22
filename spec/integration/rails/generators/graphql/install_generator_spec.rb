@@ -49,7 +49,7 @@ class DummySchema < GraphQL::Schema
   use GraphQL::Dataloader
 
   # GraphQL-Ruby calls this when something goes wrong while running a query:
-  def self.type_error(err)
+  def self.type_error(err, context)
     # if err.is_a?(GraphQL::InvalidNullError)
     #   # report to your bug tracker here
     #   return nil
@@ -59,7 +59,7 @@ class DummySchema < GraphQL::Schema
 
   # Union and Interface Resolution
   def self.resolve_type(abstract_type, obj, ctx)
-    # TODO: Implement this function
+    # TODO: Implement this method
     # to return the correct GraphQL object type for `obj`
     raise(GraphQL::RequiredImplementationMissingError)
   end
@@ -295,7 +295,7 @@ RUBY
   use GraphQL::Batch
 
   # GraphQL-Ruby calls this when something goes wrong while running a query:
-  def self.type_error(err)
+  def self.type_error(err, context)
     # if err.is_a?(GraphQL::InvalidNullError)
     #   # report to your bug tracker here
     #   return nil
@@ -305,7 +305,7 @@ RUBY
 
   # Union and Interface Resolution
   def self.resolve_type(abstract_type, obj, ctx)
-    # TODO: Implement this function
+    # TODO: Implement this method
     # to return the correct GraphQL object type for `obj`
     raise(GraphQL::RequiredImplementationMissingError)
   end
