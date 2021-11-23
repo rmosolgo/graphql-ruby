@@ -22,7 +22,7 @@ GraphQL-Ruby's JavaScript client includes four kinds of support for Apollo Clien
 
 ## Apollo 2
 
-Apollo 2 is supported by implementing Apollo Links.
+Apollo 2 is supported by implementing [Apollo Links](https://www.apollographql.com/docs/react/api/link/introduction/).
 
 ## Apollo 2 -- Pusher
 

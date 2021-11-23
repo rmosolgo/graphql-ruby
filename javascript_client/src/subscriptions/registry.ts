@@ -3,7 +3,7 @@ interface ApolloSubscription {
 }
 
 // State management for subscriptions.
-// Used to add subscriptions to an Apollo network intrface.
+// Used to add subscriptions to an Apollo network interface.
 class ApolloSubscriptionRegistry {
   // Apollo expects unique ids to reference each subscription,
   // here's a simple incrementing ID generator which starts at 1
