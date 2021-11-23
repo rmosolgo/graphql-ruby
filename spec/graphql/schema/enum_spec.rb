@@ -17,6 +17,15 @@ describe GraphQL::Schema::Enum do
       assert_equal 7, enum.values.size
     end
 
+    it "returns defined enum values" do
+      v = nil
+      Class.new(enum) do
+        graphql_name "TestEnum"
+        v = value :PERCUSSION, "new description"
+      end
+      assert_instance_of Jazz::BaseEnumValue, v
+    end
+
     it "inherits values and description" do
       new_enum = Class.new(enum) do
         value :Nonsense

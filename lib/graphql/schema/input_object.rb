@@ -129,6 +129,7 @@ module GraphQL
               self[#{method_name.inspect}]
             end
           RUBY
+          argument_defn
         end
 
         def to_graphql
