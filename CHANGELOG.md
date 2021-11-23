@@ -8,6 +8,13 @@
 
 ### Bug fixes
 
+# 1.12.21 (23 November 2021)
+
+### Bug fixes
+
+- Validators: Fix `format:`/`allow_blank: true` to correctly accept a blank string #3726
+- Generators: generate a correct `Schema.type_error` hook #3722
+
 # 1.12.20 (17 November 2021)
 
 ### New Features
