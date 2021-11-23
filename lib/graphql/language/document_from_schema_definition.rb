@@ -297,7 +297,7 @@ module GraphQL
         else
           member.directives.map do |dir|
             args = []
-            dir.arguments.argument_values.each_value do |arg_value|
+            dir.arguments.argument_values.each_value do |arg_value| # rubocop:disable Development/ContextIsPassedCop -- directive instance method
               arg_defn = arg_value.definition
               if arg_defn.default_value? && arg_value.value == arg_defn.default_value
                 next

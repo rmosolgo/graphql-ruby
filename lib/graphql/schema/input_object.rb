@@ -138,8 +138,8 @@ module GraphQL
           type_defn.metadata[:type_class] = self
           type_defn.mutation = mutation
           type_defn.ast_node = ast_node
-          arguments.each do |name, arg|
-            type_defn.arguments[arg.graphql_definition.name] = arg.graphql_definition
+          all_argument_definitions.each do |arg|
+            type_defn.arguments[arg.graphql_definition.name] = arg.graphql_definition # rubocop:disable Development/ContextIsPassedCop -- legacy-related
           end
           # Make a reference to a classic-style Arguments class
           self.arguments_class = GraphQL::Query::Arguments.construct_arguments_class(type_defn)
@@ -172,7 +172,7 @@ module GraphQL
           end
 
           # Inject missing required arguments
-          missing_required_inputs = self.arguments.reduce({}) do |m, (argument_name, argument)|
+          missing_required_inputs = self.arguments(ctx).reduce({}) do |m, (argument_name, argument)|
             if !input.key?(argument_name) && argument.type.non_null? && warden.get_argument(self, argument_name)
               m[argument_name] = nil
             end
@@ -223,7 +223,7 @@ module GraphQL
 
           result = {}
 
-          arguments.each do |input_key, input_field_defn|
+          arguments(ctx).each do |input_key, input_field_defn|
             input_value = value[input_key]
             if value.key?(input_key)
               result[input_key] = if input_value.nil?

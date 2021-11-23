@@ -57,7 +57,7 @@ module GraphQL
       end
 
       def inspect
-        "#<#{self.class} #{path}#{arguments.any? ? "(...)" : ""}: #{type.to_type_signature}>"
+        "#<#{self.class} #{path}#{all_argument_definitions.any? ? "(...)" : ""}: #{type.to_type_signature}>"
       end
 
       alias :mutation :resolver
@@ -542,9 +542,9 @@ module GraphQL
         field_defn.subscription_scope = @subscription_scope
         field_defn.ast_node = ast_node
 
-        arguments.each do |name, defn|
+        all_argument_definitions.each do |defn|
           arg_graphql = defn.to_graphql
-          field_defn.arguments[arg_graphql.name] = arg_graphql
+          field_defn.arguments[arg_graphql.name] = arg_graphql # rubocop:disable Development/ContextIsPassedCop -- legacy-related
         end
 
         # Support a passed-in proc, one way or another
@@ -734,7 +734,7 @@ module GraphQL
           ruby_kwargs = graphql_args.to_kwargs
           maybe_lazies = []
           # Apply any `prepare` methods. Not great code organization, can this go somewhere better?
-          arguments.each do |name, arg_defn|
+          arguments(field_ctx).each do |name, arg_defn|
             ruby_kwargs_key = arg_defn.keyword
 
             if ruby_kwargs.key?(ruby_kwargs_key)

@@ -71,11 +71,11 @@ module GraphQL
           when Array
             ast_arg_or_hash_or_value.map { |v| prepare_args_hash(query, v) }
           when GraphQL::Language::Nodes::Field, GraphQL::Language::Nodes::InputObject, GraphQL::Language::Nodes::Directive
-            if ast_arg_or_hash_or_value.arguments.empty?
+            if ast_arg_or_hash_or_value.arguments.empty? # rubocop:disable Development/ContextIsPassedCop -- AST-related
               return NO_ARGUMENTS
             end
             args_hash = {}
-            ast_arg_or_hash_or_value.arguments.each do |arg|
+            ast_arg_or_hash_or_value.arguments.each do |arg| # rubocop:disable Development/ContextIsPassedCop -- AST-related
               v = prepare_args_hash(query, arg.value)
               if v != NO_VALUE_GIVEN
                 args_hash[arg.name] = v

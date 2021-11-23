@@ -9,7 +9,7 @@ module GraphQL
       include GraphQL::Dig
 
       def self.construct_arguments_class(argument_owner)
-        argument_definitions = argument_owner.arguments
+        argument_definitions = argument_owner.arguments # rubocop:disable Development/ContextIsPassedCop -- legacy-related
         argument_owner.arguments_class = Class.new(self) do
           self.argument_owner = argument_owner
           self.argument_definitions = argument_definitions

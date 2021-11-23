@@ -11,9 +11,10 @@ MSG
       # These are already context-aware or else not query-related
       def_node_matcher :likely_query_specific_receiver?, "
         {
-        (send _ {:irep_node :query :context :warden :ctx :query_ctx :query_context})
-        (ivar {:@query :@context :@warden})
-        (send _ {:introspection_system})
+          (send _ {:irep_node :ast_node :query :context :warden :ctx :query_ctx :query_context})
+          (lvar {:irep_node :ast_node :query :context :warden :ctx :query_ctx :query_context})
+          (ivar {:@query :@context :@warden})
+          (send _ {:introspection_system})
         }
       "
 
