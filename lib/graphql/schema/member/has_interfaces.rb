@@ -35,17 +35,19 @@ module GraphQL
             end
           end
 
-          # Remove any interfaces which are being replaced (late-bound types are updated in place this way)
+          # Remove any String or late-bound interfaces which are being replaced
           own_interface_type_memberships.reject! { |old_i_m|
-            old_int_type = old_i_m.respond_to?(:abstract_type) ? old_i_m.abstract_type : old_i_m
-            old_name = Schema::Member::BuildType.to_type_name(old_int_type)
+            if !(old_i_m.respond_to?(:abstract_type) && old_i_m.abstract_type.is_a?(Module))
+              old_int_type = old_i_m.respond_to?(:abstract_type) ? old_i_m.abstract_type : old_i_m
+              old_name = Schema::Member::BuildType.to_type_name(old_int_type)
 
-            new_memberships.any? { |new_i_m|
-              new_int_type = new_i_m.respond_to?(:abstract_type) ? new_i_m.abstract_type : new_i_m
-              new_name = Schema::Member::BuildType.to_type_name(new_int_type)
+              new_memberships.any? { |new_i_m|
+                new_int_type = new_i_m.respond_to?(:abstract_type) ? new_i_m.abstract_type : new_i_m
+                new_name = Schema::Member::BuildType.to_type_name(new_int_type)
 
-              new_name == old_name
-            }
+                new_name == old_name
+              }
+            end
           }
           own_interface_type_memberships.concat(new_memberships)
         end
@@ -56,11 +58,6 @@ module GraphQL
 
         def interface_type_memberships
           own_interface_type_memberships + ((self.is_a?(Class) && superclass.respond_to?(:interface_type_memberships)) ? superclass.interface_type_memberships : [])
-        end
-
-        def type_membership_for(interface_type)
-          own_interface_type_memberships.find { |tm| tm.abstract_type == interface_type } ||
-            ((self.is_a?(Class) && superclass.respond_to?(:type_membership_for)) ? superclass.type_membership_for(interface_type) : nil)
         end
 
         # param context [Query::Context] If omitted, skip filtering.

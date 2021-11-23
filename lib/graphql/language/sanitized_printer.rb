@@ -79,7 +79,7 @@ module GraphQL
 
         arg_owner = @current_input_type || @current_directive || @current_field
         old_current_argument = @current_argument
-        @current_argument = arg_owner.arguments[argument.name]
+        @current_argument = arg_owner.get_argument(argument.name, @query.context)
 
         old_input_type = @current_input_type
         @current_input_type = @current_argument.type.non_null? ? @current_argument.type.of_type : @current_argument.type
@@ -193,7 +193,7 @@ module GraphQL
           end
 
           arguments = value.map do |key, val|
-            sub_type = type.arguments[key.to_s].type
+            sub_type = type.get_argument(key.to_s, @query.context).type
 
             GraphQL::Language::Nodes::Argument.new(
               name: key.to_s,

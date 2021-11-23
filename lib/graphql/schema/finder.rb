@@ -56,7 +56,7 @@ module GraphQL
 
       def find_in_directive(directive, path:)
         argument_name = path.shift
-        argument = directive.arguments[argument_name]
+        argument = directive.get_argument(argument_name) # rubocop:disable Development/ContextIsPassedCop -- build-time
 
         if argument.nil?
           raise MemberNotFoundError, "Could not find argument `#{argument_name}` on directive #{directive}."
@@ -102,7 +102,7 @@ module GraphQL
 
       def find_in_field(field, path:)
         argument_name = path.shift
-        argument = field.arguments[argument_name]
+        argument = field.get_argument(argument_name) # rubocop:disable Development/ContextIsPassedCop -- build-time
 
         if argument.nil?
           raise MemberNotFoundError, "Could not find argument `#{argument_name}` on field `#{field.name}`."
@@ -119,7 +119,7 @@ module GraphQL
 
       def find_in_input_object(input_object, path:)
         field_name = path.shift
-        input_field = input_object.arguments[field_name]
+        input_field = input_object.get_argument(field_name) # rubocop:disable Development/ContextIsPassedCop -- build-time
 
         if input_field.nil?
           raise MemberNotFoundError, "Could not find input field `#{field_name}` on input object type `#{input_object.graphql_name}`."

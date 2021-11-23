@@ -131,8 +131,21 @@ module GraphQL
 
         # If `type` is an interface, and `self` has a type membership for `type`, then make sure it's visible.
         def visible_interface_implementation?(type, context, warden)
-          if type.respond_to?(:kind) && type.kind.interface? && (type_membership = type_membership_for(type))
-            warden.visible_type_membership?(type_membership, context)
+          if type.respond_to?(:kind) && type.kind.interface?
+            implements_this_interface = false
+            implementation_is_visible = false
+            interface_type_memberships.each do |tm|
+              if tm.abstract_type == type
+                implements_this_interface ||= true
+                if warden.visible_type_membership?(tm, context)
+                  implementation_is_visible = true
+                  break
+                end
+              end
+            end
+            # It's possible this interface came by way of `include` in another interface which this
+            # object type _does_ implement, and that's ok
+            implements_this_interface ? implementation_is_visible : true
           else
             # If there's no implementation, then we're looking at Ruby-style inheritance instead
             true

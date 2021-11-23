@@ -38,6 +38,9 @@ module GraphQL
         # @return [Class]
         def object_class(new_class = nil)
           if new_class
+            if defined?(@payload_type)
+              raise "Can't configure `object_class(...)` after the payload type has already been initialized. Move this configuration higher up the class definition."
+            end
             @object_class = new_class
           else
             @object_class || find_inherited_value(:object_class, GraphQL::Schema::Object)
@@ -45,6 +48,28 @@ module GraphQL
         end
 
         NO_INTERFACES = [].freeze
+
+        def field(*args, **kwargs, &block)
+          pt = payload_type # make sure it's initialized with any inherited fields
+          field_defn = super
+
+          # Remove any inherited fields to avoid false conflicts at runtime
+          prev_fields = pt.own_fields[field_defn.graphql_name]
+          case prev_fields
+          when GraphQL::Schema::Field
+            if prev_fields.owner != self
+              pt.own_fields.delete(field_defn.graphql_name)
+            end
+          when Array
+            prev_fields.reject! { |f| f.owner != self }
+            if prev_fields.empty?
+              pt.own_fields.delete(field_defn.graphql_name)
+            end
+          end
+
+          pt.add_field(field_defn, method_conflict_warning: false)
+          field_defn
+        end
 
         private
 

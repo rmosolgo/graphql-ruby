@@ -11,9 +11,10 @@ MSG
       # These are already context-aware or else not query-related
       def_node_matcher :likely_query_specific_receiver?, "
         {
-        (send _ {:query :context :warden :ctx :query_ctx :query_context})
-        (ivar {:@query :@context :@warden})
-        (send _ {:introspection_system})
+          (send _ {:irep_node :ast_node :query :context :warden :ctx :query_ctx :query_context})
+          (lvar {:irep_node :ast_node :query :context :warden :ctx :query_ctx :query_context})
+          (ivar {:@query :@context :@warden})
+          (send _ {:introspection_system})
         }
       "
 
@@ -22,7 +23,7 @@ MSG
       MATCHER
 
       def_node_matcher :method_doesnt_receive_first_context_argument?, <<-MATCHER
-        (send _ {:fields :argument :types :enum_values})
+        (send _ {:fields :arguments :types :enum_values})
       MATCHER
 
       def_node_matcher :is_enum_values_call_without_arguments?, "

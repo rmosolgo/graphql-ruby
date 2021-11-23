@@ -51,7 +51,7 @@ module GraphQL
 
       def interfaces
         if @object.kind.object? || @object.kind.interface?
-          @context.warden.interfaces(@object)
+          @context.warden.interfaces(@object).sort_by(&:graphql_name)
         else
           nil
         end

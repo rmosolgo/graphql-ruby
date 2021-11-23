@@ -88,6 +88,19 @@ describe "Dynamic types, fields, arguments, and enum values" do
       extend AppliesToFutureSchema
     end
 
+    class BaseInputObject < GraphQL::Schema::InputObject
+      extend AppliesToFutureSchema
+      argument_class BaseArgument
+    end
+
+    class BaseEnumValue < GraphQL::Schema::EnumValue
+      include AppliesToFutureSchema
+    end
+
+    class BaseEnum < GraphQL::Schema::Enum
+      enum_value_class BaseEnumValue
+    end
+
     module Node
       include BaseInterface
 
@@ -159,14 +172,6 @@ describe "Dynamic types, fields, arguments, and enum values" do
       field :price, MoneyScalar, method: :legacy_price, future_schema: false
     end
 
-    class BaseEnumValue < GraphQL::Schema::EnumValue
-      include AppliesToFutureSchema
-    end
-
-    class BaseEnum < GraphQL::Schema::Enum
-      enum_value_class BaseEnumValue
-    end
-
     class Language < BaseEnum
       value "RUBY"
       value "PERL6", deprecation_reason: "Use RAKU instead", future_schema: true
@@ -180,9 +185,16 @@ describe "Dynamic types, fields, arguments, and enum values" do
       field :capital_name, String, null: false
     end
 
+    module HasLanguages
+      include BaseInterface
+      field :languages, [String], null: false
+    end
+
     class Country < BaseObject
       implements HasCurrency
       implements HasCapital, future_schema: true
+      implements HasLanguages, future_schema: true
+      implements HasLanguages, future_schema: false
     end
 
     class Locale < BaseUnion
@@ -313,6 +325,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
 
     class BaseMutation < GraphQL::Schema::RelayClassicMutation
       argument_class BaseArgument
+      input_object_class BaseInputObject
       field_class BaseField
     end
 
@@ -343,7 +356,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
 
     query(Query)
     mutation(Mutation)
-    orphan_types(Place, LegacyPlace, Locale, Region)
+    orphan_types(Place, LegacyPlace, Locale, Region, Country)
   end
 
   def check_for_multiple_visible_calls(context)
@@ -483,6 +496,12 @@ GRAPHQL
     assert_equal ["Field 'databaseId' doesn't exist on type 'Thing'", "Field 'uuid' doesn't exist on type 'Thing'"], exec_query(query_str)["errors"].map { |e| e["message"] }
     res = exec_future_query(query_str)
     assert_equal({ "thing" => { "databaseId" => 15, "id" => 15, "uuid" => "thing-15"} }, res["data"])
+  end
+
+  it "supports multiple implementations of the same interface" do
+    query_str = '{ __type(name: "Country") { interfaces { name } } }'
+    assert_equal ["HasLanguages"], exec_query(query_str)["data"]["__type"]["interfaces"].map { |i| i["name"] }
+    assert_equal ["HasCapital", "HasCurrency", "HasLanguages"], exec_future_query(query_str)["data"]["__type"]["interfaces"].map { |i| i["name"] }
   end
 
   it "supports different versions of field arguments" do
@@ -1072,7 +1091,7 @@ GRAPHQL
       err = assert_raises GraphQL::Schema::DuplicateNamesError do
         field.arguments({ allowed_for: 2 })
       end
-      expected_message = "Found two visible definitions for `DuplicateArgumentObject.multiArg.a`: #<DuplicateNames::BaseArgument DuplicateArgumentObject.multiArg.a: String (\"first definition\")>, #<DuplicateNames::BaseArgument DuplicateArgumentObject.multiArg.a: Int (\"second definition\")>"
+      expected_message = "Found two visible definitions for `DuplicateArgumentObject.multiArg.a`: #<DuplicateNames::BaseArgument DuplicateArgumentObject.multiArg.a: String @description=\"first definition\">, #<DuplicateNames::BaseArgument DuplicateArgumentObject.multiArg.a: Int @description=\"second definition\">"
       assert_equal expected_message, err.message
 
       err2 = assert_raises GraphQL::Schema::DuplicateNamesError do

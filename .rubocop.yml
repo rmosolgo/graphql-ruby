@@ -21,18 +21,26 @@ AllCops:
 Development/ContextIsPassedCop:
   Exclude:
     - 'spec/**/*'
+    - 'cop/**/*'
     # Legacy-related:
     - 'lib/graphql/*_type.rb'
     - 'lib/graphql/define/**/*.rb'
     - 'lib/graphql/relay/**/*'
+    - 'lib/graphql/function.rb'
+    - 'lib/graphql/directive.rb'
+    - 'lib/graphql/field.rb'
     - 'lib/graphql/schema/traversal.rb'
     - 'lib/graphql/schema/possible_types.rb'
     - 'lib/graphql/schema/validation.rb'
     - 'lib/graphql/compatibility/**/*'
     - 'lib/graphql/static_validation/type_stack.rb'
+    - 'lib/graphql/static_validation/literal_validator.rb'
+    - 'lib/graphql/static_validation/rules/**/*.rb'
+    - 'lib/graphql/internal_representation/**/*.rb'
     # AST-related:
     - 'lib/graphql/schema/build_from_definition.rb'
     - 'lib/graphql/language/printer.rb'
+    - 'lib/graphql/language/nodes.rb'
     # Build-time, not runtime:
     - 'lib/graphql/schema/addition.rb'
     - 'lib/graphql/schema/introspection_system.rb'
