@@ -14,6 +14,18 @@ describe GraphQL::Schema::Validator::FormatValidator do
       ]
     },
     {
+      config: { with: /\A[a-z]+\Z/, allow_blank: true },
+      cases: [
+        { query: "{ validated(value: \"abcd\") }", result: "abcd", error_messages: [] },
+        { query: "{ validated(value: \"ABC\") }", result: nil, error_messages: ["value is invalid"] },
+        (testing_rails? ?
+          { query: "{ validated(value: \"\") }", result: "", error_messages: [] }
+        :
+          { query: "{ validated(value: \"\") }", result: nil, error_messages: ["value is invalid"] }
+        ),
+      ]
+    },
+    {
       config: { without: /[a-z]/ },
       cases: [
         { query: "{ validated(value: \"abcd\") }", result: nil, error_messages: ["value is invalid"] },
