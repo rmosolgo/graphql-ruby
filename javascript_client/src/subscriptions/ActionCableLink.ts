@@ -17,7 +17,7 @@ class ActionCableLink extends ApolloLink {
   }) {
     super()
     this.cable = options.cable
-    this.channelName = options.channelName || "GraphqlChannel"
+    this.channelName = options.channelName || ActionCableUtil.DEFAULT_CHANNEL
     this.actionName = options.actionName || "execute"
     this.connectionParams = options.connectionParams || {}
   }

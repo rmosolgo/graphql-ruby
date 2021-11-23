@@ -5,4 +5,9 @@ export class ActionCableUtil {
    * @returns String unique-ish random string
    */
   static getUniqueChannelId = (): string => Math.round(Date.now() + Math.random() * 100000).toString(16)
+
+  /**
+   * Default ActionCable channel name
+   */
+  static DEFAULT_CHANNEL = "GraphqlChannel"
 }

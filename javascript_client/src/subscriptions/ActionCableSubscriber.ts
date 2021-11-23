@@ -31,7 +31,7 @@ class ActionCableSubscriber {
     var networkInterface = this._networkInterface
     var channelId = ActionCableUtil.getUniqueChannelId()
     var channel = this._cable.subscriptions.create({
-      channel: "GraphqlChannel",
+      channel: ActionCableUtil.DEFAULT_CHANNEL,
       channelId: channelId,
     }, {
       // After connecting, send the data over ActionCable

@@ -21,7 +21,7 @@ function createActionCableHandler(options: ActionCableHandlerOptions) {
 
     // Register the subscription by subscribing to the channel
     const channel = cable.subscriptions.create({
-      channel: "GraphqlChannel",
+      channel: ActionCableUtil.DEFAULT_CHANNEL,
       channelId: channelId,
     }, {
       connected: function() {
