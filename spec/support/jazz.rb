@@ -760,7 +760,8 @@ module Jazz
 
   class RenameEnsembleAsBand < RenameEnsemble
     argument :ensemble_id, ID, loads: Ensemble, as: :band
-
+    # This is duplicate to the inherited one; make sure it overrides it
+    field :ensemble, Ensemble, null: false
     def resolve(band:, new_name:)
       super(ensemble: band, new_name: new_name)
     end

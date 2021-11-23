@@ -1085,7 +1085,7 @@ GRAPHQL
       err = assert_raises GraphQL::Schema::DuplicateNamesError do
         field.arguments({ allowed_for: 2 })
       end
-      expected_message = "Found two visible definitions for `DuplicateArgumentObject.multiArg.a`: #<DuplicateNames::BaseArgument DuplicateArgumentObject.multiArg.a: String (\"first definition\")>, #<DuplicateNames::BaseArgument DuplicateArgumentObject.multiArg.a: Int (\"second definition\")>"
+      expected_message = "Found two visible definitions for `DuplicateArgumentObject.multiArg.a`: #<DuplicateNames::BaseArgument DuplicateArgumentObject.multiArg.a: String @description=\"first definition\">, #<DuplicateNames::BaseArgument DuplicateArgumentObject.multiArg.a: Int @description=\"second definition\">"
       assert_equal expected_message, err.message
 
       err2 = assert_raises GraphQL::Schema::DuplicateNamesError do
