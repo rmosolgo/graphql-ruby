@@ -21,6 +21,7 @@ AllCops:
 Development/ContextIsPassedCop:
   Exclude:
     - 'spec/**/*'
+    - 'cop/**/*'
     # Legacy-related:
     - 'lib/graphql/*_type.rb'
     - 'lib/graphql/define/**/*.rb'
@@ -30,6 +31,8 @@ Development/ContextIsPassedCop:
     - 'lib/graphql/schema/validation.rb'
     - 'lib/graphql/compatibility/**/*'
     - 'lib/graphql/static_validation/type_stack.rb'
+    - 'lib/graphql/static_validation/literal_validator.rb'
+    - 'lib/graphql/static_validation/rules/**/*.rb'
     # AST-related:
     - 'lib/graphql/schema/build_from_definition.rb'
     - 'lib/graphql/language/printer.rb'

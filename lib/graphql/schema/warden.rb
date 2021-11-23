@@ -343,7 +343,7 @@ module GraphQL
         unvisited_types.concat(@schema.introspection_system.types.values)
 
         directives.each do |dir_class|
-          dir_class.arguments.values.each do |arg_defn|
+          arguments(dir_class).each do |arg_defn|
             arg_t = arg_defn.type.unwrap
             if get_type(arg_t.graphql_name) # rubocop:disable Development/ContextIsPassedCop -- `self` is query-aware
               unvisited_types << arg_t

@@ -88,6 +88,19 @@ describe "Dynamic types, fields, arguments, and enum values" do
       extend AppliesToFutureSchema
     end
 
+    class BaseInputObject < GraphQL::Schema::InputObject
+      extend AppliesToFutureSchema
+      argument_class BaseArgument
+    end
+
+    class BaseEnumValue < GraphQL::Schema::EnumValue
+      include AppliesToFutureSchema
+    end
+
+    class BaseEnum < GraphQL::Schema::Enum
+      enum_value_class BaseEnumValue
+    end
+
     module Node
       include BaseInterface
 
@@ -157,14 +170,6 @@ describe "Dynamic types, fields, arguments, and enum values" do
       # still only requires one call to `visible?` at runtime?
       field :price, Money, future_schema: true
       field :price, MoneyScalar, method: :legacy_price, future_schema: false
-    end
-
-    class BaseEnumValue < GraphQL::Schema::EnumValue
-      include AppliesToFutureSchema
-    end
-
-    class BaseEnum < GraphQL::Schema::Enum
-      enum_value_class BaseEnumValue
     end
 
     class Language < BaseEnum
@@ -320,6 +325,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
 
     class BaseMutation < GraphQL::Schema::RelayClassicMutation
       argument_class BaseArgument
+      input_object_class BaseInputObject
       field_class BaseField
     end
 

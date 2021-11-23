@@ -33,13 +33,13 @@ module GraphQL
           raise Subscriptions::SubscriptionScopeMissingError, "#{field.path} (#{subscription}) requires a `scope:` value to trigger updates (Set `subscription_scope ..., optional: true` to disable this requirement)"
         end
 
-        @topic = self.class.serialize(name, arguments, field, scope: scope_val)
+        @topic = self.class.serialize(name, arguments, field, scope: scope_val, context: context)
       end
 
       # @return [String] an identifier for this unit of subscription
-      def self.serialize(_name, arguments, field, scope:)
+      def self.serialize(_name, arguments, field, scope:, context: GraphQL::Query::NullContext)
         subscription = field.resolver || GraphQL::Schema::Subscription
-        normalized_args = stringify_args(field, arguments.to_h)
+        normalized_args = stringify_args(field, arguments.to_h, context)
         subscription.topic_for(arguments: normalized_args, field: field, scope: scope)
       end
 
@@ -91,7 +91,7 @@ module GraphQL
           end
         end
 
-        def stringify_args(arg_owner, args)
+        def stringify_args(arg_owner, args, context)
           arg_owner = arg_owner.respond_to?(:unwrap) ? arg_owner.unwrap : arg_owner # remove list and non-null wrappers
           case args
           when Hash
@@ -99,13 +99,13 @@ module GraphQL
             args.each do |k, v|
               arg_name = k.to_s
               camelized_arg_name = GraphQL::Schema::Member::BuildType.camelize(arg_name)
-              arg_defn = get_arg_definition(arg_owner, camelized_arg_name)
+              arg_defn = get_arg_definition(arg_owner, camelized_arg_name, context)
 
               if arg_defn
                 normalized_arg_name = camelized_arg_name
               else
                 normalized_arg_name = arg_name
-                arg_defn = get_arg_definition(arg_owner, normalized_arg_name)
+                arg_defn = get_arg_definition(arg_owner, normalized_arg_name, context)
               end
               arg_base_type = arg_defn.type.unwrap
               # In the case where the value being emitted is seen as a "JSON"
@@ -121,22 +121,22 @@ module GraphQL
                 end
                 next_args[normalized_arg_name] = sorted_value.respond_to?(:to_json) ? sorted_value.to_json : sorted_value
               else
-                next_args[normalized_arg_name] = stringify_args(arg_base_type, v)
+                next_args[normalized_arg_name] = stringify_args(arg_base_type, v, context)
               end
             end
             # Make sure they're deeply sorted
             next_args.sort.to_h
           when Array
-            args.map { |a| stringify_args(arg_owner, a) }
+            args.map { |a| stringify_args(arg_owner, a, context) }
           when GraphQL::Schema::InputObject
-            stringify_args(arg_owner, args.to_h)
+            stringify_args(arg_owner, args.to_h, context)
           else
             args
           end
         end
 
-        def get_arg_definition(arg_owner, arg_name)
-          arg_owner.arguments[arg_name] || arg_owner.arguments.each_value.find { |v| v.keyword.to_s == arg_name }
+        def get_arg_definition(arg_owner, arg_name, context)
+          arg_owner.get_argument(arg_name, context) || arg_owner.arguments(context).each_value.find { |v| v.keyword.to_s == arg_name }
         end
       end
     end
