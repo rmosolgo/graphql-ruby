@@ -21,6 +21,14 @@ describe GraphQL::Schema::InputObject do
       assert_equal 1, input_object.arguments.size
     end
 
+    it "returns newly-added argument definitions" do
+      arg = nil
+      Class.new(GraphQL::Schema::InputObject) do
+        arg = argument(:int, Integer, required: true)
+      end
+      assert_instance_of GraphQL::Schema::Argument, arg
+    end
+
     it "is the #owner of its arguments" do
       argument = input_object.arguments["name"]
       assert_equal input_object, argument.owner

@@ -58,7 +58,7 @@ module GraphQL
           else
             raise "Invariant: Unexpected enum value for #{key.inspect}: #{prev_value.inspect}"
           end
-          nil
+          value
         end
 
         # @return [Array<GraphQL::Schema::EnumValue>] Possible values of this enum
