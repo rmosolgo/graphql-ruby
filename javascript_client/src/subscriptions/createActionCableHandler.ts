@@ -1,4 +1,5 @@
 import { Cable } from "actioncable"
+import { ActionCableUtil } from "../utils/ActionCableUtil"
 
 /**
  * Create a Relay Modern-compatible subscription handler.
@@ -14,8 +15,7 @@ interface ActionCableHandlerOptions {
 
 function createActionCableHandler(options: ActionCableHandlerOptions) {
   return function (operation: { text: string, name: string}, variables: object, _cacheConfig: object, observer: {onError: Function, onNext: Function, onCompleted: Function}) {
-    // unique-ish
-    var channelId = Math.round(Date.now() + Math.random() * 100000).toString(16)
+    var channelId = ActionCableUtil.getUniqueChannelId()
     var cable = options.cable
     var operations = options.operations
 

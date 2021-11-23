@@ -1,6 +1,7 @@
 import printer from "graphql/language/printer"
 import registry from "./registry"
 import { Cable } from "actioncable"
+import { ActionCableUtil } from "../utils/ActionCableUtil"
 
 interface ApolloNetworkInterface {
   applyMiddlewares: Function
@@ -28,8 +29,7 @@ class ActionCableSubscriber {
   */
   subscribe(request: any, handler: any) {
     var networkInterface = this._networkInterface
-    // unique-ish
-    var channelId = Math.round(Date.now() + Math.random() * 100000).toString(16)
+    var channelId = ActionCableUtil.getUniqueChannelId()
     var channel = this._cable.subscriptions.create({
       channel: "GraphqlChannel",
       channelId: channelId,

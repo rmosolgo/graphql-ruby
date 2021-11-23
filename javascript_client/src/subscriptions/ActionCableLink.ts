@@ -1,6 +1,7 @@
 import { ApolloLink, Observable, FetchResult, Operation, NextLink } from "@apollo/client/core"
 import { Cable } from "actioncable"
 import { print } from "graphql"
+import { ActionCableUtil } from "../utils/ActionCableUtil"
 
 type RequestResult = FetchResult<{ [key: string]: any; }, Record<string, any>, Record<string, any>>
 type ConnectionParams = object | ((operation: Operation) => object)
@@ -25,7 +26,7 @@ class ActionCableLink extends ApolloLink {
   // instead, it sends the request to ActionCable.
   request(operation: Operation, _next: NextLink): Observable<RequestResult> {
     return new Observable((observer) => {
-      var channelId = Math.round(Date.now() + Math.random() * 100000).toString(16)
+      var channelId = ActionCableUtil.getUniqueChannelId()
       var actionName = this.actionName
       var connectionParams = (typeof this.connectionParams === "function") ?
         this.connectionParams(operation) : this.connectionParams
