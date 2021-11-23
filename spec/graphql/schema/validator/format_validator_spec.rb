@@ -18,7 +18,7 @@ describe GraphQL::Schema::Validator::FormatValidator do
       cases: [
         { query: "{ validated(value: \"abcd\") }", result: "abcd", error_messages: [] },
         { query: "{ validated(value: \"ABC\") }", result: nil, error_messages: ["value is invalid"] },
-        (testing_rails? ?
+        (String.method_defined?(:blank?) ?
           { query: "{ validated(value: \"\") }", result: "", error_messages: [] }
         :
           { query: "{ validated(value: \"\") }", result: nil, error_messages: ["value is invalid"] }
