@@ -24,7 +24,7 @@ describe GraphQL::Schema::InputObject do
     it "returns newly-added argument definitions" do
       arg = nil
       Class.new(GraphQL::Schema::InputObject) do
-        arg = argument(:int, Integer, required: true)
+        arg = argument(:int, Integer)
       end
       assert_instance_of GraphQL::Schema::Argument, arg
     end
