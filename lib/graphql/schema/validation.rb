@@ -170,15 +170,6 @@ module GraphQL
           end
         }
 
-        SCHEMA_CAN_GENERATE_IDS = ->(schema) {
-          has_id_field = schema.types.values.any? { |t| t.kind.fields? && t.all_fields.any? { |f| f.resolve_proc.is_a?(GraphQL::Relay::GlobalIdResolve) } }
-          if has_id_field && schema.id_from_object_proc.nil?
-            "schema contains `global_id_field`, so you must define a `id_from_object -> (obj, type, ctx) { ... }` function"
-          else
-            # :ok_hand:
-          end
-        }
-
         SCHEMA_INSTRUMENTERS_ARE_VALID = ->(schema) {
           errs = []
           schema.instrumenters[:query].each do |inst|
@@ -305,7 +296,6 @@ module GraphQL
           Rules::SCHEMA_INSTRUMENTERS_ARE_VALID,
           Rules::SCHEMA_CAN_RESOLVE_TYPES,
           Rules::SCHEMA_CAN_FETCH_IDS,
-          Rules::SCHEMA_CAN_GENERATE_IDS,
         ],
       }
     end
