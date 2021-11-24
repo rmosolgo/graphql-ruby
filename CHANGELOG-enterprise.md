@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.1.0 (24 November 2021)
+
+### New Features
+
+- Changesets: Add `GraphQL::Enterprise::Changeset`
+
 # 1.0.1 (9 November 2021)
 
 ### Bug Fix
