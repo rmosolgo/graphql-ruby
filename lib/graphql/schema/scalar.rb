@@ -13,18 +13,6 @@ module GraphQL
           val
         end
 
-        def to_graphql
-          type_defn = GraphQL::ScalarType.new
-          type_defn.name = graphql_name
-          type_defn.description = description
-          type_defn.coerce_result = method(:coerce_result)
-          type_defn.coerce_input = method(:coerce_input)
-          type_defn.metadata[:type_class] = self
-          type_defn.default_scalar = default_scalar
-          type_defn.ast_node = ast_node
-          type_defn
-        end
-
         def kind
           GraphQL::TypeKinds::SCALAR
         end

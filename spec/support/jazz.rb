@@ -50,12 +50,6 @@ module Jazz
       @custom = custom
       super(*args, **kwargs)
     end
-
-    def to_graphql
-      arg_defn = super
-      arg_defn.metadata[:custom] = @custom
-      arg_defn
-    end
   end
 
   # A custom field class that supports the `upcase:` option
@@ -99,14 +93,6 @@ module Jazz
       def configs
         @configs ||= {}
       end
-
-      def to_graphql
-        type_defn = super
-        configs.each do |k, v|
-          type_defn.metadata[k] = v
-        end
-        type_defn
-      end
     end
   end
 
@@ -127,12 +113,6 @@ module Jazz
     def initialize(*args, custom_setting: nil, **kwargs, &block)
       @custom_setting = custom_setting
       super(*args, **kwargs, &block)
-    end
-
-    def to_graphql
-      enum_value_defn = super
-      enum_value_defn.metadata[:custom_setting] = @custom_setting
-      enum_value_defn
     end
   end
 

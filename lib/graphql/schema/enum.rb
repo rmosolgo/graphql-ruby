@@ -107,20 +107,6 @@ module GraphQL
           enum_values(context).each_with_object({}) { |val, obj| obj[val.graphql_name] = val }
         end
 
-        # @return [GraphQL::EnumType]
-        def to_graphql
-          enum_type = GraphQL::EnumType.new
-          enum_type.name = graphql_name
-          enum_type.description = description
-          enum_type.introspection = introspection
-          enum_type.ast_node = ast_node
-          values.each do |name, val|
-            enum_type.add_value(val.to_graphql)
-          end
-          enum_type.metadata[:type_class] = self
-          enum_type
-        end
-
         # @return [Class] for handling `value(...)` inputs and building `GraphQL::Enum::EnumValue`s out of them
         def enum_value_class(new_enum_value_class = nil)
           if new_enum_value_class

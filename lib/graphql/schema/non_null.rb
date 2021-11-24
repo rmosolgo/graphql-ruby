@@ -8,11 +8,7 @@ module GraphQL
     class NonNull < GraphQL::Schema::Wrapper
       include Schema::Member::ValidatesInput
 
-      def to_graphql
-        @of_type.graphql_definition.to_non_null_type
-      end
-
-       # @return [GraphQL::TypeKinds::NON_NULL]
+      # @return [GraphQL::TypeKinds::NON_NULL]
       def kind
         GraphQL::TypeKinds::NON_NULL
       end

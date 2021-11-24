@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 require 'graphql/schema/member/base_dsl_methods'
-require 'graphql/schema/member/cached_graphql_definition'
 require 'graphql/schema/member/graphql_type_names'
 require 'graphql/schema/member/has_ast_node'
 require 'graphql/schema/member/has_directives'
@@ -22,7 +21,6 @@ module GraphQL
     # @api private
     class Member
       include GraphQLTypeNames
-      extend CachedGraphQLDefinition
       extend BaseDSLMethods
       extend BaseDSLMethods::ConfigurationExtension
       introspection(false)

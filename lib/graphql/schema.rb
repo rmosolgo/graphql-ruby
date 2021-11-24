@@ -9,9 +9,7 @@ require "graphql/schema/invalid_type_error"
 require "graphql/schema/introspection_system"
 require "graphql/schema/late_bound_type"
 require "graphql/schema/null_mask"
-require "graphql/schema/possible_types"
 require "graphql/schema/timeout"
-require "graphql/schema/traversal"
 require "graphql/schema/type_expression"
 require "graphql/schema/unique_within_type"
 require "graphql/schema/warden"
@@ -171,10 +169,6 @@ module GraphQL
         @find_cache[path] ||= @finder.find(path)
       end
 
-      def graphql_definition
-        @graphql_definition ||= to_graphql
-      end
-
       def default_filter
         GraphQL::Filter.new(except: default_mask)
       end
@@ -202,71 +196,6 @@ module GraphQL
 
       def plugins
         find_inherited_value(:plugins, EMPTY_ARRAY) + own_plugins
-      end
-
-      def to_graphql
-        schema_defn = self.new
-        schema_defn.raise_definition_error = true
-        schema_defn.query = query && query.graphql_definition
-        schema_defn.mutation = mutation && mutation.graphql_definition
-        schema_defn.subscription = subscription && subscription.graphql_definition
-        schema_defn.validate_timeout = validate_timeout
-        schema_defn.validate_max_errors = validate_max_errors
-        schema_defn.max_complexity = max_complexity
-        schema_defn.error_bubbling = error_bubbling
-        schema_defn.max_depth = max_depth
-        schema_defn.default_max_page_size = default_max_page_size
-        schema_defn.orphan_types = orphan_types.map(&:graphql_definition)
-        schema_defn.disable_introspection_entry_points = disable_introspection_entry_points?
-        schema_defn.disable_schema_introspection_entry_point = disable_schema_introspection_entry_point?
-        schema_defn.disable_type_introspection_entry_point = disable_type_introspection_entry_point?
-
-        prepped_dirs = {}
-        directives.each { |k, v| prepped_dirs[k] = v.graphql_definition}
-        schema_defn.directives = prepped_dirs
-        schema_defn.introspection_namespace = introspection
-        schema_defn.resolve_type = method(:resolve_type)
-        schema_defn.object_from_id = method(:object_from_id)
-        schema_defn.id_from_object = method(:id_from_object)
-        schema_defn.type_error = method(:type_error)
-        schema_defn.context_class = context_class
-        schema_defn.cursor_encoder = cursor_encoder
-        schema_defn.tracers.concat(tracers)
-        schema_defn.query_analyzers.concat(query_analyzers)
-        schema_defn.analysis_engine = analysis_engine
-
-        schema_defn.multiplex_analyzers.concat(multiplex_analyzers)
-        schema_defn.query_execution_strategy = query_execution_strategy
-        schema_defn.mutation_execution_strategy = mutation_execution_strategy
-        schema_defn.subscription_execution_strategy = subscription_execution_strategy
-        schema_defn.default_mask = default_mask
-        instrumenters.each do |step, insts|
-          insts.each do |inst|
-            schema_defn.instrumenters[step] << inst
-          end
-        end
-
-        lazy_methods.each do |lazy_class, value_method|
-          schema_defn.lazy_methods.set(lazy_class, value_method)
-        end
-
-        error_handler.each_rescue do |err_class, handler|
-          schema_defn.rescue_from(err_class, &handler)
-        end
-
-        schema_defn.subscriptions ||= self.subscriptions
-
-        if !schema_defn.interpreter?
-          schema_defn.instrumenters[:query] << GraphQL::Schema::Member::Instrumentation
-        end
-
-        if new_connections?
-          schema_defn.connections = self.connections
-        end
-
-        schema_defn.send(:rebuild_artifacts)
-
-        schema_defn
       end
 
       # Build a map of `{ name => type }` and return it
@@ -808,11 +737,11 @@ module GraphQL
       end
 
       def visible?(member, ctx)
-        member.type_class.visible?(ctx)
+        member.visible?(ctx)
       end
 
       def accessible?(member, ctx)
-        member.type_class.accessible?(ctx)
+        member.accessible?(ctx)
       end
 
       # This hook is called when a client tries to access one or more
@@ -987,12 +916,7 @@ module GraphQL
       # @param context [Hash] Multiplex-level context
       # @return [Array<Hash>] One result for each query in the input
       def multiplex(queries, **kwargs)
-        schema = if interpreter?
-          self
-        else
-          graphql_definition
-        end
-        GraphQL::Execution::Multiplex.run_all(schema, queries, **kwargs)
+        GraphQL::Execution::Multiplex.run_all(self, queries, **kwargs)
       end
 
       def instrumenters

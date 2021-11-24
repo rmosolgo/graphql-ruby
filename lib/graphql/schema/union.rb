@@ -32,19 +32,6 @@ module GraphQL
           type_memberships.map(&:object_type)
         end
 
-        def to_graphql
-          type_defn = GraphQL::UnionType.new
-          type_defn.name = graphql_name
-          type_defn.description = description
-          type_defn.ast_node = ast_node
-          type_defn.type_memberships = type_memberships
-          if respond_to?(:resolve_type)
-            type_defn.resolve_type = method(:resolve_type)
-          end
-          type_defn.metadata[:type_class] = self
-          type_defn
-        end
-
         def type_membership_class(membership_class = nil)
           if membership_class
             @type_membership_class = membership_class

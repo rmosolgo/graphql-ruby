@@ -103,12 +103,7 @@ module GraphQL
 
       def load_constant(class_name)
         const = @custom_namespace.const_get(class_name)
-        if @class_based
-          dup_type_class(const)
-        else
-          # Use `.to_graphql` to get a freshly-made version, not shared between schemas
-          const.to_graphql
-        end
+        dup_type_class(const)
       rescue NameError
         # Dup the built-in so that the cached fields aren't shared
         dup_type_class(@built_in_namespace.const_get(class_name))

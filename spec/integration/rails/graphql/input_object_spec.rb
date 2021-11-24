@@ -3,11 +3,8 @@ require "spec_helper"
 
 describe GraphQL::Schema::InputObject do
   let(:input_object) do
-    # Cause the arguments_class to be prepared
-    Dummy::DairyProductInput.to_graphql
-
     Dummy::DairyProductInput.new(
-      { source: 'COW',  fatContent: 0.8 },
+      ruby_kwargs: { source: 'COW',  fatContent: 0.8 },
       defaults_used: Set.new,
       context: GraphQL::Query::NullContext)
   end

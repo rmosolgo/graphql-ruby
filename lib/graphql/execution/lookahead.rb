@@ -216,14 +216,13 @@ module GraphQL
       # Wrap get_field and ensure that it returns a GraphQL::Schema::Field.
       # Remove this when legacy execution is removed.
       def get_class_based_field(type, name)
-        f = @query.get_field(type, name)
-        f && f.type_class
+        @query.get_field(type, name)
       end
 
       def skipped_by_directive?(ast_selection)
         ast_selection.directives.each do |directive|
           dir_defn = @query.schema.directives.fetch(directive.name)
-          directive_class = dir_defn.type_class
+          directive_class = dir_defn
           if directive_class
             dir_args = @query.arguments_for(directive, dir_defn)
             return true unless directive_class.static_include?(dir_args, @query.context)
@@ -254,14 +253,14 @@ module GraphQL
             subselections_on_type = selections_on_type
             if (t = ast_selection.type)
               # Assuming this is valid, that `t` will be found.
-              on_type = @query.get_type(t.name).type_class
+              on_type = @query.get_type(t.name)
               subselections_on_type = subselections_by_type[on_type] ||= {}
             end
             find_selections(subselections_by_type, subselections_on_type, on_type, ast_selection.selections, arguments)
           when GraphQL::Language::Nodes::FragmentSpread
             frag_defn = @query.fragments[ast_selection.name] || raise("Invariant: Can't look ahead to nonexistent fragment #{ast_selection.name} (found: #{@query.fragments.keys})")
             # Again, assuming a valid AST
-            on_type = @query.get_type(frag_defn.type.name).type_class
+            on_type = @query.get_type(frag_defn.type.name)
             subselections_on_type = subselections_by_type[on_type] ||= {}
             find_selections(subselections_by_type, subselections_on_type, on_type, frag_defn.selections, arguments)
           else

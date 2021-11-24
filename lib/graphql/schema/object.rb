@@ -103,25 +103,6 @@ module GraphQL
           super
         end
 
-        # @return [GraphQL::ObjectType]
-        def to_graphql
-          obj_type = GraphQL::ObjectType.new
-          obj_type.name = graphql_name
-          obj_type.description = description
-          obj_type.structural_interface_type_memberships = interface_type_memberships
-          obj_type.introspection = introspection
-          obj_type.mutation = mutation
-          obj_type.ast_node = ast_node
-          fields.each do |field_name, field_inst| # rubocop:disable Development/ContextIsPassedCop -- legacy-related
-            field_defn = field_inst.to_graphql
-            obj_type.fields[field_defn.name] = field_defn # rubocop:disable Development/ContextIsPassedCop -- legacy-related
-          end
-
-          obj_type.metadata[:type_class] = self
-
-          obj_type
-        end
-
         def kind
           GraphQL::TypeKinds::OBJECT
         end

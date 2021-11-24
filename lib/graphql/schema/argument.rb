@@ -2,7 +2,6 @@
 module GraphQL
   class Schema
     class Argument
-      include GraphQL::Schema::Member::CachedGraphQLDefinition
       include GraphQL::Schema::Member::HasPath
       include GraphQL::Schema::Member::HasAstNode
       include GraphQL::Schema::Member::HasDirectives
@@ -145,7 +144,6 @@ module GraphQL
           end
         elsif as_type.kind.input_object?
           as_type.arguments(ctx).each do |_name, input_obj_arg|
-            input_obj_arg = input_obj_arg.type_class
             # TODO: this skips input objects whose values were alread replaced with application objects.
             # See: https://github.com/rmosolgo/graphql-ruby/issues/2633
             if value.is_a?(InputObject) && value.key?(input_obj_arg.keyword) && !input_obj_arg.authorized?(obj, value[input_obj_arg.keyword], ctx)
@@ -156,24 +154,6 @@ module GraphQL
         # None of the early-return conditions were activated,
         # so this is authorized.
         true
-      end
-
-      def to_graphql
-        argument = GraphQL::Argument.new
-        argument.name = @name
-        argument.type = -> { type }
-        argument.description = @description
-        argument.metadata[:type_class] = self
-        argument.as = @as
-        argument.ast_node = ast_node
-        argument.method_access = @method_access
-        if NO_DEFAULT != @default_value
-          argument.default_value = @default_value
-        end
-        if self.deprecation_reason
-          argument.deprecation_reason = self.deprecation_reason
-        end
-        argument
       end
 
       def type=(new_type)

@@ -132,23 +132,6 @@ module GraphQL
           argument_defn
         end
 
-        def to_graphql
-          type_defn = GraphQL::InputObjectType.new
-          type_defn.name = graphql_name
-          type_defn.description = description
-          type_defn.metadata[:type_class] = self
-          type_defn.mutation = mutation
-          type_defn.ast_node = ast_node
-          all_argument_definitions.each do |arg|
-            type_defn.arguments[arg.graphql_definition.name] = arg.graphql_definition # rubocop:disable Development/ContextIsPassedCop -- legacy-related
-          end
-          # Make a reference to a classic-style Arguments class
-          self.arguments_class = GraphQL::Query::Arguments.construct_arguments_class(type_defn)
-          # But use this InputObject class at runtime
-          type_defn.arguments_class = self
-          type_defn
-        end
-
         def kind
           GraphQL::TypeKinds::INPUT_OBJECT
         end

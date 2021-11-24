@@ -80,11 +80,6 @@ module GraphQL
     def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, except: nil, only: nil, warden: nil)
       # Even if `variables: nil` is passed, use an empty hash for simpler logic
       variables ||= {}
-
-      # Use the `.graphql_definition` here which will return legacy types instead of classes
-      if schema.is_a?(Class) && !schema.interpreter?
-        schema = schema.graphql_definition
-      end
       @schema = schema
       @interpreter = @schema.interpreter?
       @filter = schema.default_filter.merge(except: except, only: only)
@@ -167,7 +162,6 @@ module GraphQL
       @lookahead ||= begin
         ast_node = selected_operation
         root_type = warden.root_type_for_operation(ast_node.operation_type || "query")
-        root_type = root_type.type_class || raise("Invariant: `lookahead` only works with class-based types")
         GraphQL::Execution::Lookahead.new(query: self, root_type: root_type, ast_nodes: [ast_node])
       end
     end

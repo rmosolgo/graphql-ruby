@@ -40,14 +40,6 @@ describe "GraphQL::Authorization" do
         super(*args, **kwargs, &block)
       end
 
-      def to_graphql
-        field_defn = super
-        if @edge_class
-          field_defn.edge_class = @edge_class
-        end
-        field_defn
-      end
-
       argument_class BaseArgument
       def visible?(context)
         super && (context[:hide] ? @name != "hidden" : true)

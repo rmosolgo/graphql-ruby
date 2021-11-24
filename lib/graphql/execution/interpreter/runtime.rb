@@ -799,9 +799,6 @@ module GraphQL
             yield
           else
             dir_defn = schema.directives.fetch(dir_node.name)
-            if !dir_defn.is_a?(Class)
-              dir_defn = dir_defn.type_class || raise("Only class-based directives are supported (not `@#{dir_node.name}`)")
-            end
             raw_dir_args = arguments(nil, dir_defn, dir_node)
             dir_args = continue_value(
               @context[:current_path], # path
@@ -827,7 +824,7 @@ module GraphQL
         # Check {Schema::Directive.include?} for each directive that's present
         def directives_include?(node, graphql_object, parent_type)
           node.directives.each do |dir_node|
-            dir_defn = schema.directives.fetch(dir_node.name).type_class || raise("Only class-based directives are supported (not #{dir_node.name.inspect})")
+            dir_defn = schema.directives.fetch(dir_node.name)
             args = arguments(graphql_object, dir_defn, dir_node)
             if !dir_defn.include?(graphql_object, args, context)
               return false
