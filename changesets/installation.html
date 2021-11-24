@@ -1,0 +1,166 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL Enterprise - Changesets - Installing Changesets</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.13.0/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#graphql-enterprise-changesets-guides">GraphQL Enterprise - Changesets</a>
+  &raquo; Installing Changesets
+</p>
+
+
+
+  <div class="enterprise-header">
+    <p>
+      <strong>🌟 Enterprise Feature 🌟</strong>
+      <span style="font-style: italic;">
+        This feature is bundled with <a href="https://graphql.pro/enterprise">GraphQL-Enterprise</a>.
+      </span>
+    </p>
+  </div>
+
+<h1 class="guide-header">Installing Changesets</h1>
+<div class="guide-container">
+  <p>Changesets require some updates to the schema (to define changesets) and some updates to your controller (to receive version headers from clients).</p>
+
+<h3 id="schema-setup">Schema Setup</h3>
+
+<p>To get started with <a href="https://graphql.pro/enterprise">GraphQL-Enterprise</a> Changesets, you have to add them to your schema. They’re added in several places:</p>
+
+<ul>
+  <li>
+    <p>To support versioning arguments, add the <code class="language-plaintext highlighter-rouge">ArgumentIntegration</code> to your base argument:</p>
+
+    <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="c1"># app/graphql/types/base_argument.rb</span>
+  <span class="k">class</span> <span class="nc">Types::BaseArgument</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Argument</span>
+    <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">Changeset</span><span class="o">::</span><span class="no">ArgumentIntegration</span>
+  <span class="k">end</span>
+</code></pre></div>    </div>
+
+    <p>Also, make sure that your <code class="language-plaintext highlighter-rouge">BaseField</code>, <code class="language-plaintext highlighter-rouge">BaseInputObject</code>, <code class="language-plaintext highlighter-rouge">BaseResolver</code>, and <code class="language-plaintext highlighter-rouge">BaseMutation</code> have <code class="language-plaintext highlighter-rouge">argument_class(Types::BaseArgument)</code> configured in them.</p>
+  </li>
+  <li>
+    <p>To support versioning fields, add the <code class="language-plaintext highlighter-rouge">FieldIntegration</code> to your base field:</p>
+
+    <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="c1"># app/graphql/types/base_field.rb</span>
+  <span class="k">class</span> <span class="nc">Types::BaseField</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Field</span>
+    <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">Changeset</span><span class="o">::</span><span class="no">FieldIntegration</span>
+    <span class="n">argument_class</span><span class="p">(</span><span class="no">Types</span><span class="o">::</span><span class="no">BaseArgument</span><span class="p">)</span>
+  <span class="k">end</span>
+</code></pre></div>    </div>
+
+    <p>Also, make sure that your <code class="language-plaintext highlighter-rouge">BaseObject</code>, <code class="language-plaintext highlighter-rouge">BaseInterface</code>, <code class="language-plaintext highlighter-rouge">BaseResolver</code>, and <code class="language-plaintext highlighter-rouge">BaseMutation</code> have <code class="language-plaintext highlighter-rouge">field_class(Types::BaseField)</code> configured in them.</p>
+  </li>
+  <li>
+    <p>To support versioning enum values, add the <code class="language-plaintext highlighter-rouge">EnumValueIntegration</code> to your base enum value:</p>
+
+    <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="c1"># app/graphql/types/base_enum_value.rb</span>
+  <span class="k">class</span> <span class="nc">Types::BaseEnumValue</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">EnumValue</span>
+    <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">Changeset</span><span class="o">::</span><span class="no">EnumValueIntegration</span>
+  <span class="k">end</span>
+</code></pre></div>    </div>
+
+    <p>Also, make sure that your <code class="language-plaintext highlighter-rouge">BaseEnum</code> has <code class="language-plaintext highlighter-rouge">enum_value_class(Types::BaseEnumValue)</code> configured in it.</p>
+  </li>
+  <li>
+    <p>To support versioning union memberships and interface implementations, add the <code class="language-plaintext highlighter-rouge">TypeMembershipIntegration</code> to your base type membership:</p>
+
+    <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="c1"># app/graphql/types/base_type_membership.rb</span>
+  <span class="k">class</span> <span class="nc">Types::BaseTypeMembership</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">TypeMembership</span>
+    <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">Changeset</span><span class="o">::</span><span class="no">TypeMembershipIntegration</span>
+  <span class="k">end</span>
+</code></pre></div>    </div>
+
+    <p>Also, make sure that your <code class="language-plaintext highlighter-rouge">BaseUnion</code> and <code class="language-plaintext highlighter-rouge">BaseInterface</code> have <code class="language-plaintext highlighter-rouge">type_membership_class(Types::BaseTypeMembership)</code> configured in it. (<code class="language-plaintext highlighter-rouge">TypeMembership</code>s are used by GraphQL-Ruby to link object types to the union types they belong to and the interfaces they implement. By using a custom type membership class, you can make objects belong (or <em>not</em> belong) to unions or interfaces, depending on the API version.)</p>
+  </li>
+</ul>
+
+<p>Once those integrations are set up, you’re ready to <a href="/changesets/definition">write a changeset</a> and start <a href="/changesets/releases">releasing API versions</a>!</p>
+
+<h3 id="controller-setup">Controller Setup</h3>
+
+<p>Additionally, your controller must pass <code class="language-plaintext highlighter-rouge">context[:changeset_version]</code> when running queries. To provide this, update your controller:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">GraphqlController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">execute</span>
+    <span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
+      <span class="c1"># ...</span>
+      <span class="ss">changeset_version: </span><span class="n">headers</span><span class="p">[</span><span class="s2">"API-Version"</span><span class="p">],</span> <span class="c1"># &lt;- Your header here. Choose something for API clients to pass.</span>
+    <span class="p">}</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="no">MyAppSchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="ss">context: </span><span class="n">context</span><span class="p">)</span>
+    <span class="c1"># ...</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>In the example above, <code class="language-plaintext highlighter-rouge">API-Version: ...</code> will be parsed from the incoming request and used as <code class="language-plaintext highlighter-rouge">context[:changeset_version]</code>.</p>
+
+<p>If <code class="language-plaintext highlighter-rouge">context[:changeset_version]</code> is <code class="language-plaintext highlighter-rouge">nil</code>, then <em>no</em> changesets will apply to that request.</p>
+
+<p>Now that Changesets are installed, read on to <a href="/changesets/definition">define some changesets</a>.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/changesets/installation.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Installing Changesets">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

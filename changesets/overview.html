@@ -1,0 +1,131 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL Enterprise - Changesets - API Versioning for GraphQL-Ruby</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.13.0/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#graphql-enterprise-changesets-guides">GraphQL Enterprise - Changesets</a>
+  &raquo; API Versioning for GraphQL-Ruby
+</p>
+
+
+
+  <div class="enterprise-header">
+    <p>
+      <strong>🌟 Enterprise Feature 🌟</strong>
+      <span style="font-style: italic;">
+        This feature is bundled with <a href="https://graphql.pro/enterprise">GraphQL-Enterprise</a>.
+      </span>
+    </p>
+  </div>
+
+<h1 class="guide-header">API Versioning for GraphQL-Ruby</h1>
+<div class="guide-container">
+  <p>Out-of-the-box, GraphQL is <a href="https://graphql.org/learn/best-practices/#versioning">versionless by design</a>. GraphQL’s openness to extension paves the way for continuously expanding and improving an API. You can <em>always</em> add new fields, new arguments, and new types to implement new features and customize existing behavior.</p>
+
+<p>However, sometimes a business case may call for a different versioning scheme. <a href="https://graphql.pro/enterprise">GraphQL-Enterprise</a>’s “Changesets” enable schemas to release <em>any</em> change – even breaking changes – to clients, depending on what version of the schema they’re using. With Changesets, you can redefine existing fields, define new types using old names, add or remove enum values – anything, really – while maintaining compatibility for existing clients.</p>
+
+<h2 id="why-changesets">Why Changesets?</h2>
+
+<p>Changesets are a <em>complementary</em> evolution technique to continuous additions. In general, additive changes (new fields, new arguments, new types) are best added right to the existing schema. But if you need to <em>remove</em> something from the schema or redefine existing parts of the schema in non-backwards-compatible ways, Changesets provide a handy way of doing so.</p>
+
+<p>For example, if you add a values to an Enum, you can just add it to the existing schema:</p>
+
+<div class="language-diff highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  class Types::RecipeFlag &lt; Types::BaseEnum
+    value "LOW_FAT"
+    value "LOW_CARB"
+<span class="gi">+   value "VEGAN"
++   value "KETO"
++   value "GRAPEFRUIT_DIET"
+</span>  end
+</code></pre></div></div>
+
+<p>However, if you want to change the schema in ways that would <em>break</em> previous queries, you can do that with a Changeset:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">RemoveIrrelevantFlags</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">Changeset</span>
+  <span class="n">modifies</span> <span class="no">Types</span><span class="o">::</span><span class="no">RecipeFlag</span> <span class="k">do</span>
+    <span class="c1"># Turns out this makes you sick:</span>
+    <span class="n">remove_value</span> <span class="s2">"GRAPEFRUIT_DIET"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Then, only clients requesting API versions <em>before</em>  this changeset would be able to use <code class="language-plaintext highlighter-rouge">GRAPEFRUIT_DIET</code>; clients requesting newer versions could not send it as input and would not receive it in responses.</p>
+
+<p>(Changesets <em>also</em> support additive changes, if you prefer to make them that way.)</p>
+
+<h2 id="getting-started">Getting Started</h2>
+
+<p>To start using Changesets, read on:</p>
+
+<ul>
+  <li><a href="/changesets/installation">Installing Changesets</a></li>
+  <li><a href="/changesets/definition">Writing Changesets</a></li>
+  <li><a href="/changesets/releases">Releasing Changesets</a></li>
+</ul>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/changesets/overview.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: API Versioning for GraphQL-Ruby">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>
