@@ -67,7 +67,7 @@ module GraphQL
     # @param batch_parameters [Array<Object>]
     # @return [GraphQL::Dataloader::Source] An instance of {source_class}, initialized with `self, *batch_parameters`,
     #   and cached for the lifetime of this {Multiplex}.
-    if RUBY_VERSION < "3"
+    if RUBY_VERSION < "3" || RUBY_ENGINE != "ruby" # truffle-ruby wasn't doing well with the implementation below
       def with(source_class, *batch_args)
         batch_key = source_class.batch_key_for(*batch_args)
         @source_cache[source_class][batch_key] ||= begin
