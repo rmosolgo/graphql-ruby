@@ -354,6 +354,10 @@ module GraphQL
           finished_jobs = 0
           enqueued_jobs = gathered_selections.size
           gathered_selections.each do |result_name, field_ast_nodes_or_ast_node|
+            if @context[:current_object].show_current_query
+              @context[:current_query] = field_ast_nodes_or_ast_node.to_query_string
+            end
+
             @dataloader.append_job {
               evaluate_selection(
                 path, result_name, field_ast_nodes_or_ast_node, scoped_context, owner_object, owner_type, is_eager_selection, selections_result, parent_object

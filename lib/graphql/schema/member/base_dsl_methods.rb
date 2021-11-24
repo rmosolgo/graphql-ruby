@@ -54,6 +54,21 @@ module GraphQL
           end
         end
 
+        # Whether or not :current_query should be available.
+        # Call this method to provide a new show_current_query; OR
+        # call it without an argument to get the show_current_query
+        # @param new_show_current_query [Boolean]
+        # @return [Boolean]
+        def show_current_query(new_show_current_query = nil)
+          if new_show_current_query
+            @show_current_query = new_show_current_query
+          elsif defined?(@show_current_query)
+            @show_current_query
+          else
+            nil
+          end
+        end
+
         # This pushes some configurations _down_ the inheritance tree,
         # in order to prevent repetitive lookups at runtime.
         module ConfigurationExtension
