@@ -28,34 +28,47 @@ module GraphQL
     #   end
     class Lookahead
       # @param query [GraphQL::Query]
-      # @param ast_nodes [Array<GraphQL::Language::Nodes::Field>, Array<GraphQL::Language::Nodes::OperationDefinition>]
       # @param field [GraphQL::Schema::Field] if `ast_nodes` are fields, this is the field definition matching those nodes
       # @param root_type [Class] if `ast_nodes` are operation definition, this is the root type for that operation
-      def initialize(query:, ast_nodes:, field: nil, root_type: nil, owner_type: nil)
-        @ast_nodes = ast_nodes.freeze
-        @field = field
+      def initialize(query:, selections_by_type:, root_type: nil)
+        @selections_by_type = selections_by_type
         @root_type = root_type
         @query = query
         @selected_type = @field ? @field.type.unwrap : root_type
-        @owner_type = owner_type
       end
 
       # @return [Array<GraphQL::Language::Nodes::Field>]
-      attr_reader :ast_nodes
+      def ast_nodes
+        @ast_nodes ||= @selections_by_type.values.flatten
+      end
 
       # @return [GraphQL::Schema::Field]
-      attr_reader :field
+      def field
+        fields.first
+      end
+
+      def fields
+        @fields ||= @selections_by_type.map do |t, ast_nodes|
+          get_class_based_field(t, ast_nodes.first.name)
+        end
+      end
 
       # @return [GraphQL::Schema::Object, GraphQL::Schema::Union, GraphQL::Schema::Interface]
-      attr_reader :owner_type
+      def owner_type
+        owner_types.first
+      end
+
+      def owner_types
+        @owner_types ||= @selections_by_type.keys
+      end
 
       # @return [Hash<Symbol, Object>]
       def arguments
         if defined?(@arguments)
           @arguments
         else
-          @arguments = if @field
-            @query.schema.after_lazy(@query.arguments_for(@ast_nodes.first, @field)) do |args|
+          @arguments = if (f = field)
+            @query.schema.after_lazy(@query.arguments_for(ast_nodes.first, f)) do |args|
               args.is_a?(Execution::Interpreter::Arguments) ? args.keyword_arguments : args
             end
           else
@@ -88,23 +101,27 @@ module GraphQL
       # Like {#selects?}, but can be used for chaining.
       # It returns a null object (check with {#selected?})
       # @return [GraphQL::Execution::Lookahead]
-      def selection(field_name, selected_type: @selected_type, arguments: nil)
+      def selection(field_name, selected_type: nil, arguments: nil)
         next_field_name = normalize_name(field_name)
+        subselections_by_type = {}
 
-        next_field_defn = get_class_based_field(selected_type, next_field_name)
-        if next_field_defn
-          next_nodes = []
-          @ast_nodes.each do |ast_node|
+        @selections_by_type.each do |owner_type, ast_nodes|
+          next if selected_type && owner_type != selected_type
+          subselection_owner_type = if @root_type
+            @root_type
+          else
+            field_for_node = get_class_based_field(owner_type, ast_nodes.first.name)
+            field_for_node.type.unwrap
+          end
+          ast_nodes.each do |ast_node|
             ast_node.selections.each do |selection|
-              find_selected_nodes(selection, next_field_name, next_field_defn, arguments: arguments, matches: next_nodes)
+              find_selected_nodes(selection, next_field_name, subselection_owner_type, arguments: arguments, matches: subselections_by_type)
             end
           end
+        end
 
-          if next_nodes.any?
-            Lookahead.new(query: @query, ast_nodes: next_nodes, field: next_field_defn, owner_type: selected_type)
-          else
-            NULL_LOOKAHEAD
-          end
+        if subselections_by_type.any?
+          Lookahead.new(query: @query, selections_by_type: subselections_by_type)
         else
           NULL_LOOKAHEAD
         end
@@ -127,23 +144,27 @@ module GraphQL
       # @return [Array<GraphQL::Execution::Lookahead>]
       def selections(arguments: nil)
         subselections_by_type = {}
-        subselections_on_type = subselections_by_type[@selected_type] = {}
 
-        @ast_nodes.each do |node|
-          find_selections(subselections_by_type, subselections_on_type, @selected_type, node.selections, arguments)
-        end
-
-        subselections = []
-
-        subselections_by_type.each do |type, ast_nodes_by_response_key|
-          ast_nodes_by_response_key.each do |response_key, ast_nodes|
-            field_defn = get_class_based_field(type, ast_nodes.first.name)
-            lookahead = Lookahead.new(query: @query, ast_nodes: ast_nodes, field: field_defn, owner_type: type)
-            subselections.push(lookahead)
+        @selections_by_type.each do |owner_type, ast_nodes|
+          next_field_type = if @root_type
+            @root_type
+          else
+            next_field = get_class_based_field(owner_type, ast_nodes.first.name)
+            next_field.type.unwrap
+          end
+          ast_nodes.each do |node|
+            find_selections(subselections_by_type, next_field_type, node.selections, arguments)
           end
         end
 
-        subselections
+        lookaheads = []
+        subselections_by_type.each do |type, ast_nodes_by_response_key|
+          ast_nodes_by_response_key.each do |response_key, ast_nodes|
+            lookaheads << Lookahead.new(query: @query, selections_by_type: {type => ast_nodes})
+          end
+        end
+
+        lookaheads
       end
 
       # The method name of the field.
@@ -157,11 +178,11 @@ module GraphQL
       #
       # @return [Symbol]
       def name
-        @field && @field.original_name
+        field && field.original_name
       end
 
       def inspect
-        "#<GraphQL::Execution::Lookahead #{@field ? "@field=#{@field.path.inspect}": "@root_type=#{@root_type}"} @ast_nodes.size=#{@ast_nodes.size}>"
+        "#<GraphQL::Execution::Lookahead #{field ? "field=#{field.path.inspect}": "@root_type=#{@root_type}"} ast_nodes.size=#{ast_nodes.size}>"
       end
 
       # This is returned for {Lookahead#selection} when a non-existent field is passed
@@ -232,63 +253,78 @@ module GraphQL
         false
       end
 
-      def find_selections(subselections_by_type, selections_on_type, selected_type, ast_selections, arguments)
+      def add_found_selection(subselections_by_type, selected_type, response_key, result)
+        type_selections = subselections_by_type[selected_type] ||= {}
+        results = type_selections[response_key] ||= []
+        results << result
+        nil
+      end
+
+      def find_selections(subselections_by_type, selected_type, ast_selections, arguments)
         ast_selections.each do |ast_selection|
           next if skipped_by_directive?(ast_selection)
 
           case ast_selection
           when GraphQL::Language::Nodes::Field
             response_key = ast_selection.alias || ast_selection.name
-            if selections_on_type.key?(response_key)
-              selections_on_type[response_key] << ast_selection
-            elsif arguments.nil? || arguments.empty?
-              selections_on_type[response_key] = [ast_selection]
+            if arguments.nil? || arguments.empty?
+              add_found_selection(subselections_by_type, selected_type, response_key, ast_selection)
             else
               field_defn = get_class_based_field(selected_type, ast_selection.name)
               if arguments_match?(arguments, field_defn, ast_selection)
-                selections_on_type[response_key] = [ast_selection]
+                add_found_selection(subselections_by_type, selected_type, response_key, ast_selection)
               end
             end
           when GraphQL::Language::Nodes::InlineFragment
             on_type = selected_type
-            subselections_on_type = selections_on_type
             if (t = ast_selection.type)
               # Assuming this is valid, that `t` will be found.
               on_type = @query.schema.get_type(t.name).type_class
-              subselections_on_type = subselections_by_type[on_type] ||= {}
             end
-            find_selections(subselections_by_type, subselections_on_type, on_type, ast_selection.selections, arguments)
+            find_selections(subselections_by_type, on_type, ast_selection.selections, arguments)
           when GraphQL::Language::Nodes::FragmentSpread
             frag_defn = @query.fragments[ast_selection.name] || raise("Invariant: Can't look ahead to nonexistent fragment #{ast_selection.name} (found: #{@query.fragments.keys})")
             # Again, assuming a valid AST
             on_type = @query.schema.get_type(frag_defn.type.name).type_class
-            subselections_on_type = subselections_by_type[on_type] ||= {}
-            find_selections(subselections_by_type, subselections_on_type, on_type, frag_defn.selections, arguments)
+            find_selections(subselections_by_type, on_type, frag_defn.selections, arguments)
           else
             raise "Invariant: Unexpected selection type: #{ast_selection.class}"
           end
         end
       end
 
-      # If a selection on `node` matches `field_name` (which is backed by `field_defn`)
+      # If a selection on `node` matches `field_name`
       # and matches the `arguments:` constraints, then add that node to `matches`
-      def find_selected_nodes(node, field_name, field_defn, arguments:, matches:)
+      def find_selected_nodes(node, field_name, owner_type, arguments:, matches:)
         return if skipped_by_directive?(node)
         case node
         when GraphQL::Language::Nodes::Field
           if node.name == field_name
-            if arguments.nil? || arguments.empty?
+            field_defn = get_class_based_field(owner_type, field_name)
+            if field_defn.nil?
+              # This is a buggy query, do nothing
+            elsif arguments.nil? || arguments.empty?
               # No constraint applied
-              matches << node
+              results = matches[owner_type] ||= []
+              results << node
             elsif arguments_match?(arguments, field_defn, node)
-              matches << node
+              results = matches[owner_type] ||= []
+              results << node
             end
           end
         when GraphQL::Language::Nodes::InlineFragment
-          node.selections.each { |s| find_selected_nodes(s, field_name, field_defn, arguments: arguments, matches: matches) }
+          new_owner_type = if (t = node.type)
+            # Assuming this is valid, that `t` will be found.
+            @query.schema.get_type(t.name).type_class
+          else
+            owner_type
+          end
+          node.selections.each { |s| find_selected_nodes(s, field_name, new_owner_type, arguments: arguments, matches: matches) }
         when GraphQL::Language::Nodes::FragmentSpread
           frag_defn = @query.fragments[node.name] || raise("Invariant: Can't look ahead to nonexistent fragment #{node.name} (found: #{@query.fragments.keys})")
-          frag_defn.selections.each { |s| find_selected_nodes(s, field_name, field_defn, arguments: arguments, matches: matches) }
+          # Assuming this is valid
+          new_owner_type = @query.schema.get_type(frag_defn.type.name).type_class
+          frag_defn.selections.each { |s| find_selected_nodes(s, field_name, new_owner_type, arguments: arguments, matches: matches) }
         else
           raise "Unexpected selection comparison on #{node.class.name} (#{node})"
         end

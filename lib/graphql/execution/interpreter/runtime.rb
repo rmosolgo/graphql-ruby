@@ -462,8 +462,7 @@ module GraphQL
 
                   extra_args[:lookahead] = Execution::Lookahead.new(
                     query: query,
-                    ast_nodes: field_ast_nodes,
-                    field: field_defn,
+                    selections_by_type: { owner_type => field_ast_nodes}
                   )
                 when :argument_details
                   # Use this flag to tell Interpreter::Arguments to add itself
