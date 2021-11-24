@@ -698,7 +698,7 @@ module GraphQL
           end
 
           after_lazy(first_resolved_type) do |resolved_type|
-            if resolved_type.nil? || (resolved_type.is_a?(Module) && resolved_type.respond_to?(:kind)) || resolved_type.is_a?(GraphQL::BaseType)
+            if resolved_type.nil? || (resolved_type.is_a?(Module) && resolved_type.respond_to?(:kind))
               if resolved_value
                 [resolved_type, resolved_value]
               else
