@@ -268,9 +268,6 @@ module Jazz
     value "SILENCE", "Makes no sound", value: false
   end
 
-  # Lives side-by-side with an old-style definition
-  using GraphQL::DeprecatedDSL # for ! and types[]
-
   class InstrumentType < BaseObject
     implements NamedEntity
     implements GloballyIdentifiableType
@@ -843,12 +840,6 @@ module Jazz
     end
   end
 
-  class MetadataPlugin
-    def self.use(schema_defn, value:)
-      schema_defn.metadata[:plugin_key] = value
-    end
-  end
-
   class CustomContext < GraphQL::Query::Context
     def [](key)
       if key == :magic_key
@@ -943,8 +934,6 @@ module Jazz
     end
 
     use GraphQL::Dataloader
-
-    use MetadataPlugin, value: "xyz"
   end
 
   class SchemaWithoutIntrospection < GraphQL::Schema

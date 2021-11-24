@@ -2,7 +2,6 @@
 module GraphQL
   class Schema
     class InputObject < GraphQL::Schema::Member
-      extend GraphQL::Schema::Member::AcceptsDefinition
       extend Forwardable
       extend GraphQL::Schema::Member::HasArguments
       extend GraphQL::Schema::Member::HasArguments::ArgumentObjectLoader
@@ -19,6 +18,7 @@ module GraphQL
       # Ruby-like hash behaviors, read-only
       def_delegators :@ruby_style_hash, :keys, :values, :each, :map, :any?, :empty?
 
+      # TODO: remove `arguments = nil`, it was legacy-only IIRC
       def initialize(arguments = nil, ruby_kwargs: nil, context:, defaults_used:)
         @context = context
         if ruby_kwargs

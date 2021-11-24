@@ -14,41 +14,54 @@ module MaskHelpers
     end
   end
 
+  module HasMetadata
+    def metadata(key = nil, value = nil)
+      if key
+        @metadata ||= {}
+        @metadata[key] = value
+      end
+      @metadata
+    end
+  end
+
+
   class BaseArgument < GraphQL::Schema::Argument
-    accepts_definition :metadata
+    include HasMetadata
   end
 
   class BaseField < GraphQL::Schema::Field
-    accepts_definition :metadata
+    include HasMetadata
     argument_class BaseArgument
   end
 
   class BaseObject < GraphQL::Schema::Object
-    accepts_definition :metadata
+    extend HasMetadata
     field_class BaseField
   end
 
   class BaseEnumValue < GraphQL::Schema::EnumValue
-    accepts_definition :metadata
+    include HasMetadata
   end
 
   class BaseEnum < GraphQL::Schema::Enum
-    accepts_definition :metadata
+    extend HasMetadata
     enum_value_class BaseEnumValue
   end
 
   class BaseInputObject < GraphQL::Schema::InputObject
-    accepts_definition :metadata
+    extend HasMetadata
     argument_class BaseArgument
   end
 
   class BaseUnion < GraphQL::Schema::Union
-    accepts_definition :metadata
+    extend HasMetadata
   end
 
   module BaseInterface
     include GraphQL::Schema::Interface
-    accepts_definition :metadata
+    module DefinitionMethods
+      include HasMetadata
+    end
     field_class BaseField
   end
 

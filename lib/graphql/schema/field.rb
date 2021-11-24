@@ -6,7 +6,6 @@ module GraphQL
   class Schema
     class Field
       include GraphQL::Schema::Member::CachedGraphQLDefinition
-      include GraphQL::Schema::Member::AcceptsDefinition
       include GraphQL::Schema::Member::HasArguments
       include GraphQL::Schema::Member::HasAstNode
       include GraphQL::Schema::Member::HasPath
@@ -102,9 +101,6 @@ module GraphQL
         end
 
         if !type.nil?
-          if type.is_a?(GraphQL::Field)
-            raise ArgumentError, "A GraphQL::Field was passed as the second argument, use the `field:` keyword for this instead."
-          end
           if desc
             if kwargs[:description]
               raise ArgumentError, "Provide description as a positional argument or `description:` keyword, but not both (#{desc.inspect}, #{kwargs[:description].inspect})"

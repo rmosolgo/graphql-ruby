@@ -122,9 +122,6 @@ module GraphQL
         end
       end
 
-      # Extend this _after_ `DefinitionMethods` is defined, so it will be used
-      extend GraphQL::Schema::Member::AcceptsDefinition
-
       extend DefinitionMethods
 
       def unwrap

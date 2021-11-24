@@ -57,18 +57,6 @@ describe GraphQL::Schema::InputObject do
     end
   end
 
-  describe ".to_graphql" do
-    it "assigns itself as the arguments_class" do
-      assert_equal input_object, input_object.to_graphql.arguments_class
-    end
-
-    it "accepts description: kwarg" do
-      input_obj_class = Jazz::InspectableInput
-      input_obj_type = input_obj_class.to_graphql
-      assert_equal "Test description kwarg", input_obj_type.arguments["stringValue"].description
-    end
-  end
-
   describe "camelizing with numbers" do
     module InputObjectWithNumbers
       class InputObject < GraphQL::Schema::InputObject
@@ -566,59 +554,6 @@ describe GraphQL::Schema::InputObject do
     end
   end
 
-  describe 'hash conversion behavior' do
-    module InputObjectToHTest
-      class TestInput1 < GraphQL::Schema::InputObject
-        graphql_name "TestInput1"
-        argument :d, Int
-        argument :e, Int
-        argument :instrument_id, ID, loads: Jazz::InstrumentType
-      end
-
-      class TestInput2 < GraphQL::Schema::InputObject
-        graphql_name "TestInput2"
-        argument :a, Int
-        argument :b, Int
-        argument :c, TestInput1, as: :inputObject
-      end
-
-      TestInput1.to_graphql
-      TestInput2.to_graphql
-    end
-
-    before do
-      arg_values = {a: 1, b: 2, c: { d: 3, e: 4, instrumentId: "Instrument/Drum Kit"}}
-
-      query = GraphQL::Query.new(Jazz::Schema, "{ __typename }")
-      # This is because a test below expects `instrument:` to have been loaded
-      # during `InputObject#initialize`, which only happens when `!context.interpreter?`.
-      # Maybe that test could be updated instead.
-      context_without_interpreter = Class.new(SimpleDelegator) do
-        def interpreter?
-          false
-        end
-      end
-
-      @input_object = InputObjectToHTest::TestInput2.new(
-        arg_values,
-        context: context_without_interpreter.new(query.context),
-        defaults_used: Set.new
-      )
-    end
-
-    describe "#to_h" do
-      it "returns a symbolized, aliased, ruby keyword style hash" do
-        assert_equal({ a: 1, b: 2, input_object: { d: 3, e: 4, instrument: Jazz::Models::Instrument.new("Drum Kit", "PERCUSSION") } }, @input_object.to_h)
-      end
-    end
-
-    describe "#to_hash" do
-      it "returns the same results as #to_h (aliased)" do
-        assert_equal(@input_object.to_h, @input_object.to_hash)
-      end
-    end
-  end
-
   describe "#dig" do
     module InputObjectDigTest
       class TestInput1 < GraphQL::Schema::InputObject
@@ -633,14 +568,11 @@ describe GraphQL::Schema::InputObject do
         argument :b, Int
         argument :c, TestInput1, as: :inputObject
       end
-
-      TestInput1.to_graphql
-      TestInput2.to_graphql
     end
     arg_values = {a: 1, b: 2, c: { d: 3, e: 4 }}
 
     input_object = InputObjectDigTest::TestInput2.new(
-      arg_values,
+      ruby_kwargs: arg_values,
       context: nil,
       defaults_used: Set.new
     )
@@ -690,34 +622,6 @@ describe GraphQL::Schema::InputObject do
       # It's upcased to test custom introspection
       input_type = res["data"]["__schema"]["types"].find { |t| t["name"] == "INSPECTABLEINPUT" }
       assert_equal ["ensembleId", "stringValue", "nestedInput", "legacyInput"], input_type["inputFields"].map { |f| f["name"] }
-    end
-  end
-
-  describe "warning for method objects" do
-    it "warns for method conflicts" do
-      input_object = Class.new(GraphQL::Schema::InputObject) do
-        graphql_name "X"
-        argument :method, String
-      end
-
-      expected_warning = "Unable to define a helper for argument with name 'method' as this is a reserved name. Add `method_access: false` to stop this warning."
-
-      messages = []
-      GraphQL::Deprecation.stub(:warn, ->(message) { messages << message; nil }) do
-        input_object.graphql_definition
-      end
-      assert_equal [expected_warning], messages
-    end
-
-    it "doesn't warn with `method_access: false`" do
-      input_object = Class.new(GraphQL::Schema::InputObject) do
-        graphql_name "X"
-        argument :method, String, method_access: false
-      end
-
-      assert_output "", "" do
-        input_object.graphql_definition
-      end
     end
   end
 

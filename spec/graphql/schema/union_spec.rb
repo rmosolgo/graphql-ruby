@@ -22,43 +22,6 @@ describe GraphQL::Schema::Union do
     end
   end
 
-  describe ".to_graphql" do
-    it "creates a UnionType" do
-      union = Class.new(GraphQL::Schema::Union) do
-        possible_types Jazz::Musician, Jazz::Ensemble
-
-        def self.name
-          "MyUnion"
-        end
-      end
-      union_type = union.to_graphql
-      assert_equal "MyUnion", union_type.name
-      assert_equal [Jazz::Musician.to_graphql, Jazz::Ensemble.to_graphql], union_type.possible_types
-      assert_nil union_type.resolve_type_proc
-    end
-
-    it "can specify a resolve_type method" do
-      union = Class.new(GraphQL::Schema::Union) do
-        def self.resolve_type(_object, _context)
-          "MyType"
-        end
-
-        def self.name
-          "MyUnion"
-        end
-      end
-      union_type = union.to_graphql
-      assert_equal "MyType", union_type.resolve_type_proc.call(nil, nil)
-    end
-
-    it "passes on the possible type filter" do
-      union_type = union.to_graphql
-      expected_type = GraphQL::BaseType.resolve_related_type(Jazz::Musician)
-
-      assert_equal [expected_type], union_type.possible_types(hide_ensemble: true)
-    end
-  end
-
   describe "in queries" do
     it "works" do
       query_str = <<-GRAPHQL

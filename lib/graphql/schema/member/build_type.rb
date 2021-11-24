@@ -35,8 +35,6 @@ module GraphQL
             else
               maybe_type = constantize(type_expr)
               case maybe_type
-              when GraphQL::BaseType
-                maybe_type
               when Module
                 # This is a way to check that it's the right kind of module:
                 if maybe_type.respond_to?(:graphql_definition)
@@ -46,7 +44,7 @@ module GraphQL
                 end
               end
             end
-          when GraphQL::BaseType, GraphQL::Schema::LateBoundType
+          when GraphQL::Schema::LateBoundType
             type_expr
           when Array
             case type_expr.length
@@ -100,7 +98,7 @@ module GraphQL
 
         def to_type_name(something)
           case something
-          when GraphQL::BaseType, GraphQL::Schema::LateBoundType
+          when GraphQL::Schema::LateBoundType
             something.unwrap.name
           when Array
             to_type_name(something.first)

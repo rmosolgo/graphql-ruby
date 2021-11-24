@@ -14,7 +14,6 @@ require "graphql/schema/timeout"
 require "graphql/schema/traversal"
 require "graphql/schema/type_expression"
 require "graphql/schema/unique_within_type"
-require "graphql/schema/validation"
 require "graphql/schema/warden"
 require "graphql/schema/build_from_definition"
 
@@ -76,10 +75,7 @@ module GraphQL
   #
   class Schema
     extend Forwardable
-    extend GraphQL::Schema::Member::AcceptsDefinition
     extend GraphQL::Schema::Member::HasAstNode
-    include GraphQL::Define::InstanceDefinable
-    extend GraphQL::Define::InstanceDefinable::DeprecatedDefine
     extend GraphQL::Schema::FindInheritedValue
 
     class DuplicateTypeNamesError < GraphQL::Error
@@ -156,34 +152,6 @@ module GraphQL
 
     include LazyHandlingMethods
     extend LazyHandlingMethods
-
-    accepts_definitions \
-      :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
-      :validate_timeout, :validate_max_errors, :max_depth, :max_complexity, :default_max_page_size,
-      :orphan_types, :resolve_type, :type_error, :parse_error,
-      :error_bubbling,
-      :raise_definition_error,
-      :object_from_id, :id_from_object,
-      :default_mask,
-      :cursor_encoder,
-      # If these are given as classes, normalize them. Accept `nil` when building from string.
-      query: ->(schema, t) { schema.query = t.respond_to?(:graphql_definition) ? t.graphql_definition : t },
-      mutation: ->(schema, t) { schema.mutation = t.respond_to?(:graphql_definition) ? t.graphql_definition : t },
-      subscription: ->(schema, t) { schema.subscription = t.respond_to?(:graphql_definition) ? t.graphql_definition : t },
-      disable_introspection_entry_points: ->(schema) { schema.disable_introspection_entry_points = true },
-      disable_schema_introspection_entry_point: ->(schema) { schema.disable_schema_introspection_entry_point = true },
-      disable_type_introspection_entry_point: ->(schema) { schema.disable_type_introspection_entry_point = true },
-      directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.graphql_name] = d; m } },
-      directive: ->(schema, directive) { schema.directives[directive.graphql_name] = directive },
-      query_analyzer: ->(schema, analyzer) {
-        schema.query_analyzers << analyzer
-      },
-      multiplex_analyzer: ->(schema, analyzer) { schema.multiplex_analyzers << analyzer },
-      lazy_resolve: ->(schema, lazy_class, lazy_value_method) { schema.lazy_methods.set(lazy_class, lazy_value_method) },
-      rescue_from: ->(schema, err_class, &block) { schema.rescue_from(err_class, &block) },
-      tracer: ->(schema, tracer) { schema.tracers.push(tracer) }
-
-    ensure_defined :introspection_system
 
     attr_accessor \
       :query, :mutation, :subscription,
@@ -327,9 +295,6 @@ module GraphQL
     def deprecated_define(**kwargs, &block)
       super
       ensure_defined
-      # Assert that all necessary configs are present:
-      validation_error = Validation.validate(self)
-      validation_error && raise(GraphQL::RequiredImplementationMissingError, validation_error)
       rebuild_artifacts
 
       @definition_error = nil

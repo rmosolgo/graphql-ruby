@@ -651,7 +651,12 @@ describe GraphQL::Query do
     end
 
     it "can be configured to raise" do
-      raise_schema = schema.redefine(parse_error: ->(err, ctx) { raise err })
+      raise_schema = Class.new(schema) do
+        def self.parse_error(err, ctx)
+          raise err
+        end
+      end
+
       assert_raises(GraphQL::ParseError) {
         raise_schema.execute(invalid_query_string)
       }

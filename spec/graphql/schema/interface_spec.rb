@@ -47,66 +47,8 @@ describe GraphQL::Schema::Interface do
       assert new_object_2.method_defined?(:id)
 
       # It gets an overridden description:
-      assert_equal "The ID !!!!!", new_object_2.graphql_definition.fields["id"].description
+      assert_equal "The ID !!!!!", new_object_2.fields["id"].description
     end
-  end
-
-  describe ".to_graphql" do
-    it "creates an InterfaceType" do
-      interface_type = interface.to_graphql
-      assert_equal "GloballyIdentifiable", interface_type.name
-      field = interface_type.all_fields.first
-      assert_equal "id", field.name
-      assert_equal GraphQL::DEPRECATED_ID_TYPE.to_non_null_type, field.type
-      assert_equal "A unique identifier for this object", field.description
-      assert_nil interface_type.resolve_type_proc
-      assert_empty interface_type.orphan_types
-    end
-
-    it "can specify a resolve_type method" do
-      interface = Module.new do
-        include GraphQL::Schema::Interface
-        graphql_name "MyInterface"
-
-        module self::DefinitionMethods # rubocop:disable Style/ClassAndModuleChildren
-          def resolve_type(_object, _context)
-            "MyType"
-          end
-        end
-      end
-
-      interface_type = interface.to_graphql
-      assert_equal "MyType", interface_type.resolve_type_proc.call(nil, nil)
-    end
-
-    it "can specify orphan types" do
-      interface = Module.new do
-        include GraphQL::Schema::Interface
-        graphql_name "MyInterface"
-        orphan_types Dummy::Cheese, Dummy::Honey
-      end
-
-      interface_type = interface.to_graphql
-      assert_equal [Dummy::Cheese, Dummy::Honey], interface_type.orphan_types
-    end
-  end
-
-  it 'supports global_id_field' do
-    object = Module.new do
-      include GraphQL::Schema::Interface
-      graphql_name 'GlobalIdFieldTest'
-      global_id_field :uuid, description: 'The UUID field'
-    end.to_graphql
-
-    uuid_field = object.fields["uuid"]
-
-    assert_equal GraphQL::NonNullType, uuid_field.type.class
-    assert_equal GraphQL::ScalarType, uuid_field.type.unwrap.class
-    assert_equal 'The UUID field', uuid_field.description
-    assert_equal(
-      GraphQL::Schema::Member::GraphQLTypeNames::ID,
-      uuid_field.type.unwrap.name
-    )
   end
 
   describe "using `include`" do

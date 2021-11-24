@@ -27,7 +27,6 @@ module GraphQL
     #   end
     class EnumValue < GraphQL::Schema::Member
       include GraphQL::Schema::Member::CachedGraphQLDefinition
-      include GraphQL::Schema::Member::AcceptsDefinition
       include GraphQL::Schema::Member::HasPath
       include GraphQL::Schema::Member::HasAstNode
       include GraphQL::Schema::Member::HasDirectives

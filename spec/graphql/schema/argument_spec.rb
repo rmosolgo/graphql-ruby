@@ -46,7 +46,7 @@ describe GraphQL::Schema::Argument do
           raise GraphQL::UnauthorizedError.new('no access')
         end
 
-        argument :keys, [String], required: false, method_access: false
+        argument :keys, [String], required: false
         argument :instrument_id, ID, required: false, loads: Jazz::InstrumentType
         argument :instrument_ids, [ID], required: false, loads: Jazz::InstrumentType
 

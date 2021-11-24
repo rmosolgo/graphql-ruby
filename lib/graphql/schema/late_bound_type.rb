@@ -16,11 +16,11 @@ module GraphQL
       end
 
       def to_non_null_type
-        @to_non_null_type ||= GraphQL::NonNullType.new(of_type: self)
+        @to_non_null_type ||= GraphQL::Schema::NonNull.new(self)
       end
 
       def to_list_type
-        @to_list_type ||= GraphQL::ListType.new(of_type: self)
+        @to_list_type ||= GraphQL::Schema::List.new(self)
       end
 
       def inspect

@@ -2,7 +2,6 @@
 module GraphQL
   class Schema
     class Union < GraphQL::Schema::Member
-      extend GraphQL::Schema::Member::AcceptsDefinition
       extend GraphQL::Schema::Member::HasUnresolvedTypeError
 
       class << self

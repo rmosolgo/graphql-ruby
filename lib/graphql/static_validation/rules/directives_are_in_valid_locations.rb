@@ -12,20 +12,20 @@ module GraphQL
       private
 
       LOCATION_MESSAGE_NAMES = {
-        GraphQL::Directive::QUERY =>               "queries",
-        GraphQL::Directive::MUTATION =>            "mutations",
-        GraphQL::Directive::SUBSCRIPTION =>        "subscriptions",
-        GraphQL::Directive::FIELD =>               "fields",
-        GraphQL::Directive::FRAGMENT_DEFINITION => "fragment definitions",
-        GraphQL::Directive::FRAGMENT_SPREAD =>     "fragment spreads",
-        GraphQL::Directive::INLINE_FRAGMENT =>     "inline fragments",
+        GraphQL::Schema::Directive::QUERY =>               "queries",
+        GraphQL::Schema::Directive::MUTATION =>            "mutations",
+        GraphQL::Schema::Directive::SUBSCRIPTION =>        "subscriptions",
+        GraphQL::Schema::Directive::FIELD =>               "fields",
+        GraphQL::Schema::Directive::FRAGMENT_DEFINITION => "fragment definitions",
+        GraphQL::Schema::Directive::FRAGMENT_SPREAD =>     "fragment spreads",
+        GraphQL::Schema::Directive::INLINE_FRAGMENT =>     "inline fragments",
       }
 
       SIMPLE_LOCATIONS = {
-        Nodes::Field =>               GraphQL::Directive::FIELD,
-        Nodes::InlineFragment =>      GraphQL::Directive::INLINE_FRAGMENT,
-        Nodes::FragmentSpread =>      GraphQL::Directive::FRAGMENT_SPREAD,
-        Nodes::FragmentDefinition =>  GraphQL::Directive::FRAGMENT_DEFINITION,
+        Nodes::Field =>               GraphQL::Schema::Directive::FIELD,
+        Nodes::InlineFragment =>      GraphQL::Schema::Directive::INLINE_FRAGMENT,
+        Nodes::FragmentSpread =>      GraphQL::Schema::Directive::FRAGMENT_SPREAD,
+        Nodes::FragmentDefinition =>  GraphQL::Schema::Directive::FRAGMENT_DEFINITION,
       }
 
       SIMPLE_LOCATION_NODES = SIMPLE_LOCATIONS.keys
@@ -34,7 +34,7 @@ module GraphQL
         directive_defn = directives[ast_directive.name]
         case ast_parent
         when Nodes::OperationDefinition
-          required_location = GraphQL::Directive.const_get(ast_parent.operation_type.upcase)
+          required_location = GraphQL::Schema::Directive.const_get(ast_parent.operation_type.upcase)
           assert_includes_location(directive_defn, ast_directive, required_location)
         when *SIMPLE_LOCATION_NODES
           required_location = SIMPLE_LOCATIONS[ast_parent.class]

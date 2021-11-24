@@ -2,7 +2,6 @@
 module GraphQL
   class Schema
     class Scalar < GraphQL::Schema::Member
-      extend GraphQL::Schema::Member::AcceptsDefinition
       extend GraphQL::Schema::Member::ValidatesInput
 
       class << self

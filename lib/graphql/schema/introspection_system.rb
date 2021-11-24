@@ -89,9 +89,9 @@ module GraphQL
         case late_bound_type
         when GraphQL::Schema::LateBoundType
           @schema.get_type(late_bound_type.name)
-        when GraphQL::Schema::List, GraphQL::ListType
+        when GraphQL::Schema::List
           resolve_late_binding(late_bound_type.of_type).to_list_type
-        when GraphQL::Schema::NonNull, GraphQL::NonNullType
+        when GraphQL::Schema::NonNull
           resolve_late_binding(late_bound_type.of_type).to_non_null_type
         when Module
           # It's a normal type -- no change required

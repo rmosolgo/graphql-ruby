@@ -193,42 +193,6 @@ describe GraphQL::Schema::Object do
     end
   end
 
-  describe ".to_graphql" do
-    let(:obj_type) { Jazz::Ensemble.to_graphql }
-    it "returns a matching GraphQL::ObjectType" do
-      assert_equal "Ensemble", obj_type.name
-      assert_equal "A group of musicians playing together", obj_type.description
-      assert_equal 9, obj_type.all_fields.size
-
-      name_field = obj_type.all_fields[0]
-      assert_equal "name", name_field.name
-      assert_equal GraphQL::DEPRECATED_STRING_TYPE.to_non_null_type, name_field.type
-      assert_equal nil, name_field.description
-    end
-
-    it "has a custom implementation" do
-      assert_equal obj_type.metadata[:config], :configged
-    end
-
-    it "uses the custom field class" do
-      query_str = <<-GRAPHQL
-      {
-        ensembles { upcaseName }
-      }
-      GRAPHQL
-
-      res = Jazz::Schema.execute(query_str)
-      assert_equal ["BELA FLECK AND THE FLECKTONES", "ROBERT GLASPER EXPERIMENT"], res["data"]["ensembles"].map { |e| e["upcaseName"] }
-    end
-
-    it "passes on type memberships from superclasses" do
-      obj_type = Jazz::StylishMusician.to_graphql
-      parent_obj_type = Jazz::Musician.to_graphql
-      assert_equal parent_obj_type.interfaces, obj_type.interfaces
-    end
-  end
-
-
   describe "in queries" do
     after {
       Jazz::Models.reset

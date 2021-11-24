@@ -5,7 +5,6 @@ require "graphql/query/null_context"
 module GraphQL
   class Schema
     class Object < GraphQL::Schema::Member
-      extend GraphQL::Schema::Member::AcceptsDefinition
       extend GraphQL::Schema::Member::HasFields
       extend GraphQL::Schema::Member::HasInterfaces
 
@@ -102,24 +101,6 @@ module GraphQL
         def inherited(child_class)
           child_class.const_set(:InvalidNullError, GraphQL::InvalidNullError.subclass_for(child_class))
           super
-        end
-
-        # @return [Hash<String => GraphQL::Schema::Field>] All of this object's fields, indexed by name
-        # @see get_field A faster way to find one field by name ({#fields} merges hashes of inherited fields; {#get_field} just looks up one field.)
-        def fields(context = GraphQL::Query::NullContext)
-          all_fields = super
-          # This adds fields from legacy-style interfaces only.
-          # Multi-fields are not supported here.
-          interfaces.each do |int|
-            if int.is_a?(GraphQL::InterfaceType)
-              int_f = {}
-              int.fields.each do |name, legacy_field| # rubocop:disable Development/ContextIsPassedCop -- legacy-related
-                int_f[name] = field_class.from_options(name, field: legacy_field)
-              end
-              all_fields = int_f.merge(all_fields)
-            end
-          end
-          all_fields
         end
 
         # @return [GraphQL::ObjectType]
