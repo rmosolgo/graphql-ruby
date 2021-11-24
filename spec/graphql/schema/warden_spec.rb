@@ -849,7 +849,7 @@ describe GraphQL::Schema::Warden do
         unit(name: "Uvular Trill") { ... on Phoneme { manner } }
       }
       |
-      expected_class = TESTING_INTERPRETER ? MaskHelpers::MannerType::UnresolvedValueError : GraphQL::EnumType::UnresolvedValueError
+      expected_class = MaskHelpers::MannerType::UnresolvedValueError
       assert_raises(expected_class) {
         MaskHelpers.query_with_mask(query_string, mask)
       }
