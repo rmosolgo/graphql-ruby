@@ -170,10 +170,12 @@ module GraphQL
               first_subscription_id = first_event.context.fetch(:subscription_id)
               object ||= load_action_cable_message(message, first_event.context)
               result = execute_update(first_subscription_id, first_event, object)
-              # Having calculated the result _once_, send the same payload to all subscribers
-              events.each do |event|
-                subscription_id = event.context.fetch(:subscription_id)
-                deliver(subscription_id, result)
+              if !result.nil?
+                # Having calculated the result _once_, send the same payload to all subscribers
+                events.each do |event|
+                  subscription_id = event.context.fetch(:subscription_id)
+                  deliver(subscription_id, result)
+                end
               end
             end
           end
