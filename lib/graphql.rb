@@ -119,7 +119,6 @@ require "graphql/introspection"
 require "graphql/relay"
 
 require "graphql/version"
-require "graphql/compatibility"
 require "graphql/function"
 require "graphql/subscriptions"
 require "graphql/parse_error"
