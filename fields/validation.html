@@ -52,14 +52,14 @@
 
 <p>Validations are configured in <code class="language-plaintext highlighter-rouge">field(...)</code> or <code class="language-plaintext highlighter-rouge">argument(...)</code> calls:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">argument</span> <span class="ss">:home_phone</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">argument</span> <span class="ss">:home_phone</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span>
   <span class="ss">description: </span><span class="s2">"A US phone number"</span><span class="p">,</span>
   <span class="ss">validates: </span><span class="p">{</span> <span class="ss">format: </span><span class="p">{</span> <span class="ss">with: </span><span class="sr">/\d{3}-\d{3}-\d{4}/</span> <span class="p">}</span> <span class="p">}</span>
 </code></pre></div></div>
 
 <p>or:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:comments</span><span class="p">,</span> <span class="p">[</span><span class="no">Comment</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">,</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:comments</span><span class="p">,</span> <span class="p">[</span><span class="no">Comment</span><span class="p">],</span>
   <span class="ss">description: </span><span class="s2">"Find comments by author ID or author name"</span> <span class="k">do</span>
   <span class="n">argument</span> <span class="ss">:author_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">false</span>
   <span class="n">argument</span> <span class="ss">:author_name</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">false</span>

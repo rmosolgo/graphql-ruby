@@ -108,7 +108,7 @@
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Subscriptions::MessageWasPosted</span> <span class="o">&lt;</span> <span class="no">Subscriptions</span><span class="o">::</span><span class="no">BaseSubscription</span>
   <span class="c1"># `room_id` loads a `room`</span>
-  <span class="n">argument</span> <span class="ss">:room_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">loads: </span><span class="no">Types</span><span class="o">::</span><span class="no">RoomType</span>
+  <span class="n">argument</span> <span class="ss">:room_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">loads: </span><span class="no">Types</span><span class="o">::</span><span class="no">RoomType</span>
 
   <span class="c1"># It's passed to other methods as `room`</span>
   <span class="k">def</span> <span class="nf">subscribe</span><span class="p">(</span><span class="n">room</span><span class="p">:)</span>
@@ -168,7 +168,7 @@
 </span><span class="p">}</span><span class="w">
 </span></code></pre></div></div>
 
-<p>If you configure fields with <code class="language-plaintext highlighter-rouge">null: true</code>, then you can return different data in the initial subscription and the subsequent updates. (See lifecycle methods below.)</p>
+<p>If you remove <code class="language-plaintext highlighter-rouge">null: false</code>, then you can return different data in the initial subscription and the subsequent updates. (See lifecycle methods below.)</p>
 
 <p>Instead of a generated type, you can provide an already-configured type with <code class="language-plaintext highlighter-rouge">payload_type</code>:</p>
 
@@ -271,7 +271,7 @@
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Subscriptions::MessageWasPosted</span> <span class="o">&lt;</span> <span class="no">Subscriptions</span><span class="o">::</span><span class="no">BaseSubscription</span>
   <span class="c1"># ...</span>
-  <span class="n">field</span> <span class="ss">:room</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">RoomType</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span>
+  <span class="n">field</span> <span class="ss">:room</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">RoomType</span>
 
   <span class="k">def</span> <span class="nf">subscribe</span><span class="p">(</span><span class="n">room</span><span class="p">:)</span>
     <span class="c1"># authorize, etc ...</span>
@@ -372,7 +372,7 @@
 
 <p><code class="language-plaintext highlighter-rouge">#unsubscribe</code> does <em>not</em> halt the current update.</p>
 
-<p>Arguments with <code class="language-plaintext highlighter-rouge">loads:</code> configurations will call <code class="language-plaintext highlighter-rouge">unsubscribe</code> if they are <code class="language-plaintext highlighter-rouge">required: true</code> and their ID doesn’t return a value. (It’s assumed that the subscribed object was deleted.)</p>
+<p>Arguments with <code class="language-plaintext highlighter-rouge">loads:</code> configurations will call <code class="language-plaintext highlighter-rouge">unsubscribe</code> if they are <code class="language-plaintext highlighter-rouge">required: true</code> (which is the default) and their ID doesn’t return a value. (It’s assumed that the subscribed object was deleted.)</p>
 
 </div>
 <p class="guide-footer">

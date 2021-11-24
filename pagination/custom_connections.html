@@ -122,7 +122,7 @@
 <p>Alternatively, you can apply a connection wrapper on a case-by-case basis by applying it during the resolver (method or <a href="/api-doc/1.12.21/GraphQL/Schema/Resolver" target="_blank" title="API docs for GraphQL::Schema::Resolver"><code>GraphQL::Schema::Resolver</code></a>):</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:search</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">SearchResult</span><span class="p">.</span><span class="nf">connection_type</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
-  <span class="n">argument</span> <span class="ss">:query</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
+  <span class="n">argument</span> <span class="ss">:query</span><span class="p">,</span> <span class="no">String</span>
 <span class="k">end</span>
 
 <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="n">query</span><span class="p">:)</span>

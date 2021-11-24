@@ -112,7 +112,7 @@
   <li>Return lazy objects from <code class="language-plaintext highlighter-rouge">resolve</code></li>
 </ol>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:author</span><span class="p">,</span> <span class="no">PersonType</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:author</span><span class="p">,</span> <span class="no">PersonType</span>
 
 <span class="k">def</span> <span class="nf">author</span>
   <span class="no">LazyFindPerson</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">object</span><span class="p">.</span><span class="nf">author_id</span><span class="p">)</span>

@@ -79,7 +79,7 @@
 <p><a href="/type_definitions/non_nulls">Nullability</a> is expressed with the required <code class="language-plaintext highlighter-rouge">null:</code> keyword:</p>
 
 <ul>
-  <li><code class="language-plaintext highlighter-rouge">null: true</code> means that the field <em>may</em> return <code class="language-plaintext highlighter-rouge">nil</code></li>
+  <li><code class="language-plaintext highlighter-rouge">null: true</code> (default) means that the field <em>may</em> return <code class="language-plaintext highlighter-rouge">nil</code></li>
   <li><code class="language-plaintext highlighter-rouge">null: false</code> means the field is non-nullable; it may not return <code class="language-plaintext highlighter-rouge">nil</code>. If the implementation returns <code class="language-plaintext highlighter-rouge">nil</code>, GraphQL-Ruby will return an error to the client.</li>
 </ul>
 
@@ -87,10 +87,10 @@
 
 <p>Here are some examples:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span> <span class="c1"># `String`, may return a `String` or `nil`</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">String</span> <span class="c1"># `String`, may return a `String` or `nil`</span>
 <span class="n">field</span> <span class="ss">:id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span> <span class="c1"># `ID!`, always returns an `ID`, never `nil`</span>
 <span class="n">field</span> <span class="ss">:teammates</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">User</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span> <span class="c1"># `[User!]!`, always returns a list containing `User`s</span>
-<span class="n">field</span> <span class="ss">:scores</span><span class="p">,</span> <span class="p">[</span><span class="no">Integer</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">true</span> <span class="c1"># `[Int]`, may return a list or `nil`, the list may contain a mix of `Integer`s and `nil`s</span>
+<span class="n">field</span> <span class="ss">:scores</span><span class="p">,</span> <span class="p">[</span><span class="no">Integer</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">]</span> <span class="c1"># `[Int]`, may return a list or `nil`, the list may contain a mix of `Integer`s and `nil`s</span>
 </code></pre></div></div>
 
 <h3 id="field-documentation">Field Documentation</h3>
@@ -114,7 +114,7 @@
 
 <p><strong>Deprecated</strong> fields can be marked by adding a <code class="language-plaintext highlighter-rouge">deprecation_reason:</code> keyword argument:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:email</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">,</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:email</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span>
   <span class="ss">deprecation_reason: </span><span class="s2">"Users may have multiple emails, use `User.emails` instead."</span>
 </code></pre></div></div>
 

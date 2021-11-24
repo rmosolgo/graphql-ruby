@@ -92,7 +92,7 @@
 
 <ul>
   <li>Instead of a <code class="language-plaintext highlighter-rouge">GraphQL::{X}Type</code>, classes inherit from <code class="language-plaintext highlighter-rouge">GraphQL::Schema::{X}</code>. For example, instead of <code class="language-plaintext highlighter-rouge">GraphQL::ObjectType.define { ... }</code>, a definition is made by extending <code class="language-plaintext highlighter-rouge">GraphQL::Schema::Object</code></li>
-  <li>Any class hierarchy is supported; It’s recommended to create a base class for your application, then extend the base class for each of your types (like <code class="language-plaintext highlighter-rouge">ApplicationController</code> in Rails, see <a href="#customizing-defintions">Customizing Definitions</a>).</li>
+  <li>Any class hierarchy is supported; It’s recommended to create a base class for your application, then extend the base class for each of your types (like <code class="language-plaintext highlighter-rouge">ApplicationController</code> in Rails, see <a href="#customizing-definitions">Customizing Definitions</a>).</li>
 </ul>
 
 <p>See sections below for specific information about each schema definition class.</p>
@@ -135,7 +135,7 @@
   <li>Non-null types are expressed with keyword arguments <code class="language-plaintext highlighter-rouge">null:</code> or <code class="language-plaintext highlighter-rouge">required:</code>
     <ul>
       <li><code class="language-plaintext highlighter-rouge">field</code> takes a keyword <code class="language-plaintext highlighter-rouge">null:</code>. <code class="language-plaintext highlighter-rouge">null: true</code> means the field is nullable, <code class="language-plaintext highlighter-rouge">null: false</code> means the field is non-null (equivalent to <code class="language-plaintext highlighter-rouge">!</code>)</li>
-      <li><code class="language-plaintext highlighter-rouge">argument</code> takes a keyword <code class="language-plaintext highlighter-rouge">required:</code>. <code class="language-plaintext highlighter-rouge">required: true</code> means the argument is non-null (equivalent to <code class="language-plaintext highlighter-rouge">!</code>), <code class="language-plaintext highlighter-rouge">required: false</code> means that the argument is nullable</li>
+      <li><code class="language-plaintext highlighter-rouge">argument</code> takes a keyword <code class="language-plaintext highlighter-rouge">required:</code>. <code class="language-plaintext highlighter-rouge">required: true</code> (default) means the argument is non-null (equivalent to <code class="language-plaintext highlighter-rouge">!</code>), <code class="language-plaintext highlighter-rouge">required: false</code> means that the argument is nullable</li>
     </ul>
   </li>
 </ul>

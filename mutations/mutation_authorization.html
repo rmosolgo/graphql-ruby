@@ -101,7 +101,7 @@
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::PromoteEmployee</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
   <span class="c1"># `employeeId` is an ID, Types::Employee is an _Object_ type</span>
-  <span class="n">argument</span> <span class="ss">:employee_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">loads: </span><span class="no">Types</span><span class="o">::</span><span class="no">Employee</span>
+  <span class="n">argument</span> <span class="ss">:employee_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">loads: </span><span class="no">Types</span><span class="o">::</span><span class="no">Employee</span>
 
   <span class="c1"># Behind the scenes, `:employee_id` is used to fetch an object from the database,</span>
   <span class="c1"># then the object is authorized with `Employee.authorized?`, then</span>
@@ -126,7 +126,7 @@
 
 <p>Alternatively if your <code class="language-plaintext highlighter-rouge">ID</code> doesn’t specify both class <em>and</em> id, resolvers have a <code class="language-plaintext highlighter-rouge">load_#{argument}</code> method that can be overridden.</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">argument</span> <span class="ss">:employee_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">loads: </span><span class="no">Types</span><span class="o">::</span><span class="no">Employee</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">argument</span> <span class="ss">:employee_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">loads: </span><span class="no">Types</span><span class="o">::</span><span class="no">Employee</span>
 
 <span class="k">def</span> <span class="nf">load_employee</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
   <span class="o">::</span><span class="no">Employee</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
@@ -136,7 +136,7 @@
 <p>If you don’t want this behavior, don’t use it. Instead, create arguments with type <code class="language-plaintext highlighter-rouge">ID</code> and use them your own way, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># No special loading behavior:</span>
-<span class="n">argument</span> <span class="ss">:employee_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
+<span class="n">argument</span> <span class="ss">:employee_id</span><span class="p">,</span> <span class="no">ID</span>
 </code></pre></div></div>
 
 <h2 id="can-this-user-perform-this-action">Can <em>this user</em> perform <em>this action</em>?</h2>

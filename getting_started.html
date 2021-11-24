@@ -94,7 +94,7 @@
     <span class="c1"># fields should be queried in camel-case (this will be `truncatedPreview`)</span>
     <span class="n">field</span> <span class="ss">:truncated_preview</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
     <span class="c1"># Fields can return lists of other objects:</span>
-    <span class="n">field</span> <span class="ss">:comments</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">CommentType</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">,</span>
+    <span class="n">field</span> <span class="ss">:comments</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">CommentType</span><span class="p">],</span>
       <span class="c1"># And fields can have their own descriptions:</span>
       <span class="ss">description: </span><span class="s2">"This post's comments, or null if this post has comments disabled."</span>
   <span class="k">end</span>
@@ -117,9 +117,8 @@
   <span class="n">description</span> <span class="s2">"The query root of this schema"</span>
 
   <span class="c1"># First describe the field signature:</span>
-  <span class="n">field</span> <span class="ss">:post</span><span class="p">,</span> <span class="no">PostType</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span> <span class="k">do</span>
-    <span class="n">description</span> <span class="s2">"Find a post by ID"</span>
-    <span class="n">argument</span> <span class="ss">:id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
+  <span class="n">field</span> <span class="ss">:post</span><span class="p">,</span> <span class="no">PostType</span><span class="p">,</span> <span class="s2">"Find a post by ID"</span> <span class="k">do</span>
+    <span class="n">argument</span> <span class="ss">:id</span><span class="p">,</span> <span class="no">ID</span>
   <span class="k">end</span>
 
   <span class="c1"># Then provide an implementation:</span>

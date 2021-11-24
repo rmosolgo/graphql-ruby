@@ -237,7 +237,7 @@
 
   <span class="c1"># But, only allow `JobPostingPolicy#staff?` users to see</span>
   <span class="c1"># who has applied</span>
-  <span class="n">field</span> <span class="ss">:applicants</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">User</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">,</span>
+  <span class="n">field</span> <span class="ss">:applicants</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">User</span><span class="p">],</span>
     <span class="ss">pundit_role: :staff</span>
 <span class="k">end</span>
 </code></pre></div></div>
@@ -251,7 +251,7 @@
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::JobPosting</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="c1"># Only allow `ApplicantsPolicy#staff?` users to see</span>
   <span class="c1"># who has applied</span>
-  <span class="n">field</span> <span class="ss">:applicants</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">User</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">,</span>
+  <span class="n">field</span> <span class="ss">:applicants</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">User</span><span class="p">],</span>
     <span class="ss">pundit_role: :staff</span><span class="p">,</span>
     <span class="ss">pundit_policy_class: </span><span class="no">ApplicantsPolicy</span>
     <span class="c1"># Or with a string:</span>
@@ -293,7 +293,7 @@
 <p>Now, arguments accept a <code class="language-plaintext highlighter-rouge">pundit_role:</code> option, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::Company</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
-  <span class="n">field</span> <span class="ss">:employees</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Employee</span><span class="p">.</span><span class="nf">connection_type</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span> <span class="k">do</span>
+  <span class="n">field</span> <span class="ss">:employees</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Employee</span><span class="p">.</span><span class="nf">connection_type</span> <span class="k">do</span>
     <span class="c1"># Only admins can filter employees by email:</span>
     <span class="n">argument</span> <span class="ss">:email</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">pundit_role: :admin</span>
   <span class="k">end</span>
@@ -374,7 +374,7 @@
 <p>Beyond the normal <a href="#authorizing-objects">object reading permissions</a>, you can add an additional role for the specific mutation input using a <code class="language-plaintext highlighter-rouge">pundit_role:</code> option:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::FireEmployee</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
-  <span class="n">argument</span> <span class="ss">:employee_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span>
+  <span class="n">argument</span> <span class="ss">:employee_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span>
     <span class="ss">loads: </span><span class="no">Types</span><span class="o">::</span><span class="no">Employee</span><span class="p">,</span>
     <span class="ss">pundit_role: :supervisor</span><span class="p">,</span>
 <span class="k">end</span>
@@ -406,7 +406,7 @@
 <p>Whatever that method returns will be treated as an early return value for the mutation, so for example, you could return <a href="/mutations/mutation_errors">errors as data</a>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::BaseMutation</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">RelayClassicMutation</span>
-  <span class="n">field</span> <span class="ss">:errors</span><span class="p">,</span> <span class="p">[</span><span class="no">String</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">true</span>
+  <span class="n">field</span> <span class="ss">:errors</span><span class="p">,</span> <span class="p">[</span><span class="no">String</span><span class="p">]</span>
 
   <span class="k">def</span> <span class="nf">unauthorized_by_pundit</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
     <span class="c1"># Return errors as data:</span>

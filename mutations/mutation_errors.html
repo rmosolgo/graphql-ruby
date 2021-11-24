@@ -83,7 +83,7 @@
 
   <span class="n">field</span> <span class="ss">:message</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span>
     <span class="ss">description: </span><span class="s2">"A description of the error"</span>
-  <span class="n">field</span> <span class="ss">:path</span><span class="p">,</span> <span class="p">[</span><span class="no">String</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">,</span>
+  <span class="n">field</span> <span class="ss">:path</span><span class="p">,</span> <span class="p">[</span><span class="no">String</span><span class="p">],</span>
     <span class="ss">description: </span><span class="s2">"Which input value this error came from"</span>
 <span class="k">end</span>
 </code></pre></div></div>
@@ -162,19 +162,19 @@
 
 <h2 id="nullable-mutation-payload-fields">Nullable Mutation Payload Fields</h2>
 
-<p>To benefit from “Errors as Data” described above, mutation fields must have <code class="language-plaintext highlighter-rouge">null: true</code>. Why?</p>
+<p>To benefit from “Errors as Data” described above, mutation fields must not have <code class="language-plaintext highlighter-rouge">null: false</code>. Why?</p>
 
 <p>Well, for <em>non-null</em> fields (which have <code class="language-plaintext highlighter-rouge">null: false</code>), if they return <code class="language-plaintext highlighter-rouge">nil</code>, then GraphQL aborts the query and removes those fields from the response altogether.</p>
 
 <p>In mutations, when errors happen, the other fields may return <code class="language-plaintext highlighter-rouge">nil</code>. So, if those other fields have <code class="language-plaintext highlighter-rouge">null: false</code>, but they return <code class="language-plaintext highlighter-rouge">nil</code>, the GraphQL will panic and remove the whole mutation from the response, <em>including</em> the errors!</p>
 
-<p>In order to have the rich error data, even when other fields are <code class="language-plaintext highlighter-rouge">nil</code>, those fields must have <code class="language-plaintext highlighter-rouge">null: true</code> so that the type system can be obeyed when errors happen.</p>
+<p>In order to have the rich error data, even when other fields are <code class="language-plaintext highlighter-rouge">nil</code>, those fields must have <code class="language-plaintext highlighter-rouge">null: true</code> (which is the default) so that the type system can be obeyed when errors happen.</p>
 
 <p>Here’s an example of a nullable field (good!):</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::UpdatePost</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
-  <span class="c1"># Use `null: true` to support rich errors:</span>
-  <span class="n">field</span> <span class="ss">:post</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span>
+  <span class="c1"># Use the default `null: true` to support rich errors:</span>
+  <span class="n">field</span> <span class="ss">:post</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Post</span>
   <span class="c1"># ...</span>
 <span class="k">end</span>
 </code></pre></div></div>

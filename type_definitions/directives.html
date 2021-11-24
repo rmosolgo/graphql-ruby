@@ -150,7 +150,7 @@
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/directives/permission.rb</span>
 <span class="k">class</span> <span class="nc">Directives::Permission</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Directive</span>
-  <span class="n">argument</span> <span class="ss">:level</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
+  <span class="n">argument</span> <span class="ss">:level</span><span class="p">,</span> <span class="no">String</span>
   <span class="n">locations</span> <span class="no">FIELD_DEFINITION</span><span class="p">,</span> <span class="no">OBJECT</span>
 <span class="k">end</span>
 </code></pre></div></div>
@@ -197,7 +197,7 @@
 
 <p>Like fields, directives may have <a href="/fields/arguments">arguments</a> :</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">argument</span> <span class="ss">:if</span><span class="p">,</span> <span class="no">Boolean</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">argument</span> <span class="ss">:if</span><span class="p">,</span> <span class="no">Boolean</span><span class="p">,</span>
   <span class="ss">description: </span><span class="s2">"Skips the selection if this condition is true"</span>
 </code></pre></div></div>
 

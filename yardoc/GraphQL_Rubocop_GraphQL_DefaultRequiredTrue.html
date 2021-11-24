@@ -1,0 +1,26 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=/api-doc/1.12.21/GraphQL/Rubocop/GraphQL/DefaultRequiredTrue" />
+  </head>
+  <body>
+    <p>Class: GraphQL::Rubocop::GraphQL::DefaultRequiredTrue &lt; GraphQL::Rub…
+Identify (and auto-correct) any argument configuration which
+duplicates the default <code class="language-plaintext highlighter-rouge">required: true</code> property. 
+<code class="language-plaintext highlighter-rouge">required: true</code> is default because required arguments can always be
+converted to optional arguments (<code class="language-plaintext highlighter-rouge">required: false</code>) without a
+breaking change. (The opposite change, from <code class="language-plaintext highlighter-rouge">required: false</code> to
+<code class="language-plaintext highlighter-rouge">required: true</code>, change.) 
+Examples:
+#</p>
+<h1 id="both-of-these-define-id-id-in-graphql">Both of these define <code class="language-plaintext highlighter-rouge">id: ID!</code> in GraphQL:</h1>
+<h1 id="bad">bad</h1>
+<p>argument :id, ID, required: true</p>
+<h1 id="good">good</h1>
+<p>argument :id, ID
+Instance methods:
+on_send</p>
+
+
+  </body>
+</html>

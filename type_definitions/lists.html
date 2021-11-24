@@ -92,7 +92,7 @@
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># A field returning a list type:</span>
 <span class="c1"># Equivalent to `aliases: [String!]` above</span>
-<span class="n">field</span> <span class="ss">:aliases</span><span class="p">,</span> <span class="p">[</span><span class="no">String</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">true</span>
+<span class="n">field</span> <span class="ss">:aliases</span><span class="p">,</span> <span class="p">[</span><span class="no">String</span><span class="p">]</span>
 
 <span class="c1"># An argument which accepts a list type:</span>
 <span class="n">argument</span> <span class="ss">:categories</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">PostCategory</span><span class="p">],</span> <span class="ss">required: </span><span class="kp">false</span>
@@ -133,7 +133,7 @@
     </tr>
     <tr>
       <td>non-null items</td>
-      <td><code>[Integer], null: true</code><br /><code># =&gt; [Int!]</code></td>
+      <td><code>[Integer]</code><br /><code># =&gt; [Int!]</code></td>
       <td><code>[Integer], null: false</code><br /><code># =&gt; [Int!]!</code></td>
     </tr>
   </tbody>
@@ -227,7 +227,7 @@
 
 <p>Here’s an example field:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:scores</span><span class="p">,</span> <span class="p">[</span><span class="no">Integer</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">true</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:scores</span><span class="p">,</span> <span class="p">[</span><span class="no">Integer</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">]</span>
 <span class="c1"># In GraphQL,</span>
 <span class="c1">#   scores: [Int]</span>
 </code></pre></div></div>
@@ -271,7 +271,7 @@
 
 <p>Here’s an example field:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:scores</span><span class="p">,</span> <span class="p">[</span><span class="no">Integer</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">true</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:scores</span><span class="p">,</span> <span class="p">[</span><span class="no">Integer</span><span class="p">]</span>
 <span class="c1"># In GraphQL,</span>
 <span class="c1">#   scores: [Int!]</span>
 </code></pre></div></div>

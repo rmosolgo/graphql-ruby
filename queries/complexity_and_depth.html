@@ -112,6 +112,52 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
+<h4 id="connection-fields">Connection fields</h4>
+
+<p>By default, GraphQL-Ruby calculates a complexity value for connection fields by:</p>
+
+<ul>
+  <li>adding <code class="language-plaintext highlighter-rouge">1</code> for <code class="language-plaintext highlighter-rouge">pageInfo</code> and each of its subselections</li>
+  <li>adding <code class="language-plaintext highlighter-rouge">1</code> for <code class="language-plaintext highlighter-rouge">count</code>, <code class="language-plaintext highlighter-rouge">totalCount</code>, or <code class="language-plaintext highlighter-rouge">total</code></li>
+  <li>adding <code class="language-plaintext highlighter-rouge">1</code> for the connection field itself</li>
+  <li>
+    <p>multiplying the complexity of other fields by the largest possible page size, which is the greater of <code class="language-plaintext highlighter-rouge">first:</code> or <code class="language-plaintext highlighter-rouge">last:</code>, or if neither of those is given, the field’s <code class="language-plaintext highlighter-rouge">max_page_size</code> or the schema’s <code class="language-plaintext highlighter-rouge">default_max_page_size</code>.</p>
+
+    <p>(If no max page size can be determined, then the analysis crashes with an internal error – set <code class="language-plaintext highlighter-rouge">default_max_page_size</code> in your schema to prevent this.)</p>
+  </li>
+</ul>
+
+<p>For example, this query has complexity <code class="language-plaintext highlighter-rouge">26</code>:</p>
+
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">query</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">author</span><span class="w"> </span><span class="p">{</span><span class="w">              </span><span class="c"># +1</span><span class="w">
+    </span><span class="n">name</span><span class="w">                </span><span class="c"># +1</span><span class="w">
+    </span><span class="n">books</span><span class="p">(</span><span class="n">first</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">  </span><span class="c"># +1</span><span class="w">
+      </span><span class="n">nodes</span><span class="w"> </span><span class="p">{</span><span class="w">           </span><span class="c"># +10 (+1, multiplied by `first:` above)</span><span class="w">
+        </span><span class="n">title</span><span class="w">           </span><span class="c"># +10 (ditto)</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+      </span><span class="n">pageInfo</span><span class="w"> </span><span class="p">{</span><span class="w">        </span><span class="c"># +1</span><span class="w">
+        </span><span class="n">endCursor</span><span class="w">       </span><span class="c"># +1</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+      </span><span class="n">totalCount</span><span class="w">        </span><span class="c"># +1</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>To customize this behavior, implement <code class="language-plaintext highlighter-rouge">def calculate_complexity?(query:, nodes:, child_complexity:)</code> in your base field class, handling the case where <code class="language-plaintext highlighter-rouge">self.connection?</code> is <code class="language-plaintext highlighter-rouge">true</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::BaseField</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Field</span>
+  <span class="k">def</span> <span class="nf">calculate_complexity</span><span class="p">(</span><span class="n">query</span><span class="p">:,</span> <span class="n">nodes</span><span class="p">:,</span> <span class="n">child_complexity</span><span class="p">:)</span>
+    <span class="k">if</span> <span class="n">connection?</span>
+      <span class="c1"># Custom connection calculation goes here</span>
+    <span class="k">else</span>
+      <span class="k">super</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
 <h2 id="prevent-deeply-nested-queries">Prevent deeply-nested queries</h2>
 
 <p>You can also reject queries based on the depth of their nesting. You can define <code class="language-plaintext highlighter-rouge">max_depth</code> at schema-level or query-level:</p>

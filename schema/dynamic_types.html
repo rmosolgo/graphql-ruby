@@ -1,0 +1,363 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Dynamic types and fields</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.12.21/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#schema-guides">Schema</a>
+  &raquo; Dynamic types and fields
+</p>
+
+
+
+<h1 class="guide-header">Dynamic types and fields</h1>
+<div class="guide-container">
+  <p>You can use different versions of your GraphQL schema for each operation. To do this, implement <code class="language-plaintext highlighter-rouge">visible?(context)</code> on the parts of your schema that will be conditionally accessible. Additionally, many schema elements have definition methods which are called at runtime by GraphQL-Ruby. You can re-implement those to return any valid schema objects. GraphQL-Ruby caches schema elements for the duration of the operation, but if you’re making external service calls to implement the methods below, consider adding a cache layer to improve the client experience and reduce load on your backend.</p>
+
+<p>At runtime, ensure that only one object is visible per name (type name, field name, etc.). (If <code class="language-plaintext highlighter-rouge">.visible?(context)</code> returns <code class="language-plaintext highlighter-rouge">false</code>, then that part of the schema will be hidden for the current operation.)</p>
+
+<p>When using dynamic schema members, be sure to include the relevant <code class="language-plaintext highlighter-rouge">context: ...</code> when <a href="#schema-dumps">generating schema definition files</a>.</p>
+
+<h3 id="different-fields">Different fields</h3>
+
+<p>You can customize which field definitions are used for each operation.</p>
+
+<h4 id="using-visiblecontext">Using <code class="language-plaintext highlighter-rouge">#visible?(context)</code></h4>
+
+<p>To serve different fields to different clients, implement <code class="language-plaintext highlighter-rouge">def visible?(context)</code> in your <a href="/type_definitions/extensions#customizing-fields">base field class</a>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::BaseField</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Field</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="ss">for_staff: </span><span class="kp">false</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="k">super</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="vi">@for_staff</span> <span class="o">=</span> <span class="n">for_staff</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">visible?</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+    <span class="k">super</span> <span class="o">&amp;&amp;</span> <span class="k">case</span> <span class="vi">@for_staff</span>
+    <span class="k">when</span> <span class="kp">true</span>
+      <span class="o">!!</span><span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">]</span><span class="o">&amp;</span><span class="p">.</span><span class="nf">staff?</span>
+    <span class="k">when</span> <span class="kp">false</span>
+      <span class="o">!</span><span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">]</span><span class="o">&amp;</span><span class="p">.</span><span class="nf">staff?</span>
+    <span class="k">else</span>
+      <span class="kp">true</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Then, you can configure fields with <code class="language-plaintext highlighter-rouge">for_staff: true|false</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:comments</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Comment</span><span class="p">.</span><span class="nf">connection_type</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span>
+  <span class="ss">description: </span><span class="s2">"Comments on this blog post"</span><span class="p">,</span>
+  <span class="ss">resolver_method: :moderated_comments</span><span class="p">,</span>
+  <span class="ss">for_staff: </span><span class="kp">false</span>
+
+<span class="n">field</span> <span class="ss">:comments</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Comment</span><span class="p">.</span><span class="nf">connection_type</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span>
+  <span class="ss">description: </span><span class="s2">"Comments on this blog post, including unmoderated comments"</span><span class="p">,</span>
+  <span class="ss">resolver_method: :all_comments</span><span class="p">,</span>
+  <span class="ss">for_staff: </span><span class="kp">true</span>
+</code></pre></div></div>
+
+<p>With that configuration, <code class="language-plaintext highlighter-rouge">post { comments { ... } }</code> will use <code class="language-plaintext highlighter-rouge">def moderated_comments</code> when <code class="language-plaintext highlighter-rouge">context[:current_user]</code> is <code class="language-plaintext highlighter-rouge">nil</code> or is not <code class="language-plaintext highlighter-rouge">.staff?</code>, but when <code class="language-plaintext highlighter-rouge">context[:current_user].staff?</code> is <code class="language-plaintext highlighter-rouge">true</code>, it will use <code class="language-plaintext highlighter-rouge">def all_comments</code> instead.</p>
+
+<h4 id="using-fieldscontext">Using <code class="language-plaintext highlighter-rouge">.fields(context)</code></h4>
+
+<p>To customize the set of fields used at runtime, you can implement <code class="language-plaintext highlighter-rouge">def self.fields(context)</code> in your type classes, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::User</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">fields</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+    <span class="n">all_fields</span> <span class="o">=</span> <span class="k">super</span>
+    <span class="k">if</span> <span class="o">!</span><span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">]</span><span class="o">&amp;</span><span class="p">.</span><span class="nf">staff?</span>
+      <span class="n">all_fields</span><span class="p">.</span><span class="nf">delete</span><span class="p">(</span><span class="s2">"isSpammy"</span><span class="p">)</span> <span class="c1"># this is staff-only</span>
+    <span class="k">end</span>
+    <span class="n">all_fields</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>It should return a Hash of <code class="language-plaintext highlighter-rouge">{ String =&gt; GraphQL::Schema::Field }</code>.</p>
+
+<h4 id="hidden-return-types">Hidden Return Types</h4>
+
+<p>Besides field visibility described above, if an field’s return type is hidden (that is, it implements <code class="language-plaintext highlighter-rouge">self.visible?(context)</code> to return <code class="language-plaintext highlighter-rouge">false</code>), then the field will be hidden too.</p>
+
+<h3 id="different-arguments">Different arguments</h3>
+
+<p>As with fields, you can use different sets of argument definitions for different GraphQL operations.</p>
+
+<h4 id="using-visiblecontext-1">Using <code class="language-plaintext highlighter-rouge">#visible?(context)</code></h4>
+
+<p>To serve different arguments to different clients, implement <code class="language-plaintext highlighter-rouge">def visible?(context)</code> in your <a href="/type_definitions/extensions#customizing-arguments">base argument class</a>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::BaseArgument</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Argument</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="ss">for_staff: </span><span class="kp">false</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="k">super</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="vi">@for_staff</span> <span class="o">=</span> <span class="n">for_staff</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">visible?</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+    <span class="k">super</span> <span class="o">&amp;&amp;</span> <span class="k">case</span> <span class="vi">@for_staff</span>
+    <span class="k">when</span> <span class="kp">true</span>
+      <span class="o">!!</span><span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">]</span><span class="o">&amp;</span><span class="p">.</span><span class="nf">staff?</span>
+    <span class="k">when</span> <span class="kp">false</span>
+      <span class="o">!</span><span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">]</span><span class="o">&amp;</span><span class="p">.</span><span class="nf">staff?</span>
+    <span class="k">else</span>
+      <span class="kp">true</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Then, you can configure arguments with <code class="language-plaintext highlighter-rouge">for_staff: true|false</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:user</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">User</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">description: </span><span class="s2">"Look up a user"</span> <span class="k">do</span>
+  <span class="c1"># Require a UUID-style ID from non-staff clients:</span>
+  <span class="n">argument</span> <span class="ss">:id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">for_staff: </span><span class="kp">false</span>
+  <span class="c1"># Support database primary key lookups for staff clients:</span>
+  <span class="n">argument</span> <span class="ss">:id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">for_staff: </span><span class="kp">true</span>
+  <span class="n">argument</span> <span class="ss">:database_id</span><span class="p">,</span> <span class="no">Int</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">for_staff: </span><span class="kp">true</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">user</span><span class="p">(</span><span class="ss">id: </span><span class="kp">nil</span><span class="p">,</span> <span class="ss">database_id: </span><span class="kp">nil</span><span class="p">)</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>That way, any staff client will have the option of <code class="language-plaintext highlighter-rouge">id</code> or <code class="language-plaintext highlighter-rouge">databaseId</code> while non-staff clients must use <code class="language-plaintext highlighter-rouge">id</code>.</p>
+
+<h4 id="using-def-argumentscontext">Using <code class="language-plaintext highlighter-rouge">def arguments(context)</code></h4>
+
+<p>Also, you can implement <code class="language-plaintext highlighter-rouge">def arguments(context)</code> on your base field class to return a Hash of <code class="language-plaintext highlighter-rouge">{ String =&gt; GraphQL::Schema::Argument }</code>. If you take this approach, you might want some custom field classes for any types or resolvers that use <code class="language-plaintext highlighter-rouge">def arguments(context)</code>. That way, you don’t have to reimplement the method for <em>all</em> the fields in the schema.</p>
+
+<h4 id="hidden-input-types">Hidden Input Types</h4>
+
+<p>Besides argument visibility described above, if an argument’s input type is hidden (that is, it implements <code class="language-plaintext highlighter-rouge">self.visible?(context)</code> to return <code class="language-plaintext highlighter-rouge">false</code>), then the argument will be hidden too.</p>
+
+<h3 id="different-enum-values">Different enum values</h3>
+
+<h4 id="using-visiblecontext-2">Using <code class="language-plaintext highlighter-rouge">#visible?(context)</code></h4>
+
+<p>You can implement <code class="language-plaintext highlighter-rouge">def visible?(context)</code> in your <a href="/type_definitions/extensions#customizing-enum-values">base enum value class</a> to hide some enum values from some clients. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BaseEnumValue</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">EnumValue</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="ss">for_staff: </span><span class="kp">false</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="k">super</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="vi">@for_staff</span> <span class="o">=</span> <span class="n">for_staff</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">visible?</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+    <span class="k">super</span> <span class="o">&amp;&amp;</span> <span class="k">case</span> <span class="vi">@for_staff</span>
+    <span class="k">when</span> <span class="kp">true</span>
+      <span class="o">!!</span><span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">]</span><span class="o">&amp;</span><span class="p">.</span><span class="nf">staff?</span>
+    <span class="k">when</span> <span class="kp">false</span>
+      <span class="o">!</span><span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">]</span><span class="o">&amp;</span><span class="p">.</span><span class="nf">staff?</span>
+    <span class="k">else</span>
+      <span class="kp">true</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>With this base class, you can configure some enum values to be <em>just</em> for staff or non-staff viewers:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">AccountStatus</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseEnum</span>
+  <span class="n">value</span> <span class="s2">"ACTIVE"</span>
+  <span class="n">value</span> <span class="s2">"INACTIVE"</span>
+  <span class="c1"># Use this for sensitive account statuses when the viewer is public:</span>
+  <span class="n">value</span> <span class="s2">"OTHER"</span><span class="p">,</span> <span class="ss">for_staff: </span><span class="kp">false</span>
+  <span class="c1"># Staff-only sensitive account statuses:</span>
+  <span class="n">value</span> <span class="s2">"BANNED"</span><span class="p">,</span> <span class="ss">for_staff: </span><span class="kp">true</span>
+  <span class="n">value</span> <span class="s2">"PAYMENT_FAILED"</span><span class="p">,</span> <span class="ss">for_staff: </span><span class="kp">true</span>
+  <span class="n">value</span> <span class="s2">"PENDING_VERIFICATION"</span><span class="p">,</span> <span class="ss">for_staff: </span><span class="kp">true</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h4 id="using-enum_valuescontext">Using <code class="language-plaintext highlighter-rouge">.enum_values(context)</code></h4>
+
+<p>Alternatively, you can implement <code class="language-plaintext highlighter-rouge">def self.enum_values(context)</code> in your enum types to return an Array of <a href="/api-doc/1.12.21/GraphQL/Schema/EnumValue" target="_blank" title="API docs for GraphQL::Schema::EnumValue"><code>GraphQL::Schema::EnumValue</code></a>s. For example, to return a dynamic set of enum values:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">ProjectStatus</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseEnum</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">enum_values</span><span class="p">(</span><span class="n">context</span> <span class="o">=</span> <span class="p">{})</span>
+    <span class="c1"># Fetch the values from the database</span>
+    <span class="n">status_names</span> <span class="o">=</span> <span class="n">context</span><span class="p">[</span><span class="ss">:tenant</span><span class="p">].</span><span class="nf">project_statuses</span><span class="p">.</span><span class="nf">pluck</span><span class="p">(</span><span class="s2">"name"</span><span class="p">)</span>
+
+    <span class="c1"># Then build an Array of Enum values</span>
+    <span class="n">status_names</span><span class="p">.</span><span class="nf">map</span> <span class="k">do</span> <span class="o">|</span><span class="nb">name</span><span class="o">|</span>
+      <span class="c1"># Be sure to include `owner: self`, the back-reference from the EnumValue to its parent Enum</span>
+      <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">EnumValue</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="nb">name</span><span class="p">,</span> <span class="ss">owner: </span><span class="nb">self</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h3 id="different-types">Different types</h3>
+
+<p>You can also use different types for each query. A few behaviors depend on the methods defined above:</p>
+
+<ul>
+  <li>If a type is not used as a return type, an argument type, or as a member of a union or implementor of an interface, it will be hidden</li>
+  <li>If an interface or union has members, it will be hidden</li>
+  <li>If a field’s return type is hidden, the field will be hidden</li>
+  <li>If an argument’s input type is hidden, the argument will be hidden</li>
+</ul>
+
+<p>As you can imagine, these different hiding behaviors influence one another and they can cause some real head-scratchers when used simultaneously.</p>
+
+<h4 id="using-visiblecontext-3">Using <code class="language-plaintext highlighter-rouge">.visible?(context)</code></h4>
+
+<p>Type classes can implement <code class="language-plaintext highlighter-rouge">def self.visible?(context)</code> to hide themselves at runtime:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::BanReason</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseEnum</span>
+  <span class="c1"># Hide any arguments or fields that use this enum</span>
+  <span class="c1"># unless the current user is staff</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">visible?</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+    <span class="k">super</span> <span class="o">&amp;&amp;</span> <span class="o">!!</span><span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">]</span><span class="o">&amp;</span><span class="p">.</span><span class="nf">staff?</span>
+  <span class="k">end</span>
+
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h4 id="different-definitions-for-the-same-type">Different definitions for the same type</h4>
+
+<p>You can provide different implementations of the same type by:</p>
+
+<ul>
+  <li>Implementing <code class="language-plaintext highlighter-rouge">def self.visible?(context)</code> to return <code class="language-plaintext highlighter-rouge">true</code> and <code class="language-plaintext highlighter-rouge">false</code> in complementary contexts. (They should never both be <code class="language-plaintext highlighter-rouge">.visible? =&gt; true</code>).</li>
+  <li>Hooking the types up to the schema with different field or argument definitions, as described above</li>
+</ul>
+
+<p>For example, to migrate your <code class="language-plaintext highlighter-rouge">Money</code> scalar to a <code class="language-plaintext highlighter-rouge">Money</code> object type:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Previously, we used a simple string to describe money:</span>
+<span class="k">class</span> <span class="nc">Types::LegacyMoney</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseScalar</span>
+  <span class="c1"># This graphql name will conflict with `Types::Money`,</span>
+  <span class="c1"># so we have to be careful not to use them at the same time.</span>
+  <span class="c1"># (GraphQL-Ruby will raise an error if it finds two definitions with the same name at runtime.)</span>
+  <span class="n">graphql_name</span> <span class="s2">"Money"</span>
+  <span class="n">describe</span> <span class="s2">"A string describing an amount of money."</span>
+
+  <span class="c1"># Use this type definition if the current request</span>
+  <span class="c1"># explicitly opted in to the legacy money representation:</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">visible?</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+    <span class="o">!!</span><span class="n">context</span><span class="p">[</span><span class="ss">:requests_legacy_money</span><span class="p">]</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># But we want to improve the client experience with a dedicated object type:</span>
+<span class="k">class</span> <span class="nc">Types::Money</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+  <span class="n">field</span> <span class="ss">:amount</span><span class="p">,</span> <span class="no">Integer</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+  <span class="n">field</span> <span class="ss">:currency</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Currency</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+
+  <span class="c1"># Use this new definition if the client</span>
+  <span class="c1"># didn't explicitly ask for the legacy definition:</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">visible?</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+    <span class="o">!</span><span class="n">context</span><span class="p">[</span><span class="ss">:requests_legacy_money</span><span class="p">]</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Then, hook the definitions up to the schema using field definitions:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::BaseField</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Field</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="ss">legacy_money: </span><span class="kp">false</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="k">super</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="vi">@legacy_money</span> <span class="o">=</span> <span class="n">legacy_money</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">visible?</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+    <span class="k">super</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="vi">@legacy_money</span> <span class="p">?</span> <span class="o">!!</span><span class="n">context</span><span class="p">[</span><span class="ss">:requests_legacy_money</span><span class="p">]</span> <span class="p">:</span> <span class="o">!</span><span class="n">context</span><span class="p">[</span><span class="ss">:requests_legacy_money</span><span class="p">])</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Types::Invoice</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+  <span class="c1"># Add one definition for each possible return type</span>
+  <span class="c1"># (one definition will be hidden at runtime)</span>
+  <span class="n">field</span> <span class="ss">:amount</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">LegacyMoney</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">legacy_money: </span><span class="kp">true</span>
+  <span class="n">field</span> <span class="ss">:amount</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Money</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">legacy_money: </span><span class="kp">false</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Input types (like input objects, scalars, and enums) work the same way with argument definitions.</p>
+
+<h3 id="schema-dumps">Schema Dumps</h3>
+
+<p>To dump a certain <em>version</em> of the schema, provide the applicable <code class="language-plaintext highlighter-rouge">context: ...</code> to <a href="/api-doc/1.12.21/GraphQL/Schema#to_definition-class_method" target="_blank" title="API docs for GraphQL::Schema.to_definition"><code>Schema.to_definition</code></a>. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Legacy money schema:</span>
+<span class="no">MySchema</span><span class="p">.</span><span class="nf">to_definition</span><span class="p">(</span><span class="ss">context: </span><span class="p">{</span> <span class="ss">requests_legacy_money: </span><span class="kp">true</span> <span class="p">})</span>
+</code></pre></div></div>
+
+<p>or</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Staff-only schema:</span>
+<span class="no">MySchema</span><span class="p">.</span><span class="nf">to_definition</span><span class="p">(</span><span class="ss">context: </span><span class="p">{</span> <span class="ss">current_user: </span><span class="no">OpenStruct</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">staff?: </span><span class="kp">true</span><span class="p">)</span> <span class="p">})</span>
+</code></pre></div></div>
+
+<p>That way, the given <code class="language-plaintext highlighter-rouge">context</code> will be passed to <code class="language-plaintext highlighter-rouge">visible?(context)</code> calls and other relevant methods.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/schema/dynamic_types.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Dynamic types and fields">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>

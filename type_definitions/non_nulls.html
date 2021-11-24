@@ -80,13 +80,13 @@
 
 <p>When <code class="language-plaintext highlighter-rouge">!</code> is used for arguments (like <code class="language-plaintext highlighter-rouge">followers(since: DateTime!)</code> above), it means that the argument is <em>required</em> for the query to execute. Any query which doesn’t have a value for that argument will be rejected immediately.</p>
 
-<p>To make an argument non-null in Ruby, use <code class="language-plaintext highlighter-rouge">required: true</code>, for example:</p>
+<p>Arguments are non-null by default. You can use <code class="language-plaintext highlighter-rouge">required: false</code> to mark arguments as optional:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># equivalent to `since: DateTime!` above</span>
-<span class="n">argument</span> <span class="ss">:since</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">DateTime</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># This will be `since: DateTime` instead of `since: DateTime!`</span>
+<span class="n">argument</span> <span class="ss">:since</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">DateTime</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">false</span>
 </code></pre></div></div>
 
-<p>This means that any query <em>without</em> a value for <code class="language-plaintext highlighter-rouge">since:</code> will be rejected.</p>
+<p>Without <code class="language-plaintext highlighter-rouge">required: false</code>, any query <em>without</em> a value for <code class="language-plaintext highlighter-rouge">since:</code> will be rejected.</p>
 
 </div>
 <p class="guide-footer">

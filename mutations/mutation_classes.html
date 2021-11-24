@@ -94,10 +94,11 @@
 <p>Then extend it for your mutations:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::CreateComment</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
-  <span class="n">argument</span> <span class="ss">:body</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
-  <span class="n">argument</span> <span class="ss">:post_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
+  <span class="n">null</span> <span class="kp">true</span>
+  <span class="n">argument</span> <span class="ss">:body</span><span class="p">,</span> <span class="no">String</span>
+  <span class="n">argument</span> <span class="ss">:post_id</span><span class="p">,</span> <span class="no">ID</span>
 
-  <span class="n">field</span> <span class="ss">:comment</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Comment</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span>
+  <span class="n">field</span> <span class="ss">:comment</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Comment</span>
   <span class="n">field</span> <span class="ss">:errors</span><span class="p">,</span> <span class="p">[</span><span class="no">String</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span>
 
   <span class="k">def</span> <span class="nf">resolve</span><span class="p">(</span><span class="n">body</span><span class="p">:,</span> <span class="n">post_id</span><span class="p">:)</span>
@@ -142,9 +143,9 @@
 <p>An alternative approach is to use the <code class="language-plaintext highlighter-rouge">loads:</code> argument when defining the argument:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::AddStar</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
-  <span class="n">argument</span> <span class="ss">:post_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">loads: </span><span class="no">Types</span><span class="o">::</span><span class="no">Post</span>
+  <span class="n">argument</span> <span class="ss">:post_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">loads: </span><span class="no">Types</span><span class="o">::</span><span class="no">Post</span>
 
-  <span class="n">field</span> <span class="ss">:post</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span>
+  <span class="n">field</span> <span class="ss">:post</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Post</span>
 
   <span class="k">def</span> <span class="nf">resolve</span><span class="p">(</span><span class="n">post</span><span class="p">:)</span>
     <span class="n">post</span><span class="p">.</span><span class="nf">star</span>
@@ -163,9 +164,9 @@
 <p>The <code class="language-plaintext highlighter-rouge">loads:</code> option also works with list of IDs, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::AddStars</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
-  <span class="n">argument</span> <span class="ss">:post_ids</span><span class="p">,</span> <span class="p">[</span><span class="no">ID</span><span class="p">],</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">loads: </span><span class="no">Types</span><span class="o">::</span><span class="no">Post</span>
+  <span class="n">argument</span> <span class="ss">:post_ids</span><span class="p">,</span> <span class="p">[</span><span class="no">ID</span><span class="p">],</span> <span class="ss">loads: </span><span class="no">Types</span><span class="o">::</span><span class="no">Post</span>
 
-  <span class="n">field</span> <span class="ss">:posts</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">true</span>
+  <span class="n">field</span> <span class="ss">:posts</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">]</span>
 
   <span class="k">def</span> <span class="nf">resolve</span><span class="p">(</span><span class="n">posts</span><span class="p">:)</span>
     <span class="n">posts</span><span class="p">.</span><span class="nf">map</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:star</span><span class="p">)</span>
@@ -182,9 +183,9 @@
 <p>In some cases, you may want to control the resulting argument name. This can be done using the <code class="language-plaintext highlighter-rouge">as:</code> argument, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::AddStar</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
-  <span class="n">argument</span> <span class="ss">:post_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">loads: </span><span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">,</span> <span class="ss">as: :something</span>
+  <span class="n">argument</span> <span class="ss">:post_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">loads: </span><span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">,</span> <span class="ss">as: :something</span>
 
-  <span class="n">field</span> <span class="ss">:post</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span>
+  <span class="n">field</span> <span class="ss">:post</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Post</span>
 
   <span class="k">def</span> <span class="nf">resolve</span><span class="p">(</span><span class="n">something</span><span class="p">:)</span>
     <span class="n">something</span><span class="p">.</span><span class="nf">star</span>

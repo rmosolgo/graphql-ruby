@@ -53,7 +53,7 @@
 <p>Arguments are defined with the <code class="language-plaintext highlighter-rouge">argument</code> helper. These arguments are passed as <a href="https://robots.thoughtbot.com/ruby-2-keyword-arguments">keyword arguments</a> to the resolver method:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:search_posts</span><span class="p">,</span> <span class="p">[</span><span class="no">PostType</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
-  <span class="n">argument</span> <span class="ss">:category</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
+  <span class="n">argument</span> <span class="ss">:category</span><span class="p">,</span> <span class="no">String</span>
 <span class="k">end</span>
 
 <span class="k">def</span> <span class="nf">search_posts</span><span class="p">(</span><span class="n">category</span><span class="p">:)</span>
@@ -111,7 +111,7 @@
 exposing another key to clients.</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:post</span><span class="p">,</span> <span class="no">PostType</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
-  <span class="n">argument</span> <span class="ss">:post_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">as: :id</span>
+  <span class="n">argument</span> <span class="ss">:post_id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">as: :id</span>
 <span class="k">end</span>
 
 <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="nb">id</span><span class="p">:)</span>
@@ -122,7 +122,7 @@ exposing another key to clients.</p>
 <p>Provide a <code class="language-plaintext highlighter-rouge">prepare</code> function to modify or validate the value of an argument before the field’s resolver method is executed:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:posts</span><span class="p">,</span> <span class="p">[</span><span class="no">PostType</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
-  <span class="n">argument</span> <span class="ss">:start_date</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">prepare: </span><span class="o">-&gt;</span><span class="p">(</span><span class="n">startDate</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">argument</span> <span class="ss">:start_date</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">prepare: </span><span class="o">-&gt;</span><span class="p">(</span><span class="n">startDate</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span> <span class="p">{</span>
     <span class="c1"># return the prepared argument.</span>
     <span class="c1"># raise a GraphQL::ExecutionError to halt the execution of the field and</span>
     <span class="c1"># add the exception's message to the `errors` key.</span>
@@ -137,7 +137,7 @@ exposing another key to clients.</p>
 <p>Arguments that are snake_cased will be camelized in the GraphQL schema. Using the example of:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:posts</span><span class="p">,</span> <span class="p">[</span><span class="no">PostType</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
-  <span class="n">argument</span> <span class="ss">:start_year</span><span class="p">,</span> <span class="no">Int</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
+  <span class="n">argument</span> <span class="ss">:start_year</span><span class="p">,</span> <span class="no">Int</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
@@ -153,14 +153,14 @@ exposing another key to clients.</p>
 <p>To disable auto-camelization, pass <code class="language-plaintext highlighter-rouge">camelize: false</code> to the <code class="language-plaintext highlighter-rouge">argument</code> method.</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:posts</span><span class="p">,</span> <span class="p">[</span><span class="no">PostType</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
-  <span class="n">argument</span> <span class="ss">:start_year</span><span class="p">,</span> <span class="no">Int</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">camelize: </span><span class="kp">false</span>
+  <span class="n">argument</span> <span class="ss">:start_year</span><span class="p">,</span> <span class="no">Int</span><span class="p">,</span> <span class="ss">camelize: </span><span class="kp">false</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
 <p>Furthermore, if your argument is already camelCased, then it will remain camelized in the GraphQL schema. However, the argument will be converted to snake_case when it is passed to the resolver method:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:posts</span><span class="p">,</span> <span class="p">[</span><span class="no">PostType</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
-  <span class="n">argument</span> <span class="ss">:startYear</span><span class="p">,</span> <span class="no">Int</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
+  <span class="n">argument</span> <span class="ss">:startYear</span><span class="p">,</span> <span class="no">Int</span>
 <span class="k">end</span>
 
 <span class="k">def</span> <span class="nf">posts</span><span class="p">(</span><span class="n">start_year</span><span class="p">:)</span>

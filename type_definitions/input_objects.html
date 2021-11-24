@@ -85,8 +85,8 @@
 
 <span class="k">class</span> <span class="nc">Types::PostAttributes</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseInputObject</span>
   <span class="n">description</span> <span class="s2">"Attributes for creating or updating a blog post"</span>
-  <span class="n">argument</span> <span class="ss">:title</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="s2">"Header for the post"</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
-  <span class="n">argument</span> <span class="ss">:full_text</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="s2">"Full body of the post"</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
+  <span class="n">argument</span> <span class="ss">:title</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="s2">"Header for the post"</span>
+  <span class="n">argument</span> <span class="ss">:full_text</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="s2">"Full body of the post"</span>
   <span class="n">argument</span> <span class="ss">:categories</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">PostCategory</span><span class="p">],</span> <span class="ss">required: </span><span class="kp">false</span>
 <span class="k">end</span>
 </code></pre></div></div>
@@ -105,7 +105,7 @@
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># This field takes an argument called `attributes`</span>
 <span class="c1"># which will be an instance of `PostAttributes`</span>
 <span class="n">field</span> <span class="ss">:create_post</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
-  <span class="n">argument</span> <span class="ss">:attributes</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">PostAttributes</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
+  <span class="n">argument</span> <span class="ss">:attributes</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">PostAttributes</span>
 <span class="k">end</span>
 
 <span class="k">def</span> <span class="nf">create_post</span><span class="p">(</span><span class="n">attributes</span><span class="p">:)</span>
@@ -124,15 +124,15 @@
 
 <p>You can customize the <code class="language-plaintext highlighter-rouge">GraphQL::Schema::Argument</code> class which is used for input objects:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::BaseArgument</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Argument</span> 
-  <span class="c1"># your customization here ... </span>
-<span class="k">end</span> 
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::BaseArgument</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Argument</span>
+  <span class="c1"># your customization here ...</span>
+<span class="k">end</span>
 
 
-<span class="k">class</span> <span class="nc">Types::BaseInputObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">InputObject</span> 
-  <span class="c1"># Hook up the customized argument class </span>
-  <span class="n">argument_class</span><span class="p">(</span><span class="no">Types</span><span class="o">::</span><span class="no">BaseArgument</span><span class="p">)</span>  
-<span class="k">end</span> 
+<span class="k">class</span> <span class="nc">Types::BaseInputObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">InputObject</span>
+  <span class="c1"># Hook up the customized argument class</span>
+  <span class="n">argument_class</span><span class="p">(</span><span class="no">Types</span><span class="o">::</span><span class="no">BaseArgument</span><span class="p">)</span>
+<span class="k">end</span>
 </code></pre></div></div>
 
 <p>You can also add or override methods on input object classes to customize them.  They have two instance variables by default:</p>
@@ -150,8 +150,8 @@
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::DateRangeInput</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseInputObject</span>
   <span class="n">description</span> <span class="s2">"Range of dates"</span>
-  <span class="n">argument</span> <span class="ss">:min</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Date</span><span class="p">,</span> <span class="s2">"Minimum value of the range"</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
-  <span class="n">argument</span> <span class="ss">:max</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Date</span><span class="p">,</span> <span class="s2">"Maximum value of the range"</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
+  <span class="n">argument</span> <span class="ss">:min</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Date</span><span class="p">,</span> <span class="s2">"Minimum value of the range"</span>
+  <span class="n">argument</span> <span class="ss">:max</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Date</span><span class="p">,</span> <span class="s2">"Maximum value of the range"</span>
 
   <span class="k">def</span> <span class="nf">prepare</span>
     <span class="n">min</span><span class="o">..</span><span class="n">max</span>
@@ -160,7 +160,7 @@
 
 <span class="k">class</span> <span class="nc">Types::CalendarType</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="n">field</span> <span class="ss">:appointments</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">Appointment</span><span class="p">],</span> <span class="s2">"Appointments on your calendar"</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
-    <span class="n">argument</span> <span class="ss">:during</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">DateRangeInput</span><span class="p">,</span> <span class="s2">"Only show appointments within this range"</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
+    <span class="n">argument</span> <span class="ss">:during</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">DateRangeInput</span><span class="p">,</span> <span class="s2">"Only show appointments within this range"</span>
   <span class="k">end</span>
 
   <span class="k">def</span> <span class="nf">appointments</span><span class="p">(</span><span class="n">during</span><span class="p">:)</span>
