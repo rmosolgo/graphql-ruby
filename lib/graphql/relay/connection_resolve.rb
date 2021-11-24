@@ -16,7 +16,7 @@ module GraphQL
 
         nodes = @underlying_resolve.call(obj, args, ctx)
 
-        if nodes.nil? || ctx.schema.lazy?(nodes) || nodes.is_a?(GraphQL::Execution::Execute::Skip) || ctx.wrapped_connection
+        if nodes.nil? || ctx.schema.lazy?(nodes) || nodes.is_a?(GraphQL::Execution::Skip) || ctx.wrapped_connection
           nodes
         else
           ctx.wrapped_connection = true

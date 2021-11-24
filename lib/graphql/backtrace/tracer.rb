@@ -62,7 +62,6 @@ module GraphQL
             potential_context = multiplex_context[:last_graphql_backtrace_context]
 
             if potential_context.is_a?(GraphQL::Query::Context) ||
-                potential_context.is_a?(GraphQL::Query::Context::FieldResolutionContext) ||
                 potential_context.is_a?(Backtrace::Frame)
               raise TracedError.new(err, potential_context)
             else

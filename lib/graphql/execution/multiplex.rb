@@ -58,17 +58,37 @@ module GraphQL
         def run_queries(schema, queries, context: {}, max_complexity: schema.max_complexity)
           multiplex = self.new(schema: schema, queries: queries, context: context, max_complexity: max_complexity)
           multiplex.trace("execute_multiplex", { multiplex: multiplex }) do
-            if supports_multiplexing?(schema)
-              instrument_and_analyze(multiplex) do
-                run_as_multiplex(multiplex)
-              end
-            else
-              if queries.length != 1
-                raise ArgumentError, "Multiplexing doesn't support custom execution strategies, run one query at a time instead"
-              else
-                instrument_and_analyze(multiplex) do
-                  [run_one_legacy(schema, queries.first)]
+            instrument_and_analyze(multiplex) do
+              begin
+                multiplex.schema.query_execution_strategy.begin_multiplex(multiplex)
+                # Do as much eager evaluation of the query as possible
+                results = []
+                queries.each_with_index do |query, idx|
+                  multiplex.dataloader.append_job { begin_query(results, idx, query, multiplex) }
                 end
+
+                multiplex.dataloader.run
+
+                # Then, work through lazy results in a breadth-first way
+                multiplex.dataloader.append_job {
+                  multiplex.schema.query_execution_strategy.finish_multiplex(results, multiplex)
+                }
+                multiplex.dataloader.run
+
+                # Then, find all errors and assign the result to the query object
+                results.each_with_index do |data_result, idx|
+                  query = queries[idx]
+                  finish_query(data_result, query, multiplex)
+                  # Get the Query::Result, not the Hash
+                  results[idx] = query.result
+                end
+
+                results
+              rescue Exception
+                # TODO rescue at a higher level so it will catch errors in analysis, too
+                # Assign values here so that the query's `@executed` becomes true
+                queries.map { |q| q.result_values ||= {} }
+                raise
               end
             end
           end
@@ -81,7 +101,6 @@ module GraphQL
             NO_OPERATION
           else
             begin
-              # These were checked to be the same in `#supports_multiplexing?`
               query.schema.query_execution_strategy.begin_query(query, multiplex)
             rescue GraphQL::ExecutionError => err
               query.context.errors << err
@@ -93,40 +112,6 @@ module GraphQL
         end
 
         private
-
-        def run_as_multiplex(multiplex)
-
-          multiplex.schema.query_execution_strategy.begin_multiplex(multiplex)
-          queries = multiplex.queries
-          # Do as much eager evaluation of the query as possible
-          results = []
-          queries.each_with_index do |query, idx|
-            multiplex.dataloader.append_job { begin_query(results, idx, query, multiplex) }
-          end
-
-          multiplex.dataloader.run
-
-          # Then, work through lazy results in a breadth-first way
-          multiplex.dataloader.append_job {
-            multiplex.schema.query_execution_strategy.finish_multiplex(results, multiplex)
-          }
-          multiplex.dataloader.run
-
-          # Then, find all errors and assign the result to the query object
-          results.each_with_index do |data_result, idx|
-            query = queries[idx]
-            finish_query(data_result, query, multiplex)
-            # Get the Query::Result, not the Hash
-            results[idx] = query.result
-          end
-
-          results
-        rescue Exception
-          # TODO rescue at a higher level so it will catch errors in analysis, too
-          # Assign values here so that the query's `@executed` becomes true
-          queries.map { |q| q.result_values ||= {} }
-          raise
-        end
 
         # @param data_result [Hash] The result for the "data" key, if any
         # @param query [GraphQL::Query] The query which was run
@@ -151,33 +136,6 @@ module GraphQL
 
             result
           end
-        end
-
-        # use the old `query_execution_strategy` etc to run this query
-        def run_one_legacy(schema, query)
-          GraphQL::Deprecation.warn "Multiplex.run_one_legacy will be removed from GraphQL-Ruby 2.0, upgrade to the Interpreter to avoid this deprecated codepath: https://graphql-ruby.org/queries/interpreter.html"
-
-          query.result_values = if !query.valid?
-            all_errors = query.validation_errors + query.analysis_errors + query.context.errors
-            if all_errors.any?
-              { "errors" => all_errors.map(&:to_h) }
-            else
-              nil
-            end
-          else
-            GraphQL::Query::Executor.new(query).result
-          end
-        end
-
-        DEFAULT_STRATEGIES = [
-          GraphQL::Execution::Execute,
-          GraphQL::Execution::Interpreter
-        ]
-        # @return [Boolean] True if the schema is only using one strategy, and it's one that supports multiplexing.
-        def supports_multiplexing?(schema)
-          schema_strategies = [schema.query_execution_strategy, schema.mutation_execution_strategy, schema.subscription_execution_strategy]
-          schema_strategies.uniq!
-          schema_strategies.size == 1 && DEFAULT_STRATEGIES.include?(schema_strategies.first)
         end
 
         # Apply multiplex & query instrumentation to `queries`.

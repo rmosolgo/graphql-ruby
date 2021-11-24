@@ -275,7 +275,6 @@ module GraphQL
         @directives[name] = dir.graphql_definition
       end
       @static_validator = GraphQL::StaticValidation::Validator.new(schema: self)
-      @middleware = MiddlewareChain.new(final_step: GraphQL::Execution::Execute::FieldResolveStep)
       @query_analyzers = []
       @multiplex_analyzers = []
       @resolve_type_proc = nil
@@ -289,9 +288,6 @@ module GraphQL
       @cursor_encoder = Base64Encoder
       # For schema instances, default to legacy runtime modules
       @analysis_engine = GraphQL::Analysis
-      @query_execution_strategy = GraphQL::Execution::Execute
-      @mutation_execution_strategy = GraphQL::Execution::Execute
-      @subscription_execution_strategy = GraphQL::Execution::Execute
       @default_mask = GraphQL::Schema::NullMask
       @rebuilding_artifacts = false
       @context_class = GraphQL::Query::Context
@@ -960,7 +956,6 @@ module GraphQL
         schema_defn.query_analyzers.concat(query_analyzers)
         schema_defn.analysis_engine = analysis_engine
 
-        schema_defn.middleware.concat(all_middleware)
         schema_defn.multiplex_analyzers.concat(multiplex_analyzers)
         schema_defn.query_execution_strategy = query_execution_strategy
         schema_defn.mutation_execution_strategy = mutation_execution_strategy
@@ -1669,16 +1664,6 @@ module GraphQL
         find_inherited_value(:query_analyzers, EMPTY_ARRAY) + own_query_analyzers
       end
 
-      def middleware(new_middleware = nil)
-        if new_middleware
-          GraphQL::Deprecation.warn "Middleware will be removed in GraphQL-Ruby 2.0, please upgrade to Field Extensions: https://graphql-ruby.org/type_definitions/field_extensions.html"
-          own_middleware << new_middleware
-        else
-          # TODO make sure this is cached when running a query
-          MiddlewareChain.new(steps: all_middleware, final_step: GraphQL::Execution::Execute::FieldResolveStep)
-        end
-      end
-
       def multiplex_analyzer(new_analyzer)
         own_multiplex_analyzers << new_analyzer
       end
@@ -1876,14 +1861,6 @@ module GraphQL
 
       def own_query_analyzers
         @defined_query_analyzers ||= []
-      end
-
-      def all_middleware
-        find_inherited_value(:all_middleware, EMPTY_ARRAY) + own_middleware
-      end
-
-      def own_middleware
-        @own_middleware ||= []
       end
 
       def own_multiplex_analyzers

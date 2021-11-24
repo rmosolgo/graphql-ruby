@@ -618,7 +618,7 @@ module GraphQL
                 err
               end
               continue_value(path, next_value, parent_type, field, is_non_null, ast_node, result_name, selection_result)
-            elsif GraphQL::Execution::Execute::SKIP == value
+            elsif GraphQL::Execution::SKIP == value
               # It's possible a lazy was already written here
               case selection_result
               when GraphQLResultHash
