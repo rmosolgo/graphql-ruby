@@ -902,11 +902,11 @@ module Jazz
     end
 
     class DynamicFields < GraphQL::Introspection::DynamicFields
-      field :__typename_length, Int, null: false, extras: [:irep_node]
+      field :__typename_length, Int, null: false
       field :__ast_node_class, String, null: false, extras: [:ast_node]
 
-      def __typename_length(irep_node: nil)
-        __typename(irep_node: irep_node).length
+      def __typename_length
+        __typename.length
       end
 
       def __ast_node_class(ast_node:)

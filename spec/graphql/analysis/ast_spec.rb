@@ -113,23 +113,6 @@ describe GraphQL::Analysis::AST do
       refute res.key?("data")
       assert_equal ["An Error!"], res["errors"].map { |e| e["message"] }
     end
-
-    it "skips rewrite" do
-      # Try running the query:
-      query.result
-      # But the validation step doesn't build an irep_node tree
-      assert_nil query.irep_selection
-    end
-
-    describe "when validate: false" do
-      let(:query) { GraphQL::Query.new(schema, query_string, validate: false) }
-      it "Skips rewrite" do
-        # Try running the query:
-        query.result
-        # But the validation step doesn't build an irep_node tree
-        assert_nil query.irep_selection
-      end
-    end
   end
 
   describe ".analyze_query" do

@@ -41,5 +41,4 @@ end
 
 require 'graphql/schema/member/has_arguments'
 require 'graphql/schema/member/has_fields'
-require 'graphql/schema/member/instrumentation'
 require 'graphql/schema/member/build_type'

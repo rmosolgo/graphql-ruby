@@ -182,13 +182,9 @@ module GraphQL
         schema.instrumenters[type] << instrumenter
       },
       query_analyzer: ->(schema, analyzer) {
-        if analyzer == GraphQL::Authorization::Analyzer
-          GraphQL::Deprecation.warn("The Authorization query analyzer is deprecated. Authorizing at query runtime is generally a better idea.")
-        end
         schema.query_analyzers << analyzer
       },
       multiplex_analyzer: ->(schema, analyzer) { schema.multiplex_analyzers << analyzer },
-      middleware: ->(schema, middleware) { schema.middleware << middleware },
       lazy_resolve: ->(schema, lazy_class, lazy_value_method) { schema.lazy_methods.set(lazy_class, lazy_value_method) },
       rescue_from: ->(schema, err_class, &block) { schema.rescue_from(err_class, &block) },
       tracer: ->(schema, tracer) { schema.tracers.push(tracer) }
@@ -213,9 +209,6 @@ module GraphQL
     # Single, long-lived instance of the provided subscriptions class, if there is one.
     # @return [GraphQL::Subscriptions]
     attr_accessor :subscriptions
-
-    # @return [MiddlewareChain] MiddlewareChain which is applied to fields during execution
-    attr_accessor :middleware
 
     # @return [<#call(member, ctx)>] A callable for filtering members of the schema
     # @see {Query.new} for query-specific filters with `except:`
@@ -312,7 +305,6 @@ module GraphQL
       @orphan_types = other.orphan_types.dup
       @directives = other.directives.dup
       @static_validator = GraphQL::StaticValidation::Validator.new(schema: self)
-      @middleware = other.middleware.dup
       @query_analyzers = other.query_analyzers.dup
       @multiplex_analyzers = other.multiplex_analyzers.dup
       @tracers = other.tracers.dup
@@ -325,22 +317,10 @@ module GraphQL
         @instrumenters[key].concat(insts)
       end
 
-      if other.rescues?
-        @rescue_middleware = other.rescue_middleware
-      end
-
       # This will be rebuilt when it's requested
       # or during a later `define` call
       @types = nil
       @introspection_system = nil
-    end
-
-    def rescue_from(*args, &block)
-      rescue_middleware.rescue_from(*args, &block)
-    end
-
-    def remove_handler(*args, &block)
-      rescue_middleware.remove_handler(*args, &block)
     end
 
     def using_ast_analysis?
@@ -1650,9 +1630,6 @@ module GraphQL
       end
 
       def query_analyzer(new_analyzer)
-        if new_analyzer == GraphQL::Authorization::Analyzer
-          GraphQL::Deprecation.warn("The Authorization query analyzer is deprecated. Authorizing at query runtime is generally a better idea.")
-        end
         own_query_analyzers << new_analyzer
       end
 
@@ -1870,18 +1847,6 @@ module GraphQL
 
     # Install these here so that subclasses will also install it.
     use(GraphQL::Pagination::Connections)
-
-    protected
-
-    def rescues?
-      !!@rescue_middleware
-    end
-
-    # Lazily create a middleware and add it to the schema
-    # (Don't add it if it's not used)
-    def rescue_middleware
-      @rescue_middleware ||= GraphQL::Schema::RescueMiddleware.new.tap { |m| middleware.insert(0, m) }
-    end
 
     private
 

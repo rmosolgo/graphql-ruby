@@ -2,15 +2,10 @@
 module GraphQL
   module Introspection
     class DynamicFields < Introspection::BaseObject
-      field :__typename, String, "The name of this type", null: false, extras: [:irep_node]
+      field :__typename, String, "The name of this type", null: false
 
-      # `irep_node:` will be nil for the interpreter, since there is no such thing
-      def __typename(irep_node: nil)
-        if context.interpreter?
-          object.class.graphql_name
-        else
-          irep_node.owner_type.name
-        end
+      def __typename
+        object.class.graphql_name
       end
     end
   end

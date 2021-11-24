@@ -33,9 +33,6 @@ module GraphQL
 
       instrumentation = Subscriptions::Instrumentation.new(schema: schema)
       defn.instrument(:query, instrumentation)
-      if !schema.is_a?(Class)
-        defn.instrument(:field, instrumentation)
-      end
       options[:schema] = schema
       schema.subscriptions = self.new(**options)
       schema.add_subscription_extension_if_necessary

@@ -60,16 +60,6 @@ module GraphQL
       include SharedMethods
       extend Forwardable
 
-      # @return [GraphQL::InternalRepresentation::Node] The internal representation for this query node
-      def irep_node
-        @irep_node ||= query.irep_selection
-      end
-
-      # @return [GraphQL::Language::Nodes::Field] The AST node for the currently-executing field
-      def ast_node
-        @irep_node.ast_node
-      end
-
       # @return [Array<GraphQL::ExecutionError>] errors returned during execution
       attr_reader :errors
 

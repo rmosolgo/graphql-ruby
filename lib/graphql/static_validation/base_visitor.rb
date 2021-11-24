@@ -14,11 +14,6 @@ module GraphQL
         super(document)
       end
 
-      # This will be overwritten by {InternalRepresentation::Rewrite} if it's included
-      def rewrite_document
-        nil
-      end
-
       attr_reader :context
 
       # @return [Array<GraphQL::ObjectType>] Types whose scope we've entered
@@ -32,22 +27,13 @@ module GraphQL
       # Build a class to visit the AST and perform validation,
       # or use a pre-built class if rules is `ALL_RULES` or empty.
       # @param rules [Array<Module, Class>]
-      # @param rewrite [Boolean] if `false`, don't include rewrite
       # @return [Class] A class for validating `rules` during visitation
-      def self.including_rules(rules, rewrite: true)
+      def self.including_rules(rules)
         if rules.empty?
-          if rewrite
-            NoValidateVisitor
-          else
-            # It's not doing _anything?!?_
-            BaseVisitor
-          end
+          # It's not doing _anything?!?_
+          BaseVisitor
         elsif rules == ALL_RULES
-          if rewrite
-            DefaultVisitor
-          else
-            InterpreterVisitor
-          end
+          InterpreterVisitor
         else
           visitor_class = Class.new(self) do
             include(GraphQL::StaticValidation::DefinitionDependencies)
@@ -60,9 +46,6 @@ module GraphQL
             end
           end
 
-          if rewrite
-            visitor_class.include(GraphQL::InternalRepresentation::Rewrite)
-          end
           visitor_class.include(ContextMethods)
           visitor_class
         end
