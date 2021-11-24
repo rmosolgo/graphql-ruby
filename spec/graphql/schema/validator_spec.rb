@@ -174,10 +174,9 @@ describe GraphQL::Schema::Validator do
       class IntResolver < BaseValidatedResolver
       end
 
-
       class Query < GraphQL::Schema::Object
-        field :int_input, Int, null: true do
-          argument :input, IntInput, required: true
+        field :int_input, Int do
+          argument :input, IntInput
         end
 
         def int_input(input:)

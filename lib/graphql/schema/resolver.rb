@@ -37,7 +37,7 @@ module GraphQL
         @field = field
         # Since this hash is constantly rebuilt, cache it for this call
         @arguments_by_keyword = {}
-        self.class.arguments.each do |name, arg|
+        self.class.arguments(context).each do |name, arg|
           @arguments_by_keyword[arg.keyword] = arg
         end
         @prepared_arguments = nil
@@ -145,7 +145,7 @@ module GraphQL
       # @raise [GraphQL::UnauthorizedError] To signal an authorization failure
       # @return [Boolean, early_return_data] If `false`, execution will stop (and `early_return_data` will be returned instead, if present.)
       def authorized?(**inputs)
-        self.class.arguments.each_value do |argument|
+        self.class.arguments(context).each_value do |argument|
           arg_keyword = argument.keyword
           if inputs.key?(arg_keyword) && !(arg_value = inputs[arg_keyword]).nil? && (arg_value != argument.default_value)
             arg_auth, err = argument.authorized?(self, arg_value, context)
@@ -199,8 +199,8 @@ module GraphQL
         end
       end
 
-      def get_argument(name)
-        self.class.get_argument(name)
+      def get_argument(name, context = GraphQL::Query::NullContext)
+        self.class.get_argument(name, context)
       end
 
       class << self
@@ -305,13 +305,27 @@ module GraphQL
         end
 
         def field_options
+
+          all_args = {}
+          all_argument_definitions.each do |arg|
+            if (prev_entry = all_args[arg.graphql_name])
+              if prev_entry.is_a?(Array)
+                prev_entry << arg
+              else
+                all_args[arg.graphql_name] = [prev_entry, arg]
+              end
+            else
+              all_args[arg.graphql_name] = arg
+            end
+          end
+
           field_opts = {
             type: type_expr,
             description: description,
             extras: extras,
             resolver_method: :resolve_with_support,
             resolver_class: self,
-            arguments: arguments,
+            arguments: all_args,
             null: null,
             complexity: complexity,
             broadcastable: broadcastable?,

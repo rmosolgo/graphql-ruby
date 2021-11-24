@@ -78,7 +78,7 @@ describe GraphQL::Schema do
     let(:query_type) {
       Class.new(GraphQL::Schema::Object) do
         graphql_name "Query"
-        field :int, Integer, null: true do
+        field :int, Integer do
           argument :value, Integer, required: false
         end
 

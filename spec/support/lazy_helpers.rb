@@ -50,7 +50,7 @@ module LazyHelpers
   end
 
   class LazySum < GraphQL::Schema::Object
-    field :value, Integer, null: true
+    field :value, Integer
     def value
       if object == MAGIC_NUMBER_THAT_RAISES_ERROR
         nil
@@ -68,7 +68,7 @@ module LazyHelpers
     end
 
     field :nested_sum, LazySum, null: false do
-      argument :value, Integer, required: true
+      argument :value, Integer
     end
 
     def nested_sum(value:)
@@ -79,8 +79,8 @@ module LazyHelpers
       end
     end
 
-    field :nullable_nested_sum, LazySum, null: true do
-      argument :value, Integer, required: true
+    field :nullable_nested_sum, LazySum do
+      argument :value, Integer
     end
     alias :nullable_nested_sum :nested_sum
   end
@@ -93,7 +93,7 @@ module LazyHelpers
 
   class LazyQuery < GraphQL::Schema::Object
     field :int, Integer, null: false do
-      argument :value, Integer, required: true
+      argument :value, Integer
       argument :plus, Integer, required: false, default_value: 0
     end
     def int(value:, plus:)
@@ -101,15 +101,15 @@ module LazyHelpers
     end
 
     field :nested_sum, LazySum, null: false do
-      argument :value, Integer, required: true
+      argument :value, Integer
     end
 
     def nested_sum(value:)
       SumAll.new(value)
     end
 
-    field :nullable_nested_sum, LazySum, null: true do
-      argument :value, Integer, required: true
+    field :nullable_nested_sum, LazySum do
+      argument :value, Integer
     end
 
     def nullable_nested_sum(value:)
@@ -122,8 +122,8 @@ module LazyHelpers
       end
     end
 
-    field :list_sum, [LazySum, null: true], null: true do
-      argument :values, [Integer], required: true, method_access: false
+    field :list_sum, [LazySum, null: true] do
+      argument :values, [Integer], method_access: false
     end
     def list_sum(values:)
       values.map { |v| v == MAGIC_NUMBER_THAT_RETURNS_NIL ? nil : v }

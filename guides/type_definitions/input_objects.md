@@ -46,8 +46,8 @@ end
 
 class Types::PostAttributes < Types::BaseInputObject
   description "Attributes for creating or updating a blog post"
-  argument :title, String, "Header for the post", required: true
-  argument :full_text, String, "Full body of the post", required: true
+  argument :title, String, "Header for the post"
+  argument :full_text, String, "Full body of the post"
   argument :categories, [Types::PostCategory], required: false
 end
 ```
@@ -65,7 +65,7 @@ Input objects are passed to field methods as an instance of their definition cla
 # This field takes an argument called `attributes`
 # which will be an instance of `PostAttributes`
 field :create_post, Types::Post, null: false do
-  argument :attributes, Types::PostAttributes, required: true
+  argument :attributes, Types::PostAttributes
 end
 
 def create_post(attributes:)
@@ -82,18 +82,18 @@ end
 
 ## Customizing Input Objects
 
-You can customize the `GraphQL::Schema::Argument` class which is used for input objects: 
+You can customize the `GraphQL::Schema::Argument` class which is used for input objects:
 
-```ruby 
-class Types::BaseArgument < GraphQL::Schema::Argument 
-  # your customization here ... 
-end 
+```ruby
+class Types::BaseArgument < GraphQL::Schema::Argument
+  # your customization here ...
+end
 
 
-class Types::BaseInputObject < GraphQL::Schema::InputObject 
-  # Hook up the customized argument class 
-  argument_class(Types::BaseArgument)  
-end 
+class Types::BaseInputObject < GraphQL::Schema::InputObject
+  # Hook up the customized argument class
+  argument_class(Types::BaseArgument)
+end
 ```
 
 
@@ -111,8 +111,8 @@ Your input objects can be automatically converted to other Ruby types before the
 ```ruby
 class Types::DateRangeInput < Types::BaseInputObject
   description "Range of dates"
-  argument :min, Types::Date, "Minimum value of the range", required: true
-  argument :max, Types::Date, "Maximum value of the range", required: true
+  argument :min, Types::Date, "Minimum value of the range"
+  argument :max, Types::Date, "Maximum value of the range"
 
   def prepare
     min..max
@@ -121,7 +121,7 @@ end
 
 class Types::CalendarType < Types::BaseObject
   field :appointments, [Types::Appointment], "Appointments on your calendar", null: false do
-    argument :during, Types::DateRangeInput, "Only show appointments within this range", required: true
+    argument :during, Types::DateRangeInput, "Only show appointments within this range"
   end
 
   def appointments(during:)

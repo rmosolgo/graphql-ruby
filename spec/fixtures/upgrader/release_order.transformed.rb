@@ -8,7 +8,7 @@ module Platform
       argument :field, [Enums::ReleaseOrderField], <<-MD, required: false
         The field in which to order releases by.
       MD
-      argument :direction, Enums::OrderDirection, "The direction in which to order releases by the specified field.", required: true
+      argument :direction, Enums::OrderDirection, "The direction in which to order releases by the specified field."
     end
   end
 end

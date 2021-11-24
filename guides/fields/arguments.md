@@ -14,7 +14,7 @@ Arguments are defined with the `argument` helper. These arguments are passed as 
 
 ```ruby
 field :search_posts, [PostType], null: false do
-  argument :category, String, required: true
+  argument :category, String
 end
 
 def search_posts(category:)
@@ -77,7 +77,7 @@ exposing another key to clients.
 
 ```ruby
 field :post, PostType, null: false do
-  argument :post_id, ID, required: true, as: :id
+  argument :post_id, ID, as: :id
 end
 
 def post(id:)
@@ -89,7 +89,7 @@ Provide a `prepare` function to modify or validate the value of an argument befo
 
 ```ruby
 field :posts, [PostType], null: false do
-  argument :start_date, String, required: true, prepare: ->(startDate, ctx) {
+  argument :start_date, String, prepare: ->(startDate, ctx) {
     # return the prepared argument.
     # raise a GraphQL::ExecutionError to halt the execution of the field and
     # add the exception's message to the `errors` key.
@@ -105,7 +105,7 @@ Arguments that are snake_cased will be camelized in the GraphQL schema. Using th
 
 ```ruby
 field :posts, [PostType], null: false do
-  argument :start_year, Int, required: true
+  argument :start_year, Int
 end
 ```
 
@@ -123,7 +123,7 @@ To disable auto-camelization, pass `camelize: false` to the `argument` method.
 
 ```ruby
 field :posts, [PostType], null: false do
-  argument :start_year, Int, required: true, camelize: false
+  argument :start_year, Int, camelize: false
 end
 ```
 
@@ -131,7 +131,7 @@ Furthermore, if your argument is already camelCased, then it will remain cameliz
 
 ```ruby
 field :posts, [PostType], null: false do
-  argument :startYear, Int, required: true
+  argument :startYear, Int
 end
 
 def posts(start_year:)

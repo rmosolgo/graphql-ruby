@@ -55,31 +55,6 @@ module GraphQL
   def self.scan_with_ragel(graphql_string)
     GraphQL::Language::Lexer.tokenize(graphql_string)
   end
-
-  # Support Ruby 2.2 by implementing `-"str"`. If we drop 2.2 support, we can remove this backport.
-  if !String.method_defined?(:-@)
-    module StringDedupBackport
-      refine String do
-        def -@
-          if frozen?
-            self
-          else
-            self.dup.freeze
-          end
-        end
-      end
-    end
-  end
-
-  if !String.method_defined?(:match?)
-    module StringMatchBackport
-      refine String do
-        def match?(pattern)
-          self =~ pattern
-        end
-      end
-    end
-  end
 end
 
 # Order matters for these:
@@ -125,10 +100,13 @@ require "graphql/execution"
 require "graphql/pagination"
 require "graphql/schema"
 require "graphql/query"
-require "graphql/directive"
-require "graphql/execution"
 require "graphql/types"
-require "graphql/relay"
+require "graphql/dataloader"
+require "graphql/filter"
+require "graphql/internal_representation"
+require "graphql/directive"
+require "graphql/static_validation"
+require "graphql/execution"
 require "graphql/boolean_type"
 require "graphql/float_type"
 require "graphql/id_type"
@@ -137,11 +115,8 @@ require "graphql/string_type"
 require "graphql/schema/built_in_types"
 require "graphql/schema/loader"
 require "graphql/schema/printer"
-require "graphql/filter"
-require "graphql/internal_representation"
-require "graphql/static_validation"
-require "graphql/dataloader"
 require "graphql/introspection"
+require "graphql/relay"
 
 require "graphql/version"
 require "graphql/compatibility"
@@ -156,6 +131,9 @@ require "graphql/unauthorized_error"
 require "graphql/unauthorized_field_error"
 require "graphql/load_application_object_failed_error"
 require "graphql/deprecation"
+require "graphql/directive/include_directive"
+require "graphql/directive/skip_directive"
+require "graphql/directive/deprecated_directive"
 
 module GraphQL
   # Ruby has `deprecate_constant`,

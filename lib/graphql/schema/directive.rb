@@ -61,9 +61,9 @@ module GraphQL
           defn.default_directive = self.default_directive
           defn.ast_node = ast_node
           defn.metadata[:type_class] = self
-          arguments.each do |name, arg_defn|
+          all_argument_definitions.each do |arg_defn|
             arg_graphql = arg_defn.to_graphql
-            defn.arguments[arg_graphql.name] = arg_graphql
+            defn.arguments[arg_graphql.name] = arg_graphql # rubocop:disable Development/ContextIsPassedCop -- legacy-related
           end
           # Make a reference to a classic-style Arguments class
           defn.arguments_class = GraphQL::Query::Arguments.construct_arguments_class(defn)

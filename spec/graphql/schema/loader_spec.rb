@@ -68,7 +68,7 @@ describe GraphQL::Schema::Loader do
 
       field :body, String, null: false
 
-      field :field_with_arg, Int, null: true do
+      field :field_with_arg, Int do
         argument :bigint, big_int_type, default_value: 2**54, required: false
       end
     end
@@ -97,10 +97,10 @@ describe GraphQL::Schema::Loader do
 
       field :id, ID, null: false
       field :title, String, null: false
-      field :summary, String, null: true, deprecation_reason: "Don't use Post.summary"
+      field :summary, String, deprecation_reason: "Don't use Post.summary"
       field :body, String, null: false
-      field :comments, [comment_type], null: true
-      field :attachment, media_type, null: true
+      field :comments, [comment_type]
+      field :attachment, media_type
     end
 
     content_type = Class.new(GraphQL::Schema::Union) do
@@ -113,8 +113,8 @@ describe GraphQL::Schema::Loader do
       graphql_name "Query"
       description "The query root of this schema"
 
-      field :post, post_type, null: true do
-        argument :id, ID, required: true
+      field :post, post_type do
+        argument :id, ID
         argument :varied, variant_input_type, required: false, default_value: { id: "123", int: 234, float: 2.3, enum: :foo, sub: [{ string: "str" }] }
         argument :variedWithNull, variant_input_type_with_nulls, required: false, default_value: { id: nil, int: nil, float: nil, enum: nil, sub: nil, bigint: nil, bool: nil }
         argument :variedArray, [variant_input_type], required: false, default_value: [{ id: "123", int: 234, float: 2.3, enum: :foo, sub: [{ string: "str" }] }]
@@ -123,7 +123,7 @@ describe GraphQL::Schema::Loader do
         argument :deprecated_arg, String, required: false, deprecation_reason: "Don't use Varied.deprecatedArg"
       end
 
-      field :content, content_type, null: true
+      field :content, content_type
     end
 
     ping_mutation = Class.new(GraphQL::Schema::RelayClassicMutation) do

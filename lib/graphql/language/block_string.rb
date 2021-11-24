@@ -2,10 +2,6 @@
 module GraphQL
   module Language
     module BlockString
-      if !String.method_defined?(:match?)
-        using GraphQL::StringMatchBackport
-      end
-
       # Remove leading and trailing whitespace from a block string.
       # See "Block Strings" in https://github.com/facebook/graphql/blob/master/spec/Section%202%20--%20Language.md
       def self.trim_whitespace(str)

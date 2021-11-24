@@ -11,7 +11,7 @@ module GraphQL
           GraphQL::Schema::Directive::INLINE_FRAGMENT
         )
 
-        argument :if, Boolean, required: true,
+        argument :if, Boolean,
           description: "Included when true."
 
         default_directive true

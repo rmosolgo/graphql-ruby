@@ -16,6 +16,7 @@ module GraphQL
         include GraphQL::Schema::Member::HasAstNode
         include GraphQL::Schema::Member::HasUnresolvedTypeError
         include GraphQL::Schema::Member::HasDirectives
+        include GraphQL::Schema::Member::HasInterfaces
 
         # Methods defined in this block will be:
         # - Added as class methods to this interface
@@ -57,9 +58,10 @@ module GraphQL
             child_class.extend(Schema::Interface::DefinitionMethods)
 
             child_class.type_membership_class(self.type_membership_class)
-            child_class.own_interfaces << self
-            child_class.interfaces.reverse_each do |interface_defn|
-              child_class.extend(interface_defn::DefinitionMethods)
+            child_class.ancestors.reverse_each do |ancestor|
+              if ancestor.const_defined?(:DefinitionMethods)
+                child_class.extend(ancestor::DefinitionMethods)
+              end
             end
 
             # Use an instance variable to tell whether it's been included previously or not;
@@ -73,16 +75,13 @@ module GraphQL
             end
             child_class.introspection(introspection)
             child_class.description(description)
-            if overridden_graphql_name
-              child_class.graphql_name(overridden_graphql_name)
-            end
             # If interfaces are mixed into each other, only define this class once
             if !child_class.const_defined?(:UnresolvedTypeError, false)
               add_unresolved_type_error(child_class)
             end
           elsif child_class < GraphQL::Schema::Object
             # This is being included into an object type, make sure it's using `implements(...)`
-            backtrace_line = caller(0, 10).find { |line| line.include?("schema/object.rb") && line.include?("in `implements'")}
+            backtrace_line = caller(0, 10).find { |line| line.include?("schema/member/has_interfaces.rb") && line.include?("in `implements'")}
             if !backtrace_line
               raise "Attach interfaces using `implements(#{self})`, not `include(#{self})`"
             end
@@ -108,9 +107,9 @@ module GraphQL
           type_defn.orphan_types = orphan_types
           type_defn.type_membership_class = self.type_membership_class
           type_defn.ast_node = ast_node
-          fields.each do |field_name, field_inst|
+          fields.each do |field_name, field_inst| # rubocop:disable Development/ContextIsPassedCop -- legacy-related
             field_defn = field_inst.graphql_definition
-            type_defn.fields[field_defn.name] = field_defn
+            type_defn.fields[field_defn.name] = field_defn # rubocop:disable Development/ContextIsPassedCop -- legacy-related
           end
           type_defn.metadata[:type_class] = self
           if respond_to?(:resolve_type)
@@ -121,16 +120,6 @@ module GraphQL
 
         def kind
           GraphQL::TypeKinds::INTERFACE
-        end
-
-        protected
-
-        def own_interfaces
-          @own_interfaces ||= []
-        end
-
-        def interfaces
-          own_interfaces + (own_interfaces.map { |i| i.own_interfaces }).flatten
         end
       end
 

@@ -62,7 +62,7 @@ module GraphQL
           raise ArgumentError, "Unexpected ast_arguments: #{ast_arguments}"
         end
 
-        argument_defns = argument_owner.arguments
+        argument_defns = argument_owner.arguments(context || GraphQL::Query::NullContext)
         argument_defns.each do |arg_name, arg_defn|
           ast_arg = indexed_arguments[arg_name]
           # First, check the argument in the AST.

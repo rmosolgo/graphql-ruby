@@ -46,18 +46,66 @@ module GraphQL
         def value(*args, **kwargs, &block)
           kwargs[:owner] = self
           value = enum_value_class.new(*args, **kwargs, &block)
-          if own_values.key?(value.graphql_name)
-            raise ArgumentError, "#{value.graphql_name} is already defined for #{self.graphql_name}, please remove one of the definitions."
+          key = value.graphql_name
+          prev_value = own_values[key]
+          case prev_value
+          when nil
+            own_values[key] = value
+          when GraphQL::Schema::EnumValue
+            own_values[key] = [prev_value, value]
+          when Array
+            prev_value << value
+          else
+            raise "Invariant: Unexpected enum value for #{key.inspect}: #{prev_value.inspect}"
           end
-          own_values[value.graphql_name] = value
-          nil
+          value
         end
 
-        # @return [Hash<String => GraphQL::Schema::Enum::Value>] Possible values of this enum, keyed by name
-        def values
-          inherited_values = superclass <= GraphQL::Schema::Enum ? superclass.values : {}
-          # Local values take precedence over inherited ones
-          inherited_values.merge(own_values)
+        # @return [Array<GraphQL::Schema::EnumValue>] Possible values of this enum
+        def enum_values(context = GraphQL::Query::NullContext)
+          inherited_values = superclass.respond_to?(:enum_values) ? superclass.enum_values(context) : nil
+          visible_values = []
+          warden = Warden.from_context(context)
+          own_values.each do |key, values_entry|
+            if (v = Warden.visible_entry?(:visible_enum_value?, values_entry, context, warden))
+              visible_values << v
+            end
+          end
+
+          if inherited_values
+            # Local values take precedence over inherited ones
+            inherited_values.each do |i_val|
+              if !visible_values.any? { |v| v.graphql_name == i_val.graphql_name }
+                visible_values << i_val
+              end
+            end
+          end
+
+          visible_values
+        end
+
+        # @return [Array<Schema::EnumValue>] An unfiltered list of all definitions
+        def all_enum_value_definitions
+          all_defns = if superclass.respond_to?(:all_enum_value_definitions)
+            superclass.all_enum_value_definitions
+          else
+            []
+          end
+
+          @own_values && @own_values.each do |_key, value|
+            if value.is_a?(Array)
+              all_defns.concat(value)
+            else
+              all_defns << value
+            end
+          end
+
+          all_defns
+        end
+
+        # @return [Hash<String => GraphQL::Schema::EnumValue>] Possible values of this enum, keyed by name.
+        def values(context = GraphQL::Query::NullContext)
+          enum_values(context).each_with_object({}) { |val, obj| obj[val.graphql_name] = val }
         end
 
         # @return [GraphQL::EnumType]

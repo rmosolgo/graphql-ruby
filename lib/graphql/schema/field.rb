@@ -5,10 +5,6 @@ require "graphql/schema/field/scope_extension"
 module GraphQL
   class Schema
     class Field
-      if !String.method_defined?(:-@)
-        using GraphQL::StringDedupBackport
-      end
-
       include GraphQL::Schema::Member::CachedGraphQLDefinition
       include GraphQL::Schema::Member::AcceptsDefinition
       include GraphQL::Schema::Member::HasArguments
@@ -61,7 +57,7 @@ module GraphQL
       end
 
       def inspect
-        "#<#{self.class} #{path}#{arguments.any? ? "(...)" : ""}: #{type.to_type_signature}>"
+        "#<#{self.class} #{path}#{all_argument_definitions.any? ? "(...)" : ""}: #{type.to_type_signature}>"
       end
 
       alias :mutation :resolver
@@ -212,16 +208,13 @@ module GraphQL
       # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
       # @param validates [Array<Hash>] Configurations for validating this field
       # @param legacy_edge_class [Class, nil] (DEPRECATED) If present, pass this along to the legacy field definition
-      def initialize(type: nil, name: nil, owner: nil, null: nil, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, resolver_method: nil, resolve: nil, connection: nil, max_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: nil, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, legacy_edge_class: nil, &definition_block)
+      def initialize(type: nil, name: nil, owner: nil, null: true, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, resolver_method: nil, resolve: nil, connection: nil, max_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: nil, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, legacy_edge_class: nil, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
         if !(field || function || resolver_class)
           if type.nil?
             raise ArgumentError, "missing second `type` argument or keyword `type:`"
-          end
-          if null.nil?
-            raise ArgumentError, "missing keyword argument null:"
           end
         end
         if (field || function || resolve) && extras.any?
@@ -281,10 +274,15 @@ module GraphQL
         @legacy_edge_class = legacy_edge_class
 
         arguments.each do |name, arg|
-          if arg.is_a?(Hash)
+          case arg
+          when Hash
             argument(name: name, **arg)
-          else
+          when GraphQL::Schema::Argument
             add_argument(arg)
+          when Array
+            arg.each { |a| add_argument(a) }
+          else
+            raise ArgumentError, "Unexpected argument config (#{arg.class}): #{arg.inspect}"
           end
         end
 
@@ -411,6 +409,57 @@ module GraphQL
         end
       end
 
+      def calculate_complexity(query:, nodes:, child_complexity:)
+        if respond_to?(:complexity_for)
+          lookahead = GraphQL::Execution::Lookahead.new(query: query, field: self, ast_nodes: nodes, owner_type: owner)
+          complexity_for(child_complexity: child_complexity, query: query, lookahead: lookahead)
+        elsif connection?
+          arguments = query.arguments_for(nodes.first, self)
+          max_possible_page_size = nil
+          if arguments[:first]
+            max_possible_page_size = arguments[:first]
+          end
+          if arguments[:last] && (max_possible_page_size.nil? || arguments[:last] > max_possible_page_size)
+            max_possible_page_size = arguments[:last]
+          end
+
+          if max_possible_page_size.nil?
+            max_possible_page_size = max_page_size || query.schema.default_max_page_size
+          end
+
+          if max_possible_page_size.nil?
+            raise GraphQL::Error, "Can't calculate complexity for #{path}, no `first:`, `last:`, `max_page_size` or `default_max_page_size`"
+          else
+            metadata_complexity = 0
+            lookahead = GraphQL::Execution::Lookahead.new(query: query, field: self, ast_nodes: nodes, owner_type: owner)
+
+            if (page_info_lookahead = lookahead.selection(:page_info)).selected?
+              metadata_complexity += 1 # pageInfo
+              metadata_complexity += page_info_lookahead.selections.size # subfields
+            end
+
+            if lookahead.selects?(:total) || lookahead.selects?(:total_count) || lookahead.selects?(:count)
+              metadata_complexity += 1
+            end
+            # Possible bug: selections on `edges` and `nodes` are _both_ multiplied here. Should they be?
+            items_complexity = child_complexity - metadata_complexity
+            # Add 1 for _this_ field
+            1 + (max_possible_page_size * items_complexity) + metadata_complexity
+          end
+        else
+          defined_complexity = complexity
+          case defined_complexity
+          when Proc
+            arguments = query.arguments_for(nodes.first, self)
+            defined_complexity.call(query.context, arguments.keyword_arguments, child_complexity)
+          when Numeric
+            defined_complexity + child_complexity
+          else
+            raise("Invalid complexity: #{defined_complexity.inspect} on #{path} (#{inspect})")
+          end
+        end
+      end
+
       def complexity(new_complexity = nil)
         case new_complexity
         when Proc
@@ -493,9 +542,9 @@ module GraphQL
         field_defn.subscription_scope = @subscription_scope
         field_defn.ast_node = ast_node
 
-        arguments.each do |name, defn|
+        all_argument_definitions.each do |defn|
           arg_graphql = defn.to_graphql
-          field_defn.arguments[arg_graphql.name] = arg_graphql
+          field_defn.arguments[arg_graphql.name] = arg_graphql # rubocop:disable Development/ContextIsPassedCop -- legacy-related
         end
 
         # Support a passed-in proc, one way or another
@@ -559,10 +608,36 @@ module GraphQL
           # The resolver will check itself during `resolve()`
           @resolver_class.authorized?(object, context)
         else
+          if (arg_values = context[:current_arguments])
+            # ^^ that's provided by the interpreter at runtime, and includes info about whether the default value was used or not.
+            using_arg_values = true
+            arg_values = arg_values.argument_values
+          else
+            arg_values = args
+            using_arg_values = false
+          end
           # Faster than `.any?`
-          arguments.each_value do |arg|
-            if args.key?(arg.keyword) && !arg.authorized?(object, args[arg.keyword], context)
-              return false
+          arguments(context).each_value do |arg|
+            arg_key = arg.keyword
+            if arg_values.key?(arg_key)
+              arg_value = arg_values[arg_key]
+              if using_arg_values
+                if arg_value.default_used?
+                  # pass -- no auth required for default used
+                  next
+                else
+                  application_arg_value = arg_value.value
+                  if application_arg_value.is_a?(GraphQL::Execution::Interpreter::Arguments)
+                    application_arg_value.keyword_arguments
+                  end
+                end
+              else
+                application_arg_value = arg_value
+              end
+
+              if !arg.authorized?(object, application_arg_value, context)
+                return false
+              end
             end
           end
           true
@@ -659,7 +734,7 @@ module GraphQL
           ruby_kwargs = graphql_args.to_kwargs
           maybe_lazies = []
           # Apply any `prepare` methods. Not great code organization, can this go somewhere better?
-          arguments.each do |name, arg_defn|
+          arguments(field_ctx).each do |name, arg_defn|
             ruby_kwargs_key = arg_defn.keyword
 
             if ruby_kwargs.key?(ruby_kwargs_key)

@@ -1,0 +1,11 @@
+require:
+  - graphql/rubocop
+
+AllCops:
+  DisabledByDefault: true
+
+GraphQL/DefaultNullTrue:
+  Enabled: true
+
+GraphQL/DefaultRequiredTrue:
+  Enabled: true

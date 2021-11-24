@@ -1,10 +1,14 @@
 require:
-  - ./cop/none_without_block_cop
-  - ./cop/no_focus_cop
+  - ./cop/development/none_without_block_cop
+  - ./cop/development/no_focus_cop
+  - ./lib/graphql/rubocop/graphql/default_null_true
+  - ./lib/graphql/rubocop/graphql/default_required_true
+  - ./cop/development/context_is_passed_cop
 
 AllCops:
   DisabledByDefault: true
-  TargetRubyVersion: 2.2
+  SuggestExtensions: false
+  TargetRubyVersion: 2.4
   Exclude:
     - 'lib/graphql/language/lexer.rb'
     - 'lib/graphql/language/parser.rb'
@@ -12,6 +16,45 @@ AllCops:
     - 'tmp/**/*'
     - 'vendor/**/*'
     - 'spec/integration/tmp/**/*'
+    - 'spec/fixtures/cop/*.rb'
+
+Development/ContextIsPassedCop:
+  Exclude:
+    - 'spec/**/*'
+    - 'cop/**/*'
+    # Legacy-related:
+    - 'lib/graphql/*_type.rb'
+    - 'lib/graphql/define/**/*.rb'
+    - 'lib/graphql/relay/**/*'
+    - 'lib/graphql/function.rb'
+    - 'lib/graphql/directive.rb'
+    - 'lib/graphql/field.rb'
+    - 'lib/graphql/schema/traversal.rb'
+    - 'lib/graphql/schema/possible_types.rb'
+    - 'lib/graphql/schema/validation.rb'
+    - 'lib/graphql/compatibility/**/*'
+    - 'lib/graphql/static_validation/type_stack.rb'
+    - 'lib/graphql/static_validation/literal_validator.rb'
+    - 'lib/graphql/static_validation/rules/**/*.rb'
+    - 'lib/graphql/internal_representation/**/*.rb'
+    # AST-related:
+    - 'lib/graphql/schema/build_from_definition.rb'
+    - 'lib/graphql/language/printer.rb'
+    - 'lib/graphql/language/nodes.rb'
+    # Build-time, not runtime:
+    - 'lib/graphql/schema/addition.rb'
+    - 'lib/graphql/schema/introspection_system.rb'
+    # Methods from generators
+    - 'lib/generators/graphql/type_generator.rb'
+
+Development/NoneWithoutBlockCop:
+  Include:
+    - "lib/**/*"
+    - "spec/**/*"
+
+Development/NoFocusCop:
+  Include:
+    - "spec/**/*"
 
 # def ...
 # end
@@ -39,6 +82,7 @@ Style/ClassAndModuleChildren:
 
 Layout/EmptyLineBetweenDefs:
   AllowAdjacentOneLineDefs: true
+  NumberOfEmptyLines: [0, 1, 2]
 
 Style/FrozenStringLiteralComment:
   Enabled: true
@@ -61,3 +105,9 @@ Style/WordArray:
 # ->(...) { ... }
 Layout/SpaceInLambdaLiteral:
   Enabled: true # Default is "require_no_space"
+
+GraphQL/DefaultNullTrue:
+  Enabled: true
+
+GraphQL/DefaultRequiredTrue:
+  Enabled: true

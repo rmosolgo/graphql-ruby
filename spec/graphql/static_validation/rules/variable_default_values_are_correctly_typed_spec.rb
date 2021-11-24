@@ -155,11 +155,10 @@ describe GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped do
         end
       end
 
-
       class Query < GraphQL::Schema::Object
         description "The query root of this schema"
 
-        field :time, TimeType, null: true do
+        field :time, TimeType do
           argument :value, TimeType, required: false
         end
 

@@ -47,7 +47,7 @@ describe GraphQL::Types::String do
           query_type = Class.new(GraphQL::Schema::Object) do
             graphql_name "Query"
 
-            field :bad_string, String, null: true
+            field :bad_string, String
             def bad_string
               "\0\0\0foo\255\255\255".dup.force_encoding("BINARY")
             end

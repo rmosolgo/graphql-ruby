@@ -4,9 +4,11 @@ module GraphQL
     # This object can be `ctx` in places where there is no query
     class NullContext
       class NullWarden < GraphQL::Schema::Warden
-        def visible?(t); true; end
-        def visible_field?(t); true; end
-        def visible_type?(t); true; end
+        def visible_field?(field, ctx); true; end
+        def visible_argument?(arg, ctx); true; end
+        def visible_type?(type, ctx); true; end
+        def visible_enum_value?(ev, ctx); true; end
+        def visible_type_membership?(tm, ctx); true; end
       end
 
       class NullQuery
@@ -15,12 +17,15 @@ module GraphQL
         end
       end
 
+      class NullSchema < GraphQL::Schema
+      end
+
       attr_reader :schema, :query, :warden, :dataloader
 
       def initialize
         @query = NullQuery.new
         @dataloader = GraphQL::Dataloader::NullDataloader.new
-        @schema = GraphQL::Schema.new
+        @schema = NullSchema
         @warden = NullWarden.new(
           GraphQL::Filter.new,
           context: self,
@@ -31,7 +36,7 @@ module GraphQL
       def [](key); end
 
       def interpreter?
-        false
+        true
       end
 
       class << self
@@ -40,10 +45,10 @@ module GraphQL
         def [](key); end
 
         def instance
-          @instance = self.new
+          @instance ||= self.new
         end
 
-        def_delegators :instance, :query, :schema, :warden, :interpreter?, :dataloader
+        def_delegators :instance, :query, :warden, :schema, :interpreter?, :dataloader
       end
     end
   end

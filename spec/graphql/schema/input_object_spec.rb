@@ -21,6 +21,14 @@ describe GraphQL::Schema::InputObject do
       assert_equal 1, input_object.arguments.size
     end
 
+    it "returns newly-added argument definitions" do
+      arg = nil
+      Class.new(GraphQL::Schema::InputObject) do
+        arg = argument(:int, Integer)
+      end
+      assert_instance_of GraphQL::Schema::Argument, arg
+    end
+
     it "is the #owner of its arguments" do
       argument = input_object.arguments["name"]
       assert_equal input_object, argument.owner
@@ -28,13 +36,13 @@ describe GraphQL::Schema::InputObject do
 
     it "inherits arguments" do
       base_class = Class.new(GraphQL::Schema::InputObject) do
-        argument :arg1, String, required: true
-        argument :arg2, String, required: true
+        argument :arg1, String
+        argument :arg2, String
       end
 
       subclass = Class.new(base_class) do
-        argument :arg2, Integer, required: true
-        argument :arg3, Integer, required: true
+        argument :arg2, Integer
+        argument :arg3, Integer
       end
 
       ensemble_class = Class.new(subclass) do
@@ -89,7 +97,7 @@ describe GraphQL::Schema::InputObject do
   describe "prepare with camelized inputs" do
     class PrepareCamelizedSchema < GraphQL::Schema
       class CamelizedInput < GraphQL::Schema::InputObject
-        argument :inputString, String, required: true,
+        argument :inputString, String,
           camelize: false,
           as: :input_string,
           prepare: ->(val, ctx) { val.upcase }
@@ -97,7 +105,7 @@ describe GraphQL::Schema::InputObject do
 
       class Query < GraphQL::Schema::Object
         field :input_test, String, null: false do
-          argument :camelized_input, CamelizedInput, required: true
+          argument :camelized_input, CamelizedInput
         end
 
         def input_test(camelized_input:)
@@ -117,12 +125,12 @@ describe GraphQL::Schema::InputObject do
   describe "prepare: / loads: / as:" do
     module InputObjectPrepareTest
       class InputObj < GraphQL::Schema::InputObject
-        argument :a, Integer, required: true
-        argument :b, Integer, required: true, as: :b2
-        argument :c, Integer, required: true, prepare: :prep
-        argument :d, Integer, required: true, prepare: :prep, as: :d2
-        argument :e, Integer, required: true, prepare: ->(val, ctx) { val * ctx[:multiply_by] * 2 }, as: :e2
-        argument :instrument_id, ID, required: true, loads: Jazz::InstrumentType
+        argument :a, Integer
+        argument :b, Integer, as: :b2
+        argument :c, Integer, prepare: :prep
+        argument :d, Integer, prepare: :prep, as: :d2
+        argument :e, Integer, prepare: ->(val, ctx) { val * ctx[:multiply_by] * 2 }, as: :e2
+        argument :instrument_id, ID, loads: Jazz::InstrumentType
         argument :danger, Integer, required: false, prepare: ->(val, ctx) { raise GraphQL::ExecutionError.new('boom!') }
 
         def prep(val)
@@ -132,7 +140,7 @@ describe GraphQL::Schema::InputObject do
 
       class Query < GraphQL::Schema::Object
         field :inputs, [String], null: false do
-          argument :input, InputObj, required: true
+          argument :input, InputObj
         end
 
         def inputs(input:)
@@ -142,11 +150,11 @@ describe GraphQL::Schema::InputObject do
 
       class Mutation < GraphQL::Schema::Object
         class InstrumentInput < GraphQL::Schema::InputObject
-          argument :instrument_id, ID, required: true, loads: Jazz::InstrumentType
+          argument :instrument_id, ID, loads: Jazz::InstrumentType
         end
 
         class TouchInstrument < GraphQL::Schema::Mutation
-          argument :input_obj, InstrumentInput, required: true
+          argument :input_obj, InstrumentInput
           field :instrument_name_method, String, null: false
           field :instrument_name_key, String, null: false
 
@@ -160,7 +168,7 @@ describe GraphQL::Schema::InputObject do
         end
 
         class InstrumentByNameInput < GraphQL::Schema::InputObject
-          argument :instrument_name, ID, required: true, loads: Jazz::InstrumentType, as: :instrument
+          argument :instrument_name, ID, loads: Jazz::InstrumentType, as: :instrument
 
           def self.load_instrument(instrument_name, context)
             -> {
@@ -171,14 +179,14 @@ describe GraphQL::Schema::InputObject do
         end
 
         class TouchInstrumentByName < TouchInstrument
-          argument :input_obj, InstrumentByNameInput, required: true
+          argument :input_obj, InstrumentByNameInput
         end
 
         field :touch_instrument, mutation: TouchInstrument
         field :touch_instrument_by_name, mutation: TouchInstrumentByName
 
         class ListInstruments < GraphQL::Schema::Mutation
-          argument :list, [InstrumentInput], required: true
+          argument :list, [InstrumentInput]
           field :resolved_list, String, null: false
 
           def resolve(list:)
@@ -190,7 +198,6 @@ describe GraphQL::Schema::InputObject do
 
         field :list_instruments, mutation: ListInstruments
       end
-
 
       class Schema < GraphQL::Schema
         query(Query)
@@ -295,7 +302,7 @@ describe GraphQL::Schema::InputObject do
   describe "prepare (entire input object)" do
     module InputObjectPrepareObjectTest
       class InputObj < GraphQL::Schema::InputObject
-        argument :min, Integer, required: true
+        argument :min, Integer
         argument :max, Integer, required: false
 
         def prepare
@@ -305,7 +312,7 @@ describe GraphQL::Schema::InputObject do
 
       class Query < GraphQL::Schema::Object
         field :inputs, String, null: false do
-          argument :input, InputObj, required: true
+          argument :input, InputObj
         end
 
         def inputs(input:)
@@ -361,20 +368,20 @@ describe GraphQL::Schema::InputObject do
 
       class SingleLoadInputObj < GraphQL::Schema::InputObject
         argument_class BaseArgument
-        argument :instrument_id, ID, required: true, loads: Jazz::InstrumentType
+        argument :instrument_id, ID, loads: Jazz::InstrumentType
       end
 
       class MultiLoadInputObj < GraphQL::Schema::InputObject
         argument_class BaseArgument
-        argument :instrument_ids, [ID], required: true, loads: Jazz::InstrumentType
+        argument :instrument_ids, [ID], loads: Jazz::InstrumentType
       end
 
       class Query < GraphQL::Schema::Object
-        field :single_load_input, Jazz::InstrumentType, null: true do
-          argument :input, SingleLoadInputObj, required: true
+        field :single_load_input, Jazz::InstrumentType do
+          argument :input, SingleLoadInputObj
         end
-        field :multi_load_input, [Jazz::InstrumentType], null: true do
-          argument :input, MultiLoadInputObj, required: true
+        field :multi_load_input, [Jazz::InstrumentType] do
+          argument :input, MultiLoadInputObj
         end
 
         def single_load_input(input:)
@@ -534,7 +541,7 @@ describe GraphQL::Schema::InputObject do
         end
 
         class Query < GraphQL::Schema::Object
-          field :i, Int, null: true do
+          field :i, Int do
             argument :arg, InputObj, required: false, default_value: { arg_a: 1, arg_b: 2 }
           end
         end
@@ -563,16 +570,16 @@ describe GraphQL::Schema::InputObject do
     module InputObjectToHTest
       class TestInput1 < GraphQL::Schema::InputObject
         graphql_name "TestInput1"
-        argument :d, Int, required: true
-        argument :e, Int, required: true
-        argument :instrument_id, ID, required: true, loads: Jazz::InstrumentType
+        argument :d, Int
+        argument :e, Int
+        argument :instrument_id, ID, loads: Jazz::InstrumentType
       end
 
       class TestInput2 < GraphQL::Schema::InputObject
         graphql_name "TestInput2"
-        argument :a, Int, required: true
-        argument :b, Int, required: true
-        argument :c, TestInput1, as: :inputObject, required: true
+        argument :a, Int
+        argument :b, Int
+        argument :c, TestInput1, as: :inputObject
       end
 
       TestInput1.to_graphql
@@ -582,9 +589,19 @@ describe GraphQL::Schema::InputObject do
     before do
       arg_values = {a: 1, b: 2, c: { d: 3, e: 4, instrumentId: "Instrument/Drum Kit"}}
 
+      query = GraphQL::Query.new(Jazz::Schema, "{ __typename }")
+      # This is because a test below expects `instrument:` to have been loaded
+      # during `InputObject#initialize`, which only happens when `!context.interpreter?`.
+      # Maybe that test could be updated instead.
+      context_without_interpreter = Class.new(SimpleDelegator) do
+        def interpreter?
+          false
+        end
+      end
+
       @input_object = InputObjectToHTest::TestInput2.new(
         arg_values,
-        context: OpenStruct.new(warden: Jazz::Schema, schema: Jazz::Schema),
+        context: context_without_interpreter.new(query.context),
         defaults_used: Set.new
       )
     end
@@ -606,15 +623,15 @@ describe GraphQL::Schema::InputObject do
     module InputObjectDigTest
       class TestInput1 < GraphQL::Schema::InputObject
         graphql_name "TestInput1"
-        argument :d, Int, required: true
-        argument :e, Int, required: true
+        argument :d, Int
+        argument :e, Int
       end
 
       class TestInput2 < GraphQL::Schema::InputObject
         graphql_name "TestInput2"
-        argument :a, Int, required: true
-        argument :b, Int, required: true
-        argument :c, TestInput1, as: :inputObject, required: true
+        argument :a, Int
+        argument :b, Int
+        argument :c, TestInput1, as: :inputObject
       end
 
       TestInput1.to_graphql
@@ -680,7 +697,7 @@ describe GraphQL::Schema::InputObject do
     it "warns for method conflicts" do
       input_object = Class.new(GraphQL::Schema::InputObject) do
         graphql_name "X"
-        argument :method, String, required: true
+        argument :method, String
       end
 
       expected_warning = "Unable to define a helper for argument with name 'method' as this is a reserved name. Add `method_access: false` to stop this warning."
@@ -695,7 +712,7 @@ describe GraphQL::Schema::InputObject do
     it "doesn't warn with `method_access: false`" do
       input_object = Class.new(GraphQL::Schema::InputObject) do
         graphql_name "X"
-        argument :method, String, required: true, method_access: false
+        argument :method, String, method_access: false
       end
 
       assert_output "", "" do
@@ -707,11 +724,11 @@ describe GraphQL::Schema::InputObject do
   describe "nested objects inside lists" do
     class NestedInputObjectSchema < GraphQL::Schema
       class ItemInput < GraphQL::Schema::InputObject
-        argument :str, String, required: true
+        argument :str, String
       end
 
       class NestedStuff < GraphQL::Schema::RelayClassicMutation
-        argument :items, [ItemInput], required: true
+        argument :items, [ItemInput]
         field :str, String, null: false
         def resolve(items:)
           {
@@ -766,7 +783,7 @@ describe GraphQL::Schema::InputObject do
 
         query = Class.new(GraphQL::Schema::Object) do
           graphql_name "Query"
-          field :f, String, null: true do
+          field :f, String do
             argument :arg, input_obj, required: false, default_value: {}
           end
 

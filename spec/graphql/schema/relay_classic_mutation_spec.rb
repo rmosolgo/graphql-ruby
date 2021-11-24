@@ -16,6 +16,16 @@ describe GraphQL::Schema::RelayClassicMutation do
     end
   end
 
+  describe ".field" do
+    it "removes inherited field definitions, creating one with the mutation as the owner" do
+      assert_equal Jazz::RenameEnsemble, Jazz::RenameEnsemble.fields["ensemble"].owner
+      assert_equal Jazz::RenameEnsemble, Jazz::RenameEnsemble.payload_type.fields["ensemble"].owner
+
+      assert_equal Jazz::RenameEnsembleAsBand, Jazz::RenameEnsembleAsBand.fields["ensemble"].owner
+      assert_equal Jazz::RenameEnsembleAsBand, Jazz::RenameEnsembleAsBand.payload_type.fields["ensemble"].owner
+    end
+  end
+
   describe ".input_type" do
     it "has a reference to the mutation" do
       mutation = Class.new(GraphQL::Schema::RelayClassicMutation) do
@@ -308,12 +318,12 @@ describe GraphQL::Schema::RelayClassicMutation do
         module ResultInterface
           include GraphQL::Schema::Interface
           field :success, Boolean, null: false
-          field :notice, String, null: true
+          field :notice, String
         end
 
         module ErrorInterface
           include GraphQL::Schema::Interface
-          field :error, String, null: true
+          field :error, String
         end
 
         class BaseReturnType < GraphQL::Schema::Object
@@ -321,8 +331,8 @@ describe GraphQL::Schema::RelayClassicMutation do
         end
 
         class ReturnTypeWithInterfaceTest < GraphQL::Schema::RelayClassicMutation
-          field :name, String, null: true
           object_class BaseReturnType
+          field :name, String
 
           def resolve
             {
@@ -347,10 +357,9 @@ describe GraphQL::Schema::RelayClassicMutation do
 
       it 'makes the mutation type implement the interfaces' do
         mutation = MutationInterfaceSchema::ReturnTypeWithInterfaceTest
-        assert_equal(
-          [MutationInterfaceSchema::ResultInterface, MutationInterfaceSchema::ErrorInterface],
-          mutation.payload_type.interfaces
-        )
+        expected_interfaces = [MutationInterfaceSchema::ResultInterface, MutationInterfaceSchema::ErrorInterface]
+        actual_interfaces = mutation.payload_type.interfaces
+        assert_equal(expected_interfaces, actual_interfaces)
       end
 
       it "returns interface values and specific ones" do

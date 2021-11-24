@@ -16,6 +16,13 @@ module GraphQL
     class InvalidTriggerError < GraphQL::Error
     end
 
+    # Raised when either:
+    # - An initial subscription didn't have a value for `context[subscription_scope]`
+    # - Or, an update didn't pass `.trigger(..., scope:)`
+    # When raised, the initial subscription or update fails completely.
+    class SubscriptionScopeMissingError < GraphQL::Error
+    end
+
     # @see {Subscriptions#initialize} for options, concrete implementations may add options.
     def self.use(defn, options = {})
       schema = defn.is_a?(Class) ? defn : defn.target
@@ -76,7 +83,8 @@ module GraphQL
       end
 
       # Normalize symbol-keyed args to strings, try camelizing them
-      normalized_args = normalize_arguments(normalized_event_name, field, args)
+      # Should this accept a real context somehow?
+      normalized_args = normalize_arguments(normalized_event_name, field, args, GraphQL::Query::NullContext)
 
       event = Subscriptions::Event.new(
         name: normalized_event_name,
@@ -151,16 +159,6 @@ module GraphQL
     # @param object [Object]
     # @return [void]
     def execute_all(event, object)
-      each_subscription_id(event) do |subscription_id|
-        execute(subscription_id, event, object)
-      end
-    end
-
-    # Get each `subscription_id` subscribed to `event.topic` and yield them
-    # @param event [GraphQL::Subscriptions::Event]
-    # @yieldparam subscription_id [String]
-    # @return [void]
-    def each_subscription_id(event)
       raise GraphQL::RequiredImplementationMissingError
     end
 
@@ -233,7 +231,7 @@ module GraphQL
     # @param arg_owner [GraphQL::Field, GraphQL::BaseType]
     # @param args [Hash, Array, Any] some GraphQL input value to coerce as `arg_owner`
     # @return [Any] normalized arguments value
-    def normalize_arguments(event_name, arg_owner, args)
+    def normalize_arguments(event_name, arg_owner, args, context)
       case arg_owner
       when GraphQL::Field, GraphQL::InputObjectType, GraphQL::Schema::Field, Class
         if arg_owner.is_a?(Class) && !arg_owner.kind.input_object?
@@ -244,19 +242,19 @@ module GraphQL
         missing_arg_names = []
         args.each do |k, v|
           arg_name = k.to_s
-          arg_defn = arg_owner.arguments[arg_name]
+          arg_defn = arg_owner.get_argument(arg_name, context)
           if arg_defn
             normalized_arg_name = arg_name
           else
             normalized_arg_name = normalize_name(arg_name)
-            arg_defn = arg_owner.arguments[normalized_arg_name]
+            arg_defn = arg_owner.get_argument(normalized_arg_name, context)
           end
 
           if arg_defn
             if arg_defn.loads
               normalized_arg_name = arg_defn.keyword.to_s
             end
-            normalized = normalize_arguments(event_name, arg_defn.type, v)
+            normalized = normalize_arguments(event_name, arg_defn.type, v, context)
             normalized_args[normalized_arg_name] = normalized
           else
             # Couldn't find a matching argument definition
@@ -266,12 +264,12 @@ module GraphQL
 
         # Backfill default values so that trigger arguments
         # match query arguments.
-        arg_owner.arguments.each do |name, arg_defn|
+        arg_owner.arguments(context).each do |_name, arg_defn|
           if arg_defn.default_value? && !normalized_args.key?(arg_defn.name)
             default_value = arg_defn.default_value
             # We don't have an underlying "object" here, so it can't call methods.
             # This is broken.
-            normalized_args[arg_defn.name] = arg_defn.prepare_value(nil, default_value, context: GraphQL::Query::NullContext)
+            normalized_args[arg_defn.name] = arg_defn.prepare_value(nil, default_value, context: context)
           end
         end
 
@@ -290,9 +288,9 @@ module GraphQL
 
         normalized_args
       when GraphQL::ListType, GraphQL::Schema::List
-        args.map { |a| normalize_arguments(event_name, arg_owner.of_type, a) }
+        args.map { |a| normalize_arguments(event_name, arg_owner.of_type, a, context) }
       when GraphQL::NonNullType, GraphQL::Schema::NonNull
-        normalize_arguments(event_name, arg_owner.of_type, args)
+        normalize_arguments(event_name, arg_owner.of_type, args, context)
       else
         args
       end

@@ -34,7 +34,7 @@ describe GraphQL::Schema::Subscription do
     end
 
     class TootWasTooted < BaseSubscription
-      argument :handle, String, required: true, loads: User, as: :user, camelize: false
+      argument :handle, String, loads: User, as: :user, camelize: false
 
       field :toot, Toot, null: false
       field :user, User, null: false
@@ -76,10 +76,14 @@ describe GraphQL::Schema::Subscription do
       field :user, User, null: false
     end
 
+    class DirectTootWasTootedWithOptionalScope < DirectTootWasTooted
+      subscription_scope :viewer, optional: true
+    end
+
     # Test initial response, which returns all users
     class UsersJoined < BaseSubscription
       class UsersJoinedManualPayload < GraphQL::Schema::Object
-        field :users, [User], null: true,
+        field :users, [User],
           description: "Includes newly-created users, or all users on the initial load"
       end
 
@@ -98,20 +102,21 @@ describe GraphQL::Schema::Subscription do
     # Like above, but doesn't override #subscription,
     # to make sure it works without arguments
     class NewUsersJoined < BaseSubscription
-      field :users, [User], null: true,
+      field :users, [User],
         description: "Includes newly-created users, or all users on the initial load"
     end
 
     class Subscription < GraphQL::Schema::Object
       field :toot_was_tooted, subscription: TootWasTooted, extras: [:path, :query]
       field :direct_toot_was_tooted, subscription: DirectTootWasTooted
+      field :direct_toot_was_tooted_with_optional_scope, subscription: DirectTootWasTootedWithOptionalScope
       field :users_joined, subscription: UsersJoined
       field :new_users_joined, subscription: NewUsersJoined
     end
 
     class Mutation < GraphQL::Schema::Object
       field :toot, Toot, null: false do
-        argument :body, String, required: true
+        argument :body, String
       end
 
       def toot(body:)
@@ -127,9 +132,13 @@ describe GraphQL::Schema::Subscription do
     subscription(Subscription)
 
     rescue_from(StandardError) { |err, *rest|
-      err2 = RuntimeError.new("This should never happen: #{err.class}: #{err.message}")
-      err2.set_backtrace(err.backtrace)
-      raise err2
+      if err.is_a?(GraphQL::Subscriptions::SubscriptionScopeMissingError)
+        raise err
+      else
+        err2 = RuntimeError.new("This should never happen: #{err.class}: #{err.message}")
+        err2.set_backtrace(err.backtrace)
+        raise err2
+      end
     }
 
     def self.object_from_id(id, ctx)
@@ -140,7 +149,6 @@ describe GraphQL::Schema::Subscription do
       path = err.context[:last_path]
       raise GraphQL::ExecutionError, "Can't subscribe to private user (#{path})"
     end
-
 
     class InMemorySubscriptions < GraphQL::Subscriptions
       SUBSCRIPTION_REGISTRY = {}
@@ -156,9 +164,9 @@ describe GraphQL::Schema::Subscription do
         SUBSCRIPTION_REGISTRY[subscription_id] = [query, events]
       end
 
-      def each_subscription_id(event)
+      def execute_all(event, object)
         EVENT_REGISTRY[event.topic].each do |sub_id|
-          yield(sub_id)
+          execute(sub_id, event, object)
         end
       end
 
@@ -484,6 +492,66 @@ describe GraphQL::Schema::Subscription do
       scoped_subscription = SubscriptionFieldSchema::get_field("Subscription", "directTootWasTooted")
 
       assert_equal :viewer, scoped_subscription.subscription_scope
+    end
+
+    it "requires subscription scope for subscribe and update by default" do
+      err = assert_raises GraphQL::Subscriptions::SubscriptionScopeMissingError do
+        exec_query <<-GRAPHQL
+          subscription {
+            directTootWasTooted {
+              toot { body }
+            }
+          }
+        GRAPHQL
+      end
+      expected_message = "Subscription.directTootWasTooted (SubscriptionFieldSchema::DirectTootWasTooted) requires a `scope:` value to trigger updates (Set `subscription_scope ..., optional: true` to disable this requirement)"
+      assert_equal expected_message, err.message
+      assert_equal 0, in_memory_subscription_count
+
+      exec_query <<-GRAPHQL, context: { viewer: :me }
+        subscription {
+          directTootWasTooted {
+            toot { body }
+          }
+        }
+      GRAPHQL
+      assert_equal 1, in_memory_subscription_count
+
+      obj = OpenStruct.new(toot: { body: "Hello from matz!" }, user: SubscriptionFieldSchema::USERS["matz"])
+      err = assert_raises GraphQL::Subscriptions::SubscriptionScopeMissingError do
+        SubscriptionFieldSchema.subscriptions.trigger(:direct_toot_was_tooted, {}, obj)
+      end
+      assert_equal expected_message, err.message
+    end
+
+    it "doesn't require subscription scope if `optional: true`" do
+      res = exec_query <<-GRAPHQL, context: { viewer: :me }
+        subscription {
+          directTootWasTootedWithOptionalScope {
+            toot { body }
+          }
+        }
+      GRAPHQL
+
+      res2 = exec_query <<-GRAPHQL
+        subscription {
+          directTootWasTootedWithOptionalScope {
+            toot { body }
+          }
+        }
+      GRAPHQL
+
+      assert_equal 2, in_memory_subscription_count
+
+      obj = OpenStruct.new(toot: { body: "Hello from matz!" }, user: SubscriptionFieldSchema::USERS["matz"])
+
+      SubscriptionFieldSchema.subscriptions.trigger(:direct_toot_was_tooted_with_optional_scope, {}, obj)
+      assert_equal 0, res.context[:subscription_mailbox].length
+      assert_equal 1, res2.context[:subscription_mailbox].length
+
+      SubscriptionFieldSchema.subscriptions.trigger(:direct_toot_was_tooted_with_optional_scope, {}, obj, scope: :me)
+      assert_equal 1, res.context[:subscription_mailbox].length
+      assert_equal 1, res2.context[:subscription_mailbox].length
     end
 
     it "provides a subscription scope that is used in execution" do

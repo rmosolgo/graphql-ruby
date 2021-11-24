@@ -121,10 +121,6 @@
 module GraphQL
   module Language
     module Lexer
-      if !String.method_defined?(:match?)
-        using GraphQL::StringMatchBackport
-      end
-
       def self.tokenize(query_string)
         run_lexer(query_string)
       end

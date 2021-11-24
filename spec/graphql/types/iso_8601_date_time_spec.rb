@@ -10,26 +10,26 @@ describe GraphQL::Types::ISO8601DateTime do
       field :hour, Integer, null: false
       field :minute, Integer, method: :min, null: false
       field :second, Integer, method: :sec, null: false
-      field :zone, String, null: true
+      field :zone, String
       field :utc_offset, Integer, null: false
       field :iso8601, GraphQL::Types::ISO8601DateTime, null: false, method: :itself
     end
 
     class Query < GraphQL::Schema::Object
-      field :parse_date, DateTimeObject, null: true do
-        argument :date, GraphQL::Types::ISO8601DateTime, required: true
+      field :parse_date, DateTimeObject do
+        argument :date, GraphQL::Types::ISO8601DateTime
       end
 
-      field :parse_date_time, DateTimeObject, null: true do
-        argument :date, GraphQL::Types::ISO8601DateTime, required: true
+      field :parse_date_time, DateTimeObject do
+        argument :date, GraphQL::Types::ISO8601DateTime
       end
 
-      field :parse_date_string, DateTimeObject, null: true do
-        argument :date, GraphQL::Types::ISO8601DateTime, required: true
+      field :parse_date_string, DateTimeObject do
+        argument :date, GraphQL::Types::ISO8601DateTime
       end
 
-      field :parse_date_time_string, DateTimeObject, null: true do
-        argument :date, GraphQL::Types::ISO8601DateTime, required: true
+      field :parse_date_time_string, DateTimeObject do
+        argument :date, GraphQL::Types::ISO8601DateTime
       end
 
       field :invalid_date, DateTimeObject, null: false
@@ -58,7 +58,6 @@ describe GraphQL::Types::ISO8601DateTime do
         'abc'
       end
     end
-
 
     class Schema < GraphQL::Schema
       query(Query)

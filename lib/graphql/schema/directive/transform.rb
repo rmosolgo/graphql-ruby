@@ -24,7 +24,7 @@ module GraphQL
           GraphQL::Schema::Directive::FIELD,
         )
 
-        argument :by, String, required: true,
+        argument :by, String,
           description: "The name of the transform to run if applicable"
 
         TRANSFORMS = [

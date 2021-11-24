@@ -13,11 +13,11 @@ module Platform
 
       field :f1, Objects::O1, "The x being y.", null: false
       field :f2, Enums::E1, "x for the y.", method: :field_2, null: false
-      field :f3, Enums::E2, "x for y.", null: true
-      field :details, String, "Details.", null: true
+      field :f3, Enums::E2, "x for y."
+      field :details, String, "Details."
 
       field :f4, Objects::O2, "x as a y inside the z.", null: false do
-        argument :a1, Inputs::I1, required: true
+        argument :a1, Inputs::I1
       end
 
       def f4(**arguments)
@@ -39,11 +39,11 @@ module Platform
 
       field :f7, field: SomeField
       field :f8, function: SomeFunction
-      field :f9, [Objects::O2, null: true], null: true
+      field :f9, [Objects::O2, null: true]
       field :field_field, String, hash_key: "fieldField", null: true
-      field :field_field2, String, null: true
+      field :field_field2, String
 
-      field :f10, String, null: true
+      field :f10, String
 
       def f10
         object.something do |_|

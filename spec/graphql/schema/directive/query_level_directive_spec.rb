@@ -4,8 +4,9 @@ require "spec_helper"
 describe "Query level Directive" do
   class QueryDirectiveSchema < GraphQL::Schema
     class DirectiveInput < GraphQL::Schema::InputObject
-      argument :val, Integer, required: true
+      argument :val, Integer
     end
+
     class InitInt < GraphQL::Schema::Directive
       locations(GraphQL::Schema::Directive::QUERY)
       argument(:val, Integer, "Initial integer value.", required: false)

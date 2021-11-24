@@ -100,7 +100,7 @@ module GraphQL
         def on_field(node, parent)
           @response_path.push(node.alias || node.name)
           parent_type = @object_types.last
-          field_definition = @schema.get_field(parent_type, node.name)
+          field_definition = @schema.get_field(parent_type, node.name, @query.context)
           @field_definitions.push(field_definition)
           if !field_definition.nil?
             next_object_type = field_definition.type.unwrap
@@ -138,14 +138,14 @@ module GraphQL
           argument_defn = if (arg = @argument_definitions.last)
             arg_type = arg.type.unwrap
             if arg_type.kind.input_object?
-              arg_type.arguments[node.name]
+              arg_type.get_argument(node.name, @query.context)
             else
               nil
             end
           elsif (directive_defn = @directive_definitions.last)
-            directive_defn.arguments[node.name]
+            directive_defn.get_argument(node.name, @query.context)
           elsif (field_defn = @field_definitions.last)
-            field_defn.arguments[node.name]
+            field_defn.get_argument(node.name, @query.context)
           else
             nil
           end

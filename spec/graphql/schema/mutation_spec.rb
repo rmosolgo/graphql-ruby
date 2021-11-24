@@ -172,7 +172,7 @@ describe GraphQL::Schema::Mutation do
       # This should warn:
       mutation = Class.new(GraphQL::Schema::Mutation) do
         graphql_name "X"
-        field :module, String, null: true
+        field :module, String
       end
       # This should not warn again, when generating the payload type with the same fields:
       mutation.payload_type
@@ -181,7 +181,7 @@ describe GraphQL::Schema::Mutation do
     assert_output "", "" do
       mutation = Class.new(GraphQL::Schema::Mutation) do
         graphql_name "X"
-        field :module, String, null: true, hash_key: :module_value
+        field :module, String, hash_key: :module_value
       end
       mutation.payload_type
     end
@@ -189,8 +189,8 @@ describe GraphQL::Schema::Mutation do
 
   class InterfaceMutationSchema < GraphQL::Schema
     class SignIn < GraphQL::Schema::Mutation
-      argument :login, String, required: true
-      argument :password, String, required: true
+      argument :login, String
+      argument :password, String
       field :success, Boolean, null: false
       def resolve(login:, password:)
         { success: login == password }
