@@ -8,6 +8,29 @@
 
 ### Bug fixes
 
+# 1.13.0 (24 November 2021)
+
+Since this version, GraphQL-Ruby is tested on Ruby 2.4+ and Rails 4+ only.
+
+### Breaking changes
+
+- ActionCable Subscriptions: No update is delivered if all subscriptions return `NO_UPDATE` #3713
+- Subscription classes: If a subscription has a `scope ...` configuration, then a `scope:` option is required in `.trigger(...)`. Use `scope ..., optional: true` to get the old behavior. #3692
+- Arguments whose default values are used aren't checked for authorization #3665
+- Complexity: Connection fields have a default complexity implementation based on `first`/`last`/`max_page_size` #3609
+
+### New features
+
+- Visibility: A schema may contain multiple members with the same name. For each name, GraphQL-Ruby will use the one that returns true for `.visible?(context)` for each query (and raise an error if multiple objects with the same name are visible). #3651 #3716 #3725
+- Dataloader: `nonblocking: true` will make GraphQL::Dataloader use `Fiber.scheduler` to run fields and load data with sources, supporting non-blocking IO. #3482
+- `null: true` and `required: true` are now default. GraphQL-Ruby includes some RuboCop cops, `GraphQL/DefaultNullTrue` and `GraphQL/DefaultRequiredTrue`, which identify and remove those needless configurations. #3612
+- Interfaces may `implement ...` other interfaces #3613
+
+### Bug fixes
+
+- Enum `value(...)` and Input Object `argument(...)` methods return the defined object #3727
+- When a field returns an array of mixed errors and values, the result will contain `nil` where there were errors in the list #3656
+
 # 1.12.21 (23 November 2021)
 
 ### Bug fixes
