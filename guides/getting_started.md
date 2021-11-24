@@ -132,7 +132,7 @@ See {% internal_link "Executing Queries","/queries/executing_queries" %} for mor
 If you're building a backend for [Relay](https://facebook.github.io/relay/), you'll need:
 
 - A JSON dump of the schema, which you can get by sending [`GraphQL::Introspection::INTROSPECTION_QUERY`](https://github.com/rmosolgo/graphql-ruby/blob/master/lib/graphql/introspection/introspection_query.rb)
-- Relay-specific helpers for GraphQL, see the `GraphQL::Relay` guides.
+- Relay-specific helpers for GraphQL, see the {% internal_link "Connection guide", "/connections/connection_concepts" %}, {% internal_link "Mutation guide", "mutations/mutation_classes" %}, and {% internal_link "Object Identification guide", "/schema/object_identification" %}.
 
 ## Use with Apollo Client
 
