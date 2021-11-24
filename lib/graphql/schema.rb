@@ -175,12 +175,6 @@ module GraphQL
       disable_type_introspection_entry_point: ->(schema) { schema.disable_type_introspection_entry_point = true },
       directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.graphql_name] = d; m } },
       directive: ->(schema, directive) { schema.directives[directive.graphql_name] = directive },
-      instrument: ->(schema, type, instrumenter, after_built_ins: false) {
-        if type == :field && after_built_ins
-          type = :field_after_built_ins
-        end
-        schema.instrumenters[type] << instrumenter
-      },
       query_analyzer: ->(schema, analyzer) {
         schema.query_analyzers << analyzer
       },
@@ -356,9 +350,6 @@ module GraphQL
     # @return [void]
     def instrument(instrumentation_type, instrumenter)
       @instrumenters[instrumentation_type] << instrumenter
-      if instrumentation_type == :field
-        rebuild_artifacts
-      end
     end
 
     # @return [Array<GraphQL::BaseType>] The root types of this schema
@@ -1583,17 +1574,7 @@ module GraphQL
       end
 
       def instrument(instrument_step, instrumenter, options = {})
-        if instrument_step == :field
-          GraphQL::Deprecation.warn "Field instrumentation (#{instrumenter.inspect}) will be removed in GraphQL-Ruby 2.0, please upgrade to field extensions: https://graphql-ruby.org/type_definitions/field_extensions.html"
-        end
-
-        step = if instrument_step == :field && options[:after_built_ins]
-          :field_after_built_ins
-        else
-          instrument_step
-        end
-
-        own_instrumenters[step] << instrumenter
+        own_instrumenters[instrument_step] << instrumenter
       end
 
       # Add several directives at once

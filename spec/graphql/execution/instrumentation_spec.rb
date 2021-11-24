@@ -141,7 +141,7 @@ describe GraphQL::Schema do
 
     describe "within a multiplex" do
       let(:multiplex_schema) {
-        schema.redefine {
+        Class.new(schema) {
           instrument(:multiplex, FirstInstrumenter.new)
           instrument(:multiplex, SecondInstrumenter.new)
         }
