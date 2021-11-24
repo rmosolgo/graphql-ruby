@@ -73,15 +73,15 @@ end
 
 # Load dependencies
 ['Mongoid', 'Rails'].each do |integration|
-  begin
+  integration_loaded = begin
     Object.const_get(integration)
-    if ENV["TEST"].nil?
-      Dir["spec/integration/#{integration.downcase}/**/*.rb"].each do |f|
-        require f.sub("spec/", "")
-      end
-    end
   rescue NameError
-    # ignore
+    nil
+  end
+  if ENV["TEST"].nil? && integration_loaded
+    Dir["spec/integration/#{integration.downcase}/**/*.rb"].each do |f|
+      require f.sub("spec/", "")
+    end
   end
 end
 

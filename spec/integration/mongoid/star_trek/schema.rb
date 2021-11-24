@@ -20,15 +20,18 @@ module StarTrek
     graphql_name "Base"
     implements GraphQL::Types::Relay::Node
     global_id_field :id
-    field :name, String, null: false, resolve: ->(obj, args, ctx) {
+    field :name, String, null: false
+
+    def name
       LazyWrapper.new {
-        if obj.id.nil?
+        if object.id.nil?
           raise GraphQL::ExecutionError, "Boom!"
         else
-          obj.name
+          object.name
         end
       }
-    }
+    end
+
     field :sector, String
     field :residents, ResidentType.connection_type
   end
@@ -43,7 +46,7 @@ module StarTrek
     end
   end
 
-  class CustomBaseEdge < GraphQL::Relay::Edge
+  class CustomBaseEdge < GraphQL::Pagination::Connection::Edge
     def upcased_name
       node.name.upcase
     end
@@ -102,8 +105,6 @@ module StarTrek
 
   class Faction < GraphQL::Schema::Object
     implements GraphQL::Types::Relay::Node
-
-    field :id, ID, null: false, resolve: GraphQL::Relay::GlobalIdResolve.new(type: Faction)
     field :name, String
     field :ships, ShipConnectionWithParentType, connection: true, max_page_size: 1000, null: true do
       argument :name_includes, String, required: false
@@ -265,7 +266,7 @@ module StarTrek
   end
 
   LazyNodesWrapper = Struct.new(:relation)
-  class LazyNodesRelationConnection < GraphQL::Relay::RelationConnection
+  class LazyNodesRelationConnection < GraphQL::Pagination::MongoidRelationConnection
     def initialize(wrapper, *args)
       super(wrapper.relation, *args)
     end
@@ -274,8 +275,6 @@ module StarTrek
       LazyWrapper.new { super }
     end
   end
-
-  GraphQL::Relay::BaseConnection.register_connection_implementation(LazyNodesWrapper, LazyNodesRelationConnection)
 
   class QueryType < GraphQL::Schema::Object
     graphql_name "Query"

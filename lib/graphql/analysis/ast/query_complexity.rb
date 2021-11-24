@@ -5,7 +5,7 @@ module GraphQL
     module AST
       class QueryComplexity < Analyzer
         # State for the query complexity calculation:
-        # - `complexities_on_type` holds complexity scores for each type in an IRep node
+        # - `complexities_on_type` holds complexity scores for each type
         def initialize(query)
           super
           @complexities_on_type_by_query = {}

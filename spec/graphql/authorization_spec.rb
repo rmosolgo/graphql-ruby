@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::Authorization do
+describe "GraphQL::Authorization" do
   module AuthTest
     class Box
       attr_reader :value

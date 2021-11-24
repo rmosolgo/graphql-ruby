@@ -534,7 +534,6 @@ module GraphQL
           field_defn.edge_class = @legacy_edge_class
         end
 
-        field_defn.resolve = self.method(:resolve_field)
         field_defn.connection = connection?
         field_defn.connection_max_page_size = max_page_size
         field_defn.introspection = @introspection
@@ -644,37 +643,6 @@ module GraphQL
         end
       end
 
-      # Implement {GraphQL::Field}'s resolve API.
-      #
-      # Eventually, we might hook up field instances to execution in another way. TBD.
-      # @see #resolve for how the interpreter hooks up to it
-      def resolve_field(obj, args, ctx)
-        ctx.schema.after_lazy(obj) do |after_obj|
-          # First, apply auth ...
-          query_ctx = ctx.query.context
-          # Some legacy fields can have `nil` here, not exactly sure why.
-          # @see https://github.com/rmosolgo/graphql-ruby/issues/1990 before removing
-          inner_obj = after_obj && after_obj.object
-          ctx.schema.after_lazy(to_ruby_args(after_obj, args, ctx)) do |ruby_args|
-            if authorized?(inner_obj, ruby_args, query_ctx)
-              # Then if it passed, resolve the field
-              if @resolve_proc
-                # Might be nil, still want to call the func in that case
-                with_extensions(inner_obj, ruby_args, query_ctx) do |extended_obj, extended_args|
-                  # Pass the GraphQL args here for compatibility:
-                  @resolve_proc.call(extended_obj, args, ctx)
-                end
-              else
-                public_send_field(after_obj, ruby_args, query_ctx)
-              end
-            else
-              err = GraphQL::UnauthorizedFieldError.new(object: inner_obj, type: obj.class, context: ctx, field: self)
-              query_ctx.schema.unauthorized_field(err)
-            end
-          end
-        end
-      end
-
       # This method is called by the interpreter for each field.
       # You can extend it in your base field classes.
       # @param object [GraphQL::Schema::Object] An instance of some type class, wrapping an application object
@@ -707,7 +675,7 @@ module GraphQL
         err
       end
 
-      # @param ctx [GraphQL::Query::Context::FieldResolutionContext]
+      # @param ctx [GraphQL::Query::Context]
       def fetch_extra(extra_name, ctx)
         if extra_name != :path && extra_name != :ast_node && respond_to?(extra_name)
           self.public_send(extra_name)
@@ -719,63 +687,6 @@ module GraphQL
       end
 
       private
-
-      NO_ARGS = {}.freeze
-
-      # Convert a GraphQL arguments instance into a Ruby-style hash.
-      #
-      # @param obj [GraphQL::Schema::Object] The object where this field is being resolved
-      # @param graphql_args [GraphQL::Query::Arguments]
-      # @param field_ctx [GraphQL::Query::Context::FieldResolutionContext]
-      # @return [Hash<Symbol => Any>]
-      def to_ruby_args(obj, graphql_args, field_ctx)
-        if graphql_args.any? || @extras.any?
-          # Splat the GraphQL::Arguments to Ruby keyword arguments
-          ruby_kwargs = graphql_args.to_kwargs
-          maybe_lazies = []
-          # Apply any `prepare` methods. Not great code organization, can this go somewhere better?
-          arguments(field_ctx).each do |name, arg_defn|
-            ruby_kwargs_key = arg_defn.keyword
-
-            if ruby_kwargs.key?(ruby_kwargs_key)
-              loads = arg_defn.loads
-              value = ruby_kwargs[ruby_kwargs_key]
-              loaded_value = if loads && !arg_defn.from_resolver?
-                if arg_defn.type.list?
-                  loaded_values = value.map { |val| load_application_object(arg_defn, loads, val, field_ctx.query.context) }
-                  field_ctx.schema.after_any_lazies(loaded_values) { |result| result }
-                else
-                  load_application_object(arg_defn, loads, value, field_ctx.query.context)
-                end
-              elsif arg_defn.type.list? && value.is_a?(Array)
-                field_ctx.schema.after_any_lazies(value, &:itself)
-              else
-                value
-              end
-
-              maybe_lazies << field_ctx.schema.after_lazy(loaded_value) do |loaded_value|
-                prepared_value = if arg_defn.prepare
-                  arg_defn.prepare_value(obj, loaded_value)
-                else
-                  loaded_value
-                end
-
-                ruby_kwargs[ruby_kwargs_key] = prepared_value
-              end
-            end
-          end
-
-          @extras.each do |extra_arg|
-            ruby_kwargs[extra_arg] = fetch_extra(extra_arg, field_ctx)
-          end
-
-          field_ctx.schema.after_any_lazies(maybe_lazies) do
-            ruby_kwargs
-          end
-        else
-          NO_ARGS
-        end
-      end
 
       def public_send_field(unextended_obj, unextended_ruby_kwargs, query_ctx)
         with_extensions(unextended_obj, unextended_ruby_kwargs, query_ctx) do |obj, ruby_kwargs|

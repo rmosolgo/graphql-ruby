@@ -471,10 +471,6 @@ module GraphQL
                   # Use this flag to tell Interpreter::Arguments to add itself
                   # to the keyword args hash _before_ freezing everything.
                   extra_args[:argument_details] = :__arguments_add_self
-                when :irep_node
-                  # This is used by `__typename` in order to support the legacy runtime,
-                  # but it has no use here (and it's always `nil`).
-                  # Stop adding it here to avoid the overhead of `.merge_extras` below.
                 when :parent
                   extra_args[:parent] = parent_object
                 else
@@ -618,7 +614,7 @@ module GraphQL
                 err
               end
               continue_value(path, next_value, parent_type, field, is_non_null, ast_node, result_name, selection_result)
-            elsif GraphQL::Execution::Execute::SKIP == value
+            elsif GraphQL::Execution::SKIP == value
               # It's possible a lazy was already written here
               case selection_result
               when GraphQLResultHash

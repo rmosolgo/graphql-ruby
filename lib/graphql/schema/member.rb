@@ -14,7 +14,6 @@ require 'graphql/schema/member/relay_shortcuts'
 require 'graphql/schema/member/scoped'
 require 'graphql/schema/member/type_system_helpers'
 require 'graphql/schema/member/validates_input'
-require "graphql/relay/type_extensions"
 
 module GraphQL
   class Schema
@@ -25,7 +24,6 @@ module GraphQL
     class Member
       include GraphQLTypeNames
       extend CachedGraphQLDefinition
-      extend GraphQL::Relay::TypeExtensions
       extend BaseDSLMethods
       extend BaseDSLMethods::ConfigurationExtension
       introspection(false)
@@ -41,5 +39,4 @@ end
 
 require 'graphql/schema/member/has_arguments'
 require 'graphql/schema/member/has_fields'
-require 'graphql/schema/member/instrumentation'
 require 'graphql/schema/member/build_type'

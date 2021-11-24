@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 require "graphql/schema/addition"
 require "graphql/schema/base_64_encoder"
-require "graphql/schema/catchall_middleware"
 require "graphql/schema/default_parse_error"
 require "graphql/schema/default_type_error"
 require "graphql/schema/find_inherited_value"
@@ -9,12 +8,9 @@ require "graphql/schema/finder"
 require "graphql/schema/invalid_type_error"
 require "graphql/schema/introspection_system"
 require "graphql/schema/late_bound_type"
-require "graphql/schema/middleware_chain"
 require "graphql/schema/null_mask"
 require "graphql/schema/possible_types"
-require "graphql/schema/rescue_middleware"
 require "graphql/schema/timeout"
-require "graphql/schema/timeout_middleware"
 require "graphql/schema/traversal"
 require "graphql/schema/type_expression"
 require "graphql/schema/unique_within_type"
@@ -179,20 +175,10 @@ module GraphQL
       disable_type_introspection_entry_point: ->(schema) { schema.disable_type_introspection_entry_point = true },
       directives: ->(schema, directives) { schema.directives = directives.reduce({}) { |m, d| m[d.graphql_name] = d; m } },
       directive: ->(schema, directive) { schema.directives[directive.graphql_name] = directive },
-      instrument: ->(schema, type, instrumenter, after_built_ins: false) {
-        if type == :field && after_built_ins
-          type = :field_after_built_ins
-        end
-        schema.instrumenters[type] << instrumenter
-      },
       query_analyzer: ->(schema, analyzer) {
-        if analyzer == GraphQL::Authorization::Analyzer
-          GraphQL::Deprecation.warn("The Authorization query analyzer is deprecated. Authorizing at query runtime is generally a better idea.")
-        end
         schema.query_analyzers << analyzer
       },
       multiplex_analyzer: ->(schema, analyzer) { schema.multiplex_analyzers << analyzer },
-      middleware: ->(schema, middleware) { schema.middleware << middleware },
       lazy_resolve: ->(schema, lazy_class, lazy_value_method) { schema.lazy_methods.set(lazy_class, lazy_value_method) },
       rescue_from: ->(schema, err_class, &block) { schema.rescue_from(err_class, &block) },
       tracer: ->(schema, tracer) { schema.tracers.push(tracer) }
@@ -217,9 +203,6 @@ module GraphQL
     # Single, long-lived instance of the provided subscriptions class, if there is one.
     # @return [GraphQL::Subscriptions]
     attr_accessor :subscriptions
-
-    # @return [MiddlewareChain] MiddlewareChain which is applied to fields during execution
-    attr_accessor :middleware
 
     # @return [<#call(member, ctx)>] A callable for filtering members of the schema
     # @see {Query.new} for query-specific filters with `except:`
@@ -275,7 +258,6 @@ module GraphQL
         @directives[name] = dir.graphql_definition
       end
       @static_validator = GraphQL::StaticValidation::Validator.new(schema: self)
-      @middleware = MiddlewareChain.new(final_step: GraphQL::Execution::Execute::FieldResolveStep)
       @query_analyzers = []
       @multiplex_analyzers = []
       @resolve_type_proc = nil
@@ -289,9 +271,6 @@ module GraphQL
       @cursor_encoder = Base64Encoder
       # For schema instances, default to legacy runtime modules
       @analysis_engine = GraphQL::Analysis
-      @query_execution_strategy = GraphQL::Execution::Execute
-      @mutation_execution_strategy = GraphQL::Execution::Execute
-      @subscription_execution_strategy = GraphQL::Execution::Execute
       @default_mask = GraphQL::Schema::NullMask
       @rebuilding_artifacts = false
       @context_class = GraphQL::Query::Context
@@ -320,7 +299,6 @@ module GraphQL
       @orphan_types = other.orphan_types.dup
       @directives = other.directives.dup
       @static_validator = GraphQL::StaticValidation::Validator.new(schema: self)
-      @middleware = other.middleware.dup
       @query_analyzers = other.query_analyzers.dup
       @multiplex_analyzers = other.multiplex_analyzers.dup
       @tracers = other.tracers.dup
@@ -333,22 +311,10 @@ module GraphQL
         @instrumenters[key].concat(insts)
       end
 
-      if other.rescues?
-        @rescue_middleware = other.rescue_middleware
-      end
-
       # This will be rebuilt when it's requested
       # or during a later `define` call
       @types = nil
       @introspection_system = nil
-    end
-
-    def rescue_from(*args, &block)
-      rescue_middleware.rescue_from(*args, &block)
-    end
-
-    def remove_handler(*args, &block)
-      rescue_middleware.remove_handler(*args, &block)
     end
 
     def using_ast_analysis?
@@ -384,9 +350,6 @@ module GraphQL
     # @return [void]
     def instrument(instrumentation_type, instrumenter)
       @instrumenters[instrumentation_type] << instrumenter
-      if instrumentation_type == :field
-        rebuild_artifacts
-      end
     end
 
     # @return [Array<GraphQL::BaseType>] The root types of this schema
@@ -960,7 +923,6 @@ module GraphQL
         schema_defn.query_analyzers.concat(query_analyzers)
         schema_defn.analysis_engine = analysis_engine
 
-        schema_defn.middleware.concat(all_middleware)
         schema_defn.multiplex_analyzers.concat(multiplex_analyzers)
         schema_defn.query_execution_strategy = query_execution_strategy
         schema_defn.mutation_execution_strategy = mutation_execution_strategy
@@ -1612,17 +1574,7 @@ module GraphQL
       end
 
       def instrument(instrument_step, instrumenter, options = {})
-        if instrument_step == :field
-          GraphQL::Deprecation.warn "Field instrumentation (#{instrumenter.inspect}) will be removed in GraphQL-Ruby 2.0, please upgrade to field extensions: https://graphql-ruby.org/type_definitions/field_extensions.html"
-        end
-
-        step = if instrument_step == :field && options[:after_built_ins]
-          :field_after_built_ins
-        else
-          instrument_step
-        end
-
-        own_instrumenters[step] << instrumenter
+        own_instrumenters[instrument_step] << instrumenter
       end
 
       # Add several directives at once
@@ -1659,24 +1611,11 @@ module GraphQL
       end
 
       def query_analyzer(new_analyzer)
-        if new_analyzer == GraphQL::Authorization::Analyzer
-          GraphQL::Deprecation.warn("The Authorization query analyzer is deprecated. Authorizing at query runtime is generally a better idea.")
-        end
         own_query_analyzers << new_analyzer
       end
 
       def query_analyzers
         find_inherited_value(:query_analyzers, EMPTY_ARRAY) + own_query_analyzers
-      end
-
-      def middleware(new_middleware = nil)
-        if new_middleware
-          GraphQL::Deprecation.warn "Middleware will be removed in GraphQL-Ruby 2.0, please upgrade to Field Extensions: https://graphql-ruby.org/type_definitions/field_extensions.html"
-          own_middleware << new_middleware
-        else
-          # TODO make sure this is cached when running a query
-          MiddlewareChain.new(steps: all_middleware, final_step: GraphQL::Execution::Execute::FieldResolveStep)
-        end
       end
 
       def multiplex_analyzer(new_analyzer)
@@ -1878,14 +1817,6 @@ module GraphQL
         @defined_query_analyzers ||= []
       end
 
-      def all_middleware
-        find_inherited_value(:all_middleware, EMPTY_ARRAY) + own_middleware
-      end
-
-      def own_middleware
-        @own_middleware ||= []
-      end
-
       def own_multiplex_analyzers
         @own_multiplex_analyzers ||= []
       end
@@ -1897,18 +1828,6 @@ module GraphQL
 
     # Install these here so that subclasses will also install it.
     use(GraphQL::Pagination::Connections)
-
-    protected
-
-    def rescues?
-      !!@rescue_middleware
-    end
-
-    # Lazily create a middleware and add it to the schema
-    # (Don't add it if it's not used)
-    def rescue_middleware
-      @rescue_middleware ||= GraphQL::Schema::RescueMiddleware.new.tap { |m| middleware.insert(0, m) }
-    end
 
     private
 

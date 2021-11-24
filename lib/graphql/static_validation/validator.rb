@@ -28,12 +28,11 @@ module GraphQL
       # @return [Array<Hash>]
       def validate(query, validate: true, timeout: nil, max_errors: nil)
         query.trace("validate", { validate: validate, query: query }) do
-          can_skip_rewrite = query.context.interpreter? && query.schema.using_ast_analysis? && query.schema.is_a?(Class)
-          errors = if validate == false && can_skip_rewrite
+          errors = if validate == false
             []
           else
             rules_to_use = validate ? @rules : []
-            visitor_class = BaseVisitor.including_rules(rules_to_use, rewrite: !can_skip_rewrite)
+            visitor_class = BaseVisitor.including_rules(rules_to_use)
 
             context = GraphQL::StaticValidation::ValidationContext.new(query, visitor_class, max_errors)
 
@@ -64,22 +63,13 @@ module GraphQL
             context.errors
           end
 
-          irep = if errors.empty? && context
-            # Only return this if there are no errors and validation was actually run
-            context.visitor.rewrite_document
-          else
-            nil
-          end
-
           {
             errors: errors,
-            irep: irep,
           }
         end
       rescue GraphQL::ExecutionError => e
         {
           errors: [e],
-          irep: nil,
         }
       end
 

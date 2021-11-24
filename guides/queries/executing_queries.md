@@ -145,4 +145,4 @@ class Types::MutationType < GraphQL::Schema::Object
 end
 ```
 
-{{ "GraphQL::Relay::Mutation" | api_doc }} fields will also receive `root_value:` as `obj` (assuming they're attached directly to your `MutationType`).
+{{ "GraphQL::Schema::Mutation" | api_doc }} fields will also receive `root_value:` as `obj` (assuming they're attached directly to your `MutationType`).

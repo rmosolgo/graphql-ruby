@@ -5,7 +5,6 @@ module GraphQL
       include GraphQL::Schema::Member::GraphQLTypeNames
       module DefinitionMethods
         include GraphQL::Schema::Member::CachedGraphQLDefinition
-        include GraphQL::Relay::TypeExtensions
         include GraphQL::Schema::Member::BaseDSLMethods
         # ConfigurationExtension's responsibilities are in `def included` below
         include GraphQL::Schema::Member::TypeSystemHelpers

@@ -47,7 +47,7 @@ end
 
 Now, built-in connection implementations will use that encoder for cursors.
 
-If you implement your own connections, you can access the encoder's encryption methods via {{ "GraphQL::Relay::BaseConnection#encode" | api_doc }} and {{ "GraphQL::Relay::BaseConnection#decode" | api_doc }}.
+If you implement your own connections, you can access the encoder's encryption methods via {{ "GraphQL::Pagination::Connection#encode" | api_doc }} and {{ "GraphQL::Pagination::Connection#decode" | api_doc }}.
 
 
 ## Encrypting IDs

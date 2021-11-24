@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::Relay::ConnectionType do
+describe "GraphQL::Relay::ConnectionType" do
   describe ".create_type" do
     describe "connections with custom Edge classes / EdgeTypes" do
       let(:query_string) {%|

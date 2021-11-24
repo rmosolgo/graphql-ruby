@@ -1,12 +1,10 @@
 # frozen_string_literal: true
-require "graphql/relay/type_extensions"
 
 module GraphQL
   # The parent for all type classes.
   class BaseType
     include GraphQL::Define::NonNullWithBang
     include GraphQL::Define::InstanceDefinable
-    include GraphQL::Relay::TypeExtensions
 
     accepts_definitions :name, :description,
         :introspection,

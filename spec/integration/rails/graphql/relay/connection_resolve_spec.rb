@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::Relay::ConnectionResolve do
+describe "GraphQL::Relay::ConnectionResolve" do
   let(:query_string) { <<-GRAPHQL
     query getShips($name: String!, $testParentName: Boolean = false){
       rebels {

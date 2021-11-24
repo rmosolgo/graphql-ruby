@@ -1,13 +1,11 @@
 # frozen_string_literal: true
 require "graphql/query/arguments"
-require "graphql/query/arguments_cache"
 require "graphql/query/context"
 require "graphql/query/executor"
 require "graphql/query/fingerprint"
 require "graphql/query/literal_input"
 require "graphql/query/null_context"
 require "graphql/query/result"
-require "graphql/query/serial_execution"
 require "graphql/query/variables"
 require "graphql/query/input_validation_result"
 require "graphql/query/variable_validation_error"
@@ -237,16 +235,6 @@ module GraphQL
       end
     end
 
-    def irep_selection
-      @selection ||= begin
-        if selected_operation && internal_representation
-          internal_representation.operation_definitions[selected_operation.name]
-        else
-          nil
-        end
-      end
-    end
-
     # Node-level cache for calculating arguments. Used during execution and query analysis.
     # @param ast_node [GraphQL::Language::Nodes::AbstractNode]
     # @param definition [GraphQL::Schema::Field]
@@ -261,11 +249,7 @@ module GraphQL
     end
 
     def arguments_cache
-      if interpreter?
-        @arguments_cache ||= Execution::Interpreter::ArgumentsCache.new(self)
-      else
-        @arguments_cache ||= ArgumentsCache.build(self)
-      end
+      @arguments_cache ||= Execution::Interpreter::ArgumentsCache.new(self)
     end
 
     # A version of the given query string, with:
@@ -308,7 +292,7 @@ module GraphQL
       with_prepared_ast { @validation_pipeline }
     end
 
-    def_delegators :validation_pipeline, :validation_errors, :internal_representation,
+    def_delegators :validation_pipeline, :validation_errors,
                    :analyzers, :ast_analyzers, :max_depth, :max_complexity
 
     attr_accessor :analysis_errors
