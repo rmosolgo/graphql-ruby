@@ -571,8 +571,8 @@ describe GraphQL::Schema::Warden do
         unit(name: "Uvular Trill") { __typename }
       }
       |
-      expected_class = TESTING_INTERPRETER ? MaskHelpers::EmicUnitType::UnresolvedTypeError : GraphQL::UnresolvedTypeError
-      assert_raises(expected_class) {
+
+      assert_raises(MaskHelpers::EmicUnitType::UnresolvedTypeError) {
         MaskHelpers.run_query(query_string, only: whitelist)
       }
     end

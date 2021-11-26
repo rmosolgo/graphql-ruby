@@ -6,8 +6,6 @@ Bundler.require
 
 # Print full backtrace for failiures:
 ENV["BACKTRACE"] = "1"
-# Set this env var to use legacy runtime for fixture schemas.
-TESTING_INTERPRETER = !ENV["TESTING_LEGACY"]
 
 require "graphql"
 require "rake"

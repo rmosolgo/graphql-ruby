@@ -44,35 +44,6 @@ describe "GraphQL::Relay::ConnectionResolve" do
     end
   end
 
-
-  if !TESTING_INTERPRETER
-    describe "when a lazy object is returned" do
-      it "returns the items with the correct parent" do
-        result = star_wars_query(query_string, { "name" => "lazyObject", "testParentName" => true })
-        assert_equal 5, result["data"]["rebels"]["ships"]["edges"].length
-        assert_equal "StarWars::FactionRecord", result["data"]["rebels"]["ships"]["parentClassName"]
-      end
-    end
-  end
-
-  describe "when a resolver is used" do
-    if !TESTING_INTERPRETER
-      it "returns the items with the correct parent" do
-        resolver_query_str = <<-GRAPHQL
-          {
-            rebels {
-              shipsByResolver {
-                parentClassName
-              }
-            }
-          }
-          GRAPHQL
-        result = star_wars_query(resolver_query_str)
-        assert_equal "StarWars::FactionRecord", result["data"]["rebels"]["shipsByResolver"]["parentClassName"]
-      end
-    end
-  end
-
   describe "when nil is returned" do
     it "becomes null" do
       result = star_wars_query(query_string, { "name" => "null" })

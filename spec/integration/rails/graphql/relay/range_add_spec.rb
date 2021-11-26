@@ -51,8 +51,7 @@ describe GraphQL::Relay::RangeAdd do
       argument :menu_idx, Integer
 
       field :item_edge, item.edge_type, null: false
-      # On the old runtime, connection: false was required here:
-      field :items, item.connection_type, null: false, connection: TESTING_INTERPRETER
+      field :items, item.connection_type, null: false
       field :menu, menu, null: false
 
       define_method :resolve do |input|

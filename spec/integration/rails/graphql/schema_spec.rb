@@ -57,16 +57,6 @@ describe GraphQL::Schema do
     end
   end
 
-  # Interpreter has subscription support hardcoded, it doesn't just call through.
-  if !TESTING_INTERPRETER
-    describe "#subscription" do
-      it "calls fields on the subscription type" do
-        res = schema.execute("subscription { test }")
-        assert_equal("Test", res["data"]["test"])
-      end
-    end
-  end
-
   describe "#resolve_type" do
     describe "when the return value is nil" do
       it "returns nil" do
