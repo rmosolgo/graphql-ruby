@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::Query::Executor do
+describe "GraphQL::Query::Executor" do
   let(:operation_name) { nil }
   let(:schema) { Dummy::Schema }
   let(:variables) { {"cheeseId" => 2} }
