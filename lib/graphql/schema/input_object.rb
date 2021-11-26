@@ -12,23 +12,16 @@ module GraphQL
 
       # @return [GraphQL::Query::Context] The context for this query
       attr_reader :context
-      # @return [GraphQL::Query::Arguments, GraphQL::Execution::Interpereter::Arguments] The underlying arguments instance
+      # @return [GraphQL::Execution::Interpereter::Arguments] The underlying arguments instance
       attr_reader :arguments
 
       # Ruby-like hash behaviors, read-only
       def_delegators :@ruby_style_hash, :keys, :values, :each, :map, :any?, :empty?
 
-      # TODO: remove `arguments = nil`, it was legacy-only IIRC
-      def initialize(arguments = nil, ruby_kwargs: nil, context:, defaults_used:)
+      def initialize(arguments, ruby_kwargs:, context:, defaults_used:)
         @context = context
-        if ruby_kwargs
-          @ruby_style_hash = ruby_kwargs
-          @arguments = arguments
-        else
-          @arguments = self.class.arguments_class.new(arguments, context: context, defaults_used: defaults_used)
-          # Symbolized, underscored hash:
-          @ruby_style_hash = @arguments.to_kwargs
-        end
+        @ruby_style_hash = ruby_kwargs
+        @arguments = arguments
         # Apply prepares, not great to have it duplicated here.
         maybe_lazies = []
         self.class.arguments(context).each_value do |arg_defn|
@@ -117,9 +110,6 @@ module GraphQL
       end
 
       class << self
-        # @return [Class<GraphQL::Arguments>]
-        attr_accessor :arguments_class
-
         def argument(*args, **kwargs, &block)
           argument_defn = super(*args, **kwargs, &block)
           # Add a method access

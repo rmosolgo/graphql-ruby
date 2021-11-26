@@ -43,7 +43,7 @@ module GraphQL
 
         # Visit Helpers
 
-        # @return [GraphQL::Query::Arguments] Arguments for this node, merging default values, literal values and query variables
+        # @return [GraphQL::Execution::Interpreter::Arguments] Arguments for this node, merging default values, literal values and query variables
         # @see {GraphQL::Query#arguments_for}
         def arguments_for(ast_node, field_definition)
           @query.arguments_for(ast_node, field_definition)

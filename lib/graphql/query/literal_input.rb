@@ -115,20 +115,15 @@ module GraphQL
           end
         end
 
-        if argument_owner.is_a?(Class) || argument_owner.is_a?(GraphQL::Schema::Field)
-          # A Schema::InputObject, Schema::GraphQL::Field, Schema::Directive, logic from Query::Arguments#to_kwargs
-          ruby_kwargs = {}
-          values_hash.each do |key, value|
-            ruby_kwargs[Schema::Member::BuildType.underscore(key).to_sym] = value
-          end
-          if argument_owner.is_a?(Class) && argument_owner < GraphQL::Schema::InputObject
-            argument_owner.new(ruby_kwargs: ruby_kwargs, context: context, defaults_used: defaults_used)
-          else
-            ruby_kwargs
-          end
+        # A Schema::InputObject, Schema::GraphQL::Field, Schema::Directive, logic from Interpreter::Arguments
+        ruby_kwargs = {}
+        values_hash.each do |key, value|
+          ruby_kwargs[Schema::Member::BuildType.underscore(key).to_sym] = value
+        end
+        if argument_owner.is_a?(Class) && argument_owner < GraphQL::Schema::InputObject
+          argument_owner.new(ruby_kwargs: ruby_kwargs, context: context, defaults_used: defaults_used)
         else
-          result = argument_owner.arguments_class.new(values_hash, context: context, defaults_used: defaults_used)
-          result.prepare
+          ruby_kwargs
         end
       end
     end
