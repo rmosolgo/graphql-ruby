@@ -1,9 +1,6 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-# Make sure that `!` has no effect
-using GraphQL::DeprecatedDSL
-
 describe GraphQL::Schema::Mutation do
   let(:mutation) { Jazz::AddInstrument }
   after do

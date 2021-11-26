@@ -2,7 +2,6 @@
 module GraphQL
   class Schema
     class InputObject < GraphQL::Schema::Member
-      extend GraphQL::Schema::Member::AcceptsDefinition
       extend Forwardable
       extend GraphQL::Schema::Member::HasArguments
       extend GraphQL::Schema::Member::HasArguments::ArgumentObjectLoader
@@ -19,6 +18,7 @@ module GraphQL
       # Ruby-like hash behaviors, read-only
       def_delegators :@ruby_style_hash, :keys, :values, :each, :map, :any?, :empty?
 
+      # TODO: remove `arguments = nil`, it was legacy-only IIRC
       def initialize(arguments = nil, ruby_kwargs: nil, context:, defaults_used:)
         @context = context
         if ruby_kwargs
@@ -130,23 +130,6 @@ module GraphQL
             end
           RUBY
           argument_defn
-        end
-
-        def to_graphql
-          type_defn = GraphQL::InputObjectType.new
-          type_defn.name = graphql_name
-          type_defn.description = description
-          type_defn.metadata[:type_class] = self
-          type_defn.mutation = mutation
-          type_defn.ast_node = ast_node
-          all_argument_definitions.each do |arg|
-            type_defn.arguments[arg.graphql_definition.name] = arg.graphql_definition # rubocop:disable Development/ContextIsPassedCop -- legacy-related
-          end
-          # Make a reference to a classic-style Arguments class
-          self.arguments_class = GraphQL::Query::Arguments.construct_arguments_class(type_defn)
-          # But use this InputObject class at runtime
-          type_defn.arguments_class = self
-          type_defn
         end
 
         def kind

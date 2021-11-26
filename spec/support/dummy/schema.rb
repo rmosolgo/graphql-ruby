@@ -4,11 +4,7 @@ require_relative "./data"
 module Dummy
   class NoSuchDairyError < StandardError; end
 
-  GraphQL::Field.accepts_definitions(joins: GraphQL::Define.assign_metadata_key(:joins))
-  GraphQL::BaseType.accepts_definitions(class_names: GraphQL::Define.assign_metadata_key(:class_names))
-
   class BaseField < GraphQL::Schema::Field
-    accepts_definition :joins
   end
 
   class AdminField < GraphQL::Schema::Field
@@ -23,7 +19,6 @@ module Dummy
 
   class BaseObject < GraphQL::Schema::Object
     field_class BaseField
-    accepts_definition :class_names
   end
 
   class BaseUnion < GraphQL::Schema::Union
@@ -81,7 +76,6 @@ module Dummy
   end
 
   class Cheese < BaseObject
-    class_names ["Cheese"]
     description "Cultured dairy product"
     implements Edible
     implements EdibleAsMilk
@@ -101,8 +95,6 @@ module Dummy
       null: false
 
     field :similar_cheese, Cheese, "Cheeses like this one"  do
-      # metadata test
-      joins [:cheeses, :milks]
       argument :source, [DairyAnimal]
       argument :nullable_source, [DairyAnimal], required: false, default_value: [1]
     end
@@ -482,7 +474,7 @@ module Dummy
   GLOBAL_VALUES = []
 
   class ReplaceValuesInput < BaseInputObject
-    argument :values, [Integer], method_access: false
+    argument :values, [Integer]
   end
 
   class DairyAppMutation < BaseObject

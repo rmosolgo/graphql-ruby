@@ -230,7 +230,7 @@ module GraphQL
     # @return [Any] normalized arguments value
     def normalize_arguments(event_name, arg_owner, args, context)
       case arg_owner
-      when GraphQL::Field, GraphQL::InputObjectType, GraphQL::Schema::Field, Class
+      when GraphQL::Schema::Field, Class
         if arg_owner.is_a?(Class) && !arg_owner.kind.input_object?
           # it's a type, but not an input object
           return args
@@ -271,9 +271,7 @@ module GraphQL
         end
 
         if missing_arg_names.any?
-          arg_owner_name = if arg_owner.is_a?(GraphQL::Field)
-            "Subscription.#{arg_owner.name}"
-          elsif arg_owner.is_a?(GraphQL::Schema::Field)
+          arg_owner_name = if arg_owner.is_a?(GraphQL::Schema::Field)
             arg_owner.path
           elsif arg_owner.is_a?(Class)
             arg_owner.graphql_name
@@ -284,9 +282,9 @@ module GraphQL
         end
 
         normalized_args
-      when GraphQL::ListType, GraphQL::Schema::List
+      when GraphQL::Schema::List
         args.map { |a| normalize_arguments(event_name, arg_owner.of_type, a, context) }
-      when GraphQL::NonNullType, GraphQL::Schema::NonNull
+      when GraphQL::Schema::NonNull
         normalize_arguments(event_name, arg_owner.of_type, args, context)
       else
         args

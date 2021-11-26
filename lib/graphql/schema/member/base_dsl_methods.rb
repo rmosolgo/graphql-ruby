@@ -94,11 +94,6 @@ module GraphQL
           end
         end
 
-        # @return [GraphQL::BaseType] Convert this type to a legacy-style object.
-        def to_graphql
-          raise GraphQL::RequiredImplementationMissingError
-        end
-
         alias :unwrap :itself
 
         # Creates the default name for a schema member.

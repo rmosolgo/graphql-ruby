@@ -46,7 +46,6 @@ module GraphQL
             field :edges, [edge_type_class, null: edge_nullable],
               null: edges_nullable,
               description: "A list of edges.",
-              legacy_edge_class: edge_class, # This is used by the old runtime only, for EdgesInstrumentation
               connection: false
 
             define_nodes_field(node_nullable) if nodes_field

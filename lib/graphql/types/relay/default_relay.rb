@@ -15,12 +15,6 @@ module GraphQL
         def default_relay?
           !!@default_relay
         end
-
-        def to_graphql
-          type_defn = super
-          type_defn.default_relay = default_relay?
-          type_defn
-        end
       end
     end
   end

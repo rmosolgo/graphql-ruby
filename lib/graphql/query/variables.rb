@@ -14,7 +14,7 @@ module GraphQL
         schema = ctx.schema
         @context = ctx
 
-        @provided_variables = GraphQL::Argument.deep_stringify(provided_variables)
+        @provided_variables = deep_stringify(provided_variables)
         @errors = []
         @storage = ast_variables.each_with_object({}) do |ast_variable, memo|
           # Find the right value for this variable:
@@ -73,6 +73,23 @@ module GraphQL
       end
 
       def_delegators :@storage, :length, :key?, :[], :fetch, :to_h
+
+      private
+
+      def deep_stringify(val)
+        case val
+        when Array
+          val.map { |v| deep_stringify(v) }
+        when Hash
+          new_val = {}
+          val.each do |k, v|
+            new_val[k.to_s] = deep_stringify(v)
+          end
+          new_val
+        else
+          val
+        end
+      end
     end
   end
 end

@@ -13,12 +13,6 @@ module GraphQL
     #       # arguments to `value(...)` in Enum classes are passed here
     #       super
     #     end
-    #
-    #     def to_graphql
-    #       enum_value = super
-    #       # customize the derived GraphQL::EnumValue here
-    #       enum_value
-    #     end
     #   end
     #
     #   class BaseEnum < GraphQL::Schema::Enum
@@ -26,8 +20,6 @@ module GraphQL
     #     enum_value_class CustomEnumValue
     #   end
     class EnumValue < GraphQL::Schema::Member
-      include GraphQL::Schema::Member::CachedGraphQLDefinition
-      include GraphQL::Schema::Member::AcceptsDefinition
       include GraphQL::Schema::Member::HasPath
       include GraphQL::Schema::Member::HasAstNode
       include GraphQL::Schema::Member::HasDirectives
@@ -71,18 +63,6 @@ module GraphQL
           @value = new_val
         end
         @value
-      end
-
-      # @return [GraphQL::EnumType::EnumValue] A runtime-ready object derived from this object
-      def to_graphql
-        enum_value = GraphQL::EnumType::EnumValue.new
-        enum_value.name = @graphql_name
-        enum_value.description = @description
-        enum_value.value = @value
-        enum_value.deprecation_reason = self.deprecation_reason
-        enum_value.metadata[:type_class] = self
-        enum_value.ast_node = ast_node
-        enum_value
       end
 
       def inspect

@@ -26,17 +26,6 @@ Minitest::Spec.make_my_diffs_pretty!
 # to be shown.
 Minitest.backtrace_filter = Minitest::BacktraceFilter.new
 
-# This is for convenient access to metadata in test definitions
-assign_metadata_key = ->(target, key, value) { target.metadata[key] = value }
-assign_metadata_flag = ->(target, flag) { target.metadata[flag] = true }
-GraphQL::Schema.accepts_definitions(set_metadata: assign_metadata_key)
-GraphQL::BaseType.accepts_definitions(metadata: assign_metadata_key)
-GraphQL::BaseType.accepts_definitions(metadata2: assign_metadata_key)
-GraphQL::Field.accepts_definitions(metadata: assign_metadata_key)
-GraphQL::Argument.accepts_definitions(metadata: assign_metadata_key)
-GraphQL::Argument.accepts_definitions(metadata_flag: assign_metadata_flag)
-GraphQL::EnumType::EnumValue.accepts_definitions(metadata: assign_metadata_key)
-
 # Can be used as a GraphQL::Schema::Warden for some purposes, but allows nothing
 module NothingWarden
   def self.enum_values(enum_type)

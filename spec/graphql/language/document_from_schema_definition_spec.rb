@@ -326,7 +326,7 @@ type Query {
       let(:document) {
         subject.new(
           schema,
-          except: ->(m, _ctx) { m.is_a?(GraphQL::BaseType) && m.name == "Type" }
+          except: ->(m, _ctx) { m.respond_to?(:graphql_name) && m.graphql_name == "Type" }
         ).document
       }
 
@@ -377,7 +377,7 @@ type Query {
       let(:document) {
         subject.new(
           schema,
-          only: ->(m, _ctx) { !(m.is_a?(GraphQL::ScalarType) && m.name == "CustomScalar") }
+          only: ->(m, _ctx) { !(m.respond_to?(:kind) && m.kind.scalar? && m.name == "CustomScalar") }
         ).document
       }
 

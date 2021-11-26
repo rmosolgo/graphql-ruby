@@ -20,10 +20,9 @@ module GraphQL
   #   end
   class Schema
     class Enum < GraphQL::Schema::Member
-      extend GraphQL::Schema::Member::AcceptsDefinition
       extend GraphQL::Schema::Member::ValidatesInput
 
-      class UnresolvedValueError < GraphQL::EnumType::UnresolvedValueError
+      class UnresolvedValueError < GraphQL::Error
         def initialize(value:, enum:, context:)
           fix_message = ", but this isn't a valid value for `#{enum.graphql_name}`. Update the field or resolver to return one of `#{enum.graphql_name}`'s values instead."
           message = if (cp = context[:current_path]) && (cf = context[:current_field])
@@ -106,20 +105,6 @@ module GraphQL
         # @return [Hash<String => GraphQL::Schema::EnumValue>] Possible values of this enum, keyed by name.
         def values(context = GraphQL::Query::NullContext)
           enum_values(context).each_with_object({}) { |val, obj| obj[val.graphql_name] = val }
-        end
-
-        # @return [GraphQL::EnumType]
-        def to_graphql
-          enum_type = GraphQL::EnumType.new
-          enum_type.name = graphql_name
-          enum_type.description = description
-          enum_type.introspection = introspection
-          enum_type.ast_node = ast_node
-          values.each do |name, val|
-            enum_type.add_value(val.to_graphql)
-          end
-          enum_type.metadata[:type_class] = self
-          enum_type
         end
 
         # @return [Class] for handling `value(...)` inputs and building `GraphQL::Enum::EnumValue`s out of them

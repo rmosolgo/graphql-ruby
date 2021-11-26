@@ -2,7 +2,6 @@
 module GraphQL
   class Schema
     class Scalar < GraphQL::Schema::Member
-      extend GraphQL::Schema::Member::AcceptsDefinition
       extend GraphQL::Schema::Member::ValidatesInput
 
       class << self
@@ -12,18 +11,6 @@ module GraphQL
 
         def coerce_result(val, ctx)
           val
-        end
-
-        def to_graphql
-          type_defn = GraphQL::ScalarType.new
-          type_defn.name = graphql_name
-          type_defn.description = description
-          type_defn.coerce_result = method(:coerce_result)
-          type_defn.coerce_input = method(:coerce_input)
-          type_defn.metadata[:type_class] = self
-          type_defn.default_scalar = default_scalar
-          type_defn.ast_node = ast_node
-          type_defn
         end
 
         def kind
