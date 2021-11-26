@@ -29,25 +29,19 @@ module GraphQL
       # Override {GraphQL::Schema::Resolver#resolve_with_support} to
       # delete `client_mutation_id` from the kwargs.
       def resolve_with_support(**inputs)
-        # Without the interpreter, the inputs are unwrapped by an instrumenter.
-        # But when using the interpreter, no instrumenters are applied.
-        if context.interpreter?
-          input = inputs[:input].to_kwargs
+        input = inputs[:input].to_kwargs
 
-          new_extras = field ? field.extras : []
-          all_extras = self.class.extras + new_extras
+        new_extras = field ? field.extras : []
+        all_extras = self.class.extras + new_extras
 
-          # Transfer these from the top-level hash to the
-          # shortcutted `input:` object
-          all_extras.each do |ext|
-            # It's possible that the `extra` was not passed along by this point,
-            # don't re-add it if it wasn't given here.
-            if inputs.key?(ext)
-              input[ext] = inputs[ext]
-            end
+        # Transfer these from the top-level hash to the
+        # shortcutted `input:` object
+        all_extras.each do |ext|
+          # It's possible that the `extra` was not passed along by this point,
+          # don't re-add it if it wasn't given here.
+          if inputs.key?(ext)
+            input[ext] = inputs[ext]
           end
-        else
-          input = inputs
         end
 
         if input
@@ -66,17 +60,12 @@ module GraphQL
           super()
         end
 
-        # Again, this is done by an instrumenter when using non-interpreter execution.
-        if context.interpreter?
-          context.schema.after_lazy(return_value) do |return_hash|
-            # It might be an error
-            if return_hash.is_a?(Hash)
-              return_hash[:client_mutation_id] = client_mutation_id
-            end
-            return_hash
+        context.schema.after_lazy(return_value) do |return_hash|
+          # It might be an error
+          if return_hash.is_a?(Hash)
+            return_hash[:client_mutation_id] = client_mutation_id
           end
-        else
-          return_value
+          return_hash
         end
       end
 

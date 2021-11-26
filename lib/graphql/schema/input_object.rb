@@ -29,19 +29,10 @@ module GraphQL
 
           if @ruby_style_hash.key?(ruby_kwargs_key)
             loads = arg_defn.loads
-            # Resolvers do this loading themselves;
-            # With the interpreter, it's done during `coerce_arguments`
-            if loads && !arg_defn.from_resolver? && !context.interpreter?
-              value = @ruby_style_hash[ruby_kwargs_key]
-              loaded_value = arg_defn.load_and_authorize_value(self, value, context)
-              maybe_lazies << context.schema.after_lazy(loaded_value) do |loaded_value|
-                overwrite_argument(ruby_kwargs_key, loaded_value)
-              end
-            end
 
             # Weirdly, procs are applied during coercion, but not methods.
             # Probably because these methods require a `self`.
-            if arg_defn.prepare.is_a?(Symbol) || context.nil? || !context.interpreter?
+            if arg_defn.prepare.is_a?(Symbol) || context.nil?
               prepared_value = arg_defn.prepare_value(self, @ruby_style_hash[ruby_kwargs_key])
               overwrite_argument(ruby_kwargs_key, prepared_value)
             end
