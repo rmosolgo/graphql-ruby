@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.20.3 (27 November 2021)
+
+### Bug Fix
+
+- Stable Connections: Properly handle cursors containing invalid JSON #3735
+
 # 1.20.2 (15 November 2021)
 
 ### New Features
