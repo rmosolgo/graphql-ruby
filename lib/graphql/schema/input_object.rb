@@ -23,13 +23,9 @@ module GraphQL
         @ruby_style_hash = ruby_kwargs
         @arguments = arguments
         # Apply prepares, not great to have it duplicated here.
-        maybe_lazies = []
         self.class.arguments(context).each_value do |arg_defn|
           ruby_kwargs_key = arg_defn.keyword
-
           if @ruby_style_hash.key?(ruby_kwargs_key)
-            loads = arg_defn.loads
-
             # Weirdly, procs are applied during coercion, but not methods.
             # Probably because these methods require a `self`.
             if arg_defn.prepare.is_a?(Symbol) || context.nil?
@@ -38,8 +34,6 @@ module GraphQL
             end
           end
         end
-
-        @maybe_lazies = maybe_lazies
       end
 
       def to_h
@@ -52,12 +46,10 @@ module GraphQL
 
       def prepare
         if @context
-          @context.schema.after_any_lazies(@maybe_lazies) do
-            object = @context[:current_object]
-            # Pass this object's class with `as` so that messages are rendered correctly from inherited validators
-            Schema::Validator.validate!(self.class.validators, object, @context, @ruby_style_hash, as: self.class)
-            self
-          end
+          object = @context[:current_object]
+          # Pass this object's class with `as` so that messages are rendered correctly from inherited validators
+          Schema::Validator.validate!(self.class.validators, object, @context, @ruby_style_hash, as: self.class)
+          self
         else
           self
         end
