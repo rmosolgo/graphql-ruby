@@ -521,4 +521,79 @@ describe GraphQL::Schema::RelayClassicMutation do
       end
     end
   end
+
+  describe "authorizing arguments from superclasses" do
+    class RelayClassicArgumentAuthSchema < GraphQL::Schema
+      class BaseArgument < GraphQL::Schema::Argument
+        def authorized?(_object, _args, context)
+          authed = context[:authorized] ||= {}
+          authed[context[:current_path]] = super
+        end
+      end
+
+      class NameInput < GraphQL::Schema::InputObject
+        argument_class BaseArgument
+        argument :name, String
+      end
+
+      class NameOne <  GraphQL::Schema::RelayClassicMutation
+        argument_class BaseArgument
+        # input_type CarInput
+        argument :name, String
+
+        field :name, String
+
+        def resolve(**arguments)
+          {
+            name: arguments[:name]
+          }
+        end
+      end
+
+      class NameTwo < GraphQL::Schema::RelayClassicMutation
+        input_type NameInput
+        field :name, String
+
+        def resolve(**arguments)
+          {
+            name: arguments[:name]
+          }
+        end
+      end
+
+      class NameThree < GraphQL::Schema::RelayClassicMutation
+        input_object_class NameInput
+        field :name, String
+
+        def resolve(**arguments)
+          {
+            name: arguments[:name]
+          }
+        end
+      end
+
+      class Mutation < GraphQL::Schema::Object
+        field :name_one, mutation: NameOne
+        field :name_two, mutation: NameTwo
+        field :name_three, mutation: NameThree
+      end
+
+      mutation(Mutation)
+    end
+
+    it "calls #authorized? on arguments defined on the mutation" do
+      res = RelayClassicArgumentAuthSchema.execute("mutation { nameOne(input: { name: \"Camry\" }) { name } }")
+      assert_equal true, res.context[:authorized][["nameOne"]]
+    end
+
+    it "calls #authorized? on arguments defined on the input_type" do
+      res = RelayClassicArgumentAuthSchema.execute("mutation { nameTwo(input: { name: \"Camry\" }) { name } }")
+      assert_equal true, res.context[:authorized][["nameTwo"]]
+    end
+
+    it "calls #authorized? on arguments defined on the inputObjectClass" do
+      res = RelayClassicArgumentAuthSchema.execute("mutation { nameThree(input: { name: \"Camry\" }) { name } }")
+      assert_equal true, res.context[:authorized][["nameThree"]]
+    end
+  end
 end
