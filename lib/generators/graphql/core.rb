@@ -19,7 +19,9 @@ module Graphql
         sentinel = /< GraphQL::Schema\s*\n/m
 
         in_root do
-          inject_into_file schema_file_path, "  #{type}(Types::#{name})\n", after: sentinel, verbose: false, force: false
+          if File.exist?(schema_file_path)
+            inject_into_file schema_file_path, "  #{type}(Types::#{name})\n", after: sentinel, verbose: false, force: false
+          end
         end
       end
 
