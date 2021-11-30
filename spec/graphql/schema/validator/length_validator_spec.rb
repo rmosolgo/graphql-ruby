@@ -56,6 +56,15 @@ describe GraphQL::Schema::Validator::LengthValidator do
     assert_equal ["value is too long (maximum is 8)"], result["errors"].map { |e| e["message"] }
   end
 
+  it "rejects blank, even when within the maximum" do
+    schema = build_schema(String, {length: { maximum: 8 }, allow_blank: false })
+    blank_string = ValidatorHelpers::BlankString.new("")
+    result = schema.execute("query($str: String!) { validated(value: $str) }", variables: { str: blank_string })
+    assert_nil result["data"].fetch("validated")
+    # This is how Rails handles it, making the minimum 1:
+    assert_equal ["value is too short (minimum is 1)"], result["errors"].map { |e| e["message"] }
+  end
+
   it "validates within length" do
     schema = build_schema(String, {length: { within: 5..8 }})
     result = schema.execute("{ validated(value: \"is-valid\") }")
