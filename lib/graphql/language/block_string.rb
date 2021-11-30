@@ -55,7 +55,7 @@ module GraphQL
         end
 
         # Rebuild the string
-        lines.size > 1 ? lines.join("\n") : (lines.first || "".dup)
+        lines.size > 1 ? lines.join("\n") : (lines.first || "")
       end
 
       def self.print(str, indent: '')
