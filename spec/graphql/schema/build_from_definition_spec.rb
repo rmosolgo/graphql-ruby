@@ -233,6 +233,17 @@ union U = Hello
       assert_equal 63, built_schema.types["U"].ast_node.definition_line
     end
 
+    it 'supports descriptions and definition_line' do
+      schema = <<-SCHEMA
+"""
+"""
+type Query {
+  f1: Int
+}
+      SCHEMA
+      refute_nil GraphQL::Schema.from_definition(schema)
+    end
+
     it 'maintains built-in directives' do
       schema = <<-SCHEMA
 schema {
