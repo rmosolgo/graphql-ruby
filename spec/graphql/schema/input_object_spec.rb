@@ -1135,6 +1135,10 @@ describe GraphQL::Schema::InputObject do
       end
 
       lazy_resolve(Proc, :call)
+
+      rescue_from(StandardError) {
+        nil
+      }
     end
 
     it "handles a lazy failed load of an argument with a nice error" do

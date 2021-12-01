@@ -870,16 +870,20 @@ module GraphQL
               # but don't wrap the continuation below
               inner_obj = begin
                 query.with_error_handling do
-                  if trace
-                    query.trace("execute_field_lazy", {owner: owner, field: field, path: path, query: query, object: owner_object, arguments: arguments, ast_node: ast_node}) do
+                  begin
+                    if trace
+                      query.trace("execute_field_lazy", {owner: owner, field: field, path: path, query: query, object: owner_object, arguments: arguments, ast_node: ast_node}) do
+                        schema.sync_lazy(lazy_obj)
+                      end
+                    else
                       schema.sync_lazy(lazy_obj)
                     end
-                  else
-                    schema.sync_lazy(lazy_obj)
+                  rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
+                    err
                   end
                 end
-                rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
-                  err
+              rescue GraphQL::ExecutionError => ex_err
+                ex_err
               end
               yield(inner_obj)
             end
