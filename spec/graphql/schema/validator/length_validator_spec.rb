@@ -25,7 +25,8 @@ describe GraphQL::Schema::Validator::LengthValidator do
 
     result = schema.execute("query($str: String!) { validated(value: $str) }", variables: { str: blank_string })
     assert_nil result["data"].fetch("validated")
-    assert_equal ["value is too short (minimum is 5)"], result["errors"].map { |e| e["message"] }
+    # This error message is weird, but it can be fixed by removing `minimum: 5`, which causes a redundant error message:
+    assert_equal ["value is too short (minimum is 5), value can't be blank"], result["errors"].map { |e| e["message"] }
 
     # This string doesn't respond to blank:
     non_blank_string = ValidatorHelpers::NonBlankString.new("")
@@ -54,6 +55,14 @@ describe GraphQL::Schema::Validator::LengthValidator do
     result = schema.execute("{ validated(value: \"is-invalid\") }")
     assert_nil result["data"].fetch("validated")
     assert_equal ["value is too long (maximum is 8)"], result["errors"].map { |e| e["message"] }
+  end
+
+  it "rejects blank, even when within the maximum" do
+    schema = build_schema(String, {length: { maximum: 8 }, allow_blank: false })
+    blank_string = ValidatorHelpers::BlankString.new("")
+    result = schema.execute("query($str: String!) { validated(value: $str) }", variables: { str: blank_string })
+    assert_nil result["data"].fetch("validated")
+    assert_equal ["value can't be blank"], result["errors"].map { |e| e["message"] }
   end
 
   it "validates within length" do
