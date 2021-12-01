@@ -1437,9 +1437,6 @@ meta[:col],
 meta[:previous_token],
 )
 else
-# As the string is modified in place below, duping the value will provide a non-frozen string to modify.
-# `GraphQL::Language::BlockString.trim_whitespace`, can return frozen strings.
-value = value.dup if value.frozen?
 replace_escaped_characters_in_place(value)
 
 if !value.valid_encoding?
