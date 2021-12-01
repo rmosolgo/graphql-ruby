@@ -233,7 +233,7 @@ union U = Hello
       assert_equal 63, built_schema.types["U"].ast_node.definition_line
     end
 
-    it 'supports descriptions and definition_line' do
+    it 'handles empty type descriptions' do
       schema = <<-SCHEMA
 """
 """
