@@ -34,7 +34,7 @@ The second argument to `field(...)` is the return type. This can be:
 - A GraphQL type from your application
 - An _array_ of any of the above, which denotes a {% internal_link "list type", "/type_definitions/lists" %}.
 
-{% internal_link "Nullability", "/type_definitions/non_nulls" %} is expressed with the required `null:` keyword:
+{% internal_link "Nullability", "/type_definitions/non_nulls" %} is expressed with the `null:` keyword:
 
 - `null: true` (default) means that the field _may_ return `nil`
 - `null: false` means the field is non-nullable; it may not return `nil`. If the implementation returns `nil`, GraphQL-Ruby will return an error to the client.
