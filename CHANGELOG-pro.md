@@ -18,13 +18,13 @@
 
 ### New Features
 
-- Operation Store: performance improvements: only validate newly-added operations, reduce allocations when normalizing incoming query strings
+- Operation Store sync: performance improvements: when syncing operations, only validate newly-added operations, reduce allocations when normalizing incoming query strings
 
 # 1.20.1 (8 November 2021)
 
 ### Bug Fix
 
-- Operation Store: fix when operations are re-synced with new aliases
+- Operation Store sync: fix when operations are re-synced with new aliases
 
 # 1.20.0 (5 November 2021)
 
