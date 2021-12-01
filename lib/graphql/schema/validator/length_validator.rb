@@ -35,7 +35,7 @@ module GraphQL
           # Under the hood, `within` is decomposed into `minimum` and `maximum`
           @maximum = maximum || (within && within.max)
           @too_long = message || too_long
-          @minimum = minimum || (within && within.min) || (default_options[:allow_blank] == false ? 1 : nil)
+          @minimum = minimum || (within && within.min)
           @too_short = message || too_short
           @is = is
           @wrong_length = message || wrong_length
