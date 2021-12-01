@@ -18,7 +18,7 @@
 
 ### New Features
 
-- Operation Store sync: performance improvements: when syncing operations, only validate newly-added operations, reduce allocations when normalizing incoming query strings
+- Operation Store sync: ActiveRecord backend performance improvements: when syncing operations, only validate newly-added operations, reduce allocations when normalizing incoming query strings
 
 # 1.20.1 (8 November 2021)
 
