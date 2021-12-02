@@ -173,7 +173,7 @@ Some late-bound types couldn't be resolved:
           end
         when Class
           if member.respond_to?(:graphql_definition)
-            graphql_member = member.graphql_definition
+            graphql_member = member.graphql_definition(silence_deprecation_warning: true)
             visit(schema, graphql_member, context_description)
           else
             raise GraphQL::Schema::InvalidTypeError.new("Unexpected traversal member: #{member} (#{member.class.name})")

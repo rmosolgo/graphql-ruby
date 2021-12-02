@@ -47,7 +47,7 @@ describe GraphQL::Schema::Interface do
       assert new_object_2.method_defined?(:id)
 
       # It gets an overridden description:
-      assert_equal "The ID !!!!!", new_object_2.graphql_definition.fields["id"].description
+      assert_equal "The ID !!!!!", new_object_2.graphql_definition(silence_deprecation_warning: true).fields["id"].description
     end
   end
 

@@ -140,7 +140,7 @@ module GraphQL
           type_defn.mutation = mutation
           type_defn.ast_node = ast_node
           all_argument_definitions.each do |arg|
-            type_defn.arguments[arg.graphql_definition.name] = arg.graphql_definition # rubocop:disable Development/ContextIsPassedCop -- legacy-related
+            type_defn.arguments[arg.graphql_definition(silence_deprecation_warning: true).name] = arg.graphql_definition(silence_deprecation_warning: true) # rubocop:disable Development/ContextIsPassedCop -- legacy-related
           end
           # Make a reference to a classic-style Arguments class
           self.arguments_class = GraphQL::Query::Arguments.construct_arguments_class(type_defn)
