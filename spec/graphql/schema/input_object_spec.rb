@@ -1104,4 +1104,46 @@ describe GraphQL::Schema::InputObject do
       end
     end
   end
+
+  describe "failed loads on input object arguments" do
+    class FailedLoadSchema < GraphQL::Schema
+      class Thing < GraphQL::Schema::Object
+        field :id, ID
+      end
+
+      class ThingInput < GraphQL::Schema::InputObject
+        argument :id, ID, loads: Thing, as: :thing
+      end
+
+      class GetThings < GraphQL::Schema::Resolver
+        argument :things, [ThingInput]
+
+        type [Thing], null: false
+        def resolve(things:)
+          things.map { |t| t[:thing]}
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :get_things, resolver: GetThings
+      end
+
+      query(Query)
+
+      def self.object_from_id(id, ctx)
+        -> { nil }
+      end
+
+      lazy_resolve(Proc, :call)
+
+      rescue_from(StandardError) {
+        nil
+      }
+    end
+
+    it "handles a lazy failed load of an argument with a nice error" do
+      res = FailedLoadSchema.execute("{ getThings(things: [{id: \"1\"}]) { id } }")
+      assert_equal ["No object found for `id: \"1\"`"], res["errors"].map { |e| e["message"] }
+    end
+  end
 end
