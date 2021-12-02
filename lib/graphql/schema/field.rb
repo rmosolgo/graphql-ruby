@@ -322,6 +322,8 @@ module GraphQL
             instance_eval(&definition_block)
           end
         end
+
+        self.extensions.each { |ext| ext.apply_2; ext.freeze }
       end
 
       # If true, subscription updates with this field can be shared between viewers

@@ -48,6 +48,8 @@ end
 
 This way, an extension can encapsulate a behavior requiring several configuration options.
 
+### TODO document after-hook
+
 ### Modifying field execution
 
 Extensions have two hooks that wrap field resolution. Since GraphQL-Ruby supports deferred execution, these hooks _might not_ be called back-to-back.

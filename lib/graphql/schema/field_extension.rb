@@ -16,20 +16,25 @@ module GraphQL
       attr_reader :options
 
       # Called when the extension is mounted with `extension(name, options)`.
-      # The instance is frozen to avoid improper use of state during execution.
+      # The instance will be frozen to avoid improper use of state during execution.
       # @param field [GraphQL::Schema::Field] The field where this extension was mounted
       # @param options [Object] The second argument to `extension`, or `{}` if nothing was passed.
       def initialize(field:, options:)
         @field = field
         @options = options || {}
         apply
-        freeze
       end
 
       # Called when this extension is attached to a field.
       # The field definition may be extended during this method.
       # @return [void]
       def apply
+      end
+
+      # Called after the field's definition block has been executed.
+      # (Any arguments from the block are present on `field`)
+      # @return [void]
+      def apply_2
       end
 
       # Called before resolving {#field}. It should either:
