@@ -4,6 +4,7 @@ require "spec_helper"
 describe GraphQL::Schema::InputObject do
   let(:input_object) do
     Dummy::DairyProductInput.new(
+      nil,
       ruby_kwargs: { source: 'COW',  fatContent: 0.8 },
       defaults_used: Set.new,
       context: GraphQL::Query::NullContext)

@@ -573,7 +573,7 @@ module GraphQL
       end
 
       def using_ast_analysis?
-        analysis_engine == GraphQL::Analysis::AST
+        true
       end
 
       def interpreter?
@@ -911,7 +911,7 @@ module GraphQL
       #   }
       #
       # @see {Query#initialize} for query keyword arguments
-      # @see {Execution::Multiplex#run_queries} for multiplex keyword arguments
+      # @see {Execution::Multiplex#run_all} for multiplex keyword arguments
       # @param queries [Array<Hash>] Keyword arguments for each query
       # @param context [Hash] Multiplex-level context
       # @return [Array<Hash>] One result for each query in the input
@@ -928,7 +928,7 @@ module GraphQL
 
       # @api private
       def add_subscription_extension_if_necessary
-        if interpreter? && !defined?(@subscription_extension_added) && subscription && self.subscriptions
+        if !defined?(@subscription_extension_added) && subscription && self.subscriptions
           @subscription_extension_added = true
           if subscription.singleton_class.ancestors.include?(Subscriptions::SubscriptionRoot)
             GraphQL::Deprecation.warn("`extend Subscriptions::SubscriptionRoot` is no longer required; you may remove it from #{self}'s `subscription` root type (#{subscription}).")

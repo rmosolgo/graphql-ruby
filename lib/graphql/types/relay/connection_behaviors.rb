@@ -140,13 +140,10 @@ module GraphQL
         def edges
           if @object.is_a?(GraphQL::Pagination::Connection)
             @object.edges
-          elsif context.interpreter?
+          else
             context.schema.after_lazy(object.edge_nodes) do |nodes|
               nodes.map { |n| self.class.edge_class.new(n, object) }
             end
-          else
-            # This is done by edges_instrumentation
-            @object.edge_nodes
           end
         end
       end

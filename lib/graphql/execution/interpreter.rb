@@ -11,16 +11,6 @@ require "graphql/execution/interpreter/handles_raw_value"
 module GraphQL
   module Execution
     class Interpreter
-      def initialize
-      end
-
-      # Support `Executor` :S
-      def execute(_operation, _root_type, query)
-        runtime = evaluate(query)
-        sync_lazies(query: query)
-        runtime.final_result
-      end
-
       def self.use(schema_class)
         if schema_class.interpreter?
           definition_line = caller(2, 1).first

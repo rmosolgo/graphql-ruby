@@ -45,20 +45,34 @@ module GraphQL
       end
 
       class << self
-        def run_all(schema, query_options, **kwargs)
-          queries = query_options.map { |opts| GraphQL::Query.new(schema, nil, **opts) }
-          run_queries(schema, queries, **kwargs)
-        end
-
         # @param schema [GraphQL::Schema]
-        # @param queries [Array<GraphQL::Query>]
+        # @param queries [Array<GraphQL::Query, Hash>]
         # @param context [Hash]
         # @param max_complexity [Integer, nil]
         # @return [Array<Hash>] One result per query
-        def run_queries(schema, queries, context: {}, max_complexity: schema.max_complexity)
+        def run_all(schema, query_options, context: {}, max_complexity: schema.max_complexity)
+          queries = query_options.map do |opts|
+            case opts
+            when Hash
+              GraphQL::Query.new(schema, nil, **opts)
+            when GraphQL::Query
+              opts
+            else
+              raise "Expected Hash or GraphQL::Query, not #{opts.class} (#{opts.inspect})"
+            end
+          end
+
           multiplex = self.new(schema: schema, queries: queries, context: context, max_complexity: max_complexity)
           multiplex.trace("execute_multiplex", { multiplex: multiplex }) do
-            instrument_and_analyze(multiplex) do
+            GraphQL::Execution::Instrumentation.apply_instrumenters(multiplex) do
+              schema = multiplex.schema
+              multiplex_analyzers = schema.multiplex_analyzers
+              if multiplex.max_complexity
+                multiplex_analyzers += [GraphQL::Analysis::AST::MaxQueryComplexity]
+              end
+
+              schema.analysis_engine.analyze_multiplex(multiplex, multiplex_analyzers)
+
               begin
                 multiplex.schema.query_execution_strategy.begin_multiplex(multiplex)
                 # Do as much eager evaluation of the query as possible
@@ -135,35 +149,6 @@ module GraphQL
             end
 
             result
-          end
-        end
-
-        # Apply multiplex & query instrumentation to `queries`.
-        #
-        # It yields when the queries should be executed, then runs teardown.
-        def instrument_and_analyze(multiplex)
-          GraphQL::Execution::Instrumentation.apply_instrumenters(multiplex) do
-            schema = multiplex.schema
-            if schema.interpreter? && schema.analysis_engine != GraphQL::Analysis::AST
-              raise <<-ERR
-Can't use `GraphQL::Execution::Interpreter` without `GraphQL::Analysis::AST`, please add this plugin to your schema:
-
-    use GraphQL::Analysis::AST
-
-For information about the new analysis engine: https://graphql-ruby.org/queries/ast_analysis.html
-ERR
-            end
-            multiplex_analyzers = schema.multiplex_analyzers
-            if multiplex.max_complexity
-              multiplex_analyzers += if schema.using_ast_analysis?
-                [GraphQL::Analysis::AST::MaxQueryComplexity]
-              else
-                [GraphQL::Analysis::MaxQueryComplexity.new(multiplex.max_complexity)]
-              end
-            end
-
-            schema.analysis_engine.analyze_multiplex(multiplex, multiplex_analyzers)
-            yield
           end
         end
       end

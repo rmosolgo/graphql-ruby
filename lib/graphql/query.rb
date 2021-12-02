@@ -1,7 +1,5 @@
 # frozen_string_literal: true
-require "graphql/query/arguments"
 require "graphql/query/context"
-require "graphql/query/executor"
 require "graphql/query/fingerprint"
 require "graphql/query/literal_input"
 require "graphql/query/null_context"
@@ -81,7 +79,6 @@ module GraphQL
       # Even if `variables: nil` is passed, use an empty hash for simpler logic
       variables ||= {}
       @schema = schema
-      @interpreter = @schema.interpreter?
       @filter = schema.default_filter.merge(except: except, only: only)
       @context = schema.context_class.new(query: self, object: root_value, values: context)
       @warden = warden
@@ -147,7 +144,7 @@ module GraphQL
     end
 
     def interpreter?
-      @interpreter
+      true
     end
 
     attr_accessor :multiplex
@@ -191,7 +188,7 @@ module GraphQL
     # @return [Hash] A GraphQL response, with `"data"` and/or `"errors"` keys
     def result
       if !@executed
-        Execution::Multiplex.run_queries(@schema, [self], context: @context)
+        Execution::Multiplex.run_all(@schema, [self], context: @context)
       end
       @result ||= Query::Result.new(query: self, values: @result_values)
     end
@@ -235,11 +232,7 @@ module GraphQL
     # @param parent_object [GraphQL::Schema::Object]
     # @return Hash{Symbol => Object}
     def arguments_for(ast_node, definition, parent_object: nil)
-      if interpreter?
-        arguments_cache.fetch(ast_node, definition, parent_object)
-      else
-        arguments_cache[ast_node][definition]
-      end
+      arguments_cache.fetch(ast_node, definition, parent_object)
     end
 
     def arguments_cache

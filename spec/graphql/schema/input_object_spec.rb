@@ -572,10 +572,11 @@ describe GraphQL::Schema::InputObject do
     arg_values = {
       a: 1,
       b: 2,
-      inputObject: InputObjectDigTest::TestInput1.new(ruby_kwargs: { d: 3, e: 4 }, context: nil, defaults_used: Set.new)
+      inputObject: InputObjectDigTest::TestInput1.new(nil, ruby_kwargs: { d: 3, e: 4 }, context: nil, defaults_used: Set.new)
     }
 
     input_object = InputObjectDigTest::TestInput2.new(
+      nil,
       ruby_kwargs: arg_values,
       context: nil,
       defaults_used: Set.new

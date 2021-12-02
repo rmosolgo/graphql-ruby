@@ -99,7 +99,7 @@ end
 
 You can also add or override methods on input object classes to customize them.  They have two instance variables by default:
 
-- `@arguments`: A {{ "GraphQL::Query::Arguments" | api_doc }} instance
+- `@arguments`: A {{ "GraphQL::Execution::Interpreter::Arguments" | api_doc }} instance
 - `@context`: The current {{ "GraphQL::Query::Context" | api_doc }}
 
 Any extra methods you define on the class can be used for field resolution, as demonstrated above.

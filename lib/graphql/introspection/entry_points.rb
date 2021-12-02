@@ -15,16 +15,7 @@ module GraphQL
       end
 
       def __type(name:)
-        return unless context.warden.reachable_type?(name)
-        type = context.warden.get_type(name)
-
-        # The interpreter provides this wrapping, other execution doesnt, so support both.
-        if type && !context.interpreter?
-          # Apply wrapping manually since this field isn't wrapped by instrumentation
-          type_type = context.schema.introspection_system.types["__Type"]
-          type = type_type.authorized_new(type, context)
-        end
-        type
+        context.warden.reachable_type?(name) ? context.warden.get_type(name) : nil
       end
     end
   end

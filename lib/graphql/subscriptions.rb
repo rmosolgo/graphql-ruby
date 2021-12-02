@@ -42,9 +42,6 @@ module GraphQL
     # @param schema [Class] the GraphQL schema this manager belongs to
     def initialize(schema:, broadcast: false, default_broadcastable: false, **rest)
       if broadcast
-        if !schema.using_ast_analysis?
-          raise ArgumentError, "`broadcast: true` requires AST analysis, add `using GraphQL::Analysis::AST` to your schema or see https://graphql-ruby.org/queries/ast_analysis.html."
-        end
         schema.query_analyzer(Subscriptions::BroadcastAnalyzer)
       end
       @default_broadcastable = default_broadcastable
