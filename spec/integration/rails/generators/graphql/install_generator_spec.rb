@@ -140,7 +140,7 @@ RUBY
 
     # Run it again and make sure the gemfile only contains graphiql-rails once
     FileUtils.cd(File.join(destination_root)) do
-      `rails g graphql:install --relay false --force`
+      run_generator(["--relay", "false", "--force"])
     end
     assert_file "Gemfile" do |contents|
       assert_equal 1, contents.scan(/graphiql-rails/).length
@@ -148,7 +148,7 @@ RUBY
 
     # Uninstall
     FileUtils.cd(File.join(destination_root)) do
-      `rails d graphql:install --relay false --force`
+      run_generator(["--relay", "false", "--force"], behavior: :revoke)
     end
 
     refute_file "app/graphql/types/base_object.rb"
