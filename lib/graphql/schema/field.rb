@@ -323,7 +323,7 @@ module GraphQL
           end
         end
 
-        self.extensions.each { |ext| ext.apply_2; ext.freeze }
+        self.extensions.each(&:after_define_apply)
       end
 
       # If true, subscription updates with this field can be shared between viewers

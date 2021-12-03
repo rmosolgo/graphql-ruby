@@ -15,6 +15,9 @@ module GraphQL
       # @return [Object]
       attr_reader :options
 
+      # @return [Array<Symbol>, nil] `default_argument`s added, if any were added (otherwise, `nil`)
+      attr_reader :added_default_arguments
+
       # Called when the extension is mounted with `extension(name, options)`.
       # The instance will be frozen to avoid improper use of state during execution.
       # @param field [GraphQL::Schema::Field] The field where this extension was mounted
@@ -22,7 +25,30 @@ module GraphQL
       def initialize(field:, options:)
         @field = field
         @options = options || {}
+        @added_default_arguments = nil
         apply
+      end
+
+      class << self
+        # @return [Array(Array, Hash), nil] A list of default argument configs, or `nil` if there aren't any
+        def default_argument_configurations
+          args = superclass.respond_to?(:default_argument_configurations) ? superclass.default_argument_configurations : nil
+          if @own_default_argument_configurations
+            if args
+              args.concat(@own_default_argument_configurations)
+            else
+              args = @own_default_argument_configurations.dup
+            end
+          end
+          args
+        end
+
+        # @see Argument#initialize
+        # @see HasArguments#argument
+        def default_argument(*argument_args, **argument_kwargs)
+          configs = @own_default_argument_configurations ||= []
+          configs << [argument_args, argument_kwargs]
+        end
       end
 
       # Called when this extension is attached to a field.
@@ -34,7 +60,26 @@ module GraphQL
       # Called after the field's definition block has been executed.
       # (Any arguments from the block are present on `field`)
       # @return [void]
-      def apply_2
+      def after_define
+      end
+
+      # @api private
+      def after_define_apply
+        after_define
+        if (configs = self.class.default_argument_configurations)
+          existing_keywords = field.all_argument_definitions.map(&:keyword)
+          existing_keywords.uniq!
+          @added_default_arguments = []
+          configs.each do |config|
+            argument_args, argument_kwargs = config
+            arg_name = argument_args[0]
+            if !existing_keywords.include?(arg_name)
+              @added_default_arguments << arg_name
+              field.argument(*argument_args, **argument_kwargs)
+            end
+          end
+        end
+        freeze
       end
 
       # Called before resolving {#field}. It should either:

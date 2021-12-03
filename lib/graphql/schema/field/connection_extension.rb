@@ -4,30 +4,16 @@ module GraphQL
   class Schema
     class Field
       class ConnectionExtension < GraphQL::Schema::FieldExtension
-        def apply_2
-          all_keywords = field.all_argument_definitions.map(&:keyword)
-          all_keywords.uniq!
-          if !all_keywords.include?(:after)
-            field.argument :after, "String", "Returns the elements in the list that come after the specified cursor.", required: false
-          end
-          if !all_keywords.include?(:before)
-            field.argument :before, "String", "Returns the elements in the list that come before the specified cursor.", required: false
-          end
-          if !all_keywords.include?(:first)
-            field.argument :first, "Int", "Returns the first _n_ elements from the list.", required: false
-          end
-          if !all_keywords.include?(:last)
-            field.argument :last, "Int", "Returns the last _n_ elements from the list.", required: false
-          end
-        end
+        default_argument :after, "String", "Returns the elements in the list that come after the specified cursor.", required: false
+        default_argument :before, "String", "Returns the elements in the list that come before the specified cursor.", required: false
+        default_argument :first, "Int", "Returns the first _n_ elements from the list.", required: false
+        default_argument :last, "Int", "Returns the last _n_ elements from the list.", required: false
 
         # Remove pagination args before passing it to a user method
         def resolve(object:, arguments:, context:)
+          # Ruby 3.0 added `.except`, but we support Ruby 2:
           next_args = arguments.dup
-          next_args.delete(:first)
-          next_args.delete(:last)
-          next_args.delete(:before)
-          next_args.delete(:after)
+          added_default_arguments.each { |a| next_args.delete(a) }
           yield(object, next_args, arguments)
         end
 
