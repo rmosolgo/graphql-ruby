@@ -122,8 +122,15 @@ module Graphql
         if options.api?
           say("Skipped graphiql, as this rails project is API only")
           say("  You may wish to use GraphiQL.app for development: https://github.com/skevy/graphiql-app")
-        elsif !options[:skip_graphiql] && !File.read(Rails.root.join("Gemfile")).include?("graphiql-rails")
-          gem("graphiql-rails", group: :development)
+        elsif !options[:skip_graphiql]
+          # `gem(...)` uses `gsub_file(...)` under the hood, which is a no-op for `rails destroy...` (when `behavior == :revoke`).
+          # So handle that case by calling `gsub_file` with `force: true`.
+          if behavior == :invoke && !File.read(Rails.root.join("Gemfile")).include?("graphiql-rails")
+            gem("graphiql-rails", group: :development)
+          elsif behavior == :revoke
+            gemfile_pattern = /\n\s*gem ('|")graphiql-rails('|"), :?group(:| =>) :development/
+            gsub_file Rails.root.join("Gemfile"), gemfile_pattern, "", { force: true }
+          end
 
           # This is a little cheat just to get cleaner shell output:
           log :route, 'graphiql-rails'

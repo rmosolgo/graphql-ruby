@@ -14,6 +14,10 @@ class GraphQLGeneratorsInstallGeneratorTest < Rails::Generators::TestCase
     end
   end
 
+  def refute_file(path)
+    assert !File.exist?(path), "No file at #{path.inspect}"
+  end
+
   test "it generates a folder structure" do
     run_generator([ "--relay", "false"])
 
@@ -136,10 +140,34 @@ RUBY
 
     # Run it again and make sure the gemfile only contains graphiql-rails once
     FileUtils.cd(File.join(destination_root)) do
-      `rails g graphql:install --relay false --force`
+      run_generator(["--relay", "false", "--force"])
     end
     assert_file "Gemfile" do |contents|
       assert_equal 1, contents.scan(/graphiql-rails/).length
+    end
+
+    # It doesn't seem like this works on Rails 4, oh well
+    if Rails::VERSION::STRING > "5"
+      FileUtils.cd(File.join(destination_root)) do
+        run_generator(["--relay", "false", "--force"], behavior: :revoke)
+      end
+
+      refute_file "app/graphql/types/base_object.rb"
+      refute_file "app/graphql/types/base_interface.rb"
+      refute_file "app/graphql/types/base_argument.rb"
+      refute_file "app/graphql/types/base_field.rb"
+      refute_file "app/graphql/types/query_type.rb"
+      refute_file "app/graphql/dummy_schema.rb"
+
+      assert_file "config/routes.rb" do |contents|
+        refute_includes contents, expected_query_route
+        # This doesn't work for some reason....
+        # refute_includes contents, expected_graphiql_route
+      end
+
+      assert_file "Gemfile" do |contents|
+        refute_match %r{gem ('|")graphiql-rails('|"), :?group(:| =>) :development}, contents
+      end
     end
   end
 
