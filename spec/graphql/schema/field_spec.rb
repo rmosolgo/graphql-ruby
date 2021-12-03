@@ -20,7 +20,7 @@ describe GraphQL::Schema::Field do
     end
 
     it "uses the argument class" do
-      arg_defn = field.graphql_definition.arguments.values.first
+      arg_defn = field.graphql_definition(silence_deprecation_warning: true).arguments.values.first
       assert_equal :ok, arg_defn.metadata[:custom]
     end
 
@@ -34,11 +34,11 @@ describe GraphQL::Schema::Field do
     end
 
     it "attaches itself to its graphql_definition as type_class" do
-      assert_equal field, field.graphql_definition.metadata[:type_class]
+      assert_equal field, field.graphql_definition(silence_deprecation_warning: true).metadata[:type_class]
     end
 
     it "camelizes the field name, unless camelize: false" do
-      assert_equal 'inspectInput', field.graphql_definition.name
+      assert_equal 'inspectInput', field.graphql_definition(silence_deprecation_warning: true).name
       assert_equal 'inspectInput', field.name
 
       underscored_field = GraphQL::Schema::Field.from_options(:underscored_field, String, null: false, camelize: false, owner: nil) do
@@ -214,7 +214,7 @@ describe GraphQL::Schema::Field do
 
     describe "type" do
       it "tells the return type" do
-        assert_equal "[String!]!", field.type.graphql_definition.to_s
+        assert_equal "[String!]!", field.type.graphql_definition(silence_deprecation_warning: true).to_s
       end
 
       it "returns the type class" do

@@ -845,7 +845,7 @@ module GraphQL
       # - Cause the Schema instance to be created, if it hasn't been created yet
       # - Delegate to that instance
       # Eventually, the methods will be moved into this class, removing the need for the singleton.
-      def_delegators :graphql_definition,
+      def_delegators :deprecated_graphql_definition,
         # Execution
         :execution_strategy_for_operation,
         # Configuration
@@ -853,6 +853,10 @@ module GraphQL
         :id_from_object_proc, :object_from_id_proc,
         :id_from_object=, :object_from_id=,
         :remove_handler
+
+      def deprecated_graphql_definition
+        graphql_definition(silence_deprecation_warning: true)
+      end
 
       # @return [GraphQL::Subscriptions]
       attr_accessor :subscriptions
@@ -896,8 +900,15 @@ module GraphQL
         @find_cache[path] ||= @finder.find(path)
       end
 
-      def graphql_definition
-        @graphql_definition ||= to_graphql
+      def graphql_definition(silence_deprecation_warning: false)
+        @graphql_definition ||= begin
+          unless silence_deprecation_warning
+            message = "Legacy `.graphql_definition` objects are deprecated and will be removed in GraphQL-Ruby 2.0. Use a class-based definition instead."
+            caller_message = "\n\nCalled on #{self.inspect} from:\n #{caller(1, 25).map { |l| "  #{l}" }.join("\n")}"
+            GraphQL::Deprecation.warn(message + caller_message)
+          end
+          to_graphql
+        end
       end
 
       def default_filter
@@ -932,16 +943,16 @@ module GraphQL
       def to_graphql
         schema_defn = self.new
         schema_defn.raise_definition_error = true
-        schema_defn.query = query && query.graphql_definition
-        schema_defn.mutation = mutation && mutation.graphql_definition
-        schema_defn.subscription = subscription && subscription.graphql_definition
+        schema_defn.query = query && query.graphql_definition(silence_deprecation_warning: true)
+        schema_defn.mutation = mutation && mutation.graphql_definition(silence_deprecation_warning: true)
+        schema_defn.subscription = subscription && subscription.graphql_definition(silence_deprecation_warning: true)
         schema_defn.validate_timeout = validate_timeout
         schema_defn.validate_max_errors = validate_max_errors
         schema_defn.max_complexity = max_complexity
         schema_defn.error_bubbling = error_bubbling
         schema_defn.max_depth = max_depth
         schema_defn.default_max_page_size = default_max_page_size
-        schema_defn.orphan_types = orphan_types.map(&:graphql_definition)
+        schema_defn.orphan_types = orphan_types.map { |t| t.graphql_definition(silence_deprecation_warning: true) }
         schema_defn.disable_introspection_entry_points = disable_introspection_entry_points?
         schema_defn.disable_schema_introspection_entry_point = disable_schema_introspection_entry_point?
         schema_defn.disable_type_introspection_entry_point = disable_type_introspection_entry_point?

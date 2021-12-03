@@ -32,7 +32,7 @@ describe GraphQL::Schema::RelayClassicMutation do
         graphql_name "Test"
       end
       assert_equal mutation, mutation.input_type.mutation
-      assert_equal mutation, mutation.input_type.graphql_definition.mutation
+      assert_equal mutation, mutation.input_type.graphql_definition(silence_deprecation_warning: true).mutation
     end
   end
 

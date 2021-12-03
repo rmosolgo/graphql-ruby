@@ -704,7 +704,7 @@ describe GraphQL::Schema::InputObject do
 
       messages = []
       GraphQL::Deprecation.stub(:warn, ->(message) { messages << message; nil }) do
-        input_object.graphql_definition
+        input_object.graphql_definition(silence_deprecation_warning: true)
       end
       assert_equal [expected_warning], messages
     end
@@ -716,7 +716,7 @@ describe GraphQL::Schema::InputObject do
       end
 
       assert_output "", "" do
-        input_object.graphql_definition
+        input_object.graphql_definition(silence_deprecation_warning: true)
       end
     end
   end

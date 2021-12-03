@@ -11,8 +11,15 @@ module GraphQL
         # A cached result of {.to_graphql}.
         # It's cached here so that user-overridden {.to_graphql} implementations
         # are also cached
-        def graphql_definition
-          @graphql_definition ||= to_graphql
+        def graphql_definition(silence_deprecation_warning: false)
+          @graphql_definition ||= begin
+            unless silence_deprecation_warning
+              message = "Legacy `.graphql_definition` objects are deprecated and will be removed in GraphQL-Ruby 2.0. Use a class-based definition instead."
+              caller_message = "\n\nCalled on #{self.inspect} from:\n #{caller(1, 25).map { |l| "  #{l}" }.join("\n")}"
+              GraphQL::Deprecation.warn(message + caller_message)
+            end
+            to_graphql
+          end
         end
 
         # This is for a common interface with .define-based types

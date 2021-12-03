@@ -108,7 +108,7 @@ module GraphQL
           type_defn.type_membership_class = self.type_membership_class
           type_defn.ast_node = ast_node
           fields.each do |field_name, field_inst| # rubocop:disable Development/ContextIsPassedCop -- legacy-related
-            field_defn = field_inst.graphql_definition
+            field_defn = field_inst.graphql_definition(silence_deprecation_warning: true)
             type_defn.fields[field_defn.name] = field_defn # rubocop:disable Development/ContextIsPassedCop -- legacy-related
           end
           type_defn.metadata[:type_class] = self
