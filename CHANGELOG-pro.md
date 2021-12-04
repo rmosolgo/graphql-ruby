@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.20.4 (4 December 2021)
+
+### Bug Fix
+
+- Stable connections: Fix using startCursor / endCursor without nodes #3752
+
 # 1.20.3 (27 November 2021)
 
 ### Bug Fix
