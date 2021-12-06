@@ -248,7 +248,7 @@ describe GraphQL::Analysis::AST::QueryComplexity do
         1 + # nodes
         1 + 1 + # pageInfo, hasNextPage
         1 + 1 + 1 # node, id, id
-      assert_equal 9, complexity
+      assert_equal expected_complexity, complexity
     end
 
     describe "first/last" do
