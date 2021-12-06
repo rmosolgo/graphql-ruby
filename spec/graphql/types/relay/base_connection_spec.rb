@@ -81,10 +81,10 @@ describe GraphQL::Types::Relay::BaseConnection do
       edge_type(GraphQL::Schema::Object.edge_type, field_options: { deprecation_reason: "passing extra args" })
     end
 
-    field = connection.fields["edges"]
-    assert_equal "passing extra args", field.deprecation_reason
+    edges_field = connection.fields["edges"]
+    assert_equal "passing extra args", edges_field.deprecation_reason
 
     nodes_field = connection.fields["nodes"]
-    assert_equal "passing extra args", field.deprecation_reason
+    assert_equal "passing extra args", nodes_field.deprecation_reason
   end
 end
