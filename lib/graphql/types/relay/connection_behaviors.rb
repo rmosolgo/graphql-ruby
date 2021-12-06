@@ -35,8 +35,8 @@ module GraphQL
           # It's called when you subclass this base connection, trying to use the
           # class name to set defaults. You can call it again in the class definition
           # to override the default (or provide a value, if the default lookup failed).
-          # @param edges_field_options [Hash] Any extra keyword arguments to pass to the `field :edges, ...` configuration
-          def edge_type(edge_type_class, edge_class: GraphQL::Relay::Edge, node_type: edge_type_class.node_type, nodes_field: self.has_nodes_field, node_nullable: self.node_nullable, edges_nullable: self.edges_nullable, edge_nullable: self.edge_nullable, edges_field_options: nil)
+          # @param field_options [Hash] Any extra keyword arguments to pass to the `field :edges, ...` and `field :nodes, ...` configurations
+          def edge_type(edge_type_class, edge_class: GraphQL::Relay::Edge, node_type: edge_type_class.node_type, nodes_field: self.has_nodes_field, node_nullable: self.node_nullable, edges_nullable: self.edges_nullable, edge_nullable: self.edge_nullable, field_options: nil)
             # Set this connection's graphql name
             node_type_name = node_type.graphql_name
 
@@ -44,7 +44,7 @@ module GraphQL
             @edge_type = edge_type_class
             @edge_class = edge_class
 
-            field_options = {
+            base_field_options = {
               name: :edges,
               type: [edge_type_class, null: edge_nullable],
               null: edges_nullable,
@@ -53,13 +53,13 @@ module GraphQL
               connection: false,
             }
 
-            if edges_field_options
-              field_options.merge!(edges_field_options)
+            if field_options
+              base_field_options.merge!(field_options)
             end
 
-            field(**field_options)
+            field(**base_field_options)
 
-            define_nodes_field(node_nullable) if nodes_field
+            define_nodes_field(node_nullable, field_options: field_options) if nodes_field
 
             description("The connection type for #{node_type_name}.")
           end
@@ -70,8 +70,8 @@ module GraphQL
           end
 
           # Add the shortcut `nodes` field to this connection and its subclasses
-          def nodes_field(node_nullable: self.node_nullable)
-            define_nodes_field(node_nullable)
+          def nodes_field(node_nullable: self.node_nullable, field_options: nil)
+            define_nodes_field(node_nullable, field_options: field_options)
           end
 
           def authorized?(obj, ctx)
@@ -128,11 +128,18 @@ module GraphQL
 
           private
 
-          def define_nodes_field(nullable)
-            field :nodes, [@node_type, null: nullable],
+          def define_nodes_field(nullable, field_options: nil)
+            base_field_options = {
+              name: :nodes,
+              type: [@node_type, null: nullable],
               null: nullable,
               description: "A list of nodes.",
-              connection: false
+              connection: false,
+            }
+            if field_options
+              base_field_options.merge!(field_options)
+            end
+            field(**base_field_options)
           end
         end
 

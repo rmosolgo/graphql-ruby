@@ -76,12 +76,15 @@ describe GraphQL::Types::Relay::BaseConnection do
     assert_equal false, NonNullAbleNodeDummy::NoNodesFieldClassOverrideConnectionType.has_nodes_field
   end
 
-  it "Supports extra kwargs for edges" do
+  it "Supports extra kwargs for edges and nodes" do
     connection = Class.new(GraphQL::Types::Relay::BaseConnection) do
-      edge_type(GraphQL::Schema::Object.edge_type, edges_field_options: { deprecation_reason: "passing extra args" })
+      edge_type(GraphQL::Schema::Object.edge_type, field_options: { deprecation_reason: "passing extra args" })
     end
 
     field = connection.fields["edges"]
+    assert_equal "passing extra args", field.deprecation_reason
+
+    nodes_field = connection.fields["nodes"]
     assert_equal "passing extra args", field.deprecation_reason
   end
 end

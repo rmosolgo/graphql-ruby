@@ -44,7 +44,7 @@ describe GraphQL::Types::Relay::BaseEdge do
   it "Supports extra kwargs for node field" do
     extension = Class.new(GraphQL::Schema::FieldExtension)
     connection = Class.new(GraphQL::Types::Relay::BaseEdge) do
-      node_type(GraphQL::Schema::Object, node_field_options: { extensions: [extension] })
+      node_type(GraphQL::Schema::Object, field_options: { extensions: [extension] })
     end
 
     field = connection.fields["node"]
