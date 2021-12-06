@@ -229,6 +229,9 @@ describe GraphQL::Analysis::AST::QueryComplexity do
               id
             }
           }
+          nodes {
+            id
+          }
           pageInfo {
             hasNextPage
           }
@@ -239,7 +242,13 @@ describe GraphQL::Analysis::AST::QueryComplexity do
 
     it "gets the complexity" do
       complexity = reduce_result.first
-      assert_equal 7, complexity
+      expected_complexity = 1 + # rebels
+        1 + # ships
+        1 + # edges
+        1 + # nodes
+        1 + 1 + # pageInfo, hasNextPage
+        1 + 1 + 1 # node, id, id
+      assert_equal expected_complexity, complexity
     end
 
     describe "first/last" do
@@ -269,8 +278,8 @@ describe GraphQL::Analysis::AST::QueryComplexity do
 
         expected_complexity = (
           1 + # rebels
-          (1 + (5 * 3) + 2) + # s1
-          (1 + (3 * 2) + 0) # s2
+          (1 + 1 + (5 * 2) + 2) + # s1
+          (1 + 1 + (3 * 1) + 0) # s2
         )
         assert_equal expected_complexity, complexity
       end
@@ -289,7 +298,7 @@ describe GraphQL::Analysis::AST::QueryComplexity do
 
       it "uses field max_page_size" do
         complexity = reduce_result.first
-        assert_equal 1 + 1 + (1000 * 2), complexity
+        assert_equal 1 + 1 + 1 + (1000 * 1), complexity
       end
     end
 
@@ -307,7 +316,7 @@ describe GraphQL::Analysis::AST::QueryComplexity do
 
       it "uses schema default_max_page_size" do
         complexity = reduce_result.first
-        assert_equal 1 + 1 + (3 * 2) + 1, complexity
+        assert_equal 1 + 1 + 1 + (3 * 1) + 1, complexity
       end
     end
   end

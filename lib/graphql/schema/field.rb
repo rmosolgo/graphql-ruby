@@ -441,10 +441,15 @@ module GraphQL
             if lookahead.selects?(:total) || lookahead.selects?(:total_count) || lookahead.selects?(:count)
               metadata_complexity += 1
             end
+
+            nodes_edges_complexity = 0
+            nodes_edges_complexity += 1 if lookahead.selects?(:edges)
+            nodes_edges_complexity += 1 if lookahead.selects?(:nodes)
+
             # Possible bug: selections on `edges` and `nodes` are _both_ multiplied here. Should they be?
-            items_complexity = child_complexity - metadata_complexity
+            items_complexity = child_complexity - metadata_complexity - nodes_edges_complexity
             # Add 1 for _this_ field
-            1 + (max_possible_page_size * items_complexity) + metadata_complexity
+            1 + (max_possible_page_size * items_complexity) + metadata_complexity + nodes_edges_complexity
           end
         else
           defined_complexity = complexity
