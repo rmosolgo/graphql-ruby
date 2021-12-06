@@ -16,11 +16,22 @@ module GraphQL
           #
           # @param node_type [Class] A `Schema::Object` subclass
           # @param null [Boolean]
-          def node_type(node_type = nil, null: self.node_nullable)
+          # @param node_field_options [Hash] Any extra arguments to pass to the `field :node` configuration
+          def node_type(node_type = nil, null: self.node_nullable, node_field_options: nil)
             if node_type
               @node_type = node_type
               # Add a default `node` field
-              field :node, node_type, null: null, description: "The item at the end of the edge.", connection: false
+              field_options = {
+                name: :node,
+                type: node_type,
+                null: null,
+                description: "The item at the end of the edge.",
+                connection: false,
+              }
+              if node_field_options
+                field_options.merge!(node_field_options)
+              end
+              field(**field_options)
             end
             @node_type
           end

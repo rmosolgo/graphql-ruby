@@ -35,7 +35,8 @@ module GraphQL
           # It's called when you subclass this base connection, trying to use the
           # class name to set defaults. You can call it again in the class definition
           # to override the default (or provide a value, if the default lookup failed).
-          def edge_type(edge_type_class, edge_class: GraphQL::Relay::Edge, node_type: edge_type_class.node_type, nodes_field: self.has_nodes_field, node_nullable: self.node_nullable, edges_nullable: self.edges_nullable, edge_nullable: self.edge_nullable)
+          # @param edges_field_options [Hash] Any extra keyword arguments to pass to the `field :edges, ...` configuration
+          def edge_type(edge_type_class, edge_class: GraphQL::Relay::Edge, node_type: edge_type_class.node_type, nodes_field: self.has_nodes_field, node_nullable: self.node_nullable, edges_nullable: self.edges_nullable, edge_nullable: self.edge_nullable, edges_field_options: nil)
             # Set this connection's graphql name
             node_type_name = node_type.graphql_name
 
@@ -43,11 +44,20 @@ module GraphQL
             @edge_type = edge_type_class
             @edge_class = edge_class
 
-            field :edges, [edge_type_class, null: edge_nullable],
+            field_options = {
+              name: :edges,
+              type: [edge_type_class, null: edge_nullable],
               null: edges_nullable,
               description: "A list of edges.",
               legacy_edge_class: edge_class, # This is used by the old runtime only, for EdgesInstrumentation
-              connection: false
+              connection: false,
+            }
+
+            if edges_field_options
+              field_options.merge!(edges_field_options)
+            end
+
+            field(**field_options)
 
             define_nodes_field(node_nullable) if nodes_field
 
