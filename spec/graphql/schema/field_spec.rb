@@ -164,6 +164,98 @@ describe GraphQL::Schema::Field do
         assert_equal [:lookahead, :ast_node], field.extras
       end
 
+      describe "ruby argument error" do
+        class ArgumentErrorSchema < GraphQL::Schema
+          class Query < GraphQL::Schema::Object
+
+            def inspect
+              "#<#{self.class}>"
+            end
+
+            field :f1, String do
+              argument :something, Int, required: false
+            end
+
+            def f1
+              "OK"
+            end
+
+            field :f2, String, resolver_method: :field_2 do
+              argument :something, Int, required: false
+            end
+
+            def field_2(something_else: nil)
+              "ALSO OK"
+            end
+
+            field :f3, String do
+              argument :something, Int, required: false
+            end
+
+            def f3(always_missing:)
+              "NEVER OK"
+            end
+
+            field :f4, String
+
+            def f4(never_positional, ok_optional = :ok, *ok_rest)
+              "NEVER OK"
+            end
+
+            field :f5, String do
+              argument :something, Int, required: false
+            end
+
+            def f5(**ok_keyrest)
+              "OK"
+            end
+          end
+          query(Query)
+        end
+
+        it "raises a nice error when missing" do
+          assert_equal "OK", ArgumentErrorSchema.execute("{ f1 }")["data"]["f1"]
+          assert_equal "ALSO OK", ArgumentErrorSchema.execute("{ f2 }")["data"]["f2"]
+          err = assert_raises GraphQL::Schema::Field::FieldImplementationFailed do
+            ArgumentErrorSchema.execute("{ f1(something: 12) }")
+          end
+          assert_equal "Failed to call f1 on #<ArgumentErrorSchema::Query> because the Ruby method params were incompatible with the GraphQL arguments:
+
+- `something: 12` was given by GraphQL but not defined in the Ruby method. Add `something:` to the method parameters.
+", err.message
+
+          assert_instance_of ArgumentError, err.cause
+
+          err = assert_raises GraphQL::Schema::Field::FieldImplementationFailed do
+            ArgumentErrorSchema.execute("{ f2(something: 12) }")
+          end
+          assert_equal "Failed to call field_2 on #<ArgumentErrorSchema::Query> because the Ruby method params were incompatible with the GraphQL arguments:
+
+- `something: 12` was given by GraphQL but not defined in the Ruby method. Add `something:` to the method parameters.
+", err.message
+
+
+          err = assert_raises GraphQL::Schema::Field::FieldImplementationFailed do
+            ArgumentErrorSchema.execute("{ f3(something: 1) }")
+          end
+          assert_equal "Failed to call f3 on #<ArgumentErrorSchema::Query> because the Ruby method params were incompatible with the GraphQL arguments:
+
+- `something: 1` was given by GraphQL but not defined in the Ruby method. Add `something:` to the method parameters.
+- `always_missing:` is required by Ruby, but not by GraphQL. Consider `always_missing: nil` instead, or making this argument required in GraphQL.
+", err.message
+
+          err = assert_raises GraphQL::Schema::Field::FieldImplementationFailed do
+            ArgumentErrorSchema.execute("{ f4 }")
+          end
+          assert_equal "Failed to call f4 on #<ArgumentErrorSchema::Query> because the Ruby method params were incompatible with the GraphQL arguments:
+
+- `never_positional` is required by Ruby, but GraphQL doesn't pass positional arguments. If it's meant to be a GraphQL argument, use `never_positional:` instead. Otherwise, remove it.
+", err.message
+
+          assert_equal "OK", ArgumentErrorSchema.execute("{ f5(something: 2) }")["data"]["f5"]
+        end
+      end
+
       describe "argument_details" do
         class ArgumentDetailsSchema < GraphQL::Schema
           class Query < GraphQL::Schema::Object

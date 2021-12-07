@@ -16,6 +16,8 @@ module GraphQL
       include GraphQL::Schema::Member::HasDirectives
       include GraphQL::Schema::Member::HasDeprecationReason
 
+      class FieldImplementationFailed < GraphQL::Error; end
+
       # @return [String] the GraphQL name for this field, camelized unless `camelize: false` is provided
       attr_reader :name
       alias :graphql_name :name
@@ -782,52 +784,104 @@ module GraphQL
 
       def public_send_field(unextended_obj, unextended_ruby_kwargs, query_ctx)
         with_extensions(unextended_obj, unextended_ruby_kwargs, query_ctx) do |obj, ruby_kwargs|
-          if @resolver_class
-            if obj.is_a?(GraphQL::Schema::Object)
-              obj = obj.object
+          begin
+            method_receiver = nil
+            method_to_call = nil
+            if @resolver_class
+              if obj.is_a?(GraphQL::Schema::Object)
+                obj = obj.object
+              end
+              obj = @resolver_class.new(object: obj, context: query_ctx, field: self)
             end
-            obj = @resolver_class.new(object: obj, context: query_ctx, field: self)
-          end
 
-          # Find a way to resolve this field, checking:
-          #
-          # - A method on the type instance;
-          # - Hash keys, if the wrapped object is a hash;
-          # - A method on the wrapped object;
-          # - Or, raise not implemented.
-          #
-          if obj.respond_to?(@resolver_method)
-            # Call the method with kwargs, if there are any
-            if ruby_kwargs.any?
-              obj.public_send(@resolver_method, **ruby_kwargs)
+            # Find a way to resolve this field, checking:
+            #
+            # - A method on the type instance;
+            # - Hash keys, if the wrapped object is a hash;
+            # - A method on the wrapped object;
+            # - Or, raise not implemented.
+            #
+            if obj.respond_to?(@resolver_method)
+              method_to_call = @resolver_method
+              method_receiver = obj
+              # Call the method with kwargs, if there are any
+              if ruby_kwargs.any?
+                obj.public_send(@resolver_method, **ruby_kwargs)
+              else
+                obj.public_send(@resolver_method)
+              end
+            elsif obj.object.is_a?(Hash)
+              inner_object = obj.object
+              if inner_object.key?(@method_sym)
+                inner_object[@method_sym]
+              else
+                inner_object[@method_str]
+              end
+            elsif obj.object.respond_to?(@method_sym)
+              method_to_call = @method_sym
+              method_receiver = obj.object
+              if ruby_kwargs.any?
+                obj.object.public_send(@method_sym, **ruby_kwargs)
+              else
+                obj.object.public_send(@method_sym)
+              end
             else
-              obj.public_send(@resolver_method)
-            end
-          elsif obj.object.is_a?(Hash)
-            inner_object = obj.object
-            if inner_object.key?(@method_sym)
-              inner_object[@method_sym]
-            else
-              inner_object[@method_str]
-            end
-          elsif obj.object.respond_to?(@method_sym)
-            if ruby_kwargs.any?
-              obj.object.public_send(@method_sym, **ruby_kwargs)
-            else
-              obj.object.public_send(@method_sym)
-            end
-          else
-            raise <<-ERR
-          Failed to implement #{@owner.graphql_name}.#{@name}, tried:
+              raise <<-ERR
+            Failed to implement #{@owner.graphql_name}.#{@name}, tried:
 
-          - `#{obj.class}##{@resolver_method}`, which did not exist
-          - `#{obj.object.class}##{@method_sym}`, which did not exist
-          - Looking up hash key `#{@method_sym.inspect}` or `#{@method_str.inspect}` on `#{obj.object}`, but it wasn't a Hash
+            - `#{obj.class}##{@resolver_method}`, which did not exist
+            - `#{obj.object.class}##{@method_sym}`, which did not exist
+            - Looking up hash key `#{@method_sym.inspect}` or `#{@method_str.inspect}` on `#{obj.object}`, but it wasn't a Hash
 
-          To implement this field, define one of the methods above (and check for typos)
-          ERR
+            To implement this field, define one of the methods above (and check for typos)
+            ERR
+            end
+          rescue ArgumentError => error
+            assert_satisfactory_implementation(method_receiver, method_to_call, ruby_kwargs)
+            # if the line above doesn't raise, re-raise
+            raise
           end
         end
+      end
+
+      def assert_satisfactory_implementation(receiver, method_name, ruby_kwargs)
+        method_defn = receiver.method(method_name)
+        unsatisfied_ruby_kwargs = ruby_kwargs.dup
+        unsatisfied_method_params = []
+        encountered_keyrest = false
+        method_defn.parameters.each do |(param_type, param_name)|
+          case param_type
+          when :key
+            unsatisfied_ruby_kwargs.delete(param_name)
+          when :keyreq
+            if unsatisfied_ruby_kwargs.key?(param_name)
+              unsatisfied_ruby_kwargs.delete(param_name)
+            else
+              unsatisfied_method_params << "- `#{param_name}:` is required by Ruby, but not by GraphQL. Consider `#{param_name}: nil` instead, or making this argument required in GraphQL."
+            end
+          when :keyrest
+            encountered_keyrest = true
+          when :req
+            unsatisfied_method_params << "- `#{param_name}` is required by Ruby, but GraphQL doesn't pass positional arguments. If it's meant to be a GraphQL argument, use `#{param_name}:` instead. Otherwise, remove it."
+          when :opt, :rest
+            # This is fine, although it will never be present
+          end
+        end
+
+        if encountered_keyrest
+          unsatisfied_ruby_kwargs.clear
+        end
+
+
+
+        raise FieldImplementationFailed.new, <<-ERR
+Failed to call #{method_name} on #{receiver.inspect} because the Ruby method params were incompatible with the GraphQL arguments:
+
+#{ unsatisfied_ruby_kwargs
+    .map { |key, value| "- `#{key}: #{value}` was given by GraphQL but not defined in the Ruby method. Add `#{key}:` to the method parameters." }
+    .concat(unsatisfied_method_params)
+    .join("\n") }
+ERR
       end
 
       # Wrap execution with hooks.
