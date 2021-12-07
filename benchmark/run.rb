@@ -51,8 +51,11 @@ module GraphQLBenchmark
   end
 
   def self.validate_memory
+    FIELDS_WILL_MERGE_SCHEMA.validate(FIELDS_WILL_MERGE_QUERY)
+
     report = MemoryProfiler.report do
       FIELDS_WILL_MERGE_SCHEMA.validate(FIELDS_WILL_MERGE_QUERY)
+      nil
     end
 
     report.pretty_print
