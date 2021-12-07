@@ -50,6 +50,14 @@ module GraphQLBenchmark
     end
   end
 
+  def self.validate_memory
+    report = MemoryProfiler.report do
+      FIELDS_WILL_MERGE_SCHEMA.validate(FIELDS_WILL_MERGE_QUERY)
+    end
+
+    report.pretty_print
+  end
+
   def self.profile
     # Warm up any caches:
     SCHEMA.execute(document: DOCUMENT)

@@ -16,6 +16,8 @@ module GraphQL
       private
 
       def assert_required_args(ast_node, defn)
+        args = defn.arguments
+        return if args.empty?
         present_argument_names = ast_node.arguments.map(&:name)
         required_argument_names = context.warden.arguments(defn)
           .select { |a| a.type.kind.non_null? && !a.default_value? && context.warden.get_argument(defn, a.name) }
