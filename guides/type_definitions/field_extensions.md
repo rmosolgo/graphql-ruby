@@ -60,7 +60,7 @@ class SearchableExtension < GraphQL::Schema::FieldExtension
 end
 ```
 
-Additionally, extensions may implement `def after_define` which is called _after_ the field's `do .. . end` block. This is helpful when an extension should provide _default_ configurations without overriding anything in the field definition.
+Additionally, extensions may implement `def after_define` which is called _after_ the field's `do .. . end` block. This is helpful when an extension should provide _default_ configurations without overriding anything in the field definition. (When extensions are added by calling `field.extension(...)` on an already-defined field `def after_define` is called immediately.)
 
 ### Modifying field execution
 

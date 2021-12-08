@@ -290,6 +290,7 @@ module GraphQL
         @subscription_scope = subscription_scope
 
         @extensions = EMPTY_ARRAY
+        @call_after_define = false
         # This should run before connection extension,
         # but should it run after the definition block?
         if scoped?
@@ -324,6 +325,7 @@ module GraphQL
         end
 
         self.extensions.each(&:after_define_apply)
+        @call_after_define = true
       end
 
       # If true, subscription updates with this field can be shared between viewers
@@ -356,27 +358,20 @@ module GraphQL
       # @example adding an extension with options
       #   extensions([MyExtensionClass, { AnotherExtensionClass => { filter: true } }])
       #
-      # @param extensions [Array<Class, Hash<Class => Object>>] Add extensions to this field. For hash elements, only the first key/value is used.
+      # @param extensions [Array<Class, Hash<Class => Hash>>] Add extensions to this field. For hash elements, only the first key/value is used.
       # @return [Array<GraphQL::Schema::FieldExtension>] extensions to apply to this field
       def extensions(new_extensions = nil)
-        if new_extensions.nil?
-          # Read the value
-          @extensions
-        else
-          if @extensions.frozen?
-            @extensions = @extensions.dup
-          end
-          new_extensions.each do |extension|
-            if extension.is_a?(Hash)
-              extension = extension.to_a[0]
-              extension_class, options = *extension
-              @extensions << extension_class.new(field: self, options: options)
+        if new_extensions
+          new_extensions.each do |extension_config|
+            if extension_config.is_a?(Hash)
+              extension_class, options = *extension_config.to_a[0]
+              self.extension(extension_class, options)
             else
-              extension_class = extension
-              @extensions << extension_class.new(field: self, options: nil)
+              self.extension(extension_config)
             end
           end
         end
+        @extensions
       end
 
       # Add `extension` to this field, initialized with `options` if provided.
@@ -387,10 +382,19 @@ module GraphQL
       # @example adding an extension with options
       #   extension(MyExtensionClass, filter: true)
       #
-      # @param extension [Class] subclass of {Schema::Fieldextension}
-      # @param options [Object] if provided, given as `options:` when initializing `extension`.
-      def extension(extension, options = nil)
-        extensions([{extension => options}])
+      # @param extension_class [Class] subclass of {Schema::FieldExtension}
+      # @param options [Hash] if provided, given as `options:` when initializing `extension`.
+      # @return [void]
+      def extension(extension_class, options = nil)
+        extension_inst = extension_class.new(field: self, options: options)
+        if @extensions.frozen?
+          @extensions = @extensions.dup
+        end
+        if @call_after_define
+          extension_inst.after_define_apply
+        end
+        @extensions << extension_inst
+        nil
       end
 
       # Read extras (as symbols) from this field,
