@@ -50,15 +50,15 @@ module GraphQL
         @arg_conflicts = nil
 
         yield
-
-        field_conflicts.each_value { |error| add_error(error) }
-        arg_conflicts.each_value { |error| add_error(error) }
+        # don't initialize these if they weren't initialized in the block:
+        @field_conflicts && @field_conflicts.each_value { |error| add_error(error) }
+        @arg_conflicts && @arg_conflicts.each_value { |error| add_error(error) }
       end
 
       def conflicts_within_selection_set(node, parent_type)
         return if parent_type.nil?
 
-        fields, fragment_spreads = fields_and_fragments_from_selection(node, owner_type: parent_type, parents: [])
+        fields, fragment_spreads = fields_and_fragments_from_selection(node, owner_type: parent_type, parents: nil)
 
         # (A) Find find all conflicts "within" the fields of this selection set.
         find_conflicts_within(fields)
@@ -198,10 +198,14 @@ module GraphQL
         response_keys.each do |key, fields|
           next if fields.size < 2
           # find conflicts within nodes
-          for i in 0..fields.size - 1
-            for j in i + 1..fields.size - 1
+          i = 0
+          while i < fields.size
+            j = i + 1
+            while j < fields.size
               find_conflict(key, fields[i], fields[j])
+              j += 1
             end
+            i += 1
           end
         end
       end
@@ -243,7 +247,9 @@ module GraphQL
       end
 
       def find_conflicts_between_sub_selection_sets(field1, field2, mutually_exclusive:)
-        return if field1.definition.nil? || field2.definition.nil?
+        return if field1.definition.nil? ||
+          field2.definition.nil? ||
+          (field1.node.selections.empty? && field2.node.selections.empty?)
 
         return_type1 = field1.definition.type.unwrap
         return_type2 = field2.definition.type.unwrap
@@ -323,6 +329,7 @@ module GraphQL
         if node.selections.empty?
           NO_SELECTIONS
         else
+          parents ||= []
           fields, fragment_spreads = find_fields_and_fragments(node.selections, owner_type: owner_type, parents: parents, fields: [], fragment_spreads: [])
           response_keys = fields.group_by { |f| f.node.alias || f.node.name }
           [response_keys, fragment_spreads]
