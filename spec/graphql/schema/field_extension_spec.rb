@@ -298,4 +298,28 @@ describe GraphQL::Schema::FieldExtension do
       assert ext.frozen?
     end
   end
+
+  describe ".default_argument" do
+    class DefaultArgumentThing < GraphQL::Schema::Object
+      class DefaultArgumentExtension < GraphQL::Schema::FieldExtension
+        default_argument :query, String, required: false
+      end
+
+      field :search_1, String, extensions: [DefaultArgumentExtension]
+
+      field :search_2, String, extensions: [DefaultArgumentExtension] do
+        argument :query, String, required: true
+      end
+    end
+
+    it "adds an argument if one wasn't given in the definition block" do
+      search_1 = DefaultArgumentThing.get_field("search1")
+      assert_equal [:query], search_1.extensions.first.added_default_arguments
+      assert_equal GraphQL::Types::String, search_1.get_argument("query").type
+
+      search_2 = DefaultArgumentThing.get_field("search2")
+      assert_equal [], search_2.extensions.first.added_default_arguments
+      assert_equal GraphQL::Types::String.to_non_null_type, search_2.get_argument("query").type
+    end
+  end
 end
