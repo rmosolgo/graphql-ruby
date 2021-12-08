@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+# 1.12.22 (8 December 2021)
+
+### Bug fixes
+
+- Static validation: fix regression and improve performance of fields_will_merge validation #3761
+
 # 1.12.21 (23 November 2021)
 
 ### Bug fixes
