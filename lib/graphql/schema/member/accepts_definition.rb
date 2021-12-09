@@ -123,7 +123,7 @@ module GraphQL
         end
 
         module ToGraphQLExtension
-          def to_graphql
+          def to_graphql(*args, **kwargs)
             defn = super
             accepts_definition_methods.each do |method_name|
               value = public_send(method_name)

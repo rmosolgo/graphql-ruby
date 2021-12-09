@@ -40,7 +40,7 @@ describe GraphQL::Schema::List do
 
   describe "to_graphql" do
     it "will return a list type" do
-      assert_kind_of GraphQL::ListType, list_type.to_graphql
+      assert_kind_of GraphQL::ListType, list_type.deprecated_to_graphql
     end
   end
 

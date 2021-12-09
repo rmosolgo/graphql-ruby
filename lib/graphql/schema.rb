@@ -907,7 +907,7 @@ module GraphQL
             caller_message = "\n\nCalled on #{self.inspect} from:\n #{caller(1, 25).map { |l| "  #{l}" }.join("\n")}"
             GraphQL::Deprecation.warn(message + caller_message)
           end
-          to_graphql
+          to_graphql(silence_deprecation_warning: silence_deprecation_warning)
         end
       end
 
@@ -940,6 +940,7 @@ module GraphQL
         find_inherited_value(:plugins, EMPTY_ARRAY) + own_plugins
       end
 
+      prepend Schema::Member::CachedGraphQLDefinition::DeprecatedToGraphQL
       def to_graphql
         schema_defn = self.new
         schema_defn.raise_definition_error = true

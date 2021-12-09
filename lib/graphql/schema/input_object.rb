@@ -132,6 +132,8 @@ module GraphQL
           argument_defn
         end
 
+        prepend Schema::Member::CachedGraphQLDefinition::DeprecatedToGraphQL
+
         def to_graphql
           type_defn = GraphQL::InputObjectType.new
           type_defn.name = graphql_name

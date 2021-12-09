@@ -161,6 +161,8 @@ module GraphQL
         true
       end
 
+      prepend Schema::Member::CachedGraphQLDefinition::DeprecatedToGraphQL
+
       def to_graphql
         argument = GraphQL::Argument.new
         argument.name = @name

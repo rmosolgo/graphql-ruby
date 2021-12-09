@@ -40,7 +40,7 @@ describe GraphQL::Schema::NonNull do
 
   describe "to_graphql" do
     it "will return a non null type" do
-      assert_kind_of GraphQL::NonNullType, non_null_type.to_graphql
+      assert_kind_of GraphQL::NonNullType, non_null_type.deprecated_to_graphql
     end
   end
 

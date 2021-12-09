@@ -8,6 +8,8 @@ module GraphQL
     class NonNull < GraphQL::Schema::Wrapper
       include Schema::Member::ValidatesInput
 
+      prepend Schema::Member::CachedGraphQLDefinition::DeprecatedToGraphQL
+
       def to_graphql
         @of_type.graphql_definition(silence_deprecation_warning: true).to_non_null_type
       end

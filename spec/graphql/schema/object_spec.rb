@@ -194,7 +194,7 @@ describe GraphQL::Schema::Object do
   end
 
   describe ".to_graphql" do
-    let(:obj_type) { Jazz::Ensemble.to_graphql }
+    let(:obj_type) { Jazz::Ensemble.deprecated_to_graphql }
     it "returns a matching GraphQL::ObjectType" do
       assert_equal "Ensemble", obj_type.name
       assert_equal "A group of musicians playing together", obj_type.description
@@ -222,8 +222,8 @@ describe GraphQL::Schema::Object do
     end
 
     it "passes on type memberships from superclasses" do
-      obj_type = Jazz::StylishMusician.to_graphql
-      parent_obj_type = Jazz::Musician.to_graphql
+      obj_type = Jazz::StylishMusician.deprecated_to_graphql
+      parent_obj_type = Jazz::Musician.deprecated_to_graphql
       assert_equal parent_obj_type.interfaces, obj_type.interfaces
     end
   end

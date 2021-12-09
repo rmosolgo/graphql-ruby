@@ -51,8 +51,13 @@ module Jazz
       super(*args, **kwargs)
     end
 
-    def to_graphql
-      arg_defn = super
+    def to_graphql(silence_deprecation_warning: true)
+      arg_defn = case method(:to_graphql).super_method.parameters.size
+      when 1
+        super(silence_deprecation_warning: true)
+      else
+        super()
+      end
       arg_defn.metadata[:custom] = @custom
       arg_defn
     end
@@ -101,7 +106,7 @@ module Jazz
       end
 
       def to_graphql
-        type_defn = super
+        type_defn = super(silence_deprecation_warning: true)
         configs.each do |k, v|
           type_defn.metadata[k] = v
         end
@@ -130,7 +135,12 @@ module Jazz
     end
 
     def to_graphql
-      enum_value_defn = super
+      enum_value_defn = case method(:to_graphql).super_method.arity
+      when 0
+        super
+      else
+        super(silence_deprecation_warning: true)
+      end
       enum_value_defn.metadata[:custom_setting] = @custom_setting
       enum_value_defn
     end

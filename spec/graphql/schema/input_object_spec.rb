@@ -59,12 +59,12 @@ describe GraphQL::Schema::InputObject do
 
   describe ".to_graphql" do
     it "assigns itself as the arguments_class" do
-      assert_equal input_object, input_object.to_graphql.arguments_class
+      assert_equal input_object, input_object.deprecated_to_graphql.arguments_class
     end
 
     it "accepts description: kwarg" do
       input_obj_class = Jazz::InspectableInput
-      input_obj_type = input_obj_class.to_graphql
+      input_obj_type = input_obj_class.deprecated_to_graphql
       assert_equal "Test description kwarg", input_obj_type.arguments["stringValue"].description
     end
   end
@@ -582,8 +582,8 @@ describe GraphQL::Schema::InputObject do
         argument :c, TestInput1, as: :inputObject
       end
 
-      TestInput1.to_graphql
-      TestInput2.to_graphql
+      TestInput1.deprecated_to_graphql
+      TestInput2.deprecated_to_graphql
     end
 
     before do
@@ -634,8 +634,8 @@ describe GraphQL::Schema::InputObject do
         argument :c, TestInput1, as: :inputObject
       end
 
-      TestInput1.to_graphql
-      TestInput2.to_graphql
+      TestInput1.deprecated_to_graphql
+      TestInput2.deprecated_to_graphql
     end
     arg_values = {a: 1, b: 2, c: { d: 3, e: 4 }}
 
