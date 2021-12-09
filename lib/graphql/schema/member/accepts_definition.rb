@@ -124,7 +124,12 @@ module GraphQL
 
         module ToGraphQLExtension
           def to_graphql(*args, **kwargs)
-            defn = super
+
+            defn = if args.empty? && kwargs.empty?
+              super()
+            else
+              super
+            end
             accepts_definition_methods.each do |method_name|
               value = public_send(method_name)
               if !value.nil?
