@@ -1,6 +1,6 @@
 import createRelaySubscriptionHandler from "../createRelaySubscriptionHandler"
 import { createLegacyRelaySubscriptionHandler } from "../createRelaySubscriptionHandler"
-import { Cable } from "actioncable"
+import type { Consumer } from "@rails/actioncable"
 import { Network} from 'relay-runtime'
 
 describe("createRelaySubscriptionHandler", () => {
@@ -12,7 +12,7 @@ describe("createRelaySubscriptionHandler", () => {
     }
 
     var options = {
-      cable: (dummyActionCableConsumer as unknown) as Cable
+      cable: (dummyActionCableConsumer as unknown) as Consumer
     }
 
     var handler = createRelaySubscriptionHandler(options)
@@ -31,7 +31,7 @@ describe("createLegacyRelaySubscriptionHandler", () => {
     }
 
     var options = {
-      cable: (dummyActionCableConsumer as unknown) as Cable
+      cable: (dummyActionCableConsumer as unknown) as Consumer
     }
 
     expect(createLegacyRelaySubscriptionHandler(options)).toBeInstanceOf(Function)
