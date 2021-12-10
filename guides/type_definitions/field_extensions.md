@@ -48,6 +48,20 @@ end
 
 This way, an extension can encapsulate a behavior requiring several configuration options.
 
+### Adding default argument configurations
+
+Extensions may provide _default_ argument configurations which are applied if the field doesn't define the argument for itself. The configuration is passed to {{ Schema::FieldExtension.default_argument | api_doc }}. For example, to define a `:query` argument if the field doesn't already have one:
+
+```ruby
+class SearchableExtension < GraphQL::Schema::FieldExtension
+  # Any field which uses this extension and _doesn't_ define
+  # its own `:query` argument will get an argument configured with this:
+  default_argument(:query, String, required: false, description: "A search query")
+end
+```
+
+Additionally, extensions may implement `def after_define` which is called _after_ the field's `do .. . end` block. This is helpful when an extension should provide _default_ configurations without overriding anything in the field definition. (When extensions are added by calling `field.extension(...)` on an already-defined field `def after_define` is called immediately.)
+
 ### Modifying field execution
 
 Extensions have two hooks that wrap field resolution. Since GraphQL-Ruby supports deferred execution, these hooks _might not_ be called back-to-back.

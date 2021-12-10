@@ -235,4 +235,91 @@ describe GraphQL::Schema::FieldExtension do
       assert_equal 18, res["data"]["multipleExtensions"]
     end
   end
+
+  describe "after_define" do
+    class AfterDefineThing < GraphQL::Schema::Object
+      class AfterDefineExtension < GraphQL::Schema::FieldExtension
+        attr_reader :apply_arguments_count, :after_define_arguments_count
+
+        def apply
+          @apply_arguments_count = field.all_argument_definitions.count
+        end
+
+        def after_define
+          @after_define_arguments_count = field.all_argument_definitions.count
+        end
+      end
+
+      field :with_extension, String, extensions: [AfterDefineExtension] do
+        argument :something, ID
+      end
+
+      field :with_extension_2, String do
+        extension(AfterDefineExtension)
+        argument :something, ID
+      end
+
+      field :with_extension_3, String do
+        argument :something, ID
+        extension(AfterDefineExtension)
+      end
+
+      field :without_extension, String do
+        argument :something, ID
+      end
+    end
+
+    it "is applied after the define block when using `extensions: [...]`" do
+      with_extension = AfterDefineThing.get_field("withExtension")
+      ext = with_extension.extensions.first
+      assert_equal 0, ext.apply_arguments_count
+      assert_equal 1, ext.after_define_arguments_count
+      assert ext.frozen?
+    end
+
+    it "applies in Ruby order when added in the define block" do
+      with_extension_2_ext = AfterDefineThing.get_field("withExtension2").extensions.first
+      assert_equal 0, with_extension_2_ext.apply_arguments_count
+      assert_equal 1, with_extension_2_ext.after_define_arguments_count
+      assert with_extension_2_ext.frozen?
+
+      with_extension_3_ext = AfterDefineThing.get_field("withExtension3").extensions.first
+      assert_equal 1, with_extension_3_ext.apply_arguments_count
+      assert_equal 1, with_extension_3_ext.after_define_arguments_count
+      assert with_extension_3_ext.frozen?
+    end
+
+    it "is called immediately when using `field.extension(...)`" do
+      without_extension = AfterDefineThing.get_field("withoutExtension")
+      without_extension.extension(AfterDefineThing::AfterDefineExtension)
+      ext = without_extension.extensions.first
+      assert_equal 1, ext.apply_arguments_count
+      assert_equal 1, ext.after_define_arguments_count
+      assert ext.frozen?
+    end
+  end
+
+  describe ".default_argument" do
+    class DefaultArgumentThing < GraphQL::Schema::Object
+      class DefaultArgumentExtension < GraphQL::Schema::FieldExtension
+        default_argument :query, String, required: false
+      end
+
+      field :search_1, String, extensions: [DefaultArgumentExtension]
+
+      field :search_2, String, extensions: [DefaultArgumentExtension] do
+        argument :query, String
+      end
+    end
+
+    it "adds an argument if one wasn't given in the definition block" do
+      search_1 = DefaultArgumentThing.get_field("search1")
+      assert_equal [:query], search_1.extensions.first.added_default_arguments
+      assert_equal GraphQL::Types::String, search_1.get_argument("query").type
+
+      search_2 = DefaultArgumentThing.get_field("search2")
+      assert_equal [], search_2.extensions.first.added_default_arguments
+      assert_equal GraphQL::Types::String.to_non_null_type, search_2.get_argument("query").type
+    end
+  end
 end
