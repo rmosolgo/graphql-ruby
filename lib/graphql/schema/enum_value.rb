@@ -73,6 +73,8 @@ module GraphQL
         @value
       end
 
+      prepend Schema::Member::CachedGraphQLDefinition::DeprecatedToGraphQL
+
       # @return [GraphQL::EnumType::EnumValue] A runtime-ready object derived from this object
       def to_graphql
         enum_value = GraphQL::EnumType::EnumValue.new

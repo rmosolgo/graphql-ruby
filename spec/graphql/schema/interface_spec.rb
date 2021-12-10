@@ -53,7 +53,7 @@ describe GraphQL::Schema::Interface do
 
   describe ".to_graphql" do
     it "creates an InterfaceType" do
-      interface_type = interface.to_graphql
+      interface_type = interface.deprecated_to_graphql
       assert_equal "GloballyIdentifiable", interface_type.name
       field = interface_type.all_fields.first
       assert_equal "id", field.name
@@ -75,7 +75,7 @@ describe GraphQL::Schema::Interface do
         end
       end
 
-      interface_type = interface.to_graphql
+      interface_type = interface.deprecated_to_graphql
       assert_equal "MyType", interface_type.resolve_type_proc.call(nil, nil)
     end
 
@@ -86,7 +86,7 @@ describe GraphQL::Schema::Interface do
         orphan_types Dummy::Cheese, Dummy::Honey
       end
 
-      interface_type = interface.to_graphql
+      interface_type = interface.deprecated_to_graphql
       assert_equal [Dummy::Cheese, Dummy::Honey], interface_type.orphan_types
     end
   end
@@ -96,7 +96,7 @@ describe GraphQL::Schema::Interface do
       include GraphQL::Schema::Interface
       graphql_name 'GlobalIdFieldTest'
       global_id_field :uuid, description: 'The UUID field'
-    end.to_graphql
+    end.deprecated_to_graphql
 
     uuid_field = object.fields["uuid"]
 

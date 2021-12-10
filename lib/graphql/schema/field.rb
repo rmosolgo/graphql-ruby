@@ -493,6 +493,8 @@ module GraphQL
       # @return [Integer, nil] Applied to connections if {#has_max_page_size?}
       attr_reader :max_page_size
 
+      prepend Schema::Member::CachedGraphQLDefinition::DeprecatedToGraphQL
+
       # @return [GraphQL::Field]
       def to_graphql
         field_defn = if @field
@@ -548,7 +550,7 @@ module GraphQL
         field_defn.ast_node = ast_node
 
         all_argument_definitions.each do |defn|
-          arg_graphql = defn.to_graphql
+          arg_graphql = defn.deprecated_to_graphql
           field_defn.arguments[arg_graphql.name] = arg_graphql # rubocop:disable Development/ContextIsPassedCop -- legacy-related
         end
 

@@ -63,14 +63,14 @@ describe GraphQL::Schema::Enum do
   end
 
   it "uses a custom enum value class" do
-    enum_type = enum.to_graphql
+    enum_type = enum.deprecated_to_graphql
     value = enum_type.values["STRING"]
     assert_equal 1, value.metadata[:custom_setting]
   end
 
   describe ".to_graphql" do
     it "creates an EnumType" do
-      enum_type = enum.to_graphql
+      enum_type = enum.deprecated_to_graphql
       assert_equal "Family", enum_type.name
       assert_equal "Groups of musical instruments", enum_type.description
 

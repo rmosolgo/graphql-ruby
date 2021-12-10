@@ -122,6 +122,8 @@ module GraphQL
           all_fields
         end
 
+        prepend Schema::Member::CachedGraphQLDefinition::DeprecatedToGraphQL
+
         # @return [GraphQL::ObjectType]
         def to_graphql
           obj_type = GraphQL::ObjectType.new
@@ -132,7 +134,7 @@ module GraphQL
           obj_type.mutation = mutation
           obj_type.ast_node = ast_node
           fields.each do |field_name, field_inst| # rubocop:disable Development/ContextIsPassedCop -- legacy-related
-            field_defn = field_inst.to_graphql
+            field_defn = field_inst.to_graphql(silence_deprecation_warning: true)
             obj_type.fields[field_defn.name] = field_defn # rubocop:disable Development/ContextIsPassedCop -- legacy-related
           end
 

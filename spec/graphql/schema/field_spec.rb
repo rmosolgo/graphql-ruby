@@ -45,8 +45,8 @@ describe GraphQL::Schema::Field do
         argument :underscored_arg, String, camelize: false
       end
 
-      assert_equal 'underscored_field', underscored_field.to_graphql.name
-      arg_name, arg_defn = underscored_field.to_graphql.arguments.first
+      assert_equal 'underscored_field', underscored_field.deprecated_to_graphql.name
+      arg_name, arg_defn = underscored_field.deprecated_to_graphql.arguments.first
       assert_equal 'underscored_arg', arg_name
       assert_equal 'underscored_arg', arg_defn.name
     end
@@ -73,7 +73,7 @@ describe GraphQL::Schema::Field do
           argument :test, String
           description "A Description."
         end
-      end.to_graphql
+      end.deprecated_to_graphql
 
       assert_equal "test", object.fields["test"].arguments["test"].name
       assert_equal "A Description.", object.fields["test"].description
@@ -87,7 +87,7 @@ describe GraphQL::Schema::Field do
           field.argument :test, String, required: true
           field.description "A Description."
         end
-      end.to_graphql
+      end.deprecated_to_graphql
 
       assert_equal "test", object.fields["test"].arguments["test"].name
       assert_equal "A Description.", object.fields["test"].description
@@ -98,7 +98,7 @@ describe GraphQL::Schema::Field do
         graphql_name 'MyType'
       end
       field = GraphQL::Schema::Field.from_options(:my_field, type, owner: nil, null: true)
-      assert_equal type.to_graphql, field.to_graphql.type
+      assert_equal type.deprecated_to_graphql, field.deprecated_to_graphql.type
     end
 
     describe "introspection?" do
@@ -229,7 +229,7 @@ describe GraphQL::Schema::Field do
           graphql_name "complexityKeyword"
 
           field :complexityTest, String, complexity: 25
-        end.to_graphql
+        end.deprecated_to_graphql
 
         assert_equal 25, object.fields["complexityTest"].complexity
       end
@@ -241,7 +241,7 @@ describe GraphQL::Schema::Field do
           field :complexityTest, String do
             complexity ->(_ctx, _args, _child_complexity) { 52 }
           end
-        end.to_graphql
+        end.deprecated_to_graphql
 
         assert_equal 52, object.fields["complexityTest"].complexity.call(nil, nil, nil)
       end
@@ -253,7 +253,7 @@ describe GraphQL::Schema::Field do
           field :complexityTest, String do
             complexity 38
           end
-        end.to_graphql
+        end.deprecated_to_graphql
 
         assert_equal 38, object.fields["complexityTest"].complexity
       end
@@ -266,7 +266,7 @@ describe GraphQL::Schema::Field do
             field :complexityTest, String do
               complexity 'One hundred and eighty'
             end
-          end.to_graphql
+          end.deprecated_to_graphql
         end
 
         assert_match /^Invalid complexity:/, err.message
@@ -280,7 +280,7 @@ describe GraphQL::Schema::Field do
             field :complexityTest, String do
               complexity ->(one, two) { 52 }
             end
-          end.to_graphql
+          end.deprecated_to_graphql
         end
 
         assert_match /^A complexity proc should always accept 3 parameters/, err.message

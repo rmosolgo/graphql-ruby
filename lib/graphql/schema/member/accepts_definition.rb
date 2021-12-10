@@ -123,8 +123,13 @@ module GraphQL
         end
 
         module ToGraphQLExtension
-          def to_graphql
-            defn = super
+          def to_graphql(*args, **kwargs)
+
+            defn = if args.empty? && kwargs.empty?
+              super()
+            else
+              super
+            end
             accepts_definition_methods.each do |method_name|
               value = public_send(method_name)
               if !value.nil?

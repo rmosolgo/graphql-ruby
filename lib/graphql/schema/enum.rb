@@ -108,6 +108,8 @@ module GraphQL
           enum_values(context).each_with_object({}) { |val, obj| obj[val.graphql_name] = val }
         end
 
+        prepend Schema::Member::CachedGraphQLDefinition::DeprecatedToGraphQL
+
         # @return [GraphQL::EnumType]
         def to_graphql
           enum_type = GraphQL::EnumType.new
@@ -116,7 +118,7 @@ module GraphQL
           enum_type.introspection = introspection
           enum_type.ast_node = ast_node
           values.each do |name, val|
-            enum_type.add_value(val.to_graphql)
+            enum_type.add_value(val.deprecated_to_graphql)
           end
           enum_type.metadata[:type_class] = self
           enum_type

@@ -31,9 +31,9 @@ describe GraphQL::Schema::Union do
           "MyUnion"
         end
       end
-      union_type = union.to_graphql
+      union_type = union.deprecated_to_graphql
       assert_equal "MyUnion", union_type.name
-      assert_equal [Jazz::Musician.to_graphql, Jazz::Ensemble.to_graphql], union_type.possible_types
+      assert_equal [Jazz::Musician.deprecated_to_graphql, Jazz::Ensemble.deprecated_to_graphql], union_type.possible_types
       assert_nil union_type.resolve_type_proc
     end
 
@@ -47,12 +47,12 @@ describe GraphQL::Schema::Union do
           "MyUnion"
         end
       end
-      union_type = union.to_graphql
+      union_type = union.deprecated_to_graphql
       assert_equal "MyType", union_type.resolve_type_proc.call(nil, nil)
     end
 
     it "passes on the possible type filter" do
-      union_type = union.to_graphql
+      union_type = union.deprecated_to_graphql
       expected_type = GraphQL::BaseType.resolve_related_type(Jazz::Musician)
 
       assert_equal [expected_type], union_type.possible_types(hide_ensemble: true)

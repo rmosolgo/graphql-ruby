@@ -33,6 +33,8 @@ module GraphQL
           type_memberships.map(&:object_type)
         end
 
+        prepend GraphQL::Schema::Member::CachedGraphQLDefinition::DeprecatedToGraphQL
+
         def to_graphql
           type_defn = GraphQL::UnionType.new
           type_defn.name = graphql_name
