@@ -70,6 +70,23 @@ describe GraphQL::Subscriptions::Serialize do
     end
   end
 
+  it "can deserialize times that have been emitted from Rails" do
+    klass = Class.new(Time) do
+      def self.name
+        "ActiveSupport::TimeWithZone"
+      end
+
+      def self.strptime(*args)
+        Time.strptime(*args)
+      end
+    end
+    time = klass.new
+    serialized = serialize_dump(time)
+    assert_equal "Time", JSON.load(serialized)[GraphQL::Subscriptions::Serialize::TIMESTAMP_KEY].first
+    reloaded = serialize_load(serialized)
+    assert_equal time, reloaded, "#{time.inspect} is serialized to #{serialized.inspect} and reloaded"
+  end
+
   it "can deserialize openstructs" do
     os = OpenStruct.new(a: 1.2, b: :c, d: Time.new, e: OpenStruct.new(f: [1, 2, 3]))
     serialized = serialize_dump(os)

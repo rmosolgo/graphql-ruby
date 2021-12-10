@@ -11,6 +11,7 @@ module GraphQL
       TIMESTAMP_KEY = "__timestamp__"
       TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%N%z" # eg '2020-01-01 23:59:59.123456789+05:00'
       OPEN_STRUCT_KEY = "__ostruct__"
+      ACTIVESUPPORT_TIME_WITH_ZONE_CLASS = "ActiveSupport::TimeWithZone"
 
       module_function
 
@@ -123,6 +124,17 @@ module GraphQL
             { SYMBOL_KEY => obj.to_s }
           elsif obj.respond_to?(:to_gid_param)
             {GLOBALID_KEY => obj.to_gid_param}
+          elsif obj.class.name == ACTIVESUPPORT_TIME_WITH_ZONE_CLASS
+            # This handles a case where Rails prior to 7 would
+            # make the class ActiveSupport::TimeWithZone return "Time" for
+            # its name. In Rails 7, it will now return "ActiveSupport::TimeWithZone",
+            # which happens to be incompatible with expectations we have
+            # with what a Time class supports ( notably, strptime in `load_value` ).
+            #
+            # This reverts to what was happening before, in that ActiveSupport::TimeWithZone
+            # was coerced to a Time on the deserialization side.
+            #
+            { TIMESTAMP_KEY => [Time.name, obj.strftime(TIMESTAMP_FORMAT)] }
           elsif obj.is_a?(Date) || obj.is_a?(Time)
             # DateTime extends Date; for TimeWithZone, call `.utc` first.
             { TIMESTAMP_KEY => [obj.class.name, obj.strftime(TIMESTAMP_FORMAT)] }
