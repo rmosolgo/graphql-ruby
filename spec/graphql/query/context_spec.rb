@@ -368,4 +368,26 @@ describe GraphQL::Query::Context do
       assert_equal(expected_value, context[expected_key])
     end
   end
+
+  describe "Adding extensions to the response" do
+    class ResponseExtensionsSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        field :with_extension, String
+
+        def with_extension
+          context.response_extensions["Something"] = "Something else"
+          "OK"
+        end
+      end
+      query(Query)
+    end
+
+    it "adds .response_extensions" do
+      expected_response = {
+        "data" => { "withExtension" => "OK" },
+        "extensions" => { "Something" => "Something else" },
+      }
+      assert_equal(expected_response, ResponseExtensionsSchema.execute("{ withExtension }"))
+    end
+  end
 end
