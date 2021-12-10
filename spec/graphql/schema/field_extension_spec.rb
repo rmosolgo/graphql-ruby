@@ -308,7 +308,7 @@ describe GraphQL::Schema::FieldExtension do
       field :search_1, String, extensions: [DefaultArgumentExtension]
 
       field :search_2, String, extensions: [DefaultArgumentExtension] do
-        argument :query, String, required: true
+        argument :query, String
       end
     end
 
