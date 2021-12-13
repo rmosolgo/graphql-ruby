@@ -71,9 +71,15 @@ describe GraphQL::Subscriptions::Serialize do
   end
 
   if defined?(ActiveSupport::TimeWithZone)
-    it "can deserialize times that have been emitted from Rails" do
-      time = ActiveSupport::TimeZone["UTC"].now
+    it "can deserialize times that have been emitted from Rails that no longer pretend to be Time objects" do
+      klass = Class.new(ActiveSupport::TimeWithZone) do
+        def self.name
+          "ActiveSupport::TimeWithZone"
+        end
+      end
+      time = klass.new(Time.now.utc, ActiveSupport::TimeZone["UTC"])
       assert time.is_a?(ActiveSupport::TimeWithZone)
+      assert_equal "ActiveSupport::TimeWithZone", time.class.name
       serialized = serialize_dump(time)
       assert_equal "Time", JSON.load(serialized)[GraphQL::Subscriptions::Serialize::TIMESTAMP_KEY].first
       reloaded = serialize_load(serialized)
