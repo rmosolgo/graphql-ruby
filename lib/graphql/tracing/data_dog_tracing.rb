@@ -20,7 +20,12 @@ module GraphQL
 
           if key == 'execute_multiplex'
             operations = data[:multiplex].queries.map(&:selected_operation_name).join(', ')
-            span.resource = operations unless operations.empty?
+            span.resource = if operations.empty?
+              first_query = data[:multiplex].queries.first
+              fallback_transaction_name(first_query && first_query.context)
+            else
+              operations
+            end
 
             # For top span of query, set the analytics sample rate tag, if available.
             if analytics_enabled?
