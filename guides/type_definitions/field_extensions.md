@@ -50,7 +50,7 @@ This way, an extension can encapsulate a behavior requiring several configuratio
 
 ### Adding default argument configurations
 
-Extensions may provide _default_ argument configurations which are applied if the field doesn't define the argument for itself. The configuration is passed to {{ Schema::FieldExtension.default_argument | api_doc }}. For example, to define a `:query` argument if the field doesn't already have one:
+Extensions may provide _default_ argument configurations which are applied if the field doesn't define the argument for itself. The configuration is passed to {{ "Schema::FieldExtension.default_argument" | api_doc }}. For example, to define a `:query` argument if the field doesn't already have one:
 
 ```ruby
 class SearchableExtension < GraphQL::Schema::FieldExtension
