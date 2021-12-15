@@ -148,6 +148,17 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
+<h3 id="using-extras">Using <code class="language-plaintext highlighter-rouge">extras</code></h3>
+
+<p>Extensions can have the same <code class="language-plaintext highlighter-rouge">extras</code> as fields (see <a href="/fields/introduction#extra-field-metadata">Extra Field Metadata</a>). Add them by calling <code class="language-plaintext highlighter-rouge">extras</code> in the class definition:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyExtension</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">FieldExtension</span>
+  <span class="n">extras</span> <span class="p">[</span><span class="ss">:ast_node</span><span class="p">,</span> <span class="ss">:errors</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Any configured <code class="language-plaintext highlighter-rouge">extras</code> will be present in the given <code class="language-plaintext highlighter-rouge">arguments</code>, but removed before the field is resolved. (However, <code class="language-plaintext highlighter-rouge">extras</code> from <em>any</em> extension will be present in <code class="language-plaintext highlighter-rouge">arguments</code> for <em>all</em> extensions.)</p>
+
 </div>
 <p class="guide-footer">
   Suggestion, improvement, or correction?
