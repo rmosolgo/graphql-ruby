@@ -115,3 +115,15 @@ def after_resolve(value:, **rest)
   value.limit(options[:limit])
 end
 ```
+
+### Using `extras`
+
+Extensions can have the same `extras` as fields (see {% internal_link "Extra Field Metadata", "fields/introduction#extra-field-metadata" %}). Add them by calling `extras` in the class definition:
+
+```ruby
+class MyExtension < GraphQL::Schema::FieldExtension
+  extras [:ast_node, :errors, ...]
+end
+```
+
+Any configured `extras` will be present in the given `arguments`, but removed before the field is resolved. (However, `extras` from _any_ extension will be present in `arguments` for _all_ extensions.)

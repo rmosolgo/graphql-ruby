@@ -322,4 +322,72 @@ describe GraphQL::Schema::FieldExtension do
       assert_equal GraphQL::Types::String.to_non_null_type, search_2.get_argument("query").type
     end
   end
+
+  describe ".extras" do
+    class ExtensionExtrasSchema < GraphQL::Schema
+      class AstNodeExtension < GraphQL::Schema::FieldExtension
+        extras [:ast_node]
+        def resolve(object:, arguments:, context:, **rest)
+          context[:last_ast_node] = arguments[:ast_node]
+          yield(object, arguments)
+        end
+      end
+
+      class AnotherAstNodeExtension < AstNodeExtension
+        def resolve(object:, arguments:, context:, **rest)
+          context[:other_last_ast_node] = arguments[:ast_node]
+          yield(object, arguments)
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :f1, Int, extensions: [AstNodeExtension] do
+          argument :i1, Int
+        end
+
+        def f1(i1:)
+          i1
+        end
+
+        field :f2, Int, extensions: [AstNodeExtension], extras: [:ast_node]
+
+        def f2(ast_node:)
+          (ast_node.alias || "").size
+        end
+
+        field :f3, Int, extensions: [AstNodeExtension, AnotherAstNodeExtension] do
+          argument :i1, Int
+        end
+
+        def f3(i1:)
+          i1
+        end
+      end
+      query(Query)
+    end
+
+    it "appends to the field's extras, but removes them when resolving" do
+      assert_equal [:ast_node], ExtensionExtrasSchema::Query.get_field("f1").extras
+      res = ExtensionExtrasSchema.execute("{ f1(i1: 1) }")
+      assert_equal 1, res["data"]["f1"]
+      assert_instance_of GraphQL::Language::Nodes::Field, res.context[:last_ast_node]
+      assert_equal "f1", res.context[:last_ast_node].name
+    end
+
+    it "allows already-defined extras to pass thru" do
+      res = ExtensionExtrasSchema.execute("{ something: f2 }")
+      assert_equal 9, res["data"]["something"]
+      assert_instance_of GraphQL::Language::Nodes::Field, res.context[:last_ast_node]
+      assert_equal "f2", res.context[:last_ast_node].name
+    end
+
+    it "works with multiple extensions" do
+      res = ExtensionExtrasSchema.execute("{ f3(i1: 3) }")
+      assert_equal 3, res["data"]["f3"]
+      assert_instance_of GraphQL::Language::Nodes::Field, res.context[:last_ast_node]
+      assert_equal "f3", res.context[:last_ast_node].name
+      assert_instance_of GraphQL::Language::Nodes::Field, res.context[:other_last_ast_node]
+      assert_equal "f3", res.context[:other_last_ast_node].name
+    end
+  end
 end
