@@ -525,7 +525,12 @@ describe GraphQL::Schema::RelayClassicMutation do
   describe "authorizing arguments from superclasses" do
     class RelayClassicArgumentAuthSchema < GraphQL::Schema
       class BaseArgument < GraphQL::Schema::Argument
-        def authorized?(_object, _args, context)
+        def authorized?(_object, args, context)
+          authed_val = context[:authorized_value] ||= Hash.new { |h,k| h[k] = {} }
+          if (prev_val = authed_val[context[:current_path]][self.path])
+            raise "Duplicate `#authorized?` call on #{self.path} @ #{context[:current_path]}"
+          end
+          authed_val[context[:current_path]][self.path] = args
           authed = context[:authorized] ||= {}
           authed[context[:current_path]] = super
         end
@@ -536,16 +541,15 @@ describe GraphQL::Schema::RelayClassicMutation do
         argument :name, String
       end
 
-      class NameOne <  GraphQL::Schema::RelayClassicMutation
+      class NameOne < GraphQL::Schema::RelayClassicMutation
         argument_class BaseArgument
-        # input_type CarInput
-        argument :name, String
+        argument :name, String, as: :name_one
 
         field :name, String
 
         def resolve(**arguments)
           {
-            name: arguments[:name]
+            name: arguments[:name_one]
           }
         end
       end
@@ -572,13 +576,39 @@ describe GraphQL::Schema::RelayClassicMutation do
         end
       end
 
+      class Thing < GraphQL::Schema::Object
+        field :name, String
+      end
+
+      class NameFour < GraphQL::Schema::RelayClassicMutation
+        argument_class BaseArgument
+        argument :thing_id, ID, loads: Thing
+
+        field :thing, Thing
+
+        def resolve(**arguments)
+          {
+            thing: arguments[:thing]
+          }
+        end
+      end
+
       class Mutation < GraphQL::Schema::Object
         field :name_one, mutation: NameOne
         field :name_two, mutation: NameTwo
         field :name_three, mutation: NameThree
+        field :name_four, mutation: NameFour
       end
 
       mutation(Mutation)
+
+      def self.object_from_id(id, ctx)
+        { name: id }
+      end
+
+      def self.resolve_type(abs_type, obj, ctx)
+        Thing
+      end
     end
 
     it "calls #authorized? on arguments defined on the mutation" do
@@ -594,6 +624,13 @@ describe GraphQL::Schema::RelayClassicMutation do
     it "calls #authorized? on arguments defined on the inputObjectClass" do
       res = RelayClassicArgumentAuthSchema.execute("mutation { nameThree(input: { name: \"Camry\" }) { name } }")
       assert_equal true, res.context[:authorized][["nameThree"]]
+    end
+
+    it "calls #authorized? on loaded argument values" do
+      res = RelayClassicArgumentAuthSchema.execute("mutation { nameFour(input: { thingId: \"Corolla\" }) { thing { name } } }")
+      assert_equal true, res.context[:authorized][["nameFour"]]
+      assert_equal({ name: "Corolla"}, res.context[:authorized_value][["nameFour"]]["NameFour.thingId"])
+      assert_equal "Corolla", res["data"]["nameFour"]["thing"]["name"]
     end
   end
 end

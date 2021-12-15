@@ -145,19 +145,9 @@ module GraphQL
       # @raise [GraphQL::UnauthorizedError] To signal an authorization failure
       # @return [Boolean, early_return_data] If `false`, execution will stop (and `early_return_data` will be returned instead, if present.)
       def authorized?(**inputs)
-        self.class.arguments(context).each_value do |argument|
-          arg_keyword = argument.keyword
-          if inputs.key?(arg_keyword) && !(arg_value = inputs[arg_keyword]).nil? && (arg_value != argument.default_value)
-            arg_auth, err = argument.authorized?(self, arg_value, context)
-            if !arg_auth
-              return arg_auth, err
-            else
-              true
-            end
-          else
-            true
-          end
-        end
+        arg_owner = @field # || self.class
+        args = arg_owner.arguments(context)
+        authorize_arguments(args, inputs)
       end
 
       # Called when an object loaded by `loads:` fails the `.authorized?` check for its resolved GraphQL object type.
@@ -171,6 +161,22 @@ module GraphQL
       end
 
       private
+
+      def authorize_arguments(args, inputs)
+        args.each_value do |argument|
+          arg_keyword = argument.keyword
+          if inputs.key?(arg_keyword) && !(arg_value = inputs[arg_keyword]).nil? && (arg_value != argument.default_value)
+            arg_auth, err = argument.authorized?(self, arg_value, context)
+            if !arg_auth
+              return arg_auth, err
+            else
+              true
+            end
+          else
+            true
+          end
+        end
+      end
 
       def load_arguments(args)
         prepared_args = {}

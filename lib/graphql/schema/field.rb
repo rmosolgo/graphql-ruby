@@ -617,13 +617,10 @@ module GraphQL
       end
 
       def authorized?(object, args, context)
-        resolver_authed = if @resolver_class
+        if @resolver_class
           # The resolver _instance_ will check itself during `resolve()`
           @resolver_class.authorized?(object, context)
         else
-          true
-        end
-        resolver_authed && begin
           if (arg_values = context[:current_arguments])
             # ^^ that's provided by the interpreter at runtime, and includes info about whether the default value was used or not.
             using_arg_values = true
