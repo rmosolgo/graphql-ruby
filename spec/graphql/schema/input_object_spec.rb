@@ -305,13 +305,22 @@ describe GraphQL::Schema::InputObject do
         argument :min, Integer
         argument :max, Integer, required: false
 
+        def self.authorized?(obj, arg, ctx)
+          if arg.end <= 100
+            super
+          else
+            ctx.add_error(GraphQL::ExecutionError.new("Range too big"))
+            false
+          end
+        end
+
         def prepare
           min..max
         end
       end
 
       class Query < GraphQL::Schema::Object
-        field :inputs, String, null: false do
+        field :inputs, String do
           argument :input, InputObj
         end
 
@@ -343,6 +352,16 @@ describe GraphQL::Schema::InputObject do
       res = InputObjectPrepareObjectTest::Schema.execute(query_str, variables: { input: { min: 5, max: 10 } })
       expected_obj = (5..10).inspect
       assert_equal expected_obj, res["data"]["inputs"]
+    end
+
+    it "authorizes the prepared value" do
+      query_str = <<-GRAPHQL
+        query ($input: InputObj!){ inputs(input: $input) }
+      GRAPHQL
+
+      res = InputObjectPrepareObjectTest::Schema.execute(query_str, variables: { input: { min: 5, max: 101 } })
+      assert_nil res["data"]["inputs"]
+      assert_equal ["Range too big"], res["errors"].map { |e| e["message"] }
     end
   end
 

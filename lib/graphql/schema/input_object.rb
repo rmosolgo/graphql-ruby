@@ -79,6 +79,21 @@ module GraphQL
         end
       end
 
+      def self.authorized?(obj, value, ctx)
+        # Authorize each argument (but this doesn't apply if `prepare` is implemented):
+        if value.is_a?(InputObject)
+          arguments(ctx).each do |_name, input_obj_arg|
+            input_obj_arg = input_obj_arg.type_class
+            if value.key?(input_obj_arg.keyword) &&
+              !input_obj_arg.authorized?(obj, value[input_obj_arg.keyword], ctx)
+              return false
+            end
+          end
+        end
+        # It didn't early-return false:
+        true
+      end
+
       def unwrap_value(value)
         case value
         when Array
