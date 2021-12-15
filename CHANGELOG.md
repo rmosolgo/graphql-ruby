@@ -8,6 +8,13 @@
 
 ### Bug fixes
 
+# 1.13.2 (15 December 2021)
+
+### Bug fixes
+
+- Authorization: only authorize arguments _once_, after they've been loaded with `loads:` #3782
+- Execution: always provide an `Interpreter::Arguments` instance as `context[:current_arguments]` #3783
+
 # 1.13.1 (13 December 2021)
 
 ### Deprecations
