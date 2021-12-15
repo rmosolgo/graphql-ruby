@@ -27,11 +27,6 @@ module GraphQL
 
       MAX_KEYS_SIZE = 100
 
-      # Returns all the possible event names for this tracing implementation
-      def self.event_names
-        KEYS.values
-      end
-
       # Initialize a new NotificationsTracing instance
       #
       # @param [Object] notifications_engine The notifications engine to use
