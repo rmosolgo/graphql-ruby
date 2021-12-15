@@ -307,7 +307,7 @@ describe GraphQL::Schema::InputObject do
 
         def self.authorized?(obj, arg, ctx)
           if arg.end <= 100
-            true
+            super
           else
             ctx.add_error(GraphQL::ExecutionError.new("Range too big"))
             false
