@@ -528,7 +528,7 @@ describe GraphQL::Schema::RelayClassicMutation do
         def authorized?(_object, args, context)
           authed_val = context[:authorized_value] ||= Hash.new { |h,k| h[k] = {} }
           if (prev_val = authed_val[context[:current_path]][self.path])
-            raise "Duplicate `#authorized?` call on #{self.path} @ #{context[:current_path]}"
+            raise "Duplicate `#authorized?` call on #{self.path} @ #{context[:current_path]} (was: #{prev_val.inspect}, is: #{args.inspect})"
           end
           authed_val[context[:current_path]][self.path] = args
           authed = context[:authorized] ||= {}
