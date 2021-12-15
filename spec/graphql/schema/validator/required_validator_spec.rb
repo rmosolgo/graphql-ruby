@@ -52,6 +52,15 @@ describe GraphQL::Schema::Validator::RequiredValidator do
         { query: "{ validated: validatedResolver(b: 2) }", result: nil, error_messages: ["validatedResolver has the wrong arguments"] },
         { query: "{ validated: validatedResolver }", result: nil, error_messages: ["validatedResolver has the wrong arguments"] },
       ]
+    },
+    {
+      name: "Single arg validation",
+      config: { argument: :a, message: "A value must be given, even if it's `null`" },
+      cases: [
+        { query: "{ validated: validatedInput(input: { a: 1 }) }", result: 1, error_messages: [] },
+        { query: "{ validated: validatedInput(input: {}) }", result: nil, error_messages: ["A value must be given, even if it's `null`"] },
+        { query: "{ validated: validatedInput(input: { a: null }) }", result: 0, error_messages: [] },
+      ]
     }
   ]
 

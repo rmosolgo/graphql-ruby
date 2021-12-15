@@ -28,11 +28,25 @@ module GraphQL
       #    validates required: { one_of: [:node_id, [:object_type, :object_id]] }
       #  end
       #
+      # @example require _some_ value for an argument, even if it's null
+      #   field :update_settings, AccountSettings do
+      #     # `required: false` allows this argument to be `null`
+      #     argument :age, Integer, required: false
+      #     # `validates required: ...` will make sure that _some_ value is given for this arg
+      #     validates required: { argument: :age }
+      #   end
+      #
       class RequiredValidator < Validator
         # @param one_of [Symbol, Array<Symbol>] An argument, or a list of arguments, that represents a valid set of inputs for this field
         # @param message [String]
-        def initialize(one_of:, message: "%{validated} has the wrong arguments", **default_options)
-          @one_of = one_of
+        def initialize(one_of: nil, argument: nil, message: "%{validated} has the wrong arguments", **default_options)
+          @one_of = if one_of
+            one_of
+          elsif argument
+            [argument]
+          else
+            raise ArgumentError, "`one_of:` or `argument:` must be given in `validates required: {...}`"
+          end
           @message = message
           super(**default_options)
         end
@@ -40,19 +54,21 @@ module GraphQL
         def validate(_object, _context, value)
           matched_conditions = 0
 
-          @one_of.each do |one_of_condition|
-            case one_of_condition
-            when Symbol
-              if value.key?(one_of_condition)
-                matched_conditions += 1
+          if !value.nil?
+            @one_of.each do |one_of_condition|
+              case one_of_condition
+              when Symbol
+                if value.key?(one_of_condition)
+                  matched_conditions += 1
+                end
+              when Array
+                if one_of_condition.all? { |k| value.key?(k) }
+                  matched_conditions += 1
+                  break
+                end
+              else
+                raise ArgumentError, "Unknown one_of condition: #{one_of_condition.inspect}"
               end
-            when Array
-              if one_of_condition.all? { |k| value.key?(k) }
-                matched_conditions += 1
-                break
-              end
-            else
-              raise ArgumentError, "Unknown one_of condition: #{one_of_condition.inspect}"
             end
           end
 
