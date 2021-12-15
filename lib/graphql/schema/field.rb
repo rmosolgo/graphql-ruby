@@ -850,8 +850,12 @@ module GraphQL
           # This is a hack to get the _last_ value for extended obj and args,
           # in case one of the extensions doesn't `yield`.
           # (There's another implementation that uses multiple-return, but I'm wary of the perf cost of the extra arrays)
-          extended = { args: args, obj: obj, memos: nil }
+          extended = { args: args, obj: obj, memos: nil, added_extras: nil }
           value = run_extensions_before_resolve(obj, args, ctx, extended) do |obj, args|
+            if (added_extras = extended[:added_extras])
+              args = args.dup
+              added_extras.each { |e| args.delete(e) }
+            end
             yield(obj, args)
           end
 
@@ -880,6 +884,12 @@ module GraphQL
               memos = extended[:memos] ||= {}
               memos[idx] = memo
             end
+
+            if (extras = extension.added_extras)
+              ae = extended[:added_extras] ||= []
+              ae.concat(extras)
+            end
+
             extended[:obj] = extended_obj
             extended[:args] = extended_args
             run_extensions_before_resolve(extended_obj, extended_args, ctx, extended, idx: idx + 1) { |o, a| yield(o, a) }

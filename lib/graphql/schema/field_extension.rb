@@ -49,7 +49,35 @@ module GraphQL
           configs = @own_default_argument_configurations ||= []
           configs << [argument_args, argument_kwargs]
         end
+
+        # If configured, these `extras` will be added to the field if they aren't already present,
+        # but removed by from `arguments` before the field's `resolve` is called.
+        # (The extras _will_ be present for other extensions, though.)
+        #
+        # @param new_extras [Array<Symbol>] If provided, assign extras used by this extension
+        # @return [Array<Symbol>] any extras assigned to this extension
+        def extras(new_extras = nil)
+          if new_extras
+            @own_extras = new_extras
+          end
+
+          inherited_extras = self.superclass.respond_to?(:extras) ? superclass.extras : nil
+          if @own_extras
+            if inherited_extras
+              inherited_extras + @own_extras
+            else
+              @own_extras
+            end
+          elsif inherited_extras
+            inherited_extras
+          else
+            NO_EXTRAS
+          end
+        end
       end
+
+      NO_EXTRAS = [].freeze
+      private_constant :NO_EXTRAS
 
       # Called when this extension is attached to a field.
       # The field definition may be extended during this method.
@@ -79,8 +107,17 @@ module GraphQL
             end
           end
         end
+        if (extras = self.class.extras).any?
+          @added_extras = extras - field.extras
+          field.extras(@added_extras)
+        else
+          @added_extras = nil
+        end
         freeze
       end
+
+      # @api private
+      attr_reader :added_extras
 
       # Called before resolving {#field}. It should either:
       #
