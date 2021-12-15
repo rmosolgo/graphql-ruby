@@ -268,6 +268,20 @@ describe GraphQL::Execution::Interpreter do
       def self.resolve_type(type, obj, ctx)
         FieldCounter
       end
+
+      class EnsureArgsAreObject
+        def self.trace(event, data)
+          case event
+          when "execute_field", "execute_field_lazy"
+            args = data[:query].context[:current_arguments]
+            if !args.is_a?(GraphQL::Execution::Interpreter::Arguments)
+              raise "Expected arguments object, got #{args.class}: #{args.inspect}"
+            end
+          end
+          yield
+        end
+      end
+      tracer EnsureArgsAreObject
     end
   end
 
