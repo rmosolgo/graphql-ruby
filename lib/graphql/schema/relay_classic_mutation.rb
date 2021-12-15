@@ -155,6 +155,14 @@ module GraphQL
           end
         end
       end
+
+      private
+
+      def authorize_arguments(args, values)
+        # remove the `input` wrapper to match values
+        input_args = args["input"].type.unwrap.arguments(context)
+        super(input_args, values)
+      end
     end
   end
 end
