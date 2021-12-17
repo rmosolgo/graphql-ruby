@@ -10,7 +10,7 @@
   "bin": "./cli.js",
   "devDependencies": {
     "@apollo/client": "^3.3.13",
-    "@types/actioncable": "^5.2.3",
+    "@types/rails__actioncable": "^6.1.6",
     "@types/glob": "^7.1.1",
     "@types/jest": "^25.1.2",
     "@types/minimist": "^1.2.0",
