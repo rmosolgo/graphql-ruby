@@ -874,7 +874,8 @@ module GraphQL
 
 
 
-        raise FieldImplementationFailed.new, <<-ERR
+        if unsatisfied_ruby_kwargs.any?
+          raise FieldImplementationFailed.new, <<-ERR
 Failed to call #{method_name} on #{receiver.inspect} because the Ruby method params were incompatible with the GraphQL arguments:
 
 #{ unsatisfied_ruby_kwargs
@@ -882,6 +883,7 @@ Failed to call #{method_name} on #{receiver.inspect} because the Ruby method par
     .concat(unsatisfied_method_params)
     .join("\n") }
 ERR
+        end
       end
 
       # Wrap execution with hooks.
