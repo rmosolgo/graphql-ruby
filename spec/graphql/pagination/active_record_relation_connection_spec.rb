@@ -124,5 +124,25 @@ if testing_rails?
       assert_equal ["Item", "Item", "Item"], results["data"]["items"]["nodes"].map { |i| i["__typename"] }
       assert_equal 2, log.split("\n").size, "It runs two queries -- TODO this could be better"
     end
+
+    it "only runs one query for already-loaded unbounded queries" do
+      results = nil
+      log = with_active_record_log do
+        results = schema.execute("{
+          preloadedItems {
+            pageInfo {
+              hasPreviousPage
+              hasNextPage
+            }
+            nodes { __typename }
+          }
+        }")
+      end
+      # The max_page_size of 6 is applied to the results
+      assert_equal 6, results["data"]["preloadedItems"]["nodes"].size
+      assert_equal 1, log.split("\n").size, "It runs only one query"
+      decolorized_log = log.gsub(/\e\[([;\d]+)?m/, '').chomp
+      assert_operator decolorized_log, :end_with?, 'SELECT "foods".* FROM "foods"', "it's an unbounded select from the resolver"
+    end
   end
 end

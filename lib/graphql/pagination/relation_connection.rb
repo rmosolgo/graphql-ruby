@@ -126,7 +126,8 @@ module GraphQL
             if after_offset < before_offset
               # Get the number of items between the two cursors
               space_between = before_offset - after_offset - 1
-              paginated_nodes = set_limit(paginated_nodes, space_between)
+              @relation_limit = space_between
+              # paginated_nodes = set_limit(paginated_nodes, space_between)
             else
               # TODO I think this is untested
               # The cursors overextend one another to an empty set
@@ -134,7 +135,12 @@ module GraphQL
             end
           elsif before_offset
             # Use limit to cut off the tail of the relation
-            paginated_nodes = set_limit(paginated_nodes, before_offset - 1)
+            @relation_limit = before_offset - 1
+            # paginated_nodes = set_limit(paginated_nodes, before_offset - 1)
+          end
+
+          if @relation_limit
+            paginated_nodes = set_limit(paginated_nodes, @relation_limit)
           end
 
           paginated_nodes
@@ -156,32 +162,39 @@ module GraphQL
       def limited_nodes
         @limited_nodes ||= begin
           paginated_nodes = sliced_nodes
-          previous_limit = relation_limit(paginated_nodes)
+          @relation_limit ||= relation_limit(paginated_nodes)
 
-          if first && (previous_limit.nil? || previous_limit > first)
+          if first && (@relation_limit.nil? || @relation_limit > first)
             # `first` would create a stricter limit that the one already applied, so add it
-            paginated_nodes = set_limit(paginated_nodes, first)
+            @relation_limit = first
+            # paginated_nodes = set_limit(paginated_nodes, first)
           end
 
           if last
-            if (lv = relation_limit(paginated_nodes))
-              if last <= lv
+            if @relation_limit
+              if last <= @relation_limit
                 # `last` is a smaller slice than the current limit, so apply it
-                offset = (relation_offset(paginated_nodes) || 0) + (lv - last)
+                offset = (relation_offset(paginated_nodes) || 0) + (@relation_limit - last)
                 paginated_nodes = set_offset(paginated_nodes, offset)
-                paginated_nodes = set_limit(paginated_nodes, last)
+                @relation_limit = last
+                # paginated_nodes = set_limit(paginated_nodes, last)
               end
             else
               # No limit, so get the last items
               sliced_nodes_count = relation_count(@sliced_nodes)
               offset = (relation_offset(paginated_nodes) || 0) + sliced_nodes_count - [last, sliced_nodes_count].min
               paginated_nodes = set_offset(paginated_nodes, offset)
-              paginated_nodes = set_limit(paginated_nodes, last)
+              @relation_limit = last
             end
           end
 
           @paged_nodes_offset = relation_offset(paginated_nodes)
-          paginated_nodes
+
+          if paginated_nodes.loaded?
+            paginated_nodes.take(@relation_limit)
+          else
+            paginated_nodes.limit(@relation_limit)
+          end
         end
       end
 

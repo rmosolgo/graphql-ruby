@@ -127,6 +127,14 @@ module ConnectionAssertions
           get_items
         end
 
+        field :preloaded_items, item.connection_type
+
+        def preloaded_items
+          relation = get_items
+          relation.load # force the unbounded relation to load from the database
+          relation
+        end
+
         private
 
         def get_items

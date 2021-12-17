@@ -9,7 +9,12 @@ module GraphQL
 
       def relation_larger_than(relation, size)
         initial_offset = relation.offset_value || 0
-        relation.offset(initial_offset + size).exists?
+        if initial_offset == 0 && relation.loaded?
+          # An unbounded, already-loaded relation
+          relation.size > size
+        else
+          relation.offset(initial_offset + size).exists?
+        end
       end
 
       def relation_count(relation)
