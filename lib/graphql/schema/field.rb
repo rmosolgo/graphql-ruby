@@ -836,7 +836,7 @@ module GraphQL
             To implement this field, define one of the methods above (and check for typos)
             ERR
             end
-          rescue ArgumentError => error
+          rescue ArgumentError
             assert_satisfactory_implementation(method_receiver, method_to_call, ruby_kwargs)
             # if the line above doesn't raise, re-raise
             raise
