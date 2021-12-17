@@ -351,7 +351,7 @@ module StarWars
       [OpenStruct.new(id: nil)]
     end
 
-    add_field(GraphQL::Types::Relay::NodeField)
+    include GraphQL::Types::Relay::HasNodeField
 
     field :node_with_custom_resolver, GraphQL::Types::Relay::Node do
       argument :id, ID
@@ -361,7 +361,7 @@ module StarWars
     end
 
 
-    add_field(GraphQL::Types::Relay::NodesField)
+    include GraphQL::Types::Relay::HasNodesField
 
     field :nodes_with_custom_resolver, [GraphQL::Types::Relay::Node, null: true] do
       argument :ids, [ID]

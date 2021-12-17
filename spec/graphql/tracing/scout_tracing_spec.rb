@@ -5,7 +5,7 @@ require "spec_helper"
 describe GraphQL::Tracing::ScoutTracing do
   module ScoutApmTest
     class Query < GraphQL::Schema::Object
-      add_field GraphQL::Types::Relay::NodeField
+      include GraphQL::Types::Relay::HasNodeField
 
       field :int, Integer, null: false
 

@@ -8,7 +8,7 @@ describe GraphQL::Tracing::NewRelicTracing do
     end
 
     class Query < GraphQL::Schema::Object
-      add_field GraphQL::Types::Relay::NodeField
+      include GraphQL::Types::Relay::HasNodeField
 
       field :int, Integer, null: false
 
