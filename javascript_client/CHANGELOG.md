@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.10.5 (17 Dec 2021)
+
+- Dependencies: replace `actioncable` with `@rails/actioncable` #3773
+
 # 1.10.4 (19 Nov 2021)
 
 - Sync: Also make sure documents are valid after removing `@client` fields #3715
