@@ -226,8 +226,8 @@ describe GraphQL::Execution::Interpreter do
       field :field_counter, FieldCounter, null: false
       def field_counter; FieldCounter.generate_tag(context) ; end
 
-      add_field(GraphQL::Types::Relay::NodeField)
-      add_field(GraphQL::Types::Relay::NodesField)
+      include GraphQL::Types::Relay::HasNodeField
+      include GraphQL::Types::Relay::HasNodesField
     end
 
     class Counter < GraphQL::Schema::Object
