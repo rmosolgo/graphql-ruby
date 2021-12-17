@@ -196,9 +196,13 @@ module GraphQL
         when "INPUT_OBJECT"
           GraphQL::Language::Nodes::InputObject.new(
             arguments: default_value.to_h.map do |arg_name, arg_value|
-              arg = @warden.arguments(type).find { |a| a.keyword.to_s == arg_name.to_s }
+              args = @warden.arguments(type)
+              arg = args.find { |a| a.keyword.to_s == arg_name.to_s }
+              if arg.nil?
+                raise ArgumentError, "No argument definition on #{type.graphql_name} for argument: #{arg_name.inspect} (expected one of: #{args.map(&:keyword)})"
+              end
               GraphQL::Language::Nodes::Argument.new(
-                name: arg.graphql_name,
+                name: arg.graphql_name.to_s,
                 value: build_default_value(arg_value, arg.type)
               )
             end
