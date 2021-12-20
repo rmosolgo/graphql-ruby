@@ -205,8 +205,8 @@ describe GraphQL::Analysis::AST::FieldUsage do
       end
 
       class Query < GraphQL::Schema::Object
-        field :f, Int do
-          argument :i, Int, prepare: ->(*) { raise GraphQL::ExecutionError.new("boom!") }
+        field :f, Int, null: false do
+          argument :i, Int, required: false, prepare: ->(*) { raise GraphQL::ExecutionError.new("boom!") }
         end
       end
 
