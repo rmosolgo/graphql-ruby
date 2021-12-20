@@ -72,8 +72,17 @@ describe GraphQL::Subscriptions::Serialize do
 
   if defined?(ActiveSupport::TimeWithZone)
     it "can deserialize ActiveSupport::TimeWithZone into the right zone" do
-      time_utc = ActiveSupport::TimeZone["UTC"].at(1)
-      time_est = ActiveSupport::TimeZone["EST"].at(1)
+      klass = Class.new(ActiveSupport::TimeWithZone) do
+        # Forcing the name here for simulating the case where
+        # config.active_support.remove_deprecated_time_with_zone_name = true
+        # in a Rails 7+ installation
+        def self.name
+          "ActiveSupport::TimeWithZone"
+        end
+      end
+
+      time_utc = klass.new(Time.at(1), ActiveSupport::TimeZone["UTC"])
+      time_est = klass.new(Time.at(1), ActiveSupport::TimeZone["EST"])
 
       serialized_utc = serialize_dump(time_utc)
       reloaded_utc = serialize_load(serialized_utc)
