@@ -35,7 +35,7 @@ module GraphQL
         @queries = queries
         @queries.each { |q| q.multiplex = self }
         @context = context
-        @context[:dataloader] = @dataloader = @schema.dataloader_class.new
+        @dataloader = @context[:dataloader] ||= @schema.dataloader_class.new
         @tracers = schema.tracers + (context[:tracers] || [])
         # Support `context: {backtrace: true}`
         if context[:backtrace] && !@tracers.include?(GraphQL::Backtrace::Tracer)
@@ -150,6 +150,9 @@ module GraphQL
             end
 
             result
+          end
+          if query.context.namespace?(:__query_result_extensions__)
+            query.result_values["extensions"] = query.context.namespace(:__query_result_extensions__)
           end
         end
 

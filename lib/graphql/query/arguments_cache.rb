@@ -7,7 +7,7 @@ module GraphQL
         Hash.new do |h1, irep_or_ast_node|
           h1[irep_or_ast_node] = Hash.new do |h2, definition|
             ast_node = irep_or_ast_node.is_a?(GraphQL::InternalRepresentation::Node) ? irep_or_ast_node.ast_node : irep_or_ast_node
-            h2[definition] = if definition.arguments.empty?
+            h2[definition] = if definition.arguments(query.context).empty?
               GraphQL::Query::Arguments::NO_ARGS
             else
               GraphQL::Query::LiteralInput.from_arguments(

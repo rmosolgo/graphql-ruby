@@ -35,7 +35,7 @@ module GraphQL
           GraphQL::Schema::Directive::INPUT_FIELD_DEFINITION,
         )
 
-        argument :by, [String], "Flags to check for this schema member", required: true
+        argument :by, [String], "Flags to check for this schema member"
 
         module VisibleByFlag
           def self.included(schema_class)
@@ -44,7 +44,7 @@ module GraphQL
 
           def visible?(context)
             if dir = self.directives.find { |d| d.is_a?(Flagged) }
-              relevant_flags = (f = context[:flags]) && dir.arguments[:by] & f
+              relevant_flags = (f = context[:flags]) && dir.arguments[:by] & f # rubocop:disable Development/ContextIsPassedCop -- definition-related
               relevant_flags && relevant_flags.any? && super
             else
               super

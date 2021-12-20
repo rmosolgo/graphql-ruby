@@ -14,6 +14,8 @@ module GraphQL
           val
         end
 
+        prepend Schema::Member::CachedGraphQLDefinition::DeprecatedToGraphQL
+
         def to_graphql
           type_defn = GraphQL::ScalarType.new
           type_defn.name = graphql_name

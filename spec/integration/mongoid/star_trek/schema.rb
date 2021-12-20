@@ -6,14 +6,14 @@ module StarTrek
   class Ship < GraphQL::Schema::Object
     implements GraphQL::Types::Relay::Node
     global_id_field :id
-    field :name, String, null: true
+    field :name, String
     # Test cyclical connection types:
     field :ships, Ship.connection_type, null: false
   end
 
   class ResidentType < GraphQL::Schema::Object
     global_id_field :id
-    field :name, String, null: true
+    field :name, String
   end
 
   class BaseType < GraphQL::Schema::Object
@@ -29,14 +29,14 @@ module StarTrek
         end
       }
     }
-    field :sector, String, null: true
-    field :residents, ResidentType.connection_type, null: true
+    field :sector, String
+    field :residents, ResidentType.connection_type
   end
 
   class BaseConnectionWithTotalCountType < GraphQL::Types::Relay::BaseConnection
     graphql_name "BasesConnectionWithTotalCount"
     edge_type(BaseType.edge_type)
-    field :total_count, Integer, null: true
+    field :total_count, Integer
 
     def total_count
       object.items.count
@@ -55,9 +55,9 @@ module StarTrek
 
   class CustomBaseEdgeType < GraphQL::Types::Relay::BaseEdge
     node_type(BaseType)
-    field :upcased_name, String, null: true
-    field :upcased_parent_name, String, null: true
-    field :edge_class_name, String, null: true
+    field :upcased_name, String
+    field :upcased_parent_name, String
+    field :edge_class_name, String
 
     def edge_class_name
       object.class.name
@@ -67,17 +67,16 @@ module StarTrek
   class CustomEdgeBaseConnectionType < GraphQL::Types::Relay::BaseConnection
     edge_type(CustomBaseEdgeType, edge_class: CustomBaseEdge)
 
-    field :total_count_times_100, Integer, null: true
+    field :total_count_times_100, Integer
     def total_count_times_100
       obj.items.to_a.count * 100
     end
 
-    field :field_name, String, null: true
+    field :field_name, String
     def field_name
       object.field.name
     end
   end
-
 
   class ShipsWithMaxPageSize < GraphQL::Schema::Resolver
     argument :name_includes, String, required: false
@@ -105,7 +104,7 @@ module StarTrek
     implements GraphQL::Types::Relay::Node
 
     field :id, ID, null: false, resolve: GraphQL::Relay::GlobalIdResolve.new(type: Faction)
-    field :name, String, null: true
+    field :name, String
     field :ships, ShipConnectionWithParentType, connection: true, max_page_size: 1000, null: true do
       argument :name_includes, String, required: false
     end
@@ -136,7 +135,7 @@ module StarTrek
 
     field :shipsWithMaxPageSize, "Ships with max page size", max_page_size: 2, resolver: ShipsWithMaxPageSize
 
-    field :bases, BaseConnectionWithTotalCountType, null: true, connection: true do
+    field :bases, BaseConnectionWithTotalCountType, connection: true do
       argument :name_includes, String, required: false
     end
 
@@ -148,8 +147,8 @@ module StarTrek
       all_bases
     end
 
-    field :bases_clone, BaseType.connection_type, null: true
-    field :bases_by_name, BaseType.connection_type, null: true do
+    field :bases_clone, BaseType.connection_type
+    field :bases_by_name, BaseType.connection_type do
       argument :order, String, default_value: "name", required: false
     end
     def bases_by_name(order: nil)
@@ -168,13 +167,13 @@ module StarTrek
       all_bases.to_a
     end
 
-    field :basesWithMaxLimitRelation, BaseType.connection_type, null: true, max_page_size: 2, resolver_method: :all_bases
-    field :basesWithMaxLimitArray, BaseType.connection_type, null: true, max_page_size: 2, resolver_method: :all_bases_array
-    field :basesWithDefaultMaxLimitRelation, BaseType.connection_type, null: true, resolver_method: :all_bases
-    field :basesWithDefaultMaxLimitArray, BaseType.connection_type, null: true, resolver_method: :all_bases_array
-    field :basesWithLargeMaxLimitRelation, BaseType.connection_type, null: true, max_page_size: 1000, resolver_method: :all_bases
+    field :basesWithMaxLimitRelation, BaseType.connection_type, max_page_size: 2, resolver_method: :all_bases
+    field :basesWithMaxLimitArray, BaseType.connection_type, max_page_size: 2, resolver_method: :all_bases_array
+    field :basesWithDefaultMaxLimitRelation, BaseType.connection_type, resolver_method: :all_bases
+    field :basesWithDefaultMaxLimitArray, BaseType.connection_type, resolver_method: :all_bases_array
+    field :basesWithLargeMaxLimitRelation, BaseType.connection_type, max_page_size: 1000, resolver_method: :all_bases
 
-    field :bases_with_custom_edge, CustomEdgeBaseConnectionType, null: true, connection: true
+    field :bases_with_custom_edge, CustomEdgeBaseConnectionType, connection: true
     def bases_with_custom_edge
       LazyNodesWrapper.new(object.bases)
     end
@@ -185,11 +184,11 @@ module StarTrek
 
     # Nested under `input` in the query:
     argument :ship_name, String, required: false
-    argument :faction_id, ID, required: true
+    argument :faction_id, ID
 
     # Result may have access to these fields:
-    field :ship_edge, Ship.edge_type, null: true
-    field :faction, Faction, null: true
+    field :ship_edge, Ship.edge_type
+    field :faction, Faction
     field :aliased_faction, Faction, hash_key: :aliased_faction, null: true
 
     def resolve(ship_name: nil, faction_id:)
@@ -281,30 +280,30 @@ module StarTrek
   class QueryType < GraphQL::Schema::Object
     graphql_name "Query"
 
-    field :federation, Faction, null: true
+    field :federation, Faction
 
     def federation
       StarTrek::DATA["Faction"]["1"]
     end
 
-    field :klingons, Faction, null: true
+    field :klingons, Faction
     def klingons
       StarTrek::DATA["Faction"]["2"]
     end
 
-    field :romulans, Faction, null: true
+    field :romulans, Faction
 
     def romulans
       StarTrek::DATA["Faction"]["3"]
     end
 
-    field :largest_base, BaseType, null: true
+    field :largest_base, BaseType
 
     def largest_base
       Base.find(3)
     end
 
-    field :newest_bases_grouped_by_faction, BaseType.connection_type, null: true
+    field :newest_bases_grouped_by_faction, BaseType.connection_type
 
     def newest_bases_grouped_by_faction
       agg = Base.collection.aggregate([{
@@ -324,10 +323,10 @@ module StarTrek
       [OpenStruct.new(id: nil)]
     end
 
-    add_field(GraphQL::Types::Relay::NodeField)
+    include GraphQL::Types::Relay::HasNodeField
 
-    field :node_with_custom_resolver, GraphQL::Types::Relay::Node, null: true do
-      argument :id, ID, required: true
+    field :node_with_custom_resolver, GraphQL::Types::Relay::Node do
+      argument :id, ID
     end
     def node_with_custom_resolver(id:)
       StarTrek::DATA["Faction"]["1"]
@@ -335,15 +334,15 @@ module StarTrek
 
     add_field(GraphQL::Types::Relay::NodesField)
 
-    field :nodes_with_custom_resolver, [GraphQL::Types::Relay::Node, null: true], null: true do
-      argument :ids, [ID], required: true
+    field :nodes_with_custom_resolver, [GraphQL::Types::Relay::Node, null: true] do
+      argument :ids, [ID]
     end
     def nodes_with_custom_resolver(ids:)
       [StarTrek::DATA["Faction"]["1"], StarTrek::DATA["Faction"]["2"]]
     end
 
-    field :batched_base, BaseType, null: true do
-      argument :id, ID, required: true
+    field :batched_base, BaseType do
+      argument :id, ID
     end
 
     def batched_base(id:)

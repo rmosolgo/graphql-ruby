@@ -3,12 +3,7 @@ require "graphql/schema/build_from_definition/resolve_map"
 
 module GraphQL
   class Schema
-    # TODO Populate `.directive(...)` from here
     module BuildFromDefinition
-      if !String.method_defined?(:-@)
-        using GraphQL::StringDedupBackport
-      end
-
       class << self
         # @see {Schema.from_definition}
         def from_definition(definition_string, parser: GraphQL.default_parser, **kwargs)
@@ -394,6 +389,11 @@ module GraphQL
             include GraphQL::Schema::Interface
             graphql_name(interface_type_definition.name)
             description(interface_type_definition.description)
+            interface_type_definition.interfaces.each do |interface_name|
+              "Implements: #{interface_type_definition} -> #{interface_name}"
+              interface_defn = type_resolver.call(interface_name)
+              implements(interface_defn)
+            end
             ast_node(interface_type_definition)
             builder.build_directives(self, interface_type_definition, type_resolver)
 

@@ -58,7 +58,7 @@ describe GraphQL::Query::Executor do
     end
   end
 
-  describe "operation and fragment defintions of the same name" do
+  describe "operation and fragment definitions of the same name" do
     let(:query_string) { %|
       query Cheese { cheese(id: 1) { ...Cheese } }
       query MoreCheese { cheese(id: 2) { ...Cheese } }

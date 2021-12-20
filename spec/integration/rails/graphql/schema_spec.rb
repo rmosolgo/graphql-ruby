@@ -134,7 +134,7 @@ describe GraphQL::Schema do
       it "raises not implemented" do
         query_type = Class.new(GraphQL::Schema::Object) do
           graphql_name "Query"
-          add_field(GraphQL::Types::Relay::NodeField)
+          include GraphQL::Types::Relay::HasNodeField
         end
 
         thing_type = Class.new(GraphQL::Schema::Object) do
@@ -198,7 +198,7 @@ type Query {
 
       query_root = Class.new(GraphQL::Schema::Object) do
         graphql_name 'Query'
-        field :str, String, null: true
+        field :str, String
         field :db, db_connection, null: false, connection: false
       end
 
@@ -255,7 +255,7 @@ type Query {
       Class.new(GraphQL::Schema) do
         query_type = Class.new(GraphQL::Schema::Object) do
           graphql_name "Query"
-          field :int, Integer, null: true do
+          field :int, Integer do
             argument :value, Integer, required: false
           end
 

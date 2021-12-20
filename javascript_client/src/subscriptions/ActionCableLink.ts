@@ -1,18 +1,18 @@
 import { ApolloLink, Observable, FetchResult, Operation, NextLink } from "@apollo/client/core"
-import { Cable } from "actioncable"
+import type { Consumer } from "@rails/actioncable"
 import { print } from "graphql"
 
 type RequestResult = FetchResult<{ [key: string]: any; }, Record<string, any>, Record<string, any>>
 type ConnectionParams = object | ((operation: Operation) => object)
 
 class ActionCableLink extends ApolloLink {
-  cable: Cable
+  cable: Consumer
   channelName: string
   actionName: string
   connectionParams: ConnectionParams
 
   constructor(options: {
-    cable: Cable, channelName?: string, actionName?: string, connectionParams?: ConnectionParams
+    cable: Consumer, channelName?: string, actionName?: string, connectionParams?: ConnectionParams
   }) {
     super()
     this.cable = options.cable

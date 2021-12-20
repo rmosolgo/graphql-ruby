@@ -37,7 +37,7 @@ module GraphQL
         @field = field
         # Since this hash is constantly rebuilt, cache it for this call
         @arguments_by_keyword = {}
-        self.class.arguments.each do |name, arg|
+        self.class.arguments(context).each do |name, arg|
           @arguments_by_keyword[arg.keyword] = arg
         end
         @prepared_arguments = nil
@@ -145,19 +145,9 @@ module GraphQL
       # @raise [GraphQL::UnauthorizedError] To signal an authorization failure
       # @return [Boolean, early_return_data] If `false`, execution will stop (and `early_return_data` will be returned instead, if present.)
       def authorized?(**inputs)
-        self.class.arguments.each_value do |argument|
-          arg_keyword = argument.keyword
-          if inputs.key?(arg_keyword) && !(arg_value = inputs[arg_keyword]).nil? && (arg_value != argument.default_value)
-            arg_auth, err = argument.authorized?(self, arg_value, context)
-            if !arg_auth
-              return arg_auth, err
-            else
-              true
-            end
-          else
-            true
-          end
-        end
+        arg_owner = @field # || self.class
+        args = arg_owner.arguments(context)
+        authorize_arguments(args, inputs)
       end
 
       # Called when an object loaded by `loads:` fails the `.authorized?` check for its resolved GraphQL object type.
@@ -171,6 +161,22 @@ module GraphQL
       end
 
       private
+
+      def authorize_arguments(args, inputs)
+        args.each_value do |argument|
+          arg_keyword = argument.keyword
+          if inputs.key?(arg_keyword) && !(arg_value = inputs[arg_keyword]).nil? && (arg_value != argument.default_value)
+            arg_auth, err = argument.authorized?(self, arg_value, context)
+            if !arg_auth
+              return arg_auth, err
+            else
+              true
+            end
+          else
+            true
+          end
+        end
+      end
 
       def load_arguments(args)
         prepared_args = {}
@@ -199,8 +205,8 @@ module GraphQL
         end
       end
 
-      def get_argument(name)
-        self.class.get_argument(name)
+      def get_argument(name, context = GraphQL::Query::NullContext)
+        self.class.get_argument(name, context)
       end
 
       class << self
@@ -305,13 +311,27 @@ module GraphQL
         end
 
         def field_options
+
+          all_args = {}
+          all_argument_definitions.each do |arg|
+            if (prev_entry = all_args[arg.graphql_name])
+              if prev_entry.is_a?(Array)
+                prev_entry << arg
+              else
+                all_args[arg.graphql_name] = [prev_entry, arg]
+              end
+            else
+              all_args[arg.graphql_name] = arg
+            end
+          end
+
           field_opts = {
             type: type_expr,
             description: description,
             extras: extras,
             resolver_method: :resolve_with_support,
             resolver_class: self,
-            arguments: arguments,
+            arguments: all_args,
             null: null,
             complexity: complexity,
             broadcastable: broadcastable?,

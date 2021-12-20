@@ -10,7 +10,7 @@ describe GraphQL::Schema::Argument do
     end
 
     class ContextInput < GraphQL::Schema::InputObject
-      argument :context, String, required: true
+      argument :context, String
     end
 
     class LoadUnauthorizedInstruments < GraphQL::Schema::Resolver
@@ -28,14 +28,14 @@ describe GraphQL::Schema::Argument do
     end
 
     class Query < GraphQL::Schema::Object
-      field :field, String, null: true do
+      field :field, String do
         argument :arg, String, description: "test", required: false
         argument :deprecated_arg, String, deprecation_reason: "don't use me!", required: false
 
         argument :arg_with_block, String, required: false do
           description "test"
         end
-        argument :required_with_default_arg, Int, required: true, default_value: 1
+        argument :required_with_default_arg, Int, default_value: 1
         argument :aliased_arg, String, required: false, as: :renamed
         argument :prepared_arg, Int, required: false, prepare: :multiply
         argument :prepared_by_proc_arg, Int, required: false, prepare: ->(val, context) { context[:multiply_by] * val }
@@ -74,7 +74,7 @@ describe GraphQL::Schema::Argument do
       end
 
       field :context_arg_test, [String], null: false do
-        argument :input, ContextInput, required: true
+        argument :input, ContextInput
       end
 
       def context_arg_test(input:)
@@ -355,7 +355,7 @@ describe GraphQL::Schema::Argument do
       err = assert_raises ArgumentError do
         Class.new(GraphQL::Schema::InputObject) do
           graphql_name 'MyInput'
-          argument :foo, String, required: true, deprecation_reason: "Don't use me"
+          argument :foo, String, deprecation_reason: "Don't use me"
         end
       end
       assert_equal "Required arguments cannot be deprecated: MyInput.foo.", err.message
@@ -381,7 +381,7 @@ describe GraphQL::Schema::Argument do
 
       query_type = Class.new(GraphQL::Schema::Object) do
         graphql_name "Query"
-        field :f, String, null: true do
+        field :f, String do
           argument :arg, input_obj, required: false
         end
       end
@@ -440,7 +440,7 @@ describe GraphQL::Schema::Argument do
       query_type = Class.new(GraphQL::Schema::Object) do
         graphql_name "Query"
         field :f1, Integer, null: false do
-          argument :arg1, Integer, default_value: nil, required: true
+          argument :arg1, Integer, default_value: nil
         end
       end
 
@@ -462,7 +462,7 @@ describe GraphQL::Schema::Argument do
       query_type = Class.new(GraphQL::Schema::Object) do
         graphql_name "Query"
         field :f1, Integer, null: false do
-          argument :input, input_obj, required: true
+          argument :input, input_obj
         end
       end
 

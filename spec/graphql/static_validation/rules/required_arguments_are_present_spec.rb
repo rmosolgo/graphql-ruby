@@ -73,8 +73,8 @@ describe GraphQL::StaticValidation::RequiredArgumentsArePresent do
 
   describe "when a required arg is hidden" do
     class Query < GraphQL::Schema::Object
-      field :int, Integer, null: true do
-        argument :input, Integer, required: true do
+      field :int, Integer do
+        argument :input, Integer do
           def visible?(*)
             false
           end

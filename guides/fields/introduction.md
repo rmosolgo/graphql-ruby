@@ -34,9 +34,9 @@ The second argument to `field(...)` is the return type. This can be:
 - A GraphQL type from your application
 - An _array_ of any of the above, which denotes a {% internal_link "list type", "/type_definitions/lists" %}.
 
-{% internal_link "Nullability", "/type_definitions/non_nulls" %} is expressed with the required `null:` keyword:
+{% internal_link "Nullability", "/type_definitions/non_nulls" %} is expressed with the `null:` keyword:
 
-- `null: true` means that the field _may_ return `nil`
+- `null: true` (default) means that the field _may_ return `nil`
 - `null: false` means the field is non-nullable; it may not return `nil`. If the implementation returns `nil`, GraphQL-Ruby will return an error to the client.
 
 Additionally, list types maybe nullable by adding `[..., null: true]` to the definition.
@@ -44,10 +44,10 @@ Additionally, list types maybe nullable by adding `[..., null: true]` to the def
 Here are some examples:
 
 ```ruby
-field :name, String, null: true # `String`, may return a `String` or `nil`
+field :name, String # `String`, may return a `String` or `nil`
 field :id, ID, null: false # `ID!`, always returns an `ID`, never `nil`
 field :teammates, [Types::User], null: false # `[User!]!`, always returns a list containing `User`s
-field :scores, [Integer, null: true], null: true # `[Int]`, may return a list or `nil`, the list may contain a mix of `Integer`s and `nil`s
+field :scores, [Integer, null: true] # `[Int]`, may return a list or `nil`, the list may contain a mix of `Integer`s and `nil`s
 ```
 
 ### Field Documentation
@@ -73,7 +73,7 @@ end
 __Deprecated__ fields can be marked by adding a `deprecation_reason:` keyword argument:
 
 ```ruby
-field :email, String, null: true,
+field :email, String,
   deprecation_reason: "Users may have multiple emails, use `User.emails` instead."
 ```
 

@@ -41,7 +41,9 @@ module GraphQL
     alias :graphql_name :name
     # Future-compatible alias
     # @see {GraphQL::SchemaMember}
-    alias :graphql_definition :itself
+    def graphql_definition(silence_deprecation_warning: false)
+      itself
+    end
 
     def type_class
       metadata[:type_class]
@@ -194,7 +196,7 @@ module GraphQL
         resolve_related_type(Object.const_get(type_arg))
       else
         if type_arg.respond_to?(:graphql_definition)
-          type_arg.graphql_definition
+          type_arg.graphql_definition(silence_deprecation_warning: true)
         else
           type_arg
         end

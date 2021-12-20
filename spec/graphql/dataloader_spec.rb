@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require "spec_helper"
+require "fiber"
 
 describe GraphQL::Dataloader do
   class FiberSchema < GraphQL::Schema
@@ -139,48 +140,48 @@ describe GraphQL::Dataloader do
         Database.mget(["5", "6"])
       end
 
-      field :ingredient, Ingredient, null: true do
-        argument :id, ID, required: true
+      field :ingredient, Ingredient do
+        argument :id, ID
       end
 
       def ingredient(id:)
         dataloader.with(DataObject).load(id)
       end
 
-      field :ingredient_by_name, Ingredient, null: true do
-        argument :name, String, required: true
+      field :ingredient_by_name, Ingredient do
+        argument :name, String
       end
 
       def ingredient_by_name(name:)
         dataloader.with(DataObject, :name).load(name)
       end
 
-      field :nested_ingredient, Ingredient, null: true do
-        argument :id, ID, required: true
+      field :nested_ingredient, Ingredient do
+        argument :id, ID
       end
 
       def nested_ingredient(id:)
         dataloader.with(NestedDataObject).load(id)
       end
 
-      field :slow_recipe, Recipe, null: true do
-        argument :id, ID, required: true
+      field :slow_recipe, Recipe do
+        argument :id, ID
       end
 
       def slow_recipe(id:)
         dataloader.with(SlowDataObject, id).load(id)
       end
 
-      field :recipe, Recipe, null: true do
-        argument :id, ID, required: true, loads: Recipe, as: :recipe
+      field :recipe, Recipe do
+        argument :id, ID, loads: Recipe, as: :recipe
       end
 
       def recipe(recipe:)
         recipe
       end
 
-      field :key_ingredient, Ingredient, null: true do
-        argument :id, ID, required: true
+      field :key_ingredient, Ingredient do
+        argument :id, ID
       end
 
       def key_ingredient(id:)
@@ -188,12 +189,12 @@ describe GraphQL::Dataloader do
       end
 
       class RecipeIngredientInput < GraphQL::Schema::InputObject
-        argument :id, ID, required: true
-        argument :ingredient_number, Int, required: true
+        argument :id, ID
+        argument :ingredient_number, Int
       end
 
-      field :recipe_ingredient, Ingredient, null: true do
-        argument :recipe, RecipeIngredientInput, required: true
+      field :recipe_ingredient, Ingredient do
+        argument :recipe, RecipeIngredientInput
       end
 
       def recipe_ingredient(recipe:)
@@ -203,9 +204,9 @@ describe GraphQL::Dataloader do
         dataloader.with(DataObject).load(ingredient_id)
       end
 
-      field :common_ingredients, [Ingredient], null: true do
-        argument :recipe_1_id, ID, required: true
-        argument :recipe_2_id, ID, required: true
+      field :common_ingredients, [Ingredient] do
+        argument :recipe_1_id, ID
+        argument :recipe_2_id, ID
       end
 
       def common_ingredients(recipe_1_id:, recipe_2_id:)
@@ -218,8 +219,8 @@ describe GraphQL::Dataloader do
       end
 
       field :common_ingredients_with_load, [Ingredient], null: false do
-        argument :recipe_1_id, ID, required: true, loads: Recipe
-        argument :recipe_2_id, ID, required: true, loads: Recipe
+        argument :recipe_1_id, ID, loads: Recipe
+        argument :recipe_2_id, ID, loads: Recipe
       end
 
       def common_ingredients_with_load(recipe_1:, recipe_2:)
@@ -229,10 +230,10 @@ describe GraphQL::Dataloader do
 
       field :common_ingredients_from_input_object, [Ingredient], null: false do
         class CommonIngredientsInput < GraphQL::Schema::InputObject
-          argument :recipe_1_id, ID, required: true, loads: Recipe
-          argument :recipe_2_id, ID, required: true, loads: Recipe
+          argument :recipe_1_id, ID, loads: Recipe
+          argument :recipe_2_id, ID, loads: Recipe
         end
-        argument :input, CommonIngredientsInput, required: true
+        argument :input, CommonIngredientsInput
       end
 
 
@@ -243,9 +244,9 @@ describe GraphQL::Dataloader do
         dataloader.with(DataObject).load_all(common_ids)
       end
 
-      field :ingredient_with_custom_batch_key, Ingredient, null: true do
-        argument :id, ID, required: true
-        argument :batch_key, String, required: true
+      field :ingredient_with_custom_batch_key, Ingredient do
+        argument :id, ID
+        argument :batch_key, String
       end
 
       def ingredient_with_custom_batch_key(id:, batch_key:)
@@ -256,7 +257,7 @@ describe GraphQL::Dataloader do
     query(Query)
 
     class Mutation1 < GraphQL::Schema::Mutation
-      argument :argument_1, String, required: true, prepare: ->(val, ctx) {
+      argument :argument_1, String, prepare: ->(val, ctx) {
         raise FieldTestError
       }
 
@@ -266,7 +267,7 @@ describe GraphQL::Dataloader do
     end
 
     class Mutation2 < GraphQL::Schema::Mutation
-      argument :argument_2, String, required: true, prepare: ->(val, ctx) {
+      argument :argument_2, String, prepare: ->(val, ctx) {
         raise FieldTestError
       }
 
@@ -306,263 +307,6 @@ describe GraphQL::Dataloader do
     end
   end
 
-  def database_log
-    FiberSchema::Database.log
-  end
-
-  before do
-    database_log.clear
-  end
-
-  it "Works with request(...)" do
-    res = FiberSchema.execute <<-GRAPHQL
-    {
-      commonIngredients(recipe1Id: 5, recipe2Id: 6) {
-        name
-      }
-    }
-    GRAPHQL
-
-    expected_data = {
-      "data" => {
-        "commonIngredients" => [
-          { "name" => "Corn" },
-          { "name" => "Butter" },
-        ]
-      }
-    }
-    assert_equal expected_data, res
-    assert_equal [[:mget, ["5", "6"]], [:mget, ["2", "3"]]], database_log
-  end
-
-  it "batch-loads" do
-    res = FiberSchema.execute <<-GRAPHQL
-    {
-      i1: ingredient(id: 1) { id name }
-      i2: ingredient(id: 2) { name }
-      r1: recipe(id: 5) {
-        ingredients { name }
-      }
-      ri1: recipeIngredient(recipe: { id: 6, ingredientNumber: 3 }) {
-        name
-      }
-    }
-    GRAPHQL
-
-    expected_data = {
-      "i1" => { "id" => "1", "name" => "Wheat" },
-      "i2" => { "name" => "Corn" },
-      "r1" => {
-        "ingredients" => [
-          { "name" => "Wheat" },
-          { "name" => "Corn" },
-          { "name" => "Butter" },
-          { "name" => "Baking Soda" },
-        ],
-      },
-      "ri1" => {
-        "name" => "Cheese",
-      },
-    }
-    assert_equal(expected_data, res["data"])
-
-    expected_log = [
-      [:mget, [
-        "1", "2",           # The first 2 ingredients
-        "5",                # The first recipe
-        "6",                # recipeIngredient recipeId
-      ]],
-      [:mget, [
-        "3", "4",           # The two unfetched ingredients the first recipe
-        "7",                # recipeIngredient ingredient_id
-      ]],
-    ]
-    assert_equal expected_log, database_log
-  end
-
-  it "caches and batch-loads across a multiplex" do
-    context = {}
-    result = FiberSchema.multiplex([
-      { query: "{ i1: ingredient(id: 1) { name } i2: ingredient(id: 2) { name } }", },
-      { query: "{ i2: ingredient(id: 2) { name } r1: recipe(id: 5) { ingredients { name } } }", },
-      { query: "{ i1: ingredient(id: 1) { name } ri1: recipeIngredient(recipe: { id: 5, ingredientNumber: 2 }) { name } }", },
-    ], context: context)
-
-    expected_result = [
-      {"data"=>{"i1"=>{"name"=>"Wheat"}, "i2"=>{"name"=>"Corn"}}},
-      {"data"=>{"i2"=>{"name"=>"Corn"}, "r1"=>{"ingredients"=>[{"name"=>"Wheat"}, {"name"=>"Corn"}, {"name"=>"Butter"}, {"name"=>"Baking Soda"}]}}},
-      {"data"=>{"i1"=>{"name"=>"Wheat"}, "ri1"=>{"name"=>"Corn"}}},
-    ]
-    assert_equal expected_result, result
-    expected_log = [
-      [:mget, ["1", "2", "5"]],
-      [:mget, ["3", "4"]],
-    ]
-    assert_equal expected_log, database_log
-  end
-
-  it "works with calls within sources" do
-    res = FiberSchema.execute <<-GRAPHQL
-    {
-      i1: nestedIngredient(id: 1) { name }
-      i2: nestedIngredient(id: 2) { name }
-    }
-    GRAPHQL
-
-    expected_data = { "i1" => { "name" => "Wheat" }, "i2" => { "name" => "Corn" } }
-    assert_equal expected_data, res["data"]
-    assert_equal [[:mget, ["1", "2"]]], database_log
-  end
-
-  it "works with batch parameters" do
-    res = FiberSchema.execute <<-GRAPHQL
-    {
-      i1: ingredientByName(name: "Butter") { id }
-      i2: ingredientByName(name: "Corn") { id }
-      i3: ingredientByName(name: "Gummi Bears") { id }
-    }
-    GRAPHQL
-
-    expected_data = {
-      "i1" => { "id" => "3" },
-      "i2" => { "id" => "2" },
-      "i3" => nil,
-    }
-    assert_equal expected_data, res["data"]
-    assert_equal [[:find_by, :name, ["Butter", "Corn", "Gummi Bears"]]], database_log
-  end
-
-  it "works with manual parallelism" do
-    start = Time.now.to_f
-    FiberSchema.execute <<-GRAPHQL
-    {
-      i1: slowRecipe(id: 5) { slowIngredients { name } }
-      i2: slowRecipe(id: 6) { slowIngredients { name } }
-    }
-    GRAPHQL
-    finish = Time.now.to_f
-
-    # Each load slept for 0.5 second, so sequentially, this would have been 2s sequentially
-    assert_in_delta 1, finish - start, 0.1, "Load threads are executed in parallel"
-    expected_log = [
-      # These were separated because of different recipe IDs:
-      [:mget, ["5"]],
-      [:mget, ["6"]],
-      # These were cached separately because of different recipe IDs:
-      [:mget, ["2", "3", "7"]],
-      [:mget, ["1", "2", "3", "4"]],
-    ]
-    # Sort them because threads may have returned in slightly different order
-    assert_equal expected_log.sort, database_log.sort
-  end
-
-  it "Works with multiple-field selections and __typename" do
-    query_str = <<-GRAPHQL
-    {
-      ingredient(id: 1) {
-        __typename
-        name
-      }
-    }
-    GRAPHQL
-
-    res = FiberSchema.execute(query_str)
-    expected_data = {
-      "ingredient" => {
-        "__typename" => "Grain",
-        "name" => "Wheat",
-      }
-    }
-    assert_equal expected_data, res["data"]
-  end
-
-  it "Works when the parent field didn't yield" do
-    query_str = <<-GRAPHQL
-    {
-      recipes {
-        ingredients {
-          name
-        }
-      }
-    }
-    GRAPHQL
-
-    res = FiberSchema.execute(query_str)
-    expected_data = {
-      "recipes" =>[
-        { "ingredients" => [
-          {"name"=>"Wheat"},
-          {"name"=>"Corn"},
-          {"name"=>"Butter"},
-          {"name"=>"Baking Soda"}
-        ]},
-        { "ingredients" => [
-          {"name"=>"Corn"},
-          {"name"=>"Butter"},
-          {"name"=>"Cheese"}
-        ]},
-      ]
-    }
-    assert_equal expected_data, res["data"]
-
-    expected_log = [
-      [:mget, ["5", "6"]],
-      [:mget, ["1", "2", "3", "4", "7"]],
-    ]
-    assert_equal expected_log, database_log
-  end
-
-  it "loads arguments in batches, even with request" do
-    query_str = <<-GRAPHQL
-    {
-      commonIngredientsWithLoad(recipe1Id: 5, recipe2Id: 6) {
-        name
-      }
-    }
-    GRAPHQL
-
-    res = FiberSchema.execute(query_str)
-    expected_data = {
-      "commonIngredientsWithLoad" => [
-        {"name"=>"Corn"},
-        {"name"=>"Butter"},
-      ]
-    }
-    assert_equal expected_data, res["data"]
-
-    expected_log = [
-      [:mget, ["5", "6"]],
-      [:mget, ["2", "3"]],
-    ]
-    assert_equal expected_log, database_log
-
-    # Run the same test, but using `.request` from object_from_id
-    database_log.clear
-    res2 = FiberSchema.execute(query_str, context: { use_request: true })
-    assert_equal expected_data, res2["data"]
-    assert_equal expected_log, database_log
-  end
-
-  it "works with sources that use keyword arguments in the initializer" do
-    query_str = <<-GRAPHQL
-    {
-      keyIngredient(id: 1) {
-        __typename
-        name
-      }
-    }
-    GRAPHQL
-
-    res = FiberSchema.execute(query_str)
-    expected_data = {
-      "keyIngredient" => {
-        "__typename" => "Grain",
-        "name" => "Wheat",
-      }
-    }
-    assert_equal expected_data, res["data"]
-  end
-
   class UsageAnalyzer < GraphQL::Analysis::AST::Analyzer
     def initialize(query)
       @query = query
@@ -584,89 +328,428 @@ describe GraphQL::Dataloader do
     end
   end
 
-  it "Works with analyzing arguments with `loads:`, even with .request" do
-    query_str = <<-GRAPHQL
-    {
-      commonIngredientsWithLoad(recipe1Id: 5, recipe2Id: 6) {
-        name
-      }
-    }
-    GRAPHQL
-    query = GraphQL::Query.new(FiberSchema, query_str)
-    results = GraphQL::Analysis::AST.analyze_query(query, [UsageAnalyzer])
-    expected_results = [
-      ["commonIngredientsWithLoad", [:recipe_1, :recipe_2]],
-      ["name", []],
-    ]
-    assert_equal expected_results, results.first.to_a
-
-    query2 = GraphQL::Query.new(FiberSchema, query_str, context: { use_request: true })
-    result2 = GraphQL::Analysis::AST.analyze_query(query2, [UsageAnalyzer])
-    assert_equal expected_results, result2.first.to_a
+  def database_log
+    FiberSchema::Database.log
   end
 
-  it "Works with input objects, load and request" do
-    query_str = <<-GRAPHQL
-    {
-      commonIngredientsFromInputObject(input: { recipe1Id: 5, recipe2Id: 6 }) {
-        name
-      }
-    }
-    GRAPHQL
-    res = FiberSchema.execute(query_str)
-    expected_data = {
-      "commonIngredientsFromInputObject" => [
-        {"name"=>"Corn"},
-        {"name"=>"Butter"},
-      ]
-    }
-    assert_equal expected_data, res["data"]
-
-    expected_log = [
-      [:mget, ["5", "6"]],
-      [:mget, ["2", "3"]],
-    ]
-    assert_equal expected_log, database_log
-
-
-    # Run the same test, but using `.request` from object_from_id
+  before do
     database_log.clear
-    res2 = FiberSchema.execute(query_str, context: { use_request: true })
-    assert_equal expected_data, res2["data"]
-    assert_equal expected_log, database_log
   end
 
-  it "Works with input objects using variables, load and request" do
-    query_str = <<-GRAPHQL
-    query($input: CommonIngredientsInput!) {
-      commonIngredientsFromInputObject(input: $input) {
-        name
-      }
-    }
-    GRAPHQL
-    res = FiberSchema.execute(query_str, variables: { input: { recipe1Id: 5, recipe2Id: 6 }})
-    expected_data = {
-      "commonIngredientsFromInputObject" => [
-        {"name"=>"Corn"},
-        {"name"=>"Butter"},
-      ]
-    }
-    assert_equal expected_data, res["data"]
+  module DataloaderAssertions
+    def self.included(child_class)
+      child_class.class_eval do
+        it "Works with request(...)" do
+          res = schema.execute <<-GRAPHQL
+          {
+            commonIngredients(recipe1Id: 5, recipe2Id: 6) {
+              name
+            }
+          }
+          GRAPHQL
 
-    expected_log = [
-      [:mget, ["5", "6"]],
-      [:mget, ["2", "3"]],
-    ]
-    assert_equal expected_log, database_log
+          expected_data = {
+            "data" => {
+              "commonIngredients" => [
+                { "name" => "Corn" },
+                { "name" => "Butter" },
+              ]
+            }
+          }
+          assert_equal expected_data, res
+          assert_equal [[:mget, ["5", "6"]], [:mget, ["2", "3"]]], database_log
+        end
+
+        it "batch-loads" do
+          res = schema.execute <<-GRAPHQL
+          {
+            i1: ingredient(id: 1) { id name }
+            i2: ingredient(id: 2) { name }
+            r1: recipe(id: 5) {
+              ingredients { name }
+            }
+            ri1: recipeIngredient(recipe: { id: 6, ingredientNumber: 3 }) {
+              name
+            }
+          }
+          GRAPHQL
+
+          expected_data = {
+            "i1" => { "id" => "1", "name" => "Wheat" },
+            "i2" => { "name" => "Corn" },
+            "r1" => {
+              "ingredients" => [
+                { "name" => "Wheat" },
+                { "name" => "Corn" },
+                { "name" => "Butter" },
+                { "name" => "Baking Soda" },
+              ],
+            },
+            "ri1" => {
+              "name" => "Cheese",
+            },
+          }
+          assert_equal(expected_data, res["data"])
+
+          expected_log = [
+            [:mget, [
+              "1", "2",           # The first 2 ingredients
+              "5",                # The first recipe
+              "6",                # recipeIngredient recipeId
+            ]],
+            [:mget, [
+              "3", "4",           # The two unfetched ingredients the first recipe
+              "7",                # recipeIngredient ingredient_id
+            ]],
+          ]
+          assert_equal expected_log, database_log
+        end
+
+        it "caches and batch-loads across a multiplex" do
+          context = {}
+          result = schema.multiplex([
+            { query: "{ i1: ingredient(id: 1) { name } i2: ingredient(id: 2) { name } }", },
+            { query: "{ i2: ingredient(id: 2) { name } r1: recipe(id: 5) { ingredients { name } } }", },
+            { query: "{ i1: ingredient(id: 1) { name } ri1: recipeIngredient(recipe: { id: 5, ingredientNumber: 2 }) { name } }", },
+          ], context: context)
+
+          expected_result = [
+            {"data"=>{"i1"=>{"name"=>"Wheat"}, "i2"=>{"name"=>"Corn"}}},
+            {"data"=>{"i2"=>{"name"=>"Corn"}, "r1"=>{"ingredients"=>[{"name"=>"Wheat"}, {"name"=>"Corn"}, {"name"=>"Butter"}, {"name"=>"Baking Soda"}]}}},
+            {"data"=>{"i1"=>{"name"=>"Wheat"}, "ri1"=>{"name"=>"Corn"}}},
+          ]
+          assert_equal expected_result, result
+          expected_log = [
+            [:mget, ["1", "2", "5"]],
+            [:mget, ["3", "4"]],
+          ]
+          assert_equal expected_log, database_log
+        end
+
+        it "works with calls within sources" do
+          res = schema.execute <<-GRAPHQL
+          {
+            i1: nestedIngredient(id: 1) { name }
+            i2: nestedIngredient(id: 2) { name }
+          }
+          GRAPHQL
+
+          expected_data = { "i1" => { "name" => "Wheat" }, "i2" => { "name" => "Corn" } }
+          assert_equal expected_data, res["data"]
+          assert_equal [[:mget, ["1", "2"]]], database_log
+        end
+
+        it "works with batch parameters" do
+          res = schema.execute <<-GRAPHQL
+          {
+            i1: ingredientByName(name: "Butter") { id }
+            i2: ingredientByName(name: "Corn") { id }
+            i3: ingredientByName(name: "Gummi Bears") { id }
+          }
+          GRAPHQL
+
+          expected_data = {
+            "i1" => { "id" => "3" },
+            "i2" => { "id" => "2" },
+            "i3" => nil,
+          }
+          assert_equal expected_data, res["data"]
+          assert_equal [[:find_by, :name, ["Butter", "Corn", "Gummi Bears"]]], database_log
+        end
+
+        it "works with manual parallelism" do
+          start = Time.now.to_f
+          schema.execute <<-GRAPHQL
+          {
+            i1: slowRecipe(id: 5) { slowIngredients { name } }
+            i2: slowRecipe(id: 6) { slowIngredients { name } }
+          }
+          GRAPHQL
+          finish = Time.now.to_f
+
+          # Each load slept for 0.5 second, so sequentially, this would have been 2s sequentially
+          assert_in_delta 1, finish - start, 0.1, "Load threads are executed in parallel"
+          expected_log = [
+            # These were separated because of different recipe IDs:
+            [:mget, ["5"]],
+            [:mget, ["6"]],
+            # These were cached separately because of different recipe IDs:
+            [:mget, ["2", "3", "7"]],
+            [:mget, ["1", "2", "3", "4"]],
+          ]
+          # Sort them because threads may have returned in slightly different order
+          assert_equal expected_log.sort, database_log.sort
+        end
+
+        it "Works with multiple-field selections and __typename" do
+          query_str = <<-GRAPHQL
+          {
+            ingredient(id: 1) {
+              __typename
+              name
+            }
+          }
+          GRAPHQL
+
+          res = schema.execute(query_str)
+          expected_data = {
+            "ingredient" => {
+              "__typename" => "Grain",
+              "name" => "Wheat",
+            }
+          }
+          assert_equal expected_data, res["data"]
+        end
+
+        it "Works when the parent field didn't yield" do
+          query_str = <<-GRAPHQL
+          {
+            recipes {
+              ingredients {
+                name
+              }
+            }
+          }
+          GRAPHQL
+
+          res = schema.execute(query_str)
+          expected_data = {
+            "recipes" =>[
+              { "ingredients" => [
+                {"name"=>"Wheat"},
+                {"name"=>"Corn"},
+                {"name"=>"Butter"},
+                {"name"=>"Baking Soda"}
+              ]},
+              { "ingredients" => [
+                {"name"=>"Corn"},
+                {"name"=>"Butter"},
+                {"name"=>"Cheese"}
+              ]},
+            ]
+          }
+          assert_equal expected_data, res["data"]
+
+          expected_log = [
+            [:mget, ["5", "6"]],
+            [:mget, ["1", "2", "3", "4", "7"]],
+          ]
+          assert_equal expected_log, database_log
+        end
+
+        it "loads arguments in batches, even with request" do
+          query_str = <<-GRAPHQL
+          {
+            commonIngredientsWithLoad(recipe1Id: 5, recipe2Id: 6) {
+              name
+            }
+          }
+          GRAPHQL
+
+          res = schema.execute(query_str)
+          expected_data = {
+            "commonIngredientsWithLoad" => [
+              {"name"=>"Corn"},
+              {"name"=>"Butter"},
+            ]
+          }
+          assert_equal expected_data, res["data"]
+
+          expected_log = [
+            [:mget, ["5", "6"]],
+            [:mget, ["2", "3"]],
+          ]
+          assert_equal expected_log, database_log
+
+          # Run the same test, but using `.request` from object_from_id
+          database_log.clear
+          res2 = schema.execute(query_str, context: { use_request: true })
+          assert_equal expected_data, res2["data"]
+          assert_equal expected_log, database_log
+        end
+
+        it "works with sources that use keyword arguments in the initializer" do
+          query_str = <<-GRAPHQL
+          {
+            keyIngredient(id: 1) {
+              __typename
+              name
+            }
+          }
+          GRAPHQL
+
+          res = schema.execute(query_str)
+          expected_data = {
+            "keyIngredient" => {
+              "__typename" => "Grain",
+              "name" => "Wheat",
+            }
+          }
+          assert_equal expected_data, res["data"]
+        end
+
+        it "Works with analyzing arguments with `loads:`, even with .request" do
+          query_str = <<-GRAPHQL
+          {
+            commonIngredientsWithLoad(recipe1Id: 5, recipe2Id: 6) {
+              name
+            }
+          }
+          GRAPHQL
+          query = GraphQL::Query.new(schema, query_str)
+          results = GraphQL::Analysis::AST.analyze_query(query, [UsageAnalyzer])
+          expected_results = [
+            ["commonIngredientsWithLoad", [:recipe_1, :recipe_2]],
+            ["name", []],
+          ]
+          assert_equal expected_results, results.first.to_a
+
+          query2 = GraphQL::Query.new(schema, query_str, context: { use_request: true })
+          result2 = GraphQL::Analysis::AST.analyze_query(query2, [UsageAnalyzer])
+          assert_equal expected_results, result2.first.to_a
+        end
+
+        it "Works with input objects, load and request" do
+          query_str = <<-GRAPHQL
+          {
+            commonIngredientsFromInputObject(input: { recipe1Id: 5, recipe2Id: 6 }) {
+              name
+            }
+          }
+          GRAPHQL
+          res = schema.execute(query_str)
+          expected_data = {
+            "commonIngredientsFromInputObject" => [
+              {"name"=>"Corn"},
+              {"name"=>"Butter"},
+            ]
+          }
+          assert_equal expected_data, res["data"]
+
+          expected_log = [
+            [:mget, ["5", "6"]],
+            [:mget, ["2", "3"]],
+          ]
+          assert_equal expected_log, database_log
 
 
-    # Run the same test, but using `.request` from object_from_id
-    database_log.clear
-    res2 = FiberSchema.execute(query_str, context: { use_request: true }, variables: { input: { recipe1Id: 5, recipe2Id: 6 }})
-    assert_equal expected_data, res2["data"]
-    assert_equal expected_log, database_log
+          # Run the same test, but using `.request` from object_from_id
+          database_log.clear
+          res2 = schema.execute(query_str, context: { use_request: true })
+          assert_equal expected_data, res2["data"]
+          assert_equal expected_log, database_log
+        end
+
+        it "Works with input objects using variables, load and request" do
+          query_str = <<-GRAPHQL
+          query($input: CommonIngredientsInput!) {
+            commonIngredientsFromInputObject(input: $input) {
+              name
+            }
+          }
+          GRAPHQL
+          res = schema.execute(query_str, variables: { input: { recipe1Id: 5, recipe2Id: 6 }})
+          expected_data = {
+            "commonIngredientsFromInputObject" => [
+              {"name"=>"Corn"},
+              {"name"=>"Butter"},
+            ]
+          }
+          assert_equal expected_data, res["data"]
+
+          expected_log = [
+            [:mget, ["5", "6"]],
+            [:mget, ["2", "3"]],
+          ]
+          assert_equal expected_log, database_log
+
+
+          # Run the same test, but using `.request` from object_from_id
+          database_log.clear
+          res2 = schema.execute(query_str, context: { use_request: true }, variables: { input: { recipe1Id: 5, recipe2Id: 6 }})
+          assert_equal expected_data, res2["data"]
+          assert_equal expected_log, database_log
+        end
+
+
+        it "supports general usage" do
+          a = b = c = nil
+
+          res = GraphQL::Dataloader.with_dataloading { |dataloader|
+            dataloader.append_job {
+              a = dataloader.with(FiberSchema::DataObject).load("1")
+            }
+
+            dataloader.append_job {
+              b = dataloader.with(FiberSchema::DataObject).load("1")
+            }
+
+            dataloader.append_job {
+              r1 = dataloader.with(FiberSchema::DataObject).request("2")
+              r2 = dataloader.with(FiberSchema::DataObject).request("3")
+              c = [
+                r1.load,
+                r2.load
+              ]
+            }
+
+            :finished
+          }
+
+          assert_equal :finished, res
+          assert_equal [[:mget, ["1", "2", "3"]]], database_log
+          assert_equal "Wheat", a[:name]
+          assert_equal "Wheat", b[:name]
+          assert_equal ["Corn", "Butter"], c.map { |d| d[:name] }
+        end
+
+        it "uses .batch_key_for in source classes" do
+          query_str = <<-GRAPHQL
+          {
+            i1: ingredientWithCustomBatchKey(id: 1, batchKey: "abc") { name }
+            i2: ingredientWithCustomBatchKey(id: 2, batchKey: "def") { name }
+            i3: ingredientWithCustomBatchKey(id: 3, batchKey: "ghi") { name }
+          }
+          GRAPHQL
+
+          res = schema.execute(query_str)
+          expected_data = { "i1" => { "name" => "Wheat" }, "i2" => { "name" => "Corn" }, "i3" => { "name" => "Butter" } }
+          assert_equal expected_data, res["data"]
+          expected_log = [
+            # Each batch key is given to the source class:
+            [:batch_key_for, "abc"],
+            [:batch_key_for, "def"],
+            [:batch_key_for, "ghi"],
+            # But since they return the same value,
+            # all keys are fetched in the same call:
+            [:mget, ["1", "2", "3"]]
+          ]
+          assert_equal expected_log, database_log
+        end
+      end
+    end
   end
 
+  let(:schema) { FiberSchema }
+  include DataloaderAssertions
+
+  if Fiber.respond_to?(:scheduler)
+    describe "nonblocking: true" do
+      let(:schema) { Class.new(FiberSchema) do
+        use GraphQL::Dataloader, nonblocking: true
+      end }
+
+      before do
+        Fiber.set_scheduler(::DummyScheduler.new)
+      end
+
+      after do
+        Fiber.set_scheduler(nil)
+      end
+
+      include DataloaderAssertions
+    end
+  end
 
   describe "example from #3314" do
     module Example
@@ -681,7 +764,7 @@ describe GraphQL::Dataloader do
       end
 
       class QueryType < GraphQL::Schema::Object
-        field :foo, Example::FooType, null: true do
+        field :foo, Example::FooType do
           argument :foo_id, GraphQL::Types::ID, required: false, loads: Example::FooType
           argument :use_load, GraphQL::Types::Boolean, required: false, default_value: false
         end
@@ -809,6 +892,31 @@ describe GraphQL::Dataloader do
     assert :world, value
   end
 
+  it "uses context[:dataloader] when given" do
+    res = Class.new(GraphQL::Schema) do
+      query_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Query"
+      end
+      query(query_type)
+    end.execute("{ __typename }")
+    assert_instance_of GraphQL::Dataloader::NullDataloader, res.context.dataloader
+    res = FiberSchema.execute("{ __typename }")
+    assert_instance_of GraphQL::Dataloader, res.context.dataloader
+    refute res.context.dataloader.nonblocking?
+    res = FiberSchema.execute("{ __typename }", context: { dataloader: :blah } )
+    assert_equal :blah, res.context.dataloader
+
+    if Fiber.respond_to?(:scheduler)
+      Fiber.set_scheduler(::DummyScheduler.new)
+      res = FiberSchema.execute("{ __typename }", context: { dataloader: GraphQL::Dataloader.new(nonblocking: true) })
+      assert res.context.dataloader.nonblocking?
+
+      res = FiberSchema.multiplex([{ query: "{ __typename }" }], context: { dataloader: GraphQL::Dataloader.new(nonblocking: true) })
+      assert res[0].context.dataloader.nonblocking?
+      Fiber.set_scheduler(nil)
+    end
+  end
+
   describe "#run_isolated" do
     module RunIsolated
       class CountSource < GraphQL::Dataloader::Source
@@ -884,8 +992,8 @@ describe GraphQL::Dataloader do
       end
 
       class QueryType < GraphQL::Schema::Object
-        field :thread_var, ThreadVariable::Type, null: true do
-          argument :key, GraphQL::Types::String, required: true
+        field :thread_var, ThreadVariable::Type do
+          argument :key, GraphQL::Types::String
         end
 
         def thread_var(key:)
@@ -921,61 +1029,6 @@ describe GraphQL::Dataloader do
     end
   end
 
-  it "supports general usage" do
-    a = b = c = nil
-
-    res = GraphQL::Dataloader.with_dataloading { |dataloader|
-      dataloader.append_job {
-        a = dataloader.with(FiberSchema::DataObject).load("1")
-      }
-
-      dataloader.append_job {
-        b = dataloader.with(FiberSchema::DataObject).load("1")
-      }
-
-      dataloader.append_job {
-        r1 = dataloader.with(FiberSchema::DataObject).request("2")
-        r2 = dataloader.with(FiberSchema::DataObject).request("3")
-        c = [
-          r1.load,
-          r2.load
-        ]
-      }
-
-      :finished
-    }
-
-    assert_equal :finished, res
-    assert_equal [[:mget, ["1", "2", "3"]]], database_log
-    assert_equal "Wheat", a[:name]
-    assert_equal "Wheat", b[:name]
-    assert_equal ["Corn", "Butter"], c.map { |d| d[:name] }
-  end
-
-  it "uses .batch_key_for in source classes" do
-    query_str = <<-GRAPHQL
-    {
-      i1: ingredientWithCustomBatchKey(id: 1, batchKey: "abc") { name }
-      i2: ingredientWithCustomBatchKey(id: 2, batchKey: "def") { name }
-      i3: ingredientWithCustomBatchKey(id: 3, batchKey: "ghi") { name }
-    }
-    GRAPHQL
-
-    res = FiberSchema.execute(query_str)
-    expected_data = { "i1" => { "name" => "Wheat" }, "i2" => { "name" => "Corn" }, "i3" => { "name" => "Butter" } }
-    assert_equal expected_data, res["data"]
-    expected_log = [
-      # Each batch key is given to the source class:
-      [:batch_key_for, "abc"],
-      [:batch_key_for, "def"],
-      [:batch_key_for, "ghi"],
-      # But since they return the same value,
-      # all keys are fetched in the same call:
-      [:mget, ["1", "2", "3"]]
-    ]
-    assert_equal expected_log, database_log
-  end
-
   describe "dataloader calls from inside sources" do
     class NestedDataloaderCallsSchema < GraphQL::Schema
       class Echo < GraphQL::Dataloader::Source
@@ -997,8 +1050,8 @@ describe GraphQL::Dataloader do
       end
 
       class QueryType < GraphQL::Schema::Object
-        field :nested, String, null: true
-        field :nested2, String, null: true
+        field :nested, String
+        field :nested2, String
 
         def nested
           dataloader.with(Nested).load("nested")

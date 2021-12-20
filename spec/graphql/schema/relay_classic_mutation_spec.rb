@@ -16,13 +16,23 @@ describe GraphQL::Schema::RelayClassicMutation do
     end
   end
 
+  describe ".field" do
+    it "removes inherited field definitions, creating one with the mutation as the owner" do
+      assert_equal Jazz::RenameEnsemble, Jazz::RenameEnsemble.fields["ensemble"].owner
+      assert_equal Jazz::RenameEnsemble, Jazz::RenameEnsemble.payload_type.fields["ensemble"].owner
+
+      assert_equal Jazz::RenameEnsembleAsBand, Jazz::RenameEnsembleAsBand.fields["ensemble"].owner
+      assert_equal Jazz::RenameEnsembleAsBand, Jazz::RenameEnsembleAsBand.payload_type.fields["ensemble"].owner
+    end
+  end
+
   describe ".input_type" do
     it "has a reference to the mutation" do
       mutation = Class.new(GraphQL::Schema::RelayClassicMutation) do
         graphql_name "Test"
       end
       assert_equal mutation, mutation.input_type.mutation
-      assert_equal mutation, mutation.input_type.graphql_definition.mutation
+      assert_equal mutation, mutation.input_type.graphql_definition(silence_deprecation_warning: true).mutation
     end
   end
 
@@ -308,12 +318,12 @@ describe GraphQL::Schema::RelayClassicMutation do
         module ResultInterface
           include GraphQL::Schema::Interface
           field :success, Boolean, null: false
-          field :notice, String, null: true
+          field :notice, String
         end
 
         module ErrorInterface
           include GraphQL::Schema::Interface
-          field :error, String, null: true
+          field :error, String
         end
 
         class BaseReturnType < GraphQL::Schema::Object
@@ -321,8 +331,8 @@ describe GraphQL::Schema::RelayClassicMutation do
         end
 
         class ReturnTypeWithInterfaceTest < GraphQL::Schema::RelayClassicMutation
-          field :name, String, null: true
           object_class BaseReturnType
+          field :name, String
 
           def resolve
             {
@@ -347,10 +357,9 @@ describe GraphQL::Schema::RelayClassicMutation do
 
       it 'makes the mutation type implement the interfaces' do
         mutation = MutationInterfaceSchema::ReturnTypeWithInterfaceTest
-        assert_equal(
-          [MutationInterfaceSchema::ResultInterface, MutationInterfaceSchema::ErrorInterface],
-          mutation.payload_type.interfaces
-        )
+        expected_interfaces = [MutationInterfaceSchema::ResultInterface, MutationInterfaceSchema::ErrorInterface]
+        actual_interfaces = mutation.payload_type.interfaces
+        assert_equal(expected_interfaces, actual_interfaces)
       end
 
       it "returns interface values and specific ones" do
@@ -510,6 +519,118 @@ describe GraphQL::Schema::RelayClassicMutation do
           end
         end
       end
+    end
+  end
+
+  describe "authorizing arguments from superclasses" do
+    class RelayClassicArgumentAuthSchema < GraphQL::Schema
+      class BaseArgument < GraphQL::Schema::Argument
+        def authorized?(_object, args, context)
+          authed_val = context[:authorized_value] ||= Hash.new { |h,k| h[k] = {} }
+          if (prev_val = authed_val[context[:current_path]][self.path])
+            raise "Duplicate `#authorized?` call on #{self.path} @ #{context[:current_path]} (was: #{prev_val.inspect}, is: #{args.inspect})"
+          end
+          authed_val[context[:current_path]][self.path] = args
+          authed = context[:authorized] ||= {}
+          authed[context[:current_path]] = super
+        end
+      end
+
+      class NameInput < GraphQL::Schema::InputObject
+        argument_class BaseArgument
+        argument :name, String
+      end
+
+      class NameOne < GraphQL::Schema::RelayClassicMutation
+        argument_class BaseArgument
+        argument :name, String, as: :name_one
+
+        field :name, String
+
+        def resolve(**arguments)
+          {
+            name: arguments[:name_one]
+          }
+        end
+      end
+
+      class NameTwo < GraphQL::Schema::RelayClassicMutation
+        input_type NameInput
+        field :name, String
+
+        def resolve(**arguments)
+          {
+            name: arguments[:name]
+          }
+        end
+      end
+
+      class NameThree < GraphQL::Schema::RelayClassicMutation
+        input_object_class NameInput
+        field :name, String
+
+        def resolve(**arguments)
+          {
+            name: arguments[:name]
+          }
+        end
+      end
+
+      class Thing < GraphQL::Schema::Object
+        field :name, String
+      end
+
+      class NameFour < GraphQL::Schema::RelayClassicMutation
+        argument_class BaseArgument
+        argument :thing_id, ID, loads: Thing
+
+        field :thing, Thing
+
+        def resolve(**arguments)
+          {
+            thing: arguments[:thing]
+          }
+        end
+      end
+
+      class Mutation < GraphQL::Schema::Object
+        field :name_one, mutation: NameOne
+        field :name_two, mutation: NameTwo
+        field :name_three, mutation: NameThree
+        field :name_four, mutation: NameFour
+      end
+
+      mutation(Mutation)
+
+      def self.object_from_id(id, ctx)
+        { name: id }
+      end
+
+      def self.resolve_type(abs_type, obj, ctx)
+        Thing
+      end
+    end
+
+    it "calls #authorized? on arguments defined on the mutation" do
+      res = RelayClassicArgumentAuthSchema.execute("mutation { nameOne(input: { name: \"Camry\" }) { name } }")
+      assert_equal true, res.context[:authorized][["nameOne"]]
+    end
+
+    it "calls #authorized? on arguments defined on the input_type" do
+      res = RelayClassicArgumentAuthSchema.execute("mutation { nameTwo(input: { name: \"Camry\" }) { name } }")
+      assert_equal true, res.context[:authorized][["nameTwo"]]
+    end
+
+    it "calls #authorized? on arguments defined on the inputObjectClass" do
+      res = RelayClassicArgumentAuthSchema.execute("mutation { nameThree(input: { name: \"Camry\" }) { name } }")
+      assert_equal true, res.context[:authorized][["nameThree"]]
+    end
+
+    it "calls #authorized? on loaded argument values" do
+      res = RelayClassicArgumentAuthSchema.execute("mutation { nameFour(input: { thingId: \"Corolla\" }) { thing { name } } }")
+      assert_equal true, res.context[:authorized][["nameFour"]]
+      assert_equal({ name: "Corolla"}, res.context[:authorized_value][["nameFour"]]["NameFour.thingId"])
+      assert_equal "Corolla", res["data"]["nameFour"]["thing"]["name"]
     end
   end
 end

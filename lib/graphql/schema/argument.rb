@@ -2,10 +2,6 @@
 module GraphQL
   class Schema
     class Argument
-      if !String.method_defined?(:-@)
-        using GraphQL::StringDedupBackport
-      end
-
       include GraphQL::Schema::Member::CachedGraphQLDefinition
       include GraphQL::Schema::Member::AcceptsDefinition
       include GraphQL::Schema::Member::HasPath
@@ -52,7 +48,7 @@ module GraphQL
       # @param directives [Hash{Class => Hash}]
       # @param deprecation_reason [String]
       # @param validates [Hash, nil] Options for building validators, if any should be applied
-      def initialize(arg_name = nil, type_expr = nil, desc = nil, required:, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NO_DEFAULT, as: nil, from_resolver: false, camelize: true, prepare: nil, method_access: true, owner:, validates: nil, directives: nil, deprecation_reason: nil, &definition_block)
+      def initialize(arg_name = nil, type_expr = nil, desc = nil, required: true, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NO_DEFAULT, as: nil, from_resolver: false, camelize: true, prepare: nil, method_access: true, owner:, validates: nil, directives: nil, deprecation_reason: nil, &definition_block)
         arg_name ||= name
         @name = -(camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s)
         @type_expr = type_expr || type
@@ -84,6 +80,10 @@ module GraphQL
             instance_eval(&definition_block)
           end
         end
+      end
+
+      def inspect
+        "#<#{self.class} #{path}: #{type.to_type_signature}#{description ? " @description=#{description.inspect}" : ""}>"
       end
 
       # @return [Object] the value used when the client doesn't provide a value for this argument
@@ -147,19 +147,14 @@ module GraphQL
             end
           end
         elsif as_type.kind.input_object?
-          as_type.arguments.each do |_name, input_obj_arg|
-            input_obj_arg = input_obj_arg.type_class
-            # TODO: this skips input objects whose values were alread replaced with application objects.
-            # See: https://github.com/rmosolgo/graphql-ruby/issues/2633
-            if value.is_a?(InputObject) && value.key?(input_obj_arg.keyword) && !input_obj_arg.authorized?(obj, value[input_obj_arg.keyword], ctx)
-              return false
-            end
-          end
+          return as_type.authorized?(obj, value, ctx)
         end
         # None of the early-return conditions were activated,
         # so this is authorized.
         true
       end
+
+      prepend Schema::Member::CachedGraphQLDefinition::DeprecatedToGraphQL
 
       def to_graphql
         argument = GraphQL::Argument.new

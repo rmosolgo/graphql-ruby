@@ -94,7 +94,7 @@ module GraphQL
 
         def on_field(node, parent)
           parent_type = @object_types.last
-          field_definition = @schema.get_field(parent_type, node.name)
+          field_definition = @schema.get_field(parent_type, node.name, @context.query.context)
           @field_definitions.push(field_definition)
           if !field_definition.nil?
             next_object_type = field_definition.type.unwrap
@@ -120,14 +120,14 @@ module GraphQL
           argument_defn = if (arg = @argument_definitions.last)
             arg_type = arg.type.unwrap
             if arg_type.kind.input_object?
-              arg_type.arguments[node.name]
+              @context.warden.get_argument(arg_type, node.name)
             else
               nil
             end
           elsif (directive_defn = @directive_definitions.last)
-            directive_defn.arguments[node.name]
+            @context.warden.get_argument(directive_defn, node.name)
           elsif (field_defn = @field_definitions.last)
-            field_defn.arguments[node.name]
+            @context.warden.get_argument(field_defn, node.name)
           else
             nil
           end
@@ -187,7 +187,7 @@ module GraphQL
 
         def on_fragment_with_type(node)
           object_type = if node.type
-            @schema.get_type(node.type.name)
+            @context.warden.get_type(node.type.name)
           else
             @object_types.last
           end

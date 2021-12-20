@@ -84,11 +84,11 @@ type Query {
         end
 
         class Query < GraphQL::Schema::Object
-          field :i, Int, null: true do
+          field :i, Int do
             directive Secret
           end
 
-          field :ssn, String, null: true do
+          field :ssn, String do
             directive Secret, top: true
           end
         end
@@ -100,7 +100,7 @@ type Query {
           end
           locations GraphQL::Schema::Directive::FIELD
 
-          argument :lang, LangEnum, required: true
+          argument :lang, LangEnum
         end
 
         query(Query)

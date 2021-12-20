@@ -17,6 +17,15 @@ describe GraphQL::Schema::Enum do
       assert_equal 7, enum.values.size
     end
 
+    it "returns defined enum values" do
+      v = nil
+      Class.new(enum) do
+        graphql_name "TestEnum"
+        v = value :PERCUSSION, "new description"
+      end
+      assert_instance_of Jazz::BaseEnumValue, v
+    end
+
     it "inherits values and description" do
       new_enum = Class.new(enum) do
         value :Nonsense
@@ -54,14 +63,14 @@ describe GraphQL::Schema::Enum do
   end
 
   it "uses a custom enum value class" do
-    enum_type = enum.to_graphql
+    enum_type = enum.deprecated_to_graphql
     value = enum_type.values["STRING"]
     assert_equal 1, value.metadata[:custom_setting]
   end
 
   describe ".to_graphql" do
     it "creates an EnumType" do
-      enum_type = enum.to_graphql
+      enum_type = enum.deprecated_to_graphql
       assert_equal "Family", enum_type.name
       assert_equal "Groups of musical instruments", enum_type.description
 
@@ -89,6 +98,26 @@ describe GraphQL::Schema::Enum do
       expected_names = ["Piano", "Organ"]
       result = Jazz::Schema.execute(query_str, variables: { family: "KEYS" })
       assert_equal expected_names, result["data"]["instruments"].map { |i| i["name"] }
+    end
+  end
+
+  describe "multiple values with the same name" do
+    class MultipleNameTestEnum < GraphQL::Schema::Enum
+      value "A"
+      value "B", value: :a
+      value "B", value: :b
+    end
+
+    it "doesn't allow it from enum_values" do
+      err = assert_raises GraphQL::Schema::DuplicateNamesError do
+        MultipleNameTestEnum.enum_values
+      end
+      expected_message = "Found two visible definitions for `MultipleNameTestEnum.B`: #<GraphQL::Schema::EnumValue MultipleNameTestEnum.B @value=:a>, #<GraphQL::Schema::EnumValue MultipleNameTestEnum.B @value=:b>"
+      assert_equal expected_message, err.message
+    end
+
+    it "returns them all in all_enum_value_definitions" do
+      assert_equal 3, MultipleNameTestEnum.all_enum_value_definitions.size
     end
   end
 
@@ -170,7 +199,7 @@ describe GraphQL::Schema::Enum do
           query = Class.new(GraphQL::Schema::Object) do
             graphql_name "Query"
             field :names, [String], null: false do
-              argument :things, [plural], required: true
+              argument :things, [plural]
             end
 
             def names(things:)
@@ -211,22 +240,6 @@ describe GraphQL::Schema::Enum do
           result.problems.first['explanation'],
           "Expected \"bad enum\" to be one of: COW, DONKEY, GOAT, REINDEER, SHEEP, YAK"
         )
-      end
-    end
-
-    describe "validates enum value name uniqueness" do
-      it "raises an exception when adding a duplicate enum value name" do
-        expected_message = "X is already defined for SomeEnum, please remove one of the definitions."
-
-        exception = assert_raises(ArgumentError) do
-          Class.new(GraphQL::Schema::Enum) do
-            graphql_name "SomeEnum"
-            value "X"
-            value "X"
-          end
-        end
-
-        assert_equal(expected_message, exception.message)
       end
     end
   end

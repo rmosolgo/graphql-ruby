@@ -92,6 +92,8 @@ module GraphQL
       end
     end
 
+    class DuplicateNamesError < GraphQL::Error; end
+
     class UnresolvedLateBoundTypeError < GraphQL::Error
       attr_reader :type
       def initialize(type:)
@@ -843,7 +845,7 @@ module GraphQL
       # - Cause the Schema instance to be created, if it hasn't been created yet
       # - Delegate to that instance
       # Eventually, the methods will be moved into this class, removing the need for the singleton.
-      def_delegators :graphql_definition,
+      def_delegators :deprecated_graphql_definition,
         # Execution
         :execution_strategy_for_operation,
         # Configuration
@@ -851,6 +853,10 @@ module GraphQL
         :id_from_object_proc, :object_from_id_proc,
         :id_from_object=, :object_from_id=,
         :remove_handler
+
+      def deprecated_graphql_definition
+        graphql_definition(silence_deprecation_warning: true)
+      end
 
       # @return [GraphQL::Subscriptions]
       attr_accessor :subscriptions
@@ -894,8 +900,15 @@ module GraphQL
         @find_cache[path] ||= @finder.find(path)
       end
 
-      def graphql_definition
-        @graphql_definition ||= to_graphql
+      def graphql_definition(silence_deprecation_warning: false)
+        @graphql_definition ||= begin
+          unless silence_deprecation_warning
+            message = "Legacy `.graphql_definition` objects are deprecated and will be removed in GraphQL-Ruby 2.0. Use a class-based definition instead."
+            caller_message = "\n\nCalled on #{self.inspect} from:\n #{caller(1, 25).map { |l| "  #{l}" }.join("\n")}"
+            GraphQL::Deprecation.warn(message + caller_message)
+          end
+          to_graphql(silence_deprecation_warning: silence_deprecation_warning)
+        end
       end
 
       def default_filter
@@ -927,19 +940,20 @@ module GraphQL
         find_inherited_value(:plugins, EMPTY_ARRAY) + own_plugins
       end
 
+      prepend Schema::Member::CachedGraphQLDefinition::DeprecatedToGraphQL
       def to_graphql
         schema_defn = self.new
         schema_defn.raise_definition_error = true
-        schema_defn.query = query && query.graphql_definition
-        schema_defn.mutation = mutation && mutation.graphql_definition
-        schema_defn.subscription = subscription && subscription.graphql_definition
+        schema_defn.query = query && query.graphql_definition(silence_deprecation_warning: true)
+        schema_defn.mutation = mutation && mutation.graphql_definition(silence_deprecation_warning: true)
+        schema_defn.subscription = subscription && subscription.graphql_definition(silence_deprecation_warning: true)
         schema_defn.validate_timeout = validate_timeout
         schema_defn.validate_max_errors = validate_max_errors
         schema_defn.max_complexity = max_complexity
         schema_defn.error_bubbling = error_bubbling
         schema_defn.max_depth = max_depth
         schema_defn.default_max_page_size = default_max_page_size
-        schema_defn.orphan_types = orphan_types.map(&:graphql_definition)
+        schema_defn.orphan_types = orphan_types.map { |t| t.graphql_definition(silence_deprecation_warning: true) }
         schema_defn.disable_introspection_entry_points = disable_introspection_entry_points?
         schema_defn.disable_schema_introspection_entry_point = disable_schema_introspection_entry_point?
         schema_defn.disable_type_introspection_entry_point = disable_type_introspection_entry_point?
@@ -996,16 +1010,58 @@ module GraphQL
       # Build a map of `{ name => type }` and return it
       # @return [Hash<String => Class>] A dictionary of type classes by their GraphQL name
       # @see get_type Which is more efficient for finding _one type_ by name, because it doesn't merge hashes.
-      def types
-        non_introspection_types.merge(introspection_system.types)
+      def types(context = GraphQL::Query::NullContext)
+        all_types = non_introspection_types.merge(introspection_system.types)
+        visible_types = {}
+        all_types.each do |k, v|
+          visible_types[k] =if v.is_a?(Array)
+            visible_t = nil
+            v.each do |t|
+              if t.visible?(context)
+                if visible_t.nil?
+                  visible_t = t
+                else
+                  raise DuplicateNamesError, "Found two visible type definitions for `#{k}`: #{visible_t.inspect}, #{t.inspect}"
+                end
+              end
+            end
+            visible_t
+          else
+            v
+          end
+        end
+        visible_types
       end
 
       # @param type_name [String]
       # @return [Module, nil] A type, or nil if there's no type called `type_name`
-      def get_type(type_name)
-        own_types[type_name] ||
-          introspection_system.types[type_name] ||
-          find_inherited_value(:types, EMPTY_HASH)[type_name]
+      def get_type(type_name, context = GraphQL::Query::NullContext)
+        local_entry = own_types[type_name]
+        type_defn = case local_entry
+        when nil
+          nil
+        when Array
+          visible_t = nil
+          warden = Warden.from_context(context)
+          local_entry.each do |t|
+            if warden.visible_type?(t, context)
+              if visible_t.nil?
+                visible_t = t
+              else
+                raise DuplicateNamesError, "Found two visible type definitions for `#{type_name}`: #{visible_t.inspect}, #{t.inspect}"
+              end
+            end
+          end
+          visible_t
+        when Module
+          local_entry
+        else
+          raise "Invariant: unexpected own_types[#{type_name.inspect}]: #{local_entry.inspect}"
+        end
+
+        type_defn ||
+          introspection_system.types[type_name] || # todo context-specific introspection?
+          (superclass.respond_to?(:get_type) ? superclass.get_type(type_name, context) : nil)
       end
 
       # @api private
@@ -1182,19 +1238,19 @@ module GraphQL
         GraphQL::Schema::TypeExpression.build_type(type_owner, ast_node)
       end
 
-      def get_field(type_or_name, field_name)
+      def get_field(type_or_name, field_name, context = GraphQL::Query::NullContext)
         parent_type = case type_or_name
         when LateBoundType
-          get_type(type_or_name.name)
+          get_type(type_or_name.name, context)
         when String
-          get_type(type_or_name)
+          get_type(type_or_name, context)
         when Module
           type_or_name
         else
           raise ArgumentError, "unexpected field owner for #{field_name.inspect}: #{type_or_name.inspect} (#{type_or_name.class})"
         end
 
-        if parent_type.kind.fields? && (field = parent_type.get_field(field_name))
+        if parent_type.kind.fields? && (field = parent_type.get_field(field_name, context))
           field
         elsif parent_type == query && (entry_point_field = introspection_system.entry_point(name: field_name))
           entry_point_field
@@ -1205,8 +1261,8 @@ module GraphQL
         end
       end
 
-      def get_fields(type)
-        type.fields
+      def get_fields(type, context = GraphQL::Query::NullContext)
+        type.fields(context)
       end
 
       def introspection(new_introspection_namespace = nil)
@@ -1405,7 +1461,6 @@ module GraphQL
         if new_orphan_types.any?
           new_orphan_types = new_orphan_types.flatten
           add_type_and_traverse(new_orphan_types, root: false)
-          @orphan_types = new_orphan_types
           own_orphan_types.concat(new_orphan_types.flatten)
         end
 
@@ -1715,7 +1770,7 @@ module GraphQL
           if subscription.singleton_class.ancestors.include?(Subscriptions::SubscriptionRoot)
             GraphQL::Deprecation.warn("`extend Subscriptions::SubscriptionRoot` is no longer required; you may remove it from #{self}'s `subscription` root type (#{subscription}).")
           else
-            subscription.fields.each do |name, field|
+            subscription.all_field_definitions.each do |field|
               field.extension(Subscriptions::DefaultSubscriptionResolveExtension)
             end
           end
@@ -1737,7 +1792,36 @@ module GraphQL
         end
         new_types = Array(t)
         addition = Schema::Addition.new(schema: self, own_types: own_types, new_types: new_types)
-        own_types.merge!(addition.types)
+        addition.types.each do |name, types_entry| # rubocop:disable Development/ContextIsPassedCop -- build-time, not query-time
+          if (prev_entry = own_types[name])
+            prev_entries = case prev_entry
+            when Array
+              prev_entry
+            when Module
+              own_types[name] = [prev_entry]
+            else
+              raise "Invariant: unexpected prev_entry at #{name.inspect} when adding #{t.inspect}"
+            end
+
+            case types_entry
+            when Array
+              prev_entries.concat(types_entry)
+              prev_entries.uniq! # in case any are being re-visited
+            when Module
+              if !prev_entries.include?(types_entry)
+                prev_entries << types_entry
+              end
+            else
+              raise "Invariant: unexpected types_entry at #{name} when adding #{t.inspect}"
+            end
+          else
+            if types_entry.is_a?(Array)
+              types_entry.uniq!
+            end
+            own_types[name] = types_entry
+          end
+        end
+
         own_possible_types.merge!(addition.possible_types) { |key, old_val, new_val| old_val + new_val }
         own_union_memberships.merge!(addition.union_memberships)
 

@@ -18,14 +18,14 @@ describe GraphQL::Tracing::AppOpticsTracing do
 
       class Address < GraphQL::Schema::Object
         global_id_field :id
-        field :street, String, null: true
-        field :number, Integer, null: true
+        field :street, String
+        field :number, Integer
       end
 
       class Company < GraphQL::Schema::Object
         global_id_field :id
-        field :name, String, null: true
-        field :address, Schema::Address, null: true
+        field :name, String
+        field :address, Schema::Address
 
         def address
           OpenStruct.new(
@@ -40,8 +40,8 @@ describe GraphQL::Tracing::AppOpticsTracing do
         field :int, Integer, null: false
         def int; 1; end
 
-        field :company, Company, null: true do
-          argument :id, ID, required: true
+        field :company, Company do
+          argument :id, ID
         end
 
         def company(id:)

@@ -53,7 +53,7 @@ describe GraphQL::Schema::Member::AcceptsDefinition do
     class SomeObject < BaseObject
       metadata :a, :aaa
 
-      field :some_field, String, null: true
+      field :some_field, String
     end
 
     class SomeObject2 < SomeObject
@@ -65,7 +65,7 @@ describe GraphQL::Schema::Member::AcceptsDefinition do
 
       field :option, Option, null: false do
         metadata :a, :def
-        argument :value, Integer, required: true, metadata: [:a, :ghi]
+        argument :value, Integer, metadata: [:a, :ghi]
       end
 
       field :thing, Thing, null: false
@@ -79,35 +79,35 @@ describe GraphQL::Schema::Member::AcceptsDefinition do
 
   it "passes along configs for types" do
     assert_equal [:a, 123], AcceptsDefinitionSchema::Option.metadata
-    assert_equal 123, AcceptsDefinitionSchema::Option.graphql_definition.metadata[:a]
+    assert_equal 123, AcceptsDefinitionSchema::Option.graphql_definition(silence_deprecation_warning: true).metadata[:a]
     assert_equal [:a, :abc], AcceptsDefinitionSchema::Query.metadata
-    assert_equal :abc, AcceptsDefinitionSchema::Query.graphql_definition.metadata[:a]
-    assert_equal :zyx, AcceptsDefinitionSchema::Query.graphql_definition.metadata[:xyz]
+    assert_equal :abc, AcceptsDefinitionSchema::Query.graphql_definition(silence_deprecation_warning: true).metadata[:a]
+    assert_equal :zyx, AcceptsDefinitionSchema::Query.graphql_definition(silence_deprecation_warning: true).metadata[:xyz]
 
     assert_equal [:z, 888], AcceptsDefinitionSchema::Thing.metadata
-    assert_equal 888, AcceptsDefinitionSchema::Thing.graphql_definition.metadata[:z]
-    assert_equal :bc, AcceptsDefinitionSchema::Thing.graphql_definition.metadata[:a]
+    assert_equal 888, AcceptsDefinitionSchema::Thing.graphql_definition(silence_deprecation_warning: true).metadata[:z]
+    assert_equal :bc, AcceptsDefinitionSchema::Thing.graphql_definition(silence_deprecation_warning: true).metadata[:a]
     # Interface inheritance
     assert_equal [:z, 888], AcceptsDefinitionSchema::Thing2.metadata
-    assert_equal 888, AcceptsDefinitionSchema::Thing2.graphql_definition.metadata[:z]
-    assert_equal :bc, AcceptsDefinitionSchema::Thing2.graphql_definition.metadata[:a]
+    assert_equal 888, AcceptsDefinitionSchema::Thing2.graphql_definition(silence_deprecation_warning: true).metadata[:z]
+    assert_equal :bc, AcceptsDefinitionSchema::Thing2.graphql_definition(silence_deprecation_warning: true).metadata[:a]
 
     # Object inheritance
-    assert_equal :aaa, AcceptsDefinitionSchema::SomeObject.graphql_definition.metadata[:a]
-    assert_equal :aaa, AcceptsDefinitionSchema::SomeObject2.graphql_definition.metadata[:a]
+    assert_equal :aaa, AcceptsDefinitionSchema::SomeObject.graphql_definition(silence_deprecation_warning: true).metadata[:a]
+    assert_equal :aaa, AcceptsDefinitionSchema::SomeObject2.graphql_definition(silence_deprecation_warning: true).metadata[:a]
   end
 
   it "passes along configs for fields and arguments" do
-    assert_equal :def, AcceptsDefinitionSchema.find("Query.option").graphql_definition.metadata[:a]
-    assert_equal :ghi, AcceptsDefinitionSchema.find("Query.option.value").graphql_definition.metadata[:a]
+    assert_equal :def, AcceptsDefinitionSchema.find("Query.option").graphql_definition(silence_deprecation_warning: true).metadata[:a]
+    assert_equal :ghi, AcceptsDefinitionSchema.find("Query.option.value").graphql_definition(silence_deprecation_warning: true).metadata[:a]
   end
 
   it "passes along configs for enum values" do
-    assert_equal 456, AcceptsDefinitionSchema.find("Option").graphql_definition.values["A"].metadata[:a]
-    assert_nil AcceptsDefinitionSchema.find("Option").graphql_definition.values["B"].metadata[:a]
+    assert_equal 456, AcceptsDefinitionSchema.find("Option").graphql_definition(silence_deprecation_warning: true).values["A"].metadata[:a]
+    assert_nil AcceptsDefinitionSchema.find("Option").graphql_definition(silence_deprecation_warning: true).values["B"].metadata[:a]
   end
 
   it "passes along configs for schemas" do
-    assert_equal 999, AcceptsDefinitionSchema.graphql_definition.metadata[:a]
+    assert_equal 999, AcceptsDefinitionSchema.graphql_definition(silence_deprecation_warning: true).metadata[:a]
   end
 end

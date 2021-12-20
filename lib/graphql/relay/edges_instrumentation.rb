@@ -16,7 +16,6 @@ module GraphQL
         end
       end
 
-
       class EdgesResolve
         def initialize(edge_class:, resolve:)
           @edge_class = edge_class

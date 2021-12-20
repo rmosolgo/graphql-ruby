@@ -34,6 +34,7 @@ module GraphQL
           schema: @schema,
           context: schema_context,
         )
+        schema_context.warden = @warden
       end
 
       def document
@@ -87,6 +88,7 @@ module GraphQL
       def build_interface_type_node(interface_type)
         GraphQL::Language::Nodes::InterfaceTypeDefinition.new(
           name: interface_type.graphql_name,
+          interfaces: warden.interfaces(interface_type).sort_by(&:graphql_name).map { |type| build_type_name_node(type) },
           description: interface_type.description,
           fields: build_field_nodes(warden.fields(interface_type)),
           directives: directives(interface_type),
@@ -194,10 +196,14 @@ module GraphQL
         when "INPUT_OBJECT"
           GraphQL::Language::Nodes::InputObject.new(
             arguments: default_value.to_h.map do |arg_name, arg_value|
-              arg_type = type.arguments.fetch(arg_name.to_s).type
+              args = @warden.arguments(type)
+              arg = args.find { |a| a.keyword.to_s == arg_name.to_s }
+              if arg.nil?
+                raise ArgumentError, "No argument definition on #{type.graphql_name} for argument: #{arg_name.inspect} (expected one of: #{args.map(&:keyword)})"
+              end
               GraphQL::Language::Nodes::Argument.new(
-                name: arg_name.to_s,
-                value: build_default_value(arg_value, arg_type)
+                name: arg.graphql_name.to_s,
+                value: build_default_value(arg_value, arg.type)
               )
             end
           )
@@ -295,7 +301,7 @@ module GraphQL
         else
           member.directives.map do |dir|
             args = []
-            dir.arguments.argument_values.each_value do |arg_value|
+            dir.arguments.argument_values.each_value do |arg_value| # rubocop:disable Development/ContextIsPassedCop -- directive instance method
               arg_defn = arg_value.definition
               if arg_defn.default_value? && arg_value.value == arg_defn.default_value
                 next

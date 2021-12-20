@@ -15,10 +15,12 @@ module GraphQLBenchmark
   BENCHMARK_PATH = File.expand_path("../", __FILE__)
   CARD_SCHEMA = GraphQL::Schema.from_definition(File.read(File.join(BENCHMARK_PATH, "schema.graphql")))
   ABSTRACT_FRAGMENTS = GraphQL.parse(File.read(File.join(BENCHMARK_PATH, "abstract_fragments.graphql")))
-  ABSTRACT_FRAGMENTS_2 = GraphQL.parse(File.read(File.join(BENCHMARK_PATH, "abstract_fragments_2.graphql")))
+  ABSTRACT_FRAGMENTS_2_QUERY_STRING = File.read(File.join(BENCHMARK_PATH, "abstract_fragments_2.graphql"))
+  ABSTRACT_FRAGMENTS_2 = GraphQL.parse(ABSTRACT_FRAGMENTS_2_QUERY_STRING)
 
   BIG_SCHEMA = GraphQL::Schema.from_definition(File.join(BENCHMARK_PATH, "big_schema.graphql"))
-  BIG_QUERY = GraphQL.parse(File.read(File.join(BENCHMARK_PATH, "big_query.graphql")))
+  BIG_QUERY_STRING = File.read(File.join(BENCHMARK_PATH, "big_query.graphql"))
+  BIG_QUERY = GraphQL.parse(BIG_QUERY_STRING)
 
   FIELDS_WILL_MERGE_SCHEMA = GraphQL::Schema.from_definition("type Query { hello: String }")
   FIELDS_WILL_MERGE_QUERY = GraphQL.parse("{ #{Array.new(5000, "hello").join(" ")} }")
@@ -35,10 +37,28 @@ module GraphQLBenchmark
         x.report("validate - abstract fragments 2") { CARD_SCHEMA.validate(ABSTRACT_FRAGMENTS_2) }
         x.report("validate - big query") { BIG_SCHEMA.validate(BIG_QUERY) }
         x.report("validate - fields will merge") { FIELDS_WILL_MERGE_SCHEMA.validate(FIELDS_WILL_MERGE_QUERY) }
+      when "parse"
+        x.report("scan - introspection") { GraphQL.scan(QUERY_STRING) }
+        x.report("parse - introspection") { GraphQL.parse(QUERY_STRING) }
+        x.report("scan - fragments") { GraphQL.scan(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
+        x.report("parse - fragments") { GraphQL.parse(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
+        x.report("scan - big query") { GraphQL.scan(BIG_QUERY_STRING) }
+        x.report("parse - big query") { GraphQL.parse(BIG_QUERY_STRING) }
       else
         raise("Unexpected task #{task}")
       end
     end
+  end
+
+  def self.validate_memory
+    FIELDS_WILL_MERGE_SCHEMA.validate(FIELDS_WILL_MERGE_QUERY)
+
+    report = MemoryProfiler.report do
+      FIELDS_WILL_MERGE_SCHEMA.validate(FIELDS_WILL_MERGE_QUERY)
+      nil
+    end
+
+    report.pretty_print
   end
 
   def self.profile

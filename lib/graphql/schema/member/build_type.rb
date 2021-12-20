@@ -4,10 +4,6 @@ module GraphQL
     class Member
       # @api private
       module BuildType
-        if !String.method_defined?(:match?)
-          using GraphQL::StringMatchBackport
-        end
-
         LIST_TYPE_ERROR = "Use an array of [T] or [T, null: true] for list types; other arrays are not supported"
 
         module_function

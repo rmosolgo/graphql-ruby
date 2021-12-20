@@ -223,11 +223,14 @@ describe GraphQL::Analysis::AST::QueryComplexity do
     let(:query_string) {%|
     {
       rebels {
-        ships {
+        ships(first: 1) {
           edges {
             node {
               id
             }
+          }
+          nodes {
+            id
           }
           pageInfo {
             hasNextPage
@@ -239,7 +242,82 @@ describe GraphQL::Analysis::AST::QueryComplexity do
 
     it "gets the complexity" do
       complexity = reduce_result.first
-      assert_equal 7, complexity
+      expected_complexity = 1 + # rebels
+        1 + # ships
+        1 + # edges
+        1 + # nodes
+        1 + 1 + # pageInfo, hasNextPage
+        1 + 1 + 1 # node, id, id
+      assert_equal expected_complexity, complexity
+    end
+
+    describe "first/last" do
+      let(:query_string) {%|
+      {
+        rebels {
+          s1: ships(first: 5) {
+            edges {
+              node {
+                id
+              }
+            }
+            pageInfo {
+              hasNextPage
+            }
+          }
+
+          s2: ships(last: 3) {
+            nodes { id }
+          }
+        }
+      }
+      |}
+
+      it "uses first/last for calculating complexity" do
+        complexity = reduce_result.first
+
+        expected_complexity = (
+          1 + # rebels
+          (1 + 1 + (5 * 2) + 2) + # s1
+          (1 + 1 + (3 * 1) + 0) # s2
+        )
+        assert_equal expected_complexity, complexity
+      end
+    end
+
+    describe "Field-level max_page_size" do
+      let(:query_string) {%|
+      {
+        rebels {
+          ships {
+            nodes { id }
+          }
+        }
+      }
+      |}
+
+      it "uses field max_page_size" do
+        complexity = reduce_result.first
+        assert_equal 1 + 1 + 1 + (1000 * 1), complexity
+      end
+    end
+
+    describe "Schema-level default_max_page_size" do
+      let(:query_string) {%|
+      {
+        rebels {
+          bases {
+            nodes { id }
+            totalCount
+          }
+        }
+      }
+      |}
+
+      it "uses schema default_max_page_size" do
+        complexity = reduce_result.first
+        assert_equal 1 + 1 + 1 + (3 * 1) + 1, complexity
+      end
     end
   end
 
@@ -280,12 +358,12 @@ describe GraphQL::Analysis::AST::QueryComplexity do
     class CustomComplexitySchema < GraphQL::Schema
       module ComplexityInterface
         include GraphQL::Schema::Interface
-        field :value, Int, null: true
+        field :value, Int
       end
 
       class SingleComplexity < GraphQL::Schema::Object
-        field :value, Int, null: true, complexity: 0.1
-        field :complexity, SingleComplexity, null: true do
+        field :value, Int, complexity: 0.1
+        field :complexity, SingleComplexity do
           argument :int_value, Int, required: false
           complexity(->(ctx, args, child_complexity) { args[:int_value] + child_complexity })
         end
@@ -293,17 +371,17 @@ describe GraphQL::Analysis::AST::QueryComplexity do
       end
 
       class DoubleComplexity < GraphQL::Schema::Object
-        field :value, Int, null: true, complexity: 4
+        field :value, Int, complexity: 4
         implements ComplexityInterface
       end
 
       class Query < GraphQL::Schema::Object
-        field :complexity, SingleComplexity, null: true do
+        field :complexity, SingleComplexity do
           argument :int_value, Int, required: false
           complexity ->(ctx, args, child_complexity) { args[:int_value] + child_complexity }
         end
 
-        field :inner_complexity, ComplexityInterface, null: true do
+        field :inner_complexity, ComplexityInterface do
           argument :value, Int, required: false
         end
       end
@@ -314,6 +392,92 @@ describe GraphQL::Analysis::AST::QueryComplexity do
 
     let(:query) { GraphQL::Query.new(complexity_schema, query_string) }
     let(:complexity_schema) { CustomComplexitySchema }
+    let(:query_string) {%|
+      {
+        a: complexity(intValue: 3) { value }
+        b: complexity(intValue: 6) {
+          value
+          complexity(intValue: 1) {
+            value
+          }
+        }
+      }
+    |}
+
+    it "sums the complexity" do
+      complexity = reduce_result.first
+      # 10 from `complexity`, `0.3` from `value`
+      assert_equal 10.3, complexity
+    end
+
+    describe "same field on multiple types" do
+      let(:query_string) {%|
+      {
+        innerComplexity(intValue: 2) {
+          ... on SingleComplexity { value }
+          ... on DoubleComplexity { value }
+        }
+      }
+      |}
+
+      it "picks them max for those fields" do
+        complexity = reduce_result.first
+        # 1 for innerComplexity + 4 for DoubleComplexity.value
+        assert_equal 5, complexity
+      end
+    end
+  end
+
+  describe "custom complexities by complexity_for(...)" do
+    class CustomComplexityByMethodSchema < GraphQL::Schema
+      module ComplexityInterface
+        include GraphQL::Schema::Interface
+        field :value, Int
+      end
+
+      class SingleComplexity < GraphQL::Schema::Object
+        field :value, Int, complexity: 0.1
+        field :complexity, SingleComplexity do
+          argument :int_value, Int, required: false
+
+          def complexity_for(query:, child_complexity:, lookahead:)
+            lookahead.arguments[:int_value] + child_complexity
+          end
+        end
+        implements ComplexityInterface
+      end
+
+      class ComplexityFourField < GraphQL::Schema::Field
+        def complexity_for(query:, lookahead:, child_complexity:)
+          4
+        end
+      end
+
+      class DoubleComplexity < GraphQL::Schema::Object
+        field_class ComplexityFourField
+        field :value, Int
+        implements ComplexityInterface
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :complexity, SingleComplexity do
+          argument :int_value, Int, required: false
+          def complexity_for(query:, child_complexity:, lookahead:)
+            lookahead.arguments[:int_value] + child_complexity
+          end
+        end
+
+        field :inner_complexity, ComplexityInterface do
+          argument :value, Int, required: false
+        end
+      end
+
+      query(Query)
+      orphan_types(DoubleComplexity)
+    end
+
+    let(:query) { GraphQL::Query.new(complexity_schema, query_string) }
+    let(:complexity_schema) { CustomComplexityByMethodSchema }
     let(:query_string) {%|
       {
         a: complexity(intValue: 3) { value }

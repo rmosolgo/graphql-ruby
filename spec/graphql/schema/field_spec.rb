@@ -20,7 +20,7 @@ describe GraphQL::Schema::Field do
     end
 
     it "uses the argument class" do
-      arg_defn = field.graphql_definition.arguments.values.first
+      arg_defn = field.graphql_definition(silence_deprecation_warning: true).arguments.values.first
       assert_equal :ok, arg_defn.metadata[:custom]
     end
 
@@ -34,19 +34,19 @@ describe GraphQL::Schema::Field do
     end
 
     it "attaches itself to its graphql_definition as type_class" do
-      assert_equal field, field.graphql_definition.metadata[:type_class]
+      assert_equal field, field.graphql_definition(silence_deprecation_warning: true).metadata[:type_class]
     end
 
     it "camelizes the field name, unless camelize: false" do
-      assert_equal 'inspectInput', field.graphql_definition.name
+      assert_equal 'inspectInput', field.graphql_definition(silence_deprecation_warning: true).name
       assert_equal 'inspectInput', field.name
 
       underscored_field = GraphQL::Schema::Field.from_options(:underscored_field, String, null: false, camelize: false, owner: nil) do
-        argument :underscored_arg, String, required: true, camelize: false
+        argument :underscored_arg, String, camelize: false
       end
 
-      assert_equal 'underscored_field', underscored_field.to_graphql.name
-      arg_name, arg_defn = underscored_field.to_graphql.arguments.first
+      assert_equal 'underscored_field', underscored_field.deprecated_to_graphql.name
+      arg_name, arg_defn = underscored_field.deprecated_to_graphql.arguments.first
       assert_equal 'underscored_arg', arg_name
       assert_equal 'underscored_arg', arg_defn.name
     end
@@ -69,11 +69,11 @@ describe GraphQL::Schema::Field do
       object = Class.new(Jazz::BaseObject) do
         graphql_name "JustAName"
 
-        field :test, String, null: true do
-          argument :test, String, required: true
+        field :test, String do
+          argument :test, String
           description "A Description."
         end
-      end.to_graphql
+      end.deprecated_to_graphql
 
       assert_equal "test", object.fields["test"].arguments["test"].name
       assert_equal "A Description.", object.fields["test"].description
@@ -83,11 +83,11 @@ describe GraphQL::Schema::Field do
       object = Class.new(Jazz::BaseObject) do
         graphql_name "JustAName"
 
-        field :test, String, null: true do |field|
+        field :test, String do |field|
           field.argument :test, String, required: true
           field.description "A Description."
         end
-      end.to_graphql
+      end.deprecated_to_graphql
 
       assert_equal "test", object.fields["test"].arguments["test"].name
       assert_equal "A Description.", object.fields["test"].description
@@ -98,7 +98,7 @@ describe GraphQL::Schema::Field do
         graphql_name 'MyType'
       end
       field = GraphQL::Schema::Field.from_options(:my_field, type, owner: nil, null: true)
-      assert_equal type.to_graphql, field.to_graphql.type
+      assert_equal type.deprecated_to_graphql, field.deprecated_to_graphql.type
     end
 
     describe "introspection?" do
@@ -155,13 +155,105 @@ describe GraphQL::Schema::Field do
         object = Class.new(Jazz::BaseObject) do
           graphql_name "JustAName"
 
-          field :test, String, null: true, extras: [:lookahead]
+          field :test, String, extras: [:lookahead]
         end
 
         field = object.fields['test']
 
         field.extras([:ast_node])
         assert_equal [:lookahead, :ast_node], field.extras
+      end
+
+      describe "ruby argument error" do
+        class ArgumentErrorSchema < GraphQL::Schema
+          class Query < GraphQL::Schema::Object
+
+            def inspect
+              "#<#{self.class}>"
+            end
+
+            field :f1, String do
+              argument :something, Int, required: false
+            end
+
+            def f1
+              "OK"
+            end
+
+            field :f2, String, resolver_method: :field_2 do
+              argument :something, Int, required: false
+            end
+
+            def field_2(something_else: nil)
+              "ALSO OK"
+            end
+
+            field :f3, String do
+              argument :something, Int, required: false
+            end
+
+            def f3(always_missing:)
+              "NEVER OK"
+            end
+
+            field :f4, String
+
+            def f4(never_positional, ok_optional = :ok, *ok_rest)
+              "NEVER OK"
+            end
+
+            field :f5, String do
+              argument :something, Int, required: false
+            end
+
+            def f5(**ok_keyrest)
+              "OK"
+            end
+          end
+          query(Query)
+        end
+
+        it "raises a nice error when missing" do
+          assert_equal "OK", ArgumentErrorSchema.execute("{ f1 }")["data"]["f1"]
+          assert_equal "ALSO OK", ArgumentErrorSchema.execute("{ f2 }")["data"]["f2"]
+          err = assert_raises GraphQL::Schema::Field::FieldImplementationFailed do
+            ArgumentErrorSchema.execute("{ f1(something: 12) }")
+          end
+          assert_equal "Failed to call f1 on #<ArgumentErrorSchema::Query> because the Ruby method params were incompatible with the GraphQL arguments:
+
+- `something: 12` was given by GraphQL but not defined in the Ruby method. Add `something:` to the method parameters.
+", err.message
+
+          assert_instance_of ArgumentError, err.cause
+
+          err = assert_raises GraphQL::Schema::Field::FieldImplementationFailed do
+            ArgumentErrorSchema.execute("{ f2(something: 12) }")
+          end
+          assert_equal "Failed to call field_2 on #<ArgumentErrorSchema::Query> because the Ruby method params were incompatible with the GraphQL arguments:
+
+- `something: 12` was given by GraphQL but not defined in the Ruby method. Add `something:` to the method parameters.
+", err.message
+
+
+          err = assert_raises GraphQL::Schema::Field::FieldImplementationFailed do
+            ArgumentErrorSchema.execute("{ f3(something: 1) }")
+          end
+          assert_equal "Failed to call f3 on #<ArgumentErrorSchema::Query> because the Ruby method params were incompatible with the GraphQL arguments:
+
+- `something: 1` was given by GraphQL but not defined in the Ruby method. Add `something:` to the method parameters.
+- `always_missing:` is required by Ruby, but not by GraphQL. Consider `always_missing: nil` instead, or making this argument required in GraphQL.
+", err.message
+
+          err = assert_raises GraphQL::Schema::Field::FieldImplementationFailed do
+            ArgumentErrorSchema.execute("{ f4 }")
+          end
+          assert_equal "Failed to call f4 on #<ArgumentErrorSchema::Query> because the Ruby method params were incompatible with the GraphQL arguments:
+
+- `never_positional` is required by Ruby, but GraphQL doesn't pass positional arguments. If it's meant to be a GraphQL argument, use `never_positional:` instead. Otherwise, remove it.
+", err.message
+
+          assert_equal "OK", ArgumentErrorSchema.execute("{ f5(something: 2) }")["data"]["f5"]
+        end
       end
 
       describe "argument_details" do
@@ -214,7 +306,7 @@ describe GraphQL::Schema::Field do
 
     describe "type" do
       it "tells the return type" do
-        assert_equal "[String!]!", field.type.graphql_definition.to_s
+        assert_equal "[String!]!", field.type.graphql_definition(silence_deprecation_warning: true).to_s
       end
 
       it "returns the type class" do
@@ -228,8 +320,8 @@ describe GraphQL::Schema::Field do
         object = Class.new(Jazz::BaseObject) do
           graphql_name "complexityKeyword"
 
-          field :complexityTest, String, null: true, complexity: 25
-        end.to_graphql
+          field :complexityTest, String, complexity: 25
+        end.deprecated_to_graphql
 
         assert_equal 25, object.fields["complexityTest"].complexity
       end
@@ -238,10 +330,10 @@ describe GraphQL::Schema::Field do
         object = Class.new(Jazz::BaseObject) do
           graphql_name "complexityKeyword"
 
-          field :complexityTest, String, null: true do
+          field :complexityTest, String do
             complexity ->(_ctx, _args, _child_complexity) { 52 }
           end
-        end.to_graphql
+        end.deprecated_to_graphql
 
         assert_equal 52, object.fields["complexityTest"].complexity.call(nil, nil, nil)
       end
@@ -250,10 +342,10 @@ describe GraphQL::Schema::Field do
         object = Class.new(Jazz::BaseObject) do
           graphql_name "complexityKeyword"
 
-          field :complexityTest, String, null: true do
+          field :complexityTest, String do
             complexity 38
           end
-        end.to_graphql
+        end.deprecated_to_graphql
 
         assert_equal 38, object.fields["complexityTest"].complexity
       end
@@ -263,10 +355,10 @@ describe GraphQL::Schema::Field do
           Class.new(Jazz::BaseObject) do
             graphql_name "complexityKeyword"
 
-            field :complexityTest, String, null: true do
+            field :complexityTest, String do
               complexity 'One hundred and eighty'
             end
-          end.to_graphql
+          end.deprecated_to_graphql
         end
 
         assert_match /^Invalid complexity:/, err.message
@@ -277,10 +369,10 @@ describe GraphQL::Schema::Field do
           Class.new(Jazz::BaseObject) do
             graphql_name "complexityKeyword"
 
-            field :complexityTest, String, null: true do
+            field :complexityTest, String do
               complexity ->(one, two) { 52 }
             end
-          end.to_graphql
+          end.deprecated_to_graphql
         end
 
         assert_match /^A complexity proc should always accept 3 parameters/, err.message
@@ -390,8 +482,8 @@ describe GraphQL::Schema::Field do
       class Query < GraphQL::Schema::Object
         field_class BaseField
 
-        field :company, Company, null: true do
-          argument :id, ID, required: true
+        field :company, Company do
+          argument :id, ID
         end
 
         def company(id:)

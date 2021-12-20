@@ -269,9 +269,7 @@ exports[`sync operations Relay support Uses Apollo Android OperationOutput JSON 
 Array [
   Object {
     "alias": "aba626ea9bdf465954e89e5590eb2c1a",
-    "body": "mutation RemoveTodoMutation(
-  $input: RemoveTodoInput!
-) {
+    "body": "mutation RemoveTodoMutation($input: RemoveTodoInput!) {
   removeTodo(input: $input) {
     deletedTodoId
     user {

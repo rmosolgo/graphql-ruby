@@ -11,7 +11,7 @@
 					"type": "String!"
 				}
 			],
-			"source": "mutation UpdateSomething($name: String!) {\n  updateSomething(name: $name) {\n    __typename\n    name\n  }\n}",
+			"source": "mutation UpdateSomething($name: String!) {\n  updateSomething(name: $name) {\n    __typename\n    name\n  somethingElse @client\n }\n}",
 			"fields": [
 				{
 					"responseName": "updateSomething",

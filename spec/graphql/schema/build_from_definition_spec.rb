@@ -233,6 +233,17 @@ union U = Hello
       assert_equal 63, built_schema.types["U"].ast_node.definition_line
     end
 
+    it 'handles empty type descriptions' do
+      schema = <<-SCHEMA
+"""
+"""
+type Query {
+  f1: Int
+}
+      SCHEMA
+      refute_nil GraphQL::Schema.from_definition(schema)
+    end
+
     it 'maintains built-in directives' do
       schema = <<-SCHEMA
 schema {
@@ -506,6 +517,30 @@ type Hello implements WorldInterface {
 
 interface WorldInterface {
   str: String
+}
+      SCHEMA
+
+      assert_schema_and_compare_output(schema)
+    end
+
+    it "supports interfaces that implement interfaces" do
+      schema = <<-SCHEMA
+interface Named implements Node {
+  id: ID
+  name: String
+}
+
+interface Node {
+  id: ID
+}
+
+type Query {
+  thing: Thing
+}
+
+type Thing implements Named & Node {
+  id: ID
+  name: String
 }
       SCHEMA
 
@@ -955,7 +990,7 @@ type Hello { }
 SCHEMA
 
       err = assert_raises(GraphQL::Schema::InvalidTypeError) do
-        GraphQL::Schema.from_definition(schema).to_graphql
+        GraphQL::Schema.from_definition(schema).to_graphql(silence_deprecation_warning: true)
       end
       assert_equal 'Hello is invalid: Hello must define at least 1 field. 0 defined.', err.message
     end

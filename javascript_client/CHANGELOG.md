@@ -1,5 +1,17 @@
 # graphql-ruby-client
 
+# 1.10.5 (17 Dec 2021)
+
+- Dependencies: replace `actioncable` with `@rails/actioncable` #3773
+
+# 1.10.4 (19 Nov 2021)
+
+- Sync: Also make sure documents are valid after removing `@client` fields #3715
+
+# 1.10.3 (18 Nov 2021)
+
+- Sync: Remove any fields with `@client` before sending operations to the server #3712
+
 # 1.10.2 (25 Oct 2021)
 
 - Pusher Link: Properly forward network errors to subscribers #3638

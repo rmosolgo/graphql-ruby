@@ -45,7 +45,11 @@ module GraphQL
                   end
                 elsif default_value != nil
                   memo[variable_name] = if ctx.interpreter?
-                    default_value
+                    if default_value.is_a?(Language::Nodes::NullValue)
+                      nil
+                    else
+                      default_value
+                    end
                   else
                     # Add the variable if it wasn't provided but it has a default value (including `null`)
                     GraphQL::Query::LiteralInput.coerce(variable_type, default_value, self)

@@ -40,14 +40,14 @@ describe GraphQL::Schema::List do
 
   describe "to_graphql" do
     it "will return a list type" do
-      assert_kind_of GraphQL::ListType, list_type.to_graphql
+      assert_kind_of GraphQL::ListType, list_type.deprecated_to_graphql
     end
   end
 
   describe "handling null" do
     class ListNullHandlingSchema < GraphQL::Schema
       class Query < GraphQL::Schema::Object
-        field :strings, [String, null: true], null: true do
+        field :strings, [String, null: true] do
           argument :strings, [String, null: true], required: false
         end
 
@@ -91,7 +91,7 @@ describe GraphQL::Schema::List do
       end
 
       class ItemInput < GraphQL::Schema::InputObject
-        argument :item, Item, required: true
+        argument :item, Item
       end
 
       class NilItemsInput < GraphQL::Schema::InputObject
@@ -100,7 +100,7 @@ describe GraphQL::Schema::List do
 
       class Query < GraphQL::Schema::Object
         field :echo, [Item], null: false do
-          argument :items, [Item], required: true
+          argument :items, [Item]
         end
 
         def echo(items:)
@@ -108,14 +108,14 @@ describe GraphQL::Schema::List do
         end
 
         field :echoes, [Item], null: false do
-          argument :items, [ItemInput], required: true
+          argument :items, [ItemInput]
         end
 
         def echoes(items:)
           items.map { |i| i[:item] }
         end
 
-        field :nil_echoes, [Item, null: true], null: true do
+        field :nil_echoes, [Item, null: true] do
           argument :items, [NilItemsInput], required: false
         end
 

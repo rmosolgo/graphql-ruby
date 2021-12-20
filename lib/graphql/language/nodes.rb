@@ -197,7 +197,16 @@ module GraphQL
               else
                 module_eval <<-RUBY, __FILE__, __LINE__
                   def children
-                    @children ||= (#{children_of_type.keys.map { |k| "@#{k}" }.join(" + ")}).freeze
+                    @children ||= begin
+                      if #{children_of_type.keys.map { |k| "@#{k}.any?" }.join(" || ")}
+                        new_children = []
+                        #{children_of_type.keys.map { |k| "new_children.concat(@#{k})" }.join("; ")}
+                        new_children.freeze
+                        new_children
+                      else
+                        NO_CHILDREN
+                      end
+                    end
                   end
                 RUBY
               end
@@ -467,7 +476,6 @@ module GraphQL
         end
       end
 
-
       # A list type definition, denoted with `[...]` (used for variable type definitions)
       class ListType < WrapperType
       end
@@ -618,6 +626,7 @@ module GraphQL
         attr_reader :description
         scalar_methods :name
         children_methods({
+          interfaces: GraphQL::Language::Nodes::TypeName,
           directives: GraphQL::Language::Nodes::Directive,
           fields: GraphQL::Language::Nodes::FieldDefinition,
         })
@@ -627,6 +636,7 @@ module GraphQL
       class InterfaceTypeExtension < AbstractNode
         scalar_methods :name
         children_methods({
+          interfaces: GraphQL::Language::Nodes::TypeName,
           directives: GraphQL::Language::Nodes::Directive,
           fields: GraphQL::Language::Nodes::FieldDefinition,
         })

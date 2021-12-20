@@ -13,7 +13,7 @@ Fields (and their arguments, and input object arguments) can be validated at run
 Validations are configured in `field(...)` or `argument(...)` calls:
 
 ```ruby
-argument :home_phone, String, required: true,
+argument :home_phone, String,
   description: "A US phone number",
   validates: { format: { with: /\d{3}-\d{3}-\d{4}/ } }
 ```
@@ -21,7 +21,7 @@ argument :home_phone, String, required: true,
 or:
 
 ```ruby
-field :comments, [Comment], null: true,
+field :comments, [Comment],
   description: "Find comments by author ID or author name" do
   argument :author_id, ID, required: false
   argument :author_name, String, required: false

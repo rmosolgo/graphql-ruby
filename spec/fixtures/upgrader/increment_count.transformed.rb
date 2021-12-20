@@ -7,7 +7,7 @@ module Platform
       visibility :internal
       minimum_accepted_scopes ["repo"]
 
-      argument :thing_id, ID, "Thing ID to log.", option: :setting, required: true
+      argument :thing_id, ID, "Thing ID to log.", option: :setting
 
       field :thing_id, ID, "Thing ID to log.", null: false
 

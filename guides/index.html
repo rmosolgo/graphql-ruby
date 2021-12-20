@@ -20,7 +20,7 @@ rails generate graphql:install
       <div class="teaser">
         <p>
           <a href="{{ site.baseurl}}/getting_started">Get going fast</a> with the <code><a href="https://rubygems.org/gems/graphql">graphql</a></code> gem,
-          battle-tested and trusted by <a href="https://githubengineering.com/the-github-graphql-api/#open-source">GitHub</a>, <a href="https://www.graphql.com/articles/graphql-at-shopify">Shopify</a> and <a href="https://www.kickstarter.com/">Kickstarter</a>.
+          battle-tested and trusted by <a href="https://githubengineering.com/the-github-graphql-api/#open-source">GitHub</a>, <a href="https://www.graphql.com/articles/graphql-at-shopify">Shopify</a>, <a href="https://www.chime.com">Chime</a>, and <a href="https://www.kickstarter.com/">Kickstarter</a>.
         </p>
       </div>
     </div>
@@ -41,7 +41,7 @@ rails generate graphql:install
 class Types::ProfileType < Types::BaseObject
   field :id, ID, null: false
   field :name, String, null: false
-  field :avatar, Types::PhotoType, null: true
+  field :avatar, Types::PhotoType
 end
 {% endhighlight %}
       </div>

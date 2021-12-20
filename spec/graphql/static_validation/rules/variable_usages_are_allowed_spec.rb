@@ -252,12 +252,12 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
   describe "for input properties" do
     class InputVariableSchema < GraphQL::Schema
       class Input < GraphQL::Schema::InputObject
-        argument(:id, String, required: true)
+        argument(:id, String)
       end
 
       class FooMutation < GraphQL::Schema::Mutation
-        field(:foo, String, null: true)
-        argument(:input, Input, required: true)
+        field(:foo, String)
+        argument(:input, Input)
 
         def resolve(input:)
           { foo: input.id }

@@ -15,8 +15,12 @@ module GraphQL
           field = "#{visitor.parent_type_definition.graphql_name}.#{field_defn.graphql_name}"
           @used_fields << field
           @used_deprecated_fields << field if field_defn.deprecation_reason
-
-          extract_deprecated_arguments(visitor.query.arguments_for(node, visitor.field_definition).argument_values)
+          arguments = visitor.query.arguments_for(node, visitor.field_definition)
+          # If there was an error when preparing this argument object,
+          # then this might be an error or something:
+          if arguments.respond_to?(:argument_values)
+            extract_deprecated_arguments(arguments.argument_values)
+          end
         end
 
         def result
@@ -36,12 +40,12 @@ module GraphQL
             end
 
             if argument.definition.type.kind.input_object?
-              extract_deprecated_arguments(argument.value.arguments.argument_values)
+              extract_deprecated_arguments(argument.value.arguments.argument_values) # rubocop:disable Development/ContextIsPassedCop -- runtime args instance
             elsif argument.definition.type.list? && !argument.value.nil?
               argument
                 .value
                 .select { |value| value.respond_to?(:arguments) }
-                .each { |value| extract_deprecated_arguments(value.arguments.argument_values) }
+                .each { |value| extract_deprecated_arguments(value.arguments.argument_values) } # rubocop:disable Development/ContextIsPassedCop -- runtime args instance
             end
           end
         end

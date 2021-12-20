@@ -170,10 +170,12 @@ module GraphQL
               first_subscription_id = first_event.context.fetch(:subscription_id)
               object ||= load_action_cable_message(message, first_event.context)
               result = execute_update(first_subscription_id, first_event, object)
-              # Having calculated the result _once_, send the same payload to all subscribers
-              events.each do |event|
-                subscription_id = event.context.fetch(:subscription_id)
-                deliver(subscription_id, result)
+              if !result.nil?
+                # Having calculated the result _once_, send the same payload to all subscribers
+                events.each do |event|
+                  subscription_id = event.context.fetch(:subscription_id)
+                  deliver(subscription_id, result)
+                end
               end
             end
           end
@@ -214,6 +216,8 @@ module GraphQL
       # The channel was closed, forget about it.
       def delete_subscription(subscription_id)
         query = @subscriptions.delete(subscription_id)
+        # In case this came from the server, tell the client to unsubscribe:
+        @action_cable.server.broadcast(stream_subscription_name(subscription_id), { more: false })
         # This can be `nil` when `.trigger` happens inside an unsubscribed ActionCable channel,
         # see https://github.com/rmosolgo/graphql-ruby/issues/2478
         if query

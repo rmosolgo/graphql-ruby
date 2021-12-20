@@ -62,7 +62,7 @@ ERR
   end
 
   assert_dependency_version("Ragel", "7.0.0.9", "ragel -v")
-  assert_dependency_version("Racc", "1.4.16", %|ruby -e "require 'racc'; puts Racc::VERSION"|)
+  assert_dependency_version("Racc", "1.5.2", %|ruby -e "require 'racc'; puts Racc::VERSION"|)
 
   `rm -f lib/graphql/language/parser.rb lib/graphql/language/lexer.rb `
   `racc lib/graphql/language/parser.y -o lib/graphql/language/parser.rb`
@@ -75,6 +75,12 @@ namespace :bench do
     require_relative("./benchmark/run.rb")
   end
 
+  desc "Benchmark parsing"
+  task :parse do
+    prepare_benchmark
+    GraphQLBenchmark.run("parse")
+  end
+
   desc "Benchmark the introspection query"
   task :query do
     prepare_benchmark
@@ -85,6 +91,12 @@ namespace :bench do
   task :validate do
     prepare_benchmark
     GraphQLBenchmark.run("validate")
+  end
+
+  desc "Profile a validation"
+  task :validate_memory do
+    prepare_benchmark
+    GraphQLBenchmark.validate_memory
   end
 
   desc "Generate a profile of the introspection query"

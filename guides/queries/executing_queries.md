@@ -111,8 +111,8 @@ MySchema.execute(query_string, context: context)
 Then, you can access those values during execution:
 
 ```ruby
-field :post, Post, null: true do
-  argument :id, ID, required: true
+field :post, Post do
+  argument :id, ID
 end
 
 def post(id:)
@@ -136,7 +136,7 @@ That value will be provided to root-level fields, such as mutation fields. For e
 
 ```ruby
 class Types::MutationType < GraphQL::Schema::Object
-  field :create_post, Post, null: true
+  field :create_post, Post
 
   def create_post(**args)
     object # => #<Organization id=456 ...>
