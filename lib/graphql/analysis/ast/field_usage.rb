@@ -15,8 +15,12 @@ module GraphQL
           field = "#{visitor.parent_type_definition.graphql_name}.#{field_defn.graphql_name}"
           @used_fields << field
           @used_deprecated_fields << field if field_defn.deprecation_reason
-
-          extract_deprecated_arguments(visitor.query.arguments_for(node, visitor.field_definition).argument_values)
+          arguments = visitor.query.arguments_for(node, visitor.field_definition)
+          # If there was an error when preparing this argument object,
+          # then this might be an error or something:
+          if arguments.respond_to?(:argument_values)
+            extract_deprecated_arguments(arguments.argument_values)
+          end
         end
 
         def result
