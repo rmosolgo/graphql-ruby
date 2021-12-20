@@ -70,7 +70,7 @@ describe GraphQL::Subscriptions::Serialize do
     end
   end
 
-  if defined?(ActiveSupport::TimeWithZone)
+  if defined?(ActiveSupport::TimeWithZone) && defined?(Rails) && Rails.version.split(".").first.to_i >= 7
     it "can deserialize ActiveSupport::TimeWithZone into the right zone" do
       klass = Class.new(ActiveSupport::TimeWithZone) do
         # Forcing the name here for simulating the case where
