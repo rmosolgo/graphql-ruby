@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+# 1.12.23 (20 December 2021)
+
+### Bug fixes
+
+- FieldUsage analyzer: handle arguments that raise an error during `prepare:` #3795
+
 # 1.12.22 (8 December 2021)
 
 ### Bug fixes
