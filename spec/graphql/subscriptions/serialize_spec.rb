@@ -71,19 +71,21 @@ describe GraphQL::Subscriptions::Serialize do
   end
 
   if defined?(ActiveSupport::TimeWithZone)
-    it "can deserialize times that have been emitted from Rails that no longer pretend to be Time objects" do
-      klass = Class.new(ActiveSupport::TimeWithZone) do
-        def self.name
-          "ActiveSupport::TimeWithZone"
-        end
-      end
-      time = klass.new(Time.now.utc, ActiveSupport::TimeZone["UTC"])
-      assert time.is_a?(ActiveSupport::TimeWithZone)
-      assert_equal "ActiveSupport::TimeWithZone", time.class.name
-      serialized = serialize_dump(time)
-      assert_equal "Time", JSON.load(serialized)[GraphQL::Subscriptions::Serialize::TIMESTAMP_KEY].first
-      reloaded = serialize_load(serialized)
-      assert_equal time, reloaded, "#{time.inspect} is serialized to #{serialized.inspect} and reloaded"
+    it "can deserialize ActiveSupport::TimeWithZone into the right zone" do
+      time_utc = ActiveSupport::TimeZone["UTC"].at(1)
+      time_est = ActiveSupport::TimeZone["EST"].at(1)
+
+      serialized_utc = serialize_dump(time_utc)
+      reloaded_utc = serialize_load(serialized_utc)
+
+      serialized_est = serialize_dump(time_est)
+      reloaded_est = serialize_load(serialized_est)
+
+      assert_equal time_utc, reloaded_utc, "#{time_utc.inspect} is serialized to #{serialized_utc.inspect} and reloaded"
+      assert_equal time_est, reloaded_est, "#{time_est.inspect} is serialized to #{serialized_est.inspect} and reloaded"
+
+      assert_equal "UTC", time_utc.time_zone.name, "#{time_utc.inspect} is parsed within the UTC time zone"
+      assert_equal "EST", time_est.time_zone.name, "#{time_est.inspect} is parsed within the EST time zone"
     end
   end
 
