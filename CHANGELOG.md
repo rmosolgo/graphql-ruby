@@ -1,5 +1,7 @@
 # Changelog
 
+GraphQL-Ruby puts careful thought into its version numbers, but does not attempt to deliver "semantic versioning". Please see [the development guide](https://graphql-ruby.org/development.html#versioning) for details.
+
 ### Breaking changes
 
 ### Deprecations
