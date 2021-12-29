@@ -83,16 +83,16 @@
 </ul>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Generate a field which returns a filtered, sorted list of items</span>
-<span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">items_field</span><span class="p">(</span><span class="nb">name</span><span class="p">,</span> <span class="n">override_options</span><span class="p">)</span>
+<span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">items_field</span><span class="p">(</span><span class="nb">name</span><span class="p">,</span> <span class="n">override_options</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
   <span class="c1"># Prepare options</span>
   <span class="n">default_field_options</span> <span class="o">=</span> <span class="p">{</span> <span class="ss">type: </span><span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">Item</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span> <span class="p">}</span>
   <span class="n">field_options</span> <span class="o">=</span> <span class="n">default_field_options</span><span class="p">.</span><span class="nf">merge</span><span class="p">(</span><span class="n">override_options</span><span class="p">)</span>
   <span class="c1"># Create the field</span>
-  <span class="n">field</span><span class="p">(</span><span class="nb">name</span><span class="p">,</span> <span class="n">field_options</span><span class="p">)</span> <span class="k">do</span>
+  <span class="n">field</span><span class="p">(</span><span class="nb">name</span><span class="p">,</span> <span class="o">**</span><span class="n">field_options</span><span class="p">)</span> <span class="k">do</span>
     <span class="n">argument</span> <span class="ss">:order_by</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">ItemOrder</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">false</span>
     <span class="n">argument</span> <span class="ss">:category</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">ItemCategory</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">false</span>
     <span class="c1"># Allow an override block to add more arguments</span>
-    <span class="k">yield</span> <span class="nb">self</span> <span class="k">if</span> <span class="nb">block_given?</span>
+    <span class="nb">instance_eval</span><span class="p">(</span><span class="o">&amp;</span><span class="n">block</span><span class="p">)</span> <span class="k">if</span> <span class="nb">block_given?</span>
   <span class="k">end</span>
 <span class="k">end</span>
 
