@@ -341,7 +341,7 @@ module GraphQL
       #    end
       #  end
       #
-      #  document.to_query_string(printer: VariableSrubber.new)
+      #  document.to_query_string(printer: VariableScrubber.new)
       #
       class Document < AbstractNode
         scalar_methods false
