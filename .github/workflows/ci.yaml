@@ -32,6 +32,7 @@ jobs:
   # - Run the JS unit tests once
   # - Test each major version of Rails we support
   # - Test the min/max minor Ruby version we support (and others?)
+  # - Include `COVERAGE=1` on a Rails test, since some tests only apply to Rails
   test:
     strategy:
       fail-fast: false
@@ -89,6 +90,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
+    - run: echo COVERAGE=1 > $GITHUB_ENV
     - run: echo BUNDLE_GEMFILE='gemfiles/rails_6.1_postgresql.gemfile' > $GITHUB_ENV
     - run: echo DATABASE='POSTGRESQL' > $GITHUB_ENV
     - run: echo PGPASSWORD='postgres' > $GITHUB_ENV
