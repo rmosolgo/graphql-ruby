@@ -71,7 +71,7 @@ end
 
 namespace :bench do
   def prepare_benchmark
-    $LOAD_PATH << "./lib" << "./spec/support"
+    $LOAD_PATH << "./lib" << "./spec/"
     require_relative("./benchmark/run.rb")
   end
 

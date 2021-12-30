@@ -4,8 +4,8 @@ Group: Schema Definition
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/name_validator.rb (coverage: 100.0% / branch: 75.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/rake_task.rb (coverage: 96.61% / branch: 83.33%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/rake_task/validate.rb (coverage: 11.63% / branch: 0.0%)
-/Users/rmosolgo/code/graphql-ruby/lib/graphql/schema.rb (coverage: 95.69% / branch: 88.95%)
-/Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/addition.rb (coverage: 95.21% / branch: 86.57%)
+/Users/rmosolgo/code/graphql-ruby/lib/graphql/schema.rb (coverage: 95.89% / branch: 89.53%)
+/Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/addition.rb (coverage: 95.21% / branch: 88.06%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/argument.rb (coverage: 96.59% / branch: 92.31%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/base_64_bp.rb (coverage: 100.0% / branch: 75.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/base_64_encoder.rb (coverage: 100.0% / branch: 100.0%)
@@ -46,7 +46,7 @@ Group: Schema Definition
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/member/has_deprecation_reason.rb (coverage: 100.0% / branch: 100.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/member/has_directives.rb (coverage: 77.08% / branch: 72.22%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/member/has_fields.rb (coverage: 98.68% / branch: 96.67%)
-/Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/member/has_interfaces.rb (coverage: 93.18% / branch: 78.26%)
+/Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/member/has_interfaces.rb (coverage: 93.18% / branch: 82.61%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/member/has_path.rb (coverage: 100.0% / branch: 83.33%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/member/has_unresolved_type_error.rb (coverage: 100.0% / branch: 100.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/member/has_validators.rb (coverage: 100.0% / branch: 100.0%)
@@ -326,6 +326,7 @@ Group: Generators
 
 Group: Ungrouped
 ========================================
+/Users/rmosolgo/code/graphql-ruby/benchmark/run.rb (coverage: 52.38% / branch: 12.5%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql.rb (coverage: 98.46% / branch: 50.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/deprecation.rb (coverage: 100.0% / branch: 100.0%)
 

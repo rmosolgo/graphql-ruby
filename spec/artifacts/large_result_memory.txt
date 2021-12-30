@@ -1,0 +1,305 @@
+Total allocated: 13724680 bytes (78376 objects)
+Total retained:  0 bytes (0 objects)
+
+allocated memory by gem
+-----------------------------------
+  13724512  graphql-ruby/lib
+       168  other
+
+allocated memory by file
+-----------------------------------
+  12056040  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb
+    806736  /Users/rmosolgo/code/graphql-ruby/lib/graphql/dataloader.rb
+    504168  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/field.rb
+    208208  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/object.rb
+    120080  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/resolve.rb
+      6600  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/member/has_fields.rb
+      3704  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/warden.rb
+      3448  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/fields_will_merge.rb
+      2688  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema.rb
+      1936  /Users/rmosolgo/code/graphql-ruby/lib/graphql/query.rb
+      1240  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/definition_dependencies.rb
+      1104  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/variables_are_used_and_defined.rb
+      1088  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/multiplex.rb
+       872  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter.rb
+       856  /Users/rmosolgo/code/graphql-ruby/lib/graphql/analysis/ast.rb
+       704  /Users/rmosolgo/code/graphql-ruby/lib/graphql/query/context.rb
+       696  /Users/rmosolgo/code/graphql-ruby/lib/graphql/filter.rb
+       696  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/validation_context.rb
+       560  /Users/rmosolgo/code/graphql-ruby/lib/graphql/language/visitor.rb
+       496  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/literal_validator.rb
+       440  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/fields_are_defined_on_type.rb
+       424  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/validator.rb
+       368  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/operation_names_are_valid.rb
+       360  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/base_visitor.rb
+       168  /Users/rmosolgo/code/graphql-ruby/benchmark/run.rb
+       160  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/fragment_names_are_unique.rb
+       120  /Users/rmosolgo/code/graphql-ruby/lib/graphql/query/variables.rb
+       120  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/directives_are_defined.rb
+       120  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/variable_usages_are_allowed.rb
+        80  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/instrumentation.rb
+        80  /Users/rmosolgo/code/graphql-ruby/lib/graphql/query/validation_pipeline.rb
+        80  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/find_inherited_value.rb
+        80  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/fragment_spreads_are_possible.rb
+        80  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/no_definitions_are_present.rb
+        40  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/fragments_are_finite.rb
+        40  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/fragments_are_used.rb
+
+allocated memory by location
+-----------------------------------
+   6040000  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:761
+   1680168  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:505
+    928168  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:275
+    928168  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:41
+    928168  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:65
+    800400  /Users/rmosolgo/code/graphql-ruby/lib/graphql/dataloader.rb:103
+    586632  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:102
+    504168  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/field.rb:726
+    400040  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:404
+    264088  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:752
+    200040  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:412
+    168168  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/object.rb:51
+    120040  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/resolve.rb:38
+     88000  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:713
+     40040  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/object.rb:75
+     10632  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:124
+      6600  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/member/has_fields.rb:42
+      3488  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/warden.rb:329
+      3440  /Users/rmosolgo/code/graphql-ruby/lib/graphql/dataloader.rb:301
+      1856  /Users/rmosolgo/code/graphql-ruby/lib/graphql/dataloader.rb:289
+      1536  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/fields_will_merge.rb:334
+      1344  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:170
+       792  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/fields_will_merge.rb:344
+       672  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema.rb:828
+       520  /Users/rmosolgo/code/graphql-ruby/lib/graphql/language/visitor.rb:125
+       440  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/fields_are_defined_on_type.rb:7
+       440  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/fields_will_merge.rb:343
+       416  /Users/rmosolgo/code/graphql-ruby/lib/graphql/query/context.rb:84
+       416  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema.rb:924
+       400  /Users/rmosolgo/code/graphql-ruby/lib/graphql/dataloader.rb:291
+       376  /Users/rmosolgo/code/graphql-ruby/lib/graphql/query.rb:355
+       376  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/validation_context.rb:29
+       368  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/variables_are_used_and_defined.rb:28
+       336  /Users/rmosolgo/code/graphql-ruby/lib/graphql/filter.rb:21
+       336  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/validator.rb:30
+       320  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema.rb:923
+       320  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/fields_will_merge.rb:333
+       304  /Users/rmosolgo/code/graphql-ruby/lib/graphql/query.rb:83
+       296  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/multiplex.rb:57
+       296  /Users/rmosolgo/code/graphql-ruby/lib/graphql/query.rb:406
+       288  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter.rb:59
+       288  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/operation_names_are_valid.rb:7
+       288  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/variables_are_used_and_defined.rb:29
+       256  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/multiplex.rb:65
+       248  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/literal_validator.rb:10
+       248  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/literal_validator.rb:9
+       240  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/validation_context.rb:25
+       216  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:163
+       216  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/warden.rb:198
+       208  /Users/rmosolgo/code/graphql-ruby/lib/graphql/query.rb:193
+
+allocated memory by class
+-----------------------------------
+   7371264  Array
+   4223680  Hash
+    928168  GraphQL::Execution::Interpreter::Runtime::GraphQLSelectionSet
+    802960  Proc
+    264088  GraphQL::Execution::Interpreter::Runtime::GraphQLResultArray
+     88088  GraphQL::Execution::Interpreter::Runtime::GraphQLResultHash
+     40000  GraphQLBenchmark::ProfileLargeResult::FooType
+      3120  Fiber
+       792  GraphQL::StaticValidation::FieldsWillMerge::Field
+       296  GraphQL::Query
+       296  GraphQL::StaticValidation::InterpreterVisitor
+       288  Method
+       208  GraphQL::Schema::Warden
+       136  Enumerator
+       136  GraphQL::Query::Context
+       128  GraphQL::Query::ValidationPipeline
+       120  GraphQL::Execution::Interpreter::Runtime
+       120  GraphQL::Filter
+        88  GraphQL::Execution::Multiplex
+        88  GraphQL::StaticValidation::ValidationContext
+        80  GraphQL::Query::InputValidationResult
+        72  GraphQL::Query::Variables
+        72  GraphQL::StaticValidation::DefinitionDependencies::DependencyMap
+        72  GraphQL::StaticValidation::LiteralValidator
+        40  GraphQL::Dataloader
+        40  GraphQL::Execution::Interpreter
+        40  GraphQL::Filter::MergedOnly
+        40  GraphQL::Query::Result
+        40  GraphQL::StaticValidation::DefinitionDependencies::NodeWithPath
+        40  GraphQL::StaticValidation::Validator
+        40  GraphQLBenchmark::ProfileLargeResult::QueryType
+        40  String
+
+allocated objects by gem
+-----------------------------------
+     78375  graphql-ruby/lib
+         1  other
+
+allocated objects by file
+-----------------------------------
+     62021  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb
+     10030  /Users/rmosolgo/code/graphql-ruby/lib/graphql/dataloader.rb
+      3001  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/field.rb
+      2002  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/object.rb
+      1002  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/resolve.rb
+        48  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/fields_will_merge.rb
+        33  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/member/has_fields.rb
+        30  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema.rb
+        22  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/definition_dependencies.rb
+        21  /Users/rmosolgo/code/graphql-ruby/lib/graphql/query.rb
+        21  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/warden.rb
+        15  /Users/rmosolgo/code/graphql-ruby/lib/graphql/analysis/ast.rb
+        15  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/variables_are_used_and_defined.rb
+        14  /Users/rmosolgo/code/graphql-ruby/lib/graphql/language/visitor.rb
+        11  /Users/rmosolgo/code/graphql-ruby/lib/graphql/filter.rb
+        11  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/fields_are_defined_on_type.rb
+        10  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/multiplex.rb
+         9  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/base_visitor.rb
+         7  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter.rb
+         7  /Users/rmosolgo/code/graphql-ruby/lib/graphql/query/context.rb
+         7  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/validation_context.rb
+         6  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/literal_validator.rb
+         5  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/operation_names_are_valid.rb
+         3  /Users/rmosolgo/code/graphql-ruby/lib/graphql/query/variables.rb
+         3  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/directives_are_defined.rb
+         3  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/fragment_names_are_unique.rb
+         3  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/variable_usages_are_allowed.rb
+         3  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/validator.rb
+         2  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/instrumentation.rb
+         2  /Users/rmosolgo/code/graphql-ruby/lib/graphql/query/validation_pipeline.rb
+         2  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/find_inherited_value.rb
+         2  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/fragment_spreads_are_possible.rb
+         2  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/no_definitions_are_present.rb
+         1  /Users/rmosolgo/code/graphql-ruby/benchmark/run.rb
+         1  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/fragments_are_finite.rb
+         1  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/fragments_are_used.rb
+
+allocated objects by location
+-----------------------------------
+     31000  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:761
+     10005  /Users/rmosolgo/code/graphql-ruby/lib/graphql/dataloader.rb:103
+     10001  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:404
+     10001  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:505
+      3001  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:102
+      3001  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:752
+      3001  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/field.rb:726
+      1001  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/resolve.rb:38
+      1001  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:275
+      1001  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:41
+      1001  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:412
+      1001  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:65
+      1001  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/object.rb:51
+      1001  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/object.rb:75
+      1000  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:713
+        33  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/member/has_fields.rb:42
+        18  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/warden.rb:329
+        13  /Users/rmosolgo/code/graphql-ruby/lib/graphql/language/visitor.rb:125
+        13  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/fields_will_merge.rb:334
+        11  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/fields_are_defined_on_type.rb:7
+        11  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/fields_will_merge.rb:343
+        11  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/fields_will_merge.rb:344
+         6  /Users/rmosolgo/code/graphql-ruby/lib/graphql/dataloader.rb:301
+         6  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema.rb:923
+         4  /Users/rmosolgo/code/graphql-ruby/lib/graphql/analysis/ast.rb:87
+         4  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:170
+         4  /Users/rmosolgo/code/graphql-ruby/lib/graphql/filter.rb:17
+         4  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema.rb:828
+         4  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema.rb:851
+         4  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema.rb:924
+         4  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/definition_dependencies.rb:129
+         4  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/fields_will_merge.rb:333
+         4  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/variables_are_used_and_defined.rb:28
+         3  /Users/rmosolgo/code/graphql-ruby/lib/graphql/dataloader.rb:158
+         3  /Users/rmosolgo/code/graphql-ruby/lib/graphql/dataloader.rb:159
+         3  /Users/rmosolgo/code/graphql-ruby/lib/graphql/dataloader.rb:160
+         3  /Users/rmosolgo/code/graphql-ruby/lib/graphql/dataloader.rb:161
+         3  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:163
+         3  /Users/rmosolgo/code/graphql-ruby/lib/graphql/query/context.rb:84
+         3  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/warden.rb:198
+         3  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/literal_validator.rb:10
+         3  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/literal_validator.rb:9
+         3  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/operation_names_are_valid.rb:7
+         3  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/variables_are_used_and_defined.rb:29
+         3  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/validation_context.rb:29
+         2  /Users/rmosolgo/code/graphql-ruby/lib/graphql/dataloader.rb:289
+         2  /Users/rmosolgo/code/graphql-ruby/lib/graphql/dataloader.rb:291
+         2  /Users/rmosolgo/code/graphql-ruby/lib/graphql/dataloader.rb:53
+         2  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/instrumentation.rb:56
+         2  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter.rb:59
+
+allocated objects by class
+-----------------------------------
+     46208  Array
+     16086  Hash
+     10037  Proc
+      3001  GraphQL::Execution::Interpreter::Runtime::GraphQLResultArray
+      1001  GraphQL::Execution::Interpreter::Runtime::GraphQLResultHash
+      1001  GraphQL::Execution::Interpreter::Runtime::GraphQLSelectionSet
+      1000  GraphQLBenchmark::ProfileLargeResult::FooType
+        11  GraphQL::StaticValidation::FieldsWillMerge::Field
+         4  Method
+         3  GraphQL::Filter
+         2  Fiber
+         2  GraphQL::Query::InputValidationResult
+         1  Enumerator
+         1  GraphQL::Dataloader
+         1  GraphQL::Execution::Interpreter
+         1  GraphQL::Execution::Interpreter::Runtime
+         1  GraphQL::Execution::Multiplex
+         1  GraphQL::Filter::MergedOnly
+         1  GraphQL::Query
+         1  GraphQL::Query::Context
+         1  GraphQL::Query::Result
+         1  GraphQL::Query::ValidationPipeline
+         1  GraphQL::Query::Variables
+         1  GraphQL::Schema::Warden
+         1  GraphQL::StaticValidation::DefinitionDependencies::DependencyMap
+         1  GraphQL::StaticValidation::DefinitionDependencies::NodeWithPath
+         1  GraphQL::StaticValidation::InterpreterVisitor
+         1  GraphQL::StaticValidation::LiteralValidator
+         1  GraphQL::StaticValidation::ValidationContext
+         1  GraphQL::StaticValidation::Validator
+         1  GraphQLBenchmark::ProfileLargeResult::QueryType
+         1  String
+
+retained memory by gem
+-----------------------------------
+NO DATA
+
+retained memory by file
+-----------------------------------
+NO DATA
+
+retained memory by location
+-----------------------------------
+NO DATA
+
+retained memory by class
+-----------------------------------
+NO DATA
+
+retained objects by gem
+-----------------------------------
+NO DATA
+
+retained objects by file
+-----------------------------------
+NO DATA
+
+retained objects by location
+-----------------------------------
+NO DATA
+
+retained objects by class
+-----------------------------------
+NO DATA
+
+
+Allocated String Report
+-----------------------------------
+         1  "query"
+         1  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/base_visitor.rb:58
+

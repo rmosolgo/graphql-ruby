@@ -1,7 +1,13 @@
 # frozen_string_literal: true
 # Use a rails gemfile for this because it has the widest coverage
 code_cov_gemfile = "gemfiles/rails_6.1.gemfile"
-if ENV["BUNDLE_GEMFILE"].end_with?(code_cov_gemfile)
+
+if ENV["GITHUB_ACTIONS"] && ENV["COVERAGE"]
+  FileUtils.mkdir_p("spec/ci")
+end
+
+# Enable code coverage when opted in and no specific file was selected
+if ENV["COVERAGE"] && !ENV["TEST"]
   puts "Starting Code Coverage"
   require 'simplecov'
   SimpleCov.at_exit do
@@ -16,13 +22,13 @@ if ENV["BUNDLE_GEMFILE"].end_with?(code_cov_gemfile)
       text_result << "\n"
     end
     # Write this file to track coverage in source control
-    cov_file = "spec/coverage.txt"
+    cov_file = "spec/artifacts/coverage.txt"
     # Raise in CI if this file isn't up-to-date
     if ENV["GITHUB_ACTIONS"]
-      if File.read(cov_file) != text_result
-        raise "Oops! #{cov_file.inspect} isn't up-to-date. Run `BUNDLE_GEMFILE=#{code_cov_gemfile} bundle exec rake test` to update that file, then commit changes and push again."
-      end
+      File.write("spec/ci/coverage.txt", text_result)
+      # TODO diff against `spec/coverage.txt`
     else
+      FileUtils.mkdir_p("spec/artifacts")
       File.write(cov_file, text_result)
     end
     SimpleCov.result.format!
