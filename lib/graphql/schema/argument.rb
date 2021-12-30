@@ -143,13 +143,7 @@ module GraphQL
             end
           end
         elsif as_type.kind.input_object?
-          as_type.arguments(ctx).each do |_name, input_obj_arg|
-            # TODO: this skips input objects whose values were alread replaced with application objects.
-            # See: https://github.com/rmosolgo/graphql-ruby/issues/2633
-            if value.is_a?(InputObject) && value.key?(input_obj_arg.keyword) && !input_obj_arg.authorized?(obj, value[input_obj_arg.keyword], ctx)
-              return false
-            end
-          end
+          return as_type.authorized?(obj, value, ctx)
         end
         # None of the early-return conditions were activated,
         # so this is authorized.

@@ -1,6 +1,6 @@
 import ActionCableLink from "../ActionCableLink"
 import { parse } from "graphql"
-import { Cable } from "actioncable"
+import type { Consumer } from "@rails/actioncable"
 import { Operation } from "@apollo/client/core"
 
 describe("ActionCableLink", () => {
@@ -46,7 +46,7 @@ describe("ActionCableLink", () => {
       }
     }
     options = {
-      cable: (cable as unknown) as Cable
+      cable: (cable as unknown) as Consumer
     }
 
     query = parse("subscription { foo { bar } }")

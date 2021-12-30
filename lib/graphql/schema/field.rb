@@ -14,6 +14,8 @@ module GraphQL
       include GraphQL::Schema::Member::HasDirectives
       include GraphQL::Schema::Member::HasDeprecationReason
 
+      class FieldImplementationFailed < GraphQL::Error; end
+
       # @return [String] the GraphQL name for this field, camelized unless `camelize: false` is provided
       attr_reader :name
       alias :graphql_name :name
@@ -273,6 +275,7 @@ module GraphQL
         @subscription_scope = subscription_scope
 
         @extensions = EMPTY_ARRAY
+        @call_after_define = false
         # This should run before connection extension,
         # but should it run after the definition block?
         if scoped?
@@ -305,6 +308,9 @@ module GraphQL
             instance_eval(&definition_block)
           end
         end
+
+        self.extensions.each(&:after_define_apply)
+        @call_after_define = true
       end
 
       # If true, subscription updates with this field can be shared between viewers
@@ -337,27 +343,20 @@ module GraphQL
       # @example adding an extension with options
       #   extensions([MyExtensionClass, { AnotherExtensionClass => { filter: true } }])
       #
-      # @param extensions [Array<Class, Hash<Class => Object>>] Add extensions to this field. For hash elements, only the first key/value is used.
+      # @param extensions [Array<Class, Hash<Class => Hash>>] Add extensions to this field. For hash elements, only the first key/value is used.
       # @return [Array<GraphQL::Schema::FieldExtension>] extensions to apply to this field
       def extensions(new_extensions = nil)
-        if new_extensions.nil?
-          # Read the value
-          @extensions
-        else
-          if @extensions.frozen?
-            @extensions = @extensions.dup
-          end
-          new_extensions.each do |extension|
-            if extension.is_a?(Hash)
-              extension = extension.to_a[0]
-              extension_class, options = *extension
-              @extensions << extension_class.new(field: self, options: options)
+        if new_extensions
+          new_extensions.each do |extension_config|
+            if extension_config.is_a?(Hash)
+              extension_class, options = *extension_config.to_a[0]
+              self.extension(extension_class, options)
             else
-              extension_class = extension
-              @extensions << extension_class.new(field: self, options: nil)
+              self.extension(extension_config)
             end
           end
         end
+        @extensions
       end
 
       # Add `extension` to this field, initialized with `options` if provided.
@@ -368,10 +367,19 @@ module GraphQL
       # @example adding an extension with options
       #   extension(MyExtensionClass, filter: true)
       #
-      # @param extension [Class] subclass of {Schema::Fieldextension}
-      # @param options [Object] if provided, given as `options:` when initializing `extension`.
-      def extension(extension, options = nil)
-        extensions([{extension => options}])
+      # @param extension_class [Class] subclass of {Schema::FieldExtension}
+      # @param options [Hash] if provided, given as `options:` when initializing `extension`.
+      # @return [void]
+      def extension(extension_class, options = nil)
+        extension_inst = extension_class.new(field: self, options: options)
+        if @extensions.frozen?
+          @extensions = @extensions.dup
+        end
+        if @call_after_define
+          extension_inst.after_define_apply
+        end
+        @extensions << extension_inst
+        nil
       end
 
       # Read extras (as symbols) from this field,
@@ -424,10 +432,15 @@ module GraphQL
             if lookahead.selects?(:total) || lookahead.selects?(:total_count) || lookahead.selects?(:count)
               metadata_complexity += 1
             end
+
+            nodes_edges_complexity = 0
+            nodes_edges_complexity += 1 if lookahead.selects?(:edges)
+            nodes_edges_complexity += 1 if lookahead.selects?(:nodes)
+
             # Possible bug: selections on `edges` and `nodes` are _both_ multiplied here. Should they be?
-            items_complexity = child_complexity - metadata_complexity
+            items_complexity = child_complexity - metadata_complexity - nodes_edges_complexity
             # Add 1 for _this_ field
-            1 + (max_possible_page_size * items_complexity) + metadata_complexity
+            1 + (max_possible_page_size * items_complexity) + metadata_complexity + nodes_edges_complexity
           end
         else
           defined_complexity = complexity
@@ -514,7 +527,7 @@ module GraphQL
 
       def authorized?(object, args, context)
         if @resolver_class
-          # The resolver will check itself during `resolve()`
+          # The resolver _instance_ will check itself during `resolve()`
           @resolver_class.authorized?(object, context)
         else
           if (arg_values = context[:current_arguments])
@@ -600,51 +613,103 @@ module GraphQL
 
       def public_send_field(unextended_obj, unextended_ruby_kwargs, query_ctx)
         with_extensions(unextended_obj, unextended_ruby_kwargs, query_ctx) do |obj, ruby_kwargs|
-          if @resolver_class
-            if obj.is_a?(GraphQL::Schema::Object)
-              obj = obj.object
+          begin
+            method_receiver = nil
+            method_to_call = nil
+            if @resolver_class
+              if obj.is_a?(GraphQL::Schema::Object)
+                obj = obj.object
+              end
+              obj = @resolver_class.new(object: obj, context: query_ctx, field: self)
             end
-            obj = @resolver_class.new(object: obj, context: query_ctx, field: self)
+
+            # Find a way to resolve this field, checking:
+            #
+            # - A method on the type instance;
+            # - Hash keys, if the wrapped object is a hash;
+            # - A method on the wrapped object;
+            # - Or, raise not implemented.
+            #
+            if obj.respond_to?(@resolver_method)
+              method_to_call = @resolver_method
+              method_receiver = obj
+              # Call the method with kwargs, if there are any
+              if ruby_kwargs.any?
+                obj.public_send(@resolver_method, **ruby_kwargs)
+              else
+                obj.public_send(@resolver_method)
+              end
+            elsif obj.object.is_a?(Hash)
+              inner_object = obj.object
+              if inner_object.key?(@method_sym)
+                inner_object[@method_sym]
+              else
+                inner_object[@method_str]
+              end
+            elsif obj.object.respond_to?(@method_sym)
+              method_to_call = @method_sym
+              method_receiver = obj.object
+              if ruby_kwargs.any?
+                obj.object.public_send(@method_sym, **ruby_kwargs)
+              else
+                obj.object.public_send(@method_sym)
+              end
+            else
+              raise <<-ERR
+            Failed to implement #{@owner.graphql_name}.#{@name}, tried:
+
+            - `#{obj.class}##{@resolver_method}`, which did not exist
+            - `#{obj.object.class}##{@method_sym}`, which did not exist
+            - Looking up hash key `#{@method_sym.inspect}` or `#{@method_str.inspect}` on `#{obj.object}`, but it wasn't a Hash
+
+            To implement this field, define one of the methods above (and check for typos)
+            ERR
+            end
+          rescue ArgumentError
+            assert_satisfactory_implementation(method_receiver, method_to_call, ruby_kwargs)
+            # if the line above doesn't raise, re-raise
+            raise
           end
+        end
+      end
 
-          # Find a way to resolve this field, checking:
-          #
-          # - A method on the type instance;
-          # - Hash keys, if the wrapped object is a hash;
-          # - A method on the wrapped object;
-          # - Or, raise not implemented.
-          #
-          if obj.respond_to?(@resolver_method)
-            # Call the method with kwargs, if there are any
-            if ruby_kwargs.any?
-              obj.public_send(@resolver_method, **ruby_kwargs)
+      def assert_satisfactory_implementation(receiver, method_name, ruby_kwargs)
+        method_defn = receiver.method(method_name)
+        unsatisfied_ruby_kwargs = ruby_kwargs.dup
+        unsatisfied_method_params = []
+        encountered_keyrest = false
+        method_defn.parameters.each do |(param_type, param_name)|
+          case param_type
+          when :key
+            unsatisfied_ruby_kwargs.delete(param_name)
+          when :keyreq
+            if unsatisfied_ruby_kwargs.key?(param_name)
+              unsatisfied_ruby_kwargs.delete(param_name)
             else
-              obj.public_send(@resolver_method)
+              unsatisfied_method_params << "- `#{param_name}:` is required by Ruby, but not by GraphQL. Consider `#{param_name}: nil` instead, or making this argument required in GraphQL."
             end
-          elsif obj.object.is_a?(Hash)
-            inner_object = obj.object
-            if inner_object.key?(@method_sym)
-              inner_object[@method_sym]
-            else
-              inner_object[@method_str]
-            end
-          elsif obj.object.respond_to?(@method_sym)
-            if ruby_kwargs.any?
-              obj.object.public_send(@method_sym, **ruby_kwargs)
-            else
-              obj.object.public_send(@method_sym)
-            end
-          else
-            raise <<-ERR
-          Failed to implement #{@owner.graphql_name}.#{@name}, tried:
-
-          - `#{obj.class}##{@resolver_method}`, which did not exist
-          - `#{obj.object.class}##{@method_sym}`, which did not exist
-          - Looking up hash key `#{@method_sym.inspect}` or `#{@method_str.inspect}` on `#{obj.object}`, but it wasn't a Hash
-
-          To implement this field, define one of the methods above (and check for typos)
-          ERR
+          when :keyrest
+            encountered_keyrest = true
+          when :req
+            unsatisfied_method_params << "- `#{param_name}` is required by Ruby, but GraphQL doesn't pass positional arguments. If it's meant to be a GraphQL argument, use `#{param_name}:` instead. Otherwise, remove it."
+          when :opt, :rest
+            # This is fine, although it will never be present
           end
+        end
+
+        if encountered_keyrest
+          unsatisfied_ruby_kwargs.clear
+        end
+
+        if unsatisfied_ruby_kwargs.any? || unsatisfied_method_params.any?
+          raise FieldImplementationFailed.new, <<-ERR
+Failed to call #{method_name} on #{receiver.inspect} because the Ruby method params were incompatible with the GraphQL arguments:
+
+#{ unsatisfied_ruby_kwargs
+    .map { |key, value| "- `#{key}: #{value}` was given by GraphQL but not defined in the Ruby method. Add `#{key}:` to the method parameters." }
+    .concat(unsatisfied_method_params)
+    .join("\n") }
+ERR
         end
       end
 
@@ -658,8 +723,12 @@ module GraphQL
           # This is a hack to get the _last_ value for extended obj and args,
           # in case one of the extensions doesn't `yield`.
           # (There's another implementation that uses multiple-return, but I'm wary of the perf cost of the extra arrays)
-          extended = { args: args, obj: obj, memos: nil }
+          extended = { args: args, obj: obj, memos: nil, added_extras: nil }
           value = run_extensions_before_resolve(obj, args, ctx, extended) do |obj, args|
+            if (added_extras = extended[:added_extras])
+              args = args.dup
+              added_extras.each { |e| args.delete(e) }
+            end
             yield(obj, args)
           end
 
@@ -688,6 +757,12 @@ module GraphQL
               memos = extended[:memos] ||= {}
               memos[idx] = memo
             end
+
+            if (extras = extension.added_extras)
+              ae = extended[:added_extras] ||= []
+              ae.concat(extras)
+            end
+
             extended[:obj] = extended_obj
             extended[:args] = extended_args
             run_extensions_before_resolve(extended_obj, extended_args, ctx, extended, idx: idx + 1) { |o, a| yield(o, a) }

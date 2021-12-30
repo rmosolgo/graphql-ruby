@@ -8,17 +8,29 @@
 
 ### Bug Fix
 
+# 1.20.4 (4 December 2021)
+
+### Bug Fix
+
+- Stable connections: Fix using startCursor / endCursor without nodes #3752
+
+# 1.20.3 (27 November 2021)
+
+### Bug Fix
+
+- Stable Connections: Properly handle cursors containing invalid JSON #3735
+
 # 1.20.2 (15 November 2021)
 
 ### New Features
 
-- Operation Store: performance improvements: only validate newly-added operations, reduce allocations when normalizing incoming query strings
+- Operation Store sync: ActiveRecord backend performance improvements: when syncing operations, only validate newly-added operations, reduce allocations when normalizing incoming query strings
 
 # 1.20.1 (8 November 2021)
 
 ### Bug Fix
 
-- Operation Store: fix when operations are re-synced with new aliases
+- Operation Store sync: fix when operations are re-synced with new aliases
 
 # 1.20.0 (5 November 2021)
 

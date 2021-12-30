@@ -7,7 +7,7 @@ module GraphQL
       def self.trim_whitespace(str)
         # Early return for the most common cases:
         if str == ""
-          return ""
+          return "".dup
         elsif !(has_newline = str.include?("\n")) && !(str.start_with?(" "))
           return str
         end
@@ -55,7 +55,7 @@ module GraphQL
         end
 
         # Rebuild the string
-        lines.size > 1 ? lines.join("\n") : (lines.first || "")
+        lines.size > 1 ? lines.join("\n") : (lines.first || "".dup)
       end
 
       def self.print(str, indent: '')

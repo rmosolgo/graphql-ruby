@@ -18,7 +18,7 @@ describe GraphQL::Schema::Field::ConnectionExtension do
       field :argument_data, [String], null: false
 
       def argument_data
-        [object.arguments.class.name, *object.arguments.keys.map(&:inspect)]
+        [object.arguments.class.name, *object.arguments.keys.map(&:inspect).sort]
       end
     end
 

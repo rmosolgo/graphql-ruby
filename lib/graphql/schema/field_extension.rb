@@ -15,22 +15,109 @@ module GraphQL
       # @return [Object]
       attr_reader :options
 
+      # @return [Array<Symbol>, nil] `default_argument`s added, if any were added (otherwise, `nil`)
+      attr_reader :added_default_arguments
+
       # Called when the extension is mounted with `extension(name, options)`.
-      # The instance is frozen to avoid improper use of state during execution.
+      # The instance will be frozen to avoid improper use of state during execution.
       # @param field [GraphQL::Schema::Field] The field where this extension was mounted
       # @param options [Object] The second argument to `extension`, or `{}` if nothing was passed.
       def initialize(field:, options:)
         @field = field
         @options = options || {}
+        @added_default_arguments = nil
         apply
-        freeze
       end
+
+      class << self
+        # @return [Array(Array, Hash), nil] A list of default argument configs, or `nil` if there aren't any
+        def default_argument_configurations
+          args = superclass.respond_to?(:default_argument_configurations) ? superclass.default_argument_configurations : nil
+          if @own_default_argument_configurations
+            if args
+              args.concat(@own_default_argument_configurations)
+            else
+              args = @own_default_argument_configurations.dup
+            end
+          end
+          args
+        end
+
+        # @see Argument#initialize
+        # @see HasArguments#argument
+        def default_argument(*argument_args, **argument_kwargs)
+          configs = @own_default_argument_configurations ||= []
+          configs << [argument_args, argument_kwargs]
+        end
+
+        # If configured, these `extras` will be added to the field if they aren't already present,
+        # but removed by from `arguments` before the field's `resolve` is called.
+        # (The extras _will_ be present for other extensions, though.)
+        #
+        # @param new_extras [Array<Symbol>] If provided, assign extras used by this extension
+        # @return [Array<Symbol>] any extras assigned to this extension
+        def extras(new_extras = nil)
+          if new_extras
+            @own_extras = new_extras
+          end
+
+          inherited_extras = self.superclass.respond_to?(:extras) ? superclass.extras : nil
+          if @own_extras
+            if inherited_extras
+              inherited_extras + @own_extras
+            else
+              @own_extras
+            end
+          elsif inherited_extras
+            inherited_extras
+          else
+            NO_EXTRAS
+          end
+        end
+      end
+
+      NO_EXTRAS = [].freeze
+      private_constant :NO_EXTRAS
 
       # Called when this extension is attached to a field.
       # The field definition may be extended during this method.
       # @return [void]
       def apply
       end
+
+      # Called after the field's definition block has been executed.
+      # (Any arguments from the block are present on `field`)
+      # @return [void]
+      def after_define
+      end
+
+      # @api private
+      def after_define_apply
+        after_define
+        if (configs = self.class.default_argument_configurations)
+          existing_keywords = field.all_argument_definitions.map(&:keyword)
+          existing_keywords.uniq!
+          @added_default_arguments = []
+          configs.each do |config|
+            argument_args, argument_kwargs = config
+            arg_name = argument_args[0]
+            if !existing_keywords.include?(arg_name)
+              @added_default_arguments << arg_name
+              field.argument(*argument_args, **argument_kwargs)
+            end
+          end
+        end
+        if (extras = self.class.extras).any?
+          @added_extras = extras - field.extras
+          field.extras(@added_extras)
+        else
+          @added_extras = nil
+        end
+        freeze
+      end
+
+      # @api private
+      attr_reader :added_extras
 
       # Called before resolving {#field}. It should either:
       #

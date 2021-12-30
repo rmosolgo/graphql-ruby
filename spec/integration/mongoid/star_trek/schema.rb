@@ -322,7 +322,7 @@ module StarTrek
       [OpenStruct.new(id: nil)]
     end
 
-    add_field(GraphQL::Types::Relay::NodeField)
+    include GraphQL::Types::Relay::HasNodeField
 
     field :node_with_custom_resolver, GraphQL::Types::Relay::Node do
       argument :id, ID

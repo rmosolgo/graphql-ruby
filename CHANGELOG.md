@@ -8,6 +8,36 @@
 
 ### Bug fixes
 
+# 1.13.2 (15 December 2021)
+
+### Bug fixes
+
+- Authorization: only authorize arguments _once_, after they've been loaded with `loads:` #3782
+- Execution: always provide an `Interpreter::Arguments` instance as `context[:current_arguments]` #3783
+
+# 1.13.1 (13 December 2021)
+
+### Deprecations
+
+- `.to_graphql` and `.graphql_definition` are deprecated and will be removed in GraphQL-Ruby 2.0. All features using those legacy definitions are already removed and all behaviors should have been ported to class-based definitions. So, you should be able to remove those calls entirely. Please open an issue if you have trouble with it! #3750 #3765
+
+### New features
+
+- `context.response_extensions[...] = ...` adds key-value pairs to the `"extensions" => {...}` hash in the final response #3770
+- Connections: `node_type` and `edge_type` accept `field_options:` to pass custom options to generated fields #3756
+- Field extensions: Support `default_argument ...` configuration for adding arguments if the field doesn't already have them #3751
+
+### Bug fixes
+
+- fix `rails destroy graphql:install` #3739
+- ActionCable subscriptions: close channel when unsubscribing from server #3737
+- Mutations: call `.authorized?` on arguments from `input_object_class`, `input_type`, too #3738
+- Prevent blank strings with `validates: { length: ... }, allow_blank: false` #3747
+- Lexer: return mutable strings when strings are empty #3741
+- Errors: don't send execution errors to schema-defined handlers from inside lazies #3749
+- Complexity: don't multiple `edges` and `nodes` fields by page size #3758
+- Performance: fix validation performance degradation from 1.12.20 #3762
+
 # 1.13.0 (24 November 2021)
 
 Since this version, GraphQL-Ruby is tested on Ruby 2.4+ and Rails 4+ only.

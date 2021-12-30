@@ -67,8 +67,9 @@ class ActionCableSubscriptionsTest < ApplicationSystemTestCase
 
 
   test "it only re-runs queries once for subscriptions with matching fingerprints" do
+    GraphqlChannel::CounterIncremented.reset_call_count
     visit "/"
-    using_wait_time 30 do
+    using_wait_time 10 do
       sleep 1
       # Make 3 subscriptions to the same payload
       click_on("Subscribe with fingerprint 1")
@@ -122,6 +123,29 @@ class ActionCableSubscriptionsTest < ApplicationSystemTestCase
       # But this one was unsubscribed:
       refute_selector "#fingerprint-updates-1-update-1-value-#{fingerprint_1_value_2 + 1}"
       refute_selector "#fingerprint-updates-1-update-1-value-#{fingerprint_1_value_2 + 2}"
+    end
+  end
+
+  test "it unsubscribes from the server" do
+    GraphqlChannel::CounterIncremented.reset_call_count
+    visit "/"
+    using_wait_time 10 do
+      sleep 1
+      # Establish the connection
+      click_on("Subscribe with fingerprint 1")
+      debug_assert_selector "#fingerprint-updates-1-connected-1"
+      # Trigger once
+      click_on("Trigger with fingerprint 1")
+      debug_assert_selector "#fingerprint-updates-1-update-1-value-1"
+
+      # Server unsubscribe
+      click_on("Server-side unsubscribe with fingerprint 1")
+      # Subsequent updates should fail
+      click_on("Trigger with fingerprint 1")
+      refute_selector "#fingerprint-updates-1-update-2-value-2"
+
+      # The client has only 2 connections (from the initial 2)
+      assert_text "Remaining ActionCable subscriptions: 2"
     end
   end
 end

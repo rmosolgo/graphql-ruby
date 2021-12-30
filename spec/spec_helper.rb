@@ -45,10 +45,6 @@ def testing_mongoid?
   defined?(::Mongoid)
 end
 
-def skip_if_rails_7_alpha
-  skip("Rails master builds are broken because of https://github.com/rails/rails/issues/43422") if Rails::VERSION::STRING.start_with?("7.0.0.alpha")
-end
-
 # Load support files
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each do |f|
   require f

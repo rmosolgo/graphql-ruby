@@ -124,7 +124,7 @@ describe GraphQL::Schema do
       it "raises not implemented" do
         query_type = Class.new(GraphQL::Schema::Object) do
           graphql_name "Query"
-          add_field(GraphQL::Types::Relay::NodeField)
+          include GraphQL::Types::Relay::HasNodeField
         end
 
         thing_type = Class.new(GraphQL::Schema::Object) do

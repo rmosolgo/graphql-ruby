@@ -1,21 +1,17 @@
 # frozen_string_literal: true
 require "spec_helper"
 require "generators/graphql/relay_generator"
+require "generators/graphql/install_generator"
 
 class GraphQLGeneratorsRelayGeneratorTest < Rails::Generators::TestCase
   tests Graphql::Generators::RelayGenerator
   destination File.expand_path("../../../tmp/dummy", File.dirname(__FILE__))
 
   setup do
-    skip_if_rails_7_alpha
     prepare_destination
-
     FileUtils.cd(File.join(destination_root, '..')) do
-      `rails new dummy --skip-active-record --skip-test-unit --skip-spring --skip-bundle --skip-webpack-install`
-
-      FileUtils.cd("dummy") do
-        `rails generate graphql:install`
-      end
+      `rails new dummy`
+      Graphql::Generators::InstallGenerator.start([], { destination_root: destination_root })
     end
   end
 

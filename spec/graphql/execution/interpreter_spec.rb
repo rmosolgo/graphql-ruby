@@ -226,8 +226,8 @@ describe GraphQL::Execution::Interpreter do
       field :field_counter, FieldCounter, null: false
       def field_counter; FieldCounter.generate_tag(context) ; end
 
-      add_field(GraphQL::Types::Relay::NodeField)
-      add_field(GraphQL::Types::Relay::NodesField)
+      include GraphQL::Types::Relay::HasNodeField
+      include GraphQL::Types::Relay::HasNodesField
     end
 
     class Counter < GraphQL::Schema::Object
@@ -268,6 +268,20 @@ describe GraphQL::Execution::Interpreter do
       def self.resolve_type(type, obj, ctx)
         FieldCounter
       end
+
+      class EnsureArgsAreObject
+        def self.trace(event, data)
+          case event
+          when "execute_field", "execute_field_lazy"
+            args = data[:query].context[:current_arguments]
+            if !args.is_a?(GraphQL::Execution::Interpreter::Arguments)
+              raise "Expected arguments object, got #{args.class}: #{args.inspect}"
+            end
+          end
+          yield
+        end
+      end
+      tracer EnsureArgsAreObject
     end
   end
 

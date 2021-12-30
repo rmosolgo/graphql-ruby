@@ -293,13 +293,22 @@ describe GraphQL::Schema::InputObject do
         argument :min, Integer
         argument :max, Integer, required: false
 
+        def self.authorized?(obj, arg, ctx)
+          if arg.end <= 100
+            super
+          else
+            ctx.add_error(GraphQL::ExecutionError.new("Range too big"))
+            false
+          end
+        end
+
         def prepare
           min..max
         end
       end
 
       class Query < GraphQL::Schema::Object
-        field :inputs, String, null: false do
+        field :inputs, String do
           argument :input, InputObj
         end
 
@@ -331,6 +340,16 @@ describe GraphQL::Schema::InputObject do
       res = InputObjectPrepareObjectTest::Schema.execute(query_str, variables: { input: { min: 5, max: 10 } })
       expected_obj = (5..10).inspect
       assert_equal expected_obj, res["data"]["inputs"]
+    end
+
+    it "authorizes the prepared value" do
+      query_str = <<-GRAPHQL
+        query ($input: InputObj!){ inputs(input: $input) }
+      GRAPHQL
+
+      res = InputObjectPrepareObjectTest::Schema.execute(query_str, variables: { input: { min: 5, max: 101 } })
+      assert_nil res["data"]["inputs"]
+      assert_equal ["Range too big"], res["errors"].map { |e| e["message"] }
     end
   end
 
@@ -1002,6 +1021,48 @@ describe GraphQL::Schema::InputObject do
           assert_equal("Brie", cow_value)
         end
       end
+    end
+  end
+
+  describe "failed loads on input object arguments" do
+    class FailedLoadSchema < GraphQL::Schema
+      class Thing < GraphQL::Schema::Object
+        field :id, ID
+      end
+
+      class ThingInput < GraphQL::Schema::InputObject
+        argument :id, ID, loads: Thing, as: :thing
+      end
+
+      class GetThings < GraphQL::Schema::Resolver
+        argument :things, [ThingInput]
+
+        type [Thing], null: false
+        def resolve(things:)
+          things.map { |t| t[:thing]}
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :get_things, resolver: GetThings
+      end
+
+      query(Query)
+
+      def self.object_from_id(id, ctx)
+        -> { nil }
+      end
+
+      lazy_resolve(Proc, :call)
+
+      rescue_from(StandardError) {
+        nil
+      }
+    end
+
+    it "handles a lazy failed load of an argument with a nice error" do
+      res = FailedLoadSchema.execute("{ getThings(things: [{id: \"1\"}]) { id } }")
+      assert_equal ["No object found for `id: \"1\"`"], res["errors"].map { |e| e["message"] }
     end
   end
 end

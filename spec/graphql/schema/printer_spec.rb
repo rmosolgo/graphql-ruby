@@ -30,7 +30,7 @@ REASON
       argument :int, Int, required: false
       argument :float, Float, required: false
       argument :bool, Boolean, required: false
-      argument :enum, Choice, required: false, default_value: :foo
+      argument :some_enum, Choice, required: false, default_value: :foo
       argument :sub, [Sub, null: true], required: false
     end
 
@@ -72,8 +72,8 @@ REASON
 
       field :post, Post do
         argument :id, ID, description: "Post ID"
-        argument :varied, Varied, required: false, default_value: { id: "123", int: 234, float: 2.3, enum: :foo, sub: [{ string: "str" }] }
-        argument :varied_with_nulls, Varied, required: false, default_value: { id: nil, int: nil, float: nil, enum: nil, sub: nil }
+        argument :varied, Varied, required: false, default_value: { id: "123", int: 234, float: 2.3, some_enum: :foo, sub: [{ string: "str" }] }
+        argument :varied_with_nulls, Varied, required: false, default_value: { id: nil, int: nil, float: nil, some_enum: nil, sub: nil }
         argument :deprecated_arg, String, required: false, deprecation_reason: "Use something else"
       end
     end
@@ -543,8 +543,8 @@ type Query {
     Post ID
     """
     id: ID!
-    varied: Varied = {id: "123", int: 234, float: 2.3, enum: FOO, sub: [{string: "str"}]}
-    variedWithNulls: Varied = {id: null, int: null, float: null, enum: null, sub: null}
+    varied: Varied = {id: "123", int: 234, float: 2.3, someEnum: FOO, sub: [{string: "str"}]}
+    variedWithNulls: Varied = {id: null, int: null, float: null, someEnum: null, sub: null}
   ): Post
 }
 
@@ -569,10 +569,10 @@ type Subscription {
 
 input Varied {
   bool: Boolean
-  enum: Choice = FOO
   float: Float
   id: ID
   int: Int
+  someEnum: Choice = FOO
   sub: [Sub]
 }
 SCHEMA

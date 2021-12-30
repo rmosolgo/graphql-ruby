@@ -8,6 +8,7 @@ module GraphQL
     # - {.resolve}: Wraps field resolution (so it should call `yield` to continue)
     class Directive < GraphQL::Schema::Member
       extend GraphQL::Schema::Member::HasArguments
+
       class << self
         # Directives aren't types, they don't have kinds.
         undef_method :kind

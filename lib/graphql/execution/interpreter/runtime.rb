@@ -512,7 +512,7 @@ module GraphQL
               after_lazy(app_result, owner: owner_type, field: field_defn, path: next_path, ast_node: ast_node, scoped_context: context.scoped_context, owner_object: object, arguments: resolved_arguments, result_name: result_name, result: selection_result) do |inner_result|
                 continue_value = continue_value(next_path, inner_result, owner_type, field_defn, return_type.non_null?, ast_node, result_name, selection_result)
                 if HALT != continue_value
-                  continue_field(next_path, continue_value, owner_type, field_defn, return_type, ast_node, next_selections, false, object, kwarg_arguments, result_name, selection_result)
+                  continue_field(next_path, continue_value, owner_type, field_defn, return_type, ast_node, next_selections, false, object, resolved_arguments, result_name, selection_result)
                 end
               end
             end
@@ -863,16 +863,20 @@ module GraphQL
               # but don't wrap the continuation below
               inner_obj = begin
                 query.with_error_handling do
-                  if trace
-                    query.trace("execute_field_lazy", {owner: owner, field: field, path: path, query: query, object: owner_object, arguments: arguments, ast_node: ast_node}) do
+                  begin
+                    if trace
+                      query.trace("execute_field_lazy", {owner: owner, field: field, path: path, query: query, object: owner_object, arguments: arguments, ast_node: ast_node}) do
+                        schema.sync_lazy(lazy_obj)
+                      end
+                    else
                       schema.sync_lazy(lazy_obj)
                     end
-                  else
-                    schema.sync_lazy(lazy_obj)
+                  rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
+                    err
                   end
                 end
-                rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
-                  err
+              rescue GraphQL::ExecutionError => ex_err
+                ex_err
               end
               yield(inner_obj)
             end

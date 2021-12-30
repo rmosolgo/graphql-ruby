@@ -90,6 +90,11 @@ module GraphQL
         @scoped_context = {}
       end
 
+      # @return [Hash] A hash that will be added verbatim to the result hash, as `"extensions" => { ... }`
+      def response_extensions
+        namespace(:__query_result_extensions__)
+      end
+
       def dataloader
         @dataloader ||= self[:dataloader] || (query.multiplex ? query.multiplex.dataloader : schema.dataloader_class.new)
       end
@@ -168,6 +173,11 @@ module GraphQL
       # @return [Hash] namespaced storage
       def namespace(ns)
         @storage[ns]
+      end
+
+      # @return [Boolean] true if this namespace was accessed before
+      def namespace?(ns)
+        @storage.key?(ns)
       end
 
       def inspect
