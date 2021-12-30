@@ -236,8 +236,6 @@ You can define this method to add initial responses or perform other logic befor
 
 ### Adding an Initial Response
 
-(__Note__: only supported when using the new {% internal_link "Interpreter runtime", "/queries/interpreter#installation" %})
-
 By default, GraphQL-Ruby returns _nothing_ (`:no_response`) on an initial subscription. But, you may choose to override this and return a value in `def subscribe`. For example:
 
 ```ruby
@@ -272,8 +270,6 @@ subscription($roomId: ID!) {
 
 ## Subsequent Updates with #update
 
-(__Note__: only supported when using the new {% internal_link "Interpreter runtime", "/queries/interpreter#installation" %})
-
 After a client has registered a subscription, the application may trigger subscription updates with `MySchema.subscriptions.trigger(...)` (see the {% internal_link "Triggers guide", "/subscriptions/triggers" %} for more). Then, `def update` will be called for each client's subscription. In this method you can:
 
 - Unsubscribe the client with `unsubscribe`
@@ -281,8 +277,6 @@ After a client has registered a subscription, the application may trigger subscr
 - Return `NO_UPDATE` to skip this update
 
 ### Skipping subscription updates
-
-(__Note__: only supported when using the new {% internal_link "Interpreter runtime", "/queries/interpreter#installation" %})
 
 Perhaps you don't want to send updates to a certain subscriber. For example, if someone leaves a comment, you might want to push the new comment to _other_ subscribers, but not the commenter, who already has that comment data. You can accomplish this by returning `NO_UPDATE`.
 
@@ -301,8 +295,6 @@ end
 ```
 
 ### Returning a different object for subscription updates
-
-(__Note__: only supported when using the new {% internal_link "Interpreter runtime", "/queries/interpreter#installation" %})
 
 By default, whatever object you pass to `.trigger(event_name, args, object)` will be used for responding to subscription fields. But, you can return a different object from `#update` to override this:
 

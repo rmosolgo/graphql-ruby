@@ -19,13 +19,11 @@ You can also see a [full Rails & Apollo-Client demo](https://github.com/rmosolgo
 
 ## Updating the gems
 
-`GraphQL::Pro::Defer` is included in `graphql-pro 1.10+`, and it requires the new {% internal_link "Interpreter runtime", "/queries/interpreter" %} in `graphql 1.9+`, so update your gemfile:
+GraphQL-Ruby 1.9+ and GraphQL-Pro 1.10+ are required:
 
 ```ruby
-# 1.9+ for Interpreter
-gem "graphql", "~>1.9.0"
-# 1.10+ for `@defer`
-gem "graphql-pro", "~>1.10.0"
+gem "graphql", "~>1.9"
+gem "graphql-pro", "~>1.10"
 ```
 
 And then install them:

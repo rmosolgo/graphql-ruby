@@ -19,12 +19,11 @@ other applicable versions (`graphql-batch`, etc)
 
 **GraphQL schema**
 
-Include relevant types and fields (in Ruby is best, in GraphQL IDL is ok).
-Are you using [interpreter](https://graphql-ruby.org/queries/interpreter.html)? Any custom instrumentation, etc?
+Include relevant types and fields (in Ruby is best, in GraphQL IDL is ok). Any custom extensions, etc?
 
 ```ruby
 class Product < GraphQL::Schema::Object
-  field :id, ID, null: false, hash_key: :id
+  field :id, ID, hash_key: :id
   # …
 end
 
