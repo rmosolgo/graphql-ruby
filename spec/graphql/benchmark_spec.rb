@@ -2,7 +2,7 @@
 require "spec_helper"
 require_relative "../../benchmark/run.rb"
 
-if ENV["COVERAGE"]
+if testing_coverage?
   describe "GraphQL execution benchmarks" do
     it "keeps memory benchmarks in source control" do
       validate_mem, _err = capture_io do
@@ -14,7 +14,7 @@ if ENV["COVERAGE"]
       end
 
 
-      dir = ENV["GITHUB_ACTIONS"] ? "spec/ci" : "spec/artifacts"
+      dir = ci_running? ? "spec/ci" : "spec/artifacts"
       FileUtils.mkdir_p(dir)
       Dir.chdir(dir) do
         File.write("validate_memory.txt", validate_mem)

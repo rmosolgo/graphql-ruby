@@ -1,22 +1,22 @@
-Total allocated: 13724680 bytes (78376 objects)
+Total allocated: 13746744 bytes (78375 objects)
 Total retained:  0 bytes (0 objects)
 
 allocated memory by gem
 -----------------------------------
-  13724512  graphql-ruby/lib
+  13746576  graphql-ruby/lib
        168  other
 
 allocated memory by file
 -----------------------------------
-  12056040  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb
-    806736  /Users/rmosolgo/code/graphql-ruby/lib/graphql/dataloader.rb
+  12080048  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb
+    804960  /Users/rmosolgo/code/graphql-ruby/lib/graphql/dataloader.rb
     504168  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/field.rb
     208208  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/object.rb
     120080  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/resolve.rb
       6600  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/member/has_fields.rb
       3704  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/warden.rb
       3448  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/fields_will_merge.rb
-      2688  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema.rb
+      2520  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema.rb
       1936  /Users/rmosolgo/code/graphql-ruby/lib/graphql/query.rb
       1240  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/definition_dependencies.rb
       1104  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/variables_are_used_and_defined.rb
@@ -56,7 +56,7 @@ allocated memory by location
     586632  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:102
     504168  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/field.rb:726
     400040  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:404
-    264088  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:752
+    288096  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:752
     200040  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:412
     168168  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/object.rb:51
     120040  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/resolve.rb:38
@@ -65,8 +65,7 @@ allocated memory by location
      10632  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:124
       6600  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/member/has_fields.rb:42
       3488  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/warden.rb:329
-      3440  /Users/rmosolgo/code/graphql-ruby/lib/graphql/dataloader.rb:301
-      1856  /Users/rmosolgo/code/graphql-ruby/lib/graphql/dataloader.rb:289
+      3184  /Users/rmosolgo/code/graphql-ruby/lib/graphql/dataloader.rb:301
       1536  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/fields_will_merge.rb:334
       1344  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:170
        792  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/fields_will_merge.rb:344
@@ -80,6 +79,7 @@ allocated memory by location
        376  /Users/rmosolgo/code/graphql-ruby/lib/graphql/query.rb:355
        376  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/validation_context.rb:29
        368  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/variables_are_used_and_defined.rb:28
+       336  /Users/rmosolgo/code/graphql-ruby/lib/graphql/dataloader.rb:289
        336  /Users/rmosolgo/code/graphql-ruby/lib/graphql/filter.rb:21
        336  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/validator.rb:30
        320  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema.rb:923
@@ -101,13 +101,13 @@ allocated memory by location
 allocated memory by class
 -----------------------------------
    7371264  Array
-   4223680  Hash
+   4221992  Hash
     928168  GraphQL::Execution::Interpreter::Runtime::GraphQLSelectionSet
     802960  Proc
-    264088  GraphQL::Execution::Interpreter::Runtime::GraphQLResultArray
+    288096  GraphQL::Execution::Interpreter::Runtime::GraphQLResultArray
      88088  GraphQL::Execution::Interpreter::Runtime::GraphQLResultHash
      40000  GraphQLBenchmark::ProfileLargeResult::FooType
-      3120  Fiber
+      2864  Fiber
        792  GraphQL::StaticValidation::FieldsWillMerge::Field
        296  GraphQL::Query
        296  GraphQL::StaticValidation::InterpreterVisitor
@@ -135,7 +135,7 @@ allocated memory by class
 
 allocated objects by gem
 -----------------------------------
-     78375  graphql-ruby/lib
+     78374  graphql-ruby/lib
          1  other
 
 allocated objects by file
@@ -147,7 +147,7 @@ allocated objects by file
       1002  /Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/resolve.rb
         48  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/rules/fields_will_merge.rb
         33  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/member/has_fields.rb
-        30  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema.rb
+        29  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema.rb
         22  /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/definition_dependencies.rb
         21  /Users/rmosolgo/code/graphql-ruby/lib/graphql/query.rb
         21  /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/warden.rb
@@ -233,7 +233,7 @@ allocated objects by location
 allocated objects by class
 -----------------------------------
      46208  Array
-     16086  Hash
+     16085  Hash
      10037  Proc
       3001  GraphQL::Execution::Interpreter::Runtime::GraphQLResultArray
       1001  GraphQL::Execution::Interpreter::Runtime::GraphQLResultHash
