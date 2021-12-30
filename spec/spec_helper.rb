@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 # Use a rails gemfile for this because it has the widest coverage
-code_cov_gemfile = "gemfiles/rails_6.1.gemfile"
-
 def testing_coverage?
   ENV["COVERAGE"]
 end
