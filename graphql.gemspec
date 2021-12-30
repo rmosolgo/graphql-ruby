@@ -35,6 +35,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "racc", "~> 1.4"
   s.add_development_dependency "rake", "~> 12"
   s.add_development_dependency "rubocop", "1.12" # for Ruby 2.4 enforcement
+  s.add_development_dependency "simplecov"
   # website stuff
   s.add_development_dependency "jekyll"
   s.add_development_dependency "yard"
