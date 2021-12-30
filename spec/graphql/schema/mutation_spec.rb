@@ -43,13 +43,6 @@ describe GraphQL::Schema::Mutation do
     end
   end
 
-  describe ".field" do
-    it "raises a nice error when called without args" do
-      err = assert_raises(ArgumentError) { mutation.field }
-      assert_includes err.message, "Use `mutation: Jazz::AddInstrument` to attach this mutation instead."
-    end
-  end
-
   describe ".object_class" do
     it "can override & inherit the parent class" do
       obj_class = Class.new(GraphQL::Schema::Object)
