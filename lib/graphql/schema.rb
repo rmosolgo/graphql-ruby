@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 require "graphql/schema/addition"
 require "graphql/schema/base_64_encoder"
-require "graphql/schema/default_parse_error"
-require "graphql/schema/default_type_error"
 require "graphql/schema/find_inherited_value"
 require "graphql/schema/finder"
 require "graphql/schema/invalid_type_error"
@@ -789,8 +787,15 @@ module GraphQL
         unauthorized_object(unauthorized_error)
       end
 
-      def type_error(type_err, ctx)
-        DefaultTypeError.call(type_err, ctx)
+      def type_error(type_error, ctx)
+        case type_error
+        when GraphQL::InvalidNullError
+          ctx.errors << type_error
+        when GraphQL::UnresolvedTypeError, GraphQL::StringEncodingError, GraphQL::IntegerEncodingError
+          raise type_error
+        when GraphQL::IntegerDecodingError
+          nil
+        end
       end
 
       # A function to call when {#execute} receives an invalid query string

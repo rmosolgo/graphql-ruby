@@ -56,7 +56,7 @@ module GraphQL
 
         if @parse_error
           # This is kind of crazy: we push the parse error into `ctx`
-          # in {DefaultParseError} so that users can _opt out_ by redefining that hook.
+          # in `def self.parse_error` by default so that users can _opt out_ by redefining that hook.
           # That means we can't _re-add_ the error here (otherwise we'd either
           # add it twice _or_ override the user's choice to not add it).
           # So we just have to know that it was invalid and go from there.
