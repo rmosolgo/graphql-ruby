@@ -4,7 +4,7 @@ doc_stub: false
 search: true
 title: Lazy Execution
 section: Schema
-desc: Resolve functions can return "unfinished" results that are deferred for batch resolution.
+desc: Resolvers can return "unfinished" results that are deferred for batch resolution.
 index: 4
 ---
 
@@ -12,7 +12,7 @@ With lazy execution, you can optimize access to external services (such as datab
 
 - Define a lazy-loading class with _one_ method for loading & returning a value
 - Connect it to your schema with {{ "GraphQL::Schema#lazy_resolve" | api_doc }}
-- In `resolve` functions, return instances of the lazy-loading class
+- In `resolve` methods, return instances of the lazy-loading class
 
 ## Example: Batched Find
 
@@ -90,6 +90,7 @@ Will only make one query to load the `author` values.
 
 The example above is simple and has some shortcomings. Consider the following gems for a robust solution to batched resolution:
 
+* {{ "GraphQL::Dataloader" | api_doc }} is a built-in, Fiber-based approach to batching. See the {% internal_link "Dataloader guide", "/dataloader/overview" %} for more information.
 * [`graphql-batch`](https://github.com/shopify/graphql-batch) provides a powerful, flexible toolkit for lazy resolution with GraphQL.
 * [`dataloader`](https://github.com/sheerun/dataloader) is more general promise-based utility for batching queries within the same thread.
 * [`batch-loader`](https://github.com/exAspArk/batch-loader) works with any Ruby code including GraphQL, no extra dependencies or primitives.
