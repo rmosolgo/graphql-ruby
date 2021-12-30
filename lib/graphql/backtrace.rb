@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 require "graphql/backtrace/inspect_result"
-require "graphql/backtrace/legacy_tracer"
 require "graphql/backtrace/table"
 require "graphql/backtrace/traced_error"
 require "graphql/backtrace/tracer"
@@ -23,13 +22,8 @@ module GraphQL
 
     def_delegators :to_a, :each, :[]
 
-    def self.use(schema_defn, legacy: false)
-      tracer = if legacy
-        self::LegacyTracer
-      else
-        self::Tracer
-      end
-      schema_defn.tracer(tracer)
+    def self.use(schema_defn)
+      schema_defn.tracer(self::Tracer)
     end
 
     def initialize(context, value: nil)
