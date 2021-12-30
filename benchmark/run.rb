@@ -48,7 +48,7 @@ module GraphQLBenchmark
     end
   end
 
-  def self.validate_memory
+  def self.validate_memory(full_report: false)
     FIELDS_WILL_MERGE_SCHEMA.validate(FIELDS_WILL_MERGE_QUERY)
 
     report = MemoryProfiler.report do
@@ -56,7 +56,11 @@ module GraphQLBenchmark
       nil
     end
 
-    report.pretty_print
+    if full_report
+      report
+    else
+      report.pretty_print
+    end
   end
 
   def self.profile
@@ -90,7 +94,7 @@ module GraphQLBenchmark
     memory_profile_large_result(already_warm: true)
   end
 
-  def self.memory_profile_large_result(already_warm: false)
+  def self.memory_profile_large_result(already_warm: false, full_report: false)
     schema = ProfileLargeResult::Schema
     document = ProfileLargeResult::ALL_FIELDS
     if !already_warm
@@ -101,7 +105,11 @@ module GraphQLBenchmark
       schema.execute(document: document)
     end
 
-    report.pretty_print
+    if full_report
+      report
+    else
+      report.pretty_print
+    end
   end
 
   module ProfileLargeResult

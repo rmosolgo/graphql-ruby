@@ -267,3 +267,12 @@ To cut a release:
 - Push changes to GitHub: `git push origin master`. GitHub Actions will update the website.
 - Release to RubyGems: `bundle exec rake release`. This will also push the tag to GitHub which will kick off a GitHub Actions job to update the API docs.
 - Celebrate 🎊  !
+
+### Artifacts
+
+GraphQL-Ruby's source code contains a few code-related artifacts to aid in the development process. They can be found in `spec/artifacts`.
+
+- A __code coverage__ file can help identify untested lines in existing or proposed code. To generate a full coverage report, use `COVERAGE=1 bundle exec rake test ...`. It's OK if a change reduces the coverage percentage. For example, if tested code is DRY'd up, then then the coverage percentage might decrease (since the untested code makes up a larger portion of the file), but it's still an improvement overall.
+- Some __memory benchmarks__ can help prevent performance regressions. Similarly, increased memory consumption is sometimes worth the tradeoff. But any big changes here deserve an investigation!
+
+If you propose changes to GraphQL-Ruby that modify these artifacts, you can either update them manually by running `COVERAGE=1 BUNDLE_GEMFILE=gemfiles/rails_6.1.gemfile bundle exec test` or by following the prompts on your PR to merge the automatically generated commit.
