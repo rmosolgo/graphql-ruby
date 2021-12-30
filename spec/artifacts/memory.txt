@@ -1,7 +1,7 @@
 Validate Memory:
-  - Allocated 25162 objects, 2091736 bytes
-  - Retained 1 objects, 40 bytes
+  - Allocated 25171 objects, 2093512 bytes
+  - Retained 1 objects, 1280 bytes
 
 Large Result Memory:
-  - Allocated 78375 objects, 13690160 bytes
-  - Retained 1 objects, 168 bytes
+  - Allocated 78375 objects, 13733056 bytes
+  - Retained 0 objects, 0 bytes

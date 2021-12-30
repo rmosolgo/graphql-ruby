@@ -4,7 +4,7 @@ Group: Schema Definition
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/name_validator.rb (coverage: 100.0% / branch: 75.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/rake_task.rb (coverage: 96.61% / branch: 83.33%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/rake_task/validate.rb (coverage: 11.63% / branch: 0.0%)
-/Users/rmosolgo/code/graphql-ruby/lib/graphql/schema.rb (coverage: 94.13% / branch: 87.21%)
+/Users/rmosolgo/code/graphql-ruby/lib/graphql/schema.rb (coverage: 95.89% / branch: 89.53%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/addition.rb (coverage: 95.21% / branch: 88.06%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/argument.rb (coverage: 96.59% / branch: 92.31%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/base_64_bp.rb (coverage: 100.0% / branch: 75.0%)
@@ -25,14 +25,14 @@ Group: Schema Definition
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/enum.rb (coverage: 97.53% / branch: 88.89%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/enum_value.rb (coverage: 97.22% / branch: 92.86%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/field.rb (coverage: 92.27% / branch: 83.98%)
-/Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/field/connection_extension.rb (coverage: 83.33% / branch: 57.14%)
+/Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/field/connection_extension.rb (coverage: 89.58% / branch: 71.43%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/field/scope_extension.rb (coverage: 100.0% / branch: 100.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/field_extension.rb (coverage: 96.61% / branch: 90.91%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/find_inherited_value.rb (coverage: 100.0% / branch: 100.0%)
-/Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/finder.rb (coverage: 86.76% / branch: 80.56%)
-/Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/input_object.rb (coverage: 98.17% / branch: 97.37%)
+/Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/finder.rb (coverage: 88.24% / branch: 83.33%)
+/Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/input_object.rb (coverage: 99.08% / branch: 97.37%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/interface.rb (coverage: 91.67% / branch: 80.0%)
-/Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/introspection_system.rb (coverage: 78.31% / branch: 76.19%)
+/Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/introspection_system.rb (coverage: 79.52% / branch: 76.19%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/invalid_type_error.rb (coverage: 100.0% / branch: 100.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/late_bound_type.rb (coverage: 100.0% / branch: 100.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/list.rb (coverage: 100.0% / branch: 100.0%)
@@ -59,7 +59,7 @@ Group: Schema Definition
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/null_mask.rb (coverage: 100.0% / branch: 100.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/object.rb (coverage: 100.0% / branch: 100.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/printer.rb (coverage: 100.0% / branch: 100.0%)
-/Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/relay_classic_mutation.rb (coverage: 93.94% / branch: 73.91%)
+/Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/relay_classic_mutation.rb (coverage: 93.94% / branch: 78.26%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/resolver.rb (coverage: 92.73% / branch: 85.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/resolver/has_payload_type.rb (coverage: 90.91% / branch: 76.47%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/scalar.rb (coverage: 100.0% / branch: 87.5%)
@@ -70,10 +70,10 @@ Group: Schema Definition
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/union.rb (coverage: 100.0% / branch: 100.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/unique_within_type.rb (coverage: 100.0% / branch: 100.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/validator.rb (coverage: 95.06% / branch: 90.91%)
-/Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/validator/allow_blank_validator.rb (coverage: 100.0% / branch: 66.67%)
+/Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/validator/allow_blank_validator.rb (coverage: 100.0% / branch: 83.33%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/validator/allow_null_validator.rb (coverage: 100.0% / branch: 50.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/validator/exclusion_validator.rb (coverage: 100.0% / branch: 75.0%)
-/Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/validator/format_validator.rb (coverage: 100.0% / branch: 75.0%)
+/Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/validator/format_validator.rb (coverage: 100.0% / branch: 100.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/validator/inclusion_validator.rb (coverage: 100.0% / branch: 100.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/validator/length_validator.rb (coverage: 95.65% / branch: 91.67%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/schema/validator/numericality_validator.rb (coverage: 100.0% / branch: 100.0%)
@@ -110,7 +110,7 @@ Group: Language
 ========================================
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/language.rb (coverage: 100.0% / branch: 100.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/language/block_string.rb (coverage: 98.11% / branch: 90.63%)
-/Users/rmosolgo/code/graphql-ruby/lib/graphql/language/cache.rb (coverage: 38.1% / branch: 0.0%)
+/Users/rmosolgo/code/graphql-ruby/lib/graphql/language/cache.rb (coverage: 90.48% / branch: 50.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/language/definition_slice.rb (coverage: 100.0% / branch: 100.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/language/document_from_schema_definition.rb (coverage: 94.89% / branch: 83.33%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/language/generation.rb (coverage: 100.0% / branch: 100.0%)
@@ -122,6 +122,7 @@ Group: Language
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/language/token.rb (coverage: 100.0% / branch: 100.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/language/visitor.rb (coverage: 100.0% / branch: 100.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/parse_error.rb (coverage: 100.0% / branch: 100.0%)
+/Users/rmosolgo/code/graphql-ruby/lib/graphql/railtie.rb (coverage: 100.0% / branch: 50.0%)
 
 Group: Dataloader
 ========================================
@@ -134,13 +135,13 @@ Group: Dataloader
 Group: Pagination
 ========================================
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/pagination.rb (coverage: 100.0% / branch: 100.0%)
-/Users/rmosolgo/code/graphql-ruby/lib/graphql/pagination/active_record_relation_connection.rb (coverage: 43.48% / branch: 0.0%)
-/Users/rmosolgo/code/graphql-ruby/lib/graphql/pagination/array_connection.rb (coverage: 97.62% / branch: 94.44%)
-/Users/rmosolgo/code/graphql-ruby/lib/graphql/pagination/connection.rb (coverage: 91.49% / branch: 100.0%)
-/Users/rmosolgo/code/graphql-ruby/lib/graphql/pagination/connections.rb (coverage: 86.21% / branch: 75.0%)
+/Users/rmosolgo/code/graphql-ruby/lib/graphql/pagination/active_record_relation_connection.rb (coverage: 91.3% / branch: 66.67%)
+/Users/rmosolgo/code/graphql-ruby/lib/graphql/pagination/array_connection.rb (coverage: 100.0% / branch: 100.0%)
+/Users/rmosolgo/code/graphql-ruby/lib/graphql/pagination/connection.rb (coverage: 92.55% / branch: 100.0%)
+/Users/rmosolgo/code/graphql-ruby/lib/graphql/pagination/connections.rb (coverage: 89.66% / branch: 75.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/pagination/mongoid_relation_connection.rb (coverage: 66.67% / branch: 100.0%)
-/Users/rmosolgo/code/graphql-ruby/lib/graphql/pagination/relation_connection.rb (coverage: 24.18% / branch: 0.0%)
-/Users/rmosolgo/code/graphql-ruby/lib/graphql/pagination/sequel_dataset_connection.rb (coverage: 69.23% / branch: 100.0%)
+/Users/rmosolgo/code/graphql-ruby/lib/graphql/pagination/relation_connection.rb (coverage: 94.51% / branch: 91.67%)
+/Users/rmosolgo/code/graphql-ruby/lib/graphql/pagination/sequel_dataset_connection.rb (coverage: 100.0% / branch: 100.0%)
 
 Group: Introspection
 ========================================
@@ -210,9 +211,9 @@ Group: Execution
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/query/result.rb (coverage: 83.33% / branch: 40.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/query/validation_pipeline.rb (coverage: 100.0% / branch: 100.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/query/variable_validation_error.rb (coverage: 95.45% / branch: 75.0%)
-/Users/rmosolgo/code/graphql-ruby/lib/graphql/query/variables.rb (coverage: 97.5% / branch: 86.67%)
+/Users/rmosolgo/code/graphql-ruby/lib/graphql/query/variables.rb (coverage: 100.0% / branch: 93.33%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/relay.rb (coverage: 100.0% / branch: 100.0%)
-/Users/rmosolgo/code/graphql-ruby/lib/graphql/relay/range_add.rb (coverage: 31.25% / branch: 0.0%)
+/Users/rmosolgo/code/graphql-ruby/lib/graphql/relay/range_add.rb (coverage: 68.75% / branch: 50.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/runtime_type_error.rb (coverage: 100.0% / branch: 100.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation.rb (coverage: 100.0% / branch: 100.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/all_rules.rb (coverage: 100.0% / branch: 100.0%)
@@ -283,7 +284,7 @@ Group: Execution
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/static_validation/validator.rb (coverage: 100.0% / branch: 75.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/string_encoding_error.rb (coverage: 100.0% / branch: 100.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/tracing.rb (coverage: 96.15% / branch: 83.33%)
-/Users/rmosolgo/code/graphql-ruby/lib/graphql/tracing/active_support_notifications_tracing.rb (coverage: 87.5% / branch: 50.0%)
+/Users/rmosolgo/code/graphql-ruby/lib/graphql/tracing/active_support_notifications_tracing.rb (coverage: 100.0% / branch: 50.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/tracing/appoptics_tracing.rb (coverage: 90.54% / branch: 66.67%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/tracing/appsignal_tracing.rb (coverage: 45.0% / branch: 0.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/tracing/data_dog_tracing.rb (coverage: 39.39% / branch: 0.0%)
@@ -300,20 +301,32 @@ Group: Execution
 Group: Subscriptions
 ========================================
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/subscriptions.rb (coverage: 92.24% / branch: 87.5%)
-/Users/rmosolgo/code/graphql-ruby/lib/graphql/subscriptions/action_cable_subscriptions.rb (coverage: 86.49% / branch: 64.71%)
+/Users/rmosolgo/code/graphql-ruby/lib/graphql/subscriptions/action_cable_subscriptions.rb (coverage: 89.19% / branch: 76.47%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/subscriptions/broadcast_analyzer.rb (coverage: 96.67% / branch: 90.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/subscriptions/default_subscription_resolve_extension.rb (coverage: 100.0% / branch: 100.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/subscriptions/event.rb (coverage: 97.3% / branch: 84.38%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/subscriptions/instrumentation.rb (coverage: 100.0% / branch: 100.0%)
-/Users/rmosolgo/code/graphql-ruby/lib/graphql/subscriptions/serialize.rb (coverage: 91.03% / branch: 82.05%)
+/Users/rmosolgo/code/graphql-ruby/lib/graphql/subscriptions/serialize.rb (coverage: 97.44% / branch: 94.87%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/subscriptions/subscription_root.rb (coverage: 66.67% / branch: 58.33%)
 
 Group: Generators
 ========================================
+/Users/rmosolgo/code/graphql-ruby/lib/generators/graphql/core.rb (coverage: 94.74% / branch: 80.0%)
+/Users/rmosolgo/code/graphql-ruby/lib/generators/graphql/enum_generator.rb (coverage: 100.0% / branch: 100.0%)
+/Users/rmosolgo/code/graphql-ruby/lib/generators/graphql/install_generator.rb (coverage: 96.83% / branch: 86.36%)
+/Users/rmosolgo/code/graphql-ruby/lib/generators/graphql/interface_generator.rb (coverage: 100.0% / branch: 100.0%)
+/Users/rmosolgo/code/graphql-ruby/lib/generators/graphql/loader_generator.rb (coverage: 100.0% / branch: 100.0%)
+/Users/rmosolgo/code/graphql-ruby/lib/generators/graphql/mutation_generator.rb (coverage: 96.55% / branch: 50.0%)
+/Users/rmosolgo/code/graphql-ruby/lib/generators/graphql/object_generator.rb (coverage: 97.06% / branch: 90.91%)
+/Users/rmosolgo/code/graphql-ruby/lib/generators/graphql/relay.rb (coverage: 100.0% / branch: 100.0%)
+/Users/rmosolgo/code/graphql-ruby/lib/generators/graphql/relay_generator.rb (coverage: 100.0% / branch: 100.0%)
+/Users/rmosolgo/code/graphql-ruby/lib/generators/graphql/scalar_generator.rb (coverage: 100.0% / branch: 100.0%)
+/Users/rmosolgo/code/graphql-ruby/lib/generators/graphql/type_generator.rb (coverage: 96.08% / branch: 88.89%)
+/Users/rmosolgo/code/graphql-ruby/lib/generators/graphql/union_generator.rb (coverage: 100.0% / branch: 100.0%)
 
 Group: Ungrouped
 ========================================
-/Users/rmosolgo/code/graphql-ruby/benchmark/run.rb (coverage: 50.79% / branch: 12.5%)
+/Users/rmosolgo/code/graphql-ruby/benchmark/run.rb (coverage: 50.77% / branch: 25.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql.rb (coverage: 98.46% / branch: 50.0%)
 /Users/rmosolgo/code/graphql-ruby/lib/graphql/deprecation.rb (coverage: 100.0% / branch: 100.0%)
 
