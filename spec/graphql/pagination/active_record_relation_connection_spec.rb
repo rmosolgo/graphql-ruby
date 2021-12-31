@@ -125,24 +125,80 @@ if testing_rails?
       assert_equal 2, log.split("\n").size, "It runs two queries -- TODO this could be better"
     end
 
-    it "only runs one query for already-loaded unbounded queries" do
-      results = nil
-      log = with_active_record_log do
-        results = schema.execute("{
-          preloadedItems {
-            pageInfo {
-              hasPreviousPage
-              hasNextPage
+    describe "already-loaded ActiveRecord relations" do
+      ALREADY_LOADED_QUERY_STRING = "
+      query($first: Int, $after: String, $last: Int, $before: String) {
+            preloadedItems(first: $first, after: $after, last: $last, before: $before) {
+              pageInfo {
+                hasPreviousPage
+                hasNextPage
+                endCursor
+              }
+              nodes { __typename }
             }
-            nodes { __typename }
           }
-        }")
+      "
+      it "only runs one query for already-loaded unbounded queries" do
+        results = nil
+        log = with_active_record_log do
+          results = schema.execute(ALREADY_LOADED_QUERY_STRING)
+        end
+        # The max_page_size of 6 is applied to the results
+        assert_equal 6, results["data"]["preloadedItems"]["nodes"].size
+        assert_equal 1, log.split("\n").size, "It runs only one query"
+        decolorized_log = log.gsub(/\e\[([;\d]+)?m/, '').chomp
+        assert_operator decolorized_log, :end_with?, 'SELECT "foods".* FROM "foods"', "it's an unbounded select from the resolver"
       end
-      # The max_page_size of 6 is applied to the results
-      assert_equal 6, results["data"]["preloadedItems"]["nodes"].size
-      assert_equal 1, log.split("\n").size, "It runs only one query"
-      decolorized_log = log.gsub(/\e\[([;\d]+)?m/, '').chomp
-      assert_operator decolorized_log, :end_with?, 'SELECT "foods".* FROM "foods"', "it's an unbounded select from the resolver"
+
+      it "only runs one query for already-loaded `last:...` queries" do
+        results = nil
+        log = with_active_record_log do
+          results = schema.execute(ALREADY_LOADED_QUERY_STRING, variables: { last: 1 })
+        end
+        assert_equal 1, results["data"]["preloadedItems"]["nodes"].size
+        assert_equal 1, log.split("\n").size, "It runs only one query"
+        decolorized_log = log.gsub(/\e\[([;\d]+)?m/, '').chomp
+        assert_operator decolorized_log, :end_with?, 'SELECT "foods".* FROM "foods"', "it's an unbounded select from the resolver"
+      end
+
+      it "only runs one query for already-loaded `first:... / after:` queries" do
+        results = nil
+        log = with_active_record_log do
+          results = schema.execute(ALREADY_LOADED_QUERY_STRING, variables: { first: 1 })
+        end
+        assert_equal 1, results["data"]["preloadedItems"]["nodes"].size
+        assert_equal 1, log.split("\n").size, "It runs only one query"
+        decolorized_log = log.gsub(/\e\[([;\d]+)?m/, '').chomp
+        assert_operator decolorized_log, :end_with?, 'SELECT "foods".* FROM "foods"', "it's an unbounded select from the resolver"
+
+        cursor = results["data"]["preloadedItems"]["pageInfo"]["endCursor"]
+        log = with_active_record_log do
+          results = schema.execute(ALREADY_LOADED_QUERY_STRING, variables: { first: 1, after: cursor })
+        end
+        assert_equal 1, results["data"]["preloadedItems"]["nodes"].size
+        assert_equal 1, log.split("\n").size, "It runs only one query"
+        decolorized_log = log.gsub(/\e\[([;\d]+)?m/, '').chomp
+        assert_operator decolorized_log, :end_with?, 'SELECT "foods".* FROM "foods"', "it's an unbounded select from the resolver"
+        assert_equal "[\"2\"]+nonce", results["data"]["preloadedItems"]["pageInfo"]["endCursor"], "it makes the right cursor"
+      end
+
+      let(:schema) {
+        ConnectionAssertions.build_schema(
+          connection_class: GraphQL::Pagination::ActiveRecordRelationConnection,
+          total_count_connection_class: RelationConnectionWithTotalCount,
+          get_items: -> {
+            relation = if Food.respond_to?(:scoped)
+              Food.scoped # Rails 3-friendly version of .all
+            else
+              Food.all
+            end
+            relation.load
+            relation
+          }
+        )
+      }
+
+      include ConnectionAssertions
     end
   end
 end

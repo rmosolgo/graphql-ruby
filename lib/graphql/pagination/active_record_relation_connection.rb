@@ -7,18 +7,18 @@ module GraphQL
     class ActiveRecordRelationConnection < Pagination::RelationConnection
       private
 
-      def relation_larger_than(relation, size)
-        initial_offset = relation.offset_value || 0
-        if initial_offset == 0 && relation.loaded?
-          # An unbounded, already-loaded relation
-          relation.size > size
+      def relation_larger_than(relation, initial_offset, size)
+        if already_loaded?(relation)
+          (relation.size + initial_offset) > size
         else
-          relation.offset(initial_offset + size).exists?
+          set_offset(sliced_nodes, initial_offset + size).exists?
         end
       end
 
       def relation_count(relation)
-        int_or_hash = if relation.respond_to?(:unscope)
+        int_or_hash = if already_loaded?(relation)
+          relation.size
+        elsif relation.respond_to?(:unscope)
           relation.unscope(:order).count(:all)
         else
           # Rails 3
@@ -33,11 +33,19 @@ module GraphQL
       end
 
       def relation_limit(relation)
-        relation.limit_value
+        if relation.is_a?(Array)
+          nil
+        else
+          relation.limit_value
+        end
       end
 
       def relation_offset(relation)
-        relation.offset_value
+        if relation.is_a?(Array)
+          nil
+        else
+          relation.offset_value
+        end
       end
 
       def null_relation(relation)
@@ -47,6 +55,30 @@ module GraphQL
           # Rails 3
           relation.where("1=2")
         end
+      end
+
+      def set_limit(nodes, limit)
+        if already_loaded?(nodes)
+          nodes.take(limit)
+        else
+          super
+        end
+      end
+
+      def set_offset(nodes, offset)
+        if already_loaded?(nodes)
+          # If the client sent a bogus cursor beyond the size of the relation,
+          # it might get `nil` from `#[...]`, so return an empty array in that case
+          nodes[offset..-1] || []
+        else
+          super
+        end
+      end
+
+      private
+
+      def already_loaded?(relation)
+        relation.is_a?(Array) || relation.loaded?
       end
     end
   end
