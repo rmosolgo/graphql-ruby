@@ -31,7 +31,7 @@ if testing_coverage? && !ENV["TEST"]
       File.write("spec/ci/coverage.txt", text_result)
       ci_artifact_paths = Dir.glob("spec/ci/*.txt")
       any_artifact_changes = ci_artifact_paths.any? do |ci_artifact_path|
-        committed_artifact_path = ci_artifact_path.sub("/ci/", "/artifact/")
+        committed_artifact_path = ci_artifact_path.sub("/ci/", "/artifacts/")
         File.read(ci_artifact_path) != File.read(committed_artifact_path)
       end
       if any_artifact_changes
@@ -39,7 +39,7 @@ if testing_coverage? && !ENV["TEST"]
         new_branch = "update-artifacts-on-#{current_sha}"
         `git checkout -b #{new_branch}`
         ci_artifact_paths.each do |ci_artifact_path|
-          FileUtils.cp(ci_artifact_path, ci_artifact_path.sub("/ci/", "/artifact/"))
+          FileUtils.cp(ci_artifact_path, ci_artifact_path.sub("/ci/", "/artifacts/"))
         end
         `git add spec`
         `git commit -m "Update artifacts (automatic)"`
