@@ -31,7 +31,7 @@ class MySchema < GraphQL::Schema
     "#{type_hint}_#{encoded_id}"
   end
 
-  def self.object_from_id(id, query_ctx)
+  def self.object_from_id(encoded_id_with_hint, query_ctx)
     # For example, use Rails' GlobalID library (https://github.com/rails/globalid):
     # Split off the type hint
     _type_hint, encoded_id = encoded_id_with_hint.split("_", 2)
