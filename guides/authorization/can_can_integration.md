@@ -204,7 +204,6 @@ field :users, Types::User.connection_type, null: false,
   can_can_action: :manage,
   # `:all` will be used instead of `object` (which is `nil`)
   can_can_subject: :all
-end
 ```
 
 The configuration above will call `can?(:manage, :all)` whenever that field is requested.
