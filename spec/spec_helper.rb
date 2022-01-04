@@ -20,7 +20,7 @@ if testing_coverage? && !ENV["TEST"]
       text_result << "\n"
       files.each do |file|
         # Remove any local paths
-        local_filename = file.sub(/^.*graphql-ruby\/lib/, "graphql-ruby/lib")
+        local_filename = file.filename.sub(/^.*graphql-ruby\/lib/, "graphql-ruby/lib")
         text_result << "#{local_filename} (coverage: #{file.covered_percent.round(2)}% / branch: #{file.branches_coverage_percent.round(2)}%)\n"
       end
       text_result << "\n"
