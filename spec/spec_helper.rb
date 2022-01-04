@@ -19,7 +19,9 @@ if testing_coverage? && !ENV["TEST"]
       text_result << "=" * 40
       text_result << "\n"
       files.each do |file|
-        text_result << "#{file.filename} (coverage: #{file.covered_percent.round(2)}% / branch: #{file.branches_coverage_percent.round(2)}%)\n"
+        # Remove any local paths
+        local_filename = file.sub(/^.*graphql-ruby\/lib/, "graphql-ruby/lib")
+        text_result << "#{local_filename} (coverage: #{file.covered_percent.round(2)}% / branch: #{file.branches_coverage_percent.round(2)}%)\n"
       end
       text_result << "\n"
     end
@@ -52,7 +54,7 @@ if testing_coverage? && !ENV["TEST"]
         `git commit -m "Update artifacts (automatic)"`
         `git push origin #{new_branch}`
         comment = "Some artifacts have changed; update them locally or merge [this PR](https://github.com/rmosolgo/graphql-ruby/compare/#{current_branch}...#{new_branch}?expand=1) into your branch."
-        `curl -X POST #{ENV["COMMENTS_URL"]} -H "Content-Type: application/json" -H "Authorization: token #{ENV["GITHUB_TOKEN"]}" --data '{ "body": "#{comment}" }'`
+        `curl -X POST #{ENV["GITHUB_COMMENTS_URL"]} -H "Content-Type: application/json" -H "Authorization: token #{ENV["GITHUB_TOKEN"]}" --data '{ "body": "#{comment}" }'`
       end
     else
       FileUtils.mkdir_p("spec/artifacts")

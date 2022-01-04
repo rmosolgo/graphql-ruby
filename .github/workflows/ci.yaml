@@ -95,7 +95,7 @@ jobs:
     - run: echo DATABASE='POSTGRESQL' > $GITHUB_ENV
     - run: echo PGPASSWORD='postgres' > $GITHUB_ENV
     - run: echo GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} > $GITHUB_ENV
-    - run: echo COMMENTS_URL=${{ github.event.issue.comments_url }} > $GITHUB_ENV
+    - run: echo GITHUB_COMMENTS_URL=${{ github.event.pull_request.comments_url }} > $GITHUB_ENV
     - uses: actions/checkout@v2
     - uses: ruby/setup-ruby@v1
       with:
