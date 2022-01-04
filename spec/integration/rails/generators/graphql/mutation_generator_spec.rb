@@ -6,19 +6,7 @@ require "generators/graphql/install_generator"
 class GraphQLGeneratorsMutationGeneratorTest < BaseGeneratorTest
   tests Graphql::Generators::MutationGenerator
 
-  destination File.expand_path("../../../tmp/dummy", File.dirname(__FILE__))
-
-  def setup(directory = "app/graphql")
-    prepare_destination
-    FileUtils.cd(File.expand_path("../../../tmp", File.dirname(__FILE__))) do
-      `rails new dummy --skip-active-record --skip-test-unit --skip-spring --skip-bundle --skip-webpack-install`
-    end
-
-    FileUtils.cd(destination_root) do
-      `mkdir #{directory}`
-      `touch #{directory}/dummy_schema.rb`
-    end
-  end
+  setup :prepare_destination
 
   UPDATE_NAME_MUTATION = <<-RUBY
 module Mutations
@@ -82,28 +70,20 @@ module Types
 end
 RUBY
 
-  test "it generates an empty resolver by name" do
-    setup
-    run_generator(["UpdateName"])
+  test "it generates an empty resolver by name and inserts the field into the MutationType" do
+    run_generator(["UpdateName", "--schema", "dummy"])
     assert_file "app/graphql/mutations/update_name.rb", UPDATE_NAME_MUTATION
-  end
-
-  test "it inserts the field into the MutationType" do
-    setup
-    run_generator(["UpdateName"])
     assert_file "app/graphql/types/mutation_type.rb", EXPECTED_MUTATION_TYPE
   end
 
   test "it generates and inserts a namespaced resolver" do
-    setup
-    run_generator(["names/update_name"])
+    run_generator(["names/update_name", "--schema", "dummy"])
     assert_file "app/graphql/mutations/names/update_name.rb", NAMESPACED_UPDATE_NAME_MUTATION
     assert_file "app/graphql/types/mutation_type.rb", NAMESPACED_EXPECTED_MUTATION_TYPE
   end
 
   test "it allows for user-specified directory" do
-    setup "app/mydirectory"
-    run_generator(["UpdateName", "--directory", "app/mydirectory"])
+    run_generator(["UpdateName", "--schema", "dummy", "--directory", "app/mydirectory"])
 
     assert_file "app/mydirectory/mutations/update_name.rb", UPDATE_NAME_MUTATION
   end

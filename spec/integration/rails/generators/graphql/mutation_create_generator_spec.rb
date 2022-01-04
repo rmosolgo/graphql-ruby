@@ -7,20 +7,7 @@ class GraphQLGeneratorsMutationCreateGeneratorTest < BaseGeneratorTest
 
   destination File.expand_path("../../../tmp/dummy", File.dirname(__FILE__))
 
-  def setup(directory = "app/graphql")
-    prepare_destination
-    FileUtils.cd(File.expand_path("../../../tmp", File.dirname(__FILE__))) do
-      `rm -rf dummy`
-      `rails new dummy --skip-active-record --skip-test-unit --skip-spring --skip-bundle --skip-webpack-install --skip-action-mailer --skip-action-mailbox --skip-collision-check --skip-puma --skip-sprockets --skip-spring`
-      # TODO: If the rails gem is 6.1+, test the --minimal option
-      # `rails new dummy --minimal --skip-bundle`
-    end
-
-    FileUtils.cd(destination_root) do
-      `mkdir #{directory}`
-      `touch #{directory}/dummy_schema.rb`
-    end
-  end
+  setup :prepare_destination
 
   NAMESPACED_CREATE_NAME_MUTATION = <<-RUBY
 # frozen_string_literal: true
@@ -79,21 +66,18 @@ end
 RUBY
 
   test "it generates a create resolver by name, and inserts the field into the MutationType" do
-    setup
-    run_generator(["names/name"])
+    run_generator(["names/name", "--schema", "dummy"])
     assert_file "app/graphql/mutations/names/name_create.rb", CREATE_NAME_MUTATION
     assert_file "app/graphql/types/mutation_type.rb", EXPECTED_MUTATION_TYPE
   end
 
   test "it generates a namespaced create resolver by name" do
-    setup
-    run_generator(["names/name", "--namespaced-types"])
+    run_generator(["names/name", "--schema", "dummy", "--namespaced-types"])
     assert_file "app/graphql/mutations/names/name_create.rb", NAMESPACED_CREATE_NAME_MUTATION
   end
 
   test "it allows for user-specified directory" do
-    setup "app/mydirectory"
-    run_generator(["names/name", "--directory", "app/mydirectory"])
+    run_generator(["names/name", "--schema", "dummy", "--directory", "app/mydirectory"])
 
     assert_file "app/mydirectory/mutations/names/name_create.rb", CREATE_NAME_MUTATION
   end

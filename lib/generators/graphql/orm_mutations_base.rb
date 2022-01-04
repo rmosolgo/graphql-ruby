@@ -25,20 +25,13 @@ module Graphql
         banner: "Namespaced",
         desc: "If the generated types will be namespaced"
 
-      
-      def create_root_type
-        unless @behavior == :revoke
-          create_mutation_root_type
-        else
-          log :gsub, "#{options[:directory]}/types/mutation_type.rb"
-        end     
-      end
-
       def create_mutation_file
         template "mutation_#{operation_type}.erb", File.join(options[:directory], "/mutations/", class_path, "#{file_name}_#{operation_type}.rb")
 
         sentinel = /class .*MutationType\s*<\s*[^\s]+?\n/m
         in_root do
+          path = "#{options[:directory]}/types/mutation_type.rb"
+          invoke "graphql:install:mutation_root" unless File.exist?(path)
           inject_into_file "#{options[:directory]}/types/mutation_type.rb", "    field :#{file_name}_#{operation_type}, mutation: Mutations::#{class_name}#{operation_type.classify}\n", after: sentinel, verbose: false, force: false
         end
       end
