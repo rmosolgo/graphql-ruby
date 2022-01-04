@@ -116,8 +116,6 @@ module GraphQL
         if defined?(@sliced_nodes_limit)
           return
         else
-          paginated_nodes = items
-
           if after_offset
             previous_offset = relation_offset(items) || 0
             relation_offset = previous_offset + after_offset
