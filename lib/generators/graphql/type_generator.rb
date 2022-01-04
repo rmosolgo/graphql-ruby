@@ -104,7 +104,7 @@ module Graphql
           else
             ""
           end
-        @ruby_class_name || class_prefix + type_ruby_name.delete_prefix("Types::")
+        @ruby_class_name || class_prefix + type_ruby_name.sub(/^Types::/, "")
       end
 
       def subdirectory
