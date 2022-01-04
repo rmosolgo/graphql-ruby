@@ -123,7 +123,7 @@ module Graphql
         end
 
         def to_object_field
-          "field :#{@name}, #{@type_expr}, null: #{@null}"
+          "field :#{@name}, #{@type_expr}#{@null ? '' : ', null: false'}"
         end
 
         def to_input_argument

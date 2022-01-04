@@ -22,7 +22,7 @@ module Types
   module BirdType
     include Types::BaseInterface
     field :wingspan, Integer, null: false
-    field :foliage, [Types::ColorType], null: true
+    field :foliage, [Types::ColorType]
   end
 end
 RUBY
@@ -51,7 +51,7 @@ module Types
   module Interfaces::Animals::BirdType
     include Types::BaseInterface
     field :wingspan, Integer, null: false
-    field :foliage, [Types::ColorType], null: true
+    field :foliage, [Types::ColorType]
   end
 end
 RUBY

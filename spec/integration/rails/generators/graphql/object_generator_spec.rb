@@ -35,7 +35,7 @@ class GraphQLGeneratorsObjectGeneratorTest < BaseGeneratorTest
 module Types
   class BirdType < Types::BaseObject
     field :wingspan, Integer, null: false
-    field :foliage, [Types::ColorType], null: true
+    field :foliage, [Types::ColorType]
   end
 end
 RUBY
@@ -63,7 +63,7 @@ RUBY
 module Types
   class Objects::BirdType < Types::BaseObject
     field :wingspan, Integer, null: false
-    field :foliage, [Types::ColorType], null: true
+    field :foliage, [Types::ColorType]
   end
 end
 RUBY
@@ -108,8 +108,8 @@ RUBY
 module Types
   class Objects::TestUserType < Types::BaseObject
     field :id, ID, null: false
-    field :created_at, GraphQL::Types::ISO8601DateTime, null: true
-    field :birthday, GraphQL::Types::ISO8601Date, null: true
+    field :created_at, GraphQL::Types::ISO8601DateTime
+    field :birthday, GraphQL::Types::ISO8601Date
     field :points, Integer, null: false
     field :rating, Float, null: false
   end
@@ -125,13 +125,13 @@ RUBY
 module Types
   class TestUserType < Types::BaseObject
     field :id, ID, null: false
-    field :created_at, GraphQL::Types::ISO8601DateTime, null: true
-    field :birthday, GraphQL::Types::ISO8601Date, null: true
+    field :created_at, GraphQL::Types::ISO8601DateTime
+    field :birthday, GraphQL::Types::ISO8601Date
     field :points, Integer, null: false
     field :rating, Float, null: false
     field :name, String, null: false
     field :email, String, null: false
-    field :settings, GraphQL::Types::JSON, null: true
+    field :settings, GraphQL::Types::JSON
   end
 end
 RUBY
