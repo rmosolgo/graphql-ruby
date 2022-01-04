@@ -35,6 +35,10 @@ if testing_coverage? && !ENV["TEST"]
         File.read(ci_artifact_path) != File.read(committed_artifact_path)
       end
       if any_artifact_changes
+        if `git config --global user.name` == ""
+          `git config --global user.name "GraphQL-Ruby CI"`
+          `git config --global user.email "<>"`
+        end
         current_sha = `git rev-parse HEAD`.chomp
         new_branch = "update-artifacts-on-#{current_sha}"
         `git checkout -b #{new_branch}`
