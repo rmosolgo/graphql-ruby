@@ -40,6 +40,7 @@ if testing_coverage? && !ENV["TEST"]
           `git config --global user.email "<>"`
         end
         current_branch = ENV["GITHUB_HEAD_REF"].sub("refs/heads/", "")
+        `git fetch origin #{current_branch}`
         `git checkout #{current_branch}`
         current_sha = `git rev-parse HEAD`.chomp
         new_branch = "update-artifacts-on-#{current_branch}-#{current_sha[0, 10]}"
@@ -50,6 +51,8 @@ if testing_coverage? && !ENV["TEST"]
         `git add spec`
         `git commit -m "Update artifacts (automatic)"`
         `git push origin #{new_branch}`
+        comment = "Some artifacts have changed; update them locally or merge [this PR](https://github.com/rmosolgo/graphql-ruby/compare/#{current_branch}...#{new_branch}?expand=1) into your branch."
+        `curl -X POST #{ENV["COMMENTS_URL"]} -H "Content-Type: application/json" -H "Authorization: token #{ENV["GITHUB_TOKEN"]}" --data '{ "body": "#{comment}" }'`
       end
     else
       FileUtils.mkdir_p("spec/artifacts")
