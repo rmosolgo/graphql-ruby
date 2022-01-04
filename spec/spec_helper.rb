@@ -39,7 +39,7 @@ if testing_coverage? && !ENV["TEST"]
           `git config --global user.name "GraphQL-Ruby CI"`
           `git config --global user.email "<>"`
         end
-        current_branch = ENV["GITHUB_REF"].sub("refs/heads/", "")
+        current_branch = ENV["GITHUB_HEAD_REF"].sub("refs/heads/", "")
         `git checkout #{current_branch}`
         current_sha = `git rev-parse HEAD`.chomp
         new_branch = "update-artifacts-on-#{current_branch}-#{current_sha[0, 10]}"
