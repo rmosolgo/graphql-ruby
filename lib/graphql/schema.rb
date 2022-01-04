@@ -1247,7 +1247,11 @@ module GraphQL
         when Module
           type_or_name
         else
-          raise ArgumentError, "unexpected field owner for #{field_name.inspect}: #{type_or_name.inspect} (#{type_or_name.class})"
+          raise ArgumentError, <<-ERR
+Invariant: unexpected field owner for #{field_name.inspect}: #{type_or_name.inspect} (#{type_or_name.class})
+
+This is probably a bug in GraphQL-Ruby, please report this error on GitHub: https://github.com/rmosolgo/graphql-ruby/issues/new?template=bug_report.md
+ERR
         end
 
         if parent_type.kind.fields? && (field = parent_type.get_field(field_name, context))

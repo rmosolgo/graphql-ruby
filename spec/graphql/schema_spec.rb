@@ -353,4 +353,13 @@ describe GraphQL::Schema do
       end
     end
   end
+
+  describe "requiring query" do
+    class QueryRequiredSchema < GraphQL::Schema
+    end
+    it "returns an error if no query type is defined" do
+      res = QueryRequiredSchema.execute("{ blah }")
+      assert_equal ["Schema is not configured for queries"], res["errors"].map { |e| e["message"] }
+    end
+  end
 end
