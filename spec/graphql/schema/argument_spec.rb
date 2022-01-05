@@ -554,4 +554,29 @@ describe GraphQL::Schema::Argument do
     res = SchemaArgumentTest::Schema.execute("{ contextArgTest(input: { context: \"abc\" }) }")
     assert_equal ["abc", "String", "GraphQL::Query::Context"], res["data"]["contextArgTest"]
   end
+
+  describe "required: :nullable" do
+    class RequiredNullableSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        field :echo, String do
+          argument :str, String, required: :nullable
+        end
+
+        def echo(str:)
+          str
+        end
+      end
+
+      query(Query)
+    end
+
+    it "requires a value, even if it's null" do
+      res = RequiredNullableSchema.execute('{ echo(str: "ok") }')
+      assert_equal "ok", res["data"]["echo"]
+      res = RequiredNullableSchema.execute('{ echo(str: null) }')
+      assert_nil res["data"].fetch("echo")
+      res = RequiredNullableSchema.execute('{ echo }')
+      assert_equal ["echo has the wrong arguments"], res["errors"].map { |e| e["message"] }
+    end
+  end
 end
