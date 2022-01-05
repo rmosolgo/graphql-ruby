@@ -25,6 +25,11 @@ argument :object_type, String, required: false
 argument :object_id, Integer, required: false</p>
 <h1 id="either-a-global-node_id-or-an-object_typeobject_id-pair-is-required">either a global <code class="language-plaintext highlighter-rouge">node_id</code> or an <code class="language-plaintext highlighter-rouge">object_type</code>/<code class="language-plaintext highlighter-rouge">object_id</code> pair is required:</h1>
 <p>validates required: { one_of: [:node_id, [:object_type, :object_id]] }
+end</p>
+<h1 id="require-some-value-for-an-argument-even-if-its-null">require <em>some</em> value for an argument, even if it’s null</h1>
+<p>field :update_settings, AccountSettings do</p>
+<h1 id="required-nullable-means-this-argument-must-be-given-but-may-be-null"><code class="language-plaintext highlighter-rouge">required: :nullable</code> means this argument must be given, but may be <code class="language-plaintext highlighter-rouge">null</code></h1>
+<p>argument :age, Integer, required: :nullable
 end
 Instance methods:
 initialize, validate</p>
