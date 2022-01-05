@@ -37,7 +37,7 @@ module GraphQL
       # @param arg_name [Symbol]
       # @param type_expr
       # @param desc [String]
-      # @param required [Boolean] if true, this argument is non-null; if false, this argument is nullable
+      # @param required [Boolean, :nullable] if true, this argument is non-null; if false, this argument is nullable. If `:nullable`, then the argument must be provided, though it may be `null`.
       # @param description [String]
       # @param default_value [Object]
       # @param as [Symbol] Override the keyword name when passed to a method
@@ -53,7 +53,7 @@ module GraphQL
         @name = -(camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s)
         @type_expr = type_expr || type
         @description = desc || description
-        @null = !required
+        @null = required != true
         @default_value = default_value
         @owner = owner
         @as = as
@@ -72,6 +72,9 @@ module GraphQL
         end
 
         self.validates(validates)
+        if required == :nullable
+          self.owner.validates(required: { argument: arg_name })
+        end
 
         if definition_block
           if definition_block.arity == 1

@@ -30,10 +30,8 @@ module GraphQL
       #
       # @example require _some_ value for an argument, even if it's null
       #   field :update_settings, AccountSettings do
-      #     # `required: false` allows this argument to be `null`
-      #     argument :age, Integer, required: false
-      #     # `validates required: ...` will make sure that _some_ value is given for this arg
-      #     validates required: { argument: :age }
+      #     # `required: :nullable` means this argument must be given, but may be `null`
+      #     argument :age, Integer, required: :nullable
       #   end
       #
       class RequiredValidator < Validator
