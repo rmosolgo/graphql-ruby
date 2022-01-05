@@ -558,7 +558,7 @@ describe GraphQL::Schema::Argument do
   describe "required: :nullable" do
     class RequiredNullableSchema < GraphQL::Schema
       class Query < GraphQL::Schema::Object
-        field :echo, String, null: true do
+        field :echo, String do
           argument :str, String, required: :nullable
         end
 
