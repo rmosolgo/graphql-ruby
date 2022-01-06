@@ -15,7 +15,7 @@ Examples:</p>
 argument :ingredient_id, ID, required: true
 argument :cups, Integer, required: false
 argument :tablespoons, Integer, required: false
-argument :teaspoons, Integer, required: true
+argument :teaspoons, Integer, required: false
 validates required: { one_of: [:cups, :tablespoons, :teaspoons] }
 end</p>
 <h1 id="require-one-of-these-sets-of-arguments">Require one of these <em>sets</em> of arguments</h1>
