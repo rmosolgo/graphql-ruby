@@ -1048,14 +1048,11 @@ describe GraphQL::Schema::InputObject do
 
       it "null values are returned in coerced input" do
         input = MinimumInputObject.new({"a" => "Test", "b" => nil,"c" => "Test"})
-        result = input_type.coerce_isolated_input(input)
+        err = assert_raises GraphQL::ExecutionError do
+          input_type.coerce_isolated_input(input)
+        end
 
-        assert_equal 'Test', result[:a]
-
-        assert result.key?(:b)
-        assert_nil result[:b]
-
-        assert_equal "Test", result[:c]
+        assert_equal "`null` is not a valid input for `Int!`, please provide a value for this argument.", err.message
       end
 
       it "null values are preserved when argument has a default value" do

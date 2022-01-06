@@ -53,6 +53,10 @@ module GraphQL
       end
 
       def coerce_input(value, ctx)
+        # `.validate_input` above is used for variables, but this method is used for arguments
+        if value.nil?
+          raise GraphQL::ExecutionError, "`null` is not a valid input for `#{to_type_signature}`, please provide a value for this argument."
+        end
         of_type.coerce_input(value, ctx)
       end
 
