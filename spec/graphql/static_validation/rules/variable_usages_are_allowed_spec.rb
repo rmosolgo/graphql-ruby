@@ -311,4 +311,52 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
       end
     end
   end
+
+  describe "non-null arguments with default values" do
+    it "doesn't require a value in the query" do
+      schema_graphql = <<~GRAPHQL
+        type Query {
+          songs(sort: SongSort! = {name: asc}): [Song!]!
+        }
+
+        type Song {
+          name: String!
+        }
+
+        input SongSort {
+          name: SortDirection
+        }
+
+        enum SortDirection {
+          asc
+          desc
+        }
+      GRAPHQL
+
+      schema = GraphQL::Schema.from_definition(
+        schema_graphql,
+        default_resolve: {
+          "Query" => {
+            "songs" => ->(obj, args, ctx) {
+              sort = args[:sort]
+              names = ["asc", nil].include?(sort[:name]) ? ["A", "B"] : ["B", "A"]
+              names.map { |name| Struct.new(:name).new(name) }
+            }
+          }
+        }
+      )
+
+      result = schema.execute("query($sort: SongSort) { songs(sort: $sort) { name } }", variables: {})
+      expected_result = {"data" => {"songs" => [{"name" => "A"},{"name" => "B"}]}}
+      assert_equal expected_result, result
+
+      result = schema.execute("query($sort: SongSort) { songs(sort: $sort) { name } }", variables: { sort: { name: "desc" } })
+      expected_result = {"data" => {"songs" => [{"name" => "B"},{"name" => "A"}]}}
+      assert_equal expected_result, result
+
+      result = schema.execute("query($sort: SongSort) { songs(sort: $sort) { name } }", variables: { sort: nil })
+      expected_result = {"data"=>nil, "errors"=>[{"message"=>"`null` is not a valid input for `SongSort!`, please provide a value for this argument.", "locations"=>[{"line"=>1, "column"=>26}], "path"=>["songs"]}]}
+      assert_equal expected_result, result
+    end
+  end
 end
