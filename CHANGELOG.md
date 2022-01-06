@@ -1,5 +1,6 @@
 # Changelog
 
+[Versioning guidelines](https://graphql-ruby.org/development.html#versioning) 
 ### Breaking changes
 
 ### Deprecations
