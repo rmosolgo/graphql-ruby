@@ -265,6 +265,10 @@ describe GraphQL::Execution::Interpreter do
         OpenStruct.new(id: id)
       end
 
+      def self.id_from_object(obj, type, ctx)
+        obj.id
+      end
+
       def self.resolve_type(type, obj, ctx)
         FieldCounter
       end
