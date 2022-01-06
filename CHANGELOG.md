@@ -1,6 +1,7 @@
 # Changelog
 
-[Versioning guidelines](https://graphql-ruby.org/development.html#versioning) 
+[Versioning guidelines](https://graphql-ruby.org/development.html#versioning)
+
 ### Breaking changes
 
 ### Deprecations
@@ -8,6 +9,30 @@
 ### New features
 
 ### Bug fixes
+
+# 1.13.3 (6 January 2022)
+
+### Deprecations
+
+- `GraphQL::Relay::NodeField` and `GraphQL::Relay::NodesField` are deprecated; use `GraphQL::Relay::HasNodesField` or `GraphQL::Relay::HasNodeField` instead. (The underlying field instances require a reference to their owner type, but `NodeField` and `NodesField` can't do that, since they're shared instances) #3791
+
+### New features
+
+- Arguments: support `required: :nullable` to make an argument required to be _present_, even if it's `null` #3784
+- Connections: When paginating an AR::Relation, use already-loaded results if possible #3790
+- Tracing: Support DRY::Notifications #3776
+- Improve the error when a Ruby method doesn't support the defined GraphQL arguments #3785
+- Input Objects: call `.authorized?` on them at runtime #3786
+- Field extensions: add `extras(...)` for extension-related extras with automatic cleanup #3787
+
+### Bug fixes
+
+- Validation: accept nullable variable types for arguments with default values #3819
+- Validation: raise a better error when a schema receives a `query { ... }` but has no query root #3815
+- Improve the error message when `Schema.get_field` can't make sense of the arguments #3815
+- Subscriptions: losslessly serialize Rails 7 TimeWithZone #3774
+- Field Usage analyzer: handle errors from `prepare:` hooks #3794
+- Schema from definition: fix default values with camelized arguments #3780
 
 # 1.13.2 (15 December 2021)
 
