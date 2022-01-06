@@ -14,7 +14,7 @@ module GraphQL
       #     argument :ingredient_id, ID, required: true
       #     argument :cups, Integer, required: false
       #     argument :tablespoons, Integer, required: false
-      #     argument :teaspoons, Integer, required: true
+      #     argument :teaspoons, Integer, required: false
       #     validates required: { one_of: [:cups, :tablespoons, :teaspoons] }
       #   end
       #
