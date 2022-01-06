@@ -135,6 +135,12 @@ module ConnectionAssertions
           relation
         end
 
+        field :unbounded_items, item.connection_type, max_page_size: nil
+
+        def unbounded_items
+          get_items
+        end
+
         private
 
         def get_items
@@ -277,6 +283,33 @@ module ConnectionAssertions
           assert_names(["Eggplant", "Fennel", "Ginger", "Horseradish", "I Can't Believe It's Not Butter", "Jicama"], res)
           assert_equal false, get_page_info(res, "hasNextPage")
           assert_equal true, get_page_info(res, "hasPreviousPage")
+        end
+
+        it "returns unbounded lists" do
+          query_str = <<-GRAPHQL
+            query($first: Int, $after: String, $last: Int, $before: String) {
+              unboundedItems(first: $first, after: $after, last: $last, before: $before) {
+                nodes {
+                  name
+                }
+                edges {
+                  node {
+                    name
+                  }
+                  cursor
+                }
+                pageInfo {
+                  hasNextPage
+                  hasPreviousPage
+                  startCursor
+                  endCursor
+                }
+              }
+            }
+          GRAPHQL
+
+          res = exec_query(query_str, {})
+          assert_equal 10, res["data"]["unboundedItems"]["nodes"].size
         end
       end
 
