@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 1.13.4 (7 January 2022)
+
+### Bug fixes
+
+- Connections: Fix regression in 1.13.3 on unbounded Relation connections #3822
+
 # 1.13.3 (6 January 2022)
 
 ### Deprecations
