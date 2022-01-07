@@ -208,7 +208,10 @@ module GraphQL
           @paged_nodes_offset = relation_offset
           paginated_nodes = items
           paginated_nodes = set_offset(paginated_nodes, relation_offset)
-          set_limit(paginated_nodes, relation_limit)
+          if relation_limit
+            paginated_nodes = set_limit(paginated_nodes, relation_limit)
+          end
+          paginated_nodes
         end
       end
 
