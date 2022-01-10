@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.10.6 (10 Jan 2022)
+
+- Pusher Link: Don't pass along the `complete` handler because Apollo unsubscribes if you do #3830
+
 # 1.10.5 (17 Dec 2021)
 
 - Dependencies: replace `actioncable` with `@rails/actioncable` #3773
