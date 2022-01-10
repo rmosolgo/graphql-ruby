@@ -101,7 +101,11 @@ class PusherLink extends ApolloLink {
           observer.next(data)
           observer.complete()
         }
-      }, error: observer.error, complete: observer.complete})
+      },
+      error: observer.error,
+      // complete: observer.complete Don't pass this because Apollo unsubscribes if you do
+      })
+
       // Return an object that will unsubscribe _if_ the query was a subscription.
       return {
         closed: false,
