@@ -34,7 +34,6 @@ module GraphQL
 
           DeprecatedNodeField
         else
-
           super
         end
       end
