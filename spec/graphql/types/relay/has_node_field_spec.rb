@@ -26,10 +26,8 @@ describe GraphQL::Types::Relay::HasNodeField do
 
     assert_equal GraphQL::Types::Relay::DeprecatedNodeField, result
     assert_equal "", stdout
-    expected_warning = "NodeField is deprecated, use `include GraphQL::Types::Relay::HasNodeField` instead.
-(referenced from /Users/rmosolgo/code/graphql-ruby/spec/graphql/types/relay/has_node_field_spec.rb:24:in `block (3 levels) in <top (required)>')
-"
-    assert_equal expected_warning, stderr
+    expected_warning = "NodeField is deprecated, use `include GraphQL::Types::Relay::HasNodeField` instead."
+    assert_includes stderr, expected_warning
 
     stdout, stderr = capture_io do
       result = GraphQL::Types::Relay::NodesField
@@ -37,9 +35,7 @@ describe GraphQL::Types::Relay::HasNodeField do
 
     assert_equal GraphQL::Types::Relay::DeprecatedNodesField, result
     assert_equal "", stdout
-    expected_warning = "NodesField is deprecated, use `include GraphQL::Types::Relay::HasNodesField` instead.
-(referenced from /Users/rmosolgo/code/graphql-ruby/spec/graphql/types/relay/has_node_field_spec.rb:35:in `block (3 levels) in <top (required)>')
-"
-    assert_equal expected_warning, stderr
+    expected_warning = "NodesField is deprecated, use `include GraphQL::Types::Relay::HasNodesField` instead."
+    assert_includes stderr, expected_warning
   end
 end
