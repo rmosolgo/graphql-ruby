@@ -18,18 +18,6 @@ module GraphQL
       #     context.schema.object_from_id(id, context)
       #   end
       #
-      def self.const_missing(const_name)
-        if const_name == :NodeField
-          message = "NodeField is deprecated, use `include GraphQL::Types::Relay::HasNodeField` instead."
-          message += "\n(referenced from #{caller(1, 1).first})"
-          GraphQL::Deprecation.warn(message)
-
-          DeprecatedNodeField
-        else
-          super
-        end
-      end
-
       DeprecatedNodeField = GraphQL::Schema::Field.new(owner: nil, **HasNodeField.field_options, &HasNodeField.field_block)
     end
   end
