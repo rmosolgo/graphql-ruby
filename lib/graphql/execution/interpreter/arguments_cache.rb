@@ -31,8 +31,10 @@ module GraphQL
           # If any jobs were enqueued, run them now,
           # since this might have been called outside of execution.
           # (The jobs are responsible for updating `result` in-place.)
-          @dataloader.run_isolated do
-            @storage[ast_node][argument_owner][parent_object]
+          if !@storage.key?(ast_node) || !@storage[ast_node].key?(argument_owner)
+            @dataloader.run_isolated do
+              @storage[ast_node][argument_owner][parent_object]
+            end
           end
           # Ack, the _hash_ is updated, but the key is eventually
           # overridden with an immutable arguments instance.
