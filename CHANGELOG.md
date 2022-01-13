@@ -10,6 +10,19 @@
 
 ### Bug fixes
 
+# 1.13.5 (13 January 2022)
+
+### New features
+
+- Directives: support `repeatable` directives #3837
+- Tracing: use `context[:fallback_transaction_name]` when operations aren't named #3778
+
+### Bug fixes
+
+- Performance: improve performance of queries with directives #3835
+- Fix crash on undefined constant `NodeField` #3832
+- Fix crash on partially-required `ActiveSupport` #3829
+
 # 1.13.4 (7 January 2022)
 
 ### Bug fixes
