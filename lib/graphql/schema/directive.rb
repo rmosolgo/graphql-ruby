@@ -101,6 +101,14 @@ module GraphQL
         def on_operation?
           locations.include?(QUERY) && locations.include?(MUTATION) && locations.include?(SUBSCRIPTION)
         end
+
+        def repeatable?
+          !!@repeatable
+        end
+
+        def repeatable(new_value)
+          @repeatable = new_value
+        end
       end
 
       # @return [GraphQL::Schema::Field, GraphQL::Schema::Argument, Class, Module]
