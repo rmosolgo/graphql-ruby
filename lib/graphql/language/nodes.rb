@@ -318,7 +318,7 @@ module GraphQL
       class DirectiveDefinition < AbstractNode
         include DefinitionNode
         attr_reader :description
-        scalar_methods :name
+        scalar_methods :name, :repeatable
         children_methods(
           locations: Nodes::DirectiveLocation,
           arguments: Nodes::Argument,

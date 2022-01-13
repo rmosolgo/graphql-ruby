@@ -147,6 +147,7 @@ rule
   name_without_on:
       IDENTIFIER
     | FRAGMENT
+    | REPEATABLE
     | TRUE
     | FALSE
     | operation_type
@@ -155,6 +156,7 @@ rule
   enum_name: /* any identifier, but not "true", "false" or "null" */
       IDENTIFIER
     | FRAGMENT
+    | REPEATABLE
     | ON
     | operation_type
     | schema_keyword
@@ -422,9 +424,13 @@ rule
       }
 
   directive_definition:
-      description_opt DIRECTIVE DIR_SIGN name arguments_definitions_opt ON directive_locations {
-        result = make_node(:DirectiveDefinition, name: val[3], arguments: val[4], locations: val[6], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+      description_opt DIRECTIVE DIR_SIGN name arguments_definitions_opt directive_repeatable_opt ON directive_locations {
+        result = make_node(:DirectiveDefinition, name: val[3], arguments: val[4], locations: val[7], repeatable: !!val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       }
+
+  directive_repeatable_opt:
+    /* nothing */
+    | REPEATABLE
 
   directive_locations:
       name                          { result = [make_node(:DirectiveLocation, name: val[0].to_s, position_source: val[0])] }
