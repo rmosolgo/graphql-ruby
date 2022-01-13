@@ -70,6 +70,24 @@ describe GraphQL::Tracing::NewRelicTracing do
     assert_equal ["GraphQL/query.anonymous"], NewRelic::TRANSACTION_NAMES
   end
 
+  it "falls back to a :tracing_fallback_transaction_name when provided" do
+    NewRelicTest::SchemaWithTransactionName.execute("{ int }", context: { tracing_fallback_transaction_name: "Abcd" })
+    assert_equal ["GraphQL/query.Abcd"], NewRelic::TRANSACTION_NAMES
+  end
+
+  it "does not use the :tracing_fallback_transaction_name if an operation name is present" do
+    NewRelicTest::SchemaWithTransactionName.execute(
+      "query Ab { int }",
+      context: { tracing_fallback_transaction_name: "Cd" }
+    )
+    assert_equal ["GraphQL/query.Ab"], NewRelic::TRANSACTION_NAMES
+  end
+
+  it "does not require a :tracing_fallback_transaction_name even if an operation name is not present" do
+    NewRelicTest::SchemaWithTransactionName.execute("{ int }")
+    assert_equal ["GraphQL/query.anonymous"], NewRelic::TRANSACTION_NAMES
+  end
+
   it "traces scalars when trace_scalars is true" do
     NewRelicTest::SchemaWithScalarTrace.execute "query X { int }"
     assert_includes NewRelic::EXECUTION_SCOPES, "GraphQL/Query/int"
