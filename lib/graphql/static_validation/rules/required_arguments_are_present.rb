@@ -8,7 +8,7 @@ module GraphQL
       end
 
       def on_directive(node, _parent)
-        directive_defn = context.schema.directives[node.name]
+        directive_defn = context.schema_directives[node.name]
         assert_required_args(node, directive_defn)
         super
       end

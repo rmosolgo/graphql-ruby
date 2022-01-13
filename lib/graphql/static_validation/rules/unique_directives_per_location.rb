@@ -40,7 +40,7 @@ module GraphQL
               nodes: [used_directives[directive_name], ast_directive],
               directive: directive_name,
             ))
-          else
+          elsif !((dir_defn = context.schema_directives[directive_name]) && dir_defn.repeatable?)
             used_directives[directive_name] = ast_directive
           end
         end
