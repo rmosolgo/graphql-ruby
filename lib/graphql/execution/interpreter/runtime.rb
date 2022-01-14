@@ -762,17 +762,19 @@ module GraphQL
             scoped_context = context.scoped_context
             begin
               value.each do |inner_value|
-                break if dead_result?(response_list)
-                next_path = path.dup
-                next_path << idx
-                this_idx = idx
-                next_path.freeze
-                idx += 1
-                # This will update `response_list` with the lazy
-                after_lazy(inner_value, owner: inner_type, path: next_path, ast_node: ast_node, scoped_context: scoped_context, field: field, owner_object: owner_object, arguments: arguments, result_name: this_idx, result: response_list) do |inner_inner_value|
-                  continue_value = continue_value(next_path, inner_inner_value, owner_type, field, inner_type.non_null?, ast_node, this_idx, response_list)
-                  if HALT != continue_value
-                    continue_field(next_path, continue_value, owner_type, field, inner_type, ast_node, next_selections, false, owner_object, arguments, this_idx, response_list)
+                @dataloader.append_job do
+                  break if dead_result?(response_list)
+                  next_path = path.dup
+                  next_path << idx
+                  this_idx = idx
+                  next_path.freeze
+                  idx += 1
+                  # This will update `response_list` with the lazy
+                  after_lazy(inner_value, owner: inner_type, path: next_path, ast_node: ast_node, scoped_context: scoped_context, field: field, owner_object: owner_object, arguments: arguments, result_name: this_idx, result: response_list) do |inner_inner_value|
+                    continue_value = continue_value(next_path, inner_inner_value, owner_type, field, inner_type.non_null?, ast_node, this_idx, response_list)
+                    if HALT != continue_value
+                      continue_field(next_path, continue_value, owner_type, field, inner_type, ast_node, next_selections, false, owner_object, arguments, this_idx, response_list)
+                    end
                   end
                 end
               end
