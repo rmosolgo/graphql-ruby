@@ -21,10 +21,6 @@ module GraphQL
       class ImplementationMissingError < GraphQL::Error
       end
 
-      def self.use(schema_defn)
-        schema_defn.connections = self.new(schema: schema_defn)
-      end
-
       def initialize(schema:)
         @schema = schema
         @wrappers = {}

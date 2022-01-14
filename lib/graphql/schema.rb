@@ -1110,6 +1110,6 @@ module GraphQL
     end
 
     # Install these here so that subclasses will also install it.
-    use(GraphQL::Pagination::Connections)
+    self.connections = GraphQL::Pagination::Connections.new(schema: self)
   end
 end
