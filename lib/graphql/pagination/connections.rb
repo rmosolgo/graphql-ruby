@@ -22,9 +22,6 @@ module GraphQL
       end
 
       def self.use(schema_defn)
-        if schema_defn.plugins.any? { |(plugin, args)| plugin == self }
-          GraphQL::Deprecation.warn("#{self} is now the default, remove `use #{self}` from #{caller(2,1).first}")
-        end
         schema_defn.connections = self.new(schema: schema_defn)
       end
 
