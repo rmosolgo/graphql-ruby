@@ -5,7 +5,6 @@ require "graphql/subscriptions/event"
 require "graphql/subscriptions/instrumentation"
 require "graphql/subscriptions/serialize"
 require "graphql/subscriptions/action_cable_subscriptions"
-require "graphql/subscriptions/subscription_root"
 require "graphql/subscriptions/default_subscription_resolve_extension"
 
 module GraphQL

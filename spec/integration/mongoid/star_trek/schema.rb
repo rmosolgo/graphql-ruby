@@ -331,7 +331,7 @@ module StarTrek
       StarTrek::DATA["Faction"]["1"]
     end
 
-    add_field(GraphQL::Types::Relay::NodesField)
+    include GraphQL::Types::Relay::HasNodesField
 
     field :nodes_with_custom_resolver, [GraphQL::Types::Relay::Node, null: true] do
       argument :ids, [ID]

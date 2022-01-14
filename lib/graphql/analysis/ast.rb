@@ -11,16 +11,6 @@ module GraphQL
   module Analysis
     module AST
       module_function
-
-      def use(schema_class)
-        if schema_class.analysis_engine == self
-          definition_line = caller(2, 1).first
-          GraphQL::Deprecation.warn("GraphQL::Analysis::AST is now the default; remove `use GraphQL::Analysis::AST` from the schema definition (#{definition_line})")
-        else
-          schema_class.analysis_engine = self
-        end
-      end
-
       # Analyze a multiplex, and all queries within.
       # Multiplex analyzers are ran for all queries, keeping state.
       # Query analyzers are ran per query, without carrying state between queries.

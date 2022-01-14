@@ -573,9 +573,7 @@ module GraphQL
       end
 
       def interpreter?
-        query_execution_strategy == GraphQL::Execution::Interpreter &&
-          mutation_execution_strategy == GraphQL::Execution::Interpreter &&
-          subscription_execution_strategy == GraphQL::Execution::Interpreter
+        true
       end
 
       attr_writer :interpreter
@@ -933,12 +931,8 @@ module GraphQL
       def add_subscription_extension_if_necessary
         if !defined?(@subscription_extension_added) && subscription && self.subscriptions
           @subscription_extension_added = true
-          if subscription.singleton_class.ancestors.include?(Subscriptions::SubscriptionRoot)
-            GraphQL::Deprecation.warn("`extend Subscriptions::SubscriptionRoot` is no longer required; you may remove it from #{self}'s `subscription` root type (#{subscription}).")
-          else
-            subscription.all_field_definitions.each do |field|
-              field.extension(Subscriptions::DefaultSubscriptionResolveExtension)
-            end
+          subscription.all_field_definitions.each do |field|
+            field.extension(Subscriptions::DefaultSubscriptionResolveExtension)
           end
         end
       end
@@ -1116,6 +1110,6 @@ module GraphQL
     end
 
     # Install these here so that subclasses will also install it.
-    use(GraphQL::Pagination::Connections)
+    self.connections = GraphQL::Pagination::Connections.new(schema: self)
   end
 end

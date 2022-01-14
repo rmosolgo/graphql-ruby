@@ -14,11 +14,6 @@ module GraphQL
     #   end
     #
     class Errors
-      def self.use(schema)
-        definition_line = caller(2, 1).first
-        GraphQL::Deprecation.warn("GraphQL::Execution::Errors is now installed by default, remove `use GraphQL::Execution::Errors` from #{definition_line}")
-      end
-
       NEW_HANDLER_HASH = ->(h, k) {
         h[k] = {
           class: k,

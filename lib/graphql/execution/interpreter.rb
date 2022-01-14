@@ -11,18 +11,6 @@ require "graphql/execution/interpreter/handles_raw_value"
 module GraphQL
   module Execution
     class Interpreter
-      def self.use(schema_class)
-        if schema_class.interpreter?
-          definition_line = caller(2, 1).first
-          GraphQL::Deprecation.warn("GraphQL::Execution::Interpreter is now the default; remove `use GraphQL::Execution::Interpreter` from the schema definition (#{definition_line})")
-        else
-          schema_class.query_execution_strategy(self)
-          schema_class.mutation_execution_strategy(self)
-          schema_class.subscription_execution_strategy(self)
-          schema_class.add_subscription_extension_if_necessary
-        end
-      end
-
       def self.begin_multiplex(multiplex)
         # Since this is basically the batching context,
         # share it for a whole multiplex
