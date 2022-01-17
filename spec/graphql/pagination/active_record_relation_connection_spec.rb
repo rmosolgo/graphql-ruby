@@ -37,7 +37,6 @@ if testing_rails?
 
     include ConnectionAssertions
 
-    focus
     it "maintains an application-provided offset" do
       results = schema.execute("{
         offsetItems(first: 3) {
