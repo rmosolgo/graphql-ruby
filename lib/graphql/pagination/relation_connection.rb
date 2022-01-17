@@ -47,7 +47,7 @@ module GraphQL
       def cursor_for(item)
         load_nodes
         # index in nodes + existing offset + 1 (because it's offset, not index)
-        offset = nodes.index(item) + 1 + (@paged_nodes_offset || 0) + (relation_offset(items) || 0)
+        offset = nodes.index(item) + 1 + (@paged_nodes_offset || 0) - (relation_offset(items) || 0)
         encode(offset.to_s)
       end
 
@@ -116,9 +116,9 @@ module GraphQL
         if defined?(@sliced_nodes_limit)
           return
         else
+          next_offset = relation_offset(items) || 0
           if after_offset
-            previous_offset = relation_offset(items) || 0
-            relation_offset = previous_offset + after_offset
+            next_offset += after_offset
           end
 
           if before_offset && after_offset
@@ -136,7 +136,7 @@ module GraphQL
           end
 
           @sliced_nodes_limit = relation_limit
-          @sliced_nodes_offset = relation_offset || 0
+          @sliced_nodes_offset = next_offset
         end
       end
 

@@ -37,6 +37,32 @@ if testing_rails?
 
     include ConnectionAssertions
 
+    focus
+    it "maintains an application-provided offset" do
+      results = schema.execute("{
+        offsetItems(first: 3) {
+          nodes { name }
+          pageInfo { endCursor }
+        }
+      }")
+      assert_equal ["Cucumber", "Dill", "Eggplant"], results["data"]["offsetItems"]["nodes"].map { |n| n["name"] }
+      end_cursor = results["data"]["offsetItems"]["pageInfo"]["endCursor"]
+
+      results = schema.execute("{
+        offsetItems(first: 3, after: #{end_cursor.inspect}) {
+          nodes { name }
+        }
+      }")
+      assert_equal ["Fennel", "Ginger", "Horseradish"], results["data"]["offsetItems"]["nodes"].map { |n| n["name"] }
+
+      results = schema.execute("{
+        offsetItems(last: 2, before: #{end_cursor.inspect}) {
+          nodes { name }
+        }
+      }")
+      assert_equal ["Cucumber", "Dill"], results["data"]["offsetItems"]["nodes"].map { |n| n["name"] }
+    end
+
     it "doesn't run pageInfo queries when not necessary" do
       results = nil
       log = with_active_record_log do

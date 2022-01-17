@@ -141,6 +141,12 @@ module ConnectionAssertions
           get_items
         end
 
+        field :offset_items, item.connection_type
+
+        def offset_items
+          get_items.offset(2)
+        end
+
         private
 
         def get_items
