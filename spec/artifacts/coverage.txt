@@ -106,7 +106,7 @@ Group: Language
 ========================================
 graphql-ruby/lib/graphql/language.rb (coverage: 100.0% / branch: 100.0%)
 graphql-ruby/lib/graphql/language/block_string.rb (coverage: 98.11% / branch: 90.63%)
-graphql-ruby/lib/graphql/language/cache.rb (coverage: 90.48% / branch: 50.0%)
+graphql-ruby/lib/graphql/language/cache.rb (coverage: 42.86% / branch: 0.0%)
 graphql-ruby/lib/graphql/language/definition_slice.rb (coverage: 100.0% / branch: 100.0%)
 graphql-ruby/lib/graphql/language/document_from_schema_definition.rb (coverage: 97.73% / branch: 89.47%)
 graphql-ruby/lib/graphql/language/generation.rb (coverage: 100.0% / branch: 100.0%)
