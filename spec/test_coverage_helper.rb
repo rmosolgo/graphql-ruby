@@ -47,7 +47,7 @@ Some [development artifacts](https://graphql-ruby.org/development#artifacts) hav
 Merge [this PR](https://github.com/rmosolgo/graphql-ruby/compare/#{current_branch}...#{new_branch}?expand=1) into your branch or update them locally with
 
 ```
-COVERAGE=1 BUNDLE_GEMFILE=gemfiles/rails_6.1.gemfile bundle exec rake test
+COVERAGE=1 BUNDLE_GEMFILE=#{ENV['BUNDLE_GEMFILE']} bundle exec rake test
 ```
 
 and commit the changes.
