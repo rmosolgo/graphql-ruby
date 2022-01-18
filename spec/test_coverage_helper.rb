@@ -53,6 +53,7 @@ COVERAGE=1 BUNDLE_GEMFILE=gemfiles/rails_6.1.gemfile bundle exec rake test
 and commit the changes.
 "
       `curl -X POST #{ENV["GITHUB_COMMENTS_URL"]} -H "Content-Type: application/json" -H "Authorization: token #{ENV["GITHUB_TOKEN"]}" --data '{ "body": "#{comment}" }'`
+      raise "Artifacts are not up to date; update them to pass this build."
     end
   else
     FileUtils.mkdir_p("spec/artifacts")
