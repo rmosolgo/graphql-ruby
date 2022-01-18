@@ -43,7 +43,7 @@ SimpleCov.at_exit do
       `git commit -m "Update artifacts (automatic)"`
       `git push origin #{new_branch}`
       comment = 'Some [development artifacts](https://graphql-ruby.org/development#artifacts) have changed. Merge [this PR](https://github.com/rmosolgo/graphql-ruby/compare/#{current_branch}...#{new_branch}?expand=1) into your branch or update them locally with\n\n```\nCOVERAGE=1 BUNDLE_GEMFILE=#{ENV['BUNDLE_GEMFILE']} bundle exec rake test\n```\n\nand commit the changes.'
-      puts: "Posting: \"#{comment}\""
+      puts "Posting: \"#{comment}\""
       `curl -X POST #{ENV["GITHUB_COMMENTS_URL"]} -H "Content-Type: application/json" -H "Authorization: token #{ENV["GITHUB_TOKEN"]}" --data '{ "body": "#{comment}" }'`
       raise "Artifacts are not up to date; update them to pass this build."
     end
