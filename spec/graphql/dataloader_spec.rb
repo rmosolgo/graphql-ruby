@@ -3,6 +3,18 @@ require "spec_helper"
 require "fiber"
 
 describe GraphQL::Dataloader do
+  class BatchedCallsCounter
+    def initialize
+      @count = 0
+    end
+
+    def increment
+      @count += 1
+    end
+
+    attr_reader :count
+  end
+
   class FiberSchema < GraphQL::Schema
     module Database
       extend self
@@ -99,13 +111,12 @@ describe GraphQL::Dataloader do
     end
 
     class AuthorizedSource < GraphQL::Dataloader::Source
-      def initialize(context)
-        @context = context
+      def initialize(counter)
+        @counter = counter
       end
 
       def fetch(recipes)
-        @context[:authorized_batch_calls_count] ||= 0
-        @context[:authorized_batch_calls_count] += 1
+        @counter && @counter.increment
         recipes.map { true }
       end
     end
@@ -130,7 +141,7 @@ describe GraphQL::Dataloader do
 
     class Recipe < GraphQL::Schema::Object
       def self.authorized?(obj, ctx)
-        ctx.dataloader.with(AuthorizedSource, ctx).load(obj)
+        ctx.dataloader.with(AuthorizedSource, ctx[:batched_calls_counter]).load(obj)
       end
 
       field :name, String, null: false
@@ -666,14 +677,14 @@ describe GraphQL::Dataloader do
 
         it "batches calls in .authorized?" do
           query_str = "{ r1: recipe(id: 5) { name } r2: recipe(id: 6) { name } }"
-          context = { authorized_batch_calls_count: 0 }
+          context = { batched_calls_counter: BatchedCallsCounter.new }
           schema.execute(query_str, context: context)
-          assert_equal 1, context[:authorized_batch_calls_count]
+          assert_equal 1, context[:batched_calls_counter].count
 
           query_str = "{ recipes { name } }"
-          context = { authorized_batch_calls_count: 0 }
+          context = { batched_calls_counter: BatchedCallsCounter.new }
           schema.execute(query_str, context: context)
-          assert_equal 1, context[:authorized_batch_calls_count]
+          assert_equal 1, context[:batched_calls_counter].count
         end
 
         it "Works with input objects using variables, load and request" do
