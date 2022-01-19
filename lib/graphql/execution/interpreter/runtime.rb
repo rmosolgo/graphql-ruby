@@ -774,17 +774,21 @@ module GraphQL
                 if use_dataloader_job
                   @dataloader.append_job do
                     after_lazy(inner_value, owner: inner_type, path: next_path, ast_node: ast_node, scoped_context: scoped_context, field: field, owner_object: owner_object, arguments: arguments, result_name: this_idx, result: response_list) do |inner_inner_value|
-                      continue_value = continue_value(next_path, inner_inner_value, owner_type, field, inner_type.non_null?, ast_node, this_idx, response_list)
-                      if HALT != continue_value
-                        continue_field(next_path, continue_value, owner_type, field, inner_type, ast_node, next_selections, false, owner_object, arguments, this_idx, response_list)
+                      resolve_each_with_directives(owner_object, ast_node.directives, inner_inner_value) do |inner_inner_inner_value|
+                        continue_value = continue_value(next_path, inner_inner_inner_value, owner_type, field, inner_type.non_null?, ast_node, this_idx, response_list)
+                        if HALT != continue_value
+                          continue_field(next_path, continue_value, owner_type, field, inner_type, ast_node, next_selections, false, owner_object, arguments, this_idx, response_list)
+                        end
                       end
                     end
                   end
                 else
                   after_lazy(inner_value, owner: inner_type, path: next_path, ast_node: ast_node, scoped_context: scoped_context, field: field, owner_object: owner_object, arguments: arguments, result_name: this_idx, result: response_list) do |inner_inner_value|
-                    continue_value = continue_value(next_path, inner_inner_value, owner_type, field, inner_type.non_null?, ast_node, this_idx, response_list)
-                    if HALT != continue_value
-                      continue_field(next_path, continue_value, owner_type, field, inner_type, ast_node, next_selections, false, owner_object, arguments, this_idx, response_list)
+                    resolve_each_with_directives(owner_object, ast_node.directives, inner_inner_value) do |inner_inner_inner_value|
+                      continue_value = continue_value(next_path, inner_inner_inner_value, owner_type, field, inner_type.non_null?, ast_node, this_idx, response_list)
+                      if HALT != continue_value
+                        continue_field(next_path, continue_value, owner_type, field, inner_type, ast_node, next_selections, false, owner_object, arguments, this_idx, response_list)
+                      end
                     end
                   end
                 end
