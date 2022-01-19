@@ -667,12 +667,12 @@ describe GraphQL::Dataloader do
         it "batches calls in .authorized?" do
           query_str = "{ r1: recipe(id: 5) { name } r2: recipe(id: 6) { name } }"
           context = { authorized_batch_calls_count: 0 }
-          res = schema.execute(query_str, context: context)
+          schema.execute(query_str, context: context)
           assert_equal 1, context[:authorized_batch_calls_count]
 
           query_str = "{ recipes { name } }"
           context = { authorized_batch_calls_count: 0 }
-          res = schema.execute(query_str, context: context)
+          schema.execute(query_str, context: context)
           assert_equal 1, context[:authorized_batch_calls_count]
         end
 
