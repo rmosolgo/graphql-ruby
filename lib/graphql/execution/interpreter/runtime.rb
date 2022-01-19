@@ -207,7 +207,7 @@ module GraphQL
             # Root .authorized? returned false.
             @response = nil
           else
-            resolve_with_directives(object_proxy, root_operation.directives) do # execute query level directives
+            call_method_on_directives(:resolve, object_proxy, root_operation.directives) do # execute query level directives
               gathered_selections = gather_selections(object_proxy, root_type, root_operation.selections)
               # This is kind of a hack -- `gathered_selections` is an Array if any of the selections
               # require isolation during execution (because of runtime directives). In that case,
@@ -227,7 +227,7 @@ module GraphQL
 
                 @dataloader.append_job {
                   set_all_interpreter_context(query.root_value, nil, nil, path)
-                  resolve_with_directives(object_proxy, selections.graphql_directives) do
+                  call_method_on_directives(:resolve, object_proxy, selections.graphql_directives) do
                     evaluate_selections(
                       path,
                       context.scoped_context,
@@ -503,7 +503,7 @@ module GraphQL
               }
             end
 
-            field_result = resolve_with_directives(object, directives) do
+            field_result = call_method_on_directives(:resolve, object, directives) do
               # Actually call the field resolver and capture the result
               app_result = begin
                 query.with_error_handling do
@@ -735,7 +735,7 @@ module GraphQL
                     final_result = nil
                   end
                   set_all_interpreter_context(continue_value, nil, nil, path) # reset this mutable state
-                  resolve_with_directives(continue_value, selections.graphql_directives) do
+                  call_method_on_directives(:resolve, continue_value, selections.graphql_directives) do
                     evaluate_selections(
                       path,
                       context.scoped_context,
@@ -772,27 +772,10 @@ module GraphQL
                 idx += 1
                 if use_dataloader_job
                   @dataloader.append_job do
-                    set_all_interpreter_context(nil, nil, nil, next_path)
-                    resolve_each_with_directives(owner_object, ast_node.directives) do
-                      # This will update `response_list` with the lazy
-                      after_lazy(inner_value, owner: inner_type, path: next_path, ast_node: ast_node, scoped_context: scoped_context, field: field, owner_object: owner_object, arguments: arguments, result_name: this_idx, result: response_list) do |inner_inner_value|
-                        continue_value = continue_value(next_path, inner_inner_value, owner_type, field, inner_type.non_null?, ast_node, this_idx, response_list)
-                        if HALT != continue_value
-                          continue_field(next_path, continue_value, owner_type, field, inner_type, ast_node, next_selections, false, owner_object, arguments, this_idx, response_list)
-                        end
-                      end
-                    end
+                    resolve_list_item(inner_value, inner_type, next_path, ast_node, scoped_context, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type)
                   end
                 else
-                  set_all_interpreter_context(nil, nil, nil, next_path)
-                  resolve_each_with_directives(owner_object, ast_node.directives) do
-                    after_lazy(inner_value, owner: inner_type, path: next_path, ast_node: ast_node, scoped_context: scoped_context, field: field, owner_object: owner_object, arguments: arguments, result_name: this_idx, result: response_list) do |inner_inner_value|
-                      continue_value = continue_value(next_path, inner_inner_value, owner_type, field, inner_type.non_null?, ast_node, this_idx, response_list)
-                      if HALT != continue_value
-                        continue_field(next_path, continue_value, owner_type, field, inner_type, ast_node, next_selections, false, owner_object, arguments, this_idx, response_list)
-                      end
-                    end
-                  end
+                  resolve_list_item(inner_value, inner_type, next_path, ast_node, scoped_context, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type)
                 end
               end
             rescue NoMethodError => err
@@ -812,48 +795,25 @@ module GraphQL
           end
         end
 
-        def resolve_with_directives(object, directives, &block)
-          return yield if directives.nil? || directives.empty?
-          run_directive(object, directives, 0, &block)
-        end
-
-        def run_directive(object, directives, idx, &block)
-          dir_node = directives[idx]
-          if !dir_node
-            yield
-          else
-            dir_defn = @schema_directives.fetch(dir_node.name)
-            if !dir_defn.is_a?(Class)
-              dir_defn = dir_defn.type_class || raise("Only class-based directives are supported (not `@#{dir_node.name}`)")
-            end
-            raw_dir_args = arguments(nil, dir_defn, dir_node)
-            dir_args = continue_value(
-              @context[:current_path], # path
-              raw_dir_args, # value
-              dir_defn, # parent_type
-              nil, # field
-              false, # is_non_null
-              dir_node, # ast_node
-              nil, # result_name
-              nil, # selection_result
-            )
-
-            if dir_args == HALT
-              nil
-            else
-              dir_defn.resolve(object, dir_args, context) do
-                run_directive(object, directives, idx + 1, &block)
+        def resolve_list_item(inner_value, inner_type, next_path, ast_node, scoped_context, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type) # rubocop:disable Metrics/ParameterLists
+          set_all_interpreter_context(nil, nil, nil, next_path)
+          call_method_on_directives(:resolve_each, owner_object, ast_node.directives) do
+            # This will update `response_list` with the lazy
+            after_lazy(inner_value, owner: inner_type, path: next_path, ast_node: ast_node, scoped_context: scoped_context, field: field, owner_object: owner_object, arguments: arguments, result_name: this_idx, result: response_list) do |inner_inner_value|
+              continue_value = continue_value(next_path, inner_inner_value, owner_type, field, inner_type.non_null?, ast_node, this_idx, response_list)
+              if HALT != continue_value
+                continue_field(next_path, continue_value, owner_type, field, inner_type, ast_node, next_selections, false, owner_object, arguments, this_idx, response_list)
               end
             end
           end
         end
 
-        def resolve_each_with_directives(object, directives, &block)
+        def call_method_on_directives(method_name, object, directives, &block)
           return yield if directives.nil? || directives.empty?
-          run_directive_resolve_each(object, directives, 0, &block)
+          run_directive(method_name, object, directives, 0, &block)
         end
 
-        def run_directive_resolve_each(object, directives, idx, &block)
+        def run_directive(method_name, object, directives, idx, &block)
           dir_node = directives[idx]
           if !dir_node
             yield
@@ -877,8 +837,8 @@ module GraphQL
             if dir_args == HALT
               nil
             else
-              dir_defn.resolve_each(object, dir_args, context) do
-                run_directive_resolve_each(object, directives, idx + 1, &block)
+              dir_defn.public_send(method_name, object, dir_args, context) do
+                run_directive(method_name, object, directives, idx + 1, &block)
               end
             end
           end
