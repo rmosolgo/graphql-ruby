@@ -770,12 +770,13 @@ module GraphQL
                 this_idx = idx
                 next_path.freeze
                 idx += 1
-                # This will update `response_list` with the lazy
                 if use_dataloader_job
                   @dataloader.append_job do
-                    after_lazy(inner_value, owner: inner_type, path: next_path, ast_node: ast_node, scoped_context: scoped_context, field: field, owner_object: owner_object, arguments: arguments, result_name: this_idx, result: response_list) do |inner_inner_value|
-                      resolve_each_with_directives(owner_object, ast_node.directives, inner_inner_value) do |inner_inner_inner_value|
-                        continue_value = continue_value(next_path, inner_inner_inner_value, owner_type, field, inner_type.non_null?, ast_node, this_idx, response_list)
+                    set_all_interpreter_context(nil, nil, nil, next_path)
+                    resolve_each_with_directives(owner_object, ast_node.directives) do
+                      # This will update `response_list` with the lazy
+                      after_lazy(inner_value, owner: inner_type, path: next_path, ast_node: ast_node, scoped_context: scoped_context, field: field, owner_object: owner_object, arguments: arguments, result_name: this_idx, result: response_list) do |inner_inner_value|
+                        continue_value = continue_value(next_path, inner_inner_value, owner_type, field, inner_type.non_null?, ast_node, this_idx, response_list)
                         if HALT != continue_value
                           continue_field(next_path, continue_value, owner_type, field, inner_type, ast_node, next_selections, false, owner_object, arguments, this_idx, response_list)
                         end
@@ -783,9 +784,10 @@ module GraphQL
                     end
                   end
                 else
-                  after_lazy(inner_value, owner: inner_type, path: next_path, ast_node: ast_node, scoped_context: scoped_context, field: field, owner_object: owner_object, arguments: arguments, result_name: this_idx, result: response_list) do |inner_inner_value|
-                    resolve_each_with_directives(owner_object, ast_node.directives, inner_inner_value) do |inner_inner_inner_value|
-                      continue_value = continue_value(next_path, inner_inner_inner_value, owner_type, field, inner_type.non_null?, ast_node, this_idx, response_list)
+                  set_all_interpreter_context(nil, nil, nil, next_path)
+                  resolve_each_with_directives(owner_object, ast_node.directives) do
+                    after_lazy(inner_value, owner: inner_type, path: next_path, ast_node: ast_node, scoped_context: scoped_context, field: field, owner_object: owner_object, arguments: arguments, result_name: this_idx, result: response_list) do |inner_inner_value|
+                      continue_value = continue_value(next_path, inner_inner_value, owner_type, field, inner_type.non_null?, ast_node, this_idx, response_list)
                       if HALT != continue_value
                         continue_field(next_path, continue_value, owner_type, field, inner_type, ast_node, next_selections, false, owner_object, arguments, this_idx, response_list)
                       end
@@ -846,15 +848,15 @@ module GraphQL
           end
         end
 
-        def resolve_each_with_directives(object, directives, resolved_value, &block)
-          return yield(resolved_value) if directives.nil? || directives.empty?
-          run_directive_resolve_each(object, directives, resolved_value, 0, &block)
+        def resolve_each_with_directives(object, directives, &block)
+          return yield if directives.nil? || directives.empty?
+          run_directive_resolve_each(object, directives, 0, &block)
         end
 
-        def run_directive_resolve_each(object, directives, resolved_value, idx, &block)
+        def run_directive_resolve_each(object, directives, idx, &block)
           dir_node = directives[idx]
           if !dir_node
-            yield(resolved_value)
+            yield
           else
             dir_defn = @schema_directives.fetch(dir_node.name)
             if !dir_defn.is_a?(Class)
@@ -875,8 +877,8 @@ module GraphQL
             if dir_args == HALT
               nil
             else
-              dir_defn.resolve_each(object, dir_args, resolved_value, context) do |resolve_each_value|
-                run_directive_resolve_each(object, directives, resolve_each_value, idx + 1, &block)
+              dir_defn.resolve_each(object, dir_args, context) do
+                run_directive_resolve_each(object, directives, idx + 1, &block)
               end
             end
           end
