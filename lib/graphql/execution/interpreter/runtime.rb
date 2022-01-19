@@ -514,10 +514,12 @@ module GraphQL
               rescue GraphQL::ExecutionError => err
                 err
               end
-              after_lazy(app_result, owner: owner_type, field: field_defn, path: next_path, ast_node: ast_node, scoped_context: context.scoped_context, owner_object: object, arguments: resolved_arguments, result_name: result_name, result: selection_result) do |inner_result|
-                continue_value = continue_value(next_path, inner_result, owner_type, field_defn, return_type.non_null?, ast_node, result_name, selection_result)
-                if HALT != continue_value
-                  continue_field(next_path, continue_value, owner_type, field_defn, return_type, ast_node, next_selections, false, object, resolved_arguments, result_name, selection_result)
+              after_lazy(app_result, owner: owner_type, field: field_defn, path: next_path, ast_node: ast_node, scoped_context: context.scoped_context, owner_object: object, arguments: resolved_arguments, result_name: result_name, result: selection_result) do |after_lazy_result|
+                after_resolve_with_directives(object, directives, after_lazy_result) do |inner_result|
+                  continue_value = continue_value(next_path, inner_result, owner_type, field_defn, return_type.non_null?, ast_node, result_name, selection_result)
+                  if HALT != continue_value
+                    continue_field(next_path, continue_value, owner_type, field_defn, return_type, ast_node, next_selections, false, object, resolved_arguments, result_name, selection_result)
+                  end
                 end
               end
             end
@@ -837,6 +839,42 @@ module GraphQL
             else
               dir_defn.resolve(object, dir_args, context) do
                 run_directive(object, directives, idx + 1, &block)
+              end
+            end
+          end
+        end
+
+        def after_resolve_with_directives(object, directives, resolved_value, &block)
+          return yield(resolved_value) if directives.nil? || directives.empty?
+          run_directive_after_resolve(object, directives, resolved_value, 0, &block)
+        end
+
+        def run_directive_after_resolve(object, directives, resolved_value, idx, &block)
+          dir_node = directives[idx]
+          if !dir_node
+            yield(resolved_value)
+          else
+            dir_defn = @schema_directives.fetch(dir_node.name)
+            if !dir_defn.is_a?(Class)
+              dir_defn = dir_defn.type_class || raise("Only class-based directives are supported (not `@#{dir_node.name}`)")
+            end
+            raw_dir_args = arguments(nil, dir_defn, dir_node)
+            dir_args = continue_value(
+              @context[:current_path], # path
+              raw_dir_args, # value
+              dir_defn, # parent_type
+              nil, # field
+              false, # is_non_null
+              dir_node, # ast_node
+              nil, # result_name
+              nil, # selection_result
+            )
+
+            if dir_args == HALT
+              nil
+            else
+              dir_defn.after_resolve(object, dir_args, resolved_value, context) do |after_resolve_value|
+                run_directive_after_resolve(object, directives, after_resolve_value, idx + 1, &block)
               end
             end
           end
