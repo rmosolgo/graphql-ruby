@@ -51,8 +51,6 @@ jobs:
             ruby: 3.0
           - gemfile: gemfiles/rails_master.gemfile
             ruby: 3.0
-          - gemfile: gemfiles/rails_master.gemfile
-            ruby: truffleruby-head
     runs-on: ubuntu-latest
     steps:
     - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > $GITHUB_ENV
