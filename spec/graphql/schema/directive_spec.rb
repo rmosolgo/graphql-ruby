@@ -277,4 +277,44 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
       assert_equal [[{"line"=>3, "column"=>23}]], result2["errors"].map { |e| e["locations"] }
     end
   end
+
+  describe ".resolve_each" do
+    class ResolveEachSchema < GraphQL::Schema
+      class FilterByIndex < GraphQL::Schema::Directive
+        locations FIELD
+        argument :select, String
+
+        def self.resolve_each(object, args, context)
+          if context[:current_path].last.public_send(args[:select])
+            yield
+          else
+            # Don't send a value
+          end
+        end
+
+        def self.resolve(obj, args, ctx)
+          value = yield
+          value.values.compact!
+          value
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :numbers, [Integer]
+        def numbers
+          [0,1,2,3,4,5]
+        end
+      end
+
+      query(Query)
+      directive(FilterByIndex)
+    end
+
+    it "is called for each item in a list during enumeration" do
+      res = ResolveEachSchema.execute("{ numbers @filterByIndex(select: \"even?\")}")
+      assert_equal [0,2,4], res["data"]["numbers"]
+      res = ResolveEachSchema.execute("{ numbers @filterByIndex(select: \"odd?\")}")
+      assert_equal [1,3,5], res["data"]["numbers"]
+    end
+  end
 end
