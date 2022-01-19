@@ -754,6 +754,8 @@ module GraphQL
             end
           when "LIST"
             inner_type = current_type.of_type
+            # This is true for objects, unions, and interfaces
+            use_dataloader_job = !inner_type.unwrap.kind.input?
             response_list = GraphQLResultArray.new(result_name, selection_result)
             response_list.graphql_non_null_list_items = inner_type.non_null?
             set_result(selection_result, result_name, response_list)
@@ -762,14 +764,23 @@ module GraphQL
             scoped_context = context.scoped_context
             begin
               value.each do |inner_value|
-                @dataloader.append_job do
-                  break if dead_result?(response_list)
-                  next_path = path.dup
-                  next_path << idx
-                  this_idx = idx
-                  next_path.freeze
-                  idx += 1
-                  # This will update `response_list` with the lazy
+                break if dead_result?(response_list)
+                next_path = path.dup
+                next_path << idx
+                this_idx = idx
+                next_path.freeze
+                idx += 1
+                # This will update `response_list` with the lazy
+                if use_dataloader_job
+                  @dataloader.append_job do
+                    after_lazy(inner_value, owner: inner_type, path: next_path, ast_node: ast_node, scoped_context: scoped_context, field: field, owner_object: owner_object, arguments: arguments, result_name: this_idx, result: response_list) do |inner_inner_value|
+                      continue_value = continue_value(next_path, inner_inner_value, owner_type, field, inner_type.non_null?, ast_node, this_idx, response_list)
+                      if HALT != continue_value
+                        continue_field(next_path, continue_value, owner_type, field, inner_type, ast_node, next_selections, false, owner_object, arguments, this_idx, response_list)
+                      end
+                    end
+                  end
+                else
                   after_lazy(inner_value, owner: inner_type, path: next_path, ast_node: ast_node, scoped_context: scoped_context, field: field, owner_object: owner_object, arguments: arguments, result_name: this_idx, result: response_list) do |inner_inner_value|
                     continue_value = continue_value(next_path, inner_inner_value, owner_type, field, inner_type.non_null?, ast_node, this_idx, response_list)
                     if HALT != continue_value
