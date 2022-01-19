@@ -91,7 +91,7 @@ module GraphQL
         end
 
         # Continuing is passed as a block, yield to continue.
-        def after_resolve(object, arguments, resolved_value, context)
+        def resolve_each(object, arguments, resolved_value, context)
           yield(resolved_value)
         end
 
