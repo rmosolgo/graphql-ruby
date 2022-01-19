@@ -129,6 +129,10 @@ describe GraphQL::Dataloader do
     end
 
     class Recipe < GraphQL::Schema::Object
+      def self.authorized?(obj, ctx)
+        ctx.dataloader.with(AuthorizedSource, ctx).load(obj)
+      end
+
       field :name, String, null: false
       field :ingredients, [Ingredient], null: false
 
@@ -378,8 +382,10 @@ describe GraphQL::Dataloader do
             i1: ingredient(id: 1) { id name }
             i2: ingredient(id: 2) { name }
             r1: recipe(id: 5) {
+              # This loads Ingredients 3 and 4
               ingredients { name }
             }
+            # This loads Ingredient 7
             ri1: recipeIngredient(recipe: { id: 6, ingredientNumber: 3 }) {
               name
             }
@@ -617,7 +623,11 @@ describe GraphQL::Dataloader do
           assert_equal expected_results, results.first.to_a
 
           query2 = GraphQL::Query.new(schema, query_str, context: { use_request: true })
-          result2 = GraphQL::Analysis::AST.analyze_query(query2, [UsageAnalyzer])
+          result2 = nil
+          query2.context.dataloader.run_isolated do
+            result2 = GraphQL::Analysis::AST.analyze_query(query2, [UsageAnalyzer])
+          end
+
           assert_equal expected_results, result2.first.to_a
         end
 
@@ -663,7 +673,6 @@ describe GraphQL::Dataloader do
           res = schema.execute(query_str, context: context)
           assert_equal 1, context[:authorized_batch_calls_count]
         end
-
 
         it "Works with input objects using variables, load and request" do
           query_str = <<-GRAPHQL
