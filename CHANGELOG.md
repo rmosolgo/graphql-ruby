@@ -10,6 +10,23 @@
 
 ### Bug fixes
 
+# 1.13.6 (20 January 2022)
+
+### Breaking changes
+
+### Deprecations
+
+### New features
+
+- Introspection: support `__Schema.description`, `__Directive.isRepeatable`, `__Type.specifiedByUrl`, and `__DirectiveLocation.VARIABLE_DEFINITION` #3854
+- Directives: Call `Directive.resolve_each` for list items #3853
+- Dataloader: Run each list item in its own fiber (to support batching across list items) #3841
+
+### Bug fixes
+
+- RelationConnection: Preserve `OFFSET` when it's already set on the relation #3846
+- `Types::ISO8601Date`: Accept default values as Ruby date objects #3563
+
 # 1.13.5 (13 January 2022)
 
 ### New features
