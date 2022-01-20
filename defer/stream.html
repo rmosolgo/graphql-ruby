@@ -1,0 +1,119 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL Pro - Defer - Stream</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/1.13.6/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <p class="breadcrumb">
+  <a href="/">GraphQL</a>
+  &raquo; <a href="/guides">Guides</a>
+   &raquo; <a href="/guides#graphql-pro-defer-guides">GraphQL Pro - Defer</a>
+  &raquo; Stream
+</p>
+
+
+  <div class="pro-header">
+    <p>
+      <strong>⚡️ Pro Feature ⚡️</strong>
+      <span style="font-style: italic;">
+        This feature is bundled with <a href="https://graphql.pro">GraphQL-Pro</a>.
+      </span>
+    </p>
+  </div>
+
+
+<h1 class="guide-header">Stream</h1>
+<div class="guide-container">
+  <p><code class="language-plaintext highlighter-rouge">@stream</code> works very much like <code class="language-plaintext highlighter-rouge">@defer</code>, except it only applies to list fields. When a field has <code class="language-plaintext highlighter-rouge">@stream</code> and it returns a list, then each item in the list is returned to the client as a patch.</p>
+
+<p><strong>Note:</strong> <code class="language-plaintext highlighter-rouge">@stream</code> was added in GraphQL-Pro 1.21.0 and requires GraphQL-Ruby 1.13.6+.</p>
+
+<h3 id="installation">Installation</h3>
+
+<p>To support <code class="language-plaintext highlighter-rouge">@stream</code> in your schema, add it with <code class="language-plaintext highlighter-rouge">use GraphQL::Pro::Stream</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="c1"># ...</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Stream</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Additionally, you should update your controller to handle deferred parts of the response. See the <a href="/defer/setup#sending-streaming-responses">@defer setup guide</a> for details. (<code class="language-plaintext highlighter-rouge">@stream</code> uses the same deferral pipeline as <code class="language-plaintext highlighter-rouge">@defer</code>, so the same setup instructions apply.)</p>
+
+<h3 id="usage">Usage</h3>
+
+<p>After that, you can include <code class="language-plaintext highlighter-rouge">@stream</code> in your queries, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span>
+  <span class="c1"># Send each movie in its own patch:</span>
+  <span class="n">nowPlaying</span> <span class="vi">@stream</span> <span class="p">{</span>
+    <span class="n">title</span>
+    <span class="n">director</span> <span class="p">{</span> <span class="nb">name</span> <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>If <code class="language-plaintext highlighter-rouge">@stream</code> is applied to non-list fields, it’s ignored.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/defer/stream.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Stream">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+  </body>
+</html>
