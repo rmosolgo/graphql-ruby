@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.21.1 (20 January 2021)
+
+### Bug Fix
+
+- Stream, Defer: Include `hasNext: true|false` in patches
+
 # 1.21.0 (20 January 2021)
 
 ### New Features
