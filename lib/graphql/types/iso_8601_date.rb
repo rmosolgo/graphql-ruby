@@ -21,13 +21,21 @@ module GraphQL
         Date.parse(value.to_s).iso8601
       end
 
-      # @param str_value [String]
+      # @param str_value [String, Date, DateTime, Time]
       # @return [Date]
-      def self.coerce_input(str_value, _ctx)
-        Date.iso8601(str_value)
+      def self.coerce_input(value, ctx)
+        if value.is_a?(::Date)
+          value
+        elsif value.is_a?(::DateTime)
+          value.to_date
+        elsif value.is_a?(::Time)
+          value.to_date
+        else
+          Date.iso8601(value)
+        end
       rescue ArgumentError, TypeError
-        # Invalid input
-        nil
+        err = GraphQL::DateEncodingError.new(value)
+        ctx.schema.type_error(err, ctx)
       end
     end
   end

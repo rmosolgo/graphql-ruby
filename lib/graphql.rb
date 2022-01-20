@@ -69,6 +69,7 @@ require "graphql/invalid_name_error"
 require "graphql/integer_decoding_error"
 require "graphql/integer_encoding_error"
 require "graphql/string_encoding_error"
+require "graphql/date_encoding_error"
 
 require "graphql/define"
 require "graphql/base_type"
