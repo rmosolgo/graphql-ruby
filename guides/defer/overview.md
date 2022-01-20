@@ -17,6 +17,8 @@ By streaming the response, the server can send the most critical (or most availa
 
 `@defer` requires the new {% internal_link "interpreter runtime", "/queries/interpreter" %} which ships with GraphQL-Ruby 1.9+.
 
+`@stream` is like `@defer`, but it returns list items one at a time. Find details in the {% internal_link "Stream guide", "/defer/stream" %}.
+
 ## Example
 
 GraphQL queries can be large and complex, requiring lots of computation or dependencies on slow external services.

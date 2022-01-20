@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.21.0 (20 January 2021)
+
+### New Features
+
+- Stream: Add `@stream` directive for evaluating list items one-at-a-time
+
 # 1.20.4 (4 December 2021)
 
 ### Bug Fix
