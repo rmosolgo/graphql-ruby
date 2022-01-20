@@ -10,8 +10,6 @@ module Graphql
     # ```
     # rails g graphql:object PostType name:string!
     # ```
-    #
-    # Add the Node interface with `--node`.
     class InputGenerator < TypeGeneratorBase
       desc "Create a GraphQL::InputObjectType with the given name and fields"
       source_root File.expand_path('../templates', __FILE__)
