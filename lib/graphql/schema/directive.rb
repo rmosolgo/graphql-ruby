@@ -90,6 +90,11 @@ module GraphQL
           yield
         end
 
+        # Continuing is passed as a block, yield to continue.
+        def resolve_each(object, arguments, context)
+          yield
+        end
+
         def on_field?
           locations.include?(FIELD)
         end
