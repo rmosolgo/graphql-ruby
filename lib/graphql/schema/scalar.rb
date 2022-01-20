@@ -32,6 +32,18 @@ module GraphQL
           GraphQL::TypeKinds::SCALAR
         end
 
+        def specified_by_url(new_url = nil)
+          if new_url
+            @specified_by_url = new_url
+          elsif defined?(@specified_by_url)
+            @specified_by_url
+          elsif superclass.respond_to?(:specified_by_url)
+            superclass.specified_by_url
+          else
+            nil
+          end
+        end
+
         def default_scalar(is_default = nil)
           if !is_default.nil?
             @default_scalar = is_default

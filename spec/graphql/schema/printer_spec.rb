@@ -154,6 +154,7 @@ to the executor.
 type __Directive {
   args(includeDeprecated: Boolean = false): [__InputValue!]!
   description: String
+  isRepeatable: Boolean
   locations: [__DirectiveLocation!]!
   name: String!
   onField: Boolean! @deprecated(reason: "Use `locations`.")
@@ -255,6 +256,11 @@ enum __DirectiveLocation {
   Location adjacent to a union definition.
   """
   UNION
+
+  """
+  Location adjacent to a variable definition.
+  """
+  VARIABLE_DEFINITION
 }
 
 """
@@ -305,6 +311,8 @@ available types and directives on the server, as well as the entry points for
 query, mutation, and subscription operations.
 """
 type __Schema {
+  description: String
+
   """
   A list of all directives supported by this server.
   """
@@ -351,6 +359,7 @@ type __Type {
   name: String
   ofType: __Type
   possibleTypes: [__Type!]
+  specifiedByUrl: String
 }
 
 """

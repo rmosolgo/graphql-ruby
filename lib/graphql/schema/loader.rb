@@ -34,6 +34,7 @@ module GraphQL
         Class.new(GraphQL::Schema) do
           orphan_types(types.values)
           directives(directives)
+          description(schema["description"])
 
           def self.resolve_type(*)
             raise(GraphQL::RequiredImplementationMissingError, "This schema was loaded from string, so it can't resolve types for objects")
@@ -141,6 +142,7 @@ module GraphQL
               Class.new(GraphQL::Schema::Scalar) do
                 graphql_name(type["name"])
                 description(type["description"])
+                specified_by_url(type["specifiedByUrl"])
               end
             end
           when "UNION"
@@ -160,6 +162,7 @@ module GraphQL
             graphql_name(directive["name"])
             description(directive["description"])
             locations(*directive["locations"].map(&:to_sym))
+            repeatable(directive["isRepeatable"])
             loader.build_arguments(self, directive["args"], type_resolver)
           end
         end

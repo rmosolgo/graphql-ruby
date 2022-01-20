@@ -2,10 +2,11 @@
 require "spec_helper"
 
 describe GraphQL::Introspection::SchemaType do
-  let(:schema) { Class.new(Dummy::Schema) }
+  let(:schema) { Class.new(Dummy::Schema) { description("Cool schema") }}
   let(:query_string) {%|
     query getSchema {
       __schema {
+        description
         types { name }
         queryType { fields { name }}
         mutationType { fields { name }}
@@ -17,6 +18,7 @@ describe GraphQL::Introspection::SchemaType do
   it "exposes the schema" do
     expected = { "data" => {
       "__schema" => {
+        "description" => "Cool schema",
         "types" => schema.types.values.sort_by(&:graphql_name).map { |t| t.graphql_name.nil? ? (p t; raise("no name for #{t}")) : {"name" => t.graphql_name} },
         "queryType"=>{
           "fields"=>[

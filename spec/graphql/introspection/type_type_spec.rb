@@ -8,8 +8,9 @@ describe GraphQL::Introspection::TypeType do
        milkType:      __type(name: "Milk") { interfaces { name }, fields { type { kind, name, ofType { name } } } }
        dairyAnimal:   __type(name: "DairyAnimal") { name, kind, enumValues(includeDeprecated: false) { name, isDeprecated } }
        dairyProduct:  __type(name: "DairyProduct") { name, kind, possibleTypes { name } }
-       animalProduct: __type(name: "AnimalProduct") { name, kind, possibleTypes { name }, fields { name } }
+       animalProduct: __type(name: "AnimalProduct") { name, kind, specifiedByUrl, possibleTypes { name }, fields { name } }
        missingType:   __type(name: "NotAType") { name }
+       timeType:      __type(name: "Time") { specifiedByUrl }
      }
   |}
   let(:result) { Dummy::Schema.execute(query_string, context: {}, variables: {"cheeseId" => 2}) }
@@ -69,12 +70,14 @@ describe GraphQL::Introspection::TypeType do
       "animalProduct" => {
         "name"=>"AnimalProduct",
         "kind"=>"INTERFACE",
+        "specifiedByUrl" => nil,
         "possibleTypes"=>[{"name"=>"Cheese"}, {"name"=>"Honey"}, {"name"=>"Milk"}],
         "fields"=>[
           {"name"=>"source"},
         ]
       },
       "missingType" => nil,
+      "timeType" => { "specifiedByUrl" => "https://time.graphql"}
     }}
     assert_equal(expected, result.to_h)
   end

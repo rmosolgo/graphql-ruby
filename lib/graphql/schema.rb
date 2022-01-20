@@ -892,6 +892,17 @@ module GraphQL
         GraphQL::Language::DocumentFromSchemaDefinition.new(self).document
       end
 
+      # @return [String, nil]
+      def description(new_description = nil)
+        if new_description
+          @description = new_description
+        elsif defined?(@description)
+          @description
+        else
+          find_inherited_value(:description, nil)
+        end
+      end
+
       def find(path)
         if !@finder
           @find_cache = {}

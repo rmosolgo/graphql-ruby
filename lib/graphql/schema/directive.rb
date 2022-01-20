@@ -152,6 +152,7 @@ module GraphQL
         ENUM_VALUE =             :ENUM_VALUE,
         INPUT_OBJECT =           :INPUT_OBJECT,
         INPUT_FIELD_DEFINITION = :INPUT_FIELD_DEFINITION,
+        VARIABLE_DEFINITION =    :VARIABLE_DEFINITION,
       ]
 
       DEFAULT_DEPRECATION_REASON = 'No longer supported'
@@ -174,6 +175,7 @@ module GraphQL
         ENUM_VALUE:               'Location adjacent to an enum value definition.',
         INPUT_OBJECT:             'Location adjacent to an input object type definition.',
         INPUT_FIELD_DEFINITION:   'Location adjacent to an input object field definition.',
+        VARIABLE_DEFINITION:      'Location adjacent to a variable definition.',
       }
 
       private
