@@ -124,8 +124,8 @@ describe GraphQL::Schema::Scalar do
       end
 
       class Query < GraphQL::Schema::Object
-        field :f1, String, null: true do
-          argument :arg, CustomScalar, required: true
+        field :f1, String do
+          argument :arg, CustomScalar
         end
       end
 

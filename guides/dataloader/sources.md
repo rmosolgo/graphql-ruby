@@ -5,14 +5,13 @@ section: Dataloader
 title: Sources
 desc: Batch-loading objects for GraphQL::Dataloader
 index: 1
-experimental: true
 ---
 
 _Sources_ are what {{ "GraphQL::Dataloader" | api_doc }} uses to fetch data from external services.
 
 ## Source Concepts
 
-Sources are classes that inherit from `GraphQL::Dataloader::Source`. A Source _must_ implement `def fetch(keys)` to return a list of objects, one for each of the given keys. A source _may_ implement `def initialize(dataloader, ...)` to accept other batching parameters.
+Sources are classes that inherit from `GraphQL::Dataloader::Source`. A Source _must_ implement `def fetch(keys)` to return a list of objects, one for each of the given keys. A source _may_ implement `def initialize(...)` to accept other batching parameters.
 
 Sources will receive two kinds of inputs from `GraphQL::Dataloader`:
 
@@ -24,9 +23,11 @@ Sources will receive two kinds of inputs from `GraphQL::Dataloader`:
 
 - _batch parameters_, which are the basis of batched groups. For example, if you're loading records from different database tables, the the table name would be a batch parameter.
 
-  Batch parameters are given to `dataloader.with(source_class, *batch_parameters)`, and the default is _no batch parameters_. When you define a source, you should add the batch parameters to `def initialize(dataloader, ...)` and store them in instance variables.
+  Batch parameters are given to `dataloader.with(source_class, *batch_parameters)`, and the default is _no batch parameters_. When you define a source, you should add the batch parameters to `def initialize(...)` and store them in instance variables.
 
   (`dataloader.with(source_class, *batch_parameters)` returns an instance of `source_class` with the given batch parameters -- but it might be an instance which was cached by `dataloader`.)
+
+  Additionally, batch parameters are used to de-duplicate Source initializations during a query run. `.with(...)` calls that have the same batch parameters will use the same Source instance under the hood. To customize how Sources are de-duplicated, see {{ "GraphQL::Dataloader::Source.batch_key_for" | api_doc }}.
 
 ## Example: Loading Strings from Redis by Key
 

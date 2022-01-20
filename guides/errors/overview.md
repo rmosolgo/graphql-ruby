@@ -27,6 +27,8 @@ Each error has a message, line, column and path.
 
 The validation rules are part of the GraphQL specification and built into GraphQL-Ruby, so there's not really a way to customize this behavior, except to pass `validate: false` when executing a query, which skips validation altogether.
 
+You can configure your schema to stop validating after a certain number of errors by setting {{ "Schema.validate_max_errors" | api_doc }}. Also, you can add a timeout to this step with {{ "Schema.validate_timeout" | api_doc }}.
+
 ## Analysis Errors
 
 GraphQL-Ruby supports pre-execution analysis, which may return `"errors"` instead of running a query. You can find details in the {% internal_link "Analysis guide", "queries/ast_analysis" %}.

@@ -95,6 +95,14 @@ module GraphQL
         @action_cable = action_cable
         @action_cable_coder = action_cable_coder
         @serializer = serializer
+        @serialize_with_context = case @serializer.method(:load).arity
+        when 1
+          false
+        when 2
+          true
+        else
+          raise ArgumentError, "#{@serializer} must repond to `.load` accepting one or two arguments"
+        end
         @transmit_ns = namespace
         super
       end
@@ -119,7 +127,13 @@ module GraphQL
       # It will receive notifications when events come in
       # and re-evaluate the query locally.
       def write_subscription(query, events)
-        channel = query.context.fetch(:channel)
+        unless (channel = query.context[:channel])
+          raise GraphQL::Error, "This GraphQL Subscription client does not support the transport protocol expected"\
+            "by the backend Subscription Server implementation (graphql-ruby ActionCableSubscriptions in this case)."\
+            "Some official client implementation including Apollo (https://graphql-ruby.org/javascript_client/apollo_subscriptions.html), "\
+            "Relay Modern (https://graphql-ruby.org/javascript_client/relay_subscriptions.html#actioncable)."\
+            "GraphiQL via `graphiql-rails` may not work out of box (#1051)."
+        end
         subscription_id = query.context[:subscription_id] ||= build_id
         stream = stream_subscription_name(subscription_id)
         channel.stream_from(stream)
@@ -154,16 +168,30 @@ module GraphQL
               # so just run it once, then deliver the result to every subscriber
               first_event = events.first
               first_subscription_id = first_event.context.fetch(:subscription_id)
-              object ||= @serializer.load(message)
+              object ||= load_action_cable_message(message, first_event.context)
               result = execute_update(first_subscription_id, first_event, object)
-              # Having calculated the result _once_, send the same payload to all subscribers
-              events.each do |event|
-                subscription_id = event.context.fetch(:subscription_id)
-                deliver(subscription_id, result)
+              if !result.nil?
+                # Having calculated the result _once_, send the same payload to all subscribers
+                events.each do |event|
+                  subscription_id = event.context.fetch(:subscription_id)
+                  deliver(subscription_id, result)
+                end
               end
             end
           end
           nil
+        end
+      end
+
+      # This is called to turn an ActionCable-broadcasted string (JSON)
+      # into a query-ready application object.
+      # @param message [String] n ActionCable-broadcasted string (JSON)
+      # @param context [GraphQL::Query::Context] the context of the first event for a given subscription fingerprint
+      def load_action_cable_message(message, context)
+        if @serialize_with_context
+          @serializer.load(message, context)
+        else
+          @serializer.load(message)
         end
       end
 
@@ -188,6 +216,8 @@ module GraphQL
       # The channel was closed, forget about it.
       def delete_subscription(subscription_id)
         query = @subscriptions.delete(subscription_id)
+        # In case this came from the server, tell the client to unsubscribe:
+        @action_cable.server.broadcast(stream_subscription_name(subscription_id), { more: false })
         # This can be `nil` when `.trigger` happens inside an unsubscribed ActionCable channel,
         # see https://github.com/rmosolgo/graphql-ruby/issues/2478
         if query

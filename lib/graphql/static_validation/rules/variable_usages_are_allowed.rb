@@ -22,15 +22,15 @@ module GraphQL
         node_values = node_values.select { |value| value.is_a? GraphQL::Language::Nodes::VariableIdentifier }
 
         if node_values.any?
-          arguments = case parent
+          argument_owner = case parent
           when GraphQL::Language::Nodes::Field
-            context.field_definition.arguments
+            context.field_definition
           when GraphQL::Language::Nodes::Directive
-            context.directive_definition.arguments
+            context.directive_definition
           when GraphQL::Language::Nodes::InputObject
             arg_type = context.argument_definition.type.unwrap
             if arg_type.kind.input_object?
-              arguments = arg_type.arguments
+              arg_type
             else
               # This is some kind of error
               nil
@@ -43,7 +43,7 @@ module GraphQL
             var_defn_ast = @declared_variables[node_value.name]
             # Might be undefined :(
             # VariablesAreUsedAndDefined can't finalize its search until the end of the document.
-            var_defn_ast && arguments && validate_usage(arguments, node, var_defn_ast)
+            var_defn_ast && argument_owner && validate_usage(argument_owner, node, var_defn_ast)
           end
         end
         super
@@ -51,7 +51,7 @@ module GraphQL
 
       private
 
-      def validate_usage(arguments, arg_node, ast_var)
+      def validate_usage(argument_owner, arg_node, ast_var)
         var_type = context.schema.type_from_ast(ast_var.type, context: context)
         if var_type.nil?
           return
@@ -65,8 +65,14 @@ module GraphQL
           end
         end
 
-        arg_defn = arguments[arg_node.name]
+        arg_defn = context.warden.get_argument(argument_owner, arg_node.name)
         arg_defn_type = arg_defn.type
+
+        # If the argument is non-null, but it was given a default value,
+        # then treat it as nullable in practice, see https://github.com/rmosolgo/graphql-ruby/issues/3793
+        if arg_defn_type.non_null? && arg_defn.default_value?
+          arg_defn_type = arg_defn_type.of_type
+        end
 
         var_inner_type = var_type.unwrap
         arg_inner_type = arg_defn_type.unwrap

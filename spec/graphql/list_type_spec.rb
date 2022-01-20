@@ -39,7 +39,7 @@ describe GraphQL::ListType do
     it "converts hashes into lists of hashes" do
       input_object = Class.new(GraphQL::Schema::InputObject) do
         graphql_name "SomeInputObjectType"
-        argument :float, Float, required: true
+        argument :float, Float
       end
       input_object_list = input_object.to_list_type
       hash = { float: 1.0 }

@@ -31,7 +31,7 @@ module GraphQL
         end
         # Apply prepares, not great to have it duplicated here.
         maybe_lazies = []
-        self.class.arguments.each_value do |arg_defn|
+        self.class.arguments(context).each_value do |arg_defn|
           ruby_kwargs_key = arg_defn.keyword
 
           if @ruby_style_hash.key?(ruby_kwargs_key)
@@ -40,11 +40,7 @@ module GraphQL
             # With the interpreter, it's done during `coerce_arguments`
             if loads && !arg_defn.from_resolver? && !context.interpreter?
               value = @ruby_style_hash[ruby_kwargs_key]
-              loaded_value = if arg_defn.type.list?
-                value.map { |val| load_application_object(arg_defn, loads, val, context) }
-              else
-                load_application_object(arg_defn, loads, value, context)
-              end
+              loaded_value = arg_defn.load_and_authorize_value(self, value, context)
               maybe_lazies << context.schema.after_lazy(loaded_value) do |loaded_value|
                 overwrite_argument(ruby_kwargs_key, loaded_value)
               end
@@ -71,16 +67,31 @@ module GraphQL
       end
 
       def prepare
-        if context
-          context.schema.after_any_lazies(@maybe_lazies) do
-            object = context[:current_object]
+        if @context
+          @context.schema.after_any_lazies(@maybe_lazies) do
+            object = @context[:current_object]
             # Pass this object's class with `as` so that messages are rendered correctly from inherited validators
-            Schema::Validator.validate!(self.class.validators, object, context, @ruby_style_hash, as: self.class)
+            Schema::Validator.validate!(self.class.validators, object, @context, @ruby_style_hash, as: self.class)
             self
           end
         else
           self
         end
+      end
+
+      def self.authorized?(obj, value, ctx)
+        # Authorize each argument (but this doesn't apply if `prepare` is implemented):
+        if value.is_a?(InputObject)
+          arguments(ctx).each do |_name, input_obj_arg|
+            input_obj_arg = input_obj_arg.type_class
+            if value.key?(input_obj_arg.keyword) &&
+              !input_obj_arg.authorized?(obj, value[input_obj_arg.keyword], ctx)
+              return false
+            end
+          end
+        end
+        # It didn't early-return false:
+        true
       end
 
       def unwrap_value(value)
@@ -133,7 +144,10 @@ module GraphQL
               self[#{method_name.inspect}]
             end
           RUBY
+          argument_defn
         end
+
+        prepend Schema::Member::CachedGraphQLDefinition::DeprecatedToGraphQL
 
         def to_graphql
           type_defn = GraphQL::InputObjectType.new
@@ -142,8 +156,8 @@ module GraphQL
           type_defn.metadata[:type_class] = self
           type_defn.mutation = mutation
           type_defn.ast_node = ast_node
-          arguments.each do |name, arg|
-            type_defn.arguments[arg.graphql_definition.name] = arg.graphql_definition
+          all_argument_definitions.each do |arg|
+            type_defn.arguments[arg.graphql_definition(silence_deprecation_warning: true).name] = arg.graphql_definition(silence_deprecation_warning: true) # rubocop:disable Development/ContextIsPassedCop -- legacy-related
           end
           # Make a reference to a classic-style Arguments class
           self.arguments_class = GraphQL::Query::Arguments.construct_arguments_class(type_defn)
@@ -176,7 +190,7 @@ module GraphQL
           end
 
           # Inject missing required arguments
-          missing_required_inputs = self.arguments.reduce({}) do |m, (argument_name, argument)|
+          missing_required_inputs = self.arguments(ctx).reduce({}) do |m, (argument_name, argument)|
             if !input.key?(argument_name) && argument.type.non_null? && warden.get_argument(self, argument_name)
               m[argument_name] = nil
             end
@@ -227,7 +241,7 @@ module GraphQL
 
           result = {}
 
-          arguments.each do |input_key, input_field_defn|
+          arguments(ctx).each do |input_key, input_field_defn|
             input_value = value[input_key]
             if value.key?(input_key)
               result[input_key] = if input_value.nil?

@@ -38,7 +38,7 @@ def change
     t.references :graphql_operation, null: false
     t.column :alias, :string, null: false
     t.column :last_used_at, :datetime
-    t.column :is_archived, :boolean
+    t.column :is_archived, :boolean, default: false
     t.timestamps
   end
   add_index :graphql_client_operations, [:graphql_client_id, :alias], unique: true, name: "graphql_client_operations_pairs"

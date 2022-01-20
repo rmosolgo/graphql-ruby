@@ -35,7 +35,7 @@ describe GraphQL::Schema::Resolver do
     end
 
     class Resolver2 < Resolver1
-      argument :extra_value, Integer, required: true
+      argument :extra_value, Integer
 
       def resolve(extra_value:, **_rest)
         value = super(**_rest)
@@ -101,7 +101,7 @@ describe GraphQL::Schema::Resolver do
     end
 
     class PrepResolver1 < BaseResolver
-      argument :int, Integer, required: true
+      argument :int, Integer
       undef_method :load_int
       def load_int(i)
         i * 10
@@ -167,9 +167,9 @@ describe GraphQL::Schema::Resolver do
     end
 
     class PrepResolver7 < GraphQL::Schema::Mutation
-      argument :int, Integer, required: true
-      field :errors, [String], null: true
-      field :int, Integer, null: true
+      argument :int, Integer
+      field :errors, [String]
+      field :int, Integer
 
       def ready?(int:)
         if int == 13
@@ -214,7 +214,7 @@ describe GraphQL::Schema::Resolver do
     end
 
     class PrepResolver9 < BaseResolver
-      argument :int_id, ID, required: true, loads: HasValue
+      argument :int_id, ID, loads: HasValue
       # Make sure the lazy object is resolved properly:
       type HasValue, null: true
       def object_from_id(type, id, ctx)
@@ -228,10 +228,18 @@ describe GraphQL::Schema::Resolver do
       def resolve(int:)
         int * 3
       end
+
+      def unauthorized_object(err)
+        if context[:use_replacement]
+          context[:use_replacement]
+        else
+          raise GraphQL::ExecutionError, "Unauthorized #{err.type.graphql_name} loaded for #{err.context[:current_path].join(".")}"
+        end
+      end
     end
 
     class PrepResolver9Array < BaseResolver
-      argument :int_ids, [ID], required: true, loads: HasValue, as: :ints
+      argument :int_ids, [ID], loads: HasValue, as: :ints
       # Make sure the lazy object is resolved properly:
       type [HasValue], null: false
       def object_from_id(type, id, ctx)
@@ -248,7 +256,7 @@ describe GraphQL::Schema::Resolver do
     end
 
     class ResolverWithErrorHandler < BaseResolver
-      argument :int, ID, required: true, loads: HasValue
+      argument :int, ID, loads: HasValue
       type HasValue, null: true
       def object_from_id(type, id, ctx)
         LazyBlock.new {
@@ -272,8 +280,8 @@ describe GraphQL::Schema::Resolver do
     end
 
     class PrepResolver10 < BaseResolver
-      argument :int1, Integer, required: true
-      argument :int2, Integer, required: true, as: :integer_2
+      argument :int1, Integer
+      argument :int2, Integer, as: :integer_2
       type Integer, null: true
       def authorized?(int1:, integer_2:)
         if int1 + integer_2 > context[:max_int]
@@ -297,10 +305,10 @@ describe GraphQL::Schema::Resolver do
     end
 
     class PrepResolver12 < GraphQL::Schema::Mutation
-      argument :int1, Integer, required: true
-      argument :int2, Integer, required: true
-      field :error_messages, [String], null: true
-      field :value, Integer, null: true
+      argument :int1, Integer
+      argument :int2, Integer
+      field :error_messages, [String]
+      field :value, Integer
       def authorized?(int1:, int2:)
         if int1 + int2 > context[:max_int]
           return false, { error_messages: ["Inputs must be less than #{context[:max_int]} (but you provided #{int1 + int2})"] }
@@ -334,8 +342,8 @@ describe GraphQL::Schema::Resolver do
     end
 
     class ResolverWithAuthArgs < GraphQL::Schema::RelayClassicMutation
-      argument :number_s, String, required: true, prepare: ->(v, ctx) { v.to_i }
-      argument :loads_id, ID, required: true, loads: IntegerWrapper
+      argument :number_s, String, prepare: ->(v, ctx) { v.to_i }
+      argument :loads_id, ID, loads: IntegerWrapper
 
       field :result, Integer, null: false
 
@@ -366,7 +374,7 @@ describe GraphQL::Schema::Resolver do
     end
 
     class MutationWithRequiredLoadsArgument < GraphQL::Schema::Mutation
-      argument :label_id, ID, required: true, loads: HasValue
+      argument :label_id, ID, loads: HasValue
 
       field :inputs, String, null: false
 
@@ -722,6 +730,8 @@ describe GraphQL::Schema::Resolver do
           context = { max_value: 8 }
           res = exec_query(query_str, context: context)
           assert_nil res["data"]["prepResolver9"]
+          assert_equal ["Unauthorized IntegerWrapper loaded for prepResolver9"], res["errors"].map { |e| e["message"] }
+
           # This is OK
           context = { max_value: 900 }
           res = exec_query(query_str, context: context)
@@ -729,6 +739,12 @@ describe GraphQL::Schema::Resolver do
           # This is the transformation applied by the resolver,
           # just make sure it matches the response
           assert_equal 51, (9 + "HasValue".size) * 3
+
+          # It uses the returned value from unauthorized object
+          context = { max_value: 8, use_replacement: 2 }
+          res = exec_query(query_str, context: context)
+          assert_equal 6, res["data"]["prepResolver9"]["value"]
+          refute res.key?("errors")
         end
       end
     end
@@ -879,6 +895,27 @@ describe GraphQL::Schema::Resolver do
       it "is passed along to the field" do
         assert_equal 10, ObjectWithMaxPageSizeResolver.fields["items"].max_page_size
       end
+    end
+  end
+
+  describe "When the type is forgotten" do
+    class ResolverWithoutTypeSchema < GraphQL::Schema
+      class WithoutType < GraphQL::Schema::Resolver
+        def resolve
+          "OK"
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+      end
+    end
+
+    it "raises a nice error" do
+      err = assert_raises GraphQL::Schema::Field::MissingReturnTypeError do
+        ResolverWithoutTypeSchema::Query.field(:without_type, resolver: ResolverWithoutTypeSchema::WithoutType)
+      end
+      expected_message = "Can't determine the return type for Query.withoutType (it has `resolver: ResolverWithoutTypeSchema::WithoutType`, consider configuration a `type ...` for that class)"
+      assert_equal expected_message, err.message
     end
   end
 end

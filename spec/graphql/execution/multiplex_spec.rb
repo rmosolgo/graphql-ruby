@@ -186,25 +186,25 @@ describe GraphQL::Execution::Multiplex do
 
     class InspectSchema < GraphQL::Schema
       class Query < GraphQL::Schema::Object
-        field :raise_execution_error, String, null: true
+        field :raise_execution_error, String
 
         def raise_execution_error
           raise GraphQL::ExecutionError, "Whoops"
         end
 
-        field :raise_error, String, null: true
+        field :raise_error, String
 
         def raise_error
           raise GraphQL::Error, "Crash"
         end
 
-        field :raise_syntax_error, String, null: true
+        field :raise_syntax_error, String
 
         def raise_syntax_error
           raise SyntaxError
         end
 
-        field :raise_exception, String, null: true
+        field :raise_exception, String
 
         def raise_exception
           raise Exception

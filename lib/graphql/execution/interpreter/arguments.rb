@@ -59,7 +59,7 @@ module GraphQL
           @empty
         end
 
-        def_delegators :keyword_arguments, :key?, :[], :fetch, :keys, :each, :values
+        def_delegators :keyword_arguments, :key?, :[], :fetch, :keys, :each, :values, :size, :to_h
         def_delegators :argument_values, :each_value
 
         def inspect

@@ -12,6 +12,7 @@ module NewRelic
     TRANSACTION_NAMES.clear
     EXECUTION_SCOPES.clear
   end
+
   module Agent
     def self.set_transaction_name(name)
       TRANSACTION_NAMES << name

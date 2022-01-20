@@ -1,6 +1,6 @@
 import printer from "graphql/language/printer"
 import registry from "./registry"
-import { Cable } from "actioncable"
+import type { Consumer } from "@rails/actioncable"
 
 interface ApolloNetworkInterface {
   applyMiddlewares: Function
@@ -9,10 +9,10 @@ interface ApolloNetworkInterface {
 }
 
 class ActionCableSubscriber {
-  _cable: Cable
+  _cable: Consumer
   _networkInterface: ApolloNetworkInterface
 
-  constructor(cable: Cable, networkInterface: ApolloNetworkInterface) {
+  constructor(cable: Consumer, networkInterface: ApolloNetworkInterface) {
     this._cable = cable
     this._networkInterface = networkInterface
   }

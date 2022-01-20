@@ -38,9 +38,17 @@ module GraphQL
       end
     end
 
-    TYPE_CLASSES.each do |type_class|
-      refine type_class.singleton_class do
-        include Methods
+    if defined?(::Refinement) && Refinement.private_method_defined?(:import_methods)
+      TYPE_CLASSES.each do |type_class|
+        refine type_class.singleton_class do
+          import_methods Methods
+        end
+      end
+    else
+      TYPE_CLASSES.each do |type_class|
+        refine type_class.singleton_class do
+          include Methods
+        end
       end
     end
   end

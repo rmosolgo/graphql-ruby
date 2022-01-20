@@ -1,12 +1,15 @@
 import sendPayload from "./sendPayload"
+
 import { generateClientCode, gatherOperations, ClientOperation } from "./generateClient"
 import Logger from "./logger"
 import fs from "fs"
+import { removeClientFieldsFromString } from "./removeClientFields"
 
 interface SyncOptions {
   path?: string,
   relayPersistedOutput?: string,
   apolloAndroidOperationOutput?: string,
+  apolloCodegenJsonOutput?: string,
   secret?: string
   url?: string,
   mode?: string,
@@ -26,6 +29,7 @@ interface SyncOptions {
  * @param {Object} options
  * @param {String} options.path - A glob to recursively search for `.graphql` files (Default is `./`)
  * @param {String} options.relayPersistedOutput - A path to a `.json` file from `relay-compiler`'s  `--persist-output` option
+ * @param {String} options.apolloCodegenJsonOutput - A path to a `.json` file from `apollo client:codegen ... --type json`
  * @param {String} options.secret - HMAC-SHA256 key which must match the server secret (default is no encryption)
  * @param {String} options.url - Target URL for sending prepared queries. If omitted, then an outfile is generated without sending operations to the server.
  * @param {String} options.mode - If `"file"`, treat each file separately. If `"project"`, concatenate all files and extract each operation. If `"relay"`, treat it as relay-compiler output
@@ -81,12 +85,24 @@ function sync(options: SyncOptions) {
     // Structure is { operationId => { "name" => "...", "source" => "query { ... } " } }
     for (var operationId in apolloAndroidOutput) {
       operationData = apolloAndroidOutput[operationId]
+      let bodyWithoutClientFields = removeClientFieldsFromString(operationData.source)
       payload.operations.push({
-        body: operationData.source,
+        body: bodyWithoutClientFields,
         alias: operationId,
       })
     }
-
+  } else if (options.apolloCodegenJsonOutput)  {
+    var payload: { operations: ClientOperation[] } = { operations: [] }
+    const jsonText = fs.readFileSync(options.apolloCodegenJsonOutput).toString()
+    const jsonData = JSON.parse(jsonText)
+    jsonData.operations.map(function(operation: {operationId: string, operationName: string, sourceWithFragments: string}) {
+      const bodyWithoutClientFields = removeClientFieldsFromString(operation.sourceWithFragments)
+      payload.operations.push({
+        alias: operation.operationId,
+        name: operation.operationName,
+        body: bodyWithoutClientFields,
+      })
+    })
   } else {
     var payload = gatherOperations({
       path: graphqlGlob,
@@ -102,7 +118,7 @@ function sync(options: SyncOptions) {
   var outfile: string | null
   if (options.outfile) {
     outfile = options.outfile
-  } else if (options.relayPersistedOutput || options.apolloAndroidOperationOutput) {
+  } else if (options.relayPersistedOutput || options.apolloAndroidOperationOutput || options.apolloCodegenJsonOutput) {
     // These artifacts have embedded IDs in its generated files,
     // no need to generate an outfile.
     outfile = null

@@ -73,6 +73,8 @@ module GraphQL
         @value
       end
 
+      prepend Schema::Member::CachedGraphQLDefinition::DeprecatedToGraphQL
+
       # @return [GraphQL::EnumType::EnumValue] A runtime-ready object derived from this object
       def to_graphql
         enum_value = GraphQL::EnumType::EnumValue.new
@@ -83,6 +85,10 @@ module GraphQL
         enum_value.metadata[:type_class] = self
         enum_value.ast_node = ast_node
         enum_value
+      end
+
+      def inspect
+        "#<#{self.class} #{path} @value=#{@value.inspect}#{description ? " @description=#{description.inspect}" : ""}>"
       end
 
       def visible?(_ctx); true; end

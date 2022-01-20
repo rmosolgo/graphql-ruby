@@ -8,7 +8,7 @@ describe GraphQL::Tracing::NewRelicTracing do
     end
 
     class Query < GraphQL::Schema::Object
-      add_field GraphQL::Types::Relay::NodeField
+      include GraphQL::Types::Relay::HasNodeField
 
       field :int, Integer, null: false
 
@@ -67,6 +67,24 @@ describe GraphQL::Tracing::NewRelicTracing do
     assert_equal [], NewRelic::TRANSACTION_NAMES
     # Override with `true`
     NewRelicTest::SchemaWithoutTransactionName.execute "{ int }", context: { set_new_relic_transaction_name: true }
+    assert_equal ["GraphQL/query.anonymous"], NewRelic::TRANSACTION_NAMES
+  end
+
+  it "falls back to a :tracing_fallback_transaction_name when provided" do
+    NewRelicTest::SchemaWithTransactionName.execute("{ int }", context: { tracing_fallback_transaction_name: "Abcd" })
+    assert_equal ["GraphQL/query.Abcd"], NewRelic::TRANSACTION_NAMES
+  end
+
+  it "does not use the :tracing_fallback_transaction_name if an operation name is present" do
+    NewRelicTest::SchemaWithTransactionName.execute(
+      "query Ab { int }",
+      context: { tracing_fallback_transaction_name: "Cd" }
+    )
+    assert_equal ["GraphQL/query.Ab"], NewRelic::TRANSACTION_NAMES
+  end
+
+  it "does not require a :tracing_fallback_transaction_name even if an operation name is not present" do
+    NewRelicTest::SchemaWithTransactionName.execute("{ int }")
     assert_equal ["GraphQL/query.anonymous"], NewRelic::TRANSACTION_NAMES
   end
 

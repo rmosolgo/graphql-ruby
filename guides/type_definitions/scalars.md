@@ -49,7 +49,7 @@ Custom scalars (see below) can also be used by name:
 
 ```ruby
 # `homepage: Url`
-field :homepage, Types::Url, null: true
+field :homepage, Types::Url
 ```
 
 In the [Schema Definition Language](https://graphql.org/learn/schema/#type-language) (SDL), scalars are simply named:

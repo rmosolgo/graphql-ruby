@@ -67,7 +67,7 @@ end
 3. Return lazy objects from `resolve`
 
 ```ruby
-field :author, PersonType, null: true
+field :author, PersonType
 
 def author
   LazyFindPerson.new(context, object.author_id)

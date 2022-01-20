@@ -89,7 +89,7 @@ module GraphQL
             "#{context_entry.ast_node ? context_entry.ast_node.position.join(":") : ""}",
             "#{context_entry.field.path}#{field_alias ? " as #{field_alias}" : ""}",
             "#{context_entry.object.object.inspect}",
-            context_entry.arguments.to_h.inspect,
+            context_entry.arguments.to_h.inspect, # rubocop:disable Development/ContextIsPassedCop -- unrelated method
             Backtrace::InspectResult.inspect_result(value),
           ]
           if (parent = context_entry.parent_frame)

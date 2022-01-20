@@ -107,7 +107,7 @@ module GraphQL
           dup_type_class(const)
         else
           # Use `.to_graphql` to get a freshly-made version, not shared between schemas
-          const.to_graphql
+          const.deprecated_to_graphql
         end
       rescue NameError
         # Dup the built-in so that the cached fields aren't shared

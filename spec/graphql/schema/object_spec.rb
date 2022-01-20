@@ -19,7 +19,6 @@ describe GraphQL::Schema::Object do
       assert_equal [
           "GloballyIdentifiable",
           "HasMusicians",
-          "InvisibleNameEntity",
           "NamedEntity"
         ], object_class.interfaces({}).map(&:graphql_name).sort
       # Compatibility methods are delegated to the underlying BaseType
@@ -34,7 +33,7 @@ describe GraphQL::Schema::Object do
 
     it "inherits fields and interfaces" do
       new_object_class = Class.new(object_class) do
-        field :newField, String, null: true
+        field :newField, String
         field :name, String, description: "The new description", null: true
       end
 
@@ -195,13 +194,13 @@ describe GraphQL::Schema::Object do
   end
 
   describe ".to_graphql" do
-    let(:obj_type) { Jazz::Ensemble.to_graphql }
+    let(:obj_type) { Jazz::Ensemble.deprecated_to_graphql }
     it "returns a matching GraphQL::ObjectType" do
       assert_equal "Ensemble", obj_type.name
       assert_equal "A group of musicians playing together", obj_type.description
       assert_equal 9, obj_type.all_fields.size
 
-      name_field = obj_type.all_fields[3]
+      name_field = obj_type.all_fields[0]
       assert_equal "name", name_field.name
       assert_equal GraphQL::DEPRECATED_STRING_TYPE.to_non_null_type, name_field.type
       assert_equal nil, name_field.description
@@ -223,8 +222,8 @@ describe GraphQL::Schema::Object do
     end
 
     it "passes on type memberships from superclasses" do
-      obj_type = Jazz::StylishMusician.to_graphql
-      parent_obj_type = Jazz::Musician.to_graphql
+      obj_type = Jazz::StylishMusician.deprecated_to_graphql
+      parent_obj_type = Jazz::Musician.deprecated_to_graphql
       assert_equal parent_obj_type.interfaces, obj_type.interfaces
     end
   end
@@ -297,7 +296,7 @@ describe GraphQL::Schema::Object do
       assert_output "", expected_warning do
         Class.new(GraphQL::Schema::Object) do
           graphql_name "X"
-          field :method, String, null: true
+          field :method, String
         end
       end
     end
@@ -307,7 +306,7 @@ describe GraphQL::Schema::Object do
       assert_output "", expected_warning do
         Class.new(GraphQL::Schema::Object) do
           graphql_name "X"
-          field :object, String, null: true, resolver_method: :object
+          field :object, String, resolver_method: :object
         end
       end
     end
@@ -316,7 +315,7 @@ describe GraphQL::Schema::Object do
       assert_output "", "" do
         Class.new(GraphQL::Schema::Object) do
           graphql_name "X"
-          field :method, String, null: true, resolver_method: :resolve_method
+          field :method, String, resolver_method: :resolve_method
         end
       end
     end
@@ -325,7 +324,7 @@ describe GraphQL::Schema::Object do
       assert_output "", "" do
         Class.new(GraphQL::Schema::Object) do
           graphql_name "X"
-          field :module, String, null: true, method: :mod
+          field :module, String, method: :mod
         end
       end
     end
@@ -334,7 +333,7 @@ describe GraphQL::Schema::Object do
       assert_output "", "" do
         Class.new(GraphQL::Schema::Object) do
           graphql_name "X"
-          field :method, String, null: true, method_conflict_warning: false
+          field :method, String, method_conflict_warning: false
         end
       end
     end
@@ -354,7 +353,7 @@ describe GraphQL::Schema::Object do
       assert_output "", "" do
         Class.new(GraphQL::Schema::Object) do
           graphql_name "X"
-          field :thing, String, null: true, resolver_method: :object
+          field :thing, String, resolver_method: :object
         end
       end
     end

@@ -14,6 +14,10 @@ class GraphQLGeneratorsInstallGeneratorTest < Rails::Generators::TestCase
     end
   end
 
+  def refute_file(path)
+    assert !File.exist?(path), "No file at #{path.inspect}"
+  end
+
   test "it generates a folder structure" do
     run_generator([ "--relay", "false"])
 
@@ -45,10 +49,22 @@ class DummySchema < GraphQL::Schema
   mutation(Types::MutationType)
   query(Types::QueryType)
 
+  # For batch-loading (see https://graphql-ruby.org/dataloader/overview.html)
+  use GraphQL::Dataloader
+
+  # GraphQL-Ruby calls this when something goes wrong while running a query:
+  def self.type_error(err, context)
+    # if err.is_a?(GraphQL::InvalidNullError)
+    #   # report to your bug tracker here
+    #   return nil
+    # end
+    super
+  end
+
   # Union and Interface Resolution
   def self.resolve_type(abstract_type, obj, ctx)
-    # TODO: Implement this function
-    # to return the correct object type for `obj`
+    # TODO: Implement this method
+    # to return the correct GraphQL object type for `obj`
     raise(GraphQL::RequiredImplementationMissingError)
   end
 end
@@ -124,10 +140,34 @@ RUBY
 
     # Run it again and make sure the gemfile only contains graphiql-rails once
     FileUtils.cd(File.join(destination_root)) do
-      `rails g graphql:install --relay false`
+      run_generator(["--relay", "false", "--force"])
     end
     assert_file "Gemfile" do |contents|
       assert_equal 1, contents.scan(/graphiql-rails/).length
+    end
+
+    # It doesn't seem like this works on Rails 4, oh well
+    if Rails::VERSION::STRING > "5"
+      FileUtils.cd(File.join(destination_root)) do
+        run_generator(["--relay", "false", "--force"], behavior: :revoke)
+      end
+
+      refute_file "app/graphql/types/base_object.rb"
+      refute_file "app/graphql/types/base_interface.rb"
+      refute_file "app/graphql/types/base_argument.rb"
+      refute_file "app/graphql/types/base_field.rb"
+      refute_file "app/graphql/types/query_type.rb"
+      refute_file "app/graphql/dummy_schema.rb"
+
+      assert_file "config/routes.rb" do |contents|
+        refute_includes contents, expected_query_route
+        # This doesn't work for some reason....
+        # refute_includes contents, expected_graphiql_route
+      end
+
+      assert_file "Gemfile" do |contents|
+        refute_match %r{gem ('|")graphiql-rails('|"), :?group(:| =>) :development}, contents
+      end
     end
   end
 
@@ -275,18 +315,26 @@ class GraphqlController < ApplicationController
 end
 RUBY
 
-  EXPECTED_RELAY_BATCH_SCHEMA = <<-RUBY
-class DummySchema < GraphQL::Schema
+  EXPECTED_RELAY_BATCH_SCHEMA = 'class DummySchema < GraphQL::Schema
   mutation(Types::MutationType)
   query(Types::QueryType)
 
   # GraphQL::Batch setup:
   use GraphQL::Batch
 
+  # GraphQL-Ruby calls this when something goes wrong while running a query:
+  def self.type_error(err, context)
+    # if err.is_a?(GraphQL::InvalidNullError)
+    #   # report to your bug tracker here
+    #   return nil
+    # end
+    super
+  end
+
   # Union and Interface Resolution
   def self.resolve_type(abstract_type, obj, ctx)
-    # TODO: Implement this function
-    # to return the correct object type for `obj`
+    # TODO: Implement this method
+    # to return the correct GraphQL object type for `obj`
     raise(GraphQL::RequiredImplementationMissingError)
   end
 
@@ -294,21 +342,29 @@ class DummySchema < GraphQL::Schema
 
   # Return a string UUID for `object`
   def self.id_from_object(object, type_definition, query_ctx)
-    # Here's a simple implementation which:
-    # - joins the type name & object.id
-    # - encodes it with base64:
-    # GraphQL::Schema::UniqueWithinType.encode(type_definition.name, object.id)
+    # For example, use Rails\' GlobalID library (https://github.com/rails/globalid):
+    object_id = object.to_global_id.to_s
+    # Remove this redundant prefix to make IDs shorter:
+    object_id = object_id.sub("gid://#{GlobalID.app}/", "")
+    encoded_id = Base64.urlsafe_encode64(object_id)
+    # Remove the "=" padding
+    encoded_id = encoded_id.sub(/=+/, "")
+    # Add a type hint
+    type_hint = type_definition.graphql_name.first
+    "#{type_hint}_#{encoded_id}"
   end
 
   # Given a string UUID, find the object
-  def self.object_from_id(id, query_ctx)
-    # For example, to decode the UUIDs generated above:
-    # type_name, item_id = GraphQL::Schema::UniqueWithinType.decode(id)
-    #
-    # Then, based on `type_name` and `id`
-    # find an object in your application
-    # ...
+  def self.object_from_id(encoded_id_with_hint, query_ctx)
+    # For example, use Rails\' GlobalID library (https://github.com/rails/globalid):
+    # Split off the type hint
+    _type_hint, encoded_id = encoded_id_with_hint.split("_", 2)
+    # Decode the ID
+    id = Base64.urlsafe_decode64(encoded_id)
+    # Rebuild it for Rails then find the object:
+    full_global_id = "gid://#{GlobalID.app}/#{id}"
+    GlobalID::Locator.locate(full_global_id)
   end
 end
-RUBY
+'
 end

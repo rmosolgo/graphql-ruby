@@ -1,5 +1,34 @@
 # graphql-ruby-client
 
+# 1.10.6 (10 Jan 2022)
+
+- Pusher Link: Don't pass along the `complete` handler because Apollo unsubscribes if you do #3830
+
+# 1.10.5 (17 Dec 2021)
+
+- Dependencies: replace `actioncable` with `@rails/actioncable` #3773
+
+# 1.10.4 (19 Nov 2021)
+
+- Sync: Also make sure documents are valid after removing `@client` fields #3715
+
+# 1.10.3 (18 Nov 2021)
+
+- Sync: Remove any fields with `@client` before sending operations to the server #3712
+
+# 1.10.2 (25 Oct 2021)
+
+- Pusher Link: Properly forward network errors to subscribers #3638
+
+# 1.10.1 (22 Sept 2021)
+
+- Sync: Add `--apollo-codegen-json-output=...` option #3616
+
+# 1.10.0 (25 Aug 2021)
+
+- Remove direct dependency on `request` #3594
+- Update `createRelaySubscriptionHandler` to support Relay 11. Use `createLegacyRelaySubscriptionHandler` to get the old behavior. #3594
+
 # 1.9.3 (31 Mar 2021)
 
 - Move `graphql` and `@apollo/client` to `peerDeps` for more flexible versions #3395

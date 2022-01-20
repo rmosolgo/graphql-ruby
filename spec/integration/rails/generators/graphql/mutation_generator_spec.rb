@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 require "generators/graphql/mutation_generator"
+require "generators/graphql/install_generator"
 
 class GraphQLGeneratorsMutationGeneratorTest < BaseGeneratorTest
   tests Graphql::Generators::MutationGenerator
@@ -10,13 +11,10 @@ class GraphQLGeneratorsMutationGeneratorTest < BaseGeneratorTest
   def setup(directory = "app/graphql")
     prepare_destination
     FileUtils.cd(File.expand_path("../../../tmp", File.dirname(__FILE__))) do
-      `rm -rf dummy`
       `rails new dummy --skip-active-record --skip-test-unit --skip-spring --skip-bundle --skip-webpack-install`
     end
 
-    FileUtils.cd(destination_root) do
-      `rails g graphql:install --directory #{directory}`
-    end
+    Graphql::Generators::InstallGenerator.start(["--directory", directory], { destination_root: destination_root })
   end
 
   UPDATE_NAME_MUTATION = <<-RUBY

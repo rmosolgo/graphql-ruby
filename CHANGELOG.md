@@ -1,5 +1,7 @@
 # Changelog
 
+[Versioning guidelines](https://graphql-ruby.org/development.html#versioning)
+
 ### Breaking changes
 
 ### Deprecations
@@ -8,11 +10,207 @@
 
 ### Bug fixes
 
+# 1.13.5 (13 January 2022)
+
+### New features
+
+- Directives: support `repeatable` directives #3837
+- Tracing: use `context[:fallback_transaction_name]` when operations aren't named #3778
+
+### Bug fixes
+
+- Performance: improve performance of queries with directives #3835
+- Fix crash on undefined constant `NodeField` #3832
+- Fix crash on partially-required `ActiveSupport` #3829
+
+# 1.13.4 (7 January 2022)
+
+### Bug fixes
+
+- Connections: Fix regression in 1.13.3 on unbounded Relation connections #3822
+
+# 1.13.3 (6 January 2022)
+
+### Deprecations
+
+- `GraphQL::Relay::NodeField` and `GraphQL::Relay::NodesField` are deprecated; use `GraphQL::Relay::HasNodesField` or `GraphQL::Relay::HasNodeField` instead. (The underlying field instances require a reference to their owner type, but `NodeField` and `NodesField` can't do that, since they're shared instances) #3791
+
+### New features
+
+- Arguments: support `required: :nullable` to make an argument required to be _present_, even if it's `null` #3784
+- Connections: When paginating an AR::Relation, use already-loaded results if possible #3790
+- Tracing: Support DRY::Notifications #3776
+- Improve the error when a Ruby method doesn't support the defined GraphQL arguments #3785
+- Input Objects: call `.authorized?` on them at runtime #3786
+- Field extensions: add `extras(...)` for extension-related extras with automatic cleanup #3787
+
+### Bug fixes
+
+- Validation: accept nullable variable types for arguments with default values #3819
+- Validation: raise a better error when a schema receives a `query { ... }` but has no query root #3815
+- Improve the error message when `Schema.get_field` can't make sense of the arguments #3815
+- Subscriptions: losslessly serialize Rails 7 TimeWithZone #3774
+- Field Usage analyzer: handle errors from `prepare:` hooks #3794
+- Schema from definition: fix default values with camelized arguments #3780
+
+# 1.13.2 (15 December 2021)
+
+### Bug fixes
+
+- Authorization: only authorize arguments _once_, after they've been loaded with `loads:` #3782
+- Execution: always provide an `Interpreter::Arguments` instance as `context[:current_arguments]` #3783
+
+# 1.13.1 (13 December 2021)
+
+### Deprecations
+
+- `.to_graphql` and `.graphql_definition` are deprecated and will be removed in GraphQL-Ruby 2.0. All features using those legacy definitions are already removed and all behaviors should have been ported to class-based definitions. So, you should be able to remove those calls entirely. Please open an issue if you have trouble with it! #3750 #3765
+
+### New features
+
+- `context.response_extensions[...] = ...` adds key-value pairs to the `"extensions" => {...}` hash in the final response #3770
+- Connections: `node_type` and `edge_type` accept `field_options:` to pass custom options to generated fields #3756
+- Field extensions: Support `default_argument ...` configuration for adding arguments if the field doesn't already have them #3751
+
+### Bug fixes
+
+- fix `rails destroy graphql:install` #3739
+- ActionCable subscriptions: close channel when unsubscribing from server #3737
+- Mutations: call `.authorized?` on arguments from `input_object_class`, `input_type`, too #3738
+- Prevent blank strings with `validates: { length: ... }, allow_blank: false` #3747
+- Lexer: return mutable strings when strings are empty #3741
+- Errors: don't send execution errors to schema-defined handlers from inside lazies #3749
+- Complexity: don't multiple `edges` and `nodes` fields by page size #3758
+- Performance: fix validation performance degradation from 1.12.20 #3762
+
+# 1.13.0 (24 November 2021)
+
+Since this version, GraphQL-Ruby is tested on Ruby 2.4+ and Rails 4+ only.
+
+### Breaking changes
+
+- ActionCable Subscriptions: No update is delivered if all subscriptions return `NO_UPDATE` #3713
+- Subscription classes: If a subscription has a `scope ...` configuration, then a `scope:` option is required in `.trigger(...)`. Use `scope ..., optional: true` to get the old behavior. #3692
+- Arguments whose default values are used aren't checked for authorization #3665
+- Complexity: Connection fields have a default complexity implementation based on `first`/`last`/`max_page_size` #3609
+
+### New features
+
+- Visibility: A schema may contain multiple members with the same name. For each name, GraphQL-Ruby will use the one that returns true for `.visible?(context)` for each query (and raise an error if multiple objects with the same name are visible). #3651 #3716 #3725
+- Dataloader: `nonblocking: true` will make GraphQL::Dataloader use `Fiber.scheduler` to run fields and load data with sources, supporting non-blocking IO. #3482
+- `null: true` and `required: true` are now default. GraphQL-Ruby includes some RuboCop cops, `GraphQL/DefaultNullTrue` and `GraphQL/DefaultRequiredTrue`, which identify and remove those needless configurations. #3612
+- Interfaces may `implement ...` other interfaces #3613
+
+### Bug fixes
+
+- Enum `value(...)` and Input Object `argument(...)` methods return the defined object #3727
+- When a field returns an array of mixed errors and values, the result will contain `nil` where there were errors in the list #3656
+
+# 1.12.21 (23 November 2021)
+
+### Bug fixes
+
+- Validators: Fix `format:`/`allow_blank: true` to correctly accept a blank string #3726
+- Generators: generate a correct `Schema.type_error` hook #3722
+
+# 1.12.20 (17 November 2021)
+
+### New Features
+
+- Static validation: improve error messages when fields won't merge #3698
+- Generators: improve id_from_object and type_error suggested implementations #3710
+- Connections: make the new connections module fall back to old connections #3704
+
+### Bug fixes
+
+- Dataloader: re-enqueue sources when one call to `yield` didn't satisfy their pending requests #3707
+- Subscriptions: Fix when JSON-typed arguments are used #3705
+
+# 1.12.19 (5 November 2021)
+
+### New Features
+
+- Argument validation: Make `allow_null` and `allow_blank` work standalone #3671
+- Add field and path info to Encoding errors #3697
+- Add `Resolver#unauthorized_object` for handling loaded but unauthorized objects #3689
+
+### Bug fixes
+
+- Properly hook up `Schema.validate_max_errors` at runtime #3691
+
+# 1.12.18 (2 November 2021)
+
+### New features
+
+- Subscriptions: Add `NO_UPDATE` constant for skipping subscription updates #3664
+- Validation: Add `Schema.max_validation_errors(integer)` for halting validation when it reaches a certain number #3683
+- Call `self.load_...` methods on Input objects for loading arguments #3682
+- Use `import_methods` in Refinements when available #3674
+- `AppsignalTracing`: Add `set_action_name` #3659
+
+### Bug fixes
+
+- Authorize objects returned from custom `def load_...` methods #3682
+- Fix `context[:current_field]` when argument `prepare:` hooks raise an error #3666
+- Raise a helpful error when a Resolver doesn't have a configured `type(...)` #3679
+- Better error message when subscription clients are using ActionCable #3668
+- Dataloader: Fix dataloading of input object arguments #3666
+- Subscriptions: Fix parsing time zones #3667
+- Subscriptions: Fix parsing with non-null arguments #3620
+- Authorization: Call `schema.unauthorized_field` for unauthorized resolvers
+- Fix when literal `null` is used as a value for a list argument #3660
+
+# 1.12.17 (15 October 2021)
+
+### New features
+
+- Support `extras: [:parent]` #3645
+- Support ranges in `NumericalityValidator` #3635
+- Add some Dataloader methods for testing #3335
+
+### Bug fixes
+
+- Support input object arguments called `context` #3654
+- Support single-item default values for list arguments #3652
+- Ensure query strings are strings before running a query #3628
+- Fix empty hash kwargs for Ruby 3 #3610
+- Fix wrongly detecting Ipnut objects in authorization #3606
+
+# 1.12.16 (31 August 2021)
+
+### New features
+
+- Connections: automatically support Mongoid 7.3 #3599
+- Support `def self.topic_for` in Subscription classes for server-filtered streams #3597
+- When a list item or object field has an invalid null, stop executing that list or
+
+### Bug fixes
+
+- Perf: don't refine String when unnecessary #3593
+- BigInt: always parse as base 10 #3586
+- Errors: only return one error when a node in a non-null connection has an invalid null #3601
+
+# 1.12.15 (23 August 2021)
+
+### New Features
+
+- Subscriptions: add support for multi-tenant setups when deserializing context #3574
+- Analyzers: also track deprecated arguments #3549
+
+# 1.12.14 (22 July 2021)
+
+### Bug fixes
+
+- SDL: support directive arguments referencing overridden built-in scalars #3564
+- Use `"_"` as the name for `field :_, ...` fields #3560
+- Support `sanitized_printer(...)` in the schema definition for `Query#sanitized_query_string`
+- `GraphQL::Backtrace`: fix multiplex support
+
 # 1.12.13 (20 June 2021)
 
 ### Breaking changes
 
-- Add a trailing newline to the `Schema.to_definition` output sstring #3541
+- Add a trailing newline to the `Schema.to_definition` output string #3541
 
 ### Bug fixes
 

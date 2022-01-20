@@ -14,13 +14,15 @@ Arguments are defined with the `argument` helper. These arguments are passed as 
 
 ```ruby
 field :search_posts, [PostType], null: false do
-  argument :category, String, required: true
+  argument :category, String
 end
 
 def search_posts(category:)
   Post.where(category: category).limit(10)
 end
 ```
+
+### Nullability
 
 To make an argument optional, set `required: false`, and set default values for the corresponding keyword arguments:
 
@@ -62,6 +64,10 @@ def search_posts(category:)
 end
 ```
 
+Finally, `required: :nullable` will require clients to pass the argument, although it will accept `null` as a valid input.
+
+### Deprecation
+
 **Experimental:** __Deprecated__ arguments can be marked by adding a `deprecation_reason:` keyword argument:
 
 ```ruby
@@ -72,12 +78,14 @@ end
 ```
 Note argument deprecation is a stage 2 GraphQL [proposal](https://github.com/graphql/graphql-spec/pull/525) so not all clients will leverage this information.
 
+### Aliasing
+
 Use `as: :alternate_name` to use a different key from within your resolvers while
 exposing another key to clients.
 
 ```ruby
 field :post, PostType, null: false do
-  argument :post_id, ID, required: true, as: :id
+  argument :post_id, ID, as: :id
 end
 
 def post(id:)
@@ -85,11 +93,13 @@ def post(id:)
 end
 ```
 
+### Preprocessing
+
 Provide a `prepare` function to modify or validate the value of an argument before the field's resolver method is executed:
 
 ```ruby
 field :posts, [PostType], null: false do
-  argument :start_date, String, required: true, prepare: ->(startDate, ctx) {
+  argument :start_date, String, prepare: ->(startDate, ctx) {
     # return the prepared argument.
     # raise a GraphQL::ExecutionError to halt the execution of the field and
     # add the exception's message to the `errors` key.
@@ -101,11 +111,13 @@ def posts(start_date:)
 end
 ```
 
+### Automatic camelization
+
 Arguments that are snake_cased will be camelized in the GraphQL schema. Using the example of:
 
 ```ruby
 field :posts, [PostType], null: false do
-  argument :start_year, Int, required: true
+  argument :start_year, Int
 end
 ```
 
@@ -123,7 +135,7 @@ To disable auto-camelization, pass `camelize: false` to the `argument` method.
 
 ```ruby
 field :posts, [PostType], null: false do
-  argument :start_year, Int, required: true, camelize: false
+  argument :start_year, Int, camelize: false
 end
 ```
 
@@ -131,13 +143,15 @@ Furthermore, if your argument is already camelCased, then it will remain cameliz
 
 ```ruby
 field :posts, [PostType], null: false do
-  argument :startYear, Int, required: true
+  argument :startYear, Int
 end
 
 def posts(start_year:)
   # ...
 end
 ```
+
+### Valid Argument Types
 
 Only certain types are valid for arguments:
 

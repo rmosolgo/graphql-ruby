@@ -23,14 +23,6 @@ class InMemoryBackend
       end
     end
 
-    def each_subscription_id(event)
-      @events[event.topic].each do |fp, sub_ids|
-        sub_ids.each do |sub_id|
-          yield(sub_id)
-        end
-      end
-    end
-
     def read_subscription(subscription_id)
       query = @queries[subscription_id]
       if query
@@ -66,8 +58,10 @@ class InMemoryBackend
       sub_ids_by_fp = @events[topic]
       sub_ids_by_fp.each do |fingerprint, sub_ids|
         result = execute_update(sub_ids.first, event, object)
-        sub_ids.each do |sub_id|
-          deliver(sub_id, result)
+        if !result.nil?
+          sub_ids.each do |sub_id|
+            deliver(sub_id, result)
+          end
         end
       end
     end
@@ -94,6 +88,7 @@ class InMemoryBackend
       @pushes.clear
     end
   end
+
   # Just a random stateful object for tracking what happens:
   class SubscriptionPayload
     attr_reader :str
@@ -124,42 +119,63 @@ class ClassBasedInMemoryBackend < InMemoryBackend
   end
 
   class StreamInput < GraphQL::Schema::InputObject
-    argument :user_id, ID, required: true, camelize: false
+    argument :user_id, ID, camelize: false
     argument :payload_type, PayloadType, required: false, default_value: "ONE", prepare: ->(e, ctx) { e ? e.downcase : e }
   end
 
   class EventSubscription < GraphQL::Schema::Subscription
-    argument :user_id, ID, required: true
+    argument :user_id, ID
     argument :payload_type, PayloadType, required: false, default_value: "ONE", prepare: ->(e, ctx) { e ? e.downcase : e }
-    field :payload, Payload, null: true
+    field :payload, Payload
+  end
+
+  class FilteredStream < GraphQL::Schema::Subscription
+    subscription_scope :segment
+    argument :channel, Integer, required: false
+
+    field :message, String, null: false
+
+    def update(channel: nil)
+      if channel && object.channel != channel
+        NO_UPDATE
+      else
+        super
+      end
+    end
+
+    def self.topic_for(arguments:, field:, scope:)
+      "#{field.graphql_name}:#{scope}"
+    end
   end
 
   class Subscription < GraphQL::Schema::Object
     field :payload, Payload, null: false do
-      argument :id, ID, required: true
+      argument :id, ID
     end
 
-    field :event, Payload, null: true do
+    field :event, Payload do
       argument :stream, StreamInput, required: false
     end
 
     field :event_subscription, subscription: EventSubscription
 
-    field :my_event, Payload, null: true, subscription_scope: :me do
+    field :my_event, Payload, subscription_scope: :me do
       argument :payload_type, PayloadType, required: false
     end
 
     field :failed_event, Payload, null: false  do
-      argument :id, ID, required: true
+      argument :id, ID
     end
 
     def failed_event(id:)
       raise GraphQL::ExecutionError.new("unauthorized")
     end
+
+    field :filtered_stream, subscription: FilteredStream
   end
 
   class Query < GraphQL::Schema::Object
-    field :dummy, Integer, null: true
+    field :dummy, Integer
   end
 
   class Schema < GraphQL::Schema
@@ -293,6 +309,46 @@ describe GraphQL::Subscriptions do
           assert_equal({"str" => "Update", "int" => 1}, deliveries["1"][0]["data"]["firstPayload"])
           assert_equal({"str" => "Update", "int" => 2}, deliveries["2"][0]["data"]["firstPayload"])
           assert_equal({"str" => "Update", "int" => 3}, deliveries["1"][1]["data"]["firstPayload"])
+        end
+      end
+
+      if in_memory_backend_class != FromDefinitionInMemoryBackend # No way to specify this when using IDL
+        it "supports filtering in the subscription class" do
+          query_str = "subscription($channel: Int) { filteredStream(channel: $channel) { message } }"
+
+          # Unfiltered:
+          schema.execute(query_str, context: { socket: "1", segment: "A" }, variables: {})
+          # Filtered:
+          schema.execute(query_str, context: { socket: "2", segment: "A" }, variables: { channel: 1 })
+          schema.execute(query_str, context: { socket: "3", segment: "A" }, variables: { channel: 2 })
+
+          # Another Subscription scope:
+          schema.execute(query_str, context: { socket: "4", segment: "B" }, variables: {})
+          schema.execute(query_str, context: { socket: "5", segment: "B" }, variables: { channel: 1 })
+
+          schema.subscriptions.trigger(:filtered_stream, {}, OpenStruct.new(channel: 1, message: "Message 1"), scope: "A")
+          schema.subscriptions.trigger(:filtered_stream, {}, OpenStruct.new(channel: 2, message: "Message 2"), scope: "A")
+          schema.subscriptions.trigger(:filtered_stream, {}, OpenStruct.new(channel: 3, message: "Message 3"), scope: "A")
+
+          # Unfiltered, received all updates:
+          assert_equal 3, deliveries["1"].size
+          # Only received updates that matched `channel`:
+          assert_equal 1, deliveries["2"].size
+          assert_equal 1, deliveries["3"].size
+          # Different segment, no updates:
+          assert_equal 0, deliveries["4"].size
+          assert_equal 0, deliveries["5"].size
+
+          schema.subscriptions.trigger(:filtered_stream, {}, OpenStruct.new(channel: 1, message: "Message 4"), scope: "B")
+          schema.subscriptions.trigger(:filtered_stream, {}, OpenStruct.new(channel: 2, message: "Message 5"), scope: "B")
+
+          # These should be unchanged because the later triggers had a different scope value:
+          assert_equal 3, deliveries["1"].size
+          assert_equal 1, deliveries["2"].size
+          assert_equal 1, deliveries["3"].size
+          # These received updates from the second set of triggers:
+          assert_equal 2, deliveries["4"].size
+          assert_equal 1, deliveries["5"].size
         end
       end
 

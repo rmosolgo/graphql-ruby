@@ -84,11 +84,11 @@ type Query {
         end
 
         class Query < GraphQL::Schema::Object
-          field :i, Int, null: true do
+          field :i, Int do
             directive Secret
           end
 
-          field :ssn, String, null: true do
+          field :ssn, String do
             directive Secret, top: true
           end
         end
@@ -100,7 +100,7 @@ type Query {
           end
           locations GraphQL::Schema::Directive::FIELD
 
-          argument :lang, LangEnum, required: true
+          argument :lang, LangEnum
         end
 
         query(Query)
@@ -825,6 +825,21 @@ type Query {
       children_equal && scalars_equal
     else
       expected == node
+    end
+  end
+
+  describe "custom SDL directives" do
+    class CustomSDLDirectiveSchema < GraphQL::Schema
+      class CustomThing < GraphQL::Schema::Directive
+        locations(FIELD_DEFINITION)
+        argument :stuff, String
+      end
+
+      directive CustomThing
+    end
+
+    it "prints them out" do
+      assert_equal "directive @customThing(stuff: String!) on FIELD_DEFINITION\n", CustomSDLDirectiveSchema.to_definition
     end
   end
 end

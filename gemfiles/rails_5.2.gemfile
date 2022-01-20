@@ -6,11 +6,8 @@ gem "bootsnap"
 gem "ruby-prof", platform: :ruby
 gem "pry"
 gem "pry-stack_explorer", platform: :ruby
-gem "rails", "3.2.22.5", require: "rails/all"
-gem "activerecord", "~> 3.2.21"
-gem "actionpack", "~> 3.2.21"
-gem "test-unit"
-gem "sqlite3", "~> 1.3.6", platform: :ruby
+gem "rails", "~> 5.2.0", require: "rails/all"
+gem "sqlite3", "~> 1.4", platform: :ruby
 gem "activerecord-jdbcsqlite3-adapter", platform: :jruby
 gem "sequel"
 

@@ -8,7 +8,7 @@ type MockChannel = {
   bind: (action: string, handler: Function) => void,
 }
 
-describe("ActionCableLink", () => {
+describe("PusherLink", () => {
   var channelName = "abcd-efgh"
   var log: any[]
   var pusher: any
@@ -79,6 +79,54 @@ describe("ActionCableLink", () => {
     } as unknown) as Operation
   })
 
+  it("forwards errors to error handlers", () => {
+    let passedErrorHandler: Function = () => {}
+
+    var observable = link.request(operation, function(_operation: Operation): any {
+      return {
+        subscribe: (options: { next: Function, error: Function, complete: Function }): void => {
+          passedErrorHandler = options.error
+          {}
+        }
+      }
+    })
+
+    let errorHandlerWasCalled = false
+    function createdErrorHandler(_err: Error) {
+      errorHandlerWasCalled = true
+    }
+
+    observable.subscribe(function(result: any) {
+      log.push(["received", result])
+    }, createdErrorHandler)
+
+    if (passedErrorHandler) {
+      passedErrorHandler(new Error)
+    }
+
+    expect(errorHandlerWasCalled).toBe(true)
+  })
+
+  it("doesn't call the link request's `complete` handler because otherwise Apollo would clean up subscriptions", () => {
+    let passedComplete: Function = () => {}
+
+    var observable = link.request(operation, function(_operation: Operation): any {
+      return {
+        subscribe: (options: { next: Function, error: Function, complete: Function }): void => {
+          passedComplete = options.complete
+          {}
+        }
+      }
+    })
+
+    observable.subscribe(function(result: any) {
+      log.push(["received", result])
+    }, null, function() { log.push(["completed"])})
+
+    expect(log).toEqual([])
+    expect(passedComplete).toBeUndefined()
+  })
+
   it("delegates to pusher", () => {
     var requestFinished: Function = () => {}
 
@@ -120,7 +168,7 @@ describe("ActionCableLink", () => {
     ])
   })
 
-  it("delegates a manual unsubscribe to the cable", () => {
+  it("delegates a manual unsubscribe to pusher", () => {
     var requestFinished: Function = () => {}
 
     var observable = link.request(operation, function(_operation: Operation): any {

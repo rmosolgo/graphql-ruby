@@ -156,8 +156,13 @@ module GraphQL
         @scoped_context = {}
       end
 
+      # @return [Hash] A hash that will be added verbatim to the result hash, as `"extensions" => { ... }`
+      def response_extensions
+        namespace(:__query_result_extensions__)
+      end
+
       def dataloader
-        @dataloader ||= query.multiplex ? query.multiplex.dataloader : schema.dataloader_class.new
+        @dataloader ||= self[:dataloader] || (query.multiplex ? query.multiplex.dataloader : schema.dataloader_class.new)
       end
 
       # @api private
@@ -223,14 +228,22 @@ module GraphQL
 
       # @return [GraphQL::Schema::Warden]
       def warden
-        @warden ||= @query.warden
+        @warden ||= (@query && @query.warden)
       end
+
+      # @api private
+      attr_writer :warden
 
       # Get an isolated hash for `ns`. Doesn't affect user-provided storage.
       # @param ns [Object] a usage-specific namespace identifier
       # @return [Hash] namespaced storage
       def namespace(ns)
         @storage[ns]
+      end
+
+      # @return [Boolean] true if this namespace was accessed before
+      def namespace?(ns)
+        @storage.key?(ns)
       end
 
       def inspect

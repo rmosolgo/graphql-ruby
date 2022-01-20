@@ -10,7 +10,7 @@ describe "GraphQL::Execution::Interpreter::Arguments" do
     class Query < GraphQL::Schema::Object
       field :search, [String], null: false do
         argument :params, SearchParams, required: false
-        argument :limit, Int, required: true
+        argument :limit, Int
       end
     end
 

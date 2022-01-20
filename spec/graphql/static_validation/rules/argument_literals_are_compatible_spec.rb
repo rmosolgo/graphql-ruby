@@ -378,8 +378,8 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
     end
 
     class RangeType < GraphQL::Schema::InputObject
-      argument :from, TimeType, required: true
-      argument :to, TimeType, required: true
+      argument :from, TimeType
+      argument :to, TimeType
     end
 
     class EmailType < GraphQL::Schema::Scalar
@@ -397,11 +397,10 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
       end
     end
 
-
     class Query < GraphQL::Schema::Object
       description "The query root of this schema"
 
-      field :time, TimeType, null: true do
+      field :time, TimeType do
         argument :value, TimeType, required: false
         argument :range, RangeType, required: false
       end
@@ -410,7 +409,7 @@ describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
         value
       end
 
-      field :email, EmailType, null: true do
+      field :email, EmailType do
         argument :value, EmailType, required: false
       end
 

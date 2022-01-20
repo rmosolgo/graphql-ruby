@@ -20,6 +20,8 @@ optional arguments:
   --key=<key>                               HMAC authentication key
   --relay-persisted-output=<path>           Path to a .json file from "relay-compiler ... --persist-output"
                                               (Outfile generation is skipped by default.)
+  --apollo-codegen-json-output=<path>       Path to a .json file from "apollo client:codegen ... --target json"
+                                              (Outfile generation is skipped by default.)
   --apollo-android-operation-output=<path>  Path to a .json file from Apollo-Android's "generateOperationOutput" feature.
                                               (Outfile generation is skipped by default.)
   --mode=<mode>                             Treat files like a certain kind of project:
@@ -44,6 +46,7 @@ optional arguments:
     var result = sync({
       path: argv.path,
       relayPersistedOutput: argv["relay-persisted-output"],
+      apolloCodegenJsonOutput: argv["apollo-codegen-json-output"],
       apolloAndroidOperationOutput: argv["apollo-android-operation-output"],
       url: argv.url,
       client: argv.client,

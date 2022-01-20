@@ -31,8 +31,10 @@ module GraphQL
           # If any jobs were enqueued, run them now,
           # since this might have been called outside of execution.
           # (The jobs are responsible for updating `result` in-place.)
-          @dataloader.run_isolated do
-            @storage[ast_node][argument_owner][parent_object]
+          if !@storage.key?(ast_node) || !@storage[ast_node].key?(argument_owner)
+            @dataloader.run_isolated do
+              @storage[ast_node][argument_owner][parent_object]
+            end
           end
           # Ack, the _hash_ is updated, but the key is eventually
           # overridden with an immutable arguments instance.
@@ -71,11 +73,11 @@ module GraphQL
           when Array
             ast_arg_or_hash_or_value.map { |v| prepare_args_hash(query, v) }
           when GraphQL::Language::Nodes::Field, GraphQL::Language::Nodes::InputObject, GraphQL::Language::Nodes::Directive
-            if ast_arg_or_hash_or_value.arguments.empty?
+            if ast_arg_or_hash_or_value.arguments.empty? # rubocop:disable Development/ContextIsPassedCop -- AST-related
               return NO_ARGUMENTS
             end
             args_hash = {}
-            ast_arg_or_hash_or_value.arguments.each do |arg|
+            ast_arg_or_hash_or_value.arguments.each do |arg| # rubocop:disable Development/ContextIsPassedCop -- AST-related
               v = prepare_args_hash(query, arg.value)
               if v != NO_VALUE_GIVEN
                 args_hash[arg.name] = v

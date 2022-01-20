@@ -128,7 +128,7 @@ describe GraphQL::Pagination::Connections do
 
     query_type = Class.new(GraphQL::Schema::Object) do
       graphql_name 'Query'
-      field :users, user_type.connection_type, null: true, max_page_size: nil
+      field :users, user_type.connection_type, max_page_size: nil
       def users
         [{ name: 'Yoda' }, { name: 'Anakin' }, { name: 'Obi Wan' }]
       end

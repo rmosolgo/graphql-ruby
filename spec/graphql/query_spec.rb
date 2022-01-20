@@ -42,6 +42,13 @@ describe GraphQL::Query do
   )}
   let(:result) { query.result }
 
+  it "applies the max validation errors config" do
+    limited_schema = Class.new(schema) { validate_max_errors(2) }
+    res = limited_schema.execute("{ a b c d }")
+    assert_equal 2, res["errors"].size
+    refute res.key?("data")
+  end
+
   describe "when passed both a query string and a document" do
     it "returns an error to the client when query kwarg is used" do
       assert_raises ArgumentError do
@@ -83,6 +90,22 @@ describe GraphQL::Query do
       )
       query.query_string = '{ __type(name: """Cheese""") { name } }'
       assert_equal "Cheese", query.result["data"] ["__type"]["name"]
+    end
+  end
+
+  describe "when passed a query_string with an invalid type" do
+    it "returns an error to the client" do
+      assert_raises(ArgumentError) {
+        GraphQL::Query.new(schema, {"default" => "{ fromSource(source: COW) { id } }"})
+      }
+    end
+  end
+
+  describe "when passed a query with an invalid type" do
+    it "returns an error to the client" do
+      assert_raises(ArgumentError) {
+        GraphQL::Query.new(schema, query: {"default" => "{ fromSource(source: COW) { id } }"})
+      }
     end
   end
 
@@ -759,7 +782,7 @@ describe GraphQL::Query do
   it "Accepts a passed-in warden" do
     warden = GraphQL::Schema::Warden.new(->(t, ctx) { false }, schema: Jazz::Schema, context: nil)
     res = Jazz::Schema.execute("{ __typename } ", warden: warden)
-    assert_equal ["Field '__typename' doesn't exist on type 'Query'"], res["errors"].map { |e| e["message"] }
+    assert_equal ["Schema is not configured for queries"], res["errors"].map { |e| e["message"] }
   end
 
   describe "arguments_for" do

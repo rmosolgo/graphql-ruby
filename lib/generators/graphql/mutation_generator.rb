@@ -17,7 +17,7 @@ module Graphql
 
       argument :name, type: :string
 
-      def initialize(args, *options) #:nodoc:
+      def initialize(args, *options) # :nodoc:
         # Unfreeze name in case it's given as a frozen string
         args[0] = args[0].dup if args[0].is_a?(String) && args[0].frozen?
         super

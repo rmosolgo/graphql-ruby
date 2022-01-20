@@ -5,7 +5,6 @@ section: Dataloader
 title: Dataloader vs. GraphQL-Batch
 desc: Comparing and Contrasting Batch Loading Options
 index: 3
-experimental: true
 ---
 
 {{ "GraphQL::Dataloader" | api_doc }} solves the same problem as [`GraphQL::Batch`](https://github.com/shopify/graphql-batch). There are a few major differences between the modules:

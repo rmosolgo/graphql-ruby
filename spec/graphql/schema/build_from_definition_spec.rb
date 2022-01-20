@@ -68,7 +68,7 @@ directive @foo(arg: Int, nullDefault: Int = null) on FIELD
 
 directive @greeting(pleasant: Boolean = true) on ARGUMENT_DEFINITION | ENUM | FIELD_DEFINITION | INPUT_OBJECT | INTERFACE | OBJECT | UNION
 
-directive @hashed on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+directive @hashed repeatable on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
 
 directive @language(is: String!) on ENUM_VALUE
 
@@ -105,6 +105,10 @@ type Word {
       parsed_schema.directives.values.each do |dir_class|
         assert dir_class < GraphQL::Schema::Directive
       end
+
+      assert_equal true, parsed_schema.directives["hashed"].repeatable?
+      assert_equal false, parsed_schema.directives["deprecated"].repeatable?
+
       assert_equal 1, hello_type.directives.size
       assert_instance_of parsed_schema.directives["greeting"], hello_type.directives.first
       assert_equal({ pleasant: true }, hello_type.directives.first.arguments.keyword_arguments)
@@ -231,6 +235,17 @@ union U = Hello
 
       assert_equal 60, built_schema.types["U"].ast_node.line
       assert_equal 63, built_schema.types["U"].ast_node.definition_line
+    end
+
+    it 'handles empty type descriptions' do
+      schema = <<-SCHEMA
+"""
+"""
+type Query {
+  f1: Int
+}
+      SCHEMA
+      refute_nil GraphQL::Schema.from_definition(schema)
     end
 
     it 'maintains built-in directives' do
@@ -506,6 +521,30 @@ type Hello implements WorldInterface {
 
 interface WorldInterface {
   str: String
+}
+      SCHEMA
+
+      assert_schema_and_compare_output(schema)
+    end
+
+    it "supports interfaces that implement interfaces" do
+      schema = <<-SCHEMA
+interface Named implements Node {
+  id: ID
+  name: String
+}
+
+interface Node {
+  id: ID
+}
+
+type Query {
+  thing: Thing
+}
+
+type Thing implements Named & Node {
+  id: ID
+  name: String
 }
       SCHEMA
 
@@ -955,7 +994,7 @@ type Hello { }
 SCHEMA
 
       err = assert_raises(GraphQL::Schema::InvalidTypeError) do
-        GraphQL::Schema.from_definition(schema).to_graphql
+        GraphQL::Schema.from_definition(schema).to_graphql(silence_deprecation_warning: true)
       end
       assert_equal 'Hello is invalid: Hello must define at least 1 field. 0 defined.', err.message
     end
@@ -1398,6 +1437,23 @@ type ThingEdge {
         assert_equal schema_defn, schema.to_definition
       end
     end
+  end
+
+  it "works when a directive argument uses a redefined scalar" do
+    schema_str = <<-GRAPHQL
+      schema {
+        query: QueryRoot
+      }
+
+      directive @myDirective(id: ID) on MUTATION | QUERY
+
+      scalar ID
+
+      type QueryRoot {}
+    GRAPHQL
+
+    schema = GraphQL::Schema.from_definition(schema_str)
+    assert_equal schema.directives["myDirective"].get_argument("id").type, schema.find("ID")
   end
 
   describe "orphan types" do

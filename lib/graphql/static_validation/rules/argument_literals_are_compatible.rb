@@ -15,7 +15,7 @@ module GraphQL
         if @context.schema.error_bubbling || context.errors.none? { |err| err.path.take(@path.size) == @path }
           parent_defn = parent_definition(parent)
 
-          if parent_defn && (arg_defn = parent_defn.arguments[node.name])
+          if parent_defn && (arg_defn = context.warden.get_argument(parent_defn, node.name))
             validation_result = context.validate_literal(node.value, arg_defn.type)
             if !validation_result.valid?
               kind_of_node = node_type(parent)

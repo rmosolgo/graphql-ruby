@@ -15,6 +15,7 @@ describe GraphQL::StaticValidation::UniqueDirectivesPerLocation do
 
     directive @A on FIELD
     directive @B on FIELD
+    directive @C repeatable on FIELD
   ") }
 
   describe "query with no directives" do
@@ -22,6 +23,20 @@ describe GraphQL::StaticValidation::UniqueDirectivesPerLocation do
       {
         type {
           field
+        }
+      }
+    "}
+
+    it "passes rule" do
+      assert_equal [], errors
+    end
+  end
+
+  describe "query with repeatable directives" do
+    let(:query_string) {"
+      {
+        type {
+          field @C @C @C
         }
       }
     "}
@@ -183,6 +198,43 @@ describe GraphQL::StaticValidation::UniqueDirectivesPerLocation do
         "path" => ["query", "type", "field"],
         "extensions" => {"code"=>"directiveNotUniqueForLocation", "directiveName"=>"A"}
       }
+    end
+  end
+
+  describe "with error limiting" do
+    let(:query_string) {"
+      {
+        type @A @A {
+          field @A @A
+        }
+      }
+    "}
+
+    describe("disabled") do
+      let(:args) {
+        { max_errors: nil }
+      }
+
+      it "does not limit the number of errors" do
+        assert_equal(error_messages.length, 2)
+        assert_equal(error_messages, [
+          "The directive \"A\" can only be used once at this location.",
+          "The directive \"A\" can only be used once at this location."
+        ])
+      end
+    end
+
+    describe("enabled") do
+      let(:args) {
+        { max_errors: 1 }
+      }
+
+      it "does limit the number of errors" do
+        assert_equal(error_messages.length, 1)
+        assert_equal(error_messages, [
+          "The directive \"A\" can only be used once at this location."
+        ])
+      end
     end
   end
 end

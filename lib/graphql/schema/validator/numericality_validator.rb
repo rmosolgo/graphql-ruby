@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 module GraphQL
   class Schema
     class Validator
@@ -24,13 +25,15 @@ module GraphQL
         # @param other_than [Integer]
         # @param odd [Boolean]
         # @param even [Boolean]
+        # @param within [Range]
         # @param message [String] used for all validation failures
         def initialize(
             greater_than: nil, greater_than_or_equal_to: nil,
             less_than: nil, less_than_or_equal_to: nil,
             equal_to: nil, other_than: nil,
-            odd: nil, even: nil,
+            odd: nil, even: nil, within: nil,
             message: "%{validated} must be %{comparison} %{target}",
+            null_message: Validator::AllowNullValidator::MESSAGE,
             **default_options
           )
 
@@ -42,12 +45,18 @@ module GraphQL
           @other_than = other_than
           @odd = odd
           @even = even
+          @within = within
           @message = message
+          @null_message = null_message
           super(**default_options)
         end
 
         def validate(object, context, value)
-          if @greater_than && value <= @greater_than
+          if permitted_empty_value?(value)
+            # pass in this case
+          elsif value.nil? # @allow_null is handled in the parent class
+            @null_message
+          elsif @greater_than && value <= @greater_than
             partial_format(@message, { comparison: "greater than", target: @greater_than })
           elsif @greater_than_or_equal_to && value < @greater_than_or_equal_to
             partial_format(@message, { comparison: "greater than or equal to", target: @greater_than_or_equal_to })
@@ -63,6 +72,8 @@ module GraphQL
             (partial_format(@message, { comparison: "even", target: "" })).strip
           elsif @odd && !value.odd?
             (partial_format(@message, { comparison: "odd", target: "" })).strip
+          elsif @within && !@within.include?(value)
+            partial_format(@message, { comparison: "within", target: @within })
           end
         end
       end

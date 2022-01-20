@@ -47,13 +47,13 @@ describe GraphQL::Schema::Interface do
       assert new_object_2.method_defined?(:id)
 
       # It gets an overridden description:
-      assert_equal "The ID !!!!!", new_object_2.graphql_definition.fields["id"].description
+      assert_equal "The ID !!!!!", new_object_2.graphql_definition(silence_deprecation_warning: true).fields["id"].description
     end
   end
 
   describe ".to_graphql" do
     it "creates an InterfaceType" do
-      interface_type = interface.to_graphql
+      interface_type = interface.deprecated_to_graphql
       assert_equal "GloballyIdentifiable", interface_type.name
       field = interface_type.all_fields.first
       assert_equal "id", field.name
@@ -75,7 +75,7 @@ describe GraphQL::Schema::Interface do
         end
       end
 
-      interface_type = interface.to_graphql
+      interface_type = interface.deprecated_to_graphql
       assert_equal "MyType", interface_type.resolve_type_proc.call(nil, nil)
     end
 
@@ -86,7 +86,7 @@ describe GraphQL::Schema::Interface do
         orphan_types Dummy::Cheese, Dummy::Honey
       end
 
-      interface_type = interface.to_graphql
+      interface_type = interface.deprecated_to_graphql
       assert_equal [Dummy::Cheese, Dummy::Honey], interface_type.orphan_types
     end
   end
@@ -96,7 +96,7 @@ describe GraphQL::Schema::Interface do
       include GraphQL::Schema::Interface
       graphql_name 'GlobalIdFieldTest'
       global_id_field :uuid, description: 'The UUID field'
-    end.to_graphql
+    end.deprecated_to_graphql
 
     uuid_field = object.fields["uuid"]
 
@@ -211,6 +211,74 @@ describe GraphQL::Schema::Interface do
 
     it "follows the normal Ruby ancestor chain when including other interfaces" do
       assert_equal('not 42', InterfaceE.some_method)
+    end
+  end
+
+  describe "can implement other interfaces" do
+    class InterfaceImplementsSchema < GraphQL::Schema
+      module InterfaceA
+        include GraphQL::Schema::Interface
+        field :a, String
+
+        def a; "a"; end
+      end
+
+      module InterfaceB
+        include GraphQL::Schema::Interface
+        implements InterfaceA
+        field :b, String
+
+        def b; "b"; end
+      end
+
+      class Query < GraphQL::Schema::Object
+        implements InterfaceB
+      end
+
+      query(Query)
+    end
+
+    it "runs queries on inherited interfaces" do
+      result = InterfaceImplementsSchema.execute("{ a b }")
+      assert_equal "a", result["data"]["a"]
+      assert_equal "b", result["data"]["b"]
+
+      result2 = InterfaceImplementsSchema.execute(<<-GRAPHQL)
+      {
+        ... on InterfaceA {
+          ... on InterfaceB {
+            f1: a
+            f2: b
+          }
+        }
+      }
+      GRAPHQL
+      assert_equal "a", result2["data"]["f1"]
+      assert_equal "b", result2["data"]["f2"]
+    end
+
+    it "shows up in introspection" do
+      result = InterfaceImplementsSchema.execute("{ __type(name: \"InterfaceB\") { interfaces { name } } }")
+      assert_equal ["InterfaceA"], result["data"]["__type"]["interfaces"].map { |i| i["name"] }
+    end
+
+    it "has the right structure" do
+      expected_schema = <<-SCHEMA
+interface InterfaceA {
+  a: String
+}
+
+interface InterfaceB implements InterfaceA {
+  a: String
+  b: String
+}
+
+type Query implements InterfaceA & InterfaceB {
+  a: String
+  b: String
+}
+      SCHEMA
+      assert_equal expected_schema, InterfaceImplementsSchema.to_definition
     end
   end
 

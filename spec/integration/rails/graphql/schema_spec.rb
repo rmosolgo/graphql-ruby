@@ -134,7 +134,7 @@ describe GraphQL::Schema do
       it "raises not implemented" do
         query_type = Class.new(GraphQL::Schema::Object) do
           graphql_name "Query"
-          add_field(GraphQL::Types::Relay::NodeField)
+          include GraphQL::Types::Relay::HasNodeField
         end
 
         thing_type = Class.new(GraphQL::Schema::Object) do
@@ -198,7 +198,7 @@ type Query {
 
       query_root = Class.new(GraphQL::Schema::Object) do
         graphql_name 'Query'
-        field :str, String, null: true
+        field :str, String
         field :db, db_connection, null: false, connection: false
       end
 
@@ -255,7 +255,7 @@ type Query {
       Class.new(GraphQL::Schema) do
         query_type = Class.new(GraphQL::Schema::Object) do
           graphql_name "Query"
-          field :int, Integer, null: true do
+          field :int, Integer do
             argument :value, Integer, required: false
           end
 
@@ -340,6 +340,30 @@ type Query {
       context = { admin: true }
       errors = admin_schema.validate('query { adminOnlyMessage }', context: context)
       assert_equal([], errors)
+    end
+
+    describe "with error limiting" do
+      describe("disabled") do
+        it "does not limit errors when not enabled" do
+          disabled_schema = Class.new(schema) { validate_max_errors(nil) }
+          errors = disabled_schema.validate("{ cheese(id: 1) { flavor flavor: id, cow } }")
+          messages = errors.map { |e| e.message }
+          assert_equal([
+            "Field 'flavor' has a field conflict: flavor or id?",
+            "Field 'cow' doesn't exist on type 'Cheese'"
+          ], messages)
+        end
+      end
+      describe("enabled") do
+        it "does limit errors when enabled" do
+          enabled_schema = Class.new(schema) { validate_max_errors(1) }
+          errors = enabled_schema.validate("{ cheese(id: 1) { flavor flavor: id, cow } }")
+          messages = errors.map { |e| e.message }
+          assert_equal([
+            "Field 'flavor' has a field conflict: flavor or id?",
+          ], messages)
+        end
+      end
     end
   end
 

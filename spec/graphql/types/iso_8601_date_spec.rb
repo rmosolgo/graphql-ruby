@@ -11,20 +11,20 @@ describe GraphQL::Types::ISO8601Date do
     end
 
     class Query < GraphQL::Schema::Object
-      field :parse_date, DateObject, null: true do
-        argument :date, GraphQL::Types::ISO8601Date, required: true
+      field :parse_date, DateObject do
+        argument :date, GraphQL::Types::ISO8601Date
       end
 
-      field :parse_date_time, DateObject, null: true do
-        argument :date, GraphQL::Types::ISO8601Date, required: true
+      field :parse_date_time, DateObject do
+        argument :date, GraphQL::Types::ISO8601Date
       end
 
-      field :parse_date_string, DateObject, null: true do
-        argument :date, GraphQL::Types::ISO8601Date, required: true
+      field :parse_date_string, DateObject do
+        argument :date, GraphQL::Types::ISO8601Date
       end
 
-      field :parse_date_time_string, DateObject, null: true do
-        argument :date, GraphQL::Types::ISO8601Date, required: true
+      field :parse_date_time_string, DateObject do
+        argument :date, GraphQL::Types::ISO8601Date
       end
 
       field :serialize_date_default_argument, DateObject, null: true do
@@ -99,7 +99,6 @@ describe GraphQL::Types::ISO8601Date do
         date
       end
     end
-
 
     class Schema < GraphQL::Schema
       query(Query)

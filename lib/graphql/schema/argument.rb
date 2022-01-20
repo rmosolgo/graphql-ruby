@@ -2,10 +2,6 @@
 module GraphQL
   class Schema
     class Argument
-      if !String.method_defined?(:-@)
-        using GraphQL::StringDedupBackport
-      end
-
       include GraphQL::Schema::Member::CachedGraphQLDefinition
       include GraphQL::Schema::Member::AcceptsDefinition
       include GraphQL::Schema::Member::HasPath
@@ -41,7 +37,7 @@ module GraphQL
       # @param arg_name [Symbol]
       # @param type_expr
       # @param desc [String]
-      # @param required [Boolean] if true, this argument is non-null; if false, this argument is nullable
+      # @param required [Boolean, :nullable] if true, this argument is non-null; if false, this argument is nullable. If `:nullable`, then the argument must be provided, though it may be `null`.
       # @param description [String]
       # @param default_value [Object]
       # @param as [Symbol] Override the keyword name when passed to a method
@@ -52,12 +48,12 @@ module GraphQL
       # @param directives [Hash{Class => Hash}]
       # @param deprecation_reason [String]
       # @param validates [Hash, nil] Options for building validators, if any should be applied
-      def initialize(arg_name = nil, type_expr = nil, desc = nil, required:, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NO_DEFAULT, as: nil, from_resolver: false, camelize: true, prepare: nil, method_access: true, owner:, validates: nil, directives: nil, deprecation_reason: nil, &definition_block)
+      def initialize(arg_name = nil, type_expr = nil, desc = nil, required: true, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NO_DEFAULT, as: nil, from_resolver: false, camelize: true, prepare: nil, method_access: true, owner:, validates: nil, directives: nil, deprecation_reason: nil, &definition_block)
         arg_name ||= name
         @name = -(camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s)
         @type_expr = type_expr || type
         @description = desc || description
-        @null = !required
+        @null = required != true
         @default_value = default_value
         @owner = owner
         @as = as
@@ -76,6 +72,9 @@ module GraphQL
         end
 
         self.validates(validates)
+        if required == :nullable
+          self.owner.validates(required: { argument: arg_name })
+        end
 
         if definition_block
           if definition_block.arity == 1
@@ -84,6 +83,10 @@ module GraphQL
             instance_eval(&definition_block)
           end
         end
+      end
+
+      def inspect
+        "#<#{self.class} #{path}: #{type.to_type_signature}#{description ? " @description=#{description.inspect}" : ""}>"
       end
 
       # @return [Object] the value used when the client doesn't provide a value for this argument
@@ -147,19 +150,14 @@ module GraphQL
             end
           end
         elsif as_type.kind.input_object?
-          as_type.arguments.each do |_name, input_obj_arg|
-            input_obj_arg = input_obj_arg.type_class
-            # TODO: this skips input objects whose values were alread replaced with application objects.
-            # See: https://github.com/rmosolgo/graphql-ruby/issues/2633
-            if value.respond_to?(:key?) && value.key?(input_obj_arg.keyword) && !input_obj_arg.authorized?(obj, value[input_obj_arg.keyword], ctx)
-              return false
-            end
-          end
+          return as_type.authorized?(obj, value, ctx)
         end
         # None of the early-return conditions were activated,
         # so this is authorized.
         true
       end
+
+      prepend Schema::Member::CachedGraphQLDefinition::DeprecatedToGraphQL
 
       def to_graphql
         argument = GraphQL::Argument.new
@@ -260,45 +258,88 @@ module GraphQL
           type.coerce_input(value, context)
         end
 
-        # TODO this should probably be inside after_lazy
-        if loads && !from_resolver?
-          loaded_value = if type.list?
-            loaded_values = coerced_value.map { |val| owner.load_application_object(self, loads, val, context) }
-            context.schema.after_any_lazies(loaded_values) { |result| result }
-          else
-            context.query.with_error_handling do
-              owner.load_application_object(self, loads, coerced_value, context)
-            end
-          end
-        end
-
-        coerced_value = if loaded_value
-          loaded_value
-        else
-          coerced_value
-        end
-
         # If this isn't lazy, then the block returns eagerly and assigns the result here
         # If it _is_ lazy, then we write the lazy to the hash, then update it later
-        argument_values[arg_key] = context.schema.after_lazy(coerced_value) do |coerced_value|
-          owner.validate_directive_argument(self, coerced_value)
-          prepared_value = context.schema.error_handler.with_error_handling(context) do
-            prepare_value(parent_object, coerced_value, context: context)
+        argument_values[arg_key] = context.schema.after_lazy(coerced_value) do |resolved_coerced_value|
+          if loads && !from_resolver?
+            loaded_value = context.query.with_error_handling do
+              load_and_authorize_value(owner, coerced_value, context)
+            end
           end
 
-          # TODO code smell to access such a deeply-nested constant in a distant module
-          argument_values[arg_key] = GraphQL::Execution::Interpreter::ArgumentValue.new(
-            value: prepared_value,
-            definition: self,
-            default_used: default_used,
-          )
+          maybe_loaded_value = loaded_value || resolved_coerced_value
+          context.schema.after_lazy(maybe_loaded_value) do |resolved_loaded_value|
+            owner.validate_directive_argument(self, resolved_loaded_value)
+            prepared_value = context.schema.error_handler.with_error_handling(context) do
+              prepare_value(parent_object, resolved_loaded_value, context: context)
+            end
+
+            # TODO code smell to access such a deeply-nested constant in a distant module
+            argument_values[arg_key] = GraphQL::Execution::Interpreter::ArgumentValue.new(
+              value: prepared_value,
+              definition: self,
+              default_used: default_used,
+            )
+          end
+        end
+      end
+
+      def load_and_authorize_value(load_method_owner, coerced_value, context)
+        if coerced_value.nil?
+          return nil
+        end
+        arg_load_method = "load_#{keyword}"
+        if load_method_owner.respond_to?(arg_load_method)
+          custom_loaded_value = if load_method_owner.is_a?(Class)
+            load_method_owner.public_send(arg_load_method, coerced_value, context)
+          else
+            load_method_owner.public_send(arg_load_method, coerced_value)
+          end
+          context.schema.after_lazy(custom_loaded_value) do |custom_value|
+            if loads
+              if type.list?
+                loaded_values = custom_value.each_with_index.map { |custom_val, idx|
+                  id = coerced_value[idx]
+                  load_method_owner.authorize_application_object(self, id, context, custom_val)
+                }
+                context.schema.after_any_lazies(loaded_values, &:itself)
+              else
+                load_method_owner.authorize_application_object(self, coerced_value, context, custom_loaded_value)
+              end
+            else
+              custom_value
+            end
+          end
+        elsif loads
+          if type.list?
+            loaded_values = coerced_value.map { |val| load_method_owner.load_and_authorize_application_object(self, val, context) }
+            context.schema.after_any_lazies(loaded_values, &:itself)
+          else
+            load_method_owner.load_and_authorize_application_object(self, coerced_value, context)
+          end
+        else
+          coerced_value
         end
       end
 
       # @api private
       def validate_default_value
         coerced_default_value = begin
-          type.coerce_isolated_result(default_value) unless default_value.nil?
+          # This is weird, but we should accept single-item default values for list-type arguments.
+          # If we used `coerce_isolated_input` below, it would do this for us, but it's not really
+          # the right thing here because we expect default values in application format (Ruby values)
+          # not GraphQL format (scalar values).
+          #
+          # But I don't think Schema::List#coerce_result should apply wrapping to single-item lists.
+          prepped_default_value = if default_value.nil?
+            nil
+          elsif (type.kind.list? || (type.kind.non_null? && type.of_type.list?)) && !default_value.respond_to?(:map)
+            [default_value]
+          else
+            default_value
+          end
+
+          type.coerce_isolated_result(prepped_default_value) unless prepped_default_value.nil?
         rescue GraphQL::Schema::Enum::UnresolvedValueError
           # It raises this, which is helpful at runtime, but not here...
           default_value

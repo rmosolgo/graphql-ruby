@@ -9,15 +9,33 @@ describe GraphQL::Schema::Argument do
       end
     end
 
+    class ContextInput < GraphQL::Schema::InputObject
+      argument :context, String
+    end
+
+    class LoadUnauthorizedInstruments < GraphQL::Schema::Resolver
+      argument :ids, [ID], as: :instruments, required: false, loads: UnauthorizedInstrumentType
+
+      def load_instruments(ids)
+        ids.map { |id| context.schema.object_from_id(id, context).call }
+      end
+
+      type Integer, null: true
+
+      def resolve(instruments:)
+        instruments.size
+      end
+    end
+
     class Query < GraphQL::Schema::Object
-      field :field, String, null: true do
+      field :field, String do
         argument :arg, String, description: "test", required: false
         argument :deprecated_arg, String, deprecation_reason: "don't use me!", required: false
 
         argument :arg_with_block, String, required: false do
           description "test"
         end
-        argument :required_with_default_arg, Int, required: true, default_value: 1
+        argument :required_with_default_arg, Int, default_value: 1
         argument :aliased_arg, String, required: false, as: :renamed
         argument :prepared_arg, Int, required: false, prepare: :multiply
         argument :prepared_by_proc_arg, Int, required: false, prepare: ->(val, context) { context[:multiply_by] * val }
@@ -54,6 +72,16 @@ describe GraphQL::Schema::Argument do
       def multiply(val)
         context[:multiply_by] * val
       end
+
+      field :context_arg_test, [String], null: false do
+        argument :input, ContextInput
+      end
+
+      def context_arg_test(input:)
+        [input.context, input.context.class, self.context.class]
+      end
+
+      field :other_unauthorized_instruments, resolver: LoadUnauthorizedInstruments
     end
 
     class Schema < GraphQL::Schema
@@ -293,6 +321,16 @@ describe GraphQL::Schema::Argument do
       assert_nil res["errors"]
       assert_nil res["data"].fetch("field")
     end
+
+    it "handles applies authorization even when a custom load method is provided" do
+      query_str = <<-GRAPHQL
+      query { otherUnauthorizedInstruments(ids: ["Instrument/Drum Kit"]) }
+      GRAPHQL
+
+      res = SchemaArgumentTest::Schema.execute(query_str)
+      assert_nil res["errors"]
+      assert_nil res["data"].fetch("otherUnauthorizedInstruments")
+    end
   end
 
   describe "deprecation_reason:" do
@@ -317,7 +355,7 @@ describe GraphQL::Schema::Argument do
       err = assert_raises ArgumentError do
         Class.new(GraphQL::Schema::InputObject) do
           graphql_name 'MyInput'
-          argument :foo, String, required: true, deprecation_reason: "Don't use me"
+          argument :foo, String, deprecation_reason: "Don't use me"
         end
       end
       assert_equal "Required arguments cannot be deprecated: MyInput.foo.", err.message
@@ -343,7 +381,7 @@ describe GraphQL::Schema::Argument do
 
       query_type = Class.new(GraphQL::Schema::Object) do
         graphql_name "Query"
-        field :f, String, null: true do
+        field :f, String do
           argument :arg, input_obj, required: false
         end
       end
@@ -402,7 +440,7 @@ describe GraphQL::Schema::Argument do
       query_type = Class.new(GraphQL::Schema::Object) do
         graphql_name "Query"
         field :f1, Integer, null: false do
-          argument :arg1, Integer, default_value: nil, required: true
+          argument :arg1, Integer, default_value: nil
         end
       end
 
@@ -424,7 +462,7 @@ describe GraphQL::Schema::Argument do
       query_type = Class.new(GraphQL::Schema::Object) do
         graphql_name "Query"
         field :f1, Integer, null: false do
-          argument :input, input_obj, required: true
+          argument :input, input_obj
         end
       end
 
@@ -509,6 +547,36 @@ describe GraphQL::Schema::Argument do
       end
       expected_message = "`InputObj.arg1` has an invalid default value: `[nil]` isn't accepted by `[String!]`; update the default value or the argument type."
       assert_equal expected_message, err3.message
+    end
+  end
+
+  it "works with arguments named context" do
+    res = SchemaArgumentTest::Schema.execute("{ contextArgTest(input: { context: \"abc\" }) }")
+    assert_equal ["abc", "String", "GraphQL::Query::Context"], res["data"]["contextArgTest"]
+  end
+
+  describe "required: :nullable" do
+    class RequiredNullableSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        field :echo, String do
+          argument :str, String, required: :nullable
+        end
+
+        def echo(str:)
+          str
+        end
+      end
+
+      query(Query)
+    end
+
+    it "requires a value, even if it's null" do
+      res = RequiredNullableSchema.execute('{ echo(str: "ok") }')
+      assert_equal "ok", res["data"]["echo"]
+      res = RequiredNullableSchema.execute('{ echo(str: null) }')
+      assert_nil res["data"].fetch("echo")
+      res = RequiredNullableSchema.execute('{ echo }')
+      assert_equal ["echo has the wrong arguments"], res["errors"].map { |e| e["message"] }
     end
   end
 end

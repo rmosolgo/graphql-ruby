@@ -252,12 +252,12 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
   describe "for input properties" do
     class InputVariableSchema < GraphQL::Schema
       class Input < GraphQL::Schema::InputObject
-        argument(:id, String, required: true)
+        argument(:id, String)
       end
 
       class FooMutation < GraphQL::Schema::Mutation
-        field(:foo, String, null: true)
-        argument(:input, Input, required: true)
+        field(:foo, String)
+        argument(:input, Input)
 
         def resolve(input:)
           { foo: input.id }
@@ -278,6 +278,85 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
       res2 = InputVariableSchema.execute("mutation($id: String!) { fooMutation(input: { id: $id }) { foo } }", variables: { id: "abc" })
       refute res2.key?("errors")
       assert_equal "abc", res2["data"]["fooMutation"]["foo"]
+    end
+  end
+
+  describe "with error limiting" do
+    describe("disabled") do
+      let(:args) {
+        { max_errors: nil }
+      }
+
+      it "does not limit the number of errors" do
+        assert_equal(error_messages.length, 4)
+        assert_equal(error_messages, [
+          "Nullability mismatch on variable $badInt and argument id (Int / Int!)",
+          "Type mismatch on variable $badStr and argument id (String! / Int!)",
+          "Nullability mismatch on variable $badAnimals and argument source ([DairyAnimal]! / [DairyAnimal!]!)",
+          "List dimension mismatch on variable $deepAnimals and argument source ([[DairyAnimal!]!]! / [DairyAnimal!]!)"
+        ])
+      end
+    end
+
+    describe("enabled") do
+      let(:args) {
+        { max_errors: 1 }
+      }
+
+      it "does limit the number of errors" do
+        assert_equal(error_messages.length, 1)
+        assert_equal(error_messages, [
+          "Nullability mismatch on variable $badInt and argument id (Int / Int!)"
+        ])
+      end
+    end
+  end
+
+  describe "non-null arguments with default values" do
+    it "doesn't require a value in the query" do
+      schema_graphql = <<~GRAPHQL
+        type Query {
+          songs(sort: SongSort! = {name: asc}): [Song!]!
+        }
+
+        type Song {
+          name: String!
+        }
+
+        input SongSort {
+          name: SortDirection
+        }
+
+        enum SortDirection {
+          asc
+          desc
+        }
+      GRAPHQL
+
+      schema = GraphQL::Schema.from_definition(
+        schema_graphql,
+        default_resolve: {
+          "Query" => {
+            "songs" => ->(obj, args, ctx) {
+              sort = args[:sort]
+              names = ["asc", nil].include?(sort[:name]) ? ["A", "B"] : ["B", "A"]
+              names.map { |name| Struct.new(:name).new(name) }
+            }
+          }
+        }
+      )
+
+      result = schema.execute("query($sort: SongSort) { songs(sort: $sort) { name } }", variables: {})
+      expected_result = {"data" => {"songs" => [{"name" => "A"},{"name" => "B"}]}}
+      assert_equal expected_result, result
+
+      result = schema.execute("query($sort: SongSort) { songs(sort: $sort) { name } }", variables: { sort: { name: "desc" } })
+      expected_result = {"data" => {"songs" => [{"name" => "B"},{"name" => "A"}]}}
+      assert_equal expected_result, result
+
+      result = schema.execute("query($sort: SongSort) { songs(sort: $sort) { name } }", variables: { sort: nil })
+      expected_result = {"data"=>nil, "errors"=>[{"message"=>"`null` is not a valid input for `SongSort!`, please provide a value for this argument.", "locations"=>[{"line"=>1, "column"=>26}], "path"=>["songs"]}]}
+      assert_equal expected_result, result
     end
   end
 end

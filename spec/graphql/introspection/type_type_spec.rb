@@ -40,9 +40,9 @@ describe GraphQL::Introspection::TypeType do
       },
       "milkType"=>{
         "interfaces"=>[
+          {"name"=>"AnimalProduct"},
           {"name"=>"Edible"},
           {"name"=>"EdibleAsMilk"},
-          {"name"=>"AnimalProduct"},
           {"name"=>"LocalProduct"},
         ],
         "fields"=>[
@@ -108,8 +108,8 @@ describe GraphQL::Introspection::TypeType do
     it "hides deprecated field arguments by default" do
       result = Dummy::Schema.execute <<-GRAPHQL
       {
-        __type(name: "Query") { 
-          fields { 
+        __type(name: "Query") {
+          fields {
             name
             args {
               name
@@ -129,8 +129,8 @@ describe GraphQL::Introspection::TypeType do
     it "can expose deprecated field arguments" do
       result = Dummy::Schema.execute <<-GRAPHQL
       {
-        __type(name: "Query") { 
-          fields { 
+        __type(name: "Query") {
+          fields {
             name
             args(includeDeprecated: true) {
               name
@@ -179,8 +179,8 @@ describe GraphQL::Introspection::TypeType do
     it "can expose deprecated input fields" do
       result = Dummy::Schema.execute <<-GRAPHQL
       {
-        __type(name: "DairyProductInput") { 
-          inputFields(includeDeprecated: true) { 
+        __type(name: "DairyProductInput") {
+          inputFields(includeDeprecated: true) {
             name
             isDeprecated
             deprecationReason
@@ -224,7 +224,7 @@ describe GraphQL::Introspection::TypeType do
       field_result = type_result["fields"].find { |f| f["name"] == "bases" }
       all_arg_names = ["after", "before", "first", "last", "nameIncludes", "complexOrder"]
       returned_arg_names = field_result["args"].map { |a| a["name"] }
-      assert_equal all_arg_names, returned_arg_names
+      assert_equal all_arg_names.sort, returned_arg_names.sort
     end
   end
 end

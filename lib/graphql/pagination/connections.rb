@@ -70,23 +70,42 @@ module GraphQL
         wrappers = context ? context.namespace(:connections)[:all_wrappers] : all_wrappers
         impl = wrapper_for(items, wrappers: wrappers)
 
-        if impl.nil?
-          raise ImplementationMissingError, "Couldn't find a connection wrapper for #{items.class} during #{field.path} (#{items.inspect})"
+        if impl
+          impl.new(
+            items,
+            context: context,
+            parent: parent,
+            field: field,
+            max_page_size: field.has_max_page_size? ? field.max_page_size : context.schema.default_max_page_size,
+            first: arguments[:first],
+            after: arguments[:after],
+            last: arguments[:last],
+            before: arguments[:before],
+            arguments: arguments,
+            edge_class: edge_class_for_field(field),
+          )
+        else
+          begin
+            connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(items)
+            if parent.is_a?(GraphQL::Schema::Object)
+              parent = parent.object
+            end
+            connection_class.new(
+              items,
+              arguments,
+              field: field,
+              max_page_size: field.max_page_size,
+              parent: parent,
+              context: context,
+            )
+          rescue RuntimeError => err
+            if err.message.include?("No connection implementation to wrap")
+              raise ImplementationMissingError, "Couldn't find a connection wrapper for #{items.class} during #{field.path} (#{items.inspect})"
+            else
+              raise err
+            end
+          end
         end
-
-        impl.new(
-          items,
-          context: context,
-          parent: parent,
-          field: field,
-          max_page_size: field.has_max_page_size? ? field.max_page_size : context.schema.default_max_page_size,
-          first: arguments[:first],
-          after: arguments[:after],
-          last: arguments[:last],
-          before: arguments[:before],
-          arguments: arguments,
-          edge_class: edge_class_for_field(field),
-        )
       end
 
       # use an override if there is one
@@ -129,6 +148,11 @@ module GraphQL
         # Mongoid 7
         if defined?(Mongoid::Association::Referenced::HasMany::Targets::Enumerable)
           add(Mongoid::Association::Referenced::HasMany::Targets::Enumerable, Pagination::MongoidRelationConnection)
+        end
+
+        # Mongoid 7.3+
+        if defined?(Mongoid::Association::Referenced::HasMany::Enumerable)
+          add(Mongoid::Association::Referenced::HasMany::Enumerable, Pagination::MongoidRelationConnection)
         end
       end
     end

@@ -1,4 +1,4 @@
-import { Cable } from "actioncable"
+import type { Consumer } from "@rails/actioncable"
 
 /**
  * Create a Relay Modern-compatible subscription handler.
@@ -8,7 +8,7 @@ import { Cable } from "actioncable"
  * @return {Function}
 */
 interface ActionCableHandlerOptions {
-  cable: Cable
+  cable: Consumer
   operations?: { getOperationId: Function}
 }
 

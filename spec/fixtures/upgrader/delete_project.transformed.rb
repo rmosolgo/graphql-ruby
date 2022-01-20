@@ -7,7 +7,7 @@ module Platform
 
       minimum_accepted_scopes ["public_repo"]
 
-      argument :project_id, ID, "The Project ID to update.", required: true
+      argument :project_id, ID, "The Project ID to update."
       field :owner, Interfaces::ProjectOwner, "The repository or organization the project was removed from.", null: false
 
       def resolve(**inputs)

@@ -70,8 +70,8 @@ bundle exec rake test
 You need to pick a specific gemfile from gemfiles/ to run integration tests. For example:
 
 ```
-BUNDLE_GEMFILE=gemfiles/rails_5.1.gemfile bundle install
-BUNDLE_GEMFILE=gemfiles/rails_5.1.gemfile bundle exec rake test TEST=spec/integration/rails/graphql/relay/array_connection_spec.rb
+BUNDLE_GEMFILE=gemfiles/rails_6.1.gemfile bundle install
+BUNDLE_GEMFILE=gemfiles/rails_6.1.gemfile bundle exec rake test TEST=spec/integration/rails/graphql/relay/array_connection_spec.rb
 ```
 
 #### Other tests

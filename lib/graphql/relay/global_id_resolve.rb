@@ -10,7 +10,7 @@ module GraphQL
         if obj.is_a?(GraphQL::Schema::Object)
           obj = obj.object
         end
-        type = @type.respond_to?(:graphql_definition) ? @type.graphql_definition : @type
+        type = @type.respond_to?(:graphql_definition) ? @type.graphql_definition(silence_deprecation_warning: true) : @type
         ctx.query.schema.id_from_object(obj, type, ctx)
       end
     end

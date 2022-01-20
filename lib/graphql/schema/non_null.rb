@@ -8,8 +8,10 @@ module GraphQL
     class NonNull < GraphQL::Schema::Wrapper
       include Schema::Member::ValidatesInput
 
+      prepend Schema::Member::CachedGraphQLDefinition::DeprecatedToGraphQL
+
       def to_graphql
-        @of_type.graphql_definition.to_non_null_type
+        @of_type.graphql_definition(silence_deprecation_warning: true).to_non_null_type
       end
 
        # @return [GraphQL::TypeKinds::NON_NULL]
@@ -51,6 +53,10 @@ module GraphQL
       end
 
       def coerce_input(value, ctx)
+        # `.validate_input` above is used for variables, but this method is used for arguments
+        if value.nil?
+          raise GraphQL::ExecutionError, "`null` is not a valid input for `#{to_type_signature}`, please provide a value for this argument."
+        end
         of_type.coerce_input(value, ctx)
       end
 

@@ -6,9 +6,9 @@ describe GraphQL::Schema::Member::TypeSystemHelpers do
     Class.new(GraphQL::Schema::Object) do
       graphql_name "Thing"
 
-      field :int, Integer, null: true
+      field :int, Integer
       field :int2, Integer, null: false
-      field :int_list, [Integer], null: true
+      field :int_list, [Integer]
       field :int_list2, [Integer], null: false
     end
   }
