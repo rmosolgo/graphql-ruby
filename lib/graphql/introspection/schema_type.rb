@@ -13,6 +13,11 @@ module GraphQL
       field :mutation_type, GraphQL::Schema::LateBoundType.new("__Type"), "If this server supports mutation, the type that mutation operations will be rooted at."
       field :subscription_type, GraphQL::Schema::LateBoundType.new("__Type"), "If this server support subscription, the type that subscription operations will be rooted at."
       field :directives, [GraphQL::Schema::LateBoundType.new("__Directive")], "A list of all directives supported by this server.", null: false
+      field :description, String, resolver_method: :schema_description
+
+      def schema_description
+        context.schema.description
+      end
 
       def types
         @context.warden.reachable_types.sort_by(&:graphql_name)

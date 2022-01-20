@@ -7,6 +7,7 @@ module GraphQL
       <<-QUERY
 query IntrospectionQuery {
   __schema {
+    description
     queryType { name }
     mutationType { name }
     subscriptionType { name }
@@ -17,6 +18,7 @@ query IntrospectionQuery {
       name
       description
       locations
+      isRepeatable
       args#{include_deprecated_args ? '(includeDeprecated: true)' : ''} {
         ...InputValue
       }
@@ -27,6 +29,7 @@ fragment FullType on __Type {
   kind
   name
   description
+  specifiedByUrl
   fields(includeDeprecated: true) {
     name
     description

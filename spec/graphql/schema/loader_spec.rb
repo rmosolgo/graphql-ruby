@@ -28,7 +28,7 @@ describe GraphQL::Schema::Loader do
 
     big_int_type = Class.new(GraphQL::Schema::Scalar) do
       graphql_name "BigInt"
-
+      specified_by_url "https://bigint.com"
       def self.coerce_input(value, _ctx)
         value =~ /\d+/ ? Integer(value) : nil
       end
@@ -135,11 +135,17 @@ describe GraphQL::Schema::Loader do
       field :ping, mutation: ping_mutation
     end
 
+    repeatable_transform = Class.new(GraphQL::Schema::Directive::Transform) do
+      graphql_name "repeatableTransform"
+      repeatable(true)
+    end
+
     Class.new(GraphQL::Schema) do
       query query_root
       mutation mutation_root
       orphan_types audio_type, video_type
-      directives GraphQL::Schema::Directive::Transform
+      description "A schema for loader_spec.rb"
+      directives repeatable_transform
     end
   }
 
@@ -178,6 +184,7 @@ describe GraphQL::Schema::Loader do
         assert_deep_equal expected_type.directives.values.sort_by(&:graphql_name), actual_type.directives.values.sort_by(&:graphql_name)
         assert_equal expected_type.types.keys.sort, actual_type.types.keys.sort
         assert_deep_equal expected_type.types.values.sort_by(&:graphql_name), actual_type.types.values.sort_by(&:graphql_name)
+        assert_equal expected_type.description, actual_type.description
       elsif actual_type < GraphQL::Schema::Object
         assert_equal expected_type.graphql_name, actual_type.graphql_name
         assert_equal expected_type.description, actual_type.description
@@ -197,6 +204,7 @@ describe GraphQL::Schema::Loader do
         assert_deep_equal expected_type.possible_types.sort_by(&:graphql_name), actual_type.possible_types.sort_by(&:graphql_name)
       elsif actual_type < GraphQL::Schema::Scalar
         assert_equal expected_type.graphql_name, actual_type.graphql_name
+        assert_equal expected_type.specified_by_url, actual_type.specified_by_url
       elsif actual_type < GraphQL::Schema::Enum
         assert_equal expected_type.graphql_name, actual_type.graphql_name
         assert_equal expected_type.description, actual_type.description
@@ -208,6 +216,7 @@ describe GraphQL::Schema::Loader do
       elsif actual_type < GraphQL::Schema::Directive
         assert_equal expected_type.graphql_name, actual_type.graphql_name
         assert_equal expected_type.description, actual_type.description
+        assert_equal expected_type.repeatable?, actual_type.repeatable?
         assert_equal expected_type.locations.sort, actual_type.locations.sort
         assert_equal expected_type.arguments.keys.sort, actual_type.arguments.keys.sort
         assert_deep_equal expected_type.arguments.values.sort_by(&:graphql_name), actual_type.arguments.values.sort_by(&:graphql_name)
