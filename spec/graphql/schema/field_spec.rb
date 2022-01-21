@@ -530,6 +530,76 @@ describe GraphQL::Schema::Field do
     end
   end
 
+  describe "retrieving nested hash keys using dig" do
+    class DigSchema < GraphQL::Schema
+      class PersonType < GraphQL::Schema::Object
+        field :name, String, null: false
+      end
+
+      class MovieType < GraphQL::Schema::Object
+        field :title, String, null: false, dig: [:title]
+        field :stars, [PersonType], null: false, dig: ["credits", "stars"]
+        field :metascore, Float, null: false, dig: [:meta, "metascore"]
+        field :release_date, GraphQL::Types::ISO8601DateTime, null: false, dig: [:meta, :release_date]
+        field :includes_wilhelm_scream, Boolean, null: false, dig: [:meta, "wilhelm_scream"]
+        field :nullable_field, String, null: true, dig: [:this_should, :work_since, :dig_handles, :safe_expansion]
+      end
+
+      class QueryType < GraphQL::Schema::Object
+        field :a_good_laugh, MovieType, null: false
+        def a_good_laugh
+          {
+            :title => "Monty Python and the Holy Grail",
+            :meta => {
+              "metascore" => 91,
+              :release_date => DateTime.new(1975, 5, 25, 0, 0, 0),
+              "wilhelm_scream" => false
+            },
+            "credits" => {
+              "stars" => [
+                { :name => "Graham Chapman" },
+                { :name => "John Cleese" }
+              ]
+            }
+          }
+        end
+      end
+
+      query(QueryType)
+    end
+
+    it "finds the expected data" do
+      res = DigSchema.execute <<-GRAPHQL
+      {
+        aGoodLaugh {
+          title
+          includesWilhelmScream
+          metascore
+          nullableField
+          releaseDate
+          stars {
+            name
+          }
+        }
+      }
+      GRAPHQL
+
+      result = res["data"]["aGoodLaugh"]
+      expected_result = {
+        "title" => "Monty Python and the Holy Grail",
+        "includesWilhelmScream" => false,
+        "metascore" => 91.0,
+        "nullableField" => nil,
+        "releaseDate" => "1975-05-25T00:00:00+00:00",
+        "stars" => [
+          { "name" => "Graham Chapman" },
+          { "name" => "John Cleese" }
+        ]
+      }
+      assert_equal expected_result, result
+    end
+  end
+
   describe "looking up hash keys with case" do
     class HashKeySchema < GraphQL::Schema
       class ResultType < GraphQL::Schema::Object
