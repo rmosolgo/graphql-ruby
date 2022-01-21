@@ -542,7 +542,7 @@ describe GraphQL::Schema::Field do
         field :metascore, Float, null: false, dig: [:meta, "metascore"]
         field :release_date, GraphQL::Types::ISO8601DateTime, null: false, dig: [:meta, :release_date]
         field :includes_wilhelm_scream, Boolean, null: false, dig: [:meta, "wilhelm_scream"]
-        field :nullable_field, String, null: true, dig: [:this_should, :work_since, :dig_handles, :safe_expansion]
+        field :nullable_field, String, dig: [:this_should, :work_since, :dig_handles, :safe_expansion]
       end
 
       class QueryType < GraphQL::Schema::Object
