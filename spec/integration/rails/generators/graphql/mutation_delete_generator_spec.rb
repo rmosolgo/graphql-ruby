@@ -9,6 +9,9 @@ class GraphQLGeneratorsMutationDeleteGeneratorTest < BaseGeneratorTest
 
   setup :prepare_destination
 
+  # Use this to account for `.destory` vs `.destroy!` in https://github.com/rails/rails/pull/43501
+  example_orm_instance = Rails::Generators::ActiveModel.new "names_name"
+
   NAMESPACED_DELETE_NAME_MUTATION = <<-RUBY
 # frozen_string_literal: true
 
@@ -22,7 +25,7 @@ module Mutations
 
     def resolve(id:)
       names_name = ::Names::Name.find(id)
-      raise GraphQL::ExecutionError.new "Error deleting name", extensions: names_name.errors.to_hash unless names_name.destroy
+      raise GraphQL::ExecutionError.new "Error deleting name", extensions: names_name.errors.to_hash unless #{example_orm_instance.destroy}
 
       { name: names_name }
     end
@@ -43,7 +46,7 @@ module Mutations
 
     def resolve(id:)
       names_name = ::Names::Name.find(id)
-      raise GraphQL::ExecutionError.new "Error deleting name", extensions: names_name.errors.to_hash unless names_name.destroy
+      raise GraphQL::ExecutionError.new "Error deleting name", extensions: names_name.errors.to_hash unless #{example_orm_instance.destroy}
 
       { name: names_name }
     end
