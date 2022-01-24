@@ -401,7 +401,7 @@ describe GraphQL::Analysis::AST do
       end
 
       class Query < BaseObject
-        field :article, String, null: true, visible: false do |f|
+        field :article, String. visible: false do |f|
           f.argument(:id, Integer, required: true)
         end
 
