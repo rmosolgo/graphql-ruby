@@ -96,7 +96,7 @@ field :top_score, Integer, null: false
 
 The default behavior is to look for a `#top_score` method, or lookup a `Hash` key, `:top_score` (symbol) or `"top_score"` (string).
 
-You can override the method name with the `method:` keyword, or override the hash key with the `hash_key:` keyword, for example:
+You can override the method name with the `method:` keyword, or override the hash key(s) with the `hash_key:` or `dig:` keyword, for example:
 
 ```ruby
 # Use the `#best_score` method to resolve this field
@@ -106,6 +106,10 @@ field :top_score, Integer, null: false,
 # Lookup `hash["allPlayers"]` to resolve this field
 field :players, [User], null: false,
   hash_key: "allPlayers"
+
+# Use the `#dig` method on the hash with `:nested` and `:movies` keys
+field :movies, [Movie], null: false,
+  dig: [:nested, :movies]
 ```
 
 To pass-through the underlying object without calling a method on it, you can use `method: :itself`:
