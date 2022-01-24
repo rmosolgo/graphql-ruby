@@ -109,7 +109,7 @@ module Graphql
         template("query_type.erb", "#{options[:directory]}/types/query_type.rb")
         insert_root_type('query', 'QueryType')
 
-        create_mutation_root_type unless options.skip_mutation_root_type?
+        invoke "graphql:install:mutation_root" unless options.skip_mutation_root_type?
 
         template("graphql_controller.erb", "app/controllers/graphql_controller.rb")
         route('post "/graphql", to: "graphql#execute"')

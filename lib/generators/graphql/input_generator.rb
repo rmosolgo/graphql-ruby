@@ -4,24 +4,16 @@ require 'generators/graphql/field_extractor'
 
 module Graphql
   module Generators
-    # Generate an object type by name,
+    # Generate an input type by name,
     # with the specified fields.
     #
     # ```
-    # rails g graphql:object PostType name:String!
+    # rails g graphql:object PostType name:string!
     # ```
-    #
-    # Add the Node interface with `--node`.
-    class ObjectGenerator < TypeGeneratorBase
-      desc "Create a GraphQL::ObjectType with the given name and fields." \
-      "If the given type name matches an existing ActiveRecord model, the generated type will automatically include fields for the models database columns."
+    class InputGenerator < TypeGeneratorBase
+      desc "Create a GraphQL::InputObjectType with the given name and fields"
       source_root File.expand_path('../templates', __FILE__)
       include FieldExtractor
-
-      class_option :node,
-                   type: :boolean,
-                   default: false,
-                   desc: "Include the Relay Node interface"
 
       def self.normalize_type_expression(type_expression, mode:, null: true)
         case type_expression.camelize
@@ -43,7 +35,15 @@ module Graphql
       private
 
       def graphql_type
-        "object"
+        "input"
+      end
+
+      def type_ruby_name
+        super.gsub(/Type\z/, "InputType")
+      end
+
+      def type_file_name
+        super.gsub(/_type\z/, "_input_type")
       end
     end
   end

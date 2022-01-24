@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 <% module_namespacing_when_supported do -%>
 module Types
-  class <%= type_ruby_name.split('::')[-1] %> < Types::BaseScalar
+  class <%= ruby_class_name %> < Types::BaseScalar
     def self.coerce_input(input_value, context)
       # Override this to prepare a client-provided GraphQL value for your Ruby code
       input_value

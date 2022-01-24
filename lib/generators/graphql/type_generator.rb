@@ -8,13 +8,28 @@ require_relative 'core'
 
 module Graphql
   module Generators
-    class TypeGeneratorBase < Rails::Generators::Base
+    class TypeGeneratorBase < Rails::Generators::NamedBase
       include Core
 
-      argument :type_name,
-        type: :string,
-        banner: "TypeName",
-        desc: "Name of this object type (expressed as Ruby or GraphQL)"
+      class_option 'namespaced_types',
+        type: :boolean,
+        required: false,
+        default: false,
+        banner: "Namespaced",
+        desc: "If the generated types will be namespaced"
+
+      argument :custom_fields,
+                type: :array,
+                default: [],
+                banner: "name:type name:type ...",
+                desc: "Fields for this object (type may be expressed as Ruby or GraphQL)"
+
+      
+      attr_accessor :graphql_type
+
+      def create_type_file
+        template "#{graphql_type}.erb", "#{options[:directory]}/types#{subdirectory}/#{type_file_name}.rb"
+      end
 
       # Take a type expression in any combination of GraphQL or Ruby styles
       # and return it in a specified output style
@@ -60,12 +75,12 @@ module Graphql
 
       # @return [String] The user-provided type name, normalized to Ruby code
       def type_ruby_name
-        @type_ruby_name ||= self.class.normalize_type_expression(type_name, mode: :ruby)[0]
+        @type_ruby_name ||= self.class.normalize_type_expression(name, mode: :ruby)[0]
       end
 
       # @return [String] The user-provided type name, as a GraphQL name
       def type_graphql_name
-        @type_graphql_name ||= self.class.normalize_type_expression(type_name, mode: :graphql)[0]
+        @type_graphql_name ||= self.class.normalize_type_expression(name, mode: :graphql)[0]
       end
 
       # @return [String] The user-provided type name, as a file name (without extension)
@@ -82,6 +97,24 @@ module Graphql
         }
       end
 
+      def ruby_class_name
+        class_prefix = 
+          if options[:namespaced_types]
+            "#{graphql_type.pluralize.camelize}::"
+          else
+            ""
+          end
+        @ruby_class_name || class_prefix + type_ruby_name.sub(/^Types::/, "")
+      end
+
+      def subdirectory
+        if options[:namespaced_types]
+          "/#{graphql_type.pluralize}"
+        else
+          ""
+        end
+      end
+
       class NormalizedField
         def initialize(name, type_expr, null)
           @name = name
@@ -89,8 +122,12 @@ module Graphql
           @null = null
         end
 
-        def to_ruby
-          "field :#{@name}, #{@type_expr}, null: #{@null}"
+        def to_object_field
+          "field :#{@name}, #{@type_expr}#{@null ? '' : ', null: false'}"
+        end
+
+        def to_input_argument
+          "argument :#{@name}, #{@type_expr}, required: false"
         end
       end
     end
