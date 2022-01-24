@@ -252,11 +252,12 @@ module GraphQL
         end
 
         # TODO: I think non-string/symbol hash keys are wrongly normalized (eg `1` will not work)
-        method_name = method || hash_key || dig || name_s
+        method_name = method || hash_key || name_s
+        @dig_keys = dig
         resolver_method ||= name_s.to_sym
 
         @method_str = -method_name.to_s
-        @method_sym = method_name.is_a?(Array) ? method_name : method_name.to_sym
+        @method_sym = method_name.to_sym
         @resolver_method = resolver_method
         @complexity = complexity
         @return_type_expr = type
@@ -823,9 +824,8 @@ module GraphQL
               end
             elsif obj.object.is_a?(Hash)
               inner_object = obj.object
-              if @method_sym.is_a?(Array)
-                puts "Getting value, #{name}, #{@method_sym}, #{inner_object.dig(*@method_sym)}"
-                inner_object.dig(*@method_sym)
+              if @dig_keys
+                inner_object.dig(*@dig_keys)
               elsif inner_object.key?(@method_sym)
                 inner_object[@method_sym]
               else
