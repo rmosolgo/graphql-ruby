@@ -110,6 +110,7 @@ Since this version, GraphQL-Ruby is tested on Ruby 2.4+ and Rails 4+ only.
 - Subscription classes: If a subscription has a `scope ...` configuration, then a `scope:` option is required in `.trigger(...)`. Use `scope ..., optional: true` to get the old behavior. #3692
 - Arguments whose default values are used aren't checked for authorization #3665
 - Complexity: Connection fields have a default complexity implementation based on `first`/`last`/`max_page_size` #3609
+- Arguments: if arguments are configured to return `false` for `.visible?(context)`, their default values won't be applied
 
 ### New features
 

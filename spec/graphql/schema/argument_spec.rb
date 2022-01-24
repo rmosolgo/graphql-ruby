@@ -579,4 +579,52 @@ describe GraphQL::Schema::Argument do
       assert_equal ["echo has the wrong arguments"], res["errors"].map { |e| e["message"] }
     end
   end
+
+
+  describe "multiple argument definitions with default values" do
+    class MultipleArgumentDefaultValuesSchema < GraphQL::Schema
+      class BaseArgument < GraphQL::Schema::Argument
+        def initialize(*args, use_if:, **kwargs, &block)
+          @use_if = use_if
+          super(*args, **kwargs, &block)
+        end
+
+        def visible?(ctx)
+          ctx[:use_if] == @use_if
+        end
+      end
+
+      class BaseField < GraphQL::Schema::Field
+        argument_class BaseArgument
+      end
+
+      class Query < GraphQL::Schema::Object
+        field_class BaseField
+
+        field :echo, String do
+          argument :input, String, required: false, default_value: "argument-default-1", use_if: :visible_1
+          argument :input, String, required: false, default_value: "argument-default-2", use_if: :visible_2
+          argument :input, String, required: false, default_value: nil, use_if: :visible_3
+        end
+
+        def echo(input: "method-default")
+          input || "dynamic-fallback"
+        end
+      end
+
+      query(Query)
+    end
+
+    def get_echo_for(use_if)
+      res = MultipleArgumentDefaultValuesSchema.execute("{ echo }", context: { use_if: use_if })
+      res["data"]["echo"]
+    end
+
+    it "uses the default value from the matching argument if there is one" do
+      assert_equal "argument-default-1", get_echo_for(:visible_1)
+      assert_equal "argument-default-2", get_echo_for(:visible_2)
+      assert_equal "dynamic-fallback", get_echo_for(:visible_3)
+      assert_equal "method-default", get_echo_for(:visible_4) # no match
+    end
+  end
 end
