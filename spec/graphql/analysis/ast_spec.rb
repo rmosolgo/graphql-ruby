@@ -367,4 +367,64 @@ describe GraphQL::Analysis::AST do
       refute is_introspection?("{ int __type(name: \"Thing\") { name } }")
     end
   end
+
+  describe "when there's a hidden field" do
+    class HiddenAnalyzedFieldSchema < GraphQL::Schema
+      class DoNothingAnalyzer < GraphQL::Analysis::AST::Analyzer
+        def on_enter_field(node, parent, visitor)
+          @result ||= []
+          @result << [node.name, visitor.field_definition.class]
+          super
+        end
+
+        def result
+          @result
+        end
+      end
+      class BaseField < GraphQL::Schema::Field
+        def initialize(*args, visible: true, **kwargs, &block)
+          @visible = visible
+          super(*args, **kwargs, &block)
+        end
+
+        def visible?(context)
+          return @visible
+        end
+      end
+
+      class BaseObject < GraphQL::Schema::Object
+        field_class BaseField
+      end
+
+      class Article < BaseObject
+        field :title, String, null: false
+      end
+
+      class Query < BaseObject
+        field :article, String, visible: false do |f|
+          f.argument(:id, Integer, required: true)
+        end
+
+        def article(id:)
+          { title: "hello world" }
+        end
+      end
+
+      query Query
+    end
+
+    it "uses nil for the field definition" do
+      gql = <<~GQL
+      {
+        article(id: 1) {
+          title
+        }
+      }
+      GQL
+
+      query = GraphQL::Query.new(HiddenAnalyzedFieldSchema, gql)
+      result = GraphQL::Analysis::AST.analyze_query(query, [HiddenAnalyzedFieldSchema::DoNothingAnalyzer])
+      assert_equal [[["article", NilClass], ["title", NilClass]]], result
+    end
+  end
 end
