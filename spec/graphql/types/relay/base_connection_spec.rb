@@ -87,4 +87,35 @@ describe GraphQL::Types::Relay::BaseConnection do
     nodes_field = connection.fields["nodes"]
     assert_equal "passing extra args", nodes_field.deprecation_reason
   end
+
+
+  describe "visibility" do
+    class BaseConnectionImplementsInterfaceSchema < GraphQL::Schema
+      module CountableConnection
+        include GraphQL::Schema::Interface
+        field :total_count, Integer, null: false
+      end
+
+      class BaseConnection < GraphQL::Types::Relay::BaseConnection
+        implements CountableConnection
+      end
+
+      class Thing < GraphQL::Schema::Object
+        connection_type_class(BaseConnection)
+        field :name, String
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :things, Thing.connection_type
+      end
+
+      query(Query)
+    end
+
+    it "is visible when there's no node type" do
+      defn = BaseConnectionImplementsInterfaceSchema.to_definition
+      assert_includes defn, "type ThingConnection implements CountableConnection"
+      refute_includes defn, "type BaseConnection"
+    end
+  end
 end
