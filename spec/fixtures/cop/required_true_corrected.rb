@@ -12,4 +12,8 @@ class Types::Something < Types::BaseObject
 
     argument :id_5, ID
   end
+
+  field :name2, String do |f|
+    f.argument(:id_1, ID)
+  end
 end

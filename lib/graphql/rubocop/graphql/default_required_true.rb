@@ -25,16 +25,16 @@ module GraphQL
 
         def_node_matcher :argument_config_with_required_true?, <<-Pattern
         (
-          send nil? :argument ... (hash <$(pair (sym :required) (true)) ...>)
+          send {nil? _} :argument ... (hash <$(pair (sym :required) (true)) ...>)
         )
         Pattern
 
         def on_send(node)
           argument_config_with_required_true?(node) do |required_config|
             add_offense(required_config) do |corrector|
-                cleaned_node_source = source_without_keyword_argument(node, required_config)
-                corrector.replace(node, cleaned_node_source)
-              end
+              cleaned_node_source = source_without_keyword_argument(node, required_config)
+              corrector.replace(node, cleaned_node_source)
+            end
           end
         end
       end
