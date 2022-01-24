@@ -54,7 +54,14 @@ module GraphQL
         Time.iso8601(str_value)
       rescue ArgumentError, TypeError
         begin
-          Date.iso8601(str_value).to_time
+          dt = Date.iso8601(str_value).to_time
+          # For compatibility, continue accepting dates given without times
+          # But without this, it would zero out given any time part of `str_value` (hours and/or minutes)
+          if dt.iso8601.start_with?(str_value)
+            dt
+          else
+            nil
+          end
         rescue ArgumentError, TypeError
           # Invalid input
           nil

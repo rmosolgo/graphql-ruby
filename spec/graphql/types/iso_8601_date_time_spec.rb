@@ -134,6 +134,12 @@ describe GraphQL::Types::ISO8601DateTime do
       assert_equal(expected_res, res)
     end
 
+    it "rejects partial times" do
+      expected_errors = ["Variable $date of type ISO8601DateTime! was provided invalid value"]
+      assert_equal expected_errors, parse_date("2018-06-07T12:12").map { |e| e["message"] }
+      assert_equal expected_errors, parse_date("2018-06-07T12").map { |e| e["message"] }
+    end
+
     it "adds an error for invalid dates" do
       expected_errors = ["Variable $date of type ISO8601DateTime! was provided invalid value"]
 
