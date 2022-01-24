@@ -54,6 +54,7 @@
   <li><a href="#graphqlinstall">setup GraphQL</a>, including <a href="https://github.com/graphql/graphiql">GraphiQL</a>, <a href="https://github.com/Shopify/graphql-batch">GraphQL::Batch</a>, and <a href="https://facebook.github.io/relay/">Relay</a></li>
   <li><a href="#scaffolding-types">scaffold types</a></li>
   <li><a href="#scaffolding-mutations">scaffold Relay mutations</a></li>
+  <li><a href="#scaffolding-activerecord-mutations">scaffold ActiveRecord create/update/delete mutations</a></li>
   <li><a href="#scaffolding-loaders">scaffold GraphQL::Batch loaders</a></li>
 </ul>
 
@@ -100,10 +101,21 @@
 
 <ul>
   <li><code class="language-plaintext highlighter-rouge">rails g graphql:object</code></li>
+  <li><code class="language-plaintext highlighter-rouge">rails g graphql:input</code></li>
   <li><code class="language-plaintext highlighter-rouge">rails g graphql:interface</code></li>
   <li><code class="language-plaintext highlighter-rouge">rails g graphql:union</code></li>
   <li><code class="language-plaintext highlighter-rouge">rails g graphql:enum</code></li>
   <li><code class="language-plaintext highlighter-rouge">rails g graphql:scalar</code></li>
+</ul>
+
+<h3 id="activerecord-columns-auto-extraction">ActiveRecord columns auto-extraction</h3>
+
+<p>The <code class="language-plaintext highlighter-rouge">graphql:object</code> and <code class="language-plaintext highlighter-rouge">graphql:input</code> generators can detect the existence of an ActiveRecord class with the same name, and scaffold all database columns as fields/arguments using aproppiate GraphQL types and nullability detection</p>
+
+<h3 id="options-1">Options</h3>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">--namespaced-types</code> will generate each one of the <code class="language-plaintext highlighter-rouge">object</code>/<code class="language-plaintext highlighter-rouge">input</code>/<code class="language-plaintext highlighter-rouge">interface</code>/… types under separate <code class="language-plaintext highlighter-rouge">Types::Objects::*</code>/<code class="language-plaintext highlighter-rouge">Types::Inputs::*</code>/<code class="language-plaintext highlighter-rouge">Types::Interfaces::*</code>/… namespaces and folders</li>
 </ul>
 
 <h2 id="scaffolding-mutations">Scaffolding Mutations</h2>
@@ -112,6 +124,18 @@
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>rails g graphql:mutation #{mutation_name}
 </code></pre></div></div>
+
+<h2 id="scaffolding-activerecord-mutations">Scaffolding ActiveRecord Mutations</h2>
+
+<p>You can generate a Relay Classic create, update or delete mutation for a given model with</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>rails g graphql:mutation_create #{model_class_name}
+rails g graphql:mutation_update #{model_class_name}
+rails g graphql:mutation_delete #{model_class_name}
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">model_class_name</code> accepts both <code class="language-plaintext highlighter-rouge">namespace/class_type</code> and <code class="language-plaintext highlighter-rouge">Namespace::ClassType</code> formats.
+This mutation also accepts the <code class="language-plaintext highlighter-rouge">--namespaced-types</code> flag, to keep it consistent with the scaffolded Object and Input classes from the type generators</p>
 
 <h2 id="scaffolding-loaders">Scaffolding Loaders</h2>
 
