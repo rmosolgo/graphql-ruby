@@ -100,16 +100,8 @@ module GraphQL
         def on_field(node, parent)
           @response_path.push(node.alias || node.name)
           parent_type = @object_types.last
-          field_definition = begin
-            @schema.get_field(parent_type, node.name, @query.context)
-          rescue ArgumentError => err
-            if err.message.include?("Invariant: unexpected field owner")
-              nil
-            else
-              raise
-            end
-          end
-
+          # This could be nil if the previous field wasn't found:
+          field_definition = parent_type && @schema.get_field(parent_type, node.name, @query.context)
           @field_definitions.push(field_definition)
           if !field_definition.nil?
             next_object_type = field_definition.type.unwrap
