@@ -84,7 +84,7 @@ describe GraphQL::Schema::Field do
         graphql_name "JustAName"
 
         field :test, String do |field|
-          field.argument :test, String, required: true
+          field.argument :test, String
           field.description "A Description."
         end
       end.deprecated_to_graphql

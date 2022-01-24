@@ -2,7 +2,7 @@
 
 module RubocopTestHelpers
   def run_rubocop_on(fixture_path, autocorrect: false)
-    `bundle exec rubocop --debug #{autocorrect ? "--auto-correct" : ""} --config spec/fixtures/cop/.rubocop.yml #{fixture_path}`
+    `bundle exec rubocop --debug #{autocorrect ? "--auto-correct" : ""} --config spec/fixtures/cop/.rubocop.yml #{fixture_path} 2>&1`
   end
 
   def rubocop_errors(rubocop_result)
