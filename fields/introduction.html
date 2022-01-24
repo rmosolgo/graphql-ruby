@@ -138,7 +138,7 @@
 
 <p>The default behavior is to look for a <code class="language-plaintext highlighter-rouge">#top_score</code> method, or lookup a <code class="language-plaintext highlighter-rouge">Hash</code> key, <code class="language-plaintext highlighter-rouge">:top_score</code> (symbol) or <code class="language-plaintext highlighter-rouge">"top_score"</code> (string).</p>
 
-<p>You can override the method name with the <code class="language-plaintext highlighter-rouge">method:</code> keyword, or override the hash key with the <code class="language-plaintext highlighter-rouge">hash_key:</code> keyword, for example:</p>
+<p>You can override the method name with the <code class="language-plaintext highlighter-rouge">method:</code> keyword, or override the hash key(s) with the <code class="language-plaintext highlighter-rouge">hash_key:</code> or <code class="language-plaintext highlighter-rouge">dig:</code> keyword, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Use the `#best_score` method to resolve this field</span>
 <span class="n">field</span> <span class="ss">:top_score</span><span class="p">,</span> <span class="no">Integer</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span>
@@ -147,6 +147,10 @@
 <span class="c1"># Lookup `hash["allPlayers"]` to resolve this field</span>
 <span class="n">field</span> <span class="ss">:players</span><span class="p">,</span> <span class="p">[</span><span class="no">User</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span>
   <span class="ss">hash_key: </span><span class="s2">"allPlayers"</span>
+
+<span class="c1"># Use the `#dig` method on the hash with `:nested` and `:movies` keys</span>
+<span class="n">field</span> <span class="ss">:movies</span><span class="p">,</span> <span class="p">[</span><span class="no">Movie</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span>
+  <span class="ss">dig: </span><span class="p">[</span><span class="ss">:nested</span><span class="p">,</span> <span class="ss">:movies</span><span class="p">]</span>
 </code></pre></div></div>
 
 <p>To pass-through the underlying object without calling a method on it, you can use <code class="language-plaintext highlighter-rouge">method: :itself</code>:</p>
