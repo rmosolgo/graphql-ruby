@@ -57,7 +57,7 @@
 
 <h1 class="guide-header">Stream</h1>
 <div class="guide-container">
-  <p><code class="language-plaintext highlighter-rouge">@stream</code> works very much like <code class="language-plaintext highlighter-rouge">@defer</code>, except it only applies to list fields. When a field has <code class="language-plaintext highlighter-rouge">@stream</code> and it returns a list, then each item in the list is returned to the client as a patch.</p>
+  <p><code class="language-plaintext highlighter-rouge">@stream</code> works very much like <code class="language-plaintext highlighter-rouge">@defer</code>, except it only applies to list fields. When a field has <code class="language-plaintext highlighter-rouge">@stream</code> and it returns a list, then each item in the list is returned to the client as a patch. <code class="language-plaintext highlighter-rouge">@stream</code> is described in a <a href="https://github.com/graphql/graphql-wg/blob/main/rfcs/DeferStream.md">proposal to the GraphQL specification</a>.</p>
 
 <p><strong>Note:</strong> <code class="language-plaintext highlighter-rouge">@stream</code> was added in GraphQL-Pro 1.21.0 and requires GraphQL-Ruby 1.13.6+.</p>
 
@@ -87,6 +87,14 @@
 </code></pre></div></div>
 
 <p>If <code class="language-plaintext highlighter-rouge">@stream</code> is applied to non-list fields, it’s ignored.</p>
+
+<p><code class="language-plaintext highlighter-rouge">@stream</code> supports several arguments:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">if: Boolean = true</code>: when <code class="language-plaintext highlighter-rouge">false</code>, the list is <em>not</em> streamed. Instead, all items are returned synchronously.</li>
+  <li><code class="language-plaintext highlighter-rouge">label: String</code>: if present, the given string is returned in patches as <code class="language-plaintext highlighter-rouge">"label": "..."</code></li>
+  <li><code class="language-plaintext highlighter-rouge">initialCount: Int = 0</code>: this number of list items are returned synchronously. (If the list is shorter than <code class="language-plaintext highlighter-rouge">initialCount</code>, then the whole list is returned synchronously.)</li>
+</ul>
 
 </div>
 <p class="guide-footer">
