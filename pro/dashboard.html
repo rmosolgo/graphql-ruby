@@ -82,6 +82,21 @@
 
 <p>The dashboard is a Rack app, so you can mount it in Sinatra or any other Rack app.</p>
 
+<h4 id="lazy-loading-the-schema">Lazy-loading the schema</h4>
+
+<p>Alternatively, you can set up the dashboard to load the schema during the first request. To do that, initialize <code class="language-plaintext highlighter-rouge">GraphQL::Pro::Routes::Lazy</code> with a string that gives the fully-qualified name of your schema class, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">routes</span><span class="p">.</span><span class="nf">draw</span> <span class="k">do</span>
+  <span class="c1"># ...</span>
+  <span class="c1"># Add the GraphQL::Pro Dashboard</span>
+  <span class="c1"># TODO: authorize, see below</span>
+  <span class="n">lazy_routes</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Routes</span><span class="o">::</span><span class="no">Lazy</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"MySchema"</span><span class="p">)</span>
+  <span class="n">mount</span> <span class="n">lazy_routes</span><span class="p">.</span><span class="nf">dashboard</span><span class="p">,</span> <span class="ss">at: </span><span class="s2">"/graphql/dashboard"</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>With this setup, <code class="language-plaintext highlighter-rouge">MySchema</code> will be loaded when the dashboard serves its first request. This can speed up your application’s boot in development since it doesn’t load the whole GraphQL schema when building the routes.</p>
+
 <h2 id="authorizing-the-dashboard">Authorizing the Dashboard</h2>
 
 <p>You should only allow admin users to see <code class="language-plaintext highlighter-rouge">/graphql/dashboard</code> because it allows viewers to delete stored operations.</p>

@@ -129,6 +129,14 @@
 
 <p><code class="language-plaintext highlighter-rouge">operation_store_sync</code> and <code class="language-plaintext highlighter-rouge">dashboard</code> are both Rack apps, so you can mount them in Rails, Sinatra, or any other Rack app.</p>
 
+<p><strong>Alternatively</strong>, you can configure the routes to load your schema lazily, during the first request:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Provide the fully-qualified class name of your schema:</span>
+<span class="n">lazy_routes</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Routes</span><span class="o">::</span><span class="no">Lazy</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"MySchema"</span><span class="p">)</span>
+<span class="n">mount</span> <span class="n">lazy_routes</span><span class="p">.</span><span class="nf">dashboard</span><span class="p">,</span> <span class="ss">at: </span><span class="s2">"/graphql/dashboard"</span>
+<span class="n">mount</span> <span class="n">lazy_routes</span><span class="p">.</span><span class="nf">operation_store_sync</span><span class="p">,</span> <span class="ss">at: </span><span class="s2">"/graphql/sync"</span>
+</code></pre></div></div>
+
 <h4 id="update-the-controller">Update the Controller</h4>
 
 <p>Add <code class="language-plaintext highlighter-rouge">operation_id:</code> to your GraphQL context:</p>
