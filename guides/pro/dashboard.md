@@ -36,6 +36,22 @@ With this configuration, it will be available at `/graphql/dashboard`.
 
 The dashboard is a Rack app, so you can mount it in Sinatra or any other Rack app.
 
+#### Lazy-loading the schema
+
+Alternatively, you can set up the dashboard to load the schema during the first request. To do that, initialize `GraphQL::Pro::Routes::Lazy` with a string that gives the fully-qualified name of your schema class, for example:
+
+```ruby
+Rails.application.routes.draw do
+  # ...
+  # Add the GraphQL::Pro Dashboard
+  # TODO: authorize, see below
+  lazy_routes = GraphQL::Pro::Routes::Lazy.new("MySchema")
+  mount lazy_routes.dashboard, at: "/graphql/dashboard"
+end
+```
+
+With this setup, `MySchema` will be loaded when the dashboard serves its first request. This can speed up your application's boot in development since it doesn't load the whole GraphQL schema when building the routes.
+
 ## Authorizing the Dashboard
 
 You should only allow admin users to see `/graphql/dashboard` because it allows viewers to delete stored operations.

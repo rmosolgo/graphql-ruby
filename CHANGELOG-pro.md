@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.21.2 (27 January 2021)
+
+### New Features
+
+- Dashboard, Routes: support lazy-loading the schema with `Routes::Lazy` #3868
+
 # 1.21.1 (20 January 2021)
 
 ### Bug Fix

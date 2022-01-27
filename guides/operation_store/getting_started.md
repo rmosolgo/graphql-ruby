@@ -75,6 +75,15 @@ end
 
 `operation_store_sync` and `dashboard` are both Rack apps, so you can mount them in Rails, Sinatra, or any other Rack app.
 
+__Alternatively__, you can configure the routes to load your schema lazily, during the first request:
+
+```ruby
+# Provide the fully-qualified class name of your schema:
+lazy_routes = GraphQL::Pro::Routes::Lazy.new("MySchema")
+mount lazy_routes.dashboard, at: "/graphql/dashboard"
+mount lazy_routes.operation_store_sync, at: "/graphql/sync"
+```
+
 #### Update the Controller
 
 Add `operation_id:` to your GraphQL context:
