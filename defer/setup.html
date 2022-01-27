@@ -161,6 +161,8 @@
 
     <span class="c1"># Check if this is a deferred query:</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">deferred</span> <span class="o">=</span> <span class="n">result</span><span class="p">.</span><span class="nf">context</span><span class="p">[</span><span class="ss">:defer</span><span class="p">])</span>
+      <span class="c1"># Required for Rack 2.2+, see https://github.com/rack/rack/issues/1619</span>
+      <span class="n">response</span><span class="p">.</span><span class="nf">headers</span><span class="p">[</span><span class="s1">'Last-Modified'</span><span class="p">]</span> <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">httpdate</span>
       <span class="c1"># Use built-in `stream_http_multipart` with Apollo-Client &amp; ActionController::Live</span>
       <span class="n">deferred</span><span class="p">.</span><span class="nf">stream_http_multipart</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
     <span class="k">else</span>
