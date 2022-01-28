@@ -138,8 +138,8 @@ module GraphQL
       # @api private
       def result_for(key)
         if !@results.key?(key)
-          raise <<-ERR
-Invariant: fetching result for a key on #{self.class} that hasn't been loaded yet (#{key.inspect}, loaded: #{@results.keys})
+          raise GraphQL::InvariantError, <<-ERR
+Fetching result for a key on #{self.class} that hasn't been loaded yet (#{key.inspect}, loaded: #{@results.keys})
 
 This key should have been loaded already. This is a bug in GraphQL::Dataloader, please report it on GitHub: https://github.com/rmosolgo/graphql-ruby/issues/new.
 ERR

@@ -38,7 +38,9 @@ module GraphQL
 
       # @return [Class] The GraphQL type this field belongs to. (For fields defined on mutations, it's the payload type)
       def owner_type
-        @owner_type ||= if owner < GraphQL::Schema::Mutation
+        @owner_type ||= if owner.nil?
+          raise GraphQL::InvariantError, "Field #{original_name.inspect} (graphql name: #{graphql_name.inspect}) has no owner, but all fields should have an owner. How did this happen?!"
+        elsif owner < GraphQL::Schema::Mutation
           owner.payload_type
         else
           owner
