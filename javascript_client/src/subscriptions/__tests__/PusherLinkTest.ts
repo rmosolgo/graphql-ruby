@@ -107,6 +107,26 @@ describe("PusherLink", () => {
     expect(errorHandlerWasCalled).toBe(true)
   })
 
+  it("doesn't call the link request's `complete` handler because otherwise Apollo would clean up subscriptions", () => {
+    let passedComplete: Function = () => {}
+
+    var observable = link.request(operation, function(_operation: Operation): any {
+      return {
+        subscribe: (options: { next: Function, error: Function, complete: Function }): void => {
+          passedComplete = options.complete
+          {}
+        }
+      }
+    })
+
+    observable.subscribe(function(result: any) {
+      log.push(["received", result])
+    }, null, function() { log.push(["completed"])})
+
+    expect(log).toEqual([])
+    expect(passedComplete).toBeUndefined()
+  })
+
   it("delegates to pusher", () => {
     var requestFinished: Function = () => {}
 

@@ -108,11 +108,12 @@ describe GraphQL::Language::Parser do
 
     it "is parsed for directive definitions" do
       document = subject.parse <<-GRAPHQL
-      "thing description" directive @thing on FIELD
+      "thing description" directive @thing repeatable on FIELD
       GRAPHQL
 
       thing_defn = document.definitions[0]
       assert_equal "thing", thing_defn.name
+      assert_equal true, thing_defn.repeatable
       assert_equal "thing description", thing_defn.description
     end
   end

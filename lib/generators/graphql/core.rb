@@ -25,13 +25,6 @@ module Graphql
         end
       end
 
-      def create_mutation_root_type
-        create_dir("#{options[:directory]}/mutations")
-        template("base_mutation.erb", "#{options[:directory]}/mutations/base_mutation.rb", { skip: true })
-        template("mutation_type.erb", "#{options[:directory]}/types/mutation_type.rb", { skip: true })
-        insert_root_type('mutation', 'MutationType')
-      end
-
       def schema_file_path
         "#{options[:directory]}/#{schema_name.underscore}.rb"
       end

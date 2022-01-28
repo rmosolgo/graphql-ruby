@@ -1,6 +1,10 @@
+# frozen_string_literal: true
+
 <% module_namespacing_when_supported do -%>
 module Types
-  class <%= type_ruby_name.split('::')[-1] %> < Types::BaseEnum
+  class <%= ruby_class_name %> < Types::BaseEnum
+    description "<%= human_name %> enum"
+
 <% prepared_values.each do |v| %>    value "<%= v[0] %>"<%= v.length > 1 ? ", value: #{v[1]}" : "" %>
 <% end %>  end
 end

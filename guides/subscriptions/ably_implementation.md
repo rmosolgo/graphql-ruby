@@ -183,6 +183,14 @@ Rails.application.routes.draw do
 end
 ```
 
+__Alternatively__, you can configure the routes to load your schema lazily, during the first request:
+
+```ruby
+# Provide the fully-qualified class name of your schema:
+lazy_routes = GraphQL::Pro::Routes::Lazy.new("MySchema")
+mount lazy_routes.ably_webhooks_client, at: "/ably_webhooks"
+```
+
 ### Ably
 
 1. Go to the Ably dashboard

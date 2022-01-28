@@ -827,4 +827,19 @@ type Query {
       expected == node
     end
   end
+
+  describe "custom SDL directives" do
+    class CustomSDLDirectiveSchema < GraphQL::Schema
+      class CustomThing < GraphQL::Schema::Directive
+        locations(FIELD_DEFINITION)
+        argument :stuff, String
+      end
+
+      directive CustomThing
+    end
+
+    it "prints them out" do
+      assert_equal "directive @customThing(stuff: String!) on FIELD_DEFINITION\n", CustomSDLDirectiveSchema.to_definition
+    end
+  end
 end

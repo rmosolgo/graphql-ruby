@@ -138,9 +138,9 @@ module GraphQLBenchmark
     end
 
     ALL_FIELDS = GraphQL.parse <<-GRAPHQL
-      {
+      query($skip: Boolean = false) {
         foos {
-          id
+          id @skip(if: $skip)
           int1
           int2
           string1

@@ -193,4 +193,31 @@ describe GraphQL::Analysis::AST::FieldUsage do
       assert_equal ['Query.searchDairy.productIds'], result[:used_deprecated_arguments]
     end
   end
+
+  describe "when an argument prepare raises a GraphQL::ExecutionError" do
+    class ArgumentErrorFieldUsageSchema < GraphQL::Schema
+      class FieldUsage < GraphQL::Analysis::AST::FieldUsage
+        def result
+          values = super
+          query.context[:field_usage] = values
+          nil
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :f, Int do
+          argument :i, Int, prepare: ->(*) { raise GraphQL::ExecutionError.new("boom!") }
+        end
+      end
+
+      query(Query)
+      query_analyzer(FieldUsage)
+    end
+
+    it "skips analysis of those arguments" do
+      res = ArgumentErrorFieldUsageSchema.execute("{ f(i: 1) }")
+      assert_equal ["boom!"], res["errors"].map { |e| e["message"] }
+      assert_equal({used_fields: ["Query.f"], used_deprecated_arguments: [], used_deprecated_fields: []}, res.context[:field_usage])
+    end
+  end
 end

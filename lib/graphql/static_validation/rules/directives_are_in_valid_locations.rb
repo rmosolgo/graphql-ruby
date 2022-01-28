@@ -5,7 +5,7 @@ module GraphQL
       include GraphQL::Language
 
       def on_directive(node, parent)
-        validate_location(node, parent, context.schema.directives)
+        validate_location(node, parent, context.schema_directives)
         super
       end
 

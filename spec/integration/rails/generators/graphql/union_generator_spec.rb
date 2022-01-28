@@ -14,6 +14,8 @@ class GraphQLGeneratorsUnionGeneratorTest < BaseGeneratorTest
     ]
 
     expected_content = <<-RUBY
+# frozen_string_literal: true
+
 module Types
   class WingedCreatureType < Types::BaseUnion
     possible_types Types::InsectType, Types::BirdType
@@ -28,17 +30,20 @@ RUBY
     end
   end
 
-  test "it works with no possible types" do
+  test "it generates an union with possible namespaced types" do
     commands = [
       # GraphQL-style:
-      ["WingedCreature"],
+      ["WingedCreature", "Insect", "Bird"],
       # Ruby-style:
-      ["Types::WingedCreatureType"],
-    ]
+      ["Types::WingedCreatureType", "Types::InsectType", "Types::BirdType"],
+    ].map { |c| c + ["--namespaced-types"]}
 
     expected_content = <<-RUBY
+# frozen_string_literal: true
+
 module Types
-  class WingedCreatureType < Types::BaseUnion
+  class Unions::WingedCreatureType < Types::BaseUnion
+    possible_types Types::InsectType, Types::BirdType
   end
 end
 RUBY
@@ -46,14 +51,17 @@ RUBY
     commands.each do |c|
       prepare_destination
       run_generator(c)
-      assert_file "app/graphql/types/winged_creature_type.rb", expected_content
+      assert_file "app/graphql/types/unions/winged_creature_type.rb", expected_content
     end
   end
+
 
   test "it accepts a user-specified directory" do
     command = ["WingedCreature", "--directory", "app/mydirectory"]
 
     expected_content = <<-RUBY
+# frozen_string_literal: true
+
 module Types
   class WingedCreatureType < Types::BaseUnion
   end

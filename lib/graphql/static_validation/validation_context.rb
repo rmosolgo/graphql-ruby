@@ -44,6 +44,10 @@ module GraphQL
       def too_many_errors?
         @errors.length >= @max_errors
       end
+
+      def schema_directives
+        @schema_directives ||= schema.directives
+      end
     end
   end
 end

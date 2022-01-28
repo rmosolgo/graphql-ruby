@@ -22,6 +22,8 @@ def search_posts(category:)
 end
 ```
 
+### Nullability
+
 To make an argument optional, set `required: false`, and set default values for the corresponding keyword arguments:
 
 ```ruby
@@ -50,6 +52,8 @@ def search_posts(**args)
 end
 ```
 
+#### Default Values
+
 Another approach is to use `default_value: value` to provide a default value for the argument if it is not supplied in the query.
 
 ```ruby
@@ -62,6 +66,23 @@ def search_posts(category:)
 end
 ```
 
+Arguments with `required: false` _do_ accept `null` as inputs from clients. This can be surprising in resolver code, for example, an argument with `Integer, required: false` can sometimes be `nil`. In this case, you can use `replace_null_with_default_value: true` to apply the given `default_value: ...` when clients provide `null`. For example:
+
+```ruby
+# Even if clients send `query: null`, the resolver will receive `"*"` for this argument:
+argument :query, String, required: false, default_value: "*", replace_null_with_default_value: true
+```
+
+Finally, `required: :nullable` will require clients to pass the argument, although it will accept `null` as a valid input. For example:
+
+```ruby
+# This argument _must_ be given -- send `null` if there's no other appropriate value:
+argument :email_address, String, required: :nullable
+```
+
+
+### Deprecation
+
 **Experimental:** __Deprecated__ arguments can be marked by adding a `deprecation_reason:` keyword argument:
 
 ```ruby
@@ -70,7 +91,10 @@ field :search_posts, [PostType], null: false do
   argument :query, String, required: false
 end
 ```
+
 Note argument deprecation is a stage 2 GraphQL [proposal](https://github.com/graphql/graphql-spec/pull/525) so not all clients will leverage this information.
+
+### Aliasing
 
 Use `as: :alternate_name` to use a different key from within your resolvers while
 exposing another key to clients.
@@ -84,6 +108,8 @@ def post(id:)
   Post.find(id)
 end
 ```
+
+### Preprocessing
 
 Provide a `prepare` function to modify or validate the value of an argument before the field's resolver method is executed:
 
@@ -100,6 +126,8 @@ def posts(start_date:)
   # use prepared start_date
 end
 ```
+
+### Automatic camelization
 
 Arguments that are snake_cased will be camelized in the GraphQL schema. Using the example of:
 
@@ -138,6 +166,8 @@ def posts(start_year:)
   # ...
 end
 ```
+
+### Valid Argument Types
 
 Only certain types are valid for arguments:
 

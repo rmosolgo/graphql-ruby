@@ -193,6 +193,14 @@ end
 
 This way, we'll be kept up-to-date with Pusher's unsubscribe events.
 
+__Alternatively__, you can configure the routes to load your schema lazily, during the first request:
+
+```ruby
+# Provide the fully-qualified class name of your schema:
+lazy_routes = GraphQL::Pro::Routes::Lazy.new("MySchema")
+mount lazy_routes.pusher_webhooks_client, at: "/pusher_webhooks"
+```
+
 ## Authorization
 
 To ensure the privacy of subscription updates, you should use a [private channel](https://pusher.com/docs/client_api_guide/client_private_channels) for transport.

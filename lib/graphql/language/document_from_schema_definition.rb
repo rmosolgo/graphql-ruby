@@ -152,6 +152,7 @@ module GraphQL
       def build_directive_node(directive)
         GraphQL::Language::Nodes::DirectiveDefinition.new(
           name: directive.graphql_name,
+          repeatable: directive.repeatable?,
           arguments: build_argument_nodes(warden.arguments(directive)),
           locations: build_directive_location_nodes(directive.locations),
           description: directive.description,

@@ -23,7 +23,7 @@ describe GraphQL::Schema::FieldExtension do
 
     class MultiplyByArgument < GraphQL::Schema::FieldExtension
       def apply
-        field.argument(:factor, Integer, required: true)
+        field.argument(:factor, Integer)
       end
 
       def resolve(object:, arguments:, context:)
@@ -38,7 +38,7 @@ describe GraphQL::Schema::FieldExtension do
 
     class MultiplyByArgumentUsingResolve < GraphQL::Schema::FieldExtension
       def apply
-        field.argument(:factor, Integer, required: true)
+        field.argument(:factor, Integer)
       end
 
       # `yield` returns the user-returned value
@@ -51,7 +51,7 @@ describe GraphQL::Schema::FieldExtension do
 
     class MultiplyByArgumentUsingAfterResolve < GraphQL::Schema::FieldExtension
       def apply
-        field.argument(:factor, Integer, required: true)
+        field.argument(:factor, Integer)
       end
 
       def resolve(object:, arguments:, context:)

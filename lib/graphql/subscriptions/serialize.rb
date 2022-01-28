@@ -71,9 +71,17 @@ module GraphQL
               when SYMBOL_KEY
                 value[SYMBOL_KEY].to_sym
               when TIMESTAMP_KEY
-                timestamp_class_name, timestamp_s = value[TIMESTAMP_KEY]
+                timestamp_class_name, *timestamp_args = value[TIMESTAMP_KEY]
                 timestamp_class = Object.const_get(timestamp_class_name)
-                timestamp_class.strptime(timestamp_s, TIMESTAMP_FORMAT)
+                if defined?(ActiveSupport::TimeWithZone) && timestamp_class <= ActiveSupport::TimeWithZone
+                  zone_name, timestamp_s = timestamp_args
+                  zone = ActiveSupport::TimeZone[zone_name]
+                  raise "Zone #{zone_name} not found, unable to deserialize" unless zone
+                  zone.strptime(timestamp_s, TIMESTAMP_FORMAT)
+                else
+                  timestamp_s = timestamp_args.first
+                  timestamp_class.strptime(timestamp_s, TIMESTAMP_FORMAT)
+                end
               when OPEN_STRUCT_KEY
                 ostruct_values = load_value(value[OPEN_STRUCT_KEY])
                 OpenStruct.new(ostruct_values)
@@ -123,6 +131,18 @@ module GraphQL
             { SYMBOL_KEY => obj.to_s }
           elsif obj.respond_to?(:to_gid_param)
             {GLOBALID_KEY => obj.to_gid_param}
+          elsif defined?(ActiveSupport::TimeWithZone) && obj.is_a?(ActiveSupport::TimeWithZone) && obj.class.name != Time.name
+            # This handles a case where Rails prior to 7 would
+            # make the class ActiveSupport::TimeWithZone return "Time" for
+            # its name. In Rails 7, it will now return "ActiveSupport::TimeWithZone",
+            # which happens to be incompatible with expectations we have
+            # with what a Time class supports ( notably, strptime in `load_value` ).
+            #
+            # This now passes along the name of the zone, such that a future deserialization
+            # of this string will use the correct time zone from the ActiveSupport TimeZone
+            # list to produce the time.
+            #
+            { TIMESTAMP_KEY => [obj.class.name, obj.time_zone.name, obj.strftime(TIMESTAMP_FORMAT)] }
           elsif obj.is_a?(Date) || obj.is_a?(Time)
             # DateTime extends Date; for TimeWithZone, call `.utc` first.
             { TIMESTAMP_KEY => [obj.class.name, obj.strftime(TIMESTAMP_FORMAT)] }

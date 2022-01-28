@@ -29,6 +29,17 @@ field :items, Types::ItemConnectionPage, null: false, connection: true
 
 The field will be given some arguments by default: `first`, `last`, `after`, and `before`.
 
+### Opting out of default connection handling
+
+To opt out of GraphQL-Ruby's default connection handling, add `connection: false` to the field definition:
+
+```diff
+- field :items, Types::ItemType.connection_type, null: false
++ field :items, Types::ItemType.connection_type, null: false, connection: false
+```
+
+Then, add any arguments you want (`first`, `last`, `after`, `before`) and make sure that your resolver returns an object that can fulfill the fields of the configured return type.
+
 ## Return Collections
 
 With connection fields, you can return collection objects from fields or resolvers:

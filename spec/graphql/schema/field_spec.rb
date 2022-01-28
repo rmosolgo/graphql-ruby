@@ -73,7 +73,7 @@ describe GraphQL::Schema::Field do
         graphql_name "JustAName"
 
         field :test, String do |field|
-          field.argument :test, String, required: true
+          field.argument :test, String
           field.description "A Description."
         end
       end
@@ -519,6 +519,76 @@ describe GraphQL::Schema::Field do
     end
   end
 
+  describe "retrieving nested hash keys using dig" do
+    class DigSchema < GraphQL::Schema
+      class PersonType < GraphQL::Schema::Object
+        field :name, String, null: false
+      end
+
+      class MovieType < GraphQL::Schema::Object
+        field :title, String, null: false, dig: [:title]
+        field :stars, [PersonType], null: false, dig: ["credits", "stars"]
+        field :metascore, Float, null: false, dig: [:meta, "metascore"]
+        field :release_date, String, null: false, dig: [:meta, :release_date]
+        field :includes_wilhelm_scream, Boolean, null: false, dig: [:meta, "wilhelm_scream"]
+        field :nullable_field, String, dig: [:this_should, :work_since, :dig_handles, :safe_expansion]
+      end
+
+      class QueryType < GraphQL::Schema::Object
+        field :a_good_laugh, MovieType, null: false
+        def a_good_laugh
+          {
+            :title => "Monty Python and the Holy Grail",
+            :meta => {
+              "metascore" => 91,
+              :release_date => "1975-05-25T00:00:00+00:00",
+              "wilhelm_scream" => false
+            },
+            "credits" => {
+              "stars" => [
+                { :name => "Graham Chapman" },
+                { :name => "John Cleese" }
+              ]
+            }
+          }
+        end
+      end
+
+      query(QueryType)
+    end
+
+    it "finds the expected data" do
+      res = DigSchema.execute <<-GRAPHQL
+      {
+        aGoodLaugh {
+          title
+          includesWilhelmScream
+          metascore
+          nullableField
+          releaseDate
+          stars {
+            name
+          }
+        }
+      }
+      GRAPHQL
+
+      result = res["data"]["aGoodLaugh"]
+      expected_result = {
+        "title" => "Monty Python and the Holy Grail",
+        "includesWilhelmScream" => false,
+        "metascore" => 91.0,
+        "nullableField" => nil,
+        "releaseDate" => "1975-05-25T00:00:00+00:00",
+        "stars" => [
+          { "name" => "Graham Chapman" },
+          { "name" => "John Cleese" }
+        ]
+      }
+      assert_equal expected_result, result
+    end
+  end
+
   describe "looking up hash keys with case" do
     class HashKeySchema < GraphQL::Schema
       class ResultType < GraphQL::Schema::Object
@@ -563,6 +633,21 @@ describe GraphQL::Schema::Field do
         "OtherCapital" => "explicit-hash-key-works"
       }
       assert_equal expected_result, search_results
+    end
+  end
+
+  describe "when the owner is nil" do
+    it "raises a descriptive error" do
+      bad_field = GraphQL::Schema::Field.new(name: "something", owner: nil, type: String)
+      assert_nil bad_field.owner
+      err = assert_raises GraphQL::InvariantError do
+        bad_field.owner_type
+      end
+      expected_message = "Field \"something\" (graphql name: \"something\") has no owner, but all fields should have an owner. How did this happen?!
+
+This is probably a bug in GraphQL-Ruby, please report this error on GitHub: https://github.com/rmosolgo/graphql-ruby/issues/new?template=bug_report.md"
+
+      assert_equal expected_message, err.message
     end
   end
 end

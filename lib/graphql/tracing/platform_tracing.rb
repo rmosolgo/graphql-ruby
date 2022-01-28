@@ -81,17 +81,22 @@ module GraphQL
 
       private
 
-      # Get the transaction name based on the operation type and name
+      # Get the transaction name based on the operation type and name if possible, or fall back to a user provided
+      # one. Useful for anonymous queries.
       def transaction_name(query)
         selected_op = query.selected_operation
-        if selected_op
+        txn_name = if selected_op
           op_type = selected_op.operation_type
-          op_name = selected_op.name || "anonymous"
+          op_name = selected_op.name || fallback_transaction_name(query.context) || "anonymous"
+          "#{op_type}.#{op_name}"
         else
-          op_type = "query"
-          op_name = "anonymous"
+          "query.anonymous"
         end
-        "GraphQL/#{op_type}.#{op_name}"
+        "GraphQL/#{txn_name}"
+      end
+
+      def fallback_transaction_name(context)
+        context[:tracing_fallback_transaction_name]
       end
 
       attr_reader :options

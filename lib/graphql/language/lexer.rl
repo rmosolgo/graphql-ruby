@@ -27,6 +27,7 @@
   ENUM =          'enum';
   INPUT =         'input';
   DIRECTIVE =     'directive';
+  REPEATABLE =    'repeatable';
   LCURLY =        '{';
   RCURLY =        '}';
   LPAREN =        '(';
@@ -85,6 +86,7 @@
     ENUM          => { emit(:ENUM, ts, te, meta) };
     INPUT         => { emit(:INPUT, ts, te, meta) };
     DIRECTIVE     => { emit(:DIRECTIVE, ts, te, meta) };
+    REPEATABLE    => { emit(:REPEATABLE, ts, te, meta, "repeatable") };
     RCURLY        => { emit(:RCURLY, ts, te, meta, "}") };
     LCURLY        => { emit(:LCURLY, ts, te, meta, "{") };
     RPAREN        => { emit(:RPAREN, ts, te, meta, ")") };

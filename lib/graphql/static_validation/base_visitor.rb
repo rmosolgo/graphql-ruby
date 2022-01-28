@@ -93,7 +93,7 @@ module GraphQL
         end
 
         def on_directive(node, parent)
-          directive_defn = @schema.directives[node.name]
+          directive_defn = @context.schema_directives[node.name]
           @directive_definitions.push(directive_defn)
           super
           @directive_definitions.pop

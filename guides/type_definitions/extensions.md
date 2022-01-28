@@ -80,7 +80,7 @@ So, you can customize this process by:
 For example, you can create a custom class which accepts a new parameter to `initialize`:
 
 ```ruby
-class Types::AuthorizedField < GraphQL::Schema::Field
+class Types::BaseField < GraphQL::Schema::Field
   # Override #initialize to take a new argument:
   def initialize(*args, required_permission: nil, **kwargs, &block)
     @required_permission = required_permission
@@ -97,20 +97,20 @@ Then, pass the field class as `field_class(...)` wherever it should be used:
 ```ruby
 class Types::BaseObject < GraphQL::Schema::Object
   # Use this class for defining fields
-  field_class AuthorizedField
+  field_class BaseField
 end
 
 # And....
 class Types::BaseInterface < GraphQL::Schema::Interface
-  field_class AuthorizedField
+  field_class BaseField
 end
 
 class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation
-  field_class AuthorizedField 
-end 
+  field_class BaseField
+end
 ```
 
-Now, `AuthorizedField.new(*args, &block)` will be used to create `GraphQL::Schema::Field`s on those types. At runtime `field.required_permission` will return the configured value.
+Now, `BaseField.new(*args, &block)` will be used to create `GraphQL::Schema::Field`s on those types. At runtime `field.required_permission` will return the configured value.
 
 ### Customizing Connections
 

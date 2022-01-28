@@ -12,7 +12,7 @@ module GraphQL
                   "possible at runtime. List and NonNull types compose other types."
 
       field :kind, GraphQL::Schema::LateBoundType.new("__TypeKind"), null: false
-      field :name, String
+      field :name, String, method: :graphql_name
       field :description, String
       field :fields, [GraphQL::Schema::LateBoundType.new("__Field")] do
         argument :include_deprecated, Boolean, required: false, default_value: false
@@ -27,8 +27,14 @@ module GraphQL
       end
       field :of_type, GraphQL::Schema::LateBoundType.new("__Type")
 
-      def name
-        object.graphql_name
+      field :specified_by_url, String
+
+      def specified_by_url
+        if object.kind.scalar?
+          object.specified_by_url
+        else
+          nil
+        end
       end
 
       def kind

@@ -109,6 +109,8 @@ class GraphqlController < ApplicationController
 
     # Check if this is a deferred query:
     if (deferred = result.context[:defer])
+      # Required for Rack 2.2+, see https://github.com/rack/rack/issues/1619
+      response.headers['Last-Modified'] = Time.now.httpdate
       # Use built-in `stream_http_multipart` with Apollo-Client & ActionController::Live
       deferred.stream_http_multipart(response)
     else

@@ -68,7 +68,7 @@ directive @foo(arg: Int, nullDefault: Int = null) on FIELD
 
 directive @greeting(pleasant: Boolean = true) on ARGUMENT_DEFINITION | ENUM | FIELD_DEFINITION | INPUT_OBJECT | INTERFACE | OBJECT | UNION
 
-directive @hashed on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+directive @hashed repeatable on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
 
 directive @language(is: String!) on ENUM_VALUE
 
@@ -105,6 +105,10 @@ type Word {
       parsed_schema.directives.values.each do |dir_class|
         assert dir_class < GraphQL::Schema::Directive
       end
+
+      assert_equal true, parsed_schema.directives["hashed"].repeatable?
+      assert_equal false, parsed_schema.directives["deprecated"].repeatable?
+
       assert_equal 1, hello_type.directives.size
       assert_instance_of parsed_schema.directives["greeting"], hello_type.directives.first
       assert_equal({ pleasant: true }, hello_type.directives.first.arguments.keyword_arguments)

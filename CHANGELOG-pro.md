@@ -8,6 +8,24 @@
 
 ### Bug Fix
 
+# 1.21.2 (27 January 2021)
+
+### New Features
+
+- Dashboard, Routes: support lazy-loading the schema with `Routes::Lazy` #3868
+
+# 1.21.1 (20 January 2021)
+
+### Bug Fix
+
+- Stream, Defer: Include `hasNext: true|false` in patches
+
+# 1.21.0 (20 January 2021)
+
+### New Features
+
+- Stream: Add `@stream` directive for evaluating list items one-at-a-time
+
 # 1.20.4 (4 December 2021)
 
 ### Bug Fix

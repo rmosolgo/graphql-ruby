@@ -15,6 +15,7 @@ describe GraphQL::StaticValidation::UniqueDirectivesPerLocation do
 
     directive @A on FIELD
     directive @B on FIELD
+    directive @C repeatable on FIELD
   ") }
 
   describe "query with no directives" do
@@ -22,6 +23,20 @@ describe GraphQL::StaticValidation::UniqueDirectivesPerLocation do
       {
         type {
           field
+        }
+      }
+    "}
+
+    it "passes rule" do
+      assert_equal [], errors
+    end
+  end
+
+  describe "query with repeatable directives" do
+    let(:query_string) {"
+      {
+        type {
+          field @C @C @C
         }
       }
     "}

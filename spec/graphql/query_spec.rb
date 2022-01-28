@@ -787,7 +787,7 @@ describe GraphQL::Query do
   it "Accepts a passed-in warden" do
     warden = GraphQL::Schema::Warden.new(->(t, ctx) { false }, schema: Jazz::Schema, context: nil)
     res = Jazz::Schema.execute("{ __typename } ", warden: warden)
-    assert_equal ["Field '__typename' doesn't exist on type 'Query'"], res["errors"].map { |e| e["message"] }
+    assert_equal ["Schema is not configured for queries"], res["errors"].map { |e| e["message"] }
   end
 
   describe "arguments_for" do

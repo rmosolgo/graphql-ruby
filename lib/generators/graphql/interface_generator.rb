@@ -13,14 +13,14 @@ module Graphql
       desc "Create a GraphQL::InterfaceType with the given name and fields"
       source_root File.expand_path('../templates', __FILE__)
 
-      argument :fields,
-        type: :array,
-        default: [],
-        banner: "name:type name:type ...",
-        desc: "Fields for this interface (type may be expressed as Ruby or GraphQL)"
+      private
 
-      def create_type_file
-        template "interface.erb", "#{options[:directory]}/types/#{type_file_name}.rb"
+      def graphql_type
+        "interface"
+      end
+
+      def fields
+        custom_fields
       end
     end
   end

@@ -1,5 +1,7 @@
 # Changelog
 
+[Versioning guidelines](https://graphql-ruby.org/development.html#versioning)
+
 ### Breaking changes
 
 ### Deprecations
@@ -7,6 +9,81 @@
 ### New features
 
 ### Bug fixes
+
+# 1.13.7 (28 January 2022)
+
+### New Features
+
+- Arguments: `replace_null_with_default: true` replaces incoming `null`s with the configured `default_value:` #3871
+- Arguments: support `dig: [key1, key2, ...]` for nested hash key access #3856
+- Generators: support more Postgresql field types #3577
+- Generators: support downcased generator argument types #3577
+- Generators: add an input type generator #3577
+- Generators: support namespaces in generators #3577
+
+### Bug Fixes
+
+- Field: better error for nil `owner` #3870
+- ISO8601DateTime: don't accept inputs with partial time parts #3862
+- SDL: fix for base connection classes that implement interfaces #3859
+- Cops: find `required: true` on `f.argument` calls (with explicit receiver) #3858
+- Analysis: handle undefined or hidden fields with `nil` in `visitor.field_definition` #3857
+
+# 1.13.6 (20 January 2022)
+
+### New features
+
+- Introspection: support `__Schema.description`, `__Directive.isRepeatable`, `__Type.specifiedByUrl`, and `__DirectiveLocation.VARIABLE_DEFINITION` #3854
+- Directives: Call `Directive.resolve_each` for list items #3853
+- Dataloader: Run each list item in its own fiber (to support batching across list items) #3841
+
+### Bug fixes
+
+- RelationConnection: Preserve `OFFSET` when it's already set on the relation #3846
+- `Types::ISO8601Date`: Accept default values as Ruby date objects #3563
+
+# 1.13.5 (13 January 2022)
+
+### New features
+
+- Directives: support `repeatable` directives #3837
+- Tracing: use `context[:fallback_transaction_name]` when operations aren't named #3778
+
+### Bug fixes
+
+- Performance: improve performance of queries with directives #3835
+- Fix crash on undefined constant `NodeField` #3832
+- Fix crash on partially-required `ActiveSupport` #3829
+
+# 1.13.4 (7 January 2022)
+
+### Bug fixes
+
+- Connections: Fix regression in 1.13.3 on unbounded Relation connections #3822
+
+# 1.13.3 (6 January 2022)
+
+### Deprecations
+
+- `GraphQL::Relay::NodeField` and `GraphQL::Relay::NodesField` are deprecated; use `GraphQL::Relay::HasNodesField` or `GraphQL::Relay::HasNodeField` instead. (The underlying field instances require a reference to their owner type, but `NodeField` and `NodesField` can't do that, since they're shared instances) #3791
+
+### New features
+
+- Arguments: support `required: :nullable` to make an argument required to be _present_, even if it's `null` #3784
+- Connections: When paginating an AR::Relation, use already-loaded results if possible #3790
+- Tracing: Support DRY::Notifications #3776
+- Improve the error when a Ruby method doesn't support the defined GraphQL arguments #3785
+- Input Objects: call `.authorized?` on them at runtime #3786
+- Field extensions: add `extras(...)` for extension-related extras with automatic cleanup #3787
+
+### Bug fixes
+
+- Validation: accept nullable variable types for arguments with default values #3819
+- Validation: raise a better error when a schema receives a `query { ... }` but has no query root #3815
+- Improve the error message when `Schema.get_field` can't make sense of the arguments #3815
+- Subscriptions: losslessly serialize Rails 7 TimeWithZone #3774
+- Field Usage analyzer: handle errors from `prepare:` hooks #3794
+- Schema from definition: fix default values with camelized arguments #3780
 
 # 1.13.2 (15 December 2021)
 
@@ -48,6 +125,7 @@ Since this version, GraphQL-Ruby is tested on Ruby 2.4+ and Rails 4+ only.
 - Subscription classes: If a subscription has a `scope ...` configuration, then a `scope:` option is required in `.trigger(...)`. Use `scope ..., optional: true` to get the old behavior. #3692
 - Arguments whose default values are used aren't checked for authorization #3665
 - Complexity: Connection fields have a default complexity implementation based on `first`/`last`/`max_page_size` #3609
+- Arguments: if arguments are configured to return `false` for `.visible?(context)`, their default values won't be applied
 
 ### New features
 

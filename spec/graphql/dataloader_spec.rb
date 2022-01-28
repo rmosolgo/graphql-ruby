@@ -3,6 +3,18 @@ require "spec_helper"
 require "fiber"
 
 describe GraphQL::Dataloader do
+  class BatchedCallsCounter
+    def initialize
+      @count = 0
+    end
+
+    def increment
+      @count += 1
+    end
+
+    attr_reader :count
+  end
+
   class FiberSchema < GraphQL::Schema
     module Database
       extend self
@@ -98,6 +110,17 @@ describe GraphQL::Dataloader do
       end
     end
 
+    class AuthorizedSource < GraphQL::Dataloader::Source
+      def initialize(counter)
+        @counter = counter
+      end
+
+      def fetch(recipes)
+        @counter && @counter.increment
+        recipes.map { true }
+      end
+    end
+
     module Ingredient
       include GraphQL::Schema::Interface
       field :name, String, null: false
@@ -117,6 +140,10 @@ describe GraphQL::Dataloader do
     end
 
     class Recipe < GraphQL::Schema::Object
+      def self.authorized?(obj, ctx)
+        ctx.dataloader.with(AuthorizedSource, ctx[:batched_calls_counter]).load(obj)
+      end
+
       field :name, String, null: false
       field :ingredients, [Ingredient], null: false
 
@@ -366,8 +393,10 @@ describe GraphQL::Dataloader do
             i1: ingredient(id: 1) { id name }
             i2: ingredient(id: 2) { name }
             r1: recipe(id: 5) {
+              # This loads Ingredients 3 and 4
               ingredients { name }
             }
+            # This loads Ingredient 7
             ri1: recipeIngredient(recipe: { id: 6, ingredientNumber: 3 }) {
               name
             }
@@ -398,8 +427,10 @@ describe GraphQL::Dataloader do
               "6",                # recipeIngredient recipeId
             ]],
             [:mget, [
-              "3", "4",           # The two unfetched ingredients the first recipe
               "7",                # recipeIngredient ingredient_id
+            ]],
+            [:mget, [
+              "3", "4",           # The two unfetched ingredients the first recipe
             ]],
           ]
           assert_equal expected_log, database_log
@@ -605,7 +636,11 @@ describe GraphQL::Dataloader do
           assert_equal expected_results, results.first.to_a
 
           query2 = GraphQL::Query.new(schema, query_str, context: { use_request: true })
-          result2 = GraphQL::Analysis::AST.analyze_query(query2, [UsageAnalyzer])
+          result2 = nil
+          query2.context.dataloader.run_isolated do
+            result2 = GraphQL::Analysis::AST.analyze_query(query2, [UsageAnalyzer])
+          end
+
           assert_equal expected_results, result2.first.to_a
         end
 
@@ -638,6 +673,18 @@ describe GraphQL::Dataloader do
           res2 = schema.execute(query_str, context: { use_request: true })
           assert_equal expected_data, res2["data"]
           assert_equal expected_log, database_log
+        end
+
+        it "batches calls in .authorized?" do
+          query_str = "{ r1: recipe(id: 5) { name } r2: recipe(id: 6) { name } }"
+          context = { batched_calls_counter: BatchedCallsCounter.new }
+          schema.execute(query_str, context: context)
+          assert_equal 1, context[:batched_calls_counter].count
+
+          query_str = "{ recipes { name } }"
+          context = { batched_calls_counter: BatchedCallsCounter.new }
+          schema.execute(query_str, context: context)
+          assert_equal 1, context[:batched_calls_counter].count
         end
 
         it "Works with input objects using variables, load and request" do

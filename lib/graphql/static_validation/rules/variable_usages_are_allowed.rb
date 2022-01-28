@@ -68,6 +68,12 @@ module GraphQL
         arg_defn = context.warden.get_argument(argument_owner, arg_node.name)
         arg_defn_type = arg_defn.type
 
+        # If the argument is non-null, but it was given a default value,
+        # then treat it as nullable in practice, see https://github.com/rmosolgo/graphql-ruby/issues/3793
+        if arg_defn_type.non_null? && arg_defn.default_value?
+          arg_defn_type = arg_defn_type.of_type
+        end
+
         var_inner_type = var_type.unwrap
         arg_inner_type = arg_defn_type.unwrap
 

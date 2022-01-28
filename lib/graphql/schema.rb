@@ -125,6 +125,10 @@ module GraphQL
         end
       end
 
+      def deprecated_graphql_definition
+        graphql_definition(silence_deprecation_warning: true)
+      end
+
       # @return [GraphQL::Subscriptions]
       attr_accessor :subscriptions
 
@@ -157,6 +161,17 @@ module GraphQL
       # @return [GraphQL::Language::Document]
       def to_document
         GraphQL::Language::DocumentFromSchemaDefinition.new(self).document
+      end
+
+      # @return [String, nil]
+      def description(new_description = nil)
+        if new_description
+          @description = new_description
+        elsif defined?(@description)
+          @description
+        else
+          find_inherited_value(:description, nil)
+        end
       end
 
       def find(path)
@@ -434,7 +449,7 @@ module GraphQL
         when Module
           type_or_name
         else
-          raise ArgumentError, "unexpected field owner for #{field_name.inspect}: #{type_or_name.inspect} (#{type_or_name.class})"
+          raise GraphQL::InvariantError, "Unexpected field owner for #{field_name.inspect}: #{type_or_name.inspect} (#{type_or_name.class})"
         end
 
         if parent_type.kind.fields? && (field = parent_type.get_field(field_name, context))

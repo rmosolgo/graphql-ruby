@@ -42,16 +42,16 @@ end
 
 ```ruby
 # Generate a field which returns a filtered, sorted list of items
-def self.items_field(name, override_options)
+def self.items_field(name, override_options, &block)
   # Prepare options
   default_field_options = { type: [Types::Item], null: false }
   field_options = default_field_options.merge(override_options)
   # Create the field
-  field(name, field_options) do
+  field(name, **field_options) do
     argument :order_by, Types::ItemOrder, required: false
     argument :category, Types::ItemCategory, required: false
     # Allow an override block to add more arguments
-    yield self if block_given?
+    instance_eval(&block) if block_given?
   end
 end
 

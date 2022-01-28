@@ -82,7 +82,8 @@ module GraphQL
           end
 
           def visible?(ctx)
-            node_type.visible?(ctx)
+            # if this is an abstract base class, there may be no `node_type`
+            node_type ? node_type.visible?(ctx) : super
           end
 
           # Set the default `node_nullable` for this class and its child classes. (Defaults to `true`.)

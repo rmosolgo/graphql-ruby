@@ -376,6 +376,7 @@ module GraphQL
           Class.new(GraphQL::Schema::Directive) do
             graphql_name(directive_definition.name)
             description(directive_definition.description)
+            repeatable(directive_definition.repeatable)
             locations(*directive_definition.locations.map { |location| location.name.to_sym })
             ast_node(directive_definition)
             builder.build_arguments(self, directive_definition.arguments, type_resolver)

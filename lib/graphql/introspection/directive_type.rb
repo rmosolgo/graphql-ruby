@@ -19,6 +19,8 @@ module GraphQL
       field :on_fragment, Boolean, null: false, deprecation_reason: "Use `locations`.", method: :on_fragment?
       field :on_field, Boolean, null: false, deprecation_reason: "Use `locations`.", method: :on_field?
 
+      field :is_repeatable, Boolean, method: :repeatable?
+
       def args(include_deprecated:)
         args = @context.warden.arguments(@object)
         args = args.reject(&:deprecation_reason) unless include_deprecated

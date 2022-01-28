@@ -273,6 +273,7 @@ module Dummy
 
   class Time < BaseScalar
     description "Time since epoch in seconds"
+    specified_by_url "https://time.graphql"
 
     def self.coerce_input(value, ctx)
       Time.at(Float(value))

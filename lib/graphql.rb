@@ -17,6 +17,17 @@ module GraphQL
   class Error < StandardError
   end
 
+  # This error is raised when GraphQL-Ruby encounters a situation
+  # that it *thought* would never happen. Please report this bug!
+  class InvariantError < Error
+    def initialize(message)
+      message += "
+
+This is probably a bug in GraphQL-Ruby, please report this error on GitHub: https://github.com/rmosolgo/graphql-ruby/issues/new?template=bug_report.md"
+      super(message)
+    end
+  end
+
   class RequiredImplementationMissingError < Error
   end
 
@@ -69,6 +80,7 @@ require "graphql/invalid_name_error"
 require "graphql/integer_decoding_error"
 require "graphql/integer_encoding_error"
 require "graphql/string_encoding_error"
+require "graphql/date_encoding_error"
 require "graphql/type_kinds"
 require "graphql/name_validator"
 require "graphql/language"

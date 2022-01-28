@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 <% module_namespacing_when_supported do -%>
 module Types
-  class <%= type_ruby_name.split('::')[-1] %> < Types::BaseObject
+  class <%= ruby_class_name %> < Types::BaseObject
 <% if options.node %>    implements GraphQL::Types::Relay::Node
-<% end %><% normalized_fields.each do |f| %>    <%= f.to_ruby %>
+<% end %><% normalized_fields.each do |f| %>    <%= f.to_object_field %>
 <% end %>  end
 end
 <% end -%>

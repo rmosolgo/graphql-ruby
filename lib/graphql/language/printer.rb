@@ -252,6 +252,10 @@ module GraphQL
           out << print_arguments(directive.arguments)
         end
 
+        if directive.repeatable
+          out << " repeatable"
+        end
+
         out << " on #{directive.locations.map(&:name).join(' | ')}"
       end
 

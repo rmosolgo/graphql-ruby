@@ -11,7 +11,7 @@ module GraphQL
     module ActiveSupportNotificationsTracing
       # A cache of frequently-used keys to avoid needless string allocations
       KEYS = NotificationsTracing::KEYS
-      NOTIFICATIONS_ENGINE = NotificationsTracing.new(ActiveSupport::Notifications) if defined?(ActiveSupport)
+      NOTIFICATIONS_ENGINE = NotificationsTracing.new(ActiveSupport::Notifications) if defined?(ActiveSupport::Notifications)
 
       def self.trace(key, metadata, &blk)
         NOTIFICATIONS_ENGINE.trace(key, metadata, &blk)

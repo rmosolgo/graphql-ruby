@@ -554,4 +554,131 @@ describe GraphQL::Schema::Argument do
     res = SchemaArgumentTest::Schema.execute("{ contextArgTest(input: { context: \"abc\" }) }")
     assert_equal ["abc", "String", "GraphQL::Query::Context"], res["data"]["contextArgTest"]
   end
+
+  describe "required: :nullable" do
+    class RequiredNullableSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        field :echo, String do
+          argument :str, String, required: :nullable
+        end
+
+        def echo(str:)
+          str
+        end
+      end
+
+      query(Query)
+    end
+
+    it "requires a value, even if it's null" do
+      res = RequiredNullableSchema.execute('{ echo(str: "ok") }')
+      assert_equal "ok", res["data"]["echo"]
+      res = RequiredNullableSchema.execute('{ echo(str: null) }')
+      assert_nil res["data"].fetch("echo")
+      res = RequiredNullableSchema.execute('{ echo }')
+      assert_equal ["echo has the wrong arguments"], res["errors"].map { |e| e["message"] }
+    end
+  end
+
+  describe "replace_null_with_default: true" do
+    class ReplaceNullWithDefaultSchema < GraphQL::Schema
+      class Add < GraphQL::Schema::Resolver
+        argument :left, Integer, required: false, default_value: 5, replace_null_with_default: true
+        argument :right, Integer
+        type Integer, null: false
+
+        def resolve(left:, right:)
+          right + left
+        end
+      end
+
+      class AddInput < GraphQL::Schema::InputObject
+        argument :left, Integer, required: false, default_value: 5, replace_null_with_default: true
+        argument :right, Integer
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :add1, Integer do
+          argument :left, Integer, required: false, default_value: 5, replace_null_with_default: true
+          argument :right, Integer
+        end
+
+        def add1(left:, right:)
+          left + right
+        end
+
+        field :add2, resolver: Add
+
+        field :add3, Integer do
+          argument :input, AddInput
+        end
+
+        def add3(input:)
+          input[:left] + input[:right]
+        end
+      end
+      query(Query)
+    end
+
+    it "works for fields, resolvers, and input objects" do
+      res1 = ReplaceNullWithDefaultSchema.execute("{ r1: add1(left: null, right: 2) r2: add1(right: 0)}")
+      assert_equal 7, res1["data"]["r1"]
+      assert_equal 5, res1["data"]["r2"]
+
+      res2 = ReplaceNullWithDefaultSchema.execute("{ r1: add2(left: null, right: 1) r2: add2(right: 3) }")
+      assert_equal 6, res2["data"]["r1"]
+      assert_equal 8, res2["data"]["r2"]
+
+      res3 = ReplaceNullWithDefaultSchema.execute("{ r1: add3(input: { left: null, right: 5 }) r2: add3(input: { right: 6 }) }")
+      assert_equal 10, res3["data"]["r1"]
+      assert_equal 11, res3["data"]["r2"]
+    end
+  end
+
+  describe "multiple argument definitions with default values" do
+    class MultipleArgumentDefaultValuesSchema < GraphQL::Schema
+      class BaseArgument < GraphQL::Schema::Argument
+        def initialize(*args, use_if:, **kwargs, &block)
+          @use_if = use_if
+          super(*args, **kwargs, &block)
+        end
+
+        def visible?(ctx)
+          ctx[:use_if] == @use_if
+        end
+      end
+
+      class BaseField < GraphQL::Schema::Field
+        argument_class BaseArgument
+      end
+
+      class Query < GraphQL::Schema::Object
+        field_class BaseField
+
+        field :echo, String do
+          argument :input, String, required: false, default_value: "argument-default-1", use_if: :visible_1
+          argument :input, String, required: false, default_value: "argument-default-2", use_if: :visible_2
+          argument :input, String, required: false, default_value: nil, use_if: :visible_3
+        end
+
+        def echo(input: "method-default")
+          input || "dynamic-fallback"
+        end
+      end
+
+      query(Query)
+    end
+
+    def get_echo_for(use_if)
+      res = MultipleArgumentDefaultValuesSchema.execute("{ echo }", context: { use_if: use_if })
+      res["data"]["echo"]
+    end
+
+    it "uses the default value from the matching argument if there is one" do
+      assert_equal "argument-default-1", get_echo_for(:visible_1)
+      assert_equal "argument-default-2", get_echo_for(:visible_2)
+      assert_equal "dynamic-fallback", get_echo_for(:visible_3)
+      assert_equal "method-default", get_echo_for(:visible_4) # no match
+    end
+  end
 end

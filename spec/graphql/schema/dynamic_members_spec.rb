@@ -130,7 +130,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
     class Money < BaseObject
       implements HasCurrency
       field :amount, Integer, null: false
-      field :currency, String, null: false
+      field :currency, String, null: false, description: "The denomination of this amount of money"
 
       self.future_schema = true
     end
@@ -504,6 +504,12 @@ GRAPHQL
     assert_equal ["HasCapital", "HasCurrency", "HasLanguages"], exec_future_query(query_str)["data"]["__type"]["interfaces"].map { |i| i["name"] }
   end
 
+  it "overrides fields from interfaces instead of multi-defining them" do
+    f = MultifieldSchema::Money.get_field("currency")
+    assert_equal MultifieldSchema::Money, f.owner
+    assert_equal "The denomination of this amount of money", f.description
+  end
+
   it "supports different versions of field arguments" do
     res = exec_future_query("{ thing(id: \"15\") { id } }")
     assert_equal 15, res["data"]["thing"]["id"]
@@ -620,6 +626,10 @@ GRAPHQL
     assert_includes future_schema_sdl, <<-GRAPHQL
 type Money implements HasCurrency {
   amount: Int!
+
+  """
+  The denomination of this amount of money
+  """
   currency: String!
 }
 GRAPHQL
