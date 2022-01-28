@@ -38,7 +38,13 @@ module GraphQL
 
       # @return [Class] The GraphQL type this field belongs to. (For fields defined on mutations, it's the payload type)
       def owner_type
-        @owner_type ||= if owner < GraphQL::Schema::Mutation
+        @owner_type ||= if owner.nil?
+          raise GraphQL::InvariantError, <<~ERR
+Field #{original_name.inspect} (graphql name: #{graphql_name.inspect}) has no owner, but all fields should have an owner. How did this happen?!
+
+This is probably a bug in GraphQL-Ruby, please report this error on GitHub: https://github.com/rmosolgo/graphql-ruby/issues/new?template=bug_report.md
+ERR
+        elsif owner < GraphQL::Schema::Mutation
           owner.payload_type
         else
           owner

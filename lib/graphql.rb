@@ -17,6 +17,11 @@ module GraphQL
   class Error < StandardError
   end
 
+  # This error is raised when GraphQL-Ruby encounters a situation
+  # that it *thought* would never happen. Please report this bug!
+  class InvariantError < Error
+  end
+
   class RequiredImplementationMissingError < Error
   end
 

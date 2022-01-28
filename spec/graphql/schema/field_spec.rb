@@ -646,4 +646,20 @@ describe GraphQL::Schema::Field do
       assert_equal expected_result, search_results
     end
   end
+
+  describe "when the owner is nil" do
+    it "raises a descriptive error" do
+      bad_field = GraphQL::Schema::Field.new(name: "something", owner: nil, type: String)
+      assert_nil bad_field.owner
+      err = assert_raises GraphQL::InvariantError do
+        bad_field.owner_type
+      end
+      expected_message = "Field \"something\" (graphql name: \"something\") has no owner, but all fields should have an owner. How did this happen?!
+
+This is probably a bug in GraphQL-Ruby, please report this error on GitHub: https://github.com/rmosolgo/graphql-ruby/issues/new?template=bug_report.md
+"
+
+      assert_equal expected_message, err.message
+    end
+  end
 end
