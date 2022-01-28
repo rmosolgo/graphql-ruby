@@ -10,11 +10,26 @@
 
 ### Bug fixes
 
+# 1.13.7 (28 January 2022)
+
+### New Features
+
+- Arguments: `replace_null_with_default: true` replaces incoming `null`s with the configured `default_value:` #3871
+- Arguments: support `dig: [key1, key2, ...]` for nested hash key access #3856
+- Generators: support more Postgresql field types #3577
+- Generators: support downcased generator argument types #3577
+- Generators: add an input type generator #3577
+- Generators: support namespaces in generators #3577
+
+### Bug Fixes
+
+- Field: better error for nil `owner` #3870
+- ISO8601DateTime: don't accept inputs with partial time parts #3862
+- SDL: fix for base connection classes that implement interfaces #3859
+- Cops: find `required: true` on `f.argument` calls (with explicit receiver) #3858
+- Analysis: handle undefined or hidden fields with `nil` in `visitor.field_definition` #3857
+
 # 1.13.6 (20 January 2022)
-
-### Breaking changes
-
-### Deprecations
 
 ### New features
 
