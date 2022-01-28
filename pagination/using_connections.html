@@ -67,6 +67,16 @@
 
 <p>The field will be given some arguments by default: <code class="language-plaintext highlighter-rouge">first</code>, <code class="language-plaintext highlighter-rouge">last</code>, <code class="language-plaintext highlighter-rouge">after</code>, and <code class="language-plaintext highlighter-rouge">before</code>.</p>
 
+<h3 id="opting-out-of-default-connection-handling">Opting out of default connection handling</h3>
+
+<p>To opt out of GraphQL-Ruby’s default connection handling, add <code class="language-plaintext highlighter-rouge">connection: false</code> to the field definition:</p>
+
+<div class="language-diff highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gd">- field :items, Types::ItemType.connection_type, null: false
+</span><span class="gi">+ field :items, Types::ItemType.connection_type, null: false, connection: false
+</span></code></pre></div></div>
+
+<p>Then, add any arguments you want (<code class="language-plaintext highlighter-rouge">first</code>, <code class="language-plaintext highlighter-rouge">last</code>, <code class="language-plaintext highlighter-rouge">after</code>, <code class="language-plaintext highlighter-rouge">before</code>) and make sure that your resolver returns an object that can fulfill the fields of the configured return type.</p>
+
 <h2 id="return-collections">Return Collections</h2>
 
 <p>With connection fields, you can return collection objects from fields or resolvers:</p>
