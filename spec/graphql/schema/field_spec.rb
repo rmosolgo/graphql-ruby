@@ -656,8 +656,7 @@ describe GraphQL::Schema::Field do
       end
       expected_message = "Field \"something\" (graphql name: \"something\") has no owner, but all fields should have an owner. How did this happen?!
 
-This is probably a bug in GraphQL-Ruby, please report this error on GitHub: https://github.com/rmosolgo/graphql-ruby/issues/new?template=bug_report.md
-"
+This is probably a bug in GraphQL-Ruby, please report this error on GitHub: https://github.com/rmosolgo/graphql-ruby/issues/new?template=bug_report.md"
 
       assert_equal expected_message, err.message
     end

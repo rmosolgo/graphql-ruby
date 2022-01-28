@@ -20,6 +20,12 @@ module GraphQL
   # This error is raised when GraphQL-Ruby encounters a situation
   # that it *thought* would never happen. Please report this bug!
   class InvariantError < Error
+    def initialize(message)
+      message += "
+
+This is probably a bug in GraphQL-Ruby, please report this error on GitHub: https://github.com/rmosolgo/graphql-ruby/issues/new?template=bug_report.md"
+      super(message)
+    end
   end
 
   class RequiredImplementationMissingError < Error
