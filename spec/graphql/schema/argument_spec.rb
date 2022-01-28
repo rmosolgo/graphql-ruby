@@ -580,6 +580,60 @@ describe GraphQL::Schema::Argument do
     end
   end
 
+  describe "replace_null_with_default: true" do
+    class ReplaceNullWithDefaultSchema < GraphQL::Schema
+      class Add < GraphQL::Schema::Resolver
+        argument :left, Integer, required: false, default_value: 5, replace_null_with_default: true
+        argument :right, Integer
+        type Integer, null: false
+
+        def resolve(left:, right:)
+          right + left
+        end
+      end
+
+      class AddInput < GraphQL::Schema::InputObject
+        argument :left, Integer, required: false, default_value: 5, replace_null_with_default: true
+        argument :right, Integer
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :add1, Integer do
+          argument :left, Integer, required: false, default_value: 5, replace_null_with_default: true
+          argument :right, Integer
+        end
+
+        def add1(left:, right:)
+          left + right
+        end
+
+        field :add2, resolver: Add
+
+        field :add3, Integer do
+          argument :input, AddInput
+        end
+
+        def add3(input:)
+          input[:left] + input[:right]
+        end
+      end
+      query(Query)
+    end
+
+    it "works for fields, resolvers, and input objects" do
+      res1 = ReplaceNullWithDefaultSchema.execute("{ r1: add1(left: null, right: 2) r2: add1(right: 0)}")
+      assert_equal 7, res1["data"]["r1"]
+      assert_equal 5, res1["data"]["r2"]
+
+      res2 = ReplaceNullWithDefaultSchema.execute("{ r1: add2(left: null, right: 1) r2: add2(right: 3) }")
+      assert_equal 6, res2["data"]["r1"]
+      assert_equal 8, res2["data"]["r2"]
+
+      res3 = ReplaceNullWithDefaultSchema.execute("{ r1: add3(input: { left: null, right: 5 }) r2: add3(input: { right: 6 }) }")
+      assert_equal 10, res3["data"]["r1"]
+      assert_equal 11, res3["data"]["r2"]
+    end
+  end
 
   describe "multiple argument definitions with default values" do
     class MultipleArgumentDefaultValuesSchema < GraphQL::Schema

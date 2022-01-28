@@ -48,13 +48,21 @@ module GraphQL
       # @param directives [Hash{Class => Hash}]
       # @param deprecation_reason [String]
       # @param validates [Hash, nil] Options for building validators, if any should be applied
-      def initialize(arg_name = nil, type_expr = nil, desc = nil, required: true, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NO_DEFAULT, as: nil, from_resolver: false, camelize: true, prepare: nil, method_access: true, owner:, validates: nil, directives: nil, deprecation_reason: nil, &definition_block)
+      # @param replace_null_with_default [Boolean] if `true`, incoming values of `null` will be replaced with the configured `default_value`
+      def initialize(arg_name = nil, type_expr = nil, desc = nil, required: true, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NO_DEFAULT, as: nil, from_resolver: false, camelize: true, prepare: nil, method_access: true, owner:, validates: nil, directives: nil, deprecation_reason: nil, replace_null_with_default: false, &definition_block)
         arg_name ||= name
         @name = -(camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s)
         @type_expr = type_expr || type
         @description = desc || description
         @null = required != true
         @default_value = default_value
+        if replace_null_with_default
+          if !default_value?
+            raise ArgumentError, "`replace_null_with_default: true` requires a default value, please provide one with `default_value: ...`"
+          end
+          @replace_null_with_default = true
+        end
+
         @owner = owner
         @as = as
         @loads = loads
@@ -95,6 +103,10 @@ module GraphQL
       # @return [Boolean] True if this argument has a default value
       def default_value?
         @default_value != NO_DEFAULT
+      end
+
+      def replace_null_with_default?
+        @replace_null_with_default
       end
 
       attr_writer :description
@@ -251,6 +263,11 @@ module GraphQL
           # no value at all
           owner.validate_directive_argument(self, nil)
           return
+        end
+
+        if value.nil? && replace_null_with_default?
+          value = default_value
+          default_used = true
         end
 
         loaded_value = nil
