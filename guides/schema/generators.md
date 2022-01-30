@@ -61,7 +61,7 @@ Several generators will add GraphQL types to your project. Run them with `-h` to
 
 ### ActiveRecord columns auto-extraction
 
-The `graphql:object` and `graphql:input` generators can detect the existence of an ActiveRecord class with the same name, and scaffold all database columns as fields/arguments using aproppiate GraphQL types and nullability detection
+The `graphql:object` and `graphql:input` generators can detect the existence of an ActiveRecord class with the same name, and scaffold all database columns as fields/arguments using aproppriate GraphQL types and nullability detection
 
 ### Options
 
