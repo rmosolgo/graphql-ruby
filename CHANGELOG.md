@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 1.13.8 (1 February 2022)
+
+### Bug fixes
+
+- Introspection query: hide newly-supported fields behind arguments, maintain backwards-compatible INTROSPECTION_QUERY #3877
+
 # 1.13.7 (28 January 2022)
 
 ### New Features
