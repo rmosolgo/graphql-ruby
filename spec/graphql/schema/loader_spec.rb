@@ -150,7 +150,7 @@ describe GraphQL::Schema::Loader do
   }
 
   let(:schema_json) {
-    schema.execute(GraphQL::Introspection.query(include_deprecated_args: true))
+    schema.execute(GraphQL::Introspection.query(include_deprecated_args: true, include_schema_description: true, include_specified_by_url: true, include_is_repeatable: true))
   }
 
   describe "load" do
