@@ -91,7 +91,7 @@ module GraphQL
       def selection(field_name, selected_type: @selected_type, arguments: nil)
         next_field_name = normalize_name(field_name)
 
-        next_field_defn = get_class_based_field(selected_type, next_field_name)
+        next_field_defn = @query.get_field(selected_type, next_field_name)
         if next_field_defn
           next_nodes = []
           @ast_nodes.each do |ast_node|
@@ -137,7 +137,7 @@ module GraphQL
 
         subselections_by_type.each do |type, ast_nodes_by_response_key|
           ast_nodes_by_response_key.each do |response_key, ast_nodes|
-            field_defn = get_class_based_field(type, ast_nodes.first.name)
+            field_defn = @query.get_field(type, ast_nodes.first.name)
             lookahead = Lookahead.new(query: @query, ast_nodes: ast_nodes, field: field_defn, owner_type: type)
             subselections.push(lookahead)
           end
@@ -213,17 +213,10 @@ module GraphQL
         end
       end
 
-      # Wrap get_field and ensure that it returns a GraphQL::Schema::Field.
-      # Remove this when legacy execution is removed.
-      def get_class_based_field(type, name)
-        f = @query.get_field(type, name)
-        f && f.type_class
-      end
-
       def skipped_by_directive?(ast_selection)
         ast_selection.directives.each do |directive|
           dir_defn = @query.schema.directives.fetch(directive.name)
-          directive_class = dir_defn.type_class
+          directive_class = dir_defn
           if directive_class
             dir_args = @query.arguments_for(directive, dir_defn)
             return true unless directive_class.static_include?(dir_args, @query.context)
@@ -244,7 +237,7 @@ module GraphQL
             elsif arguments.nil? || arguments.empty?
               selections_on_type[response_key] = [ast_selection]
             else
-              field_defn = get_class_based_field(selected_type, ast_selection.name)
+              field_defn = @query.get_field(selected_type, ast_selection.name)
               if arguments_match?(arguments, field_defn, ast_selection)
                 selections_on_type[response_key] = [ast_selection]
               end
@@ -254,14 +247,14 @@ module GraphQL
             subselections_on_type = selections_on_type
             if (t = ast_selection.type)
               # Assuming this is valid, that `t` will be found.
-              on_type = @query.get_type(t.name).type_class
+              on_type = @query.get_type(t.name)
               subselections_on_type = subselections_by_type[on_type] ||= {}
             end
             find_selections(subselections_by_type, subselections_on_type, on_type, ast_selection.selections, arguments)
           when GraphQL::Language::Nodes::FragmentSpread
             frag_defn = @query.fragments[ast_selection.name] || raise("Invariant: Can't look ahead to nonexistent fragment #{ast_selection.name} (found: #{@query.fragments.keys})")
             # Again, assuming a valid AST
-            on_type = @query.get_type(frag_defn.type.name).type_class
+            on_type = @query.get_type(frag_defn.type.name)
             subselections_on_type = subselections_by_type[on_type] ||= {}
             find_selections(subselections_by_type, subselections_on_type, on_type, frag_defn.selections, arguments)
           else

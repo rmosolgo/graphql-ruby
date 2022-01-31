@@ -386,7 +386,7 @@ type Query {
               ]
             }
           }
-        }).graphql_definition(silence_deprecation_warning: true)
+        })
       end
     end
 

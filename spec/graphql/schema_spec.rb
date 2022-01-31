@@ -71,7 +71,7 @@ describe GraphQL::Schema do
       assert_equal base_schema.query_analyzers, schema.query_analyzers
       assert_equal base_schema.multiplex_analyzers, schema.multiplex_analyzers
       assert_equal base_schema.disable_introspection_entry_points?, schema.disable_introspection_entry_points?
-      assert_equal [GraphQL::Pagination::Connections, GraphQL::Backtrace], schema.plugins.map(&:first)
+      assert_equal [GraphQL::Backtrace], schema.plugins.map(&:first)
     end
 
     it "can override configuration from its superclass" do
@@ -101,7 +101,6 @@ describe GraphQL::Schema do
       schema.mutation_execution_strategy(mutation_execution_strategy)
       subscription_execution_strategy = Object.new
       schema.subscription_execution_strategy(subscription_execution_strategy)
-      # Assert these _before_ `use(Interpreter)` below
       assert_equal query_execution_strategy, schema.query_execution_strategy
       assert_equal mutation_execution_strategy, schema.mutation_execution_strategy
       assert_equal subscription_execution_strategy, schema.subscription_execution_strategy
@@ -119,7 +118,6 @@ describe GraphQL::Schema do
       schema.query_analyzer(query_analyzer)
       multiplex_analyzer = Object.new
       schema.multiplex_analyzer(multiplex_analyzer)
-      schema.use(GraphQL::Execution::Interpreter)
       schema.rescue_from(GraphQL::ExecutionError)
       schema.tracer(GraphQL::Tracing::NewRelicTracing)
 
@@ -139,7 +137,7 @@ describe GraphQL::Schema do
       assert_equal schema.directives, GraphQL::Schema.default_directives.merge(DummyFeature1.graphql_name => DummyFeature1, DummyFeature2.graphql_name => DummyFeature2)
       assert_equal base_schema.query_analyzers + [query_analyzer], schema.query_analyzers
       assert_equal base_schema.multiplex_analyzers + [multiplex_analyzer], schema.multiplex_analyzers
-      assert_equal [GraphQL::Pagination::Connections, GraphQL::Backtrace, GraphQL::Execution::Interpreter], schema.plugins.map(&:first)
+      assert_equal [GraphQL::Backtrace], schema.plugins.map(&:first)
       assert_equal [GraphQL::Tracing::DataDogTracing, GraphQL::Backtrace::Tracer], base_schema.tracers
       assert_equal [GraphQL::Tracing::DataDogTracing, GraphQL::Backtrace::Tracer, GraphQL::Tracing::NewRelicTracing], schema.tracers
     end

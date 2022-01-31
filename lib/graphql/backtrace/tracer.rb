@@ -23,7 +23,7 @@ module GraphQL
             push_data = multiplex.queries.first
           end
         when "execute_field", "execute_field_lazy"
-          query = metadata[:query] || raise(ArgumentError, "Add `legacy: true` to use GraphQL::Backtrace without the interpreter runtime.")
+          query = metadata[:query]
           multiplex = query.multiplex
           push_key = metadata[:path]
           parent_frame = multiplex.context[:graphql_backtrace_contexts][push_key[0..-2]]
@@ -62,7 +62,6 @@ module GraphQL
             potential_context = multiplex_context[:last_graphql_backtrace_context]
 
             if potential_context.is_a?(GraphQL::Query::Context) ||
-                potential_context.is_a?(GraphQL::Query::Context::FieldResolutionContext) ||
                 potential_context.is_a?(Backtrace::Frame)
               raise TracedError.new(err, potential_context)
             else

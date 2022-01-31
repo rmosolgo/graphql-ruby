@@ -280,9 +280,9 @@ type Hello {
 
       built_schema = GraphQL::Schema.from_definition(schema)
 
-      refute built_schema.directives['skip'] == GraphQL::Directive::SkipDirective
-      refute built_schema.directives['include'] == GraphQL::Directive::IncludeDirective
-      refute built_schema.directives['deprecated'] == GraphQL::Directive::DeprecatedDirective
+      refute built_schema.directives['skip'] == GraphQL::Schema::Directive::Skip
+      refute built_schema.directives['include'] == GraphQL::Schema::Directive::Include
+      refute built_schema.directives['deprecated'] == GraphQL::Schema::Directive::Deprecated
     end
 
     it 'supports adding directives while maintaining built-in directives' do
@@ -982,21 +982,6 @@ SCHEMA
         GraphQL::Schema.from_definition(schema)
       end
       assert_equal 'Must provide schema definition with query type or a type named Query.', err.message
-    end
-
-    it 'Requires a query type that defines at least one field' do
-      schema = <<-SCHEMA
-schema {
-  query: Hello
-}
-
-type Hello { }
-SCHEMA
-
-      err = assert_raises(GraphQL::Schema::InvalidTypeError) do
-        GraphQL::Schema.from_definition(schema).to_graphql(silence_deprecation_warning: true)
-      end
-      assert_equal 'Hello is invalid: Hello must define at least 1 field. 0 defined.', err.message
     end
 
     it 'Unknown type referenced' do

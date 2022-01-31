@@ -88,7 +88,6 @@ describe GraphQL::Types::Relay::BaseConnection do
     assert_equal "passing extra args", nodes_field.deprecation_reason
   end
 
-
   describe "visibility" do
     class BaseConnectionImplementsInterfaceSchema < GraphQL::Schema
       module CountableConnection

@@ -23,8 +23,6 @@ module GraphQL
               int.interfaces.each do |next_interface|
                 implements(next_interface)
               end
-            elsif int.is_a?(GraphQL::InterfaceType)
-              new_memberships << int.type_membership_class.new(int, self, **options)
             elsif int.is_a?(String) || int.is_a?(GraphQL::Schema::LateBoundType)
               if options.any?
                 raise ArgumentError, "`implements(...)` doesn't support options with late-loaded types yet. Remove #{options} and open an issue to request this feature."

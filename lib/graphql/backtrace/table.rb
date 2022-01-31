@@ -97,24 +97,6 @@ module GraphQL
           else
             rows
           end
-        when GraphQL::Query::Context::FieldResolutionContext
-          ctx = context_entry
-          field_name = "#{ctx.irep_node.owner_type.name}.#{ctx.field.name}"
-          position = "#{ctx.ast_node.line}:#{ctx.ast_node.col}"
-          field_alias = ctx.ast_node.alias
-          object = ctx.object
-          if object.is_a?(GraphQL::Schema::Object)
-            object = object.object
-          end
-          rows << [
-            "#{position}",
-            "#{field_name}#{field_alias ? " as #{field_alias}" : ""}",
-            "#{object.inspect}",
-            ctx.irep_node.arguments.to_h.inspect,
-            Backtrace::InspectResult.inspect_result(top && @override_value ? @override_value : ctx.value),
-          ]
-
-          build_rows(ctx.parent, rows: rows)
         when GraphQL::Query::Context
           query = context_entry.query
           op = query.selected_operation

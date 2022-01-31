@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-TESTING_INTERPRETER = true
 require "graphql"
 require "jazz"
 require "benchmark/ips"

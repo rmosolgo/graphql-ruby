@@ -2,8 +2,6 @@
 module GraphQL
   class Schema
     class Argument
-      include GraphQL::Schema::Member::CachedGraphQLDefinition
-      include GraphQL::Schema::Member::AcceptsDefinition
       include GraphQL::Schema::Member::HasPath
       include GraphQL::Schema::Member::HasAstNode
       include GraphQL::Schema::Member::HasDirectives
@@ -44,12 +42,11 @@ module GraphQL
       # @param prepare [Symbol] A method to call to transform this argument's valuebefore sending it to field resolution
       # @param camelize [Boolean] if true, the name will be camelized when building the schema
       # @param from_resolver [Boolean] if true, a Resolver class defined this argument
-      # @param method_access [Boolean] If false, don't build method access on legacy {Query::Arguments} instances.
       # @param directives [Hash{Class => Hash}]
       # @param deprecation_reason [String]
       # @param validates [Hash, nil] Options for building validators, if any should be applied
       # @param replace_null_with_default [Boolean] if `true`, incoming values of `null` will be replaced with the configured `default_value`
-      def initialize(arg_name = nil, type_expr = nil, desc = nil, required: true, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NO_DEFAULT, as: nil, from_resolver: false, camelize: true, prepare: nil, method_access: true, owner:, validates: nil, directives: nil, deprecation_reason: nil, replace_null_with_default: false, &definition_block)
+      def initialize(arg_name = nil, type_expr = nil, desc = nil, required: true, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NO_DEFAULT, as: nil, from_resolver: false, camelize: true, prepare: nil, owner:, validates: nil, directives: nil, deprecation_reason: nil, replace_null_with_default: false, &definition_block)
         arg_name ||= name
         @name = -(camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s)
         @type_expr = type_expr || type
@@ -70,7 +67,6 @@ module GraphQL
         @prepare = prepare
         @ast_node = ast_node
         @from_resolver = from_resolver
-        @method_access = method_access
         self.deprecation_reason = deprecation_reason
 
         if directives
@@ -167,26 +163,6 @@ module GraphQL
         # None of the early-return conditions were activated,
         # so this is authorized.
         true
-      end
-
-      prepend Schema::Member::CachedGraphQLDefinition::DeprecatedToGraphQL
-
-      def to_graphql
-        argument = GraphQL::Argument.new
-        argument.name = @name
-        argument.type = -> { type }
-        argument.description = @description
-        argument.metadata[:type_class] = self
-        argument.as = @as
-        argument.ast_node = ast_node
-        argument.method_access = @method_access
-        if NO_DEFAULT != @default_value
-          argument.default_value = @default_value
-        end
-        if self.deprecation_reason
-          argument.deprecation_reason = self.deprecation_reason
-        end
-        argument
       end
 
       def type=(new_type)

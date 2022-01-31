@@ -9,7 +9,7 @@ module GraphQL
       # @return [String] Corresponds to the Subscription root field name
       attr_reader :name
 
-      # @return [GraphQL::Query::Arguments]
+      # @return [GraphQL::Execution::Interpreter::Arguments]
       attr_reader :arguments
 
       # @return [GraphQL::Query::Context]

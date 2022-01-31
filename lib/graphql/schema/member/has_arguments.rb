@@ -14,7 +14,7 @@ module GraphQL
         end
 
         # @see {GraphQL::Schema::Argument#initialize} for parameters
-        # @return [GraphQL::Schema::Argument] An instance of {arguments_class}, created from `*args`
+        # @return [GraphQL::Schema::Argument] An instance of {argument_class}, created from `*args`
         def argument(*args, **kwargs, &block)
           kwargs[:owner] = self
           loads = kwargs[:loads]
@@ -291,26 +291,22 @@ module GraphQL
                   # This object was loaded successfully
                   # and resolved to the right type,
                   # now apply the `.authorized?` class method if there is one
-                  if (class_based_type = application_object_type.type_class)
-                    context.schema.after_lazy(class_based_type.authorized?(application_object, context)) do |authed|
-                      if authed
-                        application_object
+                  context.schema.after_lazy(application_object_type.authorized?(application_object, context)) do |authed|
+                    if authed
+                      application_object
+                    else
+                      err = GraphQL::UnauthorizedError.new(
+                        object: application_object,
+                        type: application_object_type,
+                        context: context,
+                      )
+                      if self.respond_to?(:unauthorized_object)
+                        err.set_backtrace(caller)
+                        unauthorized_object(err)
                       else
-                        err = GraphQL::UnauthorizedError.new(
-                          object: application_object,
-                          type: class_based_type,
-                          context: context,
-                        )
-                        if self.respond_to?(:unauthorized_object)
-                          err.set_backtrace(caller)
-                          unauthorized_object(err)
-                        else
-                          raise err
-                        end
+                        raise err
                       end
                     end
-                  else
-                    application_object
                   end
                 end
               end

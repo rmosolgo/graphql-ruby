@@ -62,29 +62,6 @@ describe GraphQL::Schema::Enum do
     end
   end
 
-  it "uses a custom enum value class" do
-    enum_type = enum.deprecated_to_graphql
-    value = enum_type.values["STRING"]
-    assert_equal 1, value.metadata[:custom_setting]
-  end
-
-  describe ".to_graphql" do
-    it "creates an EnumType" do
-      enum_type = enum.deprecated_to_graphql
-      assert_equal "Family", enum_type.name
-      assert_equal "Groups of musical instruments", enum_type.description
-
-      string_val = enum_type.values["STRING"]
-      didg_val = enum_type.values["DIDGERIDOO"]
-      silence_val = enum_type.values["SILENCE"]
-      assert_equal "STRING", string_val.name
-      assert_equal :str, string_val.value
-      assert_equal false, silence_val.value
-      assert_equal "DIDGERIDOO", didg_val.name
-      assert_equal "Merged into BRASS", didg_val.deprecation_reason
-    end
-  end
-
   describe "in queries" do
     it "works as return values" do
       query_str = "{ instruments { family } }"
@@ -141,13 +118,13 @@ describe GraphQL::Schema::Enum do
     end
 
     it "raises a helpful error when a result value can't be coerced" do
-      err = assert_raises(GraphQL::EnumType::UnresolvedValueError) {
+      err = assert_raises(GraphQL::Schema::Enum::UnresolvedValueError) {
         enum.coerce_result(:nonsense, OpenStruct.new(current_path: ["thing", 0, "name"], current_field: OpenStruct.new(path: "Thing.name")))
       }
       expected_context_message = "`Thing.name` returned `:nonsense` at `thing.0.name`, but this isn't a valid value for `DairyAnimal`. Update the field or resolver to return one of `DairyAnimal`'s values instead."
       assert_equal expected_context_message, err.message
 
-      err2 = assert_raises(GraphQL::EnumType::UnresolvedValueError) {
+      err2 = assert_raises(GraphQL::Schema::Enum::UnresolvedValueError) {
         enum.coerce_isolated_result(:nonsense)
       }
       expected_isolated_message = "`:nonsense` was returned for `DairyAnimal`, but this isn't a valid value for `DairyAnimal`. Update the field or resolver to return one of `DairyAnimal`'s values instead."
@@ -159,7 +136,7 @@ describe GraphQL::Schema::Enum do
         # OK
         assert_equal("YAK", enum.coerce_isolated_result("YAK"))
         # NOT OK
-        assert_raises(GraphQL::EnumType::UnresolvedValueError) {
+        assert_raises(GraphQL::Schema::Enum::UnresolvedValueError) {
           enum.coerce_result("YAK", OpenStruct.new(warden: NothingWarden))
         }
       end

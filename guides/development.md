@@ -264,10 +264,6 @@ To cut a release:
     - Include the PR number beside the change description for future reference
 - Update `lib/graphql/version.rb` with the new version number
 - Commit changes to master
-- Release to RubyGems
-  - Without 2FA 😢: `bundle exec rake release`
-  - With 2FA 😎: `bundle exec rake build` then `gem push pkg/graphql-<version>.gem`, `git tag v<version> && git push v<version>`
-- Update the website:
-  - Generate new API docs with `bundle exec rake apidocs:gen_version[<your.version.number>]`
-  - Push them to the website with `bundle exec rake site:publish`
+- Push changes to GitHub: `git push origin master`. GitHub Actions will update the website.
+- Release to RubyGems: `bundle exec rake release`. This will also push the tag to GitHub which will kick off a GitHub Actions job to update the API docs.
 - Celebrate 🎊  !

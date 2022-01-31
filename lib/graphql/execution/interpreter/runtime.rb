@@ -472,10 +472,6 @@ module GraphQL
                   # Use this flag to tell Interpreter::Arguments to add itself
                   # to the keyword args hash _before_ freezing everything.
                   extra_args[:argument_details] = :__arguments_add_self
-                when :irep_node
-                  # This is used by `__typename` in order to support the legacy runtime,
-                  # but it has no use here (and it's always `nil`).
-                  # Stop adding it here to avoid the overhead of `.merge_extras` below.
                 when :parent
                   extra_args[:parent] = parent_object
                 else
@@ -619,7 +615,7 @@ module GraphQL
                 err
               end
               continue_value(path, next_value, parent_type, field, is_non_null, ast_node, result_name, selection_result)
-            elsif GraphQL::Execution::Execute::SKIP == value
+            elsif GraphQL::Execution::SKIP == value
               # It's possible a lazy was already written here
               case selection_result
               when GraphQLResultHash
@@ -819,9 +815,6 @@ module GraphQL
             yield
           else
             dir_defn = @schema_directives.fetch(dir_node.name)
-            if !dir_defn.is_a?(Class)
-              dir_defn = dir_defn.type_class || raise("Only class-based directives are supported (not `@#{dir_node.name}`)")
-            end
             raw_dir_args = arguments(nil, dir_defn, dir_node)
             dir_args = continue_value(
               @context[:current_path], # path
@@ -847,7 +840,7 @@ module GraphQL
         # Check {Schema::Directive.include?} for each directive that's present
         def directives_include?(node, graphql_object, parent_type)
           node.directives.each do |dir_node|
-            dir_defn = @schema_directives.fetch(dir_node.name).type_class || raise("Only class-based directives are supported (not #{dir_node.name.inspect})")
+            dir_defn = @schema_directives.fetch(dir_node.name)
             args = arguments(graphql_object, dir_defn, dir_node)
             if !dir_defn.include?(graphql_object, args, context)
               return false

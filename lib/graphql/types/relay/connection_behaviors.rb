@@ -36,7 +36,7 @@ module GraphQL
           # class name to set defaults. You can call it again in the class definition
           # to override the default (or provide a value, if the default lookup failed).
           # @param field_options [Hash] Any extra keyword arguments to pass to the `field :edges, ...` and `field :nodes, ...` configurations
-          def edge_type(edge_type_class, edge_class: GraphQL::Relay::Edge, node_type: edge_type_class.node_type, nodes_field: self.has_nodes_field, node_nullable: self.node_nullable, edges_nullable: self.edges_nullable, edge_nullable: self.edge_nullable, field_options: nil)
+          def edge_type(edge_type_class, edge_class: GraphQL::Pagination::Connection::Edge, node_type: edge_type_class.node_type, nodes_field: self.has_nodes_field, node_nullable: self.node_nullable, edges_nullable: self.edges_nullable, edge_nullable: self.edge_nullable, field_options: nil)
             # Set this connection's graphql name
             node_type_name = node_type.graphql_name
 
@@ -49,7 +49,6 @@ module GraphQL
               type: [edge_type_class, null: edge_nullable],
               null: edges_nullable,
               description: "A list of edges.",
-              legacy_edge_class: edge_class, # This is used by the old runtime only, for EdgesInstrumentation
               connection: false,
             }
 
@@ -159,13 +158,10 @@ module GraphQL
         def edges
           if @object.is_a?(GraphQL::Pagination::Connection)
             @object.edges
-          elsif context.interpreter?
+          else
             context.schema.after_lazy(object.edge_nodes) do |nodes|
               nodes.map { |n| self.class.edge_class.new(n, object) }
             end
-          else
-            # This is done by edges_instrumentation
-            @object.edge_nodes
           end
         end
       end

@@ -50,17 +50,6 @@ module Jazz
       @custom = custom
       super(*args, **kwargs)
     end
-
-    def to_graphql(silence_deprecation_warning: true)
-      arg_defn = case method(:to_graphql).super_method.parameters.size
-      when 1
-        super(silence_deprecation_warning: true)
-      else
-        super()
-      end
-      arg_defn.metadata[:custom] = @custom
-      arg_defn
-    end
   end
 
   # A custom field class that supports the `upcase:` option
@@ -104,14 +93,6 @@ module Jazz
       def configs
         @configs ||= {}
       end
-
-      def to_graphql
-        type_defn = super(silence_deprecation_warning: true)
-        configs.each do |k, v|
-          type_defn.metadata[k] = v
-        end
-        type_defn
-      end
     end
   end
 
@@ -132,17 +113,6 @@ module Jazz
     def initialize(*args, custom_setting: nil, **kwargs, &block)
       @custom_setting = custom_setting
       super(*args, **kwargs, &block)
-    end
-
-    def to_graphql
-      enum_value_defn = case method(:to_graphql).super_method.arity
-      when 0
-        super
-      else
-        super(silence_deprecation_warning: true)
-      end
-      enum_value_defn.metadata[:custom_setting] = @custom_setting
-      enum_value_defn
     end
   end
 
@@ -277,9 +247,6 @@ module Jazz
     end
     value "SILENCE", "Makes no sound", value: false
   end
-
-  # Lives side-by-side with an old-style definition
-  using GraphQL::DeprecatedDSL # for ! and types[]
 
   class InstrumentType < BaseObject
     implements NamedEntity
@@ -549,11 +516,7 @@ module Jazz
     end
 
     field :default_value_test, String, null: false do
-      if TESTING_INTERPRETER
-        argument :arg_with_default, InspectableInput, required: false, default_value: { string_value: "S" }
-      else
-        argument :arg_with_default, InspectableInput, required: false, default_value: { "stringValue" => "S" }
-      end
+      argument :arg_with_default, InspectableInput, required: false, default_value: { string_value: "S" }
     end
 
     def default_value_test(arg_with_default:)
@@ -853,12 +816,6 @@ module Jazz
     end
   end
 
-  class MetadataPlugin
-    def self.use(schema_defn, value:)
-      schema_defn.metadata[:plugin_key] = value
-    end
-  end
-
   class CustomContext < GraphQL::Query::Context
     def [](key)
       if key == :magic_key
@@ -912,11 +869,11 @@ module Jazz
     end
 
     class DynamicFields < GraphQL::Introspection::DynamicFields
-      field :__typename_length, Int, null: false, extras: [:irep_node]
+      field :__typename_length, Int, null: false
       field :__ast_node_class, String, null: false, extras: [:ast_node]
 
-      def __typename_length(irep_node: nil)
-        __typename(irep_node: irep_node).length
+      def __typename_length
+        __typename.length
       end
 
       def __ast_node_class(ast_node:)
@@ -928,11 +885,7 @@ module Jazz
       field :__classname, String, "The Ruby class name of the root object", null: false
 
       def __classname
-        if context.interpreter?
-          object.object.class.name
-        else
-          object.class.name
-        end
+        object.object.class.name
       end
     end
   end
@@ -953,8 +906,6 @@ module Jazz
     end
 
     use GraphQL::Dataloader
-
-    use MetadataPlugin, value: "xyz"
   end
 
   class SchemaWithoutIntrospection < GraphQL::Schema

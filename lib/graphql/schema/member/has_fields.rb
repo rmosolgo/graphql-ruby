@@ -103,10 +103,10 @@ module GraphQL
         end
 
         def global_id_field(field_name, **kwargs)
-          id_resolver = GraphQL::Relay::GlobalIdResolve.new(type: self)
+          type = self
           field field_name, "ID", **kwargs, null: false
           define_method(field_name) do
-            id_resolver.call(object, {}, context)
+            context.schema.id_from_object(object, type, context)
           end
         end
 

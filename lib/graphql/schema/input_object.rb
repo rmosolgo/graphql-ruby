@@ -2,7 +2,6 @@
 module GraphQL
   class Schema
     class InputObject < GraphQL::Schema::Member
-      extend GraphQL::Schema::Member::AcceptsDefinition
       extend Forwardable
       extend GraphQL::Schema::Member::HasArguments
       extend GraphQL::Schema::Member::HasArguments::ArgumentObjectLoader
@@ -13,49 +12,28 @@ module GraphQL
 
       # @return [GraphQL::Query::Context] The context for this query
       attr_reader :context
-      # @return [GraphQL::Query::Arguments, GraphQL::Execution::Interpereter::Arguments] The underlying arguments instance
+      # @return [GraphQL::Execution::Interpereter::Arguments] The underlying arguments instance
       attr_reader :arguments
 
       # Ruby-like hash behaviors, read-only
       def_delegators :@ruby_style_hash, :keys, :values, :each, :map, :any?, :empty?
 
-      def initialize(arguments = nil, ruby_kwargs: nil, context:, defaults_used:)
+      def initialize(arguments, ruby_kwargs:, context:, defaults_used:)
         @context = context
-        if ruby_kwargs
-          @ruby_style_hash = ruby_kwargs
-          @arguments = arguments
-        else
-          @arguments = self.class.arguments_class.new(arguments, context: context, defaults_used: defaults_used)
-          # Symbolized, underscored hash:
-          @ruby_style_hash = @arguments.to_kwargs
-        end
+        @ruby_style_hash = ruby_kwargs
+        @arguments = arguments
         # Apply prepares, not great to have it duplicated here.
-        maybe_lazies = []
         self.class.arguments(context).each_value do |arg_defn|
           ruby_kwargs_key = arg_defn.keyword
-
           if @ruby_style_hash.key?(ruby_kwargs_key)
-            loads = arg_defn.loads
-            # Resolvers do this loading themselves;
-            # With the interpreter, it's done during `coerce_arguments`
-            if loads && !arg_defn.from_resolver? && !context.interpreter?
-              value = @ruby_style_hash[ruby_kwargs_key]
-              loaded_value = arg_defn.load_and_authorize_value(self, value, context)
-              maybe_lazies << context.schema.after_lazy(loaded_value) do |loaded_value|
-                overwrite_argument(ruby_kwargs_key, loaded_value)
-              end
-            end
-
             # Weirdly, procs are applied during coercion, but not methods.
             # Probably because these methods require a `self`.
-            if arg_defn.prepare.is_a?(Symbol) || context.nil? || !context.interpreter?
+            if arg_defn.prepare.is_a?(Symbol) || context.nil?
               prepared_value = arg_defn.prepare_value(self, @ruby_style_hash[ruby_kwargs_key])
               overwrite_argument(ruby_kwargs_key, prepared_value)
             end
           end
         end
-
-        @maybe_lazies = maybe_lazies
       end
 
       def to_h
@@ -68,12 +46,10 @@ module GraphQL
 
       def prepare
         if @context
-          @context.schema.after_any_lazies(@maybe_lazies) do
-            object = @context[:current_object]
-            # Pass this object's class with `as` so that messages are rendered correctly from inherited validators
-            Schema::Validator.validate!(self.class.validators, object, @context, @ruby_style_hash, as: self.class)
-            self
-          end
+          object = @context[:current_object]
+          # Pass this object's class with `as` so that messages are rendered correctly from inherited validators
+          Schema::Validator.validate!(self.class.validators, object, @context, @ruby_style_hash, as: self.class)
+          self
         else
           self
         end
@@ -83,7 +59,6 @@ module GraphQL
         # Authorize each argument (but this doesn't apply if `prepare` is implemented):
         if value.is_a?(InputObject)
           arguments(ctx).each do |_name, input_obj_arg|
-            input_obj_arg = input_obj_arg.type_class
             if value.key?(input_obj_arg.keyword) &&
               !input_obj_arg.authorized?(obj, value[input_obj_arg.keyword], ctx)
               return false
@@ -132,9 +107,6 @@ module GraphQL
       end
 
       class << self
-        # @return [Class<GraphQL::Arguments>]
-        attr_accessor :arguments_class
-
         def argument(*args, **kwargs, &block)
           argument_defn = super(*args, **kwargs, &block)
           # Add a method access
@@ -145,25 +117,6 @@ module GraphQL
             end
           RUBY
           argument_defn
-        end
-
-        prepend Schema::Member::CachedGraphQLDefinition::DeprecatedToGraphQL
-
-        def to_graphql
-          type_defn = GraphQL::InputObjectType.new
-          type_defn.name = graphql_name
-          type_defn.description = description
-          type_defn.metadata[:type_class] = self
-          type_defn.mutation = mutation
-          type_defn.ast_node = ast_node
-          all_argument_definitions.each do |arg|
-            type_defn.arguments[arg.graphql_definition(silence_deprecation_warning: true).name] = arg.graphql_definition(silence_deprecation_warning: true) # rubocop:disable Development/ContextIsPassedCop -- legacy-related
-          end
-          # Make a reference to a classic-style Arguments class
-          self.arguments_class = GraphQL::Query::Arguments.construct_arguments_class(type_defn)
-          # But use this InputObject class at runtime
-          type_defn.arguments_class = self
-          type_defn
         end
 
         def kind

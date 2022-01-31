@@ -2,14 +2,11 @@
 
 module GraphQL
   module Execution
-    # A plugin that wraps query execution with error handling.
-    # Supports class-based schemas and the new {Interpreter} runtime only.
+    # A plugin that wraps query execution with error handling. Installed by default.
     #
     # @example Handling ActiveRecord::NotFound
     #
     #   class MySchema < GraphQL::Schema
-    #     use GraphQL::Execution::Errors
-    #
     #     rescue_from(ActiveRecord::NotFound) do |err, obj, args, ctx, field|
     #       ErrorTracker.log("Not Found: #{err.message}")
     #       nil
@@ -17,11 +14,6 @@ module GraphQL
     #   end
     #
     class Errors
-      def self.use(schema)
-        definition_line = caller(2, 1).first
-        GraphQL::Deprecation.warn("GraphQL::Execution::Errors is now installed by default, remove `use GraphQL::Execution::Errors` from #{definition_line}")
-      end
-
       NEW_HANDLER_HASH = ->(h, k) {
         h[k] = {
           class: k,

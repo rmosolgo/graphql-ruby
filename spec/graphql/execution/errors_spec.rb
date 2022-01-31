@@ -150,7 +150,7 @@ describe "GraphQL::Execution::Errors" do
       end
 
       field :input_field, Int do
-        argument :values, ValuesInput, method_access: false
+        argument :values, ValuesInput
       end
 
       field :non_nullable_array, [String], null: false

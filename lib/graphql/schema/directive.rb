@@ -8,7 +8,6 @@ module GraphQL
     # - {.resolve}: Wraps field resolution (so it should call `yield` to continue)
     class Directive < GraphQL::Schema::Member
       extend GraphQL::Schema::Member::HasArguments
-      extend GraphQL::Schema::Member::AcceptsDefinition
 
       class << self
         # Directives aren't types, they don't have kinds.
@@ -53,26 +52,6 @@ module GraphQL
 
         def default_directive?
           default_directive
-        end
-
-        prepend Schema::Member::CachedGraphQLDefinition::DeprecatedToGraphQL
-
-        def to_graphql
-          defn = GraphQL::Directive.new
-          defn.name = self.graphql_name
-          defn.description = self.description
-          defn.locations = self.locations
-          defn.default_directive = self.default_directive
-          defn.ast_node = ast_node
-          defn.metadata[:type_class] = self
-          all_argument_definitions.each do |arg_defn|
-            arg_graphql = arg_defn.to_graphql(silence_deprecation_warning: true)
-            defn.arguments[arg_graphql.name] = arg_graphql # rubocop:disable Development/ContextIsPassedCop -- legacy-related
-          end
-          # Make a reference to a classic-style Arguments class
-          defn.arguments_class = GraphQL::Query::Arguments.construct_arguments_class(defn)
-
-          defn
         end
 
         # If false, this part of the query won't be evaluated

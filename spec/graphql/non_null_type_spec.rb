@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::NonNullType do
+describe "GraphQL::NonNullType" do
   describe "when a non-null field returns null" do
     it "nulls out the parent selection" do
       query_string = %|{ cow { name cantBeNullButIs } }|

@@ -38,12 +38,6 @@ describe GraphQL::Schema::List do
     end
   end
 
-  describe "to_graphql" do
-    it "will return a list type" do
-      assert_kind_of GraphQL::ListType, list_type.deprecated_to_graphql
-    end
-  end
-
   describe "handling null" do
     class ListNullHandlingSchema < GraphQL::Schema
       class Query < GraphQL::Schema::Object

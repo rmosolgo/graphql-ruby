@@ -102,7 +102,7 @@ __`instrument`__ attaches instrumenters to the schema, see {% internal_link "Ins
 
 ```ruby
 class MySchema < GraphQL::Schema
-  instrument :field, ResolveTimerInstrumentation
+  instrument :query, ResolveTimerInstrumentation
 end
 ```
 

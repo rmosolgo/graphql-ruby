@@ -28,13 +28,3 @@ module InstrumentationSpec
     orphan_types [SomeType]
   end
 end
-
-describe GraphQL::Schema::Member::Instrumentation do
-  describe "resolving nullable interface lists to nil" do
-    let(:query) { "query { someField { neverCalled } }"}
-    it "returns nil instead of failing" do
-      result = InstrumentationSpec::Schema.execute(query)
-      assert_nil(result["someField"])
-    end
-  end
-end

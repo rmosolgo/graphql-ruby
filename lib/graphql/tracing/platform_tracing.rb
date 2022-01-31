@@ -74,31 +74,8 @@ module GraphQL
         end
       end
 
-      def instrument(type, field)
-        return_type = field.type.unwrap
-        case return_type
-        when GraphQL::ScalarType, GraphQL::EnumType
-          if field.trace || (field.trace.nil? && @trace_scalars)
-            trace_field(type, field)
-          else
-            field
-          end
-        else
-          trace_field(type, field)
-        end
-      end
-
-      def trace_field(type, field)
-        new_f = field.redefine
-        new_f.metadata[:platform_key] = platform_field_key(type, field)
-        new_f
-      end
-
       def self.use(schema_defn, options = {})
         tracer = self.new(**options)
-        if !schema_defn.is_a?(Class)
-          schema_defn.instrument(:field, tracer)
-        end
         schema_defn.tracer(tracer)
       end
 

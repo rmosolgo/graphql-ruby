@@ -136,14 +136,7 @@ module GraphQL
       end
 
       def add_type(type, owner:, late_types:, path:)
-        if type.respond_to?(:metadata) && type.metadata.is_a?(Hash)
-          type_class = type.metadata[:type_class]
-          if type_class.nil?
-            raise ArgumentError, "Can't add legacy type: #{type} (#{type.class})"
-          else
-            type = type_class
-          end
-        elsif type.is_a?(String) || type.is_a?(GraphQL::Schema::LateBoundType)
+        if type.is_a?(String) || type.is_a?(GraphQL::Schema::LateBoundType)
           late_types << [owner, type]
           return
         end

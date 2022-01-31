@@ -1,13 +1,9 @@
 # frozen_string_literal: true
-require "graphql/query/arguments"
-require "graphql/query/arguments_cache"
 require "graphql/query/context"
-require "graphql/query/executor"
 require "graphql/query/fingerprint"
 require "graphql/query/literal_input"
 require "graphql/query/null_context"
 require "graphql/query/result"
-require "graphql/query/serial_execution"
 require "graphql/query/variables"
 require "graphql/query/input_validation_result"
 require "graphql/query/variable_validation_error"
@@ -82,13 +78,7 @@ module GraphQL
     def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, except: nil, only: nil, warden: nil)
       # Even if `variables: nil` is passed, use an empty hash for simpler logic
       variables ||= {}
-
-      # Use the `.graphql_definition` here which will return legacy types instead of classes
-      if schema.is_a?(Class) && !schema.interpreter?
-        schema = schema.graphql_definition
-      end
       @schema = schema
-      @interpreter = @schema.interpreter?
       @filter = schema.default_filter.merge(except: except, only: only)
       @context = schema.context_class.new(query: self, object: root_value, values: context)
       @warden = warden
@@ -154,7 +144,7 @@ module GraphQL
     end
 
     def interpreter?
-      @interpreter
+      true
     end
 
     attr_accessor :multiplex
@@ -169,7 +159,6 @@ module GraphQL
       @lookahead ||= begin
         ast_node = selected_operation
         root_type = warden.root_type_for_operation(ast_node.operation_type || "query")
-        root_type = root_type.type_class || raise("Invariant: `lookahead` only works with class-based types")
         GraphQL::Execution::Lookahead.new(query: self, root_type: root_type, ast_nodes: [ast_node])
       end
     end
@@ -199,7 +188,7 @@ module GraphQL
     # @return [Hash] A GraphQL response, with `"data"` and/or `"errors"` keys
     def result
       if !@executed
-        Execution::Multiplex.run_queries(@schema, [self], context: @context)
+        Execution::Multiplex.run_all(@schema, [self], context: @context)
       end
       @result ||= Query::Result.new(query: self, values: @result_values)
     end
@@ -237,35 +226,17 @@ module GraphQL
       end
     end
 
-    def irep_selection
-      @selection ||= begin
-        if selected_operation && internal_representation
-          internal_representation.operation_definitions[selected_operation.name]
-        else
-          nil
-        end
-      end
-    end
-
     # Node-level cache for calculating arguments. Used during execution and query analysis.
     # @param ast_node [GraphQL::Language::Nodes::AbstractNode]
     # @param definition [GraphQL::Schema::Field]
     # @param parent_object [GraphQL::Schema::Object]
     # @return Hash{Symbol => Object}
     def arguments_for(ast_node, definition, parent_object: nil)
-      if interpreter?
-        arguments_cache.fetch(ast_node, definition, parent_object)
-      else
-        arguments_cache[ast_node][definition]
-      end
+      arguments_cache.fetch(ast_node, definition, parent_object)
     end
 
     def arguments_cache
-      if interpreter?
-        @arguments_cache ||= Execution::Interpreter::ArgumentsCache.new(self)
-      else
-        @arguments_cache ||= ArgumentsCache.build(self)
-      end
+      @arguments_cache ||= Execution::Interpreter::ArgumentsCache.new(self)
     end
 
     # A version of the given query string, with:
@@ -308,7 +279,7 @@ module GraphQL
       with_prepared_ast { @validation_pipeline }
     end
 
-    def_delegators :validation_pipeline, :validation_errors, :internal_representation,
+    def_delegators :validation_pipeline, :validation_errors,
                    :analyzers, :ast_analyzers, :max_depth, :max_complexity
 
     attr_accessor :analysis_errors

@@ -25,6 +25,7 @@ spec/integration/tmp
 .vscode/
 *.swp
 *.swo
+.DS_Store
 # These are generated for distribution, but shouldn't be
 # versioned with the typescript source (which is in javascript_client/src):
 javascript_client/__tests__

@@ -4,8 +4,6 @@ module GraphQL
     module Interface
       include GraphQL::Schema::Member::GraphQLTypeNames
       module DefinitionMethods
-        include GraphQL::Schema::Member::CachedGraphQLDefinition
-        include GraphQL::Relay::TypeExtensions
         include GraphQL::Schema::Member::BaseDSLMethods
         # ConfigurationExtension's responsibilities are in `def included` below
         include GraphQL::Schema::Member::TypeSystemHelpers
@@ -100,33 +98,10 @@ module GraphQL
           end
         end
 
-        prepend Schema::Member::CachedGraphQLDefinition::DeprecatedToGraphQL
-
-        def to_graphql
-          type_defn = GraphQL::InterfaceType.new
-          type_defn.name = graphql_name
-          type_defn.description = description
-          type_defn.orphan_types = orphan_types
-          type_defn.type_membership_class = self.type_membership_class
-          type_defn.ast_node = ast_node
-          fields.each do |field_name, field_inst| # rubocop:disable Development/ContextIsPassedCop -- legacy-related
-            field_defn = field_inst.graphql_definition(silence_deprecation_warning: true)
-            type_defn.fields[field_defn.name] = field_defn # rubocop:disable Development/ContextIsPassedCop -- legacy-related
-          end
-          type_defn.metadata[:type_class] = self
-          if respond_to?(:resolve_type)
-            type_defn.resolve_type = method(:resolve_type)
-          end
-          type_defn
-        end
-
         def kind
           GraphQL::TypeKinds::INTERFACE
         end
       end
-
-      # Extend this _after_ `DefinitionMethods` is defined, so it will be used
-      extend GraphQL::Schema::Member::AcceptsDefinition
 
       extend DefinitionMethods
 

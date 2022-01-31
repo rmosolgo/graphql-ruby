@@ -115,13 +115,10 @@ describe GraphQL::Schema::IntrospectionSystem do
       assert res["data"]["__type"]["fields"].any? { |i| i["name"] == "invisibleName" }
     end
 
-    if TESTING_INTERPRETER
-      # This behavior isn't possible in legacy runtime because there's no `field.owner` to detect own fields vs interface fields
-      it "includes fields that are defined locally on the object, even when the interface's implementation is private" do
-        context = { private: false }
-        res = Jazz::Schema.execute('{ __type(name: "Ensemble") { fields { name } } }', context: context)
-        assert res["data"]["__type"]["fields"].any? { |i| i["name"] == "overriddenName" }
-      end
+    it "includes fields that are defined locally on the object, even when the interface's implementation is private" do
+      context = { private: false }
+      res = Jazz::Schema.execute('{ __type(name: "Ensemble") { fields { name } } }', context: context)
+      assert res["data"]["__type"]["fields"].any? { |i| i["name"] == "overriddenName" }
     end
   end
 

@@ -85,7 +85,7 @@ module GraphQL
       # @param context [GraphQL::Query::Context]
       # @param schema [GraphQL::Schema]
       def initialize(filter, context:, schema:)
-        @schema = schema.interpreter? ? schema : schema.graphql_definition
+        @schema = schema
         # Cache these to avoid repeated hits to the inheritance chain when one isn't present
         @query = @schema.query
         @mutation = @schema.mutation

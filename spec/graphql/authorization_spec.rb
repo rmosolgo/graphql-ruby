@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::Authorization do
+describe "GraphQL::Authorization" do
   module AuthTest
     class Box
       attr_reader :value
@@ -38,14 +38,6 @@ describe GraphQL::Authorization do
       def initialize(*args, edge_class: nil, **kwargs, &block)
         @edge_class = edge_class
         super(*args, **kwargs, &block)
-      end
-
-      def to_graphql
-        field_defn = super
-        if @edge_class
-          field_defn.edge_class = @edge_class
-        end
-        field_defn
       end
 
       argument_class BaseArgument

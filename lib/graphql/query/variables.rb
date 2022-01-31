@@ -14,7 +14,7 @@ module GraphQL
         schema = ctx.schema
         @context = ctx
 
-        @provided_variables = GraphQL::Argument.deep_stringify(provided_variables)
+        @provided_variables = deep_stringify(provided_variables)
         @errors = []
         @storage = ast_variables.each_with_object({}) do |ast_variable, memo|
           # Find the right value for this variable:
@@ -34,25 +34,12 @@ module GraphQL
               if validation_result.valid?
                 if value_was_provided
                   # Add the variable if a value was provided
-                  memo[variable_name] = if ctx.interpreter?
-                    provided_value
-                  elsif provided_value.nil?
+                  memo[variable_name] = provided_value
+                elsif default_value != nil
+                  memo[variable_name] = if default_value.is_a?(Language::Nodes::NullValue)
                     nil
                   else
-                    schema.error_handler.with_error_handling(context) do
-                      variable_type.coerce_input(provided_value, ctx)
-                    end
-                  end
-                elsif default_value != nil
-                  memo[variable_name] = if ctx.interpreter?
-                    if default_value.is_a?(Language::Nodes::NullValue)
-                      nil
-                    else
-                      default_value
-                    end
-                  else
-                    # Add the variable if it wasn't provided but it has a default value (including `null`)
-                    GraphQL::Query::LiteralInput.coerce(variable_type, default_value, self)
+                    default_value
                   end
                 end
               end
@@ -73,6 +60,23 @@ module GraphQL
       end
 
       def_delegators :@storage, :length, :key?, :[], :fetch, :to_h
+
+      private
+
+      def deep_stringify(val)
+        case val
+        when Array
+          val.map { |v| deep_stringify(v) }
+        when Hash
+          new_val = {}
+          val.each do |k, v|
+            new_val[k.to_s] = deep_stringify(v)
+          end
+          new_val
+        else
+          val
+        end
+      end
     end
   end
 end

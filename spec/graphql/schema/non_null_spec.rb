@@ -38,12 +38,6 @@ describe GraphQL::Schema::NonNull do
     end
   end
 
-  describe "to_graphql" do
-    it "will return a non null type" do
-      assert_kind_of GraphQL::NonNullType, non_null_type.deprecated_to_graphql
-    end
-  end
-
   describe "double-nulling" do
     it "is a parse error in a query" do
       res = Jazz::Schema.execute "

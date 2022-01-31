@@ -15,16 +15,6 @@ module GraphQL
         def default_relay?
           !!@default_relay
         end
-
-        def to_graphql
-          type_defn = if method(:to_graphql).super_method.arity
-            super(silence_deprecation_warning: true)
-          else
-            super
-          end
-          type_defn.default_relay = default_relay?
-          type_defn
-        end
       end
     end
   end

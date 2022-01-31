@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::Relay::ConnectionResolve do
+describe "GraphQL::Relay::ConnectionResolve" do
   let(:query_string) { <<-GRAPHQL
     query getShips($name: String!, $testParentName: Boolean = false){
       rebels {
@@ -41,35 +41,6 @@ describe GraphQL::Relay::ConnectionResolve do
       result = star_wars_query(query_string, { "name" => "raisedError"})
       assert_equal 1, result["errors"].length
       assert_equal "error raised from within connection", result["errors"][0]["message"]
-    end
-  end
-
-
-  if !TESTING_INTERPRETER
-    describe "when a lazy object is returned" do
-      it "returns the items with the correct parent" do
-        result = star_wars_query(query_string, { "name" => "lazyObject", "testParentName" => true })
-        assert_equal 5, result["data"]["rebels"]["ships"]["edges"].length
-        assert_equal "StarWars::FactionRecord", result["data"]["rebels"]["ships"]["parentClassName"]
-      end
-    end
-  end
-
-  describe "when a resolver is used" do
-    if !TESTING_INTERPRETER
-      it "returns the items with the correct parent" do
-        resolver_query_str = <<-GRAPHQL
-          {
-            rebels {
-              shipsByResolver {
-                parentClassName
-              }
-            }
-          }
-          GRAPHQL
-        result = star_wars_query(resolver_query_str)
-        assert_equal "StarWars::FactionRecord", result["data"]["rebels"]["shipsByResolver"]["parentClassName"]
-      end
     end
   end
 

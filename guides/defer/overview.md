@@ -15,8 +15,6 @@ By streaming the response, the server can send the most critical (or most availa
 
 `@defer` was first described by [Lee Byron at React Europe 2015](https://youtu.be/ViXL0YQnioU?t=768) and got experimental support in [Apollo in 2018](https://blog.apollographql.com/introducing-defer-in-apollo-server-f6797c4e9d6e).
 
-`@defer` requires the new {% internal_link "interpreter runtime", "/queries/interpreter" %} which ships with GraphQL-Ruby 1.9+.
-
 `@stream` is like `@defer`, but it returns list items one at a time. Find details in the {% internal_link "Stream guide", "/defer/stream" %}.
 
 ## Example

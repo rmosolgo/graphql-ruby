@@ -89,9 +89,9 @@ module GraphQL
         case late_bound_type
         when GraphQL::Schema::LateBoundType
           @schema.get_type(late_bound_type.name)
-        when GraphQL::Schema::List, GraphQL::ListType
+        when GraphQL::Schema::List
           resolve_late_binding(late_bound_type.of_type).to_list_type
-        when GraphQL::Schema::NonNull, GraphQL::NonNullType
+        when GraphQL::Schema::NonNull
           resolve_late_binding(late_bound_type.of_type).to_non_null_type
         when Module
           # It's a normal type -- no change required
@@ -103,12 +103,7 @@ module GraphQL
 
       def load_constant(class_name)
         const = @custom_namespace.const_get(class_name)
-        if @class_based
-          dup_type_class(const)
-        else
-          # Use `.to_graphql` to get a freshly-made version, not shared between schemas
-          const.deprecated_to_graphql
-        end
+        dup_type_class(const)
       rescue NameError
         # Dup the built-in so that the cached fields aren't shared
         dup_type_class(@built_in_namespace.const_get(class_name))

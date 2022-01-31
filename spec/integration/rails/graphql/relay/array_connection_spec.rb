@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require 'spec_helper'
 
-describe GraphQL::Relay::ArrayConnection do
+describe "GraphQL::Relay::ArrayConnection" do
   def get_names(result)
     ships = result["data"]["rebels"]["ships"]["edges"]
     ships.map { |e| e["node"]["name"] }

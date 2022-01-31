@@ -36,9 +36,6 @@ Here's how the two built-in directives work:
 
 - `@skip(if: ...)` skips the selection if the `if: ...` value is truthy ({{ "GraphQL::Schema::Directive::Skip" | api_doc }})
 - `@include(if: ...)` includes the selection if the `if: ...` value is truthy ({{ "GraphQL::Schema::Directive::Include" | api_doc }})
-
-GraphQL-Ruby also supports custom runtime directives for use with the {% internal_link "interpreter runtime", "/queries/interpreter" %}.
-
 ### Custom Runtime Directives
 
 Custom directives extend {{ "GraphQL::Schema::Directive" | api_doc }}:

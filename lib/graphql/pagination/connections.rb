@@ -21,13 +21,6 @@ module GraphQL
       class ImplementationMissingError < GraphQL::Error
       end
 
-      def self.use(schema_defn)
-        if schema_defn.plugins.any? { |(plugin, args)| plugin == self }
-          GraphQL::Deprecation.warn("#{self} is now the default, remove `use #{self}` from #{caller(2,1).first}")
-        end
-        schema_defn.connections = self.new(schema: schema_defn)
-      end
-
       def initialize(schema:)
         @schema = schema
         @wrappers = {}
@@ -85,26 +78,7 @@ module GraphQL
             edge_class: edge_class_for_field(field),
           )
         else
-          begin
-            connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(items)
-            if parent.is_a?(GraphQL::Schema::Object)
-              parent = parent.object
-            end
-            connection_class.new(
-              items,
-              arguments,
-              field: field,
-              max_page_size: field.max_page_size,
-              parent: parent,
-              context: context,
-            )
-          rescue RuntimeError => err
-            if err.message.include?("No connection implementation to wrap")
-              raise ImplementationMissingError, "Couldn't find a connection wrapper for #{items.class} during #{field.path} (#{items.inspect})"
-            else
-              raise err
-            end
-          end
+          raise ImplementationMissingError, "Couldn't find a connection wrapper for #{items.class} during #{field.path} (#{items.inspect})"
         end
       end
 
@@ -113,7 +87,7 @@ module GraphQL
       def edge_class_for_field(field)
         conn_type = field.type.unwrap
         conn_type_edge_type = conn_type.respond_to?(:edge_class) && conn_type.edge_class
-        if conn_type_edge_type && conn_type_edge_type != Relay::Edge
+        if conn_type_edge_type && conn_type_edge_type != Pagination::Connection::Edge
           conn_type_edge_type
         else
           nil

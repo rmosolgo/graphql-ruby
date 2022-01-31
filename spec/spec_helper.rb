@@ -6,8 +6,6 @@ Bundler.require
 
 # Print full backtrace for failiures:
 ENV["BACKTRACE"] = "1"
-# Set this env var to use legacy runtime for fixture schemas.
-TESTING_INTERPRETER = !ENV["TESTING_LEGACY"]
 
 require "graphql"
 require "rake"
@@ -25,17 +23,6 @@ Minitest::Spec.make_my_diffs_pretty!
 # Filter out Minitest backtrace while allowing backtrace from other libraries
 # to be shown.
 Minitest.backtrace_filter = Minitest::BacktraceFilter.new
-
-# This is for convenient access to metadata in test definitions
-assign_metadata_key = ->(target, key, value) { target.metadata[key] = value }
-assign_metadata_flag = ->(target, flag) { target.metadata[flag] = true }
-GraphQL::Schema.accepts_definitions(set_metadata: assign_metadata_key)
-GraphQL::BaseType.accepts_definitions(metadata: assign_metadata_key)
-GraphQL::BaseType.accepts_definitions(metadata2: assign_metadata_key)
-GraphQL::Field.accepts_definitions(metadata: assign_metadata_key)
-GraphQL::Argument.accepts_definitions(metadata: assign_metadata_key)
-GraphQL::Argument.accepts_definitions(metadata_flag: assign_metadata_flag)
-GraphQL::EnumType::EnumValue.accepts_definitions(metadata: assign_metadata_key)
 
 # Can be used as a GraphQL::Schema::Warden for some purposes, but allows nothing
 module NothingWarden
@@ -69,15 +56,15 @@ end
 
 # Load dependencies
 ['Mongoid', 'Rails'].each do |integration|
-  begin
+  integration_loaded = begin
     Object.const_get(integration)
-    if ENV["TEST"].nil?
-      Dir["spec/integration/#{integration.downcase}/**/*.rb"].each do |f|
-        require f.sub("spec/", "")
-      end
-    end
   rescue NameError
-    # ignore
+    nil
+  end
+  if ENV["TEST"].nil? && integration_loaded
+    Dir["spec/integration/#{integration.downcase}/**/*.rb"].each do |f|
+      require f.sub("spec/", "")
+    end
   end
 end
 

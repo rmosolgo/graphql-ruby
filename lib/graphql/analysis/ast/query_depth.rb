@@ -15,7 +15,6 @@ module GraphQL
     #   # In your Schema file:
     #
     #   class MySchema < GraphQL::Schema
-    #     use GraphQL::Analysis::AST
     #     query_analyzer LogQueryDepth
     #   end
     #

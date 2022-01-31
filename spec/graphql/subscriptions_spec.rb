@@ -376,16 +376,12 @@ describe GraphQL::Subscriptions do
         assert_equal({"str" => "Update", "int" => 1}, deliveries["1"][0]["data"]["payload"])
         assert_equal(nil, deliveries["1"][0]["data"]["event"])
 
-        if TESTING_INTERPRETER
-          # double-subscriptions is broken on the old runtime
+        # Trigger another field subscription
+        schema.subscriptions.trigger(:event, {}, OpenStruct.new(int: 1))
 
-          # Trigger another field subscription
-          schema.subscriptions.trigger(:event, {}, OpenStruct.new(int: 1))
-
-          # Now we should get result for another field
-          assert_equal(nil, deliveries["1"][1]["data"]["payload"])
-          assert_equal({"int" => 1}, deliveries["1"][1]["data"]["event"])
-        end
+        # Now we should get result for another field
+        assert_equal(nil, deliveries["1"][1]["data"]["payload"])
+        assert_equal({"int" => 1}, deliveries["1"][1]["data"]["event"])
       end
 
       describe "passing a document into #execute" do

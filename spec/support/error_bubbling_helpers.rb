@@ -9,13 +9,11 @@ module ErrorBubblingHelpers
       if schema.is_a?(Class)
         schema.error_bubbling(false)
       end
-      schema.graphql_definition(silence_deprecation_warning: true).error_bubbling = false
       yield if block_given?
     ensure
       if schema.is_a?(Class)
         schema.error_bubbling(original_error_bubbling)
       end
-      schema.graphql_definition(silence_deprecation_warning: true).error_bubbling = original_error_bubbling
     end
   end
 
@@ -25,13 +23,11 @@ module ErrorBubblingHelpers
       if schema.is_a?(Class)
         schema.error_bubbling(true)
       end
-      schema.graphql_definition(silence_deprecation_warning: true).error_bubbling = true
       yield if block_given?
     ensure
       if schema.is_a?(Class)
         schema.error_bubbling(original_error_bubbling)
       end
-      schema.graphql_definition(silence_deprecation_warning: true).error_bubbling = original_error_bubbling
     end
   end
 end

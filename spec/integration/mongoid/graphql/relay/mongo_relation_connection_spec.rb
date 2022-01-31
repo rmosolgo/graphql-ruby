@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require 'spec_helper'
 
-describe GraphQL::Relay::MongoRelationConnection do
+describe "GraphQL::Relay::MongoRelationConnection" do
   def get_names(result)
     ships = result["data"]["federation"]["bases"]["edges"]
     ships.map { |e| e["node"]["name"] }
@@ -442,13 +442,6 @@ describe GraphQL::Relay::MongoRelationConnection do
       assert_equal(bases_by_id, get_names(result, "bases"))
       assert_equal(bases_by_name, get_names(result, "basesByName"))
     end
-  end
-
-  it "is chosen for a relation" do
-    relation = StarTrek::Base.where(faction_id: 1)
-    assert relation.is_a?(Mongoid::Criteria)
-    connection = GraphQL::Relay::BaseConnection.connection_for_nodes(relation)
-    assert_equal GraphQL::Relay::MongoRelationConnection, connection
   end
 
   describe "relations" do

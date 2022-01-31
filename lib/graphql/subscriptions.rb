@@ -5,7 +5,6 @@ require "graphql/subscriptions/event"
 require "graphql/subscriptions/instrumentation"
 require "graphql/subscriptions/serialize"
 require "graphql/subscriptions/action_cable_subscriptions"
-require "graphql/subscriptions/subscription_root"
 require "graphql/subscriptions/default_subscription_resolve_extension"
 
 module GraphQL
@@ -33,9 +32,6 @@ module GraphQL
 
       instrumentation = Subscriptions::Instrumentation.new(schema: schema)
       defn.instrument(:query, instrumentation)
-      if !schema.is_a?(Class)
-        defn.instrument(:field, instrumentation)
-      end
       options[:schema] = schema
       schema.subscriptions = self.new(**options)
       schema.add_subscription_extension_if_necessary
@@ -45,9 +41,6 @@ module GraphQL
     # @param schema [Class] the GraphQL schema this manager belongs to
     def initialize(schema:, broadcast: false, default_broadcastable: false, **rest)
       if broadcast
-        if !schema.using_ast_analysis?
-          raise ArgumentError, "`broadcast: true` requires AST analysis, add `using GraphQL::Analysis::AST` to your schema or see https://graphql-ruby.org/queries/ast_analysis.html."
-        end
         schema.query_analyzer(Subscriptions::BroadcastAnalyzer)
       end
       @default_broadcastable = default_broadcastable
@@ -233,7 +226,7 @@ module GraphQL
     # @return [Any] normalized arguments value
     def normalize_arguments(event_name, arg_owner, args, context)
       case arg_owner
-      when GraphQL::Field, GraphQL::InputObjectType, GraphQL::Schema::Field, Class
+      when GraphQL::Schema::Field, Class
         if arg_owner.is_a?(Class) && !arg_owner.kind.input_object?
           # it's a type, but not an input object
           return args
@@ -274,9 +267,7 @@ module GraphQL
         end
 
         if missing_arg_names.any?
-          arg_owner_name = if arg_owner.is_a?(GraphQL::Field)
-            "Subscription.#{arg_owner.name}"
-          elsif arg_owner.is_a?(GraphQL::Schema::Field)
+          arg_owner_name = if arg_owner.is_a?(GraphQL::Schema::Field)
             arg_owner.path
           elsif arg_owner.is_a?(Class)
             arg_owner.graphql_name
@@ -287,9 +278,9 @@ module GraphQL
         end
 
         normalized_args
-      when GraphQL::ListType, GraphQL::Schema::List
+      when GraphQL::Schema::List
         args.map { |a| normalize_arguments(event_name, arg_owner.of_type, a, context) }
-      when GraphQL::NonNullType, GraphQL::Schema::NonNull
+      when GraphQL::Schema::NonNull
         normalize_arguments(event_name, arg_owner.of_type, args, context)
       else
         args

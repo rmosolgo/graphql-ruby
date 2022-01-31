@@ -365,7 +365,6 @@ module GraphQL
               deprecation_reason: builder.build_deprecation_reason(argument_defn.directives),
               ast_node: argument_defn,
               camelize: false,
-              method_access: false,
               directives: prepare_directives(argument_defn, type_resolver),
               **default_value_kwargs
             )

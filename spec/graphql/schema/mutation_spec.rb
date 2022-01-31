@@ -1,9 +1,6 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-# Make sure that `!` has no effect
-using GraphQL::DeprecatedDSL
-
 describe GraphQL::Schema::Mutation do
   let(:mutation) { Jazz::AddInstrument }
   after do
@@ -43,13 +40,6 @@ describe GraphQL::Schema::Mutation do
   describe ".payload_type" do
     it "has a reference to the mutation" do
       assert_equal mutation, mutation.payload_type.mutation
-    end
-  end
-
-  describe ".field" do
-    it "raises a nice error when called without args" do
-      err = assert_raises(ArgumentError) { mutation.field }
-      assert_includes err.message, "Use `mutation: Jazz::AddInstrument` to attach this mutation instead."
     end
   end
 
@@ -118,11 +108,9 @@ describe GraphQL::Schema::Mutation do
       query_str = "mutation { returnInvalidNull { int } }"
       response = Jazz::Schema.execute(query_str)
       assert_equal ["Cannot return null for non-nullable field ReturnInvalidNullPayload.int"], response["errors"].map { |e| e["message"] }
-      if TESTING_INTERPRETER
-        error = response.query.context.errors.first
-        assert_instance_of Jazz::ReturnInvalidNull.payload_type::InvalidNullError, error
-        assert_equal "Jazz::ReturnInvalidNull::ReturnInvalidNullPayload::InvalidNullError", error.class.inspect
-      end
+      error = response.query.context.errors.first
+      assert_instance_of Jazz::ReturnInvalidNull.payload_type::InvalidNullError, error
+      assert_equal "Jazz::ReturnInvalidNull::ReturnInvalidNullPayload::InvalidNullError", error.class.inspect
     end
   end
 

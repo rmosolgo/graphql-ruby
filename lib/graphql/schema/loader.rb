@@ -202,7 +202,6 @@ module GraphQL
               description: arg["description"],
               deprecation_reason: arg["deprecationReason"],
               required: false,
-              method_access: false,
               camelize: false,
             }
 

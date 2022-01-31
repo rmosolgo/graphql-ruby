@@ -85,12 +85,6 @@ module LazyHelpers
     alias :nullable_nested_sum :nested_sum
   end
 
-  using GraphQL::DeprecatedDSL
-  if RUBY_ENGINE == "jruby"
-    # JRuby doesn't support refinements, so the `using` above won't work
-    GraphQL::DeprecatedDSL.activate
-  end
-
   class LazyQuery < GraphQL::Schema::Object
     field :int, Integer, null: false do
       argument :value, Integer
@@ -123,7 +117,7 @@ module LazyHelpers
     end
 
     field :list_sum, [LazySum, null: true] do
-      argument :values, [Integer], method_access: false
+      argument :values, [Integer]
     end
     def list_sum(values:)
       values.map { |v| v == MAGIC_NUMBER_THAT_RETURNS_NIL ? nil : v }
