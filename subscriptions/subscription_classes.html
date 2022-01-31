@@ -374,6 +374,26 @@
 
 <p>Arguments with <code class="language-plaintext highlighter-rouge">loads:</code> configurations will call <code class="language-plaintext highlighter-rouge">unsubscribe</code> if they are <code class="language-plaintext highlighter-rouge">required: true</code> (which is the default) and their ID doesn’t return a value. (It’s assumed that the subscribed object was deleted.)</p>
 
+<h2 id="extras">Extras</h2>
+
+<p>Subscription methods can access query-related metadata by configuring <code class="language-plaintext highlighter-rouge">extras [...]</code> in the class definition. For example, to use a <code class="language-plaintext highlighter-rouge">lookahead</code> and the <code class="language-plaintext highlighter-rouge">ast_node</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Subscriptions::JobFinished</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Subscription</span>
+  <span class="c1"># ...</span>
+  <span class="n">extras</span> <span class="p">[</span><span class="ss">:lookahead</span><span class="p">,</span> <span class="ss">:ast_node</span><span class="p">]</span>
+
+  <span class="k">def</span> <span class="nf">subscribe</span><span class="p">(</span><span class="n">lookahead</span><span class="p">:,</span> <span class="n">ast_node</span><span class="p">:)</span>
+    <span class="c1"># ...</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">lookahead</span><span class="p">:,</span> <span class="n">ast_node</span><span class="p">:)</span>
+    <span class="c1"># ...</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>See the <a href="/fields/introduction#extra-field-metadata">Extra Field Metadata</a> for more information about available metadata.</p>
+
 </div>
 <p class="guide-footer">
   Suggestion, improvement, or correction?
