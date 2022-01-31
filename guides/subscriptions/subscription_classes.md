@@ -345,3 +345,24 @@ end
 `#unsubscribe` does _not_ halt the current update.
 
 Arguments with `loads:` configurations will call `unsubscribe` if they are `required: true` (which is the default) and their ID doesn't return a value. (It's assumed that the subscribed object was deleted.)
+
+## Extras
+
+Subscription methods can access query-related metadata by configuring `extras [...]` in the class definition. For example, to use a `lookahead` and the `ast_node`:
+
+```ruby
+class Subscriptions::JobFinished < GraphQL::Schema::Subscription
+  # ...
+  extras [:lookahead, :ast_node]
+
+  def subscribe(lookahead:, ast_node:)
+    # ...
+  end
+
+  def update(lookahead:, ast_node:)
+    # ...
+  end
+end
+```
+
+See the {% internal_link "Extra Field Metadata", "/fields/introduction#extra-field-metadata" %} for more information about available metadata.
