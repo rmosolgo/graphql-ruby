@@ -127,3 +127,34 @@ end
 ```
 
 Any configured `extras` will be present in the given `arguments`, but removed before the field is resolved. (However, `extras` from _any_ extension will be present in `arguments` for _all_ extensions.)
+
+### Adding an extension by default
+
+If you want to apply an extension to _all_ your fields, you can do this in your {% internal_link "BaseField", "/type_definitions/extensions.html#customizing-fields" %}'s `def initialize`, for example:
+
+```ruby
+class Types::BaseField < GraphQL::Schema::Field
+  def initialize(*args, **kwargs, &block)
+    super
+    # Add this to all fields based on this class:
+    extension(MyDefaultExtension)
+  end
+end
+```
+
+You can also _conditionally_ apply extensions in `def initialize` by adding keywords to the method definition, for example:
+
+```ruby
+class Types::BaseField < GraphQL::Schema::Field
+  # @param custom_extension [Boolean] if false, `MyCustomExtension` won't be added
+  # @example skipping `MyCustomExtension`
+  #   field :no_extension, String, custom_extension: false
+  def initialize(*args, custom_extension: true, **kwargs, &block)
+    super(*args, **kwargs, &block)
+    # Don't apply this extension if the field is configured with `custom_extension: false`:
+    if custom_extension
+      extension(MyCustomExtensions)
+    end
+  end
+end
+```
