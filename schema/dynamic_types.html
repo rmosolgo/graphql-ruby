@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/1.13.6/">API</a>
+          <a href="/api-doc/1.13.7/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -210,7 +210,7 @@
 
 <h4 id="using-enum_valuescontext">Using <code class="language-plaintext highlighter-rouge">.enum_values(context)</code></h4>
 
-<p>Alternatively, you can implement <code class="language-plaintext highlighter-rouge">def self.enum_values(context)</code> in your enum types to return an Array of <a href="/api-doc/1.13.6/GraphQL/Schema/EnumValue" target="_blank" title="API docs for GraphQL::Schema::EnumValue"><code>GraphQL::Schema::EnumValue</code></a>s. For example, to return a dynamic set of enum values:</p>
+<p>Alternatively, you can implement <code class="language-plaintext highlighter-rouge">def self.enum_values(context)</code> in your enum types to return an Array of <a href="/api-doc/1.13.7/GraphQL/Schema/EnumValue" target="_blank" title="API docs for GraphQL::Schema::EnumValue"><code>GraphQL::Schema::EnumValue</code></a>s. For example, to return a dynamic set of enum values:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">ProjectStatus</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseEnum</span>
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">enum_values</span><span class="p">(</span><span class="n">context</span> <span class="o">=</span> <span class="p">{})</span>
@@ -318,7 +318,7 @@
 
 <h3 id="schema-dumps">Schema Dumps</h3>
 
-<p>To dump a certain <em>version</em> of the schema, provide the applicable <code class="language-plaintext highlighter-rouge">context: ...</code> to <a href="/api-doc/1.13.6/GraphQL/Schema#to_definition-class_method" target="_blank" title="API docs for GraphQL::Schema.to_definition"><code>Schema.to_definition</code></a>. For example:</p>
+<p>To dump a certain <em>version</em> of the schema, provide the applicable <code class="language-plaintext highlighter-rouge">context: ...</code> to <a href="/api-doc/1.13.7/GraphQL/Schema#to_definition-class_method" target="_blank" title="API docs for GraphQL::Schema.to_definition"><code>Schema.to_definition</code></a>. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Legacy money schema:</span>
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">to_definition</span><span class="p">(</span><span class="ss">context: </span><span class="p">{</span> <span class="ss">requests_legacy_money: </span><span class="kp">true</span> <span class="p">})</span>
