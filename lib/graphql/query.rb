@@ -309,7 +309,7 @@ module GraphQL
     end
 
     def_delegators :validation_pipeline, :validation_errors, :internal_representation,
-                   :analyzers, :ast_analyzers, :max_depth, :max_complexity
+                   :analyzers, :ast_analyzers, :max_depth, :max_complexity, :skip_static_validation=
 
     attr_accessor :analysis_errors
     def valid?

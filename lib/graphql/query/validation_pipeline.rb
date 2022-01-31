@@ -15,6 +15,7 @@ module GraphQL
     # @api private
     class ValidationPipeline
       attr_reader :max_depth, :max_complexity
+      attr_accessor :skip_static_validation
 
       def initialize(query:, validate:, parse_error:, operation_name_error:, max_depth:, max_complexity:)
         @validation_errors = []
@@ -28,6 +29,7 @@ module GraphQL
         @max_complexity = max_complexity
 
         @has_validated = false
+        @skip_static_validation = false
       end
 
       # @return [Boolean] does this query have errors that should prevent it from running?
@@ -72,12 +74,14 @@ module GraphQL
         elsif @operation_name_error
           @validation_errors << @operation_name_error
         else
-          validation_result = @schema.static_validator.validate(@query, validate: @validate, timeout: @schema.validate_timeout, max_errors: @schema.validate_max_errors)
-          @validation_errors.concat(validation_result[:errors])
-          @internal_representation = validation_result[:irep]
+          if !@skip_static_validation
+            validation_result = @schema.static_validator.validate(@query, validate: @validate, timeout: @schema.validate_timeout, max_errors: @schema.validate_max_errors)
+            @validation_errors.concat(validation_result[:errors])
+            @internal_representation = validation_result[:irep]
 
-          if @validation_errors.empty?
-            @validation_errors.concat(@query.variables.errors)
+            if @validation_errors.empty?
+              @validation_errors.concat(@query.variables.errors)
+            end
           end
 
           if @validation_errors.empty?
