@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 module GraphQL
   module Introspection
-    def self.query(include_deprecated_args: false)
+    def self.query(include_deprecated_args: false, include_schema_description: false, include_is_repeatable: false, include_specified_by_url: false)
       # The introspection query to end all introspection queries, copied from
       # https://github.com/graphql/graphql-js/blob/master/src/utilities/introspectionQuery.js
       <<-QUERY
 query IntrospectionQuery {
   __schema {
-    description
+    #{include_schema_description ? "description" : ""}
     queryType { name }
     mutationType { name }
     subscriptionType { name }
@@ -18,7 +18,7 @@ query IntrospectionQuery {
       name
       description
       locations
-      isRepeatable
+      #{include_is_repeatable ? "isRepeatable" : ""}
       args#{include_deprecated_args ? '(includeDeprecated: true)' : ''} {
         ...InputValue
       }
@@ -29,7 +29,7 @@ fragment FullType on __Type {
   kind
   name
   description
-  specifiedByUrl
+  #{include_specified_by_url ? "specifiedByUrl" : ""}
   fields(includeDeprecated: true) {
     name
     description
