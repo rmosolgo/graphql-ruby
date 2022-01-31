@@ -107,6 +107,7 @@ type Word {
       end
       assert_equal 1, hello_type.directives.size
       assert_instance_of parsed_schema.directives["greeting"], hello_type.directives.first
+      assert_equal "greeting", hello_type.directives.first.graphql_name
       assert_equal({ pleasant: true }, hello_type.directives.first.arguments.keyword_arguments)
 
       humbug_directives = hello_type.get_field("humbug").directives

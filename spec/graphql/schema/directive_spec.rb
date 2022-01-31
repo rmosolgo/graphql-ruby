@@ -31,6 +31,7 @@ describe GraphQL::Schema::Directive do
     assert_equal [DirectiveTest::Secret], field.directives.map(&:class)
     assert_equal [field], field.directives.map(&:owner)
     assert_equal [true], field.directives.map{ |d| d.arguments[:top_secret] }
+    assert_equal "secret", field.directives.first.graphql_name
 
     argument = field.arguments.values.first
     assert_equal [DirectiveTest::Secret], argument.directives.map(&:class)
