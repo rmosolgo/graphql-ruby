@@ -102,6 +102,31 @@ jobs:
         ruby-version: 2.7
         bundler-cache: true
     - run: bundle exec rake test
+    - name: Upload coverage report
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: head-result
+        path: coverage/.resultset.json
+  compare_coverage:
+    name: 'Compare base & head coverages'
+    runs-on: ubuntu-latest
+    needs: [build-base, build-head]
+    steps:
+    - name: Download base artifact
+      uses: actions/download-artifact@v1
+      with:
+        name: base-result
+
+    - name: Download head artifact
+      uses: actions/download-artifact@v1
+      with:
+        name: head-result
+    - uses: kzkn/simplecov-resultset-diff-action@v1
+      with:
+        base-resultset-path: 'base-result/.resultset.json'
+        head-resultset-path: 'head-result/.resultset.json'
+        token: ${{ secrets.GITHUB_TOKEN }}
   mongodb_test:
     strategy:
       fail-fast: false
@@ -123,3 +148,36 @@ jobs:
         ruby-version: 2.7
         bundler-cache: true
     - run: bundle exec rake test
+build-base:
+  name: 'Build base'
+  runs-on: ubuntu-latest
+  steps:
+  - uses: actions/checkout@v2
+    with:
+      ref: ${{ github.base_ref }}
+
+  - id: base-ref-commit
+    run: echo "::set-output name=revision::`git rev-parse HEAD`"
+
+  - name: simplecov resultset cache
+    id: simplecov-resultset
+    uses:  actions/cache@v2
+    with:
+      path: coverage/.resultset.json
+      key: simplecov-resultset-${{ steps.base-ref-commit.outputs.revision }}
+
+  - uses: ruby/setup-ruby@v1
+    if: steps.simplecov-resultset.outputs.cache-hit != 'true'
+    with:
+      bundler-cache: true
+
+  - name: Run test
+    if: steps.simplecov-resultset.outputs.cache-hit != 'true'
+    run: bundle exec rspec
+
+  - name: Upload coverage report
+    if: always()
+    uses: actions/upload-artifact@v2
+    with:
+      name: base-result
+      path: coverage/.resultset.json

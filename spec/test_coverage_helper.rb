@@ -2,56 +2,6 @@
 puts "Starting Code Coverage"
 require 'simplecov'
 SimpleCov.at_exit do
-  text_result = +""
-  SimpleCov.result.groups.each do |name, files|
-    text_result << "Group: #{name}\n"
-    text_result << "=" * 40
-    text_result << "\n"
-    files.each do |file|
-      # Remove any local paths
-      local_filename = file.filename.sub(/^.*graphql-ruby\/lib/, "graphql-ruby/lib")
-      text_result << "#{local_filename} (coverage: #{file.covered_percent.round(2)}% / branch: #{file.branches_coverage_percent.round(2)}%)\n"
-    end
-    text_result << "\n"
-  end
-  # Write this file to track coverage in source control
-  cov_file = "spec/artifacts/coverage.txt"
-  # Raise in CI if this file isn't up-to-date
-  if ci_running?
-    FileUtils.mkdir_p("spec/ci")
-    File.write("spec/ci/coverage.txt", text_result)
-    ci_artifact_paths = Dir.glob("spec/ci/*.txt")
-    any_artifact_changes = ci_artifact_paths.any? do |ci_artifact_path|
-      committed_artifact_path = ci_artifact_path.sub("/ci/", "/artifacts/")
-      File.read(ci_artifact_path) != File.read(committed_artifact_path)
-    end
-    if any_artifact_changes
-      if `git config --global user.name` == ""
-        `git config --global user.name "GraphQL-Ruby CI"`
-        `git config --global user.email "<>"`
-      end
-      current_branch = ENV["GITHUB_HEAD_REF"].sub("refs/heads/", "")
-      `git fetch origin #{current_branch}`
-      `git checkout #{current_branch}`
-      current_sha = `git rev-parse HEAD`.chomp
-      new_branch = "update-artifacts-on-#{current_branch}-#{current_sha[0, 10]}"
-      `git checkout -b #{new_branch}`
-      ci_artifact_paths.each do |ci_artifact_path|
-        FileUtils.cp(ci_artifact_path, ci_artifact_path.sub("/ci/", "/artifacts/"))
-      end
-      `git add spec`
-      `git commit -m "Update artifacts (automatic)"`
-      `git push origin #{new_branch}`
-      local_gemfile_path = "gemfiles/#{ENV["BUNDLE_GEMFILE"].split("/").last}"
-      comment = 'Some [development artifacts](https://graphql-ruby.org/development#artifacts) have changed. To update them:\n\n- Merge [this PR](https://github.com/rmosolgo/graphql-ruby/compare/' + current_branch + '...' + new_branch + '?expand=1) into your branch\n- Or, update them locally with\n\n    ```\n    COVERAGE=1 BUNDLE_GEMFILE=' + local_gemfile_path + ' bundle exec rake test\n    ```\n\nand commit the changes.'
-      puts "Posting: \"#{comment}\""
-      `curl -X POST #{ENV["GITHUB_COMMENTS_URL"]} -H "Content-Type: application/json" -H "Authorization: token #{ENV["GITHUB_TOKEN"]}" --data '{ "body": "#{comment}" }'`
-      raise "Artifacts are not up to date; update them to pass this build."
-    end
-  else
-    FileUtils.mkdir_p("spec/artifacts")
-    File.write(cov_file, text_result)
-  end
   SimpleCov.result.format!
 end
 
