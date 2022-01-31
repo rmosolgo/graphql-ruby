@@ -159,6 +159,35 @@
 
 <p>Any configured <code class="language-plaintext highlighter-rouge">extras</code> will be present in the given <code class="language-plaintext highlighter-rouge">arguments</code>, but removed before the field is resolved. (However, <code class="language-plaintext highlighter-rouge">extras</code> from <em>any</em> extension will be present in <code class="language-plaintext highlighter-rouge">arguments</code> for <em>all</em> extensions.)</p>
 
+<h3 id="adding-an-extension-by-default">Adding an extension by default</h3>
+
+<p>If you want to apply an extension to <em>all</em> your fields, you can do this in your <a href="/type_definitions/extensions.html#customizing-fields">BaseField</a>’s <code class="language-plaintext highlighter-rouge">def initialize</code>, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::BaseField</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Field</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="k">super</span>
+    <span class="c1"># Add this to all fields based on this class:</span>
+    <span class="n">extension</span><span class="p">(</span><span class="no">MyDefaultExtension</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>You can also <em>conditionally</em> apply extensions in <code class="language-plaintext highlighter-rouge">def initialize</code> by adding keywords to the method definition, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::BaseField</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Field</span>
+  <span class="c1"># @param custom_extension [Boolean] if false, `MyCustomExtension` won't be added</span>
+  <span class="c1"># @example skipping `MyCustomExtension`</span>
+  <span class="c1">#   field :no_extension, String, custom_extension: false</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="ss">custom_extension: </span><span class="kp">true</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="k">super</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+    <span class="c1"># Don't apply this extension if the field is configured with `custom_extension: false`:</span>
+    <span class="k">if</span> <span class="n">custom_extension</span>
+      <span class="n">extension</span><span class="p">(</span><span class="no">MyCustomExtensions</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
 </div>
 <p class="guide-footer">
   Suggestion, improvement, or correction?
