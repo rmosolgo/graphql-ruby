@@ -107,7 +107,7 @@ query {
 }
 ```
 
-To customize this behavior, implement `def calculate_complexity?(query:, nodes:, child_complexity:)` in your base field class, handling the case where `self.connection?` is `true`:
+To customize this behavior, implement `def calculate_complexity(query:, nodes:, child_complexity:)` in your base field class, handling the case where `self.connection?` is `true`:
 
 ```ruby
 class Types::BaseField < GraphQL::Schema::Field
