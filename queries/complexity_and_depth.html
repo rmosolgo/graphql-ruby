@@ -145,7 +145,7 @@
 </span><span class="p">}</span><span class="w">
 </span></code></pre></div></div>
 
-<p>To customize this behavior, implement <code class="language-plaintext highlighter-rouge">def calculate_complexity?(query:, nodes:, child_complexity:)</code> in your base field class, handling the case where <code class="language-plaintext highlighter-rouge">self.connection?</code> is <code class="language-plaintext highlighter-rouge">true</code>:</p>
+<p>To customize this behavior, implement <code class="language-plaintext highlighter-rouge">def calculate_complexity(query:, nodes:, child_complexity:)</code> in your base field class, handling the case where <code class="language-plaintext highlighter-rouge">self.connection?</code> is <code class="language-plaintext highlighter-rouge">true</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::BaseField</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Field</span>
   <span class="k">def</span> <span class="nf">calculate_complexity</span><span class="p">(</span><span class="n">query</span><span class="p">:,</span> <span class="n">nodes</span><span class="p">:,</span> <span class="n">child_complexity</span><span class="p">:)</span>

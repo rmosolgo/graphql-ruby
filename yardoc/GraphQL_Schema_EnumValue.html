@@ -15,11 +15,6 @@ def initialize(*args)</p>
 <h1 id="arguments-to-value-in-enum-classes-are-passed-here">arguments to <code class="language-plaintext highlighter-rouge">value(...)</code> in Enum classes are passed here</h1>
 <p>super
 end
-def to_graphql
-enum_value = super</p>
-<h1 id="customize-the-derived-graphqlenumvalue-here">customize the derived GraphQL::EnumValue here</h1>
-<p>enum_value
-end
 end
 class BaseEnum &lt; GraphQL::Schema::Enum</p>
 <h1 id="use-it-for-these-enums">use it for these enums:</h1>
@@ -29,14 +24,10 @@ Includes:
 GraphQL::Schema::Member::HasDeprecationReason,
 GraphQL::Schema::Member::HasDirectives,
 GraphQL::Schema::Member::HasAstNode,
-GraphQL::Schema::Member::HasPath,
-GraphQL::Schema::Member::AcceptsDefinition,
-GraphQL::Schema::Member::CachedGraphQLDefinition,
-GraphQL::Schema::Member::CachedGraphQLDefinition::DeprecatedToGraphQ
-L
+GraphQL::Schema::Member::HasPath
 Instance methods:
-accessible?, authorized?, description, initialize, inspect,
-to_graphql, value, visible?</p>
+accessible?, authorized?, description, initialize, inspect, value,
+visible?</p>
 
 
   </body>

@@ -306,18 +306,8 @@ s post, <a href="https://gist.github.com/jashkenas/cbd2b088e20279ae2c8e">“Why 
   </li>
   <li>Update <code class="language-plaintext highlighter-rouge">lib/graphql/version.rb</code> with the new version number</li>
   <li>Commit changes to master</li>
-  <li>Release to RubyGems
-    <ul>
-      <li>Without 2FA 😢: <code class="language-plaintext highlighter-rouge">bundle exec rake release</code></li>
-      <li>With 2FA 😎: <code class="language-plaintext highlighter-rouge">bundle exec rake build</code> then <code class="language-plaintext highlighter-rouge">gem push pkg/graphql-&lt;version&gt;.gem</code>, <code class="language-plaintext highlighter-rouge">git tag v&lt;version&gt; &amp;&amp; git push v&lt;version&gt;</code></li>
-    </ul>
-  </li>
-  <li>Update the website:
-    <ul>
-      <li>Generate new API docs with <code class="language-plaintext highlighter-rouge">bundle exec rake apidocs:gen_version[&lt;your.version.number&gt;]</code></li>
-      <li>Push them to the website with <code class="language-plaintext highlighter-rouge">bundle exec rake site:publish</code></li>
-    </ul>
-  </li>
+  <li>Push changes to GitHub: <code class="language-plaintext highlighter-rouge">git push origin master</code>. GitHub Actions will update the website.</li>
+  <li>Release to RubyGems: <code class="language-plaintext highlighter-rouge">bundle exec rake release</code>. This will also push the tag to GitHub which will kick off a GitHub Actions job to update the API docs.</li>
   <li>Celebrate 🎊  !</li>
 </ul>
 

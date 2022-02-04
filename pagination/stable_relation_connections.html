@@ -61,8 +61,6 @@
 
 <p>These connection implementations are database-specific so that they can build proper queries with regard to <code class="language-plaintext highlighter-rouge">NULL</code> handling. (Postgres treats nulls as <em>larger</em> than other values while MySQL and SQLite treat them as <em>smaller</em> than other values.)</p>
 
-<p><strong>Note:</strong> In GraphQL-Pro 1.12.x, the <a href="/pro/cursors">previous stable connection implementation</a> is still enabled by default. See <a href="/pro/cursors#opting-out">Opting Out</a> to disable that feature, then enable this new one.</p>
-
 <h2 id="whats-the-difference">What’s the difference?</h2>
 
 <p>The default <a href="/api-doc/1.13.8/GraphQL/Pagination/ActiveRecordRelationConnection" target="_blank" title="API docs for GraphQL::Pagination::ActiveRecordRelationConnection"><code>GraphQL::Pagination::ActiveRecordRelationConnection</code></a> (which turns an <code class="language-plaintext highlighter-rouge">ActiveRecord::Relation</code> into a GraphQL-ready connection) uses <em>offset</em> as a cursor. This naive approach is sufficient for many cases, but it’s subject to a specific set of bugs.</p>
