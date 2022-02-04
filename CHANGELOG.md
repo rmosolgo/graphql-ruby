@@ -8,6 +8,12 @@
 
 ### Bug fixes
 
+# 1.12.24 (4 February 2022)
+
+### Bug fixes
+
+- SDL: fix parsing schemas where types have multiple directives #3886
+
 # 1.12.23 (20 December 2021)
 
 ### Bug fixes
