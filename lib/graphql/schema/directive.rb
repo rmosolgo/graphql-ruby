@@ -112,6 +112,10 @@ module GraphQL
         @arguments = self.class.coerce_arguments(nil, arguments, Query::NullContext)
       end
 
+      def graphql_name
+        self.class.graphql_name
+      end
+
       LOCATIONS = [
         QUERY =                  :QUERY,
         MUTATION =               :MUTATION,

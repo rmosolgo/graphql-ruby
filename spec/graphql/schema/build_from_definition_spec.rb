@@ -68,6 +68,8 @@ directive @foo(arg: Int, nullDefault: Int = null) on FIELD
 
 directive @greeting(pleasant: Boolean = true) on ARGUMENT_DEFINITION | ENUM | FIELD_DEFINITION | INPUT_OBJECT | INTERFACE | OBJECT | UNION
 
+directive @greeting2 on INTERFACE
+
 directive @hashed repeatable on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
 
 directive @language(is: String!) on ENUM_VALUE
@@ -90,7 +92,7 @@ enum Parting @greeting {
 
 union Phrase @greeting = Hello | Word
 
-interface Secret @greeting {
+interface Secret @greeting @greeting2 {
   password: String
 }
 
@@ -101,7 +103,7 @@ type Word {
 
       parsed_schema = GraphQL::Schema.from_definition(schema)
       hello_type = parsed_schema.get_type("Hello")
-      assert_equal ["deprecated", "foo", "greeting", "hashed", "include", "language", "skip"], parsed_schema.directives.keys.sort
+      assert_equal ["deprecated", "foo", "greeting", "greeting2", "hashed", "include", "language", "skip"], parsed_schema.directives.keys.sort
       parsed_schema.directives.values.each do |dir_class|
         assert dir_class < GraphQL::Schema::Directive
       end
@@ -122,6 +124,9 @@ type Word {
       assert_equal 1, au_revoir_directives.size
       assert_instance_of parsed_schema.directives["language"], au_revoir_directives.first
       assert_equal({ is: "fr" }, au_revoir_directives.first.arguments.keyword_arguments)
+
+      secret_type = parsed_schema.get_type("Secret")
+      assert_equal 2, secret_type.directives.size
 
       assert_schema_and_compare_output(schema)
     end
