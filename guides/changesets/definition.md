@@ -40,7 +40,7 @@ Additionally, the Changesets must be added to the schema (see the {% internal_li
 ```ruby
 class MyAppSchema < GraphQL::Schema
   # ...
-  use GraphQL::Enterprise::Changesets::Release, changesets: [
+  use GraphQL::Enterprise::Changeset::Release, changesets: [
     Changesets::DeprecateRecipeFlag,
     Changesets::RemoveRecipeFlag,
   ]
