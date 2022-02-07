@@ -16,9 +16,8 @@ module GraphQL
     class ValidationPipeline
       attr_reader :max_depth, :max_complexity
 
-      def initialize(query:, validate:, parse_error:, operation_name_error:, max_depth:, max_complexity:)
+      def initialize(query:, parse_error:, operation_name_error:, max_depth:, max_complexity:)
         @validation_errors = []
-        @validate = validate
         @parse_error = parse_error
         @operation_name_error = operation_name_error
         @query = query
@@ -65,7 +64,7 @@ module GraphQL
         elsif @operation_name_error
           @validation_errors << @operation_name_error
         else
-          validation_result = @schema.static_validator.validate(@query, validate: @validate, timeout: @schema.validate_timeout, max_errors: @schema.validate_max_errors)
+          validation_result = @schema.static_validator.validate(@query, validate: @query.validate, timeout: @schema.validate_timeout, max_errors: @schema.validate_max_errors)
           @validation_errors.concat(validation_result[:errors])
 
           if @validation_errors.empty?

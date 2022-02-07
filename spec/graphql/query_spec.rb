@@ -699,6 +699,13 @@ describe GraphQL::Query do
       query = GraphQL::Query.new(schema, invalid_query_string, validate: true)
       assert_equal false, query.valid?
       assert_equal 1, query.static_errors.length
+
+      # Can assign attribute after calling methods that use the AST
+      query = GraphQL::Query.new(schema, invalid_query_string)
+      assert query.fingerprint
+      query.validate = false
+      assert_equal true, query.valid?
+      assert_equal 0, query.static_errors.length
     end
   end
 
