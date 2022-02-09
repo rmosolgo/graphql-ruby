@@ -289,7 +289,7 @@ describe GraphQL::Schema::InputObject do
 
   describe "prepare (entire input object)" do
     module InputObjectPrepareObjectTest
-      class InputObj < GraphQL::Schema::InputObject
+      class RangeInput < GraphQL::Schema::InputObject
         argument :min, Integer
         argument :max, Integer, required: false
 
@@ -307,14 +307,41 @@ describe GraphQL::Schema::InputObject do
         end
       end
 
+      class SmallIntegerArgument < GraphQL::Schema::Argument
+        def authorized?(obj, val, ctx)
+          if val > 100
+            raise GraphQL::ExecutionError, "#{path} too big"
+          else
+            super
+          end
+        end
+      end
+
+      class HashInput < GraphQL::Schema::InputObject
+        argument_class SmallIntegerArgument
+        argument :k1, Integer
+        argument :k2, Integer
+      end
+
+      class HashInputResolver < GraphQL::Schema::Resolver
+        argument :input, HashInput, prepare: ->(val, ctx) { val.to_h }
+        type String, null: true
+
+        def resolve(input:)
+          "#{input.class}, #{input.inspect}"
+        end
+      end
+
       class Query < GraphQL::Schema::Object
         field :inputs, String do
-          argument :input, InputObj
+          argument :input, RangeInput
         end
 
         def inputs(input:)
           input.inspect
         end
+
+        field :hash_input, resolver: HashInputResolver
       end
 
       class Schema < GraphQL::Schema
@@ -328,28 +355,37 @@ describe GraphQL::Schema::InputObject do
       GRAPHQL
 
       res = InputObjectPrepareObjectTest::Schema.execute(query_str)
-      expected_obj = (5..10).inspect
-      assert_equal expected_obj, res["data"]["inputs"]
+      assert_equal "5..10", res["data"]["inputs"]
     end
 
     it "calls prepare on the input object (variable)" do
       query_str = <<-GRAPHQL
-      query ($input: InputObj!){ inputs(input: $input) }
+      query ($input: RangeInput!){ inputs(input: $input) }
       GRAPHQL
 
       res = InputObjectPrepareObjectTest::Schema.execute(query_str, variables: { input: { min: 5, max: 10 } })
-      expected_obj = (5..10).inspect
-      assert_equal expected_obj, res["data"]["inputs"]
+      assert_equal "5..10", res["data"]["inputs"]
     end
 
     it "authorizes the prepared value" do
       query_str = <<-GRAPHQL
-        query ($input: InputObj!){ inputs(input: $input) }
+        query ($input: RangeInput!){ inputs(input: $input) }
       GRAPHQL
 
       res = InputObjectPrepareObjectTest::Schema.execute(query_str, variables: { input: { min: 5, max: 101 } })
       assert_nil res["data"]["inputs"]
       assert_equal ["Range too big"], res["errors"].map { |e| e["message"] }
+    end
+
+    it "authorizes Hashes returned from prepare:" do
+      query_str = "{ hashInput(input: { k1: 5, k2: 12 }) }"
+      res = InputObjectPrepareObjectTest::Schema.execute(query_str)
+      assert_equal "Hash, {:k1=>5, :k2=>12}", res["data"]["hashInput"]
+
+      query_str = "{ hashInput(input: { k1: 500, k2: 12 }) }"
+      res = InputObjectPrepareObjectTest::Schema.execute(query_str)
+      assert_equal ["HashInput.k1 too big"], res["errors"].map { |e| e["message"] }
+      assert_nil res["data"]["hashInput"]
     end
   end
 
