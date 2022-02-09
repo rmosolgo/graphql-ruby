@@ -459,6 +459,10 @@ describe GraphQL::Analysis::AST::QueryComplexity do
         implements ComplexityInterface
       end
 
+      class Thing < GraphQL::Schema::Object
+        field :name, String
+      end
+
       class Query < GraphQL::Schema::Object
         field :complexity, SingleComplexity do
           argument :int_value, Int, required: false
@@ -469,6 +473,14 @@ describe GraphQL::Analysis::AST::QueryComplexity do
 
         field :inner_complexity, ComplexityInterface do
           argument :value, Int, required: false
+        end
+
+        field :things, Thing.connection_type, max_page_size: 100 do
+          argument :count, Int, validates: { numericality: { less_than: 50 } }
+        end
+
+        def things(count:)
+          count.times.map {|t| {name: t.to_s}}
         end
       end
 
@@ -499,7 +511,7 @@ describe GraphQL::Analysis::AST::QueryComplexity do
     describe "same field on multiple types" do
       let(:query_string) {%|
       {
-        innerComplexity(intValue: 2) {
+        innerComplexity(value: 2) {
           ... on SingleComplexity { value }
           ... on DoubleComplexity { value }
         }
@@ -510,6 +522,22 @@ describe GraphQL::Analysis::AST::QueryComplexity do
         complexity = reduce_result.first
         # 1 for innerComplexity + 4 for DoubleComplexity.value
         assert_equal 5, complexity
+      end
+    end
+
+    describe "when the query fails validation" do
+      let(:query_string) {%|
+      {
+        things(count: 200, first: 5) {
+          nodes { name }
+        }
+      }
+      |}
+      it "handles the error" do
+        res = GraphQL::Query.new(complexity_schema, query_string).result
+        assert_equal ["count must be less than 50"], res["errors"].map { |e| e["message"] }
+        complexity = reduce_result.first
+        assert_equal 102, complexity, "It uses max page size"
       end
     end
   end
