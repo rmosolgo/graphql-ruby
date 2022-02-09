@@ -81,7 +81,7 @@ module GraphQL
 
       def self.authorized?(obj, value, ctx)
         # Authorize each argument (but this doesn't apply if `prepare` is implemented):
-        if value.is_a?(InputObject)
+        if value.respond_to?(:key?)
           arguments(ctx).each do |_name, input_obj_arg|
             input_obj_arg = input_obj_arg.type_class
             if value.key?(input_obj_arg.keyword) &&
