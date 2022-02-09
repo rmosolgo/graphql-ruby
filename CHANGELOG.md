@@ -10,6 +10,31 @@
 
 ### Bug fixes
 
+# 1.13.9 (9 February 2022)
+
+### Breaking changes
+
+- Authorization: #3903 In graphql-ruby v1.12.17-1.13.8, when input objects used `prepare: -> { ... }` , the returned values were not authorized at all. This version goes back to the behavior from 1.12.16 and before, where a returned `Hash` is validated just like an input object that didn't have a `prepare:` hook. To get the previous behavior, you can implement `def self.authorized?` in the input object you want to skip authorization in:
+
+    ```ruby
+    class Types::BaseInputObject < GraphQL::Schema::InputObject
+      def self.authorized?(obj, value, ctx)
+        if value.is_a?(self)
+          super
+        else
+          true # graphql-ruby skipped auth in this case for v1.12.17-v1.13.8
+        end
+      end
+    end
+    ```
+
+### Bug fixes
+
+- Support re-setting `query.validate = ...` after a query is initialized #3881
+- Handle validation errors in connection complexity calculations #3906
+- Input Objects: try to authorize values when `prepare:` returns a Hash (this was default < v1.12.16) #3903
+- SDL: fix when a type has two directives
+
 # 1.13.8 (1 February 2022)
 
 ### Bug fixes
