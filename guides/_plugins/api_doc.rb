@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require_relative "../../lib/graphql/version"
+require "kramdown"
 
 module GraphQLSite
   API_DOC_ROOT = "/api-doc/#{GraphQL::VERSION}/"
@@ -106,8 +107,13 @@ module GraphQLSite
               depth = h.count("#")
               text = h.gsub(/^#+ /, "")
               target = text.downcase.gsub(/[^a-z0-9]+/, "-")
+              rendered_text = Kramdown::Document.new(text, auto_ids: false)
+                .to_html
+                .sub("<p>", "")
+                .sub("</p>", "") # remove wrapping added by kramdown
+
               "<li class='contents-entry entry-depth-#{depth}'>
-                <span class='section-count'>#{depth == 2 ? "#{section_count += 1}. " : ""}</span><a href='##{target}'>#{text}</a>
+                <span class='section-count'>#{depth == 2 ? "#{section_count += 1}. " : ""}</span><a href='##{target}'>#{rendered_text}</a>
               </li>"
             end.join("\n")}
         </ul>
