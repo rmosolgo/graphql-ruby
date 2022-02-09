@@ -476,7 +476,7 @@ describe GraphQL::Analysis::AST::QueryComplexity do
         end
 
         field :things, Thing.connection_type, max_page_size: 100 do
-          argument :count, Int, required: true, validates: { numericality: { less_than: 50 } }
+          argument :count, Int, validates: { numericality: { less_than: 50 } }
         end
 
         def things(count:)
