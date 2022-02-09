@@ -411,11 +411,14 @@ module GraphQL
         elsif connection?
           arguments = query.arguments_for(nodes.first, self)
           max_possible_page_size = nil
-          if arguments[:first]
-            max_possible_page_size = arguments[:first]
-          end
-          if arguments[:last] && (max_possible_page_size.nil? || arguments[:last] > max_possible_page_size)
-            max_possible_page_size = arguments[:last]
+          if arguments.respond_to?(:[]) # It might have been an error
+            if arguments[:first]
+              max_possible_page_size = arguments[:first]
+            end
+
+            if arguments[:last] && (max_possible_page_size.nil? || arguments[:last] > max_possible_page_size)
+              max_possible_page_size = arguments[:last]
+            end
           end
 
           if max_possible_page_size.nil?
