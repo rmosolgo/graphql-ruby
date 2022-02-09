@@ -8,19 +8,25 @@
 
 ### Bug Fix
 
-# 1.21.2 (27 January 2021)
+# 1.21.3 (9 February 2022)
+
+### New Features
+
+- Future-proof for GraphQL-Ruby 2.0
+
+# 1.21.2 (27 January 2022)
 
 ### New Features
 
 - Dashboard, Routes: support lazy-loading the schema with `Routes::Lazy` #3868
 
-# 1.21.1 (20 January 2021)
+# 1.21.1 (20 January 2022)
 
 ### Bug Fix
 
 - Stream, Defer: Include `hasNext: true|false` in patches
 
-# 1.21.0 (20 January 2021)
+# 1.21.0 (20 January 2022)
 
 ### New Features
 
