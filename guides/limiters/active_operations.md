@@ -11,15 +11,15 @@ index: 2
 
 `GraphQL::Enterprise::ActiveOperationLimiter` prevents clients from running too many GraphQL operations at the same time. It uses {% internal_link "Redis", "limiters/redis" %} to track currently-running operations.
 
-### Why?
+## Why?
 
 Some clients may suddently swamp a server with tons of requests, occupying all available Ruby processes and therefore interrupting service for other clients. This limiter aims to prevent that at the GraphQL level by halting queries when a client already has lots of queries running. That way, server processes will remain available for other clients' requests.
 
-### Setup
+## Setup
 
 To use this limiter, update the schema configuration and include `context[:limiter_key]` in your queries.
 
-##### Schema Setup
+#### Schema Setup
 
 To setup the schema, add `use GraphQL::Enterprise::ActiveOperationLimiter` with a default `limit:` value:
 
@@ -38,7 +38,7 @@ It also accepts a `stale_request_seconds:` option. The limiter uses that value t
 
 Before requests will actually be halted, ["soft mode"](#soft-limits) must be disabled as described below.
 
-##### Query Setup
+#### Query Setup
 
 In order to limit clients, the limiter needs a client identifier for each GraphQL operation. By default, it checks `context[:limiter_key]` to find it:
 
@@ -57,7 +57,7 @@ Operations with the same `context[:limiter_key]` will rate limited in the same b
 
 To provide a client identifier another way, see [Customization](#customization).
 
-### Soft Limits
+## Soft Limits
 
 By default, the limiter doesn't actually halt queries; instead, it starts out in "soft mode". In this mode:
 
@@ -73,7 +73,7 @@ To disable "soft mode" and start limiting, use the [Dashboard](#dashboard) or [c
 MySchema.enterprise_active_operation_limiter.set_soft_limit(false)
 ```
 
-### Dashboard
+## Dashboard
 
 Once installed, your {% internal_link "GraphQL-Pro dashboard", "/pro/dashboard" %} will include a simple metrics view:
 
@@ -87,7 +87,7 @@ Also, the dashboard includes a link to enable or disable "soft mode":
 
 When "soft mode" is enabled, limited requests are _not_ actually halted (although they are _counted_). When "soft mode" is disabled, any over-limit requests are halted.
 
-### Customization
+## Customization
 
 `GraphQL::Enterprise::ActiveOperationLimiter` provides several hooks for customizing its behavior. To use these, make a subclass of the limiter and override methods as described:
 
@@ -105,7 +105,7 @@ The hooks are:
 - `def soft_limit?(key, query)` can be implemented to customize the application of "soft mode". By default, it checks a setting in redis.
 - `def handle_redis_error(err)` is called when the limit rescues an error from Redis. By default, it's passed to `warn` and the query is _not_ halted.
 
-### Instrumentation
+## Instrumentation
 
 While the limiter is installed, it adds some information to the query context about its operation. It can be acccessed at `context[:active_operation_limiter]`:
 

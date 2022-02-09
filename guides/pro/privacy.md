@@ -10,12 +10,7 @@ index: 7
 
 The following statement describes what data GraphQL::Pro collects during normal operation and how that data is used.
 
-- [What Data We Collect And How It's Used](#what-data-we-collect-and-how-its-used)
-- [Third-Party Services](#third-party-services)
-- [Data Security](#data-security)
-- [More Information](#more-information)
-
-### What Data We Collect And How It's Used
+## What Data We Collect And How It's Used
 
 GraphQL::Pro collects the following kinds of data:
 
@@ -30,7 +25,7 @@ The `graphql-pro` Ruby gem collects no data and never "phones home" for any purp
 
 GraphQL::Pro is not directed at children under the age of 13. If you are under age 13, please do not use GraphQL::Pro.
 
-### Third-Party Services
+## Third-Party Services
 
 Use of GraphQL::Pro includes the following third-party services:
 
@@ -46,13 +41,13 @@ Stripe | Payment Processing
 MailChimp | Newsletter Management
 Google Apps | Company Infrastructure
 
-### Data Security
+## Data Security
 
 GraphQL::Pro does not collect ["Sensitive Personal Information"](https://gdpr-info.eu/art-9-gdpr/). GraphQL::Pro's systems are secured with strong, unique passwords and two-factor authentication is enabled wherever possible.
 
 You are responsible for using a strong, unique password to log into https://billing.graphql.pro.
 
-### More Information
+## More Information
 
 This document is managed [on GitHub](https://github.com/rmosolgo/graphql-ruby/blob/master/guides/pro/privacy.md). You can use a GitHub account to watch for changes or subscribe to a [public RSS feed](https://github.com/rmosolgo/graphql-ruby/commits/master.atom).
 

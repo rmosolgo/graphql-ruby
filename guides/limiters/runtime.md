@@ -11,15 +11,15 @@ index: 3
 
 `GraphQL::Enterprise::RuntimeLimiter` applies an upper bound to processing time consumed by a single client. It uses {% internal_link "Redis", "limiters/redis" %} track time with a [token bucket](https://en.wikipedia.org/wiki/Token_bucket) algorithm.
 
-### Why?
+## Why?
 
 This limiter prevents a single client from consuming too much processing time, regardless of whether it comes a burst of short-lived queries (which the {% internal_link "Active Operation Limiter", "/limiters/active_operations" %} can prevent) or a small number of long-running queries. Unlike request counters or complexity calculations, the runtime limiter pays no attention to the structure of the incoming request. Instead, it simply measures the time spent on the request _as a whole_ and halts queries when a client consumes more than the limit.
 
-### Setup
+## Setup
 
 To use this limiter, update the schema configuration and include `context[:limiter_key]` in your queries.
 
-##### Schema Setup
+### Schema Setup
 
 To setup the schema, add `use GraphQL::Enterprise::RuntimeLimiter` with a default `limit_ms:` value:
 
@@ -38,7 +38,7 @@ It also accepts a `window_ms:` option, which is the duration over which `limit_m
 
 Before requests will actually be halted, ["soft mode"](#soft-limits) must be disabled as described below.
 
-##### Query Setup
+### Query Setup
 
 In order to limit clients, the limiter needs a client identifier for each GraphQL operation. By default, it checks `context[:limiter_key]` to find it:
 
@@ -57,7 +57,7 @@ Operations with the same `context[:limiter_key]` will rate limited in the same b
 
 To provide a client identifier another way, see [Customization](#customization).
 
-### Soft Limits
+## Soft Limits
 
 By default, the limiter doesn't actually halt queries; instead, it starts out in "soft mode". In this mode:
 
@@ -74,7 +74,7 @@ MySchema.enterprise_runtime_limiter.set_soft_limit(false)
 ```
 
 
-### Dashboard
+## Dashboard
 
 Once installed, your {% internal_link "GraphQL-Pro dashboard", "/pro/dashboard" %} will include a simple metrics view:
 
@@ -88,7 +88,7 @@ Also, the dashboard includes a link to enable or disable "soft mode":
 
 When "soft mode" is enabled, limited requests are _not_ actually halted (although they are _counted_). When "soft mode" is disabled, any over-limit requests are halted.
 
-### Customization
+## Customization
 
 `GraphQL::Enterprise::RuntimeLimiter` provides several hooks for customizing its behavior. To use these, make a subclass of the limiter and override methods as described:
 
@@ -106,7 +106,7 @@ The hooks are:
 - `def soft_limit?(key, query)` can be implemented to customize the application of "soft mode". By default, it checks a setting in redis.
 - `def handle_redis_error(err)` is called when the limit rescues an error from Redis. By default, it's passed to `warn` and the query is _not_ halted.
 
-### Instrumentation
+## Instrumentation
 
 While the limiter is installed, it adds some information to the query context about its operation. It can be acccessed at `context[:runtime_limiter]`:
 
@@ -136,7 +136,7 @@ You could use this to add detailed metrics to your application monitoring system
 MyMetrics.increment("graphql.runtime_limiter", tags: result.context[:runtime_limiter])
 ```
 
-### Some Caveats
+## Some Caveats
 
 The limiter will not _interrupt_ a long-running field. Instead, it stops executing new fields after a client exceeds its allowed processing time. This is because interrupting arbitrary code may have unintended consequences for I/O operations, see ["Timeout: Ruby's most dangerous API"](https://www.mikeperham.com/2015/05/08/timeout-rubys-most-dangerous-api/).
 

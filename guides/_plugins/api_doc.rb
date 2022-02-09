@@ -92,6 +92,39 @@ module GraphQLSite
       POSSIBLE_EXTENSIONS.any? { |ext| File.exist?(filepath + ext) }
     end
   end
+
+
+  class TableOfContents < Liquid::Tag
+    def render(context)
+      headers = context["page"]["content"].scan(/^##+[^\n]+$/m)
+      section_count = 0
+      html = <<~HTML
+      <div class="table-of-contents">
+        <h3 class="contents-header">Contents</h3>
+        <ul class="contents-list">
+          #{headers.map do |h|
+              depth = h.count("#")
+              text = h.gsub(/^#+ /, "")
+              target = text.downcase.gsub(/[^a-z0-9]+/, "-")
+              "<li class='contents-entry entry-depth-#{depth}'>
+                <span class='section-count'>#{depth == 2 ? "#{section_count += 1}. " : ""}</span><a href='##{target}'>#{text}</a>
+              </li>"
+            end.join("\n")}
+        </ul>
+      </div>
+      HTML
+
+      if section_count == 0
+        if headers.any?
+          full_path = "guides/#{context["page"]["path"]}"
+          warn("No sections identified for #{full_path} -- make sure it's using `## ...` for section headings.")
+        end
+        ""
+      else
+        html
+      end
+    end
+  end
 end
 
 
@@ -100,3 +133,4 @@ Liquid::Template.register_filter(GraphQLSite::APIDoc)
 Liquid::Template.register_tag("api_doc_root", GraphQLSite::APIDocRoot)
 Liquid::Template.register_tag("open_an_issue", GraphQLSite::OpenAnIssue)
 Liquid::Template.register_tag("internal_link", GraphQLSite::InternalLink)
+Liquid::Template.register_tag("table_of_contents", GraphQLSite::TableOfContents)

@@ -59,7 +59,7 @@ See below for the different kind of modifications you can make in a changeset:
 - [Types](#types): changing one type definition for another
 - [Runtime](#runtime): choosing a behavior at runtime based on the current request and changeset
 
-### Fields
+## Fields
 
 In a Changeset, you can add, redefine, or remove fields that belong to object types, interface types, or resolvers. First, use `modifies ... do ... end`, naming the owner of the field:
 
@@ -78,7 +78,7 @@ Then...
 
 When a field is removed, queries that request that field will be invalid, unless the client has requested a previous API version where the field is still available.
 
-### Arguments
+## Arguments
 
 In a Changeset, you can add, redefine, or remove arguments that belong to fields, input objects, or resolvers. Use `modifies` to select the argument owner, for example:
 
@@ -109,7 +109,7 @@ Then...
 
 When arguments are removed, the schema will reject any queries which use them unless the client has requested a previous API version where the argument is still allowed.
 
-### Enum Values
+## Enum Values
 
 In a Changeset, you can add, redefine, or remove enum values. First, use `modifies ... do ... end`, naming the enum type:
 
@@ -128,7 +128,7 @@ Then...
 
 When enum values are removed, they won't be accepted as input and they won't be allowed as return values from fields unless the client has requested a previous API version where those values are still allowed.
 
-### Unions
+## Unions
 
 In a Changeset, you can add to or remove from a union's possible types. First, use `modifies ...`, naming the union type:
 
@@ -147,7 +147,7 @@ Then...
 
 When a possible type is removed, it will not be associated with the union type in introspection queries or schema dumps.
 
-### Interfaces
+## Interfaces
 
 In a Changeset, you can add to or remove from an object type's interface definitions. First, use `modifies ...`, naming the object type:
 
@@ -166,7 +166,7 @@ Then...
 
 When an interface implementation is removed, then the interface will not be associated with the object in introspection queries or schema dumps. Also, any fields inherited from the interface will be hidden from clients. (If the object defines the field itself, it will still be visible.)
 
-### Types
+## Types
 
 Using Changesets, it's possible to define a new type using the same name as an old type. (Only one type per name is allowed for each query, but different queries can use different types for the same name.)
 
@@ -230,7 +230,7 @@ end
 
 That way, legacy clients will continue to receive enum values while new clients will receive objects.
 
-### Runtime
+## Runtime
 
 While a query is running, you can check if a changeset applies by using its `.active?(context)` method. For example:
 

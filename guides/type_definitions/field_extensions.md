@@ -10,7 +10,7 @@ index: 10
 
 {{ "GraphQL::Schema::FieldExtension" | api_doc }} provides a way to modify user-defined fields in a programmatic way. For example, Relay connections are implemented as a field extension ({{ "GraphQL::Schema::Field::ConnectionExtension" | api_doc }}).
 
-### Making a new extension
+## Making a new extension
 
 Field extensions are subclasses of {{ "GraphQL::Schema::FieldExtension" | api_doc }}:
 
@@ -19,7 +19,7 @@ class MyExtension < GraphQL::Schema::FieldExtension
 end
 ```
 
-### Using an extension
+## Using an extension
 
 Defined extensions can be added to fields using the `extensions: [...]` option or the `extension(...)` method:
 
@@ -33,7 +33,7 @@ end
 
 See below for how extensions may modify fields.
 
-### Modifying field configuration
+## Modifying field configuration
 
 When extensions are attached, they are initialized with a `field:` and `options:`. Then, `#apply` is called, when they may extend the field they're attached to. For example:
 
@@ -48,7 +48,7 @@ end
 
 This way, an extension can encapsulate a behavior requiring several configuration options.
 
-### Adding default argument configurations
+## Adding default argument configurations
 
 Extensions may provide _default_ argument configurations which are applied if the field doesn't define the argument for itself. The configuration is passed to {{ "Schema::FieldExtension.default_argument" | api_doc }}. For example, to define a `:query` argument if the field doesn't already have one:
 
@@ -62,7 +62,7 @@ end
 
 Additionally, extensions may implement `def after_define` which is called _after_ the field's `do .. . end` block. This is helpful when an extension should provide _default_ configurations without overriding anything in the field definition. (When extensions are added by calling `field.extension(...)` on an already-defined field `def after_define` is called immediately.)
 
-### Modifying field execution
+## Modifying field execution
 
 Extensions have two hooks that wrap field resolution. Since GraphQL-Ruby supports deferred execution, these hooks _might not_ be called back-to-back.
 
@@ -72,7 +72,7 @@ After resolution and _after_ syncing lazy values (like `Promise`s from `graphql-
 
 See the linked API docs for the parameters of those methods.
 
-#### Execution "memo"
+### Execution "memo"
 
 One parameter to `after_resolve` deserves special attention: `memo:`. `resolve` _may_ yield a third value. For example:
 
@@ -97,7 +97,7 @@ This allows the `resolve` hook to pass data to `after_resolve`.
 
 Instance variables may not be used because, in a given GraphQL query, the same field may be resolved several times concurrently, and that would result in overriding the instance variable in an unpredictable way. (In fact, extensions are frozen to prevent instance variable writes.)
 
-### Extension options
+## Extension options
 
 The `extension(...)` method takes an optional second argument, for example:
 
@@ -116,7 +116,7 @@ def after_resolve(value:, **rest)
 end
 ```
 
-### Using `extras`
+## Using `extras`
 
 Extensions can have the same `extras` as fields (see {% internal_link "Extra Field Metadata", "fields/introduction#extra-field-metadata" %}). Add them by calling `extras` in the class definition:
 
@@ -128,7 +128,7 @@ end
 
 Any configured `extras` will be present in the given `arguments`, but removed before the field is resolved. (However, `extras` from _any_ extension will be present in `arguments` for _all_ extensions.)
 
-### Adding an extension by default
+## Adding an extension by default
 
 If you want to apply an extension to _all_ your fields, you can do this in your {% internal_link "BaseField", "/type_definitions/extensions.html#customizing-fields" %}'s `def initialize`, for example:
 

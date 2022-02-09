@@ -22,7 +22,7 @@ end
 
 Only changesets on the list will be shown to clients. The `release ...` configuration in the changeset will be compared to `context[:changeset_version]` to determine if the changeset applies to the current request.
 
-### Inspecting Releases
+## Inspecting Releases
 
 To preview releases, you can create schema dumps by passing `context: { changeset_version: ... }` to {{ "Schema.to_definition" | api_doc }}.
 

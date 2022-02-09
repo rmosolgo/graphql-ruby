@@ -11,7 +11,7 @@ index: 1
 
 Changesets require some updates to the schema (to define changesets) and some updates to your controller (to receive version headers from clients).
 
-### Schema Setup
+## Schema Setup
 
 To get started with [GraphQL-Enterprise](https://graphql.pro/enterprise) Changesets, you have to add them to your schema. They're added in several places:
 
@@ -62,7 +62,7 @@ To get started with [GraphQL-Enterprise](https://graphql.pro/enterprise) Changes
 
 Once those integrations are set up, you're ready to {% internal_link "write a changeset", "/changesets/definition" %} and start {% internal_link "releasing API versions", "/changesets/releases" %}!
 
-### Controller Setup
+## Controller Setup
 
 Additionally, your controller must pass `context[:changeset_version]` when running queries. To provide this, update your controller:
 

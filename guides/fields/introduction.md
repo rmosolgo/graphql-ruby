@@ -26,7 +26,7 @@ The different elements of field definition are addressed below:
 - [Extra field metadata](#extra-field-metadata) for low-level access to the GraphQL-Ruby runtime
 - [Add default values for field parameters](#field-parameter-default-values)
 
-### Field Return Type
+## Field Return Type
 
 The second argument to `field(...)` is the return type. This can be:
 
@@ -50,7 +50,7 @@ field :teammates, [Types::User], null: false # `[User!]!`, always returns a list
 field :scores, [Integer, null: true] # `[Int]`, may return a list or `nil`, the list may contain a mix of `Integer`s and `nil`s
 ```
 
-### Field Documentation
+## Field Documentation
 
 Fields may be documented with a __description__ and may be __deprecated__.
 
@@ -79,7 +79,7 @@ field :email, String,
 
 Fields with a `deprecation_reason:` will appear as "deprecated" in GraphiQL.
 
-### Field Resolution
+## Field Resolution
 
 In general, fields return Ruby values corresponding to their GraphQL return types. For example, a field with the return type `String` should return a Ruby string, and a field with the return type `[User!]!` should return a Ruby array with zero or more `User` objects in it.
 
@@ -176,7 +176,7 @@ end
 
 Note that `resolver_method` _cannot_ be used in combination with `method` or `hash_key`.
 
-### Field Arguments
+## Field Arguments
 
 _Arguments_ allow fields to take input to their resolution. For example:
 
@@ -186,7 +186,7 @@ _Arguments_ allow fields to take input to their resolution. For example:
 
 Read more in the {% internal_link "Arguments guide", "/fields/arguments" %}
 
-### Extra Field Metadata
+## Extra Field Metadata
 
 Inside a field method, you can access some low-level objects from the GraphQL-Ruby runtime. Be warned, these APIs are subject to change, so check the changelog when updating.
 
@@ -219,7 +219,7 @@ At runtime, the requested runtime object will be passed to the field.
 
 __Custom extras__ are also possible. Any method on your field class can be passed to `extras: [...]`, and the value will be injected into the method. For example, `extras: [:owner]` will inject the object type who owns the field. Any new methods on your custom field class may be used, too.
 
-### Field Parameter Default Values
+## Field Parameter Default Values
 
 The field method requires you to pass `null:` keyword argument to determine whether the field is nullable or not. For another field you may want to override `camelize`, which is `true` by default. You can override this behavior by adding a custom field with overwritten `camelize` option, which is `true` by default.
 

@@ -26,7 +26,7 @@ In other guides, you can read more about:
 
 Also, you can find a [demo app on GitHub](https://github.com/rmosolgo/graphql-pro-operation-store-example).
 
-### What are Persisted Queries?
+## What are Persisted Queries?
 
 _Persisted queries_ are GraphQL queries (`query`, `mutation`, or `subscription`) that are saved on the server and invoked by clients by _reference_. In this arrangement, clients don't send GraphQL queries over the network. Instead, clients send:
 
@@ -61,12 +61,12 @@ MyGraphQLEndpoint.post({
 })
 ```
 
-### Why Persisted Queries?
+## Why Persisted Queries?
 
 Using persisted queries improves the _security_, _efficiency_ and _visibility_ of your GraphQL system.
 
 
-#### Security
+### Security
 
 Persisted queries improve security because you can reject arbitrary GraphQL queries, removing an attack vector from your system. The query database serves a whitelist, so you can be sure that no unexpected queries will hit your system.
 
@@ -82,7 +82,7 @@ else
 end
 ```
 
-#### Efficiency
+### Efficiency
 
 Persisted queries improve the _efficiency_ of your system by reducing HTTP traffic. Instead of repeatedly sending GraphQL over the wire, queries are fetched from the database, so your requests require less bandwidth.
 
@@ -94,13 +94,13 @@ But _after_ using persisted queries, only the query identification info is sent 
 
 {{ "/operation_store/request_after.png" | link_to_img:"GraphQL request with persisted queries" }}
 
-#### Visibility
+### Visibility
 
 Persisted queries improve _visibility_ because you can track GraphQL usage from a single location. `OperationStore` maintains an index of type, field and argument usage so that you can analyze your traffic.
 
 {{ "/operation_store/operation_index.png" | link_to_img:"Index of GraphQL usage with persisted queries" }}
 
-### How it Works
+## How it Works
 
 `OperationStore` uses tables in your database to store normalized, deduplicated GraphQL strings. The database is immutable: new operations may be added, but operations are never modified or removed.
 
@@ -114,6 +114,6 @@ params[:operationId] # => "relay-app-v1/810c97f6631001..."
 
 `OperationStore` uses this to fetch the matching operation from the database. From there, the query is evaluated normally.
 
-### Getting Started
+## Getting Started
 
 See the {% internal_link "getting started guide","/operation_store/getting_started" %} to add `OperationStore` to your app.

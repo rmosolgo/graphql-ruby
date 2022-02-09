@@ -391,6 +391,47 @@ table {
     }
   }
 }
+
+.table-of-contents {
+  float: right;
+  border: 1px solid #aaaaaa;
+  border-radius: 3px;
+  padding: 15px;
+  margin: 0 10px 10px 10px;
+  width: 300px;
+  background: #fafafa;
+  .contents-header {
+    margin: 0 0 5px 20px;
+  }
+  .contents-list {
+    margin: 0;
+
+    .contents-entry {
+      list-style: none;
+      margin-left: 0;
+
+      .section-count {
+        color: #777777;
+        width: 20px;
+        display: inline-block;
+      }
+
+      &.entry-depth-2 {
+        padding-left: 0px;
+      }
+      &.entry-depth-3 {
+        padding-left: 10px;
+      }
+      &.entry-depth-4 {
+        padding-left: 20px;
+      }
+      &.entry-depth-5 {
+        padding-left: 30px;
+      }
+    }
+  }
+}
+
 /* pygments CSS, github theme */
 .highlight .hll { background-color: #ffffcc }
 .highlight .c { color: #999988; font-style: italic } /* Comment */

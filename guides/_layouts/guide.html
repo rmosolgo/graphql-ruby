@@ -1,5 +1,6 @@
 ---
 layout: default
+toc: true
 ---
 <p class="breadcrumb">
   <a href="{{ site.baseurl }}/">GraphQL</a>
@@ -39,6 +40,7 @@ layout: default
   </div>
 {% endif %}
 <h1 class="guide-header">{{ page.title }}</h1>
+<div class="guide-table-of-contents">{% table_of_contents %}</div>
 <div class="guide-container">
   {{ content }}
 </div>

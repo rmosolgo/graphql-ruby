@@ -22,7 +22,7 @@ def search_posts(category:)
 end
 ```
 
-### Nullability
+## Nullability
 
 To make an argument optional, set `required: false`, and set default values for the corresponding keyword arguments:
 
@@ -52,7 +52,7 @@ def search_posts(**args)
 end
 ```
 
-#### Default Values
+### Default Values
 
 Another approach is to use `default_value: value` to provide a default value for the argument if it is not supplied in the query.
 
@@ -81,7 +81,7 @@ argument :email_address, String, required: :nullable
 ```
 
 
-### Deprecation
+## Deprecation
 
 **Experimental:** __Deprecated__ arguments can be marked by adding a `deprecation_reason:` keyword argument:
 
@@ -94,7 +94,7 @@ end
 
 Note argument deprecation is a stage 2 GraphQL [proposal](https://github.com/graphql/graphql-spec/pull/525) so not all clients will leverage this information.
 
-### Aliasing
+## Aliasing
 
 Use `as: :alternate_name` to use a different key from within your resolvers while
 exposing another key to clients.
@@ -109,7 +109,7 @@ def post(id:)
 end
 ```
 
-### Preprocessing
+## Preprocessing
 
 Provide a `prepare` function to modify or validate the value of an argument before the field's resolver method is executed:
 
@@ -127,7 +127,7 @@ def posts(start_date:)
 end
 ```
 
-### Automatic camelization
+## Automatic camelization
 
 Arguments that are snake_cased will be camelized in the GraphQL schema. Using the example of:
 
@@ -167,7 +167,7 @@ def posts(start_year:)
 end
 ```
 
-### Valid Argument Types
+## Valid Argument Types
 
 Only certain types are valid for arguments:
 

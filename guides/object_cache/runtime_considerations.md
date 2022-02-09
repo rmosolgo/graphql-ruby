@@ -11,11 +11,11 @@ index: 4
 
 With caching configured, here are a few more things to keep in mind while queries are running.
 
-### Skipping the cache
+## Skipping the cache
 
 You can set `skip_object_cache: true` in your query `context: { ... }` to disable `ObjectCache` for a given query.
 
-### Manually adding an object to caching
+## Manually adding an object to caching
 
 By default, `ObjectCache` gathers the objects "behind" each GraphQL object in the result, then uses their fingerprints as cache keys. To manually register another object with the cache while a query is running, call `cacheable_object(...)`, passing the object. For example:
 
@@ -39,7 +39,7 @@ end
 
 (When the cache is disabled, `cacheable_object(...)` is a no-op.)
 
-### Measuring the cache
+## Measuring the cache
 
 While the cache is running, it logs some data in a Hash as `context[:object_cache]`. For example:
 
