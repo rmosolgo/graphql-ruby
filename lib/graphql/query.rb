@@ -405,7 +405,6 @@ module GraphQL
 
       @validation_pipeline = GraphQL::Query::ValidationPipeline.new(
         query: self,
-        validate: @validate,
         parse_error: parse_error,
         operation_name_error: operation_name_error,
         max_depth: @max_depth,
