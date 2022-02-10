@@ -1,12 +1,24 @@
 ---
 layout: default
 ---
-<p class="breadcrumb">
-  <a href="{{ site.baseurl }}/">GraphQL</a>
-  &raquo; <a href="{{ site.baseurl }}/guides">Guides</a>
-  {% if page.section %} &raquo; <a href="{{ site.baseurl }}/guides#{{ page.section | slugify }}-guides">{{ page.section }}</a>{% endif %}
-  &raquo; {{ page.title }}
-</p>
+<ul class="breadcrumb">
+  <li><a href="{{ site.baseurl }}/">GraphQL</a></li>
+  <li><a href="{{ site.baseurl }}/guides">Guides</a></li>
+  <li>
+    <select class="jump-to-select" onchange="navigateToSelected(this)">
+      {% for section in site.data.all_sections %}
+        <option {% if section.name == page.section %} selected{% endif %} data-target="{{ site.baseurl }}{{ section.overview_page.url }}">{{ section.name }}</option>
+      {% endfor %}
+    </select>
+  </li>
+  <li>
+    <select class="jump-to-select" onchange="navigateToSelected(this)">
+      {% for section_page in page.section_pages %}
+        <option {% if section_page.title == page.title %} selected{% endif %} data-target="{{ site.base_url }}{{ section_page.url }}">{{ section_page.title }}</option>
+      {% endfor %}
+    </select>
+  </li>
+</ul>
 {% if page.experimental %}
   <div class="experimental-header">
     <p>
@@ -63,5 +75,9 @@ layout: default
       header.textContent = "";
       header.appendChild(headerLink);
     }
+  }
+  function navigateToSelected(selectElement) {
+    var nextPage = selectElement.selectedOptions[0].dataset["target"]
+    document.location = nextPage
   }
 </script>

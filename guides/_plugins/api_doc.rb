@@ -94,7 +94,6 @@ module GraphQLSite
     end
   end
 
-
   class TableOfContents < Liquid::Tag
     def render(context)
       headers = context["page"]["content"].scan(/^##+[^\n]+$/m)
@@ -140,3 +139,30 @@ Liquid::Template.register_tag("api_doc_root", GraphQLSite::APIDocRoot)
 Liquid::Template.register_tag("open_an_issue", GraphQLSite::OpenAnIssue)
 Liquid::Template.register_tag("internal_link", GraphQLSite::InternalLink)
 Liquid::Template.register_tag("table_of_contents", GraphQLSite::TableOfContents)
+Jekyll::Hooks.register :site, :pre_render do |site|
+  section_pages = Hash.new { |h, k| h[k] = [] }
+  section_names = []
+  site.pages.each do |page|
+    this_section = page.data["section"]
+    if this_section
+      this_section_pages = section_pages[this_section]
+      this_section_pages << page
+      this_section_pages.sort_by! { |page| page.data["index"] || 100 }
+      page.data["section_pages"] = this_section_pages
+      section_names << this_section
+    end
+  end
+  section_names.compact!
+  section_names.uniq!
+  all_sections = []
+  section_names.each do |section_name|
+    all_sections << {
+      "name" => section_name,
+      "overview_page" => section_pages[section_name].first,
+    }
+  end
+
+  sorted_section_names = site.pages.find { |p| p.data["title"] == "Guides Index" }.data["sections"].map { |s| s["name"] }
+  all_sections.sort_by! { |s| sorted_section_names.index(s["name"]) }
+  site.data["all_sections"] = all_sections
+end
