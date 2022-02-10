@@ -37,12 +37,69 @@
       </div>
     </div>
     <div class="container">
-      <p class="breadcrumb">
-  <a href="/">GraphQL</a>
-  &raquo; <a href="/guides">Guides</a>
-   &raquo; <a href="/guides#graphql-enterprise-changesets-guides">GraphQL Enterprise - Changesets</a>
-  &raquo; Releasing Changesets
-</p>
+      <ul class="breadcrumb">
+  <li><a href="/guides">Guides</a></li>
+  <li>
+    <select class="jump-to-select" onchange="navigateToSelected(this)">
+      
+        <option  data-target="/schema/definition.html">Schema</option>
+      
+        <option  data-target="/queries/executing_queries.html">Queries</option>
+      
+        <option  data-target="/type_definitions/objects.html">Type Definitions</option>
+      
+        <option  data-target="/authorization/overview.html">Authorization</option>
+      
+        <option  data-target="/fields/introduction.html">Fields</option>
+      
+        <option  data-target="/mutations/mutation_root.html">Mutations</option>
+      
+        <option  data-target="/errors/overview.html">Errors</option>
+      
+        <option  data-target="/pagination/overview.html">Pagination</option>
+      
+        <option  data-target="/relay/range_add.html">Relay</option>
+      
+        <option  data-target="/dataloader/overview.html">Dataloader</option>
+      
+        <option  data-target="/subscriptions/overview.html">Subscriptions</option>
+      
+        <option  data-target="/pro/home.html">GraphQL Pro</option>
+      
+        <option  data-target="/operation_store/overview.html">GraphQL Pro - OperationStore</option>
+      
+        <option  data-target="/defer/overview.html">GraphQL Pro - Defer</option>
+      
+        <option  data-target="/limiters/overview.html">GraphQL Enterprise - Rate Limiters</option>
+      
+        <option  data-target="/object_cache/overview.html">GraphQL Enterprise - Object Cache</option>
+      
+        <option  selected data-target="/changesets/overview.html">GraphQL Enterprise - Changesets</option>
+      
+        <option  data-target="/javascript_client/overview.html">JavaScript Client</option>
+      
+        <option  data-target="/language_tools/visitor.html">Language Tools</option>
+      
+        <option  data-target="/testing/overview.html">Testing</option>
+      
+        <option  data-target="/development.html">Other</option>
+      
+    </select>
+  </li>
+  <li>
+    <select class="jump-to-select" onchange="navigateToSelected(this)">
+      
+        <option  data-target="/changesets/overview.html">API Versioning for GraphQL-Ruby</option>
+      
+        <option  data-target="/changesets/installation.html">Installing Changesets</option>
+      
+        <option  data-target="/changesets/definition.html">Defining Changesets</option>
+      
+        <option  selected data-target="/changesets/releases.html">Releasing Changesets</option>
+      
+    </select>
+  </li>
+</ul>
 
 
 
@@ -113,6 +170,10 @@
       header.textContent = "";
       header.appendChild(headerLink);
     }
+  }
+  function navigateToSelected(selectElement) {
+    var nextPage = selectElement.selectedOptions[0].dataset["target"]
+    document.location = nextPage
   }
 </script>
 
