@@ -195,9 +195,6 @@ a:hover, a:hover code {
   }
 }
 
-.breadcrumb {
-  color: $muted-color;
-}
 
 .guides {
   .guide-desc {
@@ -392,14 +389,68 @@ table {
   }
 }
 
+ul.breadcrumb {
+  color: $muted-color;
+
+  li {
+    display: inline;
+    list-style: none;
+    margin: 0;
+  }
+  li:before {
+    content: "»";
+    margin: 0px 4px 0px 2px;
+  }
+  li:first-child:before {
+    content: "";
+    margin: 0;
+  }
+
+  .jump-to-select {
+    box-sizing: border-box;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    appearance: none;
+    padding: 5px 20px 5px 5px;
+    border: 1px solid $code-border;
+    border-radius: 5px;
+    background-color: transparent;
+    color: $brand-color;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.3;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='292.4' height='292.4'%3E%3Cpath fill='%23a5152a' d='M287 69.4a17.6 17.6 0 0 0-13-5.4H18.4c-5 0-9.3 1.8-12.9 5.4A17.6 17.6 0 0 0 0 82.2c0 5 1.8 9.3 5.4 12.9l128 127.9c3.6 3.6 7.8 5.4 12.8 5.4s9.2-1.8 12.8-5.4L287 95c3.5-3.5 5.4-7.8 5.4-12.8 0-5-1.9-9.2-5.5-12.8z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 9px;
+
+    cursor: default;
+
+    &:hover {
+      border-color: #777;
+    }
+
+    &:focus {
+      border-color: #999;
+      box-shadow: 0 0 1px 2px #6db4ff;
+      outline: none;
+    }
+
+
+    option {
+      color: black;
+    }
+  }
+}
+
 .table-of-contents {
   float: right;
-  border: 1px solid #aaaaaa;
+  border: 1px solid $subtle-color;
   border-radius: 3px;
   padding: 15px;
   margin: 0 10px 10px 10px;
   width: 300px;
-  background: #fafafa;
+  background: $code-background;
   .contents-header {
     margin: 0 0 5px 20px;
   }
@@ -411,7 +462,7 @@ table {
       margin-left: 0;
 
       .section-count {
-        color: #777777;
+        color: $muted-color;
         width: 20px;
         display: inline-block;
       }

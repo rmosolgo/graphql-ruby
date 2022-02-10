@@ -20,4 +20,3 @@ end
 (You can initialize `Redis` with any options you need.)
 
 __Note:__ Be sure that this Redis instance is configured as a _persistent database_, not as a cache. You don't want it to throw away old keys!
-
