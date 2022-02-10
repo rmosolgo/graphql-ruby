@@ -13,17 +13,6 @@ pro: true
 
 After creating an app on Pusher and [configuring the Ruby gem](https://github.com/pusher/pusher-http-ruby#global), you can hook it up to your GraphQL schema.
 
-- [How it Works](#how-it-works)
-- [Database setup](#database-setup)
-- [Schema configuration](#schema-configuration)
-- [Execution configuration](#execution-configuration)
-- [Webhook configuration](#webhook-configuration)
-- [Authorization](#authorization)
-- [Serializing context](#serializing-context)
-- [Dashboard](#dashboard)
-- [Development tips](#development-tips)
-- [Client configuration](#client-configuration)
-
 ## How it Works
 
 This subscription implementation uses a hybrid approach:
