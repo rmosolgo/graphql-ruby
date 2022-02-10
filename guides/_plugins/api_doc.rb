@@ -105,7 +105,7 @@ module GraphQLSite
           #{headers.map do |h|
               depth = h.count("#")
               text = h.gsub(/^#+ /, "")
-              target = text.downcase.gsub(/[^a-z0-9]+/, "-")
+              target = text.downcase.gsub(/[^a-z0-9]+/, "-").sub(/-$/, "")
               rendered_text = Kramdown::Document.new(text, auto_ids: false)
                 .to_html
                 .sub("<p>", "")
