@@ -11,7 +11,7 @@ index: 3
 
 `GraphQL::Enterprise::ObjectCache` requires a Redis connection to store cached responses. Unlike `OperationStore` or rate limiters, this Redis instance should be configured to evict keys as needed.
 
-### Data Structure
+## Data Structure
 
 Under the hood, `ObjectCache` stores a mapping of queries and objects. Additionally, there are back-references from objects to queries that reference them. In general, like this:
 
@@ -33,7 +33,7 @@ Under the hood, `ObjectCache` stores a mapping of queries and objects. Additiona
 
 These mappings enable proper clean-up when queries or objects are expired from the cache. Additionally, whenever `ObjectCache` finds incomplete data in storage (for example, a necessary key was evicted), then it invalidates the whole query and re-runs it.
 
-### Memory Management
+## Memory Management
 
 Memory consumption is hard to estimate since it depends on how many queries the cache receives, how many objects those queries reference, how big the response is for those queries, and how long the fingerprints are for each object and query. To manage memory, configure the Redis instance with a `maxmemory` and `maxmemory-policy` directive, for example:
 

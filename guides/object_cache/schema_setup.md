@@ -11,7 +11,7 @@ index: 1
 
 To prepare the schema to serve cached responses, you have to add `GraphQL::Enterprise::ObjectCache` and implement a few hooks.
 
-### Add the Cache
+## Add the Cache
 
 In your schema, add `use GraphQL::Enterprise::ObjectCache, redis: ...`:
 
@@ -28,7 +28,7 @@ Additionally, it accepts some options for customizing how introspection is cache
 - `cache_introspection: { public: false }` to use {% internal_link "`public: false`", "/object_cache/caching#public" %} for all introspection fields. Use this if you hide schema members for some clients.
 - `cache_introspection: false` to completely disable caching on introspection fields.
 
-### Context Fingerprint
+## Context Fingerprint
 
 Additionally, you should implement `def self.private_context_fingerprint_for(context)` to return a string identifying the private scope of the given context. This method will be called whenever a query includes a {% internal_link "`public: false` type or field", "/object_cache/caching#public" %}. For example:
 
@@ -54,7 +54,7 @@ Whenever queries including `public: false` are cached, the private context finge
 
 The returned String should reflect any aspects of `context` that, if changed, should invalidate the cache. For example, if a user's permission level or team memberships change, then any previously-cached responses should be ignored.
 
-### Object Fingerprint
+## Object Fingerprint
 
 In order to determine whether cached results should be returned or invalidated, GraphQL needs a way to determine the "version" of each object in the query. It uses `Schema.object_fingerprint_for(object)` to do this. By default, it checks `.cache_key_with_version` (implemented by Rails), then `.to_param`, then it returns `nil`. Returning `nil` tells the cache not to use the cache _at all_. To customize this behavior, you can implement `def self.object_fingerprint_for(object)` in your schema:
 
@@ -78,7 +78,7 @@ end
 
 The returned strings are used as cache keys in the database -- whenever they change, stale data is left to be {% internal_link "cleaned up by Redis", "/object_cache/redis#memory-management" %}.
 
-### Object Identification
+## Object Identification
 
 `ObjectCache` depends on object identification hooks used elsewhere in GraphQL-Ruby:
 

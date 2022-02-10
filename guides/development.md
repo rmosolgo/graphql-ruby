@@ -19,7 +19,7 @@ So, you want to hack on GraphQL Ruby! Here are some tips for getting started.
 - [Versioning](#versioning) describes how changes are managed and released
 - [Releasing](#releasing) Gem versions
 
-### Setup
+## Setup
 
 Get your own copy of graphql-ruby by forking [`rmosolgo/graphql-ruby` on GitHub](https://github.com/rmosolgo/graphql-ruby) and cloning your fork.
 
@@ -29,9 +29,9 @@ Then, install the dependencies:
 - `bundle install`
 - Optional: [Ragel](https://www.colm.net/open-source/ragel/) is required to build the lexer
 
-### Running the Tests
+## Running the Tests
 
-#### Unit tests
+### Unit tests
 
 You can run the tests with
 
@@ -65,7 +65,7 @@ bundle exec rake test
 
 (This is provided by `minitest-focus`.)
 
-#### Integration tests
+### Integration tests
 
 You need to pick a specific gemfile from gemfiles/ to run integration tests. For example:
 
@@ -74,7 +74,7 @@ BUNDLE_GEMFILE=gemfiles/rails_6.1.gemfile bundle install
 BUNDLE_GEMFILE=gemfiles/rails_6.1.gemfile bundle exec rake test TEST=spec/integration/rails/graphql/relay/array_connection_spec.rb
 ```
 
-#### Other tests
+### Other tests
 
 There are system tests for checking ActionCable behavior, use:
 
@@ -88,7 +88,7 @@ And JavaScript tests:
 bundle exec rake test:js
 ```
 
-### Gemfiles, Gemfiles, Gemfiles
+## Gemfiles, Gemfiles, Gemfiles
 
 `graphql-ruby` has several gemfiles to ensure support for various Rails versions. You can specify a gemfile with `BUNDLE_GEMFILE`, eg:
 
@@ -96,7 +96,7 @@ bundle exec rake test:js
 BUNDLE_GEMFILE=gemfiles/rails_5.gemfile bundle exec rake test
 ```
 
-### Debugging with Pry
+## Debugging with Pry
 
 [`pry`](https://pryrepl.org/) is included with GraphQL-Ruby's development setup to help with debugging.
 
@@ -108,7 +108,7 @@ binding.pry
 
 Then, the program will pause and your terminal will become a Ruby REPL. Feel free to use `pry` in your development process!
 
-### Running the Benchmarks
+## Running the Benchmarks
 
 This project includes some Rake tasks to record benchmarks:
 
@@ -135,7 +135,7 @@ Keep these points in mind when using benchmarks:
 - The results are hardware-specific: computers with different hardware will have different results. So don't compare your results to results from other computers.
 - The results are environment-specific: CPU and memory availability are affected by other processes on your computer. So try to create similar environments for your before-and-after testing.
 
-### Coding Guidelines
+## Coding Guidelines
 
 GraphQL-Ruby uses a thorough test suite to make sure things work reliably day-after-day. Please include tests that describe your changes, for example:
 
@@ -145,7 +145,7 @@ GraphQL-Ruby uses a thorough test suite to make sure things work reliably day-af
 
 Don't fret about coding style or organization.  There's a minimal Rubocop config in `.rubocop.yml` which runs during CI. You can run it manually with `bundle exec rake rubocop`.
 
-### Lexer and Parser
+## Lexer and Parser
 
 The lexer and parser use a multistep build process:
 
@@ -157,7 +157,7 @@ To update the lexer or parser, you should update their corresponding _definition
 
 You will need Ragel to build the lexer (see above).
 
-#### Install Ragel and Colm on a Mac
+### Install Ragel and Colm on a Mac
 
 GraphQL Ruby requires Ragel 7.0.0.9 which is not available on Homebrew. To install it, you might have to download it from source.
 
@@ -181,7 +181,7 @@ make
 make install
 ```
 
-### Website
+## Website
 
 To update the website, update the `.md` files in `guides/`.
 
@@ -199,7 +199,7 @@ To publish the website with GitHub pages, run the Rake task:
 bundle exec rake site:publish
 ```
 
-#### Search Index
+### Search Index
 
 GraphQL-Ruby's search index is powered by Algolia. To update the index, you need the API key in an environment variable:
 
@@ -209,7 +209,7 @@ $ export ALGOLIA_API_KEY=...
 
 Without this key, the search index will fall out-of-sync with the website. Contact @rmosolgo to gain access to this key.
 
-#### API Docs
+### API Docs
 
 The GraphQL-Ruby website has its own rendered version of the gem's API docs. They're pushed to GitHub pages with a special process.
 
@@ -234,7 +234,7 @@ $ bundle exec rake site:publish
 
 Finally, check your work by visiting the docs on the website.
 
-### Versioning
+## Versioning
 
 GraphQL-Ruby does _not_ attempt to deliver "semantic versioning" for the reasons described in `jashkenas`'
 s post, ["Why Semantic Versioning Isn't"](https://gist.github.com/jashkenas/cbd2b088e20279ae2c8e). Instead, the following scheme is used as a guideline:
@@ -250,7 +250,7 @@ Pull requests and issues may be tagged with a [GitHub milestone](https://github.
 
 The [changelog](https://github.com/rmosolgo/graphql-ruby/blob/master/CHANGELOG.md) should always contain accurate and thorough information so that users can upgrade. If you have trouble upgrading based on the changelog, please open an issue on GitHub.
 
-### Releasing
+## Releasing
 
 GraphQL-Ruby doesn't have a strict release schedule. If you think it should, consider opening an issue to share your thoughts.
 
@@ -260,7 +260,7 @@ To cut a release:
   - Add a new heading for the new version, and paste the four categories of changes into the new section
   - Open the GitHub milestone corresponding to the new version
   - Check each pull request and put it in the category (or categories) that it belongs in
-    - If a change affects the default behavior of GraphQL-Ruby in a disruptive way, add it to `### Breaking Changes` and include migration notes if possible
+    - If a change affects the default behavior of GraphQL-Ruby in a disruptive way, add it to `## Breaking Changes` and include migration notes if possible
     - Include the PR number beside the change description for future reference
 - Update `lib/graphql/version.rb` with the new version number
 - Commit changes to master

@@ -38,17 +38,6 @@ context = {
 MySchema.execute(..., context: context)
 ```
 
-And read on about the different features of the integration:
-
-- [Authorizing Objects](#authorizing-objects)
-- [Scoping Lists and Connections](#scopes)
-- [Authorizing Fields](#authorizing-fields)
-- [Authorizing Arguments](#authorizing-arguments)
-- [Authorizing Mutations](#authorizing-mutations)
-- [Authorizing Resolvers](#authorizing-resolvers)
-- [Custom Policy Lookup](#custom-policy-lookup)
-- [Custom User Lookup](#custom-user-lookup)
-
 ## Authorizing Objects
 
 You can specify Pundit roles that must be satisfied in order for viewers to see objects of a certain type. To get started, include the `ObjectIntegration` in your base object class:

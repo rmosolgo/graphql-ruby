@@ -13,19 +13,6 @@ pro: true
 
 After creating an app on Ably, you can hook it up to your GraphQL schema.
 
-- [How it Works](#how-it-works)
-- [Ably setup](#ably-setup)
-- [Database setup](#database-setup)
-- [Schema configuration](#schema-configuration)
-- [Execution configuration](#execution-configuration)
-- [Webhook configuration](#webhook-configuration)
-- [Authorization](#authorization)
-- [End-to-end encryption](#encryption)
-- [Serializing context](#serializing-context)
-- [Dashboard](#dashboard)
-- [Development tips](#development-tips)
-- [Client configuration](#client-configuration)
-
 ## How it Works
 
 This subscription implementation uses a hybrid approach:

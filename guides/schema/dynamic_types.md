@@ -14,11 +14,11 @@ At runtime, ensure that only one object is visible per name (type name, field na
 
 When using dynamic schema members, be sure to include the relevant `context: ...` when [generating schema definition files](#schema-dumps).
 
-### Different fields
+## Different fields
 
 You can customize which field definitions are used for each operation.
 
-#### Using `#visible?(context)`
+### Using `#visible?(context)`
 
 To serve different fields to different clients, implement `def visible?(context)` in your {% internal_link "base field class", "/type_definitions/extensions#customizing-fields" %}:
 
@@ -58,7 +58,7 @@ field :comments, Types::Comment.connection_type, null: false,
 
 With that configuration, `post { comments { ... } }` will use `def moderated_comments` when `context[:current_user]` is `nil` or is not `.staff?`, but when `context[:current_user].staff?` is `true`, it will use `def all_comments` instead.
 
-#### Using `.fields(context)`
+### Using `.fields(context)`
 
 To customize the set of fields used at runtime, you can implement `def self.fields(context)` in your type classes, for example:
 
@@ -76,15 +76,15 @@ end
 
 It should return a Hash of `{ String => GraphQL::Schema::Field }`.
 
-#### Hidden Return Types
+### Hidden Return Types
 
 Besides field visibility described above, if an field's return type is hidden (that is, it implements `self.visible?(context)` to return `false`), then the field will be hidden too.
 
-### Different arguments
+## Different arguments
 
 As with fields, you can use different sets of argument definitions for different GraphQL operations.
 
-#### Using `#visible?(context)`
+### Using `#visible?(context)`
 
 To serve different arguments to different clients, implement `def visible?(context)` in your {% internal_link "base argument class", "/type_definitions/extensions#customizing-arguments" %}:
 
@@ -126,17 +126,17 @@ end
 
 That way, any staff client will have the option of `id` or `databaseId` while non-staff clients must use `id`.
 
-#### Using `def arguments(context)`
+### Using `def arguments(context)`
 
 Also, you can implement `def arguments(context)` on your base field class to return a Hash of `{ String => GraphQL::Schema::Argument }`. If you take this approach, you might want some custom field classes for any types or resolvers that use `def arguments(context)`. That way, you don't have to reimplement the method for _all_ the fields in the schema.
 
-#### Hidden Input Types
+### Hidden Input Types
 
 Besides argument visibility described above, if an argument's input type is hidden (that is, it implements `self.visible?(context)` to return `false`), then the argument will be hidden too.
 
-### Different enum values
+## Different enum values
 
-#### Using `#visible?(context)`
+### Using `#visible?(context)`
 
 You can implement `def visible?(context)` in your {% internal_link "base enum value class", "/type_definitions/extensions#customizing-enum-values" %} to hide some enum values from some clients. For example:
 
@@ -175,7 +175,7 @@ class AccountStatus < Types::BaseEnum
 end
 ```
 
-#### Using `.enum_values(context)`
+### Using `.enum_values(context)`
 
 Alternatively, you can implement `def self.enum_values(context)` in your enum types to return an Array of {{ "GraphQL::Schema::EnumValue" | api_doc }}s. For example, to return a dynamic set of enum values:
 
@@ -194,7 +194,7 @@ class ProjectStatus < Types::BaseEnum
 end
 ```
 
-### Different types
+## Different types
 
 You can also use different types for each query. A few behaviors depend on the methods defined above:
 
@@ -205,7 +205,7 @@ You can also use different types for each query. A few behaviors depend on the m
 
 As you can imagine, these different hiding behaviors influence one another and they can cause some real head-scratchers when used simultaneously.
 
-#### Using `.visible?(context)`
+### Using `.visible?(context)`
 
 Type classes can implement `def self.visible?(context)` to hide themselves at runtime:
 
@@ -221,7 +221,7 @@ class Types::BanReason < Types::BaseEnum
 end
 ```
 
-#### Different definitions for the same type
+### Different definitions for the same type
 
 You can provide different implementations of the same type by:
 
@@ -283,7 +283,7 @@ end
 
 Input types (like input objects, scalars, and enums) work the same way with argument definitions.
 
-### Schema Dumps
+## Schema Dumps
 
 To dump a certain _version_ of the schema, provide the applicable `context: ...` to {{ "Schema.to_definition" | api_doc }}. For example:
 

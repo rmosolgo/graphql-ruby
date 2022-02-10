@@ -8,6 +8,7 @@ desc: Defining your schema
 index: 1
 ---
 
+
 A GraphQL system is called a _schema_. The schema contains all the types and fields in the system. The schema executes queries and publishes an {% internal_link "introspection system","/schema/introspection" %}.
 
 Your GraphQL schema is a class that extends {{ "GraphQL::Schema" | api_doc }}, for example:

@@ -13,7 +13,7 @@ pro: true
 
 __Note:__ `@stream` was added in GraphQL-Pro 1.21.0 and requires GraphQL-Ruby 1.13.6+.
 
-### Installation
+## Installation
 
 To support `@stream` in your schema, add it with `use GraphQL::Pro::Stream`:
 
@@ -26,7 +26,7 @@ end
 
 Additionally, you should update your controller to handle deferred parts of the response. See the {% internal_link "@defer setup guide", "defer/setup#sending-streaming-responses" %} for details. (`@stream` uses the same deferral pipeline as `@defer`, so the same setup instructions apply.)
 
-### Usage
+## Usage
 
 After that, you can include `@stream` in your queries, for example:
 

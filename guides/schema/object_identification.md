@@ -44,7 +44,7 @@ class MySchema < GraphQL::Schema
 end
 ```
 
-### Node interface
+## Node interface
 
 One requirement for Relay's object management is implementing the `"Node"` interface.
 
@@ -77,7 +77,7 @@ class MySchema < GraphQL::Schema
 end
 ```
 
-### UUID fields
+## UUID fields
 
 Nodes must have a field named `"id"` which returns a globally unique ID.
 
@@ -91,7 +91,7 @@ end
 
 This field will call the previously-defined `id_from_object` class method.
 
-### `node` field (find-by-UUID)
+## `node` field (find-by-UUID)
 
 You should also provide a root-level `node` field so that Relay can refetch objects from your schema. You can attach it like this:
 
@@ -104,7 +104,7 @@ class Types::QueryType < GraphQL::Schema::Object
 end
 ```
 
-### `nodes` field
+## `nodes` field
 
 You can also provide a root-level `nodes` field so that Relay can refetch objects by IDs:
 

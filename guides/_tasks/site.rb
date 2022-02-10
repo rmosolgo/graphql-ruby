@@ -40,7 +40,7 @@ end
 
 namespace :site do
   desc "View the documentation site locally"
-  task serve: [:build_doc] do
+  task serve: [] do # if you need api docs, add `:build_doc` to the list of dependencies
     require "jekyll"
     options = {
       "source"      => File.expand_path("guides"),
