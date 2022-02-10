@@ -56,18 +56,56 @@
   </div>
 
 <h1 class="guide-header">Active Operation Limiter</h1>
+<div class="guide-table-of-contents"><div class="table-of-contents">
+  <h3 class="contents-header">Contents</h3>
+  <ul class="contents-list">
+    <li class='contents-entry entry-depth-2'>
+                <span class='section-count'>1. </span><a href='#why-'>Why?
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>2. </span><a href='#setup'>Setup
+</a>
+              </li>
+<li class='contents-entry entry-depth-4'>
+                <span class='section-count'></span><a href='#schema-setup'>Schema Setup
+</a>
+              </li>
+<li class='contents-entry entry-depth-4'>
+                <span class='section-count'></span><a href='#query-setup'>Query Setup
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>3. </span><a href='#soft-limits'>Soft Limits
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>4. </span><a href='#dashboard'>Dashboard
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>5. </span><a href='#customization'>Customization
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>6. </span><a href='#instrumentation'>Instrumentation
+</a>
+              </li>
+  </ul>
+</div>
+</div>
 <div class="guide-container">
   <p><code class="language-plaintext highlighter-rouge">GraphQL::Enterprise::ActiveOperationLimiter</code> prevents clients from running too many GraphQL operations at the same time. It uses <a href="/limiters/redis">Redis</a> to track currently-running operations.</p>
 
-<h3 id="why">Why?</h3>
+<h2 id="why">Why?</h2>
 
 <p>Some clients may suddently swamp a server with tons of requests, occupying all available Ruby processes and therefore interrupting service for other clients. This limiter aims to prevent that at the GraphQL level by halting queries when a client already has lots of queries running. That way, server processes will remain available for other clients’ requests.</p>
 
-<h3 id="setup">Setup</h3>
+<h2 id="setup">Setup</h2>
 
 <p>To use this limiter, update the schema configuration and include <code class="language-plaintext highlighter-rouge">context[:limiter_key]</code> in your queries.</p>
 
-<h5 id="schema-setup">Schema Setup</h5>
+<h4 id="schema-setup">Schema Setup</h4>
 
 <p>To setup the schema, add <code class="language-plaintext highlighter-rouge">use GraphQL::Enterprise::ActiveOperationLimiter</code> with a default <code class="language-plaintext highlighter-rouge">limit:</code> value:</p>
 
@@ -85,7 +123,7 @@
 
 <p>Before requests will actually be halted, <a href="#soft-limits">“soft mode”</a> must be disabled as described below.</p>
 
-<h5 id="query-setup">Query Setup</h5>
+<h4 id="query-setup">Query Setup</h4>
 
 <p>In order to limit clients, the limiter needs a client identifier for each GraphQL operation. By default, it checks <code class="language-plaintext highlighter-rouge">context[:limiter_key]</code> to find it:</p>
 
@@ -103,7 +141,7 @@
 
 <p>To provide a client identifier another way, see <a href="#customization">Customization</a>.</p>
 
-<h3 id="soft-limits">Soft Limits</h3>
+<h2 id="soft-limits">Soft Limits</h2>
 
 <p>By default, the limiter doesn’t actually halt queries; instead, it starts out in “soft mode”. In this mode:</p>
 
@@ -120,7 +158,7 @@
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">enterprise_active_operation_limiter</span><span class="p">.</span><span class="nf">set_soft_limit</span><span class="p">(</span><span class="kp">false</span><span class="p">)</span>
 </code></pre></div></div>
 
-<h3 id="dashboard">Dashboard</h3>
+<h2 id="dashboard">Dashboard</h2>
 
 <p>Once installed, your <a href="/pro/dashboard">GraphQL-Pro dashboard</a> will include a simple metrics view:</p>
 
@@ -138,7 +176,7 @@
 
 <p>When “soft mode” is enabled, limited requests are <em>not</em> actually halted (although they are <em>counted</em>). When “soft mode” is disabled, any over-limit requests are halted.</p>
 
-<h3 id="customization">Customization</h3>
+<h2 id="customization">Customization</h2>
 
 <p><code class="language-plaintext highlighter-rouge">GraphQL::Enterprise::ActiveOperationLimiter</code> provides several hooks for customizing its behavior. To use these, make a subclass of the limiter and override methods as described:</p>
 
@@ -157,7 +195,7 @@
   <li><code class="language-plaintext highlighter-rouge">def handle_redis_error(err)</code> is called when the limit rescues an error from Redis. By default, it’s passed to <code class="language-plaintext highlighter-rouge">warn</code> and the query is <em>not</em> halted.</li>
 </ul>
 
-<h3 id="instrumentation">Instrumentation</h3>
+<h2 id="instrumentation">Instrumentation</h2>
 
 <p>While the limiter is installed, it adds some information to the query context about its operation. It can be acccessed at <code class="language-plaintext highlighter-rouge">context[:active_operation_limiter]</code>:</p>
 

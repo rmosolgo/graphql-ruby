@@ -56,10 +56,24 @@
   </div>
 
 <h1 class="guide-header">Redis Configuration</h1>
+<div class="guide-table-of-contents"><div class="table-of-contents">
+  <h3 class="contents-header">Contents</h3>
+  <ul class="contents-list">
+    <li class='contents-entry entry-depth-2'>
+                <span class='section-count'>1. </span><a href='#data-structure'>Data Structure
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>2. </span><a href='#memory-management'>Memory Management
+</a>
+              </li>
+  </ul>
+</div>
+</div>
 <div class="guide-container">
   <p><code class="language-plaintext highlighter-rouge">GraphQL::Enterprise::ObjectCache</code> requires a Redis connection to store cached responses. Unlike <code class="language-plaintext highlighter-rouge">OperationStore</code> or rate limiters, this Redis instance should be configured to evict keys as needed.</p>
 
-<h3 id="data-structure">Data Structure</h3>
+<h2 id="data-structure">Data Structure</h2>
 
 <p>Under the hood, <code class="language-plaintext highlighter-rouge">ObjectCache</code> stores a mapping of queries and objects. Additionally, there are back-references from objects to queries that reference them. In general, like this:</p>
 
@@ -80,7 +94,7 @@
 
 <p>These mappings enable proper clean-up when queries or objects are expired from the cache. Additionally, whenever <code class="language-plaintext highlighter-rouge">ObjectCache</code> finds incomplete data in storage (for example, a necessary key was evicted), then it invalidates the whole query and re-runs it.</p>
 
-<h3 id="memory-management">Memory Management</h3>
+<h2 id="memory-management">Memory Management</h2>
 
 <p>Memory consumption is hard to estimate since it depends on how many queries the cache receives, how many objects those queries reference, how big the response is for those queries, and how long the fingerprints are for each object and query. To manage memory, configure the Redis instance with a <code class="language-plaintext highlighter-rouge">maxmemory</code> and <code class="language-plaintext highlighter-rouge">maxmemory-policy</code> directive, for example:</p>
 

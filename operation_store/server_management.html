@@ -56,10 +56,28 @@
 
 
 <h1 class="guide-header">Server Management</h1>
+<div class="guide-table-of-contents"><div class="table-of-contents">
+  <h3 class="contents-header">Contents</h3>
+  <ul class="contents-list">
+    <li class='contents-entry entry-depth-2'>
+                <span class='section-count'>1. </span><a href='#rejecting-arbitrary-queries'>Rejecting Arbitrary Queries
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>2. </span><a href='#archiving-and-deleting-data'>Archiving and Deleting Data
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>3. </span><a href='#integration-with-your-application'>Integration with Your Application
+</a>
+              </li>
+  </ul>
+</div>
+</div>
 <div class="guide-container">
   <p>After <a href="/operation_store/getting_started">getting started</a>, here some things to keep in mind.</p>
 
-<h3 id="rejecting-arbitrary-queries">Rejecting Arbitrary Queries</h3>
+<h2 id="rejecting-arbitrary-queries">Rejecting Arbitrary Queries</h2>
 
 <p>With persisted queries, you can stop accepting arbitrary GraphQL input. This way, malicious users can’t run large or inappropriate queries on your server.</p>
 
@@ -101,7 +119,7 @@
 <span class="p">)</span>
 </code></pre></div></div>
 
-<h3 id="archiving-and-deleting-data">Archiving and Deleting Data</h3>
+<h2 id="archiving-and-deleting-data">Archiving and Deleting Data</h2>
 
 <p>Clients can only <em>add</em> to the database, but as an administrator, you can also archive or delete entries from the database. (Make sure you <a href="/pro/dashboard">authorize access to the Dashboard</a>.) This is a dangerous operation: by archiving or deleting something, any clients who depend on that data will crash.</p>
 
@@ -116,7 +134,7 @@
 
 <p>When an operation is archived, it’s no longer available to clients, but it’s still in the database. It can be unarchived later, so this is lower-risk than full deletion.</p>
 
-<h3 id="integration-with-your-application">Integration with Your Application</h3>
+<h2 id="integration-with-your-application">Integration with Your Application</h2>
 
 <p>It’s on the road map to add a Ruby API to <code class="language-plaintext highlighter-rouge">OperationStore</code> so that you can integrate it with your application. For example, you might:</p>
 

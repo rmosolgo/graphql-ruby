@@ -56,6 +56,24 @@
   </div>
 
 <h1 class="guide-header">GraphQL ObjectCache</h1>
+<div class="guide-table-of-contents"><div class="table-of-contents">
+  <h3 class="contents-header">Contents</h3>
+  <ul class="contents-list">
+    <li class='contents-entry entry-depth-2'>
+                <span class='section-count'>1. </span><a href='#why-'>Why?
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>2. </span><a href='#how'>How
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>3. </span><a href='#setup'>Setup
+</a>
+              </li>
+  </ul>
+</div>
+</div>
 <div class="guide-container">
   <p><code class="language-plaintext highlighter-rouge">GraphQL::Enterprise::ObjectCache</code> is an application-level cache for GraphQL-Ruby servers. It works by storing a <a href="/object_cache/schema_setup#object-fingerprint"><em>cache fingerprint</em> for each object</a> in a query, then serving a cached response as long as those fingerprints don’t change. The cache can also be customized with <a href="/object_cache/caching#ttl">TTLs</a>.</p>
 

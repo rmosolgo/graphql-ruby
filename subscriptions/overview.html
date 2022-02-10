@@ -47,6 +47,36 @@
 
 
 <h1 class="guide-header">Overview</h1>
+<div class="guide-table-of-contents"><div class="table-of-contents">
+  <h3 class="contents-header">Contents</h3>
+  <ul class="contents-list">
+    <li class='contents-entry entry-depth-2'>
+                <span class='section-count'>1. </span><a href='#subscription-type'>Subscription Type
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>2. </span><a href='#subscription-classes'>Subscription Classes
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>3. </span><a href='#triggers'>Triggers
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>4. </span><a href='#implementation'>Implementation
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>5. </span><a href='#broadcasts'>Broadcasts
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>6. </span><a href='#multi-tenant'>Multi-Tenant
+</a>
+              </li>
+  </ul>
+</div>
+</div>
 <div class="guide-container">
   <p><em>Subscriptions</em> allow GraphQL clients to observe specific events and receive updates from the server when those events occur. This supports live updates, such as websocket pushes. Subscriptions introduce several new concepts:</p>
 
@@ -58,25 +88,25 @@
   <li><strong>Broadcasts</strong> can send the same GraphQL result to any number of subscribers.</li>
 </ul>
 
-<h3 id="subscription-type">Subscription Type</h3>
+<h2 id="subscription-type">Subscription Type</h2>
 
 <p><code class="language-plaintext highlighter-rouge">subscription</code> is an entry point to your GraphQL schema, like <code class="language-plaintext highlighter-rouge">query</code> or <code class="language-plaintext highlighter-rouge">mutation</code>. It is defined by your <code class="language-plaintext highlighter-rouge">SubscriptionType</code>, a root-level <code class="language-plaintext highlighter-rouge">GraphQL::Schema::Object</code>.</p>
 
 <p>Read more in the <a href="/subscriptions/subscription_type">Subscription Type guide</a>.</p>
 
-<h3 id="subscription-classes">Subscription Classes</h3>
+<h2 id="subscription-classes">Subscription Classes</h2>
 
 <p><a href="/api-doc/2.0.0/GraphQL/Schema/Subscription" target="_blank" title="API docs for GraphQL::Schema::Subscription"><code>GraphQL::Schema::Subscription</code></a> is a resolver class with subscription-specific behaviors. Each subscription field should be implemented by a subscription class.</p>
 
 <p>Read more in the <a href="/subscriptions/subscription_classes">Subscription Classes guide</a></p>
 
-<h3 id="triggers">Triggers</h3>
+<h2 id="triggers">Triggers</h2>
 
 <p>After an event occurs in our application, <em>triggers</em> begin the update process by sending a name and payload to GraphQL.</p>
 
 <p>Read more in the <a href="/subscriptions/triggers">Triggers guide</a>.</p>
 
-<h3 id="implementation">Implementation</h3>
+<h2 id="implementation">Implementation</h2>
 
 <p>Besides the GraphQL component, your application must provide some subscription-related plumbing, for example:</p>
 
@@ -88,11 +118,11 @@
 
 <p>Read more in the <a href="/subscriptions/implementation">Implementation guide</a> or check out the <a href="/subscriptions/action_cable_implementation">ActionCable implementation</a>, <a href="/subscriptions/pusher_implementation">Pusher implementation</a> or <a href="/subscriptions/ably_implementation">Ably implementation</a>.</p>
 
-<h3 id="broadcasts">Broadcasts</h3>
+<h2 id="broadcasts">Broadcasts</h2>
 
 <p>By default, the subscription implementations listed above handle each subscription in total isolation. However, this behavior can be optimized by setting up broadcasts. Read more in the <a href="/subscriptions/broadcast">Broadcast guide</a>.</p>
 
-<h3 id="multi-tenant">Multi-Tenant</h3>
+<h2 id="multi-tenant">Multi-Tenant</h2>
 
 <p>See the <a href="/subscriptions/multi_tenant">Multi-tenant guide</a> for supporting multi-tenancy in GraphQL subscriptions.</p>
 

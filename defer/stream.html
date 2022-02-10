@@ -56,12 +56,26 @@
 
 
 <h1 class="guide-header">Stream</h1>
+<div class="guide-table-of-contents"><div class="table-of-contents">
+  <h3 class="contents-header">Contents</h3>
+  <ul class="contents-list">
+    <li class='contents-entry entry-depth-2'>
+                <span class='section-count'>1. </span><a href='#installation'>Installation
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>2. </span><a href='#usage'>Usage
+</a>
+              </li>
+  </ul>
+</div>
+</div>
 <div class="guide-container">
   <p><code class="language-plaintext highlighter-rouge">@stream</code> works very much like <code class="language-plaintext highlighter-rouge">@defer</code>, except it only applies to list fields. When a field has <code class="language-plaintext highlighter-rouge">@stream</code> and it returns a list, then each item in the list is returned to the client as a patch. <code class="language-plaintext highlighter-rouge">@stream</code> is described in a <a href="https://github.com/graphql/graphql-wg/blob/main/rfcs/DeferStream.md">proposal to the GraphQL specification</a>.</p>
 
 <p><strong>Note:</strong> <code class="language-plaintext highlighter-rouge">@stream</code> was added in GraphQL-Pro 1.21.0 and requires GraphQL-Ruby 1.13.6+.</p>
 
-<h3 id="installation">Installation</h3>
+<h2 id="installation">Installation</h2>
 
 <p>To support <code class="language-plaintext highlighter-rouge">@stream</code> in your schema, add it with <code class="language-plaintext highlighter-rouge">use GraphQL::Pro::Stream</code>:</p>
 
@@ -73,7 +87,7 @@
 
 <p>Additionally, you should update your controller to handle deferred parts of the response. See the <a href="/defer/setup#sending-streaming-responses">@defer setup guide</a> for details. (<code class="language-plaintext highlighter-rouge">@stream</code> uses the same deferral pipeline as <code class="language-plaintext highlighter-rouge">@defer</code>, so the same setup instructions apply.)</p>
 
-<h3 id="usage">Usage</h3>
+<h2 id="usage">Usage</h2>
 
 <p>After that, you can include <code class="language-plaintext highlighter-rouge">@stream</code> in your queries, for example:</p>
 

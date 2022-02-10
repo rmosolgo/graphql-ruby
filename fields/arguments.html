@@ -47,6 +47,40 @@
 
 
 <h1 class="guide-header">Arguments</h1>
+<div class="guide-table-of-contents"><div class="table-of-contents">
+  <h3 class="contents-header">Contents</h3>
+  <ul class="contents-list">
+    <li class='contents-entry entry-depth-2'>
+                <span class='section-count'>1. </span><a href='#nullability'>Nullability
+</a>
+              </li>
+<li class='contents-entry entry-depth-3'>
+                <span class='section-count'></span><a href='#default-values'>Default Values
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>2. </span><a href='#deprecation'>Deprecation
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>3. </span><a href='#aliasing'>Aliasing
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>4. </span><a href='#preprocessing'>Preprocessing
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>5. </span><a href='#automatic-camelization'>Automatic camelization
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>6. </span><a href='#valid-argument-types'>Valid Argument Types
+</a>
+              </li>
+  </ul>
+</div>
+</div>
 <div class="guide-container">
   <p>Fields can take <strong>arguments</strong> as input. These can be used to determine the return value (eg, filtering search results) or to modify the application state (eg, updating the database in <code class="language-plaintext highlighter-rouge">MutationType</code>).</p>
 
@@ -61,7 +95,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<h3 id="nullability">Nullability</h3>
+<h2 id="nullability">Nullability</h2>
 
 <p>To make an argument optional, set <code class="language-plaintext highlighter-rouge">required: false</code>, and set default values for the corresponding keyword arguments:</p>
 
@@ -89,7 +123,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<h4 id="default-values">Default Values</h4>
+<h3 id="default-values">Default Values</h3>
 
 <p>Another approach is to use <code class="language-plaintext highlighter-rouge">default_value: value</code> to provide a default value for the argument if it is not supplied in the query.</p>
 
@@ -114,7 +148,7 @@
 <span class="n">argument</span> <span class="ss">:email_address</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: :nullable</span>
 </code></pre></div></div>
 
-<h3 id="deprecation">Deprecation</h3>
+<h2 id="deprecation">Deprecation</h2>
 
 <p><strong>Experimental:</strong> <strong>Deprecated</strong> arguments can be marked by adding a <code class="language-plaintext highlighter-rouge">deprecation_reason:</code> keyword argument:</p>
 
@@ -126,7 +160,7 @@
 
 <p>Note argument deprecation is a stage 2 GraphQL <a href="https://github.com/graphql/graphql-spec/pull/525">proposal</a> so not all clients will leverage this information.</p>
 
-<h3 id="aliasing">Aliasing</h3>
+<h2 id="aliasing">Aliasing</h2>
 
 <p>Use <code class="language-plaintext highlighter-rouge">as: :alternate_name</code> to use a different key from within your resolvers while
 exposing another key to clients.</p>
@@ -140,7 +174,7 @@ exposing another key to clients.</p>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<h3 id="preprocessing">Preprocessing</h3>
+<h2 id="preprocessing">Preprocessing</h2>
 
 <p>Provide a <code class="language-plaintext highlighter-rouge">prepare</code> function to modify or validate the value of an argument before the field’s resolver method is executed:</p>
 
@@ -157,7 +191,7 @@ exposing another key to clients.</p>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<h3 id="automatic-camelization">Automatic camelization</h3>
+<h2 id="automatic-camelization">Automatic camelization</h2>
 
 <p>Arguments that are snake_cased will be camelized in the GraphQL schema. Using the example of:</p>
 
@@ -193,7 +227,7 @@ exposing another key to clients.</p>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<h3 id="valid-argument-types">Valid Argument Types</h3>
+<h2 id="valid-argument-types">Valid Argument Types</h2>
 
 <p>Only certain types are valid for arguments:</p>
 

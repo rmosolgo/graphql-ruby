@@ -56,6 +56,40 @@
 
 
 <h1 class="guide-header">Overview</h1>
+<div class="guide-table-of-contents"><div class="table-of-contents">
+  <h3 class="contents-header">Contents</h3>
+  <ul class="contents-list">
+    <li class='contents-entry entry-depth-2'>
+                <span class='section-count'>1. </span><a href='#what-are-persisted-queries-'>What are Persisted Queries?
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>2. </span><a href='#why-persisted-queries-'>Why Persisted Queries?
+</a>
+              </li>
+<li class='contents-entry entry-depth-3'>
+                <span class='section-count'></span><a href='#security'>Security
+</a>
+              </li>
+<li class='contents-entry entry-depth-3'>
+                <span class='section-count'></span><a href='#efficiency'>Efficiency
+</a>
+              </li>
+<li class='contents-entry entry-depth-3'>
+                <span class='section-count'></span><a href='#visibility'>Visibility
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>3. </span><a href='#how-it-works'>How it Works
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>4. </span><a href='#getting-started'>Getting Started
+</a>
+              </li>
+  </ul>
+</div>
+</div>
 <div class="guide-container">
   <p><code class="language-plaintext highlighter-rouge">GraphQL::Pro::OperationStore</code> uses <code class="language-plaintext highlighter-rouge">Rack</code> and a storage backend (<a href="/operation_store/active_record_backend">ActiveRecord</a> or <a href="/operation_store/active_record_backend">Redis</a>) to maintain a normalized, deduplicated database of <em>persisted queries</em> for your GraphQL system.</p>
 
@@ -78,7 +112,7 @@
 
 <p>Also, you can find a <a href="https://github.com/rmosolgo/graphql-pro-operation-store-example">demo app on GitHub</a>.</p>
 
-<h3 id="what-are-persisted-queries">What are Persisted Queries?</h3>
+<h2 id="what-are-persisted-queries">What are Persisted Queries?</h2>
 
 <p><em>Persisted queries</em> are GraphQL queries (<code class="language-plaintext highlighter-rouge">query</code>, <code class="language-plaintext highlighter-rouge">mutation</code>, or <code class="language-plaintext highlighter-rouge">subscription</code>) that are saved on the server and invoked by clients by <em>reference</em>. In this arrangement, clients don’t send GraphQL queries over the network. Instead, clients send:</p>
 
@@ -112,11 +146,11 @@
 <span class="p">})</span>
 </code></pre></div></div>
 
-<h3 id="why-persisted-queries">Why Persisted Queries?</h3>
+<h2 id="why-persisted-queries">Why Persisted Queries?</h2>
 
 <p>Using persisted queries improves the <em>security</em>, <em>efficiency</em> and <em>visibility</em> of your GraphQL system.</p>
 
-<h4 id="security">Security</h4>
+<h3 id="security">Security</h3>
 
 <p>Persisted queries improve security because you can reject arbitrary GraphQL queries, removing an attack vector from your system. The query database serves a whitelist, so you can be sure that no unexpected queries will hit your system.</p>
 
@@ -131,7 +165,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<h4 id="efficiency">Efficiency</h4>
+<h3 id="efficiency">Efficiency</h3>
 
 <p>Persisted queries improve the <em>efficiency</em> of your system by reducing HTTP traffic. Instead of repeatedly sending GraphQL over the wire, queries are fetched from the database, so your requests require less bandwidth.</p>
 
@@ -147,7 +181,7 @@
   <img src="/operation_store/request_after.png" title="GraphQL request with persisted queries" alt="GraphQL request with persisted queries" />
 </a></p>
 
-<h4 id="visibility">Visibility</h4>
+<h3 id="visibility">Visibility</h3>
 
 <p>Persisted queries improve <em>visibility</em> because you can track GraphQL usage from a single location. <code class="language-plaintext highlighter-rouge">OperationStore</code> maintains an index of type, field and argument usage so that you can analyze your traffic.</p>
 
@@ -155,7 +189,7 @@
   <img src="/operation_store/operation_index.png" title="Index of GraphQL usage with persisted queries" alt="Index of GraphQL usage with persisted queries" />
 </a></p>
 
-<h3 id="how-it-works">How it Works</h3>
+<h2 id="how-it-works">How it Works</h2>
 
 <p><code class="language-plaintext highlighter-rouge">OperationStore</code> uses tables in your database to store normalized, deduplicated GraphQL strings. The database is immutable: new operations may be added, but operations are never modified or removed.</p>
 
@@ -168,7 +202,7 @@
 
 <p><code class="language-plaintext highlighter-rouge">OperationStore</code> uses this to fetch the matching operation from the database. From there, the query is evaluated normally.</p>
 
-<h3 id="getting-started">Getting Started</h3>
+<h2 id="getting-started">Getting Started</h2>
 
 <p>See the <a href="/operation_store/getting_started">getting started guide</a> to add <code class="language-plaintext highlighter-rouge">OperationStore</code> to your app.</p>
 

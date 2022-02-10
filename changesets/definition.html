@@ -56,6 +56,40 @@
   </div>
 
 <h1 class="guide-header">Defining Changesets</h1>
+<div class="guide-table-of-contents"><div class="table-of-contents">
+  <h3 class="contents-header">Contents</h3>
+  <ul class="contents-list">
+    <li class='contents-entry entry-depth-2'>
+                <span class='section-count'>1. </span><a href='#fields'>Fields
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>2. </span><a href='#arguments'>Arguments
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>3. </span><a href='#enum-values'>Enum Values
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>4. </span><a href='#unions'>Unions
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>5. </span><a href='#interfaces'>Interfaces
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>6. </span><a href='#types'>Types
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>7. </span><a href='#runtime'>Runtime
+</a>
+              </li>
+  </ul>
+</div>
+</div>
 <div class="guide-container">
   <p>After <a href="/changesets/installation">installing Changeset integrations</a> in your schema, you can create Changesets which modify parts of the schema. Changesets extend <code class="language-plaintext highlighter-rouge">GraphQL::Enterprise::Changeset</code> and include a <code class="language-plaintext highlighter-rouge">release</code> and some <code class="language-plaintext highlighter-rouge">modifies ...</code> configurations.</p>
 
@@ -106,7 +140,7 @@
   <li><a href="#runtime">Runtime</a>: choosing a behavior at runtime based on the current request and changeset</li>
 </ul>
 
-<h3 id="fields">Fields</h3>
+<h2 id="fields">Fields</h2>
 
 <p>In a Changeset, you can add, redefine, or remove fields that belong to object types, interface types, or resolvers. First, use <code class="language-plaintext highlighter-rouge">modifies ... do ... end</code>, naming the owner of the field:</p>
 
@@ -126,7 +160,7 @@
 
 <p>When a field is removed, queries that request that field will be invalid, unless the client has requested a previous API version where the field is still available.</p>
 
-<h3 id="arguments">Arguments</h3>
+<h2 id="arguments">Arguments</h2>
 
 <p>In a Changeset, you can add, redefine, or remove arguments that belong to fields, input objects, or resolvers. Use <code class="language-plaintext highlighter-rouge">modifies</code> to select the argument owner, for example:</p>
 
@@ -157,7 +191,7 @@
 
 <p>When arguments are removed, the schema will reject any queries which use them unless the client has requested a previous API version where the argument is still allowed.</p>
 
-<h3 id="enum-values">Enum Values</h3>
+<h2 id="enum-values">Enum Values</h2>
 
 <p>In a Changeset, you can add, redefine, or remove enum values. First, use <code class="language-plaintext highlighter-rouge">modifies ... do ... end</code>, naming the enum type:</p>
 
@@ -177,7 +211,7 @@
 
 <p>When enum values are removed, they won’t be accepted as input and they won’t be allowed as return values from fields unless the client has requested a previous API version where those values are still allowed.</p>
 
-<h3 id="unions">Unions</h3>
+<h2 id="unions">Unions</h2>
 
 <p>In a Changeset, you can add to or remove from a union’s possible types. First, use <code class="language-plaintext highlighter-rouge">modifies ...</code>, naming the union type:</p>
 
@@ -197,7 +231,7 @@
 
 <p>When a possible type is removed, it will not be associated with the union type in introspection queries or schema dumps.</p>
 
-<h3 id="interfaces">Interfaces</h3>
+<h2 id="interfaces">Interfaces</h2>
 
 <p>In a Changeset, you can add to or remove from an object type’s interface definitions. First, use <code class="language-plaintext highlighter-rouge">modifies ...</code>, naming the object type:</p>
 
@@ -217,7 +251,7 @@
 
 <p>When an interface implementation is removed, then the interface will not be associated with the object in introspection queries or schema dumps. Also, any fields inherited from the interface will be hidden from clients. (If the object defines the field itself, it will still be visible.)</p>
 
-<h3 id="types">Types</h3>
+<h2 id="types">Types</h2>
 
 <p>Using Changesets, it’s possible to define a new type using the same name as an old type. (Only one type per name is allowed for each query, but different queries can use different types for the same name.)</p>
 
@@ -277,7 +311,7 @@
 
 <p>That way, legacy clients will continue to receive enum values while new clients will receive objects.</p>
 
-<h3 id="runtime">Runtime</h3>
+<h2 id="runtime">Runtime</h2>
 
 <p>While a query is running, you can check if a changeset applies by using its <code class="language-plaintext highlighter-rouge">.active?(context)</code> method. For example:</p>
 

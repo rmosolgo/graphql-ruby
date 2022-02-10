@@ -47,10 +47,52 @@
 
 
 <h1 class="guide-header">Field Extensions</h1>
+<div class="guide-table-of-contents"><div class="table-of-contents">
+  <h3 class="contents-header">Contents</h3>
+  <ul class="contents-list">
+    <li class='contents-entry entry-depth-2'>
+                <span class='section-count'>1. </span><a href='#making-a-new-extension'>Making a new extension
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>2. </span><a href='#using-an-extension'>Using an extension
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>3. </span><a href='#modifying-field-configuration'>Modifying field configuration
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>4. </span><a href='#adding-default-argument-configurations'>Adding default argument configurations
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>5. </span><a href='#modifying-field-execution'>Modifying field execution
+</a>
+              </li>
+<li class='contents-entry entry-depth-3'>
+                <span class='section-count'></span><a href='#execution-memo-'>Execution “memo”
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>6. </span><a href='#extension-options'>Extension options
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>7. </span><a href='#using-extras-'>Using <code>extras</code>
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>8. </span><a href='#adding-an-extension-by-default'>Adding an extension by default
+</a>
+              </li>
+  </ul>
+</div>
+</div>
 <div class="guide-container">
   <p><a href="/api-doc/2.0.0/GraphQL/Schema/FieldExtension" target="_blank" title="API docs for GraphQL::Schema::FieldExtension"><code>GraphQL::Schema::FieldExtension</code></a> provides a way to modify user-defined fields in a programmatic way. For example, Relay connections are implemented as a field extension (<a href="/api-doc/2.0.0/GraphQL/Schema/Field/ConnectionExtension" target="_blank" title="API docs for GraphQL::Schema::Field::ConnectionExtension"><code>GraphQL::Schema::Field::ConnectionExtension</code></a>).</p>
 
-<h3 id="making-a-new-extension">Making a new extension</h3>
+<h2 id="making-a-new-extension">Making a new extension</h2>
 
 <p>Field extensions are subclasses of <a href="/api-doc/2.0.0/GraphQL/Schema/FieldExtension" target="_blank" title="API docs for GraphQL::Schema::FieldExtension"><code>GraphQL::Schema::FieldExtension</code></a>:</p>
 
@@ -58,7 +100,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<h3 id="using-an-extension">Using an extension</h3>
+<h2 id="using-an-extension">Using an extension</h2>
 
 <p>Defined extensions can be added to fields using the <code class="language-plaintext highlighter-rouge">extensions: [...]</code> option or the <code class="language-plaintext highlighter-rouge">extension(...)</code> method:</p>
 
@@ -71,7 +113,7 @@
 
 <p>See below for how extensions may modify fields.</p>
 
-<h3 id="modifying-field-configuration">Modifying field configuration</h3>
+<h2 id="modifying-field-configuration">Modifying field configuration</h2>
 
 <p>When extensions are attached, they are initialized with a <code class="language-plaintext highlighter-rouge">field:</code> and <code class="language-plaintext highlighter-rouge">options:</code>. Then, <code class="language-plaintext highlighter-rouge">#apply</code> is called, when they may extend the field they’re attached to. For example:</p>
 
@@ -85,7 +127,7 @@
 
 <p>This way, an extension can encapsulate a behavior requiring several configuration options.</p>
 
-<h3 id="adding-default-argument-configurations">Adding default argument configurations</h3>
+<h2 id="adding-default-argument-configurations">Adding default argument configurations</h2>
 
 <p>Extensions may provide <em>default</em> argument configurations which are applied if the field doesn’t define the argument for itself. The configuration is passed to <a href="/api-doc/2.0.0/GraphQL/Schema/FieldExtension#default_argument-class_method" target="_blank" title="API docs for GraphQL::Schema::FieldExtension.default_argument"><code>Schema::FieldExtension.default_argument</code></a>. For example, to define a <code class="language-plaintext highlighter-rouge">:query</code> argument if the field doesn’t already have one:</p>
 
@@ -98,7 +140,7 @@
 
 <p>Additionally, extensions may implement <code class="language-plaintext highlighter-rouge">def after_define</code> which is called <em>after</em> the field’s <code class="language-plaintext highlighter-rouge">do .. . end</code> block. This is helpful when an extension should provide <em>default</em> configurations without overriding anything in the field definition. (When extensions are added by calling <code class="language-plaintext highlighter-rouge">field.extension(...)</code> on an already-defined field <code class="language-plaintext highlighter-rouge">def after_define</code> is called immediately.)</p>
 
-<h3 id="modifying-field-execution">Modifying field execution</h3>
+<h2 id="modifying-field-execution">Modifying field execution</h2>
 
 <p>Extensions have two hooks that wrap field resolution. Since GraphQL-Ruby supports deferred execution, these hooks <em>might not</em> be called back-to-back.</p>
 
@@ -108,7 +150,7 @@
 
 <p>See the linked API docs for the parameters of those methods.</p>
 
-<h4 id="execution-memo">Execution “memo”</h4>
+<h3 id="execution-memo">Execution “memo”</h3>
 
 <p>One parameter to <code class="language-plaintext highlighter-rouge">after_resolve</code> deserves special attention: <code class="language-plaintext highlighter-rouge">memo:</code>. <code class="language-plaintext highlighter-rouge">resolve</code> <em>may</em> yield a third value. For example:</p>
 
@@ -131,7 +173,7 @@
 
 <p>Instance variables may not be used because, in a given GraphQL query, the same field may be resolved several times concurrently, and that would result in overriding the instance variable in an unpredictable way. (In fact, extensions are frozen to prevent instance variable writes.)</p>
 
-<h3 id="extension-options">Extension options</h3>
+<h2 id="extension-options">Extension options</h2>
 
 <p>The <code class="language-plaintext highlighter-rouge">extension(...)</code> method takes an optional second argument, for example:</p>
 
@@ -148,7 +190,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<h3 id="using-extras">Using <code class="language-plaintext highlighter-rouge">extras</code></h3>
+<h2 id="using-extras">Using <code class="language-plaintext highlighter-rouge">extras</code></h2>
 
 <p>Extensions can have the same <code class="language-plaintext highlighter-rouge">extras</code> as fields (see <a href="/fields/introduction#extra-field-metadata">Extra Field Metadata</a>). Add them by calling <code class="language-plaintext highlighter-rouge">extras</code> in the class definition:</p>
 
@@ -159,7 +201,7 @@
 
 <p>Any configured <code class="language-plaintext highlighter-rouge">extras</code> will be present in the given <code class="language-plaintext highlighter-rouge">arguments</code>, but removed before the field is resolved. (However, <code class="language-plaintext highlighter-rouge">extras</code> from <em>any</em> extension will be present in <code class="language-plaintext highlighter-rouge">arguments</code> for <em>all</em> extensions.)</p>
 
-<h3 id="adding-an-extension-by-default">Adding an extension by default</h3>
+<h2 id="adding-an-extension-by-default">Adding an extension by default</h2>
 
 <p>If you want to apply an extension to <em>all</em> your fields, you can do this in your <a href="/type_definitions/extensions.html#customizing-fields">BaseField</a>’s <code class="language-plaintext highlighter-rouge">def initialize</code>, for example:</p>
 

@@ -56,10 +56,24 @@
   </div>
 
 <h1 class="guide-header">Installing Changesets</h1>
+<div class="guide-table-of-contents"><div class="table-of-contents">
+  <h3 class="contents-header">Contents</h3>
+  <ul class="contents-list">
+    <li class='contents-entry entry-depth-2'>
+                <span class='section-count'>1. </span><a href='#schema-setup'>Schema Setup
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>2. </span><a href='#controller-setup'>Controller Setup
+</a>
+              </li>
+  </ul>
+</div>
+</div>
 <div class="guide-container">
   <p>Changesets require some updates to the schema (to define changesets) and some updates to your controller (to receive version headers from clients).</p>
 
-<h3 id="schema-setup">Schema Setup</h3>
+<h2 id="schema-setup">Schema Setup</h2>
 
 <p>To get started with <a href="https://graphql.pro/enterprise">GraphQL-Enterprise</a> Changesets, you have to add them to your schema. They’re added in several places:</p>
 
@@ -113,7 +127,7 @@
 
 <p>Once those integrations are set up, you’re ready to <a href="/changesets/definition">write a changeset</a> and start <a href="/changesets/releases">releasing API versions</a>!</p>
 
-<h3 id="controller-setup">Controller Setup</h3>
+<h2 id="controller-setup">Controller Setup</h2>
 
 <p>Additionally, your controller must pass <code class="language-plaintext highlighter-rouge">context[:changeset_version]</code> when running queries. To provide this, update your controller:</p>
 

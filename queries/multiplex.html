@@ -47,6 +47,36 @@
 
 
 <h1 class="guide-header">Multiplex</h1>
+<div class="guide-table-of-contents"><div class="table-of-contents">
+  <h3 class="contents-header">Contents</h3>
+  <ul class="contents-list">
+    <li class='contents-entry entry-depth-2'>
+                <span class='section-count'>1. </span><a href='#concurrent-execution'>Concurrent Execution
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>2. </span><a href='#apollo-query-batching'>Apollo Query Batching
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>3. </span><a href='#validation-and-error-handling'>Validation and Error Handling
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>4. </span><a href='#multiplex-level-context'>Multiplex-Level Context
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>5. </span><a href='#multiplex-level-analysis'>Multiplex-Level Analysis
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>6. </span><a href='#multiplex-instrumentation'>Multiplex Instrumentation
+</a>
+              </li>
+  </ul>
+</div>
+</div>
 <div class="guide-container">
   <p>Some clients may send <em>several</em> queries to the server at once (for example, <a href="https://www.apollographql.com/docs/react/api/link/apollo-link-batch-http/">Apollo Client’s query batching</a>). You can execute them concurrently with <a href="/api-doc/2.0.0/GraphQL/Schema#multiplex-instance_method" target="_blank" title="API docs for GraphQL::Schema#multiplex"><code>Schema#multiplex</code></a>.</p>
 

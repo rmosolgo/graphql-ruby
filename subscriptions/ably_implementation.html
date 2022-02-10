@@ -56,25 +56,80 @@
 
 
 <h1 class="guide-header">Ably Implementation</h1>
+<div class="guide-table-of-contents"><div class="table-of-contents">
+  <h3 class="contents-header">Contents</h3>
+  <ul class="contents-list">
+    <li class='contents-entry entry-depth-2'>
+                <span class='section-count'>1. </span><a href='#how-it-works'>How it Works
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>2. </span><a href='#ably-setup'>Ably setup
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>3. </span><a href='#database-setup'>Database setup
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>4. </span><a href='#schema-configuration'>Schema configuration
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>5. </span><a href='#execution-configuration'>Execution configuration
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>6. </span><a href='#webhook-configuration'>Webhook configuration
+</a>
+              </li>
+<li class='contents-entry entry-depth-3'>
+                <span class='section-count'></span><a href='#server'>Server
+</a>
+              </li>
+<li class='contents-entry entry-depth-3'>
+                <span class='section-count'></span><a href='#ably'>Ably
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>7. </span><a href='#authorization'>Authorization
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>8. </span><a href='#encryption'>Encryption
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>9. </span><a href='#serializing-context'>Serializing Context
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>10. </span><a href='#dashboard'>Dashboard
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>11. </span><a href='#development-tips'>Development Tips
+</a>
+              </li>
+<li class='contents-entry entry-depth-4'>
+                <span class='section-count'></span><a href='#clear-subscription-data'>Clear subscription data
+</a>
+              </li>
+<li class='contents-entry entry-depth-4'>
+                <span class='section-count'></span><a href='#developing-with-webhooks'>Developing with webhooks
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>12. </span><a href='#client-configuration'>Client configuration
+</a>
+              </li>
+  </ul>
+</div>
+</div>
 <div class="guide-container">
   <p><a href="https://graphql.pro">GraphQL Pro</a> includes a subscription system based on <a href="https://redis.io">Redis</a> and <a href="https://ably.io">Ably</a> which works with any Ruby web framework.</p>
 
 <p>After creating an app on Ably, you can hook it up to your GraphQL schema.</p>
-
-<ul>
-  <li><a href="#how-it-works">How it Works</a></li>
-  <li><a href="#ably-setup">Ably setup</a></li>
-  <li><a href="#database-setup">Database setup</a></li>
-  <li><a href="#schema-configuration">Schema configuration</a></li>
-  <li><a href="#execution-configuration">Execution configuration</a></li>
-  <li><a href="#webhook-configuration">Webhook configuration</a></li>
-  <li><a href="#authorization">Authorization</a></li>
-  <li><a href="#encryption">End-to-end encryption</a></li>
-  <li><a href="#serializing-context">Serializing context</a></li>
-  <li><a href="#dashboard">Dashboard</a></li>
-  <li><a href="#development-tips">Development tips</a></li>
-  <li><a href="#client-configuration">Client configuration</a></li>
-</ul>
 
 <h2 id="how-it-works">How it Works</h2>
 

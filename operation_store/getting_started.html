@@ -56,6 +56,36 @@
 
 
 <h1 class="guide-header">Getting Started</h1>
+<div class="guide-table-of-contents"><div class="table-of-contents">
+  <h3 class="contents-header">Contents</h3>
+  <ul class="contents-list">
+    <li class='contents-entry entry-depth-2'>
+                <span class='section-count'>1. </span><a href='#dependencies'>Dependencies
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>2. </span><a href='#prepare-the-database'>Prepare the Database
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>3. </span><a href='#add-operationstore-'>Add <code>OperationStore</code>
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>4. </span><a href='#add-routes'>Add Routes
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>5. </span><a href='#update-the-controller'>Update the Controller
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>6. </span><a href='#next-steps'>Next Steps
+</a>
+              </li>
+  </ul>
+</div>
+</div>
 <div class="guide-container">
   <p>To use <code class="language-plaintext highlighter-rouge">GraphQL::Pro::OperationStore</code> with your app, follow these steps:</p>
 
@@ -68,7 +98,7 @@
   <li><a href="/operation_store/client_workflow">Add a client</a> to start syncing queries</li>
 </ul>
 
-<h4 id="dependencies">Dependencies</h4>
+<h2 id="dependencies">Dependencies</h2>
 
 <p><code class="language-plaintext highlighter-rouge">OperationStore</code> requires two gems in your application environment:</p>
 
@@ -79,11 +109,11 @@
 
 <p>These are bundled with Rails by default.</p>
 
-<h4 id="prepare-the-database">Prepare the Database</h4>
+<h2 id="prepare-the-database">Prepare the Database</h2>
 
 <p>If you’re going to store data with ActiveRecord, <a href="/operation_store/active_record_backend">migrate the database</a> to prepare tables for it.</p>
 
-<h4 id="add-operationstore">Add <code class="language-plaintext highlighter-rouge">OperationStore</code></h4>
+<h2 id="add-operationstore">Add <code class="language-plaintext highlighter-rouge">OperationStore</code></h2>
 
 <p>To hook up the storage to your schema, add the plugin:</p>
 
@@ -100,7 +130,7 @@
   <li><code class="language-plaintext highlighter-rouge">backend_class:</code>, for implementing custom persistence.</li>
 </ul>
 
-<h4 id="add-routes">Add Routes</h4>
+<h2 id="add-routes">Add Routes</h2>
 
 <p>To use <code class="language-plaintext highlighter-rouge">OperationStore</code>, add two routes to your app:</p>
 
@@ -137,7 +167,7 @@
 <span class="n">mount</span> <span class="n">lazy_routes</span><span class="p">.</span><span class="nf">operation_store_sync</span><span class="p">,</span> <span class="ss">at: </span><span class="s2">"/graphql/sync"</span>
 </code></pre></div></div>
 
-<h4 id="update-the-controller">Update the Controller</h4>
+<h2 id="update-the-controller">Update the Controller</h2>
 
 <p>Add <code class="language-plaintext highlighter-rouge">operation_id:</code> to your GraphQL context:</p>
 
@@ -159,7 +189,7 @@
 
 <p>See <a href="/operation_store/server_management">Server Management</a> for details about rejecting GraphQL from <code class="language-plaintext highlighter-rouge">params[:query]</code>.</p>
 
-<h4 id="next-steps">Next Steps</h4>
+<h2 id="next-steps">Next Steps</h2>
 
 <p>Sync your operations with the <a href="/operation_store/client_workflow">Client Workflow</a>.</p>
 

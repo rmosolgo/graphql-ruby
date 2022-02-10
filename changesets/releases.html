@@ -56,6 +56,16 @@
   </div>
 
 <h1 class="guide-header">Releasing Changesets</h1>
+<div class="guide-table-of-contents"><div class="table-of-contents">
+  <h3 class="contents-header">Contents</h3>
+  <ul class="contents-list">
+    <li class='contents-entry entry-depth-2'>
+                <span class='section-count'>1. </span><a href='#inspecting-releases'>Inspecting Releases
+</a>
+              </li>
+  </ul>
+</div>
+</div>
 <div class="guide-container">
   <p>To be available to clients, Changesets added to the schema with <code class="language-plaintext highlighter-rouge">use GraphQL::Enterprise::Changeset::Release</code>:</p>
 
@@ -69,7 +79,7 @@
 
 <p>Only changesets on the list will be shown to clients. The <code class="language-plaintext highlighter-rouge">release ...</code> configuration in the changeset will be compared to <code class="language-plaintext highlighter-rouge">context[:changeset_version]</code> to determine if the changeset applies to the current request.</p>
 
-<h3 id="inspecting-releases">Inspecting Releases</h3>
+<h2 id="inspecting-releases">Inspecting Releases</h2>
 
 <p>To preview releases, you can create schema dumps by passing <code class="language-plaintext highlighter-rouge">context: { changeset_version: ... }</code> to <a href="/api-doc/2.0.0/GraphQL/Schema#to_definition-class_method" target="_blank" title="API docs for GraphQL::Schema.to_definition"><code>Schema.to_definition</code></a>.</p>
 

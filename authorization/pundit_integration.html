@@ -56,6 +56,100 @@
 
 
 <h1 class="guide-header">Pundit Integration</h1>
+<div class="guide-table-of-contents"><div class="table-of-contents">
+  <h3 class="contents-header">Contents</h3>
+  <ul class="contents-list">
+    <li class='contents-entry entry-depth-2'>
+                <span class='section-count'>1. </span><a href='#getting-started'>Getting Started
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>2. </span><a href='#authorizing-objects'>Authorizing Objects
+</a>
+              </li>
+<li class='contents-entry entry-depth-4'>
+                <span class='section-count'></span><a href='#policies-and-methods'>Policies and Methods
+</a>
+              </li>
+<li class='contents-entry entry-depth-4'>
+                <span class='section-count'></span><a href='#custom-policy-class'>Custom Policy Class
+</a>
+              </li>
+<li class='contents-entry entry-depth-4'>
+                <span class='section-count'></span><a href='#bypassing-policies'>Bypassing Policies
+</a>
+              </li>
+<li class='contents-entry entry-depth-4'>
+                <span class='section-count'></span><a href='#handling-unauthorized-objects'>Handling Unauthorized Objects
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>3. </span><a href='#scopes'>Scopes
+</a>
+              </li>
+<li class='contents-entry entry-depth-4'>
+                <span class='section-count'></span><a href='#bypassing-scopes'>Bypassing scopes
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>4. </span><a href='#authorizing-fields'>Authorizing Fields
+</a>
+              </li>
+<li class='contents-entry entry-depth-4'>
+                <span class='section-count'></span><a href='#custom-policy-class'>Custom Policy Class
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>5. </span><a href='#authorizing-arguments'>Authorizing Arguments
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>6. </span><a href='#authorizing-mutations'>Authorizing Mutations
+</a>
+              </li>
+<li class='contents-entry entry-depth-4'>
+                <span class='section-count'></span><a href='#setup'>Setup
+</a>
+              </li>
+<li class='contents-entry entry-depth-4'>
+                <span class='section-count'></span><a href='#mutation-level-roles'>Mutation-level roles
+</a>
+              </li>
+<li class='contents-entry entry-depth-4'>
+                <span class='section-count'></span><a href='#custom-policy-class'>Custom Policy Class
+</a>
+              </li>
+<li class='contents-entry entry-depth-4'>
+                <span class='section-count'></span><a href='#authorizing-loaded-objects'>Authorizing Loaded Objects
+</a>
+              </li>
+<li class='contents-entry entry-depth-4'>
+                <span class='section-count'></span><a href='#unauthorized-mutations'>Unauthorized Mutations
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>7. </span><a href='#authorizing-resolvers'>Authorizing Resolvers
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>8. </span><a href='#custom-policy-lookup'>Custom Policy Lookup
+</a>
+              </li>
+<li class='contents-entry entry-depth-3'>
+                <span class='section-count'></span><a href='#custom-policy-methods'>Custom Policy Methods
+</a>
+              </li>
+<li class='contents-entry entry-depth-3'>
+                <span class='section-count'></span><a href='#one-policy-per-class'>One Policy Per Class
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>9. </span><a href='#custom-user-lookup'>Custom User Lookup
+</a>
+              </li>
+  </ul>
+</div>
+</div>
 <div class="guide-container">
   <p><a href="https://graphql.pro">GraphQL::Pro</a> includes an integration for powering GraphQL authorization with <a href="https://github.com/varvet/pundit">Pundit</a> policies.</p>
 
@@ -86,19 +180,6 @@
 <span class="p">}</span>
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="ss">context: </span><span class="n">context</span><span class="p">)</span>
 </code></pre></div></div>
-
-<p>And read on about the different features of the integration:</p>
-
-<ul>
-  <li><a href="#authorizing-objects">Authorizing Objects</a></li>
-  <li><a href="#scopes">Scoping Lists and Connections</a></li>
-  <li><a href="#authorizing-fields">Authorizing Fields</a></li>
-  <li><a href="#authorizing-arguments">Authorizing Arguments</a></li>
-  <li><a href="#authorizing-mutations">Authorizing Mutations</a></li>
-  <li><a href="#authorizing-resolvers">Authorizing Resolvers</a></li>
-  <li><a href="#custom-policy-lookup">Custom Policy Lookup</a></li>
-  <li><a href="#custom-user-lookup">Custom User Lookup</a></li>
-</ul>
 
 <h2 id="authorizing-objects">Authorizing Objects</h2>
 

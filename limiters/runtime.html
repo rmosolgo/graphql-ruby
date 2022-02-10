@@ -56,18 +56,60 @@
   </div>
 
 <h1 class="guide-header">Runtime Limiter</h1>
+<div class="guide-table-of-contents"><div class="table-of-contents">
+  <h3 class="contents-header">Contents</h3>
+  <ul class="contents-list">
+    <li class='contents-entry entry-depth-2'>
+                <span class='section-count'>1. </span><a href='#why-'>Why?
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>2. </span><a href='#setup'>Setup
+</a>
+              </li>
+<li class='contents-entry entry-depth-3'>
+                <span class='section-count'></span><a href='#schema-setup'>Schema Setup
+</a>
+              </li>
+<li class='contents-entry entry-depth-3'>
+                <span class='section-count'></span><a href='#query-setup'>Query Setup
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>3. </span><a href='#soft-limits'>Soft Limits
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>4. </span><a href='#dashboard'>Dashboard
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>5. </span><a href='#customization'>Customization
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>6. </span><a href='#instrumentation'>Instrumentation
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>7. </span><a href='#some-caveats'>Some Caveats
+</a>
+              </li>
+  </ul>
+</div>
+</div>
 <div class="guide-container">
   <p><code class="language-plaintext highlighter-rouge">GraphQL::Enterprise::RuntimeLimiter</code> applies an upper bound to processing time consumed by a single client. It uses <a href="/limiters/redis">Redis</a> track time with a <a href="https://en.wikipedia.org/wiki/Token_bucket">token bucket</a> algorithm.</p>
 
-<h3 id="why">Why?</h3>
+<h2 id="why">Why?</h2>
 
 <p>This limiter prevents a single client from consuming too much processing time, regardless of whether it comes a burst of short-lived queries (which the <a href="/limiters/active_operations">Active Operation Limiter</a> can prevent) or a small number of long-running queries. Unlike request counters or complexity calculations, the runtime limiter pays no attention to the structure of the incoming request. Instead, it simply measures the time spent on the request <em>as a whole</em> and halts queries when a client consumes more than the limit.</p>
 
-<h3 id="setup">Setup</h3>
+<h2 id="setup">Setup</h2>
 
 <p>To use this limiter, update the schema configuration and include <code class="language-plaintext highlighter-rouge">context[:limiter_key]</code> in your queries.</p>
 
-<h5 id="schema-setup">Schema Setup</h5>
+<h3 id="schema-setup">Schema Setup</h3>
 
 <p>To setup the schema, add <code class="language-plaintext highlighter-rouge">use GraphQL::Enterprise::RuntimeLimiter</code> with a default <code class="language-plaintext highlighter-rouge">limit_ms:</code> value:</p>
 
@@ -85,7 +127,7 @@
 
 <p>Before requests will actually be halted, <a href="#soft-limits">“soft mode”</a> must be disabled as described below.</p>
 
-<h5 id="query-setup">Query Setup</h5>
+<h3 id="query-setup">Query Setup</h3>
 
 <p>In order to limit clients, the limiter needs a client identifier for each GraphQL operation. By default, it checks <code class="language-plaintext highlighter-rouge">context[:limiter_key]</code> to find it:</p>
 
@@ -103,7 +145,7 @@
 
 <p>To provide a client identifier another way, see <a href="#customization">Customization</a>.</p>
 
-<h3 id="soft-limits">Soft Limits</h3>
+<h2 id="soft-limits">Soft Limits</h2>
 
 <p>By default, the limiter doesn’t actually halt queries; instead, it starts out in “soft mode”. In this mode:</p>
 
@@ -120,7 +162,7 @@
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">enterprise_runtime_limiter</span><span class="p">.</span><span class="nf">set_soft_limit</span><span class="p">(</span><span class="kp">false</span><span class="p">)</span>
 </code></pre></div></div>
 
-<h3 id="dashboard">Dashboard</h3>
+<h2 id="dashboard">Dashboard</h2>
 
 <p>Once installed, your <a href="/pro/dashboard">GraphQL-Pro dashboard</a> will include a simple metrics view:</p>
 
@@ -138,7 +180,7 @@
 
 <p>When “soft mode” is enabled, limited requests are <em>not</em> actually halted (although they are <em>counted</em>). When “soft mode” is disabled, any over-limit requests are halted.</p>
 
-<h3 id="customization">Customization</h3>
+<h2 id="customization">Customization</h2>
 
 <p><code class="language-plaintext highlighter-rouge">GraphQL::Enterprise::RuntimeLimiter</code> provides several hooks for customizing its behavior. To use these, make a subclass of the limiter and override methods as described:</p>
 
@@ -157,7 +199,7 @@
   <li><code class="language-plaintext highlighter-rouge">def handle_redis_error(err)</code> is called when the limit rescues an error from Redis. By default, it’s passed to <code class="language-plaintext highlighter-rouge">warn</code> and the query is <em>not</em> halted.</li>
 </ul>
 
-<h3 id="instrumentation">Instrumentation</h3>
+<h2 id="instrumentation">Instrumentation</h2>
 
 <p>While the limiter is installed, it adds some information to the query context about its operation. It can be acccessed at <code class="language-plaintext highlighter-rouge">context[:runtime_limiter]</code>:</p>
 
@@ -186,7 +228,7 @@
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MyMetrics</span><span class="p">.</span><span class="nf">increment</span><span class="p">(</span><span class="s2">"graphql.runtime_limiter"</span><span class="p">,</span> <span class="ss">tags: </span><span class="n">result</span><span class="p">.</span><span class="nf">context</span><span class="p">[</span><span class="ss">:runtime_limiter</span><span class="p">])</span>
 </code></pre></div></div>
 
-<h3 id="some-caveats">Some Caveats</h3>
+<h2 id="some-caveats">Some Caveats</h2>
 
 <p>The limiter will not <em>interrupt</em> a long-running field. Instead, it stops executing new fields after a client exceeds its allowed processing time. This is because interrupting arbitrary code may have unintended consequences for I/O operations, see <a href="https://www.mikeperham.com/2015/05/08/timeout-rubys-most-dangerous-api/">“Timeout: Ruby’s most dangerous API”</a>.</p>
 

@@ -56,14 +56,32 @@
   </div>
 
 <h1 class="guide-header">Runtime Considerations</h1>
+<div class="guide-table-of-contents"><div class="table-of-contents">
+  <h3 class="contents-header">Contents</h3>
+  <ul class="contents-list">
+    <li class='contents-entry entry-depth-2'>
+                <span class='section-count'>1. </span><a href='#skipping-the-cache'>Skipping the cache
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>2. </span><a href='#manually-adding-an-object-to-caching'>Manually adding an object to caching
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>3. </span><a href='#measuring-the-cache'>Measuring the cache
+</a>
+              </li>
+  </ul>
+</div>
+</div>
 <div class="guide-container">
   <p>With caching configured, here are a few more things to keep in mind while queries are running.</p>
 
-<h3 id="skipping-the-cache">Skipping the cache</h3>
+<h2 id="skipping-the-cache">Skipping the cache</h2>
 
 <p>You can set <code class="language-plaintext highlighter-rouge">skip_object_cache: true</code> in your query <code class="language-plaintext highlighter-rouge">context: { ... }</code> to disable <code class="language-plaintext highlighter-rouge">ObjectCache</code> for a given query.</p>
 
-<h3 id="manually-adding-an-object-to-caching">Manually adding an object to caching</h3>
+<h2 id="manually-adding-an-object-to-caching">Manually adding an object to caching</h2>
 
 <p>By default, <code class="language-plaintext highlighter-rouge">ObjectCache</code> gathers the objects “behind” each GraphQL object in the result, then uses their fingerprints as cache keys. To manually register another object with the cache while a query is running, call <code class="language-plaintext highlighter-rouge">cacheable_object(...)</code>, passing the object. For example:</p>
 
@@ -86,7 +104,7 @@
 
 <p>(When the cache is disabled, <code class="language-plaintext highlighter-rouge">cacheable_object(...)</code> is a no-op.)</p>
 
-<h3 id="measuring-the-cache">Measuring the cache</h3>
+<h2 id="measuring-the-cache">Measuring the cache</h2>
 
 <p>While the cache is running, it logs some data in a Hash as <code class="language-plaintext highlighter-rouge">context[:object_cache]</code>. For example:</p>
 

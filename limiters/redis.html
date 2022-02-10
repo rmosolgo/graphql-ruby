@@ -56,10 +56,20 @@
   </div>
 
 <h1 class="guide-header">Configuring Redis</h1>
+<div class="guide-table-of-contents"><div class="table-of-contents">
+  <h3 class="contents-header">Contents</h3>
+  <ul class="contents-list">
+    <li class='contents-entry entry-depth-2'>
+                <span class='section-count'>1. </span><a href='#memory-usage'>Memory Usage
+</a>
+              </li>
+  </ul>
+</div>
+</div>
 <div class="guide-container">
   <p>Rate limiting requires persistent Redis instance, just like <a href="https://github.com/mperham/sidekiq/wiki/Using-Redis">Sidekiq</a> or the <a href="/operation_store/redis_backend">Operation Store</a>. Set <code class="language-plaintext highlighter-rouge">maxmemory-policy noeviction</code> in <code class="language-plaintext highlighter-rouge">redis.conf</code> to ensure that Redis doesn’t silently drop keys when it reaches its memory limit.</p>
 
-<h3 id="memory-usage">Memory Usage</h3>
+<h2 id="memory-usage">Memory Usage</h2>
 
 <p>Estimating memory usage depends on the string used to identify clients, since those are used in the Redis keys. Using 100-character client keys, the runtime limiter uses 400 bytes per client (two keys). Memory usage by the active operation limiter depends on the limit because each concurrent operation uses some memory; a higher limit permits more concurrent operations. With 10 active operations and a 100-character client key, the active operation limiter uses 350 bytes per client. Additionally, the limiters use up to 35kb for dashboards (2 limiters, for each one: 2x 60 per-minute keys, 24 hourly keys, and 30 daily keys @ 72 bytes per key).</p>
 

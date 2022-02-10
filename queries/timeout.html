@@ -47,6 +47,24 @@
 
 
 <h1 class="guide-header">Timeout</h1>
+<div class="guide-table-of-contents"><div class="table-of-contents">
+  <h3 class="contents-header">Contents</h3>
+  <ul class="contents-list">
+    <li class='contents-entry entry-depth-2'>
+                <span class='section-count'>1. </span><a href='#custom-error-handling'>Custom Error Handling
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>2. </span><a href='#customizing-the-timeout-window'>Customizing the Timeout Window
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>3. </span><a href='#validation'>Validation
+</a>
+              </li>
+  </ul>
+</div>
+</div>
 <div class="guide-container">
   <p>You can apply a timeout to query execution with the <code class="language-plaintext highlighter-rouge">GraphQL::Schema::Timeout</code> plugin. For example:</p>
 
@@ -59,7 +77,7 @@
 
 <p><strong>Note</strong> that this <em>does not interrupt</em> field execution (doing so is <a href="https://www.mikeperham.com/2015/05/08/timeout-rubys-most-dangerous-api/">buggy</a>). If you’re making external calls (eg, HTTP requests or database queries), make sure to use a library-specific timeout for that operation (eg, <a href="https://github.com/redis/redis-rb#timeouts">Redis timeout</a>, <a href="https://ruby-doc.org/stdlib-2.4.1/libdoc/net/http/rdoc/Net/HTTP.html">Net::HTTP</a>’s <code class="language-plaintext highlighter-rouge">ssl_timeout</code>, <code class="language-plaintext highlighter-rouge">open_timeout</code>, and <code class="language-plaintext highlighter-rouge">read_timeout</code>).</p>
 
-<h3 id="custom-error-handling">Custom Error Handling</h3>
+<h2 id="custom-error-handling">Custom Error Handling</h2>
 
 <p>To log the error, provide a subclass of <code class="language-plaintext highlighter-rouge">GraphQL::Schema::Timeout</code> with an overridden <code class="language-plaintext highlighter-rouge">handle_timeout</code> method:</p>
 
@@ -74,7 +92,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<h3 id="customizing-the-timeout-window">Customizing the Timeout Window</h3>
+<h2 id="customizing-the-timeout-window">Customizing the Timeout Window</h2>
 
 <p>To dynamically pick a timeout duration (or bypass it), override <a href="/api-doc/2.0.0/GraphQL/Schema/Timeout#max_seconds-instance_method" target="_blank" title="API docs for GraphQL::Schema::Timeout#max_seconds"><code>GraphQL::Schema::Timeout#max_seconds</code></a> in your subclass. To bypass the timeout altogether, <code class="language-plaintext highlighter-rouge">max_seconds</code> can return <code class="language-plaintext highlighter-rouge">false</code>.</p>
 
@@ -100,7 +118,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<h3 id="validation">Validation</h3>
+<h2 id="validation">Validation</h2>
 
 <p>Queries can originate from a user, and may be crafted in a manner to take a long time to validate against the schema.</p>
 

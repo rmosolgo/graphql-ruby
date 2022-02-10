@@ -47,10 +47,28 @@
 
 
 <h1 class="guide-header">Multi-Tenant</h1>
+<div class="guide-table-of-contents"><div class="table-of-contents">
+  <h3 class="contents-header">Contents</h3>
+  <ul class="contents-list">
+    <li class='contents-entry entry-depth-2'>
+                <span class='section-count'>1. </span><a href='#add-tenant-to-context-'>Add Tenant to <code>context</code>
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>2. </span><a href='#tenant-based-subscription-scope-'>Tenant-based <code>subscription_scope</code>
+</a>
+              </li>
+<li class='contents-entry entry-depth-2'>
+                <span class='section-count'>3. </span><a href='#choosing-a-tenant-for-execution'>Choosing a tenant for execution
+</a>
+              </li>
+  </ul>
+</div>
+</div>
 <div class="guide-container">
   <p>In a multi-tenant system, data from many different accounts is stored on the same server. (An account might be an organization, a customer, a namespace, a domain, etc – these are all <em>tenants</em>.) Gems like <a href="https://github.com/influitive/apartment">Apartment</a> assist with this arrangement, but it can also be implemented in the application. Here are a few considerations for this architecture when using GraphQL subscriptions.</p>
 
-<h4 id="add-tenant-to-context">Add Tenant to <code class="language-plaintext highlighter-rouge">context</code></h4>
+<h2 id="add-tenant-to-context">Add Tenant to <code class="language-plaintext highlighter-rouge">context</code></h2>
 
 <p>All the approaches below will use <code class="language-plaintext highlighter-rouge">context[:tenant]</code> to identify the tenant during GraphQL execution, so make sure to assign it before executing a query:</p>
 
@@ -63,7 +81,7 @@
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_str</span><span class="p">,</span> <span class="ss">context: </span><span class="n">context</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
 </code></pre></div></div>
 
-<h4 id="tenant-based-subscription_scope">Tenant-based <code class="language-plaintext highlighter-rouge">subscription_scope</code></h4>
+<h2 id="tenant-based-subscription_scope">Tenant-based <code class="language-plaintext highlighter-rouge">subscription_scope</code></h2>
 
 <p>When subscriptions are delivered, <a href="/subscriptions/subscription_classes#scope"><code class="language-plaintext highlighter-rouge">subscription_scope</code></a> is one element used to route data to the right subscriber. In short, it’s the <em>implicit</em> identifier for the receiver. In a multi-tenant architecture, <code class="language-plaintext highlighter-rouge">subscription_scope</code> should reference the context key that names the tenant, for example:</p>
 
@@ -88,7 +106,7 @@
 
 <p>As long as <code class="language-plaintext highlighter-rouge">project_id</code> is unique among <em>all</em> tenants, that would work fine too. But <em>some</em> scope is required so that subscriptions can be disambiguated between tenants.</p>
 
-<h4 id="choosing-a-tenant-for-execution">Choosing a tenant for execution</h4>
+<h2 id="choosing-a-tenant-for-execution">Choosing a tenant for execution</h2>
 
 <p>There are a few places where subscriptions might need to load data:</p>
 
