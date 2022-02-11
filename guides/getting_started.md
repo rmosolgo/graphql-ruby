@@ -56,8 +56,8 @@ module Types
     field :truncated_preview, String, null: false
     # Fields can return lists of other objects:
     field :comments, [Types::CommentType],
-      # And fields can have their own descriptions:
-      description: "This post's comments, or null if this post has comments disabled."
+    # And fields can have their own descriptions:
+    description: "This post's comments, or null if this post has comments disabled."
   end
 end
 
