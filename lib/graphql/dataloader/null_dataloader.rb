@@ -11,7 +11,9 @@ module GraphQL
       # executed sychronously.
       def run; end
       def run_isolated; yield; end
-      def yield; end
+      def yield
+        raise GraphQL::Error, "GraphQL::Dataloader is not running -- add `use GraphQL::Dataloader` to your schema to use Dataloader sources."
+      end
 
       def append_job
         yield
