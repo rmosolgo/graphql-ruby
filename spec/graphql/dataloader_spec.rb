@@ -376,7 +376,7 @@ describe GraphQL::Dataloader do
       end
 
       class Run < GraphQL::Dataloader::Run
-        def spawn_fiber(*args, **kwargs, &block)
+        def spawn_fiber
           FiberCountingDataloader.last_spawn_fiber_count += 1
           super
         end
