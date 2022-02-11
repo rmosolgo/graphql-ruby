@@ -25,16 +25,24 @@ module GraphQL
   class Dataloader
     class << self
       attr_accessor :default_nonblocking
+      attr_accessor :default_fiber_limit
     end
 
     AsyncDataloader = Class.new(self) { self.default_nonblocking = true }
 
-    def self.use(schema, nonblocking: nil)
-      schema.dataloader_class = if nonblocking
+    def self.use(schema, nonblocking: nil, fiber_limit: nil)
+      dataloader_class = if nonblocking
         AsyncDataloader
       else
         self
       end
+
+      if fiber_limit
+        dataloader_class = Class.new(dataloader_class)
+        dataloader_class.default_fiber_limit = fiber_limit
+      end
+
+      schema.dataloader_class = dataloader_class
     end
 
     # Call the block with a Dataloader instance,
@@ -52,6 +60,7 @@ module GraphQL
     def initialize(nonblocking: self.class.default_nonblocking)
       @source_cache = Hash.new { |h, k| h[k] = {} }
       @pending_jobs = []
+      @pending_sources = []
       if !nonblocking.nil?
         @nonblocking = nonblocking
       end
@@ -86,6 +95,14 @@ module GraphQL
         end
       end
     end
+
+    def enqueue_pending_source(source)
+      if !@pending_sources.include?(source)
+        @pending_sources << source
+      end
+      nil
+    end
+
     # Tell the dataloader that this fiber is waiting for data.
     #
     # Dataloader will resume the fiber after the requested data has been loaded (by another Fiber).
@@ -107,6 +124,7 @@ module GraphQL
     # Use a self-contained queue for the work in the block.
     def run_isolated
       prev_queue = @pending_jobs
+      prev_source_queue = @pending_sources
       prev_pending_keys = {}
       @source_cache.each do |source_class, batched_sources|
         batched_sources.each do |batch_args, batched_source_instance|
@@ -118,6 +136,7 @@ module GraphQL
       end
 
       @pending_jobs = []
+      @pending_sources = []
       res = nil
       # Make sure the block is inside a Fiber, so it can `Fiber.yield`
       append_job {
@@ -127,6 +146,7 @@ module GraphQL
       res
     ensure
       @pending_jobs = prev_queue
+      @pending_sources = prev_source_queue
       prev_pending_keys.each do |source_instance, pending_keys|
         source_instance.pending_keys.concat(pending_keys)
       end
@@ -167,10 +187,7 @@ module GraphQL
         else
           # These fibers were previously waiting for sources to load data,
           # resume them. (They might wait again, in which case, re-enqueue them.)
-          resume(f)
-          if f.alive?
-            next_fibers << f
-          end
+          resume_once(f, next_fibers)
         end
 
         while @pending_jobs.any?
@@ -181,12 +198,9 @@ module GraphQL
               job.call
             end
           }
-          resume(f)
-          # In this case, the job yielded. Queue it up to run again after
-          # we load whatever it's waiting for.
-          if f.alive?
-            next_fibers << f
-          end
+          # In this case, if `f` is still alive, the job yielded.
+          # Queue it up to run again after we load whatever it's waiting for.
+          resume_once(f, next_fibers)
         end
 
         if pending_fibers.empty?
@@ -196,22 +210,28 @@ module GraphQL
           # This is where an evented approach would be even better -- can we tell which
           # fibers are ready to continue, and continue execution there?
           #
-          if (first_source_fiber = create_source_fiber)
-            pending_source_fibers << first_source_fiber
-          end
-
-          while pending_source_fibers.any?
-            while (outer_source_fiber = pending_source_fibers.pop)
-              resume(outer_source_fiber)
-              if outer_source_fiber.alive?
-                next_source_fibers << outer_source_fiber
-              end
-              if (next_source_fiber = create_source_fiber)
-                pending_source_fibers << next_source_fiber
-              end
+          first_source_pass = true
+          while first_source_pass || (source_fiber = pending_source_fibers.shift)
+            if first_source_pass
+              first_source_pass = false
+            elsif source_fiber
+              resume_once(source_fiber, next_source_fibers)
             end
-            join_queues(pending_source_fibers, next_source_fibers)
-            next_source_fibers.clear
+
+            while @pending_sources.any?
+              f = spawn_fiber do
+                while (source = @pending_sources.shift)
+                  source.run_pending_keys
+                end
+              end
+
+              resume_once(f, next_source_fibers)
+            end
+
+            if pending_source_fibers.empty?
+              join_queues(pending_source_fibers, next_source_fibers)
+              next_source_fibers.clear
+            end
           end
           # Move newly-enqueued Fibers on to the list to be resumed.
           # Clear out the list of next-round Fibers, so that
@@ -241,40 +261,11 @@ module GraphQL
 
     private
 
-    # If there are pending sources, return a fiber for running them.
-    # Otherwise, return `nil`.
-    #
-    # @return [Fiber, nil]
-    def create_source_fiber
-      pending_sources = nil
-      @source_cache.each_value do |source_by_batch_params|
-        source_by_batch_params.each_value do |source|
-          if source.pending?
-            pending_sources ||= []
-            pending_sources << source
-          end
-        end
-      end
-
-      if pending_sources
-        # By passing the whole array into this Fiber, it's possible that we set ourselves up for a bunch of no-ops.
-        # For example, if you have sources `[a, b, c]`, and `a` is loaded, then `b` yields to wait for `d`, then
-        # the next fiber would be dispatched with `[c, d]`. It would fulfill `c`, then `d`, then eventually
-        # the previous fiber would start up again. `c` would no longer be pending, but it would still receive `.run_pending_keys`.
-        # That method is short-circuited since it isn't pending any more, but it's still a waste.
-        #
-        # This design could probably be improved by maintaining a `@pending_sources` queue which is shared by the fibers,
-        # similar to `@pending_jobs`. That way, when a fiber is resumed, it would never pick up work that was finished by a different fiber.
-        source_fiber = spawn_fiber do
-          pending_sources.each(&:run_pending_keys)
-        end
-      end
-
-      source_fiber
-    end
-
-    def resume(fiber)
+    def resume_once(fiber, next_queue)
       fiber.resume
+      if fiber.alive?
+        next_queue << fiber
+      end
     rescue UncaughtThrowError => e
       throw e.tag, e.value
     end

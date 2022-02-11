@@ -20,6 +20,7 @@ module GraphQL
       # @return [Dataloader::Request] a pending request for a value from `key`. Call `.load` on that object to wait for the result.
       def request(key)
         if !@results.key?(key)
+          @dataloader.enqueue_pending_source(self)
           @pending_keys << key
         end
         Dataloader::Request.new(self, key)
@@ -28,7 +29,10 @@ module GraphQL
       # @return [Dataloader::Request] a pending request for a values from `keys`. Call `.load` on that object to wait for the results.
       def request_all(keys)
         pending_keys = keys.select { |k| !@results.key?(k) }
-        @pending_keys.concat(pending_keys)
+        if pending_keys.any?
+          @dataloader.enqueue_pending_source(self)
+          @pending_keys.concat(pending_keys)
+        end
         Dataloader::RequestAll.new(self, keys)
       end
 
@@ -38,6 +42,7 @@ module GraphQL
         if @results.key?(key)
           result_for(key)
         else
+          @dataloader.enqueue_pending_source(self)
           @pending_keys << key
           sync
           result_for(key)
@@ -49,6 +54,7 @@ module GraphQL
       def load_all(keys)
         if keys.any? { |k| !@results.key?(k) }
           pending_keys = keys.select { |k| !@results.key?(k) }
+          @dataloader.enqueue_pending_source(self)
           @pending_keys.concat(pending_keys)
           sync
         end
