@@ -16,6 +16,14 @@ describe GraphQL::Dataloader::Source do
     end
     expected_message = "FailsToLoadSource#sync tried 1000 times to load pending keys ([1]), but they still weren't loaded. There is likely a circular dependency."
     assert_equal expected_message, err.message
+
+    dl = GraphQL::Dataloader.new(fiber_limit: 10000)
+    dl.append_job { dl.with(FailsToLoadSource).load(1) }
+    err = assert_raises RuntimeError do
+      dl.run
+    end
+    expected_message = "FailsToLoadSource#sync tried 1000 times to load pending keys ([1]), but they still weren't loaded. There is likely a circular dependency or `fiber_limit: 10000` is set too low."
+    assert_equal expected_message, err.message
   end
 
   it "is pending when waiting for false and nil" do

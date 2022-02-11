@@ -80,7 +80,7 @@ module GraphQL
         while pending_keys.any? { |k| !@results.key?(k) }
           iterations += 1
           if iterations > 1000
-            raise "#{self.class}#sync tried 1000 times to load pending keys (#{pending_keys}), but they still weren't loaded. There is likely a circular dependency."
+            raise "#{self.class}#sync tried 1000 times to load pending keys (#{pending_keys}), but they still weren't loaded. There is likely a circular dependency#{@dataloader.fiber_limit ? " or `fiber_limit: #{@dataloader.fiber_limit}` is set too low" : ""}."
           end
           @dataloader.yield
         end

@@ -364,6 +364,33 @@ describe GraphQL::Dataloader do
   end
 
   module DataloaderAssertions
+    class FiberCountingDataloader < GraphQL::Dataloader
+      class << self
+        attr_accessor :last_spawn_fiber_count, :last_max_fiber_count
+      end
+
+      def initialize(*args, **kwargs, &block)
+        super
+        FiberCountingDataloader.last_spawn_fiber_count = 0
+        FiberCountingDataloader.last_max_fiber_count = 0
+      end
+
+      class Run < GraphQL::Dataloader::Run
+        def spawn_fiber(*args, **kwargs, &block)
+          FiberCountingDataloader.last_spawn_fiber_count += 1
+          super
+        end
+
+        def fiber_count
+          v = super
+          if v > FiberCountingDataloader.last_max_fiber_count
+            FiberCountingDataloader.last_max_fiber_count = v
+          end
+          v
+        end
+      end
+    end
+
     def self.included(child_class)
       child_class.class_eval do
         it "Works with request(...)" do
@@ -773,6 +800,85 @@ describe GraphQL::Dataloader do
           ]
           assert_equal expected_log, database_log
         end
+
+        describe "fiber_limit" do
+          it "respects a configured fiber_limit" do
+            query_str = <<-GRAPHQL
+            {
+              recipes {
+                ingredients {
+                  name
+                }
+              }
+              nestedIngredient(id: 2) {
+                name
+              }
+              keyIngredient(id: 4) {
+                name
+              }
+              commonIngredientsWithLoad(recipe1Id: 5, recipe2Id: 6) {
+                name
+              }
+            }
+            GRAPHQL
+
+            res = schema.execute(query_str, context: { dataloader: FiberCountingDataloader.new })
+            assert_equal 10, FiberCountingDataloader.last_spawn_fiber_count
+            assert_equal 7, FiberCountingDataloader.last_max_fiber_count
+
+            res = schema.execute(query_str, context: { dataloader: FiberCountingDataloader.new(fiber_limit: 3) })
+            assert_equal 3, res.context.dataloader.fiber_limit
+            assert_equal 12, FiberCountingDataloader.last_spawn_fiber_count
+            # The count doesn't reach the limit because one of the fibers is short-lived;
+            # it is finished after its first `.resume` and it's never added to a queue
+            assert_equal 2, FiberCountingDataloader.last_max_fiber_count
+
+            res = schema.execute(query_str, context: { dataloader: FiberCountingDataloader.new(fiber_limit: 4) })
+            assert_equal 4, res.context.dataloader.fiber_limit
+            assert_equal 11, FiberCountingDataloader.last_spawn_fiber_count
+            assert_equal 3, FiberCountingDataloader.last_max_fiber_count
+
+            res = schema.execute(query_str, context: { dataloader: FiberCountingDataloader.new(fiber_limit: 6) })
+            assert_equal 6, res.context.dataloader.fiber_limit
+            assert_equal 11, FiberCountingDataloader.last_spawn_fiber_count
+            assert_equal 5, FiberCountingDataloader.last_max_fiber_count
+          end
+
+          it "accepts a default fiber_limit config" do
+            schema = Class.new(FiberSchema) do
+              use GraphQL::Dataloader, fiber_limit: 4
+            end
+            query_str = <<-GRAPHQL
+            {
+              recipes {
+                ingredients {
+                  name
+                }
+              }
+              nestedIngredient(id: 2) {
+                name
+              }
+              keyIngredient(id: 4) {
+                name
+              }
+              commonIngredientsWithLoad(recipe1Id: 5, recipe2Id: 6) {
+                name
+              }
+            }
+            GRAPHQL
+            res = schema.execute(query_str)
+            assert_equal 4, res.context.dataloader.fiber_limit
+            assert_nil res["errors"]
+          end
+
+          it "requires at least three fibers" do
+            dl = GraphQL::Dataloader.new(fiber_limit: 2)
+            err = assert_raises ArgumentError do
+              dl.run
+            end
+            assert_equal "Dataloader fiber limit is too low (2), it must be at least 3", err.message
+          end
+        end
       end
     end
   end
@@ -950,8 +1056,8 @@ describe GraphQL::Dataloader do
     res = FiberSchema.execute("{ __typename }")
     assert_instance_of GraphQL::Dataloader, res.context.dataloader
     refute res.context.dataloader.nonblocking?
-    res = FiberSchema.execute("{ __typename }", context: { dataloader: :blah } )
-    assert_equal :blah, res.context.dataloader
+    res = FiberSchema.execute("{ __typename }", context: { dataloader: GraphQL::Dataloader::NullDataloader.new } )
+    assert_instance_of GraphQL::Dataloader::NullDataloader, res.context.dataloader
 
     if Fiber.respond_to?(:scheduler)
       Fiber.set_scheduler(::DummyScheduler.new)
