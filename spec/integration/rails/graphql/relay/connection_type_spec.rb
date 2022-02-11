@@ -2,6 +2,25 @@
 require "spec_helper"
 
 describe GraphQL::Relay::ConnectionType do
+  describe "settings" do
+    it "warns if they're set" do
+      stdout, stderr = capture_io do
+        GraphQL::Relay::ConnectionType.bidirectional_pagination = true
+      end
+      assert_equal "", stdout
+      assert_equal "GraphQL::Relay::ConnectionType will be removed in GraphQL 2.0.0; migrate to `GraphQL::Pagination::Connections` and remove this setting (`bidirectional_pagination = true`).\n", stderr
+
+      GraphQL::Relay::ConnectionType.bidirectional_pagination = false
+      stdout, stderr = capture_io do
+        GraphQL::Relay::ConnectionType.default_nodes_field = true
+      end
+      assert_equal "", stdout
+      assert_equal "GraphQL::Relay::ConnectionType will be removed in GraphQL 2.0.0; migrate to `GraphQL::Pagination::Connections` and remove this setting (`default_nodes_field = true`).\n", stderr
+
+      GraphQL::Relay::ConnectionType.default_nodes_field = false
+    end
+  end
+
   describe ".create_type" do
     describe "connections with custom Edge classes / EdgeTypes" do
       let(:query_string) {%|
