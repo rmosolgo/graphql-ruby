@@ -822,7 +822,7 @@ describe GraphQL::Dataloader do
             }
             GRAPHQL
 
-            res = schema.execute(query_str, context: { dataloader: FiberCountingDataloader.new })
+            _res = schema.execute(query_str, context: { dataloader: FiberCountingDataloader.new })
             assert_equal 10, FiberCountingDataloader.last_spawn_fiber_count
             assert_equal 7, FiberCountingDataloader.last_max_fiber_count
 

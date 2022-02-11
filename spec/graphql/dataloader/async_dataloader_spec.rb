@@ -2,7 +2,7 @@
 require "spec_helper"
 
 if Fiber.respond_to?(:scheduler) # Ruby 3+
-  describe GraphQL::Dataloader::AsyncDataloader do
+  describe GraphQL::Dataloader do
     class AsyncSchema < GraphQL::Schema
       class SleepSource < GraphQL::Dataloader::Source
         def fetch(keys)
@@ -81,7 +81,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
       end
 
       query(Query)
-      use GraphQL::Dataloader::AsyncDataloader
+      use GraphQL::Dataloader, nonblocking: true
     end
 
     def with_scheduler
@@ -96,7 +96,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
       def self.included(child_class)
         child_class.class_eval do
           it "runs IO in parallel by default" do
-            dataloader = GraphQL::Dataloader::AsyncDataloader.new
+            dataloader = GraphQL::Dataloader.new(nonblocking: true)
             results = {}
             dataloader.append_job { `sleep 0.1`; results[:a] = 1 }
             dataloader.append_job { `sleep 0.2`; results[:b] = 2 }
@@ -112,7 +112,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
           end
 
           it "works with sources" do
-            dataloader = GraphQL::Dataloader::AsyncDataloader.new
+            dataloader = GraphQL::Dataloader.new(nonblocking: true)
             r1 = dataloader.with(AsyncSchema::SleepSource).request(0.1)
             r2 = dataloader.with(AsyncSchema::SleepSource).request(0.2)
             r3 = dataloader.with(AsyncSchema::SleepSource).request(0.3)
