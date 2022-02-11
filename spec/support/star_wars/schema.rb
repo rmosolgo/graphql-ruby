@@ -411,6 +411,9 @@ module StarWars
     end
 
     def self.id_from_object(object, type, ctx)
+      if !type.is_a?(Class)
+        raise "This handler should always receive a new-style class definition"
+      end
       GraphQL::Schema::UniqueWithinType.encode(type.graphql_name, object.id)
     end
 
