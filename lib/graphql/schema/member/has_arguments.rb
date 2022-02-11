@@ -78,14 +78,14 @@ module GraphQL
         # @return [GraphQL::Schema::Argument]
         def add_argument(arg_defn)
           @own_arguments ||= {}
-          prev_defn = own_arguments[arg_defn.name]
+          prev_defn = @own_arguments[arg_defn.name]
           case prev_defn
           when nil
-            own_arguments[arg_defn.name] = arg_defn
+            @own_arguments[arg_defn.name] = arg_defn
           when Array
             prev_defn << arg_defn
           when GraphQL::Schema::Argument
-            own_arguments[arg_defn.name] = [prev_defn, arg_defn]
+            @own_arguments[arg_defn.name] = [prev_defn, arg_defn]
           else
             raise "Invariant: unexpected `@own_arguments[#{arg_defn.name.inspect}]`: #{prev_defn.inspect}"
           end

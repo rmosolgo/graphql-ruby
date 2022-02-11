@@ -871,7 +871,6 @@ describe GraphQL::Schema::Resolver do
       it "defaults to absent" do
         assert_nil NoMaxPageSizeResolver.max_page_size
         refute NoMaxPageSizeResolver.has_max_page_size?
-        refute NoMaxPageSizeResolver.field_options[:max_page_size]
       end
 
       it "implements has_max_page_size?" do
@@ -882,14 +881,11 @@ describe GraphQL::Schema::Resolver do
 
       it "is inherited" do
         assert_equal 10, MaxPageSizeBaseResolver.max_page_size
-        assert_equal 10, MaxPageSizeBaseResolver.field_options[:max_page_size]
         assert_equal 10, MaxPageSizeSubclass.max_page_size
-        assert_equal 10, MaxPageSizeSubclass.field_options[:max_page_size]
       end
 
       it "is overridden by nil" do
         assert_nil MaxPageSizeOverrideSubclass.max_page_size
-        assert_nil MaxPageSizeOverrideSubclass.field_options.fetch(:max_page_size)
       end
 
       it "is passed along to the field" do
