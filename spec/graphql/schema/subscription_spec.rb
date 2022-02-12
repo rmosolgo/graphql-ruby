@@ -20,10 +20,23 @@ describe GraphQL::Schema::Subscription do
     class Toot < GraphQL::Schema::Object
       field :handle, String, null: false
       field :body, String, null: false
+
+      def self.visible?(context)
+        !context[:legacy_schema]
+      end
+    end
+
+    class LegacyToot < Toot
+      field :likes_count, Int, null: false
+
+      def self.visible?(context)
+        !!context[:legacy_schema]
+      end
     end
 
     class Query < GraphQL::Schema::Object
       field :toots, [Toot], null: false
+      field :toots, [LegacyToot], null: false
 
       def toots
         TOOTS
@@ -38,6 +51,11 @@ describe GraphQL::Schema::Subscription do
 
       field :toot, Toot, null: false
       field :user, User, null: false
+
+      def self.visible?(context)
+        !context[:legacy_schema]
+      end
+
       # Can't subscribe to private users
       def authorized?(user:, path:, query:)
         if user[:private]
@@ -67,6 +85,14 @@ describe GraphQL::Schema::Subscription do
           # for testing that the default implementation is `return object`
           super
         end
+      end
+    end
+
+    class LegacyTootWasTooted < TootWasTooted
+      field :toot, LegacyToot
+
+      def self.visible?(context)
+        !!context[:legacy_schema]
       end
     end
 
@@ -108,6 +134,7 @@ describe GraphQL::Schema::Subscription do
 
     class Subscription < GraphQL::Schema::Object
       field :toot_was_tooted, subscription: TootWasTooted, extras: [:path, :query]
+      field :toot_was_tooted, subscription: LegacyTootWasTooted, extras: [:path, :query]
       field :direct_toot_was_tooted, subscription: DirectTootWasTooted
       field :direct_toot_was_tooted_with_optional_scope, subscription: DirectTootWasTootedWithOptionalScope
       field :users_joined, subscription: UsersJoined
