@@ -10,7 +10,7 @@ module GraphQL
     # should go through a warden. If you access the schema directly,
     # you may show a client something that it shouldn't be allowed to see.
     #
-    # @example Hidding private fields
+    # @example Hiding private fields
     #   private_members = -> (member, ctx) { member.metadata[:private] }
     #   result = Schema.execute(query_string, except: private_members)
     #
