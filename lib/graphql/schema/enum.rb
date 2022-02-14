@@ -123,16 +123,14 @@ module GraphQL
         end
 
         def validate_non_null_input(value_name, ctx)
-          result = GraphQL::Query::InputValidationResult.new
-
           allowed_values = ctx.warden.enum_values(self)
           matching_value = allowed_values.find { |v| v.graphql_name == value_name }
 
           if matching_value.nil?
-            result.add_problem("Expected #{GraphQL::Language.serialize(value_name)} to be one of: #{allowed_values.map(&:graphql_name).join(', ')}")
+            GraphQL::Query::InputValidationResult.from_problem("Expected #{GraphQL::Language.serialize(value_name)} to be one of: #{allowed_values.map(&:graphql_name).join(', ')}")
+          else
+            nil
           end
-
-          result
         end
 
         def coerce_result(value, ctx)
