@@ -10,6 +10,16 @@
 
 ### Bug fixes
 
+# 1.13.10
+
+### Breaking changes
+
+- `id` fields: #3914 Previously, when a field was created with `global_id_field`, it would pass a _legacy-style_ type definition (an instance of `GraphQL::ObjectType`) to `Schema.id_from_object(...)`. Now, it passes a class-based definition instead. If your `id_from_object(...)` method was using any methods from those legacy definitions, they should be migrated. (Most notably, uses of `type.name` should be migrated to `type.graphql_name`.)
+
+### Deprecations
+
+- Connections: deprecation warnings were added to configuration methods `.bidirectional_pagination = ...` and `.default_nodes_field = ...`. These two configurations don't apply to the new pagination implementation, so they can be removed. #3918
+
 # 1.13.9 (9 February 2022)
 
 ### Breaking changes
