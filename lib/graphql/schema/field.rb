@@ -503,7 +503,7 @@ module GraphQL
           # Not enough info to determine type
           message = "Can't determine the return type for #{self.path}"
           if @resolver_class
-            message += " (it has `resolver: #{@resolver_class}`, consider configuration a `type ...` for that class)"
+            message += " (it has `resolver: #{@resolver_class}`, perhaps that class is missing a `type ...` declaration, or perhaps its type causes a cyclical loading issue"
           end
           raise MissingReturnTypeError, message
         else
