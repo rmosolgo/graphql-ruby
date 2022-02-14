@@ -17,6 +17,16 @@
 - __None, ideally.__ If you have an application that ran without warnings on v1.13, you should be able to update to 2.0.0 without a hitch. If this isn't the case, please [open an issue](https://github.com/rmosolgo/graphql-ruby/issues/new?template=bug_report.md&title=[2.0%20update]%20describe%20your%20problem) and let me know what happened! I plan to maintain 1.13 for a while in order to ensure a smooth transition.
 - But, many legacy code components were removed, so if there are any more references to those, there will be name errors! See #3729 for a list of removed components.
 
+# 1.13.10
+
+### Breaking changes
+
+- `id` fields: #3914 Previously, when a field was created with `global_id_field`, it would pass a _legacy-style_ type definition (an instance of `GraphQL::ObjectType`) to `Schema.id_from_object(...)`. Now, it passes a class-based definition instead. If your `id_from_object(...)` method was using any methods from those legacy definitions, they should be migrated. (Most notably, uses of `type.name` should be migrated to `type.graphql_name`.)
+
+### Deprecations
+
+- Connections: deprecation warnings were added to configuration methods `.bidirectional_pagination = ...` and `.default_nodes_field = ...`. These two configurations don't apply to the new pagination implementation, so they can be removed. #3918
+
 # 1.13.9 (9 February 2022)
 
 ### Breaking changes
