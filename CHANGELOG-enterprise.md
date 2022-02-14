@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.1.1 (14 February 2021)
+
+### Bug Fix
+
+- Changesets: don't require `context.schema` for plain-Ruby calls to introspection methods #3929
+
 # 1.1.0 (24 November 2021)
 
 ### New Features
