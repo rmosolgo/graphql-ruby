@@ -101,8 +101,8 @@ module GraphQL
 
             kwargs[:description] = desc
             kwargs[:type] = type
-          elsif (kwargs[:field] || kwargs[:function] || resolver || mutation) && type.is_a?(String)
-            # The return type should be copied from `field` or `function`, and the second positional argument is the description
+          elsif (resolver || mutation) && type.is_a?(String)
+            # The return type should be copied from the resolver, and the second positional argument is the description
             kwargs[:description] = type
           else
             kwargs[:type] = type
@@ -119,9 +119,7 @@ module GraphQL
       def connection?
         if @connection.nil?
           # Provide default based on type name
-          return_type_name = if (contains_type = @field || @function)
-            Member::BuildType.to_type_name(contains_type.type)
-          elsif @return_type_expr
+          return_type_name = if @return_type_expr
             Member::BuildType.to_type_name(@return_type_expr)
           else
             # As a last ditch, try to force loading the return type:
@@ -181,9 +179,6 @@ module GraphQL
       # @param connection_extension [Class] The extension to add, to implement connections. If `nil`, no extension is added.
       # @param max_page_size [Integer, nil] For connections, the maximum number of items to return from this field, or `nil` to allow unlimited results.
       # @param introspection [Boolean] If true, this field will be marked as `#introspection?` and the name may begin with `__`
-      # @param resolve [<#call(obj, args, ctx)>] **deprecated** for compatibility with <1.8.0
-      # @param field [GraphQL::Field, GraphQL::Schema::Field] **deprecated** for compatibility with <1.8.0
-      # @param function [GraphQL::Function] **deprecated** for compatibility with <1.8.0
       # @param resolver_class [Class] (Private) A {Schema::Resolver} which this field was derived from. Use `resolver:` to create a field with a resolver.
       # @param arguments [{String=>GraphQL::Schema::Argument, Hash}] Arguments for this field (may be added in the block, also)
       # @param camelize [Boolean] If true, the field name will be camelized when building the schema
@@ -197,30 +192,20 @@ module GraphQL
       # @param ast_node [Language::Nodes::FieldDefinition, nil] If this schema was parsed from definition, this AST node defined the field
       # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
       # @param validates [Array<Hash>] Configurations for validating this field
-      def initialize(type: nil, name: nil, owner: nil, null: true, field: nil, function: nil, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, resolve: nil, connection: nil, max_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: nil, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, &definition_block)
+      def initialize(type: nil, name: nil, owner: nil, null: true, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: 1, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: nil, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
-        if !(field || function || resolver_class)
+        if !(resolver_class)
           if type.nil?
             raise ArgumentError, "missing second `type` argument or keyword `type:`"
           end
-        end
-        if (field || function || resolve) && extras.any?
-          raise ArgumentError, "keyword `extras:` may only be used with method-based resolve and class-based field such as mutation class, please remove `field:`, `function:` or `resolve:`"
         end
         @original_name = name
         name_s = -name.to_s
         @underscored_name = -Member::BuildType.underscore(name_s)
         @name = -(camelize ? Member::BuildType.camelize(name_s) : name_s)
         @description = description
-        if field.is_a?(GraphQL::Schema::Field)
-          raise ArgumentError, "Instead of passing a field as `field:`, use `add_field(field)` to add an already-defined field."
-        else
-          @field = field
-        end
-        @function = function
-        @resolve = resolve
         self.deprecation_reason = deprecation_reason
 
         if method && hash_key && dig
@@ -495,11 +480,7 @@ module GraphQL
       attr_writer :type
 
       def type
-        @type ||= if @function
-          Member::BuildType.parse_type(@function.type, null: false)
-        elsif @field
-          Member::BuildType.parse_type(@field.type, null: false)
-        elsif @return_type_expr.nil?
+        @type ||= if @return_type_expr.nil?
           # Not enough info to determine type
           message = "Can't determine the return type for #{self.path}"
           if @resolver_class
