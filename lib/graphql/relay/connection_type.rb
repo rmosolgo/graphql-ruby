@@ -5,9 +5,22 @@ module GraphQL
     module ConnectionType
       class << self
         # @return [Boolean] If true, connection types get a `nodes` shortcut field
-        attr_accessor :default_nodes_field
+        def default_nodes_field=(new_setting)
+          if new_setting
+            warn("GraphQL::Relay::ConnectionType will be removed in GraphQL 2.0.0; migrate to `GraphQL::Pagination::Connections` and remove this setting (`default_nodes_field = true`).")
+          end
+          @default_nodes_field = new_setting
+        end
+        attr_reader :default_nodes_field
+
         # @return [Boolean] If true, connections check for reverse-direction `has*Page` values
-        attr_accessor :bidirectional_pagination
+        def bidirectional_pagination=(new_setting)
+          if new_setting
+            warn("GraphQL::Relay::ConnectionType will be removed in GraphQL 2.0.0; migrate to `GraphQL::Pagination::Connections` and remove this setting (`bidirectional_pagination = true`).")
+          end
+          @bidirectional_pagination = new_setting
+        end
+        attr_reader :bidirectional_pagination
       end
 
       self.default_nodes_field = false
