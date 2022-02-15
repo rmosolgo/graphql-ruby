@@ -80,7 +80,7 @@ module GraphQL
             visible_interfaces.concat(superclass.interfaces(context))
           end
 
-          visible_interfaces
+          visible_interfaces.uniq
         end
       end
     end
