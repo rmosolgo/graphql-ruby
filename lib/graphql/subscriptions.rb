@@ -58,7 +58,13 @@ module GraphQL
     # @param scope [Symbol, String]
     # @param context [Hash]
     # @return [void]
-    def trigger(event_name, args, object, scope: nil, context: GraphQL::Query::NullContext)
+    def trigger(event_name, args, object, scope: nil, context: {})
+      # Make something as context-like as possible, even though there isn't a current query:
+      context = @schema.context_class.new(
+        query: GraphQL::Query.new(@schema, "", validate: false),
+        object: nil,
+        values: context
+      )
       event_name = event_name.to_s
 
       # Try with the verbatim input first:
