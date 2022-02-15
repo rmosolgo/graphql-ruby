@@ -127,19 +127,15 @@ module GraphQL
         INVALID_OBJECT_MESSAGE = "Expected %{object} to be a key-value object responding to `to_h` or `to_unsafe_h`."
 
         def validate_non_null_input(input, ctx)
-          result = GraphQL::Query::InputValidationResult.new
-
           warden = ctx.warden
 
           if input.is_a?(Array)
-            result.add_problem(INVALID_OBJECT_MESSAGE % { object: JSON.generate(input, quirks_mode: true) })
-            return result
+            return GraphQL::Query::InputValidationResult.from_problem(INVALID_OBJECT_MESSAGE % { object: JSON.generate(input, quirks_mode: true) })
           end
 
           if !(input.respond_to?(:to_h) || input.respond_to?(:to_unsafe_h))
             # We're not sure it'll act like a hash, so reject it:
-            result.add_problem(INVALID_OBJECT_MESSAGE % { object: JSON.generate(input, quirks_mode: true) })
-            return result
+            return GraphQL::Query::InputValidationResult.from_problem(INVALID_OBJECT_MESSAGE % { object: JSON.generate(input, quirks_mode: true) })
           end
 
           # Inject missing required arguments
@@ -151,18 +147,22 @@ module GraphQL
             m
           end
 
-
+          result = nil
           [input, missing_required_inputs].each do |args_to_validate|
             args_to_validate.each do |argument_name, value|
               argument = warden.get_argument(self, argument_name)
               # Items in the input that are unexpected
-              unless argument
+              if argument.nil?
+                result ||= Query::InputValidationResult.new
                 result.add_problem("Field is not defined on #{self.graphql_name}", [argument_name])
-                next
+              else
+                # Items in the input that are expected, but have invalid values
+                argument_result = argument.type.validate_input(value, ctx)
+                result ||= Query::InputValidationResult.new
+                if !argument_result.valid?
+                  result.merge_result!(argument_name, argument_result)
+                end
               end
-              # Items in the input that are expected, but have invalid values
-              argument_result = argument.type.validate_input(value, ctx)
-              result.merge_result!(argument_name, argument_result) unless argument_result.valid?
             end
           end
 

@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 require "graphql/query/context"
 require "graphql/query/fingerprint"
-require "graphql/query/literal_input"
 require "graphql/query/null_context"
 require "graphql/query/result"
 require "graphql/query/variables"

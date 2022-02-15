@@ -97,5 +97,4 @@ Your class must define two class methods:
 
 When incoming data is incorrect, the method may raise {{ "GraphQL::CoercionError" | api_doc }}, which will be returned to the client in the `"errors"` key.
 
-
 Scalar classes are never initialized; only their `.coerce_*` methods are called at runtime.
