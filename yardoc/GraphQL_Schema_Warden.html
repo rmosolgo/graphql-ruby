@@ -11,7 +11,7 @@ When validating and executing a query, all access to schema members
 should go through a warden. If you access the schema directly, you
 may show a client something that it shouldn’t be allowed to see. 
 Examples:</p>
-<h1 id="hidding-private-fields">Hidding private fields</h1>
+<h1 id="hiding-private-fields">Hiding private fields</h1>
 <p>private_members = -&gt; (member, ctx) { member.metadata[:private] }
 result = Schema.execute(query_string, except: private_members)</p>
 <h1 id="custom-filter-implementation">Custom filter implementation</h1>
