@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.21.4 (15 February 2022)
+
+### Bug Fix
+
+- Encoders: don't extend `DeprecatedDefine` if it's not present (graphql-ruby < 1.12)
+
 # 1.21.3 (9 February 2022)
 
 ### New Features
