@@ -249,37 +249,55 @@ type Query implements InterfaceA & InterfaceB {
         def timestamp; "ts"; end
       end
 
-      class Query < GraphQL::Schema::Object
+      class BaseObject < GraphQL::Schema::Object
         implements Named
         implements Timestamped
+      end
+
+      class Thing < BaseObject
+        implements Named
+        implements Timestamped
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :thing, Thing
+        def thing
+          {}
+        end
       end
 
       query(Query)
     end
 
     it "allows running queries on transitive interfaces" do
-      result = TransitiveInterfaceSchema.execute("{ id name timestamp }")
-      
-      assert_equal "id", result["data"]["id"]
-      assert_equal "name", result["data"]["name"]
-      assert_equal "ts", result["data"]["timestamp"]
+      result = TransitiveInterfaceSchema.execute("{ thing { id name timestamp } }")
+
+      thing = result.dig("data", "thing")
+
+      assert_equal "id", thing["id"]
+      assert_equal "name", thing["name"]
+      assert_equal "ts", thing["timestamp"]
 
       result2 = TransitiveInterfaceSchema.execute(<<-GRAPHQL)
       {
-        ...on Node { id }
-        ...on Named { 
-          nid: id name
-          ...on Node { nnid: id }
+        thing {
+          ...on Node { id }
+          ...on Named { 
+            nid: id name
+            ...on Node { nnid: id }
+          }
+          ... on Timestamped { tid: id timestamp }
         }
-        ... on Timestamped { tid: id timestamp }
       }
       GRAPHQL
+
+      thing2 = result2.dig("data", "thing")
       
-      assert_equal "id", result2["data"]["id"]
-      assert_equal "id", result2["data"]["nid"]
-      assert_equal "id", result2["data"]["tid"]
-      assert_equal "name", result2["data"]["name"]
-      assert_equal "ts", result2["data"]["timestamp"]
+      assert_equal "id", thing2["id"]
+      assert_equal "id", thing2["nid"]
+      assert_equal "id", thing2["tid"]
+      assert_equal "name", thing2["name"]
+      assert_equal "ts", thing2["timestamp"]
     end
 
     it "has the right structure" do
@@ -293,7 +311,11 @@ interface Node {
   id: ID
 }
 
-type Query implements Named & Node & Timestamped {
+type Query {
+  thing: Thing
+}
+
+type Thing implements Named & Node & Timestamped {
   id: ID
   name: String
   timestamp: String
@@ -309,10 +331,10 @@ interface Timestamped implements Node {
 
     it "only lists each implemented interface once when introspecting" do
       introspection = TransitiveInterfaceSchema.as_json
-      query_type = introspection.dig("data", "__schema", "types").find do |type| 
-        type["name"] == "Query"
+      thing_type = introspection.dig("data", "__schema", "types").find do |type| 
+        type["name"] == "Thing"
       end
-      interfaces_names = query_type["interfaces"].map { |i| i["name"] }.sort
+      interfaces_names = thing_type["interfaces"].map { |i| i["name"] }.sort
       
       assert_equal interfaces_names, ["Named", "Node", "Timestamped"]
     end

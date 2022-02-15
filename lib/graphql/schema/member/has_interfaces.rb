@@ -82,7 +82,10 @@ module GraphQL
           end
 
           if self.is_a?(Class) && superclass <= GraphQL::Schema::Object
-            visible_interfaces.concat(superclass.interfaces(context))
+            # add interfaces from superclass if not already present
+            superclass.interfaces(context).each do |sc_int|
+              visible_interfaces << sc_int unless visible_interfaces.include?(sc_int)
+            end
           end
 
           visible_interfaces
