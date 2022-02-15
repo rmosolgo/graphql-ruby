@@ -170,7 +170,7 @@ module GraphQL
       end
 
       def print_implements(type)
-        " implements #{type.interfaces.map(&:name).join(" & ")}"
+        " implements #{type.interfaces.map(&:name).uniq.join(" & ")}"
       end
 
       def print_input_value_definition(input_value)
