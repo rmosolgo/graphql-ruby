@@ -5,7 +5,7 @@ module Jazz
   module Models
     Instrument = Struct.new(:name, :family)
     Ensemble = Struct.new(:name)
-    Musician = Struct.new(:name, :favorite_key)
+    Musician = Struct.new(:name, :favorite_key, :rating)
     Key = Struct.new(:root, :sharp, :flat) do
       def self.from_notation(key_str)
         key, sharp_or_flat = key_str.split("")
@@ -35,7 +35,9 @@ module Jazz
           Models::Ensemble.new("Spinal Tap"),
         ],
         "Musician" => [
-          Models::Musician.new("Herbie Hancock", Models::Key.from_notation("B♭")),
+          Models::Musician.new("Herbie Hancock", Models::Key.from_notation("B♭"), 4.59),
+          Models::Musician.new("Bill Evans", Models::Key.from_notation("C♯"), 4.83),
+          Models::Musician.new("Charlie Parker", Models::Key.from_notation("F"), 3.2),
         ],
       }
     end
@@ -51,6 +53,8 @@ module Jazz
       super(*args, **kwargs)
     end
   end
+
+  class BaseConnection < GraphQL::Types::Relay::BaseConnection; end
 
   # A custom field class that supports the `upcase:` option
   class BaseField < GraphQL::Schema::Field
@@ -272,7 +276,36 @@ module Jazz
     end
   end
 
+  class BaseEdge < GraphQL::Types::Relay::BaseEdge; end
+
   class Musician < BaseObject
+    musician_type = self
+
+    MusicianEdge = Class.new(BaseEdge) do
+      node_type(musician_type)
+    end
+
+    class MusicianPlaysWithConnection < BaseConnection
+      edge_type(MusicianEdge)
+
+      field :average_rating, Float, method: :compute_average
+      field :is_good, Boolean, method: :good?
+
+      def compute_average
+        ratings = object.nodes.map(&:rating)
+        return if ratings.empty?
+
+        ratings.sum / ratings.count
+      end
+
+      def good?
+        average = compute_average
+        return unless average
+
+        average >= 3.0
+      end
+    end
+
     implements GloballyIdentifiableType
     implements NamedEntity
     description "Someone who plays an instrument"
@@ -283,6 +316,9 @@ module Jazz
     # Test lists with nullable members:
     field :inspect_context, [String, null: true], null: false
     field :add_error, String, null: false, extras: [:execution_errors]
+    field :plays_with, MusicianPlaysWithConnection,
+          null: false,
+          max_page_size: 10
 
     def inspect_context
       [
@@ -296,6 +332,16 @@ module Jazz
     def add_error(execution_errors:)
       execution_errors.add("this has a path")
       "done"
+    end
+
+    def plays_with
+      case object.name 
+      when 'Bill Evans'
+        [
+          Models::Musician.new("Sam Jones", Models::Key.from_notation("E♭"), 1.23),
+          Models::Musician.new("Philly Joe Jones", Models::Key.from_notation("D♯"), 3.45),
+        ]
+      end
     end
   end
 

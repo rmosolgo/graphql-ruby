@@ -100,6 +100,32 @@ describe GraphQL::Schema::Field do
       end
     end
 
+    describe "connection fields" do
+      it "can return aggregated data for the nodes" do
+        query_str = <<-GRAPHQL
+        query {
+          bill: find(id: "Musician/Bill Evans") {
+            ... on Musician {
+              playsWith {
+                averageRating
+                isGood
+              }
+            }
+          }
+        }
+        GRAPHQL
+
+        res = Jazz::Schema.execute(query_str, max_complexity: 100)
+
+        assert_equal res['errors'], nil
+
+        bill = res.to_h['data']['bill']
+
+        assert_equal bill['playsWith']['averageRating'], 2.34
+        assert_equal bill['playsWith']['isGood'], false
+      end
+    end
+
     describe "extras" do
       it "can get errors, which adds path" do
         query_str = <<-GRAPHQL
