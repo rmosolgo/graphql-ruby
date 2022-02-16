@@ -288,8 +288,8 @@ module Jazz
     class MusicianPlaysWithConnection < BaseConnection
       edge_type(MusicianEdge)
 
-      field :average_rating, Float, method: :compute_average
-      field :is_good, Boolean, method: :good?
+      field :average_rating, Float # , method: :compute_average
+      field :is_good, Boolean # , method: :good?
 
       def compute_average
         ratings = object.nodes.map(&:rating)
@@ -304,6 +304,9 @@ module Jazz
 
         average >= 3.0
       end
+
+      alias_method :average_rating, :compute_average
+      alias_method :is_good, :good?
     end
 
     implements GloballyIdentifiableType
