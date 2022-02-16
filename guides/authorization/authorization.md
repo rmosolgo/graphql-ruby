@@ -48,7 +48,7 @@ Field `#authorized?` methods are called before resolving a field, for example:
 ```ruby
 class Types::BaseField < GraphQL::Schema::Field
   # Pass `field ..., require_admin: true` to reject non-admin users from a given field
-  def initialize(*args, **kwargs, require_admin: false, &block)
+  def initialize(*args, require_admin: false, **kwargs, &block)
     @require_admin = require_admin
     super(*args, **kwargs, &block)
   end
