@@ -66,11 +66,11 @@ def search_posts(category:)
 end
 ```
 
-Arguments with `required: false` _do_ accept `null` as inputs from clients. This can be surprising in resolver code, for example, an argument with `Integer, required: false` can sometimes be `nil`. In this case, you can use `replace_null_with_default_value: true` to apply the given `default_value: ...` when clients provide `null`. For example:
+Arguments with `required: false` _do_ accept `null` as inputs from clients. This can be surprising in resolver code, for example, an argument with `Integer, required: false` can sometimes be `nil`. In this case, you can use `replace_null_with_default: true` to apply the given `default_value: ...` when clients provide `null`. For example:
 
 ```ruby
 # Even if clients send `query: null`, the resolver will receive `"*"` for this argument:
-argument :query, String, required: false, default_value: "*", replace_null_with_default_value: true
+argument :query, String, required: false, default_value: "*", replace_null_with_default: true
 ```
 
 Finally, `required: :nullable` will require clients to pass the argument, although it will accept `null` as a valid input. For example:
