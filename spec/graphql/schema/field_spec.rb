@@ -650,4 +650,46 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
       assert_equal expected_message, err.message
     end
   end
+
+  it "Delegates many properties to its @resolver_class" do
+    resolver = Class.new(GraphQL::Schema::Resolver) do
+      description "description 1"
+      type GraphQL::Types::Float, null: true
+
+      argument :b, GraphQL::Types::Float
+    end
+
+    field = GraphQL::Schema::Field.new(name: "blah", owner: nil, resolver_class: resolver, extras: [:blah]) do
+      argument :a, GraphQL::Types::Int
+    end
+
+    assert_equal "description 1", field.description
+    assert_equal "Float", field.type.to_type_signature
+    assert_equal 1, field.complexity
+    assert_equal :resolve_with_support, field.resolver_method
+    assert_nil field.broadcastable?
+    assert_equal false, field.has_max_page_size?
+    assert_nil field.max_page_size
+    assert_equal [:blah], field.extras
+    assert_equal [:b, :a], field.all_argument_definitions.map(&:keyword)
+
+    resolver.description("description 2")
+    resolver.type(GraphQL::Types::String, null: false)
+    resolver.complexity(5)
+    resolver.resolver_method(:blah)
+    resolver.broadcastable(true)
+    resolver.max_page_size(100)
+    resolver.extras([:foo])
+    resolver.argument(:c, GraphQL::Types::Boolean)
+
+    assert_equal "description 2", field.description
+    assert_equal "String!", field.type.to_type_signature
+    assert_equal 5, field.complexity
+    assert_equal :blah, field.resolver_method
+    assert_equal true, field.broadcastable?
+    assert_equal true, field.has_max_page_size?
+    assert_equal 100, field.max_page_size
+    assert_equal [:blah, :foo], field.extras
+    assert_equal [:b, :c, :a], field.all_argument_definitions.map(&:keyword)
+  end
 end

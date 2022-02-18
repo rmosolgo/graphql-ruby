@@ -51,7 +51,8 @@ describe GraphQL::Schema::RelayClassicMutation do
         graphql_name "SomeMutation"
       end
 
-      assert_equal "Parameters for SomeMutation", mutation.field_options[:arguments][:input][:description]
+      field = GraphQL::Schema::Field.new(name: "blah", resolver_class: mutation)
+      assert_equal "Parameters for SomeMutation", field.get_argument("input").description
     end
   end
 
@@ -70,7 +71,6 @@ describe GraphQL::Schema::RelayClassicMutation do
         }
       }
       GRAPHQL
-
       assert_equal "Sitar", res["data"]["addSitar"]["instrument"]["name"]
     end
 
