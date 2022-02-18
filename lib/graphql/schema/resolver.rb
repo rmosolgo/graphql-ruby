@@ -208,6 +208,18 @@ module GraphQL
       end
 
       class << self
+        def field_arguments(context = GraphQL::Query::NullContext)
+          arguments(arguments)
+        end
+
+        def get_field_argument(name, context = GraphQL::Query::NullContext)
+          get_argument(name, context)
+        end
+
+        def own_field_arguments
+          own_arguments
+        end
+
         # Default `:resolve` set below.
         # @return [Symbol] The method to call on instances of this object to resolve the field
         def resolve_method(new_method = nil)
