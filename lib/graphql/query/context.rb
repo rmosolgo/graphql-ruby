@@ -86,8 +86,74 @@ module GraphQL
         @errors = []
         @path = []
         @value = nil
-        @context = self # for SharedMethods
-        @scoped_context = {}
+        @context = self # for SharedMethods TODO delete sharedmethods
+        @scoped_context = ScopedContext.new(self)
+      end
+
+      class ScopedContext
+        def initialize(query_context)
+          @query_context = query_context
+          @path_contexts = {}
+          @no_path = [].freeze
+        end
+
+        def current_context
+          @path_contexts[current_path]
+        end
+
+        def merge!(hash)
+          current_ctx = @path_contexts[current_path] ||= {}
+          current_ctx.merge!(hash)
+        end
+
+        def current_path
+          @query_context.namespace(:interpreter)[:current_path] || @no_path
+        end
+
+        def key?(key)
+          each_path_ctx do |path_ctx|
+            if path_ctx && path_ctx.key?(key)
+              return true
+            end
+          end
+          false
+        end
+
+        def [](key)
+          each_path_ctx do |path_ctx|
+            if path_ctx && path_ctx.key?(key)
+              return path_ctx[key]
+            end
+          end
+          nil
+        end
+
+        def dig(key, *other_keys)
+          each_path_ctx do |path_ctx|
+            if path_ctx && path_ctx.key?(key)
+              found_value = path_ctx[key]
+               if other_keys.any?
+                return found_value.dig(*other_keys)
+              else
+                return found_value
+              end
+            end
+          end
+          nil
+        end
+
+        private
+
+        # Start at the current location,
+        # but look up the tree for previously-assigned scoped values
+        def each_path_ctx
+          search_path = current_path.dup
+          yield(@path_contexts[search_path])
+          while search_path.size > 0
+            search_path.pop # look one level higher
+            yield(@path_contexts[search_path])
+          end
+        end
       end
 
       # @return [Hash] A hash that will be added verbatim to the result hash, as `"extensions" => { ... }`
@@ -106,7 +172,7 @@ module GraphQL
       attr_writer :value
 
       # @api private
-      attr_accessor :scoped_context
+      attr_reader :scoped_context
 
       def []=(key, value)
         @provided_values[key] = value
@@ -119,8 +185,11 @@ module GraphQL
 
       # Lookup `key` from the hash passed to {Schema#execute} as `context:`
       def [](key)
-        return @scoped_context[key] if @scoped_context.key?(key)
-        @provided_values[key]
+        if @scoped_context.key?(key)
+          @scoped_context[key]
+        else
+          @provided_values[key]
+        end
       end
 
       def delete(key)
@@ -135,7 +204,7 @@ module GraphQL
 
       def fetch(key, default = UNSPECIFIED_FETCH_DEFAULT)
         if @scoped_context.key?(key)
-          @scoped_context[key]
+          scoped_context[key]
         elsif @provided_values.key?(key)
           @provided_values[key]
         elsif default != UNSPECIFIED_FETCH_DEFAULT
@@ -148,12 +217,21 @@ module GraphQL
       end
 
       def dig(key, *other_keys)
-        @scoped_context.key?(key) ? @scoped_context.dig(key, *other_keys) : @provided_values.dig(key, *other_keys)
+        if @scoped_context.key?(key)
+          @scoped_context.dig(key, *other_keys)
+        else
+          @provided_values.dig(key, *other_keys)
+        end
       end
 
       def to_h
-        @provided_values.merge(@scoped_context)
+        if (current_scoped_context = @scoped_context.current_context)
+          @provided_values.merge(current_scoped_context)
+        else
+          @provided_values
+        end
       end
+
       alias :to_hash :to_h
 
       def key?(key)
@@ -185,7 +263,7 @@ module GraphQL
       end
 
       def scoped_merge!(hash)
-        @scoped_context = @scoped_context.merge(hash)
+        @scoped_context.merge!(hash)
       end
 
       def scoped_set!(key, value)

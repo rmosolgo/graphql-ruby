@@ -153,6 +153,16 @@ describe GraphQL::Query::Context do
       end
     end
 
+    class ContextKeySource < GraphQL::Dataloader::Source
+      def initialize(context)
+        @context = context
+      end
+
+      def fetch(keys)
+        keys.map { |k| @context[k] }
+      end
+    end
+
     class ContextQuery < GraphQL::Schema::Object
       field :get_scoped_context, String do
         argument :key, String
@@ -186,11 +196,25 @@ describe GraphQL::Query::Context do
           self
         end
       end
+
+      field :int_list, [ContextQuery], null: false
+
+      def int_list
+        [1, 2, 3, 4]
+      end
+
+      field :set_scoped_int, ContextQuery, null: false
+
+      def set_scoped_int
+        context.scoped_set!("int", object.to_s)
+        object.to_s
+      end
     end
 
     class ContextSchema < GraphQL::Schema
       query(ContextQuery)
       lazy_resolve(LazyBlock, :value)
+      use GraphQL::Dataloader
     end
 
     it "can be set and does not leak to sibling fields" do
@@ -327,8 +351,32 @@ describe GraphQL::Query::Context do
       assert_equal(expected, result)
     end
 
+    it "doesn't leak inside lists" do
+      query_str = <<-GRAPHQL
+      {
+        intList {
+          before: getScopedContext(key: "int")
+          setScopedInt {
+            inside: getScopedContext(key: "int")
+          }
+          after: getScopedContext(key: "int")
+        }
+      }
+      GRAPHQL
+
+      expected_data = {"intList"=>
+         [{"setScopedInt"=>{"inside"=>"1"}, "before"=>nil, "after"=>nil},
+          {"setScopedInt"=>{"inside"=>"2"}, "before"=>nil, "after"=>nil},
+          {"setScopedInt"=>{"inside"=>"3"}, "before"=>nil, "after"=>nil},
+          {"setScopedInt"=>{"inside"=>"4"}, "before"=>nil, "after"=>nil}]}
+      result = ContextSchema.execute(query_str)
+      assert_equal(expected_data, result["data"])
+    end
+
+
     it "always retrieves a scoped context value if set" do
       context = GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil, object: nil)
+      context.namespace(:interpreter)[:current_path] = ["somewhere"]
       expected_key = :a
       expected_value = :test
 
@@ -348,7 +396,7 @@ describe GraphQL::Query::Context do
       assert_nil(context.fetch(expected_key))
       assert_nil(context.dig(expected_key)) if RUBY_VERSION >= '2.3.0'
 
-      context.scoped_context = {}
+      context.namespace(:interpreter)[:current_path] = ["something", "new"]
 
       assert_equal(expected_value, context[expected_key])
       assert_equal({ expected_key => expected_value}, context.to_h)
