@@ -639,8 +639,8 @@ describe GraphQL::Schema::Subscription do
       class DirectTootSubclass < SubscriptionFieldSchema::DirectTootWasTooted
       end
       # Then check if the field options got the inherited value
-      direct_toot_options = DirectTootSubclass.field_options
-      assert_equal :viewer, direct_toot_options[:subscription_scope]
+      field = GraphQL::Schema::Field.new(name: "blah", resolver_class: DirectTootSubclass)
+      assert_equal :viewer, field.subscription_scope
     end
 
     it "allows for setting the subscription scope value to nil" do
