@@ -222,14 +222,16 @@ module GraphQL
           end
         end
 
-        # TODO: I think non-string/symbol hash keys are wrongly normalized (eg `1` will not work)
-        method_name = method || hash_key || name_s
-        @dig_keys = dig
-        resolver_method ||= name_s.to_sym
+        @field_resolver = FieldResolver.new(
+          field: self, 
+          field_name: name_s,
+          resolver_class: resolver_class,
+          resolver_method: resolver_method,
+          object_method: method,
+          hash_key: hash_key,
+          dig_keys: dig
+        )
 
-        @method_str = -method_name.to_s
-        @method_sym = method_name.to_sym
-        @resolver_method = resolver_method
         @complexity = complexity
         @return_type_expr = type
         @return_type_null = null
@@ -602,59 +604,18 @@ module GraphQL
       def public_send_field(unextended_obj, unextended_ruby_kwargs, query_ctx)
         with_extensions(unextended_obj, unextended_ruby_kwargs, query_ctx) do |obj, ruby_kwargs|
           begin
-            method_receiver = nil
-            method_to_call = nil
-            if @resolver_class
-              if obj.is_a?(GraphQL::Schema::Object)
-                obj = obj.object
-              end
-              obj = @resolver_class.new(object: obj, context: query_ctx, field: self)
-            end
+            @field_resolver.resolve(obj, query_ctx, **ruby_kwargs)
+            # find better way to raise error below, upon further refactor
+            #   raise <<-ERR
+            # Failed to implement #{@owner.graphql_name}.#{@name}, tried:
 
-            # Find a way to resolve this field, checking:
-            #
-            # - A method on the type instance;
-            # - Hash keys, if the wrapped object is a hash;
-            # - A method on the wrapped object;
-            # - Or, raise not implemented.
-            #
-            if obj.respond_to?(@resolver_method) && !::Object.respond_to?(@resolver_method)
-              method_to_call = @resolver_method
-              method_receiver = obj
-              # Call the method with kwargs, if there are any
-              if ruby_kwargs.any?
-                obj.public_send(@resolver_method, **ruby_kwargs)
-              else
-                obj.public_send(@resolver_method)
-              end
-            elsif obj.object.is_a?(Hash)
-              inner_object = obj.object
-              if @dig_keys
-                inner_object.dig(*@dig_keys)
-              elsif inner_object.key?(@method_sym)
-                inner_object[@method_sym]
-              else
-                inner_object[@method_str]
-              end
-            elsif obj.object.respond_to?(@method_sym)
-              method_to_call = @method_sym
-              method_receiver = obj.object
-              if ruby_kwargs.any?
-                obj.object.public_send(@method_sym, **ruby_kwargs)
-              else
-                obj.object.public_send(@method_sym)
-              end
-            else
-              raise <<-ERR
-            Failed to implement #{@owner.graphql_name}.#{@name}, tried:
+            # - `#{obj.class}##{@resolver_method}`, which did not exist
+            # - `#{obj.object.class}##{@method_sym}`, which did not exist
+            # - Looking up hash key `#{@method_sym.inspect}` or `#{@method_str.inspect}` on `#{obj.object}`, but it wasn't a Hash
 
-            - `#{obj.class}##{@resolver_method}`, which did not exist
-            - `#{obj.object.class}##{@method_sym}`, which did not exist
-            - Looking up hash key `#{@method_sym.inspect}` or `#{@method_str.inspect}` on `#{obj.object}`, but it wasn't a Hash
-
-            To implement this field, define one of the methods above (and check for typos)
-            ERR
-            end
+            # To implement this field, define one of the methods above (and check for typos)
+            # ERR
+            # end
           rescue ArgumentError
             assert_satisfactory_implementation(method_receiver, method_to_call, ruby_kwargs)
             # if the line above doesn't raise, re-raise
