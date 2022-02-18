@@ -18,8 +18,6 @@ Resolvers can be attached with the <code class="language-plaintext highlighter-r
 <code class="language-plaintext highlighter-rouge">field(...)</code> call. 
 A resolver’s configuration may be overridden with other keywords in
 the <code class="language-plaintext highlighter-rouge">field(...)</code> call. 
-See the field_options to see how a Resolver becomes a set of field
-configuration options. 
 See Also:</li>
   <li>{GraphQL::Schema::Mutation} - for a concrete subclass of <code class="language-plaintext highlighter-rouge">Resolver</code>.</li>
   <li>{GraphQL::Function} - <code class="language-plaintext highlighter-rouge">Resolver</code> is a replacement for
@@ -36,8 +34,10 @@ GraphQL::Schema::Member::HasValidators,
 GraphQL::Schema::Member::HasPath
 Class methods:
 argument, broadcastable, broadcastable?, complexity, extension,
-extensions, extras, field_options, has_max_page_size?,
-max_page_size, null, own_extensions, resolve_method, type, type_expr
+extensions, extras, field_arguments, get_field_argument,
+has_max_page_size?, max_page_size, null, own_extensions,
+own_field_arguments, resolve_method, resolver_method, type,
+type_expr
 Instance methods:
 arguments, authorize_arguments, authorized?, dataloader,
 get_argument, initialize, load_arguments, ready?, resolve,
