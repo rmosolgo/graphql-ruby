@@ -407,6 +407,24 @@ describe GraphQL::Query::Context do
       assert(context.key?(expected_key))
       assert_equal(expected_value, context.fetch(expected_key))
       assert_equal(expected_value, context.dig(expected_key)) if RUBY_VERSION >= '2.3.0'
+
+      # Enter a child field:
+      context.namespace(:interpreter)[:current_path] = ["somewhere", "child"]
+      assert_nil(context[expected_key])
+      assert_equal({ expected_key => nil }, context.to_h)
+      assert(context.key?(expected_key))
+      assert_nil(context.fetch(expected_key))
+      assert_nil(context.dig(expected_key)) if RUBY_VERSION >= '2.3.0'
+
+      # And a grandchild field
+      context.namespace(:interpreter)[:current_path] = ["somewhere", "child", "grandchild"]
+      context.scoped_set!(expected_key, :something_else)
+      context.scoped_set!(:another_key, :another_value)
+      assert_equal(:something_else, context[expected_key])
+      assert_equal({ expected_key => :something_else, another_key: :another_value }, context.to_h)
+      assert(context.key?(expected_key))
+      assert_equal(:something_else, context.fetch(expected_key))
+      assert_equal(:something_else, context.dig(expected_key)) if RUBY_VERSION >= '2.3.0'
     end
 
     it "sets a value using #scoped_set!" do

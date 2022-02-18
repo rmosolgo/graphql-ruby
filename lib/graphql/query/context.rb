@@ -97,8 +97,12 @@ module GraphQL
           @no_path = [].freeze
         end
 
-        def current_context
-          @path_contexts[current_path]
+        def merged_context
+          merged_ctx = {}
+          each_present_path_ctx do |path_ctx|
+            merged_ctx = path_ctx.merge(merged_ctx)
+          end
+          merged_ctx
         end
 
         def merge!(hash)
@@ -111,8 +115,8 @@ module GraphQL
         end
 
         def key?(key)
-          each_path_ctx do |path_ctx|
-            if path_ctx && path_ctx.key?(key)
+          each_present_path_ctx do |path_ctx|
+            if path_ctx.key?(key)
               return true
             end
           end
@@ -120,8 +124,8 @@ module GraphQL
         end
 
         def [](key)
-          each_path_ctx do |path_ctx|
-            if path_ctx && path_ctx.key?(key)
+          each_present_path_ctx do |path_ctx|
+            if path_ctx.key?(key)
               return path_ctx[key]
             end
           end
@@ -129,8 +133,8 @@ module GraphQL
         end
 
         def dig(key, *other_keys)
-          each_path_ctx do |path_ctx|
-            if path_ctx && path_ctx.key?(key)
+          each_present_path_ctx do |path_ctx|
+            if path_ctx.key?(key)
               found_value = path_ctx[key]
               if other_keys.any?
                 return found_value.dig(*other_keys)
@@ -146,12 +150,17 @@ module GraphQL
 
         # Start at the current location,
         # but look up the tree for previously-assigned scoped values
-        def each_path_ctx
+        def each_present_path_ctx
           search_path = current_path.dup
-          yield(@path_contexts[search_path])
+          if (current_path_ctx = @path_contexts[search_path])
+            yield(current_path_ctx)
+          end
+
           while search_path.size > 0
             search_path.pop # look one level higher
-            yield(@path_contexts[search_path])
+            if (search_path_ctx = @path_contexts[search_path])
+              yield(search_path_ctx)
+            end
           end
         end
       end
@@ -225,7 +234,7 @@ module GraphQL
       end
 
       def to_h
-        if (current_scoped_context = @scoped_context.current_context)
+        if (current_scoped_context = @scoped_context.merged_context)
           @provided_values.merge(current_scoped_context)
         else
           @provided_values
