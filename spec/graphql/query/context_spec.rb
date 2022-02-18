@@ -153,13 +153,15 @@ describe GraphQL::Query::Context do
       end
     end
 
-    class ContextKeySource < GraphQL::Dataloader::Source
-      def initialize(context)
-        @context = context
-      end
-
+    class PassthroughSource < GraphQL::Dataloader::Source
       def fetch(keys)
-        keys.map { |k| @context[k] }
+        keys
+      end
+    end
+
+    class IntArraySource < GraphQL::Dataloader::Source
+      def fetch(keys)
+        keys.map { |k| k.times.map { |i| i } }
       end
     end
 
@@ -193,14 +195,15 @@ describe GraphQL::Query::Context do
           }
         else
           context.scoped_merge!(key => value)
-          self
+          context.dataloader.with(PassthroughSource).load(self)
         end
       end
 
       field :int_list, [ContextQuery], null: false
 
       def int_list
-        [1, 2, 3, 4]
+        context.scoped_set!("int_list", "assigned")
+        context.dataloader.with(IntArraySource).load(4)
       end
 
       field :set_scoped_int, ContextQuery, null: false
@@ -358,6 +361,7 @@ describe GraphQL::Query::Context do
           before: getScopedContext(key: "int")
           setScopedInt {
             inside: getScopedContext(key: "int")
+            inside2: getScopedContext(key: "int_list")
           }
           after: getScopedContext(key: "int")
         }
@@ -365,10 +369,10 @@ describe GraphQL::Query::Context do
       GRAPHQL
 
       expected_data = {"intList"=>
-         [{"setScopedInt"=>{"inside"=>"1"}, "before"=>nil, "after"=>nil},
-          {"setScopedInt"=>{"inside"=>"2"}, "before"=>nil, "after"=>nil},
-          {"setScopedInt"=>{"inside"=>"3"}, "before"=>nil, "after"=>nil},
-          {"setScopedInt"=>{"inside"=>"4"}, "before"=>nil, "after"=>nil}]}
+         [{"setScopedInt"=>{"inside"=>"0", "inside2" => "assigned"}, "before"=>nil, "after"=>nil},
+          {"setScopedInt"=>{"inside"=>"1", "inside2" => "assigned"}, "before"=>nil, "after"=>nil},
+          {"setScopedInt"=>{"inside"=>"2", "inside2" => "assigned"}, "before"=>nil, "after"=>nil},
+          {"setScopedInt"=>{"inside"=>"3", "inside2" => "assigned"}, "before"=>nil, "after"=>nil}]}
       result = ContextSchema.execute(query_str)
       assert_equal(expected_data, result["data"])
     end
