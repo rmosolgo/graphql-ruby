@@ -94,7 +94,13 @@ module GraphQL
 
         # @return [Hash<String => GraphQL::Schema::Argument] Arguments defined on this thing, keyed by name. Includes inherited definitions
         def arguments(context = GraphQL::Query::NullContext)
-          inherited_arguments = ((self.is_a?(Class) && superclass.respond_to?(:arguments)) ? superclass.arguments(context) : nil)
+          inherited_arguments = if self.is_a?(Class) && superclass.respond_to?(:arguments)
+            superclass.arguments(context)
+          elsif defined?(@resolver_class) && @resolver_class
+            @resolver_class.arguments(context)
+          else
+            nil
+          end
           # Local definitions override inherited ones
           if own_arguments.any?
             own_arguments_that_apply = {}
@@ -138,7 +144,13 @@ module GraphQL
           warden = Warden.from_context(context)
           if !self.is_a?(Class)
             a = own_arguments[argument_name]
-            a && Warden.visible_entry?(:visible_argument?, a, context, warden)
+            if a && Warden.visible_entry?(:visible_argument?, a, context, warden)
+              a
+            elsif defined?(@resolver_class) && @resolver_class
+              @resolver_class.get_argument(argument_name, context)
+            else
+              nil
+            end
           else
             for ancestor in ancestors
               if ancestor.respond_to?(:own_arguments) &&

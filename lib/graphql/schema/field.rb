@@ -637,15 +637,6 @@ module GraphQL
 
       private
 
-      def own_arguments
-        own_args = super
-        if @resolver_class
-          @resolver_class.own_arguments.merge(own_args)
-        else
-          own_args
-        end
-      end
-
       def public_send_field(unextended_obj, unextended_ruby_kwargs, query_ctx)
         with_extensions(unextended_obj, unextended_ruby_kwargs, query_ctx) do |obj, ruby_kwargs|
           begin
