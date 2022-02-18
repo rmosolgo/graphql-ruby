@@ -132,7 +132,7 @@ module GraphQL
           each_path_ctx do |path_ctx|
             if path_ctx && path_ctx.key?(key)
               found_value = path_ctx[key]
-               if other_keys.any?
+              if other_keys.any?
                 return found_value.dig(*other_keys)
               else
                 return found_value
