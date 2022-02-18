@@ -75,7 +75,7 @@ module GraphQL
             d = Class.new(GraphQL::Schema::Resolver)
             d.argument_class(self.argument_class)
             # TODO make this lazier?
-            d.argument(:input, input_type, description: "Parameters for #{self.graphql_name}", required: true)
+            d.argument(:input, input_type, description: "Parameters for #{self.graphql_name}")
             d
           end
         end
