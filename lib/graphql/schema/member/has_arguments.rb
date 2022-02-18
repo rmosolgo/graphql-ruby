@@ -162,9 +162,8 @@ module GraphQL
         def get_argument(argument_name, context = GraphQL::Query::NullContext)
           warden = Warden.from_context(context)
           if !self.is_a?(Class)
-            a = own_arguments[argument_name]
-            if a && Warden.visible_entry?(:visible_argument?, a, context, warden)
-              a
+            if (arg_config = own_arguments[argument_name]) && (visible_arg = Warden.visible_entry?(:visible_argument?, arg_config, context, warden))
+              visible_arg
             elsif defined?(@resolver_class) && @resolver_class
               @resolver_class.get_field_argument(argument_name, context)
             else

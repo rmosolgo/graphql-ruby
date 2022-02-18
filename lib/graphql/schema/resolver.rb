@@ -209,7 +209,7 @@ module GraphQL
 
       class << self
         def field_arguments(context = GraphQL::Query::NullContext)
-          arguments(arguments)
+          arguments(context)
         end
 
         def get_field_argument(name, context = GraphQL::Query::NullContext)
