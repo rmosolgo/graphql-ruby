@@ -10,9 +10,9 @@ module GraphQL
 
         def validate_input(val, ctx)
           if val.nil?
-            GraphQL::Query::InputValidationResult.new
+            Query::InputValidationResult::VALID
           else
-            validate_non_null_input(val, ctx)
+            validate_non_null_input(val, ctx) || Query::InputValidationResult::VALID
           end
         end
 

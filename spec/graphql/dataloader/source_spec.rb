@@ -25,4 +25,36 @@ describe GraphQL::Dataloader::Source do
     source_cache = dl.instance_variable_get(:@source_cache)
     assert source_cache[FailsToLoadSource][[{}]].pending?
   end
+
+  class NoDataloaderSchema < GraphQL::Schema
+    class ThingSource < GraphQL::Dataloader::Source
+      def fetch(ids)
+        ids.map { |id| { name: "Thing-#{id}" } }
+      end
+    end
+
+    class Thing < GraphQL::Schema::Object
+      field :name, String
+    end
+
+    class Query < GraphQL::Schema::Object
+      field :thing, Thing do
+        argument :id, ID
+      end
+
+      def thing(id:)
+        context.dataloader.with(ThingSource).load(id)
+      end
+    end
+    query(Query)
+  end
+
+  it "raises an error when used without a dataloader" do
+    err = assert_raises GraphQL::Error do
+      NoDataloaderSchema.execute("{ thing(id: 1) { name } }")
+    end
+
+    expected_message = "GraphQL::Dataloader is not running -- add `use GraphQL::Dataloader` to your schema to use Dataloader sources."
+    assert_equal expected_message, err.message
+  end
 end

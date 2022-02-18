@@ -910,7 +910,7 @@ describe GraphQL::Schema::Resolver do
       err = assert_raises GraphQL::Schema::Field::MissingReturnTypeError do
         ResolverWithoutTypeSchema::Query.field(:without_type, resolver: ResolverWithoutTypeSchema::WithoutType)
       end
-      expected_message = "Can't determine the return type for Query.withoutType (it has `resolver: ResolverWithoutTypeSchema::WithoutType`, consider configuration a `type ...` for that class)"
+      expected_message = "Can't determine the return type for Query.withoutType (it has `resolver: ResolverWithoutTypeSchema::WithoutType`, perhaps that class is missing a `type ...` declaration, or perhaps its type causes a cyclical loading issue)"
       assert_equal expected_message, err.message
     end
   end

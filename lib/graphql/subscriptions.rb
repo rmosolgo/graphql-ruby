@@ -56,17 +56,24 @@ module GraphQL
     # @param args [Hash<String, Symbol => Object]
     # @param object [Object]
     # @param scope [Symbol, String]
+    # @param context [Hash]
     # @return [void]
-    def trigger(event_name, args, object, scope: nil)
+    def trigger(event_name, args, object, scope: nil, context: {})
+      # Make something as context-like as possible, even though there isn't a current query:
+      context = @schema.context_class.new(
+        query: GraphQL::Query.new(@schema, "", validate: false),
+        object: nil,
+        values: context
+      )
       event_name = event_name.to_s
 
       # Try with the verbatim input first:
-      field = @schema.get_field(@schema.subscription, event_name)
+      field = @schema.get_field(@schema.subscription, event_name, context)
 
       if field.nil?
         # And if it wasn't found, normalize it:
         normalized_event_name = normalize_name(event_name)
-        field = @schema.get_field(@schema.subscription, normalized_event_name)
+        field = @schema.get_field(@schema.subscription, normalized_event_name, context)
         if field.nil?
           raise InvalidTriggerError, "No subscription matching trigger: #{event_name} (looked for #{@schema.subscription.graphql_name}.#{normalized_event_name})"
         end

@@ -433,6 +433,8 @@ ERR
     assert_equal GraphQL::Types::Int, MultifieldSchema::Query.get_field("f1", { future_schema: nil }).type
     assert_equal GraphQL::Types::Int, MultifieldSchema::Query.get_field("f1", { future_schema: false }).type
     assert_equal GraphQL::Types::String, MultifieldSchema::Query.get_field("f1", { future_schema: true }).type
+    assert_equal GraphQL::Types::Int, MultifieldSchema.get_field("Query", "f1", { future_schema: false }).type
+    assert_equal GraphQL::Types::String, MultifieldSchema.get_field("Query", "f1", { future_schema: true }).type
     err = assert_raises GraphQL::Schema::DuplicateNamesError do
       MultifieldSchema::Query.get_field("f1")
     end
