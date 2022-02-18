@@ -596,6 +596,8 @@ describe GraphQL::Schema::Field do
         field :Capital, String, camelize: false, null: true
         field :Other, String, camelize: true, null: true
         field :OtherCapital, String, camelize: false, null: true, hash_key: "OtherCapital"
+        # regression test against https://github.com/rmosolgo/graphql-ruby/issues/3944
+        field :method, String, camelize: false, null: false, hash_key: "some_random_key"
       end
 
       class QueryType < GraphQL::Schema::Object
@@ -605,7 +607,8 @@ describe GraphQL::Schema::Field do
             "lowercase" => "lowercase-works",
             "Capital" => "capital-camelize-false-works",
             "Other" => "capital-camelize-true-works",
-            "OtherCapital" => "explicit-hash-key-works"
+            "OtherCapital" => "explicit-hash-key-works",
+            "some_random_key" => "hash-key-works-when-underlying-object-responds-to-field-name"
           }
         end
       end
@@ -617,6 +620,7 @@ describe GraphQL::Schema::Field do
       res = HashKeySchema.execute <<-GRAPHQL
       {
         searchResults {
+          method
           lowercase
           Capital
           Other
@@ -630,7 +634,8 @@ describe GraphQL::Schema::Field do
         "lowercase" => "lowercase-works",
         "Capital" => "capital-camelize-false-works",
         "Other" => "capital-camelize-true-works",
-        "OtherCapital" => "explicit-hash-key-works"
+        "OtherCapital" => "explicit-hash-key-works",
+        "method" => "hash-key-works-when-underlying-object-responds-to-field-name"
       }
       assert_equal expected_result, search_results
     end

@@ -618,7 +618,7 @@ module GraphQL
             # - A method on the wrapped object;
             # - Or, raise not implemented.
             #
-            if obj.respond_to?(@resolver_method)
+            if obj.respond_to?(@resolver_method) && !::Object.respond_to?(@resolver_method)
               method_to_call = @resolver_method
               method_receiver = obj
               # Call the method with kwargs, if there are any
