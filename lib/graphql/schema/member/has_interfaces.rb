@@ -33,9 +33,9 @@ module GraphQL
             end
           end
 
+          # Remove any String or late-bound interfaces which are being replaced
           own_interface_type_memberships.reject! { |old_i_m|
             if !(old_i_m.respond_to?(:abstract_type) && old_i_m.abstract_type.is_a?(Module))
-              # Remove any String or late-bound interfaces which are being replaced
               old_int_type = old_i_m.respond_to?(:abstract_type) ? old_i_m.abstract_type : old_i_m
               old_name = Schema::Member::BuildType.to_type_name(old_int_type)
 
@@ -44,11 +44,6 @@ module GraphQL
                 new_name = Schema::Member::BuildType.to_type_name(new_int_type)
 
                 new_name == old_name
-              }
-            elsif old_i_m.respond_to?(:abstract_type)
-              # Remove any existing implementations of the same interface
-              new_memberships.any? { |new_i_m|
-                new_i_m.respond_to?(:abstract_type) && new_i_m.abstract_type == old_i_m.abstract_type
               }
             end
           }
@@ -82,13 +77,10 @@ module GraphQL
           end
 
           if self.is_a?(Class) && superclass <= GraphQL::Schema::Object
-            # add interfaces from superclass if not already present
-            superclass.interfaces(context).each do |sc_int|
-              visible_interfaces << sc_int unless visible_interfaces.include?(sc_int)
-            end
+            visible_interfaces.concat(superclass.interfaces(context))
           end
 
-          visible_interfaces
+          visible_interfaces.uniq
         end
       end
     end
