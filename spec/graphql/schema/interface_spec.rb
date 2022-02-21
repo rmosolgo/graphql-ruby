@@ -224,6 +224,122 @@ type Query implements InterfaceA & InterfaceB {
     end
   end
 
+  describe "transitive implemention of same interface twice" do
+    class TransitiveInterfaceSchema < GraphQL::Schema
+      module Node
+        include GraphQL::Schema::Interface
+        field :id, ID
+
+        def id; "id"; end
+      end
+
+      module Named
+        include GraphQL::Schema::Interface
+        implements Node
+        field :name, String
+
+        def name; "name"; end
+      end
+
+      module Timestamped
+        include GraphQL::Schema::Interface
+        implements Node
+        field :timestamp, String
+
+        def timestamp; "ts"; end
+      end
+
+      class BaseObject < GraphQL::Schema::Object
+        implements Named
+        implements Timestamped
+      end
+
+      class Thing < BaseObject
+        implements Named
+        implements Timestamped
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :thing, Thing
+        def thing
+          {}
+        end
+      end
+
+      query(Query)
+    end
+
+    it "allows running queries on transitive interfaces" do
+      result = TransitiveInterfaceSchema.execute("{ thing { id name timestamp } }")
+
+      thing = result.dig("data", "thing")
+
+      assert_equal "id", thing["id"]
+      assert_equal "name", thing["name"]
+      assert_equal "ts", thing["timestamp"]
+
+      result2 = TransitiveInterfaceSchema.execute(<<-GRAPHQL)
+      {
+        thing {
+          ...on Node { id }
+          ...on Named { 
+            nid: id name
+            ...on Node { nnid: id }
+          }
+          ... on Timestamped { tid: id timestamp }
+        }
+      }
+      GRAPHQL
+
+      thing2 = result2.dig("data", "thing")
+      
+      assert_equal "id", thing2["id"]
+      assert_equal "id", thing2["nid"]
+      assert_equal "id", thing2["tid"]
+      assert_equal "name", thing2["name"]
+      assert_equal "ts", thing2["timestamp"]
+    end
+
+    it "has the right structure" do
+      expected_schema = <<-SCHEMA
+interface Named implements Node {
+  id: ID
+  name: String
+}
+
+interface Node {
+  id: ID
+}
+
+type Query {
+  thing: Thing
+}
+
+type Thing implements Named & Node & Timestamped {
+  id: ID
+  name: String
+  timestamp: String
+}
+
+interface Timestamped implements Node {
+  id: ID
+  timestamp: String
+}
+      SCHEMA
+      assert_equal expected_schema, TransitiveInterfaceSchema.to_definition
+    end
+
+    it "only lists each implemented interface once when introspecting" do
+      introspection = TransitiveInterfaceSchema.as_json
+      thing_type = introspection.dig("data", "__schema", "types").find do |type| 
+        type["name"] == "Thing"
+      end
+      interfaces_names = thing_type["interfaces"].map { |i| i["name"] }.sort
+      
+      assert_equal interfaces_names, ["Named", "Node", "Timestamped"]
+    end
+  end
+
   describe "migrated legacy tests" do
     let(:interface) { Dummy::Edible }
 
