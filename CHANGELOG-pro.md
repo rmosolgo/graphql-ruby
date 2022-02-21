@@ -25,6 +25,7 @@
 ### New Features
 
 - Dashboard, Routes: support lazy-loading the schema with `Routes::Lazy` #3868
+- OperationStore: Update deprecated usage of `@redis.pipelined` to address warning
 
 # 1.21.1 (20 January 2022)
 
