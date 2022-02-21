@@ -123,6 +123,53 @@ end
 
 Note that `context` is _not_ the hash that you passed it. It's an instance of {{ "GraphQL::Query::Context" | api_doc }}, but it delegates `#[]`, `#[]=`, and a few other methods to the hash you provide.
 
+### Scoped Context
+
+`context` is shared by the whole query. Anything you add to `context` will be accessible by any other field in the query (although GraphQL-Ruby's order of execution can vary).
+
+However, "scoped context" is can be used to assign values into `context` that are only available in the current field and the _children_ of the current field. For example, in this query:
+
+```graphql
+{
+  posts {
+    comments {
+      author
+      isOriginalPoster
+    }
+  }
+}
+```
+
+You could use "scoped context" to implement `isOriginalPoster`, based on the parent `comments` field.
+
+In `def comments`, add `:current_post` to scoped context using `context.scoped_set!`:
+
+```ruby
+class Types::Post < Types::BaseObject
+  # ...
+  def comments
+    context.scoped_set!(:current_post, object)
+    object.comments
+  end
+end
+```
+
+Then, inside `User`, you can check `context[:current_post]`:
+
+```ruby
+class Types::User < Types::BaseObject
+  # ...
+  def is_original_poster
+    current_post = context[:current_post]
+    current_post && current_post.author == object
+  end
+end
+```
+
+`context[:current_post]` will be present if an "upstream" field assigned it with `scoped_set!`.
+
+`context.scoped_merge!({ ... })` is also available for setting multiple keys at once.
+
 ## Root Value
 
 You can provide a root `object` value with `root_value:`. For example, to base the query off of the current organization:
