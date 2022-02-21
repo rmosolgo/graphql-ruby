@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/2.0.0/">API</a>
+          <a href="/api-doc/2.0.1/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -129,6 +129,10 @@
                 <span class='section-count'>2. </span><a href='#context'>Context
 </a>
               </li>
+<li class='contents-entry entry-depth-3'>
+                <span class='section-count'></span><a href='#scoped-context'>Scoped Context
+</a>
+              </li>
 <li class='contents-entry entry-depth-2'>
                 <span class='section-count'>3. </span><a href='#root-value'>Root Value
 </a>
@@ -137,7 +141,7 @@
 </div>
 </div>
 <div class="guide-container">
-  <p>You can execute queries with your <a href="/api-doc/2.0.0/GraphQL/Schema" target="_blank" title="API docs for GraphQL::Schema"><code>GraphQL::Schema</code></a> and get a Ruby Hash as a result. For example, to execute a query from a string:</p>
+  <p>You can execute queries with your <a href="/api-doc/2.0.1/GraphQL/Schema" target="_blank" title="API docs for GraphQL::Schema"><code>GraphQL::Schema</code></a> and get a Ruby Hash as a result. For example, to execute a query from a string:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">query_string</span> <span class="o">=</span> <span class="s2">"{ ... }"</span>
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">)</span>
@@ -167,12 +171,12 @@
   <li><code class="language-plaintext highlighter-rouge">context:</code> accepts application-specific data to pass to <code class="language-plaintext highlighter-rouge">resolve</code> functions</li>
   <li><code class="language-plaintext highlighter-rouge">root_value:</code> will be provided to root-level <code class="language-plaintext highlighter-rouge">resolve</code> functions as <code class="language-plaintext highlighter-rouge">obj</code></li>
   <li><code class="language-plaintext highlighter-rouge">operation_name:</code> picks a <a href="https://graphql.org/learn/queries/#operation-name">named operation</a> from the incoming string to execute</li>
-  <li><code class="language-plaintext highlighter-rouge">document:</code> accepts an already-parsed query (instead of a string), see <a href="/api-doc/2.0.0/GraphQL#parse-class_method" target="_blank" title="API docs for GraphQL.parse"><code>GraphQL.parse</code></a></li>
+  <li><code class="language-plaintext highlighter-rouge">document:</code> accepts an already-parsed query (instead of a string), see <a href="/api-doc/2.0.1/GraphQL#parse-class_method" target="_blank" title="API docs for GraphQL.parse"><code>GraphQL.parse</code></a></li>
   <li><code class="language-plaintext highlighter-rouge">validate:</code> may be <code class="language-plaintext highlighter-rouge">false</code> to skip static validation for this query</li>
   <li><code class="language-plaintext highlighter-rouge">max_depth:</code> and <code class="language-plaintext highlighter-rouge">max_complexity:</code> may override schema-level values</li>
 </ul>
 
-<p>Some of these options are described in more detail below, see <a href="/api-doc/2.0.0/GraphQL/Query#initialize-instance_method" target="_blank" title="API docs for GraphQL::Query#initialize"><code>GraphQL::Query#initialize</code></a> for more information.</p>
+<p>Some of these options are described in more detail below, see <a href="/api-doc/2.0.1/GraphQL/Query#initialize-instance_method" target="_blank" title="API docs for GraphQL::Query#initialize"><code>GraphQL::Query#initialize</code></a> for more information.</p>
 
 <h2 id="variables">Variables</h2>
 
@@ -192,7 +196,7 @@
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">variables: </span><span class="n">variables</span><span class="p">)</span>
 </code></pre></div></div>
 
-<p>If the variable is a <a href="/api-doc/2.0.0/GraphQL/InputObjectType" target="_blank" title="API docs for GraphQL::InputObjectType"><code>GraphQL::InputObjectType</code></a>, you can provide a nested hash, for example:</p>
+<p>If the variable is a <a href="/api-doc/2.0.1/GraphQL/InputObjectType" target="_blank" title="API docs for GraphQL::InputObjectType"><code>GraphQL::InputObjectType</code></a>, you can provide a nested hash, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">query_string</span> <span class="o">=</span> <span class="s2">"
 mutation createPost($postParams: PostInput!, $createdById: ID!){
@@ -247,7 +251,51 @@ mutation createPost($postParams: PostInput!, $createdById: ID!){
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Note that <code class="language-plaintext highlighter-rouge">context</code> is <em>not</em> the hash that you passed it. It’s an instance of <a href="/api-doc/2.0.0/GraphQL/Query/Context" target="_blank" title="API docs for GraphQL::Query::Context"><code>GraphQL::Query::Context</code></a>, but it delegates <code class="language-plaintext highlighter-rouge">#[]</code>, <code class="language-plaintext highlighter-rouge">#[]=</code>, and a few other methods to the hash you provide.</p>
+<p>Note that <code class="language-plaintext highlighter-rouge">context</code> is <em>not</em> the hash that you passed it. It’s an instance of <a href="/api-doc/2.0.1/GraphQL/Query/Context" target="_blank" title="API docs for GraphQL::Query::Context"><code>GraphQL::Query::Context</code></a>, but it delegates <code class="language-plaintext highlighter-rouge">#[]</code>, <code class="language-plaintext highlighter-rouge">#[]=</code>, and a few other methods to the hash you provide.</p>
+
+<h3 id="scoped-context">Scoped Context</h3>
+
+<p><code class="language-plaintext highlighter-rouge">context</code> is shared by the whole query. Anything you add to <code class="language-plaintext highlighter-rouge">context</code> will be accessible by any other field in the query (although GraphQL-Ruby’s order of execution can vary).</p>
+
+<p>However, “scoped context” is can be used to assign values into <code class="language-plaintext highlighter-rouge">context</code> that are only available in the current field and the <em>children</em> of the current field. For example, in this query:</p>
+
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="n">posts</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="n">comments</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="n">author</span><span class="w">
+      </span><span class="n">isOriginalPoster</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>You could use “scoped context” to implement <code class="language-plaintext highlighter-rouge">isOriginalPoster</code>, based on the parent <code class="language-plaintext highlighter-rouge">comments</code> field.</p>
+
+<p>In <code class="language-plaintext highlighter-rouge">def comments</code>, add <code class="language-plaintext highlighter-rouge">:current_post</code> to scoped context using <code class="language-plaintext highlighter-rouge">context.scoped_set!</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::Post</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+  <span class="c1"># ...</span>
+  <span class="k">def</span> <span class="nf">comments</span>
+    <span class="n">context</span><span class="p">.</span><span class="nf">scoped_set!</span><span class="p">(</span><span class="ss">:current_post</span><span class="p">,</span> <span class="n">object</span><span class="p">)</span>
+    <span class="n">object</span><span class="p">.</span><span class="nf">comments</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Then, inside <code class="language-plaintext highlighter-rouge">User</code>, you can check <code class="language-plaintext highlighter-rouge">context[:current_post]</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::User</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+  <span class="c1"># ...</span>
+  <span class="k">def</span> <span class="nf">is_original_poster</span>
+    <span class="n">current_post</span> <span class="o">=</span> <span class="n">context</span><span class="p">[</span><span class="ss">:current_post</span><span class="p">]</span>
+    <span class="n">current_post</span> <span class="o">&amp;&amp;</span> <span class="n">current_post</span><span class="p">.</span><span class="nf">author</span> <span class="o">==</span> <span class="n">object</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">context[:current_post]</code> will be present if an “upstream” field assigned it with <code class="language-plaintext highlighter-rouge">scoped_set!</code>.</p>
+
+<p><code class="language-plaintext highlighter-rouge">context.scoped_merge!({ ... })</code> is also available for setting multiple keys at once.</p>
 
 <h2 id="root-value">Root Value</h2>
 
@@ -269,7 +317,7 @@ mutation createPost($postParams: PostInput!, $createdById: ID!){
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p><a href="/api-doc/2.0.0/GraphQL/Schema/Mutation" target="_blank" title="API docs for GraphQL::Schema::Mutation"><code>GraphQL::Schema::Mutation</code></a> fields will also receive <code class="language-plaintext highlighter-rouge">root_value:</code> as <code class="language-plaintext highlighter-rouge">obj</code> (assuming they’re attached directly to your <code class="language-plaintext highlighter-rouge">MutationType</code>).</p>
+<p><a href="/api-doc/2.0.1/GraphQL/Schema/Mutation" target="_blank" title="API docs for GraphQL::Schema::Mutation"><code>GraphQL::Schema::Mutation</code></a> fields will also receive <code class="language-plaintext highlighter-rouge">root_value:</code> as <code class="language-plaintext highlighter-rouge">obj</code> (assuming they’re attached directly to your <code class="language-plaintext highlighter-rouge">MutationType</code>).</p>
 
 </div>
 <p class="guide-footer">
