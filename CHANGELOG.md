@@ -10,6 +10,20 @@
 
 ### Bug fixes
 
+# 2.0.1 (21 February 2022)
+
+### Breaking changes
+
+- Resolvers: refactored so that, instead of _copying_ configurations to `field ...` instances, `GraphQL::Schema::Field`s reference their provided `resolver: ...`, `mutation: ...`, or `subscription: ...` classes for many properties. This _shouldn't_ break anything -- all of graphql-ruby's own tests passed just fine -- but it's mentioned here in case you notice anything out-of-sorts in your own application #3916
+- Remove deprecated field options `field:`, `function:`, and `resolve:` (these were already no-ops, but they were overlooked in 2.0.0) #3917
+
+### Bug fixes
+
+- Scoped context: fix usage with dataloader #3950
+- Subscriptions: support multiple definitions for subscription root fields with `.trigger` #3897 #3935
+- Improve some error messages #3920 #3923
+- Clean up scalar validation code #3982
+
 # 2.0.0 (9 February 2022)
 
 ### Breaking Changes
