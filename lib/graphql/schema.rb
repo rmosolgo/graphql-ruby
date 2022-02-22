@@ -713,18 +713,11 @@ module GraphQL
         }
       end
 
-      # Call the given block with the schema's configured error handlers.
-      #
-      # If the block returns a lazy value, it's not wrapped with error handling. That area will have to be wrapped itself.
-      #
-      # @param ctx [GraphQL::Query::Context]
-      # @return [Object] Either the result of the given block, or some object to replace the result, in case of error handling.
-      def with_error_handling(ctx)
-        yield
-      rescue StandardError => err
+      # @api private
+      def handle_or_reraise(context, err)
         handler = Execution::Errors.find_handler_for(self, err.class)
         if handler
-          runtime_info = ctx.namespace(:interpreter) || {}
+          runtime_info = context.namespace(:interpreter) || {}
           obj = runtime_info[:current_object]
           args = runtime_info[:current_arguments]
           args = args && args.keyword_arguments
@@ -732,7 +725,7 @@ module GraphQL
           if obj.is_a?(GraphQL::Schema::Object)
             obj = obj.object
           end
-          handler[:handler].call(err, obj, args, ctx, field)
+          handler[:handler].call(err, obj, args, context, field)
         else
           raise err
         end

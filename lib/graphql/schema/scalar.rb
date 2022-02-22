@@ -42,11 +42,11 @@ module GraphQL
 
         def validate_non_null_input(value, ctx)
           coerced_result = begin
-            ctx.query.with_error_handling do
-              coerce_input(value, ctx)
-            end
+            coerce_input(value, ctx)
           rescue GraphQL::CoercionError => err
             err
+          rescue StandardError => err
+            ctx.query.handle_or_reraise(err)
           end
 
           if coerced_result.nil?

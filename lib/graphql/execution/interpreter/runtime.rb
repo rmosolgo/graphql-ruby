@@ -498,13 +498,17 @@ module GraphQL
             field_result = call_method_on_directives(:resolve, object, directives) do
               # Actually call the field resolver and capture the result
               app_result = begin
-                query.with_error_handling do
-                  query.trace("execute_field", {owner: owner_type, field: field_defn, path: next_path, ast_node: ast_node, query: query, object: object, arguments: kwarg_arguments}) do
-                    field_defn.resolve(object, kwarg_arguments, context)
-                  end
+                query.trace("execute_field", {owner: owner_type, field: field_defn, path: next_path, ast_node: ast_node, query: query, object: object, arguments: kwarg_arguments}) do
+                  field_defn.resolve(object, kwarg_arguments, context)
                 end
               rescue GraphQL::ExecutionError => err
                 err
+              rescue StandardError => err
+                begin
+                  query.handle_or_reraise(err)
+                rescue GraphQL::ExecutionError => ex_err
+                  ex_err
+                end
               end
               after_lazy(app_result, owner: owner_type, field: field_defn, path: next_path, ast_node: ast_node, owner_object: object, arguments: resolved_arguments, result_name: result_name, result: selection_result) do |inner_result|
                 continue_value = continue_value(next_path, inner_result, owner_type, field_defn, return_type.non_null?, ast_node, result_name, selection_result)
@@ -871,21 +875,21 @@ module GraphQL
               # Wrap the execution of _this_ method with tracing,
               # but don't wrap the continuation below
               inner_obj = begin
-                query.with_error_handling do
-                  begin
-                    if trace
-                      query.trace("execute_field_lazy", {owner: owner, field: field, path: path, query: query, object: owner_object, arguments: arguments, ast_node: ast_node}) do
-                        schema.sync_lazy(lazy_obj)
-                      end
-                    else
-                      schema.sync_lazy(lazy_obj)
-                    end
-                  rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
-                    err
+                if trace
+                  query.trace("execute_field_lazy", {owner: owner, field: field, path: path, query: query, object: owner_object, arguments: arguments, ast_node: ast_node}) do
+                    schema.sync_lazy(lazy_obj)
                   end
+                else
+                  schema.sync_lazy(lazy_obj)
                 end
-              rescue GraphQL::ExecutionError => ex_err
+              rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => ex_err
                 ex_err
+              rescue StandardError => err
+                begin
+                  query.handle_or_reraise(err)
+                rescue GraphQL::ExecutionError => ex_err
+                  ex_err
+                end
               end
               yield(inner_obj)
             end

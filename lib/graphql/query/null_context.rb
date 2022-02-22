@@ -12,9 +12,6 @@ module GraphQL
       end
 
       class NullQuery
-        def with_error_handling
-          yield
-        end
       end
 
       class NullSchema < GraphQL::Schema
