@@ -69,7 +69,7 @@ module GraphQL
         end
 
         # check for a handler from a parent class:
-        if schema.superclass.respond_to?(:error_handlers) && (parent_errors = schema.superclass.error_handlers)
+        if schema.superclass.respond_to?(:error_handlers)
           parent_handler = find_handler_for(schema.superclass, error_class)
         end
 
