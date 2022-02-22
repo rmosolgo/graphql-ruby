@@ -247,7 +247,7 @@ module GraphQL
         end
 
         loaded_value = nil
-        coerced_value = context.schema.error_handler.with_error_handling(context) do
+        coerced_value = context.schema.with_error_handling(context) do
           type.coerce_input(value, context)
         end
 
@@ -263,7 +263,7 @@ module GraphQL
           maybe_loaded_value = loaded_value || resolved_coerced_value
           context.schema.after_lazy(maybe_loaded_value) do |resolved_loaded_value|
             owner.validate_directive_argument(self, resolved_loaded_value)
-            prepared_value = context.schema.error_handler.with_error_handling(context) do
+            prepared_value = context.schema.with_error_handling(context) do
               prepare_value(parent_object, resolved_loaded_value, context: context)
             end
 

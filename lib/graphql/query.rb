@@ -332,7 +332,7 @@ module GraphQL
 
     # @api private
     def with_error_handling
-      schema.error_handler.with_error_handling(context) do
+      schema.with_error_handling(context) do
         yield
       end
     end
