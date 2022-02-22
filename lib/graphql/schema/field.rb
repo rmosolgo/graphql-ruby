@@ -600,70 +600,66 @@ module GraphQL
       def resolve(object, args, query_ctx)
         # Unwrap the GraphQL object to get the application object.
         application_object = object.object
+        method_receiver = nil
+        method_to_call = nil
+        method_args = nil
 
         Schema::Validator.validate!(validators, application_object, query_ctx, args)
 
         query_ctx.schema.after_lazy(self.authorized?(application_object, args, query_ctx)) do |is_authorized|
           if is_authorized
             with_extensions(object, args, query_ctx) do |obj, ruby_kwargs|
-              begin
-                method_receiver = nil
-                method_to_call = nil
-                if @resolver_class
-                  if obj.is_a?(GraphQL::Schema::Object)
-                    obj = obj.object
-                  end
-                  obj = @resolver_class.new(object: obj, context: query_ctx, field: self)
+              method_args = ruby_kwargs
+              if @resolver_class
+                if obj.is_a?(GraphQL::Schema::Object)
+                  obj = obj.object
                 end
+                obj = @resolver_class.new(object: obj, context: query_ctx, field: self)
+              end
 
-                # Find a way to resolve this field, checking:
-                #
-                # - A method on the type instance;
-                # - Hash keys, if the wrapped object is a hash;
-                # - A method on the wrapped object;
-                # - Or, raise not implemented.
-                #
-                if obj.respond_to?(resolver_method)
-                  method_to_call = resolver_method
-                  method_receiver = obj
-                  # Call the method with kwargs, if there are any
-                  if ruby_kwargs.any?
-                    obj.public_send(resolver_method, **ruby_kwargs)
-                  else
-                    obj.public_send(resolver_method)
-                  end
-                elsif obj.object.is_a?(Hash)
-                  inner_object = obj.object
-                  if @dig_keys
-                    inner_object.dig(*@dig_keys)
-                  elsif inner_object.key?(@method_sym)
-                    inner_object[@method_sym]
-                  else
-                    inner_object[@method_str]
-                  end
-                elsif obj.object.respond_to?(@method_sym)
-                  method_to_call = @method_sym
-                  method_receiver = obj.object
-                  if ruby_kwargs.any?
-                    obj.object.public_send(@method_sym, **ruby_kwargs)
-                  else
-                    obj.object.public_send(@method_sym)
-                  end
+              # Find a way to resolve this field, checking:
+              #
+              # - A method on the type instance;
+              # - Hash keys, if the wrapped object is a hash;
+              # - A method on the wrapped object;
+              # - Or, raise not implemented.
+              #
+              if obj.respond_to?(resolver_method)
+                method_to_call = resolver_method
+                method_receiver = obj
+                # Call the method with kwargs, if there are any
+                if ruby_kwargs.any?
+                  obj.public_send(resolver_method, **ruby_kwargs)
                 else
-                  raise <<-ERR
-                Failed to implement #{@owner.graphql_name}.#{@name}, tried:
-
-                - `#{obj.class}##{resolver_method}`, which did not exist
-                - `#{obj.object.class}##{@method_sym}`, which did not exist
-                - Looking up hash key `#{@method_sym.inspect}` or `#{@method_str.inspect}` on `#{obj.object}`, but it wasn't a Hash
-
-                To implement this field, define one of the methods above (and check for typos)
-                ERR
+                  obj.public_send(resolver_method)
                 end
-              rescue ArgumentError
-                assert_satisfactory_implementation(method_receiver, method_to_call, ruby_kwargs)
-                # if the line above doesn't raise, re-raise
-                raise
+              elsif obj.object.is_a?(Hash)
+                inner_object = obj.object
+                if @dig_keys
+                  inner_object.dig(*@dig_keys)
+                elsif inner_object.key?(@method_sym)
+                  inner_object[@method_sym]
+                else
+                  inner_object[@method_str]
+                end
+              elsif obj.object.respond_to?(@method_sym)
+                method_to_call = @method_sym
+                method_receiver = obj.object
+                if ruby_kwargs.any?
+                  obj.object.public_send(@method_sym, **ruby_kwargs)
+                else
+                  obj.object.public_send(@method_sym)
+                end
+              else
+                raise <<-ERR
+              Failed to implement #{@owner.graphql_name}.#{@name}, tried:
+
+              - `#{obj.class}##{resolver_method}`, which did not exist
+              - `#{obj.object.class}##{@method_sym}`, which did not exist
+              - Looking up hash key `#{@method_sym.inspect}` or `#{@method_str.inspect}` on `#{obj.object}`, but it wasn't a Hash
+
+              To implement this field, define one of the methods above (and check for typos)
+              ERR
               end
             end
           else
@@ -683,6 +679,12 @@ module GraphQL
         rescue GraphQL::ExecutionError => err
           err
         end
+      rescue ArgumentError
+        if method_receiver && method_to_call
+          assert_satisfactory_implementation(method_receiver, method_to_call, method_args)
+        end
+        # if the line above doesn't raise, re-raise
+        raise
       end
 
       # @param ctx [GraphQL::Query::Context]
