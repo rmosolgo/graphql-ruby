@@ -75,7 +75,10 @@ module GraphQL
           end
         end
 
-        self.validates(validates)
+        if validates && !validates.empty?
+          self.validates(validates)
+        end
+
         if required == :nullable
           self.owner.validates(required: { argument: arg_name })
         end

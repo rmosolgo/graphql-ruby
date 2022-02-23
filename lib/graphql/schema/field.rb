@@ -303,7 +303,9 @@ module GraphQL
           end
         end
 
-        self.validates(validates)
+        if !validates.empty?
+          self.validates(validates)
+        end
 
         if definition_block
           if definition_block.arity == 1

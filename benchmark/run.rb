@@ -221,4 +221,45 @@ module GraphQLBenchmark
 
     report.pretty_print
   end
+
+  def self.profile_schema_memory_footprint
+    schema = nil
+    report = MemoryProfiler.report do
+      query_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Query"
+        100.times do |i|
+          type = Class.new(GraphQL::Schema::Object) do
+            graphql_name "Object#{i}"
+            field :f, Integer
+          end
+          field "f#{i}", type
+        end
+      end
+
+      thing_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Thing"
+        field :name, String
+      end
+
+      mutation_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Mutation"
+        100.times do |i|
+          mutation_class = Class.new(GraphQL::Schema::RelayClassicMutation) do
+            graphql_name "Do#{i}"
+            argument :id, "ID"
+            field :thing, thing_type
+            field :things, thing_type.connection_type
+          end
+          field "f#{i}", mutation: mutation_class
+        end
+      end
+
+      schema = Class.new(GraphQL::Schema) do
+        query(query_type)
+        mutation(mutation_type)
+      end
+    end
+
+    report.pretty_print
+  end
 end

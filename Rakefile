@@ -116,6 +116,12 @@ namespace :bench do
     prepare_benchmark
     GraphQLBenchmark.profile_batch_loaders
   end
+
+  desc "Check the memory footprint of a large schema"
+  task :profile_schema_memory_footprint do
+    prepare_benchmark
+    GraphQLBenchmark.profile_schema_memory_footprint
+  end
 end
 
 namespace :test do
