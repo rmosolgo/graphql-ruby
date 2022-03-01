@@ -43,7 +43,7 @@ In your application, enums extend {{ "GraphQL::Schema::Enum" | api_doc }} and de
 
 ```ruby
 # First, a base class
-# app/graphql/types/base_enum
+# app/graphql/types/base_enum.rb
 class Types::BaseEnum < GraphQL::Schema::Enum
 end
 

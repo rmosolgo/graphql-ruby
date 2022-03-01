@@ -143,13 +143,6 @@ module GraphQL
       def self.topic_for(arguments:, field:, scope:)
         Subscriptions::Serialize.dump_recursive([scope, field.graphql_name, arguments])
       end
-
-      # Overriding Resolver#field_options to include subscription_scope
-      def self.field_options
-        super.merge(
-          subscription_scope: subscription_scope
-        )
-      end
     end
   end
 end

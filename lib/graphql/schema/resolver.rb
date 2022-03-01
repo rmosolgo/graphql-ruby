@@ -15,8 +15,6 @@ module GraphQL
     #
     # A resolver's configuration may be overridden with other keywords in the `field(...)` call.
     #
-    # See the {.field_options} to see how a Resolver becomes a set of field configuration options.
-    #
     # @see {GraphQL::Schema::Mutation} for a concrete subclass of `Resolver`.
     # @see {GraphQL::Function} `Resolver` is a replacement for `GraphQL::Function`
     class Resolver
@@ -210,6 +208,18 @@ module GraphQL
       end
 
       class << self
+        def field_arguments(context = GraphQL::Query::NullContext)
+          arguments(context)
+        end
+
+        def get_field_argument(name, context = GraphQL::Query::NullContext)
+          get_argument(name, context)
+        end
+
+        def own_field_arguments
+          own_arguments
+        end
+
         # Default `:resolve` set below.
         # @return [Symbol] The method to call on instances of this object to resolve the field
         def resolve_method(new_method = nil)
@@ -242,6 +252,14 @@ module GraphQL
           @null.nil? ? (superclass.respond_to?(:null) ? superclass.null : true) : @null
         end
 
+        def resolver_method(new_method_name = nil)
+          if new_method_name
+            @resolver_method = new_method_name
+          else
+            @resolver_method || :resolve_with_support
+          end
+        end
+
         # Call this method to get the return type of the field,
         # or use it as a configuration method to assign a return type
         # instead of generating one.
@@ -257,8 +275,8 @@ module GraphQL
             @type_expr = new_type
             @null = null
           else
-            if @type_expr
-              GraphQL::Schema::Member::BuildType.parse_type(@type_expr, null: @null)
+            if type_expr
+              GraphQL::Schema::Member::BuildType.parse_type(type_expr, null: self.null)
             elsif superclass.respond_to?(:type)
               superclass.type
             else
@@ -307,47 +325,7 @@ module GraphQL
 
         # @return [Boolean] `true` if this resolver or a superclass has an assigned `max_page_size`
         def has_max_page_size?
-          defined?(@max_page_size) || (superclass.respond_to?(:has_max_page_size?) && superclass.has_max_page_size?)
-        end
-
-        def field_options
-
-          all_args = {}
-          all_argument_definitions.each do |arg|
-            if (prev_entry = all_args[arg.graphql_name])
-              if prev_entry.is_a?(Array)
-                prev_entry << arg
-              else
-                all_args[arg.graphql_name] = [prev_entry, arg]
-              end
-            else
-              all_args[arg.graphql_name] = arg
-            end
-          end
-
-          field_opts = {
-            type: type_expr,
-            description: description,
-            extras: extras,
-            resolver_method: :resolve_with_support,
-            resolver_class: self,
-            arguments: all_args,
-            null: null,
-            complexity: complexity,
-            broadcastable: broadcastable?,
-          }
-
-          # If there aren't any, then the returned array is `[].freeze`,
-          # but passing that along breaks some user code.
-          if (exts = extensions).any?
-            field_opts[:extensions] = exts
-          end
-
-          if has_max_page_size?
-            field_opts[:max_page_size] = max_page_size
-          end
-
-          field_opts
+          (!!defined?(@max_page_size)) || (superclass.respond_to?(:has_max_page_size?) && superclass.has_max_page_size?)
         end
 
         # A non-normalized type configuration, without `null` applied

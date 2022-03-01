@@ -78,23 +78,44 @@ module GraphQL
         # @return [GraphQL::Schema::Argument]
         def add_argument(arg_defn)
           @own_arguments ||= {}
-          prev_defn = own_arguments[arg_defn.name]
+          prev_defn = @own_arguments[arg_defn.name]
           case prev_defn
           when nil
-            own_arguments[arg_defn.name] = arg_defn
+            @own_arguments[arg_defn.name] = arg_defn
           when Array
             prev_defn << arg_defn
           when GraphQL::Schema::Argument
-            own_arguments[arg_defn.name] = [prev_defn, arg_defn]
+            @own_arguments[arg_defn.name] = [prev_defn, arg_defn]
           else
             raise "Invariant: unexpected `@own_arguments[#{arg_defn.name.inspect}]`: #{prev_defn.inspect}"
           end
           arg_defn
         end
 
+        def remove_argument(arg_defn)
+          prev_defn = @own_arguments[arg_defn.name]
+          case prev_defn
+          when nil
+            # done
+          when Array
+            prev_defn.delete(arg_defn)
+          when GraphQL::Schema::Argument
+            @own_arguments.delete(arg_defn.name)
+          else
+            raise "Invariant: unexpected `@own_arguments[#{arg_defn.name.inspect}]`: #{prev_defn.inspect}"
+          end
+          nil
+        end
+
         # @return [Hash<String => GraphQL::Schema::Argument] Arguments defined on this thing, keyed by name. Includes inherited definitions
         def arguments(context = GraphQL::Query::NullContext)
-          inherited_arguments = ((self.is_a?(Class) && superclass.respond_to?(:arguments)) ? superclass.arguments(context) : nil)
+          inherited_arguments = if self.is_a?(Class) && superclass.respond_to?(:arguments)
+            superclass.arguments(context)
+          elsif defined?(@resolver_class) && @resolver_class
+            @resolver_class.field_arguments(context)
+          else
+            nil
+          end
           # Local definitions override inherited ones
           if own_arguments.any?
             own_arguments_that_apply = {}
@@ -125,6 +146,10 @@ module GraphQL
                 all_defns.merge!(ancestor.own_arguments)
               end
             end
+          elsif defined?(@resolver_class) && @resolver_class
+            all_defns = {}
+            all_defns.merge!(@resolver_class.own_field_arguments)
+            all_defns.merge!(own_arguments)
           else
             all_defns = own_arguments
           end
@@ -137,8 +162,13 @@ module GraphQL
         def get_argument(argument_name, context = GraphQL::Query::NullContext)
           warden = Warden.from_context(context)
           if !self.is_a?(Class)
-            a = own_arguments[argument_name]
-            a && Warden.visible_entry?(:visible_argument?, a, context, warden)
+            if (arg_config = own_arguments[argument_name]) && (visible_arg = Warden.visible_entry?(:visible_argument?, arg_config, context, warden))
+              visible_arg
+            elsif defined?(@resolver_class) && @resolver_class
+              @resolver_class.get_field_argument(argument_name, context)
+            else
+              nil
+            end
           else
             for ancestor in ancestors
               if ancestor.respond_to?(:own_arguments) &&

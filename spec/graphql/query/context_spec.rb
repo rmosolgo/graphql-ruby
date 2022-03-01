@@ -153,6 +153,18 @@ describe GraphQL::Query::Context do
       end
     end
 
+    class PassthroughSource < GraphQL::Dataloader::Source
+      def fetch(keys)
+        keys
+      end
+    end
+
+    class IntArraySource < GraphQL::Dataloader::Source
+      def fetch(keys)
+        keys.map { |k| k.times.map { |i| i } }
+      end
+    end
+
     class ContextQuery < GraphQL::Schema::Object
       field :get_scoped_context, String do
         argument :key, String
@@ -183,14 +195,29 @@ describe GraphQL::Query::Context do
           }
         else
           context.scoped_merge!(key => value)
-          self
+          context.dataloader.with(PassthroughSource).load(self)
         end
+      end
+
+      field :int_list, [ContextQuery], null: false
+
+      def int_list
+        context.scoped_set!("int_list", "assigned")
+        context.dataloader.with(IntArraySource).load(4)
+      end
+
+      field :set_scoped_int, ContextQuery, null: false
+
+      def set_scoped_int
+        context.scoped_set!("int", object.to_s)
+        object.to_s
       end
     end
 
     class ContextSchema < GraphQL::Schema
       query(ContextQuery)
       lazy_resolve(LazyBlock, :value)
+      use GraphQL::Dataloader
     end
 
     it "can be set and does not leak to sibling fields" do
@@ -327,8 +354,33 @@ describe GraphQL::Query::Context do
       assert_equal(expected, result)
     end
 
+    it "doesn't leak inside lists" do
+      query_str = <<-GRAPHQL
+      {
+        intList {
+          before: getScopedContext(key: "int")
+          setScopedInt {
+            inside: getScopedContext(key: "int")
+            inside2: getScopedContext(key: "int_list")
+          }
+          after: getScopedContext(key: "int")
+        }
+      }
+      GRAPHQL
+
+      expected_data = {"intList"=>
+         [{"setScopedInt"=>{"inside"=>"0", "inside2" => "assigned"}, "before"=>nil, "after"=>nil},
+          {"setScopedInt"=>{"inside"=>"1", "inside2" => "assigned"}, "before"=>nil, "after"=>nil},
+          {"setScopedInt"=>{"inside"=>"2", "inside2" => "assigned"}, "before"=>nil, "after"=>nil},
+          {"setScopedInt"=>{"inside"=>"3", "inside2" => "assigned"}, "before"=>nil, "after"=>nil}]}
+      result = ContextSchema.execute(query_str)
+      assert_equal(expected_data, result["data"])
+    end
+
+
     it "always retrieves a scoped context value if set" do
       context = GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil, object: nil)
+      context.namespace(:interpreter)[:current_path] = ["somewhere"]
       expected_key = :a
       expected_value = :test
 
@@ -348,13 +400,31 @@ describe GraphQL::Query::Context do
       assert_nil(context.fetch(expected_key))
       assert_nil(context.dig(expected_key)) if RUBY_VERSION >= '2.3.0'
 
-      context.scoped_context = {}
+      context.namespace(:interpreter)[:current_path] = ["something", "new"]
 
       assert_equal(expected_value, context[expected_key])
       assert_equal({ expected_key => expected_value}, context.to_h)
       assert(context.key?(expected_key))
       assert_equal(expected_value, context.fetch(expected_key))
       assert_equal(expected_value, context.dig(expected_key)) if RUBY_VERSION >= '2.3.0'
+
+      # Enter a child field:
+      context.namespace(:interpreter)[:current_path] = ["somewhere", "child"]
+      assert_nil(context[expected_key])
+      assert_equal({ expected_key => nil }, context.to_h)
+      assert(context.key?(expected_key))
+      assert_nil(context.fetch(expected_key))
+      assert_nil(context.dig(expected_key)) if RUBY_VERSION >= '2.3.0'
+
+      # And a grandchild field
+      context.namespace(:interpreter)[:current_path] = ["somewhere", "child", "grandchild"]
+      context.scoped_set!(expected_key, :something_else)
+      context.scoped_set!(:another_key, :another_value)
+      assert_equal(:something_else, context[expected_key])
+      assert_equal({ expected_key => :something_else, another_key: :another_value }, context.to_h)
+      assert(context.key?(expected_key))
+      assert_equal(:something_else, context.fetch(expected_key))
+      assert_equal(:something_else, context.dig(expected_key)) if RUBY_VERSION >= '2.3.0'
     end
 
     it "sets a value using #scoped_set!" do

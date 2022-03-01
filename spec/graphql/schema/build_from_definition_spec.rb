@@ -556,6 +556,36 @@ type Thing implements Named & Node {
       assert_schema_and_compare_output(schema)
     end
 
+    it "only adds the interface to the type once" do
+      schema = <<-SCHEMA
+interface Named implements Node {
+  id: ID
+  name: String
+}
+
+interface Node {
+  id: ID
+}
+
+type Query {
+  thing: Thing
+}
+
+type Thing implements Named & Node & Timestamped {
+  id: ID
+  name: String
+  timestamp: String
+}
+
+interface Timestamped implements Node {
+  id: ID
+  timestamp: String
+}
+      SCHEMA
+
+      assert_schema_and_compare_output(schema)
+    end
+
     it 'supports simple output enum' do
       schema = <<-SCHEMA
 schema {
