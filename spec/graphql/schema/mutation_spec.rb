@@ -215,4 +215,15 @@ describe GraphQL::Schema::Mutation do
     result = InterfaceMutationSchema.execute("mutation { signIn(login: \"abc\", password: \"abc\") { success } }")
     assert_equal true, result["data"]["signIn"]["success"]
   end
+
+  it "returns manually-configured return types" do
+    mutation = Class.new(GraphQL::Schema::Mutation) do
+      graphql_name "DoStuff"
+      type(String)
+    end
+
+    field = GraphQL::Schema::Field.new(name: "f", owner: nil, resolver_class: mutation)
+    assert_equal "String", field.type.graphql_name
+    assert_equal GraphQL::Types::String, field.type
+  end
 end
