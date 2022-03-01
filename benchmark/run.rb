@@ -282,10 +282,15 @@ module GraphQLBenchmark
       end
 
       def stack_trace_depth(lazy:)
+        get_depth = -> {
+          graphql_caller = caller.select { |c| c.include?("graphql") }
+          graphql_caller.size
+        }
+
         if lazy
-          -> { caller.size }
+          get_depth
         else
-          caller.size
+          get_depth.call
         end
       end
     end
@@ -320,7 +325,6 @@ module GraphQLBenchmark
     GRAPHQL
 
     very_lazy_res = StackDepthSchema.execute(query_str, variables: { lazyThing: true, lazyStackTrace: true })
-    pp very_lazy_res
     lazy_res = StackDepthSchema.execute(query_str, variables: { lazyThing: true, lazyStackTrace: false })
     eager_res = StackDepthSchema.execute(query_str, variables: { lazyThing: false, lazyStackTrace: false })
     get_depth = ->(result) { result["data"]["thing"]["thing"]["thing"]["thing"]["thing"]["stackTraceDepth"] }
