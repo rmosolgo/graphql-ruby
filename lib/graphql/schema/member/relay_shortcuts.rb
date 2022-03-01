@@ -8,7 +8,15 @@ module GraphQL
           if new_edge_type_class
             @edge_type_class = new_edge_type_class
           else
-            @edge_type_class || find_inherited_value(:edge_type_class, Types::Relay::BaseEdge)
+            # Don't call `ancestor.edge_type_class`
+            # because we don't want a fallback from any ancestors --
+            # only apply the fallback if _no_ ancestor has a configured value!
+            for ancestor in self.ancestors
+              if ancestor.respond_to?(:configured_edge_type_class, true) && (etc = ancestor.configured_edge_type_class)
+                return etc
+              end
+            end
+            Types::Relay::BaseEdge
           end
         end
 
@@ -16,7 +24,15 @@ module GraphQL
           if new_connection_type_class
             @connection_type_class = new_connection_type_class
           else
-            @connection_type_class || find_inherited_value(:connection_type_class, Types::Relay::BaseConnection)
+            # Don't call `ancestor.connection_type_class`
+            # because we don't want a fallback from any ancestors --
+            # only apply the fallback if _no_ ancestor has a configured value!
+            for ancestor in self.ancestors
+              if ancestor.respond_to?(:configured_connection_type_class, true) && (ctc = ancestor.configured_connection_type_class)
+                return ctc
+              end
+            end
+            Types::Relay::BaseConnection
           end
         end
 
@@ -40,6 +56,16 @@ module GraphQL
               edge_type(edge_type_class)
             end
           end
+        end
+
+        protected
+
+        def configured_connection_type_class
+          @connection_type_class
+        end
+
+        def configured_edge_type_class
+          @edge_type_class
         end
       end
     end
