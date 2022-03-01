@@ -20,7 +20,17 @@ module GraphQL
           @payload_type ||= generate_payload_type
         end
 
-        # alias :type :payload_type
+        def type(new_type = nil, null: nil)
+          if new_type
+            payload_type(new_type)
+            if !null.nil?
+              self.null(null)
+            end
+          else
+            super()
+          end
+        end
+
         alias :type_expr :payload_type
 
         def field_class(new_class = nil)
