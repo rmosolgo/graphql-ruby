@@ -35,3 +35,29 @@ puts schema_sdl
 ```
 
 To make sure schema versions don't change unexpectedly, use the techniques described in the {% internal_link "Schema structure guide", "/testing/schema_structure" %}.
+
+### Introspection Methods
+
+You can also inspect a schema's changesets programmatically. `GraphQL::Enterprise` adds a `Schema.changesets` method which returns a `Set` of changeset classes:
+
+```ruby
+MySchema.changesets
+# #<Set: {AddNewFeature, RemoveOldFeature}>
+```
+
+Additionally, each changeset has a `.changes` method describing its modifications:
+
+```ruby
+AddNewFeature.changes
+# [
+#   #<GraphQL::Enterprise::Changeset::Change: ...>,
+#   #<GraphQL::Enterprise::Changeset::Change: ...>,
+#   #<GraphQL::Enterprise::Changeset::Change: ...>,
+#   ...
+# ]
+```
+
+Each `Change` object responds to:
+
+- `.member`, the part of the schema that was modified
+- `.type`, the kind of modification (`:addition` when something new is added, `:removal` when a member is removed or replaced with a new definition)
