@@ -5,19 +5,8 @@
   </head>
   <body>
     <p>Class: GraphQL::Execution::Errors &lt; Object
-A plugin that wraps query execution with error handling. Installed
-by default. 
-Examples:</p>
-<h1 id="handling-activerecordnotfound">Handling ActiveRecord::NotFound</h1>
-<p>class MySchema &lt; GraphQL::Schema
-rescue_from(ActiveRecord::NotFound) do |err, obj, args, ctx, field|
-ErrorTracker.log(“Not Found: #{err.message}”)
-nil
-end
-end
-Instance methods:
-each_rescue, find_handler_for, initialize, rescue_from,
-with_error_handling</p>
+Class methods:
+find_handler_for, register_rescue_from</p>
 
 
   </body>
