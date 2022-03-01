@@ -10,6 +10,18 @@
 
 ### Bug fixes
 
+# 2.0.2 (1 March 2022)
+
+### New features
+
+- Reduce schema memory footprint #3959
+
+### Bug fixes
+
+- Mutation: Correctly use a configured `type(...)` #3965
+- Interfaces: De-duplicate indirectly implemented interfaces #3932
+- Remove an unnecessary require #3961
+
 # 2.0.1 (21 February 2022)
 
 ### Breaking changes
