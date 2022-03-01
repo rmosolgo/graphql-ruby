@@ -9,8 +9,12 @@ module GraphQL
       include GraphQL::Schema::Member::HasAstNode
       include GraphQL::Schema::Member::HasPath
       include GraphQL::Schema::Member::HasValidators
+
+      # @TODO: is ordering of these extend/includes important?
+      # I'm thinking GraphQL::Schema::Member includes should be grouped together unless otherwise important/needed.
       extend GraphQL::Schema::FindInheritedValue
       include GraphQL::Schema::FindInheritedValue::EmptyObjects
+
       include GraphQL::Schema::Member::HasDirectives
       include GraphQL::Schema::Member::HasDeprecationReason
       include GraphQL::Schema::Field::FieldResolver
@@ -21,6 +25,7 @@ module GraphQL
       attr_reader :name
       alias :graphql_name :name
 
+      # @TODO: Should attributes be writable? When is this applicable?
       attr_writer :description
 
       # @return [Class] The thing this field was defined on (type, mutation, resolver)
@@ -516,6 +521,7 @@ module GraphQL
         raise MissingReturnTypeError, "Failed to build return type for #{@owner.graphql_name}.#{name} from #{@return_type_expr.inspect}: (#{err.class}) #{err.message}", err.backtrace
       end
 
+      # @TODO: flatten this?
       def visible?(context)
         if @resolver_class
           @resolver_class.visible?(context)
@@ -524,6 +530,7 @@ module GraphQL
         end
       end
 
+      # @TODO: flatten this? 
       def accessible?(context)
         if @resolver_class
           @resolver_class.accessible?(context)
@@ -532,6 +539,7 @@ module GraphQL
         end
       end
 
+      # @TODO: Look to flatten the if/conditional structure of this method.
       def authorized?(object, args, context)
         if @resolver_class
           # The resolver _instance_ will check itself during `resolve()`
@@ -569,6 +577,7 @@ module GraphQL
               end
             end
           end
+          # @TODO: investigate this suspicious true... 
           true
         end
       end
