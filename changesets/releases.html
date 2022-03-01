@@ -120,6 +120,10 @@
                 <span class='section-count'>1. </span><a href='#inspecting-releases'>Inspecting Releases
 </a>
               </li>
+<li class='contents-entry entry-depth-3'>
+                <span class='section-count'></span><a href='#introspection-methods'>Introspection Methods
+</a>
+              </li>
   </ul>
 </div>
 </div>
@@ -148,6 +152,32 @@
 </code></pre></div></div>
 
 <p>To make sure schema versions don’t change unexpectedly, use the techniques described in the <a href="/testing/schema_structure">Schema structure guide</a>.</p>
+
+<h3 id="introspection-methods">Introspection Methods</h3>
+
+<p>You can also inspect a schema’s changesets programmatically. <code class="language-plaintext highlighter-rouge">GraphQL::Enterprise</code> adds a <code class="language-plaintext highlighter-rouge">Schema.changesets</code> method which returns a <code class="language-plaintext highlighter-rouge">Set</code> of changeset classes:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span><span class="p">.</span><span class="nf">changesets</span>
+<span class="c1"># #&lt;Set: {AddNewFeature, RemoveOldFeature}&gt;</span>
+</code></pre></div></div>
+
+<p>Additionally, each changeset has a <code class="language-plaintext highlighter-rouge">.changes</code> method describing its modifications:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">AddNewFeature</span><span class="p">.</span><span class="nf">changes</span>
+<span class="c1"># [</span>
+<span class="c1">#   #&lt;GraphQL::Enterprise::Changeset::Change: ...&gt;,</span>
+<span class="c1">#   #&lt;GraphQL::Enterprise::Changeset::Change: ...&gt;,</span>
+<span class="c1">#   #&lt;GraphQL::Enterprise::Changeset::Change: ...&gt;,</span>
+<span class="c1">#   ...</span>
+<span class="c1"># ]</span>
+</code></pre></div></div>
+
+<p>Each <code class="language-plaintext highlighter-rouge">Change</code> object responds to:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">.member</code>, the part of the schema that was modified</li>
+  <li><code class="language-plaintext highlighter-rouge">.type</code>, the kind of modification (<code class="language-plaintext highlighter-rouge">:addition</code> when something new is added, <code class="language-plaintext highlighter-rouge">:removal</code> when a member is removed or replaced with a new definition)</li>
+</ul>
 
 </div>
 <p class="guide-footer">
