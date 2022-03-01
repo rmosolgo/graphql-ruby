@@ -51,12 +51,12 @@ module GraphQL
           trace_payload = { context: context, type: self, object: object, path: context[:current_path] }
 
           maybe_lazy_auth_val = context.query.trace("authorized", trace_payload) do
-            context.query.with_error_handling do
-              begin
-                authorized?(object, context)
-              rescue GraphQL::UnauthorizedError => err
-                context.schema.unauthorized_object(err)
-              end
+            begin
+              authorized?(object, context)
+            rescue GraphQL::UnauthorizedError => err
+              context.schema.unauthorized_object(err)
+            rescue StandardError => err
+              context.query.handle_or_reraise(err)
             end
           end
 

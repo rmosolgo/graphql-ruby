@@ -250,24 +250,30 @@ module GraphQL
         end
 
         loaded_value = nil
-        coerced_value = context.schema.error_handler.with_error_handling(context) do
+        coerced_value = begin
           type.coerce_input(value, context)
+        rescue StandardError => err
+          context.schema.handle_or_reraise(context, err)
         end
 
         # If this isn't lazy, then the block returns eagerly and assigns the result here
         # If it _is_ lazy, then we write the lazy to the hash, then update it later
         argument_values[arg_key] = context.schema.after_lazy(coerced_value) do |resolved_coerced_value|
           if loads && !from_resolver?
-            loaded_value = context.query.with_error_handling do
+            loaded_value = begin
               load_and_authorize_value(owner, coerced_value, context)
+            rescue StandardError => err
+              context.schema.handle_or_reraise(context, err)
             end
           end
 
           maybe_loaded_value = loaded_value || resolved_coerced_value
           context.schema.after_lazy(maybe_loaded_value) do |resolved_loaded_value|
             owner.validate_directive_argument(self, resolved_loaded_value)
-            prepared_value = context.schema.error_handler.with_error_handling(context) do
+            prepared_value = begin
               prepare_value(parent_object, resolved_loaded_value, context: context)
+            rescue StandardError => err
+              context.schema.handle_or_reraise(context, err)
             end
 
             # TODO code smell to access such a deeply-nested constant in a distant module

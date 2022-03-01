@@ -331,10 +331,8 @@ module GraphQL
     end
 
     # @api private
-    def with_error_handling
-      schema.error_handler.with_error_handling(context) do
-        yield
-      end
+    def handle_or_reraise(err)
+      schema.handle_or_reraise(context, err)
     end
 
     private

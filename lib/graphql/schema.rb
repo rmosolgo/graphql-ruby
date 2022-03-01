@@ -693,7 +693,41 @@ module GraphQL
 
       def rescue_from(*err_classes, &handler_block)
         err_classes.each do |err_class|
-          error_handler.rescue_from(err_class, handler_block)
+          Execution::Errors.register_rescue_from(err_class, error_handlers[:subclass_handlers], handler_block)
+        end
+      end
+
+      NEW_HANDLER_HASH = ->(h, k) {
+        h[k] = {
+          class: k,
+          handler: nil,
+          subclass_handlers: Hash.new(&NEW_HANDLER_HASH),
+         }
+      }
+
+      def error_handlers
+        @error_handlers ||= {
+          class: nil,
+          handler: nil,
+          subclass_handlers: Hash.new(&NEW_HANDLER_HASH),
+        }
+      end
+
+      # @api private
+      def handle_or_reraise(context, err)
+        handler = Execution::Errors.find_handler_for(self, err.class)
+        if handler
+          runtime_info = context.namespace(:interpreter) || {}
+          obj = runtime_info[:current_object]
+          args = runtime_info[:current_arguments]
+          args = args && args.keyword_arguments
+          field = runtime_info[:current_field]
+          if obj.is_a?(GraphQL::Schema::Object)
+            obj = obj.object
+          end
+          handler[:handler].call(err, obj, args, context, field)
+        else
+          raise err
         end
       end
 
@@ -819,11 +853,6 @@ module GraphQL
       # @return void
       def parse_error(parse_err, ctx)
         ctx.errors.push(parse_err)
-      end
-
-      # @return [GraphQL::Execution::Errors]
-      def error_handler
-        @error_handler ||= GraphQL::Execution::Errors.new(self)
       end
 
       def lazy_resolve(lazy_class, value_method)
