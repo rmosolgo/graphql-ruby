@@ -15,8 +15,8 @@ module GraphQL
 
         # @return [Class, nil] The {Schema::Resolver} this field was derived from, if there is one
         attr_reader :resolver_class
-        alias_attribute :resolver, :resolver_class
-        alias_attribute :mutation, :resolver_class
+        alias :resolver :resolver_class
+        alias :mutation :resolver_class
 
         # :hash_keys, :dig_keys
 
