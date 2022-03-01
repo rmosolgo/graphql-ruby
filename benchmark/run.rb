@@ -262,4 +262,75 @@ module GraphQLBenchmark
 
     report.pretty_print
   end
+
+  class StackDepthSchema < GraphQL::Schema
+    class Thing < GraphQL::Schema::Object
+      field :thing, self do
+        argument :lazy, Boolean, default_value: false
+      end
+
+      def thing(lazy:)
+        if lazy
+          -> { :something }
+        else
+          :something
+        end
+      end
+
+      field :stack_trace_depth, Integer do
+        argument :lazy, Boolean, default_value: false
+      end
+
+      def stack_trace_depth(lazy:)
+        if lazy
+          -> { caller.size }
+        else
+          caller.size
+        end
+      end
+    end
+
+    class Query < GraphQL::Schema::Object
+      field :thing, Thing
+
+      def thing
+        :something
+      end
+    end
+
+    query(Query)
+    lazy_resolve(Proc, :call)
+  end
+
+  def self.profile_stack_depth
+    query_str = <<-GRAPHQL
+    query($lazyThing: Boolean!, $lazyStackTrace: Boolean!) {
+      thing {
+        thing(lazy: $lazyThing) {
+          thing(lazy: $lazyThing) {
+            thing(lazy: $lazyThing) {
+              thing(lazy: $lazyThing) {
+                stackTraceDepth(lazy: $lazyStackTrace)
+              }
+            }
+          }
+        }
+      }
+    }
+    GRAPHQL
+
+    very_lazy_res = StackDepthSchema.execute(query_str, variables: { lazyThing: true, lazyStackTrace: true })
+    pp very_lazy_res
+    lazy_res = StackDepthSchema.execute(query_str, variables: { lazyThing: true, lazyStackTrace: false })
+    eager_res = StackDepthSchema.execute(query_str, variables: { lazyThing: false, lazyStackTrace: false })
+    get_depth = ->(result) { result["data"]["thing"]["thing"]["thing"]["thing"]["thing"]["stackTraceDepth"] }
+
+    puts <<~RESULT
+    Result         Depth
+    ---------------------
+    Eager          #{get_depth.call(eager_res)}
+    Lazy           #{get_depth.call(lazy_res)}
+    Very Lazy      #{get_depth.call(very_lazy_res)}
+    RESULT
+  end
 end
