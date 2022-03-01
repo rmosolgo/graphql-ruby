@@ -13,6 +13,7 @@ module GraphQL
       include GraphQL::Schema::FindInheritedValue::EmptyObjects
       include GraphQL::Schema::Member::HasDirectives
       include GraphQL::Schema::Member::HasDeprecationReason
+      include GraphQL::Schema::Field::FieldResolver
 
       class FieldImplementationFailed < GraphQL::Error; end
 
