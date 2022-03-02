@@ -25,142 +25,24 @@ module GraphQL
       attr_reader :name
       alias :graphql_name :name
 
+      # @return [Symbol] the original name of the field, passed in by the user
+      attr_reader :original_name
+
+      # @return [Boolean] Apply tracing to this field? (Default: skip scalars, this is the override value)
+      attr_reader :trace
+
       # @TODO: Should attributes be writable? When is this applicable?
       attr_writer :description
 
       # @return [Class] The thing this field was defined on (type, mutation, resolver)
       attr_accessor :owner
 
-      # @return [Class] The GraphQL type this field belongs to. (For fields defined on mutations, it's the payload type)
-      def owner_type
-        @owner_type ||= if owner.nil?
-          raise GraphQL::InvariantError, "Field #{original_name.inspect} (graphql name: #{graphql_name.inspect}) has no owner, but all fields should have an owner. How did this happen?!"
-        elsif owner < GraphQL::Schema::Mutation
-          owner.payload_type
-        else
-          owner
-        end
-      end
-
-      # @return [Symbol] the original name of the field, passed in by the user
-      attr_reader :original_name
-
-      # @return [Boolean] Is this field a predefined introspection field?
-      def introspection?
-        @introspection
-      end
-
-      def inspect
-        "#<#{self.class} #{path}#{all_argument_definitions.any? ? "(...)" : ""}: #{type.to_type_signature}>"
-      end
-
-      # @return [Boolean] Apply tracing to this field? (Default: skip scalars, this is the override value)
-      attr_reader :trace
-
-      # @return [String, nil]
-      def subscription_scope
-        @subscription_scope || (@resolver_class.respond_to?(:subscription_scope) ? @resolver_class.subscription_scope : nil)
-      end
       attr_writer :subscription_scope
-
-      # Create a field instance from a list of arguments, keyword arguments, and a block.
-      #
-      # This method implements prioritization between the `resolver` or `mutation` defaults
-      # and the local overrides via other keywords.
-      #
-      # It also normalizes positional arguments into keywords for {Schema::Field#initialize}.
-      # @param resolver [Class] A {GraphQL::Schema::Resolver} class to use for field configuration
-      # @param mutation [Class] A {GraphQL::Schema::Mutation} class to use for field configuration
-      # @param subscription [Class] A {GraphQL::Schema::Subscription} class to use for field configuration
-      # @return [GraphQL::Schema:Field] an instance of `self
-      # @see {.initialize} for other options
-      def self.from_options(name = nil, type = nil, desc = nil, resolver: nil, mutation: nil, subscription: nil,**kwargs, &block)
-        if (resolver_class = resolver || mutation || subscription)
-          # Add a reference to that parent class
-          kwargs[:resolver_class] = resolver_class
-        end
-
-        if name
-          kwargs[:name] = name
-        end
-
-        if !type.nil?
-          if desc
-            if kwargs[:description]
-              raise ArgumentError, "Provide description as a positional argument or `description:` keyword, but not both (#{desc.inspect}, #{kwargs[:description].inspect})"
-            end
-
-            kwargs[:description] = desc
-            kwargs[:type] = type
-          elsif (resolver || mutation) && type.is_a?(String)
-            # The return type should be copied from the resolver, and the second positional argument is the description
-            kwargs[:description] = type
-          else
-            kwargs[:type] = type
-          end
-          if type.is_a?(Class) && type < GraphQL::Schema::Mutation
-            raise ArgumentError, "Use `field #{name.inspect}, mutation: Mutation, ...` to provide a mutation to this field instead"
-          end
-        end
-        new(**kwargs, &block)
-      end
-
-      # Can be set with `connection: true|false` or inferred from a type name ending in `*Connection`
-      # @return [Boolean] if true, this field will be wrapped with Relay connection behavior
-      def connection?
-        if @connection.nil?
-          # Provide default based on type name
-          return_type_name = if @resolver_class && @resolver_class.type
-            Member::BuildType.to_type_name(@resolver_class.type)
-          elsif @return_type_expr
-            Member::BuildType.to_type_name(@return_type_expr)
-          else
-            # As a last ditch, try to force loading the return type:
-            type.unwrap.name
-          end
-          @connection = return_type_name.end_with?("Connection")
-        else
-          @connection
-        end
-      end
-
-      # @return [Boolean] if true, the return type's `.scope_items` method will be applied to this field's return value
-      def scoped?
-        return @scope if @scope.present?
-        # @TODO: trying to simplify conditional at the end of this method, but when is this ever not defined?
-        return false if @return_type_expr.nil?
-
-        collection_type?
-      end
-
-      # Is the field type to be considered that of a collection of items?
-      private def collection_type?
-        connection? || @return_type_expr.is_a?(Array) || (@return_type_expr.is_a?(String) && @return_type_expr.start_with?("["))
-      end
-
-      # This extension is applied to fields when {#connection?} is true.
-      #
-      # You can override it in your base field definition.
-      # @return [Class] A {FieldExtension} subclass for implementing pagination behavior.
-      # @example Configuring a custom extension
-      #   class Types::BaseField < GraphQL::Schema::Field
-      #     connection_extension(MyCustomExtension)
-      #   end
-      def self.connection_extension(new_extension_class = nil)
-        if new_extension_class
-          @connection_extension = new_extension_class
-        else
-          @connection_extension ||= find_inherited_value(:connection_extension, ConnectionExtension)
-        end
-      end
 
       # @return Boolean
       attr_reader :relay_node_field
 
-      # @return [Boolean] Should we warn if this field's name conflicts with a built-in method?
-      def method_conflict_warning?
-        @method_conflict_warning
-      end
+      attr_writer :type
 
       # @param name [Symbol] The underscore-cased version of this field name (will be camelized for the GraphQL API)
       # @param type [Class, GraphQL::BaseType, Array] The return type of this field
@@ -305,6 +187,127 @@ module GraphQL
 
         self.extensions.each(&:after_define_apply)
         @call_after_define = true
+      end
+
+      # @return [Class] The GraphQL type this field belongs to. (For fields defined on mutations, it's the payload type)
+      def owner_type
+        @owner_type ||= if owner.nil?
+          raise GraphQL::InvariantError, "Field #{original_name.inspect} (graphql name: #{graphql_name.inspect}) has no owner, but all fields should have an owner. How did this happen?!"
+        elsif owner < GraphQL::Schema::Mutation
+          owner.payload_type
+        else
+          owner
+        end
+      end
+
+      # @return [Boolean] Is this field a predefined introspection field?
+      def introspection?
+        @introspection
+      end
+
+      def inspect
+        "#<#{self.class} #{path}#{all_argument_definitions.any? ? "(...)" : ""}: #{type.to_type_signature}>"
+      end
+
+      # @return [String, nil]
+      def subscription_scope
+        @subscription_scope || (@resolver_class.respond_to?(:subscription_scope) ? @resolver_class.subscription_scope : nil)
+      end
+      
+      # Create a field instance from a list of arguments, keyword arguments, and a block.
+      #
+      # This method implements prioritization between the `resolver` or `mutation` defaults
+      # and the local overrides via other keywords.
+      #
+      # It also normalizes positional arguments into keywords for {Schema::Field#initialize}.
+      # @param resolver [Class] A {GraphQL::Schema::Resolver} class to use for field configuration
+      # @param mutation [Class] A {GraphQL::Schema::Mutation} class to use for field configuration
+      # @param subscription [Class] A {GraphQL::Schema::Subscription} class to use for field configuration
+      # @return [GraphQL::Schema:Field] an instance of `self
+      # @see {.initialize} for other options
+      def self.from_options(name = nil, type = nil, desc = nil, resolver: nil, mutation: nil, subscription: nil,**kwargs, &block)
+        if (resolver_class = resolver || mutation || subscription)
+          # Add a reference to that parent class
+          kwargs[:resolver_class] = resolver_class
+        end
+
+        if name
+          kwargs[:name] = name
+        end
+
+        if !type.nil?
+          if desc
+            if kwargs[:description]
+              raise ArgumentError, "Provide description as a positional argument or `description:` keyword, but not both (#{desc.inspect}, #{kwargs[:description].inspect})"
+            end
+
+            kwargs[:description] = desc
+            kwargs[:type] = type
+          elsif (resolver || mutation) && type.is_a?(String)
+            # The return type should be copied from the resolver, and the second positional argument is the description
+            kwargs[:description] = type
+          else
+            kwargs[:type] = type
+          end
+          if type.is_a?(Class) && type < GraphQL::Schema::Mutation
+            raise ArgumentError, "Use `field #{name.inspect}, mutation: Mutation, ...` to provide a mutation to this field instead"
+          end
+        end
+        new(**kwargs, &block)
+      end
+
+      # Can be set with `connection: true|false` or inferred from a type name ending in `*Connection`
+      # @return [Boolean] if true, this field will be wrapped with Relay connection behavior
+      def connection?
+        if @connection.nil?
+          # Provide default based on type name
+          return_type_name = if @resolver_class && @resolver_class.type
+            Member::BuildType.to_type_name(@resolver_class.type)
+          elsif @return_type_expr
+            Member::BuildType.to_type_name(@return_type_expr)
+          else
+            # As a last ditch, try to force loading the return type:
+            type.unwrap.name
+          end
+          @connection = return_type_name.end_with?("Connection")
+        else
+          @connection
+        end
+      end
+
+      # @return [Boolean] if true, the return type's `.scope_items` method will be applied to this field's return value
+      def scoped?
+        return @scope if @scope.present?
+        # @TODO: trying to simplify conditional at the end of this method, but when is this ever not defined?
+        return false if @return_type_expr.nil?
+
+        collection_type?
+      end
+
+      # Is the field type to be considered that of a collection of items?
+      private def collection_type?
+        connection? || @return_type_expr.is_a?(Array) || (@return_type_expr.is_a?(String) && @return_type_expr.start_with?("["))
+      end
+
+      # This extension is applied to fields when {#connection?} is true.
+      #
+      # You can override it in your base field definition.
+      # @return [Class] A {FieldExtension} subclass for implementing pagination behavior.
+      # @example Configuring a custom extension
+      #   class Types::BaseField < GraphQL::Schema::Field
+      #     connection_extension(MyCustomExtension)
+      #   end
+      def self.connection_extension(new_extension_class = nil)
+        if new_extension_class
+          @connection_extension = new_extension_class
+        else
+          @connection_extension ||= find_inherited_value(:connection_extension, ConnectionExtension)
+        end
+      end
+
+      # @return [Boolean] Should we warn if this field's name conflicts with a built-in method?
+      def method_conflict_warning?
+        @method_conflict_warning
       end
 
       # If true, subscription updates with this field can be shared between viewers
@@ -501,8 +504,7 @@ module GraphQL
       end
 
       class MissingReturnTypeError < GraphQL::Error; end
-      attr_writer :type
-
+      
       def type
         if @resolver_class && (t = @resolver_class.type)
           t
