@@ -491,6 +491,7 @@ module GraphQL
         end
       end
 
+      # @TODO: couldn't this simplified so that it will check presence of `max_page_size`?
       # @return [Boolean] True if this field's {#max_page_size} should override the schema default.
       def has_max_page_size?
         @has_max_page_size || (@resolver_class && @resolver_class.has_max_page_size?)
