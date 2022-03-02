@@ -526,13 +526,10 @@ module GraphQL
         raise MissingReturnTypeError, "Failed to build return type for #{@owner.graphql_name}.#{name} from #{@return_type_expr.inspect}: (#{err.class}) #{err.message}", err.backtrace
       end
 
-      # @TODO: flatten this?
       def visible?(context)
-        if @resolver_class
-          @resolver_class.visible?(context)
-        else
-          true
-        end
+        return @resolver_class.visible?(context) if @resolver_class.present?
+        
+        true
       end
 
       # @TODO: flatten this? 
