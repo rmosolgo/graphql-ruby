@@ -126,12 +126,16 @@ module GraphQL
 
       # @return [Boolean] if true, the return type's `.scope_items` method will be applied to this field's return value
       def scoped?
-        if !@scope.nil?
-          # The default was overridden
-          @scope
-        else
-          @return_type_expr && (@return_type_expr.is_a?(Array) || (@return_type_expr.is_a?(String) && @return_type_expr.include?("[")) || connection?)
-        end
+        return @scope if @scope.present?
+        # @TODO: trying to simplify conditional at the end of this method, but when is this ever not defined?
+        return false if @return_type_expr.nil?
+
+        collection_type?
+      end
+
+      # Is the field type to be considered that of a collection of items?
+      private def collection_type?
+        connection? || @return_type_expr.is_a?(Array) || (@return_type_expr.is_a?(String) && @return_type_expr.start_with?("["))
       end
 
       # This extension is applied to fields when {#connection?} is true.
