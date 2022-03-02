@@ -532,13 +532,10 @@ module GraphQL
         true
       end
 
-      # @TODO: flatten this? 
       def accessible?(context)
-        if @resolver_class
-          @resolver_class.accessible?(context)
-        else
-          true
-        end
+        return @resolver_class.accessible?(context) if @resolver_class.present?
+        
+        true
       end
 
       # @TODO: Look to flatten the if/conditional structure of this method.
