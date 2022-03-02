@@ -259,20 +259,19 @@ module GraphQL
       # Can be set with `connection: true|false` or inferred from a type name ending in `*Connection`
       # @return [Boolean] if true, this field will be wrapped with Relay connection behavior
       def connection?
-        if @connection.nil?
-          # Provide default based on type name
-          return_type_name = if @resolver_class && @resolver_class.type
-            Member::BuildType.to_type_name(@resolver_class.type)
-          elsif @return_type_expr
-            Member::BuildType.to_type_name(@return_type_expr)
-          else
-            # As a last ditch, try to force loading the return type:
-            type.unwrap.name
-          end
-          @connection = return_type_name.end_with?("Connection")
+        return @connection if @connection.present?
+
+        # Provide default based on type name
+        return_type_name = if @resolver_class && @resolver_class.type
+          Member::BuildType.to_type_name(@resolver_class.type)
+        elsif @return_type_expr
+          Member::BuildType.to_type_name(@return_type_expr)
         else
-          @connection
+          # As a last ditch, try to force loading the return type:
+          type.unwrap.name
         end
+
+        @connection = return_type_name.end_with?("Connection")
       end
 
       # @return [Boolean] if true, the return type's `.scope_items` method will be applied to this field's return value
@@ -323,16 +322,15 @@ module GraphQL
         end
       end
 
+      # The description of the field
       # @param text [String]
       # @return [String]
       def description(text = nil)
-        if text
-          @description = text
-        elsif @resolver_class
-          @description || @resolver_class.description
-        else
-          @description
-        end
+        # @TODO: When is a description ever modified outside of initialize? Perhaps people setting using it for runtime magic?
+        return @description = text if text.present?
+        return @description if @description.present?
+
+        @resolver_class.description if @resolver_class.present?
       end
 
       # Read extension instances from this field,
