@@ -129,7 +129,7 @@ Then, client apps can show the error messages to end users, so they might correc
 
 ## Nullable Mutation Payload Fields
 
-To benefit from "Errors as Data" described above, mutation fields must not have `null: false`. Why?
+To benefit from "Errors as Data" described above, mutation fields must not have `null: true`. Why?
 
 Well, for _non-null_ fields (which have `null: false`), if they return `nil`, then GraphQL aborts the query and removes those fields from the response altogether.
 
