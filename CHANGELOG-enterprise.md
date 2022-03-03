@@ -18,7 +18,7 @@
 
 ### New Features
 
-- Changesets: Add introspection methods `Schema.changeset` and `Changeset.changes`
+- Changesets: Add introspection methods `Schema.changesets` and `Changeset.changes`
 
 # 1.1.1 (14 February 2021)
 
