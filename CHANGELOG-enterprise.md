@@ -8,7 +8,15 @@
 
 ### Bug Fix
 
+# 1.1.3 (3 March 2022)
+
+### Bug Fix
+
+- Changesets: Return an empty set when a schema doesn't use changesets #3972
+
 # 1.1.2 (1 March 2022)
+
+### New Features
 
 - Changesets: Add introspection methods `Schema.changesets` and `Changeset.changes`
 
