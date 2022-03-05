@@ -76,3 +76,10 @@ None of the _specific_ `Player`s will be part of the cached response, but the `T
 If a list may be sorted, then updates to `Player`s should also update the `Team` so that any sorted results in the cache are invalidated, too. Alternatively (or additionally), you could use a `ttl:` to expire cached results after a certain duration, just to be sure that results are eventually expired.
 
 By default, connection-related objects (like `*Connection` and `*Edge` types) "inherit" cacheability from their node types. You can override this in your base classes as long as `GraphQL::Enterprise::ObjectCache::ObjectIntegration` is included in the inheritance chain somewhere.
+
+## Caching Introspection
+
+By default, introspection fields are considered _public_ for all queries. This means that they are considered cacheable and their results will be reused for any clients who request them. When {% internal_link "adding the ObjectCache to your schema", "/object_cache/schema_setup#add-the-cache", %}, you can provide some options to customize this behavior:
+
+- `cache_introspection: { public: false }` to use [`public: false`](#public) for all introspection fields. Use this if you hide schema members for some clients.
+- `cache_introspection: false` to completely disable caching on introspection fields.

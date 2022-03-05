@@ -23,10 +23,7 @@ end
 
 See the {% internal_link "Redis guide", "/object_cache/redis" %} for details about configuring cache storage.
 
-Additionally, it accepts some options for customizing how introspection is cached:
-
-- `cache_introspection: { public: false }` to use {% internal_link "`public: false`", "/object_cache/caching#public" %} for all introspection fields. Use this if you hide schema members for some clients.
-- `cache_introspection: false` to completely disable caching on introspection fields.
+Additionally, it accepts some options for customizing how introspection is cached, see {% internal_link "Caching Introspection", "/object_cache/caching#caching-introspection" %}
 
 ## Context Fingerprint
 
