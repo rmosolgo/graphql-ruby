@@ -48,7 +48,11 @@ module GraphQL
       end
 
       def tracer
-        options.fetch(:tracer, Datadog.tracer)
+        if Gem::Version.new('1.0.0') >= Gem.loaded_specs["ddtrace"].version
+          options.fetch(:tracer, Datadog::Tracing)
+        else
+          options.fetch(:tracer, Datadog.tracer)
+        end
       end
 
       def analytics_available?
