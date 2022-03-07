@@ -201,7 +201,7 @@ module GraphQL
       # @param ast_node [Language::Nodes::FieldDefinition, nil] If this schema was parsed from definition, this AST node defined the field
       # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
       # @param validates [Array<Hash>] Configurations for validating this field
-      def initialize(type: nil, name: nil, owner: nil, null: true, description: nil, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: nil, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, &definition_block)
+      def initialize(type: nil, name: nil, owner: nil, null: true, description: :not_given, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: nil, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -214,7 +214,9 @@ module GraphQL
         name_s = -name.to_s
         @underscored_name = -Member::BuildType.underscore(name_s)
         @name = -(camelize ? Member::BuildType.camelize(name_s) : name_s)
-        @description = description
+        if description != :not_given
+          @description = description
+        end
         self.deprecation_reason = deprecation_reason
 
         if method && hash_key && dig
@@ -337,10 +339,12 @@ module GraphQL
       def description(text = nil)
         if text
           @description = text
+        elsif defined?(@description)
+          @description
         elsif @resolver_class
           @description || @resolver_class.description
         else
-          @description
+          nil
         end
       end
 
@@ -516,19 +520,19 @@ module GraphQL
       attr_writer :type
 
       def type
-        if @resolver_class && (t = @resolver_class.type)
-          t
-        else
-          @type ||= if @return_type_expr.nil?
+        if @return_type_expr.nil?
+          if @resolver_class && (t = @resolver_class.type)
+            t
+          else
             # Not enough info to determine type
             message = "Can't determine the return type for #{self.path}"
             if @resolver_class
               message += " (it has `resolver: #{@resolver_class}`, perhaps that class is missing a `type ...` declaration, or perhaps its type causes a cyclical loading issue)"
             end
             raise MissingReturnTypeError, message
-          else
-            Member::BuildType.parse_type(@return_type_expr, null: @return_type_null)
           end
+        else
+          @type ||= Member::BuildType.parse_type(@return_type_expr, null: @return_type_null)
         end
       rescue GraphQL::Schema::InvalidDocumentError, MissingReturnTypeError => err
         # Let this propagate up
