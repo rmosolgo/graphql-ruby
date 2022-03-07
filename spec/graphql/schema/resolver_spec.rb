@@ -908,4 +908,20 @@ describe GraphQL::Schema::Resolver do
       assert_equal expected_message, err.message
     end
   end
+
+  describe "when the field has configurations that override the resolvers" do
+    it "uses the field's type and description, not the resolver's" do
+      resolver = Class.new(GraphQL::Schema::Resolver) do
+        description "Does things!"
+        type(String, null: true)
+      end
+
+      field = GraphQL::Schema::Field.new(name: "blah", resolver_class: resolver, description: nil, type: Integer, null: false)
+      assert_equal "Int!", field.type.to_type_signature
+      assert_equal "String", resolver.type.to_type_signature
+
+      assert_nil field.description
+      assert_equal "Does things!", resolver.description
+    end
+  end
 end
