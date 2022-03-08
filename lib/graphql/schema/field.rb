@@ -614,7 +614,7 @@ module GraphQL
         query_ctx.schema.after_lazy(self.authorized?(application_object, args, query_ctx)) do |is_authorized|
           if is_authorized
             with_extensions(object, args, query_ctx) do |obj, ruby_kwargs|
-              method_args = ruby_kwargs
+                method_args = ruby_kwargs
               if @resolver_class
                 if obj.is_a?(GraphQL::Schema::Object)
                   obj = obj.object
