@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.21.5 (7 March 2022)
+
+### Bug Fix
+
+- Postgres stable connection: support more complex aliased selects #3976
+
 # 1.21.4 (15 February 2022)
 
 ### Bug Fix
