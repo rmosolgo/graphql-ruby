@@ -233,14 +233,11 @@ module GraphQL
           end
         end
 
-        # TODO: I think non-string/symbol hash keys are wrongly normalized (eg `1` will not work)
-        method_name = method || hash_key || name_s
+        @hash_key = hash_key
         @dig_keys = dig
-        resolver_method ||= name_s.to_sym
+        @object_method = method
+        @resolver_method = (resolver_method || hash_key || object_method || name_s).to_sym
 
-        @method_str = -method_name.to_s
-        @method_sym = method_name.to_sym
-        @resolver_method = resolver_method
         @complexity = complexity
         @return_type_expr = type
         @return_type_null = null
@@ -623,51 +620,65 @@ module GraphQL
                 obj = @resolver_class.new(object: obj, context: query_ctx, field: self)
               end
 
-              # Find a way to resolve this field, checking:
-              #
-              # - A method on the type instance;
-              # - Hash keys, if the wrapped object is a hash;
-              # - A method on the wrapped object;
-              # - Or, raise not implemented.
-              #
-              if obj.respond_to?(resolver_method)
-                method_to_call = resolver_method
-                method_receiver = obj
-                # Call the method with kwargs, if there are any
-                if ruby_kwargs.any?
-                  obj.public_send(resolver_method, **ruby_kwargs)
-                else
-                  obj.public_send(resolver_method)
-                end
-              elsif obj.object.is_a?(Hash)
-                inner_object = obj.object
-                if @dig_keys
+              # Resolver Priority (the order in which it will try to resolve a field)
+              # 1 Hash
+              # -> 1.1 Dig Keys
+              # -> 1.2 Hash Key
+              # -> 1.3 Object Method (as a key)
+              # -> 1.4 Resolver Method (as a key)
+              # -> 1.5 Field Name (as a key) - through @resolver_method
+              # 2 Object
+              # -> 2.1 Hash Key
+              # -> 2.2 Object Method
+              # -> 2.3 Resolver Method
+              # -> 2.4 Field Name (as a key) - through @resolver_method
+              # 3 Resolver
+              # -> 2.1 Hash Key
+              # -> 2.2 Object Method
+              # -> 2.3 Resolver Method
+              # -> 2.4 Field Name (as a key) - through @resolver_method
+
+              inner_object = obj.object
+              method_or_key = @hash_key&.to_sym || @object_method&.to_sym || @resolver_method&.to_sym
+
+              if inner_object.is_a?(Hash)
+                if @dig_keys.present?
                   inner_object.dig(*@dig_keys)
-                elsif inner_object.key?(@method_sym)
-                  inner_object[@method_sym]
-                else
-                  inner_object[@method_str]
+                elsif inner_object.key?(method_or_key)
+                  inner_object[method_or_key]
+                elsif inner_object.key?(method_or_key.to_s)
+                  inner_object[method_or_key.to_s]
                 end
-              elsif obj.object.respond_to?(@method_sym)
-                method_to_call = @method_sym
-                method_receiver = obj.object
+              elsif inner_object.respond_to?(method_or_key)
+                method_to_call = method_or_key
+                method_receiver = inner_object
+
                 if ruby_kwargs.any?
-                  obj.object.public_send(@method_sym, **ruby_kwargs)
+                  inner_object.public_send(method_or_key, **ruby_kwargs)
                 else
-                  obj.object.public_send(@method_sym)
+                  inner_object.public_send(method_or_key)
+                end
+              elsif obj.respond_to?(method_or_key)
+                method_to_call = method_or_key
+                method_receiver = obj
+
+                if ruby_kwargs.any?
+                  inner_object.public_send(method_or_key, **ruby_kwargs)
+                else
+                  inner_object.public_send(method_or_key)
                 end
               else
                 raise <<-ERR
               Failed to implement #{@owner.graphql_name}.#{@name}, tried:
 
-              - `#{obj.class}##{resolver_method}`, which did not exist
-              - `#{obj.object.class}##{@method_sym}`, which did not exist
-              - Looking up hash key `#{@method_sym.inspect}` or `#{@method_str.inspect}` on `#{obj.object}`, but it wasn't a Hash
+              1. Looking up the hash key `#{method_or_key}` or `#{@dig_keys}` on `#{inner_object}`, but it wasn't a Hash
+              2. #{inner_object.class}##{method_or_key}, which did not exist
+              3. #{obj.class}##{method_or_key}, which did not exist
 
               To implement this field, define one of the methods above (and check for typos)
               ERR
               end
-            end
+              end
           else
             raise GraphQL::UnauthorizedFieldError.new(object: application_object, type: object.class, context: query_ctx, field: self)
           end
