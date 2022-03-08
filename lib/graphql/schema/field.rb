@@ -236,7 +236,9 @@ module GraphQL
         @hash_key = hash_key
         @dig_keys = dig
         @object_method = method
-        @resolver_method = (resolver_method || hash_key || object_method || name_s).to_sym
+        @resolver_method = (resolver_method || hash_key || method || name_s).to_sym
+        @method_sym = @resolver_method
+        @method_str = @resolver_method.to_s
 
         @complexity = complexity
         @return_type_expr = type
@@ -642,7 +644,7 @@ module GraphQL
               method_or_key = @hash_key&.to_sym || @object_method&.to_sym || @resolver_method&.to_sym
 
               if inner_object.is_a?(Hash)
-                if @dig_keys.present?
+                if @dig_keys
                   inner_object.dig(*@dig_keys)
                 elsif inner_object.key?(method_or_key)
                   inner_object[method_or_key]
@@ -663,9 +665,9 @@ module GraphQL
                 method_receiver = obj
 
                 if ruby_kwargs.any?
-                  inner_object.public_send(method_or_key, **ruby_kwargs)
+                  obj.public_send(method_or_key, **ruby_kwargs)
                 else
-                  inner_object.public_send(method_or_key)
+                  obj.public_send(method_or_key)
                 end
               else
                 raise <<-ERR
