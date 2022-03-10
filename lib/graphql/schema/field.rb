@@ -641,7 +641,7 @@ module GraphQL
               # -> 2.4 Field Name (as a key) - through @resolver_method
 
               inner_object = obj.object
-              method_or_key = @hash_key&.to_sym || @object_method&.to_sym || @resolver_method&.to_sym
+              method_or_key = @hash_key&.to_sym || @object_method&.to_sym || @resolver_method
 
               if inner_object.is_a?(Hash)
                 if @dig_keys
