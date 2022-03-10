@@ -1525,4 +1525,44 @@ type ReachableType implements Node {
       assert_equal expected_definition, schema.to_definition, "UnreachableType is excluded"
     end
   end
+
+  it "works with indirect interface implementation" do
+    schema_string = <<~GRAPHQL
+      type Query {
+        entities: [Entity!]!
+        person: Person
+      }
+
+      type Person implements NamedEntity {
+        id: ID!
+        name: String
+        nationality: String
+      }
+
+      type Product implements NamedEntity {
+        id: ID!
+        name: String
+        amount: Int
+      }
+
+      interface NamedEntity implements Entity {
+        id: ID!
+        name: String
+      }
+
+      type Payment implements Entity {
+        id: ID!
+        amount: Int
+      }
+
+      interface Entity {
+        id: ID!
+      }
+    GRAPHQL
+
+    schema = GraphQL::Schema.from_definition(schema_string)
+
+    assert_equal ["amount", "id"], schema.types.fetch("Payment").fields.keys.sort
+    assert_equal ["id", "name", "nationality"], schema.types.fetch("Person").fields.keys.sort
+  end
 end
