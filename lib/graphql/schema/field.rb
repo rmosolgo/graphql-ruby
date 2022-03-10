@@ -238,7 +238,7 @@ module GraphQL
         @object_method = method
         @resolver_method = (resolver_method || hash_key || method || name_s).to_sym
         @method_sym = @resolver_method
-        @method_str = @resolver_method.to_s
+        @method_str = -@resolver_method.to_s
 
         @complexity = complexity
         @return_type_expr = type
