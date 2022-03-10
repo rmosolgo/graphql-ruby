@@ -35,10 +35,6 @@ module GraphQL
       # @param parent [Object] The owner of `collection`, will be passed to the connection if provided
       # @param edge_class [Class] The class to wrap `item` with (defaults to the connection's edge class)
       def initialize(collection:, item:, context:, parent: nil, edge_class: nil)
-        unless context.schema.new_connections?
-          raise ArgumentError, "No connections are defined for context.schema"
-        end
-
         conn_class = context.schema.connections.wrapper_for(collection)
         # The rest will be added by ConnectionExtension
         @connection = conn_class.new(collection, parent: parent, context: context, edge_class: edge_class)
