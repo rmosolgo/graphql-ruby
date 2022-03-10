@@ -233,10 +233,8 @@ module GraphQL
           end
         end
 
-        @hash_key = hash_key
         @dig_keys = dig
-        @object_method = method
-        @resolver_method = (resolver_method || hash_key || method || name_s).to_sym
+        @resolver_method = (hash_key || method || resolver_method || name_s).to_sym
         @method_sym = @resolver_method
         @method_str = -@resolver_method.to_s
 
@@ -641,41 +639,40 @@ module GraphQL
               # -> 2.4 Field Name (as a key) - through @resolver_method
 
               inner_object = obj.object
-              method_or_key = @hash_key&.to_sym || @object_method&.to_sym || @resolver_method
-
+              
               if inner_object.is_a?(Hash)
                 if @dig_keys
                   inner_object.dig(*@dig_keys)
-                elsif inner_object.key?(method_or_key)
-                  inner_object[method_or_key]
-                elsif inner_object.key?(method_or_key.to_s)
-                  inner_object[method_or_key.to_s]
+                elsif inner_object.key?(@method_sym)
+                  inner_object[method_sym]
+                elsif inner_object.key?(@method_str)
+                  inner_object[@method_str]
                 end
-              elsif inner_object.respond_to?(method_or_key)
-                method_to_call = method_or_key
+              elsif inner_object.respond_to?(@method_sym)
+                method_to_call = @method_sym
                 method_receiver = inner_object
 
                 if ruby_kwargs.any?
-                  inner_object.public_send(method_or_key, **ruby_kwargs)
+                  inner_object.public_send(@method_sym, **ruby_kwargs)
                 else
-                  inner_object.public_send(method_or_key)
+                  inner_object.public_send(@method_sym)
                 end
-              elsif obj.respond_to?(method_or_key)
-                method_to_call = method_or_key
+              elsif obj.respond_to?(@method_sym)
+                method_to_call = @method_sym
                 method_receiver = obj
 
                 if ruby_kwargs.any?
-                  obj.public_send(method_or_key, **ruby_kwargs)
+                  obj.public_send(@method_sym, **ruby_kwargs)
                 else
-                  obj.public_send(method_or_key)
+                  obj.public_send(@method_sym)
                 end
               else
                 raise <<-ERR
               Failed to implement #{@owner.graphql_name}.#{@name}, tried:
 
-              1. Looking up the hash key `#{method_or_key}` or `#{@dig_keys}` on `#{inner_object}`, but it wasn't a Hash
-              2. #{inner_object.class}##{method_or_key}, which did not exist
-              3. #{obj.class}##{method_or_key}, which did not exist
+              1. Looking up the hash key `#{@method_sym}` or `#{@dig_keys}` on `#{inner_object}`, but it wasn't a Hash
+              2. #{inner_object.class}##{@method_sym}, which did not exist
+              3. #{obj.class}##{@method_sym}, which did not exist
 
               To implement this field, define one of the methods above (and check for typos)
               ERR
