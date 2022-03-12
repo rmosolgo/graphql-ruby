@@ -98,28 +98,50 @@ module GraphQLSite
     def render(context)
       headers = context["page"]["content"].scan(/^##+[^\n]+$/m)
       section_count = 0
+      current_table = header_table = [nil]
+      prev_depth = nil
+      headers.each do |h|
+        header_hashes = h.match(/^#+/)[0]
+        depth = header_hashes.size
+        if depth == 2
+          section_count += 1
+        end
+        text = h.gsub(/^#+ /, "")
+        target = text.downcase
+          .gsub(/[^a-z0-9]+/, "-")
+          .sub(/-$/, "")
+          .sub(/^-/, "")
+
+        rendered_text = Kramdown::Document.new(text, auto_ids: false)
+          .to_html
+          .sub("<p>", "")
+          .sub("</p>", "") # remove wrapping added by kramdown
+
+        if prev_depth
+          if prev_depth > depth
+            # outdent
+            current_table = current_table[0]
+          elsif prev_depth < depth
+            # indent
+            new_table = [current_table]
+            current_table[-1][-1] = new_table
+            current_table = new_table
+          else
+            # same depth
+          end
+        end
+
+        current_table << [rendered_text, target, []]
+        prev_depth = depth
+      end
+
+      table_html = "".dup
+      render_table_into_html(table_html, header_table)
+
       html = <<~HTML
       <div class="table-of-contents">
         <h3 class="contents-header">Contents</h3>
-        <ul class="contents-list">
-          #{headers.map do |h|
-              depth = h.count("#")
-              text = h.gsub(/^#+ /, "")
-              target = text.downcase
-                .gsub(/[^a-z0-9]+/, "-")
-                .sub(/-$/, "")
-                .sub(/^-/, "")
-
-              rendered_text = Kramdown::Document.new(text, auto_ids: false)
-                .to_html
-                .sub("<p>", "")
-                .sub("</p>", "") # remove wrapping added by kramdown
-
-              "<li class='contents-entry entry-depth-#{depth}'>
-                <span class='section-count'>#{depth == 2 ? "#{section_count += 1}. " : ""}</span><a href='##{target}'>#{rendered_text}</a>
-              </li>"
-            end.join("\n")}
-        </ul>
+        #{table_html}
       </div>
       HTML
 
@@ -132,6 +154,25 @@ module GraphQLSite
       else
         html
       end
+    end
+
+    private
+
+    def render_table_into_html(html_str, table)
+      html_str << "<ol class='contents-list'>"
+      table.each_with_index do |entry, idx|
+        if idx == 0
+          next # parent reference
+        end
+        rendered_text, target, child_table = *entry
+        html_str << "<li class='contents-entry'>"
+        html_str << "<a href='##{target}'>#{rendered_text}</a>"
+        if child_table.any?
+          render_table_into_html(html_str, child_table)
+        end
+        html_str << "</li>"
+      end
+      html_str << "</ol>"
     end
   end
 end
