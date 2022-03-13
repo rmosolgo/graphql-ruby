@@ -119,96 +119,29 @@
 <h1 class="guide-header">Pundit Integration</h1>
 <div class="guide-table-of-contents"><div class="table-of-contents">
   <h3 class="contents-header">Contents</h3>
-  <ul class="contents-list">
-    <li class='contents-entry entry-depth-2'>
-                <span class='section-count'>1. </span><a href='#getting-started'>Getting Started
-</a>
-              </li>
-<li class='contents-entry entry-depth-2'>
-                <span class='section-count'>2. </span><a href='#authorizing-objects'>Authorizing Objects
-</a>
-              </li>
-<li class='contents-entry entry-depth-4'>
-                <span class='section-count'></span><a href='#policies-and-methods'>Policies and Methods
-</a>
-              </li>
-<li class='contents-entry entry-depth-4'>
-                <span class='section-count'></span><a href='#custom-policy-class'>Custom Policy Class
-</a>
-              </li>
-<li class='contents-entry entry-depth-4'>
-                <span class='section-count'></span><a href='#bypassing-policies'>Bypassing Policies
-</a>
-              </li>
-<li class='contents-entry entry-depth-4'>
-                <span class='section-count'></span><a href='#handling-unauthorized-objects'>Handling Unauthorized Objects
-</a>
-              </li>
-<li class='contents-entry entry-depth-2'>
-                <span class='section-count'>3. </span><a href='#scopes'>Scopes
-</a>
-              </li>
-<li class='contents-entry entry-depth-4'>
-                <span class='section-count'></span><a href='#bypassing-scopes'>Bypassing scopes
-</a>
-              </li>
-<li class='contents-entry entry-depth-2'>
-                <span class='section-count'>4. </span><a href='#authorizing-fields'>Authorizing Fields
-</a>
-              </li>
-<li class='contents-entry entry-depth-4'>
-                <span class='section-count'></span><a href='#custom-policy-class'>Custom Policy Class
-</a>
-              </li>
-<li class='contents-entry entry-depth-2'>
-                <span class='section-count'>5. </span><a href='#authorizing-arguments'>Authorizing Arguments
-</a>
-              </li>
-<li class='contents-entry entry-depth-2'>
-                <span class='section-count'>6. </span><a href='#authorizing-mutations'>Authorizing Mutations
-</a>
-              </li>
-<li class='contents-entry entry-depth-4'>
-                <span class='section-count'></span><a href='#setup'>Setup
-</a>
-              </li>
-<li class='contents-entry entry-depth-4'>
-                <span class='section-count'></span><a href='#mutation-level-roles'>Mutation-level roles
-</a>
-              </li>
-<li class='contents-entry entry-depth-4'>
-                <span class='section-count'></span><a href='#custom-policy-class'>Custom Policy Class
-</a>
-              </li>
-<li class='contents-entry entry-depth-4'>
-                <span class='section-count'></span><a href='#authorizing-loaded-objects'>Authorizing Loaded Objects
-</a>
-              </li>
-<li class='contents-entry entry-depth-4'>
-                <span class='section-count'></span><a href='#unauthorized-mutations'>Unauthorized Mutations
-</a>
-              </li>
-<li class='contents-entry entry-depth-2'>
-                <span class='section-count'>7. </span><a href='#authorizing-resolvers'>Authorizing Resolvers
-</a>
-              </li>
-<li class='contents-entry entry-depth-2'>
-                <span class='section-count'>8. </span><a href='#custom-policy-lookup'>Custom Policy Lookup
-</a>
-              </li>
-<li class='contents-entry entry-depth-3'>
-                <span class='section-count'></span><a href='#custom-policy-methods'>Custom Policy Methods
-</a>
-              </li>
-<li class='contents-entry entry-depth-3'>
-                <span class='section-count'></span><a href='#one-policy-per-class'>One Policy Per Class
-</a>
-              </li>
-<li class='contents-entry entry-depth-2'>
-                <span class='section-count'>9. </span><a href='#custom-user-lookup'>Custom User Lookup
-</a>
-              </li>
-  </ul>
+  <ol class='contents-list'><li class='contents-entry'><a href='#getting-started'>Getting Started
+</a></li><li class='contents-entry'><a href='#authorizing-objects'>Authorizing Objects
+</a><ol class='contents-list'><li class='contents-entry'><a href='#policies-and-methods'>Policies and Methods
+</a></li><li class='contents-entry'><a href='#custom-policy-class'>Custom Policy Class
+</a></li><li class='contents-entry'><a href='#bypassing-policies'>Bypassing Policies
+</a></li><li class='contents-entry'><a href='#handling-unauthorized-objects'>Handling Unauthorized Objects
+</a></li></ol></li><li class='contents-entry'><a href='#scopes'>Scopes
+</a><ol class='contents-list'><li class='contents-entry'><a href='#bypassing-scopes'>Bypassing scopes
+</a></li></ol></li><li class='contents-entry'><a href='#authorizing-fields'>Authorizing Fields
+</a><ol class='contents-list'><li class='contents-entry'><a href='#custom-policy-class'>Custom Policy Class
+</a></li></ol></li><li class='contents-entry'><a href='#authorizing-arguments'>Authorizing Arguments
+</a></li><li class='contents-entry'><a href='#authorizing-mutations'>Authorizing Mutations
+</a><ol class='contents-list'><li class='contents-entry'><a href='#setup'>Setup
+</a></li><li class='contents-entry'><a href='#mutation-level-roles'>Mutation-level roles
+</a></li><li class='contents-entry'><a href='#custom-policy-class'>Custom Policy Class
+</a></li><li class='contents-entry'><a href='#authorizing-loaded-objects'>Authorizing Loaded Objects
+</a></li><li class='contents-entry'><a href='#unauthorized-mutations'>Unauthorized Mutations
+</a></li></ol></li><li class='contents-entry'><a href='#authorizing-resolvers'>Authorizing Resolvers
+</a></li><li class='contents-entry'><a href='#custom-policy-lookup'>Custom Policy Lookup
+</a><ol class='contents-list'><li class='contents-entry'><a href='#custom-policy-methods'>Custom Policy Methods
+</a></li><li class='contents-entry'><a href='#one-policy-per-class'>One Policy Per Class
+</a></li></ol></li><li class='contents-entry'><a href='#custom-user-lookup'>Custom User Lookup
+</a></li></ol>
 </div>
 </div>
 <div class="guide-container">

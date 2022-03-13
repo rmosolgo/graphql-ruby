@@ -120,32 +120,13 @@
 <h1 class="guide-header">Ahead-of-Time AST Analysis</h1>
 <div class="guide-table-of-contents"><div class="table-of-contents">
   <h3 class="contents-header">Contents</h3>
-  <ul class="contents-list">
-    <li class='contents-entry entry-depth-3'>
-                <span class='section-count'></span><a href='#using-analyzers'>Using Analyzers
-</a>
-              </li>
-<li class='contents-entry entry-depth-2'>
-                <span class='section-count'>1. </span><a href='#analyzer-api'>Analyzer API
-</a>
-              </li>
-<li class='contents-entry entry-depth-3'>
-                <span class='section-count'></span><a href='#field-arguments'>Field Arguments
-</a>
-              </li>
-<li class='contents-entry entry-depth-3'>
-                <span class='section-count'></span><a href='#errors'>Errors
-</a>
-              </li>
-<li class='contents-entry entry-depth-3'>
-                <span class='section-count'></span><a href='#conditional-analysis'>Conditional Analysis
-</a>
-              </li>
-<li class='contents-entry entry-depth-2'>
-                <span class='section-count'>2. </span><a href='#analyzing-multiplexes'>Analyzing Multiplexes
-</a>
-              </li>
-  </ul>
+  <ol class='contents-list'><li class='contents-entry'><a href='#using-analyzers'>Using Analyzers
+</a></li><li class='contents-entry'><a href='#analyzer-api'>Analyzer API
+</a><ol class='contents-list'><li class='contents-entry'><a href='#field-arguments'>Field Arguments
+</a></li><li class='contents-entry'><a href='#errors'>Errors
+</a></li><li class='contents-entry'><a href='#conditional-analysis'>Conditional Analysis
+</a></li></ol></li><li class='contents-entry'><a href='#analyzing-multiplexes'>Analyzing Multiplexes
+</a></li></ol>
 </div>
 </div>
 <div class="guide-container">
@@ -153,7 +134,7 @@
 
 <p>The primitive for analysis is <a href="/api-doc/2.0.2/GraphQL/Analysis/AST/Analyzer" target="_blank" title="API docs for GraphQL::Analysis::AST::Analyzer"><code>GraphQL::Analysis::AST::Analyzer</code></a>. Analyzers must inherit from this base class and implement the desired methods for analysis.</p>
 
-<h3 id="using-analyzers">Using Analyzers</h3>
+<h2 id="using-analyzers">Using Analyzers</h2>
 
 <p>Query analyzers are added to the schema with <code class="language-plaintext highlighter-rouge">query_analyzer</code>, for example:</p>
 
