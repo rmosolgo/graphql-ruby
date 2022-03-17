@@ -8,6 +8,10 @@
 
 ### Bug Fix
 
+# 1.21.6 (16 March 2022)
+
+- OperationStore: Fix no method error in Redis pipeline usage
+
 # 1.21.5 (7 March 2022)
 
 ### Bug Fix
