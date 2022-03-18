@@ -11,7 +11,7 @@ module GraphQL
         # @return [void]
         def directive(dir_class, **options)
           @own_directives ||= []
-          remove_directive(dir_class)
+          remove_directive(dir_class) unless dir_class.repeatable?
           @own_directives << dir_class.new(self, **options)
           nil
         end

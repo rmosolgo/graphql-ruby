@@ -80,6 +80,46 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
     assert_equal "@secret.topSecret is required, but no value was given", err2.message
   end
 
+  describe 'repeatable directives' do
+    module RepeatDirectiveTest
+      class Secret < GraphQL::Schema::Directive
+        argument :secret, String
+        locations OBJECT, INTERFACE
+        repeatable true
+      end
+
+      class OtherSecret < GraphQL::Schema::Directive
+        argument :secret, String
+        locations OBJECT, INTERFACE
+        repeatable false
+      end
+
+      class Thing < GraphQL::Schema::Object
+        directive(Secret, secret: "my secret")
+        directive(Secret, secret: "my second secret")
+
+        directive(OtherSecret, secret: "other secret")
+        directive(OtherSecret, secret: "second other secret")
+      end
+    end
+
+    it "allows repeatable directives twice" do
+      directives = RepeatDirectiveTest::Thing.directives
+      secret_directives = directives.select{ |x| x.is_a?(RepeatDirectiveTest::Secret) }
+
+      assert_equal 2, secret_directives.size
+      assert_equal ["my secret", "my second secret"], secret_directives.map{ |d| d.arguments[:secret] }
+    end
+
+    it "overwrites non-repeatable directives" do
+      directives = RepeatDirectiveTest::Thing.directives
+      other_directives = directives.select{ |x| x.is_a?(RepeatDirectiveTest::OtherSecret) }
+
+      assert_equal 1, other_directives.size
+      assert_equal ["second other secret"], other_directives.map{ |d| d.arguments[:secret] }
+    end
+  end
+
   module RuntimeDirectiveTest
     class CountFields < GraphQL::Schema::Directive
       locations(FIELD, FRAGMENT_SPREAD, INLINE_FRAGMENT)
