@@ -25,7 +25,7 @@ pro: true
 Encoders can be created with `Encoder.define { ... }`:
 
 ```ruby
-MyEncoder = GraphQL::Pro::Encoder.define do
+class MyEncoder < GraphQL::Pro::Encoder
   key("f411f30...")
   # optional:
   tag("81ce51c307")
@@ -40,7 +40,7 @@ end
 Encrypt cursors by attaching an encrypted encoder to `Schema#cursor_encoder`:
 
 ```ruby
-MySchema = GraphQL::Schema.define do
+class MySchema GraphQL::Schema
   cursor_encoder(MyCursorEncoder)
 end
 ```
@@ -55,17 +55,17 @@ If you implement your own connections, you can access the encoder's encryption m
 Encrypt IDs by using encoders in `Schema#id_from_object` and `Schema#object_from_id`:
 
 ```ruby
-MySchema = GraphQL::Schema.define do
-  id_from_object ->(object, type, ctx) {
+class MySchema < GraphQL::Schema
+  def id_from_object(object, type, ctx)
     id_data = "#{object.class.name}/#{object.id}"
     MyIDEncoder.encode(id_data)
-  }
-
-  object_from_id ->(id, ctx) {
+  end
+  
+  def object_from_id(id, ctx)
     id_data = MyIDEncoder.decode(id)
     class_name, id = id_data.split("/")
-    class_name.constantize.find(id)
-  }
+    class_name.constantize.find(id) 
+  end
 end
 ```
 
@@ -77,9 +77,17 @@ You can combine several encoders into a single chain of versioned encoders. Pass
 
 ```ruby
 # Define some encoders ...
-NewSecureEncoder       = GraphQL::Pro::Encoder.define { ... }
-OldSecureEncoder       = GraphQL::Pro::Encoder.define { ... }
-LegacyInsecureEncoder  = GraphQL::Pro::Encoder.define { ... }
+class NewSecureEncoder < GraphQL::Pro::Encoder
+  # ...
+end
+
+class OldSecureEncoder < GraphQL::Pro::Encoder
+  # ...
+end
+
+class LegacyInsecureEncoder < GraphQL::Pro::Encoder
+  # ...
+end
 
 # Then order them by priority:
 VersionedEncoder = GraphQL::Pro::Encoder.versioned(
@@ -127,7 +135,7 @@ end
 Then attach it to your encoder:
 
 ```ruby
-MyURLSafeEncoder = GraphQL::Pro::Encoder.define do
+class MyURLSafeEncoder < GraphQL::Pro::Encoder
   encoder URLSafeEncoder
 end
 ```
