@@ -654,7 +654,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   it "Delegates many properties to its @resolver_class" do
     resolver = Class.new(GraphQL::Schema::Resolver) do
       description "description 1"
-      type GraphQL::Types::Float, null: true
+      type [GraphQL::Types::Float], null: true
 
       argument :b, GraphQL::Types::Float
     end
@@ -664,7 +664,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     end
 
     assert_equal "description 1", field.description
-    assert_equal "Float", field.type.to_type_signature
+    assert_equal "[Float!]", field.type.to_type_signature
     assert_equal 1, field.complexity
     assert_equal :resolve_with_support, field.resolver_method
     assert_nil field.broadcastable?
@@ -672,6 +672,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     assert_nil field.max_page_size
     assert_equal [:blah], field.extras
     assert_equal [:b, :a], field.all_argument_definitions.map(&:keyword)
+    assert_equal true, field.scoped?
 
     resolver.description("description 2")
     resolver.type(GraphQL::Types::String, null: false)
@@ -691,5 +692,6 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     assert_equal 100, field.max_page_size
     assert_equal [:blah, :foo], field.extras
     assert_equal [:b, :c, :a], field.all_argument_definitions.map(&:keyword)
+    assert_equal false, field.scoped?
   end
 end

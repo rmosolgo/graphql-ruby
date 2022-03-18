@@ -145,8 +145,18 @@ module GraphQL
         if !@scope.nil?
           # The default was overridden
           @scope
+        elsif @return_type_expr
+          # Detect a list return type, but don't call `type` since that may eager-load an otherwise lazy-loaded type
+          @return_type_expr.is_a?(Array) ||
+            (@return_type_expr.is_a?(String) && @return_type_expr.include?("[")) ||
+            connection?
+        elsif @resolver_class
+          resolver_type = @resolver_class.type_expr
+          resolver_type.is_a?(Array) ||
+            (resolver_type.is_a?(String) && resolver_type.include?("[")) ||
+            connection?
         else
-          @return_type_expr && (@return_type_expr.is_a?(Array) || (@return_type_expr.is_a?(String) && @return_type_expr.include?("[")) || connection?)
+          false
         end
       end
 
