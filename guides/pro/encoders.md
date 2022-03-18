@@ -22,7 +22,7 @@ pro: true
 
 ## Defining an Encoder
 
-Encoders can be created with by subclassing `GraphQL::Pro::Encoder`: 
+Encoders can be created by subclassing `GraphQL::Pro::Encoder`: 
 
 ```ruby
 class MyEncoder < GraphQL::Pro::Encoder
