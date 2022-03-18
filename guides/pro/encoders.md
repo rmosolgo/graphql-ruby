@@ -63,7 +63,7 @@ class MySchema < GraphQL::Schema
   def object_from_id(id, ctx)
     id_data = MyIDEncoder.decode(id)
     class_name, id = id_data.split("/")
-    class_name.constantize.find(id) 
+    class_name.constantize.find(id)
   end
 end
 ```
