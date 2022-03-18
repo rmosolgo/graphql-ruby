@@ -22,7 +22,7 @@ pro: true
 
 ## Defining an Encoder
 
-Encoders can be created with `Encoder.define { ... }`:
+Encoders can be created with by subclassing `GraphQL::Pro::Encoder`: 
 
 ```ruby
 class MyEncoder < GraphQL::Pro::Encoder
@@ -52,7 +52,7 @@ If you implement your own connections, you can access the encoder's encryption m
 
 ## Encrypting IDs
 
-Encrypt IDs by using encoders in `Schema#id_from_object` and `Schema#object_from_id`:
+Encrypt IDs by using encoders in `Schema.id_from_object` and `Schema.object_from_id`:
 
 ```ruby
 class MySchema < GraphQL::Schema
