@@ -60,7 +60,6 @@ class MySchema < GraphQL::Schema
     id_data = "#{object.class.name}/#{object.id}"
     MyIDEncoder.encode(id_data)
   end
-  
   def object_from_id(id, ctx)
     id_data = MyIDEncoder.decode(id)
     class_name, id = id_data.split("/")
@@ -125,7 +124,6 @@ module URLSafeEncoder
   def self.encode(str)
     Base64.urlsafe_encode64(str)
   end
-
   def self.decode(str)
     Base64.urlsafe_decode64(str)
   end
