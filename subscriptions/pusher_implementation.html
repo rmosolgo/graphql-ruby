@@ -132,6 +132,7 @@
 </a></li><li class='contents-entry'><a href='#schema-configuration'>Schema configuration
 </a></li><li class='contents-entry'><a href='#execution-configuration'>Execution configuration
 </a><ol class='contents-list'><li class='contents-entry'><a href='#payload-compression'>Payload Compression
+</a></li><li class='contents-entry'><a href='#batched-deliveries'>Batched Deliveries
 </a></li></ol></li><li class='contents-entry'><a href='#webhook-configuration'>Webhook configuration
 </a></li><li class='contents-entry'><a href='#authorization'>Authorization
 </a></li><li class='contents-entry'><a href='#serializing-context'>Serializing Context
@@ -269,7 +270,7 @@ appendonly <span class="nb">yes</span>
 
 <p>Read more here: <a href="https://www.html5rocks.com/en/tutorials/cors/">“Using CORS”</a>.</p>
 
-<h4 id="payload-compression">Payload Compression</h4>
+<h3 id="payload-compression">Payload Compression</h3>
 
 <p>To mitigate problems with <a href="https://support.pusher.com/hc/en-us/articles/360019115473-What-is-the-message-size-limit-when-publishing-a-message-in-Channels-">Pusher’s 10kb message limit</a>, you can specify <code class="language-plaintext highlighter-rouge">compress_pusher_payload: true</code> in the <code class="language-plaintext highlighter-rouge">context</code> of your subscription. For example:</p>
 
@@ -288,6 +289,15 @@ appendonly <span class="nb">yes</span>
 <p>This will cause subscription payloads to include <code class="language-plaintext highlighter-rouge">compressed_result: "..."</code> instead of <code class="language-plaintext highlighter-rouge">result: "..."</code> when they’re sent over Pusher. See docs for <a href="/javascript_client/apollo_subscriptions">Apollo Client</a> or <a href="/javascript_client/relay_subscriptions">Relay Modern</a> to read about preparing clients for compressed payloads.</p>
 
 <p>By configuring <code class="language-plaintext highlighter-rouge">compress_pusher_payload: true</code> on a query-by-query basis, the subscription backend can continue to support clients running <em>old</em> client code (by not compressing) while upgrading new clients to compressed payloads.</p>
+
+<h3 id="batched-deliveries">Batched Deliveries</h3>
+
+<p>By default, <code class="language-plaintext highlighter-rouge">PusherSubscriptions</code> sends updates in batches of up to 10 at a time, using <a href="https://github.com/pusher/pusher-http-ruby#batches">batch triggers</a>. You can customize the batch size by passing <code class="language-plaintext highlighter-rouge">batch_size:</code> when installing it, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">PusherSubscriptions</span><span class="p">,</span> <span class="ss">batch_size: </span><span class="mi">1</span><span class="p">,</span> <span class="o">...</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">batch_size: 1</code> will make <code class="language-plaintext highlighter-rouge">PusherSubscriptions</code> use the single trigger API instead of batch triggers.</p>
 
 <h2 id="webhook-configuration">Webhook configuration</h2>
 

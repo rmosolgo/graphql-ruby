@@ -123,6 +123,7 @@
   <h3 class="contents-header">Contents</h3>
   <ol class='contents-list'><li class='contents-entry'><a href='#database-setup'>Database Setup
 </a></li><li class='contents-entry'><a href='#database-update'>Database Update
+</a></li><li class='contents-entry'><a href='#updating-last-used-at'>Updating <code>last_used_at</code>
 </a></li></ol>
 </div>
 </div>
@@ -197,6 +198,15 @@
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">add_column</span> <span class="ss">:graphql_client_operations</span><span class="p">,</span> <span class="ss">:is_archived</span><span class="p">,</span> <span class="ss">:boolean</span><span class="p">,</span> <span class="ss">default: </span><span class="kp">false</span>
 <span class="n">add_column</span> <span class="ss">:graphql_client_operations</span><span class="p">,</span> <span class="ss">:last_used_at</span><span class="p">,</span> <span class="ss">:datetime</span>
 </code></pre></div></div>
+
+<h2 id="updating-last_used_at">Updating <code class="language-plaintext highlighter-rouge">last_used_at</code></h2>
+
+<p>By default, GraphQL-Pro updates <code class="language-plaintext highlighter-rouge">last_used_at</code> values in a background thread every 5 seconds. You can customize this by passing a number of seconds to <code class="language-plaintext highlighter-rouge">update_last_used_at_every:</code> when installing the OperationStore:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">OperationStore</span><span class="p">,</span> <span class="ss">update_last_used_at_every: </span><span class="mi">1</span> <span class="c1"># seconds</span>
+</code></pre></div></div>
+
+<p>To update that column inline each time an operation is accessed, pass <code class="language-plaintext highlighter-rouge">0</code>.</p>
 
 </div>
 <p class="guide-footer">
