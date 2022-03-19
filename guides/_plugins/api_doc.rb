@@ -211,3 +211,15 @@ Jekyll::Hooks.register :site, :pre_render do |site|
   all_sections.sort_by! { |s| sorted_section_names.index(s["name"]) }
   site.data["all_sections"] = all_sections
 end
+
+module Jekyll
+  module Algolia
+    module Hooks
+      def self.before_indexing_each(record, node, context)
+        record = record.dup
+        record.delete(:section_pages)
+        record
+      end
+    end
+  end
+end
