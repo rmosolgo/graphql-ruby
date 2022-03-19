@@ -25,6 +25,15 @@ describe GraphQL::Schema::Member::Scoped do
         end
       end
 
+      def self.authorized?(obj, ctx)
+        if ctx[:allow_unscoped]
+          true
+        else
+          raise "This should never be called"
+        end
+      end
+
+
       field :name, String, null: false
     end
 
@@ -118,7 +127,7 @@ describe GraphQL::Schema::Member::Scoped do
     end
 
     it "is bypassed when scope: false" do
-      assert_equal ["Trombone", "Paperclip"], get_item_names_with_context({}, field_name: "unscopedItems")
+      assert_equal ["Trombone", "Paperclip"], get_item_names_with_context({ allow_unscoped: true }, field_name: "unscopedItems")
     end
 
     it "returns null when the value is nil" do

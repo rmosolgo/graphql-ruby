@@ -88,6 +88,10 @@ module GraphQL
             end
           end
         end
+
+        def scoped_new(object, context)
+          self.new(object, context)
+        end
       end
 
       def initialize(object, context)

@@ -200,7 +200,7 @@ module GraphQL
           root_type = schema.root_type_for_operation(root_op_type)
           path = []
           set_all_interpreter_context(query.root_value, nil, nil, path)
-          object_proxy = authorized_new(root_type, query.root_value, context)
+          object_proxy = authorized_new(root_type, query.root_value, context, false)
           object_proxy = schema.sync_lazy(object_proxy)
 
           if object_proxy.nil?
@@ -416,7 +416,7 @@ module GraphQL
           object = owner_object
 
           if is_introspection
-            object = authorized_new(field_defn.owner, object, context)
+            object = authorized_new(field_defn.owner, object, context, false)
           end
 
           total_args_count = field_defn.arguments(context).size
@@ -510,10 +510,11 @@ module GraphQL
                   ex_err
                 end
               end
+              was_scoped = @interpreter_context.delete(:was_scoped)
               after_lazy(app_result, owner: owner_type, field: field_defn, path: next_path, ast_node: ast_node, owner_object: object, arguments: resolved_arguments, result_name: result_name, result: selection_result) do |inner_result|
                 continue_value = continue_value(next_path, inner_result, owner_type, field_defn, return_type.non_null?, ast_node, result_name, selection_result)
                 if HALT != continue_value
-                  continue_field(next_path, continue_value, owner_type, field_defn, return_type, ast_node, next_selections, false, object, resolved_arguments, result_name, selection_result)
+                  continue_field(next_path, continue_value, owner_type, field_defn, return_type, ast_node, next_selections, false, object, resolved_arguments, result_name, selection_result, was_scoped)
                 end
               end
             end
@@ -673,7 +674,7 @@ module GraphQL
         # Location information from `path` and `ast_node`.
         #
         # @return [Lazy, Array, Hash, Object] Lazy, Array, and Hash are all traversed to resolve lazy values later
-        def continue_field(path, value, owner_type, field, current_type, ast_node, next_selections, is_non_null, owner_object, arguments, result_name, selection_result) # rubocop:disable Metrics/ParameterLists
+        def continue_field(path, value, owner_type, field, current_type, ast_node, next_selections, is_non_null, owner_object, arguments, result_name, selection_result, was_scoped) # rubocop:disable Metrics/ParameterLists
           if current_type.non_null?
             current_type = current_type.of_type
             is_non_null = true
@@ -699,12 +700,12 @@ module GraphQL
                 set_result(selection_result, result_name, nil)
                 nil
               else
-                continue_field(path, resolved_value, owner_type, field, resolved_type, ast_node, next_selections, is_non_null, owner_object, arguments, result_name, selection_result)
+                continue_field(path, resolved_value, owner_type, field, resolved_type, ast_node, next_selections, is_non_null, owner_object, arguments, result_name, selection_result, was_scoped)
               end
             end
           when "OBJECT"
             object_proxy = begin
-              authorized_new(current_type, value, context)
+              authorized_new(current_type, value, context, was_scoped)
             rescue GraphQL::ExecutionError => err
               err
             end
@@ -766,10 +767,10 @@ module GraphQL
                 idx += 1
                 if use_dataloader_job
                   @dataloader.append_job do
-                    resolve_list_item(inner_value, inner_type, next_path, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type)
+                    resolve_list_item(inner_value, inner_type, next_path, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type, was_scoped)
                   end
                 else
-                  resolve_list_item(inner_value, inner_type, next_path, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type)
+                  resolve_list_item(inner_value, inner_type, next_path, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type, was_scoped)
                 end
               end
             rescue NoMethodError => err
@@ -789,14 +790,14 @@ module GraphQL
           end
         end
 
-        def resolve_list_item(inner_value, inner_type, next_path, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type) # rubocop:disable Metrics/ParameterLists
+        def resolve_list_item(inner_value, inner_type, next_path, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type, was_scoped) # rubocop:disable Metrics/ParameterLists
           set_all_interpreter_context(nil, nil, nil, next_path)
           call_method_on_directives(:resolve_each, owner_object, ast_node.directives) do
             # This will update `response_list` with the lazy
             after_lazy(inner_value, owner: inner_type, path: next_path, ast_node: ast_node, field: field, owner_object: owner_object, arguments: arguments, result_name: this_idx, result: response_list) do |inner_inner_value|
               continue_value = continue_value(next_path, inner_inner_value, owner_type, field, inner_type.non_null?, ast_node, this_idx, response_list)
               if HALT != continue_value
-                continue_field(next_path, continue_value, owner_type, field, inner_type, ast_node, next_selections, false, owner_object, arguments, this_idx, response_list)
+                continue_field(next_path, continue_value, owner_type, field, inner_type, ast_node, next_selections, false, owner_object, arguments, this_idx, response_list, was_scoped)
               end
             end
           end
@@ -944,8 +945,12 @@ module GraphQL
           end
         end
 
-        def authorized_new(type, value, context)
-          type.authorized_new(value, context)
+        def authorized_new(type, value, context, was_scoped)
+          if was_scoped
+            type.scoped_new(value, context)
+          else
+            type.authorized_new(value, context)
+          end
         end
 
         def lazy?(object)

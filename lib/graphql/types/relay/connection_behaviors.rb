@@ -49,6 +49,7 @@ module GraphQL
               type: [edge_type_class, null: edge_nullable],
               null: edges_nullable,
               description: "A list of edges.",
+              scope: false, # Assume that the connection was already scoped.
               connection: false,
             }
 
@@ -135,6 +136,7 @@ module GraphQL
               null: nullable,
               description: "A list of nodes.",
               connection: false,
+              scope: false, # assume that the connection already scoped this set of nodes
             }
             if field_options
               base_field_options.merge!(field_options)

@@ -10,7 +10,13 @@ module GraphQL
           else
             ret_type = @field.type.unwrap
             if ret_type.respond_to?(:scope_items)
-              ret_type.scope_items(value, context)
+              scoped_items = ret_type.scope_items(value, context)
+              if scoped_items == Schema::Member::Scoped::NOT_SCOPED
+                value
+              else
+                context.namespace(:interpreter)[:was_scoped] = true
+                scoped_items
+              end
             else
               value
             end
