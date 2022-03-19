@@ -83,3 +83,13 @@ GraphQL-Pro 1.15.0 introduced new features for the OperationStore. To enable the
 add_column :graphql_client_operations, :is_archived, :boolean, default: false
 add_column :graphql_client_operations, :last_used_at, :datetime
 ```
+
+## Updating `last_used_at`
+
+By default, GraphQL-Pro updates `last_used_at` values in a background thread every 5 seconds. You can customize this by passing a number of seconds to `update_last_used_at_every:` when installing the OperationStore:
+
+```ruby
+use GraphQL::Pro::OperationStore, update_last_used_at_every: 1 # seconds
+```
+
+To update that column inline each time an operation is accessed, pass `0`.

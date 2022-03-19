@@ -8,7 +8,16 @@
 
 ### Bug Fix
 
+# 1.22.0 (19 March 2022)
+
+### New Features
+
+- Pusher subscriptions: it now sends updates in groups of 10 by default, pass `use ..., batch_size: 1` to revert to the previous behavior.
+- OperationStore: when using ActiveRecord for storage, it now batches updates to `last_used_at` every 5 seconds. Pass `use ..., update_last_used_at_every: 0` to update that column synchronously, instead, as before.
+
 # 1.21.6 (16 March 2022)
+
+### Bug Fix
 
 - OperationStore: Fix no method error in Redis pipeline usage
 

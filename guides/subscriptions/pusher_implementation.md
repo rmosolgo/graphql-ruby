@@ -157,6 +157,16 @@ This will cause subscription payloads to include `compressed_result: "..."` inst
 
 By configuring `compress_pusher_payload: true` on a query-by-query basis, the subscription backend can continue to support clients running _old_ client code (by not compressing) while upgrading new clients to compressed payloads.
 
+### Batched Deliveries
+
+By default, `PusherSubscriptions` sends updates in batches of up to 10 at a time, using [batch triggers](https://github.com/pusher/pusher-http-ruby#batches). You can customize the batch size by passing `batch_size:` when installing it, for example:
+
+```ruby
+use GraphQL::Pro::PusherSubscriptions, batch_size: 1, ...
+```
+
+`batch_size: 1` will make `PusherSubscriptions` use the single trigger API instead of batch triggers.
+
 ## Webhook configuration
 
 Your server needs to receive webhooks from Pusher when clients disconnect. This keeps your local subscription database in sync with Pusher.
