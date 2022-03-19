@@ -644,7 +644,7 @@ module GraphQL
                 if @dig_keys
                   inner_object.dig(*@dig_keys)
                 elsif inner_object.key?(@method_sym)
-                  inner_object[method_sym]
+                  inner_object[@method_sym]
                 elsif inner_object.key?(@method_str)
                   inner_object[@method_str]
                 end
