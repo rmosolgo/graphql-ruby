@@ -108,7 +108,7 @@ module GraphQLSite
         end
         text = h.gsub(/^#+ /, "")
         target = text.downcase
-          .gsub(/[^a-z0-9]+/, "-")
+          .gsub(/[^a-z0-9_]+/, "-")
           .sub(/-$/, "")
           .sub(/^-/, "")
 
