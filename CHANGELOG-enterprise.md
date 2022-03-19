@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.1.4 (19 March 2022)
+
+### Bug Fix
+
+- ObjectCache: don't create a cache fingerprint if the query is found to be uncacheable during analysis.
+
 # 1.1.3 (3 March 2022)
 
 ### Bug Fix
