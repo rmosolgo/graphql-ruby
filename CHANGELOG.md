@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 1.13.11 (21 March 2022)
+
+### Deprecations
+
+- `RangeAdd` warns when `context:` isn't provided (it's required in GraphQL-Ruby 2.0) #3996
+
 # 1.13.10
 
 ### Breaking changes
