@@ -29,7 +29,7 @@ describe GraphQL::Schema::Member::Scoped do
         if ctx[:allow_unscoped]
           true
         else
-          raise "This should never be called"
+          raise "This should never be called (#{ctx[:current_path]}, #{ctx[:current_field].path})"
         end
       end
 

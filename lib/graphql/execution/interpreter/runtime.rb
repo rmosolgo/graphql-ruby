@@ -510,10 +510,10 @@ module GraphQL
                   ex_err
                 end
               end
-              was_scoped = @interpreter_context.delete(:was_scoped)
               after_lazy(app_result, owner: owner_type, field: field_defn, path: next_path, ast_node: ast_node, owner_object: object, arguments: resolved_arguments, result_name: result_name, result: selection_result) do |inner_result|
                 continue_value = continue_value(next_path, inner_result, owner_type, field_defn, return_type.non_null?, ast_node, result_name, selection_result)
                 if HALT != continue_value
+                  was_scoped = @interpreter_context.delete(:was_scoped)
                   continue_field(next_path, continue_value, owner_type, field_defn, return_type, ast_node, next_selections, false, object, resolved_arguments, result_name, selection_result, was_scoped)
                 end
               end
@@ -871,8 +871,10 @@ module GraphQL
         # @return [GraphQL::Execution::Lazy, Object] If loading `object` will be deferred, it's a wrapper over it.
         def after_lazy(lazy_obj, owner:, field:, path:, owner_object:, arguments:, ast_node:, result:, result_name:, eager: false, trace: true, &block)
           if lazy?(lazy_obj)
+            was_scoped = @interpreter_context[:was_scoped]
             lazy = GraphQL::Execution::Lazy.new(path: path, field: field) do
               set_all_interpreter_context(owner_object, field, arguments, path)
+              @interpreter_context[:was_scoped] = was_scoped
               # Wrap the execution of _this_ method with tracing,
               # but don't wrap the continuation below
               inner_obj = begin

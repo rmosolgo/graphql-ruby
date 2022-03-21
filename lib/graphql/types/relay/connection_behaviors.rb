@@ -150,6 +150,16 @@ module GraphQL
             obj_type.field :page_info, GraphQL::Types::Relay::PageInfo, null: false, description: "Information to aid in pagination."
           end
         end
+
+        def edges
+          context.namespace(:interpreter)[:was_scoped] = true
+          @object.edges
+        end
+
+        def nodes
+          context.namespace(:interpreter)[:was_scoped] = true
+          @object.nodes
+        end
       end
     end
   end

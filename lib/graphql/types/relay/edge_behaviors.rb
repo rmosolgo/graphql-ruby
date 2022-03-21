@@ -11,6 +11,11 @@ module GraphQL
           child_class.node_nullable(true)
         end
 
+        def node
+          context.namespace(:interpreter)[:was_scoped] = true
+          @object.node
+        end
+
         module ClassMethods
           # Get or set the Object type that this edge wraps.
           #
