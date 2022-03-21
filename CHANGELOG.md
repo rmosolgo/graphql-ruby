@@ -10,6 +10,19 @@
 
 ### Bug fixes
 
+# 2.0.3 (21 March 2022)
+
+### Bug fixes
+
+- Fields: make sure field configs override resolver defaults #3975
+- Fix `Field#scoped?` when the field uses a resolver #3990
+- Allow schema members to have multiple of `repeatable` directives #3986
+- Remove some legacy code #3979 #9995
+- SDL: fix indirect interface implementation when loading a schema #3982
+- Datadog tracing: Support ddtrace 1.0 #3978
+- Fix `Node` implementation when connection types include built-in behavior modules #3967
+- Small stack trace size reduction #3957
+
 # 2.0.2 (1 March 2022)
 
 ### New features
