@@ -10,6 +10,19 @@
 
 ### Bug fixes
 
+# 2.0.3 (21 March 2022)
+
+### Bug fixes
+
+- Fields: make sure field configs override resolver defaults #3975
+- Fix `Field#scoped?` when the field uses a resolver #3990
+- Allow schema members to have multiple of `repeatable` directives #3986
+- Remove some legacy code #3979 #9995
+- SDL: fix indirect interface implementation when loading a schema #3982
+- Datadog tracing: Support ddtrace 1.0 #3978
+- Fix `Node` implementation when connection types include built-in behavior modules #3967
+- Small stack trace size reduction #3957
+
 # 2.0.2 (1 March 2022)
 
 ### New features
@@ -42,6 +55,12 @@
 
 - __None, ideally.__ If you have an application that ran without warnings on v1.13, you should be able to update to 2.0.0 without a hitch. If this isn't the case, please [open an issue](https://github.com/rmosolgo/graphql-ruby/issues/new?template=bug_report.md&title=[2.0%20update]%20describe%20your%20problem) and let me know what happened! I plan to maintain 1.13 for a while in order to ensure a smooth transition.
 - But, many legacy code components were removed, so if there are any more references to those, there will be name errors! See #3729 for a list of removed components.
+
+# 1.13.11 (21 March 2022)
+
+### Deprecations
+
+- `RangeAdd` warns when `context:` isn't provided (it's required in GraphQL-Ruby 2.0) #3996
 
 # 1.13.10
 

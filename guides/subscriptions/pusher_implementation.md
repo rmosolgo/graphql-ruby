@@ -136,7 +136,7 @@ end
 
 Read more here: ["Using CORS"](https://www.html5rocks.com/en/tutorials/cors/).
 
-#### Payload Compression
+### Payload Compression
 
 To mitigate problems with [Pusher's 10kb message limit](https://support.pusher.com/hc/en-us/articles/360019115473-What-is-the-message-size-limit-when-publishing-a-message-in-Channels-), you can specify `compress_pusher_payload: true` in the `context` of your subscription. For example:
 
@@ -156,6 +156,16 @@ end
 This will cause subscription payloads to include `compressed_result: "..."` instead of `result: "..."` when they're sent over Pusher. See docs for {% internal_link "Apollo Client", "/javascript_client/apollo_subscriptions" %} or {% internal_link "Relay Modern", "/javascript_client/relay_subscriptions" %} to read about preparing clients for compressed payloads.
 
 By configuring `compress_pusher_payload: true` on a query-by-query basis, the subscription backend can continue to support clients running _old_ client code (by not compressing) while upgrading new clients to compressed payloads.
+
+### Batched Deliveries
+
+By default, `PusherSubscriptions` sends updates in batches of up to 10 at a time, using [batch triggers](https://github.com/pusher/pusher-http-ruby#batches). You can customize the batch size by passing `batch_size:` when installing it, for example:
+
+```ruby
+use GraphQL::Pro::PusherSubscriptions, batch_size: 1, ...
+```
+
+`batch_size: 1` will make `PusherSubscriptions` use the single trigger API instead of batch triggers.
 
 ## Webhook configuration
 

@@ -148,22 +148,6 @@ module GraphQL
             obj_type.field :page_info, GraphQL::Types::Relay::PageInfo, null: false, description: "Information to aid in pagination."
           end
         end
-
-        # By default this calls through to the ConnectionWrapper's edge nodes method,
-        # but sometimes you need to override it to support the `nodes` field
-        def nodes
-          @object.edge_nodes
-        end
-
-        def edges
-          if @object.is_a?(GraphQL::Pagination::Connection)
-            @object.edges
-          else
-            context.schema.after_lazy(object.edge_nodes) do |nodes|
-              nodes.map { |n| self.class.edge_class.new(n, object) }
-            end
-          end
-        end
       end
     end
   end

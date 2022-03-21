@@ -38,7 +38,7 @@ jobs:
       matrix:
         include:
           - gemfile: Gemfile
-            ruby: 3.0
+            ruby: 3.1
             bundler: "1"
           - gemfile: gemfiles/rails_4.2.gemfile
             ruby: 2.4
@@ -47,9 +47,9 @@ jobs:
             ruby: 2.7
           # Rails 6.1 is tested with Postgresql below
           - gemfile: gemfiles/rails_7.0.gemfile
-            ruby: 3.0
+            ruby: 3.1
           - gemfile: gemfiles/rails_master.gemfile
-            ruby: 3.0
+            ruby: 3.1
     runs-on: ubuntu-latest
     steps:
     - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > $GITHUB_ENV

@@ -14,7 +14,7 @@ You can do ahead-of-time analysis for your queries.
 
 The primitive for analysis is {{ "GraphQL::Analysis::AST::Analyzer" | api_doc }}. Analyzers must inherit from this base class and implement the desired methods for analysis.
 
-### Using Analyzers
+## Using Analyzers
 
 Query analyzers are added to the schema with `query_analyzer`, for example:
 

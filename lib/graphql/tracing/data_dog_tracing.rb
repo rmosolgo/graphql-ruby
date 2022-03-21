@@ -48,7 +48,9 @@ module GraphQL
       end
 
       def tracer
-        options.fetch(:tracer, Datadog.tracer)
+        default_tracer = defined?(Datadog::Tracing) ? Datadog::Tracing : Datadog.tracer
+
+        options.fetch(:tracer, default_tracer)
       end
 
       def analytics_available?
