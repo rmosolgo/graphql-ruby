@@ -124,4 +124,17 @@ describe GraphQL::Relay::RangeAdd do
       assert_equal(["__1", "__2", "__3"], mutation_res["items"]["edges"].map { |e| e["cursor"] })
     end
   end
+
+  it "warns when context is missing" do
+    _stdout, stderr = capture_io do
+      GraphQL::Relay::RangeAdd.new(collection: [], item: :something)
+    end
+    expected_warning = <<~WARN
+`context: ...` will be required by `RangeAdd.new` in GraphQL-Ruby 2.0. Add `context: context` to the call at #{__FILE__}:130:in `block (3 levels) in <top (required)>'.
+GraphQL::Relay::BaseConnection (used for GraphQL::Relay::ArrayConnection) will be removed from GraphQL-Ruby 2.0, use GraphQL::Pagination::Connections instead: https://graphql-ruby.org/pagination/overview.html
+  -> called from #{__FILE__}:130:in `new'
+    WARN
+
+    assert_equal expected_warning, stderr
+  end
 end

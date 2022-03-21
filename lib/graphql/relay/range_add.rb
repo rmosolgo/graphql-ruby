@@ -35,6 +35,10 @@ module GraphQL
       # @param context [GraphQL::Query::Context] The surrounding `ctx`, will be passed to the connection if provided (this is required for cursor encoders)
       # @param edge_class [Class] The class to wrap `item` with (defaults to the connection's edge class)
       def initialize(collection:, item:, parent: nil, context: nil, edge_class: nil)
+        if context.nil?
+          caller_loc = caller(2, 1).first
+          GraphQL::Deprecation.warn("`context: ...` will be required by `RangeAdd.new` in GraphQL-Ruby 2.0. Add `context: context` to the call at #{caller_loc}.")
+        end
         if context && context.schema.new_connections?
           conn_class = context.schema.connections.wrapper_for(collection)
           # The rest will be added by ConnectionExtension
