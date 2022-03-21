@@ -187,7 +187,7 @@ module GraphQL
       # @param name [Symbol] The underscore-cased version of this field name (will be camelized for the GraphQL API)
       # @param type [Class, GraphQL::BaseType, Array] The return type of this field
       # @param owner [Class] The type that this field belongs to
-      # @param null [Boolean] `true` if this field may return `null`, `false` if it is never `null`
+      # @param null [Boolean] (defaults to `true`) `true` if this field may return `null`, `false` if it is never `null`
       # @param description [String] Field description
       # @param deprecation_reason [String] If present, the field is marked "deprecated" with this message
       # @param method [Symbol] The method to call on the underlying object to resolve this field (defaults to `name`)
@@ -211,7 +211,7 @@ module GraphQL
       # @param ast_node [Language::Nodes::FieldDefinition, nil] If this schema was parsed from definition, this AST node defined the field
       # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
       # @param validates [Array<Hash>] Configurations for validating this field
-      def initialize(type: nil, name: nil, owner: nil, null: true, description: :not_given, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: nil, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, &definition_block)
+      def initialize(type: nil, name: nil, owner: nil, null: nil, description: :not_given, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: nil, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -253,7 +253,13 @@ module GraphQL
         @resolver_method = resolver_method
         @complexity = complexity
         @return_type_expr = type
-        @return_type_null = null
+        @return_type_null = if !null.nil?
+          null
+        elsif resolver_class
+          nil
+        else
+          true
+        end
         @connection = connection
         @has_max_page_size = max_page_size != :not_given
         @max_page_size = max_page_size == :not_given ? nil : max_page_size
@@ -530,17 +536,13 @@ module GraphQL
       attr_writer :type
 
       def type
-        if @return_type_expr.nil?
-          if @resolver_class && (t = @resolver_class.type)
-            t
-          else
-            # Not enough info to determine type
-            message = "Can't determine the return type for #{self.path}"
-            if @resolver_class
-              message += " (it has `resolver: #{@resolver_class}`, perhaps that class is missing a `type ...` declaration, or perhaps its type causes a cyclical loading issue)"
-            end
-            raise MissingReturnTypeError, message
+        if @resolver_class
+          return_type = @return_type_expr || @resolver_class.type_expr
+          if return_type.nil?
+            raise MissingReturnTypeError, "Can't determine the return type for #{self.path} (it has `resolver: #{@resolver_class}`, perhaps that class is missing a `type ...` declaration, or perhaps its type causes a cyclical loading issue)"
           end
+          nullable = @return_type_null.nil? ? @resolver_class.null : @return_type_null
+          Member::BuildType.parse_type(return_type, null: nullable)
         else
           @type ||= Member::BuildType.parse_type(@return_type_expr, null: @return_type_null)
         end

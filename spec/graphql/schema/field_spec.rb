@@ -694,4 +694,16 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     assert_equal [:b, :c, :a], field.all_argument_definitions.map(&:keyword)
     assert_equal false, field.scoped?
   end
+
+  it "accepts partial overrides for type an nullability" do
+    nonnull_float_resolver = Class.new(GraphQL::Schema::Resolver) do
+      type GraphQL::Types::Float, null: false
+    end
+
+    nullable_field = GraphQL::Schema::Field.new(name: "blah", owner: nil, resolver_class: nonnull_float_resolver, null: true)
+    assert_equal "Float", nullable_field.type.to_type_signature
+
+    int_field = GraphQL::Schema::Field.new(name: "blah", owner: nil, resolver_class: nonnull_float_resolver, type: GraphQL::Types::Int)
+    assert_equal "Int!", int_field.type.to_type_signature
+  end
 end
