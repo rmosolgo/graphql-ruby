@@ -130,9 +130,9 @@ describe GraphQL::Relay::RangeAdd do
       GraphQL::Relay::RangeAdd.new(collection: [], item: :something)
     end
     expected_warning = <<~WARN
-`context: ...` will be required by `RangeAdd.new` in GraphQL-Ruby 2.0. Add `context: context` to the call at /Users/rmosolgo/code/graphql-ruby/spec/integration/rails/graphql/relay/range_add_spec.rb:130:in `block (3 levels) in <top (required)>'.
+`context: ...` will be required by `RangeAdd.new` in GraphQL-Ruby 2.0. Add `context: context` to the call at #{__FILE__}:130:in `block (3 levels) in <top (required)>'.
 GraphQL::Relay::BaseConnection (used for GraphQL::Relay::ArrayConnection) will be removed from GraphQL-Ruby 2.0, use GraphQL::Pagination::Connections instead: https://graphql-ruby.org/pagination/overview.html
-  -> called from /Users/rmosolgo/code/graphql-ruby/spec/integration/rails/graphql/relay/range_add_spec.rb:130:in `new'
+  -> called from #{__FILE__}:130:in `new'
     WARN
 
     assert_equal expected_warning, stderr
