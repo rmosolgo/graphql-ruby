@@ -181,7 +181,6 @@ module GraphQL
               job.call
             end
           }
-          resume(f)
           # In this case, the job yielded. Queue it up to run again after
           # we load whatever it's waiting for.
           if f.alive?
@@ -196,7 +195,7 @@ module GraphQL
           # This is where an evented approach would be even better -- can we tell which
           # fibers are ready to continue, and continue execution there?
           #
-          if (first_source_fiber = create_source_fiber)
+          if (first_source_fiber = create_source_fiber) && first_source_fiber.alive?
             pending_source_fibers << first_source_fiber
           end
 
@@ -293,15 +292,17 @@ module GraphQL
       end
 
       if @nonblocking
-        Fiber.new(blocking: false) do
+        Fiber.schedule do
           fiber_locals.each { |k, v| Thread.current[k] = v }
           yield
         end
       else
-        Fiber.new do
+        f = Fiber.new do
           fiber_locals.each { |k, v| Thread.current[k] = v }
           yield
         end
+        resume(f)
+        f
       end
     end
   end

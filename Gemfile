@@ -13,6 +13,7 @@ gem 'pry-byebug'
 if RUBY_VERSION >= "3.0"
   gem "libev_scheduler"
   gem "evt"
+  gem "async"
 end
 
 # Required for running `jekyll algolia ...` (via `rake site:update_search_index`)
