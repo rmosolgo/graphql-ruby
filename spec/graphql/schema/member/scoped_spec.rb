@@ -33,6 +33,7 @@ describe GraphQL::Schema::Member::Scoped do
         end
       end
 
+      reauthorize_scoped_objects(false)
 
       field :name, String, null: false
     end

@@ -15,6 +15,18 @@ module GraphQL
         def scope_items(items, context)
           items
         end
+
+        def reauthorize_scoped_objects(new_value = nil)
+          if new_value.nil?
+            if defined?(@reauthorize_scoped_objects)
+              @reauthorize_scoped_objects
+            else
+              find_inherited_value(:reauthorize_scoped_objects, nil)
+            end
+          else
+            @reauthorize_scoped_objects = new_value
+          end
+        end
       end
     end
   end

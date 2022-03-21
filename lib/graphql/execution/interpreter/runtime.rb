@@ -948,7 +948,7 @@ module GraphQL
         end
 
         def authorized_new(type, value, context, was_scoped)
-          if was_scoped
+          if was_scoped && type.reauthorize_scoped_objects == false
             type.scoped_new(value, context)
           else
             type.authorized_new(value, context)
