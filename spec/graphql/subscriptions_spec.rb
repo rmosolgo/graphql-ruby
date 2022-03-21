@@ -2,6 +2,7 @@
 require "spec_helper"
 
 class InMemoryBackend
+  MAX_COMPLEXITY = 5
   class Subscriptions < GraphQL::Subscriptions
     attr_reader :deliveries, :pushes, :extra, :queries, :events
 
@@ -182,6 +183,7 @@ class ClassBasedInMemoryBackend < InMemoryBackend
     query(Query)
     subscription(Subscription)
     use InMemoryBackend::Subscriptions, extra: 123
+    max_complexity(InMemoryBackend::MAX_COMPLEXITY)
   end
 end
 
@@ -240,6 +242,7 @@ class FromDefinitionInMemoryBackend < InMemoryBackend
     },
   }
   Schema = GraphQL::Schema.from_definition(SchemaDefinition, default_resolve: Resolvers, using: {InMemoryBackend::Subscriptions => { extra: 123 }})
+  Schema.max_complexity(MAX_COMPLEXITY)
   # TODO don't hack this (no way to add metadata from IDL parser right now)
   Schema.get_field("Subscription", "myEvent").subscription_scope = :me
 end
@@ -763,6 +766,29 @@ describe GraphQL::Subscriptions do
 
           assert_includes err.message, "arguments: user_id_number"
           assert_includes err.message, "arguments of StreamInput"
+        end
+      end
+
+      describe "max_complexity" do
+        it "rejects subscriptions with errors" do
+          query_str = <<-GRAPHQL
+            subscription($type: PayloadType) {
+              myEvent(payloadType: $type) {
+                s1: str
+                s2: str
+                s3: str
+                s4: str
+                s5: str
+                s6: str
+              }
+            }
+          GRAPHQL
+
+          res = schema.execute(query_str, context: { socket: "1"})
+          errs = ["Query has complexity of 7, which exceeds max complexity of 5"]
+          assert_equal errs, res["errors"].map { |e| e["message"] }
+          assert_equal 0, implementation.events.size
+          assert_equal 0, implementation.queries.size
         end
       end
     end
