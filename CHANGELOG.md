@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 2.0.4 (21 March 2022)
+
+### Bug fixes
+
+- Fields: make sure `null:` config overrides a default from a resolver #4000
+
 # 2.0.3 (21 March 2022)
 
 ### Bug fixes
