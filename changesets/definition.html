@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/2.0.3/">API</a>
+          <a href="/api-doc/2.0.4/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -189,7 +189,7 @@
 <p>Then…</p>
 
 <ul>
-  <li>To add or redefine a field, use <code class="language-plaintext highlighter-rouge">field(...)</code>, including the same configurations you’d use in a type definition (see <a href="/api-doc/2.0.3/GraphQL/Schema/Field#initialize-instance_method" target="_blank" title="API docs for GraphQL::Schema::Field#initialize"><code>GraphQL::Schema::Field#initialize</code></a>). The definition given here will override the previous definition (if there was one) whenever this Changeset applies.</li>
+  <li>To add or redefine a field, use <code class="language-plaintext highlighter-rouge">field(...)</code>, including the same configurations you’d use in a type definition (see <a href="/api-doc/2.0.4/GraphQL/Schema/Field#initialize-instance_method" target="_blank" title="API docs for GraphQL::Schema::Field#initialize"><code>GraphQL::Schema::Field#initialize</code></a>). The definition given here will override the previous definition (if there was one) whenever this Changeset applies.</li>
   <li>To remove a field, use <code class="language-plaintext highlighter-rouge">remove_field(field_name)</code>, where <code class="language-plaintext highlighter-rouge">field_name</code> is the name given to <code class="language-plaintext highlighter-rouge">field(...)</code> (usually an underscore-cased symbol)</li>
 </ul>
 
@@ -220,7 +220,7 @@
 <p>Then…</p>
 
 <ul>
-  <li>To add or redefine an argument, use <code class="language-plaintext highlighter-rouge">argument(...)</code>, passing the same configurations you’d usually pass to <code class="language-plaintext highlighter-rouge">argument(...)</code> (see <a href="/api-doc/2.0.3/GraphQL/Schema/Argument#initialize-instance_method" target="_blank" title="API docs for GraphQL::Schema::Argument#initialize"><code>GraphQL::Schema::Argument#initialize</code></a>). The redefined argument will override any previous definitions whenever this Changeset is active.</li>
+  <li>To add or redefine an argument, use <code class="language-plaintext highlighter-rouge">argument(...)</code>, passing the same configurations you’d usually pass to <code class="language-plaintext highlighter-rouge">argument(...)</code> (see <a href="/api-doc/2.0.4/GraphQL/Schema/Argument#initialize-instance_method" target="_blank" title="API docs for GraphQL::Schema::Argument#initialize"><code>GraphQL::Schema::Argument#initialize</code></a>). The redefined argument will override any previous definitions whenever this Changeset is active.</li>
   <li>To remove an argument, use <code class="language-plaintext highlighter-rouge">remove_argument(argument_name)</code>, where <code class="language-plaintext highlighter-rouge">argument_name</code> is the name given to <code class="language-plaintext highlighter-rouge">field(...)</code> (usually an underscore-cased symbol)</li>
 </ul>
 
@@ -240,7 +240,7 @@
 <p>Then…</p>
 
 <ul>
-  <li>To add a value, use <code class="language-plaintext highlighter-rouge">value(...)</code>, passing the same configurations you’d usually pass to <code class="language-plaintext highlighter-rouge">value(...)</code> in an enum type (see <a href="/api-doc/2.0.3/GraphQL/Schema/Enum#value-class_method" target="_blank" title="API docs for GraphQL::Schema::Enum.value"><code>GraphQL::Schema::Enum.value</code></a>). The configuration given here will override previous configurations whenever this Changeset applies.</li>
+  <li>To add a value, use <code class="language-plaintext highlighter-rouge">value(...)</code>, passing the same configurations you’d usually pass to <code class="language-plaintext highlighter-rouge">value(...)</code> in an enum type (see <a href="/api-doc/2.0.4/GraphQL/Schema/Enum#value-class_method" target="_blank" title="API docs for GraphQL::Schema::Enum.value"><code>GraphQL::Schema::Enum.value</code></a>). The configuration given here will override previous configurations whenever this Changeset applies.</li>
   <li>To remove a value, use <code class="language-plaintext highlighter-rouge">remove_value(name)</code>, where <code class="language-plaintext highlighter-rouge">name</code> is the name given to <code class="language-plaintext highlighter-rouge">value(...)</code> (an all-caps string)</li>
 </ul>
 
