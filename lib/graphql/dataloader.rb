@@ -92,7 +92,7 @@ module GraphQL
     #
     # @return [void]
     def yield
-      Fiber.yield
+      @parent_fiber.transfer
       nil
     end
 
@@ -137,6 +137,9 @@ module GraphQL
       if @nonblocking && !Fiber.scheduler
         raise "`nonblocking: true` requires `Fiber.scheduler`, assign one with `Fiber.set_scheduler(...)` before executing GraphQL."
       end
+
+      @parent_fiber = Fiber.current
+
       # At a high level, the algorithm is:
       #
       #  A) Inside Fibers, run jobs from the queue one-by-one
@@ -274,7 +277,7 @@ module GraphQL
     end
 
     def resume(fiber)
-      fiber.resume
+      fiber.transfer
     rescue UncaughtThrowError => e
       throw e.tag, e.value
     end

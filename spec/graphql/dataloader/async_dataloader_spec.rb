@@ -235,22 +235,35 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
       end
     end
 
-    describe "With the toy scheduler from Ruby's tests" do
-      let(:scheduler_class) { ::DummyScheduler }
+    # describe "With the toy scheduler from Ruby's tests" do
+    #   let(:scheduler_class) { ::DummyScheduler }
+    #   include AsyncDataloaderAssertions
+    # end
+
+    # if RUBY_ENGINE == "ruby" && !ENV["GITHUB_ACTIONS"]
+    #   describe "With libev_scheduler" do
+    #     require "libev_scheduler"
+    #     let(:scheduler_class) { Libev::Scheduler }
+    #     include AsyncDataloaderAssertions
+    #   end
+    # end
+
+    # describe "with evt" do
+    #   require "evt"
+    #   let(:scheduler_class) { Evt::Scheduler }
+    #   include AsyncDataloaderAssertions
+    # end
+
+    describe "with async" do
+      require "async"
+      let(:scheduler_class) { Async::Scheduler }
       include AsyncDataloaderAssertions
     end
 
-    if RUBY_ENGINE == "ruby" && !ENV["GITHUB_ACTIONS"]
-      describe "With libev_scheduler" do
-        require "libev_scheduler"
-        let(:scheduler_class) { Libev::Scheduler }
-        include AsyncDataloaderAssertions
-      end
-    end
 
-    describe "with evt" do
-      require "evt"
-      let(:scheduler_class) { Evt::Scheduler }
+    describe "with fiber_scheduler" do
+      require "fiber_scheduler"
+      let(:scheduler_class) { FiberScheduler }
       include AsyncDataloaderAssertions
     end
   end
