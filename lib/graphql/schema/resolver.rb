@@ -216,8 +216,8 @@ module GraphQL
           get_argument(name, context)
         end
 
-        def own_field_arguments
-          own_arguments
+        def all_field_argument_definitions
+          all_argument_definitions
         end
 
         # Default `:resolve` set below.
