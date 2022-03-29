@@ -226,4 +226,36 @@ describe GraphQL::Schema::Mutation do
     assert_equal "String", field.type.graphql_name
     assert_equal GraphQL::Types::String, field.type
   end
+
+  it "inherits arguments even when parent classes aren't attached to the schema" do
+    parent_mutation = Class.new(GraphQL::Schema::Mutation) do
+      graphql_name "ParentMutation"
+      argument :thing_id, "ID"
+      field :inputs, String
+
+      def resolve(**inputs)
+        { inputs: inputs.inspect }
+      end
+    end
+
+    child_mutation = Class.new(parent_mutation) do
+      graphql_name "ChildMutation"
+      argument :thing_name, String
+    end
+
+    mutation_type = Class.new(GraphQL::Schema::Object) do
+      graphql_name "Mutation"
+      field :child, mutation: child_mutation
+    end
+
+    schema = Class.new(GraphQL::Schema) do
+      mutation(mutation_type)
+    end
+
+    assert_equal ["thingId", "thingName"], child_mutation.arguments.keys
+    assert_equal ["thingId", "thingName"], child_mutation.all_argument_definitions.map(&:graphql_name)
+    assert_equal ["thingId", "thingName"], schema.mutation.fields["child"].all_argument_definitions.map(&:graphql_name)
+    res = schema.execute("mutation { child(thingName: \"abc\", thingId: \"123\") { inputs } }")
+    assert_equal "{:thing_id=>\"123\", :thing_name=>\"abc\"}", res["data"]["child"]["inputs"]
+  end
 end

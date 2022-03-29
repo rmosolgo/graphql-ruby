@@ -148,7 +148,19 @@ module GraphQL
             end
           elsif defined?(@resolver_class) && @resolver_class
             all_defns = {}
-            all_defns.merge!(@resolver_class.own_field_arguments)
+            @resolver_class.all_field_argument_definitions.each do |arg_defn|
+              key = arg_defn.graphql_name
+              case (current_value = all_defns[key])
+              when nil
+                all_defns[key] = arg_defn
+              when Array
+                current_value << arg_defn
+              when GraphQL::Schema::Argument
+                all_defns[key] = [current_value, arg_defn]
+              else
+                raise "Invariant: Unexpected argument definition, #{current_value.class}: #{current_value.inspect}"
+              end
+            end
             all_defns.merge!(own_arguments)
           else
             all_defns = own_arguments
