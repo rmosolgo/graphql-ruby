@@ -13,7 +13,7 @@ exports[`returns generated code 1`] = `
      * @private
     */
     var _aliases = {
-  \\"GetStuff\\": \\"f7f65309043352183e905e1396e51078\\"
+  \\"GetStuff\\": \\"b8086942c2fbb6ac69b97cbade848033\\"
 }
 
     /**

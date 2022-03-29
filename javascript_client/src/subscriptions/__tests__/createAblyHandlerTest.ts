@@ -262,7 +262,7 @@ describe("createAblyHandler", () => {
         key: "integration-test:invalid",
         log: { level: 0 }
       })
-      await new Promise(resolve => {
+      await new Promise<void>(resolve => {
         const fetchOperation = async () => ({
           headers: new Map([["X-Subscription-ID", "foo"]])
         })
@@ -293,7 +293,7 @@ describe("createAblyHandler", () => {
       "onError is called for too many subscriptions",
       async () => {
         const ably = new Realtime({ key, log: { level: 0 } })
-        await new Promise(resolve => {
+        await new Promise<void>(resolve => {
           let subscriptionCounter = 0
           const fetchOperation = async () => {
             subscriptionCounter += 1
@@ -421,7 +421,7 @@ describe("createAblyHandler", () => {
         }
 
         // Publish before subscribe
-        await new Promise((resolve, reject) => {
+        await new Promise<void>((resolve, reject) => {
           const ablyPublisher = new Realtime({ key, log: { level: 0 } })
           const publishChannel = ablyPublisher.channels.get(subscriptionId)
           publishChannel.publish(

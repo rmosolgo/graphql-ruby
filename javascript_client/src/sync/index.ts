@@ -194,7 +194,7 @@ function sync(options: SyncOptions) {
               return
             }
           } catch (err) {
-            logger.log("Failed to print sync result:", err)
+            logger.log("Failed to print sync result:", err as string)
             reject(err)
             return
           }

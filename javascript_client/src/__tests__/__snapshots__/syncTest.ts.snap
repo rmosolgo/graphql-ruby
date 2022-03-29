@@ -3,19 +3,18 @@
 exports[`sync operations Input files Merges fragments and operations across files 1`] = `
 Array [
   Object {
-    "alias": "5f0da489cf508a7c65ff5fa144e50545",
+    "alias": "4568c28d403794e011363caf815ec827",
     "body": "fragment Frag1 on Query {
   moreStuff
 }
 
 query GetStuff {
   ...Frag1
-}
-",
+}",
     "name": "GetStuff",
   },
   Object {
-    "alias": "c944b08d15eb94cf93dd124b7d664b62",
+    "alias": "faf462be033e16dd2a56130d56a9192f",
     "body": "fragment Frag1 on Query {
   moreStuff
 }
@@ -32,12 +31,11 @@ query GetStuff2 {
   stuff
   ...Frag1
   ...Frag2
-}
-",
+}",
     "name": "GetStuff2",
   },
   Object {
-    "alias": "fc215a466a3ea309fe493e8f7cb206f2",
+    "alias": "aab385a1685772ad520fc70d468030fa",
     "body": "fragment Frag2 on Query {
   ...Frag3
 }
@@ -58,12 +56,11 @@ query GetStuff3 {
   }
   ...Frag2
   ...Frag4
-}
-",
+}",
     "name": "GetStuff3",
   },
   Object {
-    "alias": "919af8f80d8848a9b9b6176e457f8e45",
+    "alias": "b2cb0b317d071f9f38905fba21d73258",
     "body": "query GetStuffIsolated {
   ...FragIsolated
   things {
@@ -75,18 +72,16 @@ fragment FragIsolated on Query {
   evenMoreStuff {
     stuffInside
   }
-}
-",
+}",
     "name": "GetStuffIsolated",
   },
   Object {
-    "alias": "d5dfe825034aeda06e2639935d8b107d",
+    "alias": "6cdae165fd6dc5dc5900e5a2bba90cc2",
     "body": "query GetStuffIsolated2 {
   things {
     existHere
   }
-}
-",
+}",
     "name": "GetStuffIsolated2",
   },
 ]
@@ -95,71 +90,64 @@ fragment FragIsolated on Query {
 exports[`sync operations Input files Uses mode: file to process each file separately 1`] = `
 Array [
   Object {
-    "alias": "26c44bfe42872860da112b6177355bfa",
+    "alias": "664225b943e29ea8c6aae40bbde8923a",
     "body": "fragment Frag1 on Query {
   moreStuff
-}
-",
+}",
     "name": "",
   },
   Object {
-    "alias": "7de9e7bf1d6ea1f527de07a25983086c",
+    "alias": "269bbe8bbe7f6a0b9dae7f98b45a9675",
     "body": "fragment Frag2 on Query {
   ...Frag3
-}
-",
+}",
     "name": "",
   },
   Object {
-    "alias": "8bc9b9922a7fbb66f4ac6c58d5d5c357",
+    "alias": "d12578840c6518c746b125ae2e7a8ab1",
     "body": "fragment Frag3 on Query {
   evenMoreStuff
-}
-",
+}",
     "name": "",
   },
   Object {
-    "alias": "bfc521a5ade5ff6f17bdf9352c86c850",
+    "alias": "1a1b6154fb1db8bc6652edfbd7d9ac8a",
     "body": "fragment Frag4 on Query {
   evenMoreStuff {
     stuffInside
   }
-}
-",
+}",
     "name": "",
   },
   Object {
-    "alias": "0a6add7303775e2487f2c2235ecb1c80",
+    "alias": "8ab1711fcbb7befc98d06ef7d155fd81",
     "body": "query GetStuff {
   ...Frag1
-}
-",
+}",
     "name": "GetStuff",
   },
   Object {
-    "alias": "2f26b770ded2a04279bc4bf824ca54ac",
+    "alias": "cf517696fbd9ec204cd402f48c831090",
     "body": "query GetStuff2 {
   stuff
   ...Frag1
   ...Frag2
-}
-",
+}",
     "name": "GetStuff2",
   },
   Object {
-    "alias": "1b8da77aabef67ee54df7e5acfd75893",
+    "alias": "1e5290206d87a4da749118d84f7e2c65",
     "body": "query GetStuff3 {
   stuff {
     withStuffInside
   }
   ...Frag2
   ...Frag4
-}
-",
+}",
     "name": "GetStuff3",
   },
   Object {
-    "alias": "919af8f80d8848a9b9b6176e457f8e45",
+    "alias": "b2cb0b317d071f9f38905fba21d73258",
     "body": "query GetStuffIsolated {
   ...FragIsolated
   things {
@@ -171,18 +159,16 @@ fragment FragIsolated on Query {
   evenMoreStuff {
     stuffInside
   }
-}
-",
+}",
     "name": "GetStuffIsolated",
   },
   Object {
-    "alias": "d5dfe825034aeda06e2639935d8b107d",
+    "alias": "6cdae165fd6dc5dc5900e5a2bba90cc2",
     "body": "query GetStuffIsolated2 {
   things {
     existHere
   }
-}
-",
+}",
     "name": "GetStuffIsolated2",
   },
 ]
@@ -278,8 +264,7 @@ Array [
       id
     }
   }
-}
-",
+}",
   },
   Object {
     "alias": "67c2bc8aa3185a209d6651b4feb63c04",
@@ -704,11 +689,10 @@ fragment Todo_user on User {
 exports[`sync operations custom file processing options Adds .graphql to the glob if needed 1`] = `
 Array [
   Object {
-    "alias": "f7f65309043352183e905e1396e51078",
+    "alias": "b8086942c2fbb6ac69b97cbade848033",
     "body": "query GetStuff {
   stuff
-}
-",
+}",
     "name": "GetStuff",
   },
 ]
@@ -717,11 +701,10 @@ Array [
 exports[`sync operations custom file processing options Adds .graphql to the glob if needed 2`] = `
 Array [
   Object {
-    "alias": "f7f65309043352183e905e1396e51078",
+    "alias": "b8086942c2fbb6ac69b97cbade848033",
     "body": "query GetStuff {
   stuff
-}
-",
+}",
     "name": "GetStuff",
   },
 ]
@@ -733,8 +716,7 @@ Array [
     "alias": "GETSTUFF",
     "body": "query GetStuff {
   stuff
-}
-",
+}",
     "name": "GetStuff",
   },
 ]
@@ -753,7 +735,7 @@ exports[`sync operations generating artifacts without syncing works without a UR
      * @private
     */
     var _aliases = {
-  \\"GetStuff\\": \\"f7f65309043352183e905e1396e51078\\"
+  \\"GetStuff\\": \\"b8086942c2fbb6ac69b97cbade848033\\"
 }
 
     /**

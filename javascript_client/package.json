@@ -29,7 +29,7 @@
     "pusher-js": "^7.0.3",
     "relay-runtime": "11.0.2",
     "ts-jest": "^25.2.0",
-    "typescript": "^3.7.5"
+    "typescript": ">=3.7.5"
   },
   "scripts": {
     "test": "tsc && jest",
@@ -40,8 +40,8 @@
     "minimist": "^1.2.0"
   },
   "peerDependencies": {
-    "@apollo/client": "^3.3.6",
-    "graphql": "^14.3.1 || ^15.0.0"
+    "@apollo/client": ">=3.3.6",
+    "graphql": ">=14.3.1"
   },
   "prettier": {
     "semi": false,

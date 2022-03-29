@@ -93,7 +93,7 @@ describe("ActionCableLink", () => {
         "perform", {
           actionName: "execute",
           options: {
-            query: "subscription {\n  foo {\n    bar\n  }\n}\n",
+            query: "subscription {\n  foo {\n    bar\n  }\n}",
             variables: { a: 1 },
             operationId: "operationId",
             operationName: "operationName"
@@ -135,7 +135,7 @@ describe("ActionCableLink", () => {
         "perform", {
           actionName: "execute",
           options: {
-            query: "subscription {\n  foo {\n    bar\n  }\n}\n",
+            query: "subscription {\n  foo {\n    bar\n  }\n}",
             variables: { a: 1 },
             operationId: "operationId",
             operationName: "operationName"
