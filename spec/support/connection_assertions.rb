@@ -247,6 +247,11 @@ module ConnectionAssertions
           bogus_huge_cursor = NonceEnabledEncoder.encode("100")
           res = exec_query(query_str, first: 3, after: bogus_huge_cursor)
           assert_names([], res)
+
+          # It returns nothing before the first cursor
+          first_cursor = NonceEnabledEncoder.encode("1")
+          res = exec_query(query_str, first: 3, before: first_cursor)
+          assert_names([], res)
         end
 
         it "handles negative firsts and lasts by treating them as zero" do
