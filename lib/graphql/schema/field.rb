@@ -245,8 +245,6 @@ module GraphQL
 
         @dig_keys = dig
         @resolver_method = (hash_key || method || resolver_method || name_s).to_sym
-        @method_sym = @resolver_method
-        @method_str = -@resolver_method.to_s
 
         @complexity = complexity
         @return_type_expr = type
@@ -329,6 +327,12 @@ module GraphQL
             instance_eval(&definition_block)
           end
         end
+
+        # method_sym and method_str should be initialized after most attributes have been initalized, such as:
+        # - @resolver_method
+        # - @resolver_class
+        @method_sym = self.resolver_method
+        @method_str = -self.resolver_method.to_s
 
         self.extensions.each(&:after_define_apply)
         @call_after_define = true
@@ -650,12 +654,8 @@ module GraphQL
               # -> 2.3 Resolver Method
               # -> 2.4 Field Name (as a key) - through @resolver_method
 
-              inner_object = if obj.object.nil?
-                obj
-              else
-                obj.object
-              end
-              
+              inner_object = obj.object
+
               if inner_object.is_a?(Hash)
                 if @dig_keys
                   inner_object.dig(*@dig_keys)
@@ -683,21 +683,21 @@ module GraphQL
                   obj.public_send(@method_sym)
                 end
               else
-                class_method_error = if inner_object.is_a? obj.class
+                class_method_error = if inner_object.nil?
                   <<-ERR
               2. #{obj.class}##{@method_sym}, which did not exist
                   ERR
                 else
                   <<-ERR
-              2. #{inner_object.class}##{@method_sym}, which did not exist
-              3. #{obj.class}##{@method_sym}, which did not exist
+              2. #{inner_object.class}##{@method_sym}; which did not exist
+              3. #{obj.class}##{@method_sym}; which did not exist
                   ERR
                 end
 
                 raise <<-ERR
 Failed to implement #{@owner.graphql_name}.#{@name}, tried:
 
-              1. Looking up the key `#{[@method_sym, @dig_keys].compact.join("`, `")}`, but it wasn't a Hash
+              1. Looking up the key `#{[@method_sym, @dig_keys].compact.join("`, `")}`; but it wasn't a Hash
 #{class_method_error}
 
               To implement this field, define one of the methods above (and check for typos)
