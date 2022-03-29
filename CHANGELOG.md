@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 2.0.5 (28 March 2022)
+
+### Bug Fixes
+
+- Resolvers: fix inheriting arguments when parent classes aren't hooked up directly to the schema #4006
+
 # 2.0.4 (21 March 2022)
 
 ### Bug fixes
