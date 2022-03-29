@@ -15,8 +15,7 @@ fragment FragIsolated on Query {
   evenMoreStuff {
     stuffInside
   }
-}
-",
+}",
     "name": "GetStuffIsolated",
   },
   Object {
@@ -25,8 +24,7 @@ fragment FragIsolated on Query {
   things {
     existHere
   }
-}
-",
+}",
     "name": "GetStuffIsolated2",
   },
 ]
@@ -49,8 +47,7 @@ fragment FragIsolated on Query {
     stuffInside
     __typename
   }
-}
-",
+}",
     "name": "GetStuffIsolated",
   },
   Object {
@@ -60,8 +57,7 @@ fragment FragIsolated on Query {
     existHere
     __typename
   }
-}
-",
+}",
     "name": "GetStuffIsolated2",
   },
 ]

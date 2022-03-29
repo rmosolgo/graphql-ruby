@@ -19,6 +19,9 @@ describe("sync operations", () => {
   beforeEach(() => {
     global.console.error = jest.fn()
     global.console.log = jest.fn()
+    if (fs.existsSync("./src/OperationStoreClient.js")) {
+      fs.unlinkSync("./src/OperationStoreClient.js")
+    }
   })
 
   afterEach(() => {
@@ -34,7 +37,7 @@ describe("sync operations", () => {
 
       return sync(options).then(function() {
         var generatedCode = fs.readFileSync("./src/OperationStoreClient.js", "utf8")
-        expect(generatedCode).toMatch('"GetStuff": "f7f65309043352183e905e1396e51078"')
+        expect(generatedCode).toMatch('"GetStuff": "b8086942c2fbb6ac69b97cbade848033"')
         expect(generatedCode).toMatchSnapshot()
       })
     })
@@ -247,7 +250,7 @@ describe("sync operations", () => {
       }
       return sync(options).then(function() {
         var generatedCode = fs.readFileSync("./src/OperationStoreClient.js", "utf8")
-        expect(generatedCode).toMatch('"GetStuff": "5f0da489cf508a7c65ff5fa144e50545"')
+        expect(generatedCode).toMatch('"GetStuff": "4568c28d403794e011363caf815ec827"')
         expect(generatedCode).toMatch('module.exports = OperationStoreClient')
         expect(generatedCode).toMatch('var _client = "test-1"')
         fs.unlinkSync("./src/OperationStoreClient.js")
@@ -265,7 +268,7 @@ describe("sync operations", () => {
       }
       return sync(options).then(function() {
         var generatedCode = fs.readFileSync("./__crazy_outfile.js", "utf8")
-        expect(generatedCode).toMatch('"GetStuff": "5f0da489cf508a7c65ff5fa144e50545"')
+        expect(generatedCode).toMatch('"GetStuff": "4568c28d403794e011363caf815ec827"')
         expect(generatedCode).toMatch('module.exports = OperationStoreClient')
         expect(generatedCode).toMatch('var _client = "test-2"')
         fs.unlinkSync("./__crazy_outfile.js")
@@ -344,8 +347,8 @@ describe("sync operations", () => {
       var spyConsoleError = (console.error as unknown) as MockedObject
 
       buildMockRespondingWith(422, {
-        errors: { "5f0da489cf508a7c65ff5fa144e50545": ["something"] },
-        failed: ["5f0da489cf508a7c65ff5fa144e50545"],
+        errors: { "4568c28d403794e011363caf815ec827": ["something"] },
+        failed: ["4568c28d403794e011363caf815ec827"],
         added: ["defg"],
         not_modified: [],
       })

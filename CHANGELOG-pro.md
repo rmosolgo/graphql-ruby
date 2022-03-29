@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.22.1 (22 March 2022)
+
+### Bug Fix
+
+- Pusher subscriptions: don't try to send empty trigger batches to Pusher
+
 # 1.22.0 (19 March 2022)
 
 ### New Features

@@ -40,6 +40,7 @@ interface OperationStoreClient {
 */
 function generateClient(options: GenerateClientCodeOptions): string {
   var payload = gatherOperations(options)
+  console.log(options, payload)
   var generatedCode = generateClientCode(options.client, payload.operations, options.clientType)
   return generatedCode
 }
@@ -85,6 +86,7 @@ function gatherOperations(options: GenerateClientCodeOptions) {
     // Update the operations with the hash of the body
     operations.forEach(function(op) {
       op.alias = hashFunc(op.body)
+      // console.log("operation", op.alias, op.body)
     })
   }
   return { operations: operations }

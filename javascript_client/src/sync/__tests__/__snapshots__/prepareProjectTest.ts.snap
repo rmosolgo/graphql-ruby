@@ -20,8 +20,7 @@ fragment Frag2 on Query {
 
 fragment Frag3 on Query {
   evenMoreStuff
-}
-",
+}",
     "name": "GetStuff2",
   },
   Object {
@@ -32,8 +31,7 @@ fragment Frag3 on Query {
 
 fragment Frag1 on Query {
   moreStuff
-}
-",
+}",
     "name": "GetStuff",
   },
 ]
@@ -65,8 +63,7 @@ fragment Frag4 on Query {
     stuffInside
     __typename
   }
-}
-",
+}",
     "name": "GetStuff3",
   },
 ]

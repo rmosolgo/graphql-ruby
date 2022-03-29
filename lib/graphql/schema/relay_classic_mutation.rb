@@ -92,6 +92,10 @@ module GraphQL
           dummy.own_arguments
         end
 
+        def all_field_argument_definitions
+          dummy.all_argument_definitions
+        end
+
         # Also apply this argument to the input type:
         def argument(*args, own_argument: false, **kwargs, &block)
           it = input_type # make sure any inherited arguments are already added to it
