@@ -650,7 +650,11 @@ module GraphQL
               # -> 2.3 Resolver Method
               # -> 2.4 Field Name (as a key) - through @resolver_method
 
-              inner_object = obj.object
+              inner_object = if obj.object.nil?
+                obj
+              else
+                obj.object
+              end
               
               if inner_object.is_a?(Hash)
                 if @dig_keys
@@ -679,12 +683,22 @@ module GraphQL
                   obj.public_send(@method_sym)
                 end
               else
-                raise <<-ERR
-              Failed to implement #{@owner.graphql_name}.#{@name}, tried:
-
-              1. Looking up the hash key `#{@method_sym}` or `#{@dig_keys}` on `#{inner_object}`, but it wasn't a Hash
+                class_method_error = if inner_object.is_a? obj.class
+                  <<-ERR
+              2. #{obj.class}##{@method_sym}, which did not exist
+                  ERR
+                else
+                  <<-ERR
               2. #{inner_object.class}##{@method_sym}, which did not exist
               3. #{obj.class}##{@method_sym}, which did not exist
+                  ERR
+                end
+
+                raise <<-ERR
+Failed to implement #{@owner.graphql_name}.#{@name}, tried:
+
+              1. Looking up the key `#{[@method_sym, @dig_keys].compact.join("`, `")}`, but it wasn't a Hash
+#{class_method_error}
 
               To implement this field, define one of the methods above (and check for typos)
               ERR
