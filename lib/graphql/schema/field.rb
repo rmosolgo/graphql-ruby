@@ -29,6 +29,7 @@ module GraphQL
       attr_reader :method_str
 
       attr_reader :hash_key
+      attr_reader :dig_keys
 
       # @return [Symbol] The method on the type to look up
       def resolver_method

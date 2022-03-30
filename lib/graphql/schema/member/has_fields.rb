@@ -72,7 +72,7 @@ module GraphQL
         def add_field(field_defn, method_conflict_warning: field_defn.method_conflict_warning?)
           # Check that `field_defn.original_name` equals `resolver_method` and `method_sym` --
           # that shows that no override value was given manually.
-          if method_conflict_warning && CONFLICT_FIELD_NAMES.include?(field_defn.resolver_method) && field_defn.original_name == field_defn.resolver_method && field_defn.original_name == field_defn.method_sym
+          if method_conflict_warning && CONFLICT_FIELD_NAMES.include?(field_defn.resolver_method) && field_defn.original_name == field_defn.resolver_method && field_defn.original_name == field_defn.method_sym && field_defn.hash_key.nil? && field_defn.dig_keys.nil?
             warn(conflict_field_name_warning(field_defn))
           end
           prev_defn = own_fields[field_defn.name]
