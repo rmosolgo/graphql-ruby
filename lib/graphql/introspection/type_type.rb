@@ -27,7 +27,7 @@ module GraphQL
       end
       field :of_type, GraphQL::Schema::LateBoundType.new("__Type")
 
-      field :specified_by_url, String
+      field :specifiedByURL, String, resolver_method: :specified_by_url
 
       def specified_by_url
         if object.kind.scalar?

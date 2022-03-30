@@ -29,7 +29,7 @@ fragment FullType on __Type {
   kind
   name
   description
-  #{include_specified_by_url ? "specifiedByUrl" : ""}
+  #{include_specified_by_url ? "specifiedByURL" : ""}
   fields(includeDeprecated: true) {
     name
     description
