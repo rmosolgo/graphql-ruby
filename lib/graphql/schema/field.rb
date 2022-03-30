@@ -28,6 +28,8 @@ module GraphQL
       # @return [String] Method or hash key on the underlying object to look up
       attr_reader :method_str
 
+      attr_reader :hash_key
+
       # @return [Symbol] The method on the type to look up
       def resolver_method
         if @resolver_class
@@ -243,9 +245,9 @@ module GraphQL
           end
         end
 
-        # TODO: I think non-string/symbol hash keys are wrongly normalized (eg `1` will not work)
-        method_name = method || hash_key || name_s
+        method_name = method || name_s
         @dig_keys = dig
+        @hash_key = hash_key
         resolver_method ||= name_s.to_sym
 
         @method_str = -method_name.to_s
@@ -642,7 +644,9 @@ module GraphQL
               # - A method on the wrapped object;
               # - Or, raise not implemented.
               #
-              if obj.respond_to?(resolver_method)
+              if @hash_key
+                obj.object[@hash_key]
+              elsif obj.respond_to?(resolver_method)
                 method_to_call = resolver_method
                 method_receiver = obj
                 # Call the method with kwargs, if there are any
