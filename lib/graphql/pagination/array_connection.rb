@@ -36,7 +36,7 @@ module GraphQL
         @nodes ||= begin
           sliced_nodes = if before && after
             end_idx = index_from_cursor(before)-1
-            end_idx < 0 ? [] : items[index_from_cursor(after)...end_idx] || []
+            end_idx < 0 ? [] : items[index_from_cursor(after)..end_idx] || []
           elsif before
             end_idx = index_from_cursor(before)-2
             end_idx < 0 ? [] : items[0..end_idx] || []
