@@ -28,6 +28,9 @@ module GraphQL
       # @return [String] Method or hash key on the underlying object to look up
       attr_reader :method_str
 
+      attr_reader :hash_key
+      attr_reader :dig_keys
+
       # @return [Symbol] The method on the type to look up
       def resolver_method
         if @resolver_class
@@ -243,14 +246,13 @@ module GraphQL
           end
         end
 
-        # TODO: I think non-string/symbol hash keys are wrongly normalized (eg `1` will not work)
-        method_name = method || hash_key || name_s
+        method_name = method || name_s
         @dig_keys = dig
-        resolver_method ||= name_s.to_sym
+        @hash_key = hash_key
 
         @method_str = -method_name.to_s
         @method_sym = method_name.to_sym
-        @resolver_method = resolver_method
+        @resolver_method = (resolver_method || name_s).to_sym
         @complexity = complexity
         @return_type_expr = type
         @return_type_null = if !null.nil?
@@ -635,14 +637,13 @@ module GraphQL
                 obj = @resolver_class.new(object: obj, context: query_ctx, field: self)
               end
 
-              # Find a way to resolve this field, checking:
-              #
-              # - A method on the type instance;
-              # - Hash keys, if the wrapped object is a hash;
-              # - A method on the wrapped object;
-              # - Or, raise not implemented.
-              #
-              if obj.respond_to?(resolver_method)
+              inner_object = obj.object
+
+              if @hash_key
+                inner_object[@hash_key]
+              elsif @dig_keys
+                inner_object.dig(*@dig_keys)
+              elsif obj.respond_to?(resolver_method)
                 method_to_call = resolver_method
                 method_receiver = obj
                 # Call the method with kwargs, if there are any
@@ -651,30 +652,27 @@ module GraphQL
                 else
                   obj.public_send(resolver_method)
                 end
-              elsif obj.object.is_a?(Hash)
-                inner_object = obj.object
-                if @dig_keys
-                  inner_object.dig(*@dig_keys)
-                elsif inner_object.key?(@method_sym)
+              elsif inner_object.is_a?(Hash)
+                if inner_object.key?(@method_sym)
                   inner_object[@method_sym]
                 else
                   inner_object[@method_str]
                 end
-              elsif obj.object.respond_to?(@method_sym)
+              elsif inner_object.respond_to?(@method_sym)
                 method_to_call = @method_sym
                 method_receiver = obj.object
                 if ruby_kwargs.any?
-                  obj.object.public_send(@method_sym, **ruby_kwargs)
+                  inner_object.public_send(@method_sym, **ruby_kwargs)
                 else
-                  obj.object.public_send(@method_sym)
+                  inner_object.public_send(@method_sym)
                 end
               else
                 raise <<-ERR
               Failed to implement #{@owner.graphql_name}.#{@name}, tried:
 
               - `#{obj.class}##{resolver_method}`, which did not exist
-              - `#{obj.object.class}##{@method_sym}`, which did not exist
-              - Looking up hash key `#{@method_sym.inspect}` or `#{@method_str.inspect}` on `#{obj.object}`, but it wasn't a Hash
+              - `#{inner_object.class}##{@method_sym}`, which did not exist
+              - Looking up hash key `#{@method_sym.inspect}` or `#{@method_str.inspect}` on `#{inner_object}`, but it wasn't a Hash
 
               To implement this field, define one of the methods above (and check for typos)
               ERR
