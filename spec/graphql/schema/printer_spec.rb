@@ -359,7 +359,7 @@ type __Type {
   name: String
   ofType: __Type
   possibleTypes: [__Type!]
-  specifiedByUrl: String
+  specifiedByURL: String
 }
 
 """
