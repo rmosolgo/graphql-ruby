@@ -47,7 +47,7 @@ module Graphql
     #
     # Accept a `--batch` option which adds `GraphQL::Batch` setup.
     #
-    # Use `--no-graphiql` to skip `graphiql-rails` installation.
+    # Use `--skip-graphiql` to skip `graphiql-rails` installation.
     #
     # TODO: also add base classes
     class InstallGenerator < Rails::Generators::Base
