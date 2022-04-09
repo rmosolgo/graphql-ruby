@@ -73,12 +73,6 @@ module GraphQL
     extend GraphQL::Schema::Member::HasAstNode
     extend GraphQL::Schema::FindInheritedValue
 
-    class DuplicateTypeNamesError < GraphQL::Error
-      def initialize(type_name:, first_definition:, second_definition:, path:)
-        super("Multiple definitions for `#{type_name}`. Previously found #{first_definition.inspect} (#{first_definition.class}), then found #{second_definition.inspect} (#{second_definition.class}) at #{path.join(".")}")
-      end
-    end
-
     class DuplicateNamesError < GraphQL::Error; end
 
     class UnresolvedLateBoundTypeError < GraphQL::Error
