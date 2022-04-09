@@ -55,7 +55,9 @@ module GraphQL
               if visible_item.nil?
                 visible_item = item
               else
-                raise Schema::DuplicateNamesError, "Found two visible definitions for `#{item.path}`: #{visible_item.inspect}, #{item.inspect}"
+                raise DuplicateNamesError.new(
+                  duplicated_name: item.path, duplicated_definition_1: visible_item.inspect, duplicated_definition_2: item.inspect
+                )
               end
             end
           end
@@ -362,7 +364,9 @@ module GraphQL
           if @reachable_type_set.add?(type)
             type_by_name = rt_hash[type.graphql_name] ||= type
             if type_by_name != type
-              raise DuplicateNamesError, "Found two visible type definitions for `#{type.graphql_name}`: #{type.inspect}, #{type_by_name.inspect}"
+              raise DuplicateNamesError.new(
+                duplicated_name: type.graphql_name, duplicated_definition_1: type.inspect, duplicated_definition_2: type_by_name.inspect
+              )
             end
             if type.kind.input_object?
               # recurse into visible arguments

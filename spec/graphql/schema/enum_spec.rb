@@ -89,7 +89,7 @@ describe GraphQL::Schema::Enum do
       err = assert_raises GraphQL::Schema::DuplicateNamesError do
         MultipleNameTestEnum.enum_values
       end
-      expected_message = "Found two visible definitions for `MultipleNameTestEnum.B`: #<GraphQL::Schema::EnumValue MultipleNameTestEnum.B @value=:a>, #<GraphQL::Schema::EnumValue MultipleNameTestEnum.B @value=:b>"
+      expected_message = "Found two visible type definitions for `MultipleNameTestEnum.B`: #<GraphQL::Schema::EnumValue MultipleNameTestEnum.B @value=:a>, #<GraphQL::Schema::EnumValue MultipleNameTestEnum.B @value=:b>"
       assert_equal expected_message, err.message
     end
 

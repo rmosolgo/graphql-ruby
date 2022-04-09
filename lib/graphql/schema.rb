@@ -73,7 +73,14 @@ module GraphQL
     extend GraphQL::Schema::Member::HasAstNode
     extend GraphQL::Schema::FindInheritedValue
 
-    class DuplicateNamesError < GraphQL::Error; end
+    class DuplicateNamesError < GraphQL::Error
+      attr_reader :duplicated_name
+      def initialize(duplicated_name:, duplicated_definition_1:, duplicated_definition_2:)
+        super(
+          "Found two visible type definitions for `#{duplicated_name}`: #{duplicated_definition_1}, #{duplicated_definition_2}"
+        )
+      end
+    end
 
     class UnresolvedLateBoundTypeError < GraphQL::Error
       attr_reader :type
@@ -219,7 +226,9 @@ module GraphQL
                 if visible_t.nil?
                   visible_t = t
                 else
-                  raise DuplicateNamesError, "Found two visible type definitions for `#{k}`: #{visible_t.inspect}, #{t.inspect}"
+                  raise DuplicateNamesError.new(
+                    duplicated_name: k, duplicated_definition_1: visible_t.inspect, duplicated_definition_2: t.inspect
+                  )
                 end
               end
             end
@@ -246,7 +255,9 @@ module GraphQL
               if visible_t.nil?
                 visible_t = t
               else
-                raise DuplicateNamesError, "Found two visible type definitions for `#{type_name}`: #{visible_t.inspect}, #{t.inspect}"
+                raise DuplicateNamesError.new(
+                  duplicated_name: type_name, duplicated_definition_1: visible_t.inspect, duplicated_definition_2: t.inspect
+                )
               end
             end
           end
