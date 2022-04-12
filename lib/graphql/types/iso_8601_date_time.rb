@@ -17,6 +17,7 @@ module GraphQL
     # own DateTime type.
     class ISO8601DateTime < GraphQL::Schema::Scalar
       description "An ISO 8601-encoded datetime"
+      specified_by_url "https://tools.ietf.org/html/rfc3339"
 
       # It's not compatible with Rails' default,
       # i.e. ActiveSupport::JSON::Encoder.time_precision (3 by default)

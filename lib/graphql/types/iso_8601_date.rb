@@ -14,6 +14,7 @@ module GraphQL
     # own Date type.
     class ISO8601Date < GraphQL::Schema::Scalar
       description "An ISO 8601-encoded date"
+      specified_by_url "https://tools.ietf.org/html/rfc3339"
 
       # @param value [Date,Time,DateTime,String]
       # @return [String]
