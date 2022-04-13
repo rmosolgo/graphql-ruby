@@ -1730,6 +1730,7 @@ module GraphQL
           {
             backtrace: ctx[:backtrace],
             tracers: ctx[:tracers],
+            dataloader: ctx[:dataloader],
           }
         else
           {}
