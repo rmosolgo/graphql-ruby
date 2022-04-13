@@ -73,7 +73,7 @@ module GraphQL
         context.schema.after_lazy(ready_val) do |is_ready, ready_early_return|
           if ready_early_return
             if is_ready != false
-              raise "Unexpected result from #ready? (expected `true`, `false` or `[false, {...}]`): [#{authorized_result.inspect}, #{ready_early_return.inspect}]"
+              raise "Unexpected result from #ready? (expected `true`, `false` or `[false, {...}]`): [#{is_ready.inspect}, #{ready_early_return.inspect}]"
             else
               ready_early_return
             end
