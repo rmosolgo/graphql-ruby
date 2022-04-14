@@ -939,6 +939,9 @@ describe GraphQL::Dataloader do
     assert :world, value
   end
 
+  class CanaryDataloader < GraphQL::Dataloader::NullDataloader
+  end
+
   it "uses context[:dataloader] when given" do
     res = Class.new(GraphQL::Schema) do
       query_type = Class.new(GraphQL::Schema::Object) do
@@ -950,8 +953,8 @@ describe GraphQL::Dataloader do
     res = FiberSchema.execute("{ __typename }")
     assert_instance_of GraphQL::Dataloader, res.context.dataloader
     refute res.context.dataloader.nonblocking?
-    res = FiberSchema.execute("{ __typename }", context: { dataloader: :blah } )
-    assert_equal :blah, res.context.dataloader
+    res = FiberSchema.execute("{ __typename }", context: { dataloader: CanaryDataloader.new } )
+    assert_instance_of CanaryDataloader, res.context.dataloader
 
     if Fiber.respond_to?(:scheduler)
       Fiber.set_scheduler(::DummyScheduler.new)
