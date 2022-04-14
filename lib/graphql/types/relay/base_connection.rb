@@ -30,9 +30,14 @@ module GraphQL
       #               edges_nullable: true,
       #               edge_nullable: true,
       #               node_nullable: true,
-      #               has_nodes_field: true
+      #               nodes_field: true
       #
-      #     # Alternatively, you can call class methods for the named arguments above - so long as `edge_type` is called afterwards. 
+      #     # Alternatively, you can call the class methods followed by your edge type
+      #     # edges_nullable true
+      #     # edge_nullable true
+      #     # nodes_nullable true
+      #     # has_nodes_field true
+      #     # edge_type Types::PostEdge
       #   end
       #
       # @see Relay::BaseEdge for edge types
