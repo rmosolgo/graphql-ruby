@@ -184,6 +184,19 @@ describe GraphQL::Schema::Resolver do
       end
     end
 
+    class ResolverWithInvalidReady < GraphQL::Schema::Mutation
+      argument :int, Integer
+      field :int, Integer
+
+      def ready?(**args)
+        return [1,2,3]
+      end
+
+      def resolve(int:)
+        { int: int }
+      end
+    end
+
     module HasValue
       include GraphQL::Schema::Interface
       field :value, Integer, null: false
@@ -388,6 +401,7 @@ describe GraphQL::Schema::Resolver do
     class Mutation < GraphQL::Schema::Object
       field :mutation_with_nullable_loads_argument, mutation: MutationWithNullableLoadsArgument
       field :mutation_with_required_loads_argument, mutation: MutationWithRequiredLoadsArgument
+      field :resolver_with_invalid_ready, resolver: ResolverWithInvalidReady
     end
 
     class Query < GraphQL::Schema::Object
@@ -639,6 +653,13 @@ describe GraphQL::Schema::Resolver do
 
         res = exec_query("{ int: prepResolver7(int: 213) { errors int } }")
         assert_equal 213, res["data"]["int"]["int"]
+      end
+
+      it 'raises the correct error on invalid return type' do
+        err = assert_raises(RuntimeError) do 
+          exec_query("mutation { resolverWithInvalidReady(int: 2) { int } }")
+        end
+        assert_match("Unexpected result from #ready?", err.message)
       end
     end
 
