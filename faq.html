@@ -99,25 +99,59 @@
 <div class="guide-table-of-contents"></div>
 <div class="guide-container">
   <h1 id="returning-route-urls">Returning Route URLs</h1>
-<p>With GraphQL there is less of a need to include resource URLs to other REST resources, however sometimes you want to use Rails routing to include a URL as one of your fields. A common use case would be to build HTML format URLs to render a link in your React UI. In that case you can add the Rails route helpers to the execution context as shown below.</p>
+<p>With GraphQL there is less of a need to include resource URLs to other REST resources, however sometimes you want to use Rails routing to include a URL as one of your fields. A common use case would be to build HTML format URLs to render a link in your React UI. In that case you can pass the request to your context, so that the helpers are able to build full URLs based on the incoming host, port and protocol.</p>
 
 <h2 id="example">Example</h2>
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::UserType</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+  <span class="kp">include</span> <span class="no">ActionController</span><span class="o">::</span><span class="no">UrlFor</span>
+  <span class="kp">include</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">routes</span><span class="p">.</span><span class="nf">url_helpers</span>
+  <span class="c1"># Needed by ActionController::UrlFor to extract the host, port, protocol etc. from the current request</span>
+  <span class="k">def</span> <span class="nf">request</span>
+    <span class="n">context</span><span class="p">[</span><span class="ss">:request</span><span class="p">]</span>
+  <span class="k">end</span>
+  <span class="c1"># Needed by Rails.application.routes.url_helpers, it will then use the url_options defined by ActionController::UrlFor</span>
+  <span class="k">def</span> <span class="nf">default_url_options</span>
+    <span class="p">{}</span>
+  <span class="k">end</span>
+  
   <span class="n">field</span> <span class="ss">:profile_url</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
   <span class="k">def</span> <span class="nf">profile_url</span>
-    <span class="n">context</span><span class="p">[</span><span class="ss">:routes</span><span class="p">].</span><span class="nf">user_url</span><span class="p">(</span><span class="n">object</span><span class="p">)</span>
+    <span class="n">user_url</span><span class="p">(</span><span class="n">object</span><span class="p">)</span>
   <span class="k">end</span>
 <span class="k">end</span>
 
-<span class="c1"># Add the url helpers to `context`:</span>
+<span class="c1"># In your GraphQL controller, add the request to `context`:</span>
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span>
   <span class="n">params</span><span class="p">[</span><span class="ss">:query</span><span class="p">],</span>
   <span class="ss">variables: </span><span class="n">params</span><span class="p">[</span><span class="ss">:variables</span><span class="p">],</span>
   <span class="ss">context: </span><span class="p">{</span>
-    <span class="ss">routes: </span><span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">routes</span><span class="p">.</span><span class="nf">url_helpers</span><span class="p">,</span>
-    <span class="c1"># ...</span>
+    <span class="ss">request: </span><span class="n">request</span>
   <span class="p">},</span>
 <span class="p">)</span>
+</code></pre></div></div>
+
+<h1 id="returning-activestorage-blob-urls">Returning ActiveStorage blob URLs</h1>
+<p>If you are using ActiveStorage and need to return a URL to an attachment blob, you will find that using <code class="language-plaintext highlighter-rouge">Rails.application.routes.url_helpers.rails_blob_url</code> alone will throw an exception since Rails won’t know what host, port or protocol to use in it.
+You can include <code class="language-plaintext highlighter-rouge">ActiveStorage::SetCurrent</code> in your GraphQL controller to pass on this information into your resolvers.</p>
+
+<h1 id="example-1">Example</h1>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">GraphqlController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="kp">include</span> <span class="no">ActiveStorage</span><span class="o">::</span><span class="no">SetCurrent</span>
+  <span class="o">...</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Types::UserType</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+  <span class="n">field</span> <span class="ss">:picture_url</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+  <span class="k">def</span> <span class="nf">picture_url</span>
+    <span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">routes</span><span class="p">.</span><span class="nf">url_helpers</span><span class="p">.</span><span class="nf">rails_blob_url</span><span class="p">(</span>
+      <span class="n">object</span><span class="p">.</span><span class="nf">picture</span><span class="p">,</span>
+      <span class="ss">protocol: </span><span class="no">ActiveStorage</span><span class="o">::</span><span class="no">Current</span><span class="p">.</span><span class="nf">url_options</span><span class="p">[</span><span class="ss">:protocol</span><span class="p">],</span>
+      <span class="ss">host: </span><span class="no">ActiveStorage</span><span class="o">::</span><span class="no">Current</span><span class="p">.</span><span class="nf">url_options</span><span class="p">[</span><span class="ss">:host</span><span class="p">],</span>
+      <span class="ss">port: </span><span class="no">ActiveStorage</span><span class="o">::</span><span class="no">Current</span><span class="p">.</span><span class="nf">url_options</span><span class="p">[</span><span class="ss">:port</span><span class="p">]</span>
+    <span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
 </code></pre></div></div>
 
 </div>
