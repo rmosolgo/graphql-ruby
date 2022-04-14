@@ -10,6 +10,11 @@
 
 ### Bug fixes
 
+# 1.13.12 (14 April 2022)
+
+- Pass `context[:dataloader]` to multiplex context #4026
+- Add a deprecation warning to `.accepts_definitions` #4002
+
 # 1.13.11 (21 March 2022)
 
 ### Deprecations
