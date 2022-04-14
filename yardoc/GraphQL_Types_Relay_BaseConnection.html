@@ -12,6 +12,7 @@ You may wish to copy this code into your own base class, so you can
 extend your own <code class="language-plaintext highlighter-rouge">BaseObject</code> instead of <code class="language-plaintext highlighter-rouge">GraphQL::Schema::Object</code>. 
 Examples:
     <h1 id="implementation-a-connection-and-edge">Implementation a connection and edge</h1>
+    <p>class BaseObject &lt; GraphQL::Schema::Object; end</p>
     <h1 id="given-some-object-in-your-app-">Given some object in your app …</h1>
     <p>class Types::Post &lt; BaseObject
 end</p>
@@ -20,15 +21,21 @@ end</p>
 class Types::BaseConnection &lt; GraphQL::Types::Relay::BaseConnection; end</p>
     <h1 id="then-extend-them-for-the-object-in-your-app">Then extend them for the object in your app</h1>
     <p>class Types::PostEdge &lt; Types::BaseEdge
-node_type(Types::Post)
+node_type Types::Post
 end
 class Types::PostConnection &lt; Types::BaseConnection
-edge_type(Types::PostEdge)
-edges_nullable(true)
-edge_nullable(true)
-node_nullable(true)
-has_nodes_field(true)
-end
+edge_type Types::PostEdge,
+edges_nullable: true,
+edge_nullable: true,
+node_nullable: true,
+nodes_field: true</p>
+    <h1 id="alternatively-you-can-call-the-class-methods-followed-by-your-edge-type">Alternatively, you can call the class methods followed by your edge type</h1>
+    <h1 id="edges_nullable-true">edges_nullable true</h1>
+    <h1 id="edge_nullable-true">edge_nullable true</h1>
+    <h1 id="nodes_nullable-true">nodes_nullable true</h1>
+    <h1 id="has_nodes_field-true">has_nodes_field true</h1>
+    <h1 id="edge_type-typespostedge">edge_type Types::PostEdge</h1>
+    <p>end
 See Also:</p>
   </li>
   <li>Relay::BaseEdge - for edge types
