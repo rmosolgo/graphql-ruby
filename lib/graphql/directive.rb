@@ -8,7 +8,7 @@ module GraphQL
   #
   class Directive
     include GraphQL::Define::InstanceDefinable
-    accepts_definitions :locations, :name, :description, :arguments, :default_directive, argument: GraphQL::Define::AssignArgument
+    deprecated_accepts_definitions :locations, :name, :description, :arguments, :default_directive, argument: GraphQL::Define::AssignArgument
 
     attr_accessor :locations, :arguments, :name, :description, :arguments_class
     attr_accessor :ast_node

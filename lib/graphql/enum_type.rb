@@ -4,7 +4,7 @@ module GraphQL
   class EnumType < GraphQL::BaseType
     extend Define::InstanceDefinable::DeprecatedDefine
 
-    accepts_definitions :values, value: GraphQL::Define::AssignEnumValue
+    deprecated_accepts_definitions :values, value: GraphQL::Define::AssignEnumValue
     ensure_defined(:values, :validate_non_null_input, :coerce_non_null_input, :coerce_result)
     attr_accessor :ast_node
 
@@ -72,7 +72,7 @@ module GraphQL
     class EnumValue
       include GraphQL::Define::InstanceDefinable
       ATTRIBUTES = [:name, :description, :deprecation_reason, :value]
-      accepts_definitions(*ATTRIBUTES)
+      deprecated_accepts_definitions(*ATTRIBUTES)
       attr_accessor(*ATTRIBUTES)
       attr_accessor :ast_node
       ensure_defined(*ATTRIBUTES)

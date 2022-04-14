@@ -5,7 +5,7 @@ module GraphQL
   # @api deprecated
   class Field
     include GraphQL::Define::InstanceDefinable
-    accepts_definitions :name, :description, :deprecation_reason,
+    deprecated_accepts_definitions :name, :description, :deprecation_reason,
       :resolve, :lazy_resolve,
       :type, :arguments,
       :property, :hash_key, :complexity,

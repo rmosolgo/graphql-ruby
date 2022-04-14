@@ -167,6 +167,21 @@ ERR
         # Each symbol in `accepts` will be assigned with `{key}=`.
         # The last entry in accepts may be a hash of name-proc pairs for custom definitions.
         def accepts_definitions(*accepts)
+          deprecated_caller = caller(0, 1).first
+          if deprecated_caller.include?("lib/graphql")
+            deprecated_caller = caller(2, 10).find { |c| !c.include?("lib/graphql") }
+          end
+
+          if deprecated_caller
+            GraphQL::Deprecation.warn <<-ERR
+#{self}.accepts_definitions will be removed in GraphQL-Ruby 2.0; use a class-based definition instead. See https://graphql-ruby.org/schema/class_based_api.html.
+  -> called from #{deprecated_caller}
+ERR
+          end
+          deprecated_accepts_definitions(*accepts)
+        end
+
+        def deprecated_accepts_definitions(*accepts)
           new_assignments = if accepts.last.is_a?(Hash)
             accepts.pop.dup
           else

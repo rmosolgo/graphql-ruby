@@ -4,8 +4,8 @@ module GraphQL
   class ObjectType < GraphQL::BaseType
     extend Define::InstanceDefinable::DeprecatedDefine
 
-    accepts_definitions :interfaces, :fields, :mutation, :relay_node_type, field: GraphQL::Define::AssignObjectField
-    accepts_definitions implements: ->(type, *interfaces, inherit: false) { type.implements(interfaces, inherit: inherit) }
+    deprecated_accepts_definitions :interfaces, :fields, :mutation, :relay_node_type, field: GraphQL::Define::AssignObjectField
+    deprecated_accepts_definitions implements: ->(type, *interfaces, inherit: false) { type.implements(interfaces, inherit: inherit) }
 
     attr_accessor :fields, :mutation, :relay_node_type
     ensure_defined(:fields, :mutation, :interfaces, :relay_node_type)

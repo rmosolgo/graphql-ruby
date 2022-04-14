@@ -11,7 +11,7 @@ module GraphQL
       end
     end
 
-    accepts_definitions :resolve_type, :type_membership_class,
+    deprecated_accepts_definitions :resolve_type, :type_membership_class,
       possible_types: AcceptPossibleTypesDefinition
     ensure_defined :possible_types, :resolve_type, :resolve_type_proc, :type_membership_class
 

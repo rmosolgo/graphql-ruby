@@ -14,7 +14,7 @@ module Garden
     include GraphQL::Define::InstanceDefinable
     attr_accessor :name, :start_planting_on, :end_planting_on
     ensure_defined(:name, :start_planting_on, :end_planting_on)
-    accepts_definitions :name, plant_between: DefinePlantBetween, has_leaves: GraphQL::Define.assign_metadata_key(:has_leaves), color: GraphQL::Define.assign_metadata_key(:color)
+    deprecated_accepts_definitions :name, plant_between: DefinePlantBetween, has_leaves: GraphQL::Define.assign_metadata_key(:has_leaves), color: GraphQL::Define.assign_metadata_key(:color)
 
     # definition added later:
     attr_accessor :height
@@ -29,7 +29,7 @@ end
 describe GraphQL::Define::InstanceDefinable do
   describe "extending definitions" do
     before do
-      Garden::Vegetable.accepts_definitions(:height)
+      Garden::Vegetable.deprecated_accepts_definitions(:height)
     end
 
     after do

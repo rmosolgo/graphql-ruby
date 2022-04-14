@@ -8,7 +8,7 @@ module GraphQL
     # @api deprecated
     class Mutation
       include GraphQL::Define::InstanceDefinable
-      accepts_definitions(
+      deprecated_accepts_definitions(
         :name, :description, :resolve,
         :return_type,
         :return_interfaces,

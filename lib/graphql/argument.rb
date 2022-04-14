@@ -3,7 +3,7 @@ module GraphQL
   # @api deprecated
   class Argument
     include GraphQL::Define::InstanceDefinable
-    accepts_definitions :name, :type, :description, :default_value, :as, :prepare, :method_access, :deprecation_reason
+    deprecated_accepts_definitions :name, :type, :description, :default_value, :as, :prepare, :method_access, :deprecation_reason
     attr_reader :default_value
     attr_accessor :description, :name, :as, :deprecation_reason
     attr_accessor :ast_node

@@ -8,7 +8,7 @@ module GraphQL
     include GraphQL::Define::InstanceDefinable
     include GraphQL::Relay::TypeExtensions
 
-    accepts_definitions :name, :description,
+    deprecated_accepts_definitions :name, :description,
         :introspection,
         :default_scalar,
         :default_relay,

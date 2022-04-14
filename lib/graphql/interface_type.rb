@@ -4,7 +4,7 @@ module GraphQL
   class InterfaceType < GraphQL::BaseType
     extend Define::InstanceDefinable::DeprecatedDefine
 
-    accepts_definitions :fields, :orphan_types, :resolve_type, field: GraphQL::Define::AssignObjectField
+    deprecated_accepts_definitions :fields, :orphan_types, :resolve_type, field: GraphQL::Define::AssignObjectField
 
     attr_accessor :fields, :orphan_types, :resolve_type_proc
     attr_writer :type_membership_class

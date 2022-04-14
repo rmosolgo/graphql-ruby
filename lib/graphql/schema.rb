@@ -161,7 +161,7 @@ module GraphQL
     include LazyHandlingMethods
     extend LazyHandlingMethods
 
-    accepts_definitions \
+    deprecated_accepts_definitions \
       :query_execution_strategy, :mutation_execution_strategy, :subscription_execution_strategy,
       :validate_timeout, :validate_max_errors, :max_depth, :max_complexity, :default_max_page_size,
       :orphan_types, :resolve_type, :type_error, :parse_error,

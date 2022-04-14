@@ -4,8 +4,8 @@ require_relative "./data"
 module Dummy
   class NoSuchDairyError < StandardError; end
 
-  GraphQL::Field.accepts_definitions(joins: GraphQL::Define.assign_metadata_key(:joins))
-  GraphQL::BaseType.accepts_definitions(class_names: GraphQL::Define.assign_metadata_key(:class_names))
+  GraphQL::Field.deprecated_accepts_definitions(joins: GraphQL::Define.assign_metadata_key(:joins))
+  GraphQL::BaseType.deprecated_accepts_definitions(class_names: GraphQL::Define.assign_metadata_key(:class_names))
 
   class BaseField < GraphQL::Schema::Field
     accepts_definition :joins
