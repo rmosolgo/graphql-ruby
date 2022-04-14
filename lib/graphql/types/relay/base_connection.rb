@@ -10,6 +10,8 @@ module GraphQL
       # so you can extend your own `BaseObject` instead of `GraphQL::Schema::Object`.
       #
       # @example Implementation a connection and edge
+      #   class BaseObject < GraphQL::Schema::Object; end
+      #
       #   # Given some object in your app ...
       #   class Types::Post < BaseObject
       #   end
@@ -20,14 +22,22 @@ module GraphQL
       #
       #   # Then extend them for the object in your app
       #   class Types::PostEdge < Types::BaseEdge
-      #     node_type(Types::Post)
+      #     node_type Types::Post
       #   end
+      #
       #   class Types::PostConnection < Types::BaseConnection
-      #     edge_type(Types::PostEdge)
-      #     edges_nullable(true)
-      #     edge_nullable(true)
-      #     node_nullable(true)
-      #     has_nodes_field(true)
+      #     edge_type Types::PostEdge,
+      #               edges_nullable: true,
+      #               edge_nullable: true,
+      #               node_nullable: true,
+      #               nodes_field: true
+      #
+      #     # Alternatively, you can call the class methods followed by your edge type
+      #     # edges_nullable true
+      #     # edge_nullable true
+      #     # nodes_nullable true
+      #     # has_nodes_field true
+      #     # edge_type Types::PostEdge
       #   end
       #
       # @see Relay::BaseEdge for edge types
