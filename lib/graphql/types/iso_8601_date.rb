@@ -23,7 +23,7 @@ module GraphQL
       end
 
       # @param str_value [String, Date, DateTime, Time]
-      # @return [Date]
+      # @return [Date, nil]
       def self.coerce_input(value, ctx)
         if value.is_a?(::Date)
           value
@@ -31,6 +31,8 @@ module GraphQL
           value.to_date
         elsif value.is_a?(::Time)
           value.to_date
+        elsif value.nil?
+          nil
         else
           Date.iso8601(value)
         end
