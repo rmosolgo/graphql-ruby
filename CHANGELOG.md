@@ -10,6 +10,18 @@
 
 ### Bug fixes
 
+# 2.0.6 (14 April 2022)
+
+### Bug fixes
+
+- Dataloader: make multiplexes use custom dataloaders #4026
+- ISO8601Date: properly accept `nil` as input #4025
+- Mutation: fix error message when `ready?` returns an invalid result #4029
+- ISO8601 scalars: add `specified_by_url` configs #4014
+- Array connection: don't return all items when `before` is the first cursor #4012
+- Introspection: fix typo `specifiedByUrl` -> `specifiedByURL`
+- Fields: fix `hash_key` to take priority over method lookup #4015
+
 # 2.0.5 (28 March 2022)
 
 ### Bug Fixes
