@@ -76,8 +76,9 @@ module GraphQL
     class DuplicateNamesError < GraphQL::Error
       attr_reader :duplicated_name
       def initialize(duplicated_name:, duplicated_definition_1:, duplicated_definition_2:)
+        @duplicated_name = duplicated_name
         super(
-          "Found two visible type definitions for `#{duplicated_name}`: #{duplicated_definition_1}, #{duplicated_definition_2}"
+          "Found two visible definitions for `#{duplicated_name}`: #{duplicated_definition_1}, #{duplicated_definition_2}"
         )
       end
     end
