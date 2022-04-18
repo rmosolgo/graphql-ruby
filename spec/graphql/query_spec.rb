@@ -293,6 +293,19 @@ describe GraphQL::Query do
         }
         assert_equal [[expected_err]], Instrumenter::ERROR_LOG
       end
+
+      it "can access static validation errors" do
+        Instrumenter::ERROR_LOG.clear
+        query = GraphQL::Query.new(schema, "{ noField }")
+        query.result
+        expected_err = {
+          "message" => "Field 'noField' doesn't exist on type 'Query'",
+          "locations" => [{"line"=>1, "column"=>3}],
+          "path" => ["query", "noField"],
+          "extensions" => {"code"=>"undefinedField", "typeName"=>"Query", "fieldName"=>"noField"},
+        }
+        assert_equal [[expected_err]], Instrumenter::ERROR_LOG
+      end
     end
 
     describe "when an error propagated through execution" do
