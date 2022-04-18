@@ -91,6 +91,7 @@ describe GraphQL::Schema::Enum do
       end
       expected_message = "Found two visible definitions for `MultipleNameTestEnum.B`: #<GraphQL::Schema::EnumValue MultipleNameTestEnum.B @value=:a>, #<GraphQL::Schema::EnumValue MultipleNameTestEnum.B @value=:b>"
       assert_equal expected_message, err.message
+      assert_equal "MultipleNameTestEnum.B", err.duplicated_name
     end
 
     it "returns them all in all_enum_value_definitions" do
