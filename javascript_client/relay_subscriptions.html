@@ -235,7 +235,7 @@
 
 <span class="c1">// Create a Relay Modern-compatible handler</span>
 <span class="kd">var</span> <span class="nx">subscriptionHandler</span> <span class="o">=</span> <span class="nx">createRelaySubscriptionHandler</span><span class="p">({</span>
-  <span class="na">cable</span><span class="p">:</span> <span class="nx">cable</span><span class="p">,</span>
+  <span class="na">cable</span><span class="p">:</span> <span class="nx">createConsumer</span><span class="p">(...),</span>
   <span class="na">operations</span><span class="p">:</span> <span class="nx">OperationStoreClient</span><span class="p">,</span>
 <span class="p">})</span>
 
