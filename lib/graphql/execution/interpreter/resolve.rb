@@ -59,6 +59,13 @@ module GraphQL
           end
 
           if next_results.any?
+            # Any pending data loader jobs may populate the
+            # resutl arrays or result hashes accumulated in
+            # `next_results``. Run those **to completion**
+            # before continuing to resolve `next_results`.
+            # (Just `.append_job` doesn't work if any pending
+            # jobs require multiple passes.)
+            dataloader.run
             dataloader.append_job { resolve(next_results, dataloader) }
           end
 

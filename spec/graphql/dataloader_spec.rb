@@ -1122,4 +1122,64 @@ describe GraphQL::Dataloader do
     assert_equal({ "data" => { "nested2" => "nested2" } }, NestedDataloaderCallsSchema.execute("{ nested2 }"))
     assert_equal({ "data" => { "nested" => "nested", "nested2" => "nested2" } }, NestedDataloaderCallsSchema.execute("{ nested nested2 }"))
   end
+
+  describe "with lazy authorization hooks" do
+    class LazyAuthHookSchema < GraphQL::Schema
+      class Source < ::GraphQL::Dataloader::Source
+        def fetch(ids)
+          return ids.map {|i| i * 2}
+        end
+      end
+
+      class BarType < GraphQL::Schema::Object
+        field :id, Integer
+
+        def id
+          object
+        end
+
+        def self.authorized?(object, context)
+          -> { true }
+        end
+      end
+
+      class FooType < GraphQL::Schema::Object
+        field :dataloader_value, BarType
+
+        def self.authorized?(object, context)
+          -> { true }
+        end
+
+        def dataloader_value
+          dataloader.with(Source).load(1)
+        end
+      end
+
+      class QueryType < GraphQL::Schema::Object
+        field :foo, FooType
+
+        def foo
+          {}
+        end
+      end
+
+      use GraphQL::Dataloader
+      query QueryType
+      lazy_resolve Proc, :call
+    end
+
+    it "resolves everything" do
+      dataloader_query = """
+        query {
+          foo {
+            dataloaderValue {
+              id
+            }
+          }
+        }
+      """
+      dataloader_result = LazyAuthHookSchema.execute(dataloader_query)
+      assert_equal 2, dataloader_result["data"]["foo"]["dataloaderValue"]["id"]
+    end
+  end
 end
