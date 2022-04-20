@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.22.2 (20 April 2022)
+
+### Bug Fix
+
+- Use `deprecated_accepts_definitions` to stop warnings when loading this gem on 1.13.x
+
 # 1.22.1 (22 March 2022)
 
 ### Bug Fix
