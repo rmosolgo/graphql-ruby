@@ -31,7 +31,7 @@ class InMemoryBackend
           query_string: query.query_string,
           operation_name: query.operation_name,
           variables: query.provided_variables,
-          context: { me: query.context[:me] },
+          context: { me: query.context[:me], validate_update: query.context[:validate_update] },
           transport: :socket,
         }
       else
@@ -870,6 +870,76 @@ describe GraphQL::Subscriptions do
       # Socket 3 received 2, 3
       expected_values = [[1,1], [1,2], [2,3]]
       assert_equal expected_values, delivered_values
+    end
+  end
+
+  class SkipUpdateValidationSchema < GraphQL::Schema
+    COUNTERS = Hash.new(0)
+    class ValidationDetectionTracer
+      def self.trace(event, data)
+        if event == "validate"
+          COUNTERS["validate_#{data[:validate]}"] += 1
+          data[:query].context[:was_validated] = data[:validate]
+        end
+        yield
+      end
+    end
+
+    class Subscription < GraphQL::Schema::Object
+      class Counter < GraphQL::Schema::Subscription
+        argument :id, ID
+        field :value, Integer, null: false
+
+        def update(id:)
+          {
+            value: COUNTERS["counter_#{id}"] += 1
+          }
+        end
+      end
+
+      field :counter, subscription: Counter
+    end
+    subscription(Subscription)
+    tracer(ValidationDetectionTracer)
+    use InMemoryBackend::Subscriptions, extra: nil, validate_update: false
+  end
+
+  class SometimesSkipUpdateValidationSchema < GraphQL::Schema
+    COUNTERS = SkipUpdateValidationSchema::COUNTERS
+    class SometimesSkipSubscriptions < InMemoryBackend::Subscriptions
+      def validate_update?(context:, **_rest)
+        !!context[:validate_update]
+      end
+    end
+
+    subscription(SkipUpdateValidationSchema::Subscription)
+    tracer(SkipUpdateValidationSchema::ValidationDetectionTracer)
+    use(SometimesSkipSubscriptions, extra: nil)
+  end
+
+  describe "Skipping validation on updates" do
+    before do
+      schema::COUNTERS.clear
+    end
+
+    let(:schema) { SkipUpdateValidationSchema }
+    it "Skips validation when configured" do
+      res = schema.execute("subscription { counter(id: \"1\") { value } }", context: { socket: "1" })
+      assert res.context[:was_validated]
+      assert_equal({"validate_true" => 1}, schema::COUNTERS)
+      schema.subscriptions.trigger(:counter, {id: "1"}, {})
+      assert_equal({"validate_true" => 1, "validate_false" => 1, "counter_1" => 1}, schema::COUNTERS)
+    end
+
+    describe "when the method is overriden" do
+      let(:schema) { SometimesSkipUpdateValidationSchema }
+      it "calls `validate_update?`" do
+        schema.execute("subscription { counter(id: \"3\") { value } }", context: { socket: "2" })
+        schema.execute("subscription { counter(id: \"3\") { value } }", context: { socket: "3", validate_update: true })
+        assert_equal({"validate_true" => 2}, schema::COUNTERS)
+        schema.subscriptions.trigger(:counter, {id: "3"}, {})
+        assert_equal({"validate_true" => 3, "validate_false" => 1, "counter_3" => 2}, schema::COUNTERS)
+      end
     end
   end
 end
