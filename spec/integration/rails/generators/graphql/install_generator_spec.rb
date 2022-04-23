@@ -346,9 +346,7 @@ RUBY
     object_id = object.to_global_id.to_s
     # Remove this redundant prefix to make IDs shorter:
     object_id = object_id.sub("gid://#{GlobalID.app}/", "")
-    encoded_id = Base64.urlsafe_encode64(object_id)
-    # Remove the "=" padding
-    encoded_id = encoded_id.sub(/=+/, "")
+    encoded_id = Base64.urlsafe_encode64(object_id, padding: false)
     # Add a type hint
     type_hint = type_definition.graphql_name.first
     "#{type_hint}_#{encoded_id}"
