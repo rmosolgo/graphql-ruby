@@ -17,15 +17,21 @@ module GraphQL
       def platform_trace(platform_key, key, data)
         tracer.trace(platform_key, service: service_name) do |span|
           span.span_type = 'custom'
+          if defined?(Datadog::Tracing::Metadata::Ext) # Introduced in ddtrace 1.0
+            span.set_tag(Datadog::Tracing::Metadata::Ext::TAG_COMPONENT, 'graphql')
+            span.set_tag(Datadog::Tracing::Metadata::Ext::TAG_OPERATION, key)
+          end
 
           if key == 'execute_multiplex'
             operations = data[:multiplex].queries.map(&:selected_operation_name).join(', ')
-            span.resource = if operations.empty?
+
+            resource = if operations.empty?
               first_query = data[:multiplex].queries.first
               fallback_transaction_name(first_query && first_query.context)
             else
               operations
             end
+            span.resource = resource if resource
 
             # For top span of query, set the analytics sample rate tag, if available.
             if analytics_enabled?

@@ -37,8 +37,14 @@ describe GraphQL::Tracing::DataDogTracing do
     assert_equal ["Ab"], Datadog::SPAN_RESOURCE_NAMES
   end
 
-  it "does not require a :tracing_fallback_transaction_name even if an operation name is not present" do
+  it "does not set resource if no value can be derived" do
     DataDogTest::TestSchema.execute("{ int }")
-    assert_equal [nil], Datadog::SPAN_RESOURCE_NAMES
+    assert_equal [], Datadog::SPAN_RESOURCE_NAMES
+  end
+
+  it "sets component and operation tags" do
+    DataDogTest::TestSchema.execute("{ int }")
+    assert_includes Datadog::SPAN_TAGS, ['component', 'graphql']
+    assert_includes Datadog::SPAN_TAGS, ['operation', 'execute_multiplex']
   end
 end
