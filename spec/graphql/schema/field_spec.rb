@@ -598,6 +598,7 @@ describe GraphQL::Schema::Field do
         field :OtherCapital, String, camelize: false, null: true, hash_key: "OtherCapital"
         # regression test against https://github.com/rmosolgo/graphql-ruby/issues/3944
         field :method, String, camelize: false, null: false, hash_key: "some_random_key"
+        field :stringified_hash_key, String, null: false, hash_key: :stringified_hash_key
       end
 
       class QueryType < GraphQL::Schema::Object
@@ -608,7 +609,9 @@ describe GraphQL::Schema::Field do
             "Capital" => "capital-camelize-false-works",
             "Other" => "capital-camelize-true-works",
             "OtherCapital" => "explicit-hash-key-works",
-            "some_random_key" => "hash-key-works-when-underlying-object-responds-to-field-name"
+            "some_random_key" => "hash-key-works-when-underlying-object-responds-to-field-name",
+            "stringified_hash_key" => "hash-key-is-tried-as-string",
+
           }
         end
       end
@@ -625,6 +628,7 @@ describe GraphQL::Schema::Field do
           Capital
           Other
           OtherCapital
+          stringifiedHashKey
         }
       }
       GRAPHQL
@@ -635,7 +639,8 @@ describe GraphQL::Schema::Field do
         "Capital" => "capital-camelize-false-works",
         "Other" => "capital-camelize-true-works",
         "OtherCapital" => "explicit-hash-key-works",
-        "method" => "hash-key-works-when-underlying-object-responds-to-field-name"
+        "method" => "hash-key-works-when-underlying-object-responds-to-field-name",
+        "stringifiedHashKey" => "hash-key-is-tried-as-string"
       }
       assert_equal expected_result, search_results
     end
