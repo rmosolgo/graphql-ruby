@@ -267,7 +267,7 @@ module GraphQL
       end
 
       def print_field_definitions(fields)
-        if fields.none?
+        if fields.empty?
           ""
         else
           out = " {\n".dup
