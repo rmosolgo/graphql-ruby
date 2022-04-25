@@ -39,12 +39,14 @@ module GraphQL
     end
 
     # @param schema [Class] the GraphQL schema this manager belongs to
-    def initialize(schema:, broadcast: false, default_broadcastable: false, **rest)
+    # @param validate_update [Boolean] If false, then validation is skipped when executing updates
+    def initialize(schema:, validate_update: true, broadcast: false, default_broadcastable: false, **rest)
       if broadcast
         schema.query_analyzer(Subscriptions::BroadcastAnalyzer)
       end
       @default_broadcastable = default_broadcastable
       @schema = schema
+      @validate_update = validate_update
     end
 
     # @return [Boolean] Used when fields don't have `broadcastable:` explicitly set
@@ -117,14 +119,16 @@ module GraphQL
       variables = query_data.fetch(:variables)
       context = query_data.fetch(:context)
       operation_name = query_data.fetch(:operation_name)
-      result = @schema.execute(
+      execute_options = {
         query: query_string,
         context: context,
         subscription_topic: event.topic,
         operation_name: operation_name,
         variables: variables,
         root_value: object,
-      )
+      }
+      execute_options[:validate] = validate_update?(**execute_options)
+      result = @schema.execute(**execute_options)
       subscriptions_context = result.context.namespace(:subscriptions)
       if subscriptions_context[:no_update]
         result = nil
@@ -140,6 +144,14 @@ module GraphQL
       end
 
       result
+    end
+
+    # Define this method to customize whether to validate
+    # this subscription when executing an update.
+    #
+    # @return [Boolean] defaults to `true`, or false if `validate: false` is provided.
+    def validate_update?(query:, context:, root_value:, subscription_topic:, operation_name:, variables:)
+      @validate_update
     end
 
     # Run the update query for this subscription and deliver it

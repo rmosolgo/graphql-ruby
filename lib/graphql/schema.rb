@@ -983,7 +983,9 @@ module GraphQL
         if !defined?(@subscription_extension_added) && subscription && self.subscriptions
           @subscription_extension_added = true
           subscription.all_field_definitions.each do |field|
-            field.extension(Subscriptions::DefaultSubscriptionResolveExtension)
+            if !field.extensions.any? { |ext| ext.is_a?(Subscriptions::DefaultSubscriptionResolveExtension) }
+              field.extension(Subscriptions::DefaultSubscriptionResolveExtension)
+            end
           end
         end
       end
