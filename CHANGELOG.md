@@ -10,6 +10,21 @@
 
 ### Bug fixes
 
+# 2.0.7 (25 April 2022)
+
+### New Features
+
+- Subscriptions: support `validate_update: false` to disable validation when running subscription updates #4039
+- Expose duplicated name on `DuplicateNamesError` #4022
+
+### Bug Fixes
+
+- Datadog: improve tracer #4038
+- `hash_key:` try stringified hash key when resolving fields (this restores previous behavior) #4043
+- Printer: Don't print empty field set when types have no fields (`{\n}`) #4042
+- Dataloader: improve handoff between lazy resolution and dataloader resolution #4036
+- Remove unused `Lazy::Resolve` module from legacy execution code #4035
+
 # 2.0.6 (14 April 2022)
 
 ### Bug fixes
