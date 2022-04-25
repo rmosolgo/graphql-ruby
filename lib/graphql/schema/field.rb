@@ -248,7 +248,10 @@ module GraphQL
 
         method_name = method || name_s
         @dig_keys = dig
-        @hash_key = hash_key
+        if hash_key
+          @hash_key = hash_key
+          @hash_key_str = hash_key.to_s
+        end
 
         @method_str = -method_name.to_s
         @method_sym = method_name.to_sym
@@ -639,8 +642,10 @@ module GraphQL
 
               inner_object = obj.object
 
-              if @hash_key
-                inner_object[@hash_key]
+              if defined?(@hash_key)
+                inner_object.fetch(@hash_key) {
+                  inner_object[@hash_key_str]
+                }
               elsif @dig_keys
                 inner_object.dig(*@dig_keys)
               elsif obj.respond_to?(resolver_method)
