@@ -67,6 +67,9 @@ REASON
       possible_types Image, Audio
     end
 
+    class NoFields < GraphQL::Schema::Object
+    end
+
     class Query < GraphQL::Schema::Object
       description "The query root of this schema"
 
@@ -76,6 +79,8 @@ REASON
         argument :varied_with_nulls, Varied, required: false, default_value: { id: nil, int: nil, float: nil, some_enum: nil, sub: nil }
         argument :deprecated_arg, String, required: false, deprecation_reason: "Use something else"
       end
+
+      field :no_fields_type, NoFields
     end
 
     class CreatePost < GraphQL::Schema::RelayClassicMutation
@@ -526,6 +531,8 @@ type Mutation {
   ): CreatePostPayload
 }
 
+type NoFields
+
 interface Node {
   id: ID!
 }
@@ -545,6 +552,7 @@ type Post {
 The query root of this schema
 """
 type Query {
+  noFieldsType: NoFields
   post(
     deprecatedArg: String @deprecated(reason: "Use something else")
 
@@ -713,6 +721,8 @@ type Mutation {
   ): CreatePostPayload
 }
 
+type NoFields
+
 interface Node {
   id: ID!
 }
@@ -731,6 +741,7 @@ type Post {
 The query root of this schema
 """
 type Query {
+  noFieldsType: NoFields
   post(
     """
     Post ID

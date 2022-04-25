@@ -267,12 +267,16 @@ module GraphQL
       end
 
       def print_field_definitions(fields)
-        out = " {\n".dup
-        fields.each.with_index do |field, i|
-          out << print_description(field, indent: '  ', first_in_block: i == 0)
-          out << "  #{print_field_definition(field)}\n"
+        if fields.empty?
+          ""
+        else
+          out = " {\n".dup
+          fields.each.with_index do |field, i|
+            out << print_description(field, indent: '  ', first_in_block: i == 0)
+            out << "  #{print_field_definition(field)}\n"
+          end
+          out << "}"
         end
-        out << "}"
       end
 
       def print_directives(directives)
