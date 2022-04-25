@@ -119,6 +119,7 @@
 <div class="guide-table-of-contents"><div class="table-of-contents">
   <h3 class="contents-header">Contents</h3>
   <ol class='contents-list'><li class='contents-entry'><a href='#scope'>Scope
+</a></li><li class='contents-entry'><a href='#validation'>Validation
 </a></li></ol>
 </div>
 </div>
@@ -175,6 +176,15 @@
 </code></pre></div></div>
 
 <p>Since this trigger has a <code class="language-plaintext highlighter-rouge">scope:</code>, only subscribers with a matching scope value will be updated.</p>
+
+<h2 id="validation">Validation</h2>
+
+<p>By default, subscriptions are re-validated when a trigger causes them to send updates. To disable this, you can pass <code class="language-plaintext highlighter-rouge">validate_update: false</code> when hooking up subscriptions to your schema. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">use</span> <span class="no">SomeSubscriptions</span><span class="p">,</span> <span class="ss">validate_update: </span><span class="kp">false</span>
+</code></pre></div></div>
+
+<p>If you’re sure you won’t be releasing breaking changes to your schema, this setting can reduce overhead in evaluating updates.</p>
 
 </div>
 <p class="guide-footer">
