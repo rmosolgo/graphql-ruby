@@ -321,13 +321,13 @@ rule
 
   object_type_extension:
       /* TODO - This first one shouldn't be necessary but parser is getting confused */
-      EXTEND TYPE name implements LCURLY field_definition_list RCURLY { result = make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: [], fields: val[5], position_source: val[0]) }
-    | EXTEND TYPE name implements_opt directives_list_opt LCURLY field_definition_list RCURLY { result = make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: val[6], position_source: val[0]) }
+      EXTEND TYPE name implements field_definition_list_opt { result = make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: [], fields: val[4], position_source: val[0]) }
+    | EXTEND TYPE name implements_opt directives_list_opt field_definition_list_opt { result = make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: val[5], position_source: val[0]) }
     | EXTEND TYPE name implements_opt directives_list { result = make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: [], position_source: val[0]) }
     | EXTEND TYPE name implements { result = make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: [], fields: [], position_source: val[0]) }
 
   interface_type_extension:
-      EXTEND INTERFACE name implements_opt directives_list_opt LCURLY field_definition_list RCURLY { result = make_node(:InterfaceTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: val[6], position_source: val[0]) }
+      EXTEND INTERFACE name implements_opt directives_list_opt field_definition_list_opt { result = make_node(:InterfaceTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: val[5], position_source: val[0]) }
     | EXTEND INTERFACE name implements_opt directives_list { result = make_node(:InterfaceTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: [], position_source: val[0]) }
     | EXTEND INTERFACE name implements { result = make_node(:InterfaceTypeExtension, name: val[2], interfaces: val[3], directives: [], fields: [], position_source: val[0]) }
 
@@ -355,8 +355,8 @@ rule
       }
 
   object_type_definition:
-      description_opt TYPE name implements_opt directives_list_opt LCURLY field_definition_list RCURLY {
-        result = make_node(:ObjectTypeDefinition, name: val[2], interfaces: val[3], directives: val[4], fields: val[6], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+      description_opt TYPE name implements_opt directives_list_opt field_definition_list_opt {
+        result = make_node(:ObjectTypeDefinition, name: val[2], interfaces: val[3], directives: val[4], fields: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       }
 
   implements_opt:
@@ -394,14 +394,18 @@ rule
         result = make_node(:FieldDefinition, name: val[1], arguments: val[2], type: val[4], directives: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       }
 
-  field_definition_list:
+  field_definition_list_opt:
     /* none */ { result = EMPTY_ARRAY }
+    | LCURLY field_definition_list RCURLY { result = val[1] }
+
+  field_definition_list:
+    /* none - this is not actually valid but graphql-ruby used to print this */ { result = EMPTY_ARRAY }
     | field_definition                       { result = [val[0]] }
     | field_definition_list field_definition { val[0] << val[1] }
 
   interface_type_definition:
-      description_opt INTERFACE name implements_opt directives_list_opt LCURLY field_definition_list RCURLY {
-        result = make_node(:InterfaceTypeDefinition, name: val[2], interfaces: val[3], directives: val[4], fields: val[6], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+      description_opt INTERFACE name implements_opt directives_list_opt field_definition_list_opt {
+        result = make_node(:InterfaceTypeDefinition, name: val[2], interfaces: val[3], directives: val[4], fields: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
       }
 
   union_members:
