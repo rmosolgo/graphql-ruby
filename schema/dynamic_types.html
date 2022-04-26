@@ -116,11 +116,11 @@
   <h3 class="contents-header">Contents</h3>
   <ol class='contents-list'><li class='contents-entry'><a href='#different-fields'>Different fields
 </a><ol class='contents-list'><li class='contents-entry'><a href='#using-visible-context'>Using <code>#visible?(context)</code>
-</a></li><li class='contents-entry'><a href='#using-fields-context'>Using <code>.fields(context)</code>
+</a></li><li class='contents-entry'><a href='#using-fields-context-and-get_field-name-context'>Using <code>.fields(context)</code> and <code>.get_field(name, context)</code>
 </a></li><li class='contents-entry'><a href='#hidden-return-types'>Hidden Return Types
 </a></li></ol></li><li class='contents-entry'><a href='#different-arguments'>Different arguments
 </a><ol class='contents-list'><li class='contents-entry'><a href='#using-visible-context'>Using <code>#visible?(context)</code>
-</a></li><li class='contents-entry'><a href='#using-def-arguments-context'>Using <code>def arguments(context)</code>
+</a></li><li class='contents-entry'><a href='#using-def-arguments-context-and-def-get_argument-name-context'>Using <code>def arguments(context)</code> and <code>def get_argument(name, context)</code>
 </a></li><li class='contents-entry'><a href='#hidden-input-types'>Hidden Input Types
 </a></li></ol></li><li class='contents-entry'><a href='#different-enum-values'>Different enum values
 </a><ol class='contents-list'><li class='contents-entry'><a href='#using-visible-context'>Using <code>#visible?(context)</code>
@@ -181,9 +181,11 @@
 
 <p>With that configuration, <code class="language-plaintext highlighter-rouge">post { comments { ... } }</code> will use <code class="language-plaintext highlighter-rouge">def moderated_comments</code> when <code class="language-plaintext highlighter-rouge">context[:current_user]</code> is <code class="language-plaintext highlighter-rouge">nil</code> or is not <code class="language-plaintext highlighter-rouge">.staff?</code>, but when <code class="language-plaintext highlighter-rouge">context[:current_user].staff?</code> is <code class="language-plaintext highlighter-rouge">true</code>, it will use <code class="language-plaintext highlighter-rouge">def all_comments</code> instead.</p>
 
-<h3 id="using-fieldscontext">Using <code class="language-plaintext highlighter-rouge">.fields(context)</code></h3>
+<h3 id="using-fieldscontext-and-get_fieldname-context">Using <code class="language-plaintext highlighter-rouge">.fields(context)</code> and <code class="language-plaintext highlighter-rouge">.get_field(name, context)</code></h3>
 
-<p>To customize the set of fields used at runtime, you can implement <code class="language-plaintext highlighter-rouge">def self.fields(context)</code> in your type classes, for example:</p>
+<p>To customize the set of fields used at runtime, you can implement <code class="language-plaintext highlighter-rouge">def self.fields(context)</code> in your type classes. It should return a Hash of <code class="language-plaintext highlighter-rouge">{ String =&gt; GraphQL::Schema::Field }</code>.</p>
+
+<p>Along with this, you should implement <code class="language-plaintext highlighter-rouge">.get_field(name, context)</code> to return a field for <code class="language-plaintext highlighter-rouge">name</code>, if it should exist. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::User</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">fields</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
@@ -193,10 +195,17 @@
     <span class="k">end</span>
     <span class="n">all_fields</span>
   <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">get_field</span><span class="p">(</span><span class="nb">name</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+    <span class="n">field</span> <span class="o">=</span> <span class="k">super</span>
+    <span class="k">if</span> <span class="n">field</span><span class="p">.</span><span class="nf">graphql_name</span> <span class="o">==</span> <span class="s2">"isSpammy"</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">]</span><span class="o">&amp;</span><span class="p">.</span><span class="nf">staff?</span>
+      <span class="kp">nil</span> <span class="c1"># don't show this field to non-staff</span>
+    <span class="k">else</span>
+      <span class="n">field</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
 <span class="k">end</span>
 </code></pre></div></div>
-
-<p>It should return a Hash of <code class="language-plaintext highlighter-rouge">{ String =&gt; GraphQL::Schema::Field }</code>.</p>
 
 <h3 id="hidden-return-types">Hidden Return Types</h3>
 
@@ -246,9 +255,9 @@
 
 <p>That way, any staff client will have the option of <code class="language-plaintext highlighter-rouge">id</code> or <code class="language-plaintext highlighter-rouge">databaseId</code> while non-staff clients must use <code class="language-plaintext highlighter-rouge">id</code>.</p>
 
-<h3 id="using-def-argumentscontext">Using <code class="language-plaintext highlighter-rouge">def arguments(context)</code></h3>
+<h3 id="using-def-argumentscontext-and-def-get_argumentname-context">Using <code class="language-plaintext highlighter-rouge">def arguments(context)</code> and <code class="language-plaintext highlighter-rouge">def get_argument(name, context)</code></h3>
 
-<p>Also, you can implement <code class="language-plaintext highlighter-rouge">def arguments(context)</code> on your base field class to return a Hash of <code class="language-plaintext highlighter-rouge">{ String =&gt; GraphQL::Schema::Argument }</code>. If you take this approach, you might want some custom field classes for any types or resolvers that use <code class="language-plaintext highlighter-rouge">def arguments(context)</code>. That way, you don’t have to reimplement the method for <em>all</em> the fields in the schema.</p>
+<p>Also, you can implement <code class="language-plaintext highlighter-rouge">def arguments(context)</code> on your base field class to return a Hash of <code class="language-plaintext highlighter-rouge">{ String =&gt; GraphQL::Schema::Argument }</code> and <code class="language-plaintext highlighter-rouge">def get_argument(name, context)</code> to return a <a href="/api-doc/2.0.7/GraphQL/Schema/Argument" target="_blank" title="API docs for GraphQL::Schema::Argument"><code>GraphQL::Schema::Argument</code></a> or <code class="language-plaintext highlighter-rouge">nil</code>. . If you take this approach, you might want some custom field classes for any types or resolvers that use these methods. That way, you don’t have to reimplement the method for <em>all</em> the fields in the schema.</p>
 
 <h3 id="hidden-input-types">Hidden Input Types</h3>
 
