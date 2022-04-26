@@ -58,9 +58,11 @@ field :comments, Types::Comment.connection_type, null: false,
 
 With that configuration, `post { comments { ... } }` will use `def moderated_comments` when `context[:current_user]` is `nil` or is not `.staff?`, but when `context[:current_user].staff?` is `true`, it will use `def all_comments` instead.
 
-### Using `.fields(context)`
+### Using `.fields(context)` and `.get_field(name, context)`
 
-To customize the set of fields used at runtime, you can implement `def self.fields(context)` in your type classes, for example:
+To customize the set of fields used at runtime, you can implement `def self.fields(context)` in your type classes. It should return a Hash of `{ String => GraphQL::Schema::Field }`.
+
+Along with this, you should implement `.get_field(name, context)` to return a field for `name`, if it should exist. For example:
 
 ```ruby
 class Types::User < Types::BaseObject
@@ -71,10 +73,17 @@ class Types::User < Types::BaseObject
     end
     all_fields
   end
+
+  def self.get_field(name, context)
+    field = super
+    if field.graphql_name == "isSpammy" && !context[:current_user]&.staff?
+      nil # don't show this field to non-staff
+    else
+      field
+    end
+  end
 end
 ```
-
-It should return a Hash of `{ String => GraphQL::Schema::Field }`.
 
 ### Hidden Return Types
 
@@ -126,9 +135,9 @@ end
 
 That way, any staff client will have the option of `id` or `databaseId` while non-staff clients must use `id`.
 
-### Using `def arguments(context)`
+### Using `def arguments(context)` and `def get_argument(name, context)`
 
-Also, you can implement `def arguments(context)` on your base field class to return a Hash of `{ String => GraphQL::Schema::Argument }`. If you take this approach, you might want some custom field classes for any types or resolvers that use `def arguments(context)`. That way, you don't have to reimplement the method for _all_ the fields in the schema.
+Also, you can implement `def arguments(context)` on your base field class to return a Hash of `{ String => GraphQL::Schema::Argument }` and `def get_argument(name, context)` to return a {{ "GraphQL::Schema::Argument" | api_doc }} or `nil`. . If you take this approach, you might want some custom field classes for any types or resolvers that use these methods. That way, you don't have to reimplement the method for _all_ the fields in the schema.
 
 ### Hidden Input Types
 
