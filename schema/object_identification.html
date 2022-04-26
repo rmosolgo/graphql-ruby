@@ -135,26 +135,12 @@
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">id_from_object</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">type_definition</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span>
     <span class="c1"># Generate a unique string ID for `object` here</span>
     <span class="c1"># For example, use Rails' GlobalID library (https://github.com/rails/globalid):</span>
-    <span class="nb">object_id</span> <span class="o">=</span> <span class="n">object</span><span class="p">.</span><span class="nf">to_global_id</span><span class="p">.</span><span class="nf">to_s</span>
-    <span class="c1"># Remove this redundant prefix to make IDs shorter:</span>
-    <span class="nb">object_id</span> <span class="o">=</span> <span class="nb">object_id</span><span class="p">.</span><span class="nf">sub</span><span class="p">(</span><span class="s2">"gid://</span><span class="si">#{</span><span class="no">GlobalID</span><span class="p">.</span><span class="nf">app</span><span class="si">}</span><span class="s2">/"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
-    <span class="n">encoded_id</span> <span class="o">=</span> <span class="no">Base64</span><span class="p">.</span><span class="nf">urlsafe_encode64</span><span class="p">(</span><span class="nb">object_id</span><span class="p">)</span>
-    <span class="c1"># Remove the "=" padding</span>
-    <span class="n">encoded_id</span> <span class="o">=</span> <span class="n">encoded_id</span><span class="p">.</span><span class="nf">sub</span><span class="p">(</span><span class="sr">/=+/</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
-    <span class="c1"># Add a type hint</span>
-    <span class="n">type_hint</span> <span class="o">=</span> <span class="n">type_definition</span><span class="p">.</span><span class="nf">graphql_name</span><span class="p">.</span><span class="nf">first</span>
-    <span class="s2">"</span><span class="si">#{</span><span class="n">type_hint</span><span class="si">}</span><span class="s2">_</span><span class="si">#{</span><span class="n">encoded_id</span><span class="si">}</span><span class="s2">"</span>
+    <span class="n">object</span><span class="p">.</span><span class="nf">to_gid_param</span>
   <span class="k">end</span>
 
-  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">object_from_id</span><span class="p">(</span><span class="n">encoded_id_with_hint</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">object_from_id</span><span class="p">(</span><span class="n">global_id</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span>
     <span class="c1"># For example, use Rails' GlobalID library (https://github.com/rails/globalid):</span>
-    <span class="c1"># Split off the type hint</span>
-    <span class="n">_type_hint</span><span class="p">,</span> <span class="n">encoded_id</span> <span class="o">=</span> <span class="n">encoded_id_with_hint</span><span class="p">.</span><span class="nf">split</span><span class="p">(</span><span class="s2">"_"</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-    <span class="c1"># Decode the ID</span>
-    <span class="nb">id</span> <span class="o">=</span> <span class="no">Base64</span><span class="p">.</span><span class="nf">urlsafe_decode64</span><span class="p">(</span><span class="n">encoded_id</span><span class="p">)</span>
-    <span class="c1"># Rebuild it for Rails then find the object:</span>
-    <span class="n">full_global_id</span> <span class="o">=</span> <span class="s2">"gid://</span><span class="si">#{</span><span class="no">GlobalID</span><span class="p">.</span><span class="nf">app</span><span class="si">}</span><span class="s2">/</span><span class="si">#{</span><span class="nb">id</span><span class="si">}</span><span class="s2">"</span>
-    <span class="no">GlobalID</span><span class="o">::</span><span class="no">Locator</span><span class="p">.</span><span class="nf">locate</span><span class="p">(</span><span class="n">full_global_id</span><span class="p">)</span>
+    <span class="no">GlobalID</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">global_id</span><span class="p">)</span>
   <span class="k">end</span>
 <span class="k">end</span>
 </code></pre></div></div>
