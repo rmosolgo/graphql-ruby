@@ -51,6 +51,11 @@ describe "GraphQL::Execution::Errors" do
       err.value
     end
 
+    class ErrorList < Array
+      def each
+        raise ErrorB
+      end
+    end
 
     class Thing < GraphQL::Schema::Object
       def self.authorized?(obj, ctx)
@@ -156,6 +161,12 @@ describe "GraphQL::Execution::Errors" do
       field :non_nullable_array, [String], null: false
       def non_nullable_array
         [nil]
+      end
+
+      field :error_in_each, [Int]
+
+      def error_in_each
+        ErrorList.new
       end
     end
 
@@ -307,6 +318,14 @@ describe "GraphQL::Execution::Errors" do
           "message" => "Cannot return null for non-nullable field Query.nonNullableArray"
         }
         assert_equal({ "data" => nil, "errors" => [expected_error] }, res)
+      end
+    end
+
+    describe "when .each on a list type raises an error" do
+      it "rescues it properly" do
+        res = ErrorsTestSchema.execute("{ __typename errorInEach }")
+        expected_error = { "message" => "boom!", "locations"=>[{"line"=>1, "column"=>14}], "path"=>["errorInEach"] }
+        assert_equal({ "data" => { "__typename" => "Query", "errorInEach" => nil }, "errors" => [expected_error] }, res)
       end
     end
   end
