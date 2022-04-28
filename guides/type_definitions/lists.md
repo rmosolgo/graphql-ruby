@@ -83,6 +83,7 @@ Combining list types and non-null types can be a bit tricky. There are four poss
 Here's how those combinations play out:
 
  &nbsp;  | nullable field | non-null field
+ ------|------|------
 nullable items  | <code>[Integer, null: true], null: true</code><br><code># => [Int]</code> | <code>[Integer, null: true], null: false</code><br><code># => [Int]!</code>
 non-null items   | <code>[Integer]</code><br><code># => [Int!]</code> | <code>[Integer], null: false</code><br><code># => [Int!]!</code>
 
