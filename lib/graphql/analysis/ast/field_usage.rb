@@ -39,7 +39,7 @@ module GraphQL
               @used_deprecated_arguments << argument.definition.path
             end
 
-            if argument.definition.type.kind.input_object?
+            if argument.definition.type.kind.input_object? && argument.value.respond_to?(:arguments)
               extract_deprecated_arguments(argument.value.arguments.argument_values) # rubocop:disable Development/ContextIsPassedCop -- runtime args instance
             elsif argument.definition.type.list? && !argument.value.nil?
               argument
