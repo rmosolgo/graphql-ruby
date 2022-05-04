@@ -642,6 +642,10 @@ module GraphQL
 
               inner_object = obj.object
 
+              # regression against https://github.com/rmosolgo/graphql-ruby/issues/3944
+              # check if the object is a hash, but also responds to the method. If so,
+              # revert to using #fetch to grab the item, otherwise revert to using
+              # the string field.
               if inner_object.respond_to?(resolver_method) && inner_object.is_a?(Hash)
                 if defined?(@hash_key)
                   inner_object.fetch(@hash_key) {
