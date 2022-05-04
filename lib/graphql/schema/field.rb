@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "graphql/schema/field/connection_extension"
 require "graphql/schema/field/scope_extension"
-require "pry"
+
 module GraphQL
   class Schema
     class Field
