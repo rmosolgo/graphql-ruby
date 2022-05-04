@@ -656,16 +656,10 @@ module GraphQL
                   obj.public_send(resolver_method)
                 end
               elsif inner_object.is_a?(Hash)
-                if defined?(@hash_key)
-                  inner_object.fetch(@hash_key) {
-                    inner_object[@hash_key_str]
-                  }
+                if inner_object.key?(@method_sym)
+                  inner_object[@method_sym]
                 else
-                  if inner_object.key?(@method_sym)
-                    inner_object[@method_sym]
-                  else
-                    inner_object[@method_str]
-                  end
+                  inner_object[@method_str]
                 end
               elsif inner_object.respond_to?(@method_sym)
                 method_to_call = @method_sym
