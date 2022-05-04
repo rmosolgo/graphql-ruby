@@ -642,10 +642,6 @@ module GraphQL
 
               inner_object = obj.object
 
-              if defined?(@hash_key)
-                inner_object.fetch(@hash_key) {
-                  inner_object[@hash_key_str]
-                }
               elsif @dig_keys
                 inner_object.dig(*@dig_keys)
               elsif obj.respond_to?(resolver_method)
@@ -658,10 +654,16 @@ module GraphQL
                   obj.public_send(resolver_method)
                 end
               elsif inner_object.is_a?(Hash)
-                if inner_object.key?(@method_sym)
-                  inner_object[@method_sym]
+                if defined?(@hash_key)
+                  inner_object.fetch(@hash_key) {
+                    inner_object[@hash_key_str]
+                  }
                 else
-                  inner_object[@method_str]
+                  if inner_object.key?(@method_sym)
+                    inner_object[@method_sym]
+                  else
+                    inner_object[@method_str]
+                  end
                 end
               elsif inner_object.respond_to?(@method_sym)
                 method_to_call = @method_sym
