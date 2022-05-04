@@ -643,7 +643,13 @@ module GraphQL
               inner_object = obj.object
 
               if defined?(@hash_key)
+<<<<<<< HEAD
                 inner_object[@hash_key].nil? ? inner_object[@hash_key_str] : inner_object[@hash_key]
+=======
+                inner_object.fetch(@hash_key) {
+                  inner_object[@hash_key_str]
+                }
+>>>>>>> parent of 059a5b7ea (🐛  Move the `hash_keys` call into `Hash` check)
               elsif @dig_keys
                 inner_object.dig(*@dig_keys)
               elsif obj.respond_to?(resolver_method)
