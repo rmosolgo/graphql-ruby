@@ -241,4 +241,71 @@ describe GraphQL::Schema::IntrospectionSystem do
       end
     end
   end
+
+  describe "Dynamically hiding them" do
+    class HidingIntrospectionSchema < GraphQL::Schema
+      module HideIntrospectionByContext
+        def visible?(ctx)
+          super && if introspection?
+            !ctx[:hide_introspection]
+          else
+            true
+          end
+        end
+      end
+
+      class BaseField < GraphQL::Schema::Field
+        include HideIntrospectionByContext
+      end
+
+      module CustomIntrospection
+        class DynamicFields < GraphQL::Introspection::DynamicFields
+          field_class(BaseField)
+          field :__typename, String, null: false
+        end
+
+        class EntryPoints < GraphQL::Introspection::EntryPoints
+          field_class(BaseField)
+          field :__type, GraphQL::Introspection::TypeType do
+            argument :name, String
+          end
+        end
+
+        class SchemaType < GraphQL::Introspection::SchemaType
+          extend HideIntrospectionByContext
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :int, Integer, null: false
+        def int; 1; end
+      end
+
+      query(Query)
+      introspection(CustomIntrospection)
+    end
+
+    it "can implement visible? to return false for dynamic fields" do
+      assert_equal "Query", HidingIntrospectionSchema.execute("{ __typename }")["data"]["__typename"]
+      error_res = HidingIntrospectionSchema.execute("{ __typename }", context: { hide_introspection: true })
+
+      assert_equal ["Field '__typename' doesn't exist on type 'Query'"], error_res["errors"].map { |e| e["message" ]}
+    end
+
+    it "can implement visible? to return false for entry points" do
+      query_str = "{ __type(name: \"Query\") { name } }"
+      success_res = HidingIntrospectionSchema.execute(query_str)
+      assert_equal "Query", success_res["data"]["__type"]["name"]
+      error_res = HidingIntrospectionSchema.execute(query_str, context: { hide_introspection: true })
+      assert_equal ["Field '__type' doesn't exist on type 'Query'"], error_res["errors"].map { |e| e["message" ]}
+    end
+
+    it "can implement visible? to return false for types" do
+      query_str = "{ __schema { queryType { name } } }"
+      success_res = HidingIntrospectionSchema.execute(query_str)
+      assert_equal "Query", success_res["data"]["__schema"]["queryType"]["name"]
+      error_res = HidingIntrospectionSchema.execute(query_str, context: { hide_introspection: true })
+      assert_equal ["Field '__schema' doesn't exist on type 'Query'"], error_res["errors"].map { |e| e["message" ]}
+    end
+  end
 end
