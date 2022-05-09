@@ -50,7 +50,7 @@ module GraphQL
       def self.visible_entry?(visibility_method, entry, context, warden = Warden.from_context(context))
         if entry.is_a?(Array)
           visible_item = nil
-          entry.each do |item|
+          entry.uniq { |e| [e.name, e.class, e.description] }.each do |item|
             if warden.public_send(visibility_method, item, context)
               if visible_item.nil?
                 visible_item = item
