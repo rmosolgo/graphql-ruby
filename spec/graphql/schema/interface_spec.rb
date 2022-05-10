@@ -65,7 +65,7 @@ describe GraphQL::Schema::Interface do
 
   describe "in queries" do
     it "works" do
-      query_str = <<-GRAPHQL
+      query_str = <<-GQL
       {
         piano: find(id: "Instrument/Piano") {
           id
@@ -75,7 +75,7 @@ describe GraphQL::Schema::Interface do
           }
         }
       }
-      GRAPHQL
+      GQL
 
       res = Jazz::Schema.execute(query_str)
       expected_piano = {
@@ -87,7 +87,7 @@ describe GraphQL::Schema::Interface do
     end
 
     it "applies custom field attributes" do
-      query_str = <<-GRAPHQL
+      query_str = <<-GQL
       {
         find(id: "Ensemble/Bela Fleck and the Flecktones") {
           upcasedId
@@ -96,7 +96,7 @@ describe GraphQL::Schema::Interface do
           }
         }
       }
-      GRAPHQL
+      GQL
 
       res = Jazz::Schema.execute(query_str)
       expected_data = {
@@ -185,7 +185,7 @@ describe GraphQL::Schema::Interface do
       assert_equal "a", result["data"]["a"]
       assert_equal "b", result["data"]["b"]
 
-      result2 = InterfaceImplementsSchema.execute(<<-GRAPHQL)
+      result2 = InterfaceImplementsSchema.execute(<<-GQL)
       {
         ... on InterfaceA {
           ... on InterfaceB {
@@ -194,7 +194,7 @@ describe GraphQL::Schema::Interface do
           }
         }
       }
-      GRAPHQL
+      GQL
       assert_equal "a", result2["data"]["f1"]
       assert_equal "b", result2["data"]["f2"]
     end
@@ -278,7 +278,7 @@ type Query implements InterfaceA & InterfaceB {
       assert_equal "name", thing["name"]
       assert_equal "ts", thing["timestamp"]
 
-      result2 = TransitiveInterfaceSchema.execute(<<-GRAPHQL)
+      result2 = TransitiveInterfaceSchema.execute(<<-GQL)
       {
         thing {
           ...on Node { id }
@@ -289,7 +289,7 @@ type Query implements InterfaceA & InterfaceB {
           ... on Timestamped { tid: id timestamp }
         }
       }
-      GRAPHQL
+      GQL
 
       thing2 = result2.dig("data", "thing")
       
@@ -302,29 +302,29 @@ type Query implements InterfaceA & InterfaceB {
 
     it "has the right structure" do
       expected_schema = <<-SCHEMA
-interface Named implements Node {
-  id: ID
-  name: String
-}
+        interface Named implements Node {
+          id: ID
+          name: String
+        }
 
-interface Node {
-  id: ID
-}
+        interface Node {
+          id: ID
+        }
 
-type Query {
-  thing: Thing
-}
+        type Query {
+          thing: Thing
+        }
 
-type Thing implements Named & Node & Timestamped {
-  id: ID
-  name: String
-  timestamp: String
-}
+        type Thing implements Named & Node & Timestamped {
+          id: ID
+          name: String
+          timestamp: String
+        }
 
-interface Timestamped implements Node {
-  id: ID
-  timestamp: String
-}
+        interface Timestamped implements Node {
+          id: ID
+          timestamp: String
+        }
       SCHEMA
       assert_equal expected_schema, TransitiveInterfaceSchema.to_definition
     end
@@ -337,6 +337,80 @@ interface Timestamped implements Node {
       interfaces_names = thing_type["interfaces"].map { |i| i["name"] }.sort
       
       assert_equal interfaces_names, ["Named", "Node", "Timestamped"]
+    end
+  end
+
+  describe "supplying a fallback_value to a field" do
+    class FallbackValueSchema < GraphQL::Schema
+      module NodeWithFallbackInterface
+        include GraphQL::Schema::Interface
+
+        field :id, ID, null: false
+        field :name, String, fallback_value: "fallback"
+      end
+
+      module NodeWithoutFallbackInterface
+        include GraphQL::Schema::Interface
+
+        field :id, ID, null: false
+        field :name, String
+      end
+      
+      class NodeWithFallbackType < GraphQL::Schema::Object
+        implements NodeWithFallbackInterface
+      end
+
+      class NodeWithoutFallbackType < GraphQL::Schema::Object
+        implements NodeWithoutFallbackInterface
+      end
+
+      class Query < GraphQL::Schema::Object
+        # node_with_fallback, with_fallback, with_fb, with_fallback_query, and fallback_nodes don't work but bloop does!?
+        # query field cannot include the word "with"?
+        field :fallback, [NodeWithFallbackType]
+        def fallback
+          OPEN_STRUCTS + HASHES
+        end
+        
+        # CHANGE ME!
+        field :lskdjglskjg, [NodeWithoutFallbackType]
+        def lskdjglskjg
+          OPEN_STRUCTS + HASHES
+        end
+      end
+
+      query(Query)
+    end
+
+    OPEN_STRUCTS = [OpenStruct.new(id: "1", name: "OpenStruct thing"), OpenStruct.new(id: "2")]
+    HASHES = [{id: "3", name: "Hash thing"}, {id: "4"}]
+    expected_result = [
+      {"id"=>"1", "name"=>"OpenStruct thing"},
+      {"id"=>"2", "name"=>"fallback"},
+      {"id"=>"3", "name"=>"Hash thing"},
+      {"id"=>"4", "name"=>nil}
+    ]
+
+    it "uses fallback_value if supplied, but only if other ways dont' work" do
+      result = FallbackValueSchema.execute("{ fallback { id name } }")
+      data = result["data"]["fallback"]
+
+      assert_equal expected_result, data
+    end
+
+    it "allows nil as fallback_value" do
+      OPEN_STRUCTS << OpenStruct.new(id: "5", name: nil)
+      result = FallbackValueSchema.execute("{ fallback { id name } }")
+      data = result["data"]["fallback"]
+      expected_result.insert(2, {"id"=>"5", "name"=>nil})
+
+      assert_equal expected_result, data
+    end
+
+    it "errors if no fallback_value is supplied and other ways don't work" do
+      result = FallbackValueSchema.execute("{ lskdjglskjg { id name } }")
+      binding.pry
+      # expect RuntimeError include "Failed to implement"
     end
   end
 
