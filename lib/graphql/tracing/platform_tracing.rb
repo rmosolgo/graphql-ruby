@@ -10,6 +10,10 @@ module GraphQL
     class PlatformTracing
       class << self
         attr_accessor :platform_keys
+
+        def inherited(child_class)
+          child_class.platform_keys = self.platform_keys
+        end
       end
 
       def initialize(options = {})
