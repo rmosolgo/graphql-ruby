@@ -45,7 +45,7 @@ module GraphQL
 
             platform_key = if trace_field
               context = data.fetch(:query).context
-              cached_platform_key(context, field) { platform_field_key(data[:owner], field) }
+              cached_platform_key(context, field, :field) { platform_field_key(data[:owner], field) }
             else
               nil
             end
@@ -61,14 +61,14 @@ module GraphQL
         when "authorized", "authorized_lazy"
           type = data.fetch(:type)
           context = data.fetch(:context)
-          platform_key = cached_platform_key(context, type) { platform_authorized_key(type) }
+          platform_key = cached_platform_key(context, type, :authorized) { platform_authorized_key(type) }
           platform_trace(platform_key, key, data) do
             yield
           end
         when "resolve_type", "resolve_type_lazy"
           type = data.fetch(:type)
           context = data.fetch(:context)
-          platform_key = cached_platform_key(context, type) { platform_resolve_type_key(type) }
+          platform_key = cached_platform_key(context, type, :resolve_type) { platform_resolve_type_key(type) }
           platform_trace(platform_key, key, data) do
             yield
           end
@@ -116,7 +116,7 @@ module GraphQL
       # If the key isn't present, the given block is called and the result is cached for `key`.
       #
       # @return [String]
-      def cached_platform_key(ctx, key)
+      def cached_platform_key(ctx, key, trace_phase)
         cache = ctx.namespace(self.class)[:platform_key_cache] ||= {}
         cache.fetch(key) { cache[key] = yield }
       end
