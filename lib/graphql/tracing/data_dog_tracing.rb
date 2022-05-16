@@ -45,12 +45,21 @@ module GraphQL
             span.set_tag(:query_string, data[:query].query_string)
           end
 
+          prepare_span(key, data, span)
+
           yield
         end
       end
 
       def service_name
         options.fetch(:service, 'ruby-graphql')
+      end
+
+      # Implement this method in a subclass to apply custom tags to datadog spans
+      # @param key [String] The event being traced
+      # @param data [Hash] The runtime data for this event (@see GraphQL::Tracing for keys for each event)
+      # @param span [Datadog::Tracing::SpanOperation] The datadog span for this event
+      def prepare_span(key, data, span)
       end
 
       def tracer
