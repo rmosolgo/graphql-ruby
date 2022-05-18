@@ -341,6 +341,13 @@ type Query implements InterfaceA & InterfaceB {
   end
 
   describe "supplying a fallback_value to a field" do
+    DATABASE = [
+      {id: "3", name: "Hash thing"},
+      {id: "4"},
+      OpenStruct.new(id: "1", name: "OpenStruct thing"),
+      OpenStruct.new(id: "2")
+    ]
+
     class FallbackValueSchema < GraphQL::Schema
       module NodeWithFallbackInterface
         include GraphQL::Schema::Interface
@@ -355,9 +362,20 @@ type Query implements InterfaceA & InterfaceB {
         field :id, ID, null: false
         field :name, String
       end
+
+      module NodeWithNilFallbackInterface
+        include GraphQL::Schema::Interface
+
+        field :id, ID, null: false
+        field :name, String, fallback_value: nil
+      end
       
       class NodeWithFallbackType < GraphQL::Schema::Object
         implements NodeWithFallbackInterface
+      end
+
+      class NodeWithNilFallbackType < GraphQL::Schema::Object
+        implements NodeWithNilFallbackInterface
       end
 
       class NodeWithoutFallbackType < GraphQL::Schema::Object
@@ -365,52 +383,59 @@ type Query implements InterfaceA & InterfaceB {
       end
 
       class Query < GraphQL::Schema::Object
-        # node_with_fallback, with_fallback, with_fb, with_fallback_query, and fallback_nodes don't work but bloop does!?
         field :fallback, [NodeWithFallbackType]
         def fallback
-          OPEN_STRUCTS + HASHES
+          DATABASE
         end
         
-        field :weirdname, [NodeWithoutFallbackType]
-        def weirdname
-          OPEN_STRUCTS + HASHES
+        field :no_fallback, [NodeWithoutFallbackType]
+        def no_fallback
+          DATABASE
+        end
+
+        field :nil_fallback, [NodeWithNilFallbackType]
+        def nil_fallback
+          DATABASE
         end
       end
 
       query(Query)
     end
 
-    OPEN_STRUCTS = [OpenStruct.new(id: "1", name: "OpenStruct thing"), OpenStruct.new(id: "2")]
-    HASHES = [{id: "3", name: "Hash thing"}, {id: "4"}]
-
-    fallback_expected_result = [
-      {"id"=>"1", "name"=>"OpenStruct thing"},
-      {"id"=>"2", "name"=>"fallback"},
-      {"id"=>"3", "name"=>"Hash thing"},
-      {"id"=>"4", "name"=>"fallback"}
-    ]
-
     it "uses fallback_value if supplied, but only if other ways don't work" do
       result = FallbackValueSchema.execute("{ fallback { id name } }")
       data = result["data"]["fallback"]
-
-      assert_equal fallback_expected_result, data
+      expected = [
+        {"id"=>"3", "name"=>"Hash thing"},
+        {"id"=>"4", "name"=>"fallback"},
+        {"id"=>"1", "name"=>"OpenStruct thing"},
+        {"id"=>"2", "name"=>"fallback"},
+      ]
+  
+      assert_equal expected, data
     end
 
     it "allows nil as fallback_value" do
-      OPEN_STRUCTS << OpenStruct.new(id: "5", name: nil)
-      result = FallbackValueSchema.execute("{ fallback { id name } }")
-      data = result["data"]["fallback"]
-
-      assert data.find{ |item| item["id"] == "5" }["name"] == nil
+      result = FallbackValueSchema.execute("{ nilFallback { id name } }")
+      data = result["data"]["nilFallback"]
+      expected = [
+        {"id"=>"3", "name"=>"Hash thing"},
+        {"id"=>"4", "name"=>nil},
+        {"id"=>"1", "name"=>"OpenStruct thing"},
+        {"id"=>"2", "name"=>nil},
+      ]
+  
+      assert_equal expected, data
     end
 
-    # "fallback" as a query name seems to work, "no_fallback" does not, so this is now named "weirdname". WHY??
     it "errors if no fallback_value is supplied and other ways don't work" do
-      FallbackValueSchema.execute("{ weirdname { id name } }")
-      
-      # not sure how to test the below. It errors out before getting there, but I think the correct thing is happening.
-      assert_raise RuntimeError, "Failed to implement..."
+      err = assert_raises RuntimeError do
+        FallbackValueSchema.execute("{ noFallback { id name } }")
+      end
+
+      assert_includes err.message, "Failed to implement"
+      # Doesn't error until it gets to the OpenStructs.
+      assert_includes err.message, "OpenStruct"
     end
   end
 
