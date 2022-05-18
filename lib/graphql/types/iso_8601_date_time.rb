@@ -60,6 +60,9 @@ module GraphQL
           # But without this, it would zero out given any time part of `str_value` (hours and/or minutes)
           if dt.iso8601.start_with?(str_value)
             dt
+          elsif str_value.length == 8 && str_value.match?(/\A\d{8}\Z/)
+            # Allow dates that are missing the "-". eg. "20220404"
+            dt
           else
             nil
           end
