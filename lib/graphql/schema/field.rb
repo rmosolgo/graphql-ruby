@@ -662,9 +662,12 @@ module GraphQL
                 end
               elsif inner_object.is_a?(Hash)
                 if inner_object.key?(@method_sym)
-                  inner_object[@method_sym]
-                else
+                  inner_object[@method_sym] 
+                elsif inner_object.key?(@method_str)
                   inner_object[@method_str]
+                # I think we need this here too bc if the thing is a Hash we end up here and otherwise just get nil back, even if a fallback_value is passed.
+                elsif @fallback_value != :not_given
+                  @fallback_value
                 end
               elsif inner_object.respond_to?(@method_sym)
                 method_to_call = @method_sym
