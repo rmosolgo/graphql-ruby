@@ -65,7 +65,7 @@ describe GraphQL::Schema::Interface do
 
   describe "in queries" do
     it "works" do
-      query_str = <<-GQL
+      query_str = <<-GRAPHQL
       {
         piano: find(id: "Instrument/Piano") {
           id
@@ -75,7 +75,7 @@ describe GraphQL::Schema::Interface do
           }
         }
       }
-      GQL
+      GRAPHQL
 
       res = Jazz::Schema.execute(query_str)
       expected_piano = {
@@ -87,7 +87,7 @@ describe GraphQL::Schema::Interface do
     end
 
     it "applies custom field attributes" do
-      query_str = <<-GQL
+      query_str = <<-GRAPHQL
       {
         find(id: "Ensemble/Bela Fleck and the Flecktones") {
           upcasedId
@@ -96,7 +96,7 @@ describe GraphQL::Schema::Interface do
           }
         }
       }
-      GQL
+      GRAPHQL
 
       res = Jazz::Schema.execute(query_str)
       expected_data = {
@@ -185,7 +185,7 @@ describe GraphQL::Schema::Interface do
       assert_equal "a", result["data"]["a"]
       assert_equal "b", result["data"]["b"]
 
-      result2 = InterfaceImplementsSchema.execute(<<-GQL)
+      result2 = InterfaceImplementsSchema.execute(<<-GRAPHQL)
       {
         ... on InterfaceA {
           ... on InterfaceB {
@@ -194,7 +194,7 @@ describe GraphQL::Schema::Interface do
           }
         }
       }
-      GQL
+      GRAPHQL
       assert_equal "a", result2["data"]["f1"]
       assert_equal "b", result2["data"]["f2"]
     end
@@ -278,7 +278,7 @@ type Query implements InterfaceA & InterfaceB {
       assert_equal "name", thing["name"]
       assert_equal "ts", thing["timestamp"]
 
-      result2 = TransitiveInterfaceSchema.execute(<<-GQL)
+      result2 = TransitiveInterfaceSchema.execute(<<-GRAPHQL)
       {
         thing {
           ...on Node { id }
@@ -289,7 +289,7 @@ type Query implements InterfaceA & InterfaceB {
           ... on Timestamped { tid: id timestamp }
         }
       }
-      GQL
+      GRAPHQL
 
       thing2 = result2.dig("data", "thing")
       
@@ -302,29 +302,29 @@ type Query implements InterfaceA & InterfaceB {
 
     it "has the right structure" do
       expected_schema = <<-SCHEMA
-        interface Named implements Node {
-          id: ID
-          name: String
-        }
+interface Named implements Node {
+  id: ID
+  name: String
+}
 
-        interface Node {
-          id: ID
-        }
+interface Node {
+  id: ID
+}
 
-        type Query {
-          thing: Thing
-        }
+type Query {
+  thing: Thing
+}
 
-        type Thing implements Named & Node & Timestamped {
-          id: ID
-          name: String
-          timestamp: String
-        }
+type Thing implements Named & Node & Timestamped {
+  id: ID
+  name: String
+  timestamp: String
+}
 
-        interface Timestamped implements Node {
-          id: ID
-          timestamp: String
-        }
+interface Timestamped implements Node {
+  id: ID
+  timestamp: String
+}
       SCHEMA
       assert_equal expected_schema, TransitiveInterfaceSchema.to_definition
     end
@@ -342,10 +342,11 @@ type Query implements InterfaceA & InterfaceB {
 
   describe "supplying a fallback_value to a field" do
     DATABASE = [
-      {id: "3", name: "Hash thing"},
-      {id: "4"},
-      OpenStruct.new(id: "1", name: "OpenStruct thing"),
-      OpenStruct.new(id: "2")
+      {id: "1", name: "Hash thing"},
+      {id: "2"},
+      {id: "3", name: nil},
+      OpenStruct.new(id: "4", name: "OpenStruct thing"),
+      OpenStruct.new(id: "5")
     ]
 
     class FallbackValueSchema < GraphQL::Schema
@@ -406,10 +407,11 @@ type Query implements InterfaceA & InterfaceB {
       result = FallbackValueSchema.execute("{ fallback { id name } }")
       data = result["data"]["fallback"]
       expected = [
-        {"id"=>"3", "name"=>"Hash thing"},
-        {"id"=>"4", "name"=>"fallback"},
-        {"id"=>"1", "name"=>"OpenStruct thing"},
+        {"id"=>"1", "name"=>"Hash thing"},
         {"id"=>"2", "name"=>"fallback"},
+        {"id"=>"3", "name"=>nil},
+        {"id"=>"4", "name"=>"OpenStruct thing"},
+        {"id"=>"5", "name"=>"fallback"},
       ]
   
       assert_equal expected, data
@@ -419,10 +421,11 @@ type Query implements InterfaceA & InterfaceB {
       result = FallbackValueSchema.execute("{ nilFallback { id name } }")
       data = result["data"]["nilFallback"]
       expected = [
-        {"id"=>"3", "name"=>"Hash thing"},
-        {"id"=>"4", "name"=>nil},
-        {"id"=>"1", "name"=>"OpenStruct thing"},
+        {"id"=>"1", "name"=>"Hash thing"},
         {"id"=>"2", "name"=>nil},
+        {"id"=>"3", "name"=>nil},
+        {"id"=>"4", "name"=>"OpenStruct thing"},
+        {"id"=>"5", "name"=>nil},
       ]
   
       assert_equal expected, data
