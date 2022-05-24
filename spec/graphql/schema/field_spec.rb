@@ -207,7 +207,7 @@ describe GraphQL::Schema::Field do
           err = assert_raises GraphQL::Schema::Field::FieldImplementationFailed do
             ArgumentErrorSchema.execute("{ f1(something: 12) }")
           end
-          assert_equal "Failed to call f1 on #<ArgumentErrorSchema::Query> because the Ruby method params were incompatible with the GraphQL arguments:
+          assert_equal "Failed to call `:f1` on #<ArgumentErrorSchema::Query> because the Ruby method params were incompatible with the GraphQL arguments:
 
 - `something: 12` was given by GraphQL but not defined in the Ruby method. Add `something:` to the method parameters.
 ", err.message
@@ -217,7 +217,7 @@ describe GraphQL::Schema::Field do
           err = assert_raises GraphQL::Schema::Field::FieldImplementationFailed do
             ArgumentErrorSchema.execute("{ f2(something: 12) }")
           end
-          assert_equal "Failed to call field_2 on #<ArgumentErrorSchema::Query> because the Ruby method params were incompatible with the GraphQL arguments:
+          assert_equal "Failed to call `:field_2` on #<ArgumentErrorSchema::Query> because the Ruby method params were incompatible with the GraphQL arguments:
 
 - `something: 12` was given by GraphQL but not defined in the Ruby method. Add `something:` to the method parameters.
 ", err.message
@@ -226,7 +226,7 @@ describe GraphQL::Schema::Field do
           err = assert_raises GraphQL::Schema::Field::FieldImplementationFailed do
             ArgumentErrorSchema.execute("{ f3(something: 1) }")
           end
-          assert_equal "Failed to call f3 on #<ArgumentErrorSchema::Query> because the Ruby method params were incompatible with the GraphQL arguments:
+          assert_equal "Failed to call `:f3` on #<ArgumentErrorSchema::Query> because the Ruby method params were incompatible with the GraphQL arguments:
 
 - `something: 1` was given by GraphQL but not defined in the Ruby method. Add `something:` to the method parameters.
 - `always_missing:` is required by Ruby, but not by GraphQL. Consider `always_missing: nil` instead, or making this argument required in GraphQL.
@@ -235,7 +235,7 @@ describe GraphQL::Schema::Field do
           err = assert_raises GraphQL::Schema::Field::FieldImplementationFailed do
             ArgumentErrorSchema.execute("{ f4 }")
           end
-          assert_equal "Failed to call f4 on #<ArgumentErrorSchema::Query> because the Ruby method params were incompatible with the GraphQL arguments:
+          assert_equal "Failed to call `:f4` on #<ArgumentErrorSchema::Query> because the Ruby method params were incompatible with the GraphQL arguments:
 
 - `never_positional` is required by Ruby, but GraphQL doesn't pass positional arguments. If it's meant to be a GraphQL argument, use `never_positional:` instead. Otherwise, remove it.
 ", err.message
@@ -610,8 +610,13 @@ describe GraphQL::Schema::Field do
             "OtherCapital" => "explicit-hash-key-works",
             "some_random_key" => "hash-key-works-when-underlying-object-responds-to-field-name",
             "stringified_hash_key" => "hash-key-is-tried-as-string",
-
           }
+        end
+
+        field :ostruct_results, ResultType, null: false
+
+        def ostruct_results
+          OpenStruct.new(search_results)
         end
       end
 
@@ -642,6 +647,37 @@ describe GraphQL::Schema::Field do
         "stringifiedHashKey" => "hash-key-is-tried-as-string"
       }
       assert_equal expected_result, search_results
+    end
+
+    it "works with non-hash instances" do
+      res = HashKeySchema.execute <<-GRAPHQL
+      {
+        ostructResults {
+          method
+          lowercase
+          Capital
+          Other
+          OtherCapital
+          stringifiedHashKey
+        }
+      }
+      GRAPHQL
+
+      search_results = res["data"]["ostructResults"]
+      expected_result = {
+        "lowercase" => "lowercase-works",
+        "Capital" => "capital-camelize-false-works",
+        "Other" => "capital-camelize-true-works",
+        "OtherCapital" => "explicit-hash-key-works",
+        "method" => "hash-key-works-when-underlying-object-responds-to-field-name",
+        "stringifiedHashKey" => "hash-key-is-tried-as-string"
+      }
+      assert_equal expected_result, search_results
+    end
+
+    it "populates `method_str`" do
+      hash_key_field = HashKeySchema.get_field("Result", "method")
+      assert_equal "some_random_key", hash_key_field.method_str
     end
   end
 
