@@ -645,7 +645,7 @@ module GraphQL
               inner_object = obj.object
 
               if defined?(@hash_key)
-                inner_object[@hash_key] || inner_object[@hash_key_str]
+                inner_object[@hash_key] || inner_object[@hash_key_str] || (@fallback_value != :not_given ? @fallback_value : nil)
               elsif obj.respond_to?(resolver_method)
                 method_to_call = resolver_method
                 method_receiver = obj
@@ -661,8 +661,12 @@ module GraphQL
                 elsif defined?(@hash_key)
                   if inner_object.key?(@hash_key)
                     inner_object[@hash_key]
-                  else
+                  elsif inner_object.key?(@hash_key_str)
                     inner_object[@hash_key_str]
+                  elsif @fallback_value != :not_given
+                    @fallback_value
+                  else
+                    nil
                   end
                 elsif inner_object.key?(@method_sym)
                   inner_object[@method_sym]
@@ -670,6 +674,8 @@ module GraphQL
                   inner_object[@method_str]
                 elsif @fallback_value != :not_given
                   @fallback_value
+                else
+                  nil
                 end
               elsif inner_object.respond_to?(@method_sym)
                 method_to_call = @method_sym
