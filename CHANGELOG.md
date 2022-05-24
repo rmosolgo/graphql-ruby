@@ -10,6 +10,21 @@
 
 ### Bug fixes
 
+# 2.0.8 (24 May 2022)
+
+### New Features
+
+- Fields: return `fallback_value:` when method or hash key field resolution fails #4069
+- Support `hash_key:` lookups on Hash-like objects #4072
+- Datadog tracing: support `prepare_span` hook for adding custom tags #4067
+
+### Bug fixes
+
+- Fields: When `hash_key:` is given, populate `#method_str` based on it #4072
+- Errors: rescue errors raised when calling `.each` on list values #4052
+- Date type: continue accepting dates without hyphens #4061
+- Parser: properly parse empty type definitions #4046
+
 # 2.0.7 (25 April 2022)
 
 ### New Features
