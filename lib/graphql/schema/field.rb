@@ -246,7 +246,7 @@ module GraphQL
           end
         end
 
-        method_name = method || name_s
+        method_name = method || hash_key || name_s
         @dig_keys = dig
         if hash_key
           @hash_key = hash_key
@@ -643,11 +643,7 @@ module GraphQL
               inner_object = obj.object
 
               if defined?(@hash_key)
-                inner_object.fetch(@hash_key) {
-                  inner_object[@hash_key_str]
-                }
-              elsif @dig_keys
-                inner_object.dig(*@dig_keys)
+                inner_object[@hash_key] || inner_object[@hash_key_str]
               elsif obj.respond_to?(resolver_method)
                 method_to_call = resolver_method
                 method_receiver = obj
@@ -658,7 +654,15 @@ module GraphQL
                   obj.public_send(resolver_method)
                 end
               elsif inner_object.is_a?(Hash)
-                if inner_object.key?(@method_sym)
+                if @dig_keys
+                  inner_object.dig(*@dig_keys)
+                elsif defined?(@hash_key)
+                  if inner_object.key?(@hash_key)
+                    inner_object[@hash_key]
+                  else
+                    inner_object[@hash_key_str]
+                  end
+                elsif inner_object.key?(@method_sym)
                   inner_object[@method_sym]
                 else
                   inner_object[@method_str]
@@ -751,7 +755,7 @@ module GraphQL
 
         if unsatisfied_ruby_kwargs.any? || unsatisfied_method_params.any?
           raise FieldImplementationFailed.new, <<-ERR
-Failed to call #{method_name} on #{receiver.inspect} because the Ruby method params were incompatible with the GraphQL arguments:
+Failed to call `#{method_name.inspect}` on #{receiver.inspect} because the Ruby method params were incompatible with the GraphQL arguments:
 
 #{ unsatisfied_ruby_kwargs
     .map { |key, value| "- `#{key}: #{value}` was given by GraphQL but not defined in the Ruby method. Add `#{key}:` to the method parameters." }
