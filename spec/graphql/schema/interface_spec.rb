@@ -282,7 +282,7 @@ type Query implements InterfaceA & InterfaceB {
       {
         thing {
           ...on Node { id }
-          ...on Named { 
+          ...on Named {
             nid: id name
             ...on Node { nnid: id }
           }
@@ -292,7 +292,7 @@ type Query implements InterfaceA & InterfaceB {
       GRAPHQL
 
       thing2 = result2.dig("data", "thing")
-      
+
       assert_equal "id", thing2["id"]
       assert_equal "id", thing2["nid"]
       assert_equal "id", thing2["tid"]
@@ -331,12 +331,148 @@ interface Timestamped implements Node {
 
     it "only lists each implemented interface once when introspecting" do
       introspection = TransitiveInterfaceSchema.as_json
-      thing_type = introspection.dig("data", "__schema", "types").find do |type| 
+      thing_type = introspection.dig("data", "__schema", "types").find do |type|
         type["name"] == "Thing"
       end
       interfaces_names = thing_type["interfaces"].map { |i| i["name"] }.sort
-      
+
       assert_equal interfaces_names, ["Named", "Node", "Timestamped"]
+    end
+  end
+
+  describe "supplying a fallback_value to a field" do
+    DATABASE = [
+      {id: "1", name: "Hash thing"},
+      {id: "2"},
+      {id: "3", name: nil},
+      OpenStruct.new(id: "4", name: "OpenStruct thing"),
+      OpenStruct.new(id: "5"),
+      {id: "6", custom_name: "Hash Key Name"}
+    ]
+
+    class FallbackValueSchema < GraphQL::Schema
+      module NodeWithFallbackInterface
+        include GraphQL::Schema::Interface
+
+        field :id, ID, null: false
+        field :name, String, fallback_value: "fallback"
+      end
+
+      module NodeWithHashKeyFallbackInterface
+        include GraphQL::Schema::Interface
+
+        field :id, ID, null: false
+        field :name, String, hash_key: :custom_name, fallback_value: "hash-key-fallback"
+      end
+
+      module NodeWithoutFallbackInterface
+        include GraphQL::Schema::Interface
+
+        field :id, ID, null: false
+        field :name, String
+      end
+
+      module NodeWithNilFallbackInterface
+        include GraphQL::Schema::Interface
+
+        field :id, ID, null: false
+        field :name, String, fallback_value: nil
+      end
+
+      class NodeWithFallbackType < GraphQL::Schema::Object
+        implements NodeWithFallbackInterface
+      end
+
+      class NodeWithHashKeyFallbackType < GraphQL::Schema::Object
+        implements NodeWithHashKeyFallbackInterface
+      end
+
+      class NodeWithNilFallbackType < GraphQL::Schema::Object
+        implements NodeWithNilFallbackInterface
+      end
+
+      class NodeWithoutFallbackType < GraphQL::Schema::Object
+        implements NodeWithoutFallbackInterface
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :fallback, [NodeWithFallbackType]
+        def fallback
+          DATABASE
+        end
+
+        field :hash_key_fallback, [NodeWithHashKeyFallbackType]
+        def hash_key_fallback
+          DATABASE
+        end
+
+        field :no_fallback, [NodeWithoutFallbackType]
+        def no_fallback
+          DATABASE
+        end
+
+        field :nil_fallback, [NodeWithNilFallbackType]
+        def nil_fallback
+          DATABASE
+        end
+      end
+
+      query(Query)
+    end
+
+    it "uses fallback_value if supplied, but only if other ways don't work" do
+      result = FallbackValueSchema.execute("{ fallback { id name } }")
+      data = result["data"]["fallback"]
+      expected = [
+        {"id"=>"1", "name"=>"Hash thing"},
+        {"id"=>"2", "name"=>"fallback"},
+        {"id"=>"3", "name"=>nil},
+        {"id"=>"4", "name"=>"OpenStruct thing"},
+        {"id"=>"5", "name"=>"fallback"},
+        {"id"=>"6", "name"=>"fallback"},
+      ]
+
+      assert_equal expected, data
+    end
+
+    it "uses fallback_value if supplied when hash key isn't present" do
+      result = FallbackValueSchema.execute("{ hashKeyFallback { id name } }")
+      data = result["data"]["hashKeyFallback"]
+      expected = [
+        {"id"=>"1", "name"=>"hash-key-fallback"},
+        {"id"=>"2", "name"=>"hash-key-fallback"},
+        {"id"=>"3", "name"=>"hash-key-fallback"},
+        {"id"=>"4", "name"=>"hash-key-fallback"},
+        {"id"=>"5", "name"=>"hash-key-fallback"},
+        {"id"=>"6", "name"=>"Hash Key Name"},
+      ]
+
+      assert_equal expected, data
+    end
+
+    it "allows nil as fallback_value" do
+      result = FallbackValueSchema.execute("{ nilFallback { id name } }")
+      data = result["data"]["nilFallback"]
+      expected = [
+        {"id"=>"1", "name"=>"Hash thing"},
+        {"id"=>"2", "name"=>nil},
+        {"id"=>"3", "name"=>nil},
+        {"id"=>"4", "name"=>"OpenStruct thing"},
+        {"id"=>"5", "name"=>nil},
+        {"id"=>"6", "name"=>nil},
+      ]
+
+      assert_equal expected, data
+    end
+
+    it "errors if no fallback_value is supplied and other ways don't work" do
+      err = assert_raises RuntimeError do
+        FallbackValueSchema.execute("{ noFallback { id name } }")
+      end
+
+      assert_includes err.message, "Failed to implement"
+      # Doesn't error until it gets to the OpenStructs.
+      assert_includes err.message, "OpenStruct"
     end
   end
 

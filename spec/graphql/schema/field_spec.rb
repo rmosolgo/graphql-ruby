@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 require "spec_helper"
-
 describe GraphQL::Schema::Field do
   describe "graphql definition" do
     let(:object_class) { Jazz::Query }

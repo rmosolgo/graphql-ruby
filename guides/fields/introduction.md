@@ -87,6 +87,7 @@ By default, fields return values by:
 
 - Trying to call a method on the underlying object; _OR_
 - If the underlying object is a `Hash`, lookup a key in that hash.
+- An optional `:fallback_value` can be supplied that will be used if the above fail.
 
 The method name or hash key corresponds to the field name, so in this example:
 

@@ -214,7 +214,8 @@ module GraphQL
       # @param ast_node [Language::Nodes::FieldDefinition, nil] If this schema was parsed from definition, this AST node defined the field
       # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
       # @param validates [Array<Hash>] Configurations for validating this field
-      def initialize(type: nil, name: nil, owner: nil, null: nil, description: :not_given, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: nil, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, &definition_block)
+      # @fallback_value [Object] A fallback value if the method is not defined
+      def initialize(type: nil, name: nil, owner: nil, null: nil, description: :not_given, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: nil, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: :not_given, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -280,6 +281,7 @@ module GraphQL
         @relay_nodes_field = relay_nodes_field
         @ast_node = ast_node
         @method_conflict_warning = method_conflict_warning
+        @fallback_value = fallback_value
 
         arguments.each do |name, arg|
           case arg
@@ -643,7 +645,7 @@ module GraphQL
               inner_object = obj.object
 
               if defined?(@hash_key)
-                inner_object[@hash_key] || inner_object[@hash_key_str]
+                inner_object[@hash_key] || inner_object[@hash_key_str] || (@fallback_value != :not_given ? @fallback_value : nil)
               elsif obj.respond_to?(resolver_method)
                 method_to_call = resolver_method
                 method_receiver = obj
@@ -659,13 +661,21 @@ module GraphQL
                 elsif defined?(@hash_key)
                   if inner_object.key?(@hash_key)
                     inner_object[@hash_key]
-                  else
+                  elsif inner_object.key?(@hash_key_str)
                     inner_object[@hash_key_str]
+                  elsif @fallback_value != :not_given
+                    @fallback_value
+                  else
+                    nil
                   end
                 elsif inner_object.key?(@method_sym)
                   inner_object[@method_sym]
-                else
+                elsif inner_object.key?(@method_str)
                   inner_object[@method_str]
+                elsif @fallback_value != :not_given
+                  @fallback_value
+                else
+                  nil
                 end
               elsif inner_object.respond_to?(@method_sym)
                 method_to_call = @method_sym
@@ -675,6 +685,8 @@ module GraphQL
                 else
                   inner_object.public_send(@method_sym)
                 end
+              elsif @fallback_value != :not_given
+                @fallback_value
               else
                 raise <<-ERR
               Failed to implement #{@owner.graphql_name}.#{@name}, tried:
@@ -683,7 +695,7 @@ module GraphQL
               - `#{inner_object.class}##{@method_sym}`, which did not exist
               - Looking up hash key `#{@method_sym.inspect}` or `#{@method_str.inspect}` on `#{inner_object}`, but it wasn't a Hash
 
-              To implement this field, define one of the methods above (and check for typos)
+              To implement this field, define one of the methods above (and check for typos), or supply a `fallback_value`.
               ERR
               end
             end
