@@ -675,6 +675,11 @@ describe GraphQL::Schema::Field do
       }
       assert_equal expected_result, search_results
     end
+
+    it "populates `method_str`" do
+      hash_key_field = HashKeySchema.get_field("Result", "method")
+      assert_equal "some_random_key", hash_key_field.method_str
+    end
   end
 
   describe "when the owner is nil" do

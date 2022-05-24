@@ -246,7 +246,7 @@ module GraphQL
           end
         end
 
-        method_name = method || name_s
+        method_name = method || hash_key || name_s
         @dig_keys = dig
         if hash_key
           @hash_key = hash_key
