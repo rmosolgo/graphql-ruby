@@ -754,11 +754,16 @@ module GraphQL
             response_list = GraphQLResultArray.new(result_name, selection_result)
             response_list.graphql_non_null_list_items = inner_type.non_null?
             set_result(selection_result, result_name, response_list)
-
+            result_was_set = false
             idx = 0
-            begin
+            list_value = begin
               value.each do |inner_value|
                 break if dead_result?(response_list)
+                if !result_was_set
+                  # Don't set the result unless `.each` is successful
+                  set_result(selection_result, result_name, response_list)
+                  result_was_set = true
+                end
                 next_path = path.dup
                 next_path << idx
                 this_idx = idx
@@ -772,6 +777,13 @@ module GraphQL
                   resolve_list_item(inner_value, inner_type, next_path, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type)
                 end
               end
+              # Maybe the list was empty and the block was never called.
+              if !result_was_set
+                set_result(selection_result, result_name, response_list)
+                result_was_set = true
+              end
+
+              response_list
             rescue NoMethodError => err
               # Ruby 2.2 doesn't have NoMethodError#receiver, can't check that one in this case. (It's been EOL since 2017.)
               if err.name == :each && (err.respond_to?(:receiver) ? err.receiver == value : true)
@@ -781,9 +793,17 @@ module GraphQL
                 # This was some other NoMethodError -- let it bubble to reveal the real error.
                 raise
               end
+            rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => ex_err
+              ex_err
+            rescue StandardError => err
+              begin
+                query.handle_or_reraise(err)
+              rescue GraphQL::ExecutionError => ex_err
+                ex_err
+              end
             end
 
-            response_list
+            continue_value(path, list_value, owner_type, field, inner_type.non_null?, ast_node, result_name, selection_result)
           else
             raise "Invariant: Unhandled type kind #{current_type.kind} (#{current_type})"
           end
