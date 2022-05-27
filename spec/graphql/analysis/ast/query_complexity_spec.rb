@@ -378,7 +378,7 @@ describe GraphQL::Analysis::AST::QueryComplexity do
 
       class Query < GraphQL::Schema::Object
         field :complexity, SingleComplexity do
-          argument :int_value, Int, required: false, prepare: -> (val, ctx) {
+          argument :int_value, Int, required: false, prepare: ->(val, ctx) {
             if ctx[:raise_prepare_error]
               raise GraphQL::ExecutionError, "Boom"
             else
