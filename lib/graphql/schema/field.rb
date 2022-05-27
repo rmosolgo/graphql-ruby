@@ -496,7 +496,13 @@ module GraphQL
           case defined_complexity
           when Proc
             arguments = query.arguments_for(nodes.first, self)
-            defined_complexity.call(query.context, arguments.keyword_arguments, child_complexity)
+            if arguments.is_a?(GraphQL::ExecutionError)
+              return child_complexity
+            elsif arguments.respond_to?(:keyword_arguments)
+              arguments = arguments.keyword_arguments
+            end
+
+            defined_complexity.call(query.context, arguments, child_complexity)
           when Numeric
             defined_complexity + child_complexity
           else
