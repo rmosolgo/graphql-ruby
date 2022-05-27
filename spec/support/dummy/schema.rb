@@ -109,12 +109,17 @@ module Dummy
       end
     end
 
-    field :nullable_cheese, Cheese, "Cheeses like this one" do
+    field :nullable_cheese, Cheese, "Not really a Cheese at all" do
       argument :source, [DairyAnimal], required: false
     end
     def nullable_cheese; raise("NotImplemented"); end
 
-    field :deeply_nullable_cheese, Cheese, "Cheeses like this one" do
+    field :dairy_product, "Dummy::DairyProduct", "Some related dairy product, perhaps" do
+      argument :input, "Dummy::DairyProductInput", required: false
+    end
+    def dairy_product; raise("NotImplemented"); end
+
+    field :deeply_nullable_cheese, Cheese, "Definitely not a cheese" do
       argument :source, [[DairyAnimal, null: true], null: true], required: false
     end
     def deeply_nullable_cheese; raise("NotImplemented"); end
