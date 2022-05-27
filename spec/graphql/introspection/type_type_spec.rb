@@ -15,6 +15,7 @@ describe GraphQL::Introspection::TypeType do
   |}
   let(:result) { Dummy::Schema.execute(query_string, context: {}, variables: {"cheeseId" => 2}) }
   let(:cheese_fields) {[
+    {"name"=>"dairyProduct", "isDeprecated" => false, "type"=>{"kind"=>"UNION", "name"=>"DairyProduct", "ofType"=>nil}},
     {"name"=>"deeplyNullableCheese", "isDeprecated" => false, "type"=>{ "kind" => "OBJECT", "name" => "Cheese", "ofType" => nil}},
     {"name"=>"flavor",      "isDeprecated" => false, "type" => { "kind" => "NON_NULL", "name" => nil, "ofType" => { "name" => "String"}}},
     {"name"=>"id",          "isDeprecated" => false, "type" => { "kind" => "NON_NULL", "name" => nil, "ofType" => { "name" => "Int"}}},
