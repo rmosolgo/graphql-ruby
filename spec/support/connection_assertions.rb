@@ -6,6 +6,7 @@
 # The test must implement `schema` to serve the queries below with the expected results.
 module ConnectionAssertions
   MAX_PAGE_SIZE = 6
+  DEFAULT_PAGE_SIZE = 4
   NAMES = [
     "Avocado",
     "Beet",
@@ -39,6 +40,7 @@ module ConnectionAssertions
 
     Class.new(base_schema) do
       default_max_page_size ConnectionAssertions::MAX_PAGE_SIZE
+      default_page_size ConnectionAssertions::DEFAULT_PAGE_SIZE
       cursor_encoder(NonceEnabledEncoder)
 
       # Make a way to get local variables (passed in as args)
@@ -96,14 +98,18 @@ module ConnectionAssertions
         graphql_name "Query"
         field :items, item.connection_type, null: false do
           argument :max_page_size_override, Integer, required: false
+          argument :default_page_size_override, Integer, required: false
         end
 
-        def items(max_page_size_override: :no_value)
-          if max_page_size_override != :no_value
-            context.schema.connection_class.new(get_items, max_page_size: max_page_size_override)
-          else
+        def items(max_page_size_override: :no_value, default_page_size_override: :no_value)
+          if max_page_size_override == :no_value && default_page_size_override == :no_value
             # don't manually apply the wrapper when it's not required -- check automatic wrapping.
             get_items
+          else
+            args = {}
+            args[:max_page_size] = max_page_size_override if max_page_size_override != :no_value
+            args[:default_page_size] = default_page_size_override if default_page_size_override != :no_value
+            context.schema.connection_class.new(get_items, **args)
           end
         end
 
@@ -135,7 +141,7 @@ module ConnectionAssertions
           relation
         end
 
-        field :unbounded_items, item.connection_type, max_page_size: nil
+        field :unbounded_items, item.connection_type, max_page_size: nil, default_page_size: nil
 
         def unbounded_items
           get_items
@@ -277,12 +283,6 @@ module ConnectionAssertions
         end
 
         it "applies max_page_size to first and last" do
-          res = exec_query(query_str, {})
-          # Even though neither first nor last was provided, max_page_size was applied.
-          assert_names(["Avocado", "Beet", "Cucumber", "Dill", "Eggplant", "Fennel"], res)
-          assert_equal true, get_page_info(res, "hasNextPage")
-          assert_equal false, get_page_info(res, "hasPreviousPage")
-
           # max_page_size overrides first
           res = exec_query(query_str, first: 10)
           assert_names(["Avocado", "Beet", "Cucumber", "Dill", "Eggplant", "Fennel"], res)
@@ -294,6 +294,14 @@ module ConnectionAssertions
           assert_names(["Eggplant", "Fennel", "Ginger", "Horseradish", "I Can't Believe It's Not Butter", "Jicama"], res)
           assert_equal false, get_page_info(res, "hasNextPage")
           assert_equal true, get_page_info(res, "hasPreviousPage")
+        end
+
+        it "applies default_page_size to first when first and last are unspecified" do
+          res = exec_query(query_str, {})
+          # Neither first nor last was provided, so default_page_size was applied.
+          assert_names(["Avocado", "Beet", "Cucumber", "Dill"], res)
+          assert_equal true, get_page_info(res, "hasNextPage")
+          assert_equal false, get_page_info(res, "hasPreviousPage")
         end
 
         it "returns unbounded lists" do
