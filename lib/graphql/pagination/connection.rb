@@ -125,12 +125,13 @@ module GraphQL
       #   (The underlying instance variable doesn't have limits on it.)
       #   If neither `first` nor `last` is given, but `default_page_size` is
       #   present, default_page_size is used for first. If `default_page_size`
-      #   is nil, use `max_page_size`.
+      #   is greater than `max_page_size``, it'll be clamped down to
+      #   `max_page_size`. If `default_page_size` is nil, use `max_page_size`.
       def first
         @first ||= begin
           capped = limit_pagination_argument(@first_value, max_page_size)
           if capped.nil? && last.nil?
-            capped = default_page_size || max_page_size
+            capped = limit_pagination_argument(default_page_size, max_page_size) || max_page_size
           end
           capped
         end
