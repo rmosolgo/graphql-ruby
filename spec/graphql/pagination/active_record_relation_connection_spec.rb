@@ -168,8 +168,8 @@ if testing_rails?
         log = with_active_record_log do
           results = schema.execute(ALREADY_LOADED_QUERY_STRING)
         end
-        # The max_page_size of 6 is applied to the results
-        assert_equal 6, results["data"]["preloadedItems"]["nodes"].size
+        # The default_page_size of 4 is applied to the results
+        assert_equal 4, results["data"]["preloadedItems"]["nodes"].size
         assert_equal 1, log.split("\n").size, "It runs only one query"
         decolorized_log = log.gsub(/\e\[([;\d]+)?m/, '').chomp
         assert_operator decolorized_log, :end_with?, 'SELECT "foods".* FROM "foods"', "it's an unbounded select from the resolver"
