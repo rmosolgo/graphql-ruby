@@ -320,6 +320,23 @@ describe GraphQL::Analysis::AST::QueryComplexity do
         assert_equal 1 + 1 + 1 + (3 * 1) + 1, complexity
       end
     end
+
+    describe "Field-level default_page_size" do
+      let(:query_string) {%|
+      {
+        rebels {
+          shipsWithDefaultPageSize {
+            nodes { id }
+          }
+        }
+      }
+      |}
+
+      it "uses field default_page_size" do
+        complexity = reduce_result.first
+        assert_equal 1 + 1 + 1 + (500 * 1), complexity
+      end
+    end
   end
 
   describe "calucation complexity for a multiplex" do

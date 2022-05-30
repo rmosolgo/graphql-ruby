@@ -128,6 +128,10 @@ module StarWars
       argument :name_includes, String, required: false
     end
 
+    field :ships_with_default_page_size, ShipConnectionWithParentType, method: :ships, connection: true, default_page_size: 500, null: true do
+      argument :name_includes, String, required: false
+    end
+
     field :shipsByResolver, resolver: ShipsByResolver, connection: true
 
     def ships(name_includes: nil)
