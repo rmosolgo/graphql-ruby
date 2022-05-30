@@ -337,6 +337,25 @@ describe GraphQL::Analysis::AST::QueryComplexity do
         assert_equal 1 + 1 + 1 + (500 * 1), complexity
       end
     end
+
+    describe "Schema-level default_page_size" do
+      let(:query) { GraphQL::Query.new(StarWars::SchemaWithDefaultPageSize, query_string) }
+      let(:query_string) {%|
+      {
+        rebels {
+          bases {
+            nodes { id }
+            totalCount
+          }
+        }
+      }
+      |}
+
+      it "uses schema default_page_size" do
+        complexity = reduce_result.first
+        assert_equal 1 + 1 + 1 + (2 * 1) + 1, complexity
+      end
+    end
   end
 
   describe "calucation complexity for a multiplex" do

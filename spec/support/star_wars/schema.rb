@@ -421,4 +421,11 @@ module StarWars
     lazy_resolve(LazyWrapper, :value)
     lazy_resolve(LazyLoader, :value)
   end
+
+  # Create a secondary schema with a default_page_size set. This prevents us
+  # from breaking the existing default_max_page_size tests, while still
+  # allowing us to test the logic involved with default_page_size.
+  class SchemaWithDefaultPageSize < Schema
+    default_page_size 2
+  end
 end
