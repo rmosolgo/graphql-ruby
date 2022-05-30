@@ -907,6 +907,50 @@ describe GraphQL::Schema::Resolver do
         assert_equal 10, ObjectWithMaxPageSizeResolver.fields["items"].max_page_size
       end
     end
+
+    describe "default_page_size" do
+      class NoDefaultPageSizeResolver < GraphQL::Schema::Resolver
+      end
+
+      class DefaultPageSizeBaseResolver < GraphQL::Schema::Resolver
+        default_page_size 10
+      end
+
+      class DefaultPageSizeSubclass < DefaultPageSizeBaseResolver
+      end
+
+      class DefaultPageSizeOverrideSubclass < DefaultPageSizeBaseResolver
+        default_page_size nil
+      end
+
+      class ObjectWithDefaultPageSizeResolver < GraphQL::Schema::Object
+        field :items, [String], null: false, resolver: DefaultPageSizeBaseResolver
+      end
+
+      it "defaults to absent" do
+        assert_nil NoDefaultPageSizeResolver.default_page_size
+        refute NoDefaultPageSizeResolver.has_default_page_size?
+      end
+
+      it "implements has_default_page_size?" do
+        assert DefaultPageSizeBaseResolver.has_default_page_size?
+        assert DefaultPageSizeSubclass.has_default_page_size?
+        assert DefaultPageSizeOverrideSubclass.has_default_page_size?
+      end
+
+      it "is inherited" do
+        assert_equal 10, DefaultPageSizeBaseResolver.default_page_size
+        assert_equal 10, DefaultPageSizeSubclass.default_page_size
+      end
+
+      it "is overridden by nil" do
+        assert_nil DefaultPageSizeOverrideSubclass.default_page_size
+      end
+
+      it "is passed along to the field" do
+        assert_equal 10, ObjectWithDefaultPageSizeResolver.fields["items"].default_page_size
+      end
+    end
   end
 
   describe "When the type is forgotten" do
