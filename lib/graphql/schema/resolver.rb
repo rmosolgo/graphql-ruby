@@ -328,6 +328,27 @@ module GraphQL
           (!!defined?(@max_page_size)) || (superclass.respond_to?(:has_max_page_size?) && superclass.has_max_page_size?)
         end
 
+        # Get or set the `default_page_size:` which will be configured for fields using this resolver
+        # (`nil` means "unlimited default page size".)
+        # @param default_page_size [Integer, nil] Set a new value
+        # @return [Integer, nil] The `default_page_size` assigned to fields that use this resolver
+        def default_page_size(new_default_page_size = :not_given)
+          if new_default_page_size != :not_given
+            @default_page_size = new_default_page_size
+          elsif defined?(@default_page_size)
+            @default_page_size
+          elsif superclass.respond_to?(:default_page_size)
+            superclass.default_page_size
+          else
+            nil
+          end
+        end
+
+        # @return [Boolean] `true` if this resolver or a superclass has an assigned `default_page_size`
+        def has_default_page_size?
+          (!!defined?(@default_page_size)) || (superclass.respond_to?(:has_default_page_size?) && superclass.has_default_page_size?)
+        end
+
         # A non-normalized type configuration, without `null` applied
         def type_expr
           @type_expr || (superclass.respond_to?(:type_expr) ? superclass.type_expr : nil)

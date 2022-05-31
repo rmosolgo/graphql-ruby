@@ -506,6 +506,14 @@ module GraphQL
         end
       end
 
+      def default_page_size(new_default_page_size = nil)
+        if new_default_page_size
+          @default_page_size = new_default_page_size
+        else
+          @default_page_size || find_inherited_value(:default_page_size)
+        end
+      end
+
       def query_execution_strategy(new_query_execution_strategy = nil)
         if new_query_execution_strategy
           @query_execution_strategy = new_query_execution_strategy

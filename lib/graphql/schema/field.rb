@@ -200,6 +200,7 @@ module GraphQL
       # @param connection [Boolean] `true` if this field should get automagic connection behavior; default is to infer by `*Connection` in the return type name
       # @param connection_extension [Class] The extension to add, to implement connections. If `nil`, no extension is added.
       # @param max_page_size [Integer, nil] For connections, the maximum number of items to return from this field, or `nil` to allow unlimited results.
+      # @param default_page_size [Integer, nil] For connections, the default number of items to return from this field, or `nil` to return unlimited results.
       # @param introspection [Boolean] If true, this field will be marked as `#introspection?` and the name may begin with `__`
       # @param resolver_class [Class] (Private) A {Schema::Resolver} which this field was derived from. Use `resolver:` to create a field with a resolver.
       # @param arguments [{String=>GraphQL::Schema::Argument, Hash}] Arguments for this field (may be added in the block, also)
@@ -215,7 +216,7 @@ module GraphQL
       # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
       # @param validates [Array<Hash>] Configurations for validating this field
       # @fallback_value [Object] A fallback value if the method is not defined
-      def initialize(type: nil, name: nil, owner: nil, null: nil, description: :not_given, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: nil, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: :not_given, &definition_block)
+      def initialize(type: nil, name: nil, owner: nil, null: nil, description: :not_given, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: :not_given, default_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: nil, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: :not_given, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -269,6 +270,8 @@ module GraphQL
         @connection = connection
         @has_max_page_size = max_page_size != :not_given
         @max_page_size = max_page_size == :not_given ? nil : max_page_size
+        @has_default_page_size = default_page_size != :not_given
+        @default_page_size = default_page_size == :not_given ? nil : default_page_size
         @introspection = introspection
         @extras = extras
         if !broadcastable.nil?
@@ -464,11 +467,11 @@ module GraphQL
           end
 
           if max_possible_page_size.nil?
-            max_possible_page_size = max_page_size || query.schema.default_max_page_size
+            max_possible_page_size = default_page_size || query.schema.default_page_size || max_page_size || query.schema.default_max_page_size
           end
 
           if max_possible_page_size.nil?
-            raise GraphQL::Error, "Can't calculate complexity for #{path}, no `first:`, `last:`, `max_page_size` or `default_max_page_size`"
+            raise GraphQL::Error, "Can't calculate complexity for #{path}, no `first:`, `last:`, `default_page_size`, `max_page_size` or `default_max_page_size`"
           else
             metadata_complexity = 0
             lookahead = GraphQL::Execution::Lookahead.new(query: query, field: self, ast_nodes: nodes, owner_type: owner)
@@ -543,6 +546,16 @@ module GraphQL
       # @return [Integer, nil] Applied to connections if {#has_max_page_size?}
       def max_page_size
         @max_page_size || (@resolver_class && @resolver_class.max_page_size)
+      end
+
+      # @return [Boolean] True if this field's {#default_page_size} should override the schema default.
+      def has_default_page_size?
+        @has_default_page_size || (@resolver_class && @resolver_class.has_default_page_size?)
+      end
+
+      # @return [Integer, nil] Applied to connections if {#has_default_page_size?}
+      def default_page_size
+        @default_page_size || (@resolver_class && @resolver_class.default_page_size)
       end
 
       class MissingReturnTypeError < GraphQL::Error; end

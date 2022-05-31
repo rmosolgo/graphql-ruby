@@ -47,6 +47,9 @@ module GraphQL
               if field.has_max_page_size? && !value.has_max_page_size_override?
                 value.max_page_size = field.max_page_size
               end
+              if field.has_default_page_size? && !value.has_default_page_size_override?
+                value.default_page_size = field.default_page_size
+              end
               if context.schema.new_connections? && (custom_t = context.schema.connections.edge_class_for_field(@field))
                 value.edge_class = custom_t
               end
@@ -64,6 +67,7 @@ module GraphQL
                 original_arguments,
                 field: field,
                 max_page_size: field.max_page_size,
+                default_page_size: field.default_page_size,
                 parent: object,
                 context: context,
               )

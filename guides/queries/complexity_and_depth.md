@@ -84,9 +84,9 @@ By default, GraphQL-Ruby calculates a complexity value for connection fields by:
 - adding `1` for `pageInfo` and each of its subselections
 - adding `1` for `count`, `totalCount`, or `total`
 - adding `1` for the connection field itself
-- multiplying the complexity of other fields by the largest possible page size, which is the greater of `first:` or `last:`, or if neither of those is given, the field's `max_page_size` or the schema's `default_max_page_size`.
+- multiplying the complexity of other fields by the largest possible page size, which is the greater of `first:` or `last:`, or if neither of those are given it will go through each of `default_page_size`, the schema's `default_page_size`, `max_page_size`, and then the schema's `default_max_page_size`.
 
-    (If no max page size can be determined, then the analysis crashes with an internal error -- set `default_max_page_size` in your schema to prevent this.)
+    (If no default page size or max page size can be determined, then the analysis crashes with an internal error -- set `default_page_size` or `default_max_page_size` in your schema to prevent this.)
 
 For example, this query has complexity `26`:
 

@@ -35,7 +35,7 @@ describe GraphQL::Pagination::Connections do
   end
 
   it "returns connections by class, using inherited mappings and local overrides" do
-    field_defn = OpenStruct.new(has_max_page_size?: true, max_page_size: 10, type: GraphQL::Types::Relay::BaseConnection)
+    field_defn = OpenStruct.new(has_max_page_size?: true, max_page_size: 10, has_default_page_size?: true, default_page_size: 5, type: GraphQL::Types::Relay::BaseConnection)
 
     set_wrapper = schema.connections.wrap(field_defn, nil, Set.new([1,2,3]), {}, nil)
     assert_instance_of SetConnection, set_wrapper

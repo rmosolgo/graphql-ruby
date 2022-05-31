@@ -31,6 +31,7 @@ describe GraphQL::Schema do
         max_complexity 1
         max_depth 2
         default_max_page_size 3
+        default_page_size 2
         error_bubbling false
         disable_introspection_entry_points
         orphan_types Jazz::Ensemble
@@ -63,6 +64,7 @@ describe GraphQL::Schema do
       assert_equal base_schema.max_complexity, schema.max_complexity
       assert_equal base_schema.max_depth, schema.max_depth
       assert_equal base_schema.default_max_page_size, schema.default_max_page_size
+      assert_equal base_schema.default_page_size, schema.default_page_size
       assert_equal base_schema.error_bubbling, schema.error_bubbling
       assert_equal base_schema.orphan_types, schema.orphan_types
       assert_equal base_schema.context_class, schema.context_class
@@ -111,6 +113,7 @@ describe GraphQL::Schema do
       schema.max_complexity(10)
       schema.max_depth(20)
       schema.default_max_page_size(30)
+      schema.default_page_size(15)
       schema.error_bubbling(true)
       schema.orphan_types(Jazz::InstrumentType)
       schema.directives([DummyFeature2])
@@ -132,6 +135,7 @@ describe GraphQL::Schema do
       assert_equal 10, schema.max_complexity
       assert_equal 20, schema.max_depth
       assert_equal 30, schema.default_max_page_size
+      assert_equal 15, schema.default_page_size
       assert schema.error_bubbling
       assert_equal [Jazz::Ensemble, Jazz::InstrumentType], schema.orphan_types
       assert_equal schema.directives, GraphQL::Schema.default_directives.merge(DummyFeature1.graphql_name => DummyFeature1, DummyFeature2.graphql_name => DummyFeature2)
