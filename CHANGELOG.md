@@ -10,6 +10,18 @@
 
 ### Bug fixes
 
+# 2.0.9 (31 May 2022)
+
+### New features
+
+- Connections: use `Schema.default_page_size`, `Field#default_page_size`, or `Resolver.default_page_size` when one of them is available and no `first` or `last` is given #4081
+- Tracing: Add `OpenTelementryTracing` #4077
+
+### Bug fixes
+
+- Field usage analyzer: don't crash on null input objects #4078
+- Complexity: properly handle `ExecutionError`s raised in `prepare:` hooks #4079
+
 # 2.0.8 (24 May 2022)
 
 ### New Features
