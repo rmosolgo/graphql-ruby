@@ -10,6 +10,14 @@
 
 ### Bug fixes
 
+# 1.13.13 (31 May 2022)
+
+### New features
+
+- Datadog: update tracer for ddtrace 1.0 #4038
+- Datadog: Add `#prepare_span` hook for custom tags #4067
+- Tracing: Add `OpenTelementry` tracing #4077
+
 # 1.13.12 (14 April 2022)
 
 - Pass `context[:dataloader]` to multiplex context #4026
