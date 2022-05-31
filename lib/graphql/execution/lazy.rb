@@ -12,13 +12,6 @@ module GraphQL
     # - It has no error-catching functionality
     # @api private
     class Lazy
-      # Traverse `val`, lazily resolving any values along the way
-      # @param val [Object] A data structure containing mixed plain values and `Lazy` instances
-      # @return void
-      def self.resolve(val)
-        Resolve.resolve(val)
-      end
-
       attr_reader :path, :field
 
       # Create a {Lazy} which will get its inner value by calling the block
