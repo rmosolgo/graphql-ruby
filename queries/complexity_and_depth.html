@@ -200,9 +200,9 @@
   <li>adding <code class="language-plaintext highlighter-rouge">1</code> for <code class="language-plaintext highlighter-rouge">count</code>, <code class="language-plaintext highlighter-rouge">totalCount</code>, or <code class="language-plaintext highlighter-rouge">total</code></li>
   <li>adding <code class="language-plaintext highlighter-rouge">1</code> for the connection field itself</li>
   <li>
-    <p>multiplying the complexity of other fields by the largest possible page size, which is the greater of <code class="language-plaintext highlighter-rouge">first:</code> or <code class="language-plaintext highlighter-rouge">last:</code>, or if neither of those is given, the field’s <code class="language-plaintext highlighter-rouge">max_page_size</code> or the schema’s <code class="language-plaintext highlighter-rouge">default_max_page_size</code>.</p>
+    <p>multiplying the complexity of other fields by the largest possible page size, which is the greater of <code class="language-plaintext highlighter-rouge">first:</code> or <code class="language-plaintext highlighter-rouge">last:</code>, or if neither of those are given it will go through each of <code class="language-plaintext highlighter-rouge">default_page_size</code>, the schema’s <code class="language-plaintext highlighter-rouge">default_page_size</code>, <code class="language-plaintext highlighter-rouge">max_page_size</code>, and then the schema’s <code class="language-plaintext highlighter-rouge">default_max_page_size</code>.</p>
 
-    <p>(If no max page size can be determined, then the analysis crashes with an internal error – set <code class="language-plaintext highlighter-rouge">default_max_page_size</code> in your schema to prevent this.)</p>
+    <p>(If no default page size or max page size can be determined, then the analysis crashes with an internal error – set <code class="language-plaintext highlighter-rouge">default_page_size</code> or <code class="language-plaintext highlighter-rouge">default_max_page_size</code> in your schema to prevent this.)</p>
   </li>
 </ul>
 
