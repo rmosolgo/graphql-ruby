@@ -8,7 +8,6 @@ require "graphql/tracing/new_relic_tracing"
 require "graphql/tracing/scout_tracing"
 require "graphql/tracing/statsd_tracing"
 require "graphql/tracing/prometheus_tracing"
-require "graphql/tracing/opentelemetry_tracing"
 
 if defined?(PrometheusExporter::Server)
   require "graphql/tracing/prometheus_tracing/graphql_collector"
