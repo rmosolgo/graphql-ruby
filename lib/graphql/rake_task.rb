@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require "fileutils"
+require "rake"
 require "graphql/rake_task/validate"
 
 module GraphQL
