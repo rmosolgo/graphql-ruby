@@ -12,6 +12,13 @@ describe GraphQL::Language::Parser do
     end
   end
 
+  it "raises an error when unicode is used as names" do
+    err = assert_raises(GraphQL::ParseError) {
+      GraphQL.parse('query 😘 { a b }')
+    }
+    assert_equal "Parse error on \"\\xF0\" (error) at [1, 7]", err.message
+  end
+
   describe "anonymous fragment extension" do
     let(:document) { GraphQL.parse(query_string) }
     let(:query_string) {%|
