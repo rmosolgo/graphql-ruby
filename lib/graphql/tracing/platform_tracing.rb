@@ -115,6 +115,9 @@ module GraphQL
       #
       # If the key isn't present, the given block is called and the result is cached for `key`.
       #
+      # @param ctx [GraphQL::Query::Context]
+      # @param key [Class, GraphQL::Field] A part of the schema
+      # @param trace_phase [Symbol] The stage of execution being traced (used by OpenTelementry tracing)
       # @return [String]
       def cached_platform_key(ctx, key, trace_phase)
         cache = ctx.namespace(self.class)[:platform_key_cache] ||= {}
