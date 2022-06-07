@@ -39,7 +39,10 @@
   BACKSLASH = '\\';
   # Could limit to hex here, but “bad unicode escape” on 0XXF is probably a
   # more helpful error than “unknown char”
-  UNICODE_ESCAPE = '\\u' [0-9A-Za-z]{4};
+  UNICODE_DIGIT = [0-9A-Za-z];
+  FOUR_DIGIT_UNICODE = UNICODE_DIGIT{4};
+  N_DIGIT_UNICODE = LCURLY UNICODE_DIGIT{4,} RCURLY;
+  UNICODE_ESCAPE = '\\u' (FOUR_DIGIT_UNICODE | N_DIGIT_UNICODE);
   # https://graphql.github.io/graphql-spec/June2018/#sec-String-Value
   STRING_ESCAPE = '\\' [\\/bfnrt];
   BLOCK_QUOTE =   '"""';
@@ -131,7 +134,25 @@ module GraphQL
       # To avoid allocating more strings, this modifies the string passed into it
       def self.replace_escaped_characters_in_place(raw_string)
         raw_string.gsub!(ESCAPES, ESCAPES_REPLACE)
-        raw_string.gsub!(UTF_8, &UTF_8_REPLACE)
+        raw_string.gsub!(UTF_8) do |_matched_str|
+          codepoint_1 = ($1 || $2).to_i(16)
+          codepoint_2 = $3
+
+          if codepoint_2
+            codepoint_2 = codepoint_2.to_i(16)
+            if (codepoint_1 >= 0xD800 && codepoint_1 <= 0xDBFF) && # leading surrogate
+                (codepoint_2 >= 0xDC00 && codepoint_2 <= 0xDFFF) # trailing surrogate
+              # A surrogate pair
+              combined = ((codepoint_1 - 0xD800) * 0x400) + (codepoint_2 - 0xDC00) + 0x10000
+              [combined].pack('U'.freeze)
+            else
+              # Two separate code points
+              [codepoint_1].pack('U'.freeze) + [codepoint_2].pack('U'.freeze)
+            end
+          else
+            [codepoint_1].pack('U'.freeze)
+          end
+        end
         nil
       end
 
@@ -203,8 +224,8 @@ module GraphQL
         "\\t" => "\t",
       }
 
-      UTF_8 = /\\u[\dAa-f]{4}/i
-      UTF_8_REPLACE = ->(m) { [m[-4..-1].to_i(16)].pack('U'.freeze) }
+      UTF_8 = /\\u(?:([\dAa-f]{4})|\{([\da-f]{4,})\})(?:\\u([\dAa-f]{4}))?/i
+
 
       VALID_STRING = /\A(?:[^\\]|#{ESCAPES}|#{UTF_8})*\z/o
 
@@ -219,8 +240,7 @@ module GraphQL
           line_incr = value.count("\n")
           value = GraphQL::Language::BlockString.trim_whitespace(value)
         end
-        # TODO: replace with `String#match?` when we support only Ruby 2.4+
-        # (It's faster: https://bugs.ruby-lang.org/issues/8110)
+
         if !value.valid_encoding? || !value.match?(VALID_STRING)
           meta[:tokens] << token = GraphQL::Language::Token.new(
             :BAD_UNICODE_ESCAPE,

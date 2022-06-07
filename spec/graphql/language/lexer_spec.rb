@@ -78,6 +78,21 @@ describe GraphQL::Language::Lexer do
 
     it "unescapes escaped unicode characters" do
       assert_equal "\t", subject.tokenize('"\\u0009"').first.to_s
+      assert_equal "\t", subject.tokenize('"\\u{0009}"').first.to_s
+      assert_equal "𐘑", subject.tokenize('"\\u{10611}"').first.to_s
+      assert_equal "💩", subject.tokenize('"\\u{1F4A9}"').first.to_s
+      assert_equal "💩", subject.tokenize('"\\uD83D\\uDCA9"').first.to_s
+    end
+
+    it "accepts the full range of unicode" do
+      assert_equal "💩", subject.tokenize('"💩"').first.to_s
+      assert_equal "⌱", subject.tokenize('"⌱"').first.to_s
+      assert_equal "🂡\n🂢", subject.tokenize('"""🂡
+🂢"""').first.to_s
+    end
+
+    it "doesn't accept unicode outside strings or comments" do
+      assert_equal :UNKNOWN_CHAR, GraphQL.scan('😘 ').first.name
     end
 
     it "rejects bad unicode, even when there's good unicode in the string" do
@@ -92,7 +107,8 @@ describe GraphQL::Language::Lexer do
     it "rejects unicode that's well-formed but results in invalidly-encoded strings" do
       # when the string here gets tokenized into an actual `:STRING`, it results in `valid_encoding?` being false for
       # the ruby string so application code usually blows up trying to manipulate it
-      assert_equal :BAD_UNICODE_ESCAPE, subject.tokenize('"\\ud83c\\udf2c"').first.name
+      assert_equal :BAD_UNICODE_ESCAPE, subject.tokenize('"\\udc00\\udf2c"').first.name
+      assert_equal :BAD_UNICODE_ESCAPE, subject.tokenize('"\\u{dc00}\\u{df2c}"').first.name
     end
 
     it "clears the previous_token between runs" do
