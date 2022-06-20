@@ -27,13 +27,15 @@ if testing_rails?
         total_count_connection_class: RelationConnectionWithTotalCount,
         get_items: -> {
           if Food.respond_to?(:scoped)
-            Food.scoped # Rails 3-friendly version of .all
+            Food.scoped.limit(limit) # Rails 3-friendly version of .all
           else
-            Food.all
+            Food.all.limit(limit)
           end
         }
       )
     }
+
+    let(:limit) { nil }
 
     include ConnectionAssertions
 
@@ -61,6 +63,33 @@ if testing_rails?
       }")
       assert_equal ["Cucumber", "Dill"], results["data"]["offsetItems"]["nodes"].map { |n| n["name"] }
     end
+
+    describe 'with application-provided limit, which is smaller than the max_page_size' do
+      let(:limit) { 1 }
+
+      it "maintains an application-provided limit" do
+        results = schema.execute("{
+          limitedItems {
+            nodes { name }
+          }
+        }")
+        assert_equal ["Avocado"], results["data"]["limitedItems"]["nodes"].map { |n| n["name"] }
+      end
+    end
+
+    describe 'with application-provided limit, which is larger than the max_page_size' do
+      let(:limit) { 3 }
+
+      it "applies a field-level max-page-size configuration" do
+        results = schema.execute("{
+          limitedItems {
+            nodes { name }
+          }
+        }")
+        assert_equal ["Avocado", "Beet"], results["data"]["limitedItems"]["nodes"].map { |n| n["name"] }
+      end
+    end
+
 
     it "doesn't run pageInfo queries when not necessary" do
       results = nil
