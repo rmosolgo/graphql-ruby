@@ -10,6 +10,21 @@
 
 ### Bug fixes
 
+# 2.0.10 (20 June 2022)
+
+### New features
+
+- Support full unicode range #4090
+
+### Bug fixes
+
+- Subscriptions: support overriding subscriptions in subclasses #4108
+- Schema: support types with duplicate names and cyclical references #4107
+- Connections: don't exceed application-applied `LIMIT` with `max_page_size` #4104
+- Field: add `Field#relay_nodes_field` config reader #4103
+- Remove partial `opentelementry` implementation, oops #4086
+- Remove unused method `Lazy.resolve`
+
 # 2.0.9 (31 May 2022)
 
 ### New features
