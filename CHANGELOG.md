@@ -10,7 +10,7 @@
 
 ### Bug fixes
 
-# 2.0.10 (20 June 2022)
+# 2.0.11 (20 June 2022)
 
 ### New features
 
@@ -24,6 +24,10 @@
 - Field: add `Field#relay_nodes_field` config reader #4103
 - Remove partial `opentelementry` implementation, oops #4086
 - Remove unused method `Lazy.resolve`
+
+# 2.0.10 (20 June 2022)
+
+Oops, this version was accidentally released to RubyGems as "2.10.0". I yanked it. See 2.0.11 instead.
 
 # 2.0.9 (31 May 2022)
 
