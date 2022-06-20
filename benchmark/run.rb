@@ -324,9 +324,9 @@ module GraphQLBenchmark
     }
     GRAPHQL
 
-    very_lazy_res = StackDepthSchema.execute(query_str, variables: { lazyThing: true, lazyStackTrace: true })
-    lazy_res = StackDepthSchema.execute(query_str, variables: { lazyThing: true, lazyStackTrace: false })
     eager_res = StackDepthSchema.execute(query_str, variables: { lazyThing: false, lazyStackTrace: false })
+    lazy_res = StackDepthSchema.execute(query_str, variables: { lazyThing: true, lazyStackTrace: false })
+    very_lazy_res = StackDepthSchema.execute(query_str, variables: { lazyThing: true, lazyStackTrace: true })
     get_depth = ->(result) { result["data"]["thing"]["thing"]["thing"]["thing"]["thing"]["stackTraceDepth"] }
 
     puts <<~RESULT
