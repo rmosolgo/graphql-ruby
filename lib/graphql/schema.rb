@@ -132,7 +132,13 @@ module GraphQL
       end
 
       # @return [GraphQL::Subscriptions]
-      attr_accessor :subscriptions
+      def subscriptions(inherited: true)
+        defined?(@subscriptions) ? @subscriptions : (inherited ? find_inherited_value(:subscriptions, nil) : nil)
+      end
+
+      def subscriptions=(new_implementation)
+        @subscriptions = new_implementation
+      end
 
       # Returns the JSON response of {Introspection::INTROSPECTION_QUERY}.
       # @see {#as_json}

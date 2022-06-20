@@ -26,7 +26,7 @@ module GraphQL
     def self.use(defn, options = {})
       schema = defn.is_a?(Class) ? defn : defn.target
 
-      if schema.subscriptions
+      if schema.subscriptions(inherited: false)
         raise ArgumentError, "Can't reinstall subscriptions. #{schema} is using #{schema.subscriptions}, can't also add #{self}"
       end
 

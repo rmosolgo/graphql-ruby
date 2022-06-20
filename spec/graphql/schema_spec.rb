@@ -23,6 +23,9 @@ describe GraphQL::Schema do
       field :some_field, String
     end
 
+    class CustomSubscriptions < GraphQL::Subscriptions::ActionCableSubscriptions
+    end
+
     let(:base_schema) do
       Class.new(GraphQL::Schema) do
         query Query
@@ -47,6 +50,7 @@ describe GraphQL::Schema do
         multiplex_analyzer Object.new
         rescue_from(StandardError) { }
         use GraphQL::Backtrace
+        use GraphQL::Subscriptions::ActionCableSubscriptions, action_cable: nil, action_cable_coder: JSON
       end
     end
 
@@ -73,11 +77,15 @@ describe GraphQL::Schema do
       assert_equal base_schema.query_analyzers, schema.query_analyzers
       assert_equal base_schema.multiplex_analyzers, schema.multiplex_analyzers
       assert_equal base_schema.disable_introspection_entry_points?, schema.disable_introspection_entry_points?
-      assert_equal [GraphQL::Backtrace], schema.plugins.map(&:first)
+      assert_equal [GraphQL::Backtrace, GraphQL::Subscriptions::ActionCableSubscriptions], schema.plugins.map(&:first)
+      assert_instance_of GraphQL::Subscriptions::ActionCableSubscriptions, schema.subscriptions
     end
 
     it "can override configuration from its superclass" do
-      schema = Class.new(base_schema)
+      schema = Class.new(base_schema) do
+        use CustomSubscriptions, action_cable: nil, action_cable_coder: JSON
+      end
+
       query = Class.new(GraphQL::Schema::Object) do
         graphql_name 'Query'
         field :some_field, String
@@ -141,9 +149,10 @@ describe GraphQL::Schema do
       assert_equal schema.directives, GraphQL::Schema.default_directives.merge(DummyFeature1.graphql_name => DummyFeature1, DummyFeature2.graphql_name => DummyFeature2)
       assert_equal base_schema.query_analyzers + [query_analyzer], schema.query_analyzers
       assert_equal base_schema.multiplex_analyzers + [multiplex_analyzer], schema.multiplex_analyzers
-      assert_equal [GraphQL::Backtrace], schema.plugins.map(&:first)
+      assert_equal [GraphQL::Backtrace, GraphQL::Subscriptions::ActionCableSubscriptions, CustomSubscriptions], schema.plugins.map(&:first)
       assert_equal [GraphQL::Tracing::DataDogTracing, GraphQL::Backtrace::Tracer], base_schema.tracers
       assert_equal [GraphQL::Tracing::DataDogTracing, GraphQL::Backtrace::Tracer, GraphQL::Tracing::NewRelicTracing], schema.tracers
+      assert_instance_of CustomSubscriptions, schema.subscriptions
     end
   end
 
