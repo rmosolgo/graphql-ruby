@@ -151,7 +151,7 @@ module GraphQL
           um << owner
         end
 
-        if (prev_type = get_local_type(type.graphql_name)) && prev_type == type
+        if (prev_type = get_local_type(type.graphql_name)) && (prev_type == type || (prev_type.is_a?(Array) && prev_type.include?(type)))
           # No need to re-visit
         elsif type.is_a?(Class) && type < GraphQL::Schema::Directive
           @directives << type
