@@ -181,6 +181,8 @@ module GraphQL
 
       # @return Boolean
       attr_reader :relay_node_field
+      # @return Boolean
+      attr_reader :relay_nodes_field
 
       # @return [Boolean] Should we warn if this field's name conflicts with a built-in method?
       def method_conflict_warning?
