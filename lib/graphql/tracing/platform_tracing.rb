@@ -30,25 +30,19 @@ module GraphQL
             yield
           end
         when "execute_field", "execute_field_lazy"
-          if data[:context]
-            field = data[:context].field
-            platform_key = field.metadata[:platform_key]
-            trace_field = true # implemented with instrumenter
+          field = data[:field]
+          return_type = field.type.unwrap
+          trace_field = if return_type.kind.scalar? || return_type.kind.enum?
+            (field.trace.nil? && @trace_scalars) || field.trace
           else
-            field = data[:field]
-            return_type = field.type.unwrap
-            trace_field = if return_type.kind.scalar? || return_type.kind.enum?
-              (field.trace.nil? && @trace_scalars) || field.trace
-            else
-              true
-            end
+            true
+          end
 
-            platform_key = if trace_field
-              context = data.fetch(:query).context
-              cached_platform_key(context, field, :field) { platform_field_key(data[:owner], field) }
-            else
-              nil
-            end
+          platform_key = if trace_field
+            context = data.fetch(:query).context
+            cached_platform_key(context, field, :field) { platform_field_key(data[:owner], field) }
+          else
+            nil
           end
 
           if platform_key && trace_field
