@@ -246,11 +246,12 @@ describe GraphQL::Schema::IntrospectionSystem do
     class HidingIntrospectionSchema < GraphQL::Schema
       module HideIntrospectionByContext
         def visible?(ctx)
-          super && if introspection?
-                     !ctx[:hide_introspection]
-          else
-            true
-                   end
+          super &&
+            if introspection?
+              !ctx[:hide_introspection]
+            else
+              true
+            end
         end
       end
 
