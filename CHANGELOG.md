@@ -10,6 +10,13 @@
 
 ### Bug fixes
 
+# 1.13.14 (20 June 2022)
+
+### New Features
+
+- Add `Field#relay_nodes_field` reader #4103
+- Datadog: detect tracing module #4100
+
 # 1.13.13 (31 May 2022)
 
 ### New features
