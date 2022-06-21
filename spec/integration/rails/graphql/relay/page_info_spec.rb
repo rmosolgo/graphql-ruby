@@ -106,6 +106,15 @@ describe "GraphQL::Relay::PageInfo" do
     end
   end
 
+  it "can be redefined" do
+    conn_type = Class.new(GraphQL::Schema::Object) do
+      include GraphQL::Types::Relay::ConnectionBehaviors
 
+      get_field("pageInfo").type = GraphQL::Types::Int.to_non_null_type
+    end
 
+    assert_equal "Int!", conn_type.fields["pageInfo"].type.to_type_signature
+    # The original is unchanged:
+    assert_equal "PageInfo!", GraphQL::Types::Relay::BaseConnection.fields["pageInfo"].type.to_type_signature
+  end
 end
