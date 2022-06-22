@@ -20,16 +20,18 @@ module GraphQL
           is_object = self.respond_to?(:kind) && self.kind.object?
           # Local overrides take precedence over inherited fields
           visible_fields = {}
-          for ancestor in ancestors
-            if ancestor.respond_to?(:own_fields) &&
-                (is_object ? visible_interface_implementation?(ancestor, context, warden) : true)
+          excluded_fields = []
+          ancestors.each do |ancestor|
+            next unless ancestor.respond_to?(:own_fields) &&
+                        (is_object ? visible_interface_implementation?(ancestor, context, warden) : true)
 
-              ancestor.own_fields.each do |field_name, fields_entry|
-                # Choose the most local definition that passes `.visible?` --
-                # stop checking for fields by name once one has been found.
-                if !visible_fields.key?(field_name) && (f = Warden.visible_entry?(:visible_field?, fields_entry, context, warden))
-                  visible_fields[field_name] = f
-                end
+            ancestor.own_fields.each do |field_name, fields_entry|
+              next if visible_fields.key?(field_name) || excluded_fields.include?(field_name)
+
+              if (f = Warden.visible_entry?(:visible_field?, fields_entry, context, warden))
+                visible_fields[field_name] = f
+              else
+                excluded_fields << field_name
               end
             end
           end
