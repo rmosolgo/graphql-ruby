@@ -12,11 +12,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout release tag
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ env.GITHUB_REF }}
       - name: Checkout GitHub pages branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: gh-pages
           ref: gh-pages
