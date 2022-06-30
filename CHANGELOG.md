@@ -10,6 +10,13 @@
 
 ### Bug fixes
 
+# 1.13.15 (30 June 2022)
+
+### Bug fixes
+
+- Remove partial OpenTelementry tracing #4086
+- Properly use `Query#validate` to skip static validation #3881
+
 # 1.13.14 (20 June 2022)
 
 ### New Features
