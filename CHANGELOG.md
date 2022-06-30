@@ -141,6 +141,13 @@ Oops, this version was accidentally released to RubyGems as "2.10.0". I yanked i
 - __None, ideally.__ If you have an application that ran without warnings on v1.13, you should be able to update to 2.0.0 without a hitch. If this isn't the case, please [open an issue](https://github.com/rmosolgo/graphql-ruby/issues/new?template=bug_report.md&title=[2.0%20update]%20describe%20your%20problem) and let me know what happened! I plan to maintain 1.13 for a while in order to ensure a smooth transition.
 - But, many legacy code components were removed, so if there are any more references to those, there will be name errors! See #3729 for a list of removed components.
 
+# 1.13.15 (30 June 2022)
+
+### Bug fixes
+
+- Remove partial OpenTelementry tracing #4086
+- Properly use `Query#validate` to skip static validation #3881
+
 # 1.13.14 (20 June 2022)
 
 ### New Features
