@@ -72,6 +72,15 @@ describe GraphQL::Introspection::DirectiveType do
             "onOperation" => false,
           },
           {
+            "name" => "oneOf",
+            "args" => [],
+            "locations" => ["INPUT_OBJECT"],
+            "isRepeatable" => false,
+            "onField" => false,
+            "onFragment" => false,
+            "onOperation" => false
+          },
+          {
             "name"=>"doStuff",
             "args"=>[],
             "locations"=>[],

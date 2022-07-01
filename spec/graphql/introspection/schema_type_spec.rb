@@ -192,7 +192,7 @@ describe GraphQL::Introspection::SchemaType do
     |}
 
     it "only returns visible directives" do
-      expected_dirs = ['deprecated', 'include', 'skip', 'visibleDirective']
+      expected_dirs = ['deprecated', 'include', 'oneOf', 'skip', 'visibleDirective']
       directives = result['data']['__schema']['directives'].map { |dir| dir.fetch('name') }
       assert_equal(expected_dirs.sort, directives.sort)
     end
