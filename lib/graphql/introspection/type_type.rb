@@ -26,8 +26,8 @@ module GraphQL
         argument :include_deprecated, Boolean, required: false, default_value: false
       end
       field :of_type, GraphQL::Schema::LateBoundType.new("__Type")
-
       field :specifiedByURL, String, resolver_method: :specified_by_url
+      field :is_one_of, Boolean
 
       def specified_by_url
         if object.kind.scalar?
@@ -95,6 +95,16 @@ module GraphQL
 
       def of_type
         @object.kind.wraps? ? @object.of_type : nil
+      end
+
+      def is_one_of
+        if object.kind.input_object?
+          object.directives.any? do |directive|
+            directive.is_a?(GraphQL::Schema::Directive::OneOf)
+          end
+        else
+          nil
+        end
       end
     end
   end

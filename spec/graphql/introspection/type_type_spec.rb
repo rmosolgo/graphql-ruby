@@ -230,5 +230,36 @@ describe GraphQL::Introspection::TypeType do
       returned_arg_names = field_result["args"].map { |a| a["name"] }
       assert_equal all_arg_names.sort, returned_arg_names.sort
     end
+
+    it "identifies oneOf input objects" do
+      result = Dummy::Schema.execute <<-GRAPHQL
+      {
+        a: __type(name: "Animal") {
+          isOneOf
+        }
+        b: __type(name: "DairyProductInput") {
+          isOneOf
+        }
+        c: __type(name: "OneOfInput") {
+          isOneOf
+        }
+      }
+      GRAPHQL
+
+      expected = {
+        "data" => {
+          "a" => {
+            "isOneOf" => nil
+          },
+          "b" => {
+            "isOneOf" => false
+          },
+          "c" => {
+            "isOneOf" => true
+          }
+        }
+      }
+      assert_equal(expected, result)
+    end
   end
 end
