@@ -126,6 +126,24 @@ describe GraphQL::Schema::InputObject do
         end
       end
 
+      class Thing < GraphQL::Schema::Object
+        field :name, String
+      end
+
+      class PreparedInputObj < GraphQL::Schema::InputObject
+        argument :thing_id, ID, loads: Thing, prepare: ->(val, ctx) { "thing-#{val}" }
+      end
+
+      class ResolverPrepares < GraphQL::Schema::Resolver
+        argument :input_object, PreparedInputObj
+        argument :thing_id, ID, loads: Thing, prepare: ->(val, ctx) { "thing-#{val}" }
+        type [String], null: false
+
+        def resolve(thing:, input_object:)
+          [thing.name, input_object[:thing].name]
+        end
+      end
+
       class Query < GraphQL::Schema::Object
         field :inputs, [String], null: false do
           argument :input, InputObj
@@ -134,6 +152,20 @@ describe GraphQL::Schema::InputObject do
         def inputs(input:)
           [input.to_kwargs.inspect, input.instrument.name]
         end
+
+        field :multiple_prepares, [String] do
+          argument :input_object, PreparedInputObj
+          argument :thing_id, ID, loads: Thing, prepare: ->(val, ctx) { "thing-#{val}" }
+        end
+
+        def multiple_prepares(thing:, input_object:)
+          [thing.name, input_object[:thing].name]
+        end
+
+        field :resolver_prepares, resolver: ResolverPrepares
+
+
+        field :t, Thing
       end
 
       class Mutation < GraphQL::Schema::Object
@@ -193,7 +225,13 @@ describe GraphQL::Schema::InputObject do
         lazy_resolve(Proc, :call)
 
         def self.object_from_id(id, ctx)
-          -> { Jazz::GloballyIdentifiableType.find(id) }
+          -> {
+            if id.start_with?("thing-")
+              OpenStruct.new(name: id)
+            else
+              Jazz::GloballyIdentifiableType.find(id)
+            end
+          }
         end
 
         def self.resolve_type(type, obj, ctx)
@@ -203,6 +241,14 @@ describe GraphQL::Schema::InputObject do
         orphan_types [Jazz::InstrumentType]
         max_complexity 100
       end
+    end
+
+    it "always prepares before loading" do
+      res = InputObjectPrepareTest::Schema.execute("{ resolverPrepares(thingId: \"abc\", inputObject: { thingId: \"def\" }) }")
+      assert_equal ["thing-abc", "thing-def"], res["data"]["resolverPrepares"]
+
+      res = InputObjectPrepareTest::Schema.execute("{ multiplePrepares(thingId: \"abc\", inputObject: { thingId: \"def\" }) }")
+      assert_equal ["thing-abc", "thing-def"], res["data"]["multiplePrepares"]
     end
 
     it "calls methods on the input object" do
