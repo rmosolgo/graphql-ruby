@@ -45,6 +45,10 @@ module GraphQL
         @query_analyzers
       end
 
+      def has_validated?
+        @has_validated == true
+      end
+
       private
 
       # If the pipeline wasn't run yet, run it.
