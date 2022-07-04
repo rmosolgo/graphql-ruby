@@ -29,7 +29,8 @@
     "pusher-js": "^7.0.3",
     "relay-runtime": "11.0.2",
     "ts-jest": "^25.2.0",
-    "typescript": ">=3.7.5"
+    "typescript": ">=3.7.5",
+    "urql": "^2.2.2"
   },
   "scripts": {
     "test": "tsc && jest",
