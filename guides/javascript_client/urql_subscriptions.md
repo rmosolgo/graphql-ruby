@@ -8,7 +8,7 @@ desc: GraphQL subscriptions with GraphQL-Ruby and urql
 index: 4
 ---
 
-GraphQL-Ruby currently supports using `urql` with the {% internal_link "Pusher implementation", "/subscriptions/pusher_implementation %}. For example:
+GraphQL-Ruby currently supports using `urql` with the {% internal_link "Pusher implementation", "/subscriptions/pusher_implementation" %}. For example:
 
 ```js
 import SubscriptionExchange from "graphql-ruby-client/subscriptions/SubscriptionExchange"
