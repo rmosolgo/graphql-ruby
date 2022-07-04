@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
-      <title>GraphQL - Overview</title>
+      <title>GraphQL - urql Subscriptions</title>
     
     <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet" />
     <link rel="stylesheet" href="/css/main.css">
@@ -89,7 +89,7 @@
   <li>
     <select class="jump-to-select" onchange="navigateToSelected(this)">
       
-        <option  selected data-target="/javascript_client/overview.html">Overview</option>
+        <option  data-target="/javascript_client/overview.html">Overview</option>
       
         <option  data-target="/javascript_client/sync.html">OperationStore Sync</option>
       
@@ -97,7 +97,7 @@
       
         <option  data-target="/javascript_client/relay_subscriptions.html">Relay Subscriptions</option>
       
-        <option  data-target="/javascript_client/urql_subscriptions.html">urql Subscriptions</option>
+        <option  selected data-target="/javascript_client/urql_subscriptions.html">urql Subscriptions</option>
       
     </select>
   </li>
@@ -105,37 +105,36 @@
 
 
 
-<h1 class="guide-header">Overview</h1>
+<h1 class="guide-header">urql Subscriptions</h1>
 <div class="guide-table-of-contents"></div>
 <div class="guide-container">
-  <p>There is a JavaScript client for GraphQL-Ruby, <code class="language-plaintext highlighter-rouge">graphql-ruby-client</code>.</p>
+  <p>GraphQL-Ruby currently supports using <code class="language-plaintext highlighter-rouge">urql</code> with the <a href="/subscriptions/pusher_implementation">Pusher implementation</a>. For example:</p>
 
-<p>You can install it from NPM or Yarn:</p>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nx">SubscriptionExchange</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">graphql-ruby-client/subscriptions/SubscriptionExchange</span><span class="dl">"</span>
+<span class="k">import</span> <span class="nx">Pusher</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">pusher</span><span class="dl">"</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">Client</span><span class="p">,</span> <span class="nx">defaultExchanges</span><span class="p">,</span> <span class="nx">subscriptionExchange</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">urql</span><span class="dl">'</span>
 
-<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>yarn add graphql-ruby-client
-<span class="c"># Or:</span>
-npm <span class="nb">install </span>graphql-ruby-client
+<span class="kd">const</span> <span class="nx">pusherClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Pusher</span><span class="p">(</span><span class="dl">"</span><span class="s2">your-app-key</span><span class="dl">"</span><span class="p">,</span> <span class="p">{</span> <span class="na">cluster</span><span class="p">:</span> <span class="dl">"</span><span class="s2">us2</span><span class="dl">"</span> <span class="p">})</span>
+<span class="kd">const</span> <span class="nx">forwardToPusher</span> <span class="o">=</span> <span class="nx">SubscriptionExchange</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span> <span class="na">pusher</span><span class="p">:</span> <span class="nx">pusherClient</span> <span class="p">})</span>
+
+<span class="kd">const</span> <span class="nx">client</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Client</span><span class="p">({</span>
+  <span class="na">url</span><span class="p">:</span> <span class="dl">'</span><span class="s1">/graphql</span><span class="dl">'</span><span class="p">,</span>
+  <span class="na">exchanges</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">...</span><span class="nx">defaultExchanges</span><span class="p">,</span>
+    <span class="nx">subscriptionExchange</span><span class="p">({</span>
+      <span class="na">forwardSubscription</span><span class="p">:</span> <span class="nx">forwardToPusher</span>
+    <span class="p">}),</span>
+  <span class="p">],</span>
+<span class="p">});</span>
 </code></pre></div></div>
 
-<p>The source code is <a href="https://github.com/rmosolgo/graphql-ruby/tree/master/javascript_client">in the graphql-ruby repository</a>.</p>
-
-<p>See detailed guides for more info about its features:</p>
-
-<ul>
-  <li><a href="/javascript_client/sync">sync CLI</a> for use with <a href="https://graphql.pro">graphql-pro</a>’s persisted query backend</li>
-  <li>Subscription support:
-    <ul>
-      <li><a href="/javascript_client/apollo_subscriptions">Apollo integration</a></li>
-      <li><a href="/javascript_client/relay_subscriptions">Relay integration</a></li>
-    </ul>
-  </li>
-</ul>
+<p>Want to use <code class="language-plaintext highlighter-rouge">urql</code> with another subscription backend? Please <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Using urql with ..." target="_blank">open an issue</a>.</p>
 
 </div>
 <p class="guide-footer">
   Suggestion, improvement, or correction?
-  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/javascript_client/overview.md">Edit this file</a> or
-  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Overview">report an issue</a>.
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/javascript_client/urql_subscriptions.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: urql Subscriptions">report an issue</a>.
 </p>
 <script>
   // Find headers with IDs and wrap their text in `<a href=></a>`
