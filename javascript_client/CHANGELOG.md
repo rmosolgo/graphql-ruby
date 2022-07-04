@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.11.0 (4 July 2022)
+
+- Subscriptions: Add `urql` support for Pusher #4129
+
 # 1.10.7 (29 Mar 2022)
 
 - Dependencies: loosen apollo client and graphql version requirements to accept newer versions #4008
