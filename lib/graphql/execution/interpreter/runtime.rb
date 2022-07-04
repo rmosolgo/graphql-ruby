@@ -685,12 +685,16 @@ module GraphQL
             set_result(selection_result, result_name, r)
             r
           when "UNION", "INTERFACE"
-            resolved_type_or_lazy, resolved_value = resolve_type(current_type, value, path)
-            resolved_value ||= value
+            resolved_type_or_lazy = resolve_type(current_type, value, path)
+            after_lazy(resolved_type_or_lazy, owner: current_type, path: path, ast_node: ast_node, field: field, owner_object: owner_object, arguments: arguments, trace: false, result_name: result_name, result: selection_result) do |resolved_type_result|
+              if resolved_type_result.is_a?(Array) && resolved_type_result.length == 2
+                resolved_type, resolved_value = resolved_type_result
+              else
+                resolved_type = resolved_type_result
+                resolved_value = value
+              end
 
-            after_lazy(resolved_type_or_lazy, owner: current_type, path: path, ast_node: ast_node, field: field, owner_object: owner_object, arguments: arguments, trace: false, result_name: result_name, result: selection_result) do |resolved_type|
               possible_types = query.possible_types(current_type)
-
               if !possible_types.include?(resolved_type)
                 parent_type = field.owner_type
                 err_class = current_type::UnresolvedTypeError
