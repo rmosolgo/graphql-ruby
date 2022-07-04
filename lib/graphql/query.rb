@@ -34,7 +34,16 @@ module GraphQL
     attr_accessor :operation_name
 
     # @return [Boolean] if false, static validation is skipped (execution behavior for invalid queries is undefined)
-    attr_accessor :validate
+    attr_reader :validate
+
+    # @param new_validate [Boolean] if false, static validation is skipped. This can't be reasssigned after validation.
+    def validate=(new_validate)
+      if defined?(@validation_pipeline) && @validation_pipeline && @validation_pipeline.has_validated?
+        raise ArgumentError, "Can't reassign Query#validate= after validation has run, remove this assignment."
+      else
+        @validate = new_validate
+      end
+    end
 
     attr_writer :query_string
 

@@ -720,6 +720,24 @@ describe GraphQL::Query do
       assert_equal true, query.valid?
       assert_equal 0, query.static_errors.length
     end
+
+    it "can't be reassigned after validating" do
+      query = GraphQL::Query.new(schema, "{ nonExistingField }")
+      assert query.fingerprint
+      query.validate = false
+      assert_equal true, query.valid?
+      assert_equal 0, query.static_errors.length
+      err = assert_raises ArgumentError do
+        query.validate = true
+      end
+
+      err2 = assert_raises ArgumentError do
+        query.validate = false
+      end
+      expected_message = "Can't reassign Query#validate= after validation has run, remove this assignment."
+      assert_equal expected_message, err.message
+      assert_equal expected_message, err2.message
+    end
   end
 
   describe "validating with optional arguments and variables: nil" do
