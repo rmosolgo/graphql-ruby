@@ -754,13 +754,21 @@ module GraphQL
       # rubocop:disable Lint/DuplicateMethods
       module ResolveTypeWithType
         def resolve_type(type, obj, ctx)
-          first_resolved_type, resolved_value = if type.is_a?(Module) && type.respond_to?(:resolve_type)
+          maybe_lazy_resolve_type_result = if type.is_a?(Module) && type.respond_to?(:resolve_type)
             type.resolve_type(obj, ctx)
           else
             super
           end
 
-          after_lazy(first_resolved_type) do |resolved_type|
+          after_lazy(maybe_lazy_resolve_type_result) do |resolve_type_result|
+            if resolve_type_result.is_a?(Array) && resolve_type_result.size == 2
+              resolved_type = resolve_type_result[0]
+              resolved_value = resolve_type_result[1]
+            else
+              resolved_type = resolve_type_result
+              resolved_value = obj
+            end
+
             if resolved_type.nil? || (resolved_type.is_a?(Module) && resolved_type.respond_to?(:kind))
               if resolved_value
                 [resolved_type, resolved_value]

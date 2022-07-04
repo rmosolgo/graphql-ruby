@@ -323,8 +323,14 @@ module GraphQL
               end
               # Double-check that the located object is actually of this type
               # (Don't want to allow arbitrary access to objects this way)
-              resolved_application_object_type = context.schema.resolve_type(argument.loads, application_object, context)
-              context.schema.after_lazy(resolved_application_object_type) do |application_object_type|
+              maybe_lazy_resolve_type = context.schema.resolve_type(argument.loads, application_object, context)
+              context.schema.after_lazy(maybe_lazy_resolve_type) do |resolve_type_result|
+                if resolve_type_result.is_a?(Array) && resolve_type_result.size == 2
+                  application_object_type, application_object = resolve_type_result
+                else
+                  application_object_type = resolve_type_result
+                  # application_object is already assigned
+                end
                 possible_object_types = context.warden.possible_types(argument.loads)
                 if !possible_object_types.include?(application_object_type)
                   err = GraphQL::LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)

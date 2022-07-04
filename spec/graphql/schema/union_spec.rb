@@ -67,7 +67,7 @@ describe GraphQL::Schema::Union do
       assert_equal "Fragment on Ensemble can't be spread inside PerformingAct", res.to_h["errors"].first["message"]
     end
 
-    it "can cast the object after resolving the type" do
+    describe "two-value type resolution" do
       Box = Struct.new(:value)
 
       class Schema < GraphQL::Schema
@@ -75,16 +75,24 @@ describe GraphQL::Schema::Union do
           field :a, String, null: false, method: :itself
         end
 
+        class B < GraphQL::Schema::Object
+          field :b, String, method: :itself
+        end
+
         class MyUnion < GraphQL::Schema::Union
-          possible_types A
+          possible_types A, B
 
           def self.resolve_type(object, ctx)
-            [A, object.value]
+            if object.value == "return-nil"
+              [B, nil]
+            else
+              [A, object.value]
+            end
           end
         end
 
         class Query < GraphQL::Schema::Object
-          field :my_union, MyUnion, null: false
+          field :my_union, MyUnion
 
           def my_union
             Box.new(context[:value])
@@ -94,19 +102,38 @@ describe GraphQL::Schema::Union do
         query(Query)
       end
 
-      query_str = <<-GRAPHQL
-      {
-        myUnion {
-          ... on A { a }
+      it "can cast the object after resolving the type" do
+
+        query_str = <<-GRAPHQL
+        {
+          myUnion {
+            ... on A { a }
+          }
         }
-      }
-      GRAPHQL
+        GRAPHQL
 
-      res = Schema.execute(query_str, context: { value: "unwrapped" })
+        res = Schema.execute(query_str, context: { value: "unwrapped" })
 
-      assert_equal({
-        'data' => { 'myUnion' => { 'a' => 'unwrapped' } }
-      }, res.to_h)
+        assert_equal({
+          'data' => { 'myUnion' => { 'a' => 'unwrapped' } }
+        }, res.to_h)
+      end
+
+      it "uses `nil` when returned from resolve_type" do
+        query_str = <<-GRAPHQL
+        {
+          myUnion {
+            ... on B { b }
+          }
+        }
+        GRAPHQL
+
+        res = Schema.execute(query_str, context: { value: "return-nil" })
+
+        assert_equal({
+          'data' => { 'myUnion' => { 'b' => nil } }
+        }, res.to_h)
+      end
     end
   end
 
