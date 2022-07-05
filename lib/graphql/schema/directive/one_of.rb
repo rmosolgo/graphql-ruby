@@ -41,6 +41,19 @@ module GraphQL
         end
 
         module OneOfInputObjectExecution
+          def initialize(*, **)
+            super
+
+            validate_arguments!(@ruby_style_hash)
+          end
+
+          private
+
+          def validate_arguments!(arguments)
+            if arguments.count != 1 || arguments.each_value.first.nil?
+              raise GraphQL::ExecutionError, "Exactly one argument must be provided and be non-null."
+            end
+          end
         end
 
         def initialize(target, **options)
