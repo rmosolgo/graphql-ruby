@@ -36,6 +36,7 @@ module GraphQL
       GraphQL::StaticValidation::QueryRootExists,
       GraphQL::StaticValidation::SubscriptionRootExists,
       GraphQL::StaticValidation::InputObjectNamesAreUnique,
+      GraphQL::StaticValidation::OneOfInputObjectsAreValid,
     ]
   end
 end
