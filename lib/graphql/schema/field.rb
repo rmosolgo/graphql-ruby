@@ -666,7 +666,12 @@ module GraphQL
               inner_object = obj.object
 
               if defined?(@hash_key)
-                inner_object[@hash_key] || inner_object[@hash_key_str] || (@fallback_value != :not_given ? @fallback_value : nil)
+                hash_value = inner_object[@hash_key] || inner_object[@hash_key_str]
+                if type.unwrap.graphql_name == "Boolean" && (hash_value == true || hash_value == false)
+                  hash_value
+                else
+                  hash_value || (@fallback_value != :not_given ? @fallback_value : nil)
+                end
               elsif obj.respond_to?(resolver_method)
                 method_to_call = resolver_method
                 method_receiver = obj
