@@ -598,6 +598,7 @@ describe GraphQL::Schema::Field do
         # regression test against https://github.com/rmosolgo/graphql-ruby/issues/3944
         field :method, String, camelize: false, null: false, hash_key: "some_random_key"
         field :stringified_hash_key, String, null: false, hash_key: :stringified_hash_key
+        field :symbolized_hash_key, String, null: false, hash_key: "symbolized_hash_key"
       end
 
       class QueryType < GraphQL::Schema::Object
@@ -610,6 +611,7 @@ describe GraphQL::Schema::Field do
             "OtherCapital" => "explicit-hash-key-works",
             "some_random_key" => "hash-key-works-when-underlying-object-responds-to-field-name",
             "stringified_hash_key" => "hash-key-is-tried-as-string",
+            :symbolized_hash_key => "hash-key-is-tried-as-symbol"
           }
         end
 
@@ -633,6 +635,7 @@ describe GraphQL::Schema::Field do
           Other
           OtherCapital
           stringifiedHashKey
+          symbolizedHashKey
         }
       }
       GRAPHQL
@@ -644,7 +647,8 @@ describe GraphQL::Schema::Field do
         "Other" => "capital-camelize-true-works",
         "OtherCapital" => "explicit-hash-key-works",
         "method" => "hash-key-works-when-underlying-object-responds-to-field-name",
-        "stringifiedHashKey" => "hash-key-is-tried-as-string"
+        "stringifiedHashKey" => "hash-key-is-tried-as-string",
+        "symbolizedHashKey" => "hash-key-is-tried-as-symbol"
       }
       assert_equal expected_result, search_results
     end
@@ -659,6 +663,7 @@ describe GraphQL::Schema::Field do
           Other
           OtherCapital
           stringifiedHashKey
+          symbolizedHashKey
         }
       }
       GRAPHQL
@@ -670,7 +675,8 @@ describe GraphQL::Schema::Field do
         "Other" => "capital-camelize-true-works",
         "OtherCapital" => "explicit-hash-key-works",
         "method" => "hash-key-works-when-underlying-object-responds-to-field-name",
-        "stringifiedHashKey" => "hash-key-is-tried-as-string"
+        "stringifiedHashKey" => "hash-key-is-tried-as-string",
+        "symbolizedHashKey" => "hash-key-is-tried-as-symbol"
       }
       assert_equal expected_result, search_results
     end
