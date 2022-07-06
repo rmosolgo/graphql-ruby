@@ -679,16 +679,6 @@ module GraphQL
               elsif inner_object.is_a?(Hash)
                 if @dig_keys
                   inner_object.dig(*@dig_keys)
-                elsif defined?(@hash_key)
-                  if inner_object.key?(@hash_key)
-                    inner_object[@hash_key]
-                  elsif inner_object.key?(@hash_key_str)
-                    inner_object[@hash_key_str]
-                  elsif @fallback_value != :not_given
-                    @fallback_value
-                  else
-                    nil
-                  end
                 elsif inner_object.key?(@method_sym)
                   inner_object[@method_sym]
                 elsif inner_object.key?(@method_str)
