@@ -666,7 +666,7 @@ module GraphQL
               inner_object = obj.object
 
               if defined?(@hash_key)
-                hash_value = inner_object[@hash_key] || inner_object[@hash_key_str]
+                hash_value = inner_object.to_h.key?(@hash_key) ? inner_object[@hash_key] : inner_object[@hash_key_str]
                 if type.unwrap.graphql_name == "Boolean" && (hash_value == true || hash_value == false)
                   hash_value
                 else
