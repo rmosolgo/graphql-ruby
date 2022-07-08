@@ -601,6 +601,7 @@ describe GraphQL::Schema::Field do
         field :symbolized_hash_key, String, null: false, hash_key: "symbolized_hash_key"
         field :boolean_true_with_hash_key, Boolean, null: false, hash_key: :boolean_true_with_hash_key
         field :boolean_false_with_hash_key, Boolean, null: false, hash_key: :boolean_false_with_hash_key
+        field :boolean_false_with_symbolized_hash_key, Boolean, null: false, hash_key: :boolean_false_with_symbolized_hash_key
       end
 
       class QueryType < GraphQL::Schema::Object
@@ -615,7 +616,8 @@ describe GraphQL::Schema::Field do
             "stringified_hash_key" => "hash-key-is-tried-as-string",
             :symbolized_hash_key => "hash-key-is-tried-as-symbol",
             "boolean_true_with_hash_key" => true,
-            "boolean_false_with_hash_key" => false
+            "boolean_false_with_hash_key" => false,
+            :boolean_false_with_symbolized_hash_key => false
           }
         end
 
@@ -642,6 +644,7 @@ describe GraphQL::Schema::Field do
           symbolizedHashKey
           booleanTrueWithHashKey
           booleanFalseWithHashKey
+          booleanFalseWithSymbolizedHashKey
         }
       }
       GRAPHQL
@@ -656,7 +659,9 @@ describe GraphQL::Schema::Field do
         "stringifiedHashKey" => "hash-key-is-tried-as-string",
         "symbolizedHashKey" => "hash-key-is-tried-as-symbol",
         "booleanTrueWithHashKey" => true,
-        "booleanFalseWithHashKey" => false
+        "booleanFalseWithHashKey" => false,
+        "booleanFalseWithSymbolizedHashKey" => false
+
       }
       assert_equal expected_result, search_results
     end
@@ -674,6 +679,7 @@ describe GraphQL::Schema::Field do
           symbolizedHashKey
           booleanTrueWithHashKey
           booleanFalseWithHashKey
+          booleanFalseWithSymbolizedHashKey
         }
       }
       GRAPHQL
@@ -688,7 +694,8 @@ describe GraphQL::Schema::Field do
         "stringifiedHashKey" => "hash-key-is-tried-as-string",
         "symbolizedHashKey" => "hash-key-is-tried-as-symbol",
         "booleanTrueWithHashKey" => true,
-        "booleanFalseWithHashKey" => false
+        "booleanFalseWithHashKey" => false,
+        "booleanFalseWithSymbolizedHashKey" => false
       }
       assert_equal expected_result, search_results
     end
