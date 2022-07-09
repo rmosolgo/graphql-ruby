@@ -26,6 +26,7 @@ Want to add something? Please open a pull request [on GitHub](https://github.com
   - [`graphql-query-resolver`](https://github.com/nettofarah/graphql-query-resolver), a graphql-ruby add-on to minimize N+1 queries.
   - [`graphql-rails_logger`](https://github.com/jetruby/graphql-rails_logger), a logger which allows you to inspect GraphQL queries in a more readable format.
   - [`apollo_upload_server-ruby`](https://github.com/jetruby/apollo_upload_server-ruby), a middleware which allows you to upload files with GraphQL and multipart/form-data using [`apollo-upload-client`](https://github.com/jaydenseric/apollo-upload-client) library on front-end.
+  - [`graphql-sources](https://github.com/ksylvest/graphql-sources) a collection of common GraphQL [sources](https://graphql-ruby.org/dataloader/sources.html) to simplify using `ActiveRecord`, `ActiveStorage`, `Rails.cache`, and more.
 - [`search_object_graphql`](https://github.com/rstankov/SearchObjectGraphQL), a DSL for defining search resolvers for GraphQL.
 - [`action_policy-graphql`](https://github.com/palkan/action_policy-graphql), an integration for using [`action_policy`](https://github.com/palkan/action_policy) as an authorization framework for GraphQL applications.
 - [`graphql_rails`](https://github.com/samesystem/graphql_rails), Rails way GraphQL build tool
