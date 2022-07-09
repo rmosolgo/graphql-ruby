@@ -30,8 +30,7 @@ module Dummy
   class BaseInputObject < GraphQL::Schema::InputObject
   end
 
-  class BaseOneOfInputObject < GraphQL::Schema::InputObject
-    directive GraphQL::Schema::Directive::OneOf
+  class BaseOneOfInputObject < GraphQL::Schema::OneOfInputObject
   end
 
   class BaseScalar < GraphQL::Schema::Scalar
@@ -244,8 +243,8 @@ module Dummy
   end
 
   class OneOfInput < BaseOneOfInputObject
-    argument :string, String
-    argument :int, Integer
+    member :string, String
+    member :int, Integer
   end
 
   class AnimalAsCow < BaseUnion
