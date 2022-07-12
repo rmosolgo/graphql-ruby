@@ -55,7 +55,7 @@ module GraphQL
           @default_scalar ||= false
         end
 
-        def validate_non_null_input(value, ctx)
+        def validate_non_null_input(value, ctx, max_errors: nil)
           result = Query::InputValidationResult.new
           coerced_result = begin
             ctx.query.with_error_handling do

@@ -4,11 +4,11 @@ module GraphQL
     class VariableValidationError < GraphQL::ExecutionError
       attr_accessor :value, :validation_result
 
-      def initialize(variable_ast, type, value, validation_result)
+      def initialize(variable_ast, type, value, validation_result, msg: nil)
         @value = value
         @validation_result = validation_result
 
-        msg = "Variable $#{variable_ast.name} of type #{type.to_type_signature} was provided invalid value"
+        msg ||= "Variable $#{variable_ast.name} of type #{type.to_type_signature} was provided invalid value"
 
         if problem_fields.any?
           msg += " for #{problem_fields.join(", ")}"

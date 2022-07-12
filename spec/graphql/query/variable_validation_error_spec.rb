@@ -32,5 +32,20 @@ describe GraphQL::Query::VariableValidationError do
       }
       assert_equal error.to_h, as_hash
     end
+
+    it 'when msg param is passed it overwrites the message and adds validation result message' do
+      error = subject.new(ast, type, error_value, validation_result, msg: "test")
+
+      as_hash = {
+        'message' => 'test for path-to-problem (it broke)',
+        'locations' => [ {'line' => 1, 'column' => 2} ],
+        'extensions' => {
+          'code' => 'ERROR',
+          'value' => error_value,
+          'problems' => problems
+        }
+      }
+      assert_equal error.to_h, as_hash
+    end
   end
 end

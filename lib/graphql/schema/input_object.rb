@@ -173,9 +173,8 @@ module GraphQL
         # @api private
         INVALID_OBJECT_MESSAGE = "Expected %{object} to be a key-value object responding to `to_h` or `to_unsafe_h`."
 
-        def validate_non_null_input(input, ctx)
+        def validate_non_null_input(input, ctx, max_errors: nil)
           result = GraphQL::Query::InputValidationResult.new
-
           warden = ctx.warden
 
           if input.is_a?(Array)

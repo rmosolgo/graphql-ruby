@@ -8,11 +8,11 @@ module GraphQL
           validate_input(val, ctx).valid?
         end
 
-        def validate_input(val, ctx)
+        def validate_input(val, ctx, max_errors: nil)
           if val.nil?
             GraphQL::Query::InputValidationResult.new
           else
-            validate_non_null_input(val, ctx)
+            validate_non_null_input(val, ctx, max_errors: max_errors) || Query::InputValidationResult::VALID
           end
         end
 
