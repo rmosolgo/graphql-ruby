@@ -70,6 +70,9 @@ REASON
     class NoFields < GraphQL::Schema::Object
     end
 
+    class NoArguments < GraphQL::Schema::InputObject
+    end
+
     class Query < GraphQL::Schema::Object
       description "The query root of this schema"
 
@@ -80,7 +83,9 @@ REASON
         argument :deprecated_arg, String, required: false, deprecation_reason: "Use something else"
       end
 
-      field :no_fields_type, NoFields
+      field :no_fields_type, NoFields do
+        argument :no_arguments_input, NoArguments
+      end
     end
 
     class CreatePost < GraphQL::Schema::RelayClassicMutation
@@ -531,6 +536,8 @@ type Mutation {
   ): CreatePostPayload
 }
 
+input NoArguments
+
 type NoFields
 
 interface Node {
@@ -552,7 +559,7 @@ type Post {
 The query root of this schema
 """
 type Query {
-  noFieldsType: NoFields
+  noFieldsType(noArgumentsInput: NoArguments!): NoFields
   post(
     deprecatedArg: String @deprecated(reason: "Use something else")
 
@@ -721,6 +728,8 @@ type Mutation {
   ): CreatePostPayload
 }
 
+input NoArguments
+
 type NoFields
 
 interface Node {
@@ -741,7 +750,7 @@ type Post {
 The query root of this schema
 """
 type Query {
-  noFieldsType: NoFields
+  noFieldsType(noArgumentsInput: NoArguments!): NoFields
   post(
     """
     Post ID

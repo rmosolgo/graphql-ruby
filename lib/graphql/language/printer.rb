@@ -236,12 +236,15 @@ module GraphQL
         out = print_description(input_object_type)
         out << "input #{input_object_type.name}"
         out << print_directives(input_object_type.directives)
-        out << " {\n"
-        input_object_type.fields.each.with_index do |field, i|
-          out << print_description(field, indent: '  ', first_in_block: i == 0)
-          out << "  #{print_input_value_definition(field)}\n"
+        if !input_object_type.fields.empty?
+          out << " {\n"
+          input_object_type.fields.each.with_index do |field, i|
+            out << print_description(field, indent: '  ', first_in_block: i == 0)
+            out << "  #{print_input_value_definition(field)}\n"
+          end
+          out << "}"
         end
-        out << "}"
+        out
       end
 
       def print_directive_definition(directive)
