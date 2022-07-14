@@ -69,6 +69,10 @@ module GraphQL
         true
       end
 
+      def self.one_of
+        directive(GraphQL::Schema::Directive::OneOf)
+      end
+
       def unwrap_value(value)
         case value
         when Array

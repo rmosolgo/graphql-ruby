@@ -1144,4 +1144,26 @@ describe GraphQL::Schema::InputObject do
       assert_equal ["No object found for `id: \"1\"`"], res["errors"].map { |e| e["message"] }
     end
   end
+
+  describe "@oneOf" do
+    class OneOfSchema < GraphQL::Schema
+      class OneOfInput < GraphQL::Schema::InputObject
+        one_of
+        argument :arg_1, Int
+        argument :arg_2, Int
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :f, String do
+          argument :a, OneOfInput
+        end
+      end
+      query(Query)
+    end
+
+    it "prints in the SDL" do
+      sdl = OneOfSchema.to_definition
+      assert_includes sdl, "\ninput OneOfInput @oneOf {\n"
+    end
+  end
 end
