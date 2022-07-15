@@ -6,7 +6,9 @@ module GraphQL
       extend Forwardable
 
       # @return [Array<GraphQL::Query::VariableValidationError>]  Any errors encountered when parsing the provided variables and literal values
-      attr_reader :errors, :context
+      attr_reader :errors
+
+      attr_reader :context
 
       def initialize(ctx, ast_variables, provided_variables)
         schema = ctx.schema
