@@ -21,7 +21,7 @@ Sources will receive two kinds of inputs from `GraphQL::Dataloader`:
 
   Under the hood, each Source instance maintains a `key => object` cache.
 
-- _batch parameters_, which are the basis of batched groups. For example, if you're loading records from different database tables, the the table name would be a batch parameter.
+- _batch parameters_, which are the basis of batched groups. For example, if you're loading records from different database tables, the table name would be a batch parameter.
 
   Batch parameters are given to `dataloader.with(source_class, *batch_parameters)`, and the default is _no batch parameters_. When you define a source, you should add the batch parameters to `def initialize(...)` and store them in instance variables.
 
