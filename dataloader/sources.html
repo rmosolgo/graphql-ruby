@@ -136,7 +136,7 @@
     <p>Under the hood, each Source instance maintains a <code class="language-plaintext highlighter-rouge">key =&gt; object</code> cache.</p>
   </li>
   <li>
-    <p><em>batch parameters</em>, which are the basis of batched groups. For example, if you’re loading records from different database tables, the the table name would be a batch parameter.</p>
+    <p><em>batch parameters</em>, which are the basis of batched groups. For example, if you’re loading records from different database tables, the table name would be a batch parameter.</p>
 
     <p>Batch parameters are given to <code class="language-plaintext highlighter-rouge">dataloader.with(source_class, *batch_parameters)</code>, and the default is <em>no batch parameters</em>. When you define a source, you should add the batch parameters to <code class="language-plaintext highlighter-rouge">def initialize(...)</code> and store them in instance variables.</p>
 
