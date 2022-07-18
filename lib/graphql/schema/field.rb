@@ -667,7 +667,7 @@ module GraphQL
 
               if defined?(@hash_key)
                 hash_value = inner_object.to_h.key?(@hash_key) ? inner_object[@hash_key] : inner_object[@hash_key_str]
-                if type.unwrap.graphql_name == "Boolean" && (hash_value == true || hash_value == false)
+                if hash_value == false
                   hash_value
                 else
                   hash_value || (@fallback_value != :not_given ? @fallback_value : nil)
