@@ -666,7 +666,11 @@ module GraphQL
               inner_object = obj.object
 
               if defined?(@hash_key)
-                hash_value = inner_object.to_h.key?(@hash_key) ? inner_object[@hash_key] : inner_object[@hash_key_str]
+                hash_value = if inner_object.respond_to?(@hash_key)
+                  inner_object.public_send(@hash_key)
+                else
+                  inner_object.key?(@hash_key) ? inner_object[@hash_key] : inner_object[@hash_key_str]
+                end
                 if hash_value == false
                   hash_value
                 else
