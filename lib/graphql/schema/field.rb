@@ -668,8 +668,10 @@ module GraphQL
               if defined?(@hash_key)
                 hash_value = if inner_object.respond_to?(@hash_key)
                   inner_object.public_send(@hash_key)
-                else
+                elsif inner_object.is_a?(Hash)
                   inner_object.key?(@hash_key) ? inner_object[@hash_key] : inner_object[@hash_key_str]
+                else
+                  nil
                 end
                 if hash_value == false
                   hash_value
