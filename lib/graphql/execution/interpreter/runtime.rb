@@ -401,8 +401,7 @@ module GraphQL
           end
           return_type = field_defn.type
 
-          next_path = path.dup
-          next_path << result_name
+          next_path = path + [result_name]
           next_path.freeze
 
           # This seems janky, but we need to know
@@ -768,8 +767,7 @@ module GraphQL
                   set_result(selection_result, result_name, response_list)
                   result_was_set = true
                 end
-                next_path = path.dup
-                next_path << idx
+                next_path = path + [idx]
                 this_idx = idx
                 next_path.freeze
                 idx += 1
