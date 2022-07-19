@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.11.1 (19 July 2022)
+
+- Subscriptions: ActionCableLink: only forward the result if `data` or `errors` is present #4114
+
 # 1.11.0 (4 July 2022)
 
 - Subscriptions: Add `urql` support for Pusher #4129
