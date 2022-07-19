@@ -52,7 +52,7 @@ class Types::PostAttributes < Types::BaseInputObject
 end
 ```
 
-For a full description of the `argument(...)` method, see the {% internal_link "argument section of the Objects guide","/type_definitions/input_objects.html" %}.
+For a full description of the `argument(...)` method, see the {% internal_link "argument section of the Objects guide","/fields/arguments.html" %}.
 
 ## Using Input Objects
 
