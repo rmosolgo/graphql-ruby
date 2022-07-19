@@ -10,6 +10,18 @@
 
 ### Bug fixes
 
+# 2.0.12 (19 July 2022)
+
+### New features
+
+- Support returning `[Type, nil]` from `resolve_type` #4130
+
+### Bug fixes
+
+- SDL: Don't print empty braces for input objects with no arguments #4138
+- Arguments: always call `prepare` before loading objects based on ID (`loads:`) #4128
+- Don't support re-assigning `Query#validate=` after validation has run #4127
+
 # 2.0.11 (20 June 2022)
 
 ### New features
