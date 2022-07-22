@@ -86,7 +86,7 @@ class Types::BaseArgument < GraphQL::Schema::Argument
     super(*args, **kwargs, &block)
   end
 
-  def authorized?(ctx)
+  def visible?(ctx)
     super && (@require_logged_in ? ctx[:viewer].present? : true)
   end
 end
