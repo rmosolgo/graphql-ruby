@@ -8,6 +8,10 @@
 
 ### Bug Fix
 
+# 1.1.5 (22 July 2022)
+
+- ObjectCache: add `cache_introspection: { ttl: ... }` for setting an expiration (in seconds) on introspection fields.
+
 # 1.1.4 (19 March 2022)
 
 ### Bug Fix

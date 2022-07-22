@@ -81,5 +81,6 @@ By default, connection-related objects (like `*Connection` and `*Edge` types) "i
 
 By default, introspection fields are considered _public_ for all queries. This means that they are considered cacheable and their results will be reused for any clients who request them. When {% internal_link "adding the ObjectCache to your schema", "/object_cache/schema_setup#add-the-cache", %}, you can provide some options to customize this behavior:
 
-- `cache_introspection: { public: false }` to use [`public: false`](#public) for all introspection fields. Use this if you hide schema members for some clients.
+- `cache_introspection: { public: false, ... }` to use [`public: false`](#public) for all introspection fields. Use this if you hide schema members for some clients.
 - `cache_introspection: false` to completely disable caching on introspection fields.
+- `cache_introspection: { ttl: ..., ... }` to set a [ttl](#ttl) (in seconds) for introspection fields.
