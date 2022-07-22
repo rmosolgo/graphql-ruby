@@ -760,7 +760,11 @@ module GraphQL
             result_was_set = false
             idx = 0
             list_value = begin
-              value.each do |inner_value|
+              loop_i = 0
+              value_size = value.size
+              while loop_i < value_size
+                inner_value = value[loop_i]
+                loop_i += 1
                 break if dead_result?(response_list)
                 if !result_was_set
                   # Don't set the result unless `.each` is successful
