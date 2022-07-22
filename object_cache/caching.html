@@ -197,8 +197,9 @@
 <p>By default, introspection fields are considered <em>public</em> for all queries. This means that they are considered cacheable and their results will be reused for any clients who request them. When <a href="/object_cache/schema_setup#add-the-cache">adding the ObjectCache to your schema</a>, you can provide some options to customize this behavior:</p>
 
 <ul>
-  <li><code class="language-plaintext highlighter-rouge">cache_introspection: { public: false }</code> to use <a href="#public"><code class="language-plaintext highlighter-rouge">public: false</code></a> for all introspection fields. Use this if you hide schema members for some clients.</li>
+  <li><code class="language-plaintext highlighter-rouge">cache_introspection: { public: false, ... }</code> to use <a href="#public"><code class="language-plaintext highlighter-rouge">public: false</code></a> for all introspection fields. Use this if you hide schema members for some clients.</li>
   <li><code class="language-plaintext highlighter-rouge">cache_introspection: false</code> to completely disable caching on introspection fields.</li>
+  <li><code class="language-plaintext highlighter-rouge">cache_introspection: { ttl: ..., ... }</code> to set a <a href="#ttl">ttl</a> (in seconds) for introspection fields.</li>
 </ul>
 
 </div>
