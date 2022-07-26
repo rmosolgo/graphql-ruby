@@ -336,10 +336,11 @@ tracing as follows:</p>
 <code class="language-plaintext highlighter-rouge">GraphQL::Tracing::PrometheusTracing::GraphQLCollector</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># lib/graphql_collector.rb</span>
+<span class="k">if</span> <span class="k">defined?</span><span class="p">(</span><span class="no">PrometheusExporter</span><span class="o">::</span><span class="no">Server</span><span class="p">)</span>
+  <span class="nb">require</span> <span class="s1">'graphql/tracing'</span>
 
-<span class="nb">require</span> <span class="s1">'graphql/tracing'</span>
-
-<span class="k">class</span> <span class="nc">GraphQLCollector</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">PrometheusTracing</span><span class="o">::</span><span class="no">GraphQLCollector</span>
+  <span class="k">class</span> <span class="nc">GraphQLCollector</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">PrometheusTracing</span><span class="o">::</span><span class="no">GraphQLCollector</span>
+  <span class="k">end</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
