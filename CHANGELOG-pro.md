@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.22.3 (26 Jully 2022)
+
+### Bug Fix
+
+- Stable connections: handle `edges {...}` when an invalid cursor is given #4148
+
 # 1.22.2 (20 April 2022)
 
 ### Bug Fix
