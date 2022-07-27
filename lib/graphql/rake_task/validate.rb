@@ -15,7 +15,7 @@ module GraphQL
       puts "Validating graphql-pro v#{version}"
       puts "  - Checking for graphql-pro credentials..."
 
-      creds = `bundle config gems.graphql.pro`[/[a-z0-9]{11}:[a-z0-9]{11}/]
+      creds = `bundle config gems.graphql.pro --parseable`[/[a-z0-9]{11}:[a-z0-9]{11}/]
       if creds.nil?
         puts "    #{ex} failed, please set with `bundle config gems.graphql.pro $MY_CREDENTIALS`"
         exit(1)
