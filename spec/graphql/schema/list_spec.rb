@@ -149,4 +149,42 @@ describe GraphQL::Schema::List do
       assert_equal({"data" => { "nilEchoes" => nil}}, nil_result, "It works for nil")\
     end
   end
+
+  describe "when max validation errros exists" do
+    class MaxValidationSchema < GraphQL::Schema
+      class Item < GraphQL::Schema::Enum
+        value "A"
+        value "B"
+      end
+      
+      class Query < GraphQL::Schema::Object
+        field :items, [Item], null: false do
+          argument :ids, [Int]
+        end
+
+        def items(ids:)
+          items
+        end
+      end
+
+      query(Query)
+      validate_max_errors(2)
+    end
+
+    it "checks only for 2 errors and appends too many errros in the message" do
+      res = MaxValidationSchema.execute("query($ids: [Int!]!) { items(ids: $ids) }", variables: { ids: ["1", "2", "3", "4"] })
+
+      expected_error = "Variable $ids of type [Int!]! was provided invalid value for 0 "\
+        "(Could not coerce value \"1\" to Int), 1 (Could not coerce value \"2\" to Int),  "\
+        "(Too many errors processing list variable, max validation error limit reached. Execution aborted)"
+      assert_equal [expected_error], res["errors"].map { |e| e["message"] }
+    end
+
+    it "raises only 1 errror with max_validation + 1 problems" do
+      res = MaxValidationSchema.execute("query($ids: [Int!]!) { items(ids: $ids) }", variables: { ids: ["1", "2", "3", "4"] })
+
+      assert_equal 1, res["errors"].count
+      assert_equal 3, res["errors"][0]["extensions"]["problems"].count
+    end
+  end
 end

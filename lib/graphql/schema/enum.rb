@@ -122,7 +122,7 @@ module GraphQL
           GraphQL::TypeKinds::ENUM
         end
 
-        def validate_non_null_input(value_name, ctx)
+        def validate_non_null_input(value_name, ctx, max_errors: nil)
           allowed_values = ctx.warden.enum_values(self)
           matching_value = allowed_values.find { |v| v.graphql_name == value_name }
 

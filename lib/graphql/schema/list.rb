@@ -45,16 +45,24 @@ module GraphQL
         end
       end
 
-      def validate_non_null_input(value, ctx)
-        result = nil
+      def validate_non_null_input(value, ctx, max_errors: nil)
+        result = GraphQL::Query::InputValidationResult.new
         ensure_array(value).each_with_index do |item, index|
           item_result = of_type.validate_input(item, ctx)
-          if !item_result.valid?
-            result ||= GraphQL::Query::InputValidationResult.new
+          unless item_result.valid?
+            if max_errors
+              if max_errors == 0
+                add_max_errros_reached_message(result)
+                break
+              end
+
+              max_errors -= 1
+            end
+
             result.merge_result!(index, item_result)
           end
         end
-        result
+        result.valid? ? nil : result
       end
 
       private
@@ -66,6 +74,12 @@ module GraphQL
         else
           [value]
         end
+      end
+
+      def add_max_errros_reached_message(result)
+        message = "Too many errors processing list variable, max validation error limit reached. Execution aborted"
+        item_result = GraphQL::Query::InputValidationResult.from_problem(message)
+        result.merge_result!(nil, item_result)
       end
     end
   end

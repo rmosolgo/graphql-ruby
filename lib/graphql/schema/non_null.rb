@@ -31,13 +31,13 @@ module GraphQL
         "#<#{self.class.name} @of_type=#{@of_type.inspect}>"
       end
 
-      def validate_input(value, ctx)
+      def validate_input(value, ctx, max_errors: nil)
         if value.nil?
           result = GraphQL::Query::InputValidationResult.new
           result.add_problem("Expected value to not be null")
           result
         else
-          of_type.validate_input(value, ctx)
+          of_type.validate_input(value, ctx, max_errors: max_errors)
         end
       end
 

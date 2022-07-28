@@ -40,7 +40,7 @@ module GraphQL
           @default_scalar ||= false
         end
 
-        def validate_non_null_input(value, ctx)
+        def validate_non_null_input(value, ctx, max_errors: nil)
           coerced_result = begin
             coerce_input(value, ctx)
           rescue GraphQL::CoercionError => err
