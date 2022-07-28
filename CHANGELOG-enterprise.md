@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.1.7 (28 July 2022)
+
+### Bug Fix
+
+- ObjectCache: remove needless `resolve_type` calls
+
 # 1.1.6 (28 July 2022)
 
 ### Bug Fix
