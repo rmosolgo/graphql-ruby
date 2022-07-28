@@ -22,9 +22,9 @@ Under the hood, `ObjectCache` stores a mapping of queries and objects. Additiona
 "query2:result" => '{"data":{...}}'
 "query2:objects" => ["obj2:v2", "obj3:v1"]
 
-"obj1:v1" => { "fingerprint" => "...", "id" => "..." }
-"obj2:v2" => { "fingerprint" => "...", "id" => "..." }
-"obj3:v1" => { "fingerprint" => "...", "id" => "..." }
+"obj1:v1" => { "fingerprint" => "...", "id" => "...", "type_name" => "..." }
+"obj2:v2" => { "fingerprint" => "...", "id" => "...", "type_name" => "..." }
+"obj3:v1" => { "fingerprint" => "...", "id" => "...", "type_name" => "..." }
 
 "obj1:v1:queries" => ["query1"]
 "obj2:v2:queries" => ["query1", "query2"]

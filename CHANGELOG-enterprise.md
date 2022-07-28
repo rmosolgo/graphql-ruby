@@ -8,7 +8,15 @@
 
 ### Bug Fix
 
+# 1.1.6 (28 July 2022)
+
+### Bug Fix
+
+- ObjectCache: persist the type names of cached objects, pass them to `Schema.resolve_type` when validating cached responses.
+
 # 1.1.5 (22 July 2022)
+
+### New Features
 
 - ObjectCache: add `cache_introspection: { ttl: ... }` for setting an expiration (in seconds) on introspection fields.
 
