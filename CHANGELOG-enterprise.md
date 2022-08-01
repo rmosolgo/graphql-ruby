@@ -8,6 +8,15 @@
 
 ### Bug Fix
 
+# 1.1.8 (1 August 2022)
+
+### New Features
+
+- ObjectCache: Add `ObjectType.cache_dependencies_for(object, context)` to customize dependencies for an object
+
+### Bug Fix
+
+- ObjectCache: Fix to make `context[:object_cache][:objects]` a Set
 # 1.1.7 (28 July 2022)
 
 ### Bug Fix
