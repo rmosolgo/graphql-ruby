@@ -84,3 +84,24 @@ By default, introspection fields are considered _public_ for all queries. This m
 - `cache_introspection: { public: false, ... }` to use [`public: false`](#public) for all introspection fields. Use this if you hide schema members for some clients.
 - `cache_introspection: false` to completely disable caching on introspection fields.
 - `cache_introspection: { ttl: ..., ... }` to set a [ttl](#ttl) (in seconds) for introspection fields.
+
+## Object Dependencies
+
+By default, the `object` of a GraphQL Object type is used for caching the fields selected on that object. But, you can specify what object (or objects) should be used to check the cache by implementing `def self.cache_dependencies_for(object, context)` in your type definition. For example:
+
+```ruby
+class Types::Player
+  def self.cache_dependencies_for(player, context)
+    # we update the team's timestamp whenever player details change,
+    # so ignore the `player` for caching purposes
+    player.team
+  end
+end
+```
+
+Use this to:
+
+- improve performance when caching lists of children that belong to a parent object
+- register other objects with the ObjectCache when running a query. (`cacheable_object(obj)` or `def self.object_fingerprint_for` can also be used in this case.)
+
+If this method returns an `Array`, each object in the array will be registered with the cache.

@@ -84,24 +84,3 @@ The returned strings are used as cache keys in the database -- whenever they cha
 - `def self.resolve_type(abstract_type, object, context)` which returns a GraphQL object type definition to use for `object`
 
 After your schema is setup, you can {% internal_link "configure caching on your types and fields", "/object_cache/caching", %}.
-
-## Object Dependencies
-
-By default, the `object` of a GraphQL Object type is used for caching the fields selected on that object. But, you can specify what object (or objects) should be used to check the cache by implementing `def self.cache_dependencies_for(object, context)` in your type definition. For example:
-
-```ruby
-class Types::Player
-  def self.cache_dependencies_for(player, context)
-    # we update the team's timestamp whenever player details change,
-    # so ignore the `player` for caching purposes
-    player.team
-  end
-end
-```
-
-Use this to:
-
-- improve performance when caching lists of children that belong to a parent object
-- register other objects with the ObjectCache when running a query. (`cacheable_object(obj)` or `def self.object_fingerprint_for` can also be used in this case.)
-
-If this method returns an `Array`, each object in the array will be registered with the cache.
