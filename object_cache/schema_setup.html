@@ -121,6 +121,7 @@
 </a></li><li class='contents-entry'><a href='#context-fingerprint'>Context Fingerprint
 </a></li><li class='contents-entry'><a href='#object-fingerprint'>Object Fingerprint
 </a></li><li class='contents-entry'><a href='#object-identification'>Object Identification
+</a></li><li class='contents-entry'><a href='#object-dependencies'>Object Dependencies
 </a></li></ol>
 </div>
 </div>
@@ -199,6 +200,28 @@
 </ul>
 
 <p>After your schema is setup, you can <a href="/object_cache/caching">configure caching on your types and fields</a>.</p>
+
+<h2 id="object-dependencies">Object Dependencies</h2>
+
+<p>By default, the <code class="language-plaintext highlighter-rouge">object</code> of a GraphQL Object type is used for caching the fields selected on that object. But, you can specify what object (or objects) should be used to check the cache by implementing <code class="language-plaintext highlighter-rouge">def self.cache_dependencies_for(object, context)</code> in your type definition. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::Player</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">cache_dependencies_for</span><span class="p">(</span><span class="n">player</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+    <span class="c1"># we update the team's timestamp whenever player details change,</span>
+    <span class="c1"># so ignore the `player` for caching purposes</span>
+    <span class="n">player</span><span class="p">.</span><span class="nf">team</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Use this to:</p>
+
+<ul>
+  <li>improve performance when caching lists of children that belong to a parent object</li>
+  <li>register other objects with the ObjectCache when running a query. (<code class="language-plaintext highlighter-rouge">cacheable_object(obj)</code> or <code class="language-plaintext highlighter-rouge">def self.object_fingerprint_for</code> can also be used in this case.)</li>
+</ul>
+
+<p>If this method returns an <code class="language-plaintext highlighter-rouge">Array</code>, each object in the array will be registered with the cache.</p>
 
 </div>
 <p class="guide-footer">
