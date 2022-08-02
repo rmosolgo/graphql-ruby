@@ -8,7 +8,13 @@
 
 ### Bug Fix
 
-# 1.22.3 (26 Jully 2022)
+# 1.23.0 (2 August 2022)
+
+### New Features
+
+- Stable connections: support SQL queries that sort by `IS NOT NULL` #4153
+
+# 1.22.3 (26 July 2022)
 
 ### Bug Fix
 
