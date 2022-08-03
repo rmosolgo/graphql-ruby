@@ -8,6 +8,16 @@
 
 ### Bug Fix
 
+# 1.1.9 (3 August 2022)
+
+### New Features
+
+- ObjectCache: Add a message to context when a type or field causes a query to be treated as "private"
+
+### Bug Fix
+
+- ObjectCache: skip the query analyzer when `context[:skip_object_cache]` is present
+
 # 1.1.8 (1 August 2022)
 
 ### New Features
