@@ -253,7 +253,7 @@ module GraphQL
         method_name = method || hash_key || name_s
         @dig_keys = dig
         if hash_key
-          @hash_key = hash_key.to_sym
+          @hash_key = hash_key
           @hash_key_str = hash_key.to_s
         end
 
