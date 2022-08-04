@@ -598,7 +598,6 @@ describe GraphQL::Schema::Field do
         # regression test against https://github.com/rmosolgo/graphql-ruby/issues/3944
         field :method, String, camelize: false, null: false, hash_key: "some_random_key"
         field :stringified_hash_key, String, null: false, hash_key: :stringified_hash_key
-        field :symbolized_hash_key, String, null: false, hash_key: "symbolized_hash_key"
         field :boolean_true_with_hash_key, Boolean, null: false, hash_key: :boolean_true_with_hash_key
         field :boolean_false_with_hash_key, Boolean, null: false, hash_key: :boolean_false_with_hash_key
         field :boolean_false_with_symbolized_hash_key, Boolean, null: false, hash_key: :boolean_false_with_symbolized_hash_key
@@ -614,7 +613,6 @@ describe GraphQL::Schema::Field do
             "OtherCapital" => "explicit-hash-key-works",
             "some_random_key" => "hash-key-works-when-underlying-object-responds-to-field-name",
             "stringified_hash_key" => "hash-key-is-tried-as-string",
-            :symbolized_hash_key => "hash-key-is-tried-as-symbol",
             "boolean_true_with_hash_key" => true,
             "boolean_false_with_hash_key" => false,
             :boolean_false_with_symbolized_hash_key => false
@@ -641,7 +639,6 @@ describe GraphQL::Schema::Field do
           Other
           OtherCapital
           stringifiedHashKey
-          symbolizedHashKey
           booleanTrueWithHashKey
           booleanFalseWithHashKey
           booleanFalseWithSymbolizedHashKey
@@ -657,7 +654,6 @@ describe GraphQL::Schema::Field do
         "OtherCapital" => "explicit-hash-key-works",
         "method" => "hash-key-works-when-underlying-object-responds-to-field-name",
         "stringifiedHashKey" => "hash-key-is-tried-as-string",
-        "symbolizedHashKey" => "hash-key-is-tried-as-symbol",
         "booleanTrueWithHashKey" => true,
         "booleanFalseWithHashKey" => false,
         "booleanFalseWithSymbolizedHashKey" => false
@@ -676,7 +672,6 @@ describe GraphQL::Schema::Field do
           Other
           OtherCapital
           stringifiedHashKey
-          symbolizedHashKey
           booleanTrueWithHashKey
           booleanFalseWithHashKey
           booleanFalseWithSymbolizedHashKey
@@ -692,7 +687,6 @@ describe GraphQL::Schema::Field do
         "OtherCapital" => "explicit-hash-key-works",
         "method" => "hash-key-works-when-underlying-object-responds-to-field-name",
         "stringifiedHashKey" => "hash-key-is-tried-as-string",
-        "symbolizedHashKey" => "hash-key-is-tried-as-symbol",
         "booleanTrueWithHashKey" => true,
         "booleanFalseWithHashKey" => false,
         "booleanFalseWithSymbolizedHashKey" => false
