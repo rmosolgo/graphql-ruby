@@ -598,6 +598,9 @@ describe GraphQL::Schema::Field do
         # regression test against https://github.com/rmosolgo/graphql-ruby/issues/3944
         field :method, String, camelize: false, null: false, hash_key: "some_random_key"
         field :stringified_hash_key, String, null: false, hash_key: :stringified_hash_key
+        field :boolean_true_with_hash_key, Boolean, null: false, hash_key: :boolean_true_with_hash_key
+        field :boolean_false_with_hash_key, Boolean, null: false, hash_key: :boolean_false_with_hash_key
+        field :boolean_false_with_symbolized_hash_key, Boolean, null: false, hash_key: :boolean_false_with_symbolized_hash_key
       end
 
       class QueryType < GraphQL::Schema::Object
@@ -610,6 +613,9 @@ describe GraphQL::Schema::Field do
             "OtherCapital" => "explicit-hash-key-works",
             "some_random_key" => "hash-key-works-when-underlying-object-responds-to-field-name",
             "stringified_hash_key" => "hash-key-is-tried-as-string",
+            "boolean_true_with_hash_key" => true,
+            "boolean_false_with_hash_key" => false,
+            :boolean_false_with_symbolized_hash_key => false
           }
         end
 
@@ -633,6 +639,9 @@ describe GraphQL::Schema::Field do
           Other
           OtherCapital
           stringifiedHashKey
+          booleanTrueWithHashKey
+          booleanFalseWithHashKey
+          booleanFalseWithSymbolizedHashKey
         }
       }
       GRAPHQL
@@ -644,7 +653,11 @@ describe GraphQL::Schema::Field do
         "Other" => "capital-camelize-true-works",
         "OtherCapital" => "explicit-hash-key-works",
         "method" => "hash-key-works-when-underlying-object-responds-to-field-name",
-        "stringifiedHashKey" => "hash-key-is-tried-as-string"
+        "stringifiedHashKey" => "hash-key-is-tried-as-string",
+        "booleanTrueWithHashKey" => true,
+        "booleanFalseWithHashKey" => false,
+        "booleanFalseWithSymbolizedHashKey" => false
+
       }
       assert_equal expected_result, search_results
     end
@@ -659,6 +672,9 @@ describe GraphQL::Schema::Field do
           Other
           OtherCapital
           stringifiedHashKey
+          booleanTrueWithHashKey
+          booleanFalseWithHashKey
+          booleanFalseWithSymbolizedHashKey
         }
       }
       GRAPHQL
@@ -670,7 +686,10 @@ describe GraphQL::Schema::Field do
         "Other" => "capital-camelize-true-works",
         "OtherCapital" => "explicit-hash-key-works",
         "method" => "hash-key-works-when-underlying-object-responds-to-field-name",
-        "stringifiedHashKey" => "hash-key-is-tried-as-string"
+        "stringifiedHashKey" => "hash-key-is-tried-as-string",
+        "booleanTrueWithHashKey" => true,
+        "booleanFalseWithHashKey" => false,
+        "booleanFalseWithSymbolizedHashKey" => false
       }
       assert_equal expected_result, search_results
     end
