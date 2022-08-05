@@ -30,9 +30,9 @@ module GraphQL
         }.tap { |h| h["path"] = path unless path.nil? }
       end
 
-      private
-
       attr_reader :nodes
+
+      private
 
       def locations
         nodes.map do |node|

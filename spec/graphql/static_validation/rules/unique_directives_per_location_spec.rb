@@ -135,14 +135,7 @@ describe GraphQL::StaticValidation::UniqueDirectivesPerLocation do
     it "fails rule" do
       assert_includes errors, {
         "message" => 'The directive "A" can only be used once at this location.',
-        "locations" => [{ "line" => 4, "column" => 17 }, { "line" => 4, "column" => 20 }],
-        "path" => ["query", "type", "field"],
-        "extensions" => {"code"=>"directiveNotUniqueForLocation", "directiveName"=>"A"}
-      }
-
-      assert_includes errors, {
-        "message" => 'The directive "A" can only be used once at this location.',
-        "locations" => [{ "line" => 4, "column" => 17 }, { "line" => 4, "column" => 23 }],
+        "locations" => [{ "line" => 4, "column" => 17 }, { "line" => 4, "column" => 20 },  { "line" => 4, "column" => 23 }],
         "path" => ["query", "type", "field"],
         "extensions" => {"code"=>"directiveNotUniqueForLocation", "directiveName"=>"A"}
       }
