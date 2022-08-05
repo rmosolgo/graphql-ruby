@@ -635,6 +635,21 @@ describe GraphQL::Schema::Argument do
     end
   end
 
+  it "can get default_value and prepare from method calls in the config block" do
+    type = Class.new(GraphQL::Schema::Object) do
+      field :f, String do
+        argument :arg, String do
+          default_value "blah"
+          prepare -> { :stuff }
+        end
+      end
+    end
+
+    arg = type.get_field("f").get_argument("arg")
+    assert_equal "blah", arg.default_value
+    assert_equal :stuff, arg.prepare.call
+  end
+
   describe "multiple argument definitions with default values" do
     class MultipleArgumentDefaultValuesSchema < GraphQL::Schema
       class BaseArgument < GraphQL::Schema::Argument
