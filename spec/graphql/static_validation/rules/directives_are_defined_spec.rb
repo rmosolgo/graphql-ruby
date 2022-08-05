@@ -9,7 +9,7 @@ describe GraphQL::StaticValidation::DirectivesAreDefined do
         id @skip(if: true),
         source @nonsense(if: false)
         ... on Cheese {
-          flavor @moreNonsense
+          flavor @moreNonsense @moreNonsense
         }
       }
     }
@@ -22,9 +22,16 @@ describe GraphQL::StaticValidation::DirectivesAreDefined do
           "locations"=>[{"line"=>5, "column"=>16}],
           "path"=>["query getCheese", "okCheese", "source"],
           "extensions"=>{"code"=>"undefinedDirective", "directiveName"=>"nonsense"}
-        }, {
+        },
+        {
+          "message"=>"The directive \"moreNonsense\" can only be used once at this location.",
+          "locations"=>[{"line"=>7, "column"=>18}, {"line"=>7, "column"=>32}],
+          "path"=>["query getCheese", "okCheese", "... on Cheese", "flavor"],
+          "extensions"=>{"code"=>"directiveNotUniqueForLocation", "directiveName"=>"moreNonsense"}
+        },
+        {
           "message"=>"Directive @moreNonsense is not defined",
-          "locations"=>[{"line"=>7, "column"=>18}],
+          "locations"=>[{"line"=>7, "column"=>18}, {"line"=>7, "column"=>32}],
           "path"=>["query getCheese", "okCheese", "... on Cheese", "flavor"],
           "extensions"=>{"code"=>"undefinedDirective", "directiveName"=>"moreNonsense"}
         }
