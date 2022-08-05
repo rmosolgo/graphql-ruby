@@ -18,8 +18,14 @@ module GraphQL
       # @return [GraphQL::Schema::Field, Class] The field or input object this argument belongs to
       attr_reader :owner
 
-      # @return [Symbol] A method to call to transform this value before sending it to field resolution method
-      attr_reader :prepare
+      # @param new_prepare [Method, Proc]
+      # @return [Symbol] A method or proc to call to transform this value before sending it to field resolution method
+      def prepare(new_prepare = NO_DEFAULT)
+        if new_prepare != NO_DEFAULT
+          @prepare = new_prepare
+        end
+        @prepare
+      end
 
       # @return [Symbol] This argument's name in Ruby keyword arguments
       attr_reader :keyword
@@ -96,8 +102,14 @@ module GraphQL
         "#<#{self.class} #{path}: #{type.to_type_signature}#{description ? " @description=#{description.inspect}" : ""}>"
       end
 
+      # @param default_value [Object] The value to use when the client doesn't provide one
       # @return [Object] the value used when the client doesn't provide a value for this argument
-      attr_reader :default_value
+      def default_value(new_default_value = NO_DEFAULT)
+        if new_default_value != NO_DEFAULT
+          @default_value = new_default_value
+        end
+        @default_value
+      end
 
       # @return [Boolean] True if this argument has a default value
       def default_value?
