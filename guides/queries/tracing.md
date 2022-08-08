@@ -157,8 +157,6 @@ You may provide `options` as a `Hash` with the following values:
 
 | Key | Description | Default |
 | --- | ----------- | ------- |
-| `analytics_enabled` | Enable analytics for spans. `true` for on, `nil` to defer to Datadog global setting, `false` for off. | `false` |
-| `analytics_sample_rate` | Rate which tracing data should be sampled for Datadog analytics. Must be a float between `0` and `1.0`. | `1.0` |
 | `service` | Service name used for `graphql` instrumentation | `'ruby-graphql'` |
 | `tracer` | `Datadog::Tracer` used to perform instrumentation. Usually you don't need to set this. | `Datadog.tracer` |
 
