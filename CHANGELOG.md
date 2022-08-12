@@ -10,6 +10,20 @@
 
 ### Bug fixes
 
+# 2.0.13 (12 August 2022)
+
+### New features
+
+- Fields: add configuration methods for `default_value` and `prepare` #4156
+- Static validation: merge directive errors when they're on the same location or directive
+
+### Bug fixes
+
+- Subscriptions: properly use the given `.trigger(... context: )` for determining subscription root field visibility #4160
+- Fix fields that use `hash_key:` and have a falsy value for that key #4132
+- Variable validation: respect `validate_max_error` limit
+- Performance: use `Array#+` to add objects during execution #4142
+
 # 2.0.12 (19 July 2022)
 
 ### New features
