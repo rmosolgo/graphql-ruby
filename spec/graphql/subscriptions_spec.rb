@@ -31,7 +31,12 @@ class InMemoryBackend
           query_string: query.query_string,
           operation_name: query.operation_name,
           variables: query.provided_variables,
-          context: { me: query.context[:me], validate_update: query.context[:validate_update] },
+          context: {
+            me: query.context[:me],
+            validate_update: query.context[:validate_update],
+            other_int: query.context[:other_int],
+            hidden_event: query.context[:hidden_event],
+          },
           transport: :socket,
         }
       else
@@ -108,7 +113,21 @@ end
 class ClassBasedInMemoryBackend < InMemoryBackend
   class Payload < GraphQL::Schema::Object
     field :str, String, null: false
-    field :int, Integer, null: false
+    field :int, Integer, null: false do
+      def visible?(context)
+        !context[:other_int]
+      end
+    end
+
+    field :int, Integer, null: false, resolver_method: :other_int do
+      def visible?(context)
+        !!context[:other_int]
+      end
+    end
+
+    def other_int
+      1000 + object.int
+    end
   end
 
   class PayloadType < GraphQL::Schema::Enum
@@ -173,6 +192,12 @@ class ClassBasedInMemoryBackend < InMemoryBackend
     end
 
     field :filtered_stream, subscription: FilteredStream
+
+    field :hidden_event, Payload do
+      def visible?(context)
+        !!context[:hidden_event]
+      end
+    end
   end
 
   class Query < GraphQL::Schema::Object
@@ -352,6 +377,20 @@ describe GraphQL::Subscriptions do
           # These received updates from the second set of triggers:
           assert_equal 2, deliveries["4"].size
           assert_equal 1, deliveries["5"].size
+        end
+
+        it "runs visibility checks when calling .trigger" do
+          query_str = "subscription { hiddenEvent { int } }"
+          res_1 = schema.execute(query_str, context: { socket: "1", hidden_event: true }, root_value: root_object)
+          assert_equal({}, res_1["data"])
+
+          schema.subscriptions.trigger(:hidden_event, {}, root_object.payload, context: { hidden_event: true })
+          assert_equal({"hiddenEvent" => { "int" => 1 }}, deliveries["1"][0]["data"])
+
+          err = assert_raises GraphQL::Subscriptions::InvalidTriggerError do
+            schema.subscriptions.trigger(:hidden_event, {}, root_object.payload)
+          end
+          assert_equal "No subscription matching trigger: hidden_event (looked for Subscription.hiddenEvent)", err.message
         end
       end
 
