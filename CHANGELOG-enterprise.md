@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.1.10 (19 August 2022)
+
+### Bug Fix
+
+- ObjectCache: read and write objects 1000-at-a-time to avoid overloading Lua scripts in Redis
+
 # 1.1.9 (3 August 2022)
 
 ### New Features
