@@ -87,15 +87,17 @@ By default, fields return values by:
 
 - Trying to call a method on the underlying object; _OR_
 - If the underlying object is a `Hash`, lookup a key in that hash.
-- An optional `:fallback_value` can be supplied that will be used if the above fail.
+- An optional `:fallback_value` can be supplied that will return a default value if the above fail or return `nil`.
 
 The method name or hash key corresponds to the field name, so in this example:
 
 ```ruby
-field :top_score, Integer, null: false
+field :top_score, Integer, null: false, fallback_value: 0
 ```
 
 The default behavior is to look for a `#top_score` method, or lookup a `Hash` key, `:top_score` (symbol) or `"top_score"` (string).
+
+If the method, or `Hash` keys were not found (or return `nil`), the field will return the default `:fallback_value` 0.  
 
 You can override the method name with the `method:` keyword, or override the hash key(s) with the `hash_key:` or `dig:` keyword, for example:
 
