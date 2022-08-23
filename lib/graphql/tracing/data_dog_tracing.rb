@@ -75,10 +75,12 @@ module GraphQL
       end
 
       def analytics_enabled?
+        # [Deprecated] options[:analytics_enabled] will be removed in the future
         analytics_available? && Datadog::Contrib::Analytics.enabled?(options.fetch(:analytics_enabled, false))
       end
 
       def analytics_sample_rate
+        # [Deprecated] options[:analytics_sample_rate] will be removed in the future
         options.fetch(:analytics_sample_rate, 1.0)
       end
 
