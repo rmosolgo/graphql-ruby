@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.23.1 (25 August 2022)
+
+### Bug Fix
+
+- Redis: update redis usage to be forward-compatible with redis 5.x #4167
+
 # 1.23.0 (2 August 2022)
 
 ### New Features
