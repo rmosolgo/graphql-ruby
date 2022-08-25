@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.1.11 (25 August 2022)
+
+### Bug Fix
+
+- ObjectCache: also update `delete` to handle more than 1000 objects in Lua
+
 # 1.1.10 (19 August 2022)
 
 ### Bug Fix
