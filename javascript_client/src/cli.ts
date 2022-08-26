@@ -32,6 +32,8 @@ optional arguments:
                                             By default, this flag is set to:
                                               - "relay" if "__generated__" in the path
                                               - otherwise, "project"
+  --header=<header>:<value>                 Add a header to the outgoing HTTP request
+                                              (may be repeated)
   --add-typename                            Automatically adds the "__typename" field to your queries
   --quiet                                   Suppress status logging
   --verbose                                 Print debug output
@@ -43,6 +45,13 @@ optional arguments:
   if (commandName !== "sync") {
     console.log("Only `graphql-ruby-client sync` is supported")
   } else {
+    var parsedHeaders: {[key: string]: string} = {}
+    if (argv.header) {
+      argv.header.forEach((h: string) => {
+        var headerParts = h.split(":")
+        parsedHeaders[headerParts[0]] = headerParts[1]
+      })
+    }
     var result = sync({
       path: argv.path,
       relayPersistedOutput: argv["relay-persisted-output"],
@@ -54,6 +63,7 @@ optional arguments:
       outfileType: argv["outfile-type"],
       secret: argv.secret,
       mode: argv.mode,
+      headers: parsedHeaders,
       addTypename: argv["add-typename"],
       quiet: argv.hasOwnProperty("quiet"),
       verbose: argv.hasOwnProperty("verbose"),

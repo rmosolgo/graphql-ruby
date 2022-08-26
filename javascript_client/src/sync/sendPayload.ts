@@ -7,7 +7,8 @@ interface SendPayloadOptions {
   url: string,
   secret?: string,
   client?: string,
-  verbose?: boolean
+  verbose?: boolean,
+  headers?: [string],
 }
 /**
  * Use HTTP POST to send this payload to the endpoint.
@@ -20,6 +21,7 @@ interface SendPayloadOptions {
  * @param {String} options.secret - (optional) used for HMAC header if provided
  * @param {String} options.client - (optional) used for HMAC header if provided
  * @param {Boolean} options.verbose - (optional) if true, print extra info for debugging
+ * @param {Object<String, String>} options.headers - (optional) extra headers for the request
  * @return {Promise}
 */
 function sendPayload(payload: any, options: SendPayloadOptions) {
@@ -39,6 +41,8 @@ function sendPayload(payload: any, options: SendPayloadOptions) {
     'Content-Length': Buffer.byteLength(postData).toString()
   }
 
+  var allHeaders = Object.assign({}, options.headers, defaultHeaders)
+
   var httpOptions = {
     protocol: parsedURL.protocol,
     hostname: parsedURL.hostname,
@@ -46,7 +50,7 @@ function sendPayload(payload: any, options: SendPayloadOptions) {
     path: parsedURL.path,
     auth: parsedURL.auth,
     method: 'POST',
-    headers: defaultHeaders,
+    headers: allHeaders,
   };
 
   // If an auth key was provided, add a HMAC header

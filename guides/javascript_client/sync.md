@@ -50,6 +50,7 @@ option | description
 `--secret` | Client Secret ({% internal_link "created on server", "/operation_store/client_workflow" %})
 `--outfile` | Destination for generated code
 `--outfile-type` | What kind of code to generate (`js` or `json`)
+`--header={key}:{value}` | Add a header to the outgoing HTTP request (may be repeated)
 `--add-typename` | Add `__typename` to all selection sets (for use with Apollo Client)
 `--verbose` | Output some debug information
 
