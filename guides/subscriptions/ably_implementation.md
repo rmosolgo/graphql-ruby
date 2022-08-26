@@ -24,7 +24,7 @@ This subscription implementation uses a hybrid approach:
 So, the lifecycle goes like this:
 
 - A `subscription` query is sent by HTTP Post to your server (just like a `query` or `mutation`)
-- The response contains a Ably channel ID (as an HTTP header) which the client may subscribe to
+- The response contains an Ably channel ID (as an HTTP header) which the client may subscribe to
 - The client opens that Ably channel
 - When the server triggers updates, they're delivered over the Ably channel
 - When the client unsubscribes, the server receives a webhook and responds by removing its subscription data
