@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.11.2 (26 August 2022)
+
+- Sync: Add a `--header` option for custom headers #4171
+
 # 1.11.1 (19 July 2022)
 
 - Subscriptions: ActionCableLink: only forward the result if `data` or `errors` is present #4114
