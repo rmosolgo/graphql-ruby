@@ -165,7 +165,7 @@
 
 <ul>
   <li>A <code class="language-plaintext highlighter-rouge">subscription</code> query is sent by HTTP Post to your server (just like a <code class="language-plaintext highlighter-rouge">query</code> or <code class="language-plaintext highlighter-rouge">mutation</code>)</li>
-  <li>The response contains a Ably channel ID (as an HTTP header) which the client may subscribe to</li>
+  <li>The response contains an Ably channel ID (as an HTTP header) which the client may subscribe to</li>
   <li>The client opens that Ably channel</li>
   <li>When the server triggers updates, they’re delivered over the Ably channel</li>
   <li>When the client unsubscribes, the server receives a webhook and responds by removing its subscription data</li>
