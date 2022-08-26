@@ -50,13 +50,19 @@ describe("sync operations", () => {
         client: "test-1",
         path: "./src/__tests__/documents",
         url: "bogus",
+        headers: {
+          "X-Something-Special": "🎂",
+        },
         quiet: true,
-        send: (_sendPayload: object, options: { url: string }) => {
+        send: (_sendPayload: object, options: { url: string, headers: {[key: string]: string} }) => {
           url = options.url
+          Object.keys(options.headers).forEach((h) => {
+            url += "?" + h + "=" + options.headers[h]
+          })
         },
       }
       return sync(options).then(function() {
-        expect(url).toEqual("bogus")
+        expect(url).toEqual("bogus?X-Something-Special=🎂")
       })
     })
   })

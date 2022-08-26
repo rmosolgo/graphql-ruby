@@ -40,7 +40,6 @@ interface OperationStoreClient {
 */
 function generateClient(options: GenerateClientCodeOptions): string {
   var payload = gatherOperations(options)
-  console.log(options, payload)
   var generatedCode = generateClientCode(options.client, payload.operations, options.clientType)
   return generatedCode
 }

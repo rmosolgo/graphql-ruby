@@ -21,6 +21,7 @@ interface SyncOptions {
   verbose?: boolean,
   quiet?: boolean,
   addTypename?: boolean,
+  headers?: {[key: string]: string},
 }
 /**
  * Find `.graphql` files in `path`,
@@ -40,6 +41,7 @@ interface SyncOptions {
  * @param {Function} options.send - A function for sending the payload to the server, with the signature `options.send(payload)`. (Default is an HTTP `POST` request)
  * @param {Function} options.hash - A custom hash function for query strings with the signature `options.hash(string) => digest` (Default is `md5(string) => digest`)
  * @param {Boolean} options.verbose - If true, log debug output
+ * @param {Object<String, String>} options.headers - If present, extra headers to add to the HTTP request
  * @return {Promise} Rejects with an Error or String if something goes wrong. Resolves with the operation payload if successful.
 */
 function sync(options: SyncOptions) {
@@ -144,6 +146,7 @@ function sync(options: SyncOptions) {
         client: clientName,
         secret: encryptionKey,
         verbose: verbose,
+        headers: options.headers,
       }
       var sendPromise = Promise.resolve(sendFunc(payload, sendOpts))
       return sendPromise.then(function(response) {
