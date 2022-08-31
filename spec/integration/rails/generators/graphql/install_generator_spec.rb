@@ -67,6 +67,9 @@ class DummySchema < GraphQL::Schema
     # to return the correct GraphQL object type for `obj`
     raise(GraphQL::RequiredImplementationMissingError)
   end
+
+  # Stop validating when it encounters this many errors:
+  validate_max_errors(100)
 end
 RUBY
     assert_file "app/graphql/dummy_schema.rb", expected_schema
@@ -337,6 +340,9 @@ RUBY
     # to return the correct GraphQL object type for `obj`
     raise(GraphQL::RequiredImplementationMissingError)
   end
+
+  # Stop validating when it encounters this many errors:
+  validate_max_errors(100)
 
   # Relay-style Object Identification:
 

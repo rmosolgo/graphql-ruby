@@ -23,5 +23,8 @@ class <%= schema_name %> < GraphQL::Schema
     # to return the correct GraphQL object type for `obj`
     raise(GraphQL::RequiredImplementationMissingError)
   end
+
+  # Stop validating when it encounters this many errors:
+  validate_max_errors(100)
 end
 <% end -%>
