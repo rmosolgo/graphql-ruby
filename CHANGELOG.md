@@ -10,11 +10,17 @@
 
 ### Bug fixes
 
+# 1.13.16 (31 August 2022)
+
+### New Features
+
+- Make variable validation respect `validate_max_errors` #4178
+
 # 1.13.15 (30 June 2022)
 
 ### Bug fixes
 
-- Remove partial OpenTelementry tracing #4086
+- Remove partial OpenTelemetry tracing #4086
 - Properly use `Query#validate` to skip static validation #3881
 
 # 1.13.14 (20 June 2022)
