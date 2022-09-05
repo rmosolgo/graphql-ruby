@@ -11,12 +11,6 @@ require "graphql/execution/interpreter/handles_raw_value"
 module GraphQL
   module Execution
     class Interpreter
-      def self.begin_multiplex(multiplex)
-        # Since this is basically the batching context,
-        # share it for a whole multiplex
-        multiplex.context[:interpreter_instance] ||= self.new
-      end
-
       def self.begin_query(query, multiplex)
         # The batching context is shared by the multiplex,
         # so fetch it out and use that instance.
@@ -27,16 +21,6 @@ module GraphQL
         query
       end
 
-      def self.finish_multiplex(_results, multiplex)
-        interpreter = multiplex.context[:interpreter_instance]
-        interpreter.sync_lazies(multiplex: multiplex)
-      end
-
-      def self.finish_query(query, _multiplex)
-        {
-          "data" => query.context.namespace(:interpreter)[:runtime].final_result
-        }
-      end
 
       # Run the eager part of `query`
       # @return {Interpreter::Runtime}

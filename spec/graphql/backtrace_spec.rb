@@ -125,7 +125,7 @@ describe GraphQL::Backtrace do
       assert_backtrace_includes(b, file: "backtrace_spec.rb", method: "block")
       assert_backtrace_includes(b, file: "field.rb", method: "resolve")
       assert_backtrace_includes(b, file: "runtime.rb", method: "evaluate_selections")
-      assert_backtrace_includes(b, file: "interpreter.rb", method: "begin_query")
+      assert_backtrace_includes(b, file: "multiplex.rb", method: "run_all")
 
       # GraphQL backtrace is present
       expected_graphql_backtrace = [
