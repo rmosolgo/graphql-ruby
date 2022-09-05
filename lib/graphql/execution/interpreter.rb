@@ -86,7 +86,6 @@ module GraphQL
 
                   # Then, work through lazy results in a breadth-first way
                   multiplex.dataloader.append_job {
-                    interpreter = multiplex.context[:interpreter_instance]
                     tracer = multiplex
                     query = multiplex.queries.length == 1 ? multiplex.queries[0] : nil
                     queries = multiplex ? multiplex.queries : [query]
