@@ -1149,13 +1149,17 @@ describe GraphQL::Schema::InputObject do
     class OneOfSchema < GraphQL::Schema
       class OneOfInput < GraphQL::Schema::InputObject
         one_of
-        argument :arg_1, Int
-        argument :arg_2, Int
+        argument :arg_1, Int, required: false
+        argument :arg_2, Int, required: false
       end
 
       class Query < GraphQL::Schema::Object
         field :f, String do
           argument :a, OneOfInput
+        end
+
+        def f(a:)
+          "Got: #{a.values.first}"
         end
       end
       query(Query)
@@ -1164,6 +1168,82 @@ describe GraphQL::Schema::InputObject do
     it "prints in the SDL" do
       sdl = OneOfSchema.to_definition
       assert_includes sdl, "\ninput OneOfInput @oneOf {\n"
+      assert_includes sdl, "directive @oneOf on INPUT_OBJECT\n"
+    end
+
+    it "shows in the introspection query" do
+      res = OneOfSchema.execute("{ __type(name: \"OneOfInput\") { isOneOf } }")
+      assert_equal true, res["data"]["__type"]["isOneOf"]
+    end
+
+    it "is inherited" do
+      subclass = Class.new(OneOfSchema::OneOfInput)
+      assert subclass.one_of?
+    end
+
+    it "doesn't work without required: false" do
+      err1 = assert_raises ArgumentError do
+        Class.new(GraphQL::Schema::InputObject) do
+          argument :arg_1, GraphQL::Types::Int
+          one_of
+        end
+      end
+
+      assert_equal "`one_of` may not be used with required arguments -- add `required: false` to `argument :arg_1` to use `one_of`", err1.message
+
+      err2 = assert_raises ArgumentError do
+        Class.new(GraphQL::Schema::InputObject) do
+          one_of
+          argument :arg_2, GraphQL::Types::Int
+        end
+      end
+
+      assert_equal "`one_of` may not be used with required arguments -- add `required: false` to `argument :arg_2` to use `one_of`", err2.message
+    end
+
+    it "allows queries with only one value" do
+      res = OneOfSchema.execute("{ f(a: { arg1: 5 }) }")
+      assert_equal "Got: 5", res["data"]["f"]
+
+      res = OneOfSchema.execute("{ f(a: { arg2: 8 }) }")
+      assert_equal "Got: 8", res["data"]["f"]
+
+      q_str = "query($args: OneOfInput!) { f(a: $args) }"
+      res = OneOfSchema.execute(q_str, variables: { args: { arg1: 9 } })
+      assert_equal "Got: 9", res["data"]["f"]
+
+      res = OneOfSchema.execute(q_str, variables: { args: { arg2: 10 } })
+      assert_equal "Got: 10", res["data"]["f"]
+    end
+
+    it "rejects queries with multiple values" do
+      res = OneOfSchema.execute("{ f(a: { arg1: 5 , arg2: 4 }) }")
+      assert_equal ["InputObject 'OneOfInput' requires exactly one argument, but 2 were provided."], res["errors"].map { |e| e["message"] }
+
+      res = OneOfSchema.execute("{ f(a: {}) }")
+      assert_equal ["InputObject 'OneOfInput' requires exactly one argument, but none were provided."], res["errors"].map { |e| e["message"] }
+
+      res = OneOfSchema.execute("{ f(a: { arg1: 5 , arg2: null }) }")
+      assert_equal ["InputObject 'OneOfInput' requires exactly one argument, but 2 were provided."], res["errors"].map { |e| e["message"] }
+
+      res = OneOfSchema.execute("query($arg2: Int!) { f(a: { arg1: 5 , arg2: $arg2 }) }", variables: { arg2: nil })
+      assert_equal ["InputObject 'OneOfInput' requires exactly one argument, but 2 were provided."], res["errors"].map { |e| e["message"] }
+
+
+      res = OneOfSchema.execute("{ f(a: { arg2: null }) }")
+      assert_equal ["InputObject 'OneOfInput' requires exactly one argument, but 'arg2' was null."], res["errors"].map { |e| e["message"] }
+
+
+      q_str = "query($args: OneOfInput!) { f(a: $args) }"
+      res = OneOfSchema.execute(q_str, variables: { args: { arg1: 1, arg2: 2 } })
+      assert_equal ["'OneOfInput' requires exactly one argument, but 2 were provided."], res["errors"].map { |e| e["extensions"]["problems"].map { |p| p["explanation"] } }.flatten
+
+      res = OneOfSchema.execute(q_str, variables: { args: { arg1: nil, arg2: 2 } })
+      assert_equal ["'OneOfInput' requires exactly one argument, but 2 were provided."], res["errors"].map { |e| e["extensions"]["problems"].map { |p| p["explanation"] } }.flatten
+
+      res = OneOfSchema.execute(q_str, variables: { args: { arg1: nil } })
+      assert_equal ["'OneOfInput' requires exactly one argument, but 'arg1' was `null`."], res["errors"].map { |e| e["extensions"]["problems"].map { |p| p["explanation"] } }.flatten
+
     end
   end
 end

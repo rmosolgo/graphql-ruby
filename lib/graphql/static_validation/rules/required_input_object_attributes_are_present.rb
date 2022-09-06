@@ -53,6 +53,40 @@ module GraphQL
             nodes: ast_node,
           ))
         end
+
+        if parent_type.one_of?
+          case present_fields.size
+          when 1
+            if ast_node.arguments.first.value.is_a?(Language::Nodes::NullValue)
+              add_error(RequiredInputObjectAttributesArePresentError.new(
+                "InputObject '#{parent_type.to_type_signature}' requires exactly one argument, but '#{present_fields.first}' was null.",
+                argument_name: nil,
+                argument_type: nil,
+                input_object_type: parent_type.to_type_signature,
+                path: path,
+                nodes: ast_node,
+              ))
+            end
+          when 0
+            add_error(RequiredInputObjectAttributesArePresentError.new(
+              "InputObject '#{parent_type.to_type_signature}' requires exactly one argument, but none were provided.",
+              argument_name: nil,
+              argument_type: nil,
+              input_object_type: parent_type.to_type_signature,
+              path: path,
+              nodes: ast_node,
+            ))
+          else # Too many
+            add_error(RequiredInputObjectAttributesArePresentError.new(
+              "InputObject '#{parent_type.to_type_signature}' requires exactly one argument, but #{present_fields.size} were provided.",
+              argument_name: nil,
+              argument_type: nil,
+              input_object_type: parent_type.to_type_signature,
+              path: path,
+              nodes: ast_node,
+            ))
+          end
+        end
       end
     end
   end

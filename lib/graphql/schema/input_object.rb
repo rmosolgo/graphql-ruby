@@ -70,7 +70,23 @@ module GraphQL
       end
 
       def self.one_of
-        directive(GraphQL::Schema::Directive::OneOf)
+        if !@one_of
+          if (required_arg = all_argument_definitions.find { |arg| arg.type.non_null? })
+            raise ArgumentError, "`one_of` may not be used with required arguments -- add `required: false` to `argument #{required_arg.keyword.inspect}` to use `one_of`"
+          end
+          @one_of = true
+          directive(GraphQL::Schema::Directive::OneOf)
+        end
+      end
+
+      def self.one_of?
+        if defined?(@one_of)
+          @one_of
+        elsif superclass.respond_to?(:one_of?)
+          superclass.one_of?
+        else
+          false
+        end
       end
 
       def unwrap_value(value)
@@ -113,6 +129,9 @@ module GraphQL
       class << self
         def argument(*args, **kwargs, &block)
           argument_defn = super(*args, **kwargs, &block)
+          if one_of? && argument_defn.type.non_null?
+            raise ArgumentError, "`one_of` may not be used with required arguments -- add `required: false` to `argument #{argument_defn.keyword.inspect}` to use `one_of`"
+          end
           # Add a method access
           method_name = argument_defn.keyword
           class_eval <<-RUBY, __FILE__, __LINE__
@@ -167,6 +186,20 @@ module GraphQL
                   result.merge_result!(argument_name, argument_result)
                 end
               end
+            end
+          end
+
+          if one_of?
+            if input.size == 1
+              input.each do |name, value|
+                if value.nil?
+                  result ||= Query::InputValidationResult.new
+                  result.add_problem("'#{graphql_name}' requires exactly one argument, but '#{name}' was `null`.")
+                end
+              end
+            else
+              result ||= Query::InputValidationResult.new
+              result.add_problem("'#{graphql_name}' requires exactly one argument, but #{input.size} were provided.")
             end
           end
 
