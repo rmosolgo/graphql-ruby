@@ -70,11 +70,10 @@ module GraphQL
       end
 
       def self.one_of
-        if !@one_of
-          if (required_arg = all_argument_definitions.find { |arg| arg.type.non_null? })
-            raise ArgumentError, "`one_of` may not be used with required arguments -- add `required: false` to `argument #{required_arg.keyword.inspect}` to use `one_of`"
+        if !one_of?
+          if all_argument_definitions.any? { |arg| arg.type.non_null? }
+            raise ArgumentError, "`one_of` may not be used with required arguments -- add `required: false` to argument definitions to use `one_of`"
           end
-          @one_of = true
           directive(GraphQL::Schema::Directive::OneOf)
         end
       end
@@ -123,8 +122,13 @@ module GraphQL
       class << self
         def argument(*args, **kwargs, &block)
           argument_defn = super(*args, **kwargs, &block)
-          if one_of? && argument_defn.type.non_null?
-            raise ArgumentError, "`one_of` may not be used with required arguments -- add `required: false` to `argument #{argument_defn.keyword.inspect}` to use `one_of`"
+          if one_of?
+            if argument_defn.type.non_null?
+              raise ArgumentError, "Argument '#{argument_defn.path}' must be nullable because it is part of a OneOf type, add `required: false`."
+            end
+            if argument_defn.default_value?
+              raise ArgumentError, "Argument '#{argument_defn.path}' cannot have a default value because it is part of a OneOf type, remove `default_value: ...`."
+            end
           end
           # Add a method access
           method_name = argument_defn.keyword

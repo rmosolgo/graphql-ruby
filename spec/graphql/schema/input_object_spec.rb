@@ -1183,21 +1183,23 @@ describe GraphQL::Schema::InputObject do
     it "doesn't work without required: false" do
       err1 = assert_raises ArgumentError do
         Class.new(GraphQL::Schema::InputObject) do
+          graphql_name "OneOfThing"
           argument :arg_1, GraphQL::Types::Int
           one_of
         end
       end
 
-      assert_equal "`one_of` may not be used with required arguments -- add `required: false` to `argument :arg_1` to use `one_of`", err1.message
+      assert_equal "`one_of` may not be used with required arguments -- add `required: false` to argument definitions to use `one_of`", err1.message
 
       err2 = assert_raises ArgumentError do
         Class.new(GraphQL::Schema::InputObject) do
+          graphql_name "OneOfThing"
           one_of
           argument :arg_2, GraphQL::Types::Int
         end
       end
 
-      assert_equal "`one_of` may not be used with required arguments -- add `required: false` to `argument :arg_2` to use `one_of`", err2.message
+      assert_equal "Argument 'OneOfThing.arg2' must be nullable because it is part of a OneOf type, add `required: false`.", err2.message
     end
 
     it "allows queries with only one value" do
