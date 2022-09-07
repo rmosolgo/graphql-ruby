@@ -23,7 +23,7 @@ module GraphQL
                 problems = validation_result.problems
                 first_problem = problems && problems.first
                 if first_problem
-                  error_message = first_problem["message"]
+                  error_message = first_problem["explanation"]
                 end
 
                 error_message ||= "Default value for $#{node.name} doesn't match type #{type.to_type_signature}"

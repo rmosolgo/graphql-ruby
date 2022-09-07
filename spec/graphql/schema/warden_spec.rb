@@ -825,7 +825,7 @@ describe GraphQL::Schema::Warden do
       query getPhonemes($manners: [Manner!] = [STOP, TRILL]){ phonemes(manners: $manners) { symbol } }
       |
       res = MaskHelpers.query_with_mask(query_string, mask)
-      expected_errors = ["Default value for $manners doesn't match type [Manner!]"]
+      expected_errors = ["Expected \"TRILL\" to be one of: STOP, AFFRICATE, FRICATIVE, APPROXIMANT, VOWEL"]
       assert_equal expected_errors, error_messages(res)
     end
 
