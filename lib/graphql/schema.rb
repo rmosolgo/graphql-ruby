@@ -990,7 +990,7 @@ module GraphQL
       # @param context [Hash] Multiplex-level context
       # @return [Array<Hash>] One result for each query in the input
       def multiplex(queries, **kwargs)
-        GraphQL::Execution::Multiplex.run_all(self, queries, **kwargs)
+        GraphQL::Execution::Interpreter.run_all(self, queries, **kwargs)
       end
 
       def instrumenters
