@@ -139,6 +139,11 @@ directive @include(
 ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
 """
+Requires that exactly one field must be supplied and that field must not be `null`.
+"""
+directive @oneOf on INPUT_OBJECT
+
+"""
 Directs the executor to skip this field or fragment when the `if` argument is true.
 """
 directive @skip(

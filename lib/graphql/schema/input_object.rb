@@ -80,13 +80,7 @@ module GraphQL
       end
 
       def self.one_of?
-        if defined?(@one_of)
-          @one_of
-        elsif superclass.respond_to?(:one_of?)
-          superclass.one_of?
-        else
-          false
-        end
+        directives.any? { |d| d.is_a?(GraphQL::Schema::Directive::OneOf) }
       end
 
       def unwrap_value(value)

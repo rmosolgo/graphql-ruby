@@ -6,7 +6,7 @@ module GraphQL
         return super unless parent.is_a?(GraphQL::Language::Nodes::Argument)
 
         parent_type = get_parent_type(context, parent)
-        return super unless parent_type && parent_type.kind.input_object? && one_of?(parent_type)
+        return super unless parent_type && parent_type.kind.input_object? && parent_type.one_of?
 
         validate_one_of_input_object(node, context, parent_type)
         super
@@ -36,7 +36,7 @@ module GraphQL
         if value.is_a?(GraphQL::Language::Nodes::NullValue)
           add_error(
             OneOfInputObjectsAreValidError.new(
-              "Field '#{input_object_type}.#{field}' must be non-null.",
+              "Argument '#{input_object_type}.#{field}' must be non-null.",
               path: [*context.path, field],
               nodes: ast_node.arguments.first,
               input_object_type: input_object_type
@@ -59,12 +59,6 @@ module GraphQL
               )
             )
           end
-        end
-      end
-
-      def one_of?(type)
-        type.directives.any? do |directive|
-          directive.is_a?(GraphQL::Schema::Directive::OneOf)
         end
       end
     end

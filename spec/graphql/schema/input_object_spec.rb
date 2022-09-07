@@ -1167,8 +1167,7 @@ describe GraphQL::Schema::InputObject do
 
     it "prints in the SDL" do
       sdl = OneOfSchema.to_definition
-      assert_includes sdl, "\ninput OneOfInput @oneOf {\n"
-      assert_includes sdl, "directive @oneOf on INPUT_OBJECT\n"
+      assert_includes sdl, "input OneOfInput @oneOf {\n"
     end
 
     it "shows in the introspection query" do
@@ -1218,20 +1217,20 @@ describe GraphQL::Schema::InputObject do
 
     it "rejects queries with multiple values" do
       res = OneOfSchema.execute("{ f(a: { arg1: 5 , arg2: 4 }) }")
-      assert_equal ["InputObject 'OneOfInput' requires exactly one argument, but 2 were provided."], res["errors"].map { |e| e["message"] }
+      assert_equal ["OneOf Input Object 'OneOfInput' must specify exactly one key."], res["errors"].map { |e| e["message"] }
 
       res = OneOfSchema.execute("{ f(a: {}) }")
-      assert_equal ["InputObject 'OneOfInput' requires exactly one argument, but none were provided."], res["errors"].map { |e| e["message"] }
+      assert_equal ["OneOf Input Object 'OneOfInput' must specify exactly one key."], res["errors"].map { |e| e["message"] }
 
       res = OneOfSchema.execute("{ f(a: { arg1: 5 , arg2: null }) }")
-      assert_equal ["InputObject 'OneOfInput' requires exactly one argument, but 2 were provided."], res["errors"].map { |e| e["message"] }
+      assert_equal ["OneOf Input Object 'OneOfInput' must specify exactly one key."], res["errors"].map { |e| e["message"] }
 
       res = OneOfSchema.execute("query($arg2: Int!) { f(a: { arg1: 5 , arg2: $arg2 }) }", variables: { arg2: nil })
-      assert_equal ["InputObject 'OneOfInput' requires exactly one argument, but 2 were provided."], res["errors"].map { |e| e["message"] }
+      assert_equal ["OneOf Input Object 'OneOfInput' must specify exactly one key."], res["errors"].map { |e| e["message"] }
 
 
       res = OneOfSchema.execute("{ f(a: { arg2: null }) }")
-      assert_equal ["InputObject 'OneOfInput' requires exactly one argument, but 'arg2' was null."], res["errors"].map { |e| e["message"] }
+      assert_equal ["Argument 'OneOfInput.arg2' must be non-null."], res["errors"].map { |e| e["message"] }
 
 
       q_str = "query($args: OneOfInput!) { f(a: $args) }"

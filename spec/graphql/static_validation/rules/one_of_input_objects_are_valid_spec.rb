@@ -77,7 +77,7 @@ describe GraphQL::StaticValidation::OneOfInputObjectsAreValid do
     it "finds errors" do
       expected = [
         {
-          "message" => "Field 'OneOfArgInput.stringField' must be non-null.",
+          "message" => "Argument 'OneOfArgInput.stringField' must be non-null.",
           "locations" => [{ "line" => 3, "column" => 35 }],
           "path" => ["query", "oneOfArgField", "oneOfArg", "stringField"],
           "extensions" => {

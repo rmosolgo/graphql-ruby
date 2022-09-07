@@ -914,6 +914,7 @@ module GraphQL
           "include" => GraphQL::Schema::Directive::Include,
           "skip" => GraphQL::Schema::Directive::Skip,
           "deprecated" => GraphQL::Schema::Directive::Deprecated,
+          "oneOf" => GraphQL::Schema::Directive::OneOf,
         }.freeze
       end
 
