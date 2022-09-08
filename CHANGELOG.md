@@ -10,6 +10,20 @@
 
 ### Bug fixes
 
+# 2.0.14 (8 September 2022)
+
+### New features
+
+- Input Objects: support `one_of` for input objects that allow exactly one argument #4184
+- Dataloader: add `source.merge({ ... })` for adding objects to dataloader source caches #4186
+- Validation: generate new schemas with a suggested `max_validation_errors` of 100 #4179
+
+### Bug fixes
+
+- Lookahead: improve performance when field names are given as symbols #4189
+- Runtime: simplify some internal code #4183
+- Datadog tracing: remove deprecated options #4159
+
 # 2.0.13 (12 August 2022)
 
 ### New features
