@@ -124,6 +124,7 @@
 </a></li><li class='contents-entry'><a href='#using-input-objects'>Using Input Objects
 </a></li><li class='contents-entry'><a href='#customizing-input-objects'>Customizing Input Objects
 </a></li><li class='contents-entry'><a href='#converting-to-other-ruby-objects'>Converting to Other Ruby Objects
+</a></li><li class='contents-entry'><a href='#oneof'><code>@oneOf</code>
 </a></li></ol>
 </div>
 </div>
@@ -249,6 +250,25 @@
   <span class="k">end</span>
 <span class="k">end</span>
 </code></pre></div></div>
+
+<h2 id="oneof"><code class="language-plaintext highlighter-rouge">@oneOf</code></h2>
+
+<p>You can make input objects that require <em>exactly one</em> field to be provided using <code class="language-plaintext highlighter-rouge">one_of</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">FindUserInput</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseInput</span>
+  <span class="n">one_of</span>
+  <span class="c1"># Either `{ id: ... }` or `{ username: ... }` may be given,</span>
+  <span class="c1"># but not both -- and one of them _must_ be given.</span>
+  <span class="n">argument</span> <span class="ss">:id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">false</span>
+  <span class="n">argument</span> <span class="ss">:username</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">false</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>An input object with <code class="language-plaintext highlighter-rouge">one_of</code> will require exactly one given argument and it will require that the given argument’s value is not <code class="language-plaintext highlighter-rouge">nil</code>. With <code class="language-plaintext highlighter-rouge">one_of</code>, arguments must have <code class="language-plaintext highlighter-rouge">required: false</code>, since any <em>individual</em> argument is not required.</p>
+
+<p>When you use <code class="language-plaintext highlighter-rouge">one_of</code>, it will appear in schema print-outs with <code class="language-plaintext highlighter-rouge">input ... @oneOf</code> and you can query it using <code class="language-plaintext highlighter-rouge">{ __type(name: $typename) { isOneOf } }</code>.</p>
+
+<p>This behavior is described in a <a href="https://github.com/graphql/graphql-spec/pull/825">proposed change</a> to the GraphQL specification.</p>
 
 </div>
 <p class="guide-footer">
