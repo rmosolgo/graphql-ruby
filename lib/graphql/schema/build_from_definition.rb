@@ -55,13 +55,12 @@ module GraphQL
             end
           })
 
+          directives.merge!(GraphQL::Schema.default_directives)
           document.definitions.each do |definition|
             if definition.is_a?(GraphQL::Language::Nodes::DirectiveDefinition)
               directives[definition.name] = build_directive(definition, directive_type_resolver)
             end
           end
-
-          directives = GraphQL::Schema.default_directives.merge(directives)
 
           # In case any directives referenced built-in types for their arguments:
           replace_late_bound_types_with_built_in(types)

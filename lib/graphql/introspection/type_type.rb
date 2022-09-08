@@ -29,6 +29,13 @@ module GraphQL
 
       field :specifiedByURL, String, resolver_method: :specified_by_url
 
+      field :is_one_of, Boolean, null: false
+
+      def is_one_of
+        object.kind.input_object? &&
+          object.directives.any? { |d| d.graphql_name == "oneOf" }
+      end
+
       def specified_by_url
         if object.kind.scalar?
           object.specified_by_url

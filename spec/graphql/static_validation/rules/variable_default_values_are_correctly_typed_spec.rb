@@ -25,13 +25,13 @@ describe GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped do
   it "finds default values that don't match their types" do
     expected = [
       {
-        "message"=>"Default value for $badInt doesn't match type Int",
+        "message"=>"Could not coerce value \"abc\" to Int",
         "locations"=>[{"line"=>5, "column"=>7}],
         "path"=>["query getCheese"],
         "extensions"=>{"code"=>"defaultValueInvalidType", "variableName"=>"badInt", "typeName"=>"Int"}
       },
       {
-        "message"=>"Default value for $badInput doesn't match type DairyProductInput",
+        "message"=>"Could not coerce value true to Float",
         "locations"=>[{"line"=>7, "column"=>7}],
         "path"=>["query getCheese"],
         "extensions"=>{"code"=>"defaultValueInvalidType", "variableName"=>"badInput", "typeName"=>"DairyProductInput"}

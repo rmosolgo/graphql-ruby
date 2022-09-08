@@ -106,7 +106,7 @@ type Word {
 
       parsed_schema = GraphQL::Schema.from_definition(schema)
       hello_type = parsed_schema.get_type("Hello")
-      assert_equal ["deprecated", "foo", "greeting", "greeting2", "hashed", "include", "language", "skip"], parsed_schema.directives.keys.sort
+      assert_equal ["deprecated", "foo", "greeting", "greeting2", "hashed", "include", "language", "oneOf", "skip"], parsed_schema.directives.keys.sort
       parsed_schema.directives.values.each do |dir_class|
         assert dir_class < GraphQL::Schema::Directive
       end
@@ -268,7 +268,7 @@ type Hello {
       SCHEMA
 
       built_schema = GraphQL::Schema.from_definition(schema)
-      assert_equal ['deprecated', 'include', 'skip'], built_schema.directives.keys.sort
+      assert_equal ['deprecated', 'include', 'oneOf', 'skip'], built_schema.directives.keys.sort
     end
 
     it 'supports overriding built-in directives' do

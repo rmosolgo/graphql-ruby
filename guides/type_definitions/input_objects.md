@@ -130,3 +130,23 @@ class Types::CalendarType < Types::BaseObject
   end
 end
 ```
+
+## `@oneOf`
+
+You can make input objects that require _exactly one_ field to be provided using `one_of`:
+
+```ruby
+class FindUserInput < Types::BaseInput
+  one_of
+  # Either `{ id: ... }` or `{ username: ... }` may be given,
+  # but not both -- and one of them _must_ be given.
+  argument :id, ID, required: false
+  argument :username, String, required: false
+end
+```
+
+An input object with `one_of` will require exactly one given argument and it will require that the given argument's value is not `nil`. With `one_of`, arguments must have `required: false`, since any _individual_ argument is not required.
+
+When you use `one_of`, it will appear in schema print-outs with `input ... @oneOf` and you can query it using `{ __type(name: $typename) { isOneOf } }`.
+
+This behavior is described in a [proposed change](https://github.com/graphql/graphql-spec/pull/825) to the GraphQL specification.

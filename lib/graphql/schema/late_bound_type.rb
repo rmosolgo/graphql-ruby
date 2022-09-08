@@ -27,6 +27,10 @@ module GraphQL
         "#<LateBoundType @name=#{name}>"
       end
 
+      def non_null?
+        false
+      end
+
       alias :to_s :inspect
     end
   end

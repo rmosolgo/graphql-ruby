@@ -1144,4 +1144,139 @@ describe GraphQL::Schema::InputObject do
       assert_equal ["No object found for `id: \"1\"`"], res["errors"].map { |e| e["message"] }
     end
   end
+
+  describe "@oneOf" do
+    class OneOfSchema < GraphQL::Schema
+      class OneOfInput < GraphQL::Schema::InputObject
+        one_of
+        argument :arg_1, Int, required: false
+        argument :arg_2, Int, required: false
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :f, String do
+          argument :a, OneOfInput
+        end
+
+        def f(a:)
+          "Got: #{a.values.first}"
+        end
+      end
+      query(Query)
+    end
+
+    it "prints in the SDL" do
+      sdl = OneOfSchema.to_definition
+      assert_includes sdl, "input OneOfInput @oneOf {\n"
+    end
+
+    it "shows in the introspection query" do
+      res = OneOfSchema.execute("{ __type(name: \"OneOfInput\") { isOneOf } }")
+      assert_equal true, res["data"]["__type"]["isOneOf"]
+    end
+
+    it "is inherited" do
+      subclass = Class.new(OneOfSchema::OneOfInput)
+      assert subclass.one_of?
+    end
+
+    it "doesn't work without required: false" do
+      err1 = assert_raises ArgumentError do
+        Class.new(GraphQL::Schema::InputObject) do
+          graphql_name "OneOfThing"
+          argument :arg_1, GraphQL::Types::Int
+          one_of
+        end
+      end
+
+      assert_equal "`one_of` may not be used with required arguments -- add `required: false` to argument definitions to use `one_of`", err1.message
+
+      err2 = assert_raises ArgumentError do
+        Class.new(GraphQL::Schema::InputObject) do
+          graphql_name "OneOfThing"
+          one_of
+          argument :arg_2, GraphQL::Types::Int
+        end
+      end
+
+      assert_equal "Argument 'OneOfThing.arg2' must be nullable because it is part of a OneOf type, add `required: false`.", err2.message
+    end
+
+    it "allows queries with only one value" do
+      res = OneOfSchema.execute("{ f(a: { arg1: 5 }) }")
+      assert_equal "Got: 5", res["data"]["f"]
+
+      res = OneOfSchema.execute("{ f(a: { arg2: 8 }) }")
+      assert_equal "Got: 8", res["data"]["f"]
+
+      q_str = "query($args: OneOfInput!) { f(a: $args) }"
+      res = OneOfSchema.execute(q_str, variables: { args: { arg1: 9 } })
+      assert_equal "Got: 9", res["data"]["f"]
+
+      res = OneOfSchema.execute(q_str, variables: { args: { arg2: 10 } })
+      assert_equal "Got: 10", res["data"]["f"]
+    end
+
+    it "rejects queries with multiple values" do
+      res = OneOfSchema.execute("{ f(a: { arg1: 5 , arg2: 4 }) }")
+      assert_equal ["OneOf Input Object 'OneOfInput' must specify exactly one key."], res["errors"].map { |e| e["message"] }
+
+      res = OneOfSchema.execute("{ f(a: {}) }")
+      assert_equal ["OneOf Input Object 'OneOfInput' must specify exactly one key."], res["errors"].map { |e| e["message"] }
+
+      res = OneOfSchema.execute("{ f(a: { arg1: 5 , arg2: null }) }")
+      assert_equal ["OneOf Input Object 'OneOfInput' must specify exactly one key."], res["errors"].map { |e| e["message"] }
+
+      res = OneOfSchema.execute("query($arg2: Int!) { f(a: { arg1: 5 , arg2: $arg2 }) }", variables: { arg2: nil })
+      assert_equal ["OneOf Input Object 'OneOfInput' must specify exactly one key."], res["errors"].map { |e| e["message"] }
+
+
+      res = OneOfSchema.execute("{ f(a: { arg2: null }) }")
+      assert_equal ["Argument 'OneOfInput.arg2' must be non-null."], res["errors"].map { |e| e["message"] }
+
+
+      q_str = "query($args: OneOfInput!) { f(a: $args) }"
+      res = OneOfSchema.execute(q_str, variables: { args: { arg1: 1, arg2: 2 } })
+      assert_equal ["'OneOfInput' requires exactly one argument, but 2 were provided."], res["errors"].map { |e| e["extensions"]["problems"].map { |p| p["explanation"] } }.flatten
+
+      res = OneOfSchema.execute(q_str, variables: { args: { arg1: nil, arg2: 2 } })
+      assert_equal ["'OneOfInput' requires exactly one argument, but 2 were provided."], res["errors"].map { |e| e["extensions"]["problems"].map { |p| p["explanation"] } }.flatten
+
+      res = OneOfSchema.execute(q_str, variables: { args: { arg1: nil } })
+      assert_equal ["'OneOfInput' requires exactly one argument, but 'arg1' was `null`."], res["errors"].map { |e| e["extensions"]["problems"].map { |p| p["explanation"] } }.flatten
+    end
+
+    it "works with a subclass" do
+      one_of_object_class = Class.new(GraphQL::Schema::InputObject) do
+        one_of
+
+        def self.member(*args, **kwargs, &block)
+          argument(*args, required: false, **kwargs, &block)
+        end
+      end
+
+      one_of_concrete_class = Class.new(one_of_object_class) do
+        graphql_name "OneOfInput"
+        member :a, Integer
+        member :b, Integer
+      end
+
+      assert one_of_concrete_class.one_of?
+      refute one_of_concrete_class.arguments["a"].type.non_null?
+
+      query_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Query"
+        field :f, Integer do
+          argument :i, one_of_concrete_class
+        end
+      end
+
+      schema = Class.new(GraphQL::Schema) do
+        query(query_type)
+      end
+
+      schema_sdl = schema.to_definition
+      assert_includes schema_sdl, "input OneOfInput @oneOf {\n"
+    end
+  end
 end

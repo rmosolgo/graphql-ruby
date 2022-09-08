@@ -108,6 +108,10 @@ module GraphQL
             arg_type = @warden.get_argument(type, name).type
             recursively_validate(GraphQL::Language::Nodes::NullValue.new(name: name), arg_type)
           end
+
+          if type.one_of? && ast_node.arguments.size != 1
+            results << Query::InputValidationResult.from_problem("`#{type.graphql_name}` is a OneOf type, so only one argument may be given (instead of #{ast_node.arguments.size})")
+          end
           merge_results(results)
         end
       end
