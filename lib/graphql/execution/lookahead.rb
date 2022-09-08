@@ -87,16 +87,28 @@ module GraphQL
 
       # Like {#selects?}, but can be used for chaining.
       # It returns a null object (check with {#selected?})
+      # @param field_name [String, Symbol]
       # @return [GraphQL::Execution::Lookahead]
       def selection(field_name, selected_type: @selected_type, arguments: nil)
-        next_field_name = normalize_name(field_name)
+        next_field_defn = case field_name
+        when String
+          @query.get_field(selected_type, field_name)
+        when Symbol
+          # Try to avoid the `.to_s` below, if possible
+          all_fields = @query.warden.fields(selected_type)
+          if (match_by_orig_name = all_fields.find { |f| f.original_name == field_name })
+            match_by_orig_name
+          else
+            guessed_name = Schema::Member::BuildType.camelize(field_name.to_s)
+            @query.get_field(selected_type, guessed_name)
+          end
+        end
 
-        next_field_defn = @query.get_field(selected_type, next_field_name)
         if next_field_defn
           next_nodes = []
           @ast_nodes.each do |ast_node|
             ast_node.selections.each do |selection|
-              find_selected_nodes(selection, next_field_name, next_field_defn, arguments: arguments, matches: next_nodes)
+              find_selected_nodes(selection, next_field_defn, arguments: arguments, matches: next_nodes)
             end
           end
 
@@ -196,23 +208,6 @@ module GraphQL
 
       private
 
-      # If it's a symbol, stringify and camelize it
-      def normalize_name(name)
-        if name.is_a?(Symbol)
-          Schema::Member::BuildType.camelize(name.to_s)
-        else
-          name
-        end
-      end
-
-      def normalize_keyword(keyword)
-        if keyword.is_a?(String)
-          Schema::Member::BuildType.underscore(keyword).to_sym
-        else
-          keyword
-        end
-      end
-
       def skipped_by_directive?(ast_selection)
         ast_selection.directives.each do |directive|
           dir_defn = @query.schema.directives.fetch(directive.name)
@@ -265,11 +260,11 @@ module GraphQL
 
       # If a selection on `node` matches `field_name` (which is backed by `field_defn`)
       # and matches the `arguments:` constraints, then add that node to `matches`
-      def find_selected_nodes(node, field_name, field_defn, arguments:, matches:)
+      def find_selected_nodes(node, field_defn, arguments:, matches:)
         return if skipped_by_directive?(node)
         case node
         when GraphQL::Language::Nodes::Field
-          if node.name == field_name
+          if node.name == field_defn.graphql_name
             if arguments.nil? || arguments.empty?
               # No constraint applied
               matches << node
@@ -278,10 +273,10 @@ module GraphQL
             end
           end
         when GraphQL::Language::Nodes::InlineFragment
-          node.selections.each { |s| find_selected_nodes(s, field_name, field_defn, arguments: arguments, matches: matches) }
+          node.selections.each { |s| find_selected_nodes(s, field_defn, arguments: arguments, matches: matches) }
         when GraphQL::Language::Nodes::FragmentSpread
           frag_defn = @query.fragments[node.name] || raise("Invariant: Can't look ahead to nonexistent fragment #{node.name} (found: #{@query.fragments.keys})")
-          frag_defn.selections.each { |s| find_selected_nodes(s, field_name, field_defn, arguments: arguments, matches: matches) }
+          frag_defn.selections.each { |s| find_selected_nodes(s, field_defn, arguments: arguments, matches: matches) }
         else
           raise "Unexpected selection comparison on #{node.class.name} (#{node})"
         end
@@ -290,9 +285,14 @@ module GraphQL
       def arguments_match?(arguments, field_defn, field_node)
         query_kwargs = @query.arguments_for(field_node, field_defn)
         arguments.all? do |arg_name, arg_value|
-          arg_name = normalize_keyword(arg_name)
+          arg_name_sym = if arg_name.is_a?(String)
+            Schema::Member::BuildType.underscore(arg_name).to_sym
+          else
+            arg_name
+          end
+
           # Make sure the constraint is present with a matching value
-          query_kwargs.key?(arg_name) && query_kwargs[arg_name] == arg_value
+          query_kwargs.key?(arg_name_sym) && query_kwargs[arg_name_sym] == arg_value
         end
       end
     end
