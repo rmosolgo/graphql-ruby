@@ -115,6 +115,7 @@
 </a></li><li class='contents-entry'><a href='#example-loading-activerecord-objects-by-id'>Example: Loading ActiveRecord Objects by ID
 </a></li><li class='contents-entry'><a href='#example-batched-calculations'>Example: Batched Calculations
 </a></li><li class='contents-entry'><a href='#example-loading-in-a-background-thread'>Example: Loading in a background thread
+</a></li><li class='contents-entry'><a href='#filling-the-dataloader-cache'>Filling the Dataloader Cache
 </a></li></ol>
 </div>
 </div>
@@ -245,6 +246,18 @@
 <p>For a more robust asynchronous task primitive, check out <a href="http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Future.html"><code class="language-plaintext highlighter-rouge">Concurrent::Future</code></a>.</p>
 
 <p>Ruby 3.0 added built-in support for yielding Fibers that make I/O calls – hopefully a future GraphQL-Ruby version will work with that!</p>
+
+<h2 id="filling-the-dataloader-cache">Filling the Dataloader Cache</h2>
+
+<p>If you load records from the database, you can use them to populate a source’s cache by using <a href="/api-doc/2.0.13/GraphQL/Dataloader/Source#merge-instance_method" target="_blank" title="API docs for GraphQL::Dataloader::Source#merge"><code>Dataloader::Source#merge</code></a>. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Build a `{ key =&gt; value }` map to populate the cache</span>
+<span class="n">comments_by_id</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="nf">comments</span><span class="p">.</span><span class="nf">each_with_object</span><span class="p">({})</span> <span class="p">{</span> <span class="o">|</span><span class="n">comment</span><span class="p">,</span> <span class="nb">hash</span><span class="o">|</span> <span class="nb">hash</span><span class="p">[</span><span class="n">comment</span><span class="p">.</span><span class="nf">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">comment</span> <span class="p">}</span>
+<span class="c1"># Merge the map into the source's cache</span>
+<span class="n">dataloader</span><span class="p">.</span><span class="nf">with</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">ActiveRecordObject</span><span class="p">,</span> <span class="no">Comment</span><span class="p">).</span><span class="nf">merge</span><span class="p">(</span><span class="n">comments_by_id</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>After that, any calls to <code class="language-plaintext highlighter-rouge">.load(id)</code> will use those already-loaded records if they’re available.</p>
 
 </div>
 <p class="guide-footer">
