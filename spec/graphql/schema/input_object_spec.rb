@@ -1244,7 +1244,39 @@ describe GraphQL::Schema::InputObject do
 
       res = OneOfSchema.execute(q_str, variables: { args: { arg1: nil } })
       assert_equal ["'OneOfInput' requires exactly one argument, but 'arg1' was `null`."], res["errors"].map { |e| e["extensions"]["problems"].map { |p| p["explanation"] } }.flatten
+    end
 
+    it "works with a subclass" do
+      one_of_object_class = Class.new(GraphQL::Schema::InputObject) do
+        one_of
+
+        def self.member(*args, **kwargs, &block)
+          argument(*args, required: false, **kwargs, &block)
+        end
+      end
+
+      one_of_concrete_class = Class.new(one_of_object_class) do
+        graphql_name "OneOfInput"
+        member :a, Integer
+        member :b, Integer
+      end
+
+      assert one_of_concrete_class.one_of?
+      refute one_of_concrete_class.arguments["a"].type.non_null?
+
+      query_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Query"
+        field :f, Integer do
+          argument :i, one_of_concrete_class
+        end
+      end
+
+      schema = Class.new(GraphQL::Schema) do
+        query(query_type)
+      end
+
+      schema_sdl = schema.to_definition
+      assert_includes schema_sdl, "input OneOfInput @oneOf {\n"
     end
   end
 end
