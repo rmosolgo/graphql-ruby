@@ -86,6 +86,15 @@ module GraphQL
         !@pending_keys.empty?
       end
 
+      # Add these key-value pairs to this source's cache
+      # (future loads will use these merged values).
+      # @param results [Hash<Object => Object>] key-value pairs to cache in this source
+      # @return [void]
+      def merge(results)
+        @results.merge!(results)
+        nil
+      end
+
       # Called by {GraphQL::Dataloader} to resolve and pending requests to this source.
       # @api private
       # @return [void]

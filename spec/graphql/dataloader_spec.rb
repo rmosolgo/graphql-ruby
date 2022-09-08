@@ -718,7 +718,6 @@ describe GraphQL::Dataloader do
           assert_equal expected_log, database_log
         end
 
-
         it "supports general usage" do
           a = b = c = nil
 
@@ -772,6 +771,21 @@ describe GraphQL::Dataloader do
             [:mget, ["1", "2", "3"]]
           ]
           assert_equal expected_log, database_log
+        end
+
+        it "uses cached values from .merge" do
+          query_str = "{ ingredient(id: 1) { id name } }"
+          assert_equal "Wheat", schema.execute(query_str)["data"]["ingredient"]["name"]
+          assert_equal [[:mget, ["1"]]], database_log
+          database_log.clear
+
+          dataloader = schema.dataloader_class.new
+          data_source = dataloader.with(FiberSchema::DataObject)
+          data_source.merge({ "1" => { name: "Kamut", id: "1", type: "Grain" } })
+          assert_equal "Kamut", data_source.load("1")[:name]
+          res = schema.execute(query_str, context: { dataloader: dataloader })
+          assert_equal [], database_log
+          assert_equal "Kamut", res["data"]["ingredient"]["name"]
         end
       end
     end
