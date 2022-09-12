@@ -129,10 +129,10 @@ module GraphQL
       def connection?
         if @connection.nil?
           # Provide default based on type name
-          return_type_name = if @resolver_class && @resolver_class.type
-            Member::BuildType.to_type_name(@resolver_class.type)
-          elsif @return_type_expr
+          return_type_name = if @return_type_expr
             Member::BuildType.to_type_name(@return_type_expr)
+          elsif @resolver_class && @resolver_class.type
+            Member::BuildType.to_type_name(@resolver_class.type)
           else
             # As a last ditch, try to force loading the return type:
             type.unwrap.name
