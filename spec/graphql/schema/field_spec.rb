@@ -770,4 +770,26 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     int_field = GraphQL::Schema::Field.new(name: "blah", owner: nil, resolver_class: nonnull_float_resolver, type: GraphQL::Types::Int)
     assert_equal "Int!", int_field.type.to_type_signature
   end
+
+  class ResolverConnectionOverrideSchema < GraphQL::Schema
+    class Query < GraphQL::Schema::Object
+      class Resolver < GraphQL::Schema::Resolver
+        type [Int], null: false
+
+        def resolve
+          [1, 2, 3]
+        end
+      end
+
+      field :f, GraphQL::Types::Int.connection_type, resolver: Resolver
+    end
+
+    query(Query)
+  end
+
+
+  it "uses the overridden type for detecting connections" do
+    res = ResolverConnectionOverrideSchema.execute("{ f { nodes } }")
+    assert_equal [1,2,3], res["data"]["f"]["nodes"]
+  end
 end
