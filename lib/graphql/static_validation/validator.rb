@@ -27,39 +27,47 @@ module GraphQL
       # @param max_errors [Integer] Maximum number of errors before aborting validation. Any positive number will limit the number of errors. Defaults to nil for no limit.
       # @return [Array<Hash>]
       def validate(query, validate: true, timeout: nil, max_errors: nil)
-        query.trace("validate", { validate: validate, query: query }) do
-          errors = if validate == false
-            []
-          else
-            rules_to_use = validate ? @rules : []
-            visitor_class = BaseVisitor.including_rules(rules_to_use)
+        errors = if validate == false
+          []
+        else
+          rules_to_use = validate ? @rules : []
+          visitor_class = BaseVisitor.including_rules(rules_to_use)
 
-            context = GraphQL::StaticValidation::ValidationContext.new(query, visitor_class, max_errors)
+          context = GraphQL::StaticValidation::ValidationContext.new(query, visitor_class, max_errors)
 
-            begin
-              # CAUTION: Usage of the timeout module makes the assumption that validation rules are stateless Ruby code that requires no cleanup if process was interrupted. This means no blocking IO calls, native gems, locks, or `rescue` clauses that must be reached.
-              # A timeout value of 0 or nil will execute the block without any timeout.
-              Timeout::timeout(timeout) do
-                catch(:too_many_validation_errors) do
-                  context.visitor.visit
-                end
+          begin
+            # CAUTION: Usage of the timeout module makes the assumption that validation rules are stateless Ruby code that requires no cleanup if process was interrupted. This means no blocking IO calls, native gems, locks, or `rescue` clauses that must be reached.
+            # A timeout value of 0 or nil will execute the block without any timeout.
+            Timeout::timeout(timeout) do
+              catch(:too_many_validation_errors) do
+                context.visitor.visit
               end
-            rescue Timeout::Error
-              handle_timeout(query, context)
             end
-
-            context.errors
+          rescue Timeout::Error
+            handle_timeout(query, context)
           end
 
-          {
-            errors: errors,
-          }
+          context.errors
         end
+
+        {
+          errors: errors,
+        }
       rescue GraphQL::ExecutionError => e
         {
           errors: [e],
         }
       end
+
+      module WithTracing
+        def validate(query, validate: true, timeout: nil, max_errors: nil)
+          query.trace("validate", { validate: validate, query: query }) do
+            super
+          end
+        end
+      end
+
+      prepend WithTracing
 
       # Invoked when static validation times out.
       # @param query [GraphQL::Query]

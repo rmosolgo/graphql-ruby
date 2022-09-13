@@ -48,23 +48,11 @@ module GraphQL
         # @return [GraphQL::Schema::Object, GraphQL::Execution::Lazy]
         # @raise [GraphQL::UnauthorizedError] if the user-provided hook returns `false`
         def authorized_new(object, context)
-          trace_payload = { context: context, type: self, object: object, path: context[:current_path] }
-
-          maybe_lazy_auth_val = context.query.trace("authorized", trace_payload) do
-            begin
-              authorized?(object, context)
-            rescue GraphQL::UnauthorizedError => err
-              context.schema.unauthorized_object(err)
-            rescue StandardError => err
-              context.query.handle_or_reraise(err)
-            end
-          end
+          maybe_lazy_auth_val = check_authorized(object, context)
 
           auth_val = if context.schema.lazy?(maybe_lazy_auth_val)
             GraphQL::Execution::Lazy.new do
-              context.query.trace("authorized_lazy", trace_payload) do
-                context.schema.sync_lazy(maybe_lazy_auth_val)
-              end
+              sync_lazy_authorized_check(context, object, maybe_lazy_auth_val)
             end
           else
             maybe_lazy_auth_val
@@ -88,6 +76,38 @@ module GraphQL
             end
           end
         end
+
+        private
+
+        def check_authorized(object, context)
+          authorized?(object, context)
+        rescue GraphQL::UnauthorizedError => err
+          context.schema.unauthorized_object(err)
+        rescue StandardError => err
+          context.query.handle_or_reraise(err)
+        end
+
+        def sync_lazy_authorized_check(context, _object, lazy_auth_val)
+          context.schema.sync_lazy(lazy_auth_val)
+        end
+
+        module WithTracing
+          def check_authorized(object, context)
+            trace_payload = { context: context, type: self, object: object, path: context[:current_path] }
+            context.query.trace("authorized", trace_payload) do
+              super
+            end
+          end
+
+          def sync_lazy_authorized_check(context, object, lazy_auth_val)
+            trace_payload = { context: context, type: self, object: object, path: context[:current_path] }
+            context.query.trace("authorized_lazy", trace_payload) do
+              super
+            end
+          end
+        end
+
+        prepend WithTracing
       end
 
       def initialize(object, context)
