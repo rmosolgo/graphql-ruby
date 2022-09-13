@@ -95,7 +95,16 @@ module GraphQL
           @query.get_field(selected_type, field_name)
         when Symbol
           # Try to avoid the `.to_s` below, if possible
-          all_fields = @query.warden.fields(selected_type)
+          all_fields = if selected_type.kind.fields?
+            @query.warden.fields(selected_type)
+          else
+            # Handle unions by checking possible
+            @query.warden
+              .possible_types(selected_type)
+              .map { |t| @query.warden.fields(t) }
+              .flatten
+          end
+
           if (match_by_orig_name = all_fields.find { |f| f.original_name == field_name })
             match_by_orig_name
           else

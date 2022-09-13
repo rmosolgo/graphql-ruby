@@ -48,6 +48,10 @@ describe GraphQL::Execution::Lookahead do
       end
     end
 
+    class Species < GraphQL::Schema::Union
+      possible_types BirdSpecies
+    end
+
     class Query < GraphQL::Schema::Object
       field :find_bird_species, BirdSpecies do
         argument :by_name, String
@@ -67,6 +71,14 @@ describe GraphQL::Execution::Lookahead do
         else
           DATA.map { |d| d.genus }.select { |g| g.name == id }
         end
+      end
+
+      field :species, Species do
+        argument :id, ID
+      end
+
+      def species(id:)
+        DATA.find_by_name(id)
       end
     end
 
@@ -118,6 +130,26 @@ describe GraphQL::Execution::Lookahead do
 
     it "detects by name, not by alias" do
       assert_equal true, query.lookahead.selects?("__typename")
+    end
+
+    describe "on unions" do
+      let(:document) {
+        GraphQL.parse <<-GRAPHQL
+        {
+          species(id: "Cardinal") {
+            ... on BirdSpecies {
+              name
+            }
+          }
+        }
+        GRAPHQL
+      }
+
+      it "works" do
+        lookahead = query.lookahead.selection(:species)
+        assert lookahead.selects?(:name)
+        assert_equal [:name], lookahead.selections.map(&:name)
+      end
     end
 
     describe "fields on interfaces" do
