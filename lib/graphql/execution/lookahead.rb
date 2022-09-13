@@ -76,8 +76,8 @@ module GraphQL
       # @param field_name [String, Symbol]
       # @param arguments [Hash] Arguments which must match in the selection
       # @return [Boolean]
-      def selects?(field_name, arguments: nil)
-        selection(field_name, arguments: arguments).selected?
+      def selects?(field_name, selected_type: @selected_type, arguments: nil)
+        selection(field_name, selected_type: selected_type, arguments: arguments).selected?
       end
 
       # @return [Boolean] True if this lookahead represents a field that was requested

@@ -48,8 +48,15 @@ describe GraphQL::Execution::Lookahead do
       end
     end
 
+    class PlantSpecies < GraphQL::Schema::Object
+      implements Node
+      field :name, String, null: false
+      field :id, ID, null: false, method: :name
+      field :is_edible, Boolean, null: false
+    end
+
     class Species < GraphQL::Schema::Union
-      possible_types BirdSpecies
+      possible_types BirdSpecies, PlantSpecies
     end
 
     class Query < GraphQL::Schema::Object
@@ -139,6 +146,11 @@ describe GraphQL::Execution::Lookahead do
           species(id: "Cardinal") {
             ... on BirdSpecies {
               name
+              isWaterfowl
+            }
+            ... on PlantSpecies {
+              name
+              isEdible
             }
           }
         }
@@ -148,7 +160,20 @@ describe GraphQL::Execution::Lookahead do
       it "works" do
         lookahead = query.lookahead.selection(:species)
         assert lookahead.selects?(:name)
-        assert_equal [:name], lookahead.selections.map(&:name)
+        assert_equal [:name, :is_waterfowl, :name, :is_edible], lookahead.selections.map(&:name)
+      end
+
+      it "works with different selected types" do
+        lookahead = query.lookahead.selection(:species)
+        # Both have `name`
+        assert lookahead.selects?(:name, selected_type: LookaheadTest::BirdSpecies)
+        assert lookahead.selects?(:name, selected_type: LookaheadTest::PlantSpecies)
+        # Only birds have `isWaterfowl`
+        assert lookahead.selects?(:is_waterfowl, selected_type: LookaheadTest::BirdSpecies)
+        refute lookahead.selects?(:is_waterfowl, selected_type: LookaheadTest::PlantSpecies)
+        # Only plants have `isEdible`
+        refute lookahead.selects?(:is_edible, selected_type: LookaheadTest::BirdSpecies)
+        assert lookahead.selects?(:is_edible, selected_type: LookaheadTest::PlantSpecies)
       end
     end
 
