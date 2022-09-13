@@ -664,6 +664,16 @@ module GraphQL
           end
         end
 
+        module WithTracing
+          def run_eager
+            query.trace("execute_query", {query: query}) do
+              super
+            end
+          end
+        end
+
+        prepend WithTracing
+
         # The resolver for `field` returned `value`. Continue to execute the query,
         # treating `value` as `type` (probably the return type of the field).
         #

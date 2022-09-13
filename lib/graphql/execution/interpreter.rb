@@ -34,9 +34,7 @@ module GraphQL
           end
 
           multiplex = Execution::Multiplex.new(schema: schema, queries: queries, context: context, max_complexity: max_complexity)
-          multiplex.trace("execute_multiplex", { multiplex: multiplex }) do
-            run_each_query(multiplex)
-          end
+          run_each_query(multiplex)
         end
 
         private
@@ -69,10 +67,7 @@ module GraphQL
                     # in particular, assign it here:
                     runtime = Runtime.new(query: query)
                     query.context.namespace(:interpreter)[:runtime] = runtime
-
-                    query.trace("execute_query", {query: query}) do
-                      runtime.run_eager
-                    end
+                    runtime.run_eager
                   rescue GraphQL::ExecutionError => err
                     query.context.errors << err
                     NO_OPERATION
@@ -86,19 +81,14 @@ module GraphQL
 
             # Then, work through lazy results in a breadth-first way
             multiplex.dataloader.append_job {
-              tracer = multiplex
-              query = multiplex.queries.length == 1 ? multiplex.queries[0] : nil
-              queries = multiplex ? multiplex.queries : [query]
-              final_values = queries.map do |query|
+              final_values = multiplex.queries.map do |query|
                 runtime = query.context.namespace(:interpreter)[:runtime]
                 # it might not be present if the query has an error
                 runtime ? runtime.final_result : nil
               end
               final_values.compact!
-              tracer.trace("execute_query_lazy", {multiplex: multiplex, query: query}) do
-                Interpreter::Resolve.resolve_all(final_values, multiplex.dataloader)
-              end
-              queries.each do |query|
+              resolve_lazies(final_values, multiplex)
+              multiplex.queries.each do |query|
                 runtime = query.context.namespace(:interpreter)[:runtime]
                 if runtime
                   runtime.delete_interpreter_context(:current_path)
@@ -147,6 +137,10 @@ module GraphQL
             queries.map { |q| q.result_values ||= {} }
             raise
           end
+        end
+
+        def resolve_lazies(final_values, multiplex)
+          Interpreter::Resolve.resolve_all(final_values, multiplex.dataloader)
         end
 
         module WithInstrumentation
@@ -218,6 +212,23 @@ module GraphQL
         end
 
         prepend WithInstrumentation
+
+        module WithTracing
+          def run_each_query(multiplex)
+            multiplex.trace("execute_multiplex", { multiplex: multiplex }) do
+              super
+            end
+          end
+
+          def resolve_lazies(final_values, multiplex)
+            query = multiplex.queries.length == 1 ? multiplex.queries[0] : nil
+            multiplex.trace("execute_query_lazy", {multiplex: multiplex, query: query}) do
+              super
+            end
+          end
+        end
+
+        prepend WithTracing
       end
 
       class ListResultFailedError < GraphQL::Error
