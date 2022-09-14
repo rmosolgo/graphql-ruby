@@ -22,6 +22,14 @@ module GraphQL
             span.set_tag(Datadog::Tracing::Metadata::Ext::TAG_OPERATION, key)
           end
 
+          if key == 'parse'
+            add_source_tag(span, data[:query_string])
+          end
+
+          if key == 'validate'
+            add_source_tag(span, data[:query].query_string)
+          end
+
           if key == 'execute_multiplex'
             operations = data[:multiplex].queries.map(&:selected_operation_name).join(', ')
 
@@ -41,8 +49,14 @@ module GraphQL
 
           if key == 'execute_query'
             span.set_tag(:selected_operation_name, data[:query].selected_operation_name)
+            if data[:query].selected_operation_name
+              span.set_tag('graphql.operation.name', data[:query].selected_operation_name)
+            end
+
             span.set_tag(:selected_operation_type, data[:query].selected_operation.operation_type)
-            span.set_tag(:query_string, data[:query].query_string)
+            span.set_tag('graphql.operation.type', data[:query].selected_operation.operation_type)
+
+            add_source_tag(span, data[:query].query_string)
           end
 
           prepare_span(key, data, span)
@@ -94,6 +108,11 @@ module GraphQL
 
       def platform_resolve_type_key(type)
         "#{type.graphql_name}.resolve_type"
+      end
+
+      def add_source_tag(span, query_string)
+        span.set_tag(:query_string, query_string)
+        span.set_tag('graphql.source', query_string)
       end
     end
   end

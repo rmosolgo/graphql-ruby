@@ -54,8 +54,43 @@ describe GraphQL::Tracing::DataDogTracing do
 
   it "sets component and operation tags" do
     DataDogTest::TestSchema.execute("{ int }")
+
     assert_includes Datadog::SPAN_TAGS, ['component', 'graphql']
     assert_includes Datadog::SPAN_TAGS, ['operation', 'execute_multiplex']
+  end
+
+  describe '`graphql.source` tag' do
+    it do
+      DataDogTest::TestSchema.execute("{ int }")
+
+      assert_includes Datadog::SPAN_TAGS, ['graphql.source', '{ int }']
+    end
+  end
+
+  describe '`graphql.operation.name` tag' do
+    it do
+      DataDogTest::TestSchema.execute("query Bailey { int }")
+
+      assert_includes Datadog::SPAN_TAGS, ['graphql.operation.name', 'Bailey']
+    end
+
+    it do
+      DataDogTest::TestSchema.execute("{ int }")
+
+      tags = Datadog::SPAN_TAGS.select do |t|
+        t[0] == 'graphql.operation.name'
+      end
+
+      assert_empty tags
+    end
+  end
+
+  describe '`graphql.operation.type` tag' do
+    it do
+      DataDogTest::TestSchema.execute("{ int }")
+
+      assert_includes Datadog::SPAN_TAGS, ['graphql.operation.type', 'query']
+    end
   end
 
   it "sets custom tags tags" do
@@ -72,7 +107,13 @@ describe GraphQL::Tracing::DataDogTracing do
       ["custom:execute_query_lazy", "multiplex,query"],
     ]
 
-    actual_custom_tags = Datadog::SPAN_TAGS.reject { |t| t[0] == "operation" || t[0] == "component" || t[0].is_a?(Symbol) }
+    actual_custom_tags = Datadog::SPAN_TAGS.reject do |t|
+      t[0] == "operation" ||
+        t[0] == "component" ||
+        t[0] =~ /^graphql./ ||
+        t[0].is_a?(Symbol)
+    end
+
     assert_equal expected_custom_tags, actual_custom_tags
   end
 end
