@@ -48,15 +48,7 @@ module GraphQL
           end
 
           if key == 'execute_query'
-            span.set_tag(:selected_operation_name, data[:query].selected_operation_name)
-            if data[:query].selected_operation_name
-              span.set_tag('graphql.operation.name', data[:query].selected_operation_name)
-            end
-
-            span.set_tag(:selected_operation_type, data[:query].selected_operation.operation_type)
-            span.set_tag('graphql.operation.type', data[:query].selected_operation.operation_type)
-
-            add_source_tag(span, data[:query].query_string)
+            annotate_execute_query_span(span, data)
           end
 
           prepare_span(key, data, span)
@@ -108,6 +100,20 @@ module GraphQL
 
       def platform_resolve_type_key(type)
         "#{type.graphql_name}.resolve_type"
+      end
+
+      def annotate_execute_query_span(span, data)
+        query = data.fetch(:query)
+
+        span.set_tag(:selected_operation_name, query.selected_operation_name)
+        if query.selected_operation_name
+          span.set_tag('graphql.operation.name', query.selected_operation_name)
+        end
+
+        span.set_tag(:selected_operation_type, query.selected_operation.operation_type)
+        span.set_tag('graphql.operation.type', query.selected_operation.operation_type)
+
+        add_source_tag(span, query.query_string)
       end
 
       def add_source_tag(span, query_string)
