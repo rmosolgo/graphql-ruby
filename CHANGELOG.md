@@ -16,7 +16,7 @@
 
 - Input Objects: support `one_of` for input objects that allow exactly one argument #4184
 - Dataloader: add `source.merge({ ... })` for adding objects to dataloader source caches #4186
-- Validation: generate new schemas with a suggested `max_validation_errors` of 100 #4179
+- Validation: generate new schemas with a suggested `validate_max_errors` of 100 #4179
 
 ### Bug fixes
 
@@ -445,7 +445,7 @@ Since this version, GraphQL-Ruby is tested on Ruby 2.4+ and Rails 4+ only.
 ### New features
 
 - Subscriptions: Add `NO_UPDATE` constant for skipping subscription updates #3664
-- Validation: Add `Schema.max_validation_errors(integer)` for halting validation when it reaches a certain number #3683
+- Validation: Add `Schema.validate_max_errors(integer)` for halting validation when it reaches a certain number #3683
 - Call `self.load_...` methods on Input objects for loading arguments #3682
 - Use `import_methods` in Refinements when available #3674
 - `AppsignalTracing`: Add `set_action_name` #3659
