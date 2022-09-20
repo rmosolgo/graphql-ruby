@@ -1569,7 +1569,6 @@ type ReachableType implements Node {
     assert_equal ["id", "name", "nationality"], schema.types.fetch("Person").fields.keys.sort
   end
 
-  focus
   it "supports extending schemas with directives" do
     schema_sdl = <<~EOS
       directive @link(url: String, import: [String]) on SCHEMA
