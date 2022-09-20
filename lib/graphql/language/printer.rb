@@ -31,7 +31,10 @@ module GraphQL
       protected
 
       def print_document(document)
-        document.definitions.map { |d| print_node(d) }.join("\n\n")
+        directive_defns, other_defns = document.definitions.partition { |defn| defn.is_a?(GraphQL::Language::Nodes::DirectiveDefinition) }
+        [directive_defns, other_defns].map { |defns|
+          defns.map { |d| print_node(d) }.join("\n\n")
+        }.join("\n\n")
       end
 
       def print_argument(argument)
@@ -132,10 +135,11 @@ module GraphQL
       end
 
       def print_schema_definition(schema)
-        if (schema.query.nil? || schema.query == 'Query') &&
-           (schema.mutation.nil? || schema.mutation == 'Mutation') &&
-           (schema.subscription.nil? || schema.subscription == 'Subscription') &&
-           (schema.directives.empty?)
+        has_conventional_names = (schema.query.nil? || schema.query == 'Query') &&
+          (schema.mutation.nil? || schema.mutation == 'Mutation') &&
+          (schema.subscription.nil? || schema.subscription == 'Subscription')
+
+        if has_conventional_names && schema.directives.empty?
           return
         end
 
@@ -145,14 +149,19 @@ module GraphQL
             out << "\n  "
             out << print_node(dir)
           end
-          out << "\n{"
-        else
-          out << " {\n"
+          if !has_conventional_names
+            out << "\n"
+          end
         end
-        out << "  query: #{schema.query}\n" if schema.query
-        out << "  mutation: #{schema.mutation}\n" if schema.mutation
-        out << "  subscription: #{schema.subscription}\n" if schema.subscription
-        out << "}"
+
+        if !has_conventional_names
+          out << "{\n"
+          out << "  query: #{schema.query}\n" if schema.query
+          out << "  mutation: #{schema.mutation}\n" if schema.mutation
+          out << "  subscription: #{schema.subscription}\n" if schema.subscription
+          out << "}"
+        end
+        out
       end
 
       def print_scalar_type_definition(scalar_type)

@@ -44,16 +44,18 @@ module GraphQL
       end
 
       def build_schema_node
-        GraphQL::Language::Nodes::SchemaDefinition.new(
-          query: (q = warden.root_type_for_operation("query")) && q.graphql_name,
-          mutation: (m = warden.root_type_for_operation("mutation")) && m.graphql_name,
-          subscription: (s = warden.root_type_for_operation("subscription")) && s.graphql_name,
-          # This only supports directives from parsing,
-          # use a custom printer to add to this list.
-          #
+        schema_options = {
           # `@schema.directives` is covered by `build_definition_nodes`
-          directives: ast_directives(@schema),
-        )
+          directives: definition_directives(@schema, :schema_directives),
+        }
+        if !schema_respects_root_name_conventions?(@schema)
+          options.merge!({
+            query: (q = warden.root_type_for_operation("query")) && q.graphql_name,
+            mutation: (m = warden.root_type_for_operation("mutation")) && m.graphql_name,
+            subscription: (s = warden.root_type_for_operation("subscription")) && s.graphql_name,
+          })
+        end
+        GraphQL::Language::Nodes::SchemaDefinition.new(schema_options)
       end
 
       def build_object_type_node(object_type)
@@ -283,7 +285,9 @@ module GraphQL
       private
 
       def include_schema_node?
-        always_include_schema || !schema_respects_root_name_conventions?(schema)
+        always_include_schema ||
+          !schema_respects_root_name_conventions?(schema) ||
+          !schema.schema_directives.empty?
       end
 
       def schema_respects_root_name_conventions?(schema)
@@ -293,14 +297,14 @@ module GraphQL
       end
 
       def directives(member)
-        definition_directives(member)
+        definition_directives(member, :directives)
       end
 
-      def definition_directives(member)
-        dirs = if !member.respond_to?(:directives) || member.directives.empty?
+      def definition_directives(member, directives_method)
+        dirs = if !member.respond_to?(directives_method) || member.directives.empty?
           []
         else
-          member.directives.map do |dir|
+          member.public_send(directives_method).map do |dir|
             args = []
             dir.arguments.argument_values.each_value do |arg_value| # rubocop:disable Development/ContextIsPassedCop -- directive instance method
               arg_defn = arg_value.definition
@@ -322,10 +326,6 @@ module GraphQL
         end
 
         dirs
-      end
-
-      def ast_directives(member)
-        member.ast_node ? member.ast_node.directives : []
       end
 
       attr_reader :schema, :warden, :always_include_schema,

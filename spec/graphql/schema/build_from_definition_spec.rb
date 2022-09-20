@@ -1568,4 +1568,36 @@ type ReachableType implements Node {
     assert_equal ["amount", "id"], schema.types.fetch("Payment").fields.keys.sort
     assert_equal ["id", "name", "nationality"], schema.types.fetch("Person").fields.keys.sort
   end
+
+  focus
+  it "supports extending schemas with directives" do
+    schema_sdl = <<~EOS
+      directive @link(url: String, import: [String]) on SCHEMA
+
+      extend schema
+        @link(url: "https://specs.apollo.dev/federation/v2.0",
+              import: ["@key", "@shareable"])
+
+      type Query {
+        something: Int
+      }
+    EOS
+
+    schema = GraphQL::Schema.from_definition(schema_sdl)
+    assert_equal ["link"], schema.schema_directives.map(&:graphql_name)
+    assert_equal({ url: "https://specs.apollo.dev/federation/v2.0", import: ["@key", "@shareable"] },
+      schema.schema_directives.first.arguments.to_h)
+
+    expected_schema = <<~GRAPHQL
+      directive @link(import: [String], url: String) on SCHEMA
+
+      schema
+        @link(url: "https://specs.apollo.dev/federation/v2.0", import: ["@key", "@shareable"])
+
+      type Query {
+        something: Int
+      }
+    GRAPHQL
+    assert_equal expected_schema, schema.to_definition
+  end
 end

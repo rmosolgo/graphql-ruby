@@ -816,6 +816,15 @@ module GraphQL
         member.accessible?(ctx)
       end
 
+      def schema_directive(dir_class, **options)
+        @own_schema_directives ||= []
+        Member::HasDirectives.add_directive(self, @own_schema_directives, dir_class, options)
+      end
+
+      def schema_directives
+        Member::HasDirectives.get_directives(self, @own_schema_directives, :schema_directives)
+      end
+
       # This hook is called when a client tries to access one or more
       # fields that fail the `accessible?` check.
       #

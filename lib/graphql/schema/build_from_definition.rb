@@ -65,10 +65,14 @@ module GraphQL
           # In case any directives referenced built-in types for their arguments:
           replace_late_bound_types_with_built_in(types)
 
+          schema_extensions = nil
           document.definitions.each do |definition|
             case definition
             when GraphQL::Language::Nodes::SchemaDefinition, GraphQL::Language::Nodes::DirectiveDefinition
               nil # already handled
+            when GraphQL::Language::Nodes::SchemaExtension
+              schema_extensions ||= []
+              schema_extensions << definition
             else
               # It's possible that this was already loaded by the directives
               prev_type = types[definition.name]
@@ -103,7 +107,7 @@ module GraphQL
 
           raise InvalidDocumentError.new('Must provide schema definition with query type or a type named Query.') unless query_root_type
 
-          Class.new(GraphQL::Schema) do
+          schema_class = Class.new(GraphQL::Schema) do
             begin
               # Add these first so that there's some chance of resolving late-bound types
               orphan_types types.values
@@ -157,6 +161,14 @@ module GraphQL
               child_class.definition_default_resolve = self.definition_default_resolve
             end
           end
+
+          if schema_extensions
+            schema_extensions.each do |ext|
+              build_directives(schema_class, ext, type_resolver)
+            end
+          end
+
+          schema_class
         end
 
         NullResolveType = ->(type, obj, ctx) {
@@ -197,7 +209,12 @@ module GraphQL
         def build_directives(definition, ast_node, type_resolver)
           dirs = prepare_directives(ast_node, type_resolver)
           dirs.each do |dir_class, options|
-            definition.directive(dir_class, **options)
+            if definition.respond_to?(:schema_directive)
+              # it's a schema
+              definition.schema_directive(dir_class, **options)
+            else
+              definition.directive(dir_class, **options)
+            end
           end
         end
 
@@ -210,7 +227,7 @@ module GraphQL
             else
               dir_class = type_resolver.call(dir_node.name)
               if dir_class.nil?
-                raise ArgumentError, "No definition for @#{dir_node.name} on #{ast_node.name} at #{ast_node.line}:#{ast_node.col}"
+                raise ArgumentError, "No definition for @#{dir_node.name} #{ast_node.respond_to?(:name) ? "on #{ast_node.name} " : ""}at #{ast_node.line}:#{ast_node.col}"
               end
               options = args_to_kwargs(dir_class, dir_node)
               dirs[dir_class] = options
