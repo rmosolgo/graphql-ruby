@@ -110,8 +110,8 @@ module GraphQL
       # @param using [Hash] Plugins to attach to the created schema with `use(key, value)`
       # @return [Class] the schema described by `document`
       def from_definition(definition_or_path, default_resolve: nil, parser: GraphQL.default_parser, using: {})
-        # If the file ends in `.graphql`, treat it like a filepath
-        if definition_or_path.end_with?(".graphql")
+        # If the file ends in `.graphql` or `.graphqls`, treat it like a filepath
+        if definition_or_path.end_with?(".graphql") || definition_or_path.end_with?(".graphqls")
           GraphQL::Schema::BuildFromDefinition.from_definition_path(
             definition_or_path,
             default_resolve: default_resolve,
