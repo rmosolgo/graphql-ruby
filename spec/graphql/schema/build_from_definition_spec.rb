@@ -1588,10 +1588,65 @@ type ReachableType implements Node {
       schema.schema_directives.first.arguments.to_h)
 
     expected_schema = <<~GRAPHQL
-      directive @link(import: [String], url: String) on SCHEMA
-
       schema
         @link(url: "https://specs.apollo.dev/federation/v2.0", import: ["@key", "@shareable"])
+
+      directive @link(import: [String], url: String) on SCHEMA
+
+      type Query {
+        something: Int
+      }
+    GRAPHQL
+    assert_equal expected_schema, schema.to_definition
+  end
+
+
+  it "supports extending schemas with directives" do
+    schema_sdl = <<~EOS
+      extend schema
+        @link(url: "https://specs.apollo.dev/federation/v2.0",
+              import: ["@key", "@shareable"])
+
+      type Query {
+        something: Int
+      }
+    EOS
+
+    class LinkSchema < GraphQL::Schema
+      class Import < GraphQL::Schema::Scalar
+      end
+
+      class Purpose < GraphQL::Schema::Scalar
+      end
+
+      class Link < GraphQL::Schema::Directive
+        argument :url, String
+        argument :as, String, required: false
+        argument :import, Import, required: false
+        argument :for, Purpose, required: false
+
+        repeatable(true)
+        locations SCHEMA
+      end
+
+      directive(Link)
+    end
+
+    assert_equal LinkSchema::Link, LinkSchema.directives["link"]
+    schema = LinkSchema.from_definition(schema_sdl)
+    assert_equal ["link"], schema.schema_directives.map(&:graphql_name)
+    assert_equal({ url: "https://specs.apollo.dev/federation/v2.0", import: ["@key", "@shareable"] },
+      schema.schema_directives.first.arguments.to_h)
+
+    expected_schema = <<~GRAPHQL
+      schema
+        @link(url: "https://specs.apollo.dev/federation/v2.0", import: ["@key", "@shareable"])
+
+      directive @link(as: String, for: Purpose, import: Import, url: String!) repeatable on SCHEMA
+
+      scalar Import
+
+      scalar Purpose
 
       type Query {
         something: Int

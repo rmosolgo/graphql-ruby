@@ -31,10 +31,7 @@ module GraphQL
       protected
 
       def print_document(document)
-        directive_defns, other_defns = document.definitions.partition { |defn| defn.is_a?(GraphQL::Language::Nodes::DirectiveDefinition) }
-        [directive_defns, other_defns].map { |defns|
-          defns.map { |d| print_node(d) }.join("\n\n")
-        }.join("\n\n")
+        document.definitions.map { |d| print_node(d) }.join("\n\n")
       end
 
       def print_argument(argument)
@@ -155,6 +152,9 @@ module GraphQL
         end
 
         if !has_conventional_names
+          if schema.directives.empty?
+            out << " "
+          end
           out << "{\n"
           out << "  query: #{schema.query}\n" if schema.query
           out << "  mutation: #{schema.mutation}\n" if schema.mutation

@@ -49,7 +49,7 @@ module GraphQL
           directives: definition_directives(@schema, :schema_directives),
         }
         if !schema_respects_root_name_conventions?(@schema)
-          options.merge!({
+          schema_options.merge!({
             query: (q = warden.root_type_for_operation("query")) && q.graphql_name,
             mutation: (m = warden.root_type_for_operation("mutation")) && m.graphql_name,
             subscription: (s = warden.root_type_for_operation("subscription")) && s.graphql_name,

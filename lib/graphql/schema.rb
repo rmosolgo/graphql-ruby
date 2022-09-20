@@ -113,6 +113,7 @@ module GraphQL
         # If the file ends in `.graphql`, treat it like a filepath
         if definition_or_path.end_with?(".graphql")
           GraphQL::Schema::BuildFromDefinition.from_definition_path(
+            self,
             definition_or_path,
             default_resolve: default_resolve,
             parser: parser,
@@ -120,6 +121,7 @@ module GraphQL
           )
         else
           GraphQL::Schema::BuildFromDefinition.from_definition(
+            self,
             definition_or_path,
             default_resolve: default_resolve,
             parser: parser,

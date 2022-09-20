@@ -6,16 +6,16 @@ module GraphQL
     module BuildFromDefinition
       class << self
         # @see {Schema.from_definition}
-        def from_definition(definition_string, parser: GraphQL.default_parser, **kwargs)
-          from_document(parser.parse(definition_string), **kwargs)
+        def from_definition(schema_superclass, definition_string, parser: GraphQL.default_parser, **kwargs)
+          from_document(schema_superclass, parser.parse(definition_string), **kwargs)
         end
 
-        def from_definition_path(definition_path, parser: GraphQL.default_parser, **kwargs)
-          from_document(parser.parse_file(definition_path), **kwargs)
+        def from_definition_path(schema_superclass, definition_path, parser: GraphQL.default_parser, **kwargs)
+          from_document(schema_superclass, parser.parse_file(definition_path), **kwargs)
         end
 
-        def from_document(document, default_resolve:, using: {}, relay: false)
-          Builder.build(document, default_resolve: default_resolve || {}, relay: relay, using: using)
+        def from_document(schema_superclass, document, default_resolve:, using: {}, relay: false)
+          Builder.build(schema_superclass, document, default_resolve: default_resolve || {}, relay: relay, using: using)
         end
       end
 
@@ -23,7 +23,7 @@ module GraphQL
       module Builder
         extend self
 
-        def build(document, default_resolve:, using: {}, relay:)
+        def build(schema_superclass, document, default_resolve:, using: {}, relay:)
           raise InvalidDocumentError.new('Must provide a document ast.') if !document || !document.is_a?(GraphQL::Language::Nodes::Document)
 
           if default_resolve.is_a?(Hash)
@@ -36,7 +36,7 @@ module GraphQL
           end
           schema_definition = schema_defns.first
           types = {}
-          directives = {}
+          directives = schema_superclass.directives.dup
           type_resolver = build_resolve_type(types, directives, ->(type_name) { types[type_name] ||= Schema::LateBoundType.new(type_name)})
           # Make a different type resolver because we need to coerce directive arguments
           # _while_ building the schema.
@@ -107,7 +107,7 @@ module GraphQL
 
           raise InvalidDocumentError.new('Must provide schema definition with query type or a type named Query.') unless query_root_type
 
-          schema_class = Class.new(GraphQL::Schema) do
+          schema_class = Class.new(schema_superclass) do
             begin
               # Add these first so that there's some chance of resolving late-bound types
               orphan_types types.values
