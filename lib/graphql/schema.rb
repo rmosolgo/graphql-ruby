@@ -113,6 +113,7 @@ module GraphQL
         # If the file ends in `.graphql`, treat it like a filepath
         if definition_or_path.end_with?(".graphql")
           GraphQL::Schema::BuildFromDefinition.from_definition_path(
+            self,
             definition_or_path,
             default_resolve: default_resolve,
             parser: parser,
@@ -120,6 +121,7 @@ module GraphQL
           )
         else
           GraphQL::Schema::BuildFromDefinition.from_definition(
+            self,
             definition_or_path,
             default_resolve: default_resolve,
             parser: parser,
@@ -814,6 +816,15 @@ module GraphQL
 
       def accessible?(member, ctx)
         member.accessible?(ctx)
+      end
+
+      def schema_directive(dir_class, **options)
+        @own_schema_directives ||= []
+        Member::HasDirectives.add_directive(self, @own_schema_directives, dir_class, options)
+      end
+
+      def schema_directives
+        Member::HasDirectives.get_directives(self, @own_schema_directives, :schema_directives)
       end
 
       # This hook is called when a client tries to access one or more
