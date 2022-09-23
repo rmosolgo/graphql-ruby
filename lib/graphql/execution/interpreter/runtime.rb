@@ -680,7 +680,11 @@ module GraphQL
 
           case current_type.kind.name
           when "SCALAR", "ENUM"
-            r = current_type.coerce_result(value, context)
+            r = begin
+              current_type.coerce_result(value, context)
+            rescue StandardError => err
+              schema.handle_or_reraise(context, err)
+            end
             set_result(selection_result, result_name, r)
             r
           when "UNION", "INTERFACE"
