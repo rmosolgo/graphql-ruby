@@ -880,20 +880,29 @@ module GraphQL
         end
 
         def set_all_interpreter_context(object, field, arguments, path)
-          if object
-            @context[:current_object] = @interpreter_context[:current_object] = object
-          end
-          if field
-            @context[:current_field] = @interpreter_context[:current_field] = field
-          end
-          if arguments
-            @context[:current_arguments] = @interpreter_context[:current_arguments] = arguments
-          end
-          if path
-            @context[:current_path] = @interpreter_context[:current_path] = path
+          # no-op; can be overridden
+        end
+
+        module WithCurrentContext
+          # Todo: allow these to be turned on one-by-one without dynamic checks
+          # for which ones are enabled.
+          def set_all_interpreter_context(object, field, arguments, path)
+            if object
+              @context[:current_object] = @interpreter_context[:current_object] = object
+            end
+            if field
+              @context[:current_field] = @interpreter_context[:current_field] = field
+            end
+            if arguments
+              @context[:current_arguments] = @interpreter_context[:current_arguments] = arguments
+            end
+            if path
+              @context[:current_path] = @interpreter_context[:current_path] = path
+            end
           end
         end
 
+        prepend WithCurrentContext
         # @param obj [Object] Some user-returned value that may want to be batched
         # @param path [Array<String>]
         # @param field [GraphQL::Schema::Field]
