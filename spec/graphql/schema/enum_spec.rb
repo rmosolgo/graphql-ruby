@@ -62,6 +62,33 @@ describe GraphQL::Schema::Enum do
     end
   end
 
+  describe "when it fails to coerce to a valid value" do
+    class EnumValueCoerceSchema < GraphQL::Schema
+      class Value < GraphQL::Schema::Enum
+        value "ONE"
+        value "TWO"
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :value, Value
+
+        def value
+          "THREE"
+        end
+      end
+
+      query(Query)
+      rescue_from StandardError do
+        raise GraphQL::ExecutionError, "Sorry, something went wrong."
+      end
+    end
+
+    it "calls the schema error handlers" do
+      res = EnumValueCoerceSchema.execute("{ value }")
+      assert_equal ["Sorry, something went wrong."], res["errors"].map { |e| e["message"] }
+    end
+  end
+
   describe "in queries" do
     it "works as return values" do
       query_str = "{ instruments { family } }"
