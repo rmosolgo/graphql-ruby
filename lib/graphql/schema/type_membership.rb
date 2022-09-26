@@ -11,6 +11,9 @@ module GraphQL
       # @return [Class<GraphQL::Schema::Union>, Module<GraphQL::Schema::Interface>]
       attr_reader :abstract_type
 
+      # @return [Hash]
+      attr_reader :options
+
       # Called when an object is hooked up to an abstract type, such as {Schema::Union.possible_types}
       # or {Schema::Object.implements} (for interfaces).
       #
