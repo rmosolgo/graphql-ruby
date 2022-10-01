@@ -233,6 +233,11 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
+<p>If you use the <code class="language-plaintext highlighter-rouge">extensions: [...]</code> option, you can pass options using a hash:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">extensions: </span><span class="p">[</span><span class="no">LimitExtension</span> <span class="o">=&gt;</span> <span class="p">{</span> <span class="ss">limit: </span><span class="mi">20</span> <span class="p">}]</span>
+</code></pre></div></div>
+
 <h2 id="using-extras">Using <code class="language-plaintext highlighter-rouge">extras</code></h2>
 
 <p>Extensions can have the same <code class="language-plaintext highlighter-rouge">extras</code> as fields (see <a href="/fields/introduction#extra-field-metadata">Extra Field Metadata</a>). Add them by calling <code class="language-plaintext highlighter-rouge">extras</code> in the class definition:</p>
