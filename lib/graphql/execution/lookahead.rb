@@ -108,7 +108,9 @@ module GraphQL
           if (match_by_orig_name = all_fields.find { |f| f.original_name == field_name })
             match_by_orig_name
           else
-            guessed_name = Schema::Member::BuildType.camelize(field_name.to_s)
+            # Symbol#name is only present on 3.0+
+            sym_s = field_name.respond_to?(:name) ? field_name.name : field_name.to_s
+            guessed_name = Schema::Member::BuildType.camelize(sym_s)
             @query.get_field(selected_type, guessed_name)
           end
         end
