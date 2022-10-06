@@ -208,7 +208,7 @@ module GraphQL
 
         def build_directives(definition, ast_node, type_resolver)
           dirs = prepare_directives(ast_node, type_resolver)
-          dirs.each do |dir_class, options|
+          dirs.each do |(dir_class, options)|
             if definition.respond_to?(:schema_directive)
               # it's a schema
               definition.schema_directive(dir_class, **options)
@@ -219,7 +219,7 @@ module GraphQL
         end
 
         def prepare_directives(ast_node, type_resolver)
-          dirs = {}
+          dirs = []
           ast_node.directives.each do |dir_node|
             if dir_node.name == "deprecated"
               # This is handled using `deprecation_reason`
@@ -230,7 +230,7 @@ module GraphQL
                 raise ArgumentError, "No definition for @#{dir_node.name} #{ast_node.respond_to?(:name) ? "on #{ast_node.name} " : ""}at #{ast_node.line}:#{ast_node.col}"
               end
               options = args_to_kwargs(dir_class, dir_node)
-              dirs[dir_class] = options
+              dirs << [dir_class, options]
             end
           end
           dirs
