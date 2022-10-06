@@ -496,7 +496,17 @@ module GraphQL
 
             field_result = call_method_on_directives(:resolve, object, directives) do
               # Actually call the field resolver and capture the result
-              app_result = resolve_application_field(field_defn, object, kwarg_arguments, context, owner_type, next_path, ast_node)
+              app_result = begin
+                resolve_application_field(field_defn, object, kwarg_arguments, context, owner_type, next_path, ast_node)
+              rescue GraphQL::ExecutionError => err
+                err
+              rescue StandardError => err
+                begin
+                  query.handle_or_reraise(err)
+                rescue GraphQL::ExecutionError => ex_err
+                  ex_err
+                end
+              end
               after_lazy(app_result, owner: owner_type, field: field_defn, path: next_path, ast_node: ast_node, owner_object: object, arguments: resolved_arguments, result_name: result_name, result: selection_result) do |inner_result|
                 continue_value = continue_value(next_path, inner_result, owner_type, field_defn, return_type.non_null?, ast_node, result_name, selection_result)
                 if HALT != continue_value
@@ -519,14 +529,6 @@ module GraphQL
 
         def resolve_application_field(field_defn, object, kwarg_arguments, context, owner_type, next_path, ast_node)
           field_defn.resolve(object, kwarg_arguments, context)
-        rescue GraphQL::ExecutionError => err
-          err
-        rescue StandardError => err
-          begin
-            query.handle_or_reraise(err)
-          rescue GraphQL::ExecutionError => ex_err
-            ex_err
-          end
         end
 
         def dead_result?(selection_result)
