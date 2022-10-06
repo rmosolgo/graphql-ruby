@@ -496,19 +496,7 @@ module GraphQL
 
             field_result = call_method_on_directives(:resolve, object, directives) do
               # Actually call the field resolver and capture the result
-              app_result = begin
-                query.trace("execute_field", {owner: owner_type, field: field_defn, path: next_path, ast_node: ast_node, query: query, object: object, arguments: kwarg_arguments}) do
-                  field_defn.resolve(object, kwarg_arguments, context)
-                end
-              rescue GraphQL::ExecutionError => err
-                err
-              rescue StandardError => err
-                begin
-                  query.handle_or_reraise(err)
-                rescue GraphQL::ExecutionError => ex_err
-                  ex_err
-                end
-              end
+              app_result = resolve_application_field(field_defn, object, kwarg_arguments, context, owner_type, next_path, ast_node)
               after_lazy(app_result, owner: owner_type, field: field_defn, path: next_path, ast_node: ast_node, owner_object: object, arguments: resolved_arguments, result_name: result_name, result: selection_result) do |inner_result|
                 continue_value = continue_value(next_path, inner_result, owner_type, field_defn, return_type.non_null?, ast_node, result_name, selection_result)
                 if HALT != continue_value
@@ -526,6 +514,18 @@ module GraphQL
               # Return this from `after_lazy` because it might be another lazy that needs to be resolved
               field_result
             end
+          end
+        end
+
+        def resolve_application_field(field_defn, object, kwarg_arguments, context, owner_type, next_path, ast_node)
+          field_defn.resolve(object, kwarg_arguments, context)
+        rescue GraphQL::ExecutionError => err
+          err
+        rescue StandardError => err
+          begin
+            query.handle_or_reraise(err)
+          rescue GraphQL::ExecutionError => ex_err
+            ex_err
           end
         end
 
@@ -670,6 +670,12 @@ module GraphQL
               super
             end
           end
+
+          def resolve_application_field(field_defn, object, kwarg_arguments, context, owner_type, next_path, ast_node)
+            query.trace("execute_field", {owner: owner_type, field: field_defn, path: next_path, ast_node: ast_node, query: query, object: object, arguments: kwarg_arguments}) do
+              super
+            end
+          end
         end
 
         prepend WithTracing
@@ -716,11 +722,7 @@ module GraphQL
               end
             end
           when "OBJECT"
-            object_proxy = begin
-              authorized_new(current_type, value, context)
-            rescue GraphQL::ExecutionError => err
-              err
-            end
+            object_proxy = authorized_new(current_type, value, context)
             after_lazy(object_proxy, owner: current_type, path: path, ast_node: ast_node, field: field, owner_object: owner_object, arguments: arguments, trace: false, result_name: result_name, result: selection_result) do |inner_object|
               continue_value = continue_value(path, inner_object, owner_type, field, is_non_null, ast_node, result_name, selection_result)
               if HALT != continue_value
@@ -805,20 +807,21 @@ module GraphQL
                 # This was some other NoMethodError -- let it bubble to reveal the real error.
                 raise
               end
-            rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => ex_err
-              ex_err
-            rescue StandardError => err
-              begin
-                query.handle_or_reraise(err)
-              rescue GraphQL::ExecutionError => ex_err
-                ex_err
-              end
             end
 
             continue_value(path, list_value, owner_type, field, inner_type.non_null?, ast_node, result_name, selection_result)
           else
             raise "Invariant: Unhandled type kind #{current_type.kind} (#{current_type})"
           end
+        rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => ex_err
+          continue_value(path, ex_err, owner_type, field, is_non_null, ast_node, result_name, selection_result)
+        rescue StandardError => err
+          handled_err = begin
+            query.handle_or_reraise(err)
+          rescue GraphQL::ExecutionError => ex_err
+            ex_err
+          end
+          continue_value(path, handled_err, owner_type, field, is_non_null, ast_node, result_name, selection_result)
         end
 
         def resolve_list_item(inner_value, inner_type, next_path, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type) # rubocop:disable Metrics/ParameterLists
