@@ -357,4 +357,30 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
       assert_equal [1,3,5], res["data"]["numbers"]
     end
   end
+
+  it "parses repeated directives" do
+    schema_sdl = <<~EOS
+      directive @tag(name: String!) repeatable on ARGUMENT_DEFINITION | ENUM | ENUM_VALUE | FIELD_DEFINITION | INPUT_FIELD_DEFINITION | INPUT_OBJECT | INTERFACE | OBJECT | SCALAR | UNION
+
+      type Query @tag(name: "t1") @tag(name: "t2") {
+        something(
+          arg: Boolean @tag(name: "t3") @tag(name: "t4")
+        ): Int @tag(name: "t5") @tag(name: "t6")
+      }
+
+      enum Stuff {
+        THING @tag(name: "t7") @tag(name: "t8")
+      }
+    EOS
+    schema = GraphQL::Schema.from_definition(schema_sdl)
+    query_type = schema.query
+    assert_equal [["tag", { name: "t1" }], ["tag", { name: "t2" }]], query_type.directives.map { |dir| [dir.graphql_name, dir.arguments.to_h] }
+    field = schema.get_field("Query", "something")
+    arg = field.get_argument("arg")
+    assert_equal [["tag", { name: "t3"}], ["tag", { name: "t4"}]], arg.directives.map { |dir| [dir.graphql_name, dir.arguments.to_h] }
+    assert_equal [["tag", { name: "t5"}], ["tag", { name: "t6"}]], field.directives.map { |dir| [dir.graphql_name, dir.arguments.to_h] }
+
+    enum_value = schema.get_type("Stuff").values["THING"]
+    assert_equal [["tag", { name: "t7"}], ["tag", { name: "t8"}]], enum_value.directives.map { |dir| [dir.graphql_name, dir.arguments.to_h] }
+  end
 end
