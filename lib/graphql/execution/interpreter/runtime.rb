@@ -7,8 +7,7 @@ module GraphQL
       # `continue_field` not recursive. "Trampolining" it somehow.
       #
       # @api private
-      class Runtime
-
+      class BaseRuntime
         module GraphQLResult
           def initialize(result_name, parent_result)
             @graphql_parent = parent_result
@@ -666,22 +665,6 @@ module GraphQL
           end
         end
 
-        module WithTracing
-          def run_eager
-            query.trace("execute_query", {query: query}) do
-              super
-            end
-          end
-
-          def resolve_application_field(field_defn, object, kwarg_arguments, context, owner_type, next_path, ast_node)
-            query.trace("execute_field", {owner: owner_type, field: field_defn, path: next_path, ast_node: ast_node, query: query, object: object, arguments: kwarg_arguments}) do
-              super
-            end
-          end
-        end
-
-        prepend WithTracing
-
         # The resolver for `field` returned `value`. Continue to execute the query,
         # treating `value` as `type` (probably the return type of the field).
         #
@@ -888,26 +871,6 @@ module GraphQL
           # no-op; can be overridden
         end
 
-        module WithCurrentContext
-          # Todo: allow these to be turned on one-by-one without dynamic checks
-          # for which ones are enabled.
-          def set_all_interpreter_context(object, field, arguments, path)
-            if object
-              @context[:current_object] = @interpreter_context[:current_object] = object
-            end
-            if field
-              @context[:current_field] = @interpreter_context[:current_field] = field
-            end
-            if arguments
-              @context[:current_arguments] = @interpreter_context[:current_arguments] = arguments
-            end
-            if path
-              @context[:current_path] = @interpreter_context[:current_path] = path
-            end
-          end
-        end
-
-        prepend WithCurrentContext
         # @param obj [Object] Some user-returned value that may want to be batched
         # @param path [Array<String>]
         # @param field [GraphQL::Schema::Field]
@@ -922,9 +885,7 @@ module GraphQL
               # but don't wrap the continuation below
               inner_obj = begin
                 if trace
-                  query.trace("execute_field_lazy", {owner: owner, field: field, path: path, query: query, object: owner_object, arguments: arguments, ast_node: ast_node}) do
-                    schema.sync_lazy(lazy_obj)
-                  end
+                  sync_after_lazy(owner, field, path, query, owner_object, arguments, ast_node, lazy_obj)
                 else
                   schema.sync_lazy(lazy_obj)
                 end
@@ -952,6 +913,10 @@ module GraphQL
           end
         end
 
+        def sync_after_lazy(owner, field, path, query, owner_object, arguments, ast_node, lazy_obj)
+          schema.sync_lazy(lazy_obj)
+        end
+
         def arguments(graphql_object, arg_owner, ast_node)
           if arg_owner.arguments_statically_coercible?
             query.arguments_for(ast_node, arg_owner)
@@ -974,20 +939,19 @@ module GraphQL
         end
 
         def resolve_type(type, value, path)
-          trace_payload = { context: context, type: type, object: value, path: path }
-          resolved_type, resolved_value = query.trace("resolve_type", trace_payload) do
-            query.resolve_type(type, value)
-          end
+          resolved_type, resolved_value = query.resolve_type(type, value)
 
           if lazy?(resolved_type)
             GraphQL::Execution::Lazy.new do
-              query.trace("resolve_type_lazy", trace_payload) do
-                schema.sync_lazy(resolved_type)
-              end
+              resolve_type_lazy(type, value, path, resolved_type)
             end
           else
             [resolved_type, resolved_value]
           end
+        end
+
+        def resolve_type_lazy(type, value, path, resolved_type)
+          schema.sync_lazy(resolved_type)
         end
 
         def authorized_new(type, value, context)
@@ -999,6 +963,73 @@ module GraphQL
             @lazy_cache[object.class] = @schema.lazy?(object)
           }
         end
+      end
+
+      class Runtime < BaseRuntime
+        module WithTracing
+          def run_eager
+            query.trace("execute_query", {query: query}) do
+              super
+            end
+          end
+
+          def resolve_application_field(field_defn, object, kwarg_arguments, context, owner_type, next_path, ast_node)
+            query.trace("execute_field", {owner: owner_type, field: field_defn, path: next_path, ast_node: ast_node, query: query, object: object, arguments: kwarg_arguments}) do
+              super
+            end
+          end
+
+          def resolve_type(type, value, path)
+            trace_payload = { context: context, type: type, object: value, path: path }
+            query.trace("resolve_type", trace_payload) do
+              super
+            end
+          end
+
+          def resolve_type_lazy(type, value, path, resolved_type)
+            trace_payload = { context: context, type: type, object: value, path: path }
+            query.trace("resolve_type_lazy", trace_payload) do
+              super
+            end
+          end
+
+          def sync_after_lazy(owner, field, path, query, owner_object, arguments, ast_node, lazy_obj)
+            trace_payload = {
+              owner: owner,
+              field: field,
+              path: path,
+              query: query,
+              object: owner_object,
+              arguments: arguments,
+              ast_node: ast_node
+            }
+            query.trace("execute_field_lazy", trace_payload) do
+              super
+            end
+          end
+        end
+
+        module WithCurrentContext
+          # Todo: allow these to be turned on one-by-one without dynamic checks
+          # for which ones are enabled.
+          def set_all_interpreter_context(object, field, arguments, path)
+            if object
+              @context[:current_object] = @interpreter_context[:current_object] = object
+            end
+            if field
+              @context[:current_field] = @interpreter_context[:current_field] = field
+            end
+            if arguments
+              @context[:current_arguments] = @interpreter_context[:current_arguments] = arguments
+            end
+            if path
+              @context[:current_path] = @interpreter_context[:current_path] = path
+            end
+          end
+        end
+
+        include WithCurrentContext
+        include WithTracing
       end
     end
   end

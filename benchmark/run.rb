@@ -76,19 +76,21 @@ module GraphQLBenchmark
   def self.profile_large_result
     schema = ProfileLargeResult::Schema
     document = ProfileLargeResult::ALL_FIELDS
+    runtime_class = GraphQL::Execution::Interpreter::BaseRuntime
+    # runtime_class = GraphQL::Execution::Interpreter::Runtime
     Benchmark.ips do |x|
       x.report("Querying for #{ProfileLargeResult::DATA.size} objects") {
-        schema.execute(document: document)
+        schema.execute(document: document, context: { runtime_class: runtime_class })
       }
     end
 
     result = StackProf.run(mode: :wall) do
-      schema.execute(document: document)
+      schema.execute(document: document, context: { runtime_class: runtime_class })
     end
     StackProf::Report.new(result).print_text
 
     report = MemoryProfiler.report do
-      schema.execute(document: document)
+      schema.execute(document: document, context: { runtime_class: runtime_class })
     end
 
     report.pretty_print

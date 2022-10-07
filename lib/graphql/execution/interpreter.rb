@@ -55,6 +55,7 @@ module GraphQL
             multiplex.context[:interpreter_instance] ||= multiplex.schema.query_execution_strategy.new
             # Do as much eager evaluation of the query as possible
             results = []
+            multiplex_runtime_class = multiplex.context[:runtime_class] || Runtime
             queries.each_with_index do |query, idx|
               multiplex.dataloader.append_job {
                 operation = query.selected_operation
@@ -62,10 +63,8 @@ module GraphQL
                   NO_OPERATION
                 else
                   begin
-                    # Although queries in a multiplex _share_ an Interpreter instance,
-                    # they also have another item of state, which is private to that query
-                    # in particular, assign it here:
-                    runtime = Runtime.new(query: query)
+                    query_runtime_class = query.context[:runtime_class] || multiplex_runtime_class
+                    runtime = query_runtime_class.new(query: query)
                     query.context.namespace(:interpreter)[:runtime] = runtime
                     runtime.run_eager
                   rescue GraphQL::ExecutionError => err
