@@ -740,11 +740,10 @@ module GraphQL
       def handle_or_reraise(context, err)
         handler = Execution::Errors.find_handler_for(self, err.class)
         if handler
-          runtime_info = context.namespace(:interpreter) || {}
-          obj = runtime_info[:current_object]
-          args = runtime_info[:current_arguments]
+          obj = context[:current_object]
+          args = context[:current_arguments]
           args = args && args.keyword_arguments
-          field = runtime_info[:current_field]
+          field = context[:current_field]
           if obj.is_a?(GraphQL::Schema::Object)
             obj = obj.object
           end

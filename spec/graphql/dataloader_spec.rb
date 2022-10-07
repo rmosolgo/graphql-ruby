@@ -125,6 +125,12 @@ describe GraphQL::Dataloader do
       include GraphQL::Schema::Interface
       field :name, String, null: false
       field :id, ID, null: false
+
+      field :name_by_scoped_context, String
+
+      def name_by_scoped_context
+        context[:ingredient_name]
+      end
     end
 
     class Grain < GraphQL::Schema::Object
@@ -180,7 +186,9 @@ describe GraphQL::Dataloader do
       end
 
       def ingredient_by_name(name:)
-        dataloader.with(DataObject, :name).load(name)
+        ing = dataloader.with(DataObject, :name).load(name)
+        context.scoped_set!(:ingredient_name, "Scoped:#{name}")
+        ing
       end
 
       field :nested_ingredient, Ingredient do
@@ -747,6 +755,24 @@ describe GraphQL::Dataloader do
           assert_equal "Wheat", a[:name]
           assert_equal "Wheat", b[:name]
           assert_equal ["Corn", "Butter"], c.map { |d| d[:name] }
+        end
+
+        it "works with scoped context" do
+          query_str = <<-GRAPHQL
+            {
+              i1: ingredientByName(name: "Corn") { nameByScopedContext }
+              i2: ingredientByName(name: "Wheat") { nameByScopedContext }
+              i3: ingredientByName(name: "Butter") { nameByScopedContext }
+            }
+          GRAPHQL
+
+          expected_data = {
+            "i1" => { "nameByScopedContext" => "Scoped:Corn" },
+            "i2" => { "nameByScopedContext" => "Scoped:Wheat" },
+            "i3" => { "nameByScopedContext" => "Scoped:Butter" },
+          }
+          result = schema.execute(query_str)
+          assert_equal expected_data, result["data"]
         end
 
         it "uses .batch_key_for in source classes" do
