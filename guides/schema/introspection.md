@@ -174,7 +174,7 @@ This class an object type definition, so you can override fields or add new ones
 
 The GraphQL spec describes a field which may be added to _any_ selection: `__typename`. It returns the name of the current GraphQL type.
 
-You can add fields like this (or override `__typename`) by creating a custom `DynamicFields` defintion:
+You can add fields like this (or override `__typename`) by creating a custom `DynamicFields` definition:
 
 ```ruby
 module Introspection

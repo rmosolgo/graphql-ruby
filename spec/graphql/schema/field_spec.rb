@@ -67,7 +67,7 @@ describe GraphQL::Schema::Field do
       assert_equal "A Description.", object.fields["test"].description
     end
 
-    it "accepts a block for defintion and yields the field if the block has an arity of one" do
+    it "accepts a block for definition and yields the field if the block has an arity of one" do
       object = Class.new(Jazz::BaseObject) do
         graphql_name "JustAName"
 
