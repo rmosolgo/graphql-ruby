@@ -111,7 +111,7 @@ module GraphQL
         end
 
         def current_path
-          @query_context.namespace(:interpreter)[:current_path] || @no_path
+          @query_context[:current_path] || @no_path
         end
 
         def key?(key)
@@ -189,12 +189,16 @@ module GraphQL
 
       def_delegators :@query, :trace, :interpreter?
 
+      RUNTIME_METADATA_KEYS = Set.new([:current_object, :current_arguments, :current_field, :current_path])
       # @!method []=(key, value)
       #   Reassign `key` to the hash passed to {Schema#execute} as `context:`
 
       # Lookup `key` from the hash passed to {Schema#execute} as `context:`
       def [](key)
-        if @scoped_context.key?(key)
+        if RUNTIME_METADATA_KEYS.include?(key)
+          thread_info = Thread.current[:__graphql_runtime_info]
+          thread_info && thread_info[key]
+        elsif @scoped_context.key?(key)
           @scoped_context[key]
         else
           @provided_values[key]
@@ -212,7 +216,10 @@ module GraphQL
       UNSPECIFIED_FETCH_DEFAULT = Object.new
 
       def fetch(key, default = UNSPECIFIED_FETCH_DEFAULT)
-        if @scoped_context.key?(key)
+        if RUNTIME_METADATA_KEYS.include?(key)
+          (thread_info = Thread.current[:__graphql_runtime_info]) &&
+            thread_info[key]
+        elsif @scoped_context.key?(key)
           scoped_context[key]
         elsif @provided_values.key?(key)
           @provided_values[key]
@@ -226,7 +233,10 @@ module GraphQL
       end
 
       def dig(key, *other_keys)
-        if @scoped_context.key?(key)
+        if RUNTIME_METADATA_KEYS.include?(key)
+          (thread_info = Thread.current[:__graphql_runtime_info]).key?(key) &&
+            thread_info.dig(key)
+        elsif @scoped_context.key?(key)
           @scoped_context.dig(key, *other_keys)
         else
           @provided_values.dig(key, *other_keys)
@@ -259,7 +269,11 @@ module GraphQL
       # @param ns [Object] a usage-specific namespace identifier
       # @return [Hash] namespaced storage
       def namespace(ns)
-        @storage[ns]
+        if ns == :interpreter
+          self
+        else
+          @storage[ns]
+        end
       end
 
       # @return [Boolean] true if this namespace was accessed before

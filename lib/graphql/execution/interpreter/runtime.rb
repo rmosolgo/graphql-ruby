@@ -148,13 +148,23 @@ module GraphQL
         # @return [GraphQL::Query::Context]
         attr_reader :context
 
+        def thread_info
+          info = Thread.current[:__graphql_runtime_info]
+          if !info
+            new_ti = {}
+            info = Thread.current[:__graphql_runtime_info] = new_ti
+          end
+          info
+        end
+
         def initialize(query:)
           @query = query
           @dataloader = query.multiplex.dataloader
           @schema = query.schema
           @context = query.context
           @multiplex_context = query.multiplex.context
-          @interpreter_context = @context.namespace(:interpreter)
+          # Start this off empty:
+          Thread.current[:__graphql_runtime_info] = nil
           @response = GraphQLResultHash.new(nil, nil)
           # Identify runtime directives by checking which of this schema's directives have overridden `def self.resolve`
           @runtime_directive_names = []
@@ -874,17 +884,18 @@ module GraphQL
         end
 
         def set_all_interpreter_context(object, field, arguments, path)
+          ti = thread_info
           if object
-            @context[:current_object] = @interpreter_context[:current_object] = object
+            ti[:current_object] = object
           end
           if field
-            @context[:current_field] = @interpreter_context[:current_field] = field
+            ti[:current_field] = field
           end
           if arguments
-            @context[:current_arguments] = @interpreter_context[:current_arguments] = arguments
+            ti[:current_arguments] = arguments
           end
           if path
-            @context[:current_path] = @interpreter_context[:current_path] = path
+            ti[:current_path] = path
           end
         end
 
@@ -944,13 +955,11 @@ module GraphQL
         # Set this pair in the Query context, but also in the interpeter namespace,
         # for compatibility.
         def set_interpreter_context(key, value)
-          @interpreter_context[key] = value
-          @context[key] = value
+          thread_info[key] = value
         end
 
         def delete_interpreter_context(key)
-          @interpreter_context.delete(key)
-          @context.delete(key)
+          (ti = thread_info) && ti.delete(key)
         end
 
         def resolve_type(type, value, path)

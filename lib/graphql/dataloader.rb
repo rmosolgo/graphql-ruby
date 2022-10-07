@@ -289,7 +289,10 @@ module GraphQL
       fiber_locals = {}
 
       Thread.current.keys.each do |fiber_var_key|
-        fiber_locals[fiber_var_key] = Thread.current[fiber_var_key]
+        # This variable should be fresh in each new fiber
+        if fiber_var_key != :__graphql_runtime_info
+          fiber_locals[fiber_var_key] = Thread.current[fiber_var_key]
+        end
       end
 
       if @nonblocking
