@@ -406,7 +406,6 @@ module GraphQL
             graphql_name(interface_type_definition.name)
             description(interface_type_definition.description)
             interface_type_definition.interfaces.each do |interface_name|
-              "Implements: #{interface_type_definition} -> #{interface_name}"
               interface_defn = type_resolver.call(interface_name)
               implements(interface_defn)
             end
