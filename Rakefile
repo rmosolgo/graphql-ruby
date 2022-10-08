@@ -67,6 +67,8 @@ ERR
   `rm -f lib/graphql/language/parser.rb lib/graphql/language/lexer.rb `
   `racc lib/graphql/language/parser.y -o lib/graphql/language/parser.rb`
   `ragel -R -F1 lib/graphql/language/lexer.rl`
+  `rubocop -x lib/graphql/language/lexer.rb`
+  `rubocop -x lib/graphql/language/parser.rb`
 end
 
 namespace :bench do
