@@ -22,19 +22,17 @@ const anonymousClientId = "graphql-subscriber"
 // Note that using a higher value emits a warning.
 const maxNumRewindMessages = 100
 
-class AblyError {
-  constructor(reason: Types.ErrorInfo) {
-    const error = Error(reason.message)
-    const attributes: (keyof Types.ErrorInfo)[] = ["code", "statusCode"]
-    attributes.forEach(attr => {
-      Object.defineProperty(error, attr, {
-        get() {
-          return reason[attr]
-        }
-      })
-    })
-    Error.captureStackTrace(error, AblyError)
-    return error
+class AblyError extends Error {
+  constructor(public reason: Types.ErrorInfo) {
+    super(reason.message)
+  }
+
+  get code() {
+    return this.reason.code
+  }
+
+  get statusCode() {
+    return this.reason.statusCode
   }
 }
 
@@ -171,7 +169,7 @@ function createAblyHandler(options: AblyHandlerOptions) {
             }
 
             await new Promise<void>((resolve, reject) => {
-              disposedChannel.detach((err) => {
+              disposedChannel.detach(err => {
                 if (err) {
                   reject(new AblyError(err))
                 } else {
