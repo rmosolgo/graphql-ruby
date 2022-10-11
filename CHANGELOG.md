@@ -316,7 +316,7 @@ Oops, this version was accidentally released to RubyGems as "2.10.0". I yanked i
 
 ### Deprecations
 
-- `GraphQL::Relay::NodeField` and `GraphQL::Relay::NodesField` are deprecated; use `GraphQL::Relay::HasNodesField` or `GraphQL::Relay::HasNodeField` instead. (The underlying field instances require a reference to their owner type, but `NodeField` and `NodesField` can't do that, since they're shared instances) #3791
+- `GraphQL::Relay::NodeField` and `GraphQL::Relay::NodesField` are deprecated; use `GraphQL::Types::Relay::HasNodesField` or `GraphQL::Types::Relay::HasNodeField` instead. (The underlying field instances require a reference to their owner type, but `NodeField` and `NodesField` can't do that, since they're shared instances) #3791
 
 ### New features
 
