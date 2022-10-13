@@ -55,7 +55,7 @@ function createAblyHandler(options: AblyHandlerOptions) {
         if (result.errors) {
           // What kind of error stuff belongs here?
           observer.onError(result.errors)
-        } else if (result.data) {
+        } else if (result.data && Object.keys(result.data).length > 0) {
           observer.onNext({ data: result.data })
         }
       }
