@@ -185,6 +185,41 @@ describe("createAblyHandler", () => {
     expect(nextInvokedWith).toBeUndefined()
   })
 
+  it("doesn't dispatch anything for an empty data object", async () => {
+    let errorInvokedWith = undefined
+    let nextInvokedWith = undefined
+
+    const producer = createAblyHandler({
+      fetchOperation: () =>
+        new Promise(resolve =>
+          resolve({
+            headers: new Map([["X-Subscription-ID", "foo"]]),
+            body: { data: {} }
+          })
+        ),
+      ably: createDummyConsumer()
+    })
+
+    producer(
+      dummyOperation,
+      {},
+      {},
+      {
+        onError: (errors: any) => {
+          errorInvokedWith = errors
+        },
+        onNext: (response: any) => {
+          nextInvokedWith = response
+        },
+        onCompleted: () => {}
+      }
+    )
+
+    await nextTick()
+    expect(errorInvokedWith).toBeUndefined()
+    expect(nextInvokedWith).toBeUndefined()
+  })
+
   it("dispatches caught errors", async () => {
     let errorInvokedWith = undefined
     let nextInvokedWith = undefined
