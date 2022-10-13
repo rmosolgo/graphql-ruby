@@ -1,6 +1,6 @@
 {
   "name": "graphql-ruby-client",
-  "version": "1.11.2",
+  "version": "1.11.3",
   "description": "JavaScript client for graphql-ruby",
   "main": "index.js",
   "types": "index.d.ts",

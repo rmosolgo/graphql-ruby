@@ -1,5 +1,10 @@
 # graphql-ruby-client
 
+# 1.11.3 (13 October 2022)
+
+- `createAblySubscriptions`: don't use `Error.captureStackTrace` which isn't supported in all JS runtimes #4223
+- `createAblySubscriptions`: properly handle empty initial response from the interpreter (`{}`) #4226
+
 # 1.11.2 (26 August 2022)
 
 - Sync: Add a `--header` option for custom headers #4171
