@@ -8,6 +8,11 @@
 
 ### Bug Fix
 
+# 1.1.12 (18 October 2022)
+
+- ObjectCache: Update Redis calls to support redis-rb 5.0
+- Limiters: add MutationLimiter
+
 # 1.1.11 (25 August 2022)
 
 ### Bug Fix

@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.23.2 (18 October 2022)
+
+### New Features
+
+- Add dashboard component for Enterprise mutation limiter
+
 # 1.23.1 (25 August 2022)
 
 ### Bug Fix
