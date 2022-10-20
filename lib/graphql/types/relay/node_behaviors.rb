@@ -11,7 +11,7 @@ module GraphQL
         end
 
         def default_global_id
-          context.schema.id_from_object(object, self, context)
+          context.schema.id_from_object(object, self.class, context)
         end
       end
     end
