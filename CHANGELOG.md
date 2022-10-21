@@ -10,6 +10,27 @@
 
 ### Bug fixes
 
+# 2.0.15 (22 October 2022)
+
+### New features
+
+- SDL: support extensions on the schema itself #4203
+- SDL: recognize `.graphqls` files in `.from_definition` #4204
+- Schema: add a reader method of `TypeMembership#options` #4209
+
+### Bug fixes
+
+- Node Behaviors: call the id-from-object hook with the type definition, not the type instance #4233
+- RelayClassicMutation: add a period to the generated description of the payload type #4229
+- Dataloader: make scoped context work with Dataloader #4220
+- SDL: fix parsing repeatable directives #4218
+- Lookahead: reduce more allocations in `.selects?` #4212
+- Introspection Query: strip blank lines from generated query strings #4208
+- Enums: Add error handling to result coercion #4206
+- Lookahead: add `selected_type:` to `.selects?` #4194
+- Lookahead: fix `.selects?` on unions #4193
+- Fields: use field-local `connection:` config over resolver config #4191
+
 # 2.0.14 (8 September 2022)
 
 ### New features
