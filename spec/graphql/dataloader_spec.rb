@@ -271,7 +271,6 @@ describe GraphQL::Dataloader do
         argument :input, CommonIngredientsInput
       end
 
-
       def common_ingredients_from_input_object(input:)
         recipe_1 = input[:recipe_1]
         recipe_2 = input[:recipe_2]
@@ -286,6 +285,15 @@ describe GraphQL::Dataloader do
 
       def ingredient_with_custom_batch_key(id:, batch_key:)
         dataloader.with(CustomBatchKeySource, batch_key).load(id)
+      end
+
+      field :recursive_ingredient_name, String do
+        argument :id, ID
+      end
+
+      def recursive_ingredient_name(id:)
+        res = context.schema.execute("{ ingredient(id: #{id}) { name } }")
+        res["data"]["ingredient"]["name"]
       end
     end
 
@@ -775,6 +783,11 @@ describe GraphQL::Dataloader do
           assert_equal expected_data, result["data"]
         end
 
+        it "works when the schema calls itself" do
+          result = schema.execute("{ recursiveIngredientName(id: 1) }")
+          assert_equal "Wheat", result["data"]["recursiveIngredientName"]
+        end
+
         it "uses .batch_key_for in source classes" do
           query_str = <<-GRAPHQL
           {
@@ -835,6 +848,25 @@ describe GraphQL::Dataloader do
       end
 
       include DataloaderAssertions
+    end
+
+    if RUBY_ENGINE == "ruby" && !ENV["GITHUB_ACTIONS"]
+      describe "nonblocking: true with libev" do
+        require "libev_scheduler"
+        let(:schema) { Class.new(FiberSchema) do
+          use GraphQL::Dataloader, nonblocking: true
+        end }
+
+        before do
+          Fiber.set_scheduler(Libev::Scheduler.new)
+        end
+
+        after do
+          Fiber.set_scheduler(nil)
+        end
+
+        include DataloaderAssertions
+      end
     end
   end
 
