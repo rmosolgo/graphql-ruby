@@ -113,6 +113,14 @@ describe GraphQL::Query::Context do
     end
   end
 
+  it "can override values set by runtime" do
+    context = GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: {a: {b: 1}}, object: nil)
+    Thread.current[:__graphql_runtime_info] = { current_object: :runtime_value }
+    assert_equal :runtime_value, context[:current_object]
+    context[:current_object] = :override_value
+    assert_equal :override_value, context[:current_object]
+  end
+
   describe "query-level errors" do
     let(:query_string) { %|
       { pushQueryError }
