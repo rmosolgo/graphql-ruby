@@ -80,7 +80,7 @@ Once installed, your {% internal_link "GraphQL-Pro dashboard", "/pro/dashboard" 
 
 {{ "/limiters/runtime_limiter_dashboard.png" | link_to_img:"GraphQL Runtime Limiter Dashboard" }}
 
-See [Instrumentation](#instrumentation) below for more details on limiter metrics.
+See [Instrumentation](#instrumentation) below for more details on limiter metrics. To disable dashboard charts, add `use(... dashboard_charts: false)` to your configuration.
 
 Also, the dashboard includes a link to enable or disable "soft mode":
 
@@ -119,7 +119,8 @@ pp result.context[:runtime_limiter]
 #  :limit_ms=>800,
 #  :remaining_ms=>0,
 #  :soft=>true,
-#  :limited=>true}
+#  :limited=>true,
+#  :window_ms=>60_000}
 ```
 
 It returns a Hash containing:
@@ -129,6 +130,7 @@ It returns a Hash containing:
 - `remaining_ms: [Integer, nil]`, the amount of time remaining in this client's bucket
 - `soft: [Boolean]`, `true` if the query was run in "soft mode"
 - `limited: [Boolean]`, `true` if the query exceeded the rate limit (but if `soft:` was also `true`, then the query was _not_ halted)
+- `window_ms: [Integer]` the configured `window_ms:` for the limiter
 
 You could use this to add detailed metrics to your application monitoring system, for example:
 
