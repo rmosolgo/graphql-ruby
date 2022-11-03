@@ -199,7 +199,7 @@
   <img src="/limiters/runtime_limiter_dashboard.png" title="GraphQL Runtime Limiter Dashboard" alt="GraphQL Runtime Limiter Dashboard" />
 </a></p>
 
-<p>See <a href="#instrumentation">Instrumentation</a> below for more details on limiter metrics.</p>
+<p>See <a href="#instrumentation">Instrumentation</a> below for more details on limiter metrics. To disable dashboard charts, add <code class="language-plaintext highlighter-rouge">use(... dashboard_charts: false)</code> to your configuration.</p>
 
 <p>Also, the dashboard includes a link to enable or disable “soft mode”:</p>
 
@@ -239,7 +239,8 @@
 <span class="c1">#  :limit_ms=&gt;800,</span>
 <span class="c1">#  :remaining_ms=&gt;0,</span>
 <span class="c1">#  :soft=&gt;true,</span>
-<span class="c1">#  :limited=&gt;true}</span>
+<span class="c1">#  :limited=&gt;true,</span>
+<span class="c1">#  :window_ms=&gt;60_000}</span>
 </code></pre></div></div>
 
 <p>It returns a Hash containing:</p>
@@ -250,6 +251,7 @@
   <li><code class="language-plaintext highlighter-rouge">remaining_ms: [Integer, nil]</code>, the amount of time remaining in this client’s bucket</li>
   <li><code class="language-plaintext highlighter-rouge">soft: [Boolean]</code>, <code class="language-plaintext highlighter-rouge">true</code> if the query was run in “soft mode”</li>
   <li><code class="language-plaintext highlighter-rouge">limited: [Boolean]</code>, <code class="language-plaintext highlighter-rouge">true</code> if the query exceeded the rate limit (but if <code class="language-plaintext highlighter-rouge">soft:</code> was also <code class="language-plaintext highlighter-rouge">true</code>, then the query was <em>not</em> halted)</li>
+  <li><code class="language-plaintext highlighter-rouge">window_ms: [Integer]</code> the configured <code class="language-plaintext highlighter-rouge">window_ms:</code> for the limiter</li>
 </ul>
 
 <p>You could use this to add detailed metrics to your application monitoring system, for example:</p>
