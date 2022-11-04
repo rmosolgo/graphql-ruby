@@ -111,7 +111,8 @@ module GraphQL
         end
 
         def current_path
-          @query_context[:current_path] || @no_path
+          thread_info = Thread.current[:__graphql_runtime_info]
+          (thread_info && thread_info[:current_path]) || @no_path
         end
 
         def key?(key)
@@ -195,13 +196,16 @@ module GraphQL
 
       # Lookup `key` from the hash passed to {Schema#execute} as `context:`
       def [](key)
-        if RUNTIME_METADATA_KEYS.include?(key)
+        if @scoped_context.key?(key)
+          @scoped_context[key]
+        elsif @provided_values.key?(key)
+          @provided_values[key]
+        elsif RUNTIME_METADATA_KEYS.include?(key)
           thread_info = Thread.current[:__graphql_runtime_info]
           thread_info && thread_info[key]
-        elsif @scoped_context.key?(key)
-          @scoped_context[key]
         else
-          @provided_values[key]
+          # not found
+          nil
         end
       end
 

@@ -4,9 +4,10 @@ source 'https://rubygems.org'
 gem 'bootsnap'
 gem 'rails', '~> 5.2.1'
 gem 'puma'
-gem 'capybara', '3.34.0'
+gem 'capybara', '3.38.0'
 gem 'selenium-webdriver', '~>3.0'
 gem 'graphql', path: File.expand_path('../../', __dir__)
+gem "rexml"
 
 group :development do
   gem 'listen'
