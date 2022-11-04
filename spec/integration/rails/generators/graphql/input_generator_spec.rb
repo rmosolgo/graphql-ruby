@@ -11,7 +11,7 @@ class GraphQLGeneratorsInputGeneratorTest < BaseGeneratorTest
       t.date :birthday
       t.integer :points
       t.decimal :rating
-      t.references :friend, required: false, foreign_key: { to_table: :input_test_users}
+      t.references :friend, foreign_key: { to_table: :input_test_users}
     end
   end
 
