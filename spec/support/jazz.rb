@@ -375,8 +375,19 @@ module Jazz
     field :falsey, Boolean, null: false
   end
 
-  class CamelizedBooleanInput <  GraphQL::Schema::InputObject
+  class CamelizedBooleanInput < GraphQL::Schema::InputObject
     argument :camelized_boolean, Boolean
+  end
+
+  class BaseResolver < GraphQL::Schema::Resolver
+  end
+
+  class MusicStyleResolver < BaseResolver
+    type String, null: false
+
+    def resolve
+      'Jazz'
+    end
   end
 
   # Another new-style definition, with method overrides
@@ -394,6 +405,7 @@ module Jazz
     field :inspect_key, InspectableKey, null: false do
       argument :key, Key
     end
+    field :music_style, resolver: MusicStyleResolver
     field :now_playing, PerformingAct, null: false
 
     def now_playing; Models.data["Ensemble"].first; end

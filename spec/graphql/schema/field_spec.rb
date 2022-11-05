@@ -303,6 +303,22 @@ describe GraphQL::Schema::Field do
       end
     end
 
+    describe "unwrapped_resolved_type" do
+      it "tells the unwrapped return type" do
+        assert_equal "String", field.unwrapped_resolved_type.to_type_signature
+      end
+
+      it "returns the type class" do
+        field = Jazz::Query.fields["nowPlaying"]
+        assert_equal Jazz::PerformingAct, field.unwrapped_resolved_type
+      end
+
+      it "returns the resolved type" do
+        field = Jazz::Query.fields["musicStyle"]
+        assert_equal "String", field.unwrapped_resolved_type.to_type_signature
+      end
+    end
+
     describe "complexity" do
       it "accepts a keyword argument" do
         object = Class.new(Jazz::BaseObject) do

@@ -581,6 +581,21 @@ module GraphQL
         raise MissingReturnTypeError, "Failed to build return type for #{@owner.graphql_name}.#{name} from #{@return_type_expr.inspect}: (#{err.class}) #{err.message}", err.backtrace
       end
 
+      def unwrapped_resolved_type
+        resolved_type =
+          if @resolver_class
+            @resolver_class.type
+          else
+            self.type
+          end
+
+        if resolved_type.is_a?(GraphQL::Schema::Wrapper)
+          resolved_type.unwrap
+        else
+          resolved_type
+        end
+      end
+
       def visible?(context)
         if @resolver_class
           @resolver_class.visible?(context)
