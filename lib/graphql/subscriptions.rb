@@ -127,7 +127,7 @@ module GraphQL
       }
       
        # merge event's and query's context together
-      context.merge!(event.context) if event.context&.present?
+      context.merge!(event.context) if !event.context.nil? && !event.context.empty?
       
       execute_options[:validate] = validate_update?(**execute_options)
       result = @schema.execute(**execute_options)
