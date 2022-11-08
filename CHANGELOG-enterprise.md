@@ -8,6 +8,31 @@
 
 ### Bug Fix
 
+# 1.1.14 (3 November 2022)
+
+### New Features
+
+- Limiters: Support `dashboard_charts: false` to disable built-in instrumentation
+- Limiters: Support `assign_as:` to use a different accessor method for storing limiter instances on schema classes (add a corresponding `class << self; attr_accessor ...; end` to the schema class to use it)
+- Limiters: Support `context_key:` to put runtime info in a different key in query context
+- Runtime Limiter: Add `window_ms:` to runtime info
+
+# 1.1.13 (21 October 2022)
+
+### Bug Fix
+
+- Limiter: handle missing fields in MutationLimiter
+
+# 1.1.12 (18 October 2022)
+
+### New Features
+
+- Limiters: add MutationLimiter
+
+### Bug Fix
+
+- ObjectCache: Update Redis calls to support redis-rb 5.0
+
 # 1.1.11 (25 August 2022)
 
 ### Bug Fix

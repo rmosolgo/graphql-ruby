@@ -120,7 +120,7 @@ module GraphQL
         def camelize(string)
           return string if string == '_'
           return string unless string.include?("_")
-          camelized = string.split('_').map(&:capitalize).join
+          camelized = string.split('_').each(&:capitalize!).join
           camelized[0] = camelized[0].downcase
           if (match_data = string.match(/\A(_+)/))
             camelized = "#{match_data[0]}#{camelized}"

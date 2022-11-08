@@ -110,9 +110,10 @@ module GraphQL
       # @param using [Hash] Plugins to attach to the created schema with `use(key, value)`
       # @return [Class] the schema described by `document`
       def from_definition(definition_or_path, default_resolve: nil, parser: GraphQL.default_parser, using: {})
-        # If the file ends in `.graphql`, treat it like a filepath
-        if definition_or_path.end_with?(".graphql")
+        # If the file ends in `.graphql` or `.graphqls`, treat it like a filepath
+        if definition_or_path.end_with?(".graphql") || definition_or_path.end_with?(".graphqls")
           GraphQL::Schema::BuildFromDefinition.from_definition_path(
+            self,
             definition_or_path,
             default_resolve: default_resolve,
             parser: parser,
@@ -120,6 +121,7 @@ module GraphQL
           )
         else
           GraphQL::Schema::BuildFromDefinition.from_definition(
+            self,
             definition_or_path,
             default_resolve: default_resolve,
             parser: parser,
@@ -738,11 +740,10 @@ module GraphQL
       def handle_or_reraise(context, err)
         handler = Execution::Errors.find_handler_for(self, err.class)
         if handler
-          runtime_info = context.namespace(:interpreter) || {}
-          obj = runtime_info[:current_object]
-          args = runtime_info[:current_arguments]
+          obj = context[:current_object]
+          args = context[:current_arguments]
           args = args && args.keyword_arguments
-          field = runtime_info[:current_field]
+          field = context[:current_field]
           if obj.is_a?(GraphQL::Schema::Object)
             obj = obj.object
           end
@@ -814,6 +815,15 @@ module GraphQL
 
       def accessible?(member, ctx)
         member.accessible?(ctx)
+      end
+
+      def schema_directive(dir_class, **options)
+        @own_schema_directives ||= []
+        Member::HasDirectives.add_directive(self, @own_schema_directives, dir_class, options)
+      end
+
+      def schema_directives
+        Member::HasDirectives.get_directives(self, @own_schema_directives, :schema_directives)
       end
 
       # This hook is called when a client tries to access one or more

@@ -45,4 +45,18 @@ describe "GraphQL::Introspection::INTROSPECTION_QUERY" do
        GraphQL::Schema::Loader.load(result)
      }
   end
+
+  it "doesn't contain blank lines" do
+    int_query = GraphQL::Introspection.query
+    refute_includes int_query, "\n\n"
+
+    int_query_with_options = GraphQL::Introspection.query(
+      include_deprecated_args: true,
+      include_schema_description: true,
+      include_is_repeatable: true,
+      include_specified_by_url: true,
+      include_is_one_of: true
+    )
+    refute_includes int_query_with_options, "\n\n"
+  end
 end

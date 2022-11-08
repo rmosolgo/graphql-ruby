@@ -39,7 +39,7 @@ module GraphQL
           transform_name = arguments[:by]
           if TRANSFORMS.include?(transform_name) && return_value.respond_to?(transform_name)
             return_value = return_value.public_send(transform_name)
-            response = context.namespace(:interpreter)[:runtime].final_result
+            response = context.namespace(:interpreter_runtime)[:runtime].final_result
             *keys, last = path
             keys.each do |key|
               if response && (response = response[key])

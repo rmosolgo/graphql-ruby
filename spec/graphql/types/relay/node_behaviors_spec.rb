@@ -17,13 +17,15 @@ describe GraphQL::Types::Relay::NodeBehaviors do
 
     query(Query)
 
-    def self.id_from_object(obj, _type, _ctx)
+    def self.id_from_object(obj, type, context)
+      context[:id_from_object_type] = type
       "blah"
     end
   end
 
-  it "adds an `id` field that calls `schema.id_from_object`" do
+  it "adds an `id` field that calls `schema.id_from_object` with the type class" do
     res = NodeBehaviorsSchema.execute("{ thing { id } }")
     assert_equal "blah", res["data"]["thing"]["id"]
+    assert_equal NodeBehaviorsSchema::Thing, res.context[:id_from_object_type]
   end
 end

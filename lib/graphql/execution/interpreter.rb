@@ -65,7 +65,7 @@ module GraphQL
                   begin
                     query_runtime_class = query.context[:runtime_class] || multiplex_runtime_class
                     runtime = query_runtime_class.new(query: query)
-                    query.context.namespace(:interpreter)[:runtime] = runtime
+                    query.context.namespace(:interpreter_runtime)[:runtime] = runtime
                     runtime.run_eager
                   rescue GraphQL::ExecutionError => err
                     query.context.errors << err
@@ -81,14 +81,14 @@ module GraphQL
             # Then, work through lazy results in a breadth-first way
             multiplex.dataloader.append_job {
               final_values = multiplex.queries.map do |query|
-                runtime = query.context.namespace(:interpreter)[:runtime]
+                runtime = query.context.namespace(:interpreter_runtime)[:runtime]
                 # it might not be present if the query has an error
                 runtime ? runtime.final_result : nil
               end
               final_values.compact!
               resolve_lazies(final_values, multiplex)
               multiplex.queries.each do |query|
-                runtime = query.context.namespace(:interpreter)[:runtime]
+                runtime = query.context.namespace(:interpreter_runtime)[:runtime]
                 if runtime
                   runtime.delete_interpreter_context(:current_path)
                   runtime.delete_interpreter_context(:current_field)
@@ -112,7 +112,7 @@ module GraphQL
                 end
               else
                 result = {
-                  "data" => query.context.namespace(:interpreter)[:runtime].final_result
+                  "data" => query.context.namespace(:interpreter_runtime)[:runtime].final_result
                 }
 
                 if query.context.errors.any?

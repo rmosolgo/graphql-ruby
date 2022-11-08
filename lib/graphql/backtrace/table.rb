@@ -83,7 +83,7 @@ module GraphQL
           value = if top && @override_value
             @override_value
           else
-            value_at(@context.query.context.namespace(:interpreter)[:runtime], context_entry.path)
+            value_at(@context.query.context.namespace(:interpreter_runtime)[:runtime], context_entry.path)
           end
           rows << [
             "#{context_entry.ast_node ? context_entry.ast_node.position.join(":") : ""}",
@@ -112,7 +112,7 @@ module GraphQL
           if object.is_a?(GraphQL::Schema::Object)
             object = object.object
           end
-          value = value_at(context_entry.namespace(:interpreter)[:runtime], [])
+          value = value_at(context_entry.namespace(:interpreter_runtime)[:runtime], [])
           rows << [
             "#{position}",
             "#{op_type}#{op_name ? " #{op_name}" : ""}",

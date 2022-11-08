@@ -6,8 +6,11 @@ on:
     tags:
       - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 
+permissions: {}
 jobs:
   build:
+    permissions:
+      contents: write # for git push (s0/git-publish-subdir-action)
     name: Publish API Docs
     runs-on: ubuntu-latest
     steps:

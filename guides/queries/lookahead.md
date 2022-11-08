@@ -12,7 +12,7 @@ GraphQL-Ruby 1.9+ includes {{ "GraphQL::Execution::Lookahead" | api_doc }} for c
 
 ## Getting a Lookahead
 
-Add `extras: [:lookahead]` to your field configuration to recieve an injected lookahead:
+Add `extras: [:lookahead]` to your field configuration to receive an injected lookahead:
 
 ```ruby
 field :files, [Types::File], null: false, extras: [:lookahead]

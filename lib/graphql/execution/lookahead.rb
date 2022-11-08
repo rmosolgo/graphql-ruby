@@ -76,8 +76,8 @@ module GraphQL
       # @param field_name [String, Symbol]
       # @param arguments [Hash] Arguments which must match in the selection
       # @return [Boolean]
-      def selects?(field_name, arguments: nil)
-        selection(field_name, arguments: arguments).selected?
+      def selects?(field_name, selected_type: @selected_type, arguments: nil)
+        selection(field_name, selected_type: selected_type, arguments: arguments).selected?
       end
 
       # @return [Boolean] True if this lookahead represents a field that was requested
@@ -95,11 +95,22 @@ module GraphQL
           @query.get_field(selected_type, field_name)
         when Symbol
           # Try to avoid the `.to_s` below, if possible
-          all_fields = @query.warden.fields(selected_type)
+          all_fields = if selected_type.kind.fields?
+            @query.warden.fields(selected_type)
+          else
+            # Handle unions by checking possible
+            @query.warden
+              .possible_types(selected_type)
+              .map { |t| @query.warden.fields(t) }
+              .flatten
+          end
+
           if (match_by_orig_name = all_fields.find { |f| f.original_name == field_name })
             match_by_orig_name
           else
-            guessed_name = Schema::Member::BuildType.camelize(field_name.to_s)
+            # Symbol#name is only present on 3.0+
+            sym_s = field_name.respond_to?(:name) ? field_name.name : field_name.to_s
+            guessed_name = Schema::Member::BuildType.camelize(sym_s)
             @query.get_field(selected_type, guessed_name)
           end
         end

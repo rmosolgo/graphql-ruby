@@ -10,13 +10,34 @@
 
 ### Bug fixes
 
+# 2.0.15 (22 October 2022)
+
+### New features
+
+- SDL: support extensions on the schema itself #4203
+- SDL: recognize `.graphqls` files in `.from_definition` #4204
+- Schema: add a reader method of `TypeMembership#options` #4209
+
+### Bug fixes
+
+- Node Behaviors: call the id-from-object hook with the type definition, not the type instance #4233
+- RelayClassicMutation: add a period to the generated description of the payload type #4229
+- Dataloader: make scoped context work with Dataloader #4220
+- SDL: fix parsing repeatable directives #4218
+- Lookahead: reduce more allocations in `.selects?` #4212
+- Introspection Query: strip blank lines from generated query strings #4208
+- Enums: Add error handling to result coercion #4206
+- Lookahead: add `selected_type:` to `.selects?` #4194
+- Lookahead: fix `.selects?` on unions #4193
+- Fields: use field-local `connection:` config over resolver config #4191
+
 # 2.0.14 (8 September 2022)
 
 ### New features
 
 - Input Objects: support `one_of` for input objects that allow exactly one argument #4184
 - Dataloader: add `source.merge({ ... })` for adding objects to dataloader source caches #4186
-- Validation: generate new schemas with a suggested `max_validation_errors` of 100 #4179
+- Validation: generate new schemas with a suggested `validate_max_errors` of 100 #4179
 
 ### Bug fixes
 
@@ -316,7 +337,7 @@ Oops, this version was accidentally released to RubyGems as "2.10.0". I yanked i
 
 ### Deprecations
 
-- `GraphQL::Relay::NodeField` and `GraphQL::Relay::NodesField` are deprecated; use `GraphQL::Relay::HasNodesField` or `GraphQL::Relay::HasNodeField` instead. (The underlying field instances require a reference to their owner type, but `NodeField` and `NodesField` can't do that, since they're shared instances) #3791
+- `GraphQL::Relay::NodeField` and `GraphQL::Relay::NodesField` are deprecated; use `GraphQL::Types::Relay::HasNodesField` or `GraphQL::Types::Relay::HasNodeField` instead. (The underlying field instances require a reference to their owner type, but `NodeField` and `NodesField` can't do that, since they're shared instances) #3791
 
 ### New features
 
@@ -445,7 +466,7 @@ Since this version, GraphQL-Ruby is tested on Ruby 2.4+ and Rails 4+ only.
 ### New features
 
 - Subscriptions: Add `NO_UPDATE` constant for skipping subscription updates #3664
-- Validation: Add `Schema.max_validation_errors(integer)` for halting validation when it reaches a certain number #3683
+- Validation: Add `Schema.validate_max_errors(integer)` for halting validation when it reaches a certain number #3683
 - Call `self.load_...` methods on Input objects for loading arguments #3682
 - Use `import_methods` in Refinements when available #3674
 - `AppsignalTracing`: Add `set_action_name` #3659
