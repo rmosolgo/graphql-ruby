@@ -90,6 +90,7 @@ module GraphQL
         arguments: normalized_args,
         field: field,
         scope: scope,
+        context: context,
       )
       execute_all(event, object)
     end
@@ -124,6 +125,10 @@ module GraphQL
         variables: variables,
         root_value: object,
       }
+      
+       # merge event's and query's context together
+      context.merge!(event.context) unless event.context.nil? || context.nil?
+      
       execute_options[:validate] = validate_update?(**execute_options)
       result = @schema.execute(**execute_options)
       subscriptions_context = result.context.namespace(:subscriptions)
