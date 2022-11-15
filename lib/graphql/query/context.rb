@@ -93,7 +93,7 @@ module GraphQL
       class ScopedContext
         def initialize(query_context)
           @query_context = query_context
-          @path_contexts = {}
+          @scoped_contexts = {}
           @no_path = [].freeze
         end
 
@@ -106,8 +106,12 @@ module GraphQL
         end
 
         def merge!(hash)
-          current_ctx = @path_contexts[current_path] ||= {}
-          current_ctx.merge!(hash)
+          ctx = @scoped_contexts
+          current_path.each do |path_part|
+            ctx = ctx[path_part] ||= { parent: ctx }
+          end
+          this_scoped_ctx = ctx[:scoped_context] ||= {}
+          this_scoped_ctx.merge!(hash)
         end
 
         def current_path
@@ -152,16 +156,20 @@ module GraphQL
         # Start at the current location,
         # but look up the tree for previously-assigned scoped values
         def each_present_path_ctx
-          search_path = current_path.dup
-          if (current_path_ctx = @path_contexts[search_path])
-            yield(current_path_ctx)
+          ctx = @scoped_contexts
+          current_path.each do |path_part|
+            if ctx.key?(path_part)
+              ctx = ctx[path_part]
+            else
+              break
+            end
           end
 
-          while search_path.size > 0
-            search_path.pop # look one level higher
-            if (search_path_ctx = @path_contexts[search_path])
-              yield(search_path_ctx)
+          while ctx
+            if (scoped_ctx = ctx[:scoped_context])
+              yield(scoped_ctx)
             end
+            ctx = ctx[:parent]
           end
         end
       end
