@@ -154,9 +154,22 @@ module GraphQL
       # @param context [Hash]
       # @param only [<#call(member, ctx)>]
       # @param except [<#call(member, ctx)>]
+      # @param include_deprecated_args [Boolean] If true, deprecated arguments will be included in the JSON response
+      # @param include_schema_description [Boolean] If true, the schema's description will be queried and included in the response
+      # @param include_is_repeatable [Boolean] If true, `isRepeatable: true|false` will be included with the schema's directives
+      # @param include_specified_by_url [Boolean] If true, scalar types' `specifiedByUrl:` will be included in the response
+      # @param include_is_one_of [Boolean] If true, `isOneOf: true|false` will be included with input objects
       # @return [Hash] GraphQL result
-      def as_json(only: nil, except: nil, context: {})
-        execute(Introspection.query(include_deprecated_args: true), only: only, except: except, context: context).to_h
+      def as_json(only: nil, except: nil, context: {}, include_deprecated_args: true, include_schema_description: false, include_is_repeatable: false, include_specified_by_url: false, include_is_one_of: false)
+        introspection_query = Introspection.query(
+          include_deprecated_args: include_deprecated_args,
+          include_schema_description: include_schema_description,
+          include_is_repeatable: include_is_repeatable,
+          include_is_one_of: include_is_one_of,
+          include_specified_by_url: include_specified_by_url,
+        )
+
+        execute(introspection_query, only: only, except: except, context: context).to_h
       end
 
       # Return the GraphQL IDL for the schema

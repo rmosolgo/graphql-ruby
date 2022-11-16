@@ -373,4 +373,34 @@ describe GraphQL::Schema do
       assert_equal ["Schema is not configured for queries"], res["errors"].map { |e| e["message"] }
     end
   end
+
+  describe ".as_json" do
+    it "accepts options for the introspection query" do
+      introspection_schema = Class.new(Dummy::Schema) do
+        max_depth 20
+      end
+      default_res = introspection_schema.as_json
+      refute default_res["data"]["__schema"].key?("description")
+      directives = default_res["data"]["__schema"]["directives"]
+      refute directives.first.key?("isRepeatable")
+      refute default_res["data"]["__schema"]["types"].find { |t| t["kind"] == "SCALAR" }.key?("specifiedByURL")
+      refute default_res["data"]["__schema"]["types"].find { |t| t["kind"] == "INPUT_OBJECT" }.key?("isOneOf")
+      assert_includes default_res.to_s, "oldSource"
+
+      full_res = introspection_schema.as_json(
+        include_deprecated_args: false,
+        include_is_one_of: true,
+        include_is_repeatable: true,
+        include_schema_description: true,
+        include_specified_by_url: true,
+      )
+
+      assert full_res["data"]["__schema"].key?("description")
+      directives = full_res["data"]["__schema"]["directives"]
+      assert directives.first.key?("isRepeatable")
+      assert full_res["data"]["__schema"]["types"].find { |t| t["kind"] == "SCALAR" }.key?("specifiedByURL")
+      assert full_res["data"]["__schema"]["types"].find { |t| t["kind"] == "INPUT_OBJECT" }.key?("isOneOf")
+      refute_includes full_res.to_s, "oldSource"
+    end
+  end
 end
