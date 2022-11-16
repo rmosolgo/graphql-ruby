@@ -23,6 +23,10 @@ module GraphQL
   # @example Invoking the task from Ruby
   #   require "rake"
   #   Rake::Task["graphql:schema:dump"].invoke
+  #
+  # @example Providing arguments to build the introspection query
+  #   require "graphql/rake_task"
+  #   GraphQL::RakeTask.new(schema_name: "MySchema", include_is_one_of: true)
   class RakeTask
     include Rake::DSL
 
@@ -37,6 +41,11 @@ module GraphQL
       directory: ".",
       idl_outfile: "schema.graphql",
       json_outfile: "schema.json",
+      include_deprecated_args: true,
+      include_schema_description: false,
+      include_is_repeatable: false,
+      include_specified_by_url: false,
+      include_is_one_of: false
     }
 
     # @return [String] Namespace for generated tasks
@@ -74,6 +83,10 @@ module GraphQL
     # @return [String] directory for IDL & JSON files
     attr_accessor :directory
 
+    # @return [Boolean] Options for additional fields in the introspection query JSON response
+    # @see GraphQL::Schema.as_json
+    attr_accessor :include_deprecated_args, :include_schema_description, :include_is_repeatable, :include_specified_by_url, :include_is_one_of
+
     # Set the parameters of this task by passing keyword arguments
     # or assigning attributes inside the block
     def initialize(options = {})
@@ -96,7 +109,21 @@ module GraphQL
     def write_outfile(method_name, file)
       schema = @load_schema.call(self)
       context = @load_context.call(self)
-      result = schema.public_send(method_name, only: @only, except: @except, context: context)
+      result = case method_name
+      when :to_json
+        schema.to_json(
+          include_is_one_of: include_is_one_of,
+          include_deprecated_args: include_deprecated_args,
+          include_is_repeatable: include_is_repeatable,
+          include_specified_by_url: include_specified_by_url,
+          include_schema_description: include_schema_description,
+          only: @only, except: @except, context: context
+        )
+      when :to_definition
+        schema.to_definition(only: @only, except: @except, context: context)
+      else
+        raise ArgumentError, "Unexpected schema dump method: #{method_name.inspect}"
+      end
       dir = File.dirname(file)
       FileUtils.mkdir_p(dir)
       if !result.end_with?("\n")
