@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 1.13.17 (17 November 2022)
+
+### Bug fixes
+
+- Handle ExecutionErrors from prepare hooks when calculating complexity #4248
+
 # 1.13.16 (31 August 2022)
 
 ### New Features
