@@ -93,13 +93,9 @@ describe GraphQL::Query::Context do
     end
 
     it "allows you to read values of contexts using dig" do
-      if RUBY_VERSION >= '2.3.0'
-        assert_equal(1, context.dig(:a, :b))
-      else
-        assert_raises NoMethodError do
-          context.dig(:a, :b)
-        end
-      end
+      assert_equal(1, context.dig(:a, :b))
+      Thread.current[:__graphql_runtime_info][:current_arguments] = { c: 1 }
+      assert_equal 1, context.dig(:current_arguments, :c)
     end
   end
 
