@@ -20,7 +20,10 @@ GraphQL::RakeTask.new(schema_name: “MySchema”)</p>
 <h1 id="schema-json-dumped-to-schemajson">Schema JSON dumped to ./schema.json</h1>
 <h1 id="invoking-the-task-from-ruby">Invoking the task from Ruby</h1>
 <p>require “rake”
-Rake::Task[“graphql:schema:dump”].invoke
+Rake::Task[“graphql:schema:dump”].invoke</p>
+<h1 id="providing-arguments-to-build-the-introspection-query">Providing arguments to build the introspection query</h1>
+<p>require “graphql/rake_task”
+GraphQL::RakeTask.new(schema_name: “MySchema”, include_is_one_of: true)
 Includes:
 Rake::DSL
 Extended by:
