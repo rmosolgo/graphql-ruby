@@ -247,7 +247,7 @@ module GraphQL
       def dig(key, *other_keys)
         if RUNTIME_METADATA_KEYS.include?(key)
           (thread_info = Thread.current[:__graphql_runtime_info]).key?(key) &&
-            thread_info.dig(key)
+            thread_info.dig(key, *other_keys)
         elsif @scoped_context.key?(key)
           @scoped_context.dig(key, *other_keys)
         else
