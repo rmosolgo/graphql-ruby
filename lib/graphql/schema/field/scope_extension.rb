@@ -9,7 +9,7 @@ module GraphQL
             value
           else
             ret_type = @field.type.unwrap
-            if ret_type.respond_to?(:scope_items)
+            if ret_type.respond_to?(:scope_items) && !field.connection?
               ret_type.scope_items(value, context)
             else
               value
