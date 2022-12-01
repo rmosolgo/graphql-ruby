@@ -138,7 +138,7 @@ Read more here: ["Using CORS"](https://www.html5rocks.com/en/tutorials/cors/).
 
 ### Payload Compression
 
-To mitigate problems with [Pusher's 10kb message limit](https://support.pusher.com/hc/en-us/articles/360019115473-What-is-the-message-size-limit-when-publishing-a-message-in-Channels-), you can specify `compress_pusher_payload: true` in the `context` of your subscription. For example:
+To mitigate problems with [Pusher's 10kb message limit](https://support.pusher.com/hc/en-us/articles/4412243423761-What-Is-The-Message-Size-Limit-When-Publishing-an-Event-in-Channels-), you can specify `compress_pusher_payload: true` in the `context` of your subscription. For example:
 
 ```ruby
 # app/controllers/graphql_controller.rb
