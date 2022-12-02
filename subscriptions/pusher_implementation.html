@@ -272,7 +272,7 @@ appendonly <span class="nb">yes</span>
 
 <h3 id="payload-compression">Payload Compression</h3>
 
-<p>To mitigate problems with <a href="https://support.pusher.com/hc/en-us/articles/360019115473-What-is-the-message-size-limit-when-publishing-a-message-in-Channels-">Pusher’s 10kb message limit</a>, you can specify <code class="language-plaintext highlighter-rouge">compress_pusher_payload: true</code> in the <code class="language-plaintext highlighter-rouge">context</code> of your subscription. For example:</p>
+<p>To mitigate problems with <a href="https://support.pusher.com/hc/en-us/articles/4412243423761-What-Is-The-Message-Size-Limit-When-Publishing-an-Event-in-Channels-">Pusher’s 10kb message limit</a>, you can specify <code class="language-plaintext highlighter-rouge">compress_pusher_payload: true</code> in the <code class="language-plaintext highlighter-rouge">context</code> of your subscription. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/controllers/graphql_controller.rb</span>
 <span class="k">def</span> <span class="nf">execute</span>
