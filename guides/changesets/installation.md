@@ -36,7 +36,7 @@ To get started with [GraphQL-Enterprise](https://graphql.pro/enterprise) Changes
     end
     ```
 
-    Also, make sure that your `BaseObject`, `BaseInterface`, `BaseResolver`, and `BaseMutation` have `field_class(Types::BaseField)` configured in them.
+    Also, make sure that your `BaseObject`, `BaseInterface`, and `BaseMutation` have `field_class(Types::BaseField)` configured in them.
 
 - To support versioning enum values, add the `EnumValueIntegration` to your base enum value:
 
