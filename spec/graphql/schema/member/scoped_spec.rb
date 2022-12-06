@@ -8,6 +8,8 @@ describe GraphQL::Schema::Member::Scoped do
 
     class Item < BaseObject
       def self.scope_items(items, context)
+        context[:scope_calls] ||= 0
+        context[:scope_calls] += 1
         if context[:french]
           items.select { |i| i.name == "Trombone" }
         elsif context[:english]
@@ -138,7 +140,7 @@ describe GraphQL::Schema::Member::Scoped do
       assert_equal ["Trombone"], get_item_names_with_context({}, field_name: "frenchItems")
     end
 
-    it "is called for connection fields" do
+    it "is called once for connection fields" do
       query_str = "
       {
         itemsConnection {
@@ -153,6 +155,7 @@ describe GraphQL::Schema::Member::Scoped do
       res = ScopeSchema.execute(query_str, context: {english: true})
       names = res["data"]["itemsConnection"]["edges"].map { |e| e["node"]["name"] }
       assert_equal ["Paperclip"], names
+      assert_equal 1, res.context[:scope_calls]
 
       query_str = "
       {
@@ -166,6 +169,7 @@ describe GraphQL::Schema::Member::Scoped do
       res = ScopeSchema.execute(query_str, context: {english: true})
       names = res["data"]["itemsConnection"]["nodes"].map { |e| e["name"] }
       assert_equal ["Paperclip"], names
+      assert_equal 1, res.context[:scope_calls]
     end
 
     it "works for lazy connection values" do
