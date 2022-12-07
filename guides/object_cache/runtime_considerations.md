@@ -17,7 +17,7 @@ You can set `skip_object_cache: true` in your query `context: { ... }` to disabl
 
 ## Manually adding an object to caching
 
-By default, `ObjectCache` gathers the objects "behind" each GraphQL object in the result, then uses their fingerprints as cache keys. To manually register another object with the cache while a query is running, call `cacheable_object(...)`, passing the object. For example:
+By default, `ObjectCache` gathers the objects "behind" each GraphQL object in the result, then uses their fingerprints as cache keys. To manually register another object with the cache while a query is running, call `Schema::Object.cacheable_object(...)`, passing the object and `context`. For example:
 
 ```ruby
 field :team_member_count, Integer, null: true do
@@ -29,7 +29,7 @@ def team_member_count(name:)
   if team
     # Register this object so that the cached result
     # will be invalidated when the team is updated:
-    cacheable_object(team)
+    Types::Team.cacheable_object(team, context)
     team.members.count
   else
     nil
