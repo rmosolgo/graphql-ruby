@@ -137,6 +137,46 @@ describe GraphQL::Schema::Union do
     end
   end
 
+  it "doesn't allow adding non-object types" do
+    object_type = Class.new(GraphQL::Schema::Object) do
+      graphql_name "SomeObject"
+    end
+
+    err = assert_raises ArgumentError do
+      Class.new(GraphQL::Schema::Union) do
+        graphql_name "SomeUnion"
+        possible_types object_type, GraphQL::Types::Int
+      end
+    end
+    expected_message = "Union possible_types can only be object types (not SCALAR, "
+    assert_includes err.message, expected_message
+
+    input_type = Class.new(GraphQL::Schema::InputObject) do
+      graphql_name "SomeInput"
+      argument :arg, GraphQL::Types::Int
+    end
+
+    err = assert_raises ArgumentError do
+      Class.new(GraphQL::Schema::Union) do
+        graphql_name "SomeUnion"
+        possible_types object_type, input_type
+      end
+    end
+
+    expected_message = "Union possible_types can only be object types (not INPUT_OBJECT, "
+    assert_includes err.message, expected_message
+
+    err = assert_raises ArgumentError do
+      Class.new(GraphQL::Schema::Union) do
+        graphql_name "SomeUnion"
+        possible_types object_type, 1234
+      end
+    end
+
+    expected_message = "Union possible_types can only be class-based GraphQL types (not 1234 (Integer))."
+    assert_includes err.message, expected_message
+  end
+
   it "doesn't allow adding interface" do
     object_type = Class.new(GraphQL::Schema::Object) do
       graphql_name "SomeObject"

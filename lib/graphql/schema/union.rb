@@ -70,9 +70,18 @@ module GraphQL
         private
 
         def assert_valid_union_member(type_defn)
-          if type_defn.is_a?(Module) && !type_defn.is_a?(Class)
+          case type_defn
+          when Class
+            if !type_defn.kind.object?
+              raise ArgumentError, "Union possible_types can only be object types (not #{type_defn.kind.name}, #{type_defn.inspect})"
+            end
+          when Module
             # it's an interface type, defined as a module
             raise ArgumentError, "Union possible_types can only be object types (not interface types), remove #{type_defn.graphql_name} (#{type_defn.inspect})"
+          when String, GraphQL::Schema::LateBoundType
+            # Ok - assume it will get checked later
+          else
+            raise ArgumentError, "Union possible_types can only be class-based GraphQL types (not #{type_defn.inspect} (#{type_defn.class.name}))."
           end
         end
       end
