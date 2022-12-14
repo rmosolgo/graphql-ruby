@@ -127,8 +127,14 @@ module GraphQL
         # same name as if they were the same name. If _any_ of the fragments
         # with that name has a dependency, we record it.
         independent_fragment_nodes = @defdep_fragment_definitions.values.flatten - @defdep_immediate_dependencies.keys
-
+        visited_fragment_names = Set.new
         while fragment_node = independent_fragment_nodes.pop
+          if visited_fragment_names.add?(fragment_node.name)
+            # this is a new fragment name
+          else
+            # this is a duplicate fragment name
+            next
+          end
           loops += 1
           if loops > max_loops
             raise("Resolution loops exceeded the number of definitions; infinite loop detected. (Max: #{max_loops}, Current: #{loops})")
