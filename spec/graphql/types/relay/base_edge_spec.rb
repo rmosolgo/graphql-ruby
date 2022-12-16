@@ -55,6 +55,6 @@ describe GraphQL::Types::Relay::BaseEdge do
   it "is a default relay type" do
     edge_type = NonNullableDummy::Schema.get_type("NonNullableNodeEdge")
     assert_equal true, edge_type.default_relay?
-    assert_equal true, GraphQL::Relay::Types::BaseEdge.default_relay?
+    assert_equal true, GraphQL::Types::Relay::BaseEdge.default_relay?
   end
 end
