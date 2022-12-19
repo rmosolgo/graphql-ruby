@@ -10,6 +10,27 @@
 
 ### Bug fixes
 
+# 2.0.16 (19 December 2022)
+
+### Breaking changes
+
+- `Union`: Only accept Object types in `possible_types` (previously, other types were also accepted, but this was against the spec) #4269
+
+### New features
+
+- Rake: support introspection query options in the `RakeTask` #4247
+- Subscriptions: Merge `.trigger(... context: { ... })` into the query context when running updates #4242
+
+### Bug fixes
+
+- Make BaseEdge and subclasses return true for `.default_relay?` #4272
+- Validation: return a proper error for duplicate-named fragments when used indirectly #4268
+- Don't re-apply `scope_items` to `nodes { ... }` or `edges { ... }` arrays #4263
+- Fix `Concurrent::Map` initialization to prevent race conditions
+- Speed up scoped context lookup #4245
+- Support overriding built-in context keys #4239
+- Context: properly `dig` into `:current_arguments` #4249
+
 # 2.0.15 (22 October 2022)
 
 ### New features
