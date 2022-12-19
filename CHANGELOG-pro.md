@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.23.3 (19 December 2022)
+
+### New Features
+
+- Add `GraphQL::Pro::Subscriptions#read_subscription_failed_error` for handling errors that are raised when reloading queries from storage
+
 # 1.23.2 (18 October 2022)
 
 ### New Features
