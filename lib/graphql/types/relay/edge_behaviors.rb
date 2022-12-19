@@ -8,6 +8,7 @@ module GraphQL
           child_class.description("An edge in a connection.")
           child_class.field(:cursor, String, null: false, description: "A cursor for use in pagination.")
           child_class.extend(ClassMethods)
+          child_class.extend(GraphQL::Types::Relay::DefaultRelay)
           child_class.node_nullable(true)
         end
 

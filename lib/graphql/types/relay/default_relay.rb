@@ -13,7 +13,13 @@ module GraphQL
         end
 
         def default_relay?
-          !!@default_relay
+          if defined?(@default_relay)
+            @default_relay
+          elsif self.is_a?(Class)
+            superclass.respond_to?(:default_relay?) && superclass.default_relay?
+          else
+            false
+          end
         end
       end
     end
