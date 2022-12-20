@@ -5,6 +5,12 @@ on:
     # Sequence of patterns matched against refs/tags
     tags:
       - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+  # for re-running on old tags
+  workflow_dispatch:
+    inputs:
+      ref:
+        required: true
+        type: string
 
 permissions: {}
 jobs:
@@ -17,7 +23,7 @@ jobs:
       - name: Checkout release tag
         uses: actions/checkout@v3
         with:
-          ref: ${{ env.GITHUB_REF }}
+          ref: ${{ inputs.ref || env.GITHUB_REF }}
       - name: Checkout GitHub pages branch
         uses: actions/checkout@v3
         with:
