@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/2.0.15/">API</a>
+          <a href="/api-doc/2.0.16/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -132,7 +132,7 @@
 
 <h2 id="manually-adding-an-object-to-caching">Manually adding an object to caching</h2>
 
-<p>By default, <code class="language-plaintext highlighter-rouge">ObjectCache</code> gathers the objects “behind” each GraphQL object in the result, then uses their fingerprints as cache keys. To manually register another object with the cache while a query is running, call <code class="language-plaintext highlighter-rouge">cacheable_object(...)</code>, passing the object. For example:</p>
+<p>By default, <code class="language-plaintext highlighter-rouge">ObjectCache</code> gathers the objects “behind” each GraphQL object in the result, then uses their fingerprints as cache keys. To manually register another object with the cache while a query is running, call <code class="language-plaintext highlighter-rouge">Schema::Object.cacheable_object(...)</code>, passing the object and <code class="language-plaintext highlighter-rouge">context</code>. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:team_member_count</span><span class="p">,</span> <span class="no">Integer</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">true</span> <span class="k">do</span>
   <span class="n">argument</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">required: </span><span class="kp">true</span>
@@ -143,7 +143,7 @@
   <span class="k">if</span> <span class="n">team</span>
     <span class="c1"># Register this object so that the cached result</span>
     <span class="c1"># will be invalidated when the team is updated:</span>
-    <span class="n">cacheable_object</span><span class="p">(</span><span class="n">team</span><span class="p">)</span>
+    <span class="no">Types</span><span class="o">::</span><span class="no">Team</span><span class="p">.</span><span class="nf">cacheable_object</span><span class="p">(</span><span class="n">team</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
     <span class="n">team</span><span class="p">.</span><span class="nf">members</span><span class="p">.</span><span class="nf">count</span>
   <span class="k">else</span>
     <span class="kp">nil</span>
