@@ -8,7 +8,7 @@ on:
   # for re-running on old tags
   workflow_dispatch:
     inputs:
-      ref:
+      publish_version:
         required: true
         type: string
 
@@ -23,7 +23,7 @@ jobs:
       - name: Checkout release tag
         uses: actions/checkout@v3
         with:
-          ref: ${{ inputs.ref || env.GITHUB_REF }}
+          ref: ${{ env.GITHUB_REF }}
       - name: Checkout GitHub pages branch
         uses: actions/checkout@v3
         with:
@@ -35,7 +35,7 @@ jobs:
           bundler-cache: true
       - name: Build API docs
         run: |
-          bundle exec rake site:fetch_latest apidocs:gen_version["${{ inputs.ref || env.GITHUB_REF }}"]
+          bundle exec rake site:fetch_latest apidocs:gen_version["${{ inputs.publish_version || env.GITHUB_REF }}"]
       - name: Commit changes as last committer
         run: |
           git config --global user.name rmosolgo
