@@ -26,6 +26,7 @@ namespace :apidocs do
         # and locally for previewing
         push_dest = File.expand_path("../gh-pages/api-doc/#{version}")
         local_dest = File.expand_path("../guides/_site/api-doc/#{version}")
+        puts "Creating directories: #{push_dest.inspect}, #{local_dest.inspect}"
         FileUtils.mkdir_p(push_dest)
         FileUtils.mkdir_p(local_dest)
         system("yardoc")
