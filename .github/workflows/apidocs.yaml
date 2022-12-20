@@ -23,14 +23,10 @@ jobs:
         with:
           path: gh-pages
           ref: gh-pages
-      - uses: actions/setup-ruby@v1
+      - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.0'
-      - name: Bundle install
-        run: |
-          gem install bundler
-          bundle config path vendor/bundle
-          bundle install --jobs 4 --retry 3
+          bundler-cache: true
       - name: Build API docs
         run: |
           bundle exec rake site:fetch_latest apidocs:gen_version
