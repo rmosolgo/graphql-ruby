@@ -7,6 +7,7 @@ namespace :apidocs do
   task :gen_version, [:version] do |t, args|
     # GITHUB_REF comes from GitHub Actions
     version = args[:version] || ENV["GITHUB_REF"] || raise("A version is required")
+    puts "Building docs for #{version}"
     # GitHub Actions gives the full tag name
     if version.start_with?("refs/tags/")
       version = version[10..-1]
@@ -21,13 +22,13 @@ namespace :apidocs do
       system("rm graphql-#{version}.gem")
 
       Dir.chdir("graphql-#{version}") do
-        system("yardoc")
         # Copy it into gh-pages for publishing
         # and locally for previewing
         push_dest = File.expand_path("../gh-pages/api-doc/#{version}")
         local_dest = File.expand_path("../guides/_site/api-doc/#{version}")
-        mkdir_p push_dest
-        mkdir_p local_dest
+        FileUtils.mkdir_p(push_dest)
+        FileUtils.mkdir_p(local_dest)
+        system("yardoc")
         puts "Copying from #{Dir.pwd}/doc to #{push_dest}"
         copy_entry "doc", push_dest
         puts "Copying from #{Dir.pwd}/doc to #{local_dest}"
