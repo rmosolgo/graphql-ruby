@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.23.4 (20 December 2022)
+
+### Bug Fix
+
+- Dashboard: nicely render subscriptions that are not found or cleaned up by `read_subscription_failed_error`
+
 # 1.23.3 (19 December 2022)
 
 ### New Features
