@@ -527,7 +527,7 @@ describe GraphQL::Schema::Subscription do
   end
 
   describe "applying `loads:`" do
-    it "includes `as:` in the event topic" do
+    it "uses the original argument name in the event topic" do
       assert_equal [], SubscriptionFieldSchema::InMemorySubscriptions::EVENT_REGISTRY.keys
       matz = SubscriptionFieldSchema::USERS["matz"]
       obj = OpenStruct.new(toot: { body: "I am a C programmer" }, user: matz)
