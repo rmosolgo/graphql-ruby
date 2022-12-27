@@ -144,7 +144,7 @@ class ClassBasedInMemoryBackend < InMemoryBackend
   end
 
   class EventSubscription < GraphQL::Schema::Subscription
-    argument :user_id, ID
+    argument :user_id, ID, as: :user
     argument :payload_type, PayloadType, required: false, default_value: "ONE", prepare: ->(e, ctx) { e ? e.downcase : e }
     field :payload, Payload
   end
@@ -678,6 +678,9 @@ describe GraphQL::Subscriptions do
               }
             end
             assert_equal expected_sub_count, subscriptions_by_topic
+
+            schema.subscriptions.trigger(:event_subscription, { user_id: 3 }, {})
+            assert_equal 1, deliveries["1"].size
           end
 
           it "doesn't apply for plain fields" do

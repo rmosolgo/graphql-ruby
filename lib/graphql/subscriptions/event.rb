@@ -100,13 +100,8 @@ module GraphQL
               arg_name = k.to_s
               camelized_arg_name = GraphQL::Schema::Member::BuildType.camelize(arg_name)
               arg_defn = get_arg_definition(arg_owner, camelized_arg_name, context)
-
-              if arg_defn
-                normalized_arg_name = camelized_arg_name
-              else
-                normalized_arg_name = arg_name
-                arg_defn = get_arg_definition(arg_owner, normalized_arg_name, context)
-              end
+              arg_defn ||= get_arg_definition(arg_owner, arg_name, context)
+              normalized_arg_name = arg_defn.graphql_name
               arg_base_type = arg_defn.type.unwrap
               # In the case where the value being emitted is seen as a "JSON"
               # type, treat the value as one atomic unit of serialization
