@@ -28,7 +28,7 @@ module GraphQL
       class << self
         # This is protected so that we can be sure callers use the public method, {.authorized_new}
         # @see authorized_new to make instances
-        protected :new
+        # protected :new
 
         # Make a new instance of this type _if_ the auth check passes,
         # otherwise, raise an error.

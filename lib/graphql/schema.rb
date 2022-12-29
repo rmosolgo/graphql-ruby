@@ -1015,7 +1015,12 @@ module GraphQL
       # @param context [Hash] Multiplex-level context
       # @return [Array<Hash>] One result for each query in the input
       def multiplex(queries, **kwargs)
-        GraphQL::Execution::Interpreter.run_all(self, queries, **kwargs)
+        engine = @execution_engine || Execution::Interpreter
+        engine.run_all(self, queries, **kwargs)
+      end
+
+      def execution_engine(engine)
+        @execution_engine = engine
       end
 
       def instrumenters
