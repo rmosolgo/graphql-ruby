@@ -20,7 +20,7 @@ jobs:
           ref: gh-pages
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.0'
+          ruby-version: '3.1'
           bundler-cache: true
       - name: Build HTML, reindex
         env:
