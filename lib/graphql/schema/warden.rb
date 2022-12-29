@@ -181,7 +181,13 @@ module GraphQL
 
       # @return [Array<GraphQL::EnumType::EnumValue>] Visible members of `enum_defn`
       def enum_values(enum_defn)
-        @visible_enum_arrays ||= read_through { |e| e.enum_values(@context) }
+        @visible_enum_arrays ||= read_through { |e|
+         values = e.enum_values(@context)
+         if values.size == 0
+          raise GraphQL::Schema::Enum::MissingValuesError.new(e)
+         end
+         values
+        }
         @visible_enum_arrays[enum_defn]
       end
 

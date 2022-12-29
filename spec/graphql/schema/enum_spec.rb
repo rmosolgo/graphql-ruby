@@ -126,6 +126,32 @@ describe GraphQL::Schema::Enum do
     end
   end
 
+  describe "missing values at runtime" do
+    class EmptyEnumSchema < GraphQL::Schema
+      class EmptyEnum < GraphQL::Schema::Enum
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :empty_enum, EmptyEnum
+
+        def empty_enum
+          :something
+        end
+      end
+
+      query(Query)
+    end
+
+    it "requires at least one value at runtime" do
+      err = assert_raises GraphQL::Schema::Enum::MissingValuesError do
+        EmptyEnumSchema.execute("{ emptyEnum }")
+      end
+
+      expected_message = "Enum types require at least one value, but EmptyEnum didn't provide any for this query. Make sure at least one value is defined and visible for this query."
+      assert_equal expected_message, err.message
+    end
+  end
+
   describe "legacy tests" do
     let(:enum) { Dummy::DairyAnimal }
 
