@@ -8,6 +8,13 @@
 
 ### Bug Fix
 
+
+# 1.23.5 (29 December 2022)
+
+### New Features
+
+- Ably subscriptions: Also listen for `presence.leave` webhooks to clean up subscriptions more quickly
+
 # 1.23.4 (20 December 2022)
 
 ### Bug Fix

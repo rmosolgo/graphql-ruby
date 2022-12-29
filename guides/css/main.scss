@@ -127,6 +127,11 @@ ul {
   list-style-position: outside;
 }
 
+ol {
+  list-style: decimal;
+  margin-left: 5px;
+}
+
 code {
   font-family: $code-font;
   color: $code-color;

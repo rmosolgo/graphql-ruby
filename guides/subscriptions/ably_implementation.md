@@ -181,16 +181,16 @@ mount lazy_routes.ably_webhooks_client, at: "/ably_webhooks"
 ### Ably
 
 1. Go to the Ably dashboard
-2. Click on your application.
-3. Select the "Reactor" tab
-4. Click on the "+ New Reactor Rule" button
-5. Click on the "Choose" button for "Reactor Event"
-6. Click on the "Choose" button for "WebHooks"
-7. Enter your url (including the webhooks path from above) in the URL field.
-8. Select "Batch request" for "Request Mode"
-9. Under "Source" select "Channel Lifecycle"
-10. Under "Sign with key" select the API Key prefix that matches the prefix of the ABLY_API_KEY you provided.
-11. Click "Create"
+2. Click on your application
+3. Select the **"Integrations"** tab
+4. Click on the **"+ New Integration Rule"** button
+5. Click on the "Choose" button for **"Webhook"**
+6. Click on the "Choose" button for **"Webhook"** (again)
+7. Enter **your URL (including the webhooks path from above)** in the URL field.
+8. Select **"Batch request"** for "Request Mode"
+9. Under "Source", select **"Presence"**
+10. Under "Sign with key", select the API Key prefix that matches the prefix of the `ABLY_API_KEY` you provided
+11. Click **"Create"**
 
 ## Authorization
 
