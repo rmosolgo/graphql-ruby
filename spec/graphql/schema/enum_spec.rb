@@ -140,6 +140,14 @@ describe GraphQL::Schema::Enum do
       end
 
       query(Query)
+
+      rescue_from(GraphQL::Schema::Enum::MissingValuesError) do |err, obj, args, ctx, field|
+        if ctx[:handle_error]
+          raise GraphQL::ExecutionError, "Something went wrong!!"
+        else
+          raise err
+        end
+      end
     end
 
     it "requires at least one value at runtime" do
@@ -149,6 +157,11 @@ describe GraphQL::Schema::Enum do
 
       expected_message = "Enum types require at least one value, but EmptyEnum didn't provide any for this query. Make sure at least one value is defined and visible for this query."
       assert_equal expected_message, err.message
+    end
+
+    it "can be rescued by rescue_error" do
+      res = EmptyEnumSchema.execute("{ emptyEnum }", context: { handle_error: true })
+      assert_equal ["Something went wrong!!"], res["errors"].map { |e| e["message"] }
     end
   end
 
