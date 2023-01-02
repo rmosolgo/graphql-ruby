@@ -125,10 +125,10 @@ module GraphQL
         variables: variables,
         root_value: object,
       }
-      
+
        # merge event's and query's context together
       context.merge!(event.context) unless event.context.nil? || context.nil?
-      
+
       execute_options[:validate] = validate_update?(**execute_options)
       result = @schema.execute(**execute_options)
       subscriptions_context = result.context.namespace(:subscriptions)
@@ -136,11 +136,9 @@ module GraphQL
         result = nil
       end
 
-      unsubscribed = subscriptions_context[:unsubscribed]
-
-      if unsubscribed
+      if subscriptions_context[:unsubscribed] && !subscriptions_context[:final_update]
         # `unsubscribe` was called, clean up on our side
-        # TODO also send `{more: false}` to client?
+        # The transport should also send `{more: false}` to client
         delete_subscription(subscription_id)
         result = nil
       end
@@ -164,7 +162,14 @@ module GraphQL
       res = execute_update(subscription_id, event, object)
       if !res.nil?
         deliver(subscription_id, res)
+
+        if res.context.namespace(:subscriptions)[:unsubscribed]
+          # `unsubscribe` was called, clean up on our side
+          # The transport should also send `{more: false}` to client
+          delete_subscription(subscription_id)
+        end
       end
+
     end
 
     # Event `event` occurred on `object`,
