@@ -144,7 +144,7 @@ describe("PusherLink", () => {
     })
 
     // Pretend the HTTP link finished
-    requestFinished({})
+    requestFinished({ data: "initial payload" })
 
     pusher.trigger(channelName, "update", {
       result: {
@@ -162,6 +162,7 @@ describe("PusherLink", () => {
 
     expect(log).toEqual([
       ["subscribe", "abcd-efgh"],
+      ["received", { data: "initial payload"}],
       ["received", { data: "data 1" }],
       ["received", { data: "data 2" }],
       ["unsubscribe", "abcd-efgh"]
@@ -185,7 +186,7 @@ describe("PusherLink", () => {
     })
 
     // Pretend the HTTP link finished
-    requestFinished({})
+    requestFinished({ data: "initial payload" })
 
     pusher.trigger(channelName, "update", {
       result: {
@@ -198,6 +199,7 @@ describe("PusherLink", () => {
 
     expect(log).toEqual([
       ["subscribe", "abcd-efgh"],
+      ["received", { data: "initial payload"}],
       ["received", { data: "data 1" }],
       ["unsubscribe", "abcd-efgh"]
     ])
