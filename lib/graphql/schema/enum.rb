@@ -34,6 +34,13 @@ module GraphQL
         end
       end
 
+      class MissingValuesError < GraphQL::Error
+        def initialize(enum_type)
+          @enum_type = enum_type
+          super("Enum types require at least one value, but #{enum_type.graphql_name} didn't provide any for this query. Make sure at least one value is defined and visible for this query.")
+        end
+      end
+
       class << self
         # Define a value for this enum
         # @param graphql_name [String, Symbol] the GraphQL value for this, usually `SCREAMING_CASE`

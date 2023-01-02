@@ -126,6 +126,45 @@ describe GraphQL::Schema::Enum do
     end
   end
 
+  describe "missing values at runtime" do
+    class EmptyEnumSchema < GraphQL::Schema
+      class EmptyEnum < GraphQL::Schema::Enum
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :empty_enum, EmptyEnum
+
+        def empty_enum
+          :something
+        end
+      end
+
+      query(Query)
+
+      rescue_from(GraphQL::Schema::Enum::MissingValuesError) do |err, obj, args, ctx, field|
+        if ctx[:handle_error]
+          raise GraphQL::ExecutionError, "Something went wrong!!"
+        else
+          raise err
+        end
+      end
+    end
+
+    it "requires at least one value at runtime" do
+      err = assert_raises GraphQL::Schema::Enum::MissingValuesError do
+        EmptyEnumSchema.execute("{ emptyEnum }")
+      end
+
+      expected_message = "Enum types require at least one value, but EmptyEnum didn't provide any for this query. Make sure at least one value is defined and visible for this query."
+      assert_equal expected_message, err.message
+    end
+
+    it "can be rescued by rescue_error" do
+      res = EmptyEnumSchema.execute("{ emptyEnum }", context: { handle_error: true })
+      assert_equal ["Something went wrong!!"], res["errors"].map { |e| e["message"] }
+    end
+  end
+
   describe "legacy tests" do
     let(:enum) { Dummy::DairyAnimal }
 
