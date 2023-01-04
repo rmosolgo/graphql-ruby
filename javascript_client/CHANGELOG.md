@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.11.4 (4 January 2022)
+
+- PusherLink: pass initial response along to the client #4282
+
 # 1.11.3 (13 October 2022)
 
 - `createAblySubscriptions`: don't use `Error.captureStackTrace` which isn't supported in all JS runtimes #4223
