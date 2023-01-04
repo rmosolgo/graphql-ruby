@@ -62,7 +62,7 @@ module GraphQL
   # Schemas can specify how queries should be executed against them.
   # `query_execution_strategy`, `mutation_execution_strategy` and `subscription_execution_strategy`
   # each apply to corresponding root types.
-  #  #
+  #
   # @example defining a schema
   #   class MySchema < GraphQL::Schema
   #     query QueryType
@@ -900,7 +900,7 @@ module GraphQL
       # A function to call when {#execute} receives an invalid query string
       #
       # The default is to add the error to `context.errors`
-      # @param err [GraphQL::ParseError] The error encountered during parsing
+      # @param parse_err [GraphQL::ParseError] The error encountered during parsing
       # @param ctx [GraphQL::Query::Context] The context for the query where the error occurred
       # @return void
       def parse_error(parse_err, ctx)
