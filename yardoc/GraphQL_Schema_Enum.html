@@ -5,6 +5,22 @@
   </head>
   <body>
     <p>Class: GraphQL::Schema::Enum &lt; GraphQL::Schema::Member
+Extend this class to define GraphQL enums in your schema. 
+By default, GraphQL enum values are translated into Ruby strings.
+You can provide a custom value with the <code class="language-plaintext highlighter-rouge">value:</code> keyword. 
+Examples:
+#</p>
+<h1 id="equivalent-to">equivalent to</h1>
+<h1 id="enum-pizzatopping-">enum PizzaTopping {</h1>
+<h1 id="mushrooms">MUSHROOMS</h1>
+<h1 id="onions">ONIONS</h1>
+<h1 id="peppers">PEPPERS</h1>
+<h1>}</h1>
+<p>class PizzaTopping &lt; GraphQL::Enum
+value :MUSHROOMS
+value :ONIONS
+value :PEPPERS
+end
 Direct Known Subclasses:
 Introspection::DirectiveLocationEnum, Introspection::TypeKindEnum
 Extended by:
