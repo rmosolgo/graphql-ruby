@@ -144,7 +144,7 @@ describe("PusherLink", () => {
     })
 
     // Pretend the HTTP link finished
-    requestFinished({})
+    requestFinished({ data: "initial payload" })
 
     pusher.trigger(channelName, "update", {
       result: {
@@ -162,6 +162,7 @@ describe("PusherLink", () => {
 
     expect(log).toEqual([
       ["subscribe", "abcd-efgh"],
+      ["received", { data: "initial payload"}],
       ["received", { data: "data 1" }],
       ["received", { data: "data 2" }],
       ["unsubscribe", "abcd-efgh"]
@@ -185,7 +186,43 @@ describe("PusherLink", () => {
     })
 
     // Pretend the HTTP link finished
-    requestFinished({})
+    requestFinished({ data: "initial payload" })
+
+    pusher.trigger(channelName, "update", {
+      result: {
+        data: "data 1"
+      },
+      more: true
+    })
+
+    subscription.unsubscribe()
+
+    expect(log).toEqual([
+      ["subscribe", "abcd-efgh"],
+      ["received", { data: "initial payload"}],
+      ["received", { data: "data 1" }],
+      ["unsubscribe", "abcd-efgh"]
+    ])
+  })
+
+  it("doesn't send empty initial responses", () => {
+    var requestFinished: Function = () => {}
+
+    var observable = link.request(operation, function(_operation: Operation): any {
+      return {
+        subscribe: (options: { next: Function }): void => {
+          requestFinished = options.next
+        }
+      }
+    })
+
+    // unpack the underlying subscription
+    var subscription = observable.subscribe(function(result: any) {
+      log.push(["received", result])
+    })
+
+    // Pretend the HTTP link finished
+    requestFinished({ data: null })
 
     pusher.trigger(channelName, "update", {
       result: {
@@ -202,6 +239,7 @@ describe("PusherLink", () => {
       ["unsubscribe", "abcd-efgh"]
     ])
   })
+
 
   it("throws an error when no `decompress:` is configured", () => {
     const link = new PusherLink({
