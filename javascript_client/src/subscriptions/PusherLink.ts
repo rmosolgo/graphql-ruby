@@ -92,7 +92,9 @@ class PusherLink extends ApolloLink {
           // Set up the pusher subscription for updates from the server
           const pusherChannel = this.pusher.subscribe(subscriptionChannel)
           // Pass along the initial payload:
-          observer.next(data)
+          if (data.data && Object.keys(data.data).length > 0) {
+            observer.next(data)
+          }
           // Subscribe for more update
           pusherChannel.bind("update", (payload: any) => {
             this._onUpdate(subscriptionChannel, observer, payload)
