@@ -41,9 +41,6 @@ Want to add something? Please open a pull request [on GitHub](https://github.com
 -  Building a blog in GraphQL and Relay on Rails [Introduction](https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-getting-started-955a49d251de), [Part 1]( https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-creating-types-and-schema-b3f9b232ccfc), [Part 2](https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-react-component-cb3f9ee95eca)
 - https://medium.com/@khor/relay-facebook-on-rails-8b4af2057152
 - https://blog.jacobwgillespie.com/from-rest-to-graphql-b4e95e94c26b#.4cjtklrwt
-- http://mgiroux.me/2015/getting-started-with-rails-graphql-relay/
-- http://mgiroux.me/2015/uploading-files-using-relay-with-rails/
-- http://mgiroux.me/2016/journey-into-graphql-ruby-query-execution/
 - https://jonsimpson.ca/parallel-graphql-resolvers-with-futures/
 - Active Storage meets GraphQL: [Direct uploads](https://evilmartians.com/chronicles/active-storage-meets-graphql-direct-uploads) and [Exposing attachment URLs](https://evilmartians.com/chronicles/active-storage-meets-graphql-pt-2-exposing-attachment-urls)
 - [Exposing permissions in GraphQL APIs with Action Policy](https://evilmartians.com/chronicles/exposing-permissions-in-graphql-apis-with-action-policy)
