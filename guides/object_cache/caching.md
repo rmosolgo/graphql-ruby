@@ -15,6 +15,7 @@ index: 2
 # app/graphql/types/base_object.rb
 class Types::BaseObject < GraphQL::Schema::Object
   include GraphQL::Enterprise::ObjectCache::ObjectIntegration
+  field_class Types::BaseField
   cacheable(...) # see below
   # ...
 end
@@ -26,6 +27,15 @@ class Types::BaseField < GraphQL::Schema::Field
   include GraphQL::Enterprise::ObjectCache::FieldIntegration
   cacheable(...) # see below
   # ...
+end
+```
+
+Also, make sure your base interface module is using your field class:
+
+```ruby
+# app/graphql/types/base_interface.md
+module Types::BaseInterface
+ field_class Types::BaseField
 end
 ```
 
