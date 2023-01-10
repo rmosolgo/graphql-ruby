@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 1.13.18 (10 January 2022)
+
+### New Features
+
+- `hash_key:`: perform `[...]` lookups even when the underlying object isn't a Hash #4286
+
 # 1.13.17 (17 November 2022)
 
 ### Bug fixes
