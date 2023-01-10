@@ -601,6 +601,16 @@ describe GraphQL::Schema::Field do
   end
 
   describe "looking up hash keys with case" do
+    class HashLike
+      def initialize(value)
+        @value = value
+      end
+
+      def [](key)
+        @value
+      end
+    end
+
     class HashKeySchema < GraphQL::Schema
       class ResultType < GraphQL::Schema::Object
         field :lowercase, String, camelize: false, null: true
@@ -619,6 +629,8 @@ describe GraphQL::Schema::Field do
             "OtherCapital" => "explicit-hash-key-works"
           }
         end
+
+        field :hash_lookup, String, hash_key: :some_key
       end
 
       query(QueryType)
@@ -644,6 +656,11 @@ describe GraphQL::Schema::Field do
         "OtherCapital" => "explicit-hash-key-works"
       }
       assert_equal expected_result, search_results
+    end
+
+    it "does hash-style lookups on non-hash objects" do
+      res = HashKeySchema.execute("{ hashLookup }", root_value: HashLike.new("some value"))
+      assert_equal "some value", res["data"]["hashLookup"]
     end
   end
 

@@ -258,6 +258,10 @@ module GraphQL
         # TODO: I think non-string/symbol hash keys are wrongly normalized (eg `1` will not work)
         method_name = method || hash_key || name_s
         @dig_keys = dig
+        if hash_key
+          @hash_key = hash_key
+        end
+
         resolver_method ||= name_s.to_sym
 
         @method_str = -method_name.to_s
@@ -822,7 +826,7 @@ module GraphQL
             # Find a way to resolve this field, checking:
             #
             # - A method on the type instance;
-            # - Hash keys, if the wrapped object is a hash;
+            # - Hash keys, if the wrapped object is a hash or responds to `#[]`
             # - A method on the wrapped object;
             # - Or, raise not implemented.
             #
@@ -844,6 +848,8 @@ module GraphQL
               else
                 inner_object[@method_str]
               end
+            elsif defined?(@hash_key) && obj.object.respond_to?(:[])
+              obj.object[@hash_key]
             elsif obj.object.respond_to?(@method_sym)
               method_to_call = @method_sym
               method_receiver = obj.object
