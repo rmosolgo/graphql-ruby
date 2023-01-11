@@ -141,7 +141,7 @@ module GraphQL
               .gsub(/([a-z])([A-Z])/,'\1_\2') # insert underscores
               .downcase # remove caps
 
-            child_class.module_eval <<-RUBY
+            child_class.module_eval <<-RUBY, __FILE__, __LINE__
               def visit_method
                 :on_#{name_underscored}
               end
