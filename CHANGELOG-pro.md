@@ -8,6 +8,15 @@
 
 ### Bug Fix
 
+# 1.23.6
+
+### New Features
+
+- Subscriptions: accept `connection_pool:` instead of `redis:` for use with the `connection_pool` gem
+
+### Bug Fix
+
+- Stable connections: rescue `ActiveRecord::StatementInvalid` when loading nodes and return a client-facing error instead
 
 # 1.23.5 (29 December 2022)
 
