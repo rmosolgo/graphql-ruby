@@ -615,6 +615,16 @@ module GraphQL
                 end
               end
               HALT
+            elsif value.is_a?(GraphQL::UnauthorizedFieldError)
+              value.field ||= field
+              # this hook might raise & crash, or it might return
+              # a replacement value
+              next_value = begin
+                schema.unauthorized_field(value)
+              rescue GraphQL::ExecutionError => err
+                err
+              end
+              continue_value(path, next_value, parent_type, field, is_non_null, ast_node, result_name, selection_result)
             elsif value.is_a?(GraphQL::UnauthorizedError)
               # this hook might raise & crash, or it might return
               # a replacement value

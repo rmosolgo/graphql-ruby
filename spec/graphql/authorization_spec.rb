@@ -666,6 +666,7 @@ describe "GraphQL::Authorization" do
               query = "{ unauthorized }"
               response = AuthTest::SchemaWithFieldHook.execute(query, root_value: 34, context: { lazy_field_authorized: false })
               assert_nil response["data"].fetch("unauthorized")
+              assert_equal ["Unauthorized field unauthorized on Query: 34"], response["errors"].map { |e| e["message"] }
             end
           end
 
