@@ -32,6 +32,16 @@ module GraphQL
         def kind
           raise GraphQL::RequiredImplementationMissingError, "No `.kind` defined for #{self}"
         end
+
+        private
+
+        def inherited(subclass)
+          super
+          subclass.class_eval do
+            @to_non_null_type = nil
+            @to_list_type = nil
+          end
+        end
       end
     end
   end

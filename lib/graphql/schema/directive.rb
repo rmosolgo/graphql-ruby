@@ -93,6 +93,18 @@ module GraphQL
         def repeatable(new_value)
           @repeatable = new_value
         end
+
+        private
+
+        def inherited(subclass)
+          super
+          subclass.class_eval do
+            @default_graphql_name = nil
+            @repeatable = nil
+            @default_directive = nil
+            @locations = nil
+          end
+        end
       end
 
       # @return [GraphQL::Schema::Field, GraphQL::Schema::Argument, Class, Module]

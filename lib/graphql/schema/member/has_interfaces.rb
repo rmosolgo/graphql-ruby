@@ -82,6 +82,13 @@ module GraphQL
 
           visible_interfaces.uniq
         end
+
+        private
+
+        def inherited(subclass)
+          super
+          @own_interface_type_memberships = nil
+        end
       end
     end
   end
