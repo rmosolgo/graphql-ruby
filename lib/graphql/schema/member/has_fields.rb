@@ -129,6 +129,13 @@ module GraphQL
 
         private
 
+        def inherited(subclass)
+          super
+          subclass.class_eval do
+            @own_fields ||= nil
+          end
+        end
+
         # If `type` is an interface, and `self` has a type membership for `type`, then make sure it's visible.
         def visible_interface_implementation?(type, context, warden)
           if type.respond_to?(:kind) && type.kind.interface?
