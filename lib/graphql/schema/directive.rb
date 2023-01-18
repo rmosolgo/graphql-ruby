@@ -21,9 +21,9 @@ module GraphQL
         # but downcase the first letter.
         def default_graphql_name
           @default_graphql_name ||= begin
-            camelized_name = super
+            camelized_name = super.dup
             camelized_name[0] = camelized_name[0].downcase
-            camelized_name
+            -camelized_name
           end
         end
 
@@ -92,6 +92,15 @@ module GraphQL
 
         def repeatable(new_value)
           @repeatable = new_value
+        end
+
+        private
+
+        def inherited(subclass)
+          super
+          subclass.class_eval do
+            @default_graphql_name ||= nil
+          end
         end
       end
 
