@@ -17,7 +17,7 @@ optional arguments:
   --path=<path>                             Path to .graphql files (default is "./**/*.graphql")
   --outfile=<generated-filename>            Target file for generated code
   --outfile-type=<type>                     Target type for generated code (default is "js")
-  --key=<key>                               HMAC authentication key
+  --secret=<secret>                         HMAC authentication key
   --relay-persisted-output=<path>           Path to a .json file from "relay-compiler ... --persist-output"
                                               (Outfile generation is skipped by default.)
   --apollo-codegen-json-output=<path>       Path to a .json file from "apollo client:codegen ... --target json"
