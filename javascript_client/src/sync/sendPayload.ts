@@ -8,7 +8,8 @@ interface SendPayloadOptions {
   secret?: string,
   client?: string,
   verbose?: boolean,
-  headers?: [string],
+  headers?: { [key: string]: string },
+  changesetVersion?: string,
 }
 /**
  * Use HTTP POST to send this payload to the endpoint.
@@ -41,6 +42,9 @@ function sendPayload(payload: any, options: SendPayloadOptions) {
     'Content-Length': Buffer.byteLength(postData).toString()
   }
 
+  if (options.changesetVersion) {
+    defaultHeaders["Changeset-Version"] = options.changesetVersion
+  }
   var allHeaders = Object.assign({}, options.headers, defaultHeaders)
 
   var httpOptions = {

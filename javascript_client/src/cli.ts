@@ -34,6 +34,7 @@ optional arguments:
                                               - otherwise, "project"
   --header=<header>:<value>                 Add a header to the outgoing HTTP request
                                               (may be repeated)
+  --changeset-version=<version>             Populates \`context[:changeset_version]\` for this sync (for the GraphQL-Enterprise "Changesets" feature)
   --add-typename                            Automatically adds the "__typename" field to your queries
   --quiet                                   Suppress status logging
   --verbose                                 Print debug output
@@ -72,6 +73,7 @@ optional arguments:
       addTypename: argv["add-typename"],
       quiet: argv.hasOwnProperty("quiet"),
       verbose: argv.hasOwnProperty("verbose"),
+      changesetVersion: argv["changset-version"],
     })
 
     result.then(function() {
