@@ -16,4 +16,10 @@ describe("CLI", () => {
     var response = buffer.toString().replace(/\033\[[0-9;]*m/g, "")
     expect(response).toEqual("No URL; Generating artifacts without syncing them\nGenerating client module in src/OperationStoreClient.js...\n✓ Done!\n")
   })
+
+  it("runs with just one header", () => {
+    var buffer = childProcess.execSync("node ./cli.js sync --client=something --header=Ab-cd:ef-gh --mode=file --path=\"**/doc1.graphql\"", {stdio: "pipe"})
+    var response = buffer.toString().replace(/\033\[[0-9;]*m/g, "")
+    expect(response).toEqual("No URL; Generating artifacts without syncing them\nGenerating client module in src/OperationStoreClient.js...\n✓ Done!\n")
+  })
 })

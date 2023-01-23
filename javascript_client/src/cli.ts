@@ -47,10 +47,15 @@ optional arguments:
   } else {
     var parsedHeaders: {[key: string]: string} = {}
     if (argv.header) {
-      argv.header.forEach((h: string) => {
-        var headerParts = h.split(":")
+      if (typeof(argv.header) === "string") {
+        var headerParts = argv.header.split(":")
         parsedHeaders[headerParts[0]] = headerParts[1]
-      })
+      } else {
+        argv.header.forEach((h: string) => {
+          var headerParts = h.split(":")
+          parsedHeaders[headerParts[0]] = headerParts[1]
+        })
+      }
     }
     var result = sync({
       path: argv.path,
