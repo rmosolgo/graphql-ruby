@@ -171,6 +171,7 @@ describe GraphQL::Schema::Enum do
     it "coerces names to underlying values" do
       assert_equal("YAK", enum.coerce_isolated_input("YAK"))
       assert_equal(1, enum.coerce_isolated_input("COW"))
+      assert_equal(nil, enum.coerce_isolated_input("NONE"))
     end
 
     it "coerces invalid names to nil" do
@@ -178,6 +179,7 @@ describe GraphQL::Schema::Enum do
     end
 
     it "coerces result values to value's value" do
+      assert_equal("NONE", enum.coerce_isolated_result(nil))
       assert_equal("YAK", enum.coerce_isolated_result("YAK"))
       assert_equal("COW", enum.coerce_isolated_result(1))
       assert_equal("REINDEER", enum.coerce_isolated_result('reindeer'))
@@ -282,7 +284,7 @@ describe GraphQL::Schema::Enum do
         assert(!result.valid?)
         assert_equal(
           result.problems.first['explanation'],
-          "Expected \"bad enum\" to be one of: COW, DONKEY, GOAT, REINDEER, SHEEP, YAK"
+          "Expected \"bad enum\" to be one of: NONE, COW, DONKEY, GOAT, REINDEER, SHEEP, YAK"
         )
       end
     end
