@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.23.7 (25 Jan 2023)
+
+### Bug Fix
+
+- Stable Relation Connections: Fix handling of Postgres JSON accesses
+
 # 1.23.6
 
 ### New Features
