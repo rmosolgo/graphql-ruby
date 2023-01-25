@@ -27,6 +27,7 @@ describe GraphQL::Introspection::TypeType do
   ]}
 
   let(:dairy_animals) {[
+    {"name"=>"NONE",       "isDeprecated"=> false },
     {"name"=>"COW",       "isDeprecated"=> false },
     {"name"=>"DONKEY",    "isDeprecated"=> false },
     {"name"=>"GOAT",      "isDeprecated"=> false },
