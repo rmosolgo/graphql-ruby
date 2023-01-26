@@ -5,6 +5,7 @@ require "benchmark/ips"
 require "stackprof"
 require "memory_profiler"
 require "graphql/batch"
+require "graphql/metrics"
 
 module GraphQLBenchmark
   QUERY_STRING = GraphQL::Introspection::INTROSPECTION_QUERY
@@ -82,7 +83,7 @@ module GraphQLBenchmark
       }
     end
 
-    result = StackProf.run(mode: :wall) do
+    result = StackProf.run(mode: :wall, interval: 1) do
       schema.execute(document: document)
     end
     StackProf::Report.new(result).print_text
@@ -110,8 +111,20 @@ module GraphQLBenchmark
       }
     }
 
+    module Bar
+      include GraphQL::Schema::Interface
+      field :string_array, [String], null: false
+    end
+
+    module Baz
+      include Bar
+      field :int_array, [Integer], null: false
+      field :boolean_array, [Boolean], null: false
+    end
+
 
     class FooType < GraphQL::Schema::Object
+      implements Bar
       field :id, ID, null: false
       field :int1, Integer, null: false
       field :int2, Integer, null: false
@@ -119,9 +132,6 @@ module GraphQLBenchmark
       field :string2, String, null: false
       field :boolean1, Boolean, null: false
       field :boolean2, Boolean, null: false
-      field :string_array, [String], null: false
-      field :int_array, [Integer], null: false
-      field :boolean_array, [Boolean], null: false
     end
 
     class QueryType < GraphQL::Schema::Object
@@ -134,7 +144,28 @@ module GraphQLBenchmark
 
     class Schema < GraphQL::Schema
       query QueryType
-      use GraphQL::Dataloader
+      class DummyPlatformTracer < GraphQL::Tracing::PlatformTracing
+        self.platform_keys = GraphQL::Tracing::DataDogTracing.platform_keys
+
+        def platform_trace(platform_key, key, data)
+          yield
+        end
+
+        def platform_authorized_key(t)
+          t.graphql_name
+        end
+
+        def platform_field_key(t, f)
+          f.path
+        end
+      end
+
+
+      query_analyzer GraphQL::Metrics::Analyzer
+
+      instrument :query, GraphQL::Metrics::Instrumentation.new # Both of these are required if either is used.
+      tracer GraphQL::Metrics::Tracer.new                      # <-- Note!
+      # use GraphQL::Dataloader
     end
 
     ALL_FIELDS = GraphQL.parse <<-GRAPHQL
