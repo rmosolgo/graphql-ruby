@@ -9,7 +9,6 @@ gem 'pry'
 gem 'pry-stack_explorer', platform: :ruby
 gem 'graphql-batch'
 gem 'pry-byebug'
-gem "graphql-metrics"
 
 if RUBY_VERSION >= "3.0"
   gem "libev_scheduler"

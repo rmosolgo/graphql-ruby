@@ -5,7 +5,6 @@ require "benchmark/ips"
 require "stackprof"
 require "memory_profiler"
 require "graphql/batch"
-require "graphql/metrics"
 
 module GraphQLBenchmark
   QUERY_STRING = GraphQL::Introspection::INTROSPECTION_QUERY
@@ -117,14 +116,15 @@ module GraphQLBenchmark
     end
 
     module Baz
-      include Bar
+      include GraphQL::Schema::Interface
+      implements Bar
       field :int_array, [Integer], null: false
       field :boolean_array, [Boolean], null: false
     end
 
 
     class FooType < GraphQL::Schema::Object
-      implements Bar
+      implements Baz
       field :id, ID, null: false
       field :int1, Integer, null: false
       field :int2, Integer, null: false
@@ -144,27 +144,6 @@ module GraphQLBenchmark
 
     class Schema < GraphQL::Schema
       query QueryType
-      class DummyPlatformTracer < GraphQL::Tracing::PlatformTracing
-        self.platform_keys = GraphQL::Tracing::DataDogTracing.platform_keys
-
-        def platform_trace(platform_key, key, data)
-          yield
-        end
-
-        def platform_authorized_key(t)
-          t.graphql_name
-        end
-
-        def platform_field_key(t, f)
-          f.path
-        end
-      end
-
-
-      query_analyzer GraphQL::Metrics::Analyzer
-
-      instrument :query, GraphQL::Metrics::Instrumentation.new # Both of these are required if either is used.
-      tracer GraphQL::Metrics::Tracer.new                      # <-- Note!
       # use GraphQL::Dataloader
     end
 
