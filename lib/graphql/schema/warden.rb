@@ -78,6 +78,7 @@ module GraphQL
           def visible_type?(type, ctx); type.visible?(ctx); end
           def visible_enum_value?(ev, ctx); ev.visible?(ctx); end
           def visible_type_membership?(tm, ctx); tm.visible?(ctx); end
+          def interface_type_memberships(obj_t, ctx); obj_t.interface_type_memberships; end
         end
       end
 
@@ -229,6 +230,13 @@ module GraphQL
 
       def visible_type_membership?(type_membership, _ctx = nil)
         visible?(type_membership)
+      end
+
+      def interface_type_memberships(obj_type, _ctx = nil)
+        @type_memberships ||= read_through do |obj_t|
+          obj_t.interface_type_memberships
+        end
+        @type_memberships[obj_type]
       end
 
       private
