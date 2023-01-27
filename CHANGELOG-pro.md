@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.23.8 (27 Jan 2023)
+
+### New Features
+
+- OperationStore: Support `Changeset-Version` header for syncing with changesets #4304
+
 # 1.23.7 (25 Jan 2023)
 
 ### Bug Fix
