@@ -55,7 +55,17 @@ module GraphQL
         end
 
         def interface_type_memberships
-          own_interface_type_memberships + ((self.is_a?(Class) && superclass.respond_to?(:interface_type_memberships)) ? superclass.interface_type_memberships : [])
+          own_tms = own_interface_type_memberships
+          if (self.is_a?(Class) && superclass.respond_to?(:interface_type_memberships))
+            inherited_tms = superclass.interface_type_memberships
+            if inherited_tms.size > 0
+              own_tms + inherited_tms
+            else
+              own_tms
+            end
+          else
+            own_tms
+          end
         end
 
         # param context [Query::Context] If omitted, skip filtering.

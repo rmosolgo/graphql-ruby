@@ -82,7 +82,7 @@ module GraphQLBenchmark
       }
     end
 
-    result = StackProf.run(mode: :wall) do
+    result = StackProf.run(mode: :wall, interval: 1) do
       schema.execute(document: document)
     end
     StackProf::Report.new(result).print_text
@@ -110,8 +110,21 @@ module GraphQLBenchmark
       }
     }
 
+    module Bar
+      include GraphQL::Schema::Interface
+      field :string_array, [String], null: false
+    end
+
+    module Baz
+      include GraphQL::Schema::Interface
+      implements Bar
+      field :int_array, [Integer], null: false
+      field :boolean_array, [Boolean], null: false
+    end
+
 
     class FooType < GraphQL::Schema::Object
+      implements Baz
       field :id, ID, null: false
       field :int1, Integer, null: false
       field :int2, Integer, null: false
@@ -119,9 +132,6 @@ module GraphQLBenchmark
       field :string2, String, null: false
       field :boolean1, Boolean, null: false
       field :boolean2, Boolean, null: false
-      field :string_array, [String], null: false
-      field :int_array, [Integer], null: false
-      field :boolean_array, [Boolean], null: false
     end
 
     class QueryType < GraphQL::Schema::Object
@@ -134,7 +144,7 @@ module GraphQLBenchmark
 
     class Schema < GraphQL::Schema
       query QueryType
-      use GraphQL::Dataloader
+      # use GraphQL::Dataloader
     end
 
     ALL_FIELDS = GraphQL.parse <<-GRAPHQL

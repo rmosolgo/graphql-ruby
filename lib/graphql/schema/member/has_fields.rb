@@ -141,7 +141,7 @@ module GraphQL
           if type.respond_to?(:kind) && type.kind.interface?
             implements_this_interface = false
             implementation_is_visible = false
-            interface_type_memberships.each do |tm|
+            warden.interface_type_memberships(self, context).each do |tm|
               if tm.abstract_type == type
                 implements_this_interface ||= true
                 if warden.visible_type_membership?(tm, context)
