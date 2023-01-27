@@ -165,10 +165,32 @@ module GraphQLBenchmark
       field :id, ID, null: false
       field :int1, Integer, null: false
       field :int2, Integer, null: false
-      field :string1, String, null: false
-      field :string2, String, null: false
-      field :boolean1, Boolean, null: false
-      field :boolean2, Boolean, null: false
+      field :string1, String, null: false do
+        argument :arg1, String, required: false
+        argument :arg2, String, required: false
+        argument :arg3, String, required: false
+        argument :arg4, String, required: false
+      end
+
+      field :string2, String, null: false do
+        argument :arg1, String, required: false
+        argument :arg2, String, required: false
+        argument :arg3, String, required: false
+        argument :arg4, String, required: false
+      end
+
+      field :boolean1, Boolean, null: false do
+        argument :arg1, String, required: false
+        argument :arg2, String, required: false
+        argument :arg3, String, required: false
+        argument :arg4, String, required: false
+      end
+      field :boolean2, Boolean, null: false do
+        argument :arg1, String, required: false
+        argument :arg2, String, required: false
+        argument :arg3, String, required: false
+        argument :arg4, String, required: false
+      end
     end
 
     class QueryType < GraphQL::Schema::Object

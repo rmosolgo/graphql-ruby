@@ -81,6 +81,7 @@ module GraphQL
           def visible_enum_value?(ev, ctx); ev.visible?(ctx); end
           def visible_type_membership?(tm, ctx); tm.visible?(ctx); end
           def interface_type_memberships(obj_t, ctx); obj_t.interface_type_memberships; end
+          def arguments(owner, ctx); owner.arguments(ctx); end
         end
       end
 
@@ -175,8 +176,8 @@ module GraphQL
 
       # @param argument_owner [GraphQL::Field, GraphQL::InputObjectType]
       # @return [Array<GraphQL::Argument>] Visible arguments on `argument_owner`
-      def arguments(argument_owner)
-        @visible_arguments ||= read_through { |o| o.arguments(@context).each_value.select { |a| visible_argument?(a) } }
+      def arguments(argument_owner, ctx = nil)
+        @visible_arguments ||= read_through { |o| o.arguments(@context).each_value.select { |a| visible_argument?(a, @context) } }
         @visible_arguments[argument_owner]
       end
 
