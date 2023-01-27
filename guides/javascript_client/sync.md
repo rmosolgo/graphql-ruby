@@ -53,7 +53,7 @@ option | description
 `--header={key}:{value}` | Add a header to the outgoing HTTP request (may be repeated)
 `--add-typename` | Add `__typename` to all selection sets (for use with Apollo Client)
 `--verbose` | Output some debug information
-`--changeset-version` | Set a {% internal_link "Changeset Version", "/changesets/installation#controller-setup" %} when syncing these queries
+`--changeset-version` | Set a {% internal_link "Changeset Version", "/changesets/installation#controller-setup" %} when syncing these queries. (`context[:changeset_version]` will also be required at runtime, when running these stored operations.)
 
 You can see these and a few others with `graphql-ruby-client sync --help`.
 

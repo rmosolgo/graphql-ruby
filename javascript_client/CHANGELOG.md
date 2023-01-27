@@ -1,6 +1,11 @@
 # graphql-ruby-client
 
-# 1.11.4 (4 January 2022)
+# 1.11.5 (27 January 2023)
+
+- Sync: add a `--changeset-version` for use with Changesets #4304
+- Sync: fix handling of `--header` with a single header
+
+# 1.11.4 (4 January 2023)
 
 - PusherLink: pass initial response along to the client #4282
 
