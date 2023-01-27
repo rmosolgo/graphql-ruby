@@ -34,6 +34,7 @@ optional arguments:
                                               - otherwise, "project"
   --header=<header>:<value>                 Add a header to the outgoing HTTP request
                                               (may be repeated)
+  --changeset-version=<version>             Populates \`context[:changeset_version]\` for this sync (for the GraphQL-Enterprise "Changesets" feature)
   --add-typename                            Automatically adds the "__typename" field to your queries
   --quiet                                   Suppress status logging
   --verbose                                 Print debug output
@@ -47,10 +48,15 @@ optional arguments:
   } else {
     var parsedHeaders: {[key: string]: string} = {}
     if (argv.header) {
-      argv.header.forEach((h: string) => {
-        var headerParts = h.split(":")
+      if (typeof(argv.header) === "string") {
+        var headerParts = argv.header.split(":")
         parsedHeaders[headerParts[0]] = headerParts[1]
-      })
+      } else {
+        argv.header.forEach((h: string) => {
+          var headerParts = h.split(":")
+          parsedHeaders[headerParts[0]] = headerParts[1]
+        })
+      }
     }
     var result = sync({
       path: argv.path,
@@ -67,6 +73,7 @@ optional arguments:
       addTypename: argv["add-typename"],
       quiet: argv.hasOwnProperty("quiet"),
       verbose: argv.hasOwnProperty("verbose"),
+      changesetVersion: argv["changset-version"],
     })
 
     result.then(function() {

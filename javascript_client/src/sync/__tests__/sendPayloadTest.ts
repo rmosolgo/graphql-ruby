@@ -44,6 +44,21 @@ describe("Posting GraphQL to OperationStore Endpoint", () => {
     })
   })
 
+  it("Sends headers and changeset version", () => {
+    var mock = nock("http://example.com", {
+      reqheaders: {
+        thing: "Stuff",
+        "Changeset-Version": "2023-01-01",
+      }
+    })
+      .post("/stored_operations/sync")
+      .reply(200, { result: "ok" })
+
+    return sendPayload("payload", { url: "http://example.com/stored_operations/sync", headers: { thing: "Stuff" }, changesetVersion: "2023-01-01" }).then(function(_response) {
+      expect(mock.isDone()).toEqual(true)
+    })
+  })
+
   it("Adds an hmac-sha256 header if key is present", () => {
     var payload = { "payload": [1,2,3] }
     var key = "2f26b770ded2a04279bc4bf824ca54ac"

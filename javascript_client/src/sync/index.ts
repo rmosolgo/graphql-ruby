@@ -21,6 +21,7 @@ interface SyncOptions {
   verbose?: boolean,
   quiet?: boolean,
   addTypename?: boolean,
+  changesetVersion?: string,
   headers?: {[key: string]: string},
 }
 /**
@@ -42,6 +43,7 @@ interface SyncOptions {
  * @param {Function} options.hash - A custom hash function for query strings with the signature `options.hash(string) => digest` (Default is `md5(string) => digest`)
  * @param {Boolean} options.verbose - If true, log debug output
  * @param {Object<String, String>} options.headers - If present, extra headers to add to the HTTP request
+ * @param {String} options.changesetVersion - If present, sent to populate `context[:changeset_version]` on the server
  * @return {Promise} Rejects with an Error or String if something goes wrong. Resolves with the operation payload if successful.
 */
 function sync(options: SyncOptions) {
@@ -147,6 +149,7 @@ function sync(options: SyncOptions) {
         secret: encryptionKey,
         verbose: verbose,
         headers: options.headers,
+        changesetVersion: options.changesetVersion,
       }
       var sendPromise = Promise.resolve(sendFunc(payload, sendOpts))
       return sendPromise.then(function(response) {
