@@ -409,6 +409,7 @@ module GraphQL
               raise "Invariant: no field for #{owner_type}.#{field_name}"
             end
           end
+          # HERE
           return_type = field_defn.type
 
           next_path = path + [result_name]
@@ -441,6 +442,7 @@ module GraphQL
         end
 
         def evaluate_selection_with_args(arguments, field_defn, next_path, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selection_result, parent_object)  # rubocop:disable Metrics/ParameterLists
+          # HERE
           return_type = field_defn.type
           after_lazy(arguments, owner: owner_type, field: field_defn, path: next_path, ast_node: ast_node, owner_object: object, arguments: arguments, result_name: result_name, result: selection_result) do |resolved_arguments|
             if resolved_arguments.is_a?(GraphQL::ExecutionError) || resolved_arguments.is_a?(GraphQL::UnauthorizedError)
