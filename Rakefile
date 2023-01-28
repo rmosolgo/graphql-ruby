@@ -116,6 +116,12 @@ namespace :bench do
     prepare_benchmark
     GraphQLBenchmark.profile_batch_loaders
   end
+
+  desc "Run a very big introspection query"
+  task :profile_large_introspection do
+    prepare_benchmark
+    GraphQLBenchmark.profile_large_introspection
+  end
 end
 
 namespace :test do
