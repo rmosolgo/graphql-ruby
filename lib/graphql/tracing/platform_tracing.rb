@@ -36,6 +36,7 @@ module GraphQL
             trace_field = true # implemented with instrumenter
           else
             field = data[:field]
+            # HERE
             return_type = field.type.unwrap
             trace_field = if return_type.kind.scalar? || return_type.kind.enum?
               (field.trace.nil? && @trace_scalars) || field.trace
