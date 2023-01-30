@@ -228,7 +228,16 @@ module GraphQL
           end
         end
         @original_name = name
-        name_s = -name.to_s
+        name_s = name.to_s
+        if name_s.encoding != Encoding::UTF_8
+          if name_s.frozen?
+            name_s = name_s.encode(Encoding::UTF_8)
+          else
+            name_s.encode!(Encoding::UTF_8)
+          end
+        end
+        name_s = -name_s
+
         @underscored_name = -Member::BuildType.underscore(name_s)
         @name = -(camelize ? Member::BuildType.camelize(name_s) : name_s)
         if description != :not_given

@@ -54,7 +54,15 @@ module GraphQL
       # @param replace_null_with_default [Boolean] if `true`, incoming values of `null` will be replaced with the configured `default_value`
       def initialize(arg_name = nil, type_expr = nil, desc = nil, required: true, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NO_DEFAULT, as: nil, from_resolver: false, camelize: true, prepare: nil, owner:, validates: nil, directives: nil, deprecation_reason: nil, replace_null_with_default: false, &definition_block)
         arg_name ||= name
-        @name = -(camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s)
+        name_s = camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s
+        if name_s.encoding != Encoding::UTF_8
+          if name_s.frozen?
+            name_s = name_s.encode(Encoding::UTF_8)
+          else
+            name_s.encode!(Encoding::UTF_8)
+          end
+        end
+        @name = -name_s
         @type_expr = type_expr || type
         @description = desc || description
         @null = required != true
