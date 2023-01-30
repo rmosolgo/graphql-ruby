@@ -6,6 +6,7 @@ module GraphQL
   class Schema
     class Field
       include GraphQL::Schema::Member::HasArguments
+      include GraphQL::Schema::Member::HasArguments::FieldConfigured
       include GraphQL::Schema::Member::HasAstNode
       include GraphQL::Schema::Member::HasPath
       include GraphQL::Schema::Member::HasValidators
