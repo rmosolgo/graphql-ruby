@@ -14,15 +14,15 @@ module GraphQL
       field :kind, GraphQL::Schema::LateBoundType.new("__TypeKind"), null: false
       field :name, String, method: :graphql_name
       field :description, String
-      field :fields, [GraphQL::Schema::LateBoundType.new("__Field")] do
+      field :fields, [GraphQL::Schema::LateBoundType.new("__Field")], scope: false do
         argument :include_deprecated, Boolean, required: false, default_value: false
       end
-      field :interfaces, [GraphQL::Schema::LateBoundType.new("__Type")]
-      field :possible_types, [GraphQL::Schema::LateBoundType.new("__Type")]
-      field :enum_values, [GraphQL::Schema::LateBoundType.new("__EnumValue")] do
+      field :interfaces, [GraphQL::Schema::LateBoundType.new("__Type")], scope: false
+      field :possible_types, [GraphQL::Schema::LateBoundType.new("__Type")], scope: false
+      field :enum_values, [GraphQL::Schema::LateBoundType.new("__EnumValue")], scope: false do
         argument :include_deprecated, Boolean, required: false, default_value: false
       end
-      field :input_fields, [GraphQL::Schema::LateBoundType.new("__InputValue")]  do
+      field :input_fields, [GraphQL::Schema::LateBoundType.new("__InputValue")], scope: false  do
         argument :include_deprecated, Boolean, required: false, default_value: false
       end
       field :of_type, GraphQL::Schema::LateBoundType.new("__Type")
