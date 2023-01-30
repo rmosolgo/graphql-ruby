@@ -18,6 +18,22 @@ module GraphQL
 
       private
 
+      def replace_nulls_in(ast_value)
+        case ast_value
+        when Array
+          ast_value.map { |v| replace_nulls_in(v) }
+        when Hash
+          new_v = {}
+          ast_value.each do |k, v|
+            new_v[k] = replace_nulls_in(v)
+          end
+        when GraphQL::Language::Nodes::NullValue
+          nil
+        else
+          ast_value
+        end
+      end
+
       def recursively_validate(ast_value, type)
         if type.nil?
           # this means we're an undefined argument, see #present_input_field_values_are_valid
@@ -42,7 +58,8 @@ module GraphQL
           @valid_response
         elsif type.kind.scalar? && constant_scalar?(ast_value)
           maybe_raise_if_invalid(ast_value) do
-            type.validate_input(ast_value, @context)
+            ruby_value = replace_nulls_in(ast_value)
+            type.validate_input(ruby_value, @context)
           end
         elsif type.kind.enum?
           maybe_raise_if_invalid(ast_value) do

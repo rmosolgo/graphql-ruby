@@ -1654,4 +1654,59 @@ type ReachableType implements Node {
     GRAPHQL
     assert_equal expected_schema, schema.to_definition
   end
+
+  describe "JSON type" do
+    class JsonTypeApplication
+      SCHEMA_STRING = <<~EOS
+        scalar JsonValue
+
+        type Query {
+          echoJsonValue(arg: JsonValue): JsonValue
+        }
+      EOS
+
+      def initialize
+        @schema = GraphQL::Schema.from_definition(SCHEMA_STRING, default_resolve: self)
+      end
+
+      def execute_query(query_string, **vars)
+        @schema.execute(query_string, variables: vars)
+      end
+
+      def call(parent_type, field, object, args, context)
+        args.fetch(:arg)
+      end
+
+      def coerce_input(type, value, ctx)
+        (ctx[:nils] ||= []).push(value[2])
+        ::JSON.generate(value)
+      end
+
+      def coerce_result(type, value, ctx)
+        ::JSON.parse(value)
+      end
+    end
+
+    it "Sends normal ruby values to schema coercion" do
+      app = JsonTypeApplication.new
+
+      res_1 = app.execute_query(<<~EOS, arg: [3, "abc", nil, 7])
+        query WithArg($arg: JsonValue) {
+          echoJsonValue(arg: $arg)
+        }
+      EOS
+
+      assert_equal([3, "abc", nil, 7], res_1["data"]["echoJsonValue"])
+      assert_equal [nil, nil], res_1.context[:nils]
+
+      res_2 = app.execute_query(<<~EOS)
+        query {
+          echoJsonValue(arg: [3, "abc", null, 7])
+        }
+      EOS
+      assert_equal([3, "abc", nil, 7], res_2["data"]["echoJsonValue"])
+      assert_equal [nil, nil], res_2.context[:nils]
+
+    end
+  end
 end
