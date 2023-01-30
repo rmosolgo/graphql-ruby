@@ -409,7 +409,7 @@ module GraphQL
               raise "Invariant: no field for #{owner_type}.#{field_name}"
             end
           end
-          # HERE
+
           return_type = field_defn.type
 
           next_path = path + [result_name]
@@ -432,19 +432,16 @@ module GraphQL
           total_args_count = field_defn.arguments(context).size
           if total_args_count == 0
             resolved_arguments = GraphQL::Execution::Interpreter::Arguments::EMPTY
-            evaluate_selection_with_args(resolved_arguments, field_defn, next_path, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selections_result, parent_object)
+            evaluate_selection_with_args(resolved_arguments, field_defn, next_path, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selections_result, parent_object, return_type)
           else
             # TODO remove all arguments(...) usages?
             @query.arguments_cache.dataload_for(ast_node, field_defn, object) do |resolved_arguments|
-              evaluate_selection_with_args(resolved_arguments, field_defn, next_path, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selections_result, parent_object)
+              evaluate_selection_with_args(resolved_arguments, field_defn, next_path, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selections_result, parent_object, return_type)
             end
           end
         end
 
-        def evaluate_selection_with_args(arguments, field_defn, next_path, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selection_result, parent_object)  # rubocop:disable Metrics/ParameterLists
-          # HERE
-          return_type = field_defn.type
-          after_lazy(arguments, owner: owner_type, field: field_defn, path: next_path, ast_node: ast_node, owner_object: object, arguments: arguments, result_name: result_name, result: selection_result) do |resolved_arguments|
+        def evaluate_selection_with_args(arguments, field_defn, next_path, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selection_result, parent_object, return_type)  # rubocop:disable Metrics/ParameterLists
             if resolved_arguments.is_a?(GraphQL::ExecutionError) || resolved_arguments.is_a?(GraphQL::UnauthorizedError)
               continue_value(next_path, resolved_arguments, owner_type, field_defn, return_type.non_null?, ast_node, result_name, selection_result)
               next

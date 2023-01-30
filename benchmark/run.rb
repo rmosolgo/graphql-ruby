@@ -79,7 +79,7 @@ module GraphQLBenchmark
         100.times do |n|
           obj_t = Class.new(GraphQL::Schema::Object) do
             graphql_name("Object#{n}")
-            5.times do |n2|
+            20.times do |n2|
               field :"field#{n2}", String do
                 argument :arg, String
               end
