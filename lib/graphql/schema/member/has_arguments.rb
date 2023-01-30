@@ -209,7 +209,7 @@ module GraphQL
         # @return [Interpreter::Arguments, Execution::Lazy<Interpeter::Arguments>]
         def coerce_arguments(parent_object, values, context, &block)
           # Cache this hash to avoid re-merging it
-          arg_defns = self.arguments(context)
+          arg_defns = context.warden.arguments(self)
           total_args_count = arg_defns.size
 
           finished_args = nil
@@ -223,7 +223,7 @@ module GraphQL
               argument_values = {}
               resolved_args_count = 0
               raised_error = false
-              arg_defns.each do |arg_name, arg_defn|
+              arg_defns.each do |arg_defn|
                 context.dataloader.append_job do
                   begin
                     arg_defn.coerce_into_values(parent_object, values, context, argument_values)

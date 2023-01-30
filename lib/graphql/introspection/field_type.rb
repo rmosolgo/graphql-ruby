@@ -7,7 +7,7 @@ module GraphQL
                   "a name, potentially a list of arguments, and a return type."
       field :name, String, null: false
       field :description, String
-      field :args, [GraphQL::Schema::LateBoundType.new("__InputValue")], null: false do
+      field :args, [GraphQL::Schema::LateBoundType.new("__InputValue")], null: false, scope: false do
         argument :include_deprecated, Boolean, required: false, default_value: false
       end
       field :type, GraphQL::Schema::LateBoundType.new("__Type"), null: false

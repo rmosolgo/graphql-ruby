@@ -8,11 +8,11 @@ module GraphQL
                   "available types and directives on the server, as well as the entry points for "\
                   "query, mutation, and subscription operations."
 
-      field :types, [GraphQL::Schema::LateBoundType.new("__Type")], "A list of all types supported by this server.", null: false
+      field :types, [GraphQL::Schema::LateBoundType.new("__Type")], "A list of all types supported by this server.", null: false, scope: false
       field :query_type, GraphQL::Schema::LateBoundType.new("__Type"), "The type that query operations will be rooted at.", null: false
       field :mutation_type, GraphQL::Schema::LateBoundType.new("__Type"), "If this server supports mutation, the type that mutation operations will be rooted at."
       field :subscription_type, GraphQL::Schema::LateBoundType.new("__Type"), "If this server support subscription, the type that subscription operations will be rooted at."
-      field :directives, [GraphQL::Schema::LateBoundType.new("__Directive")], "A list of all directives supported by this server.", null: false
+      field :directives, [GraphQL::Schema::LateBoundType.new("__Directive")], "A list of all directives supported by this server.", null: false, scope: false
       field :description, String, resolver_method: :schema_description
 
       def schema_description

@@ -72,6 +72,43 @@ module GraphQLBenchmark
     StackProf::Report.new(result).print_text
   end
 
+  def self.profile_large_introspection
+    schema = Class.new(GraphQL::Schema) do
+      query_t = Class.new(GraphQL::Schema::Object) do
+        graphql_name("Query")
+        100.times do |n|
+          obj_t = Class.new(GraphQL::Schema::Object) do
+            graphql_name("Object#{n}")
+            20.times do |n2|
+              field :"field#{n2}", String do
+                argument :arg, String
+              end
+            end
+          end
+          field :"rootfield#{n}", obj_t
+        end
+      end
+      query(query_t)
+    end
+
+    Benchmark.ips do |x|
+      x.report("Run large introspection") {
+        schema.to_json
+      }
+    end
+
+    result = StackProf.run(mode: :wall, interval: 10) do
+      schema.to_json
+    end
+    StackProf::Report.new(result).print_text
+
+    report = MemoryProfiler.report do
+      schema.to_json
+    end
+    puts "\n\n"
+    report.pretty_print
+  end
+
   # Adapted from https://github.com/rmosolgo/graphql-ruby/issues/861
   def self.profile_large_result
     schema = ProfileLargeResult::Schema
@@ -128,10 +165,32 @@ module GraphQLBenchmark
       field :id, ID, null: false
       field :int1, Integer, null: false
       field :int2, Integer, null: false
-      field :string1, String, null: false
-      field :string2, String, null: false
-      field :boolean1, Boolean, null: false
-      field :boolean2, Boolean, null: false
+      field :string1, String, null: false do
+        argument :arg1, String, required: false
+        argument :arg2, String, required: false
+        argument :arg3, String, required: false
+        argument :arg4, String, required: false
+      end
+
+      field :string2, String, null: false do
+        argument :arg1, String, required: false
+        argument :arg2, String, required: false
+        argument :arg3, String, required: false
+        argument :arg4, String, required: false
+      end
+
+      field :boolean1, Boolean, null: false do
+        argument :arg1, String, required: false
+        argument :arg2, String, required: false
+        argument :arg3, String, required: false
+        argument :arg4, String, required: false
+      end
+      field :boolean2, Boolean, null: false do
+        argument :arg1, String, required: false
+        argument :arg2, String, required: false
+        argument :arg3, String, required: false
+        argument :arg4, String, required: false
+      end
     end
 
     class QueryType < GraphQL::Schema::Object
