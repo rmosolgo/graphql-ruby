@@ -22,7 +22,7 @@ module GraphQL
         # but downcase the first letter.
         def default_graphql_name
           @default_graphql_name ||= begin
-            camelized_name = super
+            camelized_name = super.dup
             camelized_name[0] = camelized_name[0].downcase
             camelized_name
           end
