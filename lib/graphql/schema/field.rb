@@ -229,6 +229,7 @@ module GraphQL
         end
         @original_name = name
         name_s = -name.to_s
+
         @underscored_name = -Member::BuildType.underscore(name_s)
         @name = -(camelize ? Member::BuildType.camelize(name_s) : name_s)
         if description != :not_given
