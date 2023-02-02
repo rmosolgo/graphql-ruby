@@ -10,7 +10,17 @@
 
 ### Bug fixes
 
-# 1.13.18 (10 January 2022)
+# 1.13.19 (2 February 2023)
+
+### Bug fixes
+
+- Performance: don't re-encode schema member names #4323
+- Performance: fix a duplicate field.type call #4316
+- Performance: use `scope: false` for introspection types #4315
+- Performance: improve argument coercion and validation #4312
+- Performance: improve interface type membership lookup #4309
+
+# 1.13.18 (10 January 2023)
 
 ### New Features
 
