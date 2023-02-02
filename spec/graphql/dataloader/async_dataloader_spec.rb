@@ -253,5 +253,11 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
       let(:scheduler_class) { Evt::Scheduler }
       include AsyncDataloaderAssertions
     end
+
+    describe "with fiber_scheduler" do
+      require "fiber_scheduler"
+      let(:scheduler_class) { FiberScheduler }
+      include AsyncDataloaderAssertions
+    end
   end
 end
