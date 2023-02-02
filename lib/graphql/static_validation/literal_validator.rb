@@ -22,11 +22,8 @@ module GraphQL
         case ast_value
         when Array
           ast_value.map { |v| replace_nulls_in(v) }
-        when Hash
-          new_v = {}
-          ast_value.each do |k, v|
-            new_v[k] = replace_nulls_in(v)
-          end
+        when GraphQL::Language::Nodes::InputObject
+          ast_value.to_h
         when GraphQL::Language::Nodes::NullValue
           nil
         else

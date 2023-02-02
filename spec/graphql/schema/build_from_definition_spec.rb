@@ -1678,7 +1678,12 @@ type ReachableType implements Node {
       end
 
       def coerce_input(type, value, ctx)
-        (ctx[:nils] ||= []).push(value[2])
+        nils = ctx[:nils] ||= []
+        if value.is_a?(Array)
+          nils << value[2]
+        else
+          nils << value["abc"]
+        end
         ::JSON.generate(value)
       end
 
@@ -1707,6 +1712,23 @@ type ReachableType implements Node {
       assert_equal([3, "abc", nil, 7], res_2["data"]["echoJsonValue"])
       assert_equal [nil, nil], res_2.context[:nils]
 
+      res_3 = app.execute_query(<<~EOS, arg: { "abc" => nil, "def" => 7 })
+      query WithArg($arg: JsonValue) {
+        echoJsonValue(arg: $arg)
+      }
+      EOS
+
+      assert_equal({ "abc" => nil, "def" => 7 }, res_3["data"]["echoJsonValue"])
+      assert_equal [nil, nil], res_3.context[:nils]
+
+      res_4 = app.execute_query(<<~EOS)
+      query {
+        echoJsonValue(arg: { abc: null, def: 7, ghi: { jkl: null } })
+      }
+      EOS
+
+      assert_equal({ "abc" => nil, "def" => 7, "ghi"=>{"jkl"=>nil} }, res_4["data"]["echoJsonValue"])
+      assert_equal [nil, nil], res_4.context[:nils]
     end
   end
 end
