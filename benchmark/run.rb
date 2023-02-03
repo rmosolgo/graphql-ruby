@@ -72,25 +72,45 @@ module GraphQLBenchmark
     StackProf::Report.new(result).print_text
   end
 
-  def self.profile_large_introspection
-    schema = Class.new(GraphQL::Schema) do
-      query_t = Class.new(GraphQL::Schema::Object) do
-        graphql_name("Query")
-        100.times do |n|
-          obj_t = Class.new(GraphQL::Schema::Object) do
-            graphql_name("Object#{n}")
-            20.times do |n2|
-              field :"field#{n2}", String do
-                argument :arg, String
-              end
+  SILLY_LARGE_SCHEMA = Class.new(GraphQL::Schema) do
+    query_t = Class.new(GraphQL::Schema::Object) do
+      graphql_name("Query")
+      int_ts = 5.times.map do |i|
+        int_t = Module.new do
+          include GraphQL::Schema::Interface
+          graphql_name "Interface#{i}"
+          5.times do |n2|
+            field :"field#{n2}", String do
+              argument :arg, String
             end
           end
-          field :"rootfield#{n}", obj_t
         end
+        field :"int_field_#{i}", int_t
+        int_t
       end
-      query(query_t)
-    end
 
+      100.times do |n|
+        obj_t = Class.new(GraphQL::Schema::Object) do
+          graphql_name("Object#{n}")
+          implements(*int_ts)
+          20.times do |n2|
+            field :"field#{n2}", String do
+              argument :arg, String
+            end
+
+          end
+          field :self_field, self
+          field :int_0_field, int_ts[0]
+        end
+
+        field :"rootfield#{n}", obj_t
+      end
+    end
+    query(query_t)
+  end
+
+  def self.profile_large_introspection
+    schema = SILLY_LARGE_SCHEMA
     Benchmark.ips do |x|
       x.report("Run large introspection") {
         schema.to_json
@@ -104,6 +124,50 @@ module GraphQLBenchmark
 
     report = MemoryProfiler.report do
       schema.to_json
+    end
+    puts "\n\n"
+    report.pretty_print
+  end
+
+  def self.profile_large_analysis
+    query_str = "query {\n".dup
+    fragments = []
+    5.times do |n|
+      query_str << "  intField#{n} { "
+      20.times do |o|
+        query_str << "...Obj#{o}Fields "
+      end
+      query_str << "}\n"
+    end
+    query_str << "}"
+
+    20.times do |o|
+      query_str << "fragment Obj#{o}Fields on Object#{o} { "
+      20.times do |f|
+        query_str << "  field#{f}(arg: \"a\")\n"
+      end
+      query_str << "  selfField { selfField { selfField { __typename } } }\n"
+      query_str << "  int0Field { ...Int0Fields }"
+      query_str << "}\n"
+    end
+    query_str << "fragment Int0Fields on Interface0 { __typename }"
+    query = GraphQL::Query.new(SILLY_LARGE_SCHEMA, query_str)
+    analyzers = [GraphQL::Analysis::AST::FieldUsage]
+    multiplex_analyzers = []
+    Benchmark.ips do |x|
+      x.report("Running introspection") {
+        GraphQL::Analysis::AST.analyze_query(query, analyzers)
+      }
+    end
+
+    result = StackProf.run(mode: :wall, interval: 1) do
+      GraphQL::Analysis::AST.analyze_query(query, analyzers)
+    end
+
+    StackProf::Report.new(result).print_text
+
+    report = MemoryProfiler.report do
+      GraphQL::Analysis::AST.analyze_query(query, analyzers)
     end
     puts "\n\n"
     report.pretty_print
