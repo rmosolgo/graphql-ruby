@@ -281,7 +281,7 @@ type Query {
       end
     end
 
-    describe "with an except filter" do
+    describe "with a visiblity check" do
       let(:expected_idl) { <<-GRAPHQL
         type QueryType {
           foo: Foo
@@ -323,11 +323,16 @@ type Query {
       GRAPHQL
       }
 
+      let(:schema) {
+        Class.new(GraphQL::Schema.from_definition(schema_idl)) do
+          def self.visible?(m, ctx)
+            m.graphql_name != "Type"
+          end
+        end
+      }
+
       let(:document) {
-        subject.new(
-          schema,
-          except: ->(m, _ctx) { m.respond_to?(:graphql_name) && m.graphql_name == "Type" }
-        ).document
+        subject.new(schema).document
       }
 
       it "returns the IDL minus the filtered members" do
@@ -374,11 +379,16 @@ type Query {
       GRAPHQL
       }
 
+      let(:schema) {
+        Class.new(GraphQL::Schema.from_definition(schema_idl)) do
+          def self.visible?(m, ctx)
+            !(m.respond_to?(:kind) && m.kind.scalar? && m.name == "CustomScalar")
+          end
+        end
+      }
+
       let(:document) {
-        subject.new(
-          schema,
-          only: ->(m, _ctx) { !(m.respond_to?(:kind) && m.kind.scalar? && m.name == "CustomScalar") }
-        ).document
+        subject.new(schema).document
       }
 
       it "returns the IDL minus the filtered members" do

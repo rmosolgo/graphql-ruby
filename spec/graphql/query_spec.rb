@@ -823,7 +823,12 @@ describe GraphQL::Query do
   end
 
   it "Accepts a passed-in warden" do
-    warden = GraphQL::Schema::Warden.new(->(t, ctx) { false }, schema: Jazz::Schema, context: nil)
+    schema = Class.new(Jazz::Schema) do
+      def self.visible?(_m, _ctx)
+        false
+      end
+    end
+    warden = GraphQL::Schema::Warden.new(schema: schema, context: nil)
     res = Jazz::Schema.execute("{ __typename } ", warden: warden)
     assert_equal ["Schema is not configured for queries"], res["errors"].map { |e| e["message"] }
   end

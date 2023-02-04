@@ -24,7 +24,6 @@ module GraphQL
         @dataloader = GraphQL::Dataloader::NullDataloader.new
         @schema = NullSchema
         @warden = NullWarden.new(
-          GraphQL::Filter.new,
           context: self,
           schema: @schema,
         )
