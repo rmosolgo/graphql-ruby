@@ -432,7 +432,7 @@ describe GraphQL::Schema::Warden do
       }
       |
 
-      res = MaskHelpers.run_query(query_string, context: { except: -> (member, ctx) { MaskHelpers.has_flag?(member, :hidden_type) } })
+      res = MaskHelpers.run_query(query_string, context: { except: ->(member, ctx) { MaskHelpers.has_flag?(member, :hidden_type) } })
       # It's not visible by name
       assert_nil res["data"]["Phoneme"]
 
@@ -621,7 +621,7 @@ describe GraphQL::Schema::Warden do
       }
       |
 
-      res = MaskHelpers.run_query(query_string, context: { except: -> (member, ctx) { MaskHelpers.has_flag?(member, :hidden_type) } })
+      res = MaskHelpers.run_query(query_string, context: { except: ->(member, ctx) { MaskHelpers.has_flag?(member, :hidden_type) } })
 
       expected_errors = [
         "No such type Phoneme, so it can't be a fragment condition",
@@ -638,7 +638,7 @@ describe GraphQL::Schema::Warden do
       |
 
       assert_raises(MaskHelpers::EmicUnitType::UnresolvedTypeError) {
-        MaskHelpers.run_query(query_string, context: { except: -> (member, ctx) { MaskHelpers.has_flag?(member, :hidden_type) } })
+        MaskHelpers.run_query(query_string, context: { except: ->(member, ctx) { MaskHelpers.has_flag?(member, :hidden_type) } })
       }
     end
 
