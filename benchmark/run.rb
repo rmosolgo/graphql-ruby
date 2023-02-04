@@ -131,7 +131,6 @@ module GraphQLBenchmark
 
   def self.profile_large_analysis
     query_str = "query {\n".dup
-    fragments = []
     5.times do |n|
       query_str << "  intField#{n} { "
       20.times do |o|
@@ -153,7 +152,6 @@ module GraphQLBenchmark
     query_str << "fragment Int0Fields on Interface0 { __typename }"
     query = GraphQL::Query.new(SILLY_LARGE_SCHEMA, query_str)
     analyzers = [GraphQL::Analysis::AST::FieldUsage]
-    multiplex_analyzers = []
     Benchmark.ips do |x|
       x.report("Running introspection") {
         GraphQL::Analysis::AST.analyze_query(query, analyzers)
