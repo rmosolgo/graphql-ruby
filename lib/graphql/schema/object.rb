@@ -60,17 +60,7 @@ module GraphQL
             end
           end
 
-          auth_val = if context.schema.lazy?(maybe_lazy_auth_val)
-            GraphQL::Execution::Lazy.new do
-              context.query.trace("authorized_lazy", trace_payload) do
-                context.schema.sync_lazy(maybe_lazy_auth_val)
-              end
-            end
-          else
-            maybe_lazy_auth_val
-          end
-
-          context.schema.after_lazy(auth_val) do |is_authorized|
+          maybe_lazy_auth_val.then do |is_authorized|
             if is_authorized
               self.new(object, context)
             else

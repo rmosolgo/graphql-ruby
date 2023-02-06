@@ -17,8 +17,9 @@ describe "GraphQL::Authorization" do
 
       def then(&block)
         self.class.new value: ->{
-          v = value
-          block.call(v)
+          value.then do |v|
+            block.call(v)
+          end
         }
       end
     end
