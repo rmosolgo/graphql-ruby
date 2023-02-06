@@ -35,8 +35,7 @@ module GraphQL
         #
         # Probably only the framework should call this method.
         #
-        # This might return a {GraphQL::Execution::Lazy} if the user-provided `.authorized?`
-        # hook returns some lazy value (like a Promise).
+        # Use `.then { |obj| ... }` because application checks may return lazy values.
         #
         # The reason that the auth check is in this wrapper method instead of {.new} is because
         # of how it might return a Promise. It would be weird if `.new` returned a promise;
@@ -45,7 +44,7 @@ module GraphQL
         #
         # @param object [Object] The thing wrapped by this object
         # @param context [GraphQL::Query::Context]
-        # @return [GraphQL::Schema::Object, GraphQL::Execution::Lazy]
+        # @return [#then] an initialized instance of this class, or an object whose `.then` method will yield the instance eventually.
         # @raise [GraphQL::UnauthorizedError] if the user-provided hook returns `false`
         def authorized_new(object, context)
           trace_payload = { context: context, type: self, object: object, path: context[:current_path] }

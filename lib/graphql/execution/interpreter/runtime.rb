@@ -974,17 +974,15 @@ module GraphQL
 
         def resolve_type(type, value, path)
           trace_payload = { context: context, type: type, object: value, path: path }
-          resolved_type, resolved_value = query.trace("resolve_type", trace_payload) do
+          before_resolved_type, before_resolved_value = query.trace("resolve_type", trace_payload) do
             query.resolve_type(type, value)
           end
 
-          if lazy?(resolved_type)
-            GraphQL::Execution::Lazy.new do
-              query.trace("resolve_type_lazy", trace_payload) do
-                schema.sync_lazy(resolved_type)
-              end
+          before_resolved_type.then do |resolved_type, resolved_value|
+            if resolved_value.nil?
+              resolved_value = before_resolved_value
             end
-          else
+
             [resolved_type, resolved_value]
           end
         end
