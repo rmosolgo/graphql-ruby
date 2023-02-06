@@ -1045,10 +1045,10 @@ module GraphQL
       # - Right away, if `value` is not registered with `lazy_resolve`
       # - After resolving `value`, if it's registered with `lazy_resolve` (eg, `Promise`)
       # @api private
-      def after_lazy(value, &block)
+      def after_lazy(value)
         value.then do |res|
           res.then do |res2|
-            block.call(res2)
+            yield(res2)
           end
         end
       end
