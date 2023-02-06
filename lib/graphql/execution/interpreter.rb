@@ -146,6 +146,16 @@ module GraphQL
                   # Assign values here so that the query's `@executed` becomes true
                   queries.map { |q| q.result_values ||= {} }
                   raise
+                ensure
+                  queries.map { |query|
+                    runtime = query.context.namespace(:interpreter_runtime)[:runtime]
+                    if runtime
+                      runtime.delete_interpreter_context(:current_path)
+                      runtime.delete_interpreter_context(:current_field)
+                      runtime.delete_interpreter_context(:current_object)
+                      runtime.delete_interpreter_context(:current_arguments)
+                    end
+                  }
                 end
               end
             end
