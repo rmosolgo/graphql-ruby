@@ -79,7 +79,7 @@ module GraphQL
         end
 
         def introspection?
-          introspection
+          @introspection
         end
 
         # The mutation this type was derived from, if it was derived from a mutation
