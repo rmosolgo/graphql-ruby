@@ -89,7 +89,7 @@ describe GraphQL::Schema::Argument do
       lazy_resolve(Proc, :call)
 
       def self.object_from_id(id, ctx)
-        -> { Jazz::GloballyIdentifiableType.find(id) }
+        Dummy::ThenProc.new { Jazz::GloballyIdentifiableType.find(id) }
       end
 
       orphan_types [Jazz::InstrumentType, UnauthorizedInstrumentType]

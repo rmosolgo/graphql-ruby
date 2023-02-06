@@ -2,6 +2,23 @@
 require "graphql"
 require_relative "./data"
 module Dummy
+  class ThenProc < Proc
+    def then(&block)
+      self.class.new do
+        value = self.call
+        block.call(value)
+      end
+    end
+
+    def call
+      result = super
+      if result.is_a?(self.class)
+        result = result.call
+      end
+      result
+    end
+  end
+
   class NoSuchDairyError < StandardError; end
 
   class BaseField < GraphQL::Schema::Field
@@ -84,7 +101,7 @@ module Dummy
     implements LocalProduct
 
     def self.authorized?(obj, ctx)
-      -> { true }
+      ThenProc.new { true }
     end
 
     field :id, Int, "Unique identifier", null: false
@@ -521,7 +538,7 @@ module Dummy
     rescue_from(NoSuchDairyError) { |err| raise GraphQL::ExecutionError, err.message  }
 
     def self.resolve_type(type, obj, ctx)
-      -> { Schema.types[obj.class.name.split("::").last] }
+      ThenProc.new { Schema.types[obj.class.name.split("::").last] }
     end
 
     # This is used to confirm that the hook is called:

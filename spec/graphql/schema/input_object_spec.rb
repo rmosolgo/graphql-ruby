@@ -191,7 +191,7 @@ describe GraphQL::Schema::InputObject do
           argument :instrument_name, ID, loads: Jazz::InstrumentType, as: :instrument
 
           def self.load_instrument(instrument_name, context)
-            -> {
+            Dummy::ThenProc.new {
               instruments = Jazz::Models.data["Instrument"]
               instruments.find { |i| i.name == instrument_name }
             }
@@ -225,7 +225,7 @@ describe GraphQL::Schema::InputObject do
         lazy_resolve(Proc, :call)
 
         def self.object_from_id(id, ctx)
-          -> {
+          Dummy::ThenProc.new {
             if id.start_with?("thing-")
               OpenStruct.new(name: id)
             else
@@ -1129,7 +1129,7 @@ describe GraphQL::Schema::InputObject do
       query(Query)
 
       def self.object_from_id(id, ctx)
-        -> { nil }
+        Dummy::ThenProc.new { nil }
       end
 
       lazy_resolve(Proc, :call)

@@ -1046,14 +1046,10 @@ module GraphQL
       # - After resolving `value`, if it's registered with `lazy_resolve` (eg, `Promise`)
       # @api private
       def after_lazy(value, &block)
-        if lazy?(value)
-          GraphQL::Execution::Lazy.new do
-            result = sync_lazy(value)
-            # The returned result might also be lazy, so check it, too
-            after_lazy(result, &block)
+        value.then do |res|
+          res.then do |res2|
+            block.call(res2)
           end
-        else
-          yield(value) if block_given?
         end
       end
 
@@ -1085,13 +1081,25 @@ module GraphQL
       # otherwise, call the block eagerly and return the result.
       # @param maybe_lazies [Array]
       # @api private
-      def after_any_lazies(maybe_lazies)
-        if maybe_lazies.any? { |l| lazy?(l) }
-          GraphQL::Execution::Lazy.all(maybe_lazies).then do |result|
-            yield result
-          end
+      def after_any_lazies(maybe_lazies, &block)
+        if maybe_lazies.size == 0
+          yield(maybe_lazies)
         else
-          yield maybe_lazies
+          result = []
+          maybe_then(0, maybe_lazies.length - 1, maybe_lazies, result, &block)
+        end
+      end
+
+      def maybe_then(current_idx, last_idx, maybe_lazies, result, &block)
+        item = maybe_lazies[current_idx]
+        item.then do |value|
+          result << value
+          if current_idx < last_idx
+            next_idx = current_idx + 1
+            maybe_then(next_idx, last_idx, maybe_lazies, result, &block)
+          else
+            block.call(result)
+          end
         end
       end
 

@@ -80,8 +80,7 @@ module GraphQL
           elsif is_ready
             # Then call each prepare hook, which may return a different value
             # for that argument, or may return a lazy object
-            load_arguments_val = load_arguments(args)
-            context.schema.after_lazy(load_arguments_val) do |loaded_args|
+            load_arguments(args) do |loaded_args|
               @prepared_arguments = loaded_args
               Schema::Validator.validate!(self.class.validators, object, context, loaded_args, as: @field)
               # Then call `authorized?`, which may raise or may return a lazy object
@@ -183,11 +182,9 @@ module GraphQL
         args.each do |key, value|
           arg_defn = @arguments_by_keyword[key]
           if arg_defn
-            prepped_value = prepared_args[key] = arg_defn.load_and_authorize_value(self, value, context)
-            if context.schema.lazy?(prepped_value)
-              prepare_lazies << context.schema.after_lazy(prepped_value) do |finished_prepped_value|
-                prepared_args[key] = finished_prepped_value
-              end
+            prepped_value = arg_defn.load_and_authorize_value(self, value, context)
+            prepare_lazies << prepped_value.then do |v|
+              prepared_args[key] = v
             end
           else
             # these are `extras:`
@@ -195,11 +192,8 @@ module GraphQL
           end
         end
 
-        # Avoid returning a lazy if none are needed
-        if prepare_lazies.any?
-          GraphQL::Execution::Lazy.all(prepare_lazies).then { prepared_args }
-        else
-          prepared_args
+        context.schema.after_any_lazies(prepare_lazies) do
+          yield(prepared_args)
         end
       end
 
