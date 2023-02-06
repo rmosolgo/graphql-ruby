@@ -22,12 +22,8 @@ module GraphQL
             GraphQL::NameValidator.validate!(new_name)
             @graphql_name = new_name
           else
-            overridden_graphql_name || default_graphql_name
+            @graphql_name ||= default_graphql_name
           end
-        end
-
-        def overridden_graphql_name
-          defined?(@graphql_name) ? @graphql_name : nil
         end
 
         # Just a convenience method to point out that people should use graphql_name instead
@@ -60,8 +56,8 @@ module GraphQL
           def inherited(child_class)
             child_class.introspection(introspection)
             child_class.description(description)
-            if overridden_graphql_name
-              child_class.graphql_name(overridden_graphql_name)
+            if defined?(@graphql_name) && (self.name.nil? || graphql_name != default_graphql_name)
+              child_class.graphql_name(graphql_name)
             end
             super
           end
@@ -125,10 +121,7 @@ module GraphQL
 
         def inherited(subclass)
           super
-          if subclass.name
-            # Prime this cached name:
-            subclass.default_graphql_name
-          end
+          subclass.default_graphql_name = nil
         end
       end
     end
