@@ -17,6 +17,14 @@ describe GraphQL::Execution::Interpreter do
         end
         @value
       end
+
+      def then
+        self.class.new do
+          value.then do |v|
+            yield(v)
+          end
+        end
+      end
     end
 
     class Expansion < GraphQL::Schema::Object
@@ -591,7 +599,7 @@ describe GraphQL::Execution::Interpreter do
 
         field :lazy_skip, String
         def lazy_skip
-          -> { context.skip }
+          Dummy::ThenProc.new { context.skip }
         end
 
         field :mixed_skips, [String]
@@ -600,7 +608,7 @@ describe GraphQL::Execution::Interpreter do
             "a",
             context.skip,
             "c",
-            -> { context.skip },
+            Dummy::ThenProc.new { context.skip },
             "e",
           ]
         end
@@ -609,7 +617,7 @@ describe GraphQL::Execution::Interpreter do
       class NothingSubscription < GraphQL::Schema::Subscription
         field :nothing, String
         def authorized?(*)
-          -> { true }
+          Dummy::ThenProc.new { true }
         end
 
         def update

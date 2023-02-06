@@ -129,7 +129,7 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
         result = nil
         ctx.dataloader.run_isolated do
           result = yield
-          GraphQL::Execution::Interpreter::Resolve.resolve_all([result], ctx.dataloader)
+          GraphQL::Execution::Interpreter::Resolve.resolve_all(ctx.schema, [result], ctx.dataloader)
         end
 
         ctx[:count_fields] ||= Hash.new { |h, k| h[k] = [] }

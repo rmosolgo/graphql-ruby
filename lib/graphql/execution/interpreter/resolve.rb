@@ -6,8 +6,8 @@ module GraphQL
       module Resolve
         # Continue field results in `results` until there's nothing else to continue.
         # @return [void]
-        def self.resolve_all(results, dataloader)
-          dataloader.append_job { resolve(results, dataloader) }
+        def self.resolve_all(schema, results, dataloader)
+          dataloader.append_job { resolve(schema, results, dataloader) }
           nil
         end
 
@@ -24,7 +24,7 @@ module GraphQL
         # or return {Hash}/{Array} if the query should be continued.
         #
         # @return [void]
-        def self.resolve(results, dataloader)
+        def self.resolve(schema, results, dataloader)
           # There might be pending jobs here that _will_ write lazies
           # into the result hash. We should run them out, so we
           # can be sure that all lazies will be present in the result hashes.
@@ -43,9 +43,9 @@ module GraphQL
             elsif result_value.is_a?(Array)
               results.concat(result_value)
               next
-            elsif result_value.is_a?(Lazy)
-              loaded_value = result_value.value
-              if loaded_value.is_a?(Lazy)
+            elsif schema.lazy?(result_value)
+              loaded_value = schema.sync_lazy_once(result_value)
+              if schema.lazy?(loaded_value)
                 # Since this field returned another lazy,
                 # add it to the same queue
                 results << loaded_value
@@ -66,7 +66,7 @@ module GraphQL
             # (Just `.append_job` doesn't work if any pending
             # jobs require multiple passes.)
             dataloader.run
-            dataloader.append_job { resolve(next_results, dataloader) }
+            dataloader.append_job { resolve(schema, next_results, dataloader) }
           end
 
           nil

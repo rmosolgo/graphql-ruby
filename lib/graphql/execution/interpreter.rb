@@ -89,14 +89,20 @@ module GraphQL
                     tracer = multiplex
                     query = multiplex.queries.length == 1 ? multiplex.queries[0] : nil
                     queries = multiplex ? multiplex.queries : [query]
+                    pending_paths = []
                     final_values = queries.map do |query|
                       runtime = query.context.namespace(:interpreter_runtime)[:runtime]
-                      # it might not be present if the query has an error
-                      runtime ? runtime.final_result : nil
+                      if runtime
+                        pending_paths << runtime.pending_paths
+                        runtime.final_result
+                      else
+                        # it might not be present if the query has an error
+                        nil
+                      end
                     end
                     final_values.compact!
                     tracer.trace("execute_query_lazy", {multiplex: multiplex, query: query}) do
-                      Interpreter::Resolve.resolve_all(final_values, multiplex.dataloader)
+                      Interpreter::Resolve.resolve_all(schema, [final_values, *pending_paths], multiplex.dataloader)
                     end
                     queries.each do |query|
                       runtime = query.context.namespace(:interpreter_runtime)[:runtime]

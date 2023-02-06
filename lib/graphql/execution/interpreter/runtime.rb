@@ -157,12 +157,15 @@ module GraphQL
           info
         end
 
+        attr_reader :pending_paths
+
         def initialize(query:)
           @query = query
           @dataloader = query.multiplex.dataloader
           @schema = query.schema
           @context = query.context
           @multiplex_context = query.multiplex.context
+          @pending_paths = {}
           # Start this off empty:
           Thread.current[:__graphql_runtime_info] = nil
           @response = GraphQLResultHash.new(nil, nil)
@@ -531,7 +534,7 @@ module GraphQL
             # all of its child fields before moving on to the next root mutation field.
             # (Subselections of this mutation will still be resolved level-by-level.)
             if is_eager_field
-              Interpreter::Resolve.resolve_all([field_result], @dataloader)
+              Interpreter::Resolve.resolve_all(@schema, [field_result], @dataloader)
             else
               # Return this from `after_lazy` because it might be another lazy that needs to be resolved
               field_result
@@ -915,42 +918,52 @@ module GraphQL
         # @param eager [Boolean] Set to `true` for mutation root fields only
         # @param trace [Boolean] If `false`, don't wrap this with field tracing
         # @return [GraphQL::Execution::Lazy, Object] If loading `object` will be deferred, it's a wrapper over it.
-        def after_lazy(lazy_obj, owner:, field:, path:, owner_object:, arguments:, ast_node:, result:, result_name:, eager: false, trace: true, &block)
-          if lazy?(lazy_obj)
-            lazy = GraphQL::Execution::Lazy.new(path: path, field: field) do
-              set_all_interpreter_context(owner_object, field, arguments, path)
-              # Wrap the execution of _this_ method with tracing,
-              # but don't wrap the continuation below
-              inner_obj = begin
-                if trace
-                  query.trace("execute_field_lazy", {owner: owner, field: field, path: path, query: query, object: owner_object, arguments: arguments, ast_node: ast_node}) do
-                    schema.sync_lazy(lazy_obj)
-                  end
-                else
-                  schema.sync_lazy(lazy_obj)
-                end
-              rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => ex_err
-                ex_err
-              rescue StandardError => err
-                begin
-                  query.handle_or_reraise(err)
-                rescue GraphQL::ExecutionError => ex_err
-                  ex_err
-                end
-              end
-              yield(inner_obj)
-            end
-
-            if eager
-              lazy.value
-            else
-              set_result(result, result_name, lazy)
-              lazy
-            end
-          else
-            set_all_interpreter_context(owner_object, field, arguments, path)
-            yield(lazy_obj)
+        def after_lazy(lazy_obj, owner:, field:, path:, owner_object:, arguments:, ast_node:, result:, result_name:, eager: false, trace: true)
+          was_eager = false
+          res = lazy_obj.then do |inner_obj|
+            was_eager = true
+            yield(inner_obj)
           end
+          if !was_eager
+            @pending_paths[path] = res
+            set_result(result, result_name, res)
+          end
+          res
+          # if lazy?(lazy_obj)
+          #   lazy = GraphQL::Execution::Lazy.new(path: path, field: field) do
+          #     set_all_interpreter_context(owner_object, field, arguments, path)
+          #     # Wrap the execution of _this_ method with tracing,
+          #     # but don't wrap the continuation below
+          #     inner_obj = begin
+          #       if trace
+          #         query.trace("execute_field_lazy", {owner: owner, field: field, path: path, query: query, object: owner_object, arguments: arguments, ast_node: ast_node}) do
+          #           schema.sync_lazy(lazy_obj)
+          #         end
+          #       else
+          #         schema.sync_lazy(lazy_obj)
+          #       end
+          #     rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => ex_err
+          #       ex_err
+          #     rescue StandardError => err
+          #       begin
+          #         query.handle_or_reraise(err)
+          #       rescue GraphQL::ExecutionError => ex_err
+          #         ex_err
+          #       end
+          #     end
+          #     yield(inner_obj)
+          #   end
+
+          #   if eager
+          #     lazy.value
+          #   else
+          #     set_result(result, result_name, lazy)
+          #     lazy
+          #   end
+          # else
+          #   set_all_interpreter_context(owner_object, field, arguments, path)
+          #   yield(lazy_obj)
+          # end
         end
 
         def arguments(graphql_object, arg_owner, ast_node)

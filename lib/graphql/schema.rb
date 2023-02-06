@@ -1067,6 +1067,11 @@ module GraphQL
         end
       end
 
+      def sync_lazy_once(value)
+        lazy_method = lazy_method_name(value)
+        value.public_send(lazy_method)
+      end
+
       # @return [Symbol, nil] The method name to lazily resolve `obj`, or nil if `obj`'s class wasn't registered with {#lazy_resolve}.
       def lazy_method_name(obj)
         lazy_methods.get(obj)
