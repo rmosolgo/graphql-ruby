@@ -39,7 +39,6 @@ jobs:
         include:
           - gemfile: Gemfile
             ruby: 3.1
-            bundler: "1"
           - gemfile: gemfiles/rails_4.2.gemfile
             ruby: 2.4
             bundler: "1"
@@ -50,6 +49,10 @@ jobs:
             ruby: 3.1
           - gemfile: gemfiles/rails_master.gemfile
             ruby: 3.1
+          - gemfile: gemfiles/rails_7.0.gemfile
+            ruby: 3.2
+          - gemfile: gemfiles/rails_master.gemfile
+            ruby: 3.2
     runs-on: ubuntu-latest
     steps:
     - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > $GITHUB_ENV
