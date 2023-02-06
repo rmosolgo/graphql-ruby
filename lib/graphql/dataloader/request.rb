@@ -14,6 +14,25 @@ module GraphQL
       def load
         @source.load(@key)
       end
+
+      def then(&block)
+        ThenRequest.new do
+          value = load
+          value.then do |v|
+            block.call(v)
+          end
+        end
+      end
+
+      class ThenRequest < Request
+        def initialize(&block)
+          @block = block
+        end
+
+        def load
+          @block.call
+        end
+      end
     end
   end
 end

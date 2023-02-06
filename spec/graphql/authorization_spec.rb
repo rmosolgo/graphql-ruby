@@ -4,9 +4,22 @@ require "spec_helper"
 describe "GraphQL::Authorization" do
   module AuthTest
     class Box
-      attr_reader :value
       def initialize(value:)
         @value = value
+      end
+
+      def value
+        if @value.is_a?(Proc)
+          @value = @value.call
+        end
+        @value
+      end
+
+      def then(&block)
+        self.class.new value: ->{
+          v = value
+          block.call(v)
+        }
       end
     end
 

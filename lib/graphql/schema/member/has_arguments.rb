@@ -52,7 +52,7 @@ module GraphQL
               def #{method_owner}load_#{arg_defn.keyword}(values, context = nil)
                 argument = get_argument("#{arg_defn.graphql_name}")
                 (context || self.context).schema.after_lazy(values) do |values2|
-                  GraphQL::Execution::Lazy.all(values2.map { |value| load_application_object(argument, value, context || self.context) })
+                  values2.map { |value| load_application_object(argument, value, context || self.context) }
                 end
               end
               RUBY

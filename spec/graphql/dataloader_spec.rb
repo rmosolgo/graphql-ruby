@@ -357,11 +357,11 @@ describe GraphQL::Dataloader do
     end
 
     def on_enter_field(node, parent, visitor)
-      args = @query.arguments_for(node, visitor.field_definition)
+      orig_args = args = @query.arguments_for(node, visitor.field_definition)
       # This bug has been around for a while,
       # see https://github.com/rmosolgo/graphql-ruby/issues/3321
-      if args.is_a?(GraphQL::Execution::Lazy)
-        args = args.value
+      if @query.schema.lazy?(args)
+        args = @query.schema.sync_lazy(args)
       end
       @fields << [node.name, args.keys]
     end

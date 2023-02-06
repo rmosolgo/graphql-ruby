@@ -17,7 +17,7 @@ describe GraphQL::Schema::Member::Scoped do
         elsif context[:lazy]
           # return everything, but make the runtime wait for it,
           # and add a flag for confirming it was called
-          ->() {
+          Dummy::ThenProc.new {
             context[:proc_called] = true
             items
           }
@@ -92,7 +92,7 @@ describe GraphQL::Schema::Member::Scoped do
       field :lazy_items, [Item], null: false
       field :lazy_items_connection, Item.connection_type, null: false, resolver_method: :lazy_items
       def lazy_items
-        ->() { items }
+        Dummy::ThenProc.new { items }
       end
     end
 

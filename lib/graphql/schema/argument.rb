@@ -309,7 +309,7 @@ module GraphQL
           else
             load_method_owner.public_send(arg_load_method, coerced_value)
           end
-          context.schema.after_lazy(custom_loaded_value) do |custom_value|
+          custom_loaded_value.then do |custom_value|
             if loads
               if type.list?
                 loaded_values = custom_value.each_with_index.map { |custom_val, idx|

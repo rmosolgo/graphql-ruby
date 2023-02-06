@@ -11,6 +11,14 @@ describe GraphQL::Schema::Resolver do
       def value
         @get_value.call
       end
+
+      def then(&block)
+        self.class.new do
+          self.value.then do |v|
+            block.call(v)
+          end
+        end
+      end
     end
 
     class BaseResolver < GraphQL::Schema::Resolver
@@ -656,7 +664,7 @@ describe GraphQL::Schema::Resolver do
       end
 
       it 'raises the correct error on invalid return type' do
-        err = assert_raises(RuntimeError) do 
+        err = assert_raises(RuntimeError) do
           exec_query("mutation { resolverWithInvalidReady(int: 2) { int } }")
         end
         assert_match("Unexpected result from #ready?", err.message)
