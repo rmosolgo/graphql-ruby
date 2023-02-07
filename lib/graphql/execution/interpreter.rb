@@ -89,14 +89,21 @@ module GraphQL
                     tracer = multiplex
                     query = multiplex.queries.length == 1 ? multiplex.queries[0] : nil
                     queries = multiplex ? multiplex.queries : [query]
+                    lazies_at_depth = Hash.new { |h, k| h[k] = [] }
                     final_values = queries.map do |query|
                       runtime = query.context.namespace(:interpreter_runtime)[:runtime]
+                      if runtime
+                        runtime.lazies_at_depth.each do |k, v|
+                          lazies_at_depth[k].concat(v)
+                        end
+                      end
+
                       # it might not be present if the query has an error
                       runtime ? runtime.final_result : nil
                     end
                     final_values.compact!
                     tracer.trace("execute_query_lazy", {multiplex: multiplex, query: query}) do
-                      Interpreter::Resolve.resolve_all(final_values, multiplex.dataloader)
+                      Interpreter::Resolve.resolve_each_depth(lazies_at_depth, multiplex.dataloader)
                     end
                     queries.each do |query|
                       runtime = query.context.namespace(:interpreter_runtime)[:runtime]

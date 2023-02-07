@@ -157,9 +157,12 @@ module GraphQL
           info
         end
 
+        attr_reader :lazies_at_depth
+
         def initialize(query:)
           @query = query
           @dataloader = query.multiplex.dataloader
+          @lazies_at_depth = Hash.new { |h,k| h[k] = [] }
           @schema = query.schema
           @context = query.context
           @multiplex_context = query.multiplex.context
@@ -945,6 +948,7 @@ module GraphQL
               lazy.value
             else
               set_result(result, result_name, lazy)
+              @lazies_at_depth[path.size] << lazy
               lazy
             end
           else
