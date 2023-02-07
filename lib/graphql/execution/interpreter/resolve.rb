@@ -18,7 +18,7 @@ module GraphQL
             lazies_at_depth.delete(next_depth)
             if lazies.any?
               dataloader.append_job {
-                resolve(lazies, dataloader)
+                lazies.each(&:value)
                 resolve_each_depth(lazies_at_depth, dataloader)
               }
             end

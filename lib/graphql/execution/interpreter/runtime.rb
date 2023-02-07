@@ -157,12 +157,10 @@ module GraphQL
           info
         end
 
-        attr_reader :lazies_at_depth
-
-        def initialize(query:)
+        def initialize(query:, lazies_at_depth:)
           @query = query
           @dataloader = query.multiplex.dataloader
-          @lazies_at_depth = Hash.new { |h,k| h[k] = [] }
+          @lazies_at_depth = lazies_at_depth
           @schema = query.schema
           @context = query.context
           @multiplex_context = query.multiplex.context
