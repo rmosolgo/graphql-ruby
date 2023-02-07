@@ -161,7 +161,7 @@ module GraphQL
 
         def initialize(query:)
           @query = query
-          @lazies = []
+          @lazies = Hash.new { |h, k| h[k] = [] }
           @dataloader = query.multiplex.dataloader
           @schema = query.schema
           @context = query.context
@@ -936,7 +936,7 @@ module GraphQL
             if eager
               lazy.value
             else
-              @lazies << lazy
+              @lazies[path.size] << lazy
               set_result(result, result_name, lazy)
               lazy
             end

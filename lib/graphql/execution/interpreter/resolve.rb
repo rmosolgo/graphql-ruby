@@ -11,6 +11,27 @@ module GraphQL
           nil
         end
 
+        def self.resolve_each_depth(lazies_at_depth, dataloader)
+          i = 1
+          lazies = nil
+          while i <= lazies_at_depth.length
+            lazies = lazies_at_depth[i]
+            if lazies.any?
+              lazies_at_depth[i] = []
+              break
+            end
+            i += 1
+          end
+
+          if lazies && lazies.any?
+            dataloader.append_job {
+              resolve(lazies, dataloader)
+              resolve_each_depth(lazies_at_depth, dataloader)
+            }
+          end
+          nil
+        end
+
         # After getting `results` back from an interpreter evaluation,
         # continue it until you get a response-ready Ruby value.
         #
