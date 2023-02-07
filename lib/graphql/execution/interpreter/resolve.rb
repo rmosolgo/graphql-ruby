@@ -12,22 +12,18 @@ module GraphQL
         end
 
         def self.resolve_each_depth(lazies_at_depth, dataloader)
-          i = 1
-          lazies = nil
-          while i <= lazies_at_depth.length
-            lazies = lazies_at_depth[i]
+          depths = lazies_at_depth.keys
+          depths.sort!
+          next_depth = depths.first
+          if next_depth
+            lazies = lazies_at_depth[next_depth]
+            lazies_at_depth.delete(next_depth)
             if lazies.any?
-              lazies_at_depth[i] = []
-              break
+              dataloader.append_job {
+                lazies.each(&:value) # resolve these Lazy instances
+                resolve_each_depth(lazies_at_depth, dataloader)
+              }
             end
-            i += 1
-          end
-
-          if lazies && lazies.any?
-            dataloader.append_job {
-              resolve(lazies, dataloader)
-              resolve_each_depth(lazies_at_depth, dataloader)
-            }
           end
           nil
         end

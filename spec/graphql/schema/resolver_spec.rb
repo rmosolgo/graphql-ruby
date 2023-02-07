@@ -656,7 +656,7 @@ describe GraphQL::Schema::Resolver do
       end
 
       it 'raises the correct error on invalid return type' do
-        err = assert_raises(RuntimeError) do 
+        err = assert_raises(RuntimeError) do
           exec_query("mutation { resolverWithInvalidReady(int: 2) { int } }")
         end
         assert_match("Unexpected result from #ready?", err.message)
