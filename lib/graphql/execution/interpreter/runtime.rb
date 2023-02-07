@@ -157,8 +157,11 @@ module GraphQL
           info
         end
 
+        attr_reader :lazies
+
         def initialize(query:)
           @query = query
+          @lazies = []
           @dataloader = query.multiplex.dataloader
           @schema = query.schema
           @context = query.context
@@ -944,6 +947,7 @@ module GraphQL
             if eager
               lazy.value
             else
+              @lazies << lazy
               set_result(result, result_name, lazy)
               lazy
             end
@@ -960,12 +964,6 @@ module GraphQL
             # The arguments must be prepared in the context of the given object
             query.arguments_for(ast_node, arg_owner, parent_object: graphql_object)
           end
-        end
-
-        # Set this pair in the Query context, but also in the interpeter namespace,
-        # for compatibility.
-        def set_interpreter_context(key, value)
-          thread_info[key] = value
         end
 
         def delete_interpreter_context(key)
