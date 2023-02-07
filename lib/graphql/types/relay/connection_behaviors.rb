@@ -79,10 +79,6 @@ module GraphQL
             true # Let nodes be filtered out
           end
 
-          def accessible?(ctx)
-            node_type.accessible?(ctx)
-          end
-
           def visible?(ctx)
             # if this is an abstract base class, there may be no `node_type`
             node_type ? node_type.visible?(ctx) : super

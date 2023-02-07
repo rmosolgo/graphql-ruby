@@ -15,10 +15,6 @@ describe "GraphQL::Authorization" do
         super && (context[:hide] ? @name != "hidden" : true)
       end
 
-      def accessible?(context)
-        super && (context[:hide] ? @name != "inaccessible" : true)
-      end
-
       def authorized?(parent_object, value, context)
         super && parent_object != :hide2
       end
@@ -43,10 +39,6 @@ describe "GraphQL::Authorization" do
       argument_class BaseArgument
       def visible?(context)
         super && (context[:hide] ? @name != "hidden" : true)
-      end
-
-      def accessible?(context)
-        super && (context[:hide] ? @name != "inaccessible" : true)
       end
 
       def authorized?(object, args, context)
@@ -117,46 +109,8 @@ describe "GraphQL::Authorization" do
         super && !ctx[:hidden_relay]
       end
 
-      def self.accessible?(ctx)
-        super && !ctx[:inaccessible_relay]
-      end
-
       def self.authorized?(_val, ctx)
         super && !ctx[:unauthorized_relay]
-      end
-
-      field :some_field, String
-    end
-
-    # TODO test default behavior for abstract types,
-    # that they check their concrete types
-    module InaccessibleInterface
-      include BaseInterface
-
-      def self.accessible?(ctx)
-        super && !ctx[:hide]
-      end
-
-      def self.resolve_type(obj, ctx)
-        InaccessibleObject
-      end
-    end
-
-    module InaccessibleDefaultInterface
-      include BaseInterface
-      # accessible? will call the super method
-      def self.resolve_type(obj, ctx)
-        InaccessibleObject
-      end
-
-      field :some_field, String
-    end
-
-    class InaccessibleObject < BaseObject
-      implements InaccessibleInterface
-      implements InaccessibleDefaultInterface
-      def self.accessible?(ctx)
-        super && !ctx[:hide]
       end
 
       field :some_field, String
@@ -251,7 +205,7 @@ describe "GraphQL::Authorization" do
     class LandscapeFeature < BaseEnum
       value "MOUNTAIN"
       value "STREAM", role: :unauthorized
-      value "FIELD", role: :inaccessible
+      value "FIELD"
       value "TAR_PIT", role: :hidden
     end
 
@@ -265,7 +219,6 @@ describe "GraphQL::Authorization" do
       field :int2, Integer do
         argument :int, Integer, required: false
         argument :hidden, Integer, required: false
-        argument :inaccessible, Integer, required: false
         argument :unauthorized, Integer, required: false
       end
 
@@ -297,13 +250,6 @@ describe "GraphQL::Authorization" do
       field :hidden_default_interface, HiddenDefaultInterface, null: false, resolver_method: :itself
       field :hidden_connection, RelayObject.connection_type, null: :false, resolver_method: :empty_array
       field :hidden_edge, RelayObject.edge_type, null: :false, resolver_method: :edge_object
-
-      field :inaccessible, Integer, null: false, method: :object_id
-      field :inaccessible_object, InaccessibleObject, null: false, resolver_method: :itself
-      field :inaccessible_interface, InaccessibleInterface, null: false, resolver_method: :itself
-      field :inaccessible_default_interface, InaccessibleDefaultInterface, null: false, resolver_method: :itself
-      field :inaccessible_connection, RelayObject.connection_type, null: :false, resolver_method: :empty_array
-      field :inaccessible_edge, RelayObject.edge_type, null: :false, resolver_method: :edge_object
 
       field :unauthorized_object, UnauthorizedObject, resolver_method: :itself
       field :unauthorized_connection, RelayObject.connection_type, null: false, resolver_method: :array_with_item
@@ -375,12 +321,6 @@ describe "GraphQL::Authorization" do
       field :some_return_field, String
     end
 
-    class DoInaccessibleStuff < GraphQL::Schema::RelayClassicMutation
-      def self.accessible?(ctx)
-        super && (ctx[:inaccessible_mutation] ? false : true)
-      end
-    end
-
     class DoUnauthorizedStuff < GraphQL::Schema::RelayClassicMutation
       def self.authorized?(obj, ctx)
         super && (ctx[:unauthorized_mutation] ? false : true)
@@ -390,7 +330,6 @@ describe "GraphQL::Authorization" do
     class Mutation < BaseObject
       field :do_hidden_stuff, mutation: DoHiddenStuff
       field :do_hidden_stuff2, mutation: DoHiddenStuff2
-      field :do_inaccessible_stuff, mutation: DoInaccessibleStuff
       field :do_unauthorized_stuff, mutation: DoUnauthorizedStuff
     end
 
@@ -584,7 +523,7 @@ describe "GraphQL::Authorization" do
       query_field_names = res["data"]["query"]["fields"].map { |f| f["name"] }
       refute_includes query_field_names, "int"
       int2_arg_names = res["data"]["query"]["fields"].find { |f| f["name"] == "int2" }["args"].map { |a| a["name"] }
-      assert_equal ["int", "inaccessible", "unauthorized"], int2_arg_names
+      assert_equal ["int", "unauthorized"], int2_arg_names
 
       assert_nil res["data"]["hiddenObject"]
       assert_nil res["data"]["hiddenInterface"]

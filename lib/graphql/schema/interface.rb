@@ -28,16 +28,6 @@ module GraphQL
           true
         end
 
-        # The interface is accessible if any of its possible types are accessible
-        def accessible?(context)
-          context.schema.possible_types(self, context).each do |type|
-            if context.schema.accessible?(type, context)
-              return true
-            end
-          end
-          false
-        end
-
         def type_membership_class(membership_class = nil)
           if membership_class
             @type_membership_class = membership_class
