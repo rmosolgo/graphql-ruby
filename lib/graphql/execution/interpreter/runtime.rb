@@ -784,16 +784,10 @@ module GraphQL
             response_list = GraphQLResultArray.new(result_name, selection_result)
             response_list.graphql_non_null_list_items = inner_type.non_null?
             set_result(selection_result, result_name, response_list)
-            result_was_set = false
             idx = 0
             list_value = begin
               value.each do |inner_value|
                 break if dead_result?(response_list)
-                if !result_was_set
-                  # Don't set the result unless `.each` is successful
-                  set_result(selection_result, result_name, response_list)
-                  result_was_set = true
-                end
                 next_path = path + [idx]
                 this_idx = idx
                 next_path.freeze
@@ -805,11 +799,6 @@ module GraphQL
                 else
                   resolve_list_item(inner_value, inner_type, next_path, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type)
                 end
-              end
-              # Maybe the list was empty and the block was never called.
-              if !result_was_set
-                set_result(selection_result, result_name, response_list)
-                result_was_set = true
               end
 
               response_list
