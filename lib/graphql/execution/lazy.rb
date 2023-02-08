@@ -29,15 +29,11 @@ module GraphQL
       def value
         if !@resolved
           @resolved = true
-          @value = begin
-            v = @get_value_func.call
-            if v.is_a?(Lazy)
-              v = v.value
-            end
-            v
-          rescue GraphQL::ExecutionError => err
-            err
+          v = @get_value_func.call
+          if v.is_a?(Lazy)
+            v = v.value
           end
+          @value = v
         end
 
         # `SKIP` was made into a subclass of `GraphQL::Error` to improve runtime performance
