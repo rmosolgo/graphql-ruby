@@ -148,9 +148,17 @@ module GraphQL
 
               class << self
                 attr_accessor :children_method_name
+
+                def visit_method
+                  :on_#{name_underscored}
+                end
               end
               self.children_method_name = :#{name_underscored}s
             RUBY
+          end
+
+          def children_of_type
+            @children_methods
           end
 
           private
@@ -300,7 +308,7 @@ module GraphQL
         #   @return [String] the key for this argument
 
         # @!attribute value
-        #   @return [String, Float, Integer, Boolean, Array, InputObject] The value passed for this key
+        #   @return [String, Float, Integer, Boolean, Array, InputObject, VariableIdentifier] The value passed for this key
 
         def children
           @children ||= Array(value).flatten.select { |v| v.is_a?(AbstractNode) }
@@ -323,35 +331,6 @@ module GraphQL
           locations: Nodes::DirectiveLocation,
           arguments: Nodes::Argument,
         )
-      end
-
-      # This is the AST root for normal queries
-      #
-      # @example Deriving a document by parsing a string
-      #   document = GraphQL.parse(query_string)
-      #
-      # @example Creating a string from a document
-      #   document.to_query_string
-      #   # { ... }
-      #
-      # @example Creating a custom string from a document
-      #  class VariableScrubber < GraphQL::Language::Printer
-      #    def print_argument(arg)
-      #      "#{arg.name}: <HIDDEN>"
-      #    end
-      #  end
-      #
-      #  document.to_query_string(printer: VariableScrubber.new)
-      #
-      class Document < AbstractNode
-        scalar_methods false
-        children_methods(definitions: nil)
-        # @!attribute definitions
-        #   @return [Array<OperationDefinition, FragmentDefinition>] top-level GraphQL units: operations or fragments
-
-        def slice_definition(name)
-          GraphQL::Language::DefinitionSlice.slice(self, name)
-        end
       end
 
       # An enum value. The string is available as {#name}.
@@ -524,6 +503,35 @@ module GraphQL
         #   @return [String, nil] The name for this operation, or `nil` if unnamed
 
         self.children_method_name = :definitions
+      end
+
+      # This is the AST root for normal queries
+      #
+      # @example Deriving a document by parsing a string
+      #   document = GraphQL.parse(query_string)
+      #
+      # @example Creating a string from a document
+      #   document.to_query_string
+      #   # { ... }
+      #
+      # @example Creating a custom string from a document
+      #  class VariableScrubber < GraphQL::Language::Printer
+      #    def print_argument(arg)
+      #      "#{arg.name}: <HIDDEN>"
+      #    end
+      #  end
+      #
+      #  document.to_query_string(printer: VariableScrubber.new)
+      #
+      class Document < AbstractNode
+        scalar_methods false
+        children_methods(definitions: nil)
+        # @!attribute definitions
+        #   @return [Array<OperationDefinition, FragmentDefinition>] top-level GraphQL units: operations or fragments
+
+        def slice_definition(name)
+          GraphQL::Language::DefinitionSlice.slice(self, name)
+        end
       end
 
       # A type name, used for variable definitions

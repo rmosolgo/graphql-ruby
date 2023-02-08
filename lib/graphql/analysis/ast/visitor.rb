@@ -70,9 +70,23 @@ module GraphQL
           object_type = @schema.root_type_for_operation(node.operation_type)
           @object_types.push(object_type)
           @path.push("#{node.operation_type}#{node.name ? " #{node.name}" : ""}")
-          call_analyzers(:on_enter_operation_definition, node, parent)
+          @analyzers.each { |a|
+            begin
+              a.on_enter_operation_definition(node, parent, self)
+            rescue AnalysisError => err
+              @rescued_errors << err
+            end
+          }
+
           super
-          call_analyzers(:on_leave_operation_definition, node, parent)
+          @analyzers.each { |a|
+            begin
+              a.on_leave_operation_definition(node, parent, self)
+            rescue AnalysisError => err
+              @rescued_errors << err
+            end
+          }
+
           @object_types.pop
           @path.pop
         end
@@ -81,19 +95,47 @@ module GraphQL
           on_fragment_with_type(node) do
             @path.push("fragment #{node.name}")
             @in_fragment_def = false
-            call_analyzers(:on_enter_fragment_definition, node, parent)
+            @analyzers.each { |a|
+              begin
+                a.on_enter_fragment_definition(node, parent, self)
+              rescue AnalysisError => err
+                @rescued_errors << err
+              end
+            }
+
             super
             @in_fragment_def = false
-            call_analyzers(:on_leave_fragment_definition, node, parent)
+            @analyzers.each { |a|
+              begin
+                a.on_leave_fragment_definition(node, parent, self)
+              rescue AnalysisError => err
+                @rescued_errors << err
+              end
+            }
+
           end
         end
 
         def on_inline_fragment(node, parent)
           on_fragment_with_type(node) do
             @path.push("...#{node.type ? " on #{node.type.name}" : ""}")
-            call_analyzers(:on_enter_inline_fragment, node, parent)
+            @analyzers.each { |a|
+              begin
+                a.on_enter_inline_fragment(node, parent, self)
+              rescue AnalysisError => err
+                @rescued_errors << err
+              end
+            }
+
             super
-            call_analyzers(:on_leave_inline_fragment, node, parent)
+            @analyzers.each { |a|
+              begin
+                a.on_leave_inline_fragment(node, parent, self)
+              rescue AnalysisError => err
+                @rescued_errors << err
+              end
+            }
+
           end
         end
 
@@ -114,12 +156,26 @@ module GraphQL
           @skipping = @skip_stack.last || skip?(node)
           @skip_stack << @skipping
 
-          call_analyzers(:on_enter_field, node, parent)
+          @analyzers.each { |a|
+            begin
+              a.on_enter_field(node, parent, self)
+            rescue AnalysisError => err
+              @rescued_errors << err
+            end
+          }
+
           super
 
           @skipping = @skip_stack.pop
 
-          call_analyzers(:on_leave_field, node, parent)
+          @analyzers.each { |a|
+            begin
+              a.on_leave_field(node, parent, self)
+            rescue AnalysisError => err
+              @rescued_errors << err
+            end
+          }
+
           @response_path.pop
           @field_definitions.pop
           @object_types.pop
@@ -129,9 +185,23 @@ module GraphQL
         def on_directive(node, parent)
           directive_defn = @schema.directives[node.name]
           @directive_definitions.push(directive_defn)
-          call_analyzers(:on_enter_directive, node, parent)
+          @analyzers.each { |a|
+            begin
+              a.on_enter_directive(node, parent, self)
+            rescue AnalysisError => err
+              @rescued_errors << err
+            end
+          }
+
           super
-          call_analyzers(:on_leave_directive, node, parent)
+          @analyzers.each { |a|
+            begin
+              a.on_leave_directive(node, parent, self)
+            rescue AnalysisError => err
+              @rescued_errors << err
+            end
+          }
+
           @directive_definitions.pop
         end
 
@@ -153,27 +223,69 @@ module GraphQL
 
           @argument_definitions.push(argument_defn)
           @path.push(node.name)
-          call_analyzers(:on_enter_argument, node, parent)
+          @analyzers.each { |a|
+            begin
+              a.on_enter_argument(node, parent, self)
+            rescue AnalysisError => err
+              @rescued_errors << err
+            end
+          }
+
           super
-          call_analyzers(:on_leave_argument, node, parent)
+          @analyzers.each { |a|
+            begin
+              a.on_leave_argument(node, parent, self)
+            rescue AnalysisError => err
+              @rescued_errors << err
+            end
+          }
+
           @argument_definitions.pop
           @path.pop
         end
 
         def on_fragment_spread(node, parent)
           @path.push("... #{node.name}")
-          call_analyzers(:on_enter_fragment_spread, node, parent)
+          @analyzers.each { |a|
+            begin
+              a.on_enter_fragment_spread(node, parent, self)
+            rescue AnalysisError => err
+              @rescued_errors << err
+            end
+          }
+
           enter_fragment_spread_inline(node)
           super
           leave_fragment_spread_inline(node)
-          call_analyzers(:on_leave_fragment_spread, node, parent)
+          @analyzers.each { |a|
+            begin
+              a.on_leave_fragment_spread(node, parent, self)
+            rescue AnalysisError => err
+              @rescued_errors << err
+            end
+          }
+
           @path.pop
         end
 
         def on_abstract_node(node, parent)
-          call_analyzers(:on_enter_abstract_node, node, parent)
+          @analyzers.each { |a|
+            begin
+              a.on_enter_abstract_node(node, parent, self)
+            rescue AnalysisError => err
+              @rescued_errors << err
+            end
+          }
+
           super
-          call_analyzers(:on_leave_abstract_node, node, parent)
+          @analyzers.each { |a|
+            begin
+              a.on_leave_abstract_node(node, parent, self)
+            rescue AnalysisError => err
+              @rescued_errors << err
+            end
+          }
+
         end
 
         # @return [GraphQL::BaseType] The current object type
@@ -226,9 +338,7 @@ module GraphQL
 
           object_types << object_type
 
-          fragment_def.selections.each do |selection|
-            visit_node(selection, fragment_def)
-          end
+          visit_fragment_definition_children(fragment_def)
         end
 
         # Visit a fragment spread inline instead of visiting the definition
@@ -240,16 +350,6 @@ module GraphQL
         def skip?(ast_node)
           dir = ast_node.directives
           dir.any? && !GraphQL::Execution::DirectiveChecks.include?(dir, query)
-        end
-
-        def call_analyzers(method, node, parent)
-          @analyzers.each do |analyzer|
-            begin
-              analyzer.public_send(method, node, parent, self)
-            rescue AnalysisError => err
-              @rescued_errors << err
-            end
-          end
         end
 
         def on_fragment_with_type(node)
