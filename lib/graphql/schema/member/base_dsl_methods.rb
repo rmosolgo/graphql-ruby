@@ -111,10 +111,6 @@ module GraphQL
           true
         end
 
-        def accessible?(context)
-          true
-        end
-
         def authorized?(object, context)
           true
         end

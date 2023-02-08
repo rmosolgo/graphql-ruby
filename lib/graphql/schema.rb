@@ -826,10 +826,6 @@ module GraphQL
         member.visible?(ctx)
       end
 
-      def accessible?(member, ctx)
-        member.accessible?(ctx)
-      end
-
       def schema_directive(dir_class, **options)
         @own_schema_directives ||= []
         Member::HasDirectives.add_directive(self, @own_schema_directives, dir_class, options)
@@ -837,18 +833,6 @@ module GraphQL
 
       def schema_directives
         Member::HasDirectives.get_directives(self, @own_schema_directives, :schema_directives)
-      end
-
-      # This hook is called when a client tries to access one or more
-      # fields that fail the `accessible?` check.
-      #
-      # By default, an error is added to the response. Override this hook to
-      # track metrics or return a different error to the client.
-      #
-      # @param error [InaccessibleFieldsError] The analysis error for this check
-      # @return [AnalysisError, nil] Return an error to skip the query
-      def inaccessible_fields(error)
-        error
       end
 
       # This hook is called when an object fails an `authorized?` check.
