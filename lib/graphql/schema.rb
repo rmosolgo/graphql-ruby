@@ -755,7 +755,7 @@ module GraphQL
         if handler
           obj = context[:current_object]
           args = context[:current_arguments]
-          args = args && args.keyword_arguments
+          args = args && args.respond_to?(:keyword_arguments) ? args.keyword_arguments : nil
           field = context[:current_field]
           if obj.is_a?(GraphQL::Schema::Object)
             obj = obj.object
