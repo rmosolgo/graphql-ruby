@@ -209,8 +209,20 @@ module GraphQL
         elsif @provided_values.key?(key)
           @provided_values[key]
         elsif RUNTIME_METADATA_KEYS.include?(key)
-          thread_info = Thread.current[:__graphql_runtime_info]
-          thread_info && thread_info[key]
+          if key == :current_path
+            thread_info = Thread.current[:__graphql_runtime_info]
+            path = thread_info &&
+              (result = thread_info[:current_result]) &&
+              (result.path)
+            if path && (rn = thread_info[:current_result_name])
+              path = path.dup
+              path.push(rn)
+            end
+            path
+          else
+            thread_info = Thread.current[:__graphql_runtime_info]
+            thread_info && thread_info[key]
+          end
         else
           # not found
           nil
