@@ -114,11 +114,6 @@ module GraphQL
           this_scoped_ctx.merge!(hash)
         end
 
-        def current_path
-          thread_info = Thread.current[:__graphql_runtime_info]
-          (thread_info && thread_info[:current_path]) || @no_path
-        end
-
         def key?(key)
           each_present_path_ctx do |path_ctx|
             if path_ctx.key?(key)
@@ -135,6 +130,10 @@ module GraphQL
             end
           end
           nil
+        end
+
+        def current_path
+          @query_context.current_path || @no_path
         end
 
         def dig(key, *other_keys)
@@ -210,15 +209,7 @@ module GraphQL
           @provided_values[key]
         elsif RUNTIME_METADATA_KEYS.include?(key)
           if key == :current_path
-            thread_info = Thread.current[:__graphql_runtime_info]
-            path = thread_info &&
-              (result = thread_info[:current_result]) &&
-              (result.path)
-            if path && (rn = thread_info[:current_result_name])
-              path = path.dup
-              path.push(rn)
-            end
-            path
+            current_path
           else
             thread_info = Thread.current[:__graphql_runtime_info]
             thread_info && thread_info[key]
@@ -227,6 +218,18 @@ module GraphQL
           # not found
           nil
         end
+      end
+
+      def current_path
+        thread_info = Thread.current[:__graphql_runtime_info]
+        path = thread_info &&
+          (result = thread_info[:current_result]) &&
+          (result.path)
+        if path && (rn = thread_info[:current_result_name])
+          path = path.dup
+          path.push(rn)
+        end
+        path
       end
 
       def delete(key)
