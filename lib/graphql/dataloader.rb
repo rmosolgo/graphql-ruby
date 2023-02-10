@@ -51,12 +51,13 @@ module GraphQL
       result
     end
 
-    def initialize(nonblocking: self.class.default_nonblocking)
+    def initialize(nonblocking: self.class.default_nonblocking, fiber_control_mode: self.class.fiber_control_mode)
       @source_cache = Hash.new { |h, k| h[k] = {} }
       @pending_jobs = []
       if !nonblocking.nil?
         @nonblocking = nonblocking
       end
+      @fiber_control_mode = fiber_control_mode
     end
 
     def nonblocking?
@@ -94,7 +95,7 @@ module GraphQL
     #
     # @return [void]
     def yield
-      if self.class.fiber_control_mode == :transfer
+      if @fiber_control_mode == :transfer
         Thread.current[:parent_fiber].transfer
       else
         Fiber.yield
@@ -280,7 +281,7 @@ module GraphQL
     end
 
     def resume(fiber)
-      if self.class.fiber_control_mode == :transfer
+      if @fiber_control_mode == :transfer
         fiber.transfer
       else
         fiber.resume

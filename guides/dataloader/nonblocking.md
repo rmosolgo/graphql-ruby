@@ -35,6 +35,11 @@ MySchema.execute(...)
 
 The scheduler must implement [`Fiber::SchedulerImplementation`](https://ruby-doc.org/core-3.0.2/Fiber/SchedulerInterface.html). Existing implementations can be found at [Fiber Scheduler List](https://github.com/bruno-/fiber_scheduler_list).
 
-- [`dsh0416/evt`](https://github.com/dsh0416/evt) supports several backends in `Evt::Scheduler`.
--  [`digital-fabric/libev_scheduler`](https://github.com/digital-fabric/libev_scheduler) contains `Libev::Scheduler`, built on [`libev`](http://pod.tst.eu/http://cvs.schmorp.de/libev/ev.pod), an event loop written in C. ⚠️ This _works_, but it was failing oddly on GitHub actions, so CI is turned off for it.
-- ⚠️ [`socketry/async`](https://github.com/socketry/async) contains `Async::Scheduler`, but I haven't figured out how to make it work with `GraphQL::Dataloader` yet. Please update this doc if you know how to!
+Ruby has two mutually exclusive systems for Fiber control flow. For transfer-based schedulers, you must add `fiber_control_mode: :transfer` for `nonblocking: true` to work (see below).
+
+Gem | Scheduler | Required Config | Note
+---|---|---|--
+[`dsh0416/evt`](https://github.com/dsh0416/evt) | `Evt::Scheduler` | none |
+[`digital-fabric/libev_scheduler`](https://github.com/digital-fabric/libev_scheduler) | `Libev::Scheduler` | none | built on [`libev`](http://pod.tst.eu/http://cvs.schmorp.de/libev/ev.pod), an event loop written in C. ⚠️ This _works_, but it was failing oddly on GitHub actions, so CI is turned off for it.
+[`bruno-/fiber_scheduler`](https://github.com/bruno-/fiber_scheduler) | `FiberScheduler` | `fiber_control_mode: :transfer` |
+⚠️ [`socketry/async`](https://github.com/socketry/async) | `Async::Scheduler` | `fiber_control_mode: transfer` |  I haven't figured out how to make it work with `GraphQL::Dataloader` yet. Please update this doc if you know how to!
