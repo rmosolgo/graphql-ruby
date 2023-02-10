@@ -2,87 +2,83 @@
 require "spec_helper"
 
 if Fiber.respond_to?(:scheduler) # Ruby 3+
-  describe GraphQL::Dataloader::AsyncDataloader do
-    class AsyncSchema < GraphQL::Schema
-      class SleepSource < GraphQL::Dataloader::Source
-        def fetch(keys)
-          max_sleep = keys.max
-          `sleep #{max_sleep}`
-          keys.map { |_k| max_sleep }
-        end
+  describe "GraphQL::Dataloader::AsyncDataloader" do
+    class SleepSource < GraphQL::Dataloader::Source
+      def fetch(keys)
+        max_sleep = keys.max
+        `sleep #{max_sleep}`
+        keys.map { |_k| max_sleep }
       end
-
-      class WaitForSource < GraphQL::Dataloader::Source
-        def initialize(tag)
-          @tag = tag
-        end
-
-        def fetch(waits)
-          max_wait = waits.max
-          # puts "[#{Time.now.to_f}] Waiting #{max_wait} for #{@tag}"
-          `sleep #{max_wait}`
-          # puts "[#{Time.now.to_f}] Finished for #{@tag}"
-          waits.map { |_w| @tag }
-        end
-      end
-
-      class Sleeper < GraphQL::Schema::Object
-        field :sleeper, Sleeper, null: false, resolver_method: :sleep do
-          argument :duration, Float
-        end
-
-        def sleep(duration:)
-          `sleep #{duration}`
-          duration
-        end
-
-        field :duration, Float, null: false
-        def duration; object; end
-      end
-
-      class Waiter < GraphQL::Schema::Object
-        field :wait_for, Waiter, null: false do
-          argument :tag, String
-          argument :wait, Float
-        end
-
-        def wait_for(tag:, wait:)
-          dataloader.with(WaitForSource, tag).load(wait)
-        end
-
-        field :tag, String, null: false
-        def tag
-          object
-        end
-      end
-
-      class Query < GraphQL::Schema::Object
-        field :sleep, Float, null: false do
-          argument :duration, Float
-        end
-
-        field :sleeper, Sleeper, null: false, resolver_method: :sleep do
-          argument :duration, Float
-        end
-
-        def sleep(duration:)
-          `sleep #{duration}`
-          duration
-        end
-
-        field :wait_for, Waiter, null: false do
-          argument :tag, String
-          argument :wait, Float
-        end
-
-        def wait_for(tag:, wait:)
-          dataloader.with(WaitForSource, tag).load(wait)
-        end
-      end
-
-      query(Query)
-      use GraphQL::Dataloader::AsyncDataloader
     end
+
+    class WaitForSource < GraphQL::Dataloader::Source
+      def initialize(tag)
+        @tag = tag
+      end
+
+      def fetch(waits)
+        max_wait = waits.max
+        # puts "[#{Time.now.to_f}] Waiting #{max_wait} for #{@tag}"
+        `sleep #{max_wait}`
+        # puts "[#{Time.now.to_f}] Finished for #{@tag}"
+        waits.map { |_w| @tag }
+      end
+    end
+
+    class Sleeper < GraphQL::Schema::Object
+      field :sleeper, Sleeper, null: false, resolver_method: :sleep do
+        argument :duration, Float
+      end
+
+      def sleep(duration:)
+        `sleep #{duration}`
+        duration
+      end
+
+      field :duration, Float, null: false
+      def duration; object; end
+    end
+
+    class Waiter < GraphQL::Schema::Object
+      field :wait_for, Waiter, null: false do
+        argument :tag, String
+        argument :wait, Float
+      end
+
+      def wait_for(tag:, wait:)
+        dataloader.with(WaitForSource, tag).load(wait)
+      end
+
+      field :tag, String, null: false
+      def tag
+        object
+      end
+    end
+
+    class Query < GraphQL::Schema::Object
+      field :sleep, Float, null: false do
+        argument :duration, Float
+      end
+
+      field :sleeper, Sleeper, null: false, resolver_method: :sleep do
+        argument :duration, Float
+      end
+
+      def sleep(duration:)
+        `sleep #{duration}`
+        duration
+      end
+
+      field :wait_for, Waiter, null: false do
+        argument :tag, String
+        argument :wait, Float
+      end
+
+      def wait_for(tag:, wait:)
+        dataloader.with(WaitForSource, tag).load(wait)
+      end
+    end
+
 
     def with_scheduler
       prev_scheduler = Fiber.scheduler
@@ -93,10 +89,22 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
     end
 
     module AsyncDataloaderAssertions
+      def setup
+        opts = { nonblocking: true }
+        fiber_mode = fiber_control_mode
+        if fiber_mode
+          opts[:fiber_control_mode] = fiber_mode
+        end
+        @async_schema = Class.new(GraphQL::Schema) do
+          query(Query)
+          use GraphQL::Dataloader, **opts
+        end
+      end
+
       def self.included(child_class)
         child_class.class_eval do
           it "runs IO in parallel by default" do
-            dataloader = GraphQL::Dataloader::AsyncDataloader.new
+            dataloader = @async_schema.dataloader_class.new
             results = {}
             dataloader.append_job { `sleep 0.1`; results[:a] = 1 }
             dataloader.append_job { `sleep 0.2`; results[:b] = 2 }
@@ -112,10 +120,10 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
           end
 
           it "works with sources" do
-            dataloader = GraphQL::Dataloader::AsyncDataloader.new
-            r1 = dataloader.with(AsyncSchema::SleepSource).request(0.1)
-            r2 = dataloader.with(AsyncSchema::SleepSource).request(0.2)
-            r3 = dataloader.with(AsyncSchema::SleepSource).request(0.3)
+            dataloader = @async_schema.dataloader_class.new
+            r1 = dataloader.with(SleepSource).request(0.1)
+            r2 = dataloader.with(SleepSource).request(0.2)
+            r3 = dataloader.with(SleepSource).request(0.3)
 
             v1 = nil
             dataloader.append_job {
@@ -141,7 +149,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
           it "works with GraphQL" do
             started_at = Time.now
             res = with_scheduler {
-              AsyncSchema.execute("{ s1: sleep(duration: 0.1) s2: sleep(duration: 0.2) s3: sleep(duration: 0.3) }")
+              @async_schema.execute("{ s1: sleep(duration: 0.1) s2: sleep(duration: 0.2) s3: sleep(duration: 0.3) }")
             }
             ended_at = Time.now
             assert_equal({"s1"=>0.1, "s2"=>0.2, "s3"=>0.3}, res["data"])
@@ -170,7 +178,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
             GRAPHQL
             started_at = Time.now
             res = with_scheduler {
-              AsyncSchema.execute(query_str)
+              @async_schema.execute(query_str)
             }
             ended_at = Time.now
 
@@ -215,7 +223,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
             GRAPHQL
             started_at = Time.now
             res = with_scheduler do
-              AsyncSchema.execute(query_str)
+              @async_schema.execute(query_str)
             end
             ended_at = Time.now
 
@@ -237,6 +245,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
 
     describe "With the toy scheduler from Ruby's tests" do
       let(:scheduler_class) { ::DummyScheduler }
+      let(:fiber_control_mode) { :resume }
       include AsyncDataloaderAssertions
     end
 
@@ -244,6 +253,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
       describe "With libev_scheduler" do
         require "libev_scheduler"
         let(:scheduler_class) { Libev::Scheduler }
+        let(:fiber_control_mode) { :resume }
         include AsyncDataloaderAssertions
       end
     end
@@ -251,12 +261,14 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
     describe "with evt" do
       require "evt"
       let(:scheduler_class) { Evt::Scheduler }
+      let(:fiber_control_mode) { :resume }
       include AsyncDataloaderAssertions
     end
 
     describe "with fiber_scheduler" do
       require "fiber_scheduler"
       let(:scheduler_class) { FiberScheduler }
+      let(:fiber_control_mode) { nil }
       include AsyncDataloaderAssertions
     end
   end

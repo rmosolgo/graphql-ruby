@@ -14,6 +14,7 @@ if RUBY_VERSION >= "3.0"
   gem "libev_scheduler"
   gem "evt"
   gem "fiber_scheduler"
+  gem "io-event"
 end
 
 # Required for running `jekyll algolia ...` (via `rake site:update_search_index`)

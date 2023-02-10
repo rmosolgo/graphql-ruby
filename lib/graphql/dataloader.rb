@@ -24,14 +24,16 @@ module GraphQL
   #
   class Dataloader
     class << self
-      attr_accessor :default_nonblocking
+      attr_accessor :default_nonblocking, :fiber_control_mode
     end
 
     AsyncDataloader = Class.new(self) { self.default_nonblocking = true }
-
-    def self.use(schema, nonblocking: nil)
+    def self.use(schema, nonblocking: nil, fiber_control_mode: :transfer)
       schema.dataloader_class = if nonblocking
-        AsyncDataloader
+        Class.new(self) do
+          self.default_nonblocking = nonblocking
+          self.fiber_control_mode = fiber_control_mode
+        end
       else
         self
       end
@@ -92,7 +94,11 @@ module GraphQL
     #
     # @return [void]
     def yield
-      Fiber.yield
+      if self.class.fiber_control_mode == :transfer
+        Thread.current[:parent_fiber].transfer
+      else
+        Fiber.yield
+      end
       nil
     end
 
@@ -274,7 +280,11 @@ module GraphQL
     end
 
     def resume(fiber)
-      fiber.resume
+      if self.class.fiber_control_mode == :transfer
+        fiber.transfer
+      else
+        fiber.resume
+      end
     rescue UncaughtThrowError => e
       throw e.tag, e.value
     end
@@ -294,6 +304,8 @@ module GraphQL
           fiber_locals[fiber_var_key] = Thread.current[fiber_var_key]
         end
       end
+
+      fiber_locals[:parent_fiber] = Fiber.current
 
       if @nonblocking
         Fiber.new(blocking: false) do
