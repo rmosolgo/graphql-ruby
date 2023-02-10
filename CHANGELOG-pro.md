@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.24.0 (10 Feb 2023)
+
+### New Features
+
+- Support the `redis-client` gem as `redis:`
+
 # 1.23.9 (2 Feb 2023)
 
 ### Bug Fix
