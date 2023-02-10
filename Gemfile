@@ -13,7 +13,7 @@ gem 'pry-byebug'
 if RUBY_VERSION >= "3.0"
   gem "libev_scheduler"
   gem "evt"
-  gem "fiber_scheduler"
+  gem "fiber_scheduler", github: "bruno-/fiber_scheduler"
   gem "io-event"
 end
 
