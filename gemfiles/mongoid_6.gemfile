@@ -10,6 +10,7 @@ gem "mongoid", "~> 6.4.1"
 if RUBY_VERSION >= "3.0"
   gem "libev_scheduler"
   gem "evt"
+  gem "fiber_scheduler"
 end
 
 gemspec path: "../"
