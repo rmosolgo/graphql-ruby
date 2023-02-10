@@ -836,7 +836,7 @@ describe GraphQL::Dataloader do
   if Fiber.respond_to?(:scheduler)
     describe "nonblocking: true" do
       let(:schema) { Class.new(FiberSchema) do
-        use GraphQL::Dataloader, nonblocking: true, fiber_control_mode: :resume
+        use GraphQL::Dataloader, nonblocking: true
       end }
 
       before do
@@ -854,7 +854,7 @@ describe GraphQL::Dataloader do
       describe "nonblocking: true with libev" do
         require "libev_scheduler"
         let(:schema) { Class.new(FiberSchema) do
-          use GraphQL::Dataloader, nonblocking: true, fiber_control_mode: :resume
+          use GraphQL::Dataloader, nonblocking: true
         end }
 
         before do

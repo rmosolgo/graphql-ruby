@@ -245,7 +245,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
 
     describe "With the toy scheduler from Ruby's tests" do
       let(:scheduler_class) { ::DummyScheduler }
-      let(:fiber_control_mode) { :resume }
+      let(:fiber_control_mode) { nil }
       include AsyncDataloaderAssertions
     end
 
@@ -253,7 +253,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
       describe "With libev_scheduler" do
         require "libev_scheduler"
         let(:scheduler_class) { Libev::Scheduler }
-        let(:fiber_control_mode) { :resume }
+        let(:fiber_control_mode) { nil }
         include AsyncDataloaderAssertions
       end
     end
@@ -261,14 +261,14 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
     describe "with evt" do
       require "evt"
       let(:scheduler_class) { Evt::Scheduler }
-      let(:fiber_control_mode) { :resume }
+      let(:fiber_control_mode) { nil }
       include AsyncDataloaderAssertions
     end
 
     describe "with fiber_scheduler" do
       require "fiber_scheduler"
       let(:scheduler_class) { FiberScheduler }
-      let(:fiber_control_mode) { nil }
+      let(:fiber_control_mode) { :transfer }
       include AsyncDataloaderAssertions
     end
   end

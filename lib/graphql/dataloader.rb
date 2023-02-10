@@ -28,7 +28,7 @@ module GraphQL
     end
 
     AsyncDataloader = Class.new(self) { self.default_nonblocking = true }
-    def self.use(schema, nonblocking: nil, fiber_control_mode: :transfer)
+    def self.use(schema, nonblocking: nil, fiber_control_mode: :resume)
       schema.dataloader_class = if nonblocking
         Class.new(self) do
           self.default_nonblocking = nonblocking
