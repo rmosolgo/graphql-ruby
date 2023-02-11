@@ -338,7 +338,7 @@ module GraphQL
 
           object_types << object_type
 
-          visit_fragment_definition_children(fragment_def)
+          on_fragment_definition_children(fragment_def)
         end
 
         # Visit a fragment spread inline instead of visiting the definition

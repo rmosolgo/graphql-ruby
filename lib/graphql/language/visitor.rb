@@ -77,9 +77,11 @@ module GraphQL
       end
 
       # We don't use `alias` here because it breaks `super`
-      def self.make_visit_methods(ast_node_class, child_visit_method: nil)
+      def self.make_visit_methods(ast_node_class)
         node_method = ast_node_class.visit_method
         children_of_type = ast_node_class.children_of_type
+        child_visit_method = :"#{node_method}_children"
+
         class_eval(<<-RUBY, __FILE__, __LINE__ + 1)
           # The default implementation for visiting an AST node.
           # It doesn't _do_ anything, but it continues to visiting the node's children.
@@ -101,7 +103,7 @@ module GraphQL
               no_hooks = !@visitors.key?(node.class)
               if no_hooks || begin_visit(new_node, parent)
                 #{
-                  if child_visit_method
+                  if method_defined?(child_visit_method)
                     "new_node = #{child_visit_method}(new_node)"
                   elsif children_of_type
                     children_of_type.map do |child_accessor, child_class|
@@ -135,8 +137,7 @@ module GraphQL
         RUBY
       end
 
-      make_visit_methods(Language::Nodes::Document, child_visit_method: :visit_document_children)
-      def visit_document_children(document_node)
+      def on_document_children(document_node)
         new_node = document_node
         document_node.children.each do |child_node|
           visit_method = :"#{child_node.visit_method}_with_modifications"
@@ -149,9 +150,8 @@ module GraphQL
         new_node
       end
 
-      make_visit_methods(Language::Nodes::Field, child_visit_method: :visit_field_children)
-      def visit_field_children(new_node)
-        new_node.arguments.each do |arg_node|
+      def on_field_children(new_node)
+        new_node.arguments.each do |arg_node| # rubocop:disable Development/ContextIsPassedCop
           new_child_and_node = on_argument_with_modifications(arg_node, new_node)
           # Reassign `node` in case the child hook makes a modification
           if new_child_and_node.is_a?(Array)
@@ -194,17 +194,15 @@ module GraphQL
         new_node
       end
 
-      make_visit_methods(Language::Nodes::FragmentDefinition, child_visit_method: :visit_fragment_definition_children)
-      def visit_fragment_definition_children(new_node)
+      def on_fragment_definition_children(new_node)
         new_node = visit_directives(new_node)
         new_node = visit_selections(new_node)
         new_node
       end
 
-      make_visit_methods(Language::Nodes::InlineFragment, child_visit_method: :visit_fragment_definition_children)
+      alias :on_inline_fragment_children :on_fragment_definition_children
 
-      make_visit_methods(Language::Nodes::OperationDefinition, child_visit_method: :visit_operation_definition_children)
-      def visit_operation_definition_children(new_node)
+      def on_operation_definition_children(new_node)
         new_node.variables.each do |arg_node|
           new_child_and_node = on_variable_definition_with_modifications(arg_node, new_node)
           # Reassign `node` in case the child hook makes a modification
@@ -217,8 +215,7 @@ module GraphQL
         new_node
       end
 
-      make_visit_methods(Language::Nodes::Argument, child_visit_method: :visit_argument_children)
-      def visit_argument_children(new_node)
+      def on_argument_children(new_node)
         new_node.children.each do |value_node|
           new_child_and_node = case value_node
           when Language::Nodes::VariableIdentifier
@@ -241,20 +238,20 @@ module GraphQL
       end
 
       [
-        # Language::Nodes::Argument,
+        Language::Nodes::Argument,
         Language::Nodes::Directive,
         Language::Nodes::DirectiveDefinition,
         Language::Nodes::DirectiveLocation,
-        # Language::Nodes::Document, special case, see above
+        Language::Nodes::Document,
         Language::Nodes::Enum,
         Language::Nodes::EnumTypeDefinition,
         Language::Nodes::EnumTypeExtension,
         Language::Nodes::EnumValueDefinition,
-        # Language::Nodes::Field, special case, see above
+        Language::Nodes::Field,
         Language::Nodes::FieldDefinition,
-        # Language::Nodes::FragmentDefinition,
+        Language::Nodes::FragmentDefinition,
         Language::Nodes::FragmentSpread,
-        # Language::Nodes::InlineFragment,
+        Language::Nodes::InlineFragment,
         Language::Nodes::InputObject,
         Language::Nodes::InputObjectTypeDefinition,
         Language::Nodes::InputObjectTypeExtension,
@@ -266,7 +263,7 @@ module GraphQL
         Language::Nodes::NullValue,
         Language::Nodes::ObjectTypeDefinition,
         Language::Nodes::ObjectTypeExtension,
-        # Language::Nodes::OperationDefinition,
+        Language::Nodes::OperationDefinition,
         Language::Nodes::ScalarTypeDefinition,
         Language::Nodes::ScalarTypeExtension,
         Language::Nodes::SchemaDefinition,
