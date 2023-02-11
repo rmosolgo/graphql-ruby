@@ -13,8 +13,10 @@ gem 'pry-byebug'
 if RUBY_VERSION >= "3.0"
   gem "libev_scheduler"
   gem "evt"
+  # Required for Ruby 3.2
   gem "fiber_scheduler", github: "bruno-/fiber_scheduler"
   gem "io-event"
+  gem "async"
 end
 
 # Required for running `jekyll algolia ...` (via `rake site:update_search_index`)

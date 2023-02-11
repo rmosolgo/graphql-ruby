@@ -12,6 +12,7 @@ gem "activerecord-jdbcsqlite3-adapter", platform: :jruby
 gem "sequel"
 gem "evt"
 gem "fiber_scheduler", github: "bruno-/fiber_scheduler"
+gem "async"
 
 if RUBY_ENGINE == "ruby" # This doesn't work on truffle-ruby becuase there's no `IO::READABLE`
   gem "libev_scheduler"

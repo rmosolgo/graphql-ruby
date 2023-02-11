@@ -265,11 +265,22 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
       include AsyncDataloaderAssertions
     end
 
-    describe "with fiber_scheduler" do
-      require "fiber_scheduler"
-      let(:scheduler_class) { FiberScheduler }
-      let(:fiber_control_mode) { :transfer }
-      include AsyncDataloaderAssertions
+    if !ENV["GITHUB_ACTIONS"] && RUBY_VERSION < "3.2.0"
+      describe "with fiber_scheduler" do
+        require "fiber_scheduler"
+        let(:scheduler_class) { FiberScheduler }
+        let(:fiber_control_mode) { :transfer }
+        include AsyncDataloaderAssertions
+      end
+    end
+
+    if RUBY_VERSION > "3.2"
+      describe "with async" do
+        require "async"
+        let(:scheduler_class) { Async::Scheduler }
+        let(:fiber_control_mode) { :transfer }
+        include AsyncDataloaderAssertions
+      end
     end
   end
 end

@@ -12,5 +12,6 @@ gem "activerecord-jdbcsqlite3-adapter", platform: :jruby
 gem "sequel"
 gem "evt"
 gem "fiber_scheduler", github: "bruno-/fiber_scheduler"
+gem "async"
 
 gemspec path: "../"
