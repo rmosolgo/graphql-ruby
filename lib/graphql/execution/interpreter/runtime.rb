@@ -768,7 +768,8 @@ module GraphQL
                     this_result = response_hash
                     final_result = nil
                   end
-                  set_all_interpreter_context(continue_value, nil, nil, result_name, this_result) # reset this mutable state
+                  # Don't pass `result_name` here because it's already included in the new response hash
+                  set_all_interpreter_context(continue_value, nil, nil, nil, this_result) # reset this mutable state
                   call_method_on_directives(:resolve, continue_value, selections.graphql_directives) do
                     evaluate_selections(
                       continue_value,

@@ -381,11 +381,10 @@ describe GraphQL::Query::Context do
       assert_equal(expected_data, result["data"])
     end
 
-
     it "always retrieves a scoped context value if set" do
       context = GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil, object: nil)
       runtime_info = Thread.current[:__graphql_runtime_info] ||= {}
-      runtime_info[:current_path] = ["somewhere"]
+      runtime_info[:current_result] = OpenStruct.new(path: ["somewhere"])
       expected_key = :a
       expected_value = :test
 
@@ -405,7 +404,7 @@ describe GraphQL::Query::Context do
       assert_nil(context.fetch(expected_key))
       assert_nil(context.dig(expected_key)) if RUBY_VERSION >= '2.3.0'
 
-      runtime_info[:current_path] = ["something", "new"]
+      runtime_info[:current_result] = OpenStruct.new(path: ["something", "new"])
 
       assert_equal(expected_value, context[expected_key])
       assert_equal({ expected_key => expected_value}, context.to_h)
@@ -414,7 +413,7 @@ describe GraphQL::Query::Context do
       assert_equal(expected_value, context.dig(expected_key)) if RUBY_VERSION >= '2.3.0'
 
       # Enter a child field:
-      runtime_info[:current_path] = ["somewhere", "child"]
+      runtime_info[:current_result] = OpenStruct.new(path: ["somewhere", "child"])
       assert_nil(context[expected_key])
       assert_equal({ expected_key => nil }, context.to_h)
       assert(context.key?(expected_key))
@@ -422,7 +421,7 @@ describe GraphQL::Query::Context do
       assert_nil(context.dig(expected_key)) if RUBY_VERSION >= '2.3.0'
 
       # And a grandchild field
-      runtime_info[:current_path] = ["somewhere", "child", "grandchild"]
+      runtime_info[:current_result] = OpenStruct.new(path: ["somewhere", "child", "grandchild"])
       context.scoped_set!(expected_key, :something_else)
       context.scoped_set!(:another_key, :another_value)
       assert_equal(:something_else, context[expected_key])
