@@ -90,7 +90,6 @@ module GraphQL
                     tracer = multiplex
                     query = multiplex.queries.length == 1 ? multiplex.queries[0] : nil
                     queries = multiplex ? multiplex.queries : [query]
-                    lazies = Hash.new { |h, k| h[k] = [] }
                     final_values = queries.map do |query|
                       runtime = query.context.namespace(:interpreter_runtime)[:runtime]
                       # it might not be present if the query has an error

@@ -210,6 +210,10 @@ describe GraphQL::ExecutionError do
       # This is extracted from the test above -- it kept breaking
       # when working on dataloader, so I isolated it to keep an eye
       # on the minimal reproduction
+      #
+      # It's `def self.authorized?` is lazy, and it requires
+      # _both_ a lazy resolution and a dataloader run
+      # in order to resolve properly.
       expected_result = {
         "data"=>{
           "cheese"=>{

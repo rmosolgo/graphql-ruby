@@ -21,8 +21,10 @@ module GraphQL
             if lazies.any?
               dataloader.append_job {
                 lazies.each(&:value) # resolve these Lazy instances
-                resolve_each_depth(lazies_at_depth, dataloader)
               }
+              # Run lazies _and_ dataloader, see if more are enqueued
+              dataloader.run
+              resolve_each_depth(lazies_at_depth, dataloader)
             end
           end
           nil
