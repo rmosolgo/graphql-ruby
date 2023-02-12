@@ -65,28 +65,41 @@ module GraphQL
         end
 
         # Visitor Hooks
+        [
+          :operation_definition, :fragment_definition,
+          :inline_fragment, :field, :directive, :argument, :fragment_spread
+        ].each do |node_type|
+          module_eval <<-RUBY, __FILE__, __LINE__
+          def call_on_enter_#{node_type}(node, parent)
+            @analyzers.each do |a|
+              begin
+                a.on_enter_#{node_type}(node, parent, self)
+              rescue AnalysisError => err
+                @rescued_errors << err
+              end
+            end
+          end
+
+          def call_on_leave_#{node_type}(node, parent)
+            @analyzers.each do |a|
+              begin
+                a.on_leave_#{node_type}(node, parent, self)
+              rescue AnalysisError => err
+                @rescued_errors << err
+              end
+            end
+          end
+
+          RUBY
+        end
 
         def on_operation_definition(node, parent)
           object_type = @schema.root_type_for_operation(node.operation_type)
           @object_types.push(object_type)
           @path.push("#{node.operation_type}#{node.name ? " #{node.name}" : ""}")
-          @analyzers.each { |a|
-            begin
-              a.on_enter_operation_definition(node, parent, self)
-            rescue AnalysisError => err
-              @rescued_errors << err
-            end
-          }
-
+          call_on_enter_operation_definition(node, parent)
           super
-          @analyzers.each { |a|
-            begin
-              a.on_leave_operation_definition(node, parent, self)
-            rescue AnalysisError => err
-              @rescued_errors << err
-            end
-          }
-
+          call_on_leave_operation_definition(node, parent)
           @object_types.pop
           @path.pop
         end
@@ -95,47 +108,19 @@ module GraphQL
           on_fragment_with_type(node) do
             @path.push("fragment #{node.name}")
             @in_fragment_def = false
-            @analyzers.each { |a|
-              begin
-                a.on_enter_fragment_definition(node, parent, self)
-              rescue AnalysisError => err
-                @rescued_errors << err
-              end
-            }
-
+            call_on_enter_fragment_definition(node, parent)
             super
             @in_fragment_def = false
-            @analyzers.each { |a|
-              begin
-                a.on_leave_fragment_definition(node, parent, self)
-              rescue AnalysisError => err
-                @rescued_errors << err
-              end
-            }
-
+            call_on_leave_fragment_definition(node, parent)
           end
         end
 
         def on_inline_fragment(node, parent)
           on_fragment_with_type(node) do
             @path.push("...#{node.type ? " on #{node.type.name}" : ""}")
-            @analyzers.each { |a|
-              begin
-                a.on_enter_inline_fragment(node, parent, self)
-              rescue AnalysisError => err
-                @rescued_errors << err
-              end
-            }
-
+            call_on_enter_inline_fragment(node, parent)
             super
-            @analyzers.each { |a|
-              begin
-                a.on_leave_inline_fragment(node, parent, self)
-              rescue AnalysisError => err
-                @rescued_errors << err
-              end
-            }
-
+            call_on_leave_inline_fragment(node, parent)
           end
         end
 
@@ -156,26 +141,10 @@ module GraphQL
           @skipping = @skip_stack.last || skip?(node)
           @skip_stack << @skipping
 
-          @analyzers.each { |a|
-            begin
-              a.on_enter_field(node, parent, self)
-            rescue AnalysisError => err
-              @rescued_errors << err
-            end
-          }
-
+          call_on_enter_field(node, parent)
           super
-
           @skipping = @skip_stack.pop
-
-          @analyzers.each { |a|
-            begin
-              a.on_leave_field(node, parent, self)
-            rescue AnalysisError => err
-              @rescued_errors << err
-            end
-          }
-
+          call_on_leave_field(node, parent)
           @response_path.pop
           @field_definitions.pop
           @object_types.pop
@@ -185,23 +154,9 @@ module GraphQL
         def on_directive(node, parent)
           directive_defn = @schema.directives[node.name]
           @directive_definitions.push(directive_defn)
-          @analyzers.each { |a|
-            begin
-              a.on_enter_directive(node, parent, self)
-            rescue AnalysisError => err
-              @rescued_errors << err
-            end
-          }
-
+          call_on_enter_directive(node, parent)
           super
-          @analyzers.each { |a|
-            begin
-              a.on_leave_directive(node, parent, self)
-            rescue AnalysisError => err
-              @rescued_errors << err
-            end
-          }
-
+          call_on_leave_directive(node, parent)
           @directive_definitions.pop
         end
 
@@ -223,69 +178,21 @@ module GraphQL
 
           @argument_definitions.push(argument_defn)
           @path.push(node.name)
-          @analyzers.each { |a|
-            begin
-              a.on_enter_argument(node, parent, self)
-            rescue AnalysisError => err
-              @rescued_errors << err
-            end
-          }
-
+          call_on_enter_argument(node, parent)
           super
-          @analyzers.each { |a|
-            begin
-              a.on_leave_argument(node, parent, self)
-            rescue AnalysisError => err
-              @rescued_errors << err
-            end
-          }
-
+          call_on_leave_argument(node, parent)
           @argument_definitions.pop
           @path.pop
         end
 
         def on_fragment_spread(node, parent)
           @path.push("... #{node.name}")
-          @analyzers.each { |a|
-            begin
-              a.on_enter_fragment_spread(node, parent, self)
-            rescue AnalysisError => err
-              @rescued_errors << err
-            end
-          }
-
+          call_on_enter_fragment_spread(node, parent)
           enter_fragment_spread_inline(node)
           super
           leave_fragment_spread_inline(node)
-          @analyzers.each { |a|
-            begin
-              a.on_leave_fragment_spread(node, parent, self)
-            rescue AnalysisError => err
-              @rescued_errors << err
-            end
-          }
-
+          call_on_leave_fragment_spread(node, parent)
           @path.pop
-        end
-
-        def on_abstract_node(node, parent)
-          @analyzers.each { |a|
-            begin
-              a.on_enter_abstract_node(node, parent, self)
-            rescue AnalysisError => err
-              @rescued_errors << err
-            end
-          }
-
-          super
-          @analyzers.each { |a|
-            begin
-              a.on_leave_abstract_node(node, parent, self)
-            rescue AnalysisError => err
-              @rescued_errors << err
-            end
-          }
-
         end
 
         # @return [GraphQL::BaseType] The current object type
