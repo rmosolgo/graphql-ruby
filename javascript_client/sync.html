@@ -232,28 +232,28 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// ...</span>
 <span class="c1">// require the generated module:</span>
-<span class="kd">const</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">./OperationStoreClient</span><span class="dl">'</span><span class="p">)</span>
+<span class="kd">const</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nf">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">./OperationStoreClient</span><span class="dl">'</span><span class="p">)</span>
 
 <span class="c1">// ...</span>
-<span class="kd">function</span> <span class="nx">fetchQuery</span><span class="p">(</span><span class="nx">operation</span><span class="p">,</span> <span class="nx">variables</span><span class="p">,</span> <span class="nx">cacheConfig</span><span class="p">,</span> <span class="nx">uploadables</span><span class="p">)</span> <span class="p">{</span>
+<span class="kd">function</span> <span class="nf">fetchQuery</span><span class="p">(</span><span class="nx">operation</span><span class="p">,</span> <span class="nx">variables</span><span class="p">,</span> <span class="nx">cacheConfig</span><span class="p">,</span> <span class="nx">uploadables</span><span class="p">)</span> <span class="p">{</span>
   <span class="kd">const</span> <span class="nx">requestParams</span> <span class="o">=</span> <span class="p">{</span>
     <span class="nx">variables</span><span class="p">,</span>
     <span class="na">operationName</span><span class="p">:</span> <span class="nx">operation</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span>
   <span class="p">}</span>
 
-  <span class="k">if</span> <span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span> <span class="o">===</span> <span class="dl">"</span><span class="s2">production</span><span class="dl">"</span><span class="p">)</span>
+  <span class="nf">if </span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span> <span class="o">===</span> <span class="dl">"</span><span class="s2">production</span><span class="dl">"</span><span class="p">)</span>
     <span class="c1">// In production, use the stored operation</span>
-    <span class="nx">requestParams</span><span class="p">.</span><span class="nx">operationId</span> <span class="o">=</span> <span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nx">getOperationId</span><span class="p">(</span><span class="nx">operation</span><span class="p">.</span><span class="nx">name</span><span class="p">)</span>
+    <span class="nx">requestParams</span><span class="p">.</span><span class="nx">operationId</span> <span class="o">=</span> <span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nf">getOperationId</span><span class="p">(</span><span class="nx">operation</span><span class="p">.</span><span class="nx">name</span><span class="p">)</span>
   <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
     <span class="c1">// In development, use the query text</span>
     <span class="nx">requestParams</span><span class="p">.</span><span class="nx">query</span> <span class="o">=</span> <span class="nx">operation</span><span class="p">.</span><span class="nx">text</span><span class="p">,</span>
   <span class="p">}</span>
 
-  <span class="k">return</span> <span class="nx">fetch</span><span class="p">(</span><span class="dl">'</span><span class="s1">/graphql</span><span class="dl">'</span><span class="p">,</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nf">fetch</span><span class="p">(</span><span class="dl">'</span><span class="s1">/graphql</span><span class="dl">'</span><span class="p">,</span> <span class="p">{</span>
     <span class="na">method</span><span class="p">:</span> <span class="dl">'</span><span class="s1">POST</span><span class="dl">'</span><span class="p">,</span>
     <span class="na">headers</span><span class="p">:</span> <span class="p">{</span> <span class="cm">/*...*/</span> <span class="p">},</span>
-    <span class="na">body</span><span class="p">:</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">requestParams</span><span class="p">),</span>
-  <span class="p">}).</span><span class="nx">then</span><span class="p">(</span><span class="cm">/* ... */</span><span class="p">);</span>
+    <span class="na">body</span><span class="p">:</span> <span class="nx">JSON</span><span class="p">.</span><span class="nf">stringify</span><span class="p">(</span><span class="nx">requestParams</span><span class="p">),</span>
+  <span class="p">}).</span><span class="nf">then</span><span class="p">(</span><span class="cm">/* ... */</span><span class="p">);</span>
 <span class="p">}</span>
 
 <span class="c1">// ...</span>
@@ -279,20 +279,20 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">operationStoreClientName</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">MyRelayApp</span><span class="dl">"</span><span class="p">;</span>
 
-<span class="kd">function</span> <span class="nx">fetchQuery</span><span class="p">(</span><span class="nx">operation</span><span class="p">,</span> <span class="nx">variables</span><span class="p">,)</span> <span class="p">{</span>
-  <span class="k">return</span> <span class="nx">fetch</span><span class="p">(</span><span class="dl">'</span><span class="s1">/graphql</span><span class="dl">'</span><span class="p">,</span> <span class="p">{</span>
+<span class="kd">function</span> <span class="nf">fetchQuery</span><span class="p">(</span><span class="nx">operation</span><span class="p">,</span> <span class="nx">variables</span><span class="p">,)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nf">fetch</span><span class="p">(</span><span class="dl">'</span><span class="s1">/graphql</span><span class="dl">'</span><span class="p">,</span> <span class="p">{</span>
     <span class="na">method</span><span class="p">:</span> <span class="dl">'</span><span class="s1">POST</span><span class="dl">'</span><span class="p">,</span>
     <span class="na">headers</span><span class="p">:</span> <span class="p">{</span>
       <span class="dl">'</span><span class="s1">content-type</span><span class="dl">'</span><span class="p">:</span> <span class="dl">'</span><span class="s1">application/json</span><span class="dl">'</span>
     <span class="p">},</span>
-    <span class="na">body</span><span class="p">:</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">({</span>
+    <span class="na">body</span><span class="p">:</span> <span class="nx">JSON</span><span class="p">.</span><span class="nf">stringify</span><span class="p">({</span>
       <span class="c1">// Pass the client name and the operation ID, joined by `/`</span>
       <span class="na">documentId</span><span class="p">:</span> <span class="nx">operationStoreClientName</span> <span class="o">+</span> <span class="dl">"</span><span class="s2">/</span><span class="dl">"</span> <span class="o">+</span> <span class="nx">operation</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span>
       <span class="c1">// query: operation.text, // this is now obsolete because text is null</span>
       <span class="nx">variables</span><span class="p">,</span>
     <span class="p">}),</span>
-  <span class="p">}).</span><span class="nx">then</span><span class="p">(</span><span class="nx">response</span> <span class="o">=&gt;</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="nx">response</span><span class="p">.</span><span class="nx">json</span><span class="p">();</span>
+  <span class="p">}).</span><span class="nf">then</span><span class="p">(</span><span class="nx">response</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">response</span><span class="p">.</span><span class="nf">json</span><span class="p">();</span>
   <span class="p">});</span>
 <span class="p">}</span>
 </code></pre></div></div>
@@ -311,12 +311,12 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 <p>Then, load the generated module and add its <code class="language-plaintext highlighter-rouge">.apolloMiddleware</code> to your network interface with <code class="language-plaintext highlighter-rouge">.use([...])</code>:</p>
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// load the generated module</span>
-<span class="kd">var</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">./OperationStoreClient</span><span class="dl">"</span><span class="p">)</span>
+<span class="kd">var</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nf">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">./OperationStoreClient</span><span class="dl">"</span><span class="p">)</span>
 
 <span class="c1">// attach it as middleware in production</span>
 <span class="c1">// (in development, send queries to the server as normal)</span>
-<span class="k">if</span> <span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span> <span class="o">===</span> <span class="dl">"</span><span class="s2">production</span><span class="dl">"</span><span class="p">)</span> <span class="p">{</span>
-  <span class="nx">MyNetworkInterface</span><span class="p">.</span><span class="nx">use</span><span class="p">([</span><span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nx">apolloMiddleware</span><span class="p">])</span>
+<span class="nf">if </span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span> <span class="o">===</span> <span class="dl">"</span><span class="s2">production</span><span class="dl">"</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">MyNetworkInterface</span><span class="p">.</span><span class="nf">use</span><span class="p">([</span><span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nx">apolloMiddleware</span><span class="p">])</span>
 <span class="p">}</span>
 </code></pre></div></div>
 
@@ -332,19 +332,19 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 <p>Then, load the generated module and add its <code class="language-plaintext highlighter-rouge">.apolloLink</code> to your Apollo Link:</p>
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// load the generated module</span>
-<span class="kd">var</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">./OperationStoreClient</span><span class="dl">"</span><span class="p">)</span>
+<span class="kd">var</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nf">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">./OperationStoreClient</span><span class="dl">"</span><span class="p">)</span>
 
 <span class="c1">// Integrate the link to another link:</span>
-<span class="kd">const</span> <span class="nx">link</span> <span class="o">=</span> <span class="nx">ApolloLink</span><span class="p">.</span><span class="k">from</span><span class="p">([</span>
+<span class="kd">const</span> <span class="nx">link</span> <span class="o">=</span> <span class="nx">ApolloLink</span><span class="p">.</span><span class="nf">from</span><span class="p">([</span>
   <span class="nx">authLink</span><span class="p">,</span>
   <span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nx">apolloLink</span><span class="p">,</span>
   <span class="nx">httpLink</span><span class="p">,</span>
 <span class="p">])</span>
 
 <span class="c1">// Create a client</span>
-<span class="kd">const</span> <span class="nx">client</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ApolloClient</span><span class="p">({</span>
+<span class="kd">const</span> <span class="nx">client</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ApolloClient</span><span class="p">({</span>
   <span class="na">link</span><span class="p">:</span> <span class="nx">link</span><span class="p">,</span>
-  <span class="na">cache</span><span class="p">:</span> <span class="k">new</span> <span class="nx">InMemoryCache</span><span class="p">(),</span>
+  <span class="na">cache</span><span class="p">:</span> <span class="k">new</span> <span class="nc">InMemoryCache</span><span class="p">(),</span>
 <span class="p">});</span>
 </code></pre></div></div>
 
@@ -412,19 +412,19 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 
 <p><code class="language-plaintext highlighter-rouge">OperationStoreClient.getOperationId</code> takes an operation name as input and returns the server-side alias for that operation:</p>
 
-<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">./OperationStoreClient</span><span class="dl">"</span><span class="p">)</span>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nf">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">./OperationStoreClient</span><span class="dl">"</span><span class="p">)</span>
 
-<span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nx">getOperationId</span><span class="p">(</span><span class="dl">"</span><span class="s2">AppHomeQuery</span><span class="dl">"</span><span class="p">)</span>       <span class="c1">// =&gt; "my-frontend-app/7a8078c7555e20744cb1ff5a62e44aa92c6e0f02554868a15b8a1cbf2e776b6f"</span>
-<span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nx">getOperationId</span><span class="p">(</span><span class="dl">"</span><span class="s2">ProductDetailQuery</span><span class="dl">"</span><span class="p">)</span> <span class="c1">// =&gt; "my-frontend-app/6726a3b816e99b9971a1d25a1205ca81ecadc6eb1d5dd3a71028c4b01cc254c1"</span>
+<span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nf">getOperationId</span><span class="p">(</span><span class="dl">"</span><span class="s2">AppHomeQuery</span><span class="dl">"</span><span class="p">)</span>       <span class="c1">// =&gt; "my-frontend-app/7a8078c7555e20744cb1ff5a62e44aa92c6e0f02554868a15b8a1cbf2e776b6f"</span>
+<span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nf">getOperationId</span><span class="p">(</span><span class="dl">"</span><span class="s2">ProductDetailQuery</span><span class="dl">"</span><span class="p">)</span> <span class="c1">// =&gt; "my-frontend-app/6726a3b816e99b9971a1d25a1205ca81ecadc6eb1d5dd3a71028c4b01cc254c1"</span>
 </code></pre></div></div>
 
 <p>Post the <code class="language-plaintext highlighter-rouge">operationId</code> in your GraphQL requests:</p>
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Lookup the operation name:</span>
-<span class="kd">var</span> <span class="nx">operationId</span> <span class="o">=</span> <span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nx">getOperationId</span><span class="p">(</span><span class="nx">operationName</span><span class="p">)</span>
+<span class="kd">var</span> <span class="nx">operationId</span> <span class="o">=</span> <span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nf">getOperationId</span><span class="p">(</span><span class="nx">operationName</span><span class="p">)</span>
 
 <span class="c1">// Include it in the params:</span>
-<span class="nx">$</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="dl">"</span><span class="s2">/graphql</span><span class="dl">"</span><span class="p">,</span> <span class="p">{</span>
+<span class="nx">$</span><span class="p">.</span><span class="nf">post</span><span class="p">(</span><span class="dl">"</span><span class="s2">/graphql</span><span class="dl">"</span><span class="p">,</span> <span class="p">{</span>
   <span class="na">operationId</span><span class="p">:</span> <span class="nx">operationId</span><span class="p">,</span>
   <span class="na">variables</span><span class="p">:</span> <span class="nx">queryVariables</span><span class="p">,</span>
 <span class="p">},</span> <span class="kd">function</span><span class="p">(</span><span class="nx">response</span><span class="p">)</span> <span class="p">{</span>

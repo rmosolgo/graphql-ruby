@@ -114,14 +114,14 @@
 <span class="k">import</span> <span class="nx">Pusher</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">pusher</span><span class="dl">"</span>
 <span class="k">import</span> <span class="p">{</span> <span class="nx">Client</span><span class="p">,</span> <span class="nx">defaultExchanges</span><span class="p">,</span> <span class="nx">subscriptionExchange</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">urql</span><span class="dl">'</span>
 
-<span class="kd">const</span> <span class="nx">pusherClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Pusher</span><span class="p">(</span><span class="dl">"</span><span class="s2">your-app-key</span><span class="dl">"</span><span class="p">,</span> <span class="p">{</span> <span class="na">cluster</span><span class="p">:</span> <span class="dl">"</span><span class="s2">us2</span><span class="dl">"</span> <span class="p">})</span>
-<span class="kd">const</span> <span class="nx">forwardToPusher</span> <span class="o">=</span> <span class="nx">SubscriptionExchange</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span> <span class="na">pusher</span><span class="p">:</span> <span class="nx">pusherClient</span> <span class="p">})</span>
+<span class="kd">const</span> <span class="nx">pusherClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Pusher</span><span class="p">(</span><span class="dl">"</span><span class="s2">your-app-key</span><span class="dl">"</span><span class="p">,</span> <span class="p">{</span> <span class="na">cluster</span><span class="p">:</span> <span class="dl">"</span><span class="s2">us2</span><span class="dl">"</span> <span class="p">})</span>
+<span class="kd">const</span> <span class="nx">forwardToPusher</span> <span class="o">=</span> <span class="nx">SubscriptionExchange</span><span class="p">.</span><span class="nf">create</span><span class="p">({</span> <span class="na">pusher</span><span class="p">:</span> <span class="nx">pusherClient</span> <span class="p">})</span>
 
-<span class="kd">const</span> <span class="nx">client</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Client</span><span class="p">({</span>
+<span class="kd">const</span> <span class="nx">client</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Client</span><span class="p">({</span>
   <span class="na">url</span><span class="p">:</span> <span class="dl">'</span><span class="s1">/graphql</span><span class="dl">'</span><span class="p">,</span>
   <span class="na">exchanges</span><span class="p">:</span> <span class="p">[</span>
     <span class="p">...</span><span class="nx">defaultExchanges</span><span class="p">,</span>
-    <span class="nx">subscriptionExchange</span><span class="p">({</span>
+    <span class="nf">subscriptionExchange</span><span class="p">({</span>
       <span class="na">forwardSubscription</span><span class="p">:</span> <span class="nx">forwardToPusher</span>
     <span class="p">}),</span>
   <span class="p">],</span>
