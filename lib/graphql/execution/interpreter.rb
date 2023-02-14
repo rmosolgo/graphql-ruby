@@ -34,7 +34,7 @@ module GraphQL
           end
 
           multiplex = Execution::Multiplex.new(schema: schema, queries: queries, context: context, max_complexity: max_complexity)
-          multiplex.trace("execute_multiplex", { multiplex: multiplex }) do
+          multiplex.current_trace.execute_multiplex(multiplex: multiplex) do
             schema = multiplex.schema
             queries = multiplex.queries
             query_instrumenters = schema.instrumenters[:query]
@@ -70,7 +70,7 @@ module GraphQL
                           runtime = Runtime.new(query: query)
                           query.context.namespace(:interpreter_runtime)[:runtime] = runtime
 
-                          query.trace("execute_query", {query: query}) do
+                          query.current_trace.execute_query(query: query) do
                             runtime.run_eager
                           end
                         rescue GraphQL::ExecutionError => err
@@ -95,7 +95,7 @@ module GraphQL
                       runtime ? runtime.final_result : nil
                     end
                     final_values.compact!
-                    tracer.trace("execute_query_lazy", {multiplex: multiplex, query: query}) do
+                    tracer.current_trace.execute_query_lazy(query: query) do
                       Interpreter::Resolve.resolve_all(final_values, multiplex.dataloader)
                     end
                     queries.each do |query|

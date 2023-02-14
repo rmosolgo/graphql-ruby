@@ -143,6 +143,13 @@ module GraphQL
         @subscriptions = new_implementation
       end
 
+      def trace_class(new_class = nil)
+        if new_class
+          @trace_class = new_class
+        end
+        @trace_class || GraphQL::Tracing::Trace
+      end
+
       # Returns the JSON response of {Introspection::INTROSPECTION_QUERY}.
       # @see {#as_json}
       # @return [String]

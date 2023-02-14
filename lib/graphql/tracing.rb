@@ -54,6 +54,66 @@ module GraphQL
   # - Otherwise, they receive `{context: ...}`
   #
   module Tracing
+    class Trace
+      def initialize
+      end
+
+      def lex(query_string:)
+        yield
+      end
+
+      def parse(query_string:)
+        yield
+      end
+
+      def validate(query:, validate:)
+        yield
+      end
+
+      def analyze_multiplex(multiplex:)
+        yield
+      end
+
+      def analyze_query(query:)
+        yield
+      end
+
+      def execute_multiplex(multiplex:)
+        yield
+      end
+
+      def execute_query(query:)
+        yield
+      end
+
+      def execute_query_lazy(query:)
+        yield
+      end
+
+      def execute_field(field:, query:, ast_node:, arguments:, object:)
+        yield
+      end
+
+      def execute_field_lazy(field:, query:, ast_node:, arguments:, object:)
+        yield
+      end
+
+      def authorized(query:, type:, object:)
+        yield
+      end
+
+      def authorized_lazy(query:, type:, object:)
+        yield
+      end
+
+      def resolve_type(query:, type:, object:)
+        yield
+      end
+
+      def resolve_type_lazy(query:, type:, object:)
+        yield
+      end
+    end
     # Objects may include traceable to gain a `.trace(...)` method.
     # The object must have a `@tracers` ivar of type `Array<<#trace(k, d, &b)>>`.
     # @api private

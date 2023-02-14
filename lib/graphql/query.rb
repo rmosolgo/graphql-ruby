@@ -157,6 +157,11 @@ module GraphQL
 
     attr_accessor :multiplex
 
+    # @return [GraphQL::Tracing::Trace]
+    def current_trace
+      multiplex.current_trace
+    end
+
     def subscription_update?
       @subscription_topic && subscription?
     end
