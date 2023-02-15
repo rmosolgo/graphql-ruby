@@ -55,16 +55,18 @@ module GraphQL
   #
   module Tracing
     class Trace
-      def initialize
+      class << self
+        attr_accessor :schema
       end
 
-      def lex(query_string:)
-        yield
-      end
+      # TODO
+      # def lex(query_string:)
+      #   yield
+      # end
 
-      def parse(query_string:)
-        yield
-      end
+      # def parse(query_string:)
+      #   yield
+      # end
 
       def validate(query:, validate:)
         yield
@@ -114,6 +116,69 @@ module GraphQL
         yield
       end
     end
+
+    class LegacyTrace < Trace
+      def initialize
+      end
+
+      # TODO: These are not migrated yet
+      # def lex(query_string:)
+      #   yield
+      # end
+
+      # def parse(query_string:)
+      #   yield
+      # end
+
+      def validate(query:, validate:, &block)
+        query.trace("validate", { validate: validate, query: query }, &block)
+      end
+
+      def analyze_multiplex(multiplex:, &block)
+        multiplex.trace("analyze_multiplex", { multiplex: multiplex }, &block)
+      end
+
+      def analyze_query(query:, &block)
+        query.trace("analyze_query", { query: query }, &block)
+      end
+
+      def execute_multiplex(multiplex:, &block)
+        multiplex.trace("execute_multiplex", { multiplex: multiplex }, &block)
+      end
+
+      def execute_query(query:, &block)
+        query.trace("execute_query", { query: query }, &block)
+      end
+
+      def execute_query_lazy(query:, &block)
+        query.trace("execute_query_lazy", { multiplex: query.multiplex, query: query }, &block)
+      end
+
+      def execute_field(field:, query:, ast_node:, arguments:, object:, &block)
+        query.trace("execute_field", { field: field, query: query, ast_node: ast_node, arguments: arguments, object: object, owner: field.owner, path: query.context[:current_path] }, &block)
+      end
+
+      def execute_field_lazy(field:, query:, ast_node:, arguments:, object:, &block)
+        query.trace("execute_field_lazy", { field: field, query: query, ast_node: ast_node, arguments: arguments, object: object, owner: field.owner, path: query.context[:current_path] }, &block)
+      end
+
+      def authorized(query:, type:, object:, &block)
+        query.trace("authorized", { context: query.context, type: type, object: object, path: query.context[:current_path] }, &block)
+      end
+
+      def authorized_lazy(query:, type:, object:, &block)
+        query.trace("authorized_lazy", { context: query.context, type: type, object: object, path: query.context[:current_path] }, &block)
+      end
+
+      def resolve_type(query:, type:, object:, &block)
+        query.trace("resolve_type", { context: query.context, type: type, object: object, path: query.context[:current_path] }, &block)
+      end
+
+      def resolve_type_lazy(query:, type:, object:, &block)
+        query.trace("resolve_type_lazy", { context: query.context, type: type, object: object, path: query.context[:current_path] }, &block)
+      end
+    end
+
     # Objects may include traceable to gain a `.trace(...)` method.
     # The object must have a `@tracers` ivar of type `Array<<#trace(k, d, &b)>>`.
     # @api private

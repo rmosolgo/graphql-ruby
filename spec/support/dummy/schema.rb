@@ -517,6 +517,7 @@ module Dummy
     subscription Subscription
     max_depth 5
     orphan_types Honey, Beverage
+    trace_class GraphQL::Tracing::LegacyTrace
 
     rescue_from(NoSuchDairyError) { |err| raise GraphQL::ExecutionError, err.message  }
 
