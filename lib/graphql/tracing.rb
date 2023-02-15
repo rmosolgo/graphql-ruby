@@ -88,7 +88,7 @@ module GraphQL
         yield
       end
 
-      def execute_query_lazy(query:)
+      def execute_query_lazy(query:, multiplex:)
         yield
       end
 
@@ -150,8 +150,8 @@ module GraphQL
         query.trace("execute_query", { query: query }, &block)
       end
 
-      def execute_query_lazy(query:, &block)
-        query.trace("execute_query_lazy", { multiplex: query.multiplex, query: query }, &block)
+      def execute_query_lazy(query:, multiplex:, &block)
+        multiplex.trace("execute_query_lazy", { multiplex: multiplex, query: query }, &block)
       end
 
       def execute_field(field:, query:, ast_node:, arguments:, object:, &block)
