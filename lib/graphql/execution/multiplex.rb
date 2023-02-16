@@ -32,7 +32,7 @@ module GraphQL
         @queries = queries
         @queries.each { |q| q.multiplex = self }
         @context = context
-        @current_trace = @context[:trace] || schema.trace_class.new
+        @current_trace = @context[:trace] || schema.new_trace
         @dataloader = @context[:dataloader] ||= @schema.dataloader_class.new
         @tracers = schema.tracers + (context[:tracers] || [])
         # Support `context: {backtrace: true}`

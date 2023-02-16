@@ -146,8 +146,10 @@ module GraphQL
       def trace_class(new_class = nil)
         if new_class
           @trace_class = new_class
+        elsif !defined?(@trace_class)
+          @trace_class = Class.new(GraphQL::Tracing::Trace)
         end
-        @trace_class || GraphQL::Tracing::Trace
+        @trace_class
       end
 
       # Returns the JSON response of {Introspection::INTROSPECTION_QUERY}.
@@ -944,6 +946,17 @@ module GraphQL
 
       def tracers
         find_inherited_value(:tracers, EMPTY_ARRAY) + own_tracers
+      end
+
+      def trace_with(trace_mod, **options)
+        @trace_options ||= {}
+        @trace_options.merge!(options)
+        trace_class.include(trace_mod)
+      end
+
+      def new_trace
+        @trace_options ||= {}
+        trace_class.new(**@trace_options)
       end
 
       def query_analyzer(new_analyzer)

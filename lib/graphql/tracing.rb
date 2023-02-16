@@ -1,8 +1,7 @@
 # frozen_string_literal: true
+# Legacy tracing:
 require "graphql/tracing/active_support_notifications_tracing"
-# require "graphql/tracing/active_support_notifications_trace"
 require "graphql/tracing/platform_tracing"
-require "graphql/tracing/platform_trace"
 require "graphql/tracing/appoptics_tracing"
 require "graphql/tracing/appsignal_tracing"
 require "graphql/tracing/data_dog_tracing"
@@ -11,6 +10,10 @@ require "graphql/tracing/scout_tracing"
 require "graphql/tracing/statsd_tracing"
 require "graphql/tracing/prometheus_tracing"
 
+# New Tracing:
+require "graphql/tracing/platform_trace"
+require "graphql/tracing/new_relic_trace"
+
 if defined?(PrometheusExporter::Server)
   require "graphql/tracing/prometheus_tracing/graphql_collector"
 end
@@ -18,8 +21,7 @@ end
 module GraphQL
   module Tracing
     class Trace
-      class << self
-        attr_accessor :schema
+      def initialize(**_options)
       end
 
       # TODO
@@ -81,9 +83,6 @@ module GraphQL
     end
 
     class LegacyTrace < Trace
-      def initialize
-      end
-
       # TODO: These are not migrated yet
       # def lex(query_string:)
       #   yield

@@ -3,92 +3,53 @@
 module GraphQL
   module Tracing
     module PlatformTrace
-      class << self
-        attr_accessor :platform_keys, :options
+      module ClassMethods
+        attr_accessor :platform_keys
 
         def inherited(child_class)
           child_class.platform_keys = self.platform_keys
         end
       end
 
-      def initialize
-        @trace_scalars = self.class.options.fetch(:trace_scalars, false)
+      def self.included(child_mod)
+        child_mod.extend(ClassMethods)
+      end
+
+      def initialize(trace_scalars: false, **_options)
+        @trace_scalars = trace_scalars
         super
       end
 
-      [
-        :lex, :parse, :validate,
-        :analyze_query, :analyze_multiplex,
-        :execute_multiplex, :execute_query, :execute_query_lazy,
-        # :execute_field, :execute_field_lazy,
-        :authorized, :authorized_lazy,
-        :resolve_type, :resolve_type_lazy,
-      ].each do |trace_method|
-        module_eval <<-RUBY, __FILE__, __LINE__
-          def #{trace_method}(**kwargs)
-            @#{trace_method}_key ||= @platform_keys.fetch("#{trace_method}")
-            platform_trace(@#{trace_method}_key, **kwargs) do
-              yield
-            end
-          end
-        RUBY
-      end
+      # def execute_field()
+      # end
 
-      [:execute_field, :execute_field_lazy].each do |field_trace_method|
-        module_eval <<-RUBY, __FILE__, __LINE__
-          def #{field_trace_method}(field:, query:, **_rest)
-            return_type = field.type.unwrap
-            trace_field = if return_type.kind.scalar? || return_type.kind.enum?
-              (field.trace.nil? && @trace_scalars) || field.trace
-            else
-              true
-            end
-
-            platform_key = if trace_field
-              context = query.context
-              cached_platform_key(context, field, :field) { platform_field_key(field.owner, field) }
-            else
-              nil
-            end
-
-            if platform_key && trace_field
-              # TODO data here ?
-              data = {}
-              platform_trace(platform_key, "#{field_trace_method}", data) do
-                yield
-              end
-            else
-              yield
-            end
-          end
-        RUBY
-      end
-
-      [:authorized, :authorized_lazy].each do |auth_trace_method|
-        module_eval <<-RUBY, __FILE__, __LINE__
-        def #{auth_trace_method}(type:, query:, **rest)
-          @#{auth_trace_method}_key ||= @platform_keys.fetch("#{auth_trace_method}")
-          platform_key = cached_platform_key(query.context, type, :authorized) { platform_authorized_key(type) }
-          # TODO Data here?
-          platform_trace(@#{auth_trace_method}_key, data = {}) do
-            yield
-          end
-        end
-        RUBY
-      end
-
-      [:resolve_type, :resolve_type_lazy].each do |resolve_type_trace_method|
-        module_eval <<-RUBY, __FILE__, __LINE__
-        def #{resolve_type_trace_method}(type:, query:, **rest)
-          @#{resolve_type_trace_method}_key ||= @platform_keys.fetch("#{resolve_type_trace_method}")
-          platform_key = cached_platform_key(query.context, type, :resolve_type) { platform_authorized_key(type) }
-          # TODO Data here?
-          platform_trace(@#{resolve_type_trace_method}_key, data = {}) do
-            yield
-          end
-        end
-        RUBY
-      end
+      # [:execute_field, :execute_field_lazy].each do |field_trace_method|
+      #   module_eval <<-RUBY, __FILE__, __LINE__
+      #     def #{field_trace_method}(field:, query:, **_rest)
+      #       return_type = field.type.unwrap
+      #       trace_field = if return_type.kind.scalar? || return_type.kind.enum?
+      #         (field.trace.nil? && @trace_scalars) || field.trace
+      #       else
+      #         true
+      #       end
+      #       platform_key = if trace_field
+      #         context = query.context
+      #         cached_platform_key(context, field, :field) { platform_field_key(field.owner, field) }
+      #       else
+      #         nil
+      #       end
+      #       if platform_key && trace_field
+      #         # TODO data here ?
+      #         data = {}
+      #         platform_trace(platform_key, "#{field_trace_method}", data) do
+      #           yield
+      #         end
+      #       else
+      #         yield
+      #       end
+      #     end
+      #   RUBY
+      # end
 
       private
 
