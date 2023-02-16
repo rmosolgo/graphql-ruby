@@ -4,6 +4,12 @@ require "spec_helper"
 
 describe GraphQL::Tracing::DataDogTrace do
   module DataDogTraceTest
+    class Thing < GraphQL::Schema::Object
+      field :str, String
+
+      def str; "blah"; end
+    end
+
     class Query < GraphQL::Schema::Object
       include GraphQL::Types::Relay::HasNodeField
 
@@ -12,6 +18,9 @@ describe GraphQL::Tracing::DataDogTrace do
       def int
         1
       end
+
+      field :thing, Thing
+      def thing; :thing; end
     end
 
     class TestSchema < GraphQL::Schema
@@ -23,7 +32,7 @@ describe GraphQL::Tracing::DataDogTrace do
       module CustomDataDogTracing
         include GraphQL::Tracing::DataDogTrace
         def prepare_span(trace_key, data, span)
-          span.set_tag("custom:#{trace_key}", data.keys.join(","))
+          span.set_tag("custom:#{trace_key}", data.keys.sort.join(","))
         end
       end
       query(Query)
@@ -60,16 +69,18 @@ describe GraphQL::Tracing::DataDogTrace do
   end
 
   it "sets custom tags tags" do
-    DataDogTraceTest::CustomTracerTestSchema.execute("{ int }")
+    DataDogTraceTest::CustomTracerTestSchema.execute("{ thing { str } }")
     expected_custom_tags = [
       ["custom:lex", "query_string"],
       ["custom:parse", "query_string"],
       ["custom:execute_multiplex", "multiplex"],
       ["custom:analyze_multiplex", "multiplex"],
-      ["custom:validate", "validate,query"],
+      ["custom:validate", "query,validate"],
       ["custom:analyze_query", "query"],
       ["custom:execute_query", "query"],
-      ["custom:authorized", "query,type,object"],
+      ["custom:authorized", "object,query,type"],
+      ["custom:execute_field", "arguments,ast_node,field,object,query"],
+      ["custom:authorized", "object,query,type"],
       ["custom:execute_query_lazy", "multiplex,query"],
     ]
 

@@ -12,10 +12,14 @@ require "graphql/tracing/prometheus_tracing"
 
 # New Tracing:
 require "graphql/tracing/platform_trace"
+# require "graphql/tracing/active_support_notifications_trace"
 require "graphql/tracing/appoptics_trace"
+require "graphql/tracing/appsignal_trace"
 require "graphql/tracing/data_dog_trace"
 require "graphql/tracing/new_relic_trace"
-
+require "graphql/tracing/scout_trace"
+require "graphql/tracing/statsd_trace"
+# require "graphql/tracing/prometheus_trace"
 if defined?(PrometheusExporter::Server)
   require "graphql/tracing/prometheus_tracing/graphql_collector"
 end

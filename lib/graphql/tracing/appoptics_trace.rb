@@ -57,6 +57,7 @@ module GraphQL
       end
 
       def platform_execute_field(platform_key, data)
+        return super if !defined?(AppOpticsAPM) || gql_config[:enabled] == false
         layer = platform_key
         kvs = metadata(data, layer)
 
@@ -66,12 +67,47 @@ module GraphQL
         end
       end
 
-      def platform_execute_field_lazy(platform_key, data)
-        layer = platform_key
+      def authorized(**data)
+        return super if !defined?(AppOpticsAPM) || gql_config[:enabled] == false
+        layer = cached_platform_key(data[:query].context, data[:type], :authorized) { platform_authorized_key(data[:type]) }
         kvs = metadata(data, layer)
+
         ::AppOpticsAPM::SDK.trace(layer, kvs) do
           kvs.clear # we don't have to send them twice
-          yield
+          super
+        end
+      end
+
+      def authorized_lazy(**data)
+        return super if !defined?(AppOpticsAPM) || gql_config[:enabled] == false
+        layer = cached_platform_key(data[:query].context, data[:type], :authorized) { platform_authorized_key(data[:type]) }
+        kvs = metadata(data, layer)
+
+        ::AppOpticsAPM::SDK.trace(layer, kvs) do
+          kvs.clear # we don't have to send them twice
+          super
+        end
+      end
+
+      def resolve_type(**data)
+        return super if !defined?(AppOpticsAPM) || gql_config[:enabled] == false
+        layer = cached_platform_key(data[:query].context, data[:type], :resolve_type) { platform_resolve_type_key(data[:type]) }
+        kvs = metadata(data, layer)
+
+        ::AppOpticsAPM::SDK.trace(layer, kvs) do
+          kvs.clear # we don't have to send them twice
+          super
+        end
+      end
+
+      def resolve_type_lazy(**data)
+        return super if !defined?(AppOpticsAPM) || gql_config[:enabled] == false
+        layer = cached_platform_key(data[:query].context, data[:type], :resolve_type) { platform_resolve_type_key(data[:type]) }
+        kvs = metadata(data, layer)
+
+        ::AppOpticsAPM::SDK.trace(layer, kvs) do
+          kvs.clear # we don't have to send them twice
+          super
         end
       end
 

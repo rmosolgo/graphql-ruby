@@ -3,8 +3,6 @@
 module GraphQL
   module Tracing
     module DataDogTrace
-      include PlatformTrace
-
       # @param analytics_enabled [Boolean] Deprecated
       # @param analytics_sample_rate [Float] Deprecated
       def initialize(tracer: nil, analytics_enabled: false, analytics_sample_rate: 1.0, service: "ruby-graphql", **rest)
@@ -31,10 +29,6 @@ module GraphQL
         'execute_multiplex' => 'execute.graphql',
         'execute_query' => 'execute.graphql',
         'execute_query_lazy' => 'execute.graphql',
-        'authorized' => 'authorize.graphql',
-        'authorized_lazy' => 'authorize.graphql',
-        'resolve_type' => 'resolve_type.graphql',
-        'resolve_type_lazy' => 'resolve_type.graphql',
       }.each do |trace_method, trace_key|
         module_eval <<-RUBY, __FILE__, __LINE__
           def #{trace_method}(**data)
@@ -71,12 +65,64 @@ module GraphQL
                   RUBY
                 end
               }
-              prepare_span("#{trace_method}", data, span)
+              prepare_span("#{trace_method.sub("platform_", "")}", data, span)
               super
             end
           end
         RUBY
       end
+
+      def platform_execute_field(platform_key, data, span_key = "execute_field")
+        @tracer.trace(platform_key, service: @service_name) do |span|
+          span.span_type = 'custom'
+          if defined?(Datadog::Tracing::Metadata::Ext) # Introduced in ddtrace 1.0
+            span.set_tag(Datadog::Tracing::Metadata::Ext::TAG_COMPONENT, 'graphql')
+            span.set_tag(Datadog::Tracing::Metadata::Ext::TAG_OPERATION, span_key)
+          end
+          prepare_span(span_key, data, span)
+          yield
+        end
+      end
+
+      def platform_execute_field_lazy(platform_key, data, &block)
+        platform_execute_field(platform_key, data, "execute_field_lazy", &block)
+      end
+
+      def authorized(object:, type:, query:, span_key: "authorized")
+        platform_key = cached_platform_key(query.context, type, :authorized) { platform_authorized_key(type) }
+        @tracer.trace(platform_key, service: @service_name) do |span|
+          span.span_type = 'custom'
+          if defined?(Datadog::Tracing::Metadata::Ext) # Introduced in ddtrace 1.0
+            span.set_tag(Datadog::Tracing::Metadata::Ext::TAG_COMPONENT, 'graphql')
+            span.set_tag(Datadog::Tracing::Metadata::Ext::TAG_OPERATION, span_key)
+          end
+          prepare_span(span_key, {object: object, type: type, query: query}, span)
+          super(query: query, type: type, object: object)
+        end
+      end
+
+      def authorized_lazy(**kwargs, &block)
+        authorized(span_key: "authorized_lazy", **kwargs, &block)
+      end
+
+      def resolve_type(object:, type:, query:, span_key: "resolve_type")
+        platform_key = cached_platform_key(query.context, type, :resolve_type) { platform_resolve_type_key(type) }
+        @tracer.trace(platform_key, service: @service_name) do |span|
+          span.span_type = 'custom'
+          if defined?(Datadog::Tracing::Metadata::Ext) # Introduced in ddtrace 1.0
+            span.set_tag(Datadog::Tracing::Metadata::Ext::TAG_COMPONENT, 'graphql')
+            span.set_tag(Datadog::Tracing::Metadata::Ext::TAG_OPERATION, span_key)
+          end
+          prepare_span(span_key, {object: object, type: type, query: query}, span)
+          super(query: query, type: type, object: object)
+        end
+      end
+
+      def resolve_type_lazy(**kwargs, &block)
+        resolve_type(span_key: "resolve_type_lazy", **kwargs, &block)
+      end
+
+      include PlatformTrace
 
       # Implement this method in a subclass to apply custom tags to datadog spans
       # @param key [String] The event being traced

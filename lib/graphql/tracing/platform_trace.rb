@@ -8,32 +8,75 @@ module GraphQL
         super
       end
 
-      [:execute_field, :execute_field_lazy].each do |field_trace_method|
-        module_eval <<-RUBY, __FILE__, __LINE__
-          def #{field_trace_method}(**data)
-            field = data[:field]
-            return_type = field.type.unwrap
-            trace_field = if return_type.kind.scalar? || return_type.kind.enum?
-              (field.trace.nil? && @trace_scalars) || field.trace
-            else
-              true
-            end
-            platform_key = if trace_field
-              context = data[:query].context
-              cached_platform_key(context, field, :field) { platform_field_key(field.owner, field) }
-            else
-              nil
-            end
-            if platform_key && trace_field
-              platform_#{field_trace_method}(platform_key, data) do
+      def platform_execute_field_lazy(platform_key, data, &block)
+        platform_execute_field(platform_key, data, &block)
+      end
+
+      def platform_authorized_lazy(key, &block)
+        platform_authorized(key, &block)
+      end
+
+      def platform_resolve_type_lazy(key, &block)
+        platform_resolve_type(key, &block)
+      end
+
+      def self.included(child_class)
+        [:execute_field, :execute_field_lazy].each do |field_trace_method|
+          child_class.module_eval <<-RUBY, __FILE__, __LINE__
+            def #{field_trace_method}(**data)
+              field = data[:field]
+              return_type = field.type.unwrap
+              trace_field = if return_type.kind.scalar? || return_type.kind.enum?
+                (field.trace.nil? && @trace_scalars) || field.trace
+              else
+                true
+              end
+              platform_key = if trace_field
+                context = data[:query].context
+                cached_platform_key(context, field, :field) { platform_field_key(field.owner, field) }
+              else
+                nil
+              end
+              if platform_key && trace_field
+                platform_#{field_trace_method}(platform_key, data) do
+                  super
+                end
+              else
                 super
               end
-            else
-              super
             end
+          RUBY
+        end
+
+
+        [:authorized, :authorized_lazy].each do |auth_trace_method|
+          if !child_class.method_defined?(auth_trace_method)
+            child_class.module_eval <<-RUBY, __FILE__, __LINE__
+              def #{auth_trace_method}(type:, query:, object:)
+                platform_key = cached_platform_key(query.context, type, :authorized) { platform_authorized_key(type) }
+                platform_#{auth_trace_method}(platform_key) do
+                  super
+                end
+              end
+            RUBY
           end
-        RUBY
+        end
+
+        [:resolve_type, :resolve_type_lazy].each do |rt_trace_method|
+          if !child_class.method_defined?(rt_trace_method)
+            child_class.module_eval <<-RUBY, __FILE__, __LINE__
+              def #{rt_trace_method}(query:, type:, object:)
+                platform_key = cached_platform_key(query.context, type, :resolve_type) { platform_resolve_type_key(type) }
+                platform_#{rt_trace_method}(platform_key) do
+                  super
+                end
+              end
+            RUBY
+          end
+        end
       end
+
+
 
       private
 

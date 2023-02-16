@@ -19,7 +19,7 @@ describe GraphQL::Tracing::StatsdTracing do
     end
   end
 
-  class StatsdTestSchema < GraphQL::Schema
+  class StatsdTraceTestSchema < GraphQL::Schema
     class Thing < GraphQL::Schema::Object
       field :str, String
       def str; "blah"; end
@@ -38,7 +38,7 @@ describe GraphQL::Tracing::StatsdTracing do
 
     query(Query)
 
-    use GraphQL::Tracing::StatsdTracing, statsd: MockStatsd
+    trace_with GraphQL::Tracing::StatsdTrace, statsd: MockStatsd
   end
 
   before do
@@ -46,7 +46,7 @@ describe GraphQL::Tracing::StatsdTracing do
   end
 
   it "gathers timings" do
-    StatsdTestSchema.execute("query X { int thing { str } }")
+    StatsdTraceTestSchema.execute("query X { int thing { str } }")
     expected_timings = [
       "graphql.execute_multiplex",
       "graphql.analyze_multiplex",

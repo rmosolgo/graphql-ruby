@@ -47,37 +47,15 @@ module GraphQL
         end
       end
 
-      def platform_execute_field_lazy(platform_key, _data)
+      def platform_authorized(platform_key)
         NewRelic::Agent::MethodTracerHelpers.trace_execution_scoped(platform_key) do
           yield
         end
       end
 
-      def authorized(type:, query:, **_rest)
-        platform_key = cached_platform_key(query.context, type, :authorized) { platform_authorized_key(type) }
+      def platform_resolve_type(platform_key)
         NewRelic::Agent::MethodTracerHelpers.trace_execution_scoped(platform_key) do
-          super
-        end
-      end
-
-      def authorized_lazy(type:, query:, **_rest)
-        platform_key = cached_platform_key(query.context, type, :authorized) { platform_authorized_key(type) }
-        NewRelic::Agent::MethodTracerHelpers.trace_execution_scoped(platform_key) do
-          super
-        end
-      end
-
-      def resolve_type(type:, query:, **_rest)
-        platform_key = cached_platform_key(query.context, type, :resolve_type) { platform_resolve_type_key(type) }
-        NewRelic::Agent::MethodTracerHelpers.trace_execution_scoped(platform_key) do
-          super
-        end
-      end
-
-      def resolve_type_lazy(type:, query:, **_rest)
-        platform_key = cached_platform_key(query.context, type, :resolve_type) { platform_resolve_type_key(type) }
-        NewRelic::Agent::MethodTracerHelpers.trace_execution_scoped(platform_key) do
-          super
+          yield
         end
       end
 
