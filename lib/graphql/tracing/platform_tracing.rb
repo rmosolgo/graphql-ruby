@@ -73,8 +73,20 @@ module GraphQL
       end
 
       def self.use(schema_defn, options = {})
-        tracer = self.new(**options)
-        schema_defn.tracer(tracer)
+        if options[:legacy_tracing]
+          tracer = self.new(**options)
+          schema_defn.tracer(tracer)
+        else
+          tracing_name = self.name.split("::").last
+          trace_name = tracing_name.sub("Tracing", "Trace")
+          if GraphQL::Tracing.const_defined?(trace_name, false)
+            trace_module = GraphQL::Tracing.const_get(trace_name)
+            schema_defn.trace_with(trace_module, **options)
+          else
+            tracer = self.new(**options)
+            schema_defn.tracer(tracer)
+          end
+        end
       end
 
       private
