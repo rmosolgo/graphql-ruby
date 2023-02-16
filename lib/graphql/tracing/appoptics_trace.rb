@@ -15,7 +15,6 @@ module GraphQL
     #     AppOpticsAPM::Config[:graphql][:sanitize_query] = true|false
     #     AppOpticsAPM::Config[:graphql][:remove_comments] = true|false
     module AppOpticsTrace
-      include PlatformTrace
       # These GraphQL events will show up as 'graphql.prep' spans
       PREP_KEYS = ['lex', 'parse', 'validate', 'analyze_query', 'analyze_multiplex'].freeze
       # These GraphQL events will show up as 'graphql.execute' spans
@@ -110,6 +109,8 @@ module GraphQL
           super
         end
       end
+
+      include PlatformTrace
 
       def platform_field_key(field)
         "graphql.#{field.owner.graphql_name}.#{field.graphql_name}"

@@ -32,7 +32,7 @@ describe GraphQL::Tracing::PlatformTrace do
       yield
     end
 
-    def platform_execute_field(platform_key, data)
+    def platform_execute_field(platform_key)
       TRACE << platform_key
       yield
     end

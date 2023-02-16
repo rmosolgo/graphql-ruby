@@ -44,7 +44,7 @@ module GraphQL
         RUBY
       end
 
-      def platform_execute_field(platform_key, data)
+      def platform_execute_field(platform_key)
         Appsignal.instrument(platform_key) do
           super
         end

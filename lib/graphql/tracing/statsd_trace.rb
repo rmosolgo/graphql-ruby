@@ -30,7 +30,7 @@ module GraphQL
         RUBY
       end
 
-      def platform_execute_field(platform_key, _data, &block)
+      def platform_execute_field(platform_key, &block)
         @statsd.time(platform_key, &block)
       end
 

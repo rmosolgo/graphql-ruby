@@ -30,11 +30,11 @@ module GraphQL
         RUBY
       end
 
-      def platform_execute_field(platform_key, _data, &block)
+      def platform_execute_field(platform_key, &block)
         instrument_execution(platform_key, "execute_field", &block)
       end
 
-      def platform_execute_field_lazy(platform_key, _data, &block)
+      def platform_execute_field_lazy(platform_key, &block)
         instrument_execution(platform_key, "execute_field_lazy", &block)
       end
 

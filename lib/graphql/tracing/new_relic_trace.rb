@@ -41,7 +41,7 @@ module GraphQL
         RUBY
       end
 
-      def platform_execute_field(platform_key, _data)
+      def platform_execute_field(platform_key)
         NewRelic::Agent::MethodTracerHelpers.trace_execution_scoped(platform_key) do
           yield
         end

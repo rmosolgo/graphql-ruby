@@ -46,7 +46,7 @@ module GraphQL
         RUBY
       end
 
-      def platform_execute_field(platform_key, _data, &block)
+      def platform_execute_field(platform_key, &block)
         self.class.instrument("GraphQL", platform_key, INSTRUMENT_OPTS, &block)
       end
 

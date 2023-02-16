@@ -11,8 +11,8 @@ module GraphQL
         super
       end
 
-      def platform_execute_field_lazy(platform_key, data, &block)
-        platform_execute_field(platform_key, data, &block)
+      def platform_execute_field_lazy(*args, &block)
+        platform_execute_field(*args, &block)
       end
 
       def platform_authorized_lazy(key, &block)
@@ -24,10 +24,13 @@ module GraphQL
       end
 
       def self.included(child_class)
+        # Don't gather this unless necessary
+        pass_data_to_execute_field = child_class.method_defined?(:platform_execute_field) &&
+          child_class.instance_method(:platform_execute_field).arity != 1
+
         [:execute_field, :execute_field_lazy].each do |field_trace_method|
           child_class.module_eval <<-RUBY, __FILE__, __LINE__
-            def #{field_trace_method}(**data)
-              field = data[:field]
+            def #{field_trace_method}(query:, field:, ast_node:, arguments:, object:)
               return_type = field.type.unwrap
               trace_field = if return_type.kind.scalar? || return_type.kind.enum?
                 (field.trace.nil? && @trace_scalars) || field.trace
@@ -35,13 +38,12 @@ module GraphQL
                 true
               end
               platform_key = if trace_field
-                context = data[:query].context
                 @platform_field_key_cache[field]
               else
                 nil
               end
               if platform_key && trace_field
-                platform_#{field_trace_method}(platform_key, data) do
+                platform_#{field_trace_method}(platform_key#{pass_data_to_execute_field ? ", { query: query, field: field, ast_node: ast_node, arguments: arguments, object: object }" : ""}) do
                   super
                 end
               else
