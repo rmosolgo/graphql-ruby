@@ -167,7 +167,7 @@ module GraphQL
 
     # @return [GraphQL::Tracing::Trace]
     def current_trace
-      @current_trace ||= multiplex ? multiplex.current_trace : schema.new_trace
+      @current_trace ||= multiplex ? multiplex.current_trace : schema.new_trace(multiplex: multiplex, query: self)
     end
 
     def subscription_update?
@@ -375,7 +375,7 @@ module GraphQL
       parse_error = nil
       @document ||= begin
         if query_string
-          GraphQL.parse(query_string, tracer: self)
+          GraphQL.parse(query_string, trace: self.current_trace)
         end
       rescue GraphQL::ParseError => err
         parse_error = err

@@ -954,9 +954,11 @@ module GraphQL
         trace_class.include(trace_mod)
       end
 
-      def new_trace
-        @trace_options ||= {}
-        trace_class.new(**@trace_options)
+      def new_trace(**options)
+        if defined?(@trace_options)
+          options = @trace_options.merge(options)
+        end
+        trace_class.new(**options)
       end
 
       def query_analyzer(new_analyzer)

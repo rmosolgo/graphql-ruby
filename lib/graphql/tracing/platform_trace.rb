@@ -3,18 +3,6 @@
 module GraphQL
   module Tracing
     module PlatformTrace
-      module ClassMethods
-        attr_accessor :platform_keys
-
-        def inherited(child_class)
-          child_class.platform_keys = self.platform_keys
-        end
-      end
-
-      def self.included(child_mod)
-        child_mod.extend(ClassMethods)
-      end
-
       def initialize(trace_scalars: false, **_options)
         @trace_scalars = trace_scalars
         super

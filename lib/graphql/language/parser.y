@@ -448,22 +448,22 @@ end
 
 EMPTY_ARRAY = [].freeze
 
-def initialize(query_string, filename:, tracer: Tracing::NullTracer)
+def initialize(query_string, filename:, trace: Tracing::NullTrace)
   raise GraphQL::ParseError.new("No query string was present", nil, nil, query_string) if query_string.nil?
   @query_string = query_string
   @filename = filename
-  @tracer = tracer
+  @trace = trace
   @reused_next_token = [nil, nil]
 end
 
 def parse_document
   @document ||= begin
     # Break the string into tokens
-    @tracer.trace("lex", {query_string: @query_string}) do
+    @trace.lex(query_string: @query_string) do
       @tokens ||= GraphQL.scan(@query_string)
     end
     # From the tokens, build an AST
-    @tracer.trace("parse", {query_string: @query_string}) do
+    @trace.parse(query_string: @query_string) do
       if @tokens.empty?
         raise GraphQL::ParseError.new("Unexpected end of document", nil, nil, @query_string)
       else
@@ -476,17 +476,17 @@ end
 class << self
   attr_accessor :cache
 
-  def parse(query_string, filename: nil, tracer: GraphQL::Tracing::NullTracer)
-    new(query_string, filename: filename, tracer: tracer).parse_document
+  def parse(query_string, filename: nil, trace: GraphQL::Tracing::NullTrace)
+    new(query_string, filename: filename, trace: trace).parse_document
   end
 
-  def parse_file(filename, tracer: GraphQL::Tracing::NullTracer)
+  def parse_file(filename, trace: GraphQL::Tracing::NullTrace)
     if cache
       cache.fetch(filename) do
-        parse(File.read(filename), filename: filename, tracer: tracer)
+        parse(File.read(filename), filename: filename, trace: trace)
       end
     else
-      parse(File.read(filename), filename: filename, tracer: tracer)
+      parse(File.read(filename), filename: filename, trace: trace)
     end
   end
 end

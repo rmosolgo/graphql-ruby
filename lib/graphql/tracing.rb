@@ -12,6 +12,7 @@ require "graphql/tracing/prometheus_tracing"
 
 # New Tracing:
 require "graphql/tracing/platform_trace"
+require "graphql/tracing/data_dog_trace"
 require "graphql/tracing/new_relic_trace"
 
 if defined?(PrometheusExporter::Server)
@@ -21,17 +22,20 @@ end
 module GraphQL
   module Tracing
     class Trace
-      def initialize(**_options)
+      # @param multiplex [GraphQL::Execution::Multiplex, nil]
+      # @param query [GraphQL::Query, nil]
+      def initialize(multiplex: nil, query: nil, **_options)
+        @multiplex = multiplex
+        @query = query
       end
 
-      # TODO
-      # def lex(query_string:)
-      #   yield
-      # end
+      def lex(query_string:)
+        yield
+      end
 
-      # def parse(query_string:)
-      #   yield
-      # end
+      def parse(query_string:)
+        yield
+      end
 
       def validate(query:, validate:)
         yield
@@ -82,15 +86,16 @@ module GraphQL
       end
     end
 
-    class LegacyTrace < Trace
-      # TODO: These are not migrated yet
-      # def lex(query_string:)
-      #   yield
-      # end
+    NullTrace = Trace.new
 
-      # def parse(query_string:)
-      #   yield
-      # end
+    class LegacyTrace < Trace
+      def lex(query_string:, &block)
+        (@multiplex || @query).trace("lex", { query_string: query_string }, &block)
+      end
+
+      def parse(query_string:, &block)
+        (@multiplex || @query).trace("parse", { query_string: query_string }, &block)
+      end
 
       def validate(query:, validate:, &block)
         query.trace("validate", { validate: validate, query: query }, &block)

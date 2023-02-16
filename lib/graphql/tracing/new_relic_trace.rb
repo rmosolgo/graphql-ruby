@@ -5,17 +5,6 @@ module GraphQL
     module NewRelicTrace
       include PlatformTrace
 
-      self.platform_keys = {
-        "lex" => "GraphQL/lex",
-        "parse" => "GraphQL/parse",
-        "validate" => "GraphQL/validate",
-        "analyze_query" => "GraphQL/analyze",
-        "analyze_multiplex" => "GraphQL/analyze",
-        "execute_multiplex" => "GraphQL/execute",
-        "execute_query" => "GraphQL/execute",
-        "execute_query_lazy" => "GraphQL/execute",
-      }
-
       # @param set_transaction_name [Boolean] If true, the GraphQL operation name will be used as the transaction name.
       #   This is not advised if you run more than one query per HTTP request, for example, with `graphql-client` or multiplexing.
       #   It can also be specified per-query with `context[:set_new_relic_transaction_name]`.
