@@ -12,6 +12,7 @@ require "graphql/tracing/prometheus_tracing"
 
 # New Tracing:
 require "graphql/tracing/platform_trace"
+require "graphql/tracing/appoptics_trace"
 require "graphql/tracing/data_dog_trace"
 require "graphql/tracing/new_relic_trace"
 
