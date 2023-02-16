@@ -54,12 +54,10 @@ module GraphQL
         self.class.instrument("GraphQL", platform_key, INSTRUMENT_OPTS, &block)
       end
 
-      alias :platform_authorized_lazy :platform_authorized
       alias :platform_resolve_type :platform_authorized
-      alias :platform_resolve_type_lazy :platform_authorized
 
-      def platform_field_key(type, field)
-        "#{type.graphql_name}.#{field.graphql_name}"
+      def platform_field_key(field)
+        field.path
       end
 
       def platform_authorized_key(type)

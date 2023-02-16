@@ -5,6 +5,9 @@ module GraphQL
     module PlatformTrace
       def initialize(trace_scalars: false, **_options)
         @trace_scalars = trace_scalars
+        @platform_field_key_cache = Hash.new { |h, k| h[k] = platform_field_key(k) }
+        @platform_authorized_key_cache = Hash.new { |h, k| h[k] = platform_authorized_key(k) }
+        @platform_resolve_type_key_cache = Hash.new { |h, k| h[k] = platform_resolve_type_key(k) }
         super
       end
 
@@ -33,7 +36,7 @@ module GraphQL
               end
               platform_key = if trace_field
                 context = data[:query].context
-                cached_platform_key(context, field, :field) { platform_field_key(field.owner, field) }
+                @platform_field_key_cache[field]
               else
                 nil
               end
@@ -53,7 +56,7 @@ module GraphQL
           if !child_class.method_defined?(auth_trace_method)
             child_class.module_eval <<-RUBY, __FILE__, __LINE__
               def #{auth_trace_method}(type:, query:, object:)
-                platform_key = cached_platform_key(query.context, type, :authorized) { platform_authorized_key(type) }
+                platform_key = @platform_authorized_key_cache[type]
                 platform_#{auth_trace_method}(platform_key) do
                   super
                 end
@@ -66,7 +69,7 @@ module GraphQL
           if !child_class.method_defined?(rt_trace_method)
             child_class.module_eval <<-RUBY, __FILE__, __LINE__
               def #{rt_trace_method}(query:, type:, object:)
-                platform_key = cached_platform_key(query.context, type, :resolve_type) { platform_resolve_type_key(type) }
+                platform_key = @platform_resolve_type_key_cache[type]
                 platform_#{rt_trace_method}(platform_key) do
                   super
                 end
@@ -96,27 +99,6 @@ module GraphQL
 
       def fallback_transaction_name(context)
         context[:tracing_fallback_transaction_name]
-      end
-
-      attr_reader :options
-
-      # Different kind of schema objects have different kinds of keys:
-      #
-      # - Object types: `.authorized`
-      # - Union/Interface types: `.resolve_type`
-      # - Fields: execution
-      #
-      # So, they can all share one cache.
-      #
-      # If the key isn't present, the given block is called and the result is cached for `key`.
-      #
-      # @param ctx [GraphQL::Query::Context]
-      # @param key [Class, GraphQL::Field] A part of the schema
-      # @param trace_phase [Symbol] The stage of execution being traced (used by OpenTelementry tracing)
-      # @return [String]
-      def cached_platform_key(ctx, key, trace_phase)
-        cache = ctx.namespace(self.class)[:platform_key_cache] ||= {}
-        cache.fetch(key) { cache[key] = yield }
       end
     end
   end

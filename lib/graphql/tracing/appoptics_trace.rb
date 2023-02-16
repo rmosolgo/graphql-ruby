@@ -39,7 +39,7 @@ module GraphQL
         'execute_query',
         'execute_query_lazy',
       ].each do |trace_method|
-        module_eval <<-RUBY
+        module_eval <<-RUBY, __FILE__, __LINE__
           def #{trace_method}(**data)
             return super if !defined?(AppOpticsAPM) || gql_config[:enabled] == false
             layer = span_name("#{trace_method}")
@@ -69,7 +69,7 @@ module GraphQL
 
       def authorized(**data)
         return super if !defined?(AppOpticsAPM) || gql_config[:enabled] == false
-        layer = cached_platform_key(data[:query].context, data[:type], :authorized) { platform_authorized_key(data[:type]) }
+        layer = @platform_authorized_key_cache[data[:type]]
         kvs = metadata(data, layer)
 
         ::AppOpticsAPM::SDK.trace(layer, kvs) do
@@ -80,7 +80,7 @@ module GraphQL
 
       def authorized_lazy(**data)
         return super if !defined?(AppOpticsAPM) || gql_config[:enabled] == false
-        layer = cached_platform_key(data[:query].context, data[:type], :authorized) { platform_authorized_key(data[:type]) }
+        layer = @platform_authorized_key_cache[data[:type]]
         kvs = metadata(data, layer)
 
         ::AppOpticsAPM::SDK.trace(layer, kvs) do
@@ -91,7 +91,7 @@ module GraphQL
 
       def resolve_type(**data)
         return super if !defined?(AppOpticsAPM) || gql_config[:enabled] == false
-        layer = cached_platform_key(data[:query].context, data[:type], :resolve_type) { platform_resolve_type_key(data[:type]) }
+        layer = @platform_resolve_type_key_cache[data[:type]]
         kvs = metadata(data, layer)
 
         ::AppOpticsAPM::SDK.trace(layer, kvs) do
@@ -102,7 +102,7 @@ module GraphQL
 
       def resolve_type_lazy(**data)
         return super if !defined?(AppOpticsAPM) || gql_config[:enabled] == false
-        layer = cached_platform_key(data[:query].context, data[:type], :resolve_type) { platform_resolve_type_key(data[:type]) }
+        layer = @platform_resolve_type_key_cache[data[:type]]
         kvs = metadata(data, layer)
 
         ::AppOpticsAPM::SDK.trace(layer, kvs) do
@@ -111,8 +111,8 @@ module GraphQL
         end
       end
 
-      def platform_field_key(type, field)
-        "graphql.#{type.graphql_name}.#{field.graphql_name}"
+      def platform_field_key(field)
+        "graphql.#{field.owner.graphql_name}.#{field.graphql_name}"
       end
 
       def platform_authorized_key(type)

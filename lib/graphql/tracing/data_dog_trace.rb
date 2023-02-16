@@ -18,6 +18,7 @@ module GraphQL
         @analytics_enabled = analytics_available && Datadog::Contrib::Analytics.enabled?(analytics_enabled)
         @analytics_sample_rate = analytics_sample_rate
         @service_name = service
+        super
       end
 
       {
@@ -89,7 +90,7 @@ module GraphQL
       end
 
       def authorized(object:, type:, query:, span_key: "authorized")
-        platform_key = cached_platform_key(query.context, type, :authorized) { platform_authorized_key(type) }
+        platform_key = @platform_authorized_key_cache[type]
         @tracer.trace(platform_key, service: @service_name) do |span|
           span.span_type = 'custom'
           if defined?(Datadog::Tracing::Metadata::Ext) # Introduced in ddtrace 1.0
@@ -106,7 +107,7 @@ module GraphQL
       end
 
       def resolve_type(object:, type:, query:, span_key: "resolve_type")
-        platform_key = cached_platform_key(query.context, type, :resolve_type) { platform_resolve_type_key(type) }
+        platform_key = @platform_resolve_type_key_cache[type]
         @tracer.trace(platform_key, service: @service_name) do |span|
           span.span_type = 'custom'
           if defined?(Datadog::Tracing::Metadata::Ext) # Introduced in ddtrace 1.0
@@ -131,8 +132,8 @@ module GraphQL
       def prepare_span(key, data, span)
       end
 
-      def platform_field_key(type, field)
-        "#{type.graphql_name}.#{field.graphql_name}"
+      def platform_field_key(field)
+        field.path
       end
 
       def platform_authorized_key(type)

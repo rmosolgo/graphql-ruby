@@ -54,8 +54,8 @@ module GraphQL
         instrument_execution(platform_key, "resolve_type_lazy", &block)
       end
 
-      def platform_field_key(type, field)
-        "#{type.graphql_name}.#{field.graphql_name}"
+      def platform_field_key(field)
+        field.path
       end
 
       def platform_authorized_key(type)

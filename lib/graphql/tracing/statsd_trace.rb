@@ -38,12 +38,10 @@ module GraphQL
         @statsd.time(key, &block)
       end
 
-      alias :authorized_lazy :platform_authorized
       alias :platform_resolve_type :platform_authorized
-      alias :platform_resolve_type_lazy :platform_authorized
 
-      def platform_field_key(type, field)
-        "graphql.#{type.graphql_name}.#{field.graphql_name}"
+      def platform_field_key(field)
+        "graphql.#{field.path}"
       end
 
       def platform_authorized_key(type)
