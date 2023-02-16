@@ -33,60 +33,56 @@ module GraphQL
     #   end
     #
     class Timeout
-      def self.use(schema, **options)
-        tracer = new(**options)
-        schema.tracer(tracer)
+      def self.use(schema, max_seconds: nil)
+        timeout = self.new(max_seconds: max_seconds)
+        schema.trace_with(self::Trace, timeout: timeout)
       end
 
-      # @param max_seconds [Numeric] how many seconds the query should be allowed to resolve new fields
       def initialize(max_seconds:)
         @max_seconds = max_seconds
       end
 
-      def trace(key, data)
-        case key
-        when 'execute_multiplex'
-          data.fetch(:multiplex).queries.each do |query|
-            timeout_duration_s = max_seconds(query)
+      module Trace
+        # @param max_seconds [Numeric] how many seconds the query should be allowed to resolve new fields
+        def initialize(timeout:, **rest)
+          @timeout = timeout
+          super
+        end
+
+        def execute_multiplex(multiplex:)
+          multiplex.queries.each do |query|
+            timeout_duration_s = @timeout.max_seconds(query)
             timeout_state = if timeout_duration_s == false
               # if the method returns `false`, don't apply a timeout
               false
             else
               now = Process.clock_gettime(Process::CLOCK_MONOTONIC, :millisecond)
-              timeout_at = now + (max_seconds(query) * 1000)
+              timeout_at = now + (timeout_duration_s * 1000)
               {
                 timeout_at: timeout_at,
                 timed_out: false
               }
             end
-            query.context.namespace(self.class)[:state] = timeout_state
+            query.context.namespace(@timeout)[:state] = timeout_state
           end
+          super
+        end
 
-          yield
-        when 'execute_field', 'execute_field_lazy'
-          query_context = data[:context] || data[:query].context
-          timeout_state = query_context.namespace(self.class).fetch(:state)
+        def execute_field(query:, field:, **_rest)
+          timeout_state = query.context.namespace(@timeout).fetch(:state)
           # If the `:state` is `false`, then `max_seconds(query)` opted out of timeout for this query.
           if timeout_state != false && Process.clock_gettime(Process::CLOCK_MONOTONIC, :millisecond) > timeout_state.fetch(:timeout_at)
-            error = if data[:context]
-              GraphQL::Schema::Timeout::TimeoutError.new(query_context.parent_type, query_context.field)
-            else
-              field = data.fetch(:field)
-              GraphQL::Schema::Timeout::TimeoutError.new(field.owner, field)
-            end
-
+            error = GraphQL::Schema::Timeout::TimeoutError.new(field)
             # Only invoke the timeout callback for the first timeout
             if !timeout_state[:timed_out]
               timeout_state[:timed_out] = true
-              handle_timeout(error, query_context.query)
+              @timeout.handle_timeout(error, query)
             end
 
             error
           else
             yield
           end
-        else
-          yield
         end
       end
 
@@ -114,8 +110,8 @@ module GraphQL
       # to take this error and raise a new one which _doesn't_ descend from {GraphQL::ExecutionError},
       # such as `RuntimeError`.
       class TimeoutError < GraphQL::ExecutionError
-        def initialize(parent_type, field)
-          super("Timeout on #{parent_type.graphql_name}.#{field.graphql_name}")
+        def initialize(field)
+          super("Timeout on #{field.path}")
         end
       end
     end
