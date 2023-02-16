@@ -30,12 +30,12 @@ module GraphQL
         def #{trace_method}(**data)
           #{
             if trace_method == "execute_query"
-            <<-RUBY
-            set_this_txn_name = data[:query].context[:set_scout_transaction_name]
-            if set_this_txn_name == true || (set_this_txn_name.nil? && @set_transaction_name)
-              ScoutApm::Transaction.rename(transaction_name(data[:query]))
-            end
-            RUBY
+              <<-RUBY
+              set_this_txn_name = data[:query].context[:set_scout_transaction_name]
+              if set_this_txn_name == true || (set_this_txn_name.nil? && @set_transaction_name)
+                ScoutApm::Transaction.rename(transaction_name(data[:query]))
+              end
+              RUBY
             end
           }
 

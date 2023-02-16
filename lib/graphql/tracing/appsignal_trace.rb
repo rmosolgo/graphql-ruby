@@ -24,7 +24,7 @@ module GraphQL
         "execute_query" => "execute.graphql",
         "execute_query_lazy" => "execute.graphql",
       }.each do |trace_method, platform_key|
-        module_eval <<-RUBY
+        module_eval <<-RUBY, __FILE__, __LINE__
           def #{trace_method}(**data)
             #{
               if trace_method == "execute_query"
