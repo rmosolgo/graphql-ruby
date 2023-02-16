@@ -41,47 +41,15 @@ module GraphQL
         RUBY
       end
 
-      def execute_field(query:, field:, **_rest)
-        return_type = field.type.unwrap
-        trace_field = if return_type.kind.scalar? || return_type.kind.enum?
-          (field.trace.nil? && @trace_scalars) || field.trace
-        else
-          true
-        end
-        platform_key = if trace_field
-          context = query.context
-          cached_platform_key(context, field, :field) { platform_field_key(field.owner, field) }
-        else
-          nil
-        end
-        if platform_key && trace_field
-          NewRelic::Agent::MethodTracerHelpers.trace_execution_scoped(platform_key) do
-            super
-          end
-        else
-          super
+      def platform_execute_field(platform_key, _data)
+        NewRelic::Agent::MethodTracerHelpers.trace_execution_scoped(platform_key) do
+          yield
         end
       end
 
-      def execute_field_lazy(type:, field:, **_rest)
-        return_type = field.type.unwrap
-        trace_field = if return_type.kind.scalar? || return_type.kind.enum?
-          (field.trace.nil? && @trace_scalars) || field.trace
-        else
-          true
-        end
-        platform_key = if trace_field
-          context = query.context
-          cached_platform_key(context, field, :field) { platform_field_key(field.owner, field) }
-        else
-          nil
-        end
-        if platform_key && trace_field
-          NewRelic::Agent::MethodTracerHelpers.trace_execution_scoped(platform_key) do
-            super
-          end
-        else
-          super
+      def platform_execute_field_lazy(platform_key, _data)
+        NewRelic::Agent::MethodTracerHelpers.trace_execution_scoped(platform_key) do
+          yield
         end
       end
 

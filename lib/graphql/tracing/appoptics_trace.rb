@@ -56,37 +56,23 @@ module GraphQL
         RUBY
       end
 
-      [:execute_field, :execute_field_lazy].each do |field_trace_method|
-        module_eval <<-RUBY, __FILE__, __LINE__
-          def #{field_trace_method}(**data)
-            return super if !defined?(AppOpticsAPM) || gql_config[:enabled] == false
-            field = data[:field]
-            return_type = field.type.unwrap
-            trace_field = if return_type.kind.scalar? || return_type.kind.enum?
-              (field.trace.nil? && @trace_scalars) || field.trace
-            else
-              true
-            end
-            platform_key = if trace_field
-              context = data[:query].context
-              cached_platform_key(context, field, :field) { platform_field_key(field.owner, field) }
-            else
-              nil
-            end
-            if platform_key && trace_field
-              layer = platform_key
-              kvs = metadata(data, layer)
-              kvs[:Key] = "#{field_trace_method}" if (PREP_KEYS + EXEC_KEYS).include?("#{field_trace_method}")
+      def platform_execute_field(platform_key, data)
+        layer = platform_key
+        kvs = metadata(data, layer)
 
-              ::AppOpticsAPM::SDK.trace(layer, kvs) do
-                kvs.clear # we don't have to send them twice
-                super
-              end
-            else
-              super
-            end
-          end
-        RUBY
+        ::AppOpticsAPM::SDK.trace(layer, kvs) do
+          kvs.clear # we don't have to send them twice
+          yield
+        end
+      end
+
+      def platform_execute_field_lazy(platform_key, data)
+        layer = platform_key
+        kvs = metadata(data, layer)
+        ::AppOpticsAPM::SDK.trace(layer, kvs) do
+          kvs.clear # we don't have to send them twice
+          yield
+        end
       end
 
       def platform_field_key(type, field)

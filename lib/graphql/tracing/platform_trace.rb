@@ -8,36 +8,32 @@ module GraphQL
         super
       end
 
-      # def execute_field()
-      # end
-
-      # [:execute_field, :execute_field_lazy].each do |field_trace_method|
-      #   module_eval <<-RUBY, __FILE__, __LINE__
-      #     def #{field_trace_method}(field:, query:, **_rest)
-      #       return_type = field.type.unwrap
-      #       trace_field = if return_type.kind.scalar? || return_type.kind.enum?
-      #         (field.trace.nil? && @trace_scalars) || field.trace
-      #       else
-      #         true
-      #       end
-      #       platform_key = if trace_field
-      #         context = query.context
-      #         cached_platform_key(context, field, :field) { platform_field_key(field.owner, field) }
-      #       else
-      #         nil
-      #       end
-      #       if platform_key && trace_field
-      #         # TODO data here ?
-      #         data = {}
-      #         platform_trace(platform_key, "#{field_trace_method}", data) do
-      #           yield
-      #         end
-      #       else
-      #         yield
-      #       end
-      #     end
-      #   RUBY
-      # end
+      [:execute_field, :execute_field_lazy].each do |field_trace_method|
+        module_eval <<-RUBY, __FILE__, __LINE__
+          def #{field_trace_method}(**data)
+            field = data[:field]
+            return_type = field.type.unwrap
+            trace_field = if return_type.kind.scalar? || return_type.kind.enum?
+              (field.trace.nil? && @trace_scalars) || field.trace
+            else
+              true
+            end
+            platform_key = if trace_field
+              context = data[:query].context
+              cached_platform_key(context, field, :field) { platform_field_key(field.owner, field) }
+            else
+              nil
+            end
+            if platform_key && trace_field
+              platform_#{field_trace_method}(platform_key, data) do
+                super
+              end
+            else
+              super
+            end
+          end
+        RUBY
+      end
 
       private
 
