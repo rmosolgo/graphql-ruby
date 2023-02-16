@@ -31,7 +31,7 @@ jobs:
           ref: gh-pages
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.0'
+          ruby-version: '3.2'
           bundler-cache: true
       - name: Build API docs
         run: |
