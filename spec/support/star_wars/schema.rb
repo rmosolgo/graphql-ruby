@@ -173,7 +173,10 @@ module StarWars
       if complex_order
         all_bases = all_bases.order("bases.name DESC")
       end
-      all_bases
+
+      # Emulates ActiveRecord::Base.connected_to(role: :reading) do
+      # https://github.com/rails/rails/blob/d18fc329993df5a583ef721330cffb248ef9a213/activerecord/lib/active_record/connection_handling.rb#L355
+      all_bases.load
     end
 
     field :bases_clone, BaseConnection

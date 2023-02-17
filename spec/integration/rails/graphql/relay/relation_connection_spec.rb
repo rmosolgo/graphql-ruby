@@ -66,6 +66,14 @@ describe "GraphQL::Relay::RelationConnection" do
       assert_equal("Mw", get_last_cursor(result))
     end
 
+    it 'returns the correct hasNextPage value' do
+      first_page_result = star_wars_query(query_string, { "first" => 2})
+      assert_equal(true, get_page_info(first_page_result)["hasNextPage"])
+
+      result = star_wars_query(query_string, { "first" => 2, after: get_page_info(first_page_result)["endCursor"] })
+      assert_equal(false, get_page_info(result)["hasNextPage"])
+    end
+
     it "uses unscope(:order) count(*) when the relation has some complicated SQL" do
       query_s = <<-GRAPHQL
         query getShips($first: Int, $after: String, $complexOrder: Boolean){
@@ -93,10 +101,9 @@ describe "GraphQL::Relay::RelationConnection" do
       assert_equal(true, conn["pageInfo"]["hasNextPage"])
 
       log_entries = log.split("\n")
-      assert_equal 2, log_entries.size, "It ran 2 sql queries"
+      assert_equal 1, log_entries.size, "It should run 1 sql query"
       edges_query, has_next_page_query = log_entries
       assert_includes edges_query, "ORDER BY bases.name", "The query for edges _is_ ordered"
-      refute_includes has_next_page_query, "ORDER BY bases.name", "The count query **does not** have an order"
     end
 
     it 'provides custom fields on the connection type' do
