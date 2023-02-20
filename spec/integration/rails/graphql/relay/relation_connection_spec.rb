@@ -70,7 +70,7 @@ describe "GraphQL::Relay::RelationConnection" do
       first_page_result = star_wars_query(query_string, { "first" => 2})
       assert_equal(true, get_page_info(first_page_result)["hasNextPage"])
 
-      result = star_wars_query(query_string, { "first" => 2, after: get_page_info(first_page_result)["endCursor"] })
+      result = star_wars_query(query_string, { "first" => 2, "after" =>  get_page_info(first_page_result)["endCursor"] })
       assert_equal(false, get_page_info(result)["hasNextPage"])
     end
 
