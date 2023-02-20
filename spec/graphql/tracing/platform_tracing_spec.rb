@@ -116,7 +116,6 @@ describe GraphQL::Tracing::PlatformTracing do
       assert_equal expected_trace, CustomPlatformTracer::TRACE
     end
 
-    focus
     it "traces resolve_type and differentiates field calls on different types" do
       scalar_schema = Class.new(Dummy::Schema) { use(CustomPlatformTracer, trace_scalars: true) }
 
