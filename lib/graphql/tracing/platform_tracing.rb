@@ -40,7 +40,7 @@ module GraphQL
 
           platform_key = if trace_field
             context = data.fetch(:query).context
-            cached_platform_key(context, field, :field) { platform_field_key(data[:owner], field) }
+            cached_platform_key(context, field, :field) { platform_field_key(field.owner, field) }
           else
             nil
           end

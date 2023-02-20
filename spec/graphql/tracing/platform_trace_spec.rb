@@ -112,7 +112,7 @@ describe GraphQL::Tracing::PlatformTrace do
 
     it "traces resolve_type and differentiates field calls on different types" do
       scalar_schema = Class.new(Dummy::Schema) { trace_with(CustomPlatformTrace, trace_scalars: true) }
-      scalar_schema.execute(" { allEdible { __typename origin } }")
+      scalar_schema.execute(" { allEdible { __typename fatContent } }")
       expected_trace = [
           "em",
           "am",
@@ -133,24 +133,24 @@ describe GraphQL::Tracing::PlatformTrace do
           "Cheese.authorized",
           "DynamicFields.authorized",
           "D._",
-          "C.o",
+          "C.f",
           "Edible.resolve_type",
           "Cheese.authorized",
           "Cheese.authorized",
           "DynamicFields.authorized",
           "D._",
-          "C.o",
+          "C.f",
           "Edible.resolve_type",
           "Cheese.authorized",
           "Cheese.authorized",
           "DynamicFields.authorized",
           "D._",
-          "C.o",
+          "C.f",
           "Edible.resolve_type",
           "Milk.authorized",
           "DynamicFields.authorized",
           "D._",
-          "M.o",
+          "E.f",
         ]
 
       assert_equal expected_trace, CustomPlatformTrace::TRACE
