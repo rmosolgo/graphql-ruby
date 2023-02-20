@@ -102,7 +102,7 @@ describe "GraphQL::Relay::RelationConnection" do
 
       log_entries = log.split("\n")
       assert_equal 1, log_entries.size, "It should run 1 sql query"
-      edges_query, has_next_page_query = log_entries
+      edges_query, = log_entries.first
       assert_includes edges_query, "ORDER BY bases.name", "The query for edges _is_ ordered"
     end
 
