@@ -125,7 +125,7 @@
   <li><strong>Scope:</strong> It’s not currently possible to use <code class="language-plaintext highlighter-rouge">GraphQL::Dataloader</code> <em>outside</em> GraphQL.</li>
 </ul>
 
-<p>The incentive in writing <code class="language-plaintext highlighter-rouge">GraphQL::Dataloader</code> was to leverage <code class="language-plaintext highlighter-rouge">Fiber</code>’s ability to <em>transparently</em> pause and resume work, which removes the need for <code class="language-plaintext highlighter-rouge">Promise</code>s (and removes the resulting complexity in the code). Additionally, <code class="language-plaintext highlighter-rouge">GraphQL::Dataloader</code> shoulde <em>eventually</em> support Ruby 3.0’s <code class="language-plaintext highlighter-rouge">Fiber.scheduler</code> API, which runs I/O in the background by default.</p>
+<p>The incentive in writing <code class="language-plaintext highlighter-rouge">GraphQL::Dataloader</code> was to leverage <code class="language-plaintext highlighter-rouge">Fiber</code>’s ability to <em>transparently</em> pause and resume work, which removes the need for <code class="language-plaintext highlighter-rouge">Promise</code>s (and removes the resulting complexity in the code). Additionally, <code class="language-plaintext highlighter-rouge">GraphQL::Dataloader</code> should <em>eventually</em> support Ruby 3.0’s <code class="language-plaintext highlighter-rouge">Fiber.scheduler</code> API, which runs I/O in the background by default.</p>
 
 <h2 id="comparison-fetching-a-single-object">Comparison: Fetching a single object</h2>
 
