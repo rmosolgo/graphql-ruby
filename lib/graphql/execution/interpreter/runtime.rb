@@ -166,9 +166,10 @@ module GraphQL
           info
         end
 
-        def initialize(query:)
+        def initialize(query:, lazies_at_depth:)
           @query = query
           @dataloader = query.multiplex.dataloader
+          @lazies_at_depth = lazies_at_depth
           @schema = query.schema
           @context = query.context
           @multiplex_context = query.multiplex.context
@@ -598,6 +599,16 @@ module GraphQL
           path
         end
 
+        def current_depth
+          ti = thread_info
+          depth = 1
+          result = ti[:current_result]
+          while (result = result.graphql_parent)
+            depth += 1
+          end
+          depth
+        end
+
         HALT = Object.new
         def continue_value(value, parent_type, field, is_non_null, ast_node, result_name, selection_result) # rubocop:disable Metrics/ParameterLists
           case value
@@ -792,16 +803,10 @@ module GraphQL
             response_list = GraphQLResultArray.new(result_name, selection_result)
             response_list.graphql_non_null_list_items = inner_type.non_null?
             set_result(selection_result, result_name, response_list)
-            result_was_set = false
             idx = 0
             list_value = begin
               value.each do |inner_value|
                 break if dead_result?(response_list)
-                if !result_was_set
-                  # Don't set the result unless `.each` is successful
-                  set_result(selection_result, result_name, response_list)
-                  result_was_set = true
-                end
                 this_idx = idx
                 idx += 1
                 if use_dataloader_job
@@ -811,11 +816,6 @@ module GraphQL
                 else
                   resolve_list_item(inner_value, inner_type, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type)
                 end
-              end
-              # Maybe the list was empty and the block was never called.
-              if !result_was_set
-                set_result(selection_result, result_name, response_list)
-                result_was_set = true
               end
 
               response_list
@@ -953,6 +953,7 @@ module GraphQL
               lazy.value
             else
               set_result(result, result_name, lazy)
+              @lazies_at_depth[current_depth] << lazy
               lazy
             end
           else
@@ -968,12 +969,6 @@ module GraphQL
             # The arguments must be prepared in the context of the given object
             query.arguments_for(ast_node, arg_owner, parent_object: graphql_object)
           end
-        end
-
-        # Set this pair in the Query context, but also in the interpeter namespace,
-        # for compatibility.
-        def set_interpreter_context(key, value)
-          thread_info[key] = value
         end
 
         def delete_all_interpreter_context

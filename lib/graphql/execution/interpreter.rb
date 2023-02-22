@@ -39,6 +39,7 @@ module GraphQL
             queries = multiplex.queries
             query_instrumenters = schema.instrumenters[:query]
             multiplex_instrumenters = schema.instrumenters[:multiplex]
+            lazies_at_depth = Hash.new { |h, k| h[k] = [] }
 
             # First, run multiplex instrumentation, then query instrumentation for each query
             call_hooks(multiplex_instrumenters, multiplex, :before_multiplex, :after_multiplex) do
@@ -67,7 +68,7 @@ module GraphQL
                           # Although queries in a multiplex _share_ an Interpreter instance,
                           # they also have another item of state, which is private to that query
                           # in particular, assign it here:
-                          runtime = Runtime.new(query: query)
+                          runtime = Runtime.new(query: query, lazies_at_depth: lazies_at_depth)
                           query.context.namespace(:interpreter_runtime)[:runtime] = runtime
 
                           query.current_trace.execute_query(query: query) do
@@ -96,7 +97,7 @@ module GraphQL
                     end
                     final_values.compact!
                     tracer.current_trace.execute_query_lazy(multiplex: multiplex, query: query) do
-                      Interpreter::Resolve.resolve_all(final_values, multiplex.dataloader)
+                      Interpreter::Resolve.resolve_each_depth(lazies_at_depth, multiplex.dataloader)
                     end
                     queries.each do |query|
                       runtime = query.context.namespace(:interpreter_runtime)[:runtime]

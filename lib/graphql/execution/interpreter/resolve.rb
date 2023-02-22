@@ -11,6 +11,25 @@ module GraphQL
           nil
         end
 
+        def self.resolve_each_depth(lazies_at_depth, dataloader)
+          depths = lazies_at_depth.keys
+          depths.sort!
+          next_depth = depths.first
+          if next_depth
+            lazies = lazies_at_depth[next_depth]
+            lazies_at_depth.delete(next_depth)
+            if lazies.any?
+              dataloader.append_job {
+                lazies.each(&:value) # resolve these Lazy instances
+              }
+              # Run lazies _and_ dataloader, see if more are enqueued
+              dataloader.run
+              resolve_each_depth(lazies_at_depth, dataloader)
+            end
+          end
+          nil
+        end
+
         # After getting `results` back from an interpreter evaluation,
         # continue it until you get a response-ready Ruby value.
         #

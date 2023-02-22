@@ -202,19 +202,23 @@ module GraphQLBenchmark
   end
 
   module ProfileLargeResult
+    def self.eager_or_proc(value)
+      ENV["EAGER"] ? value : -> { value }
+    end
+
     DATA = 1000.times.map {
-      {
-        id:             SecureRandom.uuid,
-        int1:           SecureRandom.random_number(100000),
-        int2:           SecureRandom.random_number(100000),
-        string1:        SecureRandom.base64,
-        string2:        SecureRandom.base64,
-        boolean1:       SecureRandom.random_number(1) == 0,
-        boolean2:       SecureRandom.random_number(1) == 0,
-        int_array:      10.times.map { SecureRandom.random_number(100000) },
-        string_array:   10.times.map { SecureRandom.base64 },
-        boolean_array:  10.times.map { SecureRandom.random_number(1) == 0 },
-      }
+      eager_or_proc({
+          id:             SecureRandom.uuid,
+          int1:           SecureRandom.random_number(100000),
+          int2:           SecureRandom.random_number(100000),
+          string1:        eager_or_proc(SecureRandom.base64),
+          string2:        SecureRandom.base64,
+          boolean1:       SecureRandom.random_number(1) == 0,
+          boolean2:       SecureRandom.random_number(1) == 0,
+          int_array:      eager_or_proc(10.times.map { eager_or_proc(SecureRandom.random_number(100000)) } ),
+          string_array:   10.times.map { SecureRandom.base64 },
+          boolean_array:  10.times.map { SecureRandom.random_number(1) == 0 },
+      })
     }
 
     module Bar
@@ -274,6 +278,7 @@ module GraphQLBenchmark
     class Schema < GraphQL::Schema
       query QueryType
       # use GraphQL::Dataloader
+      lazy_resolve Proc, :call
     end
 
     ALL_FIELDS = GraphQL.parse <<-GRAPHQL
