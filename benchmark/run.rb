@@ -203,20 +203,26 @@ module GraphQLBenchmark
 
   module ProfileLargeResult
     DATA = 1000.times.map {
-      -> {
-        {
+      h = {
           id:             SecureRandom.uuid,
           int1:           SecureRandom.random_number(100000),
           int2:           SecureRandom.random_number(100000),
-          string1:        -> { SecureRandom.base64 },
+          string1:        (d = SecureRandom.base64; -> { d }),
           string2:        SecureRandom.base64,
           boolean1:       SecureRandom.random_number(1) == 0,
           boolean2:       SecureRandom.random_number(1) == 0,
-          int_array:      -> { 10.times.map { -> { SecureRandom.random_number(100000) } } },
+          int_array:      (
+            a = [];
+            10.times.map {
+              n = SecureRandom.random_number(100000)
+              a << -> { n }
+            };
+            -> { a }
+          ),
           string_array:   10.times.map { SecureRandom.base64 },
           boolean_array:  10.times.map { SecureRandom.random_number(1) == 0 },
         }
-      }
+      -> { h }
     }
 
     module Bar
