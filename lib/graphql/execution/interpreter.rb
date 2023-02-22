@@ -102,10 +102,7 @@ module GraphQL
                     queries.each do |query|
                       runtime = query.context.namespace(:interpreter_runtime)[:runtime]
                       if runtime
-                        runtime.delete_interpreter_context(:current_path)
-                        runtime.delete_interpreter_context(:current_field)
-                        runtime.delete_interpreter_context(:current_object)
-                        runtime.delete_interpreter_context(:current_arguments)
+                        runtime.delete_all_interpreter_context
                       end
                     end
                   }
@@ -151,10 +148,7 @@ module GraphQL
                   queries.map { |query|
                     runtime = query.context.namespace(:interpreter_runtime)[:runtime]
                     if runtime
-                      runtime.delete_interpreter_context(:current_path)
-                      runtime.delete_interpreter_context(:current_field)
-                      runtime.delete_interpreter_context(:current_object)
-                      runtime.delete_interpreter_context(:current_arguments)
+                      runtime.delete_all_interpreter_context
                     end
                   }
                 end
