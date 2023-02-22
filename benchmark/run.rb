@@ -202,27 +202,23 @@ module GraphQLBenchmark
   end
 
   module ProfileLargeResult
+    def self.eager_or_proc(value)
+      ENV["EAGER"] ? value : -> { value }
+    end
+
     DATA = 1000.times.map {
-      h = {
+      eager_or_proc({
           id:             SecureRandom.uuid,
           int1:           SecureRandom.random_number(100000),
           int2:           SecureRandom.random_number(100000),
-          string1:        (d = SecureRandom.base64; -> { d }),
+          string1:        eager_or_proc(SecureRandom.base64),
           string2:        SecureRandom.base64,
           boolean1:       SecureRandom.random_number(1) == 0,
           boolean2:       SecureRandom.random_number(1) == 0,
-          int_array:      (
-            a = [];
-            10.times.map {
-              n = SecureRandom.random_number(100000)
-              a << -> { n }
-            };
-            -> { a }
-          ),
+          int_array:      eager_or_proc(10.times.map { eager_or_proc(SecureRandom.random_number(100000)) } ),
           string_array:   10.times.map { SecureRandom.base64 },
           boolean_array:  10.times.map { SecureRandom.random_number(1) == 0 },
-        }
-      -> { h }
+      })
     }
 
     module Bar
