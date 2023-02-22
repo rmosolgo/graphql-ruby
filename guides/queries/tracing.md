@@ -8,9 +8,7 @@ desc: Observation hooks for execution
 index: 11
 ---
 
-{{ "GraphQL::Tracing" | api_doc }} provides a `.trace` hook to observe events from the GraphQL runtime.
-
-A tracer must implement `.trace`, for example:
+{{ "GraphQL::Tracing::Trace" | api_doc }} provides hooks to observe and modify events during runtime. Tracing hooks are methods, defined in modules and mixed in with {{ "Schema.trace_with" | api_doc }}.
 
 ```ruby
 class MyCustomTracer
@@ -30,20 +28,13 @@ end
 To run a tracer for __every query__, add it to the schema with `tracer`:
 
 ```ruby
-# Run `MyCustomTracer` for all queries
+# Run `MyCustomTrace` for all queries
 class MySchema < GraphQL::Schema
-  tracer(MyCustomTracer)
+  trace_with(MyCustomTrace)
 end
 ```
 
-Or, to run a tracer for __one query only__, add it to `context:` as `tracers: [...]`, for example:
-
-```ruby
-# Run `MyCustomTracer` for this query
-MySchema.execute(..., context: { tracers: [MyCustomTracer]})
-```
-
-For a full list of events, see the {{ "GraphQL::Tracing" | api_doc }} API docs.
+For a full list of methods and their arguments, see {{ "GraphQL::Tracing::Trace" | api_doc }}.
 
 ## ActiveSupport::Notifications
 
@@ -63,8 +54,6 @@ end
 Several monitoring platforms are supported out-of-the box by GraphQL-Ruby (see platforms below).
 
 Leaf fields are _not_ monitored (to avoid high cardinality in the metrics service).
-
-Implementations are based on {{ "Tracing::PlatformTracing" | api_doc }}.
 
 ## AppOptics
 

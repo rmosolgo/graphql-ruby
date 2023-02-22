@@ -95,11 +95,19 @@ module GraphQL
       @fragments = nil
       @operations = nil
       @validate = validate
-      @tracers = schema.tracers + (context ? context.fetch(:tracers, []) : [])
+      context_tracers = (context ? context.fetch(:tracers, []) : [])
+      @tracers = schema.tracers + context_tracers
+
       # Support `ctx[:backtrace] = true` for wrapping backtraces
       if context && context[:backtrace] && !@tracers.include?(GraphQL::Backtrace::Tracer)
+        context_tracers += [GraphQL::Backtrace::Tracer]
         @tracers << GraphQL::Backtrace::Tracer
       end
+
+      if context_tracers.any? && !(schema.trace_class <= GraphQL::Tracing::LegacyTrace)
+        raise ArgumentError, "context[:tracers] and context[:backtrace] are not supported without `tracer_class(GraphQL::Tracing::LegacyTrace)` in the schema configuration, please add it."
+      end
+
 
       @analysis_errors = []
       if variables.is_a?(String)
@@ -156,6 +164,11 @@ module GraphQL
     end
 
     attr_accessor :multiplex
+
+    # @return [GraphQL::Tracing::Trace]
+    def current_trace
+      @current_trace ||= multiplex ? multiplex.current_trace : schema.new_trace(multiplex: multiplex, query: self)
+    end
 
     def subscription_update?
       @subscription_topic && subscription?
@@ -362,7 +375,7 @@ module GraphQL
       parse_error = nil
       @document ||= begin
         if query_string
-          GraphQL.parse(query_string, tracer: self)
+          GraphQL.parse(query_string, trace: self.current_trace)
         end
       rescue GraphQL::ParseError => err
         parse_error = err

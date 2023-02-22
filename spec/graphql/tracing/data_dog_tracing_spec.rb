@@ -4,6 +4,14 @@ require "spec_helper"
 
 describe GraphQL::Tracing::DataDogTracing do
   module DataDogTest
+    class Thing < GraphQL::Schema::Object
+      field :str, String
+
+      def str
+        "blah"
+      end
+    end
+
     class Query < GraphQL::Schema::Object
       include GraphQL::Types::Relay::HasNodeField
 
@@ -11,6 +19,12 @@ describe GraphQL::Tracing::DataDogTracing do
 
       def int
         1
+      end
+
+      field :thing, Thing
+
+      def thing
+        :thing
       end
     end
 
@@ -59,7 +73,7 @@ describe GraphQL::Tracing::DataDogTracing do
   end
 
   it "sets custom tags tags" do
-    DataDogTest::CustomTracerTestSchema.execute("{ int }")
+    DataDogTest::CustomTracerTestSchema.execute("{ thing { str } }")
     expected_custom_tags = [
       ["custom:lex", "query_string"],
       ["custom:parse", "query_string"],
@@ -68,6 +82,8 @@ describe GraphQL::Tracing::DataDogTracing do
       ["custom:validate", "validate,query"],
       ["custom:analyze_query", "query"],
       ["custom:execute_query", "query"],
+      ["custom:authorized", "context,type,object,path"],
+      ["custom:execute_field", "field,query,ast_node,arguments,object,owner,path"],
       ["custom:authorized", "context,type,object,path"],
       ["custom:execute_query_lazy", "multiplex,query"],
     ]

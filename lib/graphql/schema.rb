@@ -143,6 +143,15 @@ module GraphQL
         @subscriptions = new_implementation
       end
 
+      def trace_class(new_class = nil)
+        if new_class
+          @trace_class = new_class
+        elsif !defined?(@trace_class)
+          @trace_class = Class.new(GraphQL::Tracing::Trace)
+        end
+        @trace_class
+      end
+
       # Returns the JSON response of {Introspection::INTROSPECTION_QUERY}.
       # @see {#as_json}
       # @return [String]
@@ -755,7 +764,7 @@ module GraphQL
         if handler
           obj = context[:current_object]
           args = context[:current_arguments]
-          args = args && args.keyword_arguments
+          args = args && args.respond_to?(:keyword_arguments) ? args.keyword_arguments : nil
           field = context[:current_field]
           if obj.is_a?(GraphQL::Schema::Object)
             obj = obj.object
@@ -926,11 +935,30 @@ module GraphQL
       end
 
       def tracer(new_tracer)
+        if defined?(@trace_class) && !(@trace_class < GraphQL::Tracing::LegacyTrace)
+          raise ArgumentError, "Can't add tracer after configuring a `trace_class`, use GraphQL::Tracing::LegacyTrace to merge legacy tracers into a trace class instead."
+        elsif !defined?(@trace_class)
+          @trace_class = Class.new(GraphQL::Tracing::LegacyTrace)
+        end
+
         own_tracers << new_tracer
       end
 
       def tracers
         find_inherited_value(:tracers, EMPTY_ARRAY) + own_tracers
+      end
+
+      def trace_with(trace_mod, **options)
+        @trace_options ||= {}
+        @trace_options.merge!(options)
+        trace_class.include(trace_mod)
+      end
+
+      def new_trace(**options)
+        if defined?(@trace_options)
+          options = @trace_options.merge(options)
+        end
+        trace_class.new(**options)
       end
 
       def query_analyzer(new_analyzer)

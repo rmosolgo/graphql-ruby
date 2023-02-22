@@ -196,6 +196,27 @@ Array [
     "Syncing 5 operations to [1mhttp://example.com/stored_operations/sync[0m...",
   ],
   Array [
+    "[Sync] 2 Headers:",
+  ],
+  Array [
+    "[Sync]    Content-Type: application/json",
+  ],
+  Array [
+    "[Sync]    Content-Length: 1132",
+  ],
+  Array [
+    "[Sync] Data:",
+    "{\\"operations\\":[{\\"name\\":\\"GetStuff\\",\\"body\\":\\"fragment Frag1 on Query {\\\\n  moreStuff\\\\n}\\\\n\\\\nquery GetStuff {\\\\n  ...Frag1\\\\n}\\",\\"alias\\":\\"4568c28d403794e011363caf815ec827\\"},{\\"name\\":\\"GetStuff2\\",\\"body\\":\\"fragment Frag1 on Query {\\\\n  moreStuff\\\\n}\\\\n\\\\nfragment Frag2 on Query {\\\\n  ...Frag3\\\\n}\\\\n\\\\nfragment Frag3 on Query {\\\\n  evenMoreStuff\\\\n}\\\\n\\\\nquery GetStuff2 {\\\\n  stuff\\\\n  ...Frag1\\\\n  ...Frag2\\\\n}\\",\\"alias\\":\\"faf462be033e16dd2a56130d56a9192f\\"},{\\"name\\":\\"GetStuff3\\",\\"body\\":\\"fragment Frag2 on Query {\\\\n  ...Frag3\\\\n}\\\\n\\\\nfragment Frag3 on Query {\\\\n  evenMoreStuff\\\\n}\\\\n\\\\nfragment Frag4 on Query {\\\\n  evenMoreStuff {\\\\n    stuffInside\\\\n  }\\\\n}\\\\n\\\\nquery GetStuff3 {\\\\n  stuff {\\\\n    withStuffInside\\\\n  }\\\\n  ...Frag2\\\\n  ...Frag4\\\\n}\\",\\"alias\\":\\"aab385a1685772ad520fc70d468030fa\\"},{\\"name\\":\\"GetStuffIsolated\\",\\"body\\":\\"query GetStuffIsolated {\\\\n  ...FragIsolated\\\\n  things {\\\\n    existHere\\\\n  }\\\\n}\\\\n\\\\nfragment FragIsolated on Query {\\\\n  evenMoreStuff {\\\\n    stuffInside\\\\n  }\\\\n}\\",\\"alias\\":\\"b2cb0b317d071f9f38905fba21d73258\\"},{\\"name\\":\\"GetStuffIsolated2\\",\\"body\\":\\"query GetStuffIsolated2 {\\\\n  things {\\\\n    existHere\\\\n  }\\\\n}\\",\\"alias\\":\\"6cdae165fd6dc5dc5900e5a2bba90cc2\\"}]}",
+  ],
+  Array [
+    "[Sync] Response Headers: ",
+    "{\\"content-type\\":\\"application/json\\"}",
+  ],
+  Array [
+    "[Sync] Response Body: ",
+    "{\\"errors\\":{\\"4568c28d403794e011363caf815ec827\\":[\\"something\\"]},\\"failed\\":[\\"4568c28d403794e011363caf815ec827\\"],\\"added\\":[\\"defg\\"],\\"not_modified\\":[]}",
+  ],
+  Array [
     "  [2m0 added[0m",
   ],
   Array [
@@ -226,11 +247,32 @@ Array [
   Array [
     "Syncing 5 operations to [1mhttp://example.com/stored_operations/sync[0m...",
   ],
+  Array [
+    "[Sync] 2 Headers:",
+  ],
+  Array [
+    "[Sync]    Content-Type: application/json",
+  ],
+  Array [
+    "[Sync]    Content-Length: 1132",
+  ],
+  Array [
+    "[Sync] Data:",
+    "{\\"operations\\":[{\\"name\\":\\"GetStuff\\",\\"body\\":\\"fragment Frag1 on Query {\\\\n  moreStuff\\\\n}\\\\n\\\\nquery GetStuff {\\\\n  ...Frag1\\\\n}\\",\\"alias\\":\\"4568c28d403794e011363caf815ec827\\"},{\\"name\\":\\"GetStuff2\\",\\"body\\":\\"fragment Frag1 on Query {\\\\n  moreStuff\\\\n}\\\\n\\\\nfragment Frag2 on Query {\\\\n  ...Frag3\\\\n}\\\\n\\\\nfragment Frag3 on Query {\\\\n  evenMoreStuff\\\\n}\\\\n\\\\nquery GetStuff2 {\\\\n  stuff\\\\n  ...Frag1\\\\n  ...Frag2\\\\n}\\",\\"alias\\":\\"faf462be033e16dd2a56130d56a9192f\\"},{\\"name\\":\\"GetStuff3\\",\\"body\\":\\"fragment Frag2 on Query {\\\\n  ...Frag3\\\\n}\\\\n\\\\nfragment Frag3 on Query {\\\\n  evenMoreStuff\\\\n}\\\\n\\\\nfragment Frag4 on Query {\\\\n  evenMoreStuff {\\\\n    stuffInside\\\\n  }\\\\n}\\\\n\\\\nquery GetStuff3 {\\\\n  stuff {\\\\n    withStuffInside\\\\n  }\\\\n  ...Frag2\\\\n  ...Frag4\\\\n}\\",\\"alias\\":\\"aab385a1685772ad520fc70d468030fa\\"},{\\"name\\":\\"GetStuffIsolated\\",\\"body\\":\\"query GetStuffIsolated {\\\\n  ...FragIsolated\\\\n  things {\\\\n    existHere\\\\n  }\\\\n}\\\\n\\\\nfragment FragIsolated on Query {\\\\n  evenMoreStuff {\\\\n    stuffInside\\\\n  }\\\\n}\\",\\"alias\\":\\"b2cb0b317d071f9f38905fba21d73258\\"},{\\"name\\":\\"GetStuffIsolated2\\",\\"body\\":\\"query GetStuffIsolated2 {\\\\n  things {\\\\n    existHere\\\\n  }\\\\n}\\",\\"alias\\":\\"6cdae165fd6dc5dc5900e5a2bba90cc2\\"}]}",
+  ],
 ]
 `;
 
 exports[`sync operations Printing the result prints success 2`] = `
 Array [
+  Array [
+    "[Sync] Response Headers: ",
+    "{\\"content-type\\":\\"application/json\\"}",
+  ],
+  Array [
+    "[Sync] Response Body: ",
+    "{\\"errors\\":{},\\"failed\\":[],\\"added\\":[\\"defg\\"],\\"not_modified\\":[\\"xyz\\",\\"123\\"]}",
+  ],
   Array [
     "  [32m1 added[0m",
   ],

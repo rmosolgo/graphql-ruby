@@ -115,6 +115,53 @@ describe GraphQL::Tracing::PlatformTracing do
 
       assert_equal expected_trace, CustomPlatformTracer::TRACE
     end
+
+    it "traces resolve_type and differentiates field calls on different types" do
+      scalar_schema = Class.new(Dummy::Schema) { use(CustomPlatformTracer, trace_scalars: true) }
+
+      scalar_schema.execute(" { allEdible { __typename fatContent } }")
+      expected_trace = [
+        "em",
+        "am",
+        "l",
+        "p",
+        "v",
+        "aq",
+        "eq",
+        "Query.authorized",
+        "Q.a",
+        "Edible.resolve_type",
+        "Edible.resolve_type",
+        "Edible.resolve_type",
+        "Edible.resolve_type",
+        "eql",
+        "Edible.resolve_type",
+        "Cheese.authorized",
+        "Cheese.authorized",
+        "DynamicFields.authorized",
+        "D._",
+        "C.f",
+        "Edible.resolve_type",
+        "Cheese.authorized",
+        "Cheese.authorized",
+        "DynamicFields.authorized",
+        "D._",
+        "C.f",
+        "Edible.resolve_type",
+        "Cheese.authorized",
+        "Cheese.authorized",
+        "DynamicFields.authorized",
+        "D._",
+        "C.f",
+        "Edible.resolve_type",
+        "Milk.authorized",
+        "DynamicFields.authorized",
+        "D._",
+        "E.f",
+      ]
+
+      assert_equal expected_trace, CustomPlatformTracer::TRACE
+    end
   end
 
   describe "by default, scalar fields are not traced" do
