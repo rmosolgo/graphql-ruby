@@ -349,6 +349,13 @@ describe GraphQL::Schema::Argument do
     it "has an assignment method" do
       arg.deprecation_reason = "another new deprecation reason"
       assert_equal "another new deprecation reason", arg.deprecation_reason
+      assert_equal 1, arg.directives.size
+      arg.deprecation_reason = "something else"
+      assert_equal "something else", arg.deprecation_reason
+      assert_equal 1, arg.directives.size
+      arg.deprecation_reason = nil
+      assert_nil arg.deprecation_reason
+      assert_equal 0, arg.directives.size
     end
 
     it "disallows deprecating required arguments in the constructor" do
