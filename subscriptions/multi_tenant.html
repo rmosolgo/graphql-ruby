@@ -177,26 +177,21 @@
 
 <p>Each of these operations will need to select the right tenant in order to load data properly.</p>
 
-<p>For <strong>building the payload</strong>, use a <a href="/queries/tracing">Tracer</a>:</p>
+<p>For <strong>building the payload</strong>, use a <a href="/queries/tracing">Trace module</a>:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">TenantSelectionTracer</span>
-  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">trace</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
-    <span class="k">case</span> <span class="n">event</span>
-    <span class="k">when</span> <span class="s2">"execute_multiplex"</span> <span class="c1"># this is the top-level, umbrella event</span>
-      <span class="n">context</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="ss">:multiplex</span><span class="p">].</span><span class="nf">queries</span><span class="p">.</span><span class="nf">first</span><span class="p">.</span><span class="nf">context</span> <span class="c1"># This assumes that all queries in a multiplex have the same tenant</span>
-      <span class="no">MultiTenancy</span><span class="p">.</span><span class="nf">select_tenant</span><span class="p">(</span><span class="n">context</span><span class="p">[</span><span class="ss">:tenant</span><span class="p">])</span> <span class="k">do</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">TenantSelectionTrace</span>
+  <span class="k">def</span> <span class="nf">execute_multiplex</span><span class="p">(</span><span class="n">multiplex</span><span class="p">:)</span> <span class="c1"># this is the top-level, umbrella event</span>
+    <span class="n">context</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="ss">:multiplex</span><span class="p">].</span><span class="nf">queries</span><span class="p">.</span><span class="nf">first</span><span class="p">.</span><span class="nf">context</span> <span class="c1"># This assumes that all queries in a multiplex have the same tenant</span>
+    <span class="no">MultiTenancy</span><span class="p">.</span><span class="nf">select_tenant</span><span class="p">(</span><span class="n">context</span><span class="p">[</span><span class="ss">:tenant</span><span class="p">])</span> <span class="k">do</span>
       <span class="c1"># ^^ your multi-tenancy implementation here</span>
-        <span class="k">yield</span>
-      <span class="k">end</span>
-    <span class="k">else</span>
-      <span class="k">yield</span>
+      <span class="k">super</span> <span class="c1"># Call through to the rest of execution</span>
     <span class="k">end</span>
   <span class="k">end</span>
 <span class="k">end</span>
 
 <span class="c1"># ...</span>
 <span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="n">tracer</span><span class="p">(</span><span class="no">TenantSelectionTracer</span><span class="p">)</span>
+  <span class="n">trace_with</span><span class="p">(</span><span class="no">TenantSelectionTrace</span><span class="p">)</span>
 <span class="k">end</span>
 </code></pre></div></div>
 

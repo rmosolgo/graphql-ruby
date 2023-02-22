@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.0.17/GraphQL/Tracing/AppOpticsTrace" />
+  </head>
+  <body>
+    <p>Module: GraphQL::Tracing::AppOpticsTrace
+This class uses the AppopticsAPM SDK from the appoptics_apm gem to
+create traces for GraphQL. 
+There are 4 configurations available. They can be set in the
+appoptics_apm config file or in code. Please see:
+https://docs.appoptics.com/kb/apm_tracing/ruby/configure 
+AppOpticsAPM::Config[:graphql][:enabled] = true|false
+AppOpticsAPM::Config[:graphql][:transaction_name]  = true|false
+AppOpticsAPM::Config[:graphql][:sanitize_query] = true|false
+AppOpticsAPM::Config[:graphql][:remove_comments] = true|false
+Includes:
+GraphQL::Tracing::PlatformTrace
+Class methods:
+version
+Instance methods:
+authorized, authorized_lazy, gql_config, graphql_context,
+graphql_multiplex, graphql_query, graphql_query_string, metadata,
+multiplex_transaction_name, platform_authorized_key,
+platform_execute_field, platform_field_key,
+platform_resolve_type_key, remove_comments, resolve_type,
+resolve_type_lazy, sanitize, span_name, transaction_name</p>
+
+
+  </body>
+</html>
