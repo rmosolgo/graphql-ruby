@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::Tracing::NewRelicTracing do
-  module NewRelicTest
+describe GraphQL::Tracing::NewRelicTrace do
+  module NewRelicTraceTest
     class Thing < GraphQL::Schema::Object
       implements GraphQL::Types::Relay::Node
     end
@@ -19,7 +19,7 @@ describe GraphQL::Tracing::NewRelicTracing do
 
     class SchemaWithoutTransactionName < GraphQL::Schema
       query(Query)
-      use(GraphQL::Tracing::NewRelicTracing)
+      trace_with(GraphQL::Tracing::NewRelicTrace)
       orphan_types(Thing)
 
       def self.object_from_id(_id, _ctx)
@@ -33,12 +33,12 @@ describe GraphQL::Tracing::NewRelicTracing do
 
     class SchemaWithTransactionName < GraphQL::Schema
       query(Query)
-      use(GraphQL::Tracing::NewRelicTracing, set_transaction_name: true)
+      trace_with(GraphQL::Tracing::NewRelicTrace, set_transaction_name: true)
     end
 
     class SchemaWithScalarTrace < GraphQL::Schema
       query(Query)
-      use(GraphQL::Tracing::NewRelicTracing, trace_scalars: true)
+      trace_with(GraphQL::Tracing::NewRelicTrace, trace_scalars: true)
     end
   end
 
@@ -46,41 +46,37 @@ describe GraphQL::Tracing::NewRelicTracing do
     NewRelic.clear_all
   end
 
-  it "Actually uses the new-style trace under the hood" do
-    assert NewRelicTest::SchemaWithoutTransactionName.trace_class < GraphQL::Tracing::NewRelicTrace
-  end
-
   it "works with the built-in node field, even though it doesn't have an @owner" do
-    res = NewRelicTest::SchemaWithoutTransactionName.execute '{ node(id: "1") { __typename } }'
+    res = NewRelicTraceTest::SchemaWithoutTransactionName.execute '{ node(id: "1") { __typename } }'
     assert_equal "Thing", res["data"]["node"]["__typename"]
   end
 
   it "can leave the transaction name in place" do
-    NewRelicTest::SchemaWithoutTransactionName.execute "query X { int }"
+    NewRelicTraceTest::SchemaWithoutTransactionName.execute "query X { int }"
     assert_equal [], NewRelic::TRANSACTION_NAMES
   end
 
   it "can override the transaction name" do
-    NewRelicTest::SchemaWithTransactionName.execute "query X { int }"
+    NewRelicTraceTest::SchemaWithTransactionName.execute "query X { int }"
     assert_equal ["GraphQL/query.X"], NewRelic::TRANSACTION_NAMES
   end
 
   it "can override the transaction name per query" do
     # Override with `false`
-    NewRelicTest::SchemaWithTransactionName.execute "{ int }", context: { set_new_relic_transaction_name: false }
+    NewRelicTraceTest::SchemaWithTransactionName.execute "{ int }", context: { set_new_relic_transaction_name: false }
     assert_equal [], NewRelic::TRANSACTION_NAMES
     # Override with `true`
-    NewRelicTest::SchemaWithoutTransactionName.execute "{ int }", context: { set_new_relic_transaction_name: true }
+    NewRelicTraceTest::SchemaWithoutTransactionName.execute "{ int }", context: { set_new_relic_transaction_name: true }
     assert_equal ["GraphQL/query.anonymous"], NewRelic::TRANSACTION_NAMES
   end
 
   it "falls back to a :tracing_fallback_transaction_name when provided" do
-    NewRelicTest::SchemaWithTransactionName.execute("{ int }", context: { tracing_fallback_transaction_name: "Abcd" })
+    NewRelicTraceTest::SchemaWithTransactionName.execute("{ int }", context: { tracing_fallback_transaction_name: "Abcd" })
     assert_equal ["GraphQL/query.Abcd"], NewRelic::TRANSACTION_NAMES
   end
 
   it "does not use the :tracing_fallback_transaction_name if an operation name is present" do
-    NewRelicTest::SchemaWithTransactionName.execute(
+    NewRelicTraceTest::SchemaWithTransactionName.execute(
       "query Ab { int }",
       context: { tracing_fallback_transaction_name: "Cd" }
     )
@@ -88,12 +84,12 @@ describe GraphQL::Tracing::NewRelicTracing do
   end
 
   it "does not require a :tracing_fallback_transaction_name even if an operation name is not present" do
-    NewRelicTest::SchemaWithTransactionName.execute("{ int }")
+    NewRelicTraceTest::SchemaWithTransactionName.execute("{ int }")
     assert_equal ["GraphQL/query.anonymous"], NewRelic::TRANSACTION_NAMES
   end
 
   it "traces scalars when trace_scalars is true" do
-    NewRelicTest::SchemaWithScalarTrace.execute "query X { int }"
+    NewRelicTraceTest::SchemaWithScalarTrace.execute "query X { int }"
     assert_includes NewRelic::EXECUTION_SCOPES, "GraphQL/Query/int"
   end
 end

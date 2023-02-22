@@ -81,6 +81,7 @@ describe GraphQL::Backtrace do
     schema_class.class_exec {
       lazy_resolve(LazyError, :raise_err)
       query_analyzer(ErrorAnalyzer)
+      trace_class(GraphQL::Tracing::LegacyTrace)
     }
     schema_class
   }
@@ -212,6 +213,7 @@ describe GraphQL::Backtrace do
     it "raises original exception instead of a TracedError when error does not occur during resolving" do
       instrumentation_schema = Class.new(schema) do
         instrument(:query, ErrorInstrumentation)
+        trace_class(GraphQL::Tracing::LegacyTrace)
       end
 
       assert_raises(RuntimeError) {

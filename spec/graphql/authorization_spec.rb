@@ -901,12 +901,23 @@ describe "GraphQL::Authorization" do
 
   describe "overriding authorized_new" do
     class AuthorizedNewOverrideSchema < GraphQL::Schema
-      class LogTracer
+      module LogTrace
         def trace(key, data)
-          if (c = data[:context]) || ((q = data[:query]) && (c = q.context))
+          if ((q = data[:query]) && (c = q.context))
             c[:log] << key
           end
           yield
+        end
+        ["parse", "lex", "validate",
+        "analyze_query", "analyze_multiplex",
+        "execute_query", "execute_multiplex",
+        "execute_field", "execute_field_lazy",
+        "authorized", "authorized_lazy",
+        "resolve_type", "resolve_type_lazy",
+        "execute_query_lazy"].each do |method_name|
+          define_method(method_name) do |**data, &block|
+            trace(method_name, data, &block)
+          end
         end
       end
 
@@ -928,7 +939,7 @@ describe "GraphQL::Authorization" do
 
       query(Query)
       introspection(CustomIntrospection)
-      tracer(LogTracer.new)
+      trace_with(LogTrace)
     end
 
     it "avoids calls to Object.authorized?" do

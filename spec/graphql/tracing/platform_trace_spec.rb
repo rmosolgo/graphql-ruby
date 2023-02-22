@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::Tracing::PlatformTracing do
-  class CustomPlatformTracer < GraphQL::Tracing::PlatformTracing
+describe GraphQL::Tracing::PlatformTrace do
+  module CustomPlatformTrace
+    include GraphQL::Tracing::PlatformTrace
     TRACE = []
 
-    self.platform_keys = {
+    {
       "lex" => "l",
       "parse" => "p",
       "validate" => "v",
@@ -14,10 +15,30 @@ describe GraphQL::Tracing::PlatformTracing do
       "execute_multiplex" => "em",
       "execute_query" => "eq",
       "execute_query_lazy" => "eql",
-    }
+    }.each do |method_name, trace_key|
+      define_method(method_name) do |**data, &block|
+        TRACE << trace_key
+        block.call
+      end
+    end
 
-    def platform_field_key(type, field)
-      "#{type.graphql_name[0]}.#{field.graphql_name[0]}"
+    def platform_authorized(platform_key)
+      TRACE << platform_key
+      yield
+    end
+
+    def platform_resolve_type(platform_key)
+      TRACE << platform_key
+      yield
+    end
+
+    def platform_execute_field(platform_key)
+      TRACE << platform_key
+      yield
+    end
+
+    def platform_field_key(field)
+      "#{field.owner.graphql_name[0]}.#{field.graphql_name[0]}"
     end
 
     def platform_authorized_key(type)
@@ -27,20 +48,15 @@ describe GraphQL::Tracing::PlatformTracing do
     def platform_resolve_type_key(type)
       "#{type.graphql_name}.resolve_type"
     end
-
-    def platform_trace(platform_key, key, data)
-      TRACE << platform_key
-      yield
-    end
   end
 
   describe "calling a platform tracer" do
     let(:schema) {
-      Class.new(Dummy::Schema) { use(CustomPlatformTracer) }
+      Class.new(Dummy::Schema) { trace_with(CustomPlatformTrace) }
     }
 
     before do
-      CustomPlatformTracer::TRACE.clear
+      CustomPlatformTrace::TRACE.clear
     end
 
     it "runs the introspection query (handles late-bound types)" do
@@ -64,7 +80,7 @@ describe GraphQL::Tracing::PlatformTracing do
           "Cheese.authorized", # This is the lazy part, calling the proc
         ]
 
-      assert_equal expected_trace, CustomPlatformTracer::TRACE
+      assert_equal expected_trace, CustomPlatformTrace::TRACE
     end
 
     it "traces during Query#result" do
@@ -91,11 +107,12 @@ describe GraphQL::Tracing::PlatformTracing do
       schema.validate(query.query_string)
       # Then execute
       query.result
-      assert_equal expected_trace, CustomPlatformTracer::TRACE
+      assert_equal expected_trace, CustomPlatformTrace::TRACE
     end
 
-    it "traces resolve_type calls" do
-      schema.execute(" { favoriteEdible { __typename } }")
+    it "traces resolve_type and differentiates field calls on different types" do
+      scalar_schema = Class.new(Dummy::Schema) { trace_with(CustomPlatformTrace, trace_scalars: true) }
+      scalar_schema.execute(" { allEdible { __typename fatContent } }")
       expected_trace = [
           "em",
           "am",
@@ -105,74 +122,50 @@ describe GraphQL::Tracing::PlatformTracing do
           "aq",
           "eq",
           "Query.authorized",
-          "Q.f",
+          "Q.a",
+          "Edible.resolve_type",
+          "Edible.resolve_type",
+          "Edible.resolve_type",
           "Edible.resolve_type",
           "eql",
           "Edible.resolve_type",
+          "Cheese.authorized",
+          "Cheese.authorized",
+          "DynamicFields.authorized",
+          "D._",
+          "C.f",
+          "Edible.resolve_type",
+          "Cheese.authorized",
+          "Cheese.authorized",
+          "DynamicFields.authorized",
+          "D._",
+          "C.f",
+          "Edible.resolve_type",
+          "Cheese.authorized",
+          "Cheese.authorized",
+          "DynamicFields.authorized",
+          "D._",
+          "C.f",
+          "Edible.resolve_type",
           "Milk.authorized",
           "DynamicFields.authorized",
+          "D._",
+          "E.f",
         ]
 
-      assert_equal expected_trace, CustomPlatformTracer::TRACE
-    end
-
-    it "traces resolve_type and differentiates field calls on different types" do
-      scalar_schema = Class.new(Dummy::Schema) { use(CustomPlatformTracer, trace_scalars: true) }
-
-      scalar_schema.execute(" { allEdible { __typename fatContent } }")
-      expected_trace = [
-        "em",
-        "am",
-        "l",
-        "p",
-        "v",
-        "aq",
-        "eq",
-        "Query.authorized",
-        "Q.a",
-        "Edible.resolve_type",
-        "Edible.resolve_type",
-        "Edible.resolve_type",
-        "Edible.resolve_type",
-        "eql",
-        "Edible.resolve_type",
-        "Cheese.authorized",
-        "Cheese.authorized",
-        "DynamicFields.authorized",
-        "D._",
-        "C.f",
-        "Edible.resolve_type",
-        "Cheese.authorized",
-        "Cheese.authorized",
-        "DynamicFields.authorized",
-        "D._",
-        "C.f",
-        "Edible.resolve_type",
-        "Cheese.authorized",
-        "Cheese.authorized",
-        "DynamicFields.authorized",
-        "D._",
-        "C.f",
-        "Edible.resolve_type",
-        "Milk.authorized",
-        "DynamicFields.authorized",
-        "D._",
-        "E.f",
-      ]
-
-      assert_equal expected_trace, CustomPlatformTracer::TRACE
+      assert_equal expected_trace, CustomPlatformTrace::TRACE
     end
   end
 
   describe "by default, scalar fields are not traced" do
     let(:schema) {
       Class.new(Dummy::Schema) {
-        use(CustomPlatformTracer)
+        trace_with(CustomPlatformTrace)
       }
     }
 
     before do
-      CustomPlatformTracer::TRACE.clear
+      CustomPlatformTrace::TRACE.clear
     end
 
     it "only traces traceTrue, not traceFalse or traceNil" do
@@ -191,19 +184,19 @@ describe GraphQL::Tracing::PlatformTracing do
           "T.t",
           "eql",
         ]
-      assert_equal expected_trace, CustomPlatformTracer::TRACE
+      assert_equal expected_trace, CustomPlatformTrace::TRACE
     end
   end
 
   describe "when scalar fields are traced by default, they are unless specified" do
     let(:schema) {
       Class.new(Dummy::Schema) do
-        use(CustomPlatformTracer, trace_scalars: true)
+        trace_with(CustomPlatformTrace, trace_scalars: true)
       end
     }
 
     before do
-      CustomPlatformTracer::TRACE.clear
+      CustomPlatformTrace::TRACE.clear
     end
 
     it "traces traceTrue and traceNil but not traceFalse" do
@@ -223,7 +216,7 @@ describe GraphQL::Tracing::PlatformTracing do
           "T.t",
           "eql",
         ]
-      assert_equal expected_trace, CustomPlatformTracer::TRACE
+      assert_equal expected_trace, CustomPlatformTrace::TRACE
     end
   end
 end

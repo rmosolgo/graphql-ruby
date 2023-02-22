@@ -2,14 +2,12 @@
 
 require "spec_helper"
 
-describe GraphQL::Tracing::DataDogTracing do
-  module DataDogTest
+describe GraphQL::Tracing::DataDogTrace do
+  module DataDogTraceTest
     class Thing < GraphQL::Schema::Object
       field :str, String
 
-      def str
-        "blah"
-      end
+      def str; "blah"; end
     end
 
     class Query < GraphQL::Schema::Object
@@ -22,25 +20,23 @@ describe GraphQL::Tracing::DataDogTracing do
       end
 
       field :thing, Thing
-
-      def thing
-        :thing
-      end
+      def thing; :thing; end
     end
 
     class TestSchema < GraphQL::Schema
       query(Query)
-      use(GraphQL::Tracing::DataDogTracing)
+      trace_with(GraphQL::Tracing::DataDogTrace)
     end
 
     class CustomTracerTestSchema < GraphQL::Schema
-      class CustomDataDogTracing < GraphQL::Tracing::DataDogTracing
+      module CustomDataDogTracing
+        include GraphQL::Tracing::DataDogTrace
         def prepare_span(trace_key, data, span)
-          span.set_tag("custom:#{trace_key}", data.keys.join(","))
+          span.set_tag("custom:#{trace_key}", data.keys.sort.join(","))
         end
       end
       query(Query)
-      use(CustomDataDogTracing)
+      trace_with(CustomDataDogTracing)
     end
   end
 
@@ -49,12 +45,12 @@ describe GraphQL::Tracing::DataDogTracing do
   end
 
   it "falls back to a :tracing_fallback_transaction_name when provided" do
-    DataDogTest::TestSchema.execute("{ int }", context: { tracing_fallback_transaction_name: "Abcd" })
+    DataDogTraceTest::TestSchema.execute("{ int }", context: { tracing_fallback_transaction_name: "Abcd" })
     assert_equal ["Abcd"], Datadog::SPAN_RESOURCE_NAMES
   end
 
   it "does not use the :tracing_fallback_transaction_name if an operation name is present" do
-    DataDogTest::TestSchema.execute(
+    DataDogTraceTest::TestSchema.execute(
       "query Ab { int }",
       context: { tracing_fallback_transaction_name: "Cd" }
     )
@@ -62,29 +58,29 @@ describe GraphQL::Tracing::DataDogTracing do
   end
 
   it "does not set resource if no value can be derived" do
-    DataDogTest::TestSchema.execute("{ int }")
+    DataDogTraceTest::TestSchema.execute("{ int }")
     assert_equal [], Datadog::SPAN_RESOURCE_NAMES
   end
 
   it "sets component and operation tags" do
-    DataDogTest::TestSchema.execute("{ int }")
+    DataDogTraceTest::TestSchema.execute("{ int }")
     assert_includes Datadog::SPAN_TAGS, ['component', 'graphql']
     assert_includes Datadog::SPAN_TAGS, ['operation', 'execute_multiplex']
   end
 
   it "sets custom tags tags" do
-    DataDogTest::CustomTracerTestSchema.execute("{ thing { str } }")
+    DataDogTraceTest::CustomTracerTestSchema.execute("{ thing { str } }")
     expected_custom_tags = [
       ["custom:lex", "query_string"],
       ["custom:parse", "query_string"],
       ["custom:execute_multiplex", "multiplex"],
       ["custom:analyze_multiplex", "multiplex"],
-      ["custom:validate", "validate,query"],
+      ["custom:validate", "query,validate"],
       ["custom:analyze_query", "query"],
       ["custom:execute_query", "query"],
-      ["custom:authorized", "context,type,object,path"],
-      ["custom:execute_field", "field,query,ast_node,arguments,object,owner,path"],
-      ["custom:authorized", "context,type,object,path"],
+      ["custom:authorized", "object,query,type"],
+      ["custom:execute_field", "arguments,ast_node,field,object,query"],
+      ["custom:authorized", "object,query,type"],
       ["custom:execute_query_lazy", "multiplex,query"],
     ]
 
