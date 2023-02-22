@@ -948,6 +948,12 @@ module GraphQL
         find_inherited_value(:tracers, EMPTY_ARRAY) + own_tracers
       end
 
+      # Mix `trace_mod` into this schema's `Trace` class so that its methods
+      # will be called at runtime.
+      #
+      # @param trace_mod [Module] A module that implements tracing methods
+      # @param options [Hash] Keywords that will be passed to the tracing class during `#initialize`
+      # @return [void]
       def trace_with(trace_mod, **options)
         @trace_options ||= {}
         @trace_options.merge!(options)

@@ -11,21 +11,17 @@ index: 11
 {{ "GraphQL::Tracing::Trace" | api_doc }} provides hooks to observe and modify events during runtime. Tracing hooks are methods, defined in modules and mixed in with {{ "Schema.trace_with" | api_doc }}.
 
 ```ruby
-class MyCustomTracer
-  def self.trace(key, data)
-    # do stuff with key & data
+module CustomTrace
+  def parse(query_string:)
+    # measure, log, etc
     yield
   end
+
+  # ...
 end
 ```
 
-`.trace` is called with:
-
-- `key`: the event happening in the runtime
-- `data`: a hash of metadata about the event
-- `&block`: the event itself, it must be `yield`ed and the value must be returned
-
-To run a tracer for __every query__, add it to the schema with `tracer`:
+To include a trace module when running queries, add it to the schema with `trace_with`:
 
 ```ruby
 # Run `MyCustomTrace` for all queries
