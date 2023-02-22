@@ -146,16 +146,24 @@ module GraphQLBenchmark
         query_str << "  field#{f}(arg: \"a\")\n"
       end
       query_str << "  selfField { selfField { selfField { __typename } } }\n"
-      query_str << "  int0Field { ...Int0Fields }"
+      # query_str << "  int0Field { ...Int0Fields }"
       query_str << "}\n"
     end
-    query_str << "fragment Int0Fields on Interface0 { __typename }"
+    # query_str << "fragment Int0Fields on Interface0 { __typename }"
     query = GraphQL::Query.new(SILLY_LARGE_SCHEMA, query_str)
-    analyzers = [GraphQL::Analysis::AST::FieldUsage]
+    analyzers = [
+      GraphQL::Analysis::AST::FieldUsage,
+      GraphQL::Analysis::AST::QueryDepth,
+      GraphQL::Analysis::AST::QueryComplexity
+    ]
     Benchmark.ips do |x|
       x.report("Running introspection") {
         GraphQL::Analysis::AST.analyze_query(query, analyzers)
       }
+    end
+
+    StackProf.run(mode: :wall, out: "last-stackprof.dump", interval: 1) do
+      GraphQL::Analysis::AST.analyze_query(query, analyzers)
     end
 
     result = StackProf.run(mode: :wall, interval: 1) do

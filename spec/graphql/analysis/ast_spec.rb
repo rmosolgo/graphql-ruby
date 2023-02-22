@@ -31,6 +31,10 @@ describe GraphQL::Analysis::AST do
       @nodes[node.class] += 1
     end
 
+    alias :on_enter_operation_definition :on_enter_abstract_node
+    alias :on_enter_field :on_enter_abstract_node
+    alias :on_enter_argument :on_enter_abstract_node
+
     def result
       @nodes
     end

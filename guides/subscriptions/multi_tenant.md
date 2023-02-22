@@ -62,27 +62,22 @@ There are a few places where subscriptions might need to load data:
 
 Each of these operations will need to select the right tenant in order to load data properly.
 
-For __building the payload__, use a {% internal_link "Tracer", "queries/tracing" %}:
+For __building the payload__, use a {% internal_link "Trace module", "queries/tracing" %}:
 
 ```ruby
-class TenantSelectionTracer
-  def self.trace(event, data)
-    case event
-    when "execute_multiplex" # this is the top-level, umbrella event
-      context = data[:multiplex].queries.first.context # This assumes that all queries in a multiplex have the same tenant
-      MultiTenancy.select_tenant(context[:tenant]) do
+module TenantSelectionTrace
+  def execute_multiplex(multiplex:) # this is the top-level, umbrella event
+    context = data[:multiplex].queries.first.context # This assumes that all queries in a multiplex have the same tenant
+    MultiTenancy.select_tenant(context[:tenant]) do
       # ^^ your multi-tenancy implementation here
-        yield
-      end
-    else
-      yield
+      super # Call through to the rest of execution
     end
   end
 end
 
 # ...
 class MySchema < GraphQL::Schema
-  tracer(TenantSelectionTracer)
+  trace_with(TenantSelectionTrace)
 end
 ```
 

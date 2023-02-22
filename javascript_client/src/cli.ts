@@ -73,7 +73,7 @@ optional arguments:
       addTypename: argv["add-typename"],
       quiet: argv.hasOwnProperty("quiet"),
       verbose: argv.hasOwnProperty("verbose"),
-      changesetVersion: argv["changset-version"],
+      changesetVersion: argv["changeset-version"],
     })
 
     result.then(function() {

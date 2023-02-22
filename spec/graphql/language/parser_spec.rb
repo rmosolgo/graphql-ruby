@@ -224,7 +224,11 @@ describe GraphQL::Language::Parser do
 
   it "serves traces" do
     TestTracing.clear
-    GraphQL.parse("{ t: __typename }", tracer: TestTracing)
+    schema = Class.new(GraphQL::Schema) do
+      tracer(TestTracing)
+    end
+    query = GraphQL::Query.new(schema, "{ t: __typename }")
+    GraphQL.parse("{ t: __typename }", trace: query.current_trace)
     traces = TestTracing.traces
     assert_equal 2, traces.length
     lex_trace, parse_trace = traces

@@ -591,14 +591,6 @@ module GraphQL
         end
       end
 
-      def accessible?(context)
-        if @resolver_class
-          @resolver_class.accessible?(context)
-        else
-          true
-        end
-      end
-
       def authorized?(object, args, context)
         if @resolver_class
           # The resolver _instance_ will check itself during `resolve()`

@@ -1,4 +1,5 @@
 import sync from "../sync"
+import Logger from "../sync/logger"
 var fs = require("fs")
 var nock = require("nock")
 
@@ -77,10 +78,8 @@ describe("sync operations", () => {
         path: "./src/__tests__/documents",
         url: "bogus",
         verbose: true,
-        send: (_sendPayload: string, opts: { verbose: boolean }) => {
-          if (opts.verbose) {
-            console.log("Verbose!")
-          }
+        send: (_sendPayload: string, opts: { logger: Logger }) => {
+          opts.logger.log("Verbose!")
         },
       }
       return sync(options).then(function() {

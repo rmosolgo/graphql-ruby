@@ -508,7 +508,7 @@ module GraphQL
             field_result = call_method_on_directives(:resolve, object, directives) do
               # Actually call the field resolver and capture the result
               app_result = begin
-                query.trace("execute_field", {owner: owner_type, field: field_defn, path: next_path, ast_node: ast_node, query: query, object: object, arguments: kwarg_arguments}) do
+                query.current_trace.execute_field(field: field_defn, ast_node: ast_node, query: query, object: object, arguments: kwarg_arguments) do
                   field_defn.resolve(object, kwarg_arguments, context)
                 end
               rescue GraphQL::ExecutionError => err
@@ -913,7 +913,7 @@ module GraphQL
               # but don't wrap the continuation below
               inner_obj = begin
                 if trace
-                  query.trace("execute_field_lazy", {owner: owner, field: field, path: path, query: query, object: owner_object, arguments: arguments, ast_node: ast_node}) do
+                  query.current_trace.execute_field_lazy(field: field, query: query, object: owner_object, arguments: arguments, ast_node: ast_node) do
                     schema.sync_lazy(lazy_obj)
                   end
                 else
@@ -958,14 +958,13 @@ module GraphQL
         end
 
         def resolve_type(type, value, path)
-          trace_payload = { context: context, type: type, object: value, path: path }
-          resolved_type, resolved_value = query.trace("resolve_type", trace_payload) do
+          resolved_type, resolved_value = query.current_trace.resolve_type(query: query, type: type, object: value) do
             query.resolve_type(type, value)
           end
 
           if lazy?(resolved_type)
             GraphQL::Execution::Lazy.new do
-              query.trace("resolve_type_lazy", trace_payload) do
+              query.current_trace.resolve_type_lazy(query: query, type: type, object: value) do
                 schema.sync_lazy(resolved_type)
               end
             end

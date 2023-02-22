@@ -41,10 +41,6 @@ module GraphQL
             true
           end
 
-          def accessible?(ctx)
-            node_type.accessible?(ctx)
-          end
-
           def visible?(ctx)
             node_type.visible?(ctx)
           end
