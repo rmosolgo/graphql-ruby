@@ -14,7 +14,7 @@ index: 3
 - __Maturity:__ Frankly, GraphQL-Batch is about as old as GraphQL-Ruby, and it's been in production at Shopify, GitHub, and others for many years. GraphQL::Dataloader is new, and although Ruby has supported `Fiber`s since 1.9, they still aren't widely used.
 - __Scope:__ It's not currently possible to use `GraphQL::Dataloader` _outside_ GraphQL.
 
-The incentive in writing `GraphQL::Dataloader` was to leverage `Fiber`'s ability to _transparently_ pause and resume work, which removes the need for `Promise`s (and removes the resulting complexity in the code). Additionally, `GraphQL::Dataloader` shoulde _eventually_ support Ruby 3.0's `Fiber.scheduler` API, which runs I/O in the background by default.
+The incentive in writing `GraphQL::Dataloader` was to leverage `Fiber`'s ability to _transparently_ pause and resume work, which removes the need for `Promise`s (and removes the resulting complexity in the code). Additionally, `GraphQL::Dataloader` should _eventually_ support Ruby 3.0's `Fiber.scheduler` API, which runs I/O in the background by default.
 
 ## Comparison: Fetching a single object
 
