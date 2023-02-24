@@ -793,6 +793,10 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   end
 
   it "has a consistent Object shape" do
+    # This test will be inherently flaky: the `Field` instances
+    # on the heap depends on what tests ran before this one and
+    # whether or not GC ran since then.
+    # But in my opinion,
     shapes = Set.new
     ObjectSpace.each_object(GraphQL::Schema::Field) do |field_obj|
       field_ivars = field_obj.instance_variables
@@ -805,6 +809,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     #     f.puts(shape.inspect + "\n")
     #   end
     # end
-    assert_equal 1, shapes.size
+    default_field_shape = GraphQL::Introspection::TypeType.get_field("name").instance_variables
+    assert_equal [default_field_shape], shapes.to_a
   end
 end

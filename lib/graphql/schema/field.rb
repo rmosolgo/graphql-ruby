@@ -5,6 +5,8 @@ require "graphql/schema/field/scope_extension"
 module GraphQL
   class Schema
     class Field
+      NOT_CONFIGURED = ::Object.new
+
       include GraphQL::Schema::Member::HasArguments
       include GraphQL::Schema::Member::HasArguments::FieldConfigured
       include GraphQL::Schema::Member::HasAstNode
@@ -219,7 +221,7 @@ module GraphQL
       # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
       # @param validates [Array<Hash>] Configurations for validating this field
       # @fallback_value [Object] A fallback value if the method is not defined
-      def initialize(type: nil, name: nil, owner: nil, null: nil, description: :not_given, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: :not_given, default_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: nil, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: :not_given, &definition_block)
+    def initialize(type: nil, name: nil, owner: nil, null: nil, description: NOT_CONFIGURED, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: :not_given, default_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: NOT_CONFIGURED, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: :not_given, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -234,14 +236,7 @@ module GraphQL
         @underscored_name = -Member::BuildType.underscore(name_s)
         @name = -(camelize ? Member::BuildType.camelize(name_s) : name_s)
 
-        if description == :not_given
-          @has_description = false
-          @description = nil
-        else
-          @has_description = true
-          @description = description
-        end
-
+        @description = description
         @own_directives = @own_arguments = nil # these will be prepared later if necessary
 
         self.deprecation_reason = deprecation_reason
@@ -263,13 +258,11 @@ module GraphQL
         method_name = method || hash_key || name_s
         @dig_keys = dig
         if hash_key
-          @has_hash_key = true
           @hash_key = hash_key
           @hash_key_str = hash_key.to_s
         else
-          @has_hash_key = false
-          @hash_key = nil
-          @hash_key_str = nil
+          @hash_key = NOT_CONFIGURED
+          @hash_key_str = NOT_CONFIGURED
         end
 
         @method_str = -method_name.to_s
@@ -292,7 +285,6 @@ module GraphQL
         @default_page_size = default_page_size == :not_given ? nil : default_page_size
         @introspection = introspection
         @extras = extras
-        @has_broadcastable = !broadcastable.nil?
         @broadcastable = broadcastable
         @resolver_class = resolver_class
         @scope = scope
@@ -368,7 +360,7 @@ module GraphQL
       # @return [Boolean, nil]
       # @see GraphQL::Subscriptions::BroadcastAnalyzer
       def broadcastable?
-        if @has_broadcastable
+        if @broadcastable != NOT_CONFIGURED
           @broadcastable
         elsif @resolver_class
           @resolver_class.broadcastable?
@@ -382,10 +374,10 @@ module GraphQL
       def description(text = nil)
         if text
           @description = text
-        elsif @has_description
+        elsif @description != NOT_CONFIGURED
           @description
         elsif @resolver_class
-          @description || @resolver_class.description
+          @resolver_class.description
         else
           nil
         end
@@ -674,7 +666,7 @@ module GraphQL
 
               inner_object = obj.object
 
-              if @has_hash_key
+              if @hash_key != NOT_CONFIGURED
                 hash_value = if inner_object.is_a?(Hash)
                   inner_object.key?(@hash_key) ? inner_object[@hash_key] : inner_object[@hash_key_str]
                 elsif inner_object.respond_to?(:[])
