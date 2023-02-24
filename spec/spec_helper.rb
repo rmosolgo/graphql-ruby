@@ -42,14 +42,9 @@ ERR
     end
   end
 
-  def result(*args, **kwargs, &block)
-    setup_finalizer
+  def prepare_ast(*args, **kwargs, &block)
     super
-  end
-
-  def result=(*args, **kwargs, &block)
     setup_finalizer
-    super
   end
 
   private
