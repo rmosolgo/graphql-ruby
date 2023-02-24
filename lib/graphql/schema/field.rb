@@ -551,7 +551,13 @@ module GraphQL
 
       # @return [Integer, nil] Applied to connections if {#has_max_page_size?}
       def max_page_size
-        @max_page_size || (@resolver_class && @resolver_class.max_page_size)
+        if @max_page_size != NOT_CONFIGURED
+          @max_page_size
+        elsif @resolver_class && @resolver_class.has_max_page_size?
+          @resolver_class.max_page_size
+        else
+          nil
+        end
       end
 
       # @return [Boolean] True if this field's {#default_page_size} should override the schema default.
@@ -561,7 +567,13 @@ module GraphQL
 
       # @return [Integer, nil] Applied to connections if {#has_default_page_size?}
       def default_page_size
-        @default_page_size || (@resolver_class && @resolver_class.default_page_size)
+        if @default_page_size != NOT_CONFIGURED
+          @default_page_size
+        elsif @resolver_class && @resolver_class.has_default_page_size?
+          @resolver_class.default_page_size
+        else
+          nil
+        end
       end
 
       class MissingReturnTypeError < GraphQL::Error; end
