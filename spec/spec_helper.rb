@@ -42,7 +42,7 @@ ERR
     end
   end
 
-  def prepare_ast(*args, **kwargs, &block)
+  def prepare_ast
     super
     setup_finalizer
   end
