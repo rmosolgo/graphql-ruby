@@ -221,7 +221,7 @@ module GraphQL
       # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
       # @param validates [Array<Hash>] Configurations for validating this field
       # @fallback_value [Object] A fallback value if the method is not defined
-    def initialize(type: nil, name: nil, owner: nil, null: nil, description: NOT_CONFIGURED, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: :not_given, default_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: NOT_CONFIGURED, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: :not_given, &definition_block)
+      def initialize(type: nil, name: nil, owner: nil, null: nil, description: NOT_CONFIGURED, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: NOT_CONFIGURED, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: :not_given, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -237,7 +237,7 @@ module GraphQL
         @name = -(camelize ? Member::BuildType.camelize(name_s) : name_s)
 
         @description = description
-        @own_validators = @own_directives = @own_arguments = nil # these will be prepared later if necessary
+        @type = @owner_type = @own_validators = @own_directives = @own_arguments = nil # these will be prepared later if necessary
 
         self.deprecation_reason = deprecation_reason
 
@@ -269,7 +269,6 @@ module GraphQL
         @method_sym = method_name.to_sym
         @resolver_method = (resolver_method || name_s).to_sym
         @complexity = complexity
-        @type = nil # this will be determined later
         @return_type_expr = type
         @return_type_null = if !null.nil?
           null
@@ -279,10 +278,8 @@ module GraphQL
           true
         end
         @connection = connection
-        @has_max_page_size = max_page_size != :not_given
-        @max_page_size = max_page_size == :not_given ? nil : max_page_size
-        @has_default_page_size = default_page_size != :not_given
-        @default_page_size = default_page_size == :not_given ? nil : default_page_size
+        @max_page_size = max_page_size
+        @default_page_size = default_page_size
         @introspection = introspection
         @extras = extras
         @broadcastable = broadcastable
@@ -549,7 +546,7 @@ module GraphQL
 
       # @return [Boolean] True if this field's {#max_page_size} should override the schema default.
       def has_max_page_size?
-        @has_max_page_size || (@resolver_class && @resolver_class.has_max_page_size?)
+        @max_page_size != NOT_CONFIGURED || (@resolver_class && @resolver_class.has_max_page_size?)
       end
 
       # @return [Integer, nil] Applied to connections if {#has_max_page_size?}
@@ -559,7 +556,7 @@ module GraphQL
 
       # @return [Boolean] True if this field's {#default_page_size} should override the schema default.
       def has_default_page_size?
-        @has_default_page_size || (@resolver_class && @resolver_class.has_default_page_size?)
+        @default_page_size != NOT_CONFIGURED || (@resolver_class && @resolver_class.has_default_page_size?)
       end
 
       # @return [Integer, nil] Applied to connections if {#has_default_page_size?}
