@@ -787,9 +787,24 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     query(Query)
   end
 
-
   it "uses the overridden type for detecting connections" do
     res = ResolverConnectionOverrideSchema.execute("{ f { nodes } }")
     assert_equal [1,2,3], res["data"]["f"]["nodes"]
+  end
+
+  it "has a consistent Object shape" do
+    shapes = Set.new
+    ObjectSpace.each_object(GraphQL::Schema::Field) do |field_obj|
+      field_ivars = field_obj.instance_variables
+      field_ivars.delete(:@upcase) # a test adds this to some custom fields
+      shapes.add(field_ivars)
+    end
+    # To see the different shapes, uncomment this:
+    # File.open("field_shapes.txt", "wb+") do |f|
+    #   shapes.to_a.each do |shape|
+    #     f.puts(shape.inspect + "\n")
+    #   end
+    # end
+    assert_equal 1, shapes.size
   end
 end

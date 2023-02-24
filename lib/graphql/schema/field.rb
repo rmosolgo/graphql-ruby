@@ -233,9 +233,17 @@ module GraphQL
 
         @underscored_name = -Member::BuildType.underscore(name_s)
         @name = -(camelize ? Member::BuildType.camelize(name_s) : name_s)
-        if description != :not_given
+
+        if description == :not_given
+          @has_description = false
+          @description = nil
+        else
+          @has_description = true
           @description = description
         end
+
+        @own_directives = @own_arguments = nil # these will be prepared later if necessary
+
         self.deprecation_reason = deprecation_reason
 
         if method && hash_key && dig
@@ -255,14 +263,20 @@ module GraphQL
         method_name = method || hash_key || name_s
         @dig_keys = dig
         if hash_key
+          @has_hash_key = true
           @hash_key = hash_key
           @hash_key_str = hash_key.to_s
+        else
+          @has_hash_key = false
+          @hash_key = nil
+          @hash_key_str = nil
         end
 
         @method_str = -method_name.to_s
         @method_sym = method_name.to_sym
         @resolver_method = (resolver_method || name_s).to_sym
         @complexity = complexity
+        @type = nil # this will be determined later
         @return_type_expr = type
         @return_type_null = if !null.nil?
           null
@@ -278,9 +292,8 @@ module GraphQL
         @default_page_size = default_page_size == :not_given ? nil : default_page_size
         @introspection = introspection
         @extras = extras
-        if !broadcastable.nil?
-          @broadcastable = broadcastable
-        end
+        @has_broadcastable = !broadcastable.nil?
+        @broadcastable = broadcastable
         @resolver_class = resolver_class
         @scope = scope
         @trace = trace
@@ -355,7 +368,7 @@ module GraphQL
       # @return [Boolean, nil]
       # @see GraphQL::Subscriptions::BroadcastAnalyzer
       def broadcastable?
-        if defined?(@broadcastable)
+        if @has_broadcastable
           @broadcastable
         elsif @resolver_class
           @resolver_class.broadcastable?
@@ -369,7 +382,7 @@ module GraphQL
       def description(text = nil)
         if text
           @description = text
-        elsif defined?(@description)
+        elsif @has_description
           @description
         elsif @resolver_class
           @description || @resolver_class.description
@@ -661,7 +674,7 @@ module GraphQL
 
               inner_object = obj.object
 
-              if defined?(@hash_key)
+              if @has_hash_key
                 hash_value = if inner_object.is_a?(Hash)
                   inner_object.key?(@hash_key) ? inner_object[@hash_key] : inner_object[@hash_key_str]
                 elsif inner_object.respond_to?(:[])
