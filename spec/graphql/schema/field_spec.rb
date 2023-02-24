@@ -796,11 +796,18 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     # This test will be inherently flaky: the `Field` instances
     # on the heap depends on what tests ran before this one and
     # whether or not GC ran since then.
-    # But in my opinion,
     shapes = Set.new
+
+    # This is custom state added by some test schemas:
+    custom_ivars = [:@upcase, :@future_schema, :@visible, :@allow_for, :@metadata]
+
     ObjectSpace.each_object(GraphQL::Schema::Field) do |field_obj|
       field_ivars = field_obj.instance_variables
-      field_ivars.delete(:@upcase) # a test adds this to some custom fields
+      custom_ivars.each do |ivar|
+        if field_ivars.delete(ivar) && field_obj.class == GraphQL::Schema::Field
+          raise "Invariant: a built-in-based field instance has an ivar that was expected to be custom state(#{ivar.inspect}): #{field_obj.path} (#{field_obj.inspect})"
+        end
+      end
       shapes.add(field_ivars)
     end
     # To see the different shapes, uncomment this:

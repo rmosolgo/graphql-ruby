@@ -237,7 +237,7 @@ module GraphQL
         @name = -(camelize ? Member::BuildType.camelize(name_s) : name_s)
 
         @description = description
-        @own_directives = @own_arguments = nil # these will be prepared later if necessary
+        @own_validators = @own_directives = @own_arguments = nil # these will be prepared later if necessary
 
         self.deprecation_reason = deprecation_reason
 
