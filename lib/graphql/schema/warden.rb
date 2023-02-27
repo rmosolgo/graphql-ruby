@@ -96,6 +96,13 @@ module GraphQL
         @subscription = @schema.subscription
         @context = context
         @visibility_cache = read_through { |m| filter.call(m, context) }
+        # Initialize all ivars to improve object shape consistency:
+        @types = @visible_types = @reachable_types = @visible_parent_fields =
+          @visible_possible_types = @visible_fields = @visible_arguments = @visible_enum_arrays =
+          @visible_enum_values = @visible_interfaces = @type_visibility = @type_memberships =
+          @visible_and_reachable_type = @unions = @unfiltered_interfaces = @references_to =
+          @reachable_type_set =
+            nil
       end
 
       # @return [Hash<String, GraphQL::BaseType>] Visible types in the schema
@@ -347,7 +354,7 @@ module GraphQL
       end
 
       def reachable_type_set
-        return @reachable_type_set if defined?(@reachable_type_set)
+        return @reachable_type_set if @reachable_type_set
 
         @reachable_type_set = Set.new
         rt_hash = {}
