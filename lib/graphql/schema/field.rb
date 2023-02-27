@@ -5,8 +5,6 @@ require "graphql/schema/field/scope_extension"
 module GraphQL
   class Schema
     class Field
-      NOT_CONFIGURED = ::Object.new
-
       include GraphQL::Schema::Member::HasArguments
       include GraphQL::Schema::Member::HasArguments::FieldConfigured
       include GraphQL::Schema::Member::HasAstNode
@@ -357,7 +355,7 @@ module GraphQL
       # @return [Boolean, nil]
       # @see GraphQL::Subscriptions::BroadcastAnalyzer
       def broadcastable?
-        if @broadcastable != NOT_CONFIGURED
+        if !NOT_CONFIGURED.equal?(@broadcastable)
           @broadcastable
         elsif @resolver_class
           @resolver_class.broadcastable?
@@ -371,7 +369,7 @@ module GraphQL
       def description(text = nil)
         if text
           @description = text
-        elsif @description != NOT_CONFIGURED
+        elsif !NOT_CONFIGURED.equal?(@description)
           @description
         elsif @resolver_class
           @resolver_class.description
@@ -546,12 +544,12 @@ module GraphQL
 
       # @return [Boolean] True if this field's {#max_page_size} should override the schema default.
       def has_max_page_size?
-        @max_page_size != NOT_CONFIGURED || (@resolver_class && @resolver_class.has_max_page_size?)
+        !NOT_CONFIGURED.equal?(@max_page_size) || (@resolver_class && @resolver_class.has_max_page_size?)
       end
 
       # @return [Integer, nil] Applied to connections if {#has_max_page_size?}
       def max_page_size
-        if @max_page_size != NOT_CONFIGURED
+        if !NOT_CONFIGURED.equal?(@max_page_size)
           @max_page_size
         elsif @resolver_class && @resolver_class.has_max_page_size?
           @resolver_class.max_page_size
@@ -562,12 +560,12 @@ module GraphQL
 
       # @return [Boolean] True if this field's {#default_page_size} should override the schema default.
       def has_default_page_size?
-        @default_page_size != NOT_CONFIGURED || (@resolver_class && @resolver_class.has_default_page_size?)
+        !NOT_CONFIGURED.equal?(@default_page_size) || (@resolver_class && @resolver_class.has_default_page_size?)
       end
 
       # @return [Integer, nil] Applied to connections if {#has_default_page_size?}
       def default_page_size
-        if @default_page_size != NOT_CONFIGURED
+        if !NOT_CONFIGURED.equal?(@default_page_size)
           @default_page_size
         elsif @resolver_class && @resolver_class.has_default_page_size?
           @resolver_class.default_page_size
@@ -675,7 +673,7 @@ module GraphQL
 
               inner_object = obj.object
 
-              if @hash_key != NOT_CONFIGURED
+              if !NOT_CONFIGURED.equal?(@hash_key)
                 hash_value = if inner_object.is_a?(Hash)
                   inner_object.key?(@hash_key) ? inner_object[@hash_key] : inner_object[@hash_key_str]
                 elsif inner_object.respond_to?(:[])

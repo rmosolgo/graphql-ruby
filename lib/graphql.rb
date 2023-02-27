@@ -66,6 +66,9 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   def self.scan_with_ragel(graphql_string)
     GraphQL::Language::Lexer.tokenize(graphql_string)
   end
+
+  NOT_CONFIGURED = Object.new
+  private_constant :NOT_CONFIGURED
 end
 
 # Order matters for these:
