@@ -6,7 +6,7 @@ Bundler::GemHelper.install_tasks
 require "rake/testtask"
 require_relative "guides/_tasks/site"
 require_relative "lib/graphql/rake_task/validate"
-
+require 'rake/extensiontask'
 
 Rake::TestTask.new do |t|
   t.libs << "spec" << "lib"
@@ -42,31 +42,32 @@ else
   task(default: default_tasks)
 end
 
-desc "Use Racc & Ragel to regenerate parser.rb & lexer.rb from configuration files"
-task :build_parser do
-  def assert_dependency_version(dep_name, required_version, check_script)
-    version = `#{check_script}`
-    if !version.include?(required_version)
-      raise <<-ERR
+def assert_dependency_version(dep_name, required_version, check_script)
+  version = `#{check_script}`
+  if !version.include?(required_version)
+    raise <<-ERR
 build_parser requires #{dep_name} version "#{required_version}", but found:
 
-    $ #{check_script}
-    > #{version}
+  $ #{check_script}
+  > #{version}
 
 To fix this issue:
 
 - Update #{dep_name} to the required version
 - Update the assertion in `Rakefile` to match the current version
 ERR
-    end
   end
+end
+
+desc "Use Racc & Ragel to regenerate parser.rb & lexer.rb from configuration files"
+task :build_parser do
 
   assert_dependency_version("Ragel", "7.0.0.9", "ragel -v")
   assert_dependency_version("Racc", "1.6.0", %|ruby -e "require 'racc'; puts Racc::VERSION"|)
 
   `rm -f lib/graphql/language/parser.rb lib/graphql/language/lexer.rb `
   `racc lib/graphql/language/parser.y -o lib/graphql/language/parser.rb`
-  `ragel -R -F1 lib/graphql/language/lexer.rl`
+  `ragel -C -F1 lib/graphql/language/lexer.rl`
 end
 
 namespace :bench do
@@ -181,3 +182,13 @@ namespace :js do
   end
   task all: [:install, :build, :test]
 end
+
+Rake::ExtensionTask.new("graphql_ext")
+
+task :build_c_lexer do
+  assert_dependency_version("Ragel", "7.0.0.9", "ragel -v")
+  `ragel -C -F1 ext/graphql_ext/lexer.rl`
+end
+
+desc "Build the C Extension"
+task build_ext: [:build_c_lexer, :compile]
