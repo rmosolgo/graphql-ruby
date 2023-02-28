@@ -188,7 +188,9 @@ namespace :js do
   task all: [:install, :build, :test]
 end
 
-Rake::ExtensionTask.new("graphql_ext")
+Rake::ExtensionTask.new("graphql_ext") do |t|
+  t.lib_dir = "lib/graphql"
+end
 
 task :build_c_lexer do
   assert_dependency_version("Ragel", "7.0.0.9", "ragel -v")
