@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 require "bundler/setup"
-Bundler.require
 Bundler::GemHelper.install_tasks
 
 require "rake/testtask"

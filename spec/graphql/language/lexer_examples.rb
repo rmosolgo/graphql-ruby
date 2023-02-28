@@ -102,14 +102,9 @@ module LexerExamples
             assert_equal '', tokens[0].value
           end
 
-          focus
           it "tokenizes escaped backslashes at the end of blocks" do
-            tokens = subject.tokenize('text: """b""", otherText: "a"')
-            pp tokens.map(&:inspect)
             str = 'text: """b\\\\""", otherText: "a"'
-            puts str
             tokens = subject.tokenize(str)
-            pp tokens.map(&:inspect)
             assert_equal ['text', ':', 'b\\', 'otherText', ':', 'a',], tokens.map(&:value)
           end
         end
