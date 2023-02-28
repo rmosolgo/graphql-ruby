@@ -22,7 +22,7 @@ jobs:
         bundler-cache: true
       env:
         BUNDLE_GEMFILE: ./spec/dummy/Gemfile
-    - run: bundle exec rake build_ext
+    - run: bundle exec rake compile
     - run: bundle exec rails test:system
       working-directory: ./spec/dummy
   # Some coverage goals of these tests:
@@ -63,7 +63,7 @@ jobs:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
         bundler: ${{ matrix.bundler || 'default' }}
-    - run: bundle exec rake build_ext
+    - run: bundle exec rake compile
     - run: bundle exec rake test
   javascript_test:
     runs-on: ubuntu-latest
