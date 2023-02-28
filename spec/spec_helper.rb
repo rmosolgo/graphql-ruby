@@ -2,12 +2,12 @@
 
 require 'rubygems'
 require 'bundler'
+pp ["Extension files:", Dir.glob("**/*.{so,bundle}")]
 Bundler.require
 
 # Print full backtrace for failiures:
 ENV["BACKTRACE"] = "1"
 
-pp ["Extension files:", Dir.glob("**/*.{so,bundle}")]
 require "graphql"
 require "rake"
 require "graphql/rake_task"
