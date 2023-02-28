@@ -2,7 +2,6 @@
 
 require 'rubygems'
 require 'bundler'
-pp ["Extension files:", Dir.glob("**/*.{so,bundle}")]
 Bundler.require
 
 # Print full backtrace for failiures:
