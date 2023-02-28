@@ -364,4 +364,46 @@ describe GraphQL::Schema::Object do
       end
     end
   end
+
+  class ExampleGraphQLObject < GraphQL::Schema::Object
+    field :f1, String
+  end
+
+  it "has a consistent object shape" do
+    type_defn_shapes = Set.new
+    example_shapes_by_name = {}
+    ObjectSpace.each_object(Class) do |cls|
+      if cls < GraphQL::Schema::Object
+        shape = cls.instance_variables
+        # these are from a custom test
+        shape.delete(:@configs)
+        shape.delete(:@future_schema)
+        shape.delete(:@metadata)
+        if type_defn_shapes.add?(shape)
+          example_shapes_by_name[cls.graphql_name] = shape
+        end
+      end
+    end
+
+    # # Uncomment this to debug shapes:
+    # File.open("shapes.txt", "w+") do |f|
+    #   f.puts(type_defn_shapes.to_a.map { |ary| ary.inspect }.join("\n"))
+    #   example_shapes_by_name.each do |name, sh|
+    #     f.puts("#{name} ==> #{sh.inspect}")
+    #   end
+    # end
+
+    default_shape = ExampleGraphQLObject.instance_variables
+    default_edge_shape = Class.new(GraphQL::Types::Relay::BaseEdge).instance_variables
+    default_connection_shape = Class.new(GraphQL::Types::Relay::BaseConnection).instance_variables
+    default_mutation_payload_shape = Class.new(GraphQL::Schema::RelayClassicMutation) { graphql_name("DoSomething") }.payload_type.instance_variables
+    expected_default_shapes = Set.new([
+      default_shape,
+      default_edge_shape,
+      default_connection_shape,
+      default_mutation_payload_shape
+    ])
+
+    assert_equal expected_default_shapes, type_defn_shapes
+  end
 end

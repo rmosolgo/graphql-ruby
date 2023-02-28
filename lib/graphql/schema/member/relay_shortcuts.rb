@@ -58,6 +58,14 @@ module GraphQL
           end
         end
 
+        def inherited(child_class)
+          super
+          child_class.connection_type = nil
+          child_class.edge_type = nil
+          child_class.connection_type_class = nil
+          child_class.edge_type_class = nil
+        end
+
         protected
 
         def configured_connection_type_class
@@ -67,6 +75,8 @@ module GraphQL
         def configured_edge_type_class
           @edge_type_class
         end
+
+        attr_writer :edge_type, :connection_type, :connection_type_class, :edge_type_class
       end
     end
   end
