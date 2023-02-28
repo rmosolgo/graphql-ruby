@@ -8,8 +8,6 @@ Bundler.require
 ENV["BACKTRACE"] = "1"
 
 require "graphql"
-pp GraphQL::Clexer.tokenize("{ f1 }")
-
 require "rake"
 require "graphql/rake_task"
 require "benchmark"

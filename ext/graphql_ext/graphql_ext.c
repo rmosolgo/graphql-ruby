@@ -1,8 +1,9 @@
 #include "graphql_ext.h"
-#include "lexer.c"
+#include "lexer.h"
 
 VALUE GraphQL_Clexer_tokenize(VALUE self, VALUE query_string) {
-  return query_string;
+  VALUE tokens = tokenize(query_string);
+  return tokens;
 }
 
 // Initialize the extension

@@ -82,6 +82,12 @@ namespace :bench do
     GraphQLBenchmark.run("parse")
   end
 
+  desc "Benchmark lexical analysis"
+  task :scan do
+    prepare_benchmark
+    GraphQLBenchmark.run("scan")
+  end
+
   desc "Benchmark the introspection query"
   task :query do
     prepare_benchmark

@@ -1,7 +1,7 @@
 
 #line 1 "ext/graphql_ext/lexer.rl"
 
-#line 118 "ext/graphql_ext/lexer.rl"
+#line 117 "ext/graphql_ext/lexer.rl"
 
 
 
@@ -744,7 +744,7 @@ static const int graphql_c_lexer_error = -1;
 static const int graphql_c_lexer_en_main = 21;
 
 
-#line 121 "ext/graphql_ext/lexer.rl"
+#line 120 "ext/graphql_ext/lexer.rl"
 
 
 #include <ruby.h>
@@ -789,8 +789,6 @@ typedef enum TokenType {
 	AMP,
 	IDENTIFIER,
 	COMMENT,
-	NEWLINE,
-	BLANK,
 	UNKNOWN_CHAR
 } TokenType;
 
@@ -798,64 +796,152 @@ typedef struct Meta {
 	int line;
 	int col;
 	char *query_cstr;
+	char *pe;
+	VALUE tokens;
+	VALUE previous_token;
 } Meta;
 
+#define STATIC_VALUE_TOKEN(token_type, content_str) \
+case token_type: \
+token_sym = ID2SYM(rb_intern(#token_type)); \
+token_content = rb_str_new_cstr(content_str); \
+break;
+
+#define DYNAMIC_VALUE_TOKEN(token_type) \
+case token_type: \
+token_sym = ID2SYM(rb_intern(#token_type)); \
+token_content = rb_utf8_str_new(ts, te - ts); \
+break;
+
 void emit(TokenType tt, char *ts, char *te, Meta *meta) {
-	char *content;
-	const char literal_content;
+	int quotes_length = 0; // set by string tokens below
+	int line_incr = 0;
+	VALUE token_sym = Qnil;
+	VALUE token_content = Qnil;
 	
 	switch(tt) {
-		case ON: literal_content = "on"; break;
-		case FRAGMENT: content = "fragment"; break;
-		case TRUE_LITERAL: content = "true"; break;
-		case FALSE_LITERAL: content = "false"; break;
-		case NULL_LITERAL: content = "null"; break;
-		case QUERY: content = "query"; break;
-		case MUTATION: content = "mutation"; break;
-		case SUBSCRIPTION: content = "subscription"; break;
-		case REPEATABLE: content = "repeatable"; break;
-		case RCURLY: content = "}"; break;
-	case LCURLY: content = "{"; break;
-		case RPAREN: content = ")"; break;
-		case LPAREN: content = "("; break;
-		case RBRACKET: content = "]"; break;
-		case LBRACKET: content = "["; break;
-		case COLON: content = ":"; break;
-		case VAR_SIGN: content = "$"; break;
-		case DIR_SIGN: content = "@"; break;
-		case ELLIPSIS: content = "..."; break;
-		case EQUALS: content = "="; break;
-		case BANG: content = "!"; break;
-		case PIPE: content = "|"; break;
-		case AMP: content = "&"; break;
-		default: content = "read from query_str";
+		STATIC_VALUE_TOKEN(ON, "on")
+		STATIC_VALUE_TOKEN(FRAGMENT, "fragment")
+		STATIC_VALUE_TOKEN(QUERY, "query")
+		STATIC_VALUE_TOKEN(MUTATION, "mutation")
+		STATIC_VALUE_TOKEN(SUBSCRIPTION, "subscription")
+		STATIC_VALUE_TOKEN(REPEATABLE, "repeatable")
+		STATIC_VALUE_TOKEN(RCURLY, "}")
+	STATIC_VALUE_TOKEN(LCURLY, "{")
+		STATIC_VALUE_TOKEN(RBRACKET, "]")
+		STATIC_VALUE_TOKEN(LBRACKET, "[")
+		STATIC_VALUE_TOKEN(RPAREN, ")")
+		STATIC_VALUE_TOKEN(LPAREN, "(")
+		STATIC_VALUE_TOKEN(COLON, ":")
+		STATIC_VALUE_TOKEN(VAR_SIGN, "$")
+		STATIC_VALUE_TOKEN(DIR_SIGN, "@")
+		STATIC_VALUE_TOKEN(ELLIPSIS, "...")
+		STATIC_VALUE_TOKEN(EQUALS, "=")
+		STATIC_VALUE_TOKEN(BANG, "!")
+		STATIC_VALUE_TOKEN(PIPE, "|")
+		STATIC_VALUE_TOKEN(AMP, "&")
+		STATIC_VALUE_TOKEN(SCHEMA, "schema")
+		STATIC_VALUE_TOKEN(SCALAR, "scalar")
+		STATIC_VALUE_TOKEN(TYPE, "type")
+		STATIC_VALUE_TOKEN(EXTEND, "extend")
+		STATIC_VALUE_TOKEN(IMPLEMENTS, "implements")
+		STATIC_VALUE_TOKEN(INTERFACE, "interface")
+		STATIC_VALUE_TOKEN(UNION, "union")
+		STATIC_VALUE_TOKEN(ENUM, "enum")
+		STATIC_VALUE_TOKEN(DIRECTIVE, "directive")
+		STATIC_VALUE_TOKEN(INPUT, "input")
+		// For these, the enum name doesn't match the symbol name:
+		case TRUE_LITERAL:
+		token_sym = ID2SYM(rb_intern("TRUE"));
+		token_content = rb_str_new_cstr("true");
+		break;
+		case FALSE_LITERAL:
+		token_sym = ID2SYM(rb_intern("FALSE"));
+		token_content = rb_str_new_cstr("false");
+		break;
+		case NULL_LITERAL:
+		token_sym = ID2SYM(rb_intern("NULL"));
+		token_content = rb_str_new_cstr("null");
+		break;
+		DYNAMIC_VALUE_TOKEN(IDENTIFIER)
+		DYNAMIC_VALUE_TOKEN(INT)
+		DYNAMIC_VALUE_TOKEN(FLOAT)
+		DYNAMIC_VALUE_TOKEN(COMMENT)
+		case UNKNOWN_CHAR:
+		if (ts[0] == '\0') {
+			return;
+		} else {
+			token_content = rb_utf8_str_new(ts, te - ts);
+			token_sym = ID2SYM(rb_intern("UNKNOWN_CHAR"));
+			break;
+		}
+		case QUOTED_STRING:
+		quotes_length = 1;
+		token_content = rb_utf8_str_new(ts + quotes_length, (te - ts - (2 * quotes_length)));
+		token_sym = ID2SYM(rb_intern("STRING"));
+		break;
+		case BLOCK_STRING:
+		token_sym = ID2SYM(rb_intern("STRING"));
+		quotes_length = 3;
+		token_content = rb_utf8_str_new(ts + quotes_length, (te - ts - (2 * quotes_length)));
+		line_incr = FIX2INT(rb_funcall(token_content, rb_intern("count"), 1, rb_str_new_cstr("\n")));
+		break;
 	}
 	
+	if (token_sym != Qnil) {
+		if (tt == BLOCK_STRING || tt == QUOTED_STRING) {
+			VALUE mGraphQL = rb_const_get_at(rb_cObject, rb_intern("GraphQL"));
+			VALUE mGraphQLLanguage = rb_const_get_at(mGraphQL, rb_intern("Language"));
+			VALUE mGraphQLLanguageLexer = rb_const_get_at(mGraphQLLanguage, rb_intern("Lexer"));
+			VALUE valid_string_pattern = rb_const_get_at(mGraphQLLanguageLexer, rb_intern("VALID_STRING"));
+			if (tt == BLOCK_STRING) {
+				VALUE mGraphQLLanguageBlockString = rb_const_get_at(mGraphQLLanguage, rb_intern("BlockString"));
+				token_content = rb_funcall(mGraphQLLanguageBlockString, rb_intern("trim_whitespace"), 1, token_content);
+			}
+			
+			if (
+			RB_TEST(rb_funcall(token_content, rb_intern("valid_encoding?"), 0)) &&
+			RB_TEST(rb_funcall(token_content, rb_intern("match?"), 1, valid_string_pattern))
+			) {
+				rb_funcall(mGraphQLLanguageLexer, rb_intern("replace_escaped_characters_in_place"), 1, token_content);
+				if (!RB_TEST(rb_funcall(token_content, rb_intern("valid_encoding?"), 0))) {
+					token_sym = ID2SYM(rb_intern("BAD_UNICODE_ESCAPE"));
+				}
+				
+				
+			} else {
+				token_sym = ID2SYM(rb_intern("BAD_UNICODE_ESCAPE"));
+			}
+		}
+		
+		VALUE token_data[5] = {
+			token_sym,
+			rb_int2inum(meta->line),
+			rb_int2inum(meta->col),
+			token_content,
+			meta->previous_token,
+		};
+		VALUE token = rb_ary_new_from_values(5, token_data);
+		// COMMENTs are retained as `previous_token` but aren't pushed to the normal token list
+		if (tt != COMMENT) {
+			rb_ary_push(meta->tokens, token);
+		}
+		meta->previous_token = token;
+	}
+	// Bump the column counter for the next token
+	meta->col += te - ts;
+	meta->line += line_incr;
 }
 
-void emit_string(char *ts, char *te, Meta *meta, int is_block) {
-	
-}
-
-void record_comment(char *ts, char *te, Meta *meta) {
-	
-}
-
-
-void push_token(VALUE tokens, char *ts, char *te) {
-	VALUE rb_token_ary = rb_ary_new2(4);
-	// rb_ary_aref(0, rb_str_new_cstr(token_content))
-	rb_ary_push(tokens, rb_token_ary);
-}
-
-int tokenize(VALUE query_rbstr) {
+VALUE tokenize(VALUE query_rbstr) {
 	int cs, act = 0;
-	char *p = rb_string_value_cstr(query_rbstr);
+	char *p = StringValueCStr(query_rbstr);
 	char *pe = p + strlen(p) + 1;
+	char *eof = NULL;
 	char *ts, *te;
 	VALUE tokens = rb_ary_new();
 	
-	struct Meta meta_s = {0, 0, p};
+	struct Meta meta_s = {1, 1, p, pe, tokens, Qnil};
 	Meta *meta = &meta_s;
 	
 	
@@ -866,7 +952,7 @@ int tokenize(VALUE query_rbstr) {
 		act = 0;
 	}
 	
-	#line 234 "ext/graphql_ext/lexer.rl"
+	#line 319 "ext/graphql_ext/lexer.rl"
 	
 	
 	{
@@ -968,14 +1054,14 @@ int tokenize(VALUE query_rbstr) {
 							#line 96 "ext/graphql_ext/lexer.rl"
 							{te = p+1;{
 									#line 96 "ext/graphql_ext/lexer.rl"
-									emit_string(ts, te, meta, 0); }}}
+									emit(QUOTED_STRING, ts, te, meta); }}}
 						break; }
 					case 33:  {
 						{
 							#line 97 "ext/graphql_ext/lexer.rl"
 							{te = p+1;{
 									#line 97 "ext/graphql_ext/lexer.rl"
-									emit_string(ts, te, meta, 1); }}}
+									emit(BLOCK_STRING, ts, te, meta); }}}
 						break; }
 					case 14:  {
 						{
@@ -1062,14 +1148,14 @@ int tokenize(VALUE query_rbstr) {
 							#line 96 "ext/graphql_ext/lexer.rl"
 							{te = p;p = p - 1;{
 									#line 96 "ext/graphql_ext/lexer.rl"
-									emit_string(ts, te, meta, 0); }}}
+									emit(QUOTED_STRING, ts, te, meta); }}}
 						break; }
 					case 32:  {
 						{
 							#line 97 "ext/graphql_ext/lexer.rl"
 							{te = p;p = p - 1;{
 									#line 97 "ext/graphql_ext/lexer.rl"
-									emit_string(ts, te, meta, 1); }}}
+									emit(BLOCK_STRING, ts, te, meta); }}}
 						break; }
 					case 37:  {
 						{
@@ -1083,7 +1169,7 @@ int tokenize(VALUE query_rbstr) {
 							#line 106 "ext/graphql_ext/lexer.rl"
 							{te = p;p = p - 1;{
 									#line 106 "ext/graphql_ext/lexer.rl"
-									record_comment(ts, te, meta); }}}
+									emit(COMMENT, ts, te, meta); }}}
 						break; }
 					case 28:  {
 						{
@@ -1228,12 +1314,12 @@ int tokenize(VALUE query_rbstr) {
 										p = ((te))-1;
 										{
 											#line 96 "ext/graphql_ext/lexer.rl"
-											emit_string(ts, te, meta, 0); } break; }
+											emit(QUOTED_STRING, ts, te, meta); } break; }
 									case 30:  {
 										p = ((te))-1;
 										{
 											#line 97 "ext/graphql_ext/lexer.rl"
-											emit_string(ts, te, meta, 1); } break; }
+											emit(BLOCK_STRING, ts, te, meta); } break; }
 									case 38:  {
 										p = ((te))-1;
 										{
@@ -1440,7 +1526,7 @@ int tokenize(VALUE query_rbstr) {
 		}
 	}
 	
-	#line 235 "ext/graphql_ext/lexer.rl"
+	#line 320 "ext/graphql_ext/lexer.rl"
 	
-	return 0;
+	return tokens;
 }
