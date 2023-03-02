@@ -100,7 +100,7 @@ jobs:
       with:
         ruby-version: 2.7
         bundler-cache: true
-    - run: bundle exec rake test
+    - run: bundle exec rake compile test
   mongodb_test:
     strategy:
       fail-fast: false
@@ -121,4 +121,4 @@ jobs:
       with:
         ruby-version: 2.7
         bundler-cache: true
-    - run: bundle exec rake test
+    - run: bundle exec rake compile test
