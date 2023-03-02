@@ -62,11 +62,11 @@ desc "Use Racc & Ragel to regenerate parser.rb & lexer.rb from configuration fil
 task :build_parser do
 
   assert_dependency_version("Ragel", "7.0.0.9", "ragel -v")
-  assert_dependency_version("Racc", "1.6.0", %|ruby -e "require 'racc'; puts Racc::VERSION"|)
+  assert_dependency_version("Racc", "1.6.2", %|ruby -e "require 'racc'; puts Racc::VERSION"|)
 
   `rm -f lib/graphql/language/parser.rb lib/graphql/language/lexer.rb `
   `racc lib/graphql/language/parser.y -o lib/graphql/language/parser.rb`
-  `ragel -C -F1 lib/graphql/language/lexer.rl`
+  `ragel -R -F1 lib/graphql/language/lexer.rl`
 end
 
 namespace :bench do
@@ -193,8 +193,8 @@ Rake::ExtensionTask.new("graphql_ext") do |t|
 end
 
 task :build_c_lexer do
-  assert_dependency_version("Ragel", "7.0.0.9", "ragel -v")
-  `ragel -C -F1 ext/graphql_ext/lexer.rl`
+  assert_dependency_version("Ragel", "7.0.4", "ragel -v")
+  `ragel -F1 ext/graphql_ext/lexer.rl`
 end
 
 desc "Build the C Extension"

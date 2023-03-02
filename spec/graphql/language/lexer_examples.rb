@@ -103,8 +103,11 @@ module LexerExamples
           end
 
           it "tokenizes escaped backslashes at the end of blocks" do
-            str = 'text: """b\\\\""", otherText: "a"'
-            tokens = subject.tokenize(str)
+            query_str = <<-GRAPHQL
+text: """b\\\\""", otherText: "a"
+GRAPHQL
+
+            tokens = subject.tokenize(query_str)
             assert_equal ['text', ':', 'b\\', 'otherText', ':', 'a',], tokens.map(&:value)
           end
         end

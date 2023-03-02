@@ -1,15 +1,12 @@
 %%{
   machine graphql_c_lexer;
 
-
   IDENTIFIER =    [_A-Za-z][_0-9A-Za-z]*;
   NEWLINE =       [\c\r\n];
   BLANK   =       [, \t]+;
   COMMENT =       '#' [^\n\r]*;
   INT =           '-'? ('0'|[1-9][0-9]*);
-  FLOAT_DECIMAL = '.'[0-9]+;
-  FLOAT_EXP =     ('e' | 'E')?('+' | '-')?[0-9]+;
-  FLOAT =         INT FLOAT_DECIMAL? FLOAT_EXP?;
+  FLOAT =         INT ('.'[0-9]+)? (('e' | 'E')?('+' | '-')?[0-9]+)?;
   ON =            'on';
   FRAGMENT =      'fragment';
   TRUE_LITERAL =  'true';
@@ -36,21 +33,9 @@
   LBRACKET =      '[';
   RBRACKET =      ']';
   COLON =         ':';
-  QUOTE =         '"';
-  BACKSLASH =     "\\";
   # Could limit to hex here, but “bad unicode escape” on 0XXF is probably a
   # more helpful error than “unknown char”
-  UNICODE_DIGIT = [0-9A-Za-z];
-  FOUR_DIGIT_UNICODE = UNICODE_DIGIT{4};
-  N_DIGIT_UNICODE = LCURLY UNICODE_DIGIT{4,} RCURLY;
-  UNICODE_ESCAPE = "\\u" (FOUR_DIGIT_UNICODE | N_DIGIT_UNICODE);
-  # https://graphql.github.io/graphql-spec/June2018/#sec-String-Value
-  STRING_ESCAPE = '\\' [\\/bfnrt];
-  BLOCK_QUOTE =   '"""';
-  ESCAPED_BLOCK_QUOTE = "\\\"\"\"";
-  BLOCK_STRING_CHAR = (ESCAPED_BLOCK_QUOTE | ^QUOTE | QUOTE{1,2} ^QUOTE);
-  ESCAPED_QUOTE = '\\"';
-  STRING_CHAR =   ((ESCAPED_QUOTE | ^QUOTE) - BACKSLASH) | UNICODE_ESCAPE | STRING_ESCAPE;
+  UNICODE_ESCAPE = "\\u" ([0-9A-Za-z]{4} | LCURLY [0-9A-Za-z]{4,} RCURLY);
   VAR_SIGN =      '$';
   DIR_SIGN =      '@';
   ELLIPSIS =      '...';
@@ -59,10 +44,15 @@
   PIPE =          '|';
   AMP =           '&';
 
-  QUOTED_STRING = QUOTE STRING_CHAR* QUOTE;
-  BLOCK_STRING = BLOCK_QUOTE BLOCK_STRING_CHAR* QUOTE{0,2} BLOCK_QUOTE;
+  QUOTED_STRING = ('"' ((('\\"' | ^'"') - "\\") | UNICODE_ESCAPE | '\\' [\\/bfnrt])* '"');
   # catch-all for anything else. must be at the bottom for precedence.
   UNKNOWN_CHAR =         /./;
+
+  QUOTE = '"';
+  BLOCK_QUOTE =   '"""';
+  ESCAPED_BLOCK_QUOTE = '\\"""';
+  BLOCK_STRING_CHAR = (ESCAPED_BLOCK_QUOTE | ^QUOTE | QUOTE{1,2} ^QUOTE);
+  BLOCK_STRING = (BLOCK_QUOTE BLOCK_STRING_CHAR* QUOTE{0,2} BLOCK_QUOTE);
 
   main := |*
     INT           => { emit(INT, ts, te, meta); };
@@ -93,8 +83,8 @@
     RBRACKET      => { emit(RBRACKET, ts, te, meta); };
     LBRACKET      => { emit(LBRACKET, ts, te, meta); };
     COLON         => { emit(COLON, ts, te, meta); };
-    QUOTED_STRING => { emit(QUOTED_STRING, ts, te, meta); };
     BLOCK_STRING  => { emit(BLOCK_STRING, ts, te, meta); };
+    QUOTED_STRING => { emit(QUOTED_STRING, ts, te, meta); };
     VAR_SIGN      => { emit(VAR_SIGN, ts, te, meta); };
     DIR_SIGN      => { emit(DIR_SIGN, ts, te, meta); };
     ELLIPSIS      => { emit(ELLIPSIS, ts, te, meta); };
@@ -104,7 +94,6 @@
     AMP           => { emit(AMP, ts, te, meta); };
     IDENTIFIER    => { emit(IDENTIFIER, ts, te, meta); };
     COMMENT       => { emit(COMMENT, ts, te, meta); };
-
     NEWLINE => {
       meta->line += 1;
       meta->col = 1;
@@ -305,11 +294,13 @@ void emit(TokenType tt, char *ts, char *te, Meta *meta) {
 }
 
 VALUE tokenize(VALUE query_rbstr) {
-  int cs, act = 0;
+  int cs = 0;
+  int act = 0;
   char *p = StringValueCStr(query_rbstr);
-  char *pe = p + strlen(p) + 1;
-  char *eof = NULL;
-  char *ts, *te;
+  char *pe = p + strlen(p);
+  char *eof = pe;
+  char *ts = 0;
+  char *te = 0;
   VALUE tokens = rb_ary_new();
 
   struct Meta meta_s = {1, 1, p, pe, tokens, Qnil};
@@ -317,5 +308,6 @@ VALUE tokenize(VALUE query_rbstr) {
 
   %% write init;
   %% write exec;
+
   return tokens;
 }
