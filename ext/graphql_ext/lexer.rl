@@ -48,11 +48,7 @@
   # catch-all for anything else. must be at the bottom for precedence.
   UNKNOWN_CHAR =         /./;
 
-  QUOTE = '"';
-  BLOCK_QUOTE =   '"""';
-  ESCAPED_BLOCK_QUOTE = '\\"""';
-  BLOCK_STRING_CHAR = (ESCAPED_BLOCK_QUOTE | ^QUOTE | QUOTE{1,2} ^QUOTE);
-  BLOCK_STRING = (BLOCK_QUOTE BLOCK_STRING_CHAR* QUOTE{0,2} BLOCK_QUOTE);
+  BLOCK_STRING = ('"""' ('\\"""' | ^'"' | '"'{1,2} ^'"')* '"'{0,2} '"""');
 
   main := |*
     INT           => { emit(INT, ts, te, meta); };

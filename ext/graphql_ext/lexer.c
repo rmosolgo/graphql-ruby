@@ -1,6 +1,6 @@
 #line 1 "ext/graphql_ext/lexer.rl"
 
-#line 106 "ext/graphql_ext/lexer.rl"
+#line 102 "ext/graphql_ext/lexer.rl"
 
 
 
@@ -686,7 +686,7 @@ static const int graphql_c_lexer_error = -1;
 static const int graphql_c_lexer_en_main = 21;
 
 
-#line 108 "ext/graphql_ext/lexer.rl"
+#line 104 "ext/graphql_ext/lexer.rl"
 
 
 #include <ruby.h>
@@ -897,7 +897,7 @@ VALUE tokenize(VALUE query_rbstr) {
 		act = 0;
 	}
 	
-#line 309 "ext/graphql_ext/lexer.rl"
+#line 305 "ext/graphql_ext/lexer.rl"
 	
 	
 #line 904 "ext/graphql_ext/lexer.c"
@@ -960,9 +960,9 @@ VALUE tokenize(VALUE query_rbstr) {
 				}
 				case 27:  {
 					{
-#line 79 "ext/graphql_ext/lexer.rl"
+#line 75 "ext/graphql_ext/lexer.rl"
 						{te = p+1;{
-#line 79 "ext/graphql_ext/lexer.rl"
+#line 75 "ext/graphql_ext/lexer.rl"
 								emit(RCURLY, ts, te, meta); }
 						}}
 					
@@ -973,9 +973,9 @@ VALUE tokenize(VALUE query_rbstr) {
 				}
 				case 25:  {
 					{
-#line 80 "ext/graphql_ext/lexer.rl"
+#line 76 "ext/graphql_ext/lexer.rl"
 						{te = p+1;{
-#line 80 "ext/graphql_ext/lexer.rl"
+#line 76 "ext/graphql_ext/lexer.rl"
 								emit(LCURLY, ts, te, meta); }
 						}}
 					
@@ -986,9 +986,9 @@ VALUE tokenize(VALUE query_rbstr) {
 				}
 				case 17:  {
 					{
-#line 81 "ext/graphql_ext/lexer.rl"
+#line 77 "ext/graphql_ext/lexer.rl"
 						{te = p+1;{
-#line 81 "ext/graphql_ext/lexer.rl"
+#line 77 "ext/graphql_ext/lexer.rl"
 								emit(RPAREN, ts, te, meta); }
 						}}
 					
@@ -999,9 +999,9 @@ VALUE tokenize(VALUE query_rbstr) {
 				}
 				case 16:  {
 					{
-#line 82 "ext/graphql_ext/lexer.rl"
+#line 78 "ext/graphql_ext/lexer.rl"
 						{te = p+1;{
-#line 82 "ext/graphql_ext/lexer.rl"
+#line 78 "ext/graphql_ext/lexer.rl"
 								emit(LPAREN, ts, te, meta); }
 						}}
 					
@@ -1012,9 +1012,9 @@ VALUE tokenize(VALUE query_rbstr) {
 				}
 				case 24:  {
 					{
-#line 83 "ext/graphql_ext/lexer.rl"
+#line 79 "ext/graphql_ext/lexer.rl"
 						{te = p+1;{
-#line 83 "ext/graphql_ext/lexer.rl"
+#line 79 "ext/graphql_ext/lexer.rl"
 								emit(RBRACKET, ts, te, meta); }
 						}}
 					
@@ -1025,9 +1025,9 @@ VALUE tokenize(VALUE query_rbstr) {
 				}
 				case 23:  {
 					{
-#line 84 "ext/graphql_ext/lexer.rl"
+#line 80 "ext/graphql_ext/lexer.rl"
 						{te = p+1;{
-#line 84 "ext/graphql_ext/lexer.rl"
+#line 80 "ext/graphql_ext/lexer.rl"
 								emit(LBRACKET, ts, te, meta); }
 						}}
 					
@@ -1038,9 +1038,9 @@ VALUE tokenize(VALUE query_rbstr) {
 				}
 				case 19:  {
 					{
-#line 85 "ext/graphql_ext/lexer.rl"
+#line 81 "ext/graphql_ext/lexer.rl"
 						{te = p+1;{
-#line 85 "ext/graphql_ext/lexer.rl"
+#line 81 "ext/graphql_ext/lexer.rl"
 								emit(COLON, ts, te, meta); }
 						}}
 					
@@ -1051,9 +1051,9 @@ VALUE tokenize(VALUE query_rbstr) {
 				}
 				case 33:  {
 					{
-#line 86 "ext/graphql_ext/lexer.rl"
+#line 82 "ext/graphql_ext/lexer.rl"
 						{te = p+1;{
-#line 86 "ext/graphql_ext/lexer.rl"
+#line 82 "ext/graphql_ext/lexer.rl"
 								emit(BLOCK_STRING, ts, te, meta); }
 						}}
 					
@@ -1064,9 +1064,9 @@ VALUE tokenize(VALUE query_rbstr) {
 				}
 				case 2:  {
 					{
-#line 87 "ext/graphql_ext/lexer.rl"
+#line 83 "ext/graphql_ext/lexer.rl"
 						{te = p+1;{
-#line 87 "ext/graphql_ext/lexer.rl"
+#line 83 "ext/graphql_ext/lexer.rl"
 								emit(QUOTED_STRING, ts, te, meta); }
 						}}
 					
@@ -1077,9 +1077,9 @@ VALUE tokenize(VALUE query_rbstr) {
 				}
 				case 14:  {
 					{
-#line 88 "ext/graphql_ext/lexer.rl"
+#line 84 "ext/graphql_ext/lexer.rl"
 						{te = p+1;{
-#line 88 "ext/graphql_ext/lexer.rl"
+#line 84 "ext/graphql_ext/lexer.rl"
 								emit(VAR_SIGN, ts, te, meta); }
 						}}
 					
@@ -1090,9 +1090,9 @@ VALUE tokenize(VALUE query_rbstr) {
 				}
 				case 21:  {
 					{
-#line 89 "ext/graphql_ext/lexer.rl"
+#line 85 "ext/graphql_ext/lexer.rl"
 						{te = p+1;{
-#line 89 "ext/graphql_ext/lexer.rl"
+#line 85 "ext/graphql_ext/lexer.rl"
 								emit(DIR_SIGN, ts, te, meta); }
 						}}
 					
@@ -1103,9 +1103,9 @@ VALUE tokenize(VALUE query_rbstr) {
 				}
 				case 7:  {
 					{
-#line 90 "ext/graphql_ext/lexer.rl"
+#line 86 "ext/graphql_ext/lexer.rl"
 						{te = p+1;{
-#line 90 "ext/graphql_ext/lexer.rl"
+#line 86 "ext/graphql_ext/lexer.rl"
 								emit(ELLIPSIS, ts, te, meta); }
 						}}
 					
@@ -1116,9 +1116,9 @@ VALUE tokenize(VALUE query_rbstr) {
 				}
 				case 20:  {
 					{
-#line 91 "ext/graphql_ext/lexer.rl"
+#line 87 "ext/graphql_ext/lexer.rl"
 						{te = p+1;{
-#line 91 "ext/graphql_ext/lexer.rl"
+#line 87 "ext/graphql_ext/lexer.rl"
 								emit(EQUALS, ts, te, meta); }
 						}}
 					
@@ -1129,9 +1129,9 @@ VALUE tokenize(VALUE query_rbstr) {
 				}
 				case 12:  {
 					{
-#line 92 "ext/graphql_ext/lexer.rl"
+#line 88 "ext/graphql_ext/lexer.rl"
 						{te = p+1;{
-#line 92 "ext/graphql_ext/lexer.rl"
+#line 88 "ext/graphql_ext/lexer.rl"
 								emit(BANG, ts, te, meta); }
 						}}
 					
@@ -1142,9 +1142,9 @@ VALUE tokenize(VALUE query_rbstr) {
 				}
 				case 26:  {
 					{
-#line 93 "ext/graphql_ext/lexer.rl"
+#line 89 "ext/graphql_ext/lexer.rl"
 						{te = p+1;{
-#line 93 "ext/graphql_ext/lexer.rl"
+#line 89 "ext/graphql_ext/lexer.rl"
 								emit(PIPE, ts, te, meta); }
 						}}
 					
@@ -1155,9 +1155,9 @@ VALUE tokenize(VALUE query_rbstr) {
 				}
 				case 15:  {
 					{
-#line 94 "ext/graphql_ext/lexer.rl"
+#line 90 "ext/graphql_ext/lexer.rl"
 						{te = p+1;{
-#line 94 "ext/graphql_ext/lexer.rl"
+#line 90 "ext/graphql_ext/lexer.rl"
 								emit(AMP, ts, te, meta); }
 						}}
 					
@@ -1168,9 +1168,9 @@ VALUE tokenize(VALUE query_rbstr) {
 				}
 				case 11:  {
 					{
-#line 97 "ext/graphql_ext/lexer.rl"
+#line 93 "ext/graphql_ext/lexer.rl"
 						{te = p+1;{
-#line 97 "ext/graphql_ext/lexer.rl"
+#line 93 "ext/graphql_ext/lexer.rl"
 								
 								meta->line += 1;
 								meta->col = 1;
@@ -1184,9 +1184,9 @@ VALUE tokenize(VALUE query_rbstr) {
 				}
 				case 10:  {
 					{
-#line 104 "ext/graphql_ext/lexer.rl"
+#line 100 "ext/graphql_ext/lexer.rl"
 						{te = p+1;{
-#line 104 "ext/graphql_ext/lexer.rl"
+#line 100 "ext/graphql_ext/lexer.rl"
 								emit(UNKNOWN_CHAR, ts, te, meta); }
 						}}
 					
@@ -1197,9 +1197,9 @@ VALUE tokenize(VALUE query_rbstr) {
 				}
 				case 35:  {
 					{
-#line 58 "ext/graphql_ext/lexer.rl"
+#line 54 "ext/graphql_ext/lexer.rl"
 						{te = p;p = p - 1;{
-#line 58 "ext/graphql_ext/lexer.rl"
+#line 54 "ext/graphql_ext/lexer.rl"
 								emit(INT, ts, te, meta); }
 						}}
 					
@@ -1210,9 +1210,9 @@ VALUE tokenize(VALUE query_rbstr) {
 				}
 				case 36:  {
 					{
-#line 59 "ext/graphql_ext/lexer.rl"
+#line 55 "ext/graphql_ext/lexer.rl"
 						{te = p;p = p - 1;{
-#line 59 "ext/graphql_ext/lexer.rl"
+#line 55 "ext/graphql_ext/lexer.rl"
 								emit(FLOAT, ts, te, meta); }
 						}}
 					
@@ -1223,9 +1223,9 @@ VALUE tokenize(VALUE query_rbstr) {
 				}
 				case 32:  {
 					{
-#line 86 "ext/graphql_ext/lexer.rl"
+#line 82 "ext/graphql_ext/lexer.rl"
 						{te = p;p = p - 1;{
-#line 86 "ext/graphql_ext/lexer.rl"
+#line 82 "ext/graphql_ext/lexer.rl"
 								emit(BLOCK_STRING, ts, te, meta); }
 						}}
 					
@@ -1236,9 +1236,9 @@ VALUE tokenize(VALUE query_rbstr) {
 				}
 				case 31:  {
 					{
-#line 87 "ext/graphql_ext/lexer.rl"
+#line 83 "ext/graphql_ext/lexer.rl"
 						{te = p;p = p - 1;{
-#line 87 "ext/graphql_ext/lexer.rl"
+#line 83 "ext/graphql_ext/lexer.rl"
 								emit(QUOTED_STRING, ts, te, meta); }
 						}}
 					
@@ -1249,9 +1249,9 @@ VALUE tokenize(VALUE query_rbstr) {
 				}
 				case 37:  {
 					{
-#line 95 "ext/graphql_ext/lexer.rl"
+#line 91 "ext/graphql_ext/lexer.rl"
 						{te = p;p = p - 1;{
-#line 95 "ext/graphql_ext/lexer.rl"
+#line 91 "ext/graphql_ext/lexer.rl"
 								emit(IDENTIFIER, ts, te, meta); }
 						}}
 					
@@ -1262,9 +1262,9 @@ VALUE tokenize(VALUE query_rbstr) {
 				}
 				case 34:  {
 					{
-#line 96 "ext/graphql_ext/lexer.rl"
+#line 92 "ext/graphql_ext/lexer.rl"
 						{te = p;p = p - 1;{
-#line 96 "ext/graphql_ext/lexer.rl"
+#line 92 "ext/graphql_ext/lexer.rl"
 								emit(COMMENT, ts, te, meta); }
 						}}
 					
@@ -1275,9 +1275,9 @@ VALUE tokenize(VALUE query_rbstr) {
 				}
 				case 28:  {
 					{
-#line 102 "ext/graphql_ext/lexer.rl"
+#line 98 "ext/graphql_ext/lexer.rl"
 						{te = p;p = p - 1;{
-#line 102 "ext/graphql_ext/lexer.rl"
+#line 98 "ext/graphql_ext/lexer.rl"
 								meta->col += te - ts; }
 						}}
 					
@@ -1288,9 +1288,9 @@ VALUE tokenize(VALUE query_rbstr) {
 				}
 				case 29:  {
 					{
-#line 104 "ext/graphql_ext/lexer.rl"
+#line 100 "ext/graphql_ext/lexer.rl"
 						{te = p;p = p - 1;{
-#line 104 "ext/graphql_ext/lexer.rl"
+#line 100 "ext/graphql_ext/lexer.rl"
 								emit(UNKNOWN_CHAR, ts, te, meta); }
 						}}
 					
@@ -1301,10 +1301,10 @@ VALUE tokenize(VALUE query_rbstr) {
 				}
 				case 5:  {
 					{
-#line 58 "ext/graphql_ext/lexer.rl"
+#line 54 "ext/graphql_ext/lexer.rl"
 						{p = ((te))-1;
 							{
-#line 58 "ext/graphql_ext/lexer.rl"
+#line 54 "ext/graphql_ext/lexer.rl"
 								emit(INT, ts, te, meta); }
 						}}
 					
@@ -1315,10 +1315,10 @@ VALUE tokenize(VALUE query_rbstr) {
 				}
 				case 1:  {
 					{
-#line 104 "ext/graphql_ext/lexer.rl"
+#line 100 "ext/graphql_ext/lexer.rl"
 						{p = ((te))-1;
 							{
-#line 104 "ext/graphql_ext/lexer.rl"
+#line 100 "ext/graphql_ext/lexer.rl"
 								emit(UNKNOWN_CHAR, ts, te, meta); }
 						}}
 					
@@ -1334,168 +1334,168 @@ VALUE tokenize(VALUE query_rbstr) {
 								case 1:  {
 									p = ((te))-1;
 									{
-#line 58 "ext/graphql_ext/lexer.rl"
+#line 54 "ext/graphql_ext/lexer.rl"
 										emit(INT, ts, te, meta); }
 									break; 
 								}
 								case 2:  {
 									p = ((te))-1;
 									{
-#line 59 "ext/graphql_ext/lexer.rl"
+#line 55 "ext/graphql_ext/lexer.rl"
 										emit(FLOAT, ts, te, meta); }
 									break; 
 								}
 								case 3:  {
 									p = ((te))-1;
 									{
-#line 60 "ext/graphql_ext/lexer.rl"
+#line 56 "ext/graphql_ext/lexer.rl"
 										emit(ON, ts, te, meta); }
 									break; 
 								}
 								case 4:  {
 									p = ((te))-1;
 									{
-#line 61 "ext/graphql_ext/lexer.rl"
+#line 57 "ext/graphql_ext/lexer.rl"
 										emit(FRAGMENT, ts, te, meta); }
 									break; 
 								}
 								case 5:  {
 									p = ((te))-1;
 									{
-#line 62 "ext/graphql_ext/lexer.rl"
+#line 58 "ext/graphql_ext/lexer.rl"
 										emit(TRUE_LITERAL, ts, te, meta); }
 									break; 
 								}
 								case 6:  {
 									p = ((te))-1;
 									{
-#line 63 "ext/graphql_ext/lexer.rl"
+#line 59 "ext/graphql_ext/lexer.rl"
 										emit(FALSE_LITERAL, ts, te, meta); }
 									break; 
 								}
 								case 7:  {
 									p = ((te))-1;
 									{
-#line 64 "ext/graphql_ext/lexer.rl"
+#line 60 "ext/graphql_ext/lexer.rl"
 										emit(NULL_LITERAL, ts, te, meta); }
 									break; 
 								}
 								case 8:  {
 									p = ((te))-1;
 									{
-#line 65 "ext/graphql_ext/lexer.rl"
+#line 61 "ext/graphql_ext/lexer.rl"
 										emit(QUERY, ts, te, meta); }
 									break; 
 								}
 								case 9:  {
 									p = ((te))-1;
 									{
-#line 66 "ext/graphql_ext/lexer.rl"
+#line 62 "ext/graphql_ext/lexer.rl"
 										emit(MUTATION, ts, te, meta); }
 									break; 
 								}
 								case 10:  {
 									p = ((te))-1;
 									{
-#line 67 "ext/graphql_ext/lexer.rl"
+#line 63 "ext/graphql_ext/lexer.rl"
 										emit(SUBSCRIPTION, ts, te, meta); }
 									break; 
 								}
 								case 11:  {
 									p = ((te))-1;
 									{
-#line 68 "ext/graphql_ext/lexer.rl"
+#line 64 "ext/graphql_ext/lexer.rl"
 										emit(SCHEMA, ts, te, meta); }
 									break; 
 								}
 								case 12:  {
 									p = ((te))-1;
 									{
-#line 69 "ext/graphql_ext/lexer.rl"
+#line 65 "ext/graphql_ext/lexer.rl"
 										emit(SCALAR, ts, te, meta); }
 									break; 
 								}
 								case 13:  {
 									p = ((te))-1;
 									{
-#line 70 "ext/graphql_ext/lexer.rl"
+#line 66 "ext/graphql_ext/lexer.rl"
 										emit(TYPE, ts, te, meta); }
 									break; 
 								}
 								case 14:  {
 									p = ((te))-1;
 									{
-#line 71 "ext/graphql_ext/lexer.rl"
+#line 67 "ext/graphql_ext/lexer.rl"
 										emit(EXTEND, ts, te, meta); }
 									break; 
 								}
 								case 15:  {
 									p = ((te))-1;
 									{
-#line 72 "ext/graphql_ext/lexer.rl"
+#line 68 "ext/graphql_ext/lexer.rl"
 										emit(IMPLEMENTS, ts, te, meta); }
 									break; 
 								}
 								case 16:  {
 									p = ((te))-1;
 									{
-#line 73 "ext/graphql_ext/lexer.rl"
+#line 69 "ext/graphql_ext/lexer.rl"
 										emit(INTERFACE, ts, te, meta); }
 									break; 
 								}
 								case 17:  {
 									p = ((te))-1;
 									{
-#line 74 "ext/graphql_ext/lexer.rl"
+#line 70 "ext/graphql_ext/lexer.rl"
 										emit(UNION, ts, te, meta); }
 									break; 
 								}
 								case 18:  {
 									p = ((te))-1;
 									{
-#line 75 "ext/graphql_ext/lexer.rl"
+#line 71 "ext/graphql_ext/lexer.rl"
 										emit(ENUM, ts, te, meta); }
 									break; 
 								}
 								case 19:  {
 									p = ((te))-1;
 									{
-#line 76 "ext/graphql_ext/lexer.rl"
+#line 72 "ext/graphql_ext/lexer.rl"
 										emit(INPUT, ts, te, meta); }
 									break; 
 								}
 								case 20:  {
 									p = ((te))-1;
 									{
-#line 77 "ext/graphql_ext/lexer.rl"
+#line 73 "ext/graphql_ext/lexer.rl"
 										emit(DIRECTIVE, ts, te, meta); }
 									break; 
 								}
 								case 21:  {
 									p = ((te))-1;
 									{
-#line 78 "ext/graphql_ext/lexer.rl"
+#line 74 "ext/graphql_ext/lexer.rl"
 										emit(REPEATABLE, ts, te, meta); }
 									break; 
 								}
 								case 29:  {
 									p = ((te))-1;
 									{
-#line 86 "ext/graphql_ext/lexer.rl"
+#line 82 "ext/graphql_ext/lexer.rl"
 										emit(BLOCK_STRING, ts, te, meta); }
 									break; 
 								}
 								case 30:  {
 									p = ((te))-1;
 									{
-#line 87 "ext/graphql_ext/lexer.rl"
+#line 83 "ext/graphql_ext/lexer.rl"
 										emit(QUOTED_STRING, ts, te, meta); }
 									break; 
 								}
 								case 38:  {
 									p = ((te))-1;
 									{
-#line 95 "ext/graphql_ext/lexer.rl"
+#line 91 "ext/graphql_ext/lexer.rl"
 										emit(IDENTIFIER, ts, te, meta); }
 									break; 
 								}
@@ -1515,7 +1515,7 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1516 "ext/graphql_ext/lexer.c"
 					
 					{
-#line 58 "ext/graphql_ext/lexer.rl"
+#line 54 "ext/graphql_ext/lexer.rl"
 						{act = 1;}}
 					
 #line 1522 "ext/graphql_ext/lexer.c"
@@ -1531,7 +1531,7 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1532 "ext/graphql_ext/lexer.c"
 					
 					{
-#line 59 "ext/graphql_ext/lexer.rl"
+#line 55 "ext/graphql_ext/lexer.rl"
 						{act = 2;}}
 					
 #line 1538 "ext/graphql_ext/lexer.c"
@@ -1547,7 +1547,7 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1548 "ext/graphql_ext/lexer.c"
 					
 					{
-#line 60 "ext/graphql_ext/lexer.rl"
+#line 56 "ext/graphql_ext/lexer.rl"
 						{act = 3;}}
 					
 #line 1554 "ext/graphql_ext/lexer.c"
@@ -1563,7 +1563,7 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1564 "ext/graphql_ext/lexer.c"
 					
 					{
-#line 61 "ext/graphql_ext/lexer.rl"
+#line 57 "ext/graphql_ext/lexer.rl"
 						{act = 4;}}
 					
 #line 1570 "ext/graphql_ext/lexer.c"
@@ -1579,7 +1579,7 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1580 "ext/graphql_ext/lexer.c"
 					
 					{
-#line 62 "ext/graphql_ext/lexer.rl"
+#line 58 "ext/graphql_ext/lexer.rl"
 						{act = 5;}}
 					
 #line 1586 "ext/graphql_ext/lexer.c"
@@ -1595,7 +1595,7 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1596 "ext/graphql_ext/lexer.c"
 					
 					{
-#line 63 "ext/graphql_ext/lexer.rl"
+#line 59 "ext/graphql_ext/lexer.rl"
 						{act = 6;}}
 					
 #line 1602 "ext/graphql_ext/lexer.c"
@@ -1611,7 +1611,7 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1612 "ext/graphql_ext/lexer.c"
 					
 					{
-#line 64 "ext/graphql_ext/lexer.rl"
+#line 60 "ext/graphql_ext/lexer.rl"
 						{act = 7;}}
 					
 #line 1618 "ext/graphql_ext/lexer.c"
@@ -1627,7 +1627,7 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1628 "ext/graphql_ext/lexer.c"
 					
 					{
-#line 65 "ext/graphql_ext/lexer.rl"
+#line 61 "ext/graphql_ext/lexer.rl"
 						{act = 8;}}
 					
 #line 1634 "ext/graphql_ext/lexer.c"
@@ -1643,7 +1643,7 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1644 "ext/graphql_ext/lexer.c"
 					
 					{
-#line 66 "ext/graphql_ext/lexer.rl"
+#line 62 "ext/graphql_ext/lexer.rl"
 						{act = 9;}}
 					
 #line 1650 "ext/graphql_ext/lexer.c"
@@ -1659,7 +1659,7 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1660 "ext/graphql_ext/lexer.c"
 					
 					{
-#line 67 "ext/graphql_ext/lexer.rl"
+#line 63 "ext/graphql_ext/lexer.rl"
 						{act = 10;}}
 					
 #line 1666 "ext/graphql_ext/lexer.c"
@@ -1675,7 +1675,7 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1676 "ext/graphql_ext/lexer.c"
 					
 					{
-#line 68 "ext/graphql_ext/lexer.rl"
+#line 64 "ext/graphql_ext/lexer.rl"
 						{act = 11;}}
 					
 #line 1682 "ext/graphql_ext/lexer.c"
@@ -1691,7 +1691,7 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1692 "ext/graphql_ext/lexer.c"
 					
 					{
-#line 69 "ext/graphql_ext/lexer.rl"
+#line 65 "ext/graphql_ext/lexer.rl"
 						{act = 12;}}
 					
 #line 1698 "ext/graphql_ext/lexer.c"
@@ -1707,7 +1707,7 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1708 "ext/graphql_ext/lexer.c"
 					
 					{
-#line 70 "ext/graphql_ext/lexer.rl"
+#line 66 "ext/graphql_ext/lexer.rl"
 						{act = 13;}}
 					
 #line 1714 "ext/graphql_ext/lexer.c"
@@ -1723,7 +1723,7 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1724 "ext/graphql_ext/lexer.c"
 					
 					{
-#line 71 "ext/graphql_ext/lexer.rl"
+#line 67 "ext/graphql_ext/lexer.rl"
 						{act = 14;}}
 					
 #line 1730 "ext/graphql_ext/lexer.c"
@@ -1739,7 +1739,7 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1740 "ext/graphql_ext/lexer.c"
 					
 					{
-#line 72 "ext/graphql_ext/lexer.rl"
+#line 68 "ext/graphql_ext/lexer.rl"
 						{act = 15;}}
 					
 #line 1746 "ext/graphql_ext/lexer.c"
@@ -1755,7 +1755,7 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1756 "ext/graphql_ext/lexer.c"
 					
 					{
-#line 73 "ext/graphql_ext/lexer.rl"
+#line 69 "ext/graphql_ext/lexer.rl"
 						{act = 16;}}
 					
 #line 1762 "ext/graphql_ext/lexer.c"
@@ -1771,7 +1771,7 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1772 "ext/graphql_ext/lexer.c"
 					
 					{
-#line 74 "ext/graphql_ext/lexer.rl"
+#line 70 "ext/graphql_ext/lexer.rl"
 						{act = 17;}}
 					
 #line 1778 "ext/graphql_ext/lexer.c"
@@ -1787,7 +1787,7 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1788 "ext/graphql_ext/lexer.c"
 					
 					{
-#line 75 "ext/graphql_ext/lexer.rl"
+#line 71 "ext/graphql_ext/lexer.rl"
 						{act = 18;}}
 					
 #line 1794 "ext/graphql_ext/lexer.c"
@@ -1803,7 +1803,7 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1804 "ext/graphql_ext/lexer.c"
 					
 					{
-#line 76 "ext/graphql_ext/lexer.rl"
+#line 72 "ext/graphql_ext/lexer.rl"
 						{act = 19;}}
 					
 #line 1810 "ext/graphql_ext/lexer.c"
@@ -1819,7 +1819,7 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1820 "ext/graphql_ext/lexer.c"
 					
 					{
-#line 77 "ext/graphql_ext/lexer.rl"
+#line 73 "ext/graphql_ext/lexer.rl"
 						{act = 20;}}
 					
 #line 1826 "ext/graphql_ext/lexer.c"
@@ -1835,7 +1835,7 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1836 "ext/graphql_ext/lexer.c"
 					
 					{
-#line 78 "ext/graphql_ext/lexer.rl"
+#line 74 "ext/graphql_ext/lexer.rl"
 						{act = 21;}}
 					
 #line 1842 "ext/graphql_ext/lexer.c"
@@ -1851,7 +1851,7 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1852 "ext/graphql_ext/lexer.c"
 					
 					{
-#line 86 "ext/graphql_ext/lexer.rl"
+#line 82 "ext/graphql_ext/lexer.rl"
 						{act = 29;}}
 					
 #line 1858 "ext/graphql_ext/lexer.c"
@@ -1867,7 +1867,7 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1868 "ext/graphql_ext/lexer.c"
 					
 					{
-#line 87 "ext/graphql_ext/lexer.rl"
+#line 83 "ext/graphql_ext/lexer.rl"
 						{act = 30;}}
 					
 #line 1874 "ext/graphql_ext/lexer.c"
@@ -1883,7 +1883,7 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1884 "ext/graphql_ext/lexer.c"
 					
 					{
-#line 95 "ext/graphql_ext/lexer.rl"
+#line 91 "ext/graphql_ext/lexer.rl"
 						{act = 38;}}
 					
 #line 1890 "ext/graphql_ext/lexer.c"
@@ -1919,7 +1919,7 @@ VALUE tokenize(VALUE query_rbstr) {
 		_out: {}
 	}
 	
-#line 310 "ext/graphql_ext/lexer.rl"
+#line 306 "ext/graphql_ext/lexer.rl"
 	
 	
 	return tokens;
