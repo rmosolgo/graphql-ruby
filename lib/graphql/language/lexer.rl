@@ -185,13 +185,13 @@ module GraphQL
       end
 
       def self.record_comment(ts, te, meta)
-        token = GraphQL::Language::Token.new(
+        token = [
           :COMMENT,
-          meta[:data][ts, te - ts].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING),
           meta[:line],
           meta[:col],
+          meta[:data][ts, te - ts].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING),
           meta[:previous_token],
-        )
+        ]
 
         meta[:previous_token] = token
 
@@ -200,13 +200,13 @@ module GraphQL
 
       def self.emit(token_name, ts, te, meta, token_value = nil)
         token_value ||= meta[:data][ts, te - ts].pack(PACK_DIRECTIVE).force_encoding(UTF_8_ENCODING)
-        meta[:tokens] << token = GraphQL::Language::Token.new(
+        meta[:tokens] << token = [
           token_name,
-          token_value,
           meta[:line],
           meta[:col],
+          token_value,
           meta[:previous_token],
-        )
+        ]
         meta[:previous_token] = token
         # Bump the column counter for the next token
         meta[:col] += te - ts
@@ -242,32 +242,32 @@ module GraphQL
         end
 
         if !value.valid_encoding? || !value.match?(VALID_STRING)
-          meta[:tokens] << token = GraphQL::Language::Token.new(
+          meta[:tokens] << token = [
             :BAD_UNICODE_ESCAPE,
-            value,
             meta[:line],
             meta[:col],
+            value,
             meta[:previous_token],
-          )
+          ]
         else
           replace_escaped_characters_in_place(value)
 
           if !value.valid_encoding?
-            meta[:tokens] << token = GraphQL::Language::Token.new(
+            meta[:tokens] << token = [
               :BAD_UNICODE_ESCAPE,
-              value,
               meta[:line],
               meta[:col],
+              value,
               meta[:previous_token],
-            )
+            ]
           else
-            meta[:tokens] << token = GraphQL::Language::Token.new(
+            meta[:tokens] << token = [
               :STRING,
-              value,
               meta[:line],
               meta[:col],
+              value,
               meta[:previous_token],
-            )
+            ]
           end
         end
 

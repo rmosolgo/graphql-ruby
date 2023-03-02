@@ -61,12 +61,12 @@ end
 desc "Use Racc & Ragel to regenerate parser.rb & lexer.rb from configuration files"
 task :build_parser do
 
-  assert_dependency_version("Ragel", "7.0.0.9", "ragel -v")
+  assert_dependency_version("Ragel", "7.0.4", "ragel -v")
   assert_dependency_version("Racc", "1.6.2", %|ruby -e "require 'racc'; puts Racc::VERSION"|)
 
   `rm -f lib/graphql/language/parser.rb lib/graphql/language/lexer.rb `
   `racc lib/graphql/language/parser.y -o lib/graphql/language/parser.rb`
-  `ragel -R -F1 lib/graphql/language/lexer.rl`
+  `ragel-ruby -F1 lib/graphql/language/lexer.rl`
 end
 
 namespace :bench do

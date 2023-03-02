@@ -36,3 +36,5 @@ javascript_client/index*
 # Don't commit compiled extension files:
 *.bundle
 *.so
+# Ragel generates Ruby type hints which is great, but I'm not ready to support them
+*.ri

@@ -28,8 +28,8 @@ module GraphQL
         def initialize(options = {})
           if options.key?(:position_source)
             position_source = options.delete(:position_source)
-            @line = position_source.line
-            @col = position_source.col
+            @line = position_source[1]
+            @col = position_source[2]
           end
 
           @filename = options.delete(:filename)

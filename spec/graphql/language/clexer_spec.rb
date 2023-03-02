@@ -10,9 +10,7 @@ describe GraphQL::Clexer do
     str = "{ f1(arg: \"str\") ...F2 }\nfragment F2 on SomeType { f2 }"
     # Don't include prev_token here
     tokens = subject.tokenize(str).map { |t| [t[0], t[1], t[2], t[3]]}
-    old_tokens = GraphQL.scan_with_ragel(str).map { |t|
-      [t.name, t.line, t.col, t.value]
-    }
+    old_tokens = GraphQL.scan_with_ragel(str).map { |t| [t[0], t[1], t[2], t[3]]}
 
     assert_equal [
       [:LCURLY, 1, 1, "{"],
