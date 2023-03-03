@@ -71,10 +71,12 @@
 
 // C Declarations
 #include <ruby.h>
-union YYSTYPE;
-int yylex(union YYSTYPE *);
+#define YYSTYPE VALUE
+int yylex(YYSTYPE *, VALUE);
+void yyerror(VALUE, const char*);
 
-#line 78 "ext/graphql_ext/parser.c"
+
+#line 80 "ext/graphql_ext/parser.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -115,43 +117,43 @@ extern int yydebug;
     YYEOF = 0,                     /* "end of file"  */
     YYerror = 256,                 /* error  */
     YYUNDEF = 257,                 /* "invalid token"  */
-    AMP = 258,                     /* AMP  */
-    BANG = 259,                    /* BANG  */
-    COLON = 260,                   /* COLON  */
-    DIRECTIVE = 261,               /* DIRECTIVE  */
-    DIR_SIGN = 262,                /* DIR_SIGN  */
-    ENUM = 263,                    /* ENUM  */
-    ELLIPSIS = 264,                /* ELLIPSIS  */
-    EQUALS = 265,                  /* EQUALS  */
-    EXTEND = 266,                  /* EXTEND  */
-    FALSE_LITERAL = 267,           /* FALSE_LITERAL  */
-    FLOAT = 268,                   /* FLOAT  */
-    FRAGMENT = 269,                /* FRAGMENT  */
-    IDENTIFIER = 270,              /* IDENTIFIER  */
-    INPUT = 271,                   /* INPUT  */
-    IMPLEMENTS = 272,              /* IMPLEMENTS  */
-    INT = 273,                     /* INT  */
-    INTERFACE = 274,               /* INTERFACE  */
-    LBRACKET = 275,                /* LBRACKET  */
-    LCURLY = 276,                  /* LCURLY  */
-    LPAREN = 277,                  /* LPAREN  */
-    MUTATION = 278,                /* MUTATION  */
-    NULL_LITERAL = 279,            /* NULL_LITERAL  */
-    ON = 280,                      /* ON  */
-    PIPE = 281,                    /* PIPE  */
-    QUERY = 282,                   /* QUERY  */
-    RBRACKET = 283,                /* RBRACKET  */
-    RCURLY = 284,                  /* RCURLY  */
-    REPEATABLE = 285,              /* REPEATABLE  */
-    RPAREN = 286,                  /* RPAREN  */
-    SCALAR = 287,                  /* SCALAR  */
-    SCHEMA = 288,                  /* SCHEMA  */
-    STRING = 289,                  /* STRING  */
-    SUBSCRIPTION = 290,            /* SUBSCRIPTION  */
-    TRUE_LITERAL = 291,            /* TRUE_LITERAL  */
-    TYPE_LITERAL = 292,            /* TYPE_LITERAL  */
-    UNION = 293,                   /* UNION  */
-    VAR_SIGN = 294                 /* VAR_SIGN  */
+    AMP = 200,                     /* AMP  */
+    BANG = 201,                    /* BANG  */
+    COLON = 202,                   /* COLON  */
+    DIRECTIVE = 203,               /* DIRECTIVE  */
+    DIR_SIGN = 204,                /* DIR_SIGN  */
+    ENUM = 205,                    /* ENUM  */
+    ELLIPSIS = 206,                /* ELLIPSIS  */
+    EQUALS = 207,                  /* EQUALS  */
+    EXTEND = 208,                  /* EXTEND  */
+    FALSE_LITERAL = 209,           /* FALSE_LITERAL  */
+    FLOAT = 210,                   /* FLOAT  */
+    FRAGMENT = 211,                /* FRAGMENT  */
+    IDENTIFIER = 212,              /* IDENTIFIER  */
+    INPUT = 213,                   /* INPUT  */
+    IMPLEMENTS = 214,              /* IMPLEMENTS  */
+    INT = 215,                     /* INT  */
+    INTERFACE = 216,               /* INTERFACE  */
+    LBRACKET = 217,                /* LBRACKET  */
+    LCURLY = 218,                  /* LCURLY  */
+    LPAREN = 219,                  /* LPAREN  */
+    MUTATION = 220,                /* MUTATION  */
+    NULL_LITERAL = 221,            /* NULL_LITERAL  */
+    ON = 222,                      /* ON  */
+    PIPE = 223,                    /* PIPE  */
+    QUERY = 224,                   /* QUERY  */
+    RBRACKET = 225,                /* RBRACKET  */
+    RCURLY = 226,                  /* RCURLY  */
+    REPEATABLE = 227,              /* REPEATABLE  */
+    RPAREN = 228,                  /* RPAREN  */
+    SCALAR = 229,                  /* SCALAR  */
+    SCHEMA = 230,                  /* SCHEMA  */
+    STRING = 231,                  /* STRING  */
+    SUBSCRIPTION = 232,            /* SUBSCRIPTION  */
+    TRUE_LITERAL = 233,            /* TRUE_LITERAL  */
+    TYPE_LITERAL = 234,            /* TYPE_LITERAL  */
+    UNION = 235,                   /* UNION  */
+    VAR_SIGN = 236                 /* VAR_SIGN  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -160,43 +162,43 @@ extern int yydebug;
 #define YYEOF 0
 #define YYerror 256
 #define YYUNDEF 257
-#define AMP 258
-#define BANG 259
-#define COLON 260
-#define DIRECTIVE 261
-#define DIR_SIGN 262
-#define ENUM 263
-#define ELLIPSIS 264
-#define EQUALS 265
-#define EXTEND 266
-#define FALSE_LITERAL 267
-#define FLOAT 268
-#define FRAGMENT 269
-#define IDENTIFIER 270
-#define INPUT 271
-#define IMPLEMENTS 272
-#define INT 273
-#define INTERFACE 274
-#define LBRACKET 275
-#define LCURLY 276
-#define LPAREN 277
-#define MUTATION 278
-#define NULL_LITERAL 279
-#define ON 280
-#define PIPE 281
-#define QUERY 282
-#define RBRACKET 283
-#define RCURLY 284
-#define REPEATABLE 285
-#define RPAREN 286
-#define SCALAR 287
-#define SCHEMA 288
-#define STRING 289
-#define SUBSCRIPTION 290
-#define TRUE_LITERAL 291
-#define TYPE_LITERAL 292
-#define UNION 293
-#define VAR_SIGN 294
+#define AMP 200
+#define BANG 201
+#define COLON 202
+#define DIRECTIVE 203
+#define DIR_SIGN 204
+#define ENUM 205
+#define ELLIPSIS 206
+#define EQUALS 207
+#define EXTEND 208
+#define FALSE_LITERAL 209
+#define FLOAT 210
+#define FRAGMENT 211
+#define IDENTIFIER 212
+#define INPUT 213
+#define IMPLEMENTS 214
+#define INT 215
+#define INTERFACE 216
+#define LBRACKET 217
+#define LCURLY 218
+#define LPAREN 219
+#define MUTATION 220
+#define NULL_LITERAL 221
+#define ON 222
+#define PIPE 223
+#define QUERY 224
+#define RBRACKET 225
+#define RCURLY 226
+#define REPEATABLE 227
+#define RPAREN 228
+#define SCALAR 229
+#define SCHEMA 230
+#define STRING 231
+#define SUBSCRIPTION 232
+#define TRUE_LITERAL 233
+#define TYPE_LITERAL 234
+#define UNION 235
+#define VAR_SIGN 236
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -208,7 +210,7 @@ typedef int YYSTYPE;
 
 
 
-int yyparse (void);
+int yyparse (VALUE parser);
 
 
 
@@ -263,84 +265,37 @@ enum yysymbol_kind_t
   YYSYMBOL_definition = 44,                /* definition  */
   YYSYMBOL_executable_definition = 45,     /* executable_definition  */
   YYSYMBOL_operation_definition = 46,      /* operation_definition  */
-  YYSYMBOL_operation_type = 47,            /* operation_type  */
-  YYSYMBOL_operation_name_opt = 48,        /* operation_name_opt  */
-  YYSYMBOL_variable_definitions_opt = 49,  /* variable_definitions_opt  */
-  YYSYMBOL_variable_definitions_list = 50, /* variable_definitions_list  */
-  YYSYMBOL_variable_definition = 51,       /* variable_definition  */
-  YYSYMBOL_type = 52,                      /* type  */
-  YYSYMBOL_nullable_type = 53,             /* nullable_type  */
-  YYSYMBOL_default_value_opt = 54,         /* default_value_opt  */
-  YYSYMBOL_selection_set = 55,             /* selection_set  */
-  YYSYMBOL_selection_set_opt = 56,         /* selection_set_opt  */
-  YYSYMBOL_selection_list = 57,            /* selection_list  */
-  YYSYMBOL_selection = 58,                 /* selection  */
-  YYSYMBOL_field = 59,                     /* field  */
-  YYSYMBOL_name = 60,                      /* name  */
-  YYSYMBOL_schema_keyword = 61,            /* schema_keyword  */
-  YYSYMBOL_name_without_on = 62,           /* name_without_on  */
-  YYSYMBOL_enum_name = 63,                 /* enum_name  */
-  YYSYMBOL_enum_value_definition = 64,     /* enum_value_definition  */
-  YYSYMBOL_enum_value_definitions = 65,    /* enum_value_definitions  */
-  YYSYMBOL_arguments_opt = 66,             /* arguments_opt  */
-  YYSYMBOL_arguments_list = 67,            /* arguments_list  */
-  YYSYMBOL_argument = 68,                  /* argument  */
-  YYSYMBOL_literal_value = 69,             /* literal_value  */
-  YYSYMBOL_input_value = 70,               /* input_value  */
-  YYSYMBOL_null_value = 71,                /* null_value  */
-  YYSYMBOL_variable = 72,                  /* variable  */
-  YYSYMBOL_list_value = 73,                /* list_value  */
-  YYSYMBOL_list_value_list = 74,           /* list_value_list  */
-  YYSYMBOL_object_value = 75,              /* object_value  */
-  YYSYMBOL_object_value_list = 76,         /* object_value_list  */
-  YYSYMBOL_object_value_field = 77,        /* object_value_field  */
-  YYSYMBOL_object_literal_value = 78,      /* object_literal_value  */
-  YYSYMBOL_object_literal_value_list = 79, /* object_literal_value_list  */
-  YYSYMBOL_object_literal_value_field = 80, /* object_literal_value_field  */
-  YYSYMBOL_enum_value = 81,                /* enum_value  */
-  YYSYMBOL_directives_list_opt = 82,       /* directives_list_opt  */
-  YYSYMBOL_directives_list = 83,           /* directives_list  */
-  YYSYMBOL_directive = 84,                 /* directive  */
-  YYSYMBOL_fragment_spread = 85,           /* fragment_spread  */
-  YYSYMBOL_inline_fragment = 86,           /* inline_fragment  */
-  YYSYMBOL_fragment_definition = 87,       /* fragment_definition  */
-  YYSYMBOL_fragment_name_opt = 88,         /* fragment_name_opt  */
-  YYSYMBOL_type_system_definition = 89,    /* type_system_definition  */
-  YYSYMBOL_schema_definition = 90,         /* schema_definition  */
-  YYSYMBOL_operation_type_definition_list = 91, /* operation_type_definition_list  */
-  YYSYMBOL_operation_type_definition = 92, /* operation_type_definition  */
-  YYSYMBOL_type_definition = 93,           /* type_definition  */
-  YYSYMBOL_type_system_extension = 94,     /* type_system_extension  */
-  YYSYMBOL_schema_extension = 95,          /* schema_extension  */
-  YYSYMBOL_type_extension = 96,            /* type_extension  */
-  YYSYMBOL_scalar_type_extension = 97,     /* scalar_type_extension  */
-  YYSYMBOL_object_type_extension = 98,     /* object_type_extension  */
-  YYSYMBOL_interface_type_extension = 99,  /* interface_type_extension  */
-  YYSYMBOL_union_type_extension = 100,     /* union_type_extension  */
-  YYSYMBOL_enum_type_extension = 101,      /* enum_type_extension  */
-  YYSYMBOL_input_object_type_extension = 102, /* input_object_type_extension  */
-  YYSYMBOL_description = 103,              /* description  */
-  YYSYMBOL_description_opt = 104,          /* description_opt  */
-  YYSYMBOL_scalar_type_definition = 105,   /* scalar_type_definition  */
-  YYSYMBOL_object_type_definition = 106,   /* object_type_definition  */
-  YYSYMBOL_implements_opt = 107,           /* implements_opt  */
-  YYSYMBOL_implements = 108,               /* implements  */
-  YYSYMBOL_interfaces_list = 109,          /* interfaces_list  */
-  YYSYMBOL_legacy_interfaces_list = 110,   /* legacy_interfaces_list  */
-  YYSYMBOL_input_value_definition = 111,   /* input_value_definition  */
-  YYSYMBOL_input_value_definition_list = 112, /* input_value_definition_list  */
-  YYSYMBOL_arguments_definitions_opt = 113, /* arguments_definitions_opt  */
-  YYSYMBOL_field_definition = 114,         /* field_definition  */
-  YYSYMBOL_field_definition_list_opt = 115, /* field_definition_list_opt  */
-  YYSYMBOL_field_definition_list = 116,    /* field_definition_list  */
-  YYSYMBOL_interface_type_definition = 117, /* interface_type_definition  */
-  YYSYMBOL_union_members = 118,            /* union_members  */
-  YYSYMBOL_union_type_definition = 119,    /* union_type_definition  */
-  YYSYMBOL_enum_type_definition = 120,     /* enum_type_definition  */
-  YYSYMBOL_input_object_type_definition = 121, /* input_object_type_definition  */
-  YYSYMBOL_directive_definition = 122,     /* directive_definition  */
-  YYSYMBOL_directive_repeatable_opt = 123, /* directive_repeatable_opt  */
-  YYSYMBOL_directive_locations = 124       /* directive_locations  */
+  YYSYMBOL_selection_list = 47,            /* selection_list  */
+  YYSYMBOL_selection = 48,                 /* selection  */
+  YYSYMBOL_selection_set = 49,             /* selection_set  */
+  YYSYMBOL_selection_set_opt = 50,         /* selection_set_opt  */
+  YYSYMBOL_field = 51,                     /* field  */
+  YYSYMBOL_arguments_opt = 52,             /* arguments_opt  */
+  YYSYMBOL_arguments_list = 53,            /* arguments_list  */
+  YYSYMBOL_argument = 54,                  /* argument  */
+  YYSYMBOL_literal_value = 55,             /* literal_value  */
+  YYSYMBOL_input_value = 56,               /* input_value  */
+  YYSYMBOL_null_value = 57,                /* null_value  */
+  YYSYMBOL_variable = 58,                  /* variable  */
+  YYSYMBOL_list_value = 59,                /* list_value  */
+  YYSYMBOL_list_value_list = 60,           /* list_value_list  */
+  YYSYMBOL_enum_name = 61,                 /* enum_name  */
+  YYSYMBOL_enum_value = 62,                /* enum_value  */
+  YYSYMBOL_object_value = 63,              /* object_value  */
+  YYSYMBOL_object_value_list_opt = 64,     /* object_value_list_opt  */
+  YYSYMBOL_object_value_list = 65,         /* object_value_list  */
+  YYSYMBOL_object_value_field = 66,        /* object_value_field  */
+  YYSYMBOL_object_literal_value = 67,      /* object_literal_value  */
+  YYSYMBOL_object_literal_value_list_opt = 68, /* object_literal_value_list_opt  */
+  YYSYMBOL_object_literal_value_list = 69, /* object_literal_value_list  */
+  YYSYMBOL_object_literal_value_field = 70, /* object_literal_value_field  */
+  YYSYMBOL_directives_list_opt = 71,       /* directives_list_opt  */
+  YYSYMBOL_directives_list = 72,           /* directives_list  */
+  YYSYMBOL_directive = 73,                 /* directive  */
+  YYSYMBOL_name = 74,                      /* name  */
+  YYSYMBOL_operation_type = 75,            /* operation_type  */
+  YYSYMBOL_schema_keyword = 76,            /* schema_keyword  */
+  YYSYMBOL_name_without_on = 77            /* name_without_on  */
 };
 typedef enum yysymbol_kind_t yysymbol_kind_t;
 
@@ -457,7 +412,7 @@ typedef int yytype_uint16;
 
 
 /* Stored state numbers (used for stacks). */
-typedef yytype_int16 yy_state_t;
+typedef yytype_int8 yy_state_t;
 
 /* State numbers in computations.  */
 typedef int yy_state_fast_t;
@@ -666,21 +621,21 @@ union yyalloc
 #endif /* !YYCOPY_NEEDED */
 
 /* YYFINAL -- State number of the termination state.  */
-#define YYFINAL  77
+#define YYFINAL  34
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   946
+#define YYLAST   367
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  40
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  85
+#define YYNNTS  38
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  184
+#define YYNRULES  86
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  315
+#define YYNSTATES  113
 
 /* YYMAXUTOK -- Last valid token kind.  */
-#define YYMAXUTOK   294
+#define YYMAXUTOK   257
 
 
 /* YYTRANSLATE(TOKEN-NUM) -- Symbol number corresponding to TOKEN-NUM
@@ -714,41 +669,27 @@ static const yytype_int8 yytranslate[] =
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       3,     4,     5,     6,     7,     8,     9,    10,    11,    12,
+      13,    14,    15,    16,    17,    18,    19,    20,    21,    22,
+      23,    24,    25,    26,    27,    28,    29,    30,    31,    32,
+      33,    34,    35,    36,    37,    38,    39,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
-       5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
-      15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
-      25,    26,    27,    28,    29,    30,    31,    32,    33,    34,
-      35,    36,    37,    38,    39
+       2,     2,     2,     2,     2,     2,     1,     2
 };
 
 #if YYDEBUG
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    54,    54,    56,    59,    60,    63,    64,    65,    68,
-      69,    72,    84,    93,   104,   105,   106,   109,   110,   113,
-     114,   117,   118,   121,   131,   132,   135,   136,   139,   140,
-     143,   146,   147,   150,   151,   154,   155,   156,   159,   170,
-     184,   185,   188,   189,   190,   191,   192,   193,   194,   195,
-     196,   199,   200,   201,   202,   203,   204,   205,   208,   209,
-     210,   211,   212,   213,   216,   219,   220,   223,   224,   227,
-     228,   231,   234,   235,   236,   237,   238,   239,   240,   241,
-     242,   245,   246,   247,   249,   250,   253,   254,   257,   258,
-     261,   262,   265,   266,   269,   273,   274,   277,   278,   281,
-     283,   286,   287,   290,   291,   293,   296,   299,   307,   317,
-     329,   330,   333,   334,   335,   338,   341,   342,   345,   348,
-     349,   350,   351,   352,   353,   356,   357,   360,   361,   364,
-     365,   366,   367,   368,   369,   371,   375,   376,   377,   378,
-     381,   382,   383,   386,   387,   390,   391,   394,   395,   397,
-     399,   401,   404,   409,   414,   415,   418,   419,   420,   423,
-     424,   427,   428,   431,   436,   437,   440,   441,   444,   449,
-     450,   453,   454,   455,   458,   463,   464,   467,   472,   477,
-     482,   486,   488,   491,   492
+       0,    57,    57,    59,    62,    63,    66,    72,    91,   100,
+     111,   112,   115,   120,   123,   124,   129,   142,   157,   158,
+     161,   162,   165,   176,   177,   178,   179,   180,   181,   182,
+     183,   184,   187,   188,   189,   191,   200,   210,   211,   214,
+     215,   218,   219,   220,   221,   222,   223,   225,   234,   235,
+     245,   246,   249,   250,   253,   265,   275,   276,   279,   280,
+     283,   295,   296,   299,   300,   302,   313,   314,   317,   318,
+     319,   322,   323,   324,   325,   326,   327,   328,   329,   330,
+     333,   334,   335,   336,   337,   338,   339
 };
 #endif
 
@@ -772,34 +713,16 @@ static const char *const yytname[] =
   "REPEATABLE", "RPAREN", "SCALAR", "SCHEMA", "STRING", "SUBSCRIPTION",
   "TRUE_LITERAL", "TYPE_LITERAL", "UNION", "VAR_SIGN", "$accept", "start",
   "document", "definitions_list", "definition", "executable_definition",
-  "operation_definition", "operation_type", "operation_name_opt",
-  "variable_definitions_opt", "variable_definitions_list",
-  "variable_definition", "type", "nullable_type", "default_value_opt",
-  "selection_set", "selection_set_opt", "selection_list", "selection",
-  "field", "name", "schema_keyword", "name_without_on", "enum_name",
-  "enum_value_definition", "enum_value_definitions", "arguments_opt",
-  "arguments_list", "argument", "literal_value", "input_value",
-  "null_value", "variable", "list_value", "list_value_list",
-  "object_value", "object_value_list", "object_value_field",
-  "object_literal_value", "object_literal_value_list",
-  "object_literal_value_field", "enum_value", "directives_list_opt",
-  "directives_list", "directive", "fragment_spread", "inline_fragment",
-  "fragment_definition", "fragment_name_opt", "type_system_definition",
-  "schema_definition", "operation_type_definition_list",
-  "operation_type_definition", "type_definition", "type_system_extension",
-  "schema_extension", "type_extension", "scalar_type_extension",
-  "object_type_extension", "interface_type_extension",
-  "union_type_extension", "enum_type_extension",
-  "input_object_type_extension", "description", "description_opt",
-  "scalar_type_definition", "object_type_definition", "implements_opt",
-  "implements", "interfaces_list", "legacy_interfaces_list",
-  "input_value_definition", "input_value_definition_list",
-  "arguments_definitions_opt", "field_definition",
-  "field_definition_list_opt", "field_definition_list",
-  "interface_type_definition", "union_members", "union_type_definition",
-  "enum_type_definition", "input_object_type_definition",
-  "directive_definition", "directive_repeatable_opt",
-  "directive_locations", YY_NULLPTR
+  "operation_definition", "selection_list", "selection", "selection_set",
+  "selection_set_opt", "field", "arguments_opt", "arguments_list",
+  "argument", "literal_value", "input_value", "null_value", "variable",
+  "list_value", "list_value_list", "enum_name", "enum_value",
+  "object_value", "object_value_list_opt", "object_value_list",
+  "object_value_field", "object_literal_value",
+  "object_literal_value_list_opt", "object_literal_value_list",
+  "object_literal_value_field", "directives_list_opt", "directives_list",
+  "directive", "name", "operation_type", "schema_keyword",
+  "name_without_on", YY_NULLPTR
 };
 
 static const char *
@@ -809,12 +732,12 @@ yysymbol_name (yysymbol_kind_t yysymbol)
 }
 #endif
 
-#define YYPACT_NINF (-266)
+#define YYPACT_NINF (-97)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
 
-#define YYTABLE_NINF (-172)
+#define YYTABLE_NINF (-1)
 
 #define yytable_value_is_error(Yyn) \
   0
@@ -823,392 +746,186 @@ yysymbol_name (yysymbol_kind_t yysymbol)
    STATE-NUM.  */
 static const yytype_int16 yypact[] =
 {
-     245,   210,   875,   479,  -266,  -266,    14,  -266,  -266,    22,
-    -266,   211,  -266,  -266,  -266,   842,  -266,  -266,  -266,  -266,
-    -266,  -266,  -266,  -266,  -266,  -266,  -266,  -266,  -266,  -266,
-      85,  -266,  -266,  -266,  -266,  -266,  -266,  -266,   842,   842,
-     842,   842,    14,   842,   842,  -266,  -266,  -266,  -266,  -266,
-    -266,  -266,  -266,  -266,  -266,  -266,  -266,  -266,  -266,  -266,
-    -266,  -266,     9,   578,  -266,  -266,   512,  -266,  -266,     3,
-    -266,  -266,  -266,   842,    37,    14,  -266,  -266,  -266,    45,
-    -266,    61,   842,   842,   842,   842,   842,   842,    14,    14,
-      60,    14,    66,    12,    60,    14,   611,   611,    14,    67,
-    -266,  -266,   842,   842,    14,    74,   101,  -266,    86,    14,
-     842,    14,    14,    60,    14,    60,    14,    92,    12,   110,
-      12,   311,    14,   125,    14,   101,    14,    55,   128,    21,
-     611,    14,   144,  -266,    14,  -266,   644,  -266,    74,   147,
-     677,  -266,    67,  -266,   150,   160,  -266,   842,    -7,  -266,
-      67,   134,   142,   143,    14,  -266,  -266,    14,   158,   136,
-     136,   842,    91,   168,   842,   152,    14,   192,   152,    14,
-      40,  -266,   842,   151,    67,  -266,    67,   545,    14,   412,
-    -266,  -266,  -266,  -266,   842,  -266,  -266,   173,  -266,  -266,
-    -266,   136,   156,   136,   136,   152,   152,   842,  -266,    80,
-     908,   842,  -266,    81,  -266,   168,   842,  -266,  -266,  -266,
-    -266,   842,  -266,   105,  -266,   154,  -266,  -266,  -266,  -266,
-      67,  -266,  -266,  -266,  -266,  -266,   344,   710,  -266,  -266,
-    -266,  -266,  -266,   842,  -266,  -266,  -266,  -266,  -266,  -266,
-    -266,  -266,  -266,  -266,  -266,  -266,   611,    16,  -266,   157,
-     117,   120,  -266,  -266,   154,  -266,  -266,    14,   185,  -266,
-    -266,  -266,   134,  -266,  -266,   842,  -266,  -266,  -266,   378,
-    -266,   186,   743,  -266,   776,  -266,  -266,   182,  -266,   842,
-    -266,  -266,  -266,   611,   188,  -266,  -266,  -266,   412,  -266,
-     194,  -266,  -266,   196,  -266,   446,  -266,  -266,   171,   182,
-     611,  -266,  -266,   412,   446,   809,  -266,   842,    14,    14,
-    -266,  -266,  -266,  -266,  -266
+     -10,   197,    13,   -97,   -10,   -97,   -97,   -97,   -97,   -97,
+     -97,   -97,   -97,   -97,   -97,   -97,   -97,   -97,   -97,   -97,
+     -97,   -97,   -97,   -97,   -97,   -97,   -97,   230,   -97,   -97,
+       0,   -97,   -97,   -97,   -97,   -97,   -97,   -97,   329,   329,
+       7,    -6,   263,   -97,    12,   329,    -2,     7,   -97,     7,
+     -97,   -97,   130,    -6,   329,   -97,   -97,   -97,    -2,   -97,
+     -97,   -97,   -97,   -97,    62,   329,   -97,   -97,   -97,   -97,
+     -97,   329,   -97,   -97,   -97,   -97,   -97,   -97,   -97,   -97,
+     -97,   -97,   -97,   -97,   296,   -97,   -97,   -97,    96,    -5,
+     329,   -97,    -4,   329,   -97,    18,   -97,   -97,   -97,   -97,
+     -97,   -97,    21,   -97,   -97,    23,   130,   130,   164,   -97,
+     -97,   329,   -97
 };
 
 /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
    Performed when YYTABLE does not specify something else to do.  Zero
    means the default is an error.  */
-static const yytype_uint8 yydefact[] =
+static const yytype_int8 yydefact[] =
 {
-     150,     0,   110,     0,    15,    14,   101,   149,    16,     0,
-       2,   150,     4,     6,     9,    17,    10,     7,   112,   113,
-       8,   125,   126,   129,   130,   131,   132,   133,   134,   151,
-       0,   119,   120,   121,   122,   123,   124,   114,     0,     0,
-       0,     0,   101,     0,     0,    50,    48,    55,    52,    51,
-      49,    45,    46,    53,    43,    42,    54,    44,    47,    56,
-      57,   111,     0,   101,    41,    13,     0,    33,    35,    67,
-      40,    36,    37,     0,     0,   102,   103,     1,     5,    19,
-      18,     0,     0,     0,     0,     0,     0,     0,   101,   101,
-     154,     0,     0,   128,   154,   101,     0,     0,   101,     0,
-      12,    34,     0,     0,   101,    67,     0,   104,     0,   101,
-       0,   101,   101,   154,   101,   154,   101,     0,   146,     0,
-     148,     0,   101,   142,   135,     0,   101,   139,     0,   144,
-       0,   101,    24,    26,   101,   106,     0,   108,    67,     0,
-       0,    69,    31,   105,     0,     0,   116,     0,     0,    21,
-       0,   166,     0,     0,   101,   155,   152,   101,     0,   150,
-     150,     0,   159,   157,   158,   169,   102,     0,   169,   102,
-     150,   136,     0,     0,     0,    25,     0,     0,   101,     0,
-      68,    70,    32,    38,     0,   115,   117,     0,    20,    22,
-      11,   150,   181,   150,   150,   169,   169,     0,    65,   150,
-       0,     0,   164,   150,   159,   156,     0,   162,   140,   127,
-     137,     0,   172,   150,   175,   143,    27,   109,   107,    30,
-      31,    76,    72,    59,    58,    73,     0,     0,    84,    61,
-      60,    74,    75,     0,    62,    63,   100,    81,    71,    77,
-      82,    79,    83,    80,    78,   118,     0,   150,   182,     0,
-     150,   150,   174,   153,   177,   145,    66,   101,     0,   147,
-     165,   160,   166,   170,   173,     0,    39,    86,    88,     0,
-      90,     0,     0,    92,     0,    97,    85,    28,   167,     0,
-     178,   179,    64,     0,     0,   176,    87,    89,     0,    91,
-       0,    93,    96,     0,    98,     0,    23,   183,   180,    28,
-       0,    81,    94,     0,     0,     0,    29,     0,   101,   101,
-      99,    95,   184,   163,   168
+       0,     0,     0,     2,     3,     4,     6,     7,    79,    77,
+      84,    81,    80,    78,    74,    75,    69,    67,    68,     9,
+      82,    72,    71,    70,    83,    73,    76,     0,    10,    12,
+      18,    85,    86,    66,     1,     5,     8,    11,     0,     0,
+      61,    18,     0,    20,     0,     0,    14,    62,    63,    61,
+      19,    21,    48,    18,     0,    15,    17,    64,    14,    27,
+      23,    42,    41,    24,     0,    50,    35,    44,    43,    25,
+      26,     0,    32,    22,    28,    33,    30,    47,    29,    34,
+      31,    45,    46,    65,     0,    16,    37,    39,     0,     0,
+      51,    52,     0,    57,    58,     0,    36,    13,    38,    40,
+      49,    53,     0,    55,    59,     0,    48,    48,     0,    32,
+      54,    56,    60
 };
 
 /* YYPGOTO[NTERM-NUM].  */
-static const yytype_int16 yypgoto[] =
+static const yytype_int8 yypgoto[] =
 {
-    -266,  -266,  -266,  -266,   191,  -266,  -266,     5,  -266,  -266,
-    -266,    56,   -87,  -266,   -92,   -79,   -10,    76,   -65,  -266,
-      -3,  -128,     1,    17,  -184,    23,   -96,  -266,    83,  -265,
-    -177,  -266,  -266,  -266,  -266,  -266,  -266,   -58,  -266,  -266,
-     -46,  -266,    31,   -36,   -64,  -266,  -266,  -266,  -266,  -266,
-    -266,   108,  -141,  -266,  -266,  -266,  -266,  -266,  -266,  -266,
-    -266,  -266,  -266,  -266,     7,  -266,  -266,   -67,    -5,    75,
-    -266,  -190,  -116,   -27,    24,  -151,  -266,  -266,    42,  -266,
-    -266,  -266,  -266,  -266,  -266
+     -97,   -97,   -97,   -97,    25,   -97,   -97,   -24,   -25,   -97,
+     -27,   -97,   -33,   -97,    -8,   -96,   -49,   -97,   -97,   -97,
+     -97,   -97,   -97,   -97,   -97,   -97,   -58,   -97,   -97,   -97,
+     -57,   -14,   -97,    -9,   -38,   -46,   -43,   -97
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
-static const yytype_int16 yydefgoto[] =
+static const yytype_int8 yydefgoto[] =
 {
-       0,     9,    10,    11,    12,    13,    14,    59,    79,   109,
-     148,   149,   131,   132,   296,   182,   183,    66,    67,    68,
-     133,    60,    70,   236,   198,   199,   104,   140,   141,   237,
-     302,   239,   240,   241,   269,   242,   272,   273,   243,   274,
-     275,   244,    74,    75,    76,    71,    72,    16,    62,    17,
-      18,   145,   146,    19,    20,    21,    22,    23,    24,    25,
-      26,    27,    28,    29,   201,    31,    32,   122,   155,   163,
-     164,   202,   203,   192,   212,   171,   213,    33,   215,    34,
-      35,    36,    37,   249,   298
+       0,     2,     3,     4,     5,     6,     7,    27,    28,    55,
+      56,    29,    40,    42,    43,    72,   110,    74,    75,    76,
+      88,    77,    78,    79,    89,    90,    91,    80,    92,    93,
+      94,    46,    47,    48,    30,    31,    32,    33
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
    positive, shift that token.  If negative, reduce the rule whose
    number is the opposite.  If YYTABLE_NINF, syntax error.  */
-static const yytype_int16 yytable[] =
+static const yytype_int8 yytable[] =
 {
-      69,   101,   238,    61,   186,    15,    93,    30,   102,   143,
-     134,   107,    80,   260,   208,   256,    15,   210,    30,    73,
-     137,    73,    77,   301,   188,   103,   186,   126,    73,   107,
-     306,  -102,   147,  -102,    96,    88,    89,    90,    91,   310,
-      94,    95,   178,   173,   252,   253,   154,   278,   157,   268,
-       7,   235,   118,   120,   107,   124,   107,   260,   106,   129,
-     107,   260,  -155,    69,    98,   107,   256,   108,   110,  -171,
-     105,   190,   235,    92,     7,   247,   170,   121,   251,   111,
-     112,   113,   114,   115,   116,   123,   166,   125,   136,   127,
-     169,    81,   287,    82,    99,   217,   103,   218,   235,   138,
-     139,    83,   107,  -161,    84,   107,  -161,   151,  -161,   255,
-     259,   144,   101,   159,     7,     7,  -161,    85,   162,   117,
-     119,  -161,    86,    87,     4,   147,   128,  -161,     5,   135,
-     144,   160,  -155,    69,   263,   142,     8,   139,   172,     7,
-     150,   235,   152,   153,   187,   156,   280,   158,   175,   281,
-     144,     7,   179,   165,     7,   184,   191,   168,   204,   277,
-     235,   207,   174,   193,   194,   176,   200,   235,   197,   214,
-       7,   206,   144,   170,    69,   235,   235,   211,   246,   216,
-     265,   245,   279,     4,   234,   195,   248,     5,   196,   185,
-     283,   288,   295,   300,   214,     8,   299,   307,   258,   303,
-     200,   304,    78,   261,   189,   234,   200,   308,   262,   220,
-     266,    -3,   177,   309,   291,     4,   250,   257,    38,     5,
-     211,   209,     1,   181,   271,     2,    39,     8,   294,    40,
-     276,   234,     3,   167,     4,   284,   205,   264,     5,   254,
-       0,     0,    41,    42,     6,     7,     8,    43,    44,     0,
-       0,     0,     0,     0,     0,     0,     1,   200,     0,     2,
-       0,     0,   285,     0,     0,     0,     3,     0,     4,   290,
-       0,   293,     5,     0,   234,     0,   297,     0,     6,     7,
-       8,     0,     0,     0,     0,     0,     0,     0,   282,     0,
-       0,     0,     0,   234,     0,     0,     0,     0,     0,     0,
-     234,     0,   293,     0,   312,     0,     0,     0,   234,   234,
-       0,     0,     0,     0,   161,     0,     0,    45,     0,    46,
-       0,     0,     0,    47,     0,    48,    49,    50,    51,     0,
-      52,     0,     0,     0,     4,     0,    64,     0,     5,   313,
-     314,    53,     0,    54,    55,     0,     8,    56,    57,    58,
-      45,     0,    46,     0,     0,     0,   221,   222,   223,   224,
-      50,    51,   225,    52,   226,   227,     0,     4,   228,   229,
-       0,     5,   267,     0,   230,     0,    54,    55,   231,     8,
-     232,    57,    58,   233,    45,     0,    46,     0,     0,     0,
-     221,   222,   223,   224,    50,    51,   225,    52,   226,   227,
-       0,     4,   228,   229,     0,     5,   286,     0,   230,     0,
-      54,    55,   231,     8,   232,    57,    58,   233,    45,     0,
-      46,     0,     0,     0,   221,   222,   223,   224,    50,    51,
-     225,    52,   226,   227,     0,     4,   228,   229,     0,     5,
-       0,     0,   230,     0,    54,    55,   231,     8,   232,    57,
-      58,   233,    45,     0,    46,     0,     0,     0,   221,   222,
-     223,   224,    50,    51,   225,    52,   226,   305,     0,     4,
-     228,   229,     0,     5,     0,     0,   230,     0,    54,    55,
-     231,     8,   232,    57,    58,    45,     0,    46,    63,     0,
-       0,    47,     0,    48,    49,    50,    51,     0,    52,     0,
-       0,     0,     4,     0,    64,     0,     5,     0,    65,    53,
-       0,    54,    55,     0,     8,    56,    57,    58,    45,     0,
-      46,    63,     0,     0,    47,     0,    48,    49,    50,    51,
-       0,    52,     0,     0,     0,     4,     0,    64,     0,     5,
-       0,   100,    53,     0,    54,    55,     0,     8,    56,    57,
-      58,    45,     0,    46,    63,     0,     0,    47,     0,    48,
-      49,    50,    51,     0,    52,     0,     0,     0,     4,     0,
-      64,     0,     5,     0,   219,    53,     0,    54,    55,     0,
-       8,    56,    57,    58,    45,    73,    46,     0,     0,     0,
-      47,     0,    48,    49,    50,    51,     0,    52,     0,     0,
-       0,     4,     0,    97,     0,     5,     0,     0,    53,     0,
-      54,    55,     0,     8,    56,    57,    58,    45,     0,    46,
-       0,     0,     0,    47,     0,    48,    49,    50,    51,     0,
-      52,   130,     0,     0,     4,     0,    64,     0,     5,     0,
-       0,    53,     0,    54,    55,     0,     8,    56,    57,    58,
-      45,     0,    46,    63,     0,     0,    47,     0,    48,    49,
-      50,    51,     0,    52,     0,     0,     0,     4,     0,    64,
-       0,     5,     0,     0,    53,     0,    54,    55,     0,     8,
-      56,    57,    58,    45,     0,    46,     0,     0,     0,    47,
-       0,    48,    49,    50,    51,     0,    52,     0,     0,     0,
-       4,     0,    64,     0,     5,     0,     0,    53,   180,    54,
-      55,     0,     8,    56,    57,    58,    45,     0,    46,     0,
-       0,     0,    47,     0,    48,    49,    50,    51,     0,    52,
-       0,     0,     0,     4,     0,    64,     0,     5,     0,   270,
-      53,     0,    54,    55,     0,     8,    56,    57,    58,    45,
-       0,    46,     0,     0,     0,    47,     0,    48,    49,    50,
-      51,     0,    52,     0,     0,     0,     4,     0,    64,     0,
-       5,     0,   289,    53,     0,    54,    55,     0,     8,    56,
-      57,    58,    45,     0,    46,     0,     0,     0,    47,     0,
-      48,    49,    50,    51,     0,    52,     0,     0,     0,     4,
-       0,    64,     0,     5,     0,   292,    53,     0,    54,    55,
-       0,     8,    56,    57,    58,    45,     0,    46,     0,     0,
-       0,    47,     0,    48,    49,    50,    51,     0,    52,     0,
-       0,     0,     4,     0,    64,     0,     5,     0,   311,    53,
-       0,    54,    55,     0,     8,    56,    57,    58,    45,     0,
-      46,     0,     0,     0,    47,     0,    48,    49,    50,    51,
-       0,    52,     0,     0,     0,     4,     0,    64,     0,     5,
-       0,     0,    53,     0,    54,    55,     0,     8,    56,    57,
-      58,    45,     0,    46,     0,     0,     0,    47,     0,    48,
-      49,    50,    51,     0,    52,     0,     0,     0,     4,     0,
-       0,     0,     5,     0,     0,    53,     0,    54,    55,     0,
-       8,    56,    57,    58,    45,     0,    46,     0,     0,     0,
-       0,     0,   223,   224,    50,    51,     0,    52,     0,     0,
-       0,     4,     0,   229,     0,     5,     0,     0,   230,     0,
-      54,    55,     0,     8,     0,    57,    58
+      41,    44,    37,    73,    44,    38,    81,    53,    49,    82,
+     109,     1,   112,    34,    45,    87,    39,    52,    81,    54,
+      83,    82,    39,   106,   100,   103,   107,    95,   108,    35,
+      84,    85,   101,    96,    51,    58,   104,     0,    57,    99,
+       0,     0,    81,     0,     0,    82,     0,     0,     0,     0,
+       0,     0,   102,     0,     0,   105,     0,     0,     0,    37,
+      81,    81,    81,    82,    82,    82,     0,     0,     8,     0,
+       9,     0,     0,   105,    59,    60,    61,    62,    13,    14,
+      63,    15,    64,    65,     0,    16,    66,    67,     0,    18,
+      86,     0,    68,     0,    21,    22,    69,    23,    70,    25,
+      26,    71,     8,     0,     9,     0,     0,     0,    59,    60,
+      61,    62,    13,    14,    63,    15,    64,    65,     0,    16,
+      66,    67,     0,    18,    98,     0,    68,     0,    21,    22,
+      69,    23,    70,    25,    26,    71,     8,     0,     9,     0,
+       0,     0,    59,    60,    61,    62,    13,    14,    63,    15,
+      64,    65,     0,    16,    66,    67,     0,    18,     0,     0,
+      68,     0,    21,    22,    69,    23,    70,    25,    26,    71,
+       8,     0,     9,     0,     0,     0,    59,    60,    61,    62,
+      13,    14,    63,    15,    64,   111,     0,    16,    66,    67,
+       0,    18,     0,     0,    68,     0,    21,    22,    69,    23,
+      70,    25,    26,     8,     0,     9,     0,     0,     0,    10,
+       0,    11,    12,    13,    14,     0,    15,     0,     0,     0,
+      16,     0,    17,     0,    18,     0,    19,    20,     0,    21,
+      22,     0,    23,    24,    25,    26,     8,     0,     9,     0,
+       0,     0,    10,     0,    11,    12,    13,    14,     0,    15,
+       0,     0,     0,    16,     0,    17,     0,    18,     0,    36,
+      20,     0,    21,    22,     0,    23,    24,    25,    26,     8,
+       0,     9,     0,     0,     0,    10,     0,    11,    12,    13,
+      14,     0,    15,     0,     0,     0,    16,     0,    17,     0,
+      18,     0,     0,    20,    50,    21,    22,     0,    23,    24,
+      25,    26,     8,     0,     9,     0,     0,     0,    10,     0,
+      11,    12,    13,    14,     0,    15,     0,     0,     0,    16,
+       0,    17,     0,    18,     0,    97,    20,     0,    21,    22,
+       0,    23,    24,    25,    26,     8,     0,     9,     0,     0,
+       0,    10,     0,    11,    12,    13,    14,     0,    15,     0,
+       0,     0,    16,     0,    17,     0,    18,     0,     0,    20,
+       0,    21,    22,     0,    23,    24,    25,    26
 };
 
-static const yytype_int16 yycheck[] =
+static const yytype_int8 yycheck[] =
 {
-       3,    66,   179,     2,   145,     0,    42,     0,     5,   105,
-      97,    75,    15,   203,   165,   199,    11,   168,    11,     7,
-      99,     7,     0,   288,    31,    22,   167,    94,     7,    93,
-     295,    10,    39,    21,    25,    38,    39,    40,    41,   304,
-      43,    44,   138,   130,   195,   196,   113,    31,   115,   226,
-      34,   179,    88,    89,   118,    91,   120,   247,    21,    95,
-     124,   251,     7,    66,    63,   129,   250,    22,     7,    29,
-      73,   150,   200,    42,    34,   191,    21,    17,   194,    82,
-      83,    84,    85,    86,    87,    90,   122,    21,    21,    94,
-     126,     6,   269,     8,    63,   174,    22,   176,   226,   102,
-     103,    16,   166,    12,    19,   169,    15,   110,    17,    29,
-      29,   106,   177,    21,    34,    34,    25,    32,   121,    88,
-      89,    30,    37,    38,    23,    39,    95,    36,    27,    98,
-     125,    21,     7,   136,    29,   104,    35,   140,    10,    34,
-     109,   269,   111,   112,   147,   114,    29,   116,     4,    29,
-     145,    34,     5,   122,    34,     5,    22,   126,   161,   246,
-     288,   164,   131,    21,    21,   134,   159,   295,    10,   172,
-      34,     3,   167,    21,   177,   303,   304,   170,     5,    28,
-      26,   184,    25,    23,   179,   154,    30,    27,   157,    29,
-       5,     5,    10,     5,   197,    35,   283,    26,   201,     5,
-     193,     5,    11,   206,   148,   200,   199,   299,   211,   178,
-     220,     0,   136,   300,   272,    23,   193,   200,     8,    27,
-     213,    29,    11,   140,   227,    14,    16,    35,   274,    19,
-     233,   226,    21,   125,    23,   262,   161,   213,    27,   197,
-      -1,    -1,    32,    33,    33,    34,    35,    37,    38,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    11,   250,    -1,    14,
-      -1,    -1,   265,    -1,    -1,    -1,    21,    -1,    23,   272,
-      -1,   274,    27,    -1,   269,    -1,   279,    -1,    33,    34,
-      35,    -1,    -1,    -1,    -1,    -1,    -1,    -1,   257,    -1,
-      -1,    -1,    -1,   288,    -1,    -1,    -1,    -1,    -1,    -1,
-     295,    -1,   305,    -1,   307,    -1,    -1,    -1,   303,   304,
-      -1,    -1,    -1,    -1,     3,    -1,    -1,     6,    -1,     8,
-      -1,    -1,    -1,    12,    -1,    14,    15,    16,    17,    -1,
-      19,    -1,    -1,    -1,    23,    -1,    25,    -1,    27,   308,
-     309,    30,    -1,    32,    33,    -1,    35,    36,    37,    38,
-       6,    -1,     8,    -1,    -1,    -1,    12,    13,    14,    15,
-      16,    17,    18,    19,    20,    21,    -1,    23,    24,    25,
-      -1,    27,    28,    -1,    30,    -1,    32,    33,    34,    35,
-      36,    37,    38,    39,     6,    -1,     8,    -1,    -1,    -1,
-      12,    13,    14,    15,    16,    17,    18,    19,    20,    21,
-      -1,    23,    24,    25,    -1,    27,    28,    -1,    30,    -1,
-      32,    33,    34,    35,    36,    37,    38,    39,     6,    -1,
-       8,    -1,    -1,    -1,    12,    13,    14,    15,    16,    17,
+      38,    39,    27,    52,    42,     5,    52,    45,    41,    52,
+     106,    21,   108,     0,     7,    64,    22,     5,    64,    21,
+      53,    64,    22,     5,    29,    29,     5,    65,     5,     4,
+      54,    58,    90,    71,    42,    49,    93,    -1,    47,    88,
+      -1,    -1,    88,    -1,    -1,    88,    -1,    -1,    -1,    -1,
+      -1,    -1,    90,    -1,    -1,    93,    -1,    -1,    -1,    84,
+     106,   107,   108,   106,   107,   108,    -1,    -1,     6,    -1,
+       8,    -1,    -1,   111,    12,    13,    14,    15,    16,    17,
       18,    19,    20,    21,    -1,    23,    24,    25,    -1,    27,
-      -1,    -1,    30,    -1,    32,    33,    34,    35,    36,    37,
+      28,    -1,    30,    -1,    32,    33,    34,    35,    36,    37,
       38,    39,     6,    -1,     8,    -1,    -1,    -1,    12,    13,
       14,    15,    16,    17,    18,    19,    20,    21,    -1,    23,
-      24,    25,    -1,    27,    -1,    -1,    30,    -1,    32,    33,
-      34,    35,    36,    37,    38,     6,    -1,     8,     9,    -1,
-      -1,    12,    -1,    14,    15,    16,    17,    -1,    19,    -1,
-      -1,    -1,    23,    -1,    25,    -1,    27,    -1,    29,    30,
-      -1,    32,    33,    -1,    35,    36,    37,    38,     6,    -1,
-       8,     9,    -1,    -1,    12,    -1,    14,    15,    16,    17,
-      -1,    19,    -1,    -1,    -1,    23,    -1,    25,    -1,    27,
-      -1,    29,    30,    -1,    32,    33,    -1,    35,    36,    37,
-      38,     6,    -1,     8,     9,    -1,    -1,    12,    -1,    14,
-      15,    16,    17,    -1,    19,    -1,    -1,    -1,    23,    -1,
-      25,    -1,    27,    -1,    29,    30,    -1,    32,    33,    -1,
-      35,    36,    37,    38,     6,     7,     8,    -1,    -1,    -1,
-      12,    -1,    14,    15,    16,    17,    -1,    19,    -1,    -1,
-      -1,    23,    -1,    25,    -1,    27,    -1,    -1,    30,    -1,
-      32,    33,    -1,    35,    36,    37,    38,     6,    -1,     8,
-      -1,    -1,    -1,    12,    -1,    14,    15,    16,    17,    -1,
-      19,    20,    -1,    -1,    23,    -1,    25,    -1,    27,    -1,
-      -1,    30,    -1,    32,    33,    -1,    35,    36,    37,    38,
-       6,    -1,     8,     9,    -1,    -1,    12,    -1,    14,    15,
-      16,    17,    -1,    19,    -1,    -1,    -1,    23,    -1,    25,
-      -1,    27,    -1,    -1,    30,    -1,    32,    33,    -1,    35,
+      24,    25,    -1,    27,    28,    -1,    30,    -1,    32,    33,
+      34,    35,    36,    37,    38,    39,     6,    -1,     8,    -1,
+      -1,    -1,    12,    13,    14,    15,    16,    17,    18,    19,
+      20,    21,    -1,    23,    24,    25,    -1,    27,    -1,    -1,
+      30,    -1,    32,    33,    34,    35,    36,    37,    38,    39,
+       6,    -1,     8,    -1,    -1,    -1,    12,    13,    14,    15,
+      16,    17,    18,    19,    20,    21,    -1,    23,    24,    25,
+      -1,    27,    -1,    -1,    30,    -1,    32,    33,    34,    35,
       36,    37,    38,     6,    -1,     8,    -1,    -1,    -1,    12,
       -1,    14,    15,    16,    17,    -1,    19,    -1,    -1,    -1,
-      23,    -1,    25,    -1,    27,    -1,    -1,    30,    31,    32,
+      23,    -1,    25,    -1,    27,    -1,    29,    30,    -1,    32,
       33,    -1,    35,    36,    37,    38,     6,    -1,     8,    -1,
       -1,    -1,    12,    -1,    14,    15,    16,    17,    -1,    19,
       -1,    -1,    -1,    23,    -1,    25,    -1,    27,    -1,    29,
       30,    -1,    32,    33,    -1,    35,    36,    37,    38,     6,
       -1,     8,    -1,    -1,    -1,    12,    -1,    14,    15,    16,
       17,    -1,    19,    -1,    -1,    -1,    23,    -1,    25,    -1,
-      27,    -1,    29,    30,    -1,    32,    33,    -1,    35,    36,
+      27,    -1,    -1,    30,    31,    32,    33,    -1,    35,    36,
       37,    38,     6,    -1,     8,    -1,    -1,    -1,    12,    -1,
       14,    15,    16,    17,    -1,    19,    -1,    -1,    -1,    23,
       -1,    25,    -1,    27,    -1,    29,    30,    -1,    32,    33,
       -1,    35,    36,    37,    38,     6,    -1,     8,    -1,    -1,
       -1,    12,    -1,    14,    15,    16,    17,    -1,    19,    -1,
-      -1,    -1,    23,    -1,    25,    -1,    27,    -1,    29,    30,
-      -1,    32,    33,    -1,    35,    36,    37,    38,     6,    -1,
-       8,    -1,    -1,    -1,    12,    -1,    14,    15,    16,    17,
-      -1,    19,    -1,    -1,    -1,    23,    -1,    25,    -1,    27,
-      -1,    -1,    30,    -1,    32,    33,    -1,    35,    36,    37,
-      38,     6,    -1,     8,    -1,    -1,    -1,    12,    -1,    14,
-      15,    16,    17,    -1,    19,    -1,    -1,    -1,    23,    -1,
-      -1,    -1,    27,    -1,    -1,    30,    -1,    32,    33,    -1,
-      35,    36,    37,    38,     6,    -1,     8,    -1,    -1,    -1,
-      -1,    -1,    14,    15,    16,    17,    -1,    19,    -1,    -1,
-      -1,    23,    -1,    25,    -1,    27,    -1,    -1,    30,    -1,
-      32,    33,    -1,    35,    -1,    37,    38
+      -1,    -1,    23,    -1,    25,    -1,    27,    -1,    -1,    30,
+      -1,    32,    33,    -1,    35,    36,    37,    38
 };
 
 /* YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
    state STATE-NUM.  */
 static const yytype_int8 yystos[] =
 {
-       0,    11,    14,    21,    23,    27,    33,    34,    35,    41,
-      42,    43,    44,    45,    46,    47,    87,    89,    90,    93,
-      94,    95,    96,    97,    98,    99,   100,   101,   102,   103,
-     104,   105,   106,   117,   119,   120,   121,   122,     8,    16,
-      19,    32,    33,    37,    38,     6,     8,    12,    14,    15,
-      16,    17,    19,    30,    32,    33,    36,    37,    38,    47,
-      61,    62,    88,     9,    25,    29,    57,    58,    59,    60,
-      62,    85,    86,     7,    82,    83,    84,     0,    44,    48,
-      60,     6,     8,    16,    19,    32,    37,    38,    60,    60,
-      60,    60,    82,    83,    60,    60,    25,    25,    62,    82,
-      29,    58,     5,    22,    66,    60,    21,    84,    22,    49,
-       7,    60,    60,    60,    60,    60,    60,    82,    83,    82,
-      83,    17,   107,   108,    83,    21,   107,   108,    82,    83,
-      20,    52,    53,    60,    52,    82,    21,    55,    60,    60,
-      67,    68,    82,    66,    47,    91,    92,    39,    50,    51,
-      82,    60,    82,    82,   107,   108,    82,   107,    82,    21,
-      21,     3,    60,   109,   110,    82,    83,    91,    82,    83,
-      21,   115,    10,    52,    82,     4,    82,    57,    66,     5,
-      31,    68,    55,    56,     5,    29,    92,    60,    31,    51,
-      55,    22,   113,    21,    21,    82,    82,    10,    64,    65,
-     104,   104,   111,   112,    60,   109,     3,    60,   115,    29,
-     115,   104,   114,   116,    60,   118,    28,    55,    55,    29,
-      82,    12,    13,    14,    15,    18,    20,    21,    24,    25,
-      30,    34,    36,    39,    47,    61,    63,    69,    70,    71,
-      72,    73,    75,    78,    81,    60,     5,   112,    30,   123,
-      65,   112,   115,   115,   118,    29,    64,    63,    60,    29,
-     111,    60,    60,    29,   114,    26,    56,    28,    70,    74,
-      29,    60,    76,    77,    79,    80,    60,    52,    31,    25,
-      29,    29,    82,     5,   113,    60,    28,    70,     5,    29,
-      60,    77,    29,    60,    80,    10,    54,    60,   124,    52,
-       5,    69,    70,     5,     5,    21,    69,    26,    54,    52,
-      69,    29,    60,    82,    82
+       0,    21,    41,    42,    43,    44,    45,    46,     6,     8,
+      12,    14,    15,    16,    17,    19,    23,    25,    27,    29,
+      30,    32,    33,    35,    36,    37,    38,    47,    48,    51,
+      74,    75,    76,    77,     0,    44,    29,    48,     5,    22,
+      52,    74,    53,    54,    74,     7,    71,    72,    73,    52,
+      31,    54,     5,    74,    21,    49,    50,    73,    71,    12,
+      13,    14,    15,    18,    20,    21,    24,    25,    30,    34,
+      36,    39,    55,    56,    57,    58,    59,    61,    62,    63,
+      67,    75,    76,    52,    47,    50,    28,    56,    60,    64,
+      65,    66,    68,    69,    70,    74,    74,    29,    28,    56,
+      29,    66,    74,    29,    70,    74,     5,     5,     5,    55,
+      56,    21,    55
 };
 
 /* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr1[] =
 {
-       0,    40,    41,    42,    43,    43,    44,    44,    44,    45,
-      45,    46,    46,    46,    47,    47,    47,    48,    48,    49,
-      49,    50,    50,    51,    52,    52,    53,    53,    54,    54,
-      55,    56,    56,    57,    57,    58,    58,    58,    59,    59,
-      60,    60,    61,    61,    61,    61,    61,    61,    61,    61,
-      61,    62,    62,    62,    62,    62,    62,    62,    63,    63,
-      63,    63,    63,    63,    64,    65,    65,    66,    66,    67,
-      67,    68,    69,    69,    69,    69,    69,    69,    69,    69,
-      69,    70,    70,    70,    71,    72,    73,    73,    74,    74,
-      75,    75,    76,    76,    77,    78,    78,    79,    79,    80,
-      81,    82,    82,    83,    83,    84,    85,    86,    86,    87,
-      88,    88,    89,    89,    89,    90,    91,    91,    92,    93,
-      93,    93,    93,    93,    93,    94,    94,    95,    95,    96,
-      96,    96,    96,    96,    96,    97,    98,    98,    98,    98,
-      99,    99,    99,   100,   100,   101,   101,   102,   102,   103,
-     104,   104,   105,   106,   107,   107,   108,   108,   108,   109,
-     109,   110,   110,   111,   112,   112,   113,   113,   114,   115,
-     115,   116,   116,   116,   117,   118,   118,   119,   120,   121,
-     122,   123,   123,   124,   124
+       0,    40,    41,    42,    43,    43,    44,    45,    46,    46,
+      47,    47,    48,    49,    50,    50,    51,    51,    52,    52,
+      53,    53,    54,    55,    55,    55,    55,    55,    55,    55,
+      55,    55,    56,    56,    56,    57,    58,    59,    59,    60,
+      60,    61,    61,    61,    61,    61,    61,    62,    63,    63,
+      64,    64,    65,    65,    66,    67,    68,    68,    69,    69,
+      70,    71,    71,    72,    72,    73,    74,    74,    75,    75,
+      75,    76,    76,    76,    76,    76,    76,    76,    76,    76,
+      77,    77,    77,    77,    77,    77,    77
 };
 
 /* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr2[] =
 {
-       0,     2,     1,     1,     1,     2,     1,     1,     1,     1,
-       1,     5,     3,     2,     1,     1,     1,     0,     1,     0,
-       3,     1,     2,     5,     1,     2,     1,     3,     0,     2,
-       3,     0,     1,     1,     2,     1,     1,     1,     4,     6,
+       0,     2,     1,     1,     1,     2,     1,     1,     3,     2,
+       1,     2,     1,     3,     0,     1,     6,     4,     0,     3,
+       1,     2,     3,     1,     1,     1,     1,     1,     1,     1,
+       1,     1,     1,     1,     1,     1,     2,     2,     3,     1,
+       2,     1,     1,     1,     1,     1,     1,     1,     0,     3,
+       0,     1,     1,     2,     3,     3,     0,     1,     1,     2,
+       3,     0,     1,     1,     2,     3,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     1,     3,     1,     2,     0,     3,     1,
-       2,     3,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     1,     1,     2,     2,     3,     1,     2,
-       2,     3,     1,     2,     3,     2,     3,     1,     2,     3,
-       1,     0,     1,     1,     2,     3,     3,     5,     3,     6,
-       0,     1,     1,     1,     1,     5,     1,     2,     3,     1,
-       1,     1,     1,     1,     1,     1,     1,     6,     3,     1,
-       1,     1,     1,     1,     1,     4,     5,     6,     5,     4,
-       6,     5,     4,     6,     4,     7,     4,     7,     4,     1,
-       0,     1,     4,     6,     0,     1,     3,     2,     2,     1,
-       3,     1,     2,     6,     1,     2,     0,     3,     6,     0,
-       3,     0,     1,     2,     6,     1,     3,     6,     7,     7,
-       8,     0,     1,     1,     3
+       1,     1,     1,     1,     1,     1,     1
 };
 
 
@@ -1237,7 +954,7 @@ enum { YYENOMEM = -2 };
       }                                                           \
     else                                                          \
       {                                                           \
-        yyerror (YY_("syntax error: cannot back up")); \
+        yyerror (parser, YY_("syntax error: cannot back up")); \
         YYERROR;                                                  \
       }                                                           \
   while (0)
@@ -1270,7 +987,7 @@ do {                                                                      \
     {                                                                     \
       YYFPRINTF (stderr, "%s ", Title);                                   \
       yy_symbol_print (stderr,                                            \
-                  Kind, Value); \
+                  Kind, Value, parser); \
       YYFPRINTF (stderr, "\n");                                           \
     }                                                                     \
 } while (0)
@@ -1282,10 +999,11 @@ do {                                                                      \
 
 static void
 yy_symbol_value_print (FILE *yyo,
-                       yysymbol_kind_t yykind, YYSTYPE const * const yyvaluep)
+                       yysymbol_kind_t yykind, YYSTYPE const * const yyvaluep, VALUE parser)
 {
   FILE *yyoutput = yyo;
   YY_USE (yyoutput);
+  YY_USE (parser);
   if (!yyvaluep)
     return;
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
@@ -1300,12 +1018,12 @@ yy_symbol_value_print (FILE *yyo,
 
 static void
 yy_symbol_print (FILE *yyo,
-                 yysymbol_kind_t yykind, YYSTYPE const * const yyvaluep)
+                 yysymbol_kind_t yykind, YYSTYPE const * const yyvaluep, VALUE parser)
 {
   YYFPRINTF (yyo, "%s %s (",
              yykind < YYNTOKENS ? "token" : "nterm", yysymbol_name (yykind));
 
-  yy_symbol_value_print (yyo, yykind, yyvaluep);
+  yy_symbol_value_print (yyo, yykind, yyvaluep, parser);
   YYFPRINTF (yyo, ")");
 }
 
@@ -1339,7 +1057,7 @@ do {                                                            \
 
 static void
 yy_reduce_print (yy_state_t *yyssp, YYSTYPE *yyvsp,
-                 int yyrule)
+                 int yyrule, VALUE parser)
 {
   int yylno = yyrline[yyrule];
   int yynrhs = yyr2[yyrule];
@@ -1352,7 +1070,7 @@ yy_reduce_print (yy_state_t *yyssp, YYSTYPE *yyvsp,
       YYFPRINTF (stderr, "   $%d = ", yyi + 1);
       yy_symbol_print (stderr,
                        YY_ACCESSING_SYMBOL (+yyssp[yyi + 1 - yynrhs]),
-                       &yyvsp[(yyi + 1) - (yynrhs)]);
+                       &yyvsp[(yyi + 1) - (yynrhs)], parser);
       YYFPRINTF (stderr, "\n");
     }
 }
@@ -1360,7 +1078,7 @@ yy_reduce_print (yy_state_t *yyssp, YYSTYPE *yyvsp,
 # define YY_REDUCE_PRINT(Rule)          \
 do {                                    \
   if (yydebug)                          \
-    yy_reduce_print (yyssp, yyvsp, Rule); \
+    yy_reduce_print (yyssp, yyvsp, Rule, parser); \
 } while (0)
 
 /* Nonzero means print parse trace.  It is left uninitialized so that
@@ -1401,9 +1119,10 @@ int yydebug;
 
 static void
 yydestruct (const char *yymsg,
-            yysymbol_kind_t yykind, YYSTYPE *yyvaluep)
+            yysymbol_kind_t yykind, YYSTYPE *yyvaluep, VALUE parser)
 {
   YY_USE (yyvaluep);
+  YY_USE (parser);
   if (!yymsg)
     yymsg = "Deleting";
   YY_SYMBOL_PRINT (yymsg, yykind, yyvaluep, yylocationp);
@@ -1423,7 +1142,7 @@ yydestruct (const char *yymsg,
 `----------*/
 
 int
-yyparse (void)
+yyparse (VALUE parser)
 {
 /* Lookahead token kind.  */
 int yychar;
@@ -1590,7 +1309,7 @@ yybackup:
   if (yychar == YYEMPTY)
     {
       YYDPRINTF ((stderr, "Reading a token\n"));
-      yychar = yylex (&yylval);
+      yychar = yylex (&yylval, parser);
     }
 
   if (yychar <= YYEOF)
@@ -1677,782 +1396,373 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
+  case 2: /* start: document  */
+#line 57 "ext/graphql_ext/parser.y"
+                  { rb_ivar_set(parser, rb_intern("result"), yyvsp[0]); }
+#line 1403 "ext/graphql_ext/parser.c"
+    break;
+
   case 3: /* document: definitions_list  */
-#line 56 "ext/graphql_ext/parser.y"
-                             { result = make_node(:Document, definitions: val[0])}
-#line 1684 "ext/graphql_ext/parser.c"
+#line 59 "ext/graphql_ext/parser.y"
+                             { yyval = yyvsp[0]; }
+#line 1409 "ext/graphql_ext/parser.c"
     break;
 
   case 4: /* definitions_list: definition  */
-#line 59 "ext/graphql_ext/parser.y"
-                                    { result = [val[0]]}
-#line 1690 "ext/graphql_ext/parser.c"
+#line 62 "ext/graphql_ext/parser.y"
+                                    { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
+#line 1415 "ext/graphql_ext/parser.c"
     break;
 
   case 5: /* definitions_list: definitions_list definition  */
-#line 60 "ext/graphql_ext/parser.y"
-                                    { val[0] << val[1] }
-#line 1696 "ext/graphql_ext/parser.c"
+#line 63 "ext/graphql_ext/parser.y"
+                                    { rb_ary_push(yyval, yyvsp[0]); }
+#line 1421 "ext/graphql_ext/parser.c"
     break;
 
-  case 11: /* operation_definition: operation_type operation_name_opt variable_definitions_opt directives_list_opt selection_set  */
-#line 72 "ext/graphql_ext/parser.y"
-                                                                                                   {
-        result = make_node(
-          :OperationDefinition, {
-            operation_type: val[0],
-            name:           val[1],
-            variables:      val[2],
-            directives:     val[3],
-            selections:     val[4],
-            position_source: val[0],
-          }
-        )
+  case 8: /* operation_definition: LCURLY selection_list RCURLY  */
+#line 91 "ext/graphql_ext/parser.y"
+                                 {
+        yyval = rb_ary_new_from_args(5,
+          rb_id2sym(rb_intern("OperationDefinition")),
+          rb_ary_entry(yyvsp[-2], 1),
+          rb_ary_entry(yyvsp[-2], 2),
+          rb_str_new_cstr("query"), // TODO static string
+          yyvsp[-1]
+        );
       }
-#line 1713 "ext/graphql_ext/parser.c"
+#line 1435 "ext/graphql_ext/parser.c"
     break;
 
-  case 12: /* operation_definition: LCURLY selection_list RCURLY  */
-#line 84 "ext/graphql_ext/parser.y"
-                                   {
-        result = make_node(
-          :OperationDefinition, {
-            operation_type: "query",
-            selections: val[1],
-            position_source: val[0],
-          }
-        )
-      }
-#line 1727 "ext/graphql_ext/parser.c"
-    break;
-
-  case 13: /* operation_definition: LCURLY RCURLY  */
-#line 93 "ext/graphql_ext/parser.y"
+  case 9: /* operation_definition: LCURLY RCURLY  */
+#line 100 "ext/graphql_ext/parser.y"
                     {
-        result = make_node(
-          :OperationDefinition, {
-            operation_type: "query",
-            selections: [],
-            position_source: val[0],
-          }
-        )
+        yyval = rb_ary_new_from_args(5,
+          rb_id2sym(rb_intern("OperationDefinition")),
+          rb_ary_entry(yyvsp[-1], 1),
+          rb_ary_entry(yyvsp[-1], 2),
+          rb_str_new_cstr("query"), // TODO static string
+          rb_ary_new()
+        );
       }
-#line 1741 "ext/graphql_ext/parser.c"
+#line 1449 "ext/graphql_ext/parser.c"
     break;
 
-  case 17: /* operation_name_opt: %empty  */
-#line 109 "ext/graphql_ext/parser.y"
-                 { result = nil }
-#line 1747 "ext/graphql_ext/parser.c"
+  case 10: /* selection_list: selection  */
+#line 111 "ext/graphql_ext/parser.y"
+                                { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
+#line 1455 "ext/graphql_ext/parser.c"
     break;
 
-  case 19: /* variable_definitions_opt: %empty  */
-#line 113 "ext/graphql_ext/parser.y"
-                                              { result = EMPTY_ARRAY }
-#line 1753 "ext/graphql_ext/parser.c"
+  case 11: /* selection_list: selection_list selection  */
+#line 112 "ext/graphql_ext/parser.y"
+                                { rb_ary_push(yyval, yyvsp[0]); }
+#line 1461 "ext/graphql_ext/parser.c"
     break;
 
-  case 20: /* variable_definitions_opt: LPAREN variable_definitions_list RPAREN  */
-#line 114 "ext/graphql_ext/parser.y"
-                                              { result = val[1] }
-#line 1759 "ext/graphql_ext/parser.c"
+  case 13: /* selection_set: LCURLY selection_list RCURLY  */
+#line 120 "ext/graphql_ext/parser.y"
+                                   { yyval = yyvsp[-1]; }
+#line 1467 "ext/graphql_ext/parser.c"
     break;
 
-  case 21: /* variable_definitions_list: variable_definition  */
-#line 117 "ext/graphql_ext/parser.y"
-                                                    { result = [val[0]] }
-#line 1765 "ext/graphql_ext/parser.c"
+  case 14: /* selection_set_opt: %empty  */
+#line 123 "ext/graphql_ext/parser.y"
+                    { yyval = rb_ary_new(); }
+#line 1473 "ext/graphql_ext/parser.c"
     break;
 
-  case 22: /* variable_definitions_list: variable_definitions_list variable_definition  */
-#line 118 "ext/graphql_ext/parser.y"
-                                                    { val[0] << val[1] }
-#line 1771 "ext/graphql_ext/parser.c"
-    break;
-
-  case 23: /* variable_definition: VAR_SIGN name COLON type default_value_opt  */
-#line 121 "ext/graphql_ext/parser.y"
-                                                 {
-        result = make_node(:VariableDefinition, {
-          name: val[1],
-          type: val[3],
-          default_value: val[4],
-          position_source: val[0],
-        })
-      }
-#line 1784 "ext/graphql_ext/parser.c"
-    break;
-
-  case 24: /* type: nullable_type  */
-#line 131 "ext/graphql_ext/parser.y"
-                              { result = val[0] }
-#line 1790 "ext/graphql_ext/parser.c"
-    break;
-
-  case 25: /* type: nullable_type BANG  */
-#line 132 "ext/graphql_ext/parser.y"
-                              { result = make_node(:NonNullType, of_type: val[0]) }
-#line 1796 "ext/graphql_ext/parser.c"
-    break;
-
-  case 26: /* nullable_type: name  */
-#line 135 "ext/graphql_ext/parser.y"
-                             { result = make_node(:TypeName, name: val[0])}
-#line 1802 "ext/graphql_ext/parser.c"
-    break;
-
-  case 27: /* nullable_type: LBRACKET type RBRACKET  */
-#line 136 "ext/graphql_ext/parser.y"
-                             { result = make_node(:ListType, of_type: val[1]) }
-#line 1808 "ext/graphql_ext/parser.c"
-    break;
-
-  case 28: /* default_value_opt: %empty  */
-#line 139 "ext/graphql_ext/parser.y"
-                            { result = nil }
-#line 1814 "ext/graphql_ext/parser.c"
-    break;
-
-  case 29: /* default_value_opt: EQUALS literal_value  */
-#line 140 "ext/graphql_ext/parser.y"
-                            { result = val[1] }
-#line 1820 "ext/graphql_ext/parser.c"
-    break;
-
-  case 30: /* selection_set: LCURLY selection_list RCURLY  */
-#line 143 "ext/graphql_ext/parser.y"
-                                   { result = val[1] }
-#line 1826 "ext/graphql_ext/parser.c"
-    break;
-
-  case 31: /* selection_set_opt: %empty  */
-#line 146 "ext/graphql_ext/parser.y"
-                    { result = EMPTY_ARRAY }
-#line 1832 "ext/graphql_ext/parser.c"
-    break;
-
-  case 32: /* selection_set_opt: selection_set  */
-#line 147 "ext/graphql_ext/parser.y"
-                    { result = val[0] }
-#line 1838 "ext/graphql_ext/parser.c"
-    break;
-
-  case 33: /* selection_list: selection  */
-#line 150 "ext/graphql_ext/parser.y"
-                                { result = [result] }
-#line 1844 "ext/graphql_ext/parser.c"
-    break;
-
-  case 34: /* selection_list: selection_list selection  */
-#line 151 "ext/graphql_ext/parser.y"
-                                { val[0] << val[1] }
-#line 1850 "ext/graphql_ext/parser.c"
-    break;
-
-  case 38: /* field: name arguments_opt directives_list_opt selection_set_opt  */
-#line 159 "ext/graphql_ext/parser.y"
-                                                               {
-            result = make_node(
-              :Field, {
-                name:         val[0],
-                arguments:    val[1],
-                directives:   val[2],
-                selections:   val[3],
-                position_source: val[0],
-              }
-            )
-          }
-#line 1866 "ext/graphql_ext/parser.c"
-    break;
-
-  case 39: /* field: name COLON name arguments_opt directives_list_opt selection_set_opt  */
-#line 170 "ext/graphql_ext/parser.y"
-                                                                          {
-            result = make_node(
-              :Field, {
-                alias:        val[0],
-                name:         val[2],
-                arguments:    val[3],
-                directives:   val[4],
-                selections:   val[5],
-                position_source: val[0],
-              }
-            )
-          }
-#line 1883 "ext/graphql_ext/parser.c"
-    break;
-
-  case 64: /* enum_value_definition: description_opt enum_name directives_list_opt  */
-#line 216 "ext/graphql_ext/parser.y"
-                                                  { result = make_node(:EnumValueDefinition, name: val[1], directives: val[2], description: val[0] || get_description(val[1]), definition_line: val[1][1], position_source: val[0] || val[1]) }
-#line 1889 "ext/graphql_ext/parser.c"
-    break;
-
-  case 65: /* enum_value_definitions: enum_value_definition  */
-#line 219 "ext/graphql_ext/parser.y"
-                                                   { result = [val[0]] }
-#line 1895 "ext/graphql_ext/parser.c"
-    break;
-
-  case 66: /* enum_value_definitions: enum_value_definitions enum_value_definition  */
-#line 220 "ext/graphql_ext/parser.y"
-                                                   { result = val[0] << val[1] }
-#line 1901 "ext/graphql_ext/parser.c"
-    break;
-
-  case 67: /* arguments_opt: %empty  */
-#line 223 "ext/graphql_ext/parser.y"
-                                    { result = EMPTY_ARRAY }
-#line 1907 "ext/graphql_ext/parser.c"
-    break;
-
-  case 68: /* arguments_opt: LPAREN arguments_list RPAREN  */
-#line 224 "ext/graphql_ext/parser.y"
-                                    { result = val[1] }
-#line 1913 "ext/graphql_ext/parser.c"
-    break;
-
-  case 69: /* arguments_list: argument  */
-#line 227 "ext/graphql_ext/parser.y"
-                              { result = [val[0]] }
-#line 1919 "ext/graphql_ext/parser.c"
-    break;
-
-  case 70: /* arguments_list: arguments_list argument  */
-#line 228 "ext/graphql_ext/parser.y"
-                              { val[0] << val[1] }
-#line 1925 "ext/graphql_ext/parser.c"
-    break;
-
-  case 71: /* argument: name COLON input_value  */
-#line 231 "ext/graphql_ext/parser.y"
-                             { result = make_node(:Argument, name: val[0], value: val[2], position_source: val[0])}
-#line 1931 "ext/graphql_ext/parser.c"
-    break;
-
-  case 72: /* literal_value: FLOAT  */
-#line 234 "ext/graphql_ext/parser.y"
-                  { result = val[0][3].to_f }
-#line 1937 "ext/graphql_ext/parser.c"
-    break;
-
-  case 73: /* literal_value: INT  */
-#line 235 "ext/graphql_ext/parser.y"
-                  { result = val[0][3].to_i }
-#line 1943 "ext/graphql_ext/parser.c"
-    break;
-
-  case 74: /* literal_value: STRING  */
-#line 236 "ext/graphql_ext/parser.y"
-                  { result = val[0][3] }
-#line 1949 "ext/graphql_ext/parser.c"
-    break;
-
-  case 75: /* literal_value: TRUE_LITERAL  */
-#line 237 "ext/graphql_ext/parser.y"
-                          { result = true }
-#line 1955 "ext/graphql_ext/parser.c"
-    break;
-
-  case 76: /* literal_value: FALSE_LITERAL  */
-#line 238 "ext/graphql_ext/parser.y"
-                          { result = false }
-#line 1961 "ext/graphql_ext/parser.c"
-    break;
-
-  case 84: /* null_value: NULL_LITERAL  */
-#line 249 "ext/graphql_ext/parser.y"
-                           { result = make_node(:NullValue, name: val[0], position_source: val[0]) }
-#line 1967 "ext/graphql_ext/parser.c"
-    break;
-
-  case 85: /* variable: VAR_SIGN name  */
-#line 250 "ext/graphql_ext/parser.y"
-                          { result = make_node(:VariableIdentifier, name: val[1], position_source: val[0]) }
-#line 1973 "ext/graphql_ext/parser.c"
-    break;
-
-  case 86: /* list_value: LBRACKET RBRACKET  */
-#line 253 "ext/graphql_ext/parser.y"
-                                        { result = EMPTY_ARRAY }
-#line 1979 "ext/graphql_ext/parser.c"
-    break;
-
-  case 87: /* list_value: LBRACKET list_value_list RBRACKET  */
-#line 254 "ext/graphql_ext/parser.y"
-                                        { result = val[1] }
-#line 1985 "ext/graphql_ext/parser.c"
-    break;
-
-  case 88: /* list_value_list: input_value  */
-#line 257 "ext/graphql_ext/parser.y"
-                                  { result = [val[0]] }
-#line 1991 "ext/graphql_ext/parser.c"
-    break;
-
-  case 89: /* list_value_list: list_value_list input_value  */
-#line 258 "ext/graphql_ext/parser.y"
-                                  { val[0] << val[1] }
-#line 1997 "ext/graphql_ext/parser.c"
-    break;
-
-  case 90: /* object_value: LCURLY RCURLY  */
-#line 261 "ext/graphql_ext/parser.y"
-                                      { result = make_node(:InputObject, arguments: [], position_source: val[0])}
-#line 2003 "ext/graphql_ext/parser.c"
-    break;
-
-  case 91: /* object_value: LCURLY object_value_list RCURLY  */
-#line 262 "ext/graphql_ext/parser.y"
-                                      { result = make_node(:InputObject, arguments: val[1], position_source: val[0])}
-#line 2009 "ext/graphql_ext/parser.c"
-    break;
-
-  case 92: /* object_value_list: object_value_field  */
-#line 265 "ext/graphql_ext/parser.y"
-                                            { result = [val[0]] }
-#line 2015 "ext/graphql_ext/parser.c"
-    break;
-
-  case 93: /* object_value_list: object_value_list object_value_field  */
-#line 266 "ext/graphql_ext/parser.y"
-                                            { val[0] << val[1] }
-#line 2021 "ext/graphql_ext/parser.c"
-    break;
-
-  case 94: /* object_value_field: name COLON input_value  */
-#line 269 "ext/graphql_ext/parser.y"
-                             { result = make_node(:Argument, name: val[0], value: val[2], position_source: val[0])}
-#line 2027 "ext/graphql_ext/parser.c"
-    break;
-
-  case 95: /* object_literal_value: LCURLY RCURLY  */
-#line 273 "ext/graphql_ext/parser.y"
-                                              { result = make_node(:InputObject, arguments: [], position_source: val[0])}
-#line 2033 "ext/graphql_ext/parser.c"
-    break;
-
-  case 96: /* object_literal_value: LCURLY object_literal_value_list RCURLY  */
-#line 274 "ext/graphql_ext/parser.y"
-                                              { result = make_node(:InputObject, arguments: val[1], position_source: val[0])}
-#line 2039 "ext/graphql_ext/parser.c"
-    break;
-
-  case 97: /* object_literal_value_list: object_literal_value_field  */
-#line 277 "ext/graphql_ext/parser.y"
-                                                            { result = [val[0]] }
-#line 2045 "ext/graphql_ext/parser.c"
-    break;
-
-  case 98: /* object_literal_value_list: object_literal_value_list object_literal_value_field  */
-#line 278 "ext/graphql_ext/parser.y"
-                                                            { val[0] << val[1] }
-#line 2051 "ext/graphql_ext/parser.c"
-    break;
-
-  case 99: /* object_literal_value_field: name COLON literal_value  */
-#line 281 "ext/graphql_ext/parser.y"
-                               { result = make_node(:Argument, name: val[0], value: val[2], position_source: val[0])}
-#line 2057 "ext/graphql_ext/parser.c"
-    break;
-
-  case 100: /* enum_value: enum_name  */
-#line 283 "ext/graphql_ext/parser.y"
-                        { result = make_node(:Enum, name: val[0], position_source: val[0]) }
-#line 2063 "ext/graphql_ext/parser.c"
-    break;
-
-  case 101: /* directives_list_opt: %empty  */
-#line 286 "ext/graphql_ext/parser.y"
-                      { result = EMPTY_ARRAY }
-#line 2069 "ext/graphql_ext/parser.c"
-    break;
-
-  case 103: /* directives_list: directive  */
-#line 290 "ext/graphql_ext/parser.y"
-                                { result = [val[0]] }
-#line 2075 "ext/graphql_ext/parser.c"
-    break;
-
-  case 104: /* directives_list: directives_list directive  */
-#line 291 "ext/graphql_ext/parser.y"
-                                { val[0] << val[1] }
-#line 2081 "ext/graphql_ext/parser.c"
-    break;
-
-  case 105: /* directive: DIR_SIGN name arguments_opt  */
-#line 293 "ext/graphql_ext/parser.y"
-                                         { result = make_node(:Directive, name: val[1], arguments: val[2], position_source: val[0]) }
-#line 2087 "ext/graphql_ext/parser.c"
-    break;
-
-  case 106: /* fragment_spread: ELLIPSIS name_without_on directives_list_opt  */
-#line 296 "ext/graphql_ext/parser.y"
-                                                   { result = make_node(:FragmentSpread, name: val[1], directives: val[2], position_source: val[0]) }
-#line 2093 "ext/graphql_ext/parser.c"
-    break;
-
-  case 107: /* inline_fragment: ELLIPSIS ON type directives_list_opt selection_set  */
-#line 299 "ext/graphql_ext/parser.y"
-                                                         {
-        result = make_node(:InlineFragment, {
-          type: val[2],
-          directives: val[3],
-          selections: val[4],
-          position_source: val[0]
-        })
-      }
-#line 2106 "ext/graphql_ext/parser.c"
-    break;
-
-  case 108: /* inline_fragment: ELLIPSIS directives_list_opt selection_set  */
-#line 307 "ext/graphql_ext/parser.y"
-                                                 {
-        result = make_node(:InlineFragment, {
-          type: nil,
-          directives: val[1],
-          selections: val[2],
-          position_source: val[0]
-        })
-      }
-#line 2119 "ext/graphql_ext/parser.c"
-    break;
-
-  case 109: /* fragment_definition: FRAGMENT fragment_name_opt ON type directives_list_opt selection_set  */
-#line 317 "ext/graphql_ext/parser.y"
-                                                                         {
-      result = make_node(:FragmentDefinition, {
-          name:       val[1],
-          type:       val[3],
-          directives: val[4],
-          selections: val[5],
-          position_source: val[0],
-        }
-      )
+  case 16: /* field: name COLON name arguments_opt directives_list_opt selection_set_opt  */
+#line 129 "ext/graphql_ext/parser.y"
+                                                                        {
+      yyval = rb_ary_new_from_args(
+        8,
+        rb_id2sym(rb_intern("Field")),
+        rb_ary_entry(yyvsp[-5], 1),
+        rb_ary_entry(yyvsp[-5], 2),
+        rb_ary_entry(yyvsp[-5], 3), // alias
+        rb_ary_entry(yyvsp[-3], 3), // name
+        yyvsp[-2], // args
+        yyvsp[-1], // directives
+        yyvsp[0] // subselections
+      );
     }
-#line 2134 "ext/graphql_ext/parser.c"
+#line 1491 "ext/graphql_ext/parser.c"
     break;
 
-  case 110: /* fragment_name_opt: %empty  */
-#line 329 "ext/graphql_ext/parser.y"
-                 { result = nil }
-#line 2140 "ext/graphql_ext/parser.c"
+  case 17: /* field: name arguments_opt directives_list_opt selection_set_opt  */
+#line 142 "ext/graphql_ext/parser.y"
+                                                               {
+      yyval = rb_ary_new_from_args(
+        8,
+        rb_id2sym(rb_intern("Field")),
+        rb_ary_entry(yyvsp[-3], 1),
+        rb_ary_entry(yyvsp[-3], 2),
+        Qnil, // alias
+        rb_ary_entry(yyvsp[-3], 3), // name
+        yyvsp[-2], // args
+        yyvsp[-1], // directives
+        yyvsp[0] // subselections
+      );
+    }
+#line 1509 "ext/graphql_ext/parser.c"
     break;
 
-  case 115: /* schema_definition: SCHEMA directives_list_opt LCURLY operation_type_definition_list RCURLY  */
-#line 338 "ext/graphql_ext/parser.y"
-                                                                              { result = make_node(:SchemaDefinition, position_source: val[0], definition_line: val[0][1], directives: val[1], **val[3]) }
-#line 2146 "ext/graphql_ext/parser.c"
+  case 18: /* arguments_opt: %empty  */
+#line 157 "ext/graphql_ext/parser.y"
+                                    { yyval = Qnil; }
+#line 1515 "ext/graphql_ext/parser.c"
     break;
 
-  case 117: /* operation_type_definition_list: operation_type_definition_list operation_type_definition  */
-#line 342 "ext/graphql_ext/parser.y"
-                                                               { result = val[0].merge(val[1]) }
-#line 2152 "ext/graphql_ext/parser.c"
+  case 19: /* arguments_opt: LPAREN arguments_list RPAREN  */
+#line 158 "ext/graphql_ext/parser.y"
+                                    { yyval = yyvsp[-1]; }
+#line 1521 "ext/graphql_ext/parser.c"
     break;
 
-  case 118: /* operation_type_definition: operation_type COLON name  */
-#line 345 "ext/graphql_ext/parser.y"
-                                { result = { val[0][3].to_sym => val[2] } }
-#line 2158 "ext/graphql_ext/parser.c"
+  case 20: /* arguments_list: argument  */
+#line 161 "ext/graphql_ext/parser.y"
+                              { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
+#line 1527 "ext/graphql_ext/parser.c"
     break;
 
-  case 127: /* schema_extension: EXTEND SCHEMA directives_list_opt LCURLY operation_type_definition_list RCURLY  */
-#line 360 "ext/graphql_ext/parser.y"
-                                                                                     { result = make_node(:SchemaExtension, position_source: val[0], directives: val[2], **val[4]) }
-#line 2164 "ext/graphql_ext/parser.c"
+  case 21: /* arguments_list: arguments_list argument  */
+#line 162 "ext/graphql_ext/parser.y"
+                              { rb_ary_push(yyval, yyvsp[0]); }
+#line 1533 "ext/graphql_ext/parser.c"
     break;
 
-  case 128: /* schema_extension: EXTEND SCHEMA directives_list  */
-#line 361 "ext/graphql_ext/parser.y"
-                                    { result = make_node(:SchemaExtension, position_source: val[0], directives: val[2]) }
-#line 2170 "ext/graphql_ext/parser.c"
-    break;
-
-  case 135: /* scalar_type_extension: EXTEND SCALAR name directives_list  */
-#line 371 "ext/graphql_ext/parser.y"
-                                                            { result = make_node(:ScalarTypeExtension, name: val[2], directives: val[3], position_source: val[0]) }
-#line 2176 "ext/graphql_ext/parser.c"
-    break;
-
-  case 136: /* object_type_extension: EXTEND TYPE_LITERAL name implements field_definition_list_opt  */
-#line 375 "ext/graphql_ext/parser.y"
-                                                                    { result = make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: [], fields: val[4], position_source: val[0]) }
-#line 2182 "ext/graphql_ext/parser.c"
-    break;
-
-  case 137: /* object_type_extension: EXTEND TYPE_LITERAL name implements_opt directives_list_opt field_definition_list_opt  */
-#line 376 "ext/graphql_ext/parser.y"
-                                                                                            { result = make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: val[5], position_source: val[0]) }
-#line 2188 "ext/graphql_ext/parser.c"
-    break;
-
-  case 138: /* object_type_extension: EXTEND TYPE_LITERAL name implements_opt directives_list  */
-#line 377 "ext/graphql_ext/parser.y"
-                                                              { result = make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: [], position_source: val[0]) }
-#line 2194 "ext/graphql_ext/parser.c"
-    break;
-
-  case 139: /* object_type_extension: EXTEND TYPE_LITERAL name implements  */
-#line 378 "ext/graphql_ext/parser.y"
-                                          { result = make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: [], fields: [], position_source: val[0]) }
-#line 2200 "ext/graphql_ext/parser.c"
-    break;
-
-  case 140: /* interface_type_extension: EXTEND INTERFACE name implements_opt directives_list_opt field_definition_list_opt  */
-#line 381 "ext/graphql_ext/parser.y"
-                                                                                         { result = make_node(:InterfaceTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: val[5], position_source: val[0]) }
-#line 2206 "ext/graphql_ext/parser.c"
-    break;
-
-  case 141: /* interface_type_extension: EXTEND INTERFACE name implements_opt directives_list  */
-#line 382 "ext/graphql_ext/parser.y"
-                                                           { result = make_node(:InterfaceTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: [], position_source: val[0]) }
-#line 2212 "ext/graphql_ext/parser.c"
-    break;
-
-  case 142: /* interface_type_extension: EXTEND INTERFACE name implements  */
-#line 383 "ext/graphql_ext/parser.y"
-                                       { result = make_node(:InterfaceTypeExtension, name: val[2], interfaces: val[3], directives: [], fields: [], position_source: val[0]) }
-#line 2218 "ext/graphql_ext/parser.c"
-    break;
-
-  case 143: /* union_type_extension: EXTEND UNION name directives_list_opt EQUALS union_members  */
-#line 386 "ext/graphql_ext/parser.y"
-                                                                 { result = make_node(:UnionTypeExtension, name: val[2], directives: val[3], types: val[5], position_source: val[0]) }
-#line 2224 "ext/graphql_ext/parser.c"
-    break;
-
-  case 144: /* union_type_extension: EXTEND UNION name directives_list  */
-#line 387 "ext/graphql_ext/parser.y"
-                                        { result = make_node(:UnionTypeExtension, name: val[2], directives: val[3], types: [], position_source: val[0]) }
-#line 2230 "ext/graphql_ext/parser.c"
-    break;
-
-  case 145: /* enum_type_extension: EXTEND ENUM name directives_list_opt LCURLY enum_value_definitions RCURLY  */
-#line 390 "ext/graphql_ext/parser.y"
-                                                                                { result = make_node(:EnumTypeExtension, name: val[2], directives: val[3], values: val[5], position_source: val[0]) }
-#line 2236 "ext/graphql_ext/parser.c"
-    break;
-
-  case 146: /* enum_type_extension: EXTEND ENUM name directives_list  */
-#line 391 "ext/graphql_ext/parser.y"
-                                       { result = make_node(:EnumTypeExtension, name: val[2], directives: val[3], values: [], position_source: val[0]) }
-#line 2242 "ext/graphql_ext/parser.c"
-    break;
-
-  case 147: /* input_object_type_extension: EXTEND INPUT name directives_list_opt LCURLY input_value_definition_list RCURLY  */
-#line 394 "ext/graphql_ext/parser.y"
-                                                                                      { result = make_node(:InputObjectTypeExtension, name: val[2], directives: val[3], fields: val[5], position_source: val[0]) }
-#line 2248 "ext/graphql_ext/parser.c"
-    break;
-
-  case 148: /* input_object_type_extension: EXTEND INPUT name directives_list  */
-#line 395 "ext/graphql_ext/parser.y"
-                                        { result = make_node(:InputObjectTypeExtension, name: val[2], directives: val[3], fields: [], position_source: val[0]) }
-#line 2254 "ext/graphql_ext/parser.c"
-    break;
-
-  case 152: /* scalar_type_definition: description_opt SCALAR name directives_list_opt  */
-#line 404 "ext/graphql_ext/parser.y"
-                                                      {
-        result = make_node(:ScalarTypeDefinition, name: val[2], directives: val[3], description: val[0] || get_description(val[1]), definition_line: val[1][1], position_source: val[0] || val[1])
+  case 22: /* argument: name COLON input_value  */
+#line 165 "ext/graphql_ext/parser.y"
+                             {
+        yyval = rb_ary_new_from_args(5,
+          rb_id2sym(rb_intern("Argument")),
+          rb_ary_entry(yyvsp[-2], 1),
+          rb_ary_entry(yyvsp[-2], 2),
+          rb_ary_entry(yyvsp[-2], 3),
+          yyvsp[0]
+        );
       }
-#line 2262 "ext/graphql_ext/parser.c"
+#line 1547 "ext/graphql_ext/parser.c"
     break;
 
-  case 153: /* object_type_definition: description_opt TYPE_LITERAL name implements_opt directives_list_opt field_definition_list_opt  */
-#line 409 "ext/graphql_ext/parser.y"
-                                                                                                     {
-        result = make_node(:ObjectTypeDefinition, name: val[2], interfaces: val[3], directives: val[4], fields: val[5], description: val[0] || get_description(val[1]), definition_line: val[1][1], position_source: val[0] || val[1])
+  case 23: /* literal_value: FLOAT  */
+#line 176 "ext/graphql_ext/parser.y"
+                  { yyval = rb_funcall(rb_ary_entry(yyvsp[0], 3), rb_intern("to_f"), 0); }
+#line 1553 "ext/graphql_ext/parser.c"
+    break;
+
+  case 24: /* literal_value: INT  */
+#line 177 "ext/graphql_ext/parser.y"
+                  { yyval = rb_funcall(rb_ary_entry(yyvsp[0], 3), rb_intern("to_i"), 0); }
+#line 1559 "ext/graphql_ext/parser.c"
+    break;
+
+  case 25: /* literal_value: STRING  */
+#line 178 "ext/graphql_ext/parser.y"
+                  { yyval = rb_ary_entry(yyvsp[0], 3); }
+#line 1565 "ext/graphql_ext/parser.c"
+    break;
+
+  case 26: /* literal_value: TRUE_LITERAL  */
+#line 179 "ext/graphql_ext/parser.y"
+                          { yyval = Qtrue; }
+#line 1571 "ext/graphql_ext/parser.c"
+    break;
+
+  case 27: /* literal_value: FALSE_LITERAL  */
+#line 180 "ext/graphql_ext/parser.y"
+                          { yyval = Qfalse; }
+#line 1577 "ext/graphql_ext/parser.c"
+    break;
+
+  case 35: /* null_value: NULL_LITERAL  */
+#line 191 "ext/graphql_ext/parser.y"
+                           {
+    yyval = rb_ary_new_from_args(4,
+      rb_id2sym(rb_intern("NullValue")),
+      rb_ary_entry(yyvsp[0], 1),
+      rb_ary_entry(yyvsp[0], 2),
+      rb_ary_entry(yyvsp[0], 3)
+    );
+  }
+#line 1590 "ext/graphql_ext/parser.c"
+    break;
+
+  case 36: /* variable: VAR_SIGN name  */
+#line 200 "ext/graphql_ext/parser.y"
+                          {
+    yyval = rb_ary_new_from_args(4,
+      rb_id2sym(rb_intern("VariableIdentifier")),
+      rb_ary_entry(yyvsp[-1], 1),
+      rb_ary_entry(yyvsp[-1], 2),
+      rb_ary_entry(yyvsp[-1], 3)
+    );
+  }
+#line 1603 "ext/graphql_ext/parser.c"
+    break;
+
+  case 37: /* list_value: LBRACKET RBRACKET  */
+#line 210 "ext/graphql_ext/parser.y"
+                                        { yyval = rb_ary_new(); }
+#line 1609 "ext/graphql_ext/parser.c"
+    break;
+
+  case 38: /* list_value: LBRACKET list_value_list RBRACKET  */
+#line 211 "ext/graphql_ext/parser.y"
+                                        { yyval = yyvsp[-1]; }
+#line 1615 "ext/graphql_ext/parser.c"
+    break;
+
+  case 39: /* list_value_list: input_value  */
+#line 214 "ext/graphql_ext/parser.y"
+                                  { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
+#line 1621 "ext/graphql_ext/parser.c"
+    break;
+
+  case 40: /* list_value_list: list_value_list input_value  */
+#line 215 "ext/graphql_ext/parser.y"
+                                  { rb_ary_push(yyval, yyvsp[0]); }
+#line 1627 "ext/graphql_ext/parser.c"
+    break;
+
+  case 47: /* enum_value: enum_name  */
+#line 225 "ext/graphql_ext/parser.y"
+                        {
+    yyval = rb_ary_new_from_args(4,
+      rb_id2sym(rb_intern("Enum")),
+      rb_ary_entry(yyvsp[0], 1),
+      rb_ary_entry(yyvsp[0], 2),
+      rb_ary_entry(yyvsp[0], 3)
+    );
+  }
+#line 1640 "ext/graphql_ext/parser.c"
+    break;
+
+  case 49: /* object_value: LCURLY object_value_list_opt RCURLY  */
+#line 235 "ext/graphql_ext/parser.y"
+                                          {
+      yyval = rb_ary_new_from_args(4,
+        rb_id2sym(rb_intern("InputObject")),
+        rb_ary_entry(yyvsp[-2], 1),
+        rb_ary_entry(yyvsp[-2], 2),
+        yyvsp[-1]
+      );
+    }
+#line 1653 "ext/graphql_ext/parser.c"
+    break;
+
+  case 50: /* object_value_list_opt: %empty  */
+#line 245 "ext/graphql_ext/parser.y"
+                        { yyval = rb_ary_new(); }
+#line 1659 "ext/graphql_ext/parser.c"
+    break;
+
+  case 52: /* object_value_list: object_value_field  */
+#line 249 "ext/graphql_ext/parser.y"
+                                            { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
+#line 1665 "ext/graphql_ext/parser.c"
+    break;
+
+  case 53: /* object_value_list: object_value_list object_value_field  */
+#line 250 "ext/graphql_ext/parser.y"
+                                            { rb_ary_push(yyval, yyvsp[0]); }
+#line 1671 "ext/graphql_ext/parser.c"
+    break;
+
+  case 54: /* object_value_field: name COLON input_value  */
+#line 253 "ext/graphql_ext/parser.y"
+                             {
+        yyval = rb_ary_new_from_args(5,
+          rb_id2sym(rb_intern("Argument")),
+          rb_ary_entry(yyvsp[-2], 1),
+          rb_ary_entry(yyvsp[-2], 2),
+          rb_ary_entry(yyvsp[-2], 3),
+          rb_ary_entry(yyvsp[0], 3)
+        );
       }
-#line 2270 "ext/graphql_ext/parser.c"
+#line 1685 "ext/graphql_ext/parser.c"
     break;
 
-  case 154: /* implements_opt: %empty  */
-#line 414 "ext/graphql_ext/parser.y"
-                 { result = EMPTY_ARRAY }
-#line 2276 "ext/graphql_ext/parser.c"
-    break;
-
-  case 156: /* implements: IMPLEMENTS AMP interfaces_list  */
-#line 418 "ext/graphql_ext/parser.y"
-                                     { result = val[2] }
-#line 2282 "ext/graphql_ext/parser.c"
-    break;
-
-  case 157: /* implements: IMPLEMENTS interfaces_list  */
-#line 419 "ext/graphql_ext/parser.y"
-                                 { result = val[1] }
-#line 2288 "ext/graphql_ext/parser.c"
-    break;
-
-  case 158: /* implements: IMPLEMENTS legacy_interfaces_list  */
-#line 420 "ext/graphql_ext/parser.y"
-                                        { result = val[1] }
-#line 2294 "ext/graphql_ext/parser.c"
-    break;
-
-  case 159: /* interfaces_list: name  */
-#line 423 "ext/graphql_ext/parser.y"
-                               { result = [make_node(:TypeName, name: val[0], position_source: val[0])] }
-#line 2300 "ext/graphql_ext/parser.c"
-    break;
-
-  case 160: /* interfaces_list: interfaces_list AMP name  */
-#line 424 "ext/graphql_ext/parser.y"
-                               { val[0] << make_node(:TypeName, name: val[2], position_source: val[2]) }
-#line 2306 "ext/graphql_ext/parser.c"
-    break;
-
-  case 161: /* legacy_interfaces_list: name  */
-#line 427 "ext/graphql_ext/parser.y"
-                                  { result = [make_node(:TypeName, name: val[0], position_source: val[0])] }
-#line 2312 "ext/graphql_ext/parser.c"
-    break;
-
-  case 162: /* legacy_interfaces_list: legacy_interfaces_list name  */
-#line 428 "ext/graphql_ext/parser.y"
-                                  { val[0] << make_node(:TypeName, name: val[1], position_source: val[1]) }
-#line 2318 "ext/graphql_ext/parser.c"
-    break;
-
-  case 163: /* input_value_definition: description_opt name COLON type default_value_opt directives_list_opt  */
-#line 431 "ext/graphql_ext/parser.y"
-                                                                            {
-        result = make_node(:InputValueDefinition, name: val[1], type: val[3], default_value: val[4], directives: val[5], description: val[0] || get_description(val[1]), definition_line: val[1][1], position_source: val[0] || val[1])
+  case 55: /* object_literal_value: LCURLY object_literal_value_list_opt RCURLY  */
+#line 265 "ext/graphql_ext/parser.y"
+                                                  {
+        yyval = rb_ary_new_from_args(4,
+          rb_id2sym(rb_intern("InputObject")),
+          rb_ary_entry(yyvsp[-2], 1),
+          rb_ary_entry(yyvsp[-2], 2),
+          yyvsp[-1]
+        );
       }
-#line 2326 "ext/graphql_ext/parser.c"
+#line 1698 "ext/graphql_ext/parser.c"
     break;
 
-  case 164: /* input_value_definition_list: input_value_definition  */
-#line 436 "ext/graphql_ext/parser.y"
-                                                         { result = [val[0]] }
-#line 2332 "ext/graphql_ext/parser.c"
+  case 56: /* object_literal_value_list_opt: %empty  */
+#line 275 "ext/graphql_ext/parser.y"
+                                { yyval = rb_ary_new(); }
+#line 1704 "ext/graphql_ext/parser.c"
     break;
 
-  case 165: /* input_value_definition_list: input_value_definition_list input_value_definition  */
-#line 437 "ext/graphql_ext/parser.y"
-                                                         { val[0] << val[1] }
-#line 2338 "ext/graphql_ext/parser.c"
+  case 58: /* object_literal_value_list: object_literal_value_field  */
+#line 279 "ext/graphql_ext/parser.y"
+                                                            { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
+#line 1710 "ext/graphql_ext/parser.c"
     break;
 
-  case 166: /* arguments_definitions_opt: %empty  */
-#line 440 "ext/graphql_ext/parser.y"
-                 { result = EMPTY_ARRAY }
-#line 2344 "ext/graphql_ext/parser.c"
+  case 59: /* object_literal_value_list: object_literal_value_list object_literal_value_field  */
+#line 280 "ext/graphql_ext/parser.y"
+                                                            { rb_ary_push(yyval, yyvsp[0]); }
+#line 1716 "ext/graphql_ext/parser.c"
     break;
 
-  case 167: /* arguments_definitions_opt: LPAREN input_value_definition_list RPAREN  */
-#line 441 "ext/graphql_ext/parser.y"
-                                                { result = val[1] }
-#line 2350 "ext/graphql_ext/parser.c"
-    break;
-
-  case 168: /* field_definition: description_opt name arguments_definitions_opt COLON type directives_list_opt  */
-#line 444 "ext/graphql_ext/parser.y"
-                                                                                    {
-        result = make_node(:FieldDefinition, name: val[1], arguments: val[2], type: val[4], directives: val[5], description: val[0] || get_description(val[1]), definition_line: val[1][1], position_source: val[0] || val[1])
+  case 60: /* object_literal_value_field: name COLON literal_value  */
+#line 283 "ext/graphql_ext/parser.y"
+                               {
+        yyval = rb_ary_new_from_args(5,
+          rb_id2sym(rb_intern("Argument")),
+          rb_ary_entry(yyvsp[-2], 1),
+          rb_ary_entry(yyvsp[-2], 2),
+          rb_ary_entry(yyvsp[-2], 3),
+          rb_ary_entry(yyvsp[0], 3)
+        );
       }
-#line 2358 "ext/graphql_ext/parser.c"
+#line 1730 "ext/graphql_ext/parser.c"
     break;
 
-  case 169: /* field_definition_list_opt: %empty  */
-#line 449 "ext/graphql_ext/parser.y"
-               { result = EMPTY_ARRAY }
-#line 2364 "ext/graphql_ext/parser.c"
+  case 61: /* directives_list_opt: %empty  */
+#line 295 "ext/graphql_ext/parser.y"
+                      { yyval = rb_ary_new(); }
+#line 1736 "ext/graphql_ext/parser.c"
     break;
 
-  case 170: /* field_definition_list_opt: LCURLY field_definition_list RCURLY  */
-#line 450 "ext/graphql_ext/parser.y"
-                                          { result = val[1] }
-#line 2370 "ext/graphql_ext/parser.c"
+  case 63: /* directives_list: directive  */
+#line 299 "ext/graphql_ext/parser.y"
+                                { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
+#line 1742 "ext/graphql_ext/parser.c"
     break;
 
-  case 171: /* field_definition_list: %empty  */
-#line 453 "ext/graphql_ext/parser.y"
-                                                                                { result = EMPTY_ARRAY }
-#line 2376 "ext/graphql_ext/parser.c"
+  case 64: /* directives_list: directives_list directive  */
+#line 300 "ext/graphql_ext/parser.y"
+                                { rb_ary_push(yyval, yyvsp[0]); }
+#line 1748 "ext/graphql_ext/parser.c"
     break;
 
-  case 172: /* field_definition_list: field_definition  */
-#line 454 "ext/graphql_ext/parser.y"
-                                             { result = [val[0]] }
-#line 2382 "ext/graphql_ext/parser.c"
-    break;
-
-  case 173: /* field_definition_list: field_definition_list field_definition  */
-#line 455 "ext/graphql_ext/parser.y"
-                                             { val[0] << val[1] }
-#line 2388 "ext/graphql_ext/parser.c"
-    break;
-
-  case 174: /* interface_type_definition: description_opt INTERFACE name implements_opt directives_list_opt field_definition_list_opt  */
-#line 458 "ext/graphql_ext/parser.y"
-                                                                                                  {
-        result = make_node(:InterfaceTypeDefinition, name: val[2], interfaces: val[3], directives: val[4], fields: val[5], description: val[0] || get_description(val[1]), definition_line: val[1][1], position_source: val[0] || val[1])
-      }
-#line 2396 "ext/graphql_ext/parser.c"
-    break;
-
-  case 175: /* union_members: name  */
-#line 463 "ext/graphql_ext/parser.y"
-                              { result = [make_node(:TypeName, name: val[0], position_source: val[0])]}
-#line 2402 "ext/graphql_ext/parser.c"
-    break;
-
-  case 176: /* union_members: union_members PIPE name  */
-#line 464 "ext/graphql_ext/parser.y"
-                              { val[0] << make_node(:TypeName, name: val[2], position_source: val[2]) }
-#line 2408 "ext/graphql_ext/parser.c"
-    break;
-
-  case 177: /* union_type_definition: description_opt UNION name directives_list_opt EQUALS union_members  */
-#line 467 "ext/graphql_ext/parser.y"
-                                                                          {
-        result = make_node(:UnionTypeDefinition, name: val[2], directives: val[3], types: val[5], description: val[0] || get_description(val[1]), definition_line: val[1][1], position_source: val[0] || val[1])
-      }
-#line 2416 "ext/graphql_ext/parser.c"
-    break;
-
-  case 178: /* enum_type_definition: description_opt ENUM name directives_list_opt LCURLY enum_value_definitions RCURLY  */
-#line 472 "ext/graphql_ext/parser.y"
-                                                                                         {
-         result = make_node(:EnumTypeDefinition, name: val[2], directives: val[3], values: val[5], description: val[0] || get_description(val[1]), definition_line: val[1][1], position_source: val[0] || val[1])
-      }
-#line 2424 "ext/graphql_ext/parser.c"
-    break;
-
-  case 179: /* input_object_type_definition: description_opt INPUT name directives_list_opt LCURLY input_value_definition_list RCURLY  */
-#line 477 "ext/graphql_ext/parser.y"
-                                                                                               {
-        result = make_node(:InputObjectTypeDefinition, name: val[2], directives: val[3], fields: val[5], description: val[0] || get_description(val[1]), definition_line: val[1][1], position_source: val[0] || val[1])
-      }
-#line 2432 "ext/graphql_ext/parser.c"
-    break;
-
-  case 180: /* directive_definition: description_opt DIRECTIVE DIR_SIGN name arguments_definitions_opt directive_repeatable_opt ON directive_locations  */
-#line 482 "ext/graphql_ext/parser.y"
-                                                                                                                        {
-        result = make_node(:DirectiveDefinition, name: val[3], arguments: val[4], locations: val[7], repeatable: !!val[5], description: val[0] || get_description(val[1]), definition_line: val[1][1], position_source: val[0] || val[1])
-      }
-#line 2440 "ext/graphql_ext/parser.c"
-    break;
-
-  case 183: /* directive_locations: name  */
-#line 491 "ext/graphql_ext/parser.y"
-                                    { result = [make_node(:DirectiveLocation, name: val[0][3], position_source: val[0])] }
-#line 2446 "ext/graphql_ext/parser.c"
-    break;
-
-  case 184: /* directive_locations: directive_locations PIPE name  */
-#line 492 "ext/graphql_ext/parser.y"
-                                    { val[0] << make_node(:DirectiveLocation, name: val[2][3], position_source: val[2]) }
-#line 2452 "ext/graphql_ext/parser.c"
+  case 65: /* directive: DIR_SIGN name arguments_opt  */
+#line 302 "ext/graphql_ext/parser.y"
+                                         {
+    yyval = rb_ary_new_from_args(5,
+      rb_id2sym(rb_intern("Directive")),
+      rb_ary_entry(yyvsp[-2], 1),
+      rb_ary_entry(yyvsp[-2], 2),
+      rb_ary_entry(yyvsp[-1], 3),
+      yyvsp[0]
+    );
+  }
+#line 1762 "ext/graphql_ext/parser.c"
     break;
 
 
-#line 2456 "ext/graphql_ext/parser.c"
+#line 1766 "ext/graphql_ext/parser.c"
 
       default: break;
     }
@@ -2499,7 +1809,7 @@ yyerrlab:
   if (!yyerrstatus)
     {
       ++yynerrs;
-      yyerror (YY_("syntax error"));
+      yyerror (parser, YY_("syntax error"));
     }
 
   if (yyerrstatus == 3)
@@ -2516,7 +1826,7 @@ yyerrlab:
       else
         {
           yydestruct ("Error: discarding",
-                      yytoken, &yylval);
+                      yytoken, &yylval, parser);
           yychar = YYEMPTY;
         }
     }
@@ -2572,7 +1882,7 @@ yyerrlab1:
 
 
       yydestruct ("Error: popping",
-                  YY_ACCESSING_SYMBOL (yystate), yyvsp);
+                  YY_ACCESSING_SYMBOL (yystate), yyvsp, parser);
       YYPOPSTACK (1);
       yystate = *yyssp;
       YY_STACK_PRINT (yyss, yyssp);
@@ -2610,7 +1920,7 @@ yyabortlab:
 | yyexhaustedlab -- YYNOMEM (memory exhaustion) comes here.  |
 `-----------------------------------------------------------*/
 yyexhaustedlab:
-  yyerror (YY_("memory exhausted"));
+  yyerror (parser, YY_("memory exhausted"));
   yyresult = 2;
   goto yyreturnlab;
 
@@ -2625,7 +1935,7 @@ yyreturnlab:
          user semantic actions for why this is necessary.  */
       yytoken = YYTRANSLATE (yychar);
       yydestruct ("Cleanup: discarding lookahead",
-                  yytoken, &yylval);
+                  yytoken, &yylval, parser);
     }
   /* Do not reclaim the symbols of the rule whose action triggered
      this YYABORT or YYACCEPT.  */
@@ -2634,7 +1944,7 @@ yyreturnlab:
   while (yyssp != yyss)
     {
       yydestruct ("Cleanup: popping",
-                  YY_ACCESSING_SYMBOL (+*yyssp), yyvsp);
+                  YY_ACCESSING_SYMBOL (+*yyssp), yyvsp, parser);
       YYPOPSTACK (1);
     }
 #ifndef yyoverflow
@@ -2645,13 +1955,26 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 494 "ext/graphql_ext/parser.y"
+#line 340 "ext/graphql_ext/parser.y"
 
 
 // Custom functions
-int
-yylex (YYSTYPE *lvalp)
-{
-  *lvalp = value;  /* Put value onto Bison stack. */
-  return INT;      /* Return the kind of the token. */
+int yylex (YYSTYPE *lvalp, VALUE parser) {
+  int next_token_idx = FIX2INT(rb_ivar_get(parser, rb_intern("current_token")));
+  VALUE tokens = rb_ivar_get(parser, rb_intern("tokens"));
+  VALUE next_token = rb_ary_entry(tokens, next_token_idx);
+
+  if (!RB_TEST(next_token)) {
+    return YYEOF;
+  }
+
+  rb_ivar_set(parser, rb_intern("current_token"), INT2FIX(next_token_idx + 1));
+  VALUE token_type_rb_int = rb_ary_entry(next_token, 5);
+  int next_token_type = FIX2INT(token_type_rb_int);
+
+  *lvalp = next_token;
+  return next_token_type;
+}
+
+void yyerror(VALUE tokens, const char *msg) {
 }

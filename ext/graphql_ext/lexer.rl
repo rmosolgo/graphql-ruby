@@ -17,7 +17,7 @@
   SUBSCRIPTION =  'subscription';
   SCHEMA =        'schema';
   SCALAR =        'scalar';
-  TYPE =          'type';
+  TYPE_LITERAL =  'type';
   EXTEND =        'extend';
   IMPLEMENTS =    'implements';
   INTERFACE =     'interface';
@@ -63,7 +63,7 @@
     SUBSCRIPTION  => { emit(SUBSCRIPTION, ts, te, meta); };
     SCHEMA        => { emit(SCHEMA, ts, te, meta); };
     SCALAR        => { emit(SCALAR, ts, te, meta); };
-    TYPE          => { emit(TYPE, ts, te, meta); };
+    TYPE_LITERAL  => { emit(TYPE_LITERAL, ts, te, meta); };
     EXTEND        => { emit(EXTEND, ts, te, meta); };
     IMPLEMENTS    => { emit(IMPLEMENTS, ts, te, meta); };
     INTERFACE     => { emit(INTERFACE, ts, te, meta); };
@@ -130,7 +130,7 @@ INIT_STATIC_TOKEN_VARIABLE(PIPE)
 INIT_STATIC_TOKEN_VARIABLE(AMP)
 INIT_STATIC_TOKEN_VARIABLE(SCHEMA)
 INIT_STATIC_TOKEN_VARIABLE(SCALAR)
-INIT_STATIC_TOKEN_VARIABLE(TYPE)
+INIT_STATIC_TOKEN_VARIABLE(TYPE_LITERAL)
 INIT_STATIC_TOKEN_VARIABLE(EXTEND)
 INIT_STATIC_TOKEN_VARIABLE(IMPLEMENTS)
 INIT_STATIC_TOKEN_VARIABLE(INTERFACE)
@@ -140,46 +140,47 @@ INIT_STATIC_TOKEN_VARIABLE(DIRECTIVE)
 INIT_STATIC_TOKEN_VARIABLE(INPUT)
 
 typedef enum TokenType {
-  INT,
-  FLOAT,
-  ON,
-  FRAGMENT,
-  TRUE_LITERAL,
-  FALSE_LITERAL,
-  NULL_LITERAL,
-  QUERY,
-  MUTATION,
-  SUBSCRIPTION,
-  SCHEMA,
-  SCALAR,
-  TYPE,
-  EXTEND,
-  IMPLEMENTS,
-  INTERFACE,
-  UNION,
-  ENUM,
-  INPUT,
-  DIRECTIVE,
-  REPEATABLE,
-  RCURLY,
-  LCURLY,
-  RPAREN,
-  LPAREN,
-  RBRACKET,
-  LBRACKET,
+  AMP,
+  BANG,
   COLON,
-  QUOTED_STRING,
-  BLOCK_STRING,
-  VAR_SIGN,
+  DIRECTIVE,
   DIR_SIGN,
+  ENUM,
   ELLIPSIS,
   EQUALS,
-  BANG,
-  PIPE,
-  AMP,
+  EXTEND,
+  FALSE_LITERAL,
+  FLOAT,
+  FRAGMENT,
   IDENTIFIER,
-  COMMENT,
-  UNKNOWN_CHAR
+  INPUT,
+  IMPLEMENTS,
+  INT,
+  INTERFACE,
+  LBRACKET,
+  LCURLY,
+  LPAREN,
+  MUTATION,
+  NULL_LITERAL,
+  ON,
+  PIPE,
+  QUERY,
+  RBRACKET,
+  RCURLY,
+  REPEATABLE,
+  RPAREN,
+  SCALAR,
+  SCHEMA,
+  STRING,
+  SUBSCRIPTION,
+  TRUE_LITERAL,
+  TYPE_LITERAL,
+  UNION,
+  VAR_SIGN,
+  BLOCK_STRING,
+  QUOTED_STRING,
+  UNKNOWN_CHAR,
+  COMMENT
 } TokenType;
 
 typedef struct Meta {
@@ -232,7 +233,7 @@ void emit(TokenType tt, char *ts, char *te, Meta *meta) {
     STATIC_VALUE_TOKEN(AMP, "&")
     STATIC_VALUE_TOKEN(SCHEMA, "schema")
     STATIC_VALUE_TOKEN(SCALAR, "scalar")
-    STATIC_VALUE_TOKEN(TYPE, "type")
+    STATIC_VALUE_TOKEN(TYPE_LITERAL, "type")
     STATIC_VALUE_TOKEN(EXTEND, "extend")
     STATIC_VALUE_TOKEN(IMPLEMENTS, "implements")
     STATIC_VALUE_TOKEN(INTERFACE, "interface")
@@ -276,6 +277,9 @@ void emit(TokenType tt, char *ts, char *te, Meta *meta) {
       token_content = rb_utf8_str_new(ts + quotes_length, (te - ts - (2 * quotes_length)));
       line_incr = FIX2INT(rb_funcall(token_content, rb_intern("count"), 1, rb_str_new_cstr("\n")));
       break;
+    case STRING:
+      // This is used only by the parser, this is never reached
+      break;
   }
 
   if (token_sym != Qnil) {
@@ -302,16 +306,19 @@ void emit(TokenType tt, char *ts, char *te, Meta *meta) {
       } else {
         token_sym = ID2SYM(rb_intern("BAD_UNICODE_ESCAPE"));
       }
+      // The parser doesn't distinguish between these:
+      tt = STRING;
     }
 
-    VALUE token_data[5] = {
+    VALUE token_data[] = {
       token_sym,
       rb_int2inum(meta->line),
       rb_int2inum(meta->col),
       token_content,
       meta->previous_token,
+      INT2FIX(200 + (int)tt)
     };
-    VALUE token = rb_ary_new_from_values(5, token_data);
+    VALUE token = rb_ary_new_from_values(6, token_data);
     // COMMENTs are retained as `previous_token` but aren't pushed to the normal token list
     if (tt != COMMENT) {
       rb_ary_push(meta->tokens, token);
@@ -370,7 +377,7 @@ void setup_static_token_variables() {
   SETUP_STATIC_TOKEN_VARIABLE(AMP, "&")
   SETUP_STATIC_TOKEN_VARIABLE(SCHEMA, "schema")
   SETUP_STATIC_TOKEN_VARIABLE(SCALAR, "scalar")
-  SETUP_STATIC_TOKEN_VARIABLE(TYPE, "type")
+  SETUP_STATIC_TOKEN_VARIABLE(TYPE_LITERAL, "type")
   SETUP_STATIC_TOKEN_VARIABLE(EXTEND, "extend")
   SETUP_STATIC_TOKEN_VARIABLE(IMPLEMENTS, "implements")
   SETUP_STATIC_TOKEN_VARIABLE(INTERFACE, "interface")

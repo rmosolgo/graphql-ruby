@@ -205,7 +205,7 @@ end
 
 task :build_yacc_parser do
   assert_dependency_version("Bison", "3.8", "yacc --version")
-  `yacc ext/graphql_ext/parser.y -o ext/graphql_ext/parser.c -Wyacc`
+  `yacc ext/graphql_ext/parser.y -o ext/graphql_ext/parser.c -Wno-yacc`
 end
 
 
