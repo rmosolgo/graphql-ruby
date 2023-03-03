@@ -155,12 +155,13 @@ typedef struct Meta {
   char *pe;
   VALUE tokens;
   VALUE previous_token;
+  VALUE module;
 } Meta;
 
 #define STATIC_VALUE_TOKEN(token_type, content_str) \
   case token_type: \
   token_sym = ID2SYM(rb_intern(#token_type)); \
-  token_content = rb_str_new_cstr(content_str); \
+  token_content = rb_const_get(meta->module, rb_intern(#token_type)); \
   break;
 
 #define DYNAMIC_VALUE_TOKEN(token_type) \
@@ -298,8 +299,8 @@ VALUE tokenize(VALUE query_rbstr) {
   char *ts = 0;
   char *te = 0;
   VALUE tokens = rb_ary_new();
-
-  struct Meta meta_s = {1, 1, p, pe, tokens, Qnil};
+  VALUE module = rb_define_module_under(rb_define_module("GraphQL"), "Clexer");
+  struct Meta meta_s = {1, 1, p, pe, tokens, Qnil, module};
   Meta *meta = &meta_s;
 
   %% write init;

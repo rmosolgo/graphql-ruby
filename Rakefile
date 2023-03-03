@@ -146,6 +146,12 @@ namespace :bench do
     prepare_benchmark
     GraphQLBenchmark.profile_large_analysis
   end
+
+  desc "Run analysis on parsing"
+  task :profile_parse do
+    prepare_benchmark
+    GraphQLBenchmark.profile_parse
+  end
 end
 
 namespace :test do

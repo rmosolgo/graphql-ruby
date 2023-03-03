@@ -53,6 +53,22 @@ module GraphQLBenchmark
     end
   end
 
+  def self.profile_parse
+    GraphQL.module_eval do
+      def self.scan(str)
+        GraphQL::Clexer.tokenize(str)
+      end
+    end
+
+    report = MemoryProfiler.report do
+      GraphQL.parse(BIG_QUERY_STRING)
+      GraphQL.parse(QUERY_STRING)
+      GraphQL.parse(ABSTRACT_FRAGMENTS_2_QUERY_STRING)
+    end
+    report.pretty_print
+  end
+
+
   def self.validate_memory
     FIELDS_WILL_MERGE_SCHEMA.validate(FIELDS_WILL_MERGE_QUERY)
 
