@@ -52,8 +52,6 @@ jobs:
           # Rails 6.1 is tested with Postgresql below
           - gemfile: gemfiles/rails_7.0.gemfile
             ruby: 3.1
-            env:
-              GRAPHQL_CLEXER: 1
           - gemfile: gemfiles/rails_master.gemfile
             ruby: 3.1
           - gemfile: gemfiles/rails_7.0.gemfile
@@ -101,6 +99,7 @@ jobs:
     - run: echo BUNDLE_GEMFILE='gemfiles/rails_6.1_postgresql.gemfile' > $GITHUB_ENV
     - run: echo DATABASE='POSTGRESQL' > $GITHUB_ENV
     - run: echo PGPASSWORD='postgres' > $GITHUB_ENV
+    - run: echo GRAPHQL_CLEXER=1 > $GITHUB_ENV
     - uses: actions/checkout@v3
     - uses: ruby/setup-ruby@v1
       with:
