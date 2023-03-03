@@ -76,7 +76,7 @@ module GraphQL
               CONFLICT_FIELD_NAMES.include?(field_defn.resolver_method) &&
               field_defn.original_name == field_defn.resolver_method &&
               field_defn.original_name == field_defn.method_sym &&
-              field_defn.hash_key == GraphQL::Schema::Field::NOT_CONFIGURED &&
+              field_defn.hash_key == NOT_CONFIGURED &&
               field_defn.dig_keys.nil?
             warn(conflict_field_name_warning(field_defn))
           end
