@@ -203,5 +203,11 @@ task :build_c_lexer do
   `ragel -F1 ext/graphql_ext/lexer.rl`
 end
 
+task :build_yacc_parser do
+  assert_dependency_version("Bison", "3.8", "yacc --version")
+  `yacc ext/graphql_ext/parser.y -o ext/graphql_ext/parser.c -Wyacc`
+end
+
+
 desc "Build the C Extension"
-task build_ext: [:build_c_lexer, :compile]
+task build_ext: [:build_c_lexer, :build_yacc_parser, :compile]
