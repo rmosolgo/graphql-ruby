@@ -219,7 +219,7 @@ module GraphQL
       # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
       # @param validates [Array<Hash>] Configurations for validating this field
       # @fallback_value [Object] A fallback value if the method is not defined
-      def initialize(type: nil, name: nil, owner: nil, null: nil, description: :not_given, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: :not_given, default_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: nil, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: :not_given, &definition_block)
+      def initialize(type: nil, name: nil, owner: nil, null: nil, description: NOT_CONFIGURED, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: NOT_CONFIGURED, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: :not_given, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -233,9 +233,10 @@ module GraphQL
 
         @underscored_name = -Member::BuildType.underscore(name_s)
         @name = -(camelize ? Member::BuildType.camelize(name_s) : name_s)
-        if description != :not_given
-          @description = description
-        end
+
+        @description = description
+        @type = @owner_type = @own_validators = @own_directives = @own_arguments = nil # these will be prepared later if necessary
+
         self.deprecation_reason = deprecation_reason
 
         if method && hash_key && dig
@@ -257,6 +258,9 @@ module GraphQL
         if hash_key
           @hash_key = hash_key
           @hash_key_str = hash_key.to_s
+        else
+          @hash_key = NOT_CONFIGURED
+          @hash_key_str = NOT_CONFIGURED
         end
 
         @method_str = -method_name.to_s
@@ -272,15 +276,11 @@ module GraphQL
           true
         end
         @connection = connection
-        @has_max_page_size = max_page_size != :not_given
-        @max_page_size = max_page_size == :not_given ? nil : max_page_size
-        @has_default_page_size = default_page_size != :not_given
-        @default_page_size = default_page_size == :not_given ? nil : default_page_size
+        @max_page_size = max_page_size
+        @default_page_size = default_page_size
         @introspection = introspection
         @extras = extras
-        if !broadcastable.nil?
-          @broadcastable = broadcastable
-        end
+        @broadcastable = broadcastable
         @resolver_class = resolver_class
         @scope = scope
         @trace = trace
@@ -355,7 +355,7 @@ module GraphQL
       # @return [Boolean, nil]
       # @see GraphQL::Subscriptions::BroadcastAnalyzer
       def broadcastable?
-        if defined?(@broadcastable)
+        if !NOT_CONFIGURED.equal?(@broadcastable)
           @broadcastable
         elsif @resolver_class
           @resolver_class.broadcastable?
@@ -369,10 +369,10 @@ module GraphQL
       def description(text = nil)
         if text
           @description = text
-        elsif defined?(@description)
+        elsif !NOT_CONFIGURED.equal?(@description)
           @description
         elsif @resolver_class
-          @description || @resolver_class.description
+          @resolver_class.description
         else
           nil
         end
@@ -544,22 +544,34 @@ module GraphQL
 
       # @return [Boolean] True if this field's {#max_page_size} should override the schema default.
       def has_max_page_size?
-        @has_max_page_size || (@resolver_class && @resolver_class.has_max_page_size?)
+        !NOT_CONFIGURED.equal?(@max_page_size) || (@resolver_class && @resolver_class.has_max_page_size?)
       end
 
       # @return [Integer, nil] Applied to connections if {#has_max_page_size?}
       def max_page_size
-        @max_page_size || (@resolver_class && @resolver_class.max_page_size)
+        if !NOT_CONFIGURED.equal?(@max_page_size)
+          @max_page_size
+        elsif @resolver_class && @resolver_class.has_max_page_size?
+          @resolver_class.max_page_size
+        else
+          nil
+        end
       end
 
       # @return [Boolean] True if this field's {#default_page_size} should override the schema default.
       def has_default_page_size?
-        @has_default_page_size || (@resolver_class && @resolver_class.has_default_page_size?)
+        !NOT_CONFIGURED.equal?(@default_page_size) || (@resolver_class && @resolver_class.has_default_page_size?)
       end
 
       # @return [Integer, nil] Applied to connections if {#has_default_page_size?}
       def default_page_size
-        @default_page_size || (@resolver_class && @resolver_class.default_page_size)
+        if !NOT_CONFIGURED.equal?(@default_page_size)
+          @default_page_size
+        elsif @resolver_class && @resolver_class.has_default_page_size?
+          @resolver_class.default_page_size
+        else
+          nil
+        end
       end
 
       class MissingReturnTypeError < GraphQL::Error; end
@@ -661,7 +673,7 @@ module GraphQL
 
               inner_object = obj.object
 
-              if defined?(@hash_key)
+              if !NOT_CONFIGURED.equal?(@hash_key)
                 hash_value = if inner_object.is_a?(Hash)
                   inner_object.key?(@hash_key) ? inner_object[@hash_key] : inner_object[@hash_key_str]
                 elsif inner_object.respond_to?(:[])

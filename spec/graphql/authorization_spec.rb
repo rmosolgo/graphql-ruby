@@ -31,11 +31,6 @@ describe "GraphQL::Authorization" do
     end
 
     class BaseField < GraphQL::Schema::Field
-      def initialize(*args, edge_class: nil, **kwargs, &block)
-        @edge_class = edge_class
-        super(*args, **kwargs, &block)
-      end
-
       argument_class BaseArgument
       def visible?(context)
         super && (context[:hide] ? @name != "hidden" : true)
