@@ -6,7 +6,9 @@ VALUE GraphQL_Clexer_tokenize(VALUE self, VALUE query_string) {
 }
 
 #define ASSIGN_STATIC_VALUE_TOKEN(token_name, token_content) \
-  rb_define_const(Clexer, #token_name, rb_str_new_cstr(token_content));
+  VALUE token_str_##token_name = rb_str_new_cstr(token_content); \
+  rb_funcall(token_str_##token_name, rb_intern("-@"), 0); \
+  rb_define_const(Clexer, #token_name, token_str_##token_name);
 
 // Initialize the extension
 void Init_graphql_ext() {
