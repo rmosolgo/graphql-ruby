@@ -23,6 +23,7 @@ Gem::Specification.new do |s|
   }
 
   s.files = Dir["{lib}/**/*", "MIT-LICENSE", "readme.md", ".yardopts"]
+  s.extensions << "ext/graphql_ext/extconf.rb"
 
   s.add_development_dependency "benchmark-ips"
   s.add_development_dependency "concurrent-ruby", "~>1.0"
