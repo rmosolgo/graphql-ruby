@@ -66,6 +66,10 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   def self.scan_with_ragel(graphql_string)
     GraphQL::Language::Lexer.tokenize(graphql_string)
   end
+
+  def self.scan_with_c(graphql_string)
+    GraphQL::Language::CLexer.tokenize(graphql_string)
+  end
 end
 
 # Order matters for these:

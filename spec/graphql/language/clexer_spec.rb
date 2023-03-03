@@ -2,14 +2,13 @@
 require "spec_helper"
 require_relative "./lexer_examples"
 
-# TODO dry with lexer_spec.rb
-describe GraphQL::Clexer do
-  subject { GraphQL::Clexer }
+describe GraphQL::Language::CLexer do
+  subject { GraphQL::Language::CLexer }
 
   it "makes tokens like the other lexer" do
     str = "{ f1(arg: \"str\") ...F2 }\nfragment F2 on SomeType { f2 }"
     # Don't include prev_token here
-    tokens = subject.tokenize(str).map { |t| [t[0], t[1], t[2], t[3]]}
+    tokens = GraphQL.scan_with_c(str).map { |t| [t[0], t[1], t[2], t[3]]}
     old_tokens = GraphQL.scan_with_ragel(str).map { |t| [t[0], t[1], t[2], t[3]]}
 
     assert_equal [

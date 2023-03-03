@@ -1,14 +1,14 @@
 #include "graphql_ext.h"
 
-VALUE GraphQL_Clexer_tokenize(VALUE self, VALUE query_string) {
+VALUE GraphQL_Language_CLexer_tokenize(VALUE self, VALUE query_string) {
   VALUE tokens = tokenize(query_string);
   return tokens;
 }
 
-// Initialize the extension
 void Init_graphql_ext() {
   VALUE GraphQL = rb_define_module("GraphQL");
-  VALUE Clexer = rb_define_module_under(GraphQL, "Clexer");
-  rb_define_singleton_method(Clexer, "tokenize", GraphQL_Clexer_tokenize, 1);
+  VALUE Language = rb_define_module_under(GraphQL, "Language");
+  VALUE CLexer = rb_define_module_under(Language, "CLexer");
+  rb_define_singleton_method(CLexer, "tokenize", GraphQL_Language_CLexer_tokenize, 1);
   setup_static_token_variables();
 }

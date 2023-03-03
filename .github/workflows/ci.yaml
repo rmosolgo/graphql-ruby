@@ -52,6 +52,8 @@ jobs:
           # Rails 6.1 is tested with Postgresql below
           - gemfile: gemfiles/rails_7.0.gemfile
             ruby: 3.1
+            env:
+              GRAPHQL_CLEXER: 1
           - gemfile: gemfiles/rails_master.gemfile
             ruby: 3.1
           - gemfile: gemfiles/rails_7.0.gemfile
