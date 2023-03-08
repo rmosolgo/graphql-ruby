@@ -3,4 +3,6 @@ gem "rails", "~> 6.1.0", require: "rails/all"
 gem "pg", platform: :ruby
 gem "sequel"
 gem "pry"
+gem "bootsnap"
+
 gemspec path: "../"

@@ -7,4 +7,6 @@ gem "evt"
 gem "fiber_scheduler", github: "bruno-/fiber_scheduler"
 gem "async"
 gem "pry"
+gem "bootsnap"
+
 gemspec path: "../"

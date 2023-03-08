@@ -8,5 +8,6 @@ gem "fiber_scheduler", github: "bruno-/fiber_scheduler"
 gem "async"
 gem "libev_scheduler"
 gem "pry"
+gem "bootsnap"
 
 gemspec path: "../"
