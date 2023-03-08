@@ -61,12 +61,10 @@ ERR
     end
   end
 
-  assert_dependency_version("Ragel", "7.0.0.9", "ragel -v")
   assert_dependency_version("Racc", "1.6.0", %|ruby -e "require 'racc'; puts Racc::VERSION"|)
 
-  `rm -f lib/graphql/language/parser.rb lib/graphql/language/lexer.rb `
+  `rm -f lib/graphql/language/parser.rb `
   `racc lib/graphql/language/parser.y -o lib/graphql/language/parser.rb`
-  `ragel -R -F1 lib/graphql/language/lexer.rl`
 end
 
 namespace :bench do
