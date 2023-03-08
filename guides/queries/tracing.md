@@ -8,7 +8,7 @@ desc: Observation hooks for execution
 index: 11
 ---
 
-{{ "GraphQL::Tracing::Trace" | api_doc }} provides hooks to observe and modify events during runtime. Tracing hooks are methods, defined in modules and mixed in with {{ "Schema.trace_with" | api_doc }}.
+{{ "GraphQL::Tracing" | api_doc }} provides hooks to observe and modify events during runtime. Tracing hooks are methods, defined in modules and mixed in with {{ "Schema.trace_with" | api_doc }}.
 
 ```ruby
 module CustomTrace
@@ -30,7 +30,7 @@ class MySchema < GraphQL::Schema
 end
 ```
 
-For a full list of methods and their arguments, see {{ "GraphQL::Tracing::Trace" | api_doc }}.
+For a full list of methods and their arguments, see {{ "GraphQL::Tracing" | api_doc }}.
 
 ## ActiveSupport::Notifications
 
