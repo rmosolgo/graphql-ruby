@@ -70,6 +70,11 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   def self.scan_with_c(graphql_string)
     GraphQL::Language::CLexer.tokenize(graphql_string)
   end
+
+  def self.parse_with_c(string, filename: nil, trace: GraphQL::Tracing::NullTrace)
+    # TODO handle other arguments here
+    GraphQL::Language::CParser.parse(string)
+  end
 end
 
 # Order matters for these:

@@ -24,4 +24,5 @@ void Init_graphql_ext() {
 
   VALUE CParser = rb_define_class_under(Language, "CParser", rb_cObject);
   rb_define_singleton_method(CParser, "parse", GraphQL_Language_CParser_parse, 1);
+  initialize_node_class_variables();
 }

@@ -8,6 +8,27 @@
 int yylex(YYSTYPE *, VALUE);
 void yyerror(VALUE, const char*);
 
+static VALUE GraphQL_Language_Nodes_NONE;
+static VALUE r_string_query;
+#define SETUP_NODE_CLASS_VARIABLE(node_class_name) static VALUE GraphQL_Language_Nodes_##node_class_name;
+
+SETUP_NODE_CLASS_VARIABLE(Argument)
+SETUP_NODE_CLASS_VARIABLE(Directive)
+SETUP_NODE_CLASS_VARIABLE(Document)
+SETUP_NODE_CLASS_VARIABLE(Enum)
+SETUP_NODE_CLASS_VARIABLE(Field)
+SETUP_NODE_CLASS_VARIABLE(FragmentDefinition)
+SETUP_NODE_CLASS_VARIABLE(FragmentSpread)
+SETUP_NODE_CLASS_VARIABLE(InlineFragment)
+SETUP_NODE_CLASS_VARIABLE(InputObject)
+SETUP_NODE_CLASS_VARIABLE(ListType)
+SETUP_NODE_CLASS_VARIABLE(NonNullType)
+SETUP_NODE_CLASS_VARIABLE(NullValue)
+SETUP_NODE_CLASS_VARIABLE(OperationDefinition)
+SETUP_NODE_CLASS_VARIABLE(TypeName)
+SETUP_NODE_CLASS_VARIABLE(VariableDefinition)
+SETUP_NODE_CLASS_VARIABLE(VariableIdentifier)
+
 %}
 
 %param {VALUE parser}
@@ -56,7 +77,22 @@ void yyerror(VALUE, const char*);
   // YACC Rules
   start: document { rb_ivar_set(parser, rb_intern("result"), $1); }
 
-  document: definitions_list { $$ = $1; }
+  document: definitions_list {
+    VALUE position_source = rb_ary_entry($1, 0);
+    VALUE line, col;
+    if (RB_TEST(position_source)) {
+      line = rb_funcall(position_source, rb_intern("line"), 0);
+      col = rb_funcall(position_source, rb_intern("col"), 0);
+    } else {
+      line = INT2FIX(1);
+      col = INT2FIX(1);
+    }
+    $$ = rb_funcall(GraphQL_Language_Nodes_Document, rb_intern("from_a"), 3,
+      line,
+      col,
+      $1
+    );
+  }
 
   definitions_list:
       definition                    { $$ = rb_ary_new_from_args(1, $1); }
@@ -70,42 +106,92 @@ void yyerror(VALUE, const char*);
 
   executable_definition:
       operation_definition
-    /* TODO | fragment_definition  */
-
+    | fragment_definition
 
   operation_definition:
-      /*
-      operation_type operation_name_opt variable_definitions_opt directives_list_opt selection_set {
-        result = make_node(
-          :OperationDefinition, {
-            operation_type: val[0],
-            name:           val[1],
-            variables:      val[2],
-            directives:     val[3],
-            selections:     val[4],
-            position_source: val[0],
-          }
-        )
-      }
-    | */
-    LCURLY selection_list RCURLY {
-        $$ = rb_ary_new_from_args(5,
-          rb_id2sym(rb_intern("OperationDefinition")),
+      operation_type name variable_definitions_opt directives_list_opt selection_set {
+        $$ = rb_funcall(GraphQL_Language_Nodes_OperationDefinition, rb_intern("from_a"), 7,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
-          rb_str_new_cstr("query"), // TODO static string
+          rb_ary_entry($1, 3),
+          rb_ary_entry($2, 3),
+          $3,
+          $4,
+          $5
+        );
+      }
+    | name variable_definitions_opt directives_list_opt selection_set {
+        $$ = rb_funcall(GraphQL_Language_Nodes_OperationDefinition, rb_intern("from_a"), 7,
+          rb_ary_entry($1, 1),
+          rb_ary_entry($1, 2),
+          r_string_query,
+          rb_ary_entry($1, 3),
+          $2,
+          $3,
+          $4
+        );
+      }
+    | operation_type variable_definitions_opt directives_list_opt selection_set {
+        $$ = rb_funcall(GraphQL_Language_Nodes_OperationDefinition, rb_intern("from_a"), 7,
+          rb_ary_entry($1, 1),
+          rb_ary_entry($1, 2),
+          rb_ary_entry($1, 3),
+          Qnil,
+          $2,
+          $3,
+          $4
+        );
+      }
+    | LCURLY selection_list RCURLY {
+        $$ = rb_funcall(GraphQL_Language_Nodes_OperationDefinition, rb_intern("from_a"), 7,
+          rb_ary_entry($1, 1),
+          rb_ary_entry($1, 2),
+          r_string_query,
+          Qnil,
+          GraphQL_Language_Nodes_NONE,
+          GraphQL_Language_Nodes_NONE,
           $2
         );
       }
     | LCURLY RCURLY {
-        $$ = rb_ary_new_from_args(5,
-          rb_id2sym(rb_intern("OperationDefinition")),
+        $$ = rb_funcall(GraphQL_Language_Nodes_OperationDefinition, rb_intern("from_a"), 7,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
-          rb_str_new_cstr("query"), // TODO static string
-          rb_ary_new()
+          r_string_query,
+          Qnil,
+          GraphQL_Language_Nodes_NONE,
+          GraphQL_Language_Nodes_NONE,
+          GraphQL_Language_Nodes_NONE
         );
       }
+
+  operation_type:
+      QUERY
+    | MUTATION
+    | SUBSCRIPTION
+
+  variable_definitions_opt:
+      /* none */                              { $$ = GraphQL_Language_Nodes_NONE; }
+    | LPAREN variable_definitions_list RPAREN { $$ = $2; }
+
+  variable_definitions_list:
+      variable_definition                           { $$ = rb_ary_new_from_args(1, $1); }
+    | variable_definitions_list variable_definition { rb_ary_push($$, $2); }
+
+  variable_definition:
+      VAR_SIGN name COLON type default_value_opt {
+        $$ = rb_funcall(GraphQL_Language_Nodes_VariableDefinition, rb_intern("from_a"), 5,
+          rb_ary_entry($1, 1),
+          rb_ary_entry($1, 2),
+          rb_ary_entry($2, 3),
+          $4,
+          $5
+        );
+      }
+
+  default_value_opt:
+      /* none */            { $$ = Qnil; }
+    | EQUALS literal_value  { $$ = $2; }
 
   selection_list:
       selection                 { $$ = rb_ary_new_from_args(1, $1); }
@@ -113,8 +199,8 @@ void yyerror(VALUE, const char*);
 
   selection:
       field
-    /* TODO | fragment_spread
-    | inline_fragment */
+    | fragment_spread
+    | inline_fragment
 
   selection_set:
       LCURLY selection_list RCURLY { $$ = $2; }
@@ -123,13 +209,9 @@ void yyerror(VALUE, const char*);
       /* none */    { $$ = rb_ary_new(); }
     | selection_set
 
-
-
   field:
     name COLON name arguments_opt directives_list_opt selection_set_opt {
-      $$ = rb_ary_new_from_args(
-        8,
-        rb_id2sym(rb_intern("Field")),
+      $$ = rb_funcall(GraphQL_Language_Nodes_Field, rb_intern("from_a"), 7,
         rb_ary_entry($1, 1),
         rb_ary_entry($1, 2),
         rb_ary_entry($1, 3), // alias
@@ -140,9 +222,7 @@ void yyerror(VALUE, const char*);
       );
     }
     | name arguments_opt directives_list_opt selection_set_opt {
-      $$ = rb_ary_new_from_args(
-        8,
-        rb_id2sym(rb_intern("Field")),
+      $$ = rb_funcall(GraphQL_Language_Nodes_Field, rb_intern("from_a"), 7,
         rb_ary_entry($1, 1),
         rb_ary_entry($1, 2),
         Qnil, // alias
@@ -163,8 +243,7 @@ void yyerror(VALUE, const char*);
 
   argument:
       name COLON input_value {
-        $$ = rb_ary_new_from_args(5,
-          rb_id2sym(rb_intern("Argument")),
+        $$ = rb_funcall(GraphQL_Language_Nodes_Argument, rb_intern("from_a"), 4,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           rb_ary_entry($1, 3),
@@ -189,8 +268,7 @@ void yyerror(VALUE, const char*);
     | object_value
 
   null_value: NULL_LITERAL {
-    $$ = rb_ary_new_from_args(4,
-      rb_id2sym(rb_intern("NullValue")),
+    $$ = rb_funcall(GraphQL_Language_Nodes_NullValue, rb_intern("from_a"), 3,
       rb_ary_entry($1, 1),
       rb_ary_entry($1, 2),
       rb_ary_entry($1, 3)
@@ -198,16 +276,15 @@ void yyerror(VALUE, const char*);
   }
 
   variable: VAR_SIGN name {
-    $$ = rb_ary_new_from_args(4,
-      rb_id2sym(rb_intern("VariableIdentifier")),
+    $$ = rb_funcall(GraphQL_Language_Nodes_VariableIdentifier, rb_intern("from_a"), 3,
       rb_ary_entry($1, 1),
       rb_ary_entry($1, 2),
-      rb_ary_entry($1, 3)
+      rb_ary_entry($2, 3)
     );
   }
 
   list_value:
-      LBRACKET RBRACKET                 { $$ = rb_ary_new(); } // TODO get a empty array?
+      LBRACKET RBRACKET                 { $$ = GraphQL_Language_Nodes_NONE; }
     | LBRACKET list_value_list RBRACKET { $$ = $2; }
 
   list_value_list:
@@ -223,8 +300,7 @@ void yyerror(VALUE, const char*);
     | schema_keyword
 
   enum_value: enum_name {
-    $$ = rb_ary_new_from_args(4,
-      rb_id2sym(rb_intern("Enum")),
+    $$ = rb_funcall(GraphQL_Language_Nodes_Enum, rb_intern("from_a"), 3,
       rb_ary_entry($1, 1),
       rb_ary_entry($1, 2),
       rb_ary_entry($1, 3)
@@ -233,8 +309,7 @@ void yyerror(VALUE, const char*);
 
   object_value:
     | LCURLY object_value_list_opt RCURLY {
-      $$ = rb_ary_new_from_args(4,
-        rb_id2sym(rb_intern("InputObject")),
+      $$ = rb_funcall(GraphQL_Language_Nodes_InputObject, rb_intern("from_a"), 3,
         rb_ary_entry($1, 1),
         rb_ary_entry($1, 2),
         $2
@@ -242,7 +317,7 @@ void yyerror(VALUE, const char*);
     }
 
   object_value_list_opt:
-      /* nothing */     { $$ = rb_ary_new(); }
+      /* nothing */     { $$ = GraphQL_Language_Nodes_NONE; }
     | object_value_list
 
   object_value_list:
@@ -251,12 +326,11 @@ void yyerror(VALUE, const char*);
 
   object_value_field:
       name COLON input_value {
-        $$ = rb_ary_new_from_args(5,
-          rb_id2sym(rb_intern("Argument")),
+        $$ = rb_funcall(GraphQL_Language_Nodes_Argument, rb_intern("from_a"), 4,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           rb_ary_entry($1, 3),
-          rb_ary_entry($3, 3)
+          $3
         );
       }
 
@@ -272,7 +346,7 @@ void yyerror(VALUE, const char*);
       }
 
   object_literal_value_list_opt:
-      /* nothing */             { $$ = rb_ary_new(); }
+      /* nothing */             { $$ = GraphQL_Language_Nodes_NONE; }
     | object_literal_value_list
 
   object_literal_value_list:
@@ -281,8 +355,7 @@ void yyerror(VALUE, const char*);
 
   object_literal_value_field:
       name COLON literal_value {
-        $$ = rb_ary_new_from_args(5,
-          rb_id2sym(rb_intern("Argument")),
+        $$ = rb_funcall(GraphQL_Language_Nodes_Argument, rb_intern("from_a"), 4,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           rb_ary_entry($1, 3),
@@ -292,7 +365,7 @@ void yyerror(VALUE, const char*);
 
 
   directives_list_opt:
-      /* none */      { $$ = rb_ary_new(); }
+      /* none */      { $$ = GraphQL_Language_Nodes_NONE; }
     | directives_list
 
   directives_list:
@@ -300,8 +373,7 @@ void yyerror(VALUE, const char*);
     | directives_list directive { rb_ary_push($$, $2); }
 
   directive: DIR_SIGN name arguments_opt {
-    $$ = rb_ary_new_from_args(5,
-      rb_id2sym(rb_intern("Directive")),
+    $$ = rb_funcall(GraphQL_Language_Nodes_Directive, rb_intern("from_a"), 4,
       rb_ary_entry($1, 1),
       rb_ary_entry($1, 2),
       rb_ary_entry($2, 3),
@@ -337,6 +409,73 @@ void yyerror(VALUE, const char*);
     | FALSE_LITERAL
     | operation_type
     | schema_keyword
+
+
+  fragment_spread:
+      ELLIPSIS name_without_on directives_list_opt {
+        $$ = rb_funcall(GraphQL_Language_Nodes_FragmentSpread, rb_intern("from_a"), 4,
+          rb_ary_entry($1, 1),
+          rb_ary_entry($1, 2),
+          rb_ary_entry($2, 3),
+          $3
+        );
+      }
+
+  inline_fragment:
+      ELLIPSIS ON type directives_list_opt selection_set {
+        $$ = rb_funcall(GraphQL_Language_Nodes_InlineFragment, rb_intern("from_a"), 5,
+          rb_ary_entry($1, 1),
+          rb_ary_entry($1, 2),
+          $3,
+          $4,
+          $5
+        );
+      }
+    | ELLIPSIS directives_list_opt selection_set {
+        $$ = rb_funcall(GraphQL_Language_Nodes_InlineFragment, rb_intern("from_a"), 5,
+          rb_ary_entry($1, 1),
+          rb_ary_entry($1, 2),
+          Qnil,
+          $2,
+          $3
+        );
+      }
+
+  fragment_definition:
+    FRAGMENT fragment_name_opt ON type directives_list_opt selection_set {
+      $$ = rb_funcall(GraphQL_Language_Nodes_FragmentDefinition, rb_intern("from_a"), 6,
+        rb_ary_entry($1, 1),
+        rb_ary_entry($1, 2),
+        $2,
+        $4,
+        $5,
+        $6
+      );
+    }
+
+  fragment_name_opt:
+      /* none */ { $$ = Qnil; }
+    | name_without_on { $$ = rb_ary_entry($1, 3); }
+
+  type:
+      nullable_type
+    | nullable_type BANG      { $$ = rb_funcall(GraphQL_Language_Nodes_NonNullType, rb_intern("from_a"), 3, rb_funcall($1, rb_intern("line"), 0), rb_funcall($1, rb_intern("col"), 0), $1); }
+
+  nullable_type:
+      name                   {
+        $$ = rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3,
+          rb_ary_entry($1, 1),
+          rb_ary_entry($1, 2),
+          rb_ary_entry($1, 3)
+        );
+      }
+    | LBRACKET type RBRACKET {
+        $$ = rb_funcall(GraphQL_Language_Nodes_ListType, rb_intern("from_a"), 3,
+          rb_funcall($2, rb_intern("line"), 0),
+          rb_funcall($2, rb_intern("col"), 0),
+          $2
+        );
+      }
 %%
 
 // Custom functions
@@ -358,4 +497,33 @@ int yylex (YYSTYPE *lvalp, VALUE parser) {
 }
 
 void yyerror(VALUE tokens, const char *msg) {
+}
+
+#define INITIALIZE_NODE_CLASS_VARIABLE(node_class_name) GraphQL_Language_Nodes_##node_class_name = rb_const_get_at(mGraphQLLanguageNodes, rb_intern(#node_class_name));
+
+void initialize_node_class_variables() {
+  VALUE mGraphQL = rb_const_get_at(rb_cObject, rb_intern("GraphQL"));
+  VALUE mGraphQLLanguage = rb_const_get_at(mGraphQL, rb_intern("Language"));
+  VALUE mGraphQLLanguageNodes = rb_const_get_at(mGraphQLLanguage, rb_intern("Nodes"));
+  GraphQL_Language_Nodes_NONE = rb_const_get_at(mGraphQLLanguageNodes, rb_intern("NONE"));
+  r_string_query = rb_str_new_cstr("query");
+  rb_global_variable(&r_string_query);
+  rb_str_freeze(r_string_query);
+
+  INITIALIZE_NODE_CLASS_VARIABLE(Argument)
+  INITIALIZE_NODE_CLASS_VARIABLE(Directive)
+  INITIALIZE_NODE_CLASS_VARIABLE(Document)
+  INITIALIZE_NODE_CLASS_VARIABLE(Enum)
+  INITIALIZE_NODE_CLASS_VARIABLE(Field)
+  INITIALIZE_NODE_CLASS_VARIABLE(FragmentDefinition)
+  INITIALIZE_NODE_CLASS_VARIABLE(FragmentSpread)
+  INITIALIZE_NODE_CLASS_VARIABLE(InlineFragment)
+  INITIALIZE_NODE_CLASS_VARIABLE(InputObject)
+  INITIALIZE_NODE_CLASS_VARIABLE(ListType)
+  INITIALIZE_NODE_CLASS_VARIABLE(NonNullType)
+  INITIALIZE_NODE_CLASS_VARIABLE(NullValue)
+  INITIALIZE_NODE_CLASS_VARIABLE(OperationDefinition)
+  INITIALIZE_NODE_CLASS_VARIABLE(TypeName)
+  INITIALIZE_NODE_CLASS_VARIABLE(VariableDefinition)
+  INITIALIZE_NODE_CLASS_VARIABLE(VariableIdentifier)
 }

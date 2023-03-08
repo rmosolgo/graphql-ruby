@@ -44,8 +44,11 @@ module GraphQLBenchmark
         x.report("scan c - big query") { GraphQL::Clexer.tokenize(BIG_QUERY_STRING) }
         x.report("scan - big query") { GraphQL.scan(BIG_QUERY_STRING) }
       when "parse"
+        x.report("parse c - introspection") { GraphQL.parse_with_c(QUERY_STRING) }
         x.report("parse - introspection") { GraphQL.parse(QUERY_STRING) }
+        x.report("parse c - fragments") { GraphQL.parse_with_c(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
         x.report("parse - fragments") { GraphQL.parse(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
+        x.report("parse c - big query") { GraphQL.parse_with_c(BIG_QUERY_STRING) }
         x.report("parse - big query") { GraphQL.parse(BIG_QUERY_STRING) }
       else
         raise("Unexpected task #{task}")

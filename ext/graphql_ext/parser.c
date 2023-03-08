@@ -75,8 +75,29 @@
 int yylex(YYSTYPE *, VALUE);
 void yyerror(VALUE, const char*);
 
+static VALUE GraphQL_Language_Nodes_NONE;
+static VALUE r_string_query;
+#define SETUP_NODE_CLASS_VARIABLE(node_class_name) static VALUE GraphQL_Language_Nodes_##node_class_name;
 
-#line 80 "ext/graphql_ext/parser.c"
+SETUP_NODE_CLASS_VARIABLE(Argument)
+SETUP_NODE_CLASS_VARIABLE(Directive)
+SETUP_NODE_CLASS_VARIABLE(Document)
+SETUP_NODE_CLASS_VARIABLE(Enum)
+SETUP_NODE_CLASS_VARIABLE(Field)
+SETUP_NODE_CLASS_VARIABLE(FragmentDefinition)
+SETUP_NODE_CLASS_VARIABLE(FragmentSpread)
+SETUP_NODE_CLASS_VARIABLE(InlineFragment)
+SETUP_NODE_CLASS_VARIABLE(InputObject)
+SETUP_NODE_CLASS_VARIABLE(ListType)
+SETUP_NODE_CLASS_VARIABLE(NonNullType)
+SETUP_NODE_CLASS_VARIABLE(NullValue)
+SETUP_NODE_CLASS_VARIABLE(OperationDefinition)
+SETUP_NODE_CLASS_VARIABLE(TypeName)
+SETUP_NODE_CLASS_VARIABLE(VariableDefinition)
+SETUP_NODE_CLASS_VARIABLE(VariableIdentifier)
+
+
+#line 101 "ext/graphql_ext/parser.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -265,37 +286,47 @@ enum yysymbol_kind_t
   YYSYMBOL_definition = 44,                /* definition  */
   YYSYMBOL_executable_definition = 45,     /* executable_definition  */
   YYSYMBOL_operation_definition = 46,      /* operation_definition  */
-  YYSYMBOL_selection_list = 47,            /* selection_list  */
-  YYSYMBOL_selection = 48,                 /* selection  */
-  YYSYMBOL_selection_set = 49,             /* selection_set  */
-  YYSYMBOL_selection_set_opt = 50,         /* selection_set_opt  */
-  YYSYMBOL_field = 51,                     /* field  */
-  YYSYMBOL_arguments_opt = 52,             /* arguments_opt  */
-  YYSYMBOL_arguments_list = 53,            /* arguments_list  */
-  YYSYMBOL_argument = 54,                  /* argument  */
-  YYSYMBOL_literal_value = 55,             /* literal_value  */
-  YYSYMBOL_input_value = 56,               /* input_value  */
-  YYSYMBOL_null_value = 57,                /* null_value  */
-  YYSYMBOL_variable = 58,                  /* variable  */
-  YYSYMBOL_list_value = 59,                /* list_value  */
-  YYSYMBOL_list_value_list = 60,           /* list_value_list  */
-  YYSYMBOL_enum_name = 61,                 /* enum_name  */
-  YYSYMBOL_enum_value = 62,                /* enum_value  */
-  YYSYMBOL_object_value = 63,              /* object_value  */
-  YYSYMBOL_object_value_list_opt = 64,     /* object_value_list_opt  */
-  YYSYMBOL_object_value_list = 65,         /* object_value_list  */
-  YYSYMBOL_object_value_field = 66,        /* object_value_field  */
-  YYSYMBOL_object_literal_value = 67,      /* object_literal_value  */
-  YYSYMBOL_object_literal_value_list_opt = 68, /* object_literal_value_list_opt  */
-  YYSYMBOL_object_literal_value_list = 69, /* object_literal_value_list  */
-  YYSYMBOL_object_literal_value_field = 70, /* object_literal_value_field  */
-  YYSYMBOL_directives_list_opt = 71,       /* directives_list_opt  */
-  YYSYMBOL_directives_list = 72,           /* directives_list  */
-  YYSYMBOL_directive = 73,                 /* directive  */
-  YYSYMBOL_name = 74,                      /* name  */
-  YYSYMBOL_operation_type = 75,            /* operation_type  */
-  YYSYMBOL_schema_keyword = 76,            /* schema_keyword  */
-  YYSYMBOL_name_without_on = 77            /* name_without_on  */
+  YYSYMBOL_operation_type = 47,            /* operation_type  */
+  YYSYMBOL_variable_definitions_opt = 48,  /* variable_definitions_opt  */
+  YYSYMBOL_variable_definitions_list = 49, /* variable_definitions_list  */
+  YYSYMBOL_variable_definition = 50,       /* variable_definition  */
+  YYSYMBOL_default_value_opt = 51,         /* default_value_opt  */
+  YYSYMBOL_selection_list = 52,            /* selection_list  */
+  YYSYMBOL_selection = 53,                 /* selection  */
+  YYSYMBOL_selection_set = 54,             /* selection_set  */
+  YYSYMBOL_selection_set_opt = 55,         /* selection_set_opt  */
+  YYSYMBOL_field = 56,                     /* field  */
+  YYSYMBOL_arguments_opt = 57,             /* arguments_opt  */
+  YYSYMBOL_arguments_list = 58,            /* arguments_list  */
+  YYSYMBOL_argument = 59,                  /* argument  */
+  YYSYMBOL_literal_value = 60,             /* literal_value  */
+  YYSYMBOL_input_value = 61,               /* input_value  */
+  YYSYMBOL_null_value = 62,                /* null_value  */
+  YYSYMBOL_variable = 63,                  /* variable  */
+  YYSYMBOL_list_value = 64,                /* list_value  */
+  YYSYMBOL_list_value_list = 65,           /* list_value_list  */
+  YYSYMBOL_enum_name = 66,                 /* enum_name  */
+  YYSYMBOL_enum_value = 67,                /* enum_value  */
+  YYSYMBOL_object_value = 68,              /* object_value  */
+  YYSYMBOL_object_value_list_opt = 69,     /* object_value_list_opt  */
+  YYSYMBOL_object_value_list = 70,         /* object_value_list  */
+  YYSYMBOL_object_value_field = 71,        /* object_value_field  */
+  YYSYMBOL_object_literal_value = 72,      /* object_literal_value  */
+  YYSYMBOL_object_literal_value_list_opt = 73, /* object_literal_value_list_opt  */
+  YYSYMBOL_object_literal_value_list = 74, /* object_literal_value_list  */
+  YYSYMBOL_object_literal_value_field = 75, /* object_literal_value_field  */
+  YYSYMBOL_directives_list_opt = 76,       /* directives_list_opt  */
+  YYSYMBOL_directives_list = 77,           /* directives_list  */
+  YYSYMBOL_directive = 78,                 /* directive  */
+  YYSYMBOL_name = 79,                      /* name  */
+  YYSYMBOL_schema_keyword = 80,            /* schema_keyword  */
+  YYSYMBOL_name_without_on = 81,           /* name_without_on  */
+  YYSYMBOL_fragment_spread = 82,           /* fragment_spread  */
+  YYSYMBOL_inline_fragment = 83,           /* inline_fragment  */
+  YYSYMBOL_fragment_definition = 84,       /* fragment_definition  */
+  YYSYMBOL_fragment_name_opt = 85,         /* fragment_name_opt  */
+  YYSYMBOL_type = 86,                      /* type  */
+  YYSYMBOL_nullable_type = 87              /* nullable_type  */
 };
 typedef enum yysymbol_kind_t yysymbol_kind_t;
 
@@ -412,7 +443,7 @@ typedef int yytype_uint16;
 
 
 /* Stored state numbers (used for stacks). */
-typedef yytype_int8 yy_state_t;
+typedef yytype_uint8 yy_state_t;
 
 /* State numbers in computations.  */
 typedef int yy_state_fast_t;
@@ -621,18 +652,18 @@ union yyalloc
 #endif /* !YYCOPY_NEEDED */
 
 /* YYFINAL -- State number of the termination state.  */
-#define YYFINAL  34
+#define YYFINAL  43
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   367
+#define YYLAST   617
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  40
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  38
+#define YYNNTS  48
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  86
+#define YYNRULES  112
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  113
+#define YYNSTATES  162
 
 /* YYMAXUTOK -- Last valid token kind.  */
 #define YYMAXUTOK   257
@@ -681,15 +712,18 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    57,    57,    59,    62,    63,    66,    72,    91,   100,
-     111,   112,   115,   120,   123,   124,   129,   142,   157,   158,
-     161,   162,   165,   176,   177,   178,   179,   180,   181,   182,
-     183,   184,   187,   188,   189,   191,   200,   210,   211,   214,
-     215,   218,   219,   220,   221,   222,   223,   225,   234,   235,
-     245,   246,   249,   250,   253,   265,   275,   276,   279,   280,
-     283,   295,   296,   299,   300,   302,   313,   314,   317,   318,
-     319,   322,   323,   324,   325,   326,   327,   328,   329,   330,
-     333,   334,   335,   336,   337,   338,   339
+       0,    78,    78,    80,    98,    99,   102,   108,   109,   112,
+     123,   134,   145,   156,   169,   170,   171,   174,   175,   178,
+     179,   182,   193,   194,   197,   198,   201,   202,   203,   206,
+     209,   210,   213,   224,   237,   238,   241,   242,   245,   255,
+     256,   257,   258,   259,   260,   261,   262,   263,   266,   267,
+     268,   270,   278,   287,   288,   291,   292,   295,   296,   297,
+     298,   299,   300,   302,   310,   311,   320,   321,   324,   325,
+     328,   339,   349,   350,   353,   354,   357,   368,   369,   372,
+     373,   375,   385,   386,   389,   390,   391,   394,   395,   396,
+     397,   398,   399,   400,   401,   402,   405,   406,   407,   408,
+     409,   410,   411,   415,   425,   434,   445,   457,   458,   461,
+     462,   465,   472
 };
 #endif
 
@@ -713,16 +747,18 @@ static const char *const yytname[] =
   "REPEATABLE", "RPAREN", "SCALAR", "SCHEMA", "STRING", "SUBSCRIPTION",
   "TRUE_LITERAL", "TYPE_LITERAL", "UNION", "VAR_SIGN", "$accept", "start",
   "document", "definitions_list", "definition", "executable_definition",
-  "operation_definition", "selection_list", "selection", "selection_set",
-  "selection_set_opt", "field", "arguments_opt", "arguments_list",
-  "argument", "literal_value", "input_value", "null_value", "variable",
-  "list_value", "list_value_list", "enum_name", "enum_value",
-  "object_value", "object_value_list_opt", "object_value_list",
-  "object_value_field", "object_literal_value",
+  "operation_definition", "operation_type", "variable_definitions_opt",
+  "variable_definitions_list", "variable_definition", "default_value_opt",
+  "selection_list", "selection", "selection_set", "selection_set_opt",
+  "field", "arguments_opt", "arguments_list", "argument", "literal_value",
+  "input_value", "null_value", "variable", "list_value", "list_value_list",
+  "enum_name", "enum_value", "object_value", "object_value_list_opt",
+  "object_value_list", "object_value_field", "object_literal_value",
   "object_literal_value_list_opt", "object_literal_value_list",
   "object_literal_value_field", "directives_list_opt", "directives_list",
-  "directive", "name", "operation_type", "schema_keyword",
-  "name_without_on", YY_NULLPTR
+  "directive", "name", "schema_keyword", "name_without_on",
+  "fragment_spread", "inline_fragment", "fragment_definition",
+  "fragment_name_opt", "type", "nullable_type", YY_NULLPTR
 };
 
 static const char *
@@ -732,12 +768,12 @@ yysymbol_name (yysymbol_kind_t yysymbol)
 }
 #endif
 
-#define YYPACT_NINF (-97)
+#define YYPACT_NINF (-92)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
 
-#define YYTABLE_NINF (-1)
+#define YYTABLE_NINF (-108)
 
 #define yytable_value_is_error(Yyn) \
   0
@@ -746,18 +782,23 @@ yysymbol_name (yysymbol_kind_t yysymbol)
    STATE-NUM.  */
 static const yytype_int16 yypact[] =
 {
-     -10,   197,    13,   -97,   -10,   -97,   -97,   -97,   -97,   -97,
-     -97,   -97,   -97,   -97,   -97,   -97,   -97,   -97,   -97,   -97,
-     -97,   -97,   -97,   -97,   -97,   -97,   -97,   230,   -97,   -97,
-       0,   -97,   -97,   -97,   -97,   -97,   -97,   -97,   329,   329,
-       7,    -6,   263,   -97,    12,   329,    -2,     7,   -97,     7,
-     -97,   -97,   130,    -6,   329,   -97,   -97,   -97,    -2,   -97,
-     -97,   -97,   -97,   -97,    62,   329,   -97,   -97,   -97,   -97,
-     -97,   329,   -97,   -97,   -97,   -97,   -97,   -97,   -97,   -97,
-     -97,   -97,   -97,   -97,   296,   -97,   -97,   -97,    96,    -5,
-     329,   -97,    -4,   329,   -97,    18,   -97,   -97,   -97,   -97,
-     -97,   -97,    21,   -97,   -97,    23,   130,   130,   164,   -97,
-     -97,   329,   -97
+     348,   -92,   -92,   -92,   546,   -92,   -92,   -92,   -92,    94,
+     -92,   -92,   -92,   -92,   -92,   -92,   -92,   -92,   -92,   -92,
+       5,   -92,   348,   -92,   -92,   -92,   381,   -12,   -92,   -92,
+     -92,   -92,   -92,   -92,    -5,   414,   -92,   282,   -92,   -92,
+       9,   -92,   -92,   -92,   -92,   -11,    25,   -12,    25,   447,
+     579,   447,    12,    25,   -92,    25,   -92,   -92,   579,   579,
+      25,   579,   -27,   -92,    12,    25,    12,   447,   -92,    25,
+      30,    14,    25,   480,   -92,   -92,   -92,    14,   513,   -92,
+      36,    12,    40,   -92,   -92,   -92,    12,   -92,    18,    12,
+     -92,   -92,    12,   315,    25,   -92,   -92,   215,   -92,   -92,
+     447,   -92,   -92,   -92,   -92,   -92,    12,   -92,   -92,   -92,
+     -92,   -92,   147,   579,   -92,   -92,   -92,   -92,   -92,   579,
+     -92,   -92,   -92,   -92,   -92,   -92,   -92,   -92,   -92,   -92,
+     -92,    37,   -92,   -92,   -92,   181,    19,   579,   -92,    27,
+     579,   -92,    49,   -92,   249,   -92,   -92,   -92,   -92,   -92,
+      56,   -92,   -92,    65,   215,   579,   -92,   215,   249,   -92,
+     -92,   -92
 };
 
 /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -765,117 +806,174 @@ static const yytype_int16 yypact[] =
    means the default is an error.  */
 static const yytype_int8 yydefact[] =
 {
-       0,     0,     0,     2,     3,     4,     6,     7,    79,    77,
-      84,    81,    80,    78,    74,    75,    69,    67,    68,     9,
-      82,    72,    71,    70,    83,    73,    76,     0,    10,    12,
-      18,    85,    86,    66,     1,     5,     8,    11,     0,     0,
-      61,    18,     0,    20,     0,     0,    14,    62,    63,    61,
-      19,    21,    48,    18,     0,    15,    17,    64,    14,    27,
-      23,    42,    41,    24,     0,    50,    35,    44,    43,    25,
-      26,     0,    32,    22,    28,    33,    30,    47,    29,    34,
-      31,    45,    46,    65,     0,    16,    37,    39,     0,     0,
-      51,    52,     0,    57,    58,     0,    36,    13,    38,    40,
-      49,    53,     0,    55,    59,     0,    48,    48,     0,    32,
-      54,    56,    60
+       0,    95,    93,   100,    97,    96,    94,    90,    91,     0,
+      15,    83,    14,    98,    88,    87,    16,    99,    89,    92,
+       0,     2,     3,     4,     6,     7,    17,    17,   102,    82,
+       8,    97,   101,   108,     0,    77,    13,     0,    24,    26,
+      34,    27,    28,     1,     5,     0,    77,    17,    77,     0,
+       0,     0,     0,    78,    79,    77,    12,    25,     0,     0,
+      77,     0,     0,    19,     0,    77,     0,     0,   111,    77,
+     109,    34,    77,     0,   105,    80,   103,    34,     0,    36,
+       0,    30,     0,    18,    20,    11,     0,    10,     0,     0,
+     110,    81,     0,     0,    77,    35,    37,    64,    31,    33,
+       0,     9,   112,   106,   104,    29,    30,    43,    39,    58,
+      57,    40,     0,    66,    51,    60,    59,    41,    42,     0,
+      61,    48,    38,    44,    49,    46,    63,    45,    50,    47,
+      62,    22,    32,    53,    55,     0,     0,    67,    68,     0,
+      73,    74,     0,    52,     0,    21,    54,    56,    65,    69,
+       0,    71,    75,     0,    64,    72,    23,    64,     0,    48,
+      70,    76
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -97,   -97,   -97,   -97,    25,   -97,   -97,   -24,   -25,   -97,
-     -27,   -97,   -33,   -97,    -8,   -96,   -49,   -97,   -97,   -97,
-     -97,   -97,   -97,   -97,   -97,   -97,   -58,   -97,   -97,   -97,
-     -57,   -14,   -97,    -9,   -38,   -46,   -43,   -97
+     -92,   -92,   -92,   -92,    50,   -92,   -92,     0,   -18,   -92,
+      11,   -92,    -2,   -35,   -49,   -32,   -92,   -58,   -92,    -3,
+     -89,   -86,   -92,   -92,   -92,   -92,   -92,   -92,   -92,   -92,
+     -92,   -61,   -92,   -92,   -92,   -63,   -30,   -92,    28,     1,
+     -91,     3,   -92,   -92,   -92,   -92,   -43,   -92
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
-static const yytype_int8 yydefgoto[] =
+static const yytype_uint8 yydefgoto[] =
 {
-       0,     2,     3,     4,     5,     6,     7,    27,    28,    55,
-      56,    29,    40,    42,    43,    72,   110,    74,    75,    76,
-      88,    77,    78,    79,    89,    90,    91,    80,    92,    93,
-      94,    46,    47,    48,    30,    31,    32,    33
+       0,    20,    21,    22,    23,    24,    25,    32,    46,    62,
+      63,   145,    37,    38,    98,    99,    39,    60,    78,    79,
+     121,   160,   123,   124,   125,   135,   126,   127,   128,   136,
+     137,   138,   129,   139,   140,   141,    52,    53,    54,    40,
+      28,    29,    41,    42,    30,    34,    69,    70
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
    positive, shift that token.  If negative, reduce the rule whose
    number is the opposite.  If YYTABLE_NINF, syntax error.  */
-static const yytype_int8 yytable[] =
+static const yytype_int16 yytable[] =
 {
-      41,    44,    37,    73,    44,    38,    81,    53,    49,    82,
-     109,     1,   112,    34,    45,    87,    39,    52,    81,    54,
-      83,    82,    39,   106,   100,   103,   107,    95,   108,    35,
-      84,    85,   101,    96,    51,    58,   104,     0,    57,    99,
-       0,     0,    81,     0,     0,    82,     0,     0,     0,     0,
-       0,     0,   102,     0,     0,   105,     0,     0,     0,    37,
-      81,    81,    81,    82,    82,    82,     0,     0,     8,     0,
-       9,     0,     0,   105,    59,    60,    61,    62,    13,    14,
-      63,    15,    64,    65,     0,    16,    66,    67,     0,    18,
-      86,     0,    68,     0,    21,    22,    69,    23,    70,    25,
-      26,    71,     8,     0,     9,     0,     0,     0,    59,    60,
-      61,    62,    13,    14,    63,    15,    64,    65,     0,    16,
-      66,    67,     0,    18,    98,     0,    68,     0,    21,    22,
-      69,    23,    70,    25,    26,    71,     8,     0,     9,     0,
-       0,     0,    59,    60,    61,    62,    13,    14,    63,    15,
-      64,    65,     0,    16,    66,    67,     0,    18,     0,     0,
-      68,     0,    21,    22,    69,    23,    70,    25,    26,    71,
-       8,     0,     9,     0,     0,     0,    59,    60,    61,    62,
-      13,    14,    63,    15,    64,   111,     0,    16,    66,    67,
-       0,    18,     0,     0,    68,     0,    21,    22,    69,    23,
-      70,    25,    26,     8,     0,     9,     0,     0,     0,    10,
-       0,    11,    12,    13,    14,     0,    15,     0,     0,     0,
-      16,     0,    17,     0,    18,     0,    19,    20,     0,    21,
-      22,     0,    23,    24,    25,    26,     8,     0,     9,     0,
-       0,     0,    10,     0,    11,    12,    13,    14,     0,    15,
-       0,     0,     0,    16,     0,    17,     0,    18,     0,    36,
-      20,     0,    21,    22,     0,    23,    24,    25,    26,     8,
-       0,     9,     0,     0,     0,    10,     0,    11,    12,    13,
-      14,     0,    15,     0,     0,     0,    16,     0,    17,     0,
-      18,     0,     0,    20,    50,    21,    22,     0,    23,    24,
-      25,    26,     8,     0,     9,     0,     0,     0,    10,     0,
-      11,    12,    13,    14,     0,    15,     0,     0,     0,    16,
-       0,    17,     0,    18,     0,    97,    20,     0,    21,    22,
-       0,    23,    24,    25,    26,     8,     0,     9,     0,     0,
-       0,    10,     0,    11,    12,    13,    14,     0,    15,     0,
-       0,     0,    16,     0,    17,     0,    18,     0,     0,    20,
-       0,    21,    22,     0,    23,    24,    25,    26
+      26,    27,    57,    74,    83,    43,   130,    33,    72,    48,
+      45,   122,    61,    91,    58,    85,    64,    87,    66,    94,
+      49,   130,    26,    27,    88,    76,   134,    47,    61,    65,
+      81,    59,    50,    73,    90,    86,    59,   101,    55,    89,
+     103,    97,    92,   104,   130,   100,   102,   144,   148,   147,
+      68,    71,    68,   130,   154,   156,   151,   131,    57,    77,
+      80,   157,    82,   130,   106,   159,   130,   130,    68,   161,
+     158,    93,    44,    84,   132,    96,   149,   152,     0,    80,
+       0,    75,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,   120,     0,     0,
+       1,    68,     2,    35,     0,     0,     3,     0,    31,     5,
+       6,     7,   120,     8,   142,     0,     0,    10,     0,    11,
+     143,    12,     0,    36,    13,     0,    14,    15,     0,    16,
+      17,    18,    19,     0,     0,   120,     0,     0,   150,     0,
+       0,   153,     0,     0,   120,     0,     0,     0,     0,     0,
+       0,     0,     0,     1,   120,     2,   153,   120,   120,   107,
+     108,   109,   110,     6,     7,   111,     8,   112,   113,     0,
+      10,   114,   115,     0,    12,   133,     0,   116,     0,    14,
+      15,   117,    16,   118,    18,    19,   119,     1,     0,     2,
+       0,     0,     0,   107,   108,   109,   110,     6,     7,   111,
+       8,   112,   113,     0,    10,   114,   115,     0,    12,   146,
+       0,   116,     0,    14,    15,   117,    16,   118,    18,    19,
+     119,     1,     0,     2,     0,     0,     0,   107,   108,   109,
+     110,     6,     7,   111,     8,   112,   113,     0,    10,   114,
+     115,     0,    12,     0,     0,   116,     0,    14,    15,   117,
+      16,   118,    18,    19,   119,     1,     0,     2,     0,     0,
+       0,   107,   108,   109,   110,     6,     7,   111,     8,   112,
+     155,     0,    10,   114,   115,     0,    12,     0,     0,   116,
+       0,    14,    15,   117,    16,   118,    18,    19,     1,     0,
+       2,    35,     0,     0,     3,     0,    31,     5,     6,     7,
+       0,     8,     0,     0,     0,    10,     0,    11,     0,    12,
+       0,    56,    13,     0,    14,    15,     0,    16,    17,    18,
+      19,     1,     0,     2,    35,     0,     0,     3,     0,    31,
+       5,     6,     7,     0,     8,     0,     0,     0,    10,     0,
+      11,     0,    12,     0,   105,    13,     0,    14,    15,     0,
+      16,    17,    18,    19,     1,     0,     2,     0,     0,     0,
+       3,     0,     4,     5,     6,     7,     0,     8,     0,     9,
+       0,    10,     0,    11,     0,    12,     0,     0,    13,     0,
+      14,    15,     0,    16,    17,    18,    19,     1,     0,     2,
+       0,     0,     0,     3,     0,    31,     5,     6,     7,     0,
+       8,     0,     0,    45,    10,     0,    11,     0,    12,     0,
+       0,    13,     0,    14,    15,     0,    16,    17,    18,    19,
+       1,    50,     2,     0,     0,     0,     3,     0,    31,     5,
+       6,     7,     0,     8,     0,     0,     0,    10,     0,    51,
+       0,    12,     0,     0,    13,     0,    14,    15,     0,    16,
+      17,    18,    19,     1,     0,     2,     0,     0,     0,     3,
+       0,    31,     5,     6,     7,     0,     8,    67,     0,     0,
+      10,     0,    11,     0,    12,     0,     0,    13,     0,    14,
+      15,     0,    16,    17,    18,    19,     1,     0,     2,    35,
+       0,     0,     3,     0,    31,     5,     6,     7,     0,     8,
+       0,     0,     0,    10,     0,    11,     0,    12,     0,     0,
+      13,     0,    14,    15,     0,    16,    17,    18,    19,     1,
+       0,     2,     0,     0,     0,     3,     0,    31,     5,     6,
+       7,     0,     8,     0,     0,     0,    10,     0,    11,     0,
+      12,     0,     0,    13,    95,    14,    15,     0,    16,    17,
+      18,    19,     1,     0,     2,     0,     0,     0,     3,     0,
+      31,     5,     6,     7,     0,     8,     0,     0,     0,    10,
+       0,  -107,     0,    12,     0,     0,    13,     0,    14,    15,
+       0,    16,    17,    18,    19,     1,     0,     2,     0,     0,
+       0,     3,     0,    31,     5,     6,     7,     0,     8,     0,
+       0,     0,    10,     0,    11,     0,    12,     0,     0,    13,
+       0,    14,    15,     0,    16,    17,    18,    19
 };
 
-static const yytype_int8 yycheck[] =
+static const yytype_int16 yycheck[] =
 {
-      38,    39,    27,    52,    42,     5,    52,    45,    41,    52,
-     106,    21,   108,     0,     7,    64,    22,     5,    64,    21,
-      53,    64,    22,     5,    29,    29,     5,    65,     5,     4,
-      54,    58,    90,    71,    42,    49,    93,    -1,    47,    88,
-      -1,    -1,    88,    -1,    -1,    88,    -1,    -1,    -1,    -1,
-      -1,    -1,    90,    -1,    -1,    93,    -1,    -1,    -1,    84,
-     106,   107,   108,   106,   107,   108,    -1,    -1,     6,    -1,
-       8,    -1,    -1,   111,    12,    13,    14,    15,    16,    17,
-      18,    19,    20,    21,    -1,    23,    24,    25,    -1,    27,
-      28,    -1,    30,    -1,    32,    33,    34,    35,    36,    37,
-      38,    39,     6,    -1,     8,    -1,    -1,    -1,    12,    13,
-      14,    15,    16,    17,    18,    19,    20,    21,    -1,    23,
-      24,    25,    -1,    27,    28,    -1,    30,    -1,    32,    33,
-      34,    35,    36,    37,    38,    39,     6,    -1,     8,    -1,
-      -1,    -1,    12,    13,    14,    15,    16,    17,    18,    19,
-      20,    21,    -1,    23,    24,    25,    -1,    27,    -1,    -1,
-      30,    -1,    32,    33,    34,    35,    36,    37,    38,    39,
-       6,    -1,     8,    -1,    -1,    -1,    12,    13,    14,    15,
-      16,    17,    18,    19,    20,    21,    -1,    23,    24,    25,
-      -1,    27,    -1,    -1,    30,    -1,    32,    33,    34,    35,
+       0,     0,    37,    52,    31,     0,    97,     4,    51,    27,
+      22,    97,    39,    71,     5,    64,    46,    66,    48,    77,
+      25,   112,    22,    22,    67,    55,   112,    26,    39,    47,
+      60,    22,     7,    21,     4,    65,    22,    86,    35,    69,
+      89,     5,    72,    92,   135,     5,    28,    10,    29,   135,
+      49,    50,    51,   144,     5,   144,    29,   100,    93,    58,
+      59,     5,    61,   154,    94,   154,   157,   158,    67,   158,
+       5,    73,    22,    62,   106,    78,   137,   140,    -1,    78,
+      -1,    53,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    97,    -1,    -1,
+       6,   100,     8,     9,    -1,    -1,    12,    -1,    14,    15,
+      16,    17,   112,    19,   113,    -1,    -1,    23,    -1,    25,
+     119,    27,    -1,    29,    30,    -1,    32,    33,    -1,    35,
+      36,    37,    38,    -1,    -1,   135,    -1,    -1,   137,    -1,
+      -1,   140,    -1,    -1,   144,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,     6,   154,     8,   155,   157,   158,    12,
+      13,    14,    15,    16,    17,    18,    19,    20,    21,    -1,
+      23,    24,    25,    -1,    27,    28,    -1,    30,    -1,    32,
+      33,    34,    35,    36,    37,    38,    39,     6,    -1,     8,
+      -1,    -1,    -1,    12,    13,    14,    15,    16,    17,    18,
+      19,    20,    21,    -1,    23,    24,    25,    -1,    27,    28,
+      -1,    30,    -1,    32,    33,    34,    35,    36,    37,    38,
+      39,     6,    -1,     8,    -1,    -1,    -1,    12,    13,    14,
+      15,    16,    17,    18,    19,    20,    21,    -1,    23,    24,
+      25,    -1,    27,    -1,    -1,    30,    -1,    32,    33,    34,
+      35,    36,    37,    38,    39,     6,    -1,     8,    -1,    -1,
+      -1,    12,    13,    14,    15,    16,    17,    18,    19,    20,
+      21,    -1,    23,    24,    25,    -1,    27,    -1,    -1,    30,
+      -1,    32,    33,    34,    35,    36,    37,    38,     6,    -1,
+       8,     9,    -1,    -1,    12,    -1,    14,    15,    16,    17,
+      -1,    19,    -1,    -1,    -1,    23,    -1,    25,    -1,    27,
+      -1,    29,    30,    -1,    32,    33,    -1,    35,    36,    37,
+      38,     6,    -1,     8,     9,    -1,    -1,    12,    -1,    14,
+      15,    16,    17,    -1,    19,    -1,    -1,    -1,    23,    -1,
+      25,    -1,    27,    -1,    29,    30,    -1,    32,    33,    -1,
+      35,    36,    37,    38,     6,    -1,     8,    -1,    -1,    -1,
+      12,    -1,    14,    15,    16,    17,    -1,    19,    -1,    21,
+      -1,    23,    -1,    25,    -1,    27,    -1,    -1,    30,    -1,
+      32,    33,    -1,    35,    36,    37,    38,     6,    -1,     8,
+      -1,    -1,    -1,    12,    -1,    14,    15,    16,    17,    -1,
+      19,    -1,    -1,    22,    23,    -1,    25,    -1,    27,    -1,
+      -1,    30,    -1,    32,    33,    -1,    35,    36,    37,    38,
+       6,     7,     8,    -1,    -1,    -1,    12,    -1,    14,    15,
+      16,    17,    -1,    19,    -1,    -1,    -1,    23,    -1,    25,
+      -1,    27,    -1,    -1,    30,    -1,    32,    33,    -1,    35,
       36,    37,    38,     6,    -1,     8,    -1,    -1,    -1,    12,
-      -1,    14,    15,    16,    17,    -1,    19,    -1,    -1,    -1,
-      23,    -1,    25,    -1,    27,    -1,    29,    30,    -1,    32,
-      33,    -1,    35,    36,    37,    38,     6,    -1,     8,    -1,
+      -1,    14,    15,    16,    17,    -1,    19,    20,    -1,    -1,
+      23,    -1,    25,    -1,    27,    -1,    -1,    30,    -1,    32,
+      33,    -1,    35,    36,    37,    38,     6,    -1,     8,     9,
       -1,    -1,    12,    -1,    14,    15,    16,    17,    -1,    19,
-      -1,    -1,    -1,    23,    -1,    25,    -1,    27,    -1,    29,
+      -1,    -1,    -1,    23,    -1,    25,    -1,    27,    -1,    -1,
       30,    -1,    32,    33,    -1,    35,    36,    37,    38,     6,
       -1,     8,    -1,    -1,    -1,    12,    -1,    14,    15,    16,
       17,    -1,    19,    -1,    -1,    -1,    23,    -1,    25,    -1,
       27,    -1,    -1,    30,    31,    32,    33,    -1,    35,    36,
       37,    38,     6,    -1,     8,    -1,    -1,    -1,    12,    -1,
       14,    15,    16,    17,    -1,    19,    -1,    -1,    -1,    23,
-      -1,    25,    -1,    27,    -1,    29,    30,    -1,    32,    33,
+      -1,    25,    -1,    27,    -1,    -1,    30,    -1,    32,    33,
       -1,    35,    36,    37,    38,     6,    -1,     8,    -1,    -1,
       -1,    12,    -1,    14,    15,    16,    17,    -1,    19,    -1,
       -1,    -1,    23,    -1,    25,    -1,    27,    -1,    -1,    30,
@@ -886,46 +984,57 @@ static const yytype_int8 yycheck[] =
    state STATE-NUM.  */
 static const yytype_int8 yystos[] =
 {
-       0,    21,    41,    42,    43,    44,    45,    46,     6,     8,
-      12,    14,    15,    16,    17,    19,    23,    25,    27,    29,
-      30,    32,    33,    35,    36,    37,    38,    47,    48,    51,
-      74,    75,    76,    77,     0,    44,    29,    48,     5,    22,
-      52,    74,    53,    54,    74,     7,    71,    72,    73,    52,
-      31,    54,     5,    74,    21,    49,    50,    73,    71,    12,
-      13,    14,    15,    18,    20,    21,    24,    25,    30,    34,
-      36,    39,    55,    56,    57,    58,    59,    61,    62,    63,
-      67,    75,    76,    52,    47,    50,    28,    56,    60,    64,
-      65,    66,    68,    69,    70,    74,    74,    29,    28,    56,
-      29,    66,    74,    29,    70,    74,     5,     5,     5,    55,
-      56,    21,    55
+       0,     6,     8,    12,    14,    15,    16,    17,    19,    21,
+      23,    25,    27,    30,    32,    33,    35,    36,    37,    38,
+      41,    42,    43,    44,    45,    46,    47,    79,    80,    81,
+      84,    14,    47,    81,    85,     9,    29,    52,    53,    56,
+      79,    82,    83,     0,    44,    22,    48,    79,    48,    25,
+       7,    25,    76,    77,    78,    81,    29,    53,     5,    22,
+      57,    39,    49,    50,    76,    48,    76,    20,    79,    86,
+      87,    79,    86,    21,    54,    78,    76,    79,    58,    59,
+      79,    76,    79,    31,    50,    54,    76,    54,    86,    76,
+       4,    57,    76,    52,    57,    31,    59,     5,    54,    55,
+       5,    54,    28,    54,    54,    29,    76,    12,    13,    14,
+      15,    18,    20,    21,    24,    25,    30,    34,    36,    39,
+      47,    60,    61,    62,    63,    64,    66,    67,    68,    72,
+      80,    86,    55,    28,    61,    65,    69,    70,    71,    73,
+      74,    75,    79,    79,    10,    51,    28,    61,    29,    71,
+      79,    29,    75,    79,     5,    21,    60,     5,     5,    60,
+      61,    60
 };
 
 /* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr1[] =
 {
-       0,    40,    41,    42,    43,    43,    44,    45,    46,    46,
-      47,    47,    48,    49,    50,    50,    51,    51,    52,    52,
-      53,    53,    54,    55,    55,    55,    55,    55,    55,    55,
-      55,    55,    56,    56,    56,    57,    58,    59,    59,    60,
-      60,    61,    61,    61,    61,    61,    61,    62,    63,    63,
-      64,    64,    65,    65,    66,    67,    68,    68,    69,    69,
-      70,    71,    71,    72,    72,    73,    74,    74,    75,    75,
-      75,    76,    76,    76,    76,    76,    76,    76,    76,    76,
-      77,    77,    77,    77,    77,    77,    77
+       0,    40,    41,    42,    43,    43,    44,    45,    45,    46,
+      46,    46,    46,    46,    47,    47,    47,    48,    48,    49,
+      49,    50,    51,    51,    52,    52,    53,    53,    53,    54,
+      55,    55,    56,    56,    57,    57,    58,    58,    59,    60,
+      60,    60,    60,    60,    60,    60,    60,    60,    61,    61,
+      61,    62,    63,    64,    64,    65,    65,    66,    66,    66,
+      66,    66,    66,    67,    68,    68,    69,    69,    70,    70,
+      71,    72,    73,    73,    74,    74,    75,    76,    76,    77,
+      77,    78,    79,    79,    47,    47,    47,    80,    80,    80,
+      80,    80,    80,    80,    80,    80,    81,    81,    81,    81,
+      81,    81,    81,    82,    83,    83,    84,    85,    85,    86,
+      86,    87,    87
 };
 
 /* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr2[] =
 {
-       0,     2,     1,     1,     1,     2,     1,     1,     3,     2,
-       1,     2,     1,     3,     0,     1,     6,     4,     0,     3,
-       1,     2,     3,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     1,     1,     1,     2,     2,     3,     1,
-       2,     1,     1,     1,     1,     1,     1,     1,     0,     3,
-       0,     1,     1,     2,     3,     3,     0,     1,     1,     2,
-       3,     0,     1,     1,     2,     3,     1,     1,     1,     1,
+       0,     2,     1,     1,     1,     2,     1,     1,     1,     5,
+       4,     4,     3,     2,     1,     1,     1,     0,     3,     1,
+       2,     5,     0,     2,     1,     2,     1,     1,     1,     3,
+       0,     1,     6,     4,     0,     3,     1,     2,     3,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     1,     1,     1,     1
+       1,     1,     2,     2,     3,     1,     2,     1,     1,     1,
+       1,     1,     1,     1,     0,     3,     0,     1,     1,     2,
+       3,     3,     0,     1,     1,     2,     3,     0,     1,     1,
+       2,     3,     1,     1,     1,     1,     1,     1,     1,     1,
+       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+       1,     1,     1,     3,     5,     3,     6,     0,     1,     1,
+       2,     1,     3
 };
 
 
@@ -1397,87 +1506,202 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* start: document  */
-#line 57 "ext/graphql_ext/parser.y"
+#line 78 "ext/graphql_ext/parser.y"
                   { rb_ivar_set(parser, rb_intern("result"), yyvsp[0]); }
-#line 1403 "ext/graphql_ext/parser.c"
+#line 1512 "ext/graphql_ext/parser.c"
     break;
 
   case 3: /* document: definitions_list  */
-#line 59 "ext/graphql_ext/parser.y"
-                             { yyval = yyvsp[0]; }
-#line 1409 "ext/graphql_ext/parser.c"
+#line 80 "ext/graphql_ext/parser.y"
+                             {
+    VALUE position_source = rb_ary_entry(yyvsp[0], 0);
+    VALUE line, col;
+    if (RB_TEST(position_source)) {
+      line = rb_funcall(position_source, rb_intern("line"), 0);
+      col = rb_funcall(position_source, rb_intern("col"), 0);
+    } else {
+      line = INT2FIX(1);
+      col = INT2FIX(1);
+    }
+    yyval = rb_funcall(GraphQL_Language_Nodes_Document, rb_intern("from_a"), 3,
+      line,
+      col,
+      yyvsp[0]
+    );
+  }
+#line 1533 "ext/graphql_ext/parser.c"
     break;
 
   case 4: /* definitions_list: definition  */
-#line 62 "ext/graphql_ext/parser.y"
+#line 98 "ext/graphql_ext/parser.y"
                                     { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
-#line 1415 "ext/graphql_ext/parser.c"
+#line 1539 "ext/graphql_ext/parser.c"
     break;
 
   case 5: /* definitions_list: definitions_list definition  */
-#line 63 "ext/graphql_ext/parser.y"
+#line 99 "ext/graphql_ext/parser.y"
                                     { rb_ary_push(yyval, yyvsp[0]); }
-#line 1421 "ext/graphql_ext/parser.c"
+#line 1545 "ext/graphql_ext/parser.c"
     break;
 
-  case 8: /* operation_definition: LCURLY selection_list RCURLY  */
-#line 91 "ext/graphql_ext/parser.y"
-                                 {
-        yyval = rb_ary_new_from_args(5,
-          rb_id2sym(rb_intern("OperationDefinition")),
+  case 9: /* operation_definition: operation_type name variable_definitions_opt directives_list_opt selection_set  */
+#line 112 "ext/graphql_ext/parser.y"
+                                                                                     {
+        yyval = rb_funcall(GraphQL_Language_Nodes_OperationDefinition, rb_intern("from_a"), 7,
+          rb_ary_entry(yyvsp[-4], 1),
+          rb_ary_entry(yyvsp[-4], 2),
+          rb_ary_entry(yyvsp[-4], 3),
+          rb_ary_entry(yyvsp[-3], 3),
+          yyvsp[-2],
+          yyvsp[-1],
+          yyvsp[0]
+        );
+      }
+#line 1561 "ext/graphql_ext/parser.c"
+    break;
+
+  case 10: /* operation_definition: name variable_definitions_opt directives_list_opt selection_set  */
+#line 123 "ext/graphql_ext/parser.y"
+                                                                      {
+        yyval = rb_funcall(GraphQL_Language_Nodes_OperationDefinition, rb_intern("from_a"), 7,
+          rb_ary_entry(yyvsp[-3], 1),
+          rb_ary_entry(yyvsp[-3], 2),
+          r_string_query,
+          rb_ary_entry(yyvsp[-3], 3),
+          yyvsp[-2],
+          yyvsp[-1],
+          yyvsp[0]
+        );
+      }
+#line 1577 "ext/graphql_ext/parser.c"
+    break;
+
+  case 11: /* operation_definition: operation_type variable_definitions_opt directives_list_opt selection_set  */
+#line 134 "ext/graphql_ext/parser.y"
+                                                                                {
+        yyval = rb_funcall(GraphQL_Language_Nodes_OperationDefinition, rb_intern("from_a"), 7,
+          rb_ary_entry(yyvsp[-3], 1),
+          rb_ary_entry(yyvsp[-3], 2),
+          rb_ary_entry(yyvsp[-3], 3),
+          Qnil,
+          yyvsp[-2],
+          yyvsp[-1],
+          yyvsp[0]
+        );
+      }
+#line 1593 "ext/graphql_ext/parser.c"
+    break;
+
+  case 12: /* operation_definition: LCURLY selection_list RCURLY  */
+#line 145 "ext/graphql_ext/parser.y"
+                                   {
+        yyval = rb_funcall(GraphQL_Language_Nodes_OperationDefinition, rb_intern("from_a"), 7,
           rb_ary_entry(yyvsp[-2], 1),
           rb_ary_entry(yyvsp[-2], 2),
-          rb_str_new_cstr("query"), // TODO static string
+          r_string_query,
+          Qnil,
+          GraphQL_Language_Nodes_NONE,
+          GraphQL_Language_Nodes_NONE,
           yyvsp[-1]
         );
       }
-#line 1435 "ext/graphql_ext/parser.c"
+#line 1609 "ext/graphql_ext/parser.c"
     break;
 
-  case 9: /* operation_definition: LCURLY RCURLY  */
-#line 100 "ext/graphql_ext/parser.y"
+  case 13: /* operation_definition: LCURLY RCURLY  */
+#line 156 "ext/graphql_ext/parser.y"
                     {
-        yyval = rb_ary_new_from_args(5,
-          rb_id2sym(rb_intern("OperationDefinition")),
+        yyval = rb_funcall(GraphQL_Language_Nodes_OperationDefinition, rb_intern("from_a"), 7,
           rb_ary_entry(yyvsp[-1], 1),
           rb_ary_entry(yyvsp[-1], 2),
-          rb_str_new_cstr("query"), // TODO static string
-          rb_ary_new()
+          r_string_query,
+          Qnil,
+          GraphQL_Language_Nodes_NONE,
+          GraphQL_Language_Nodes_NONE,
+          GraphQL_Language_Nodes_NONE
         );
       }
-#line 1449 "ext/graphql_ext/parser.c"
+#line 1625 "ext/graphql_ext/parser.c"
     break;
 
-  case 10: /* selection_list: selection  */
-#line 111 "ext/graphql_ext/parser.y"
+  case 17: /* variable_definitions_opt: %empty  */
+#line 174 "ext/graphql_ext/parser.y"
+                                              { yyval = GraphQL_Language_Nodes_NONE; }
+#line 1631 "ext/graphql_ext/parser.c"
+    break;
+
+  case 18: /* variable_definitions_opt: LPAREN variable_definitions_list RPAREN  */
+#line 175 "ext/graphql_ext/parser.y"
+                                              { yyval = yyvsp[-1]; }
+#line 1637 "ext/graphql_ext/parser.c"
+    break;
+
+  case 19: /* variable_definitions_list: variable_definition  */
+#line 178 "ext/graphql_ext/parser.y"
+                                                    { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
+#line 1643 "ext/graphql_ext/parser.c"
+    break;
+
+  case 20: /* variable_definitions_list: variable_definitions_list variable_definition  */
+#line 179 "ext/graphql_ext/parser.y"
+                                                    { rb_ary_push(yyval, yyvsp[0]); }
+#line 1649 "ext/graphql_ext/parser.c"
+    break;
+
+  case 21: /* variable_definition: VAR_SIGN name COLON type default_value_opt  */
+#line 182 "ext/graphql_ext/parser.y"
+                                                 {
+        yyval = rb_funcall(GraphQL_Language_Nodes_VariableDefinition, rb_intern("from_a"), 5,
+          rb_ary_entry(yyvsp[-4], 1),
+          rb_ary_entry(yyvsp[-4], 2),
+          rb_ary_entry(yyvsp[-3], 3),
+          yyvsp[-1],
+          yyvsp[0]
+        );
+      }
+#line 1663 "ext/graphql_ext/parser.c"
+    break;
+
+  case 22: /* default_value_opt: %empty  */
+#line 193 "ext/graphql_ext/parser.y"
+                            { yyval = Qnil; }
+#line 1669 "ext/graphql_ext/parser.c"
+    break;
+
+  case 23: /* default_value_opt: EQUALS literal_value  */
+#line 194 "ext/graphql_ext/parser.y"
+                            { yyval = yyvsp[0]; }
+#line 1675 "ext/graphql_ext/parser.c"
+    break;
+
+  case 24: /* selection_list: selection  */
+#line 197 "ext/graphql_ext/parser.y"
                                 { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
-#line 1455 "ext/graphql_ext/parser.c"
+#line 1681 "ext/graphql_ext/parser.c"
     break;
 
-  case 11: /* selection_list: selection_list selection  */
-#line 112 "ext/graphql_ext/parser.y"
+  case 25: /* selection_list: selection_list selection  */
+#line 198 "ext/graphql_ext/parser.y"
                                 { rb_ary_push(yyval, yyvsp[0]); }
-#line 1461 "ext/graphql_ext/parser.c"
+#line 1687 "ext/graphql_ext/parser.c"
     break;
 
-  case 13: /* selection_set: LCURLY selection_list RCURLY  */
-#line 120 "ext/graphql_ext/parser.y"
+  case 29: /* selection_set: LCURLY selection_list RCURLY  */
+#line 206 "ext/graphql_ext/parser.y"
                                    { yyval = yyvsp[-1]; }
-#line 1467 "ext/graphql_ext/parser.c"
+#line 1693 "ext/graphql_ext/parser.c"
     break;
 
-  case 14: /* selection_set_opt: %empty  */
-#line 123 "ext/graphql_ext/parser.y"
+  case 30: /* selection_set_opt: %empty  */
+#line 209 "ext/graphql_ext/parser.y"
                     { yyval = rb_ary_new(); }
-#line 1473 "ext/graphql_ext/parser.c"
+#line 1699 "ext/graphql_ext/parser.c"
     break;
 
-  case 16: /* field: name COLON name arguments_opt directives_list_opt selection_set_opt  */
-#line 129 "ext/graphql_ext/parser.y"
+  case 32: /* field: name COLON name arguments_opt directives_list_opt selection_set_opt  */
+#line 213 "ext/graphql_ext/parser.y"
                                                                         {
-      yyval = rb_ary_new_from_args(
-        8,
-        rb_id2sym(rb_intern("Field")),
+      yyval = rb_funcall(GraphQL_Language_Nodes_Field, rb_intern("from_a"), 7,
         rb_ary_entry(yyvsp[-5], 1),
         rb_ary_entry(yyvsp[-5], 2),
         rb_ary_entry(yyvsp[-5], 3), // alias
@@ -1487,15 +1711,13 @@ yyreduce:
         yyvsp[0] // subselections
       );
     }
-#line 1491 "ext/graphql_ext/parser.c"
+#line 1715 "ext/graphql_ext/parser.c"
     break;
 
-  case 17: /* field: name arguments_opt directives_list_opt selection_set_opt  */
-#line 142 "ext/graphql_ext/parser.y"
+  case 33: /* field: name arguments_opt directives_list_opt selection_set_opt  */
+#line 224 "ext/graphql_ext/parser.y"
                                                                {
-      yyval = rb_ary_new_from_args(
-        8,
-        rb_id2sym(rb_intern("Field")),
+      yyval = rb_funcall(GraphQL_Language_Nodes_Field, rb_intern("from_a"), 7,
         rb_ary_entry(yyvsp[-3], 1),
         rb_ary_entry(yyvsp[-3], 2),
         Qnil, // alias
@@ -1505,187 +1727,181 @@ yyreduce:
         yyvsp[0] // subselections
       );
     }
-#line 1509 "ext/graphql_ext/parser.c"
+#line 1731 "ext/graphql_ext/parser.c"
     break;
 
-  case 18: /* arguments_opt: %empty  */
-#line 157 "ext/graphql_ext/parser.y"
+  case 34: /* arguments_opt: %empty  */
+#line 237 "ext/graphql_ext/parser.y"
                                     { yyval = Qnil; }
-#line 1515 "ext/graphql_ext/parser.c"
+#line 1737 "ext/graphql_ext/parser.c"
     break;
 
-  case 19: /* arguments_opt: LPAREN arguments_list RPAREN  */
-#line 158 "ext/graphql_ext/parser.y"
+  case 35: /* arguments_opt: LPAREN arguments_list RPAREN  */
+#line 238 "ext/graphql_ext/parser.y"
                                     { yyval = yyvsp[-1]; }
-#line 1521 "ext/graphql_ext/parser.c"
+#line 1743 "ext/graphql_ext/parser.c"
     break;
 
-  case 20: /* arguments_list: argument  */
-#line 161 "ext/graphql_ext/parser.y"
+  case 36: /* arguments_list: argument  */
+#line 241 "ext/graphql_ext/parser.y"
                               { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
-#line 1527 "ext/graphql_ext/parser.c"
+#line 1749 "ext/graphql_ext/parser.c"
     break;
 
-  case 21: /* arguments_list: arguments_list argument  */
-#line 162 "ext/graphql_ext/parser.y"
+  case 37: /* arguments_list: arguments_list argument  */
+#line 242 "ext/graphql_ext/parser.y"
                               { rb_ary_push(yyval, yyvsp[0]); }
-#line 1533 "ext/graphql_ext/parser.c"
+#line 1755 "ext/graphql_ext/parser.c"
     break;
 
-  case 22: /* argument: name COLON input_value  */
-#line 165 "ext/graphql_ext/parser.y"
+  case 38: /* argument: name COLON input_value  */
+#line 245 "ext/graphql_ext/parser.y"
                              {
-        yyval = rb_ary_new_from_args(5,
-          rb_id2sym(rb_intern("Argument")),
+        yyval = rb_funcall(GraphQL_Language_Nodes_Argument, rb_intern("from_a"), 4,
           rb_ary_entry(yyvsp[-2], 1),
           rb_ary_entry(yyvsp[-2], 2),
           rb_ary_entry(yyvsp[-2], 3),
           yyvsp[0]
         );
       }
-#line 1547 "ext/graphql_ext/parser.c"
+#line 1768 "ext/graphql_ext/parser.c"
     break;
 
-  case 23: /* literal_value: FLOAT  */
-#line 176 "ext/graphql_ext/parser.y"
+  case 39: /* literal_value: FLOAT  */
+#line 255 "ext/graphql_ext/parser.y"
                   { yyval = rb_funcall(rb_ary_entry(yyvsp[0], 3), rb_intern("to_f"), 0); }
-#line 1553 "ext/graphql_ext/parser.c"
+#line 1774 "ext/graphql_ext/parser.c"
     break;
 
-  case 24: /* literal_value: INT  */
-#line 177 "ext/graphql_ext/parser.y"
+  case 40: /* literal_value: INT  */
+#line 256 "ext/graphql_ext/parser.y"
                   { yyval = rb_funcall(rb_ary_entry(yyvsp[0], 3), rb_intern("to_i"), 0); }
-#line 1559 "ext/graphql_ext/parser.c"
+#line 1780 "ext/graphql_ext/parser.c"
     break;
 
-  case 25: /* literal_value: STRING  */
-#line 178 "ext/graphql_ext/parser.y"
+  case 41: /* literal_value: STRING  */
+#line 257 "ext/graphql_ext/parser.y"
                   { yyval = rb_ary_entry(yyvsp[0], 3); }
-#line 1565 "ext/graphql_ext/parser.c"
+#line 1786 "ext/graphql_ext/parser.c"
     break;
 
-  case 26: /* literal_value: TRUE_LITERAL  */
-#line 179 "ext/graphql_ext/parser.y"
+  case 42: /* literal_value: TRUE_LITERAL  */
+#line 258 "ext/graphql_ext/parser.y"
                           { yyval = Qtrue; }
-#line 1571 "ext/graphql_ext/parser.c"
+#line 1792 "ext/graphql_ext/parser.c"
     break;
 
-  case 27: /* literal_value: FALSE_LITERAL  */
-#line 180 "ext/graphql_ext/parser.y"
+  case 43: /* literal_value: FALSE_LITERAL  */
+#line 259 "ext/graphql_ext/parser.y"
                           { yyval = Qfalse; }
-#line 1577 "ext/graphql_ext/parser.c"
+#line 1798 "ext/graphql_ext/parser.c"
     break;
 
-  case 35: /* null_value: NULL_LITERAL  */
-#line 191 "ext/graphql_ext/parser.y"
+  case 51: /* null_value: NULL_LITERAL  */
+#line 270 "ext/graphql_ext/parser.y"
                            {
-    yyval = rb_ary_new_from_args(4,
-      rb_id2sym(rb_intern("NullValue")),
+    yyval = rb_funcall(GraphQL_Language_Nodes_NullValue, rb_intern("from_a"), 3,
       rb_ary_entry(yyvsp[0], 1),
       rb_ary_entry(yyvsp[0], 2),
       rb_ary_entry(yyvsp[0], 3)
     );
   }
-#line 1590 "ext/graphql_ext/parser.c"
+#line 1810 "ext/graphql_ext/parser.c"
     break;
 
-  case 36: /* variable: VAR_SIGN name  */
-#line 200 "ext/graphql_ext/parser.y"
+  case 52: /* variable: VAR_SIGN name  */
+#line 278 "ext/graphql_ext/parser.y"
                           {
-    yyval = rb_ary_new_from_args(4,
-      rb_id2sym(rb_intern("VariableIdentifier")),
+    yyval = rb_funcall(GraphQL_Language_Nodes_VariableIdentifier, rb_intern("from_a"), 3,
       rb_ary_entry(yyvsp[-1], 1),
       rb_ary_entry(yyvsp[-1], 2),
-      rb_ary_entry(yyvsp[-1], 3)
+      rb_ary_entry(yyvsp[0], 3)
     );
   }
-#line 1603 "ext/graphql_ext/parser.c"
+#line 1822 "ext/graphql_ext/parser.c"
     break;
 
-  case 37: /* list_value: LBRACKET RBRACKET  */
-#line 210 "ext/graphql_ext/parser.y"
-                                        { yyval = rb_ary_new(); }
-#line 1609 "ext/graphql_ext/parser.c"
+  case 53: /* list_value: LBRACKET RBRACKET  */
+#line 287 "ext/graphql_ext/parser.y"
+                                        { yyval = GraphQL_Language_Nodes_NONE; }
+#line 1828 "ext/graphql_ext/parser.c"
     break;
 
-  case 38: /* list_value: LBRACKET list_value_list RBRACKET  */
-#line 211 "ext/graphql_ext/parser.y"
+  case 54: /* list_value: LBRACKET list_value_list RBRACKET  */
+#line 288 "ext/graphql_ext/parser.y"
                                         { yyval = yyvsp[-1]; }
-#line 1615 "ext/graphql_ext/parser.c"
+#line 1834 "ext/graphql_ext/parser.c"
     break;
 
-  case 39: /* list_value_list: input_value  */
-#line 214 "ext/graphql_ext/parser.y"
+  case 55: /* list_value_list: input_value  */
+#line 291 "ext/graphql_ext/parser.y"
                                   { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
-#line 1621 "ext/graphql_ext/parser.c"
+#line 1840 "ext/graphql_ext/parser.c"
     break;
 
-  case 40: /* list_value_list: list_value_list input_value  */
-#line 215 "ext/graphql_ext/parser.y"
+  case 56: /* list_value_list: list_value_list input_value  */
+#line 292 "ext/graphql_ext/parser.y"
                                   { rb_ary_push(yyval, yyvsp[0]); }
-#line 1627 "ext/graphql_ext/parser.c"
+#line 1846 "ext/graphql_ext/parser.c"
     break;
 
-  case 47: /* enum_value: enum_name  */
-#line 225 "ext/graphql_ext/parser.y"
+  case 63: /* enum_value: enum_name  */
+#line 302 "ext/graphql_ext/parser.y"
                         {
-    yyval = rb_ary_new_from_args(4,
-      rb_id2sym(rb_intern("Enum")),
+    yyval = rb_funcall(GraphQL_Language_Nodes_Enum, rb_intern("from_a"), 3,
       rb_ary_entry(yyvsp[0], 1),
       rb_ary_entry(yyvsp[0], 2),
       rb_ary_entry(yyvsp[0], 3)
     );
   }
-#line 1640 "ext/graphql_ext/parser.c"
+#line 1858 "ext/graphql_ext/parser.c"
     break;
 
-  case 49: /* object_value: LCURLY object_value_list_opt RCURLY  */
-#line 235 "ext/graphql_ext/parser.y"
+  case 65: /* object_value: LCURLY object_value_list_opt RCURLY  */
+#line 311 "ext/graphql_ext/parser.y"
                                           {
-      yyval = rb_ary_new_from_args(4,
-        rb_id2sym(rb_intern("InputObject")),
+      yyval = rb_funcall(GraphQL_Language_Nodes_InputObject, rb_intern("from_a"), 3,
         rb_ary_entry(yyvsp[-2], 1),
         rb_ary_entry(yyvsp[-2], 2),
         yyvsp[-1]
       );
     }
-#line 1653 "ext/graphql_ext/parser.c"
+#line 1870 "ext/graphql_ext/parser.c"
     break;
 
-  case 50: /* object_value_list_opt: %empty  */
-#line 245 "ext/graphql_ext/parser.y"
-                        { yyval = rb_ary_new(); }
-#line 1659 "ext/graphql_ext/parser.c"
+  case 66: /* object_value_list_opt: %empty  */
+#line 320 "ext/graphql_ext/parser.y"
+                        { yyval = GraphQL_Language_Nodes_NONE; }
+#line 1876 "ext/graphql_ext/parser.c"
     break;
 
-  case 52: /* object_value_list: object_value_field  */
-#line 249 "ext/graphql_ext/parser.y"
+  case 68: /* object_value_list: object_value_field  */
+#line 324 "ext/graphql_ext/parser.y"
                                             { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
-#line 1665 "ext/graphql_ext/parser.c"
+#line 1882 "ext/graphql_ext/parser.c"
     break;
 
-  case 53: /* object_value_list: object_value_list object_value_field  */
-#line 250 "ext/graphql_ext/parser.y"
+  case 69: /* object_value_list: object_value_list object_value_field  */
+#line 325 "ext/graphql_ext/parser.y"
                                             { rb_ary_push(yyval, yyvsp[0]); }
-#line 1671 "ext/graphql_ext/parser.c"
+#line 1888 "ext/graphql_ext/parser.c"
     break;
 
-  case 54: /* object_value_field: name COLON input_value  */
-#line 253 "ext/graphql_ext/parser.y"
+  case 70: /* object_value_field: name COLON input_value  */
+#line 328 "ext/graphql_ext/parser.y"
                              {
-        yyval = rb_ary_new_from_args(5,
-          rb_id2sym(rb_intern("Argument")),
+        yyval = rb_funcall(GraphQL_Language_Nodes_Argument, rb_intern("from_a"), 4,
           rb_ary_entry(yyvsp[-2], 1),
           rb_ary_entry(yyvsp[-2], 2),
           rb_ary_entry(yyvsp[-2], 3),
-          rb_ary_entry(yyvsp[0], 3)
+          yyvsp[0]
         );
       }
-#line 1685 "ext/graphql_ext/parser.c"
+#line 1901 "ext/graphql_ext/parser.c"
     break;
 
-  case 55: /* object_literal_value: LCURLY object_literal_value_list_opt RCURLY  */
-#line 265 "ext/graphql_ext/parser.y"
+  case 71: /* object_literal_value: LCURLY object_literal_value_list_opt RCURLY  */
+#line 339 "ext/graphql_ext/parser.y"
                                                   {
         yyval = rb_ary_new_from_args(4,
           rb_id2sym(rb_intern("InputObject")),
@@ -1694,75 +1910,171 @@ yyreduce:
           yyvsp[-1]
         );
       }
-#line 1698 "ext/graphql_ext/parser.c"
+#line 1914 "ext/graphql_ext/parser.c"
     break;
 
-  case 56: /* object_literal_value_list_opt: %empty  */
-#line 275 "ext/graphql_ext/parser.y"
-                                { yyval = rb_ary_new(); }
-#line 1704 "ext/graphql_ext/parser.c"
+  case 72: /* object_literal_value_list_opt: %empty  */
+#line 349 "ext/graphql_ext/parser.y"
+                                { yyval = GraphQL_Language_Nodes_NONE; }
+#line 1920 "ext/graphql_ext/parser.c"
     break;
 
-  case 58: /* object_literal_value_list: object_literal_value_field  */
-#line 279 "ext/graphql_ext/parser.y"
+  case 74: /* object_literal_value_list: object_literal_value_field  */
+#line 353 "ext/graphql_ext/parser.y"
                                                             { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
-#line 1710 "ext/graphql_ext/parser.c"
+#line 1926 "ext/graphql_ext/parser.c"
     break;
 
-  case 59: /* object_literal_value_list: object_literal_value_list object_literal_value_field  */
-#line 280 "ext/graphql_ext/parser.y"
+  case 75: /* object_literal_value_list: object_literal_value_list object_literal_value_field  */
+#line 354 "ext/graphql_ext/parser.y"
                                                             { rb_ary_push(yyval, yyvsp[0]); }
-#line 1716 "ext/graphql_ext/parser.c"
+#line 1932 "ext/graphql_ext/parser.c"
     break;
 
-  case 60: /* object_literal_value_field: name COLON literal_value  */
-#line 283 "ext/graphql_ext/parser.y"
+  case 76: /* object_literal_value_field: name COLON literal_value  */
+#line 357 "ext/graphql_ext/parser.y"
                                {
-        yyval = rb_ary_new_from_args(5,
-          rb_id2sym(rb_intern("Argument")),
+        yyval = rb_funcall(GraphQL_Language_Nodes_Argument, rb_intern("from_a"), 4,
           rb_ary_entry(yyvsp[-2], 1),
           rb_ary_entry(yyvsp[-2], 2),
           rb_ary_entry(yyvsp[-2], 3),
           rb_ary_entry(yyvsp[0], 3)
         );
       }
-#line 1730 "ext/graphql_ext/parser.c"
+#line 1945 "ext/graphql_ext/parser.c"
     break;
 
-  case 61: /* directives_list_opt: %empty  */
-#line 295 "ext/graphql_ext/parser.y"
-                      { yyval = rb_ary_new(); }
-#line 1736 "ext/graphql_ext/parser.c"
+  case 77: /* directives_list_opt: %empty  */
+#line 368 "ext/graphql_ext/parser.y"
+                      { yyval = GraphQL_Language_Nodes_NONE; }
+#line 1951 "ext/graphql_ext/parser.c"
     break;
 
-  case 63: /* directives_list: directive  */
-#line 299 "ext/graphql_ext/parser.y"
+  case 79: /* directives_list: directive  */
+#line 372 "ext/graphql_ext/parser.y"
                                 { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
-#line 1742 "ext/graphql_ext/parser.c"
+#line 1957 "ext/graphql_ext/parser.c"
     break;
 
-  case 64: /* directives_list: directives_list directive  */
-#line 300 "ext/graphql_ext/parser.y"
+  case 80: /* directives_list: directives_list directive  */
+#line 373 "ext/graphql_ext/parser.y"
                                 { rb_ary_push(yyval, yyvsp[0]); }
-#line 1748 "ext/graphql_ext/parser.c"
+#line 1963 "ext/graphql_ext/parser.c"
     break;
 
-  case 65: /* directive: DIR_SIGN name arguments_opt  */
-#line 302 "ext/graphql_ext/parser.y"
+  case 81: /* directive: DIR_SIGN name arguments_opt  */
+#line 375 "ext/graphql_ext/parser.y"
                                          {
-    yyval = rb_ary_new_from_args(5,
-      rb_id2sym(rb_intern("Directive")),
+    yyval = rb_funcall(GraphQL_Language_Nodes_Directive, rb_intern("from_a"), 4,
       rb_ary_entry(yyvsp[-2], 1),
       rb_ary_entry(yyvsp[-2], 2),
       rb_ary_entry(yyvsp[-1], 3),
       yyvsp[0]
     );
   }
-#line 1762 "ext/graphql_ext/parser.c"
+#line 1976 "ext/graphql_ext/parser.c"
+    break;
+
+  case 103: /* fragment_spread: ELLIPSIS name_without_on directives_list_opt  */
+#line 415 "ext/graphql_ext/parser.y"
+                                                   {
+        yyval = rb_funcall(GraphQL_Language_Nodes_FragmentSpread, rb_intern("from_a"), 4,
+          rb_ary_entry(yyvsp[-2], 1),
+          rb_ary_entry(yyvsp[-2], 2),
+          rb_ary_entry(yyvsp[-1], 3),
+          yyvsp[0]
+        );
+      }
+#line 1989 "ext/graphql_ext/parser.c"
+    break;
+
+  case 104: /* inline_fragment: ELLIPSIS ON type directives_list_opt selection_set  */
+#line 425 "ext/graphql_ext/parser.y"
+                                                         {
+        yyval = rb_funcall(GraphQL_Language_Nodes_InlineFragment, rb_intern("from_a"), 5,
+          rb_ary_entry(yyvsp[-4], 1),
+          rb_ary_entry(yyvsp[-4], 2),
+          yyvsp[-2],
+          yyvsp[-1],
+          yyvsp[0]
+        );
+      }
+#line 2003 "ext/graphql_ext/parser.c"
+    break;
+
+  case 105: /* inline_fragment: ELLIPSIS directives_list_opt selection_set  */
+#line 434 "ext/graphql_ext/parser.y"
+                                                 {
+        yyval = rb_funcall(GraphQL_Language_Nodes_InlineFragment, rb_intern("from_a"), 5,
+          rb_ary_entry(yyvsp[-2], 1),
+          rb_ary_entry(yyvsp[-2], 2),
+          Qnil,
+          yyvsp[-1],
+          yyvsp[0]
+        );
+      }
+#line 2017 "ext/graphql_ext/parser.c"
+    break;
+
+  case 106: /* fragment_definition: FRAGMENT fragment_name_opt ON type directives_list_opt selection_set  */
+#line 445 "ext/graphql_ext/parser.y"
+                                                                         {
+      yyval = rb_funcall(GraphQL_Language_Nodes_FragmentDefinition, rb_intern("from_a"), 6,
+        rb_ary_entry(yyvsp[-5], 1),
+        rb_ary_entry(yyvsp[-5], 2),
+        yyvsp[-4],
+        yyvsp[-2],
+        yyvsp[-1],
+        yyvsp[0]
+      );
+    }
+#line 2032 "ext/graphql_ext/parser.c"
+    break;
+
+  case 107: /* fragment_name_opt: %empty  */
+#line 457 "ext/graphql_ext/parser.y"
+                 { yyval = Qnil; }
+#line 2038 "ext/graphql_ext/parser.c"
+    break;
+
+  case 108: /* fragment_name_opt: name_without_on  */
+#line 458 "ext/graphql_ext/parser.y"
+                      { yyval = rb_ary_entry(yyvsp[0], 3); }
+#line 2044 "ext/graphql_ext/parser.c"
+    break;
+
+  case 110: /* type: nullable_type BANG  */
+#line 462 "ext/graphql_ext/parser.y"
+                              { yyval = rb_funcall(GraphQL_Language_Nodes_NonNullType, rb_intern("from_a"), 3, rb_funcall(yyvsp[-1], rb_intern("line"), 0), rb_funcall(yyvsp[-1], rb_intern("col"), 0), yyvsp[-1]); }
+#line 2050 "ext/graphql_ext/parser.c"
+    break;
+
+  case 111: /* nullable_type: name  */
+#line 465 "ext/graphql_ext/parser.y"
+                             {
+        yyval = rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3,
+          rb_ary_entry(yyvsp[0], 1),
+          rb_ary_entry(yyvsp[0], 2),
+          rb_ary_entry(yyvsp[0], 3)
+        );
+      }
+#line 2062 "ext/graphql_ext/parser.c"
+    break;
+
+  case 112: /* nullable_type: LBRACKET type RBRACKET  */
+#line 472 "ext/graphql_ext/parser.y"
+                             {
+        yyval = rb_funcall(GraphQL_Language_Nodes_ListType, rb_intern("from_a"), 3,
+          rb_funcall(yyvsp[-1], rb_intern("line"), 0),
+          rb_funcall(yyvsp[-1], rb_intern("col"), 0),
+          yyvsp[-1]
+        );
+      }
+#line 2074 "ext/graphql_ext/parser.c"
     break;
 
 
-#line 1766 "ext/graphql_ext/parser.c"
+#line 2078 "ext/graphql_ext/parser.c"
 
       default: break;
     }
@@ -1955,7 +2267,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 340 "ext/graphql_ext/parser.y"
+#line 479 "ext/graphql_ext/parser.y"
 
 
 // Custom functions
@@ -1977,4 +2289,33 @@ int yylex (YYSTYPE *lvalp, VALUE parser) {
 }
 
 void yyerror(VALUE tokens, const char *msg) {
+}
+
+#define INITIALIZE_NODE_CLASS_VARIABLE(node_class_name) GraphQL_Language_Nodes_##node_class_name = rb_const_get_at(mGraphQLLanguageNodes, rb_intern(#node_class_name));
+
+void initialize_node_class_variables() {
+  VALUE mGraphQL = rb_const_get_at(rb_cObject, rb_intern("GraphQL"));
+  VALUE mGraphQLLanguage = rb_const_get_at(mGraphQL, rb_intern("Language"));
+  VALUE mGraphQLLanguageNodes = rb_const_get_at(mGraphQLLanguage, rb_intern("Nodes"));
+  GraphQL_Language_Nodes_NONE = rb_const_get_at(mGraphQLLanguageNodes, rb_intern("NONE"));
+  r_string_query = rb_str_new_cstr("query");
+  rb_global_variable(&r_string_query);
+  rb_str_freeze(r_string_query);
+
+  INITIALIZE_NODE_CLASS_VARIABLE(Argument)
+  INITIALIZE_NODE_CLASS_VARIABLE(Directive)
+  INITIALIZE_NODE_CLASS_VARIABLE(Document)
+  INITIALIZE_NODE_CLASS_VARIABLE(Enum)
+  INITIALIZE_NODE_CLASS_VARIABLE(Field)
+  INITIALIZE_NODE_CLASS_VARIABLE(FragmentDefinition)
+  INITIALIZE_NODE_CLASS_VARIABLE(FragmentSpread)
+  INITIALIZE_NODE_CLASS_VARIABLE(InlineFragment)
+  INITIALIZE_NODE_CLASS_VARIABLE(InputObject)
+  INITIALIZE_NODE_CLASS_VARIABLE(ListType)
+  INITIALIZE_NODE_CLASS_VARIABLE(NonNullType)
+  INITIALIZE_NODE_CLASS_VARIABLE(NullValue)
+  INITIALIZE_NODE_CLASS_VARIABLE(OperationDefinition)
+  INITIALIZE_NODE_CLASS_VARIABLE(TypeName)
+  INITIALIZE_NODE_CLASS_VARIABLE(VariableDefinition)
+  INITIALIZE_NODE_CLASS_VARIABLE(VariableIdentifier)
 }

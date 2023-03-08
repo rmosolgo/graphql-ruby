@@ -2,6 +2,7 @@
 module GraphQL
   module Language
     module Nodes
+      NONE = [].freeze
       # {AbstractNode} is the base class for all nodes in a GraphQL AST.
       #
       # It provides some APIs for working with ASTs:
@@ -9,6 +10,7 @@ module GraphQL
       # - `scalars` returns all scalar (Ruby) values attached to this one. Used for comparing nodes.
       # - `to_query_string` turns an AST node into a GraphQL string
       class AbstractNode
+
         module DefinitionNode
           # This AST node's {#line} returns the first line, which may be the description.
           # @return [Integer] The first line of the definition (not the description)
@@ -30,6 +32,9 @@ module GraphQL
             position_source = options.delete(:position_source)
             @line = position_source[1]
             @col = position_source[2]
+          else
+            @line = options.delete(:line)
+            @col = options.delete(:col)
           end
 
           @filename = options.delete(:filename)
@@ -277,9 +282,16 @@ module GraphQL
               assignments = scalar_method_names.map { |m| "@#{m} = #{m}"} +
                 @children_methods.keys.map { |m| "@#{m} = #{m}.freeze" }
 
+              keywords = scalar_method_names.map { |m| "#{m}: #{m}"} +
+                @children_methods.keys.map { |m| "#{m}: #{m}" }
+
               module_eval <<-RUBY, __FILE__, __LINE__
                 def initialize_node #{arguments.join(", ")}
                   #{assignments.join("\n")}
+                end
+
+                def self.from_a(line, col, #{(scalar_method_names + @children_methods.keys).join(", ")})
+                  self.new(line: line, col: col, #{keywords.join(", ")})
                 end
               RUBY
             end
@@ -343,8 +355,6 @@ module GraphQL
 
       # A single selection in a GraphQL query.
       class Field < AbstractNode
-        NONE = [].freeze
-
         scalar_methods :name, :alias
         children_methods({
           arguments: GraphQL::Language::Nodes::Argument,
@@ -364,6 +374,10 @@ module GraphQL
           @alias = attributes[:alias]
         end
 
+        def self.from_a(line, col, graphql_alias, name, arguments, directives, selections)
+          self.new(line: line, col: col, alias: graphql_alias, name: name, arguments: arguments, directives: directives, selections: selections)
+        end
+
         # Override this because default is `:fields`
         self.children_method_name = :selections
       end
@@ -380,6 +394,10 @@ module GraphQL
           @type = type
           @directives = directives
           @selections = selections
+        end
+
+        def self.from_a(line, col, name, type, directives, selections)
+          self.new(line: line, col: col, name: name, type: type, directives: directives, selections: selections)
         end
 
         scalar_methods :name, :type
@@ -406,8 +424,8 @@ module GraphQL
       class InlineFragment < AbstractNode
         scalar_methods :type
         children_methods({
-          selections: GraphQL::Language::Nodes::Field,
           directives: GraphQL::Language::Nodes::Directive,
+          selections: GraphQL::Language::Nodes::Field,
         })
 
         self.children_method_name = :selections
@@ -486,8 +504,8 @@ module GraphQL
         scalar_methods :operation_type, :name
         children_methods({
           variables: GraphQL::Language::Nodes::VariableDefinition,
-          selections: GraphQL::Language::Nodes::Field,
           directives: GraphQL::Language::Nodes::Directive,
+          selections: GraphQL::Language::Nodes::Field,
         })
 
         # @!attribute variables
