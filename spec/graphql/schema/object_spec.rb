@@ -40,13 +40,15 @@ describe GraphQL::Schema::Object do
       # one more than the parent class
       assert_equal 10, new_object_class.fields.size
       # inherited interfaces are present
-      assert_equal [
-          "GloballyIdentifiable",
-          "HasMusicians",
-          "InvisibleNameEntity",
-          "NamedEntity",
-          "PrivateNameEntity",
-        ], new_object_class.interfaces.map(&:graphql_name).sort
+      expected_interface_names = [
+        "GloballyIdentifiable",
+        "HasMusicians",
+        "InvisibleNameEntity",
+        "NamedEntity",
+        "PrivateNameEntity",
+      ]
+      assert_equal expected_interface_names, object_class.interfaces.map(&:graphql_name).sort
+      assert_equal expected_interface_names, new_object_class.interfaces.map(&:graphql_name).sort
       # The new field is present
       assert new_object_class.fields.key?("newField")
       # The overridden field is present:

@@ -336,7 +336,7 @@ interface Timestamped implements Node {
       end
       interfaces_names = thing_type["interfaces"].map { |i| i["name"] }.sort
 
-      assert_equal interfaces_names, ["Named", "Node", "Timestamped"]
+      assert_equal ["Named", "Node", "Timestamped"], interfaces_names
     end
   end
 

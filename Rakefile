@@ -134,6 +134,12 @@ namespace :bench do
     prepare_benchmark
     GraphQLBenchmark.profile_large_introspection
   end
+
+  desc "Run analysis on a big query"
+  task :profile_large_analysis do
+    prepare_benchmark
+    GraphQLBenchmark.profile_large_analysis
+  end
 end
 
 namespace :test do

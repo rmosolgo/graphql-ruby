@@ -147,9 +147,9 @@ function sync(options: SyncOptions) {
         url: url,
         client: clientName,
         secret: encryptionKey,
-        verbose: verbose,
         headers: options.headers,
         changesetVersion: options.changesetVersion,
+        logger: logger,
       }
       var sendPromise = Promise.resolve(sendFunc(payload, sendOpts))
       return sendPromise.then(function(response) {

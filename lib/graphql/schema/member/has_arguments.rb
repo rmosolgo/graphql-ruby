@@ -11,6 +11,7 @@ module GraphQL
         def self.extended(cls)
           cls.extend(ArgumentClassAccessor)
           cls.include(ArgumentObjectLoader)
+          cls.extend(ClassConfigured)
         end
 
         # @see {GraphQL::Schema::Argument#initialize} for parameters
@@ -109,14 +110,6 @@ module GraphQL
 
         # @return [Hash<String => GraphQL::Schema::Argument] Arguments defined on this thing, keyed by name. Includes inherited definitions
         def arguments(context = GraphQL::Query::NullContext)
-          inherited_arguments = if self.is_a?(Class) && superclass.respond_to?(:arguments)
-            superclass.arguments(context)
-          elsif defined?(@resolver_class) && @resolver_class
-            @resolver_class.field_arguments(context)
-          else
-            nil
-          end
-          # Local definitions override inherited ones
           if own_arguments.any?
             own_arguments_that_apply = {}
             own_arguments.each do |name, args_entry|
@@ -125,47 +118,107 @@ module GraphQL
               end
             end
           end
+          # might be nil if there are actually no arguments
+          own_arguments_that_apply || own_arguments
+        end
 
-          if inherited_arguments
-            if own_arguments_that_apply
-              inherited_arguments.merge(own_arguments_that_apply)
-            else
-              inherited_arguments
+        module ClassConfigured
+          def inherited(child_class)
+            super
+            child_class.extend(InheritedArguments)
+          end
+
+          module InheritedArguments
+            def arguments(context = GraphQL::Query::NullContext)
+              own_arguments = super
+              inherited_arguments = superclass.arguments(context)
+
+              if own_arguments.any?
+                if inherited_arguments.any?
+                  # Local definitions override inherited ones
+                  inherited_arguments.merge(own_arguments)
+                else
+                  own_arguments
+                end
+              else
+                inherited_arguments
+              end
             end
-          else
-            # might be nil if there are actually no arguments
-            own_arguments_that_apply || own_arguments
+
+            def all_argument_definitions
+              all_defns = {}
+              ancestors.reverse_each do |ancestor|
+                if ancestor.respond_to?(:own_arguments)
+                  all_defns.merge!(ancestor.own_arguments)
+                end
+              end
+              all_defns = all_defns.values
+              all_defns.flatten!
+              all_defns
+            end
+
+
+            def get_argument(argument_name, context = GraphQL::Query::NullContext)
+              warden = Warden.from_context(context)
+              for ancestor in ancestors
+                if ancestor.respond_to?(:own_arguments) &&
+                  (a = ancestor.own_arguments[argument_name]) &&
+                  (a = Warden.visible_entry?(:visible_argument?, a, context, warden))
+                  return a
+                end
+              end
+              nil
+            end
+          end
+        end
+
+        module FieldConfigured
+          def arguments(context = GraphQL::Query::NullContext)
+            own_arguments = super
+            if defined?(@resolver_class) && @resolver_class
+              inherited_arguments = @resolver_class.field_arguments(context)
+              if own_arguments.any?
+                if inherited_arguments.any?
+                  inherited_arguments.merge(own_arguments)
+                else
+                  own_arguments
+                end
+              else
+                inherited_arguments
+              end
+            else
+              own_arguments
+            end
+          end
+
+          def all_argument_definitions
+            if defined?(@resolver_class) && @resolver_class
+              all_defns = {}
+              @resolver_class.all_field_argument_definitions.each do |arg_defn|
+                key = arg_defn.graphql_name
+                case (current_value = all_defns[key])
+                when nil
+                  all_defns[key] = arg_defn
+                when Array
+                  current_value << arg_defn
+                when GraphQL::Schema::Argument
+                  all_defns[key] = [current_value, arg_defn]
+                else
+                  raise "Invariant: Unexpected argument definition, #{current_value.class}: #{current_value.inspect}"
+                end
+              end
+              all_defns.merge!(own_arguments)
+              all_defns = all_defns.values
+              all_defns.flatten!
+              all_defns
+            else
+              super
+            end
           end
         end
 
         def all_argument_definitions
-          if self.is_a?(Class)
-            all_defns = {}
-            ancestors.reverse_each do |ancestor|
-              if ancestor.respond_to?(:own_arguments)
-                all_defns.merge!(ancestor.own_arguments)
-              end
-            end
-          elsif defined?(@resolver_class) && @resolver_class
-            all_defns = {}
-            @resolver_class.all_field_argument_definitions.each do |arg_defn|
-              key = arg_defn.graphql_name
-              case (current_value = all_defns[key])
-              when nil
-                all_defns[key] = arg_defn
-              when Array
-                current_value << arg_defn
-              when GraphQL::Schema::Argument
-                all_defns[key] = [current_value, arg_defn]
-              else
-                raise "Invariant: Unexpected argument definition, #{current_value.class}: #{current_value.inspect}"
-              end
-            end
-            all_defns.merge!(own_arguments)
-          else
-            all_defns = own_arguments
-          end
-          all_defns = all_defns.values
+          all_defns = own_arguments.values
           all_defns.flatten!
           all_defns
         end
@@ -173,22 +226,11 @@ module GraphQL
         # @return [GraphQL::Schema::Argument, nil] Argument defined on this thing, fetched by name.
         def get_argument(argument_name, context = GraphQL::Query::NullContext)
           warden = Warden.from_context(context)
-          if !self.is_a?(Class)
-            if (arg_config = own_arguments[argument_name]) && (visible_arg = Warden.visible_entry?(:visible_argument?, arg_config, context, warden))
-              visible_arg
-            elsif defined?(@resolver_class) && @resolver_class
-              @resolver_class.get_field_argument(argument_name, context)
-            else
-              nil
-            end
+          if (arg_config = own_arguments[argument_name]) && (visible_arg = Warden.visible_entry?(:visible_argument?, arg_config, context, warden))
+            visible_arg
+          elsif defined?(@resolver_class) && @resolver_class
+            @resolver_class.get_field_argument(argument_name, context)
           else
-            for ancestor in ancestors
-              if ancestor.respond_to?(:own_arguments) &&
-                (a = ancestor.own_arguments[argument_name]) &&
-                (a = Warden.visible_entry?(:visible_argument?, a, context, warden))
-                return a
-              end
-            end
             nil
           end
         end
@@ -265,7 +307,12 @@ module GraphQL
         # but not for directives.
         # TODO apply static validations on schema definitions?
         def validate_directive_argument(arg_defn, value)
-          if arg_defn.owner.is_a?(Class) && arg_defn.owner < GraphQL::Schema::Directive
+          # this is only implemented on directives.
+          nil
+        end
+
+        module HasDirectiveArguments
+          def validate_directive_argument(arg_defn, value)
             if value.nil? && arg_defn.type.non_null?
               raise ArgumentError, "#{arg_defn.path} is required, but no value was given"
             end

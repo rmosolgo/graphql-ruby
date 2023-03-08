@@ -56,28 +56,6 @@ describe GraphQL::ExecutionError do
     it "the error is inserted into the errors key and the rest of the query is fulfilled" do
       expected_result = {
         "data"=>{
-          "cheese"=>{
-            "id" => 1,
-            "error1"=> nil,
-            "error2"=> nil,
-            "nonError"=> {
-              "id" => 3,
-              "flavor" => "Manchego",
-            },
-            "flavor" => "Brie",
-          },
-          "allDairy" => [
-            { "flavor" => "Brie" },
-            { "flavor" => "Gouda" },
-            { "flavor" => "Manchego" },
-            { "source" => "COW", "executionError" => nil }
-          ],
-          "dairyErrors" => [
-            { "__typename" => "Cheese" },
-            nil,
-            { "__typename" => "Cheese" },
-            { "__typename" => "Milk" }
-          ],
           "dairy" => {
             "milks" => [
               {
@@ -93,7 +71,29 @@ describe GraphQL::ExecutionError do
             ]
           },
           "executionError" => nil,
-          "valueWithExecutionError" => 0
+          "valueWithExecutionError" => 0,
+          "cheese"=>{
+            "id" => 1,
+            "flavor" => "Brie",
+            "error1"=> nil,
+            "error2"=> nil,
+            "nonError"=> {
+              "id" => 3,
+              "flavor" => "Manchego",
+            },
+          },
+          "allDairy" => [
+            { "flavor" => "Brie" },
+            { "flavor" => "Gouda" },
+            { "flavor" => "Manchego" },
+            { "source" => "COW", "executionError" => nil }
+          ],
+          "dairyErrors" => [
+            { "__typename" => "Cheese" },
+            nil,
+            { "__typename" => "Cheese" },
+            { "__typename" => "Milk" }
+          ],
         },
         "errors"=>[
           {
@@ -117,16 +117,6 @@ describe GraphQL::ExecutionError do
             "path"=>["dairy", "milks", 0, "executionError"]
           },
           {
-            "message"=>"There was an execution error",
-            "locations"=>[{"line"=>22, "column"=>9}],
-            "path"=>["allDairy", 3, "executionError"]
-          },
-          {
-            "message"=>"There was an execution error",
-            "locations"=>[{"line"=>36, "column"=>13}],
-            "path"=>["dairy", "milks", 0, "allDairy", 3, "executionError"]
-          },
-          {
             "message"=>"No cheeses are made from Yak milk!",
             "locations"=>[{"line"=>5, "column"=>7}],
             "path"=>["cheese", "error1"]
@@ -135,6 +125,16 @@ describe GraphQL::ExecutionError do
             "message"=>"No cheeses are made from Yak milk!",
             "locations"=>[{"line"=>8, "column"=>7}],
             "path"=>["cheese", "error2"]
+          },
+          {
+            "message"=>"There was an execution error",
+            "locations"=>[{"line"=>22, "column"=>9}],
+            "path"=>["allDairy", 3, "executionError"]
+          },
+          {
+            "message"=>"There was an execution error",
+            "locations"=>[{"line"=>36, "column"=>13}],
+            "path"=>["dairy", "milks", 0, "allDairy", 3, "executionError"]
           },
         ]
       }
@@ -210,6 +210,10 @@ describe GraphQL::ExecutionError do
       # This is extracted from the test above -- it kept breaking
       # when working on dataloader, so I isolated it to keep an eye
       # on the minimal reproduction
+      #
+      # It's `def self.authorized?` is lazy, and it requires
+      # _both_ a lazy resolution and a dataloader run
+      # in order to resolve properly.
       expected_result = {
         "data"=>{
           "cheese"=>{

@@ -18,12 +18,38 @@ module GraphQL
 
         # @return [Array<GraphQL::Schema::Validator>]
         def validators
-          own_validators = @own_validators || EMPTY_ARRAY
-          if self.is_a?(Class) && superclass.respond_to?(:validators) && (inherited_validators = superclass.validators).any?
-            inherited_validators + own_validators
-          else
-            own_validators
+          @own_validators || EMPTY_ARRAY
+        end
+
+        module ClassConfigured
+          def inherited(child_cls)
+            super
+            child_cls.extend(ClassValidators)
           end
+
+          module ClassValidators
+            include Schema::FindInheritedValue::EmptyObjects
+
+            def validators
+              inherited_validators = superclass.validators
+              if inherited_validators.any?
+                if @own_validators.nil?
+                  inherited_validators
+                else
+                  inherited_validators + @own_validators
+                end
+              elsif @own_validators.nil?
+                EMPTY_ARRAY
+              else
+                @own_validators
+              end
+            end
+          end
+        end
+
+        def self.extended(child_cls)
+          super
+          child_cls.extend(ClassConfigured)
         end
       end
     end

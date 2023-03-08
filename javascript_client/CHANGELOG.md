@@ -1,5 +1,14 @@
 # graphql-ruby-client
 
+# 1.11.7 (24 February 2023)
+
+- ActionCableLink: fix race condition #4359
+
+# 1.11.6 (14 February 2023)
+
+- Sync: fix `--changeset-version` #4328
+- Improve verbose logging #4328
+
 # 1.11.5 (27 January 2023)
 
 - Sync: add a `--changeset-version` for use with Changesets #4304

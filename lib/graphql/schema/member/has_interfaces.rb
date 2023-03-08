@@ -55,16 +55,37 @@ module GraphQL
         end
 
         def interface_type_memberships
-          own_tms = own_interface_type_memberships
-          if (self.is_a?(Class) && superclass.respond_to?(:interface_type_memberships))
-            inherited_tms = superclass.interface_type_memberships
-            if inherited_tms.size > 0
-              own_tms + inherited_tms
-            else
-              own_tms
+          own_interface_type_memberships
+        end
+
+        module ClassConfigured
+          # This combination of extended -> inherited -> extended
+          # means that the base class (`Schema::Object`) *won't*
+          # have the superclass-related code in `InheritedInterfaces`,
+          # but child classes of `Schema::Object` will have it.
+          # That way, we don't need a `superclass.respond_to?(...)` check.
+          def inherited(child_class)
+            super
+            child_class.extend(InheritedInterfaces)
+          end
+
+          module InheritedInterfaces
+            def interfaces(context = GraphQL::Query::NullContext)
+              visible_interfaces = super
+              visible_interfaces.concat(superclass.interfaces(context))
+              visible_interfaces.uniq!
+              visible_interfaces
             end
-          else
-            own_tms
+
+            def interface_type_memberships
+              own_tms = super
+              inherited_tms = superclass.interface_type_memberships
+              if inherited_tms.size > 0
+                own_tms + inherited_tms
+              else
+                own_tms
+              end
+            end
           end
         end
 
@@ -73,27 +94,28 @@ module GraphQL
           warden = Warden.from_context(context)
           visible_interfaces = []
           own_interface_type_memberships.each do |type_membership|
-            # During initialization, `type_memberships` can hold late-bound types
             case type_membership
-            when String, Schema::LateBoundType
-              visible_interfaces << type_membership
             when Schema::TypeMembership
               if warden.visible_type_membership?(type_membership, context)
                 visible_interfaces << type_membership.abstract_type
               end
+            when String, Schema::LateBoundType
+              # During initialization, `type_memberships` can hold late-bound types
+              visible_interfaces << type_membership
             else
               raise "Invariant: Unexpected type_membership #{type_membership.class}: #{type_membership.inspect}"
             end
           end
+          visible_interfaces.uniq!
 
-          if self.is_a?(Class) && superclass <= GraphQL::Schema::Object
-            visible_interfaces.concat(superclass.interfaces(context))
-          end
-
-          visible_interfaces.uniq
+          visible_interfaces
         end
 
         private
+
+        def self.extended(child_class)
+          child_class.extend(ClassConfigured)
+        end
 
         def inherited(subclass)
           super
