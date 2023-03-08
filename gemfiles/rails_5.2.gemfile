@@ -3,5 +3,6 @@ source "https://rubygems.org"
 gem "rails", "~> 5.2.0", require: "rails/all"
 gem "sqlite3", "~> 1.4", platform: :ruby
 gem "sequel"
+gem "pry"
 
 gemspec path: "../"
