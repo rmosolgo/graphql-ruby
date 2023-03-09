@@ -8,7 +8,7 @@ require_relative "lib/graphql/rake_task/validate"
 require 'rake/extensiontask'
 
 Rake::TestTask.new do |t|
-  t.libs << "spec" << "lib"
+  t.libs << "spec" << "lib" << "graphql-c_parser/lib"
 
   exclude_integrations = []
   ['Mongoid', 'Rails'].each do |integration|
@@ -191,14 +191,14 @@ namespace :js do
   task all: [:install, :build, :test]
 end
 
-Rake::ExtensionTask.new("graphql_ext") do |t|
-  t.lib_dir = "lib/graphql"
-end
-
 task :build_c_lexer do
   assert_dependency_version("Ragel", "7.0.4", "ragel -v")
-  `ragel -F1 ext/graphql_ext/lexer.rl`
+  `ragel -F1 graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl`
+end
+
+Rake::ExtensionTask.new("graphql_c_parser_ext") do |ext|
+  ext.ext_dir = 'graphql-c_parser/ext/graphql_c_parser_ext' # search for 'hello_world' inside it.
 end
 
 desc "Build the C Extension"
-task build_ext: [:build_c_lexer, :compile]
+task build_ext: [:build_c_lexer, "compile:graphql_c_parser_ext"]

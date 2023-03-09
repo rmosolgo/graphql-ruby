@@ -67,10 +67,6 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     GraphQL::Language::Lexer.tokenize(graphql_string)
   end
 
-  def self.scan_with_c(graphql_string)
-    GraphQL::Language::CLexer.tokenize(graphql_string)
-  end
-
   NOT_CONFIGURED = Object.new
   private_constant :NOT_CONFIGURED
 end
@@ -121,4 +117,3 @@ require "graphql/unauthorized_error"
 require "graphql/unauthorized_field_error"
 require "graphql/load_application_object_failed_error"
 require "graphql/deprecation"
-require "graphql/graphql_ext"

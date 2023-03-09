@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require "spec_helper"
+require "graphql/c_parser"
 require_relative "./lexer_examples"
 
 describe GraphQL::Language::CLexer do
