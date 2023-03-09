@@ -10,7 +10,7 @@
 
 ### Bug fixes
 
-# 2.0.17 (14 February 2022)
+# 2.0.17 (14 February 2023)
 
 ### Breaking changes
 

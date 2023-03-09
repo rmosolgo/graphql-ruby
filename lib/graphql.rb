@@ -60,16 +60,19 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
 
   # @return [Array<Array>]
   def self.scan(graphql_string)
-    scan_with_ragel(graphql_string)
+    scan_with_ruby(graphql_string)
   end
 
-  def self.scan_with_ragel(graphql_string)
+  def self.scan_with_ruby(graphql_string)
     GraphQL::Language::Lexer.tokenize(graphql_string)
   end
 
   def self.scan_with_c(graphql_string)
     GraphQL::Language::CLexer.tokenize(graphql_string)
   end
+
+  NOT_CONFIGURED = Object.new
+  private_constant :NOT_CONFIGURED
 end
 
 # Order matters for these:
