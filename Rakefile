@@ -196,8 +196,9 @@ task :build_c_lexer do
   `ragel -F1 graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl`
 end
 
-Rake::ExtensionTask.new("graphql_c_parser_ext") do |ext|
-  ext.ext_dir = 'graphql-c_parser/ext/graphql_c_parser_ext' # search for 'hello_world' inside it.
+Rake::ExtensionTask.new("graphql_c_parser_ext") do |t|
+  t.ext_dir = 'graphql-c_parser/ext/graphql_c_parser_ext'
+  t.lib_dir = "graphql-c_parser/lib/graphql"
 end
 
 desc "Build the C Extension"

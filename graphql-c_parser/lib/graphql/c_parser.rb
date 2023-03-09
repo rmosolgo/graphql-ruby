@@ -2,7 +2,7 @@
 
 require "graphql"
 require "graphql/c_parser/version"
-require "graphql_c_parser_ext"
+require "graphql/graphql_c_parser_ext"
 
 module GraphQL
   module CParser
