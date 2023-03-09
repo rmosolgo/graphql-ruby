@@ -10,6 +10,23 @@
 
 ### Bug fixes
 
+# 2.0.18 (9 March 2023)
+
+### New features
+
+- Add `TypeKind#leaf?` #4352
+
+### Bug fixes
+
+- Performance: improve Shape compatibility of `GraphQL::Schema::Field` #4360
+- Performance: improve Shape compatibility of `GraphQL::Schema::Warden` #4361
+- Performance: rewrite the token scanner in plain Ruby #4369
+- Performance: make `deprecation_reason` faster #4356
+- Performance: improve lazy value resolution in execution #4333
+- Performance: create `current_path` only when the application needs it #4342
+- Performance: add `GraphQL::Tracing::Trace` as a lower-overhead tracing API #4344
+- Connections: fix `hasNextPage` for already-loaded ActiveRecord Relations #4349
+
 # 2.0.17 (14 February 2023)
 
 ### Breaking changes
