@@ -60,10 +60,10 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
 
   # @return [Array<Array>]
   def self.scan(graphql_string)
-    scan_with_ragel(graphql_string)
+    scan_with_ruby(graphql_string)
   end
 
-  def self.scan_with_ragel(graphql_string)
+  def self.scan_with_ruby(graphql_string)
     GraphQL::Language::Lexer.tokenize(graphql_string)
   end
 
@@ -75,6 +75,9 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     # TODO handle other arguments here
     GraphQL::Language::CParser.parse(string)
   end
+
+  NOT_CONFIGURED = Object.new
+  private_constant :NOT_CONFIGURED
 end
 
 # Order matters for these:
@@ -123,4 +126,3 @@ require "graphql/unauthorized_error"
 require "graphql/unauthorized_field_error"
 require "graphql/load_application_object_failed_error"
 require "graphql/deprecation"
-require "graphql/graphql_ext"

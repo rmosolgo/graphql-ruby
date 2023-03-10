@@ -6,7 +6,6 @@ section: Type Definitions
 title: Directives
 desc: Special instructions for the GraphQL runtime
 index: 10
-experimental: true
 ---
 
 

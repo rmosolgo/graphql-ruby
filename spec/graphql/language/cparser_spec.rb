@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 require "spec_helper"
+require "graphql/c_parser"
 
+# TODO all parsing tests here
 describe GraphQL::Language::CParser do
   it "does something" do
     # pp GraphQL::Language::CParser.parse("{ }")

@@ -72,18 +72,6 @@ module GraphQL
       # @return [Array<String, Integer>] The current position in the result
       attr_reader :path
 
-      module EmptyScopedContext
-        EMPTY_HASH = {}.freeze
-
-        def self.key?(k)
-          false
-        end
-
-        def self.merged_context
-          EMPTY_HASH
-        end
-      end
-
       # Make a new context which delegates key lookup to `values`
       # @param query [GraphQL::Query] the query who owns this context
       # @param values [Hash] A hash of arbitrary values which will be accessible at query-time
@@ -99,28 +87,35 @@ module GraphQL
         @path = []
         @value = nil
         @context = self # for SharedMethods TODO delete sharedmethods
-        @scoped_context = EmptyScopedContext
+        @scoped_context = ScopedContext.new(self)
       end
 
       class ScopedContext
+        NO_PATH = [].freeze
+        NO_CONTEXT = {}.freeze
+
         def initialize(query_context)
           @query_context = query_context
-          @scoped_contexts = {}
-          @all_keys = Set.new
-          @no_path = [].freeze
+          @scoped_contexts = nil
+          @all_keys = nil
         end
 
         def merged_context
-          merged_ctx = {}
-          each_present_path_ctx do |path_ctx|
-            merged_ctx = path_ctx.merge(merged_ctx)
+          if @scoped_contexts.nil?
+            NO_CONTEXT
+          else
+            merged_ctx = {}
+            each_present_path_ctx do |path_ctx|
+              merged_ctx = path_ctx.merge(merged_ctx)
+            end
+            merged_ctx
           end
-          merged_ctx
         end
 
         def merge!(hash)
+          @all_keys ||= Set.new
           @all_keys.merge(hash.keys)
-          ctx = @scoped_contexts
+          ctx = @scoped_contexts ||= {}
           current_path.each do |path_part|
             ctx = ctx[path_part] ||= { parent: ctx }
           end
@@ -129,7 +124,7 @@ module GraphQL
         end
 
         def key?(key)
-          if @all_keys.include?(key)
+          if @all_keys && @all_keys.include?(key)
             each_present_path_ctx do |path_ctx|
               if path_ctx.key?(key)
                 return true
@@ -149,7 +144,7 @@ module GraphQL
         end
 
         def current_path
-          @query_context.current_path || @no_path
+          @query_context.current_path || NO_PATH
         end
 
         def dig(key, *other_keys)
@@ -172,19 +167,23 @@ module GraphQL
         # but look up the tree for previously-assigned scoped values
         def each_present_path_ctx
           ctx = @scoped_contexts
-          current_path.each do |path_part|
-            if ctx.key?(path_part)
-              ctx = ctx[path_part]
-            else
-              break
+          if ctx.nil?
+            # no-op
+          else
+            current_path.each do |path_part|
+              if ctx.key?(path_part)
+                ctx = ctx[path_part]
+              else
+                break
+              end
             end
-          end
 
-          while ctx
-            if (scoped_ctx = ctx[:scoped_context])
-              yield(scoped_ctx)
+            while ctx
+              if (scoped_ctx = ctx[:scoped_context])
+                yield(scoped_ctx)
+              end
+              ctx = ctx[:parent]
             end
-            ctx = ctx[:parent]
           end
         end
       end
@@ -329,9 +328,6 @@ module GraphQL
       end
 
       def scoped_merge!(hash)
-        if @scoped_context == EmptyScopedContext
-          @scoped_context = ScopedContext.new(self)
-        end
         @scoped_context.merge!(hash)
       end
 

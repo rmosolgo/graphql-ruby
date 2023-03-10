@@ -130,7 +130,6 @@ INIT_STATIC_TOKEN_VARIABLE(PIPE)
 INIT_STATIC_TOKEN_VARIABLE(AMP)
 INIT_STATIC_TOKEN_VARIABLE(SCHEMA)
 INIT_STATIC_TOKEN_VARIABLE(SCALAR)
-INIT_STATIC_TOKEN_VARIABLE(TYPE_LITERAL)
 INIT_STATIC_TOKEN_VARIABLE(EXTEND)
 INIT_STATIC_TOKEN_VARIABLE(IMPLEMENTS)
 INIT_STATIC_TOKEN_VARIABLE(INTERFACE)
@@ -139,6 +138,10 @@ INIT_STATIC_TOKEN_VARIABLE(ENUM)
 INIT_STATIC_TOKEN_VARIABLE(DIRECTIVE)
 INIT_STATIC_TOKEN_VARIABLE(INPUT)
 
+static VALUE GraphQL_type_str;
+static VALUE GraphQL_true_str;
+static VALUE GraphQL_false_str;
+static VALUE GraphQL_null_str;
 typedef enum TokenType {
   AMP,
   BANG,
@@ -233,7 +236,6 @@ void emit(TokenType tt, char *ts, char *te, Meta *meta) {
     STATIC_VALUE_TOKEN(AMP, "&")
     STATIC_VALUE_TOKEN(SCHEMA, "schema")
     STATIC_VALUE_TOKEN(SCALAR, "scalar")
-    STATIC_VALUE_TOKEN(TYPE_LITERAL, "type")
     STATIC_VALUE_TOKEN(EXTEND, "extend")
     STATIC_VALUE_TOKEN(IMPLEMENTS, "implements")
     STATIC_VALUE_TOKEN(INTERFACE, "interface")
@@ -242,17 +244,21 @@ void emit(TokenType tt, char *ts, char *te, Meta *meta) {
     STATIC_VALUE_TOKEN(DIRECTIVE, "directive")
     STATIC_VALUE_TOKEN(INPUT, "input")
     // For these, the enum name doesn't match the symbol name:
+    case TYPE_LITERAL:
+      token_sym = ID2SYM(rb_intern("TYPE"));
+      token_content = GraphQL_type_str;
+      break;
     case TRUE_LITERAL:
       token_sym = ID2SYM(rb_intern("TRUE"));
-      token_content = rb_str_new_cstr("true");
+      token_content = GraphQL_true_str;
       break;
     case FALSE_LITERAL:
       token_sym = ID2SYM(rb_intern("FALSE"));
-      token_content = rb_str_new_cstr("false");
+      token_content = GraphQL_false_str;
       break;
     case NULL_LITERAL:
       token_sym = ID2SYM(rb_intern("NULL"));
-      token_content = rb_str_new_cstr("null");
+      token_content = GraphQL_null_str;
       break;
     DYNAMIC_VALUE_TOKEN(IDENTIFIER)
     DYNAMIC_VALUE_TOKEN(INT)
@@ -354,6 +360,11 @@ VALUE tokenize(VALUE query_rbstr) {
   rb_funcall(GraphQLTokenString##token_name, rb_intern("-@"), 0); \
   rb_global_variable(&GraphQLTokenString##token_name); \
 
+#define SETUP_STATIC_STRING(var_name, str_content) \
+  var_name = rb_str_new_cstr(str_content); \
+  rb_global_variable(&var_name); \
+  rb_str_freeze(var_name); \
+
 void setup_static_token_variables() {
   SETUP_STATIC_TOKEN_VARIABLE(ON, "on")
   SETUP_STATIC_TOKEN_VARIABLE(FRAGMENT, "fragment")
@@ -377,7 +388,6 @@ void setup_static_token_variables() {
   SETUP_STATIC_TOKEN_VARIABLE(AMP, "&")
   SETUP_STATIC_TOKEN_VARIABLE(SCHEMA, "schema")
   SETUP_STATIC_TOKEN_VARIABLE(SCALAR, "scalar")
-  SETUP_STATIC_TOKEN_VARIABLE(TYPE_LITERAL, "type")
   SETUP_STATIC_TOKEN_VARIABLE(EXTEND, "extend")
   SETUP_STATIC_TOKEN_VARIABLE(IMPLEMENTS, "implements")
   SETUP_STATIC_TOKEN_VARIABLE(INTERFACE, "interface")
@@ -385,4 +395,9 @@ void setup_static_token_variables() {
   SETUP_STATIC_TOKEN_VARIABLE(ENUM, "enum")
   SETUP_STATIC_TOKEN_VARIABLE(DIRECTIVE, "directive")
   SETUP_STATIC_TOKEN_VARIABLE(INPUT, "input")
+
+  SETUP_STATIC_STRING(GraphQL_type_str, "type")
+  SETUP_STATIC_STRING(GraphQL_true_str, "true")
+  SETUP_STATIC_STRING(GraphQL_false_str, "false")
+  SETUP_STATIC_STRING(GraphQL_null_str, "null")
 }

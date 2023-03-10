@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require "spec_helper"
+require "graphql/c_parser"
 require_relative "./lexer_examples"
 
 describe GraphQL::Language::CLexer do
@@ -8,8 +9,8 @@ describe GraphQL::Language::CLexer do
   it "makes tokens like the other lexer" do
     str = "{ f1(arg: \"str\") ...F2 }\nfragment F2 on SomeType { f2 }"
     # Don't include prev_token here
-    tokens = GraphQL.scan_with_c(str).map { |t| [t[0], t[1], t[2], t[3]]}
-    old_tokens = GraphQL.scan_with_ragel(str).map { |t| [t[0], t[1], t[2], t[3]]}
+    tokens = GraphQL.scan_with_c(str).map { |t| t.first(4) }
+    old_tokens = GraphQL.scan_with_ruby(str).map { |t| t.first(4) }
 
     assert_equal [
       [:LCURLY, 1, 1, "{"],

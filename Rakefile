@@ -8,7 +8,7 @@ require_relative "lib/graphql/rake_task/validate"
 require 'rake/extensiontask'
 
 Rake::TestTask.new do |t|
-  t.libs << "spec" << "lib"
+  t.libs << "spec" << "lib" << "graphql-c_parser/lib"
 
   exclude_integrations = []
   ['Mongoid', 'Rails'].each do |integration|
@@ -58,15 +58,12 @@ ERR
   end
 end
 
-desc "Use Racc & Ragel to regenerate parser.rb & lexer.rb from configuration files"
+desc "Use Racc to regenerate parser.rb from configuration files"
 task :build_parser do
-
-  assert_dependency_version("Ragel", "7.0.4", "ragel -v")
   assert_dependency_version("Racc", "1.6.2", %|ruby -e "require 'racc'; puts Racc::VERSION"|)
 
-  `rm -f lib/graphql/language/parser.rb lib/graphql/language/lexer.rb `
+  `rm -f lib/graphql/language/parser.rb `
   `racc lib/graphql/language/parser.y -o lib/graphql/language/parser.rb`
-  `ragel-ruby -F1 lib/graphql/language/lexer.rl`
 end
 
 namespace :bench do
@@ -194,13 +191,14 @@ namespace :js do
   task all: [:install, :build, :test]
 end
 
-Rake::ExtensionTask.new("graphql_ext") do |t|
-  t.lib_dir = "lib/graphql"
-end
-
 task :build_c_lexer do
   assert_dependency_version("Ragel", "7.0.4", "ragel -v")
-  `ragel -F1 ext/graphql_ext/lexer.rl`
+  `ragel -F1 graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl`
+end
+
+Rake::ExtensionTask.new("graphql_c_parser_ext") do |t|
+  t.ext_dir = 'graphql-c_parser/ext/graphql_c_parser_ext'
+  t.lib_dir = "graphql-c_parser/lib/graphql"
 end
 
 task :build_yacc_parser do
@@ -208,6 +206,5 @@ task :build_yacc_parser do
   `yacc ext/graphql_ext/parser.y -o ext/graphql_ext/parser.c -Wno-yacc`
 end
 
-
 desc "Build the C Extension"
-task build_ext: [:build_c_lexer, :build_yacc_parser, :compile]
+task build_ext: [:build_c_lexer, :build_yacc_parser, "compile:graphql_c_parser_ext"]

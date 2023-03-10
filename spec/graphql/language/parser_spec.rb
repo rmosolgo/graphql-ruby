@@ -16,7 +16,11 @@ describe GraphQL::Language::Parser do
     err = assert_raises(GraphQL::ParseError) {
       GraphQL.parse('query 😘 { a b }')
     }
-    assert_equal "Parse error on \"\\xF0\" (error) at [1, 7]", err.message
+    if ENV["GRAPHQL_CLEXER"]
+      assert_equal "Parse error on \"\\xF0\" (error) at [1, 7]", err.message
+    else
+      assert_equal "Parse error on \"😘\" (error) at [1, 7]", err.message
+    end
   end
 
   describe "anonymous fragment extension" do

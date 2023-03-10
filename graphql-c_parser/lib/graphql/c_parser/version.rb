@@ -1,4 +1,7 @@
 # frozen_string_literal: true
+
 module GraphQL
-  VERSION = "2.0.18"
+  module CParser
+    VERSION = "1.0.0"
+  end
 end
