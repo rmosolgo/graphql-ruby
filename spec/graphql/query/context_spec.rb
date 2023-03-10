@@ -441,6 +441,13 @@ describe GraphQL::Query::Context do
       context.scoped_set!(expected_key, expected_value)
       assert_equal(expected_value, context[expected_key])
     end
+
+    it "has a #current_path method" do
+      context = GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil, object: nil)
+      current_result = OpenStruct.new(path: ["somewhere", "child", "grandchild"])
+      Thread.current[:__graphql_runtime_info][:current_result] = current_result
+      assert_equal ["somewhere", "child", "grandchild"], context.scoped_context.current_path
+    end
   end
 
   describe "Adding extensions to the response" do
