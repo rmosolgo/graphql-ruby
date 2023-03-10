@@ -129,13 +129,13 @@ module GraphQL
       end
 
       def self.emit(token_name, ts, te, meta, token_value)
-        meta[:tokens] << token = GraphQL::Language::Token.new(
+        meta[:tokens] << token = [
           token_name,
-          token_value,
           meta[:line],
           meta[:col],
+          token_value,
           meta[:previous_token],
-        )
+        ]
         meta[:previous_token] = token
         # Bump the column counter for the next token
         meta[:col] += te - ts
@@ -168,13 +168,13 @@ module GraphQL
       end
 
       def self.record_comment(ts, te, meta, str)
-        token = GraphQL::Language::Token.new(
+        token = [
           :COMMENT,
-          str,
           meta[:line],
           meta[:col],
+          str,
           meta[:previous_token],
-        )
+        ]
 
         meta[:previous_token] = token
 

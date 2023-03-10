@@ -58,8 +58,12 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     GraphQL::Language::Parser.parse(string, filename: filename, trace: trace)
   end
 
-  # @return [Array<GraphQL::Language::Token>]
+  # @return [Array<Array>]
   def self.scan(graphql_string)
+    scan_with_ruby(graphql_string)
+  end
+
+  def self.scan_with_ruby(graphql_string)
     GraphQL::Language::Lexer.tokenize(graphql_string)
   end
 

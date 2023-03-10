@@ -36,18 +36,38 @@ module GraphQLBenchmark
         x.report("validate - abstract fragments 2") { CARD_SCHEMA.validate(ABSTRACT_FRAGMENTS_2) }
         x.report("validate - big query") { BIG_SCHEMA.validate(BIG_QUERY) }
         x.report("validate - fields will merge") { FIELDS_WILL_MERGE_SCHEMA.validate(FIELDS_WILL_MERGE_QUERY) }
-      when "parse"
+      when "scan"
+        x.report("scan c - introspection") { GraphQL::Language::CLexer.tokenize(QUERY_STRING) }
         x.report("scan - introspection") { GraphQL.scan(QUERY_STRING) }
-        x.report("parse - introspection") { GraphQL.parse(QUERY_STRING) }
+        x.report("scan c - fragments") { GraphQL::Language::CLexer.tokenize(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
         x.report("scan - fragments") { GraphQL.scan(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
-        x.report("parse - fragments") { GraphQL.parse(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
+        x.report("scan c - big query") { GraphQL::Language::CLexer.tokenize(BIG_QUERY_STRING) }
         x.report("scan - big query") { GraphQL.scan(BIG_QUERY_STRING) }
+      when "parse"
+        x.report("parse - introspection") { GraphQL.parse(QUERY_STRING) }
+        x.report("parse - fragments") { GraphQL.parse(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
         x.report("parse - big query") { GraphQL.parse(BIG_QUERY_STRING) }
       else
         raise("Unexpected task #{task}")
       end
     end
   end
+
+  def self.profile_parse
+    GraphQL.module_eval do
+      def self.scan(str)
+        GraphQL::Clexer.tokenize(str)
+      end
+    end
+
+    report = MemoryProfiler.report do
+      GraphQL.parse(BIG_QUERY_STRING)
+      GraphQL.parse(QUERY_STRING)
+      GraphQL.parse(ABSTRACT_FRAGMENTS_2_QUERY_STRING)
+    end
+    report.pretty_print
+  end
+
 
   def self.validate_memory
     FIELDS_WILL_MERGE_SCHEMA.validate(FIELDS_WILL_MERGE_QUERY)
