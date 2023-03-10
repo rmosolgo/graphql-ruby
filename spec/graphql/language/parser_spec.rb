@@ -2,7 +2,7 @@
 require "spec_helper"
 
 describe GraphQL::Language::Parser do
-  subject { GraphQL::Language::Parser }
+  subject { GraphQL }
 
   describe "when there are no selections" do
     it 'raises a ParseError' do
@@ -49,7 +49,6 @@ describe GraphQL::Language::Parser do
         "Thing description"
         scalar Thing
       GRAPHQL
-
       thing_defn = document.definitions[0]
       assert_equal "Thing", thing_defn.name
       assert_equal "Thing description", thing_defn.description

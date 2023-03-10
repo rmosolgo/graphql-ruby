@@ -611,8 +611,8 @@ module GraphQL
         attr_reader :description
         scalar_methods :name, :type
         children_methods({
-          directives: GraphQL::Language::Nodes::Directive,
           arguments: GraphQL::Language::Nodes::InputValueDefinition,
+          directives: GraphQL::Language::Nodes::Directive,
         })
         self.children_method_name = :fields
 

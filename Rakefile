@@ -203,8 +203,13 @@ end
 
 task :build_yacc_parser do
   assert_dependency_version("Bison", "3.8", "yacc --version")
-  `yacc ext/graphql_ext/parser.y -o ext/graphql_ext/parser.c -Wno-yacc`
+  `yacc graphql-c_parser/ext/graphql_c_parser_ext/parser.y -o graphql-c_parser/ext/graphql_c_parser_ext/parser.c -Wno-yacc`
+end
+
+task :move_binary do
+  # For some reason my local env doesn't respect the `lib_dir` configured above
+  `mv graphql-c_parser/lib/*.bundle graphql-c_parser/lib/graphql`
 end
 
 desc "Build the C Extension"
-task build_ext: [:build_c_lexer, :build_yacc_parser, "compile:graphql_c_parser_ext"]
+task build_ext: [:build_c_lexer, :build_yacc_parser, "compile:graphql_c_parser_ext", :move_binary]

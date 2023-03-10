@@ -29,6 +29,19 @@ SETUP_NODE_CLASS_VARIABLE(TypeName)
 SETUP_NODE_CLASS_VARIABLE(VariableDefinition)
 SETUP_NODE_CLASS_VARIABLE(VariableIdentifier)
 
+SETUP_NODE_CLASS_VARIABLE(ScalarTypeDefinition)
+SETUP_NODE_CLASS_VARIABLE(ObjectTypeDefinition)
+SETUP_NODE_CLASS_VARIABLE(InterfaceTypeDefinition)
+SETUP_NODE_CLASS_VARIABLE(UnionTypeDefinition)
+SETUP_NODE_CLASS_VARIABLE(EnumTypeDefinition)
+SETUP_NODE_CLASS_VARIABLE(InputObjectTypeDefinition)
+SETUP_NODE_CLASS_VARIABLE(EnumValueDefinition)
+SETUP_NODE_CLASS_VARIABLE(DirectiveDefinition)
+SETUP_NODE_CLASS_VARIABLE(DirectiveLocation)
+SETUP_NODE_CLASS_VARIABLE(FieldDefinition)
+SETUP_NODE_CLASS_VARIABLE(InputValueDefinition)
+SETUP_NODE_CLASS_VARIABLE(SchemaDefinition)
+
 %}
 
 %param {VALUE parser}
@@ -100,9 +113,8 @@ SETUP_NODE_CLASS_VARIABLE(VariableIdentifier)
 
   definition:
     executable_definition
-    /* TODO
     | type_system_definition
-    | type_system_extension */
+    /* TODO | type_system_extension */
 
   executable_definition:
       operation_definition
@@ -476,6 +488,260 @@ SETUP_NODE_CLASS_VARIABLE(VariableIdentifier)
           $2
         );
       }
+
+type_system_definition:
+     schema_definition
+   | type_definition
+   | directive_definition
+
+  schema_definition:
+      SCHEMA directives_list_opt LCURLY operation_type_definition_list RCURLY {
+        $$ = rb_funcall(GraphQL_Language_Nodes_SchemaDefinition, rb_intern("from_a"), 6,
+          rb_ary_entry($1, 1),
+          rb_ary_entry($1, 2),
+          $2,
+          // TODO use static strings:
+          rb_hash_aref($4, rb_str_new_cstr("query")),
+          rb_hash_aref($4, rb_str_new_cstr("mutation")),
+          rb_hash_aref($4, rb_str_new_cstr("subscription"))
+        );
+      }
+
+  operation_type_definition_list:
+      operation_type_definition
+    | operation_type_definition_list operation_type_definition {
+      rb_funcall($$, rb_intern("merge!"), 1, $1);
+    }
+
+  operation_type_definition:
+      operation_type COLON name {
+        $$ = rb_hash_new();
+        rb_hash_aset($$, rb_ary_entry($1, 3), rb_ary_entry($3, 3));
+      }
+
+  type_definition:
+      scalar_type_definition
+    | object_type_definition
+    | interface_type_definition
+    | union_type_definition
+    | enum_type_definition
+    | input_object_type_definition
+
+  description: STRING
+
+  description_opt:
+      /* none */
+    | description
+
+  scalar_type_definition:
+      description_opt SCALAR name directives_list_opt {
+        $$ = rb_funcall(GraphQL_Language_Nodes_ScalarTypeDefinition, rb_intern("from_a"), 5,
+          rb_ary_entry($2, 1),
+          rb_ary_entry($2, 2),
+          rb_ary_entry($3, 3),
+          // TODO see get_description for reading a description from comments
+          (RB_TEST($1) ? rb_ary_entry($1, 3) : Qnil),
+          $4
+        );
+      }
+
+  object_type_definition:
+      description_opt TYPE_LITERAL name implements_opt directives_list_opt field_definition_list_opt {
+        $$ = rb_funcall(GraphQL_Language_Nodes_ObjectTypeDefinition, rb_intern("from_a"), 7,
+          rb_ary_entry($2, 1),
+          rb_ary_entry($2, 2),
+          rb_ary_entry($3, 3),
+          // TODO see get_description for reading a description from comments
+          (RB_TEST($1) ? rb_ary_entry($1, 3) : Qnil),
+          $4,
+          $5,
+          $6
+        );
+      }
+
+  implements_opt:
+      /* none */ { $$ = GraphQL_Language_Nodes_NONE; }
+    | implements
+
+  implements:
+      IMPLEMENTS AMP interfaces_list { $$ = $3; }
+    | IMPLEMENTS interfaces_list { $$ = $2; }
+    | IMPLEMENTS legacy_interfaces_list { $$ = $2; }
+
+  interfaces_list:
+      name {
+        $$ = rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3,
+          rb_ary_entry($1, 1),
+          rb_ary_entry($1, 2),
+          rb_ary_entry($1, 3)
+        );
+      }
+    | interfaces_list AMP name {
+      rb_ary_push($$, rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3, rb_ary_entry($3, 1), rb_ary_entry($3, 2), rb_ary_entry($3, 3)));
+    }
+
+  legacy_interfaces_list:
+      name {
+        $$ = rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3,
+          rb_ary_entry($1, 1),
+          rb_ary_entry($1, 2),
+          rb_ary_entry($1, 3)
+        );
+      }
+    | legacy_interfaces_list name {
+      rb_ary_push($$, rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3, rb_ary_entry($2, 1), rb_ary_entry($2, 2), rb_ary_entry($2, 3)));
+    }
+
+  input_value_definition:
+      description_opt name COLON type default_value_opt directives_list_opt {
+        $$ = rb_funcall(GraphQL_Language_Nodes_InputValueDefinition, rb_intern("from_a"), 7,
+          rb_ary_entry($2, 1),
+          rb_ary_entry($2, 2),
+          rb_ary_entry($2, 3),
+          // TODO see get_description for reading a description from comments
+          (RB_TEST($1) ? rb_ary_entry($1, 3) : Qnil),
+          $4,
+          $5,
+          $6
+        );
+      }
+
+  input_value_definition_list:
+      input_value_definition                             { $$ = rb_ary_new_from_args(1, $1); }
+    | input_value_definition_list input_value_definition { rb_ary_push($$, $1); }
+
+  arguments_definitions_opt:
+      /* none */ { $$ = GraphQL_Language_Nodes_NONE; }
+    | LPAREN input_value_definition_list RPAREN { $$ = $2; }
+
+  field_definition:
+      description_opt name arguments_definitions_opt COLON type directives_list_opt {
+        $$ = rb_funcall(GraphQL_Language_Nodes_FieldDefinition, rb_intern("from_a"), 7,
+          rb_ary_entry($2, 1),
+          rb_ary_entry($2, 2),
+          rb_ary_entry($2, 3),
+          // TODO see get_description for reading a description from comments
+          (RB_TEST($1) ? rb_ary_entry($1, 3) : Qnil),
+          $5,
+          $3,
+          $6
+        );
+      }
+
+  field_definition_list_opt:
+    /* none */ { $$ = GraphQL_Language_Nodes_NONE; }
+    | LCURLY field_definition_list RCURLY { $$ = $2; }
+
+  field_definition_list:
+    /* none - this is not actually valid but graphql-ruby used to print this */ { $$ = GraphQL_Language_Nodes_NONE; }
+    | field_definition                       { $$ = rb_ary_new_from_args(1, $1); }
+    | field_definition_list field_definition { rb_ary_push($$, $2); }
+
+  interface_type_definition:
+      description_opt INTERFACE name implements_opt directives_list_opt field_definition_list_opt {
+        $$ = rb_funcall(GraphQL_Language_Nodes_InterfaceTypeDefinition, rb_intern("from_a"), 7,
+          rb_ary_entry($2, 1),
+          rb_ary_entry($2, 2),
+          rb_ary_entry($3, 3),
+          // TODO see get_description for reading a description from comments
+          (RB_TEST($1) ? rb_ary_entry($1, 3) : Qnil),
+          $4,
+          $5,
+          $6
+        );
+      }
+
+  union_members:
+      name {
+        $$ = rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3,
+          rb_ary_entry($1, 1),
+          rb_ary_entry($1, 2),
+          rb_ary_entry($1, 3)
+        );
+      }
+    | union_members PIPE name {
+        rb_ary_push($$, rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3, rb_ary_entry($3, 1), rb_ary_entry($3, 2), rb_ary_entry($3, 3)));
+      }
+
+  union_type_definition:
+      description_opt UNION name directives_list_opt EQUALS union_members {
+        $$ = rb_funcall(GraphQL_Language_Nodes_UnionTypeDefinition, rb_intern("from_a"),  6,
+          rb_ary_entry($2, 1),
+          rb_ary_entry($2, 2),
+          rb_ary_entry($3, 3),
+          // TODO see get_description for reading a description from comments
+          (RB_TEST($1) ? rb_ary_entry($1, 3) : Qnil),
+          $4,
+          $5
+        );
+      }
+
+  enum_type_definition:
+      description_opt ENUM name directives_list_opt LCURLY enum_value_definitions RCURLY {
+        $$ = rb_funcall(GraphQL_Language_Nodes_EnumTypeDefinition, rb_intern("from_a"),  6,
+          rb_ary_entry($2, 1),
+          rb_ary_entry($2, 2),
+          rb_ary_entry($3, 3),
+          // TODO see get_description for reading a description from comments
+          (RB_TEST($1) ? rb_ary_entry($1, 3) : Qnil),
+          $4,
+          $5
+        );
+      }
+
+  enum_value_definition:
+    description_opt enum_name directives_list_opt {
+      $$ = rb_funcall(GraphQL_Language_Nodes_EnumValueDefinition, rb_intern("from_a"), 5,
+        rb_ary_entry($2, 1),
+        rb_ary_entry($2, 2),
+        rb_ary_entry($2, 3),
+        // TODO see get_description for reading a description from comments
+        (RB_TEST($1) ? rb_ary_entry($1, 3) : Qnil),
+        $3
+      );
+    }
+
+  enum_value_definitions:
+      enum_value_definition                        { $$ = rb_ary_new_from_args(1, $1); }
+    | enum_value_definitions enum_value_definition {
+      rb_ary_push($$, $2);
+     }
+
+  input_object_type_definition:
+      description_opt INPUT name directives_list_opt LCURLY input_value_definition_list RCURLY {
+        $$ = rb_funcall(GraphQL_Language_Nodes_InputObjectTypeDefinition, rb_intern("from_a"), 6,
+          rb_ary_entry($2, 1),
+          rb_ary_entry($2, 2),
+          rb_ary_entry($3, 3),
+          // TODO see get_description for reading a description from comments
+          (RB_TEST($1) ? rb_ary_entry($1, 3) : Qnil),
+          $4,
+          $6
+        );
+      }
+
+  directive_definition:
+      description_opt DIRECTIVE DIR_SIGN name arguments_definitions_opt directive_repeatable_opt ON directive_locations {
+        $$ = rb_funcall(GraphQL_Language_Nodes_DirectiveDefinition, rb_intern("from_a"), 7,
+          rb_ary_entry($2, 1),
+          rb_ary_entry($2, 2),
+          rb_ary_entry($4, 3),
+          // TODO see get_description for reading a description from comments
+          (RB_TEST($1) ? rb_ary_entry($1, 3) : Qnil),
+          (RB_TEST($6) ? Qtrue : Qfalse), // repeatable
+          $5,
+          $8
+        );
+      }
+
+  directive_repeatable_opt:
+    /* nothing */
+    | REPEATABLE
+
+  directive_locations:
+      name                          { $$ = rb_ary_new_from_args(1, rb_funcall(GraphQL_Language_Nodes_DirectiveLocation, rb_intern("from_a"), 3, rb_ary_entry($1, 1), rb_ary_entry($1, 2), rb_ary_entry($1, 3))); }
+    | directive_locations PIPE name { rb_ary_push($$, rb_funcall(GraphQL_Language_Nodes_DirectiveLocation, rb_intern("from_a"), 3, rb_ary_entry($3, 1), rb_ary_entry($3, 2), rb_ary_entry($3, 3))); }
+
 %%
 
 // Custom functions
@@ -496,7 +762,13 @@ int yylex (YYSTYPE *lvalp, VALUE parser) {
   return next_token_type;
 }
 
-void yyerror(VALUE tokens, const char *msg) {
+void yyerror(VALUE parser, const char *msg) {
+  VALUE mGraphQL = rb_const_get_at(rb_cObject, rb_intern("GraphQL"));
+  VALUE cParseError = rb_const_get_at(mGraphQL, rb_intern("ParseError"));
+  // TODO add proper arguments to this error
+  VALUE exception = rb_funcall(cParseError, rb_intern("new"), 4, rb_str_new_cstr(msg), Qnil, Qnil, Qnil);
+  rb_p(exception);
+  rb_exc_raise(exception);
 }
 
 #define INITIALIZE_NODE_CLASS_VARIABLE(node_class_name) GraphQL_Language_Nodes_##node_class_name = rb_const_get_at(mGraphQLLanguageNodes, rb_intern(#node_class_name));
@@ -526,4 +798,17 @@ void initialize_node_class_variables() {
   INITIALIZE_NODE_CLASS_VARIABLE(TypeName)
   INITIALIZE_NODE_CLASS_VARIABLE(VariableDefinition)
   INITIALIZE_NODE_CLASS_VARIABLE(VariableIdentifier)
+
+  INITIALIZE_NODE_CLASS_VARIABLE(ScalarTypeDefinition)
+  INITIALIZE_NODE_CLASS_VARIABLE(ObjectTypeDefinition)
+  INITIALIZE_NODE_CLASS_VARIABLE(InterfaceTypeDefinition)
+  INITIALIZE_NODE_CLASS_VARIABLE(UnionTypeDefinition)
+  INITIALIZE_NODE_CLASS_VARIABLE(EnumTypeDefinition)
+  INITIALIZE_NODE_CLASS_VARIABLE(InputObjectTypeDefinition)
+  INITIALIZE_NODE_CLASS_VARIABLE(EnumValueDefinition)
+  INITIALIZE_NODE_CLASS_VARIABLE(DirectiveDefinition)
+  INITIALIZE_NODE_CLASS_VARIABLE(DirectiveLocation)
+  INITIALIZE_NODE_CLASS_VARIABLE(FieldDefinition)
+  INITIALIZE_NODE_CLASS_VARIABLE(InputValueDefinition)
+  INITIALIZE_NODE_CLASS_VARIABLE(SchemaDefinition)
 }

@@ -15,6 +15,10 @@ if ENV["GRAPHQL_CLEXER"]
     def self.scan(str)
       scan_with_c(str)
     end
+
+    def self.parse(*args, **kwargs)
+      parse_with_c(*args, **kwargs)
+    end
   end
 end
 

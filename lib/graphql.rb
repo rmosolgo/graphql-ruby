@@ -73,6 +73,9 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
 
   def self.parse_with_c(string, filename: nil, trace: GraphQL::Tracing::NullTrace)
     # TODO handle other arguments here
+    if string.nil?
+      raise GraphQL::ParseError.new("No query string was present", nil, nil, string)
+    end
     GraphQL::Language::CParser.parse(string)
   end
 
