@@ -147,7 +147,12 @@ module GraphQL
         if new_class
           @trace_class = new_class
         elsif !defined?(@trace_class)
-          @trace_class = Class.new(GraphQL::Tracing::Trace)
+          parent_trace_class = if superclass.respond_to?(:trace_class)
+            superclass.trace_class
+          else
+            GraphQL::Tracing::Trace
+          end
+          @trace_class = Class.new(parent_trace_class)
         end
         @trace_class
       end
@@ -955,14 +960,17 @@ module GraphQL
       # @param options [Hash] Keywords that will be passed to the tracing class during `#initialize`
       # @return [void]
       def trace_with(trace_mod, **options)
-        @trace_options ||= {}
-        @trace_options.merge!(options)
+        trace_options.merge!(options)
         trace_class.include(trace_mod)
+      end
+
+      def trace_options
+        @trace_options ||= superclass.respond_to?(:trace_options) ? superclass.trace_options.dup : {}
       end
 
       def new_trace(**options)
         if defined?(@trace_options)
-          options = @trace_options.merge(options)
+          options = trace_options.merge(options)
         end
         trace_class.new(**options)
       end
