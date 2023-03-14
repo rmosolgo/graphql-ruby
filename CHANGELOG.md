@@ -12,12 +12,18 @@
 
 # 2.0.18 (9 March 2023)
 
+
+### Breaking Changes
+
+- Tracing: `"execute_field"` events on fields defined on interface types will now receive the _interface_ type as `data[:owner]` instead of the current object type. To get the old behavior, use `data[:object].class` instead. #4292
+
 ### New features
 
 - Add `TypeKind#leaf?` #4352
 
 ### Bug fixes
 
+- Tracing: use the interface type as `data[:owner]` instead of the object type #4292
 - Performance: improve Shape compatibility of `GraphQL::Schema::Field` #4360
 - Performance: improve Shape compatibility of `GraphQL::Schema::Warden` #4361
 - Performance: rewrite the token scanner in plain Ruby #4369
