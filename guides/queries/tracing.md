@@ -14,7 +14,7 @@ index: 11
 module CustomTrace
   def parse(query_string:)
     # measure, log, etc
-    yield
+    super
   end
 
   # ...
@@ -34,14 +34,14 @@ For a full list of methods and their arguments, see {{ "GraphQL::Tracing::Trace"
 
 ## ActiveSupport::Notifications
 
-You can emit events to `ActiveSupport::Notifications` with an experimental tracer, `ActiveSupportNotificationsTracing`.
+You can emit events to `ActiveSupport::Notifications` with an experimental tracer, `ActiveSupportNotificationsTrace`.
 
 To enable it, install the tracer:
 
 ```ruby
 # Send execution events to ActiveSupport::Notifications
 class MySchema < GraphQL::Schema
-  tracer(GraphQL::Tracing::ActiveSupportNotificationsTracing)
+  trace_with(GraphQL::Tracing::ActiveSupportNotificationsTrace)
 end
 ```
 
