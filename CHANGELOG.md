@@ -10,8 +10,17 @@
 
 ### Bug fixes
 
-# 2.0.18 (9 March 2023)
 
+# 2.0.19 (14 March 2023)
+
+### Bug fixes
+
+- Scoped context: fix `context.scoped_context.current_path` #4376
+- Tracing: fix `tracer` inheritance in Schema classes #4379
+- Timeout: fix `Timeout` plugin when other tracers are used #4383
+- Performance: use Arrays instead of `GraphQL::Language::Token`s when scanning #4366
+
+# 2.0.18 (9 March 2023)
 
 ### Breaking Changes
 
