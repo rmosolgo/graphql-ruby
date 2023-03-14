@@ -81,7 +81,7 @@ module GraphQL
 
             error
           else
-            yield
+            super
           end
         end
       end
