@@ -27,6 +27,7 @@ Then, install the dependencies:
 
 - Install SQLite3 and MongoDB (eg, `brew install sqlite && brew tap mongodb/brew && brew install mongodb-community`)
 - `bundle install`
+- `rake compile # If you get warnings at this step, you can ignore them.`
 - Optional: [Ragel](https://www.colm.net/open-source/ragel/) is required to build the lexer
 
 ## Running the Tests
