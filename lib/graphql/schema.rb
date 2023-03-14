@@ -960,14 +960,17 @@ module GraphQL
       # @param options [Hash] Keywords that will be passed to the tracing class during `#initialize`
       # @return [void]
       def trace_with(trace_mod, **options)
-        @trace_options ||= {}
-        @trace_options.merge!(options)
+        trace_options.merge!(options)
         trace_class.include(trace_mod)
+      end
+
+      def trace_options
+        @trace_options ||= superclass.respond_to?(:trace_options) ? superclass.trace_options.dup : {}
       end
 
       def new_trace(**options)
         if defined?(@trace_options)
-          options = @trace_options.merge(options)
+          options = trace_options.merge(options)
         end
         trace_class.new(**options)
       end
