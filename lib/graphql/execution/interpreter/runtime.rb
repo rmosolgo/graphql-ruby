@@ -603,7 +603,7 @@ module GraphQL
           ti = thread_info
           depth = 1
           result = ti[:current_result]
-          while (result = result.graphql_parent)
+          while (result = result&.graphql_parent)
             depth += 1
           end
           depth
