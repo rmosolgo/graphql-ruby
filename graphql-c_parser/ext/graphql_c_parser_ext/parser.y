@@ -349,8 +349,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaDefinition)
   /* like the previous, but with literals only: */
   object_literal_value:
       LCURLY object_literal_value_list_opt RCURLY {
-        $$ = rb_ary_new_from_args(4,
-          rb_id2sym(rb_intern("InputObject")),
+        $$ = rb_funcall(GraphQL_Language_Nodes_InputObject, rb_intern("from_a"), 3,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           $2
@@ -371,7 +370,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaDefinition)
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           rb_ary_entry($1, 3),
-          rb_ary_entry($3, 3)
+          $3
         );
       }
 
