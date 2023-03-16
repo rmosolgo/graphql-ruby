@@ -915,8 +915,9 @@ module GraphQL
         # @return [GraphQL::Execution::Lazy, Object] If loading `object` will be deferred, it's a wrapper over it.
         def after_lazy(lazy_obj, owner:, field:, owner_object:, arguments:, ast_node:, result:, result_name:, eager: false, trace: true, &block)
           if lazy?(lazy_obj)
+            orig_result = result
             lazy = GraphQL::Execution::Lazy.new(field: field) do
-              set_all_interpreter_context(owner_object, field, arguments, result_name, result)
+              set_all_interpreter_context(owner_object, field, arguments, result_name, orig_result)
               # Wrap the execution of _this_ method with tracing,
               # but don't wrap the continuation below
               inner_obj = begin
