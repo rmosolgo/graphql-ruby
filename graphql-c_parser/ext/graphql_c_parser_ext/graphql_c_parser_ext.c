@@ -8,11 +8,21 @@ VALUE GraphQL_Language_CLexer_tokenize(VALUE self, VALUE query_string) {
 VALUE GraphQL_Language_CParser_parse(VALUE self, VALUE query_string) {
   VALUE tokens = tokenize(query_string);
   VALUE parser = rb_class_new(self);
-  rb_ivar_set(parser, rb_intern("tokens"), tokens);
-  rb_ivar_set(parser, rb_intern("current_token"), INT2FIX(0));
-  rb_ivar_set(parser, rb_intern("result"), Qnil);
+  rb_ivar_set(parser, rb_intern("@tokens"), tokens);
+  rb_ivar_set(parser, rb_intern("@next_token_index"), INT2FIX(0));
+  rb_ivar_set(parser, rb_intern("@result"), Qnil);
   yyparse(parser);
-  return rb_ivar_get(parser, rb_intern("result"));
+  return rb_ivar_get(parser, rb_intern("@result"));
+}
+
+VALUE GraphQL_Language_CParser_parse_with_parser(VALUE self, VALUE query_string) {
+  VALUE tokens = tokenize(query_string);
+  VALUE parser = rb_class_new(self);
+  rb_ivar_set(parser, rb_intern("@tokens"), tokens);
+  rb_ivar_set(parser, rb_intern("@next_token_index"), INT2FIX(0));
+  rb_ivar_set(parser, rb_intern("@result"), Qnil);
+  yyparse(parser);
+  return parser;
 }
 
 void Init_graphql_c_parser_ext() {
@@ -24,5 +34,6 @@ void Init_graphql_c_parser_ext() {
 
   VALUE CParser = rb_define_class_under(Language, "CParser", rb_cObject);
   rb_define_singleton_method(CParser, "parse", GraphQL_Language_CParser_parse, 1);
+  rb_define_singleton_method(CParser, "parse_with_parser", GraphQL_Language_CParser_parse_with_parser, 1);
   initialize_node_class_variables();
 }

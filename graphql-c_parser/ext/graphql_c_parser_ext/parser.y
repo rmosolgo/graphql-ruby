@@ -1,5 +1,6 @@
 %require "3.8"
 %define api.pure full
+%define parse.error detailed
 
 %{
 // C Declarations
@@ -88,7 +89,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaDefinition)
 %%
 
   // YACC Rules
-  start: document { rb_ivar_set(parser, rb_intern("result"), $1); }
+  start: document { rb_ivar_set(parser, rb_intern("@result"), $1); }
 
   document: definitions_list {
     VALUE position_source = rb_ary_entry($1, 0);
@@ -557,6 +558,17 @@ type_system_definition:
           $6
         );
       }
+    | TYPE_LITERAL name field_definition_list_opt {
+        $$ = rb_funcall(GraphQL_Language_Nodes_ObjectTypeDefinition, rb_intern("from_a"), 7,
+          rb_ary_entry($1, 1),
+          rb_ary_entry($1, 2),
+          rb_ary_entry($2, 3),
+          Qnil,
+          Qnil,
+          Qnil,
+          $3
+        );
+      }
 
   implements_opt:
       /* none */ { $$ = GraphQL_Language_Nodes_NONE; }
@@ -598,7 +610,7 @@ type_system_definition:
           rb_ary_entry($2, 2),
           rb_ary_entry($2, 3),
           // TODO see get_description for reading a description from comments
-          (RB_TEST($1) ? rb_ary_entry($1, 3) : Qnil),
+          Qnil,
           $4,
           $5,
           $6
@@ -620,10 +632,10 @@ type_system_definition:
           rb_ary_entry($2, 2),
           rb_ary_entry($2, 3),
           // TODO see get_description for reading a description from comments
-          (RB_TEST($1) ? rb_ary_entry($1, 3) : Qnil),
-          $5,
-          $3,
-          $6
+          Qnil,
+          Qnil,
+          Qnil,
+          Qnil
         );
       }
 
@@ -745,15 +757,14 @@ type_system_definition:
 
 // Custom functions
 int yylex (YYSTYPE *lvalp, VALUE parser) {
-  int next_token_idx = FIX2INT(rb_ivar_get(parser, rb_intern("current_token")));
-  VALUE tokens = rb_ivar_get(parser, rb_intern("tokens"));
+  int next_token_idx = FIX2INT(rb_ivar_get(parser, rb_intern("@next_token_index")));
+  VALUE tokens = rb_ivar_get(parser, rb_intern("@tokens"));
   VALUE next_token = rb_ary_entry(tokens, next_token_idx);
 
   if (!RB_TEST(next_token)) {
     return YYEOF;
   }
-
-  rb_ivar_set(parser, rb_intern("current_token"), INT2FIX(next_token_idx + 1));
+  rb_ivar_set(parser, rb_intern("@next_token_index"), INT2FIX(next_token_idx + 1));
   VALUE token_type_rb_int = rb_ary_entry(next_token, 5);
   int next_token_type = FIX2INT(token_type_rb_int);
 
@@ -762,11 +773,20 @@ int yylex (YYSTYPE *lvalp, VALUE parser) {
 }
 
 void yyerror(VALUE parser, const char *msg) {
+  VALUE next_token_idx = rb_ivar_get(parser, rb_intern("@next_token_index"));
+  int this_token_idx = FIX2INT(next_token_idx) - 1;
+  VALUE tokens = rb_ivar_get(parser, rb_intern("@tokens"));
+  VALUE this_token = rb_ary_entry(tokens, this_token_idx);
   VALUE mGraphQL = rb_const_get_at(rb_cObject, rb_intern("GraphQL"));
   VALUE cParseError = rb_const_get_at(mGraphQL, rb_intern("ParseError"));
-  // TODO add proper arguments to this error
-  VALUE exception = rb_funcall(cParseError, rb_intern("new"), 4, rb_str_new_cstr(msg), Qnil, Qnil, Qnil);
-  rb_p(exception);
+  VALUE exception = rb_funcall(
+      cParseError, rb_intern("new"), 4,
+      rb_str_new_cstr(msg),
+      rb_ary_entry(this_token, 1),
+      rb_ary_entry(this_token, 2),
+      Qnil // TODO pass the whole query string from the parser object
+  );
+
   rb_exc_raise(exception);
 }
 
