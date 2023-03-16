@@ -599,16 +599,6 @@ module GraphQL
           path
         end
 
-        def current_depth
-          ti = thread_info
-          depth = 1
-          result = ti[:current_result]
-          while (result = result&.graphql_parent)
-            depth += 1
-          end
-          depth
-        end
-
         HALT = Object.new
         def continue_value(value, parent_type, field, is_non_null, ast_node, result_name, selection_result) # rubocop:disable Metrics/ParameterLists
           case value
@@ -953,6 +943,11 @@ module GraphQL
               lazy.value
             else
               set_result(result, result_name, lazy)
+              current_depth = 0
+              while result
+                current_depth += 1
+                result = result.graphql_parent
+              end
               @lazies_at_depth[current_depth] << lazy
               lazy
             end
