@@ -47,7 +47,7 @@ describe GraphQL::Tracing::AppsignalTrace do
   end
 
   it "traces events" do
-    res = AppsignalTraceTest::TestSchema.execute("{ int thing { str } }")
+    _res = AppsignalTraceTest::TestSchema.execute("{ int thing { str } }")
     expected_trace = [
       "execute.graphql",
       "analyze.graphql",
