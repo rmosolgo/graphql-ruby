@@ -5,7 +5,6 @@ module GraphQL
     module AppsignalTrace
       include PlatformTrace
 
-
       # @param set_action_name [Boolean] If true, the GraphQL operation name will be used as the transaction name.
       #   This is not advised if you run more than one query per HTTP request, for example, with `graphql-client` or multiplexing.
       #   It can also be specified per-query with `context[:set_appsignal_action_name]`.
@@ -46,7 +45,13 @@ module GraphQL
 
       def platform_execute_field(platform_key)
         Appsignal.instrument(platform_key) do
-          super
+          yield
+        end
+      end
+
+      def platform_authorized(platform_key)
+        Appsignal.instrument(platform_key) do
+          yield
         end
       end
 
