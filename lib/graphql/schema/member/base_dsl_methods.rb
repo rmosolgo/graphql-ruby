@@ -57,7 +57,6 @@ module GraphQL
             child_class.introspection(introspection)
             child_class.description(description)
             child_class.default_graphql_name = nil
-            child_class.default_relay = false
 
             if defined?(@graphql_name) && (self.name.nil? || graphql_name != default_graphql_name)
               child_class.graphql_name(graphql_name)
@@ -114,9 +113,13 @@ module GraphQL
           true
         end
 
+        def default_relay
+          false
+        end
+
         protected
 
-        attr_writer :default_graphql_name, :graphql_name, :default_relay
+        attr_writer :default_graphql_name, :graphql_name
       end
     end
   end

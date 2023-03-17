@@ -9,8 +9,6 @@ module GraphQL
 
         def self.included(child_class)
           child_class.extend(ClassMethods)
-          child_class.extend(Relay::DefaultRelay)
-          child_class.default_relay(true)
           child_class.has_nodes_field(true)
           child_class.node_nullable(true)
           child_class.edges_nullable(true)
@@ -33,6 +31,10 @@ module GraphQL
             child_class.edge_type = nil
             child_class.node_type = nil
             child_class.edge_class = nil
+          end
+
+          def default_relay?
+            true
           end
 
           # @return [Class]

@@ -9,7 +9,6 @@ module GraphQL
           child_class.field(:cursor, String, null: false, description: "A cursor for use in pagination.")
           child_class.extend(ClassMethods)
           child_class.class_eval { self.node_type = nil }
-          child_class.extend(GraphQL::Types::Relay::DefaultRelay)
           child_class.node_nullable(true)
         end
 
@@ -18,6 +17,10 @@ module GraphQL
             super
             child_class.node_type = nil
             child_class.node_nullable = nil
+          end
+
+          def default_relay?
+            true
           end
 
           # Get or set the Object type that this edge wraps.
