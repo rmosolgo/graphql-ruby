@@ -46,7 +46,7 @@ Or, you can build a GraphQL server by hand:
 Types describe objects in your application and form the basis for [GraphQL's type system](https://graphql.org/learn/schema/#type-system).
 
 ```ruby
-# app/graphql/types/post_type.rb
+# app/graphql/types/post_type.rb (you will need to modify this file)
 module Types
   class PostType < Types::BaseObject
     description "A blog post"
@@ -61,7 +61,7 @@ module Types
   end
 end
 
-# app/graphql/types/comment_type.rb
+# app/graphql/types/comment_type.rb (you will need to create this file)
 module Types
   class CommentType < Types::BaseObject
     field :id, ID, null: false
@@ -75,6 +75,7 @@ end
 Before building a schema, you have to define an [entry point to your system, the "query root"](https://graphql.org/learn/schema/#the-query-and-mutation-types):
 
 ```ruby
+# app/graphql/types/query_type.rb (the class derivation has changed and you should probably leave the implementation to test_field to see if this works at all)
 class QueryType < GraphQL::Schema::Object
   description "The query root of this schema"
 
@@ -93,6 +94,8 @@ end
 Then, build a schema with `QueryType` as the query entry point:
 
 ```ruby
+# maybe app/graphql/graphql_schema.rb, but who knows for sure and for what version? regardless, it doesn't work for http://localhost:3000/graphiql. i'm sure it's very difficult to come up with a minimal example using all the JSON interfaces already included with JBuilder.
+
 class Schema < GraphQL::Schema
   query QueryType
 end
