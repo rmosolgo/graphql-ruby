@@ -6,6 +6,7 @@ module GraphQL
       module RelayShortcuts
         def edge_type_class(new_edge_type_class = nil)
           if new_edge_type_class
+            initialize_relay_metadata
             @edge_type_class = new_edge_type_class
           else
             # Don't call `ancestor.edge_type_class`
@@ -22,6 +23,7 @@ module GraphQL
 
         def connection_type_class(new_connection_type_class = nil)
           if new_connection_type_class
+            initialize_relay_metadata
             @connection_type_class = new_connection_type_class
           else
             # Don't call `ancestor.connection_type_class`
@@ -37,6 +39,7 @@ module GraphQL
         end
 
         def edge_type
+          initialize_relay_metadata
           @edge_type ||= begin
             edge_name = self.graphql_name + "Edge"
             node_type_class = self
@@ -48,6 +51,7 @@ module GraphQL
         end
 
         def connection_type
+          initialize_relay_metadata
           @connection_type ||= begin
             conn_name = self.graphql_name + "Connection"
             edge_type_class = self.edge_type
@@ -66,6 +70,21 @@ module GraphQL
 
         def configured_edge_type_class
           @edge_type_class
+        end
+
+        attr_writer :edge_type, :connection_type, :connection_type_class, :edge_type_class
+
+        private
+
+        # If one of thse values is accessed, initialize all the instance variables to retain
+        # a consistent object shape.
+        def initialize_relay_metadata
+          if !defined?(@connection_type)
+            @connection_type = nil
+            @edge_type = nil
+            @connection_type_class = nil
+            @edge_type_class = nil
+          end
         end
       end
     end

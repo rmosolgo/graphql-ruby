@@ -138,6 +138,7 @@ module GraphQL
           super
           subclass.class_eval do
             @own_fields ||= nil
+            @field_class ||= nil
           end
         end
 

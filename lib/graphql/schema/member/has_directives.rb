@@ -4,6 +4,16 @@ module GraphQL
   class Schema
     class Member
       module HasDirectives
+        def self.extended(child_cls)
+          super
+          child_cls.module_eval { self.own_directives = nil }
+        end
+
+        def inherited(child_cls)
+          super
+          child_cls.own_directives = nil
+        end
+
         # Create an instance of `dir_class` for `self`, using `options`.
         #
         # It removes a previously-attached instance of `dir_class`, if there is one.
@@ -101,12 +111,9 @@ module GraphQL
           end
         end
 
-
         protected
 
-        def own_directives
-          @own_directives
-        end
+        attr_accessor :own_directives
       end
     end
   end

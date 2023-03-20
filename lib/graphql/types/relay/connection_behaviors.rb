@@ -9,16 +9,34 @@ module GraphQL
 
         def self.included(child_class)
           child_class.extend(ClassMethods)
-          child_class.extend(Relay::DefaultRelay)
-          child_class.default_relay(true)
           child_class.has_nodes_field(true)
           child_class.node_nullable(true)
           child_class.edges_nullable(true)
           child_class.edge_nullable(true)
+          child_class.module_eval {
+            self.edge_type = nil
+            self.node_type = nil
+            self.edge_class = nil
+          }
           add_page_info_field(child_class)
         end
 
         module ClassMethods
+          def inherited(child_class)
+            super
+            child_class.has_nodes_field(has_nodes_field)
+            child_class.node_nullable(node_nullable)
+            child_class.edges_nullable(edges_nullable)
+            child_class.edge_nullable(edge_nullable)
+            child_class.edge_type = nil
+            child_class.node_type = nil
+            child_class.edge_class = nil
+          end
+
+          def default_relay?
+            true
+          end
+
           # @return [Class]
           attr_reader :node_type
 
@@ -123,6 +141,10 @@ module GraphQL
               @nodes_field = new_value
             end
           end
+
+          protected
+
+          attr_writer :edge_type, :node_type,  :edge_class
 
           private
 
