@@ -8,6 +8,10 @@
 
 ### Bug Fix
 
+# 1.24.2 (20 Mar 2023)
+
+- Remove debug output, oops
+
 # 1.24.1 (20 Mar 2023)
 
 - Fix `OperationStore` with new module-based execution traces (#4389)
