@@ -58,7 +58,7 @@ module GraphQL
             child_class.description(description)
             child_class.default_graphql_name = nil
 
-            if defined?(@graphql_name) && (self.name.nil? || graphql_name != default_graphql_name)
+            if defined?(@graphql_name) && @graphql_name && (self.name.nil? || graphql_name != default_graphql_name)
               child_class.graphql_name(graphql_name)
             else
               child_class.graphql_name = nil
