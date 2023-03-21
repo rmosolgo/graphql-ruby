@@ -703,7 +703,7 @@ union yyalloc
 /* YYNNTS -- Number of nonterminals.  */
 #define YYNNTS  77
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  166
+#define YYNRULES  167
 /* YYNSTATES -- Number of states.  */
 #define YYNSTATES  270
 
@@ -754,23 +754,23 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    92,    92,    94,   112,   113,   116,   117,   121,   122,
-     125,   136,   147,   158,   169,   182,   183,   184,   187,   188,
-     191,   192,   195,   206,   207,   210,   211,   214,   215,   216,
-     219,   222,   223,   226,   237,   250,   251,   254,   255,   258,
-     268,   269,   270,   271,   272,   273,   274,   275,   276,   279,
-     280,   281,   283,   291,   300,   301,   304,   305,   308,   309,
-     310,   311,   312,   313,   315,   323,   324,   333,   334,   337,
-     338,   341,   352,   361,   362,   365,   366,   369,   380,   381,
-     384,   385,   387,   397,   398,   401,   402,   403,   406,   407,
-     408,   409,   410,   411,   412,   413,   414,   417,   418,   419,
-     420,   421,   422,   423,   427,   437,   446,   457,   469,   470,
-     473,   474,   477,   484,   493,   494,   495,   498,   511,   512,
-     517,   523,   524,   525,   526,   527,   528,   530,   532,   534,
-     537,   549,   561,   574,   575,   578,   579,   580,   583,   590,
-     595,   602,   607,   621,   622,   625,   626,   629,   643,   644,
-     647,   648,   649,   652,   666,   673,   678,   691,   704,   716,
-     717,   722,   735,   748,   750,   753,   754
+       0,    92,    92,    94,   112,   113,   114,   117,   118,   122,
+     123,   126,   137,   148,   159,   170,   183,   184,   185,   188,
+     189,   192,   193,   196,   207,   208,   211,   212,   215,   216,
+     217,   220,   223,   224,   227,   238,   251,   252,   255,   256,
+     259,   269,   270,   271,   272,   273,   274,   275,   276,   277,
+     280,   281,   282,   284,   292,   301,   302,   305,   306,   309,
+     310,   311,   312,   313,   314,   316,   324,   325,   334,   335,
+     338,   339,   342,   353,   362,   363,   366,   367,   370,   381,
+     382,   385,   386,   388,   398,   399,   402,   403,   404,   407,
+     408,   409,   410,   411,   412,   413,   414,   415,   418,   419,
+     420,   421,   422,   423,   424,   428,   438,   447,   458,   470,
+     471,   474,   475,   478,   485,   494,   495,   496,   499,   512,
+     513,   518,   524,   525,   526,   527,   528,   529,   531,   533,
+     535,   538,   550,   562,   575,   576,   579,   580,   581,   584,
+     591,   596,   603,   608,   622,   623,   626,   627,   630,   644,
+     645,   648,   649,   650,   653,   667,   674,   679,   692,   705,
+     717,   718,   721,   734,   747,   749,   752,   753
 };
 #endif
 
@@ -829,7 +829,7 @@ yysymbol_name (yysymbol_kind_t yysymbol)
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
 
-#define YYTABLE_NINF (-151)
+#define YYTABLE_NINF (-152)
 
 #define yytable_value_is_error(Yyn) \
   0
@@ -872,33 +872,33 @@ static const yytype_int16 yypact[] =
    means the default is an error.  */
 static const yytype_uint8 yydefact[] =
 {
-       0,    96,    94,   101,    98,    97,    95,    91,    92,     0,
-      16,    84,    15,    99,    89,    78,   127,    17,   100,    90,
-      93,     0,     2,     3,     4,     6,     8,    18,    18,   103,
-      83,     9,     7,   114,   115,   129,     0,   121,   122,   123,
-     124,   125,   126,   116,    98,    88,    90,   102,   109,     0,
-      78,    14,     0,    25,    27,    35,    28,    29,     0,     0,
-      79,    80,   148,     1,     5,     0,    78,    18,    78,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,     0,    78,
-      13,    26,     0,     0,    78,    35,     0,    81,   128,   132,
-       0,     0,    20,     0,    78,     0,     0,    78,    78,   133,
-      78,   133,    78,     0,   112,    78,   110,    78,     0,   106,
-     104,    35,     0,    37,     0,    31,    82,     0,     0,   118,
-       0,   151,   128,     0,    19,    21,    12,     0,    11,   145,
-       0,     0,     0,    78,   134,   130,    78,     0,     0,     0,
-     111,     0,     0,    78,    36,    38,    65,    32,    34,     0,
-     117,   119,   145,   149,   152,     0,    10,   128,   163,   128,
-     128,     0,   138,   136,   137,   148,   148,     0,   113,   107,
-     105,    30,    31,    44,    40,    59,    58,    41,     0,    67,
-      52,    61,    60,    42,    43,     0,    62,    49,    39,    45,
-      50,    47,    64,    46,    51,    48,    63,   120,     0,    23,
-       0,   143,   128,   164,     0,     0,   159,   128,   128,   138,
-     135,     0,   141,   153,   131,   154,   156,    33,    54,    56,
-       0,     0,    68,    69,     0,    74,    75,     0,    53,     0,
-       0,    22,     0,   146,   144,     0,    78,   157,   160,   161,
-     139,     0,    55,    57,    66,    70,     0,    72,    76,     0,
-      65,    78,    73,    24,     0,   165,   162,   158,   155,    65,
-       0,    49,    71,   147,    23,     0,    77,    78,   166,   142
+       4,    97,    95,   102,    99,    98,    96,    92,    93,     0,
+      17,    85,    16,   100,    90,    79,   128,    18,   101,    91,
+      94,     0,     2,     3,     5,     7,     9,    19,    19,   104,
+      84,    10,     8,   115,   116,   130,     0,   122,   123,   124,
+     125,   126,   127,   117,    99,    89,    91,   103,   110,     0,
+      79,    15,     0,    26,    28,    36,    29,    30,     0,     0,
+      80,    81,   149,     1,     6,     0,    79,    19,    79,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,    79,
+      14,    27,     0,     0,    79,    36,     0,    82,   129,   133,
+       0,     0,    21,     0,    79,     0,     0,    79,    79,   134,
+      79,   134,    79,     0,   113,    79,   111,    79,     0,   107,
+     105,    36,     0,    38,     0,    32,    83,     0,     0,   119,
+       0,   152,   129,     0,    20,    22,    13,     0,    12,   146,
+       0,     0,     0,    79,   135,   131,    79,     0,     0,     0,
+     112,     0,     0,    79,    37,    39,    66,    33,    35,     0,
+     118,   120,   146,   150,   153,     0,    11,   129,   164,   129,
+     129,     0,   139,   137,   138,   149,   149,     0,   114,   108,
+     106,    31,    32,    45,    41,    60,    59,    42,     0,    68,
+      53,    62,    61,    43,    44,     0,    63,    50,    40,    46,
+      51,    48,    65,    47,    52,    49,    64,   121,     0,    24,
+       0,   144,   129,   165,     0,     0,   160,   129,   129,   139,
+     136,     0,   142,   154,   132,   155,   157,    34,    55,    57,
+       0,     0,    69,    70,     0,    75,    76,     0,    54,     0,
+       0,    23,     0,   147,   145,     0,    79,   158,   161,   162,
+     140,     0,    56,    58,    67,    71,     0,    73,    77,     0,
+      66,    79,    74,    25,     0,   166,   163,   159,   156,    66,
+       0,    50,    72,   148,    24,     0,    78,    79,   167,   143
 };
 
 /* YYPGOTO[NTERM-NUM].  */
@@ -934,7 +934,7 @@ static const yytype_int16 yytable[] =
 {
       28,   109,   196,    36,   188,    81,   107,    68,    27,    55,
       48,    69,   116,    70,    58,   253,   126,   124,   128,    62,
-      63,    71,    82,    28,    72,    90,    36,    67,  -150,   -88,
+      63,    71,    82,    28,    72,    90,    36,    67,  -151,   -89,
       86,    27,   138,    16,   196,   261,   219,    73,   143,    83,
      213,   214,    74,    75,   153,   266,    94,    10,   234,    16,
      156,    12,    55,   150,   234,   237,    79,    65,    85,    17,
@@ -1002,7 +1002,7 @@ static const yytype_int16 yytable[] =
        0,    11,     0,    12,     0,     0,    13,   144,    14,    45,
        0,    17,    18,    46,    20,     1,     0,     2,     0,     0,
        0,     3,     0,    44,     5,     6,     7,     0,     8,     0,
-       0,     0,    10,     0,  -108,     0,    12,     0,     0,    13,
+       0,     0,    10,     0,  -109,     0,    12,     0,     0,    13,
        0,    14,    45,     0,    17,    18,    46,    20,     1,     0,
        2,     0,     0,     0,     3,     0,    44,     5,     6,     7,
        0,     8,     0,     0,     0,    10,     0,    11,     0,    12,
@@ -1132,45 +1132,45 @@ static const yytype_int8 yystos[] =
 /* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr1[] =
 {
-       0,    40,    41,    42,    43,    43,    44,    44,    45,    45,
-      46,    46,    46,    46,    46,    47,    47,    47,    48,    48,
-      49,    49,    50,    51,    51,    52,    52,    53,    53,    53,
-      54,    55,    55,    56,    56,    57,    57,    58,    58,    59,
-      60,    60,    60,    60,    60,    60,    60,    60,    60,    61,
-      61,    61,    62,    63,    64,    64,    65,    65,    66,    66,
-      66,    66,    66,    66,    67,    68,    68,    69,    69,    70,
-      70,    71,    72,    73,    73,    74,    74,    75,    76,    76,
-      77,    77,    78,    79,    79,    47,    47,    47,    80,    80,
-      80,    80,    80,    80,    80,    80,    80,    81,    81,    81,
-      81,    81,    81,    81,    82,    83,    83,    84,    85,    85,
-      86,    86,    87,    87,    88,    88,    88,    89,    90,    90,
-      91,    92,    92,    92,    92,    92,    92,    93,    94,    94,
-      95,    96,    96,    97,    97,    98,    98,    98,    99,    99,
-     100,   100,   101,   102,   102,   103,   103,   104,   105,   105,
-     106,   106,   106,   107,   108,   108,   109,   110,   111,   112,
-     112,   113,   114,   115,   115,   116,   116
+       0,    40,    41,    42,    43,    43,    43,    44,    44,    45,
+      45,    46,    46,    46,    46,    46,    47,    47,    47,    48,
+      48,    49,    49,    50,    51,    51,    52,    52,    53,    53,
+      53,    54,    55,    55,    56,    56,    57,    57,    58,    58,
+      59,    60,    60,    60,    60,    60,    60,    60,    60,    60,
+      61,    61,    61,    62,    63,    64,    64,    65,    65,    66,
+      66,    66,    66,    66,    66,    67,    68,    68,    69,    69,
+      70,    70,    71,    72,    73,    73,    74,    74,    75,    76,
+      76,    77,    77,    78,    79,    79,    47,    47,    47,    80,
+      80,    80,    80,    80,    80,    80,    80,    80,    81,    81,
+      81,    81,    81,    81,    81,    82,    83,    83,    84,    85,
+      85,    86,    86,    87,    87,    88,    88,    88,    89,    90,
+      90,    91,    92,    92,    92,    92,    92,    92,    93,    94,
+      94,    95,    96,    96,    97,    97,    98,    98,    98,    99,
+      99,   100,   100,   101,   102,   102,   103,   103,   104,   105,
+     105,   106,   106,   106,   107,   108,   108,   109,   110,   111,
+     112,   112,   113,   114,   115,   115,   116,   116
 };
 
 /* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr2[] =
 {
-       0,     2,     1,     1,     1,     2,     1,     1,     1,     1,
-       5,     4,     4,     3,     2,     1,     1,     1,     0,     3,
-       1,     2,     5,     0,     2,     1,     2,     1,     1,     1,
-       3,     0,     1,     6,     4,     0,     3,     1,     2,     3,
+       0,     2,     1,     1,     0,     1,     2,     1,     1,     1,
+       1,     5,     4,     4,     3,     2,     1,     1,     1,     0,
+       3,     1,     2,     5,     0,     2,     1,     2,     1,     1,
+       1,     3,     0,     1,     6,     4,     0,     3,     1,     2,
+       3,     1,     1,     1,     1,     1,     1,     1,     1,     1,
+       1,     1,     1,     1,     2,     2,     3,     1,     2,     1,
+       1,     1,     1,     1,     1,     1,     0,     3,     0,     1,
+       1,     2,     3,     3,     0,     1,     1,     2,     3,     0,
+       1,     1,     2,     3,     1,     1,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     2,     2,     3,     1,     2,     1,     1,
-       1,     1,     1,     1,     1,     0,     3,     0,     1,     1,
-       2,     3,     3,     0,     1,     1,     2,     3,     0,     1,
-       1,     2,     3,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     1,     3,     5,     3,     6,     0,     1,
-       1,     2,     1,     3,     1,     1,     1,     5,     1,     2,
-       3,     1,     1,     1,     1,     1,     1,     1,     0,     1,
-       4,     6,     3,     0,     1,     3,     2,     2,     1,     3,
-       1,     2,     6,     1,     2,     0,     3,     6,     0,     3,
-       0,     1,     2,     6,     1,     3,     6,     7,     3,     1,
-       2,     7,     8,     0,     1,     1,     3
+       1,     1,     1,     1,     1,     3,     5,     3,     6,     0,
+       1,     1,     2,     1,     3,     1,     1,     1,     5,     1,
+       2,     3,     1,     1,     1,     1,     1,     1,     1,     0,
+       1,     4,     6,     3,     0,     1,     3,     2,     2,     1,
+       3,     1,     2,     6,     1,     2,     0,     3,     6,     0,
+       3,     0,     1,     2,     6,     1,     3,     6,     7,     3,
+       1,     2,     7,     8,     0,     1,     1,     3
 };
 
 
@@ -1889,20 +1889,26 @@ yyreduce:
 #line 1890 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 4: /* definitions_list: definition  */
+  case 4: /* definitions_list: %empty  */
 #line 112 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                    { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
+                                    { yyval = GraphQL_Language_Nodes_NONE; }
 #line 1896 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 5: /* definitions_list: definitions_list definition  */
+  case 5: /* definitions_list: definition  */
 #line 113 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                    { rb_ary_push(yyval, yyvsp[0]); }
+                                    { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
 #line 1902 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 10: /* operation_definition: operation_type name variable_definitions_opt directives_list_opt selection_set  */
-#line 125 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 6: /* definitions_list: definitions_list definition  */
+#line 114 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                    { rb_ary_push(yyval, yyvsp[0]); }
+#line 1908 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 11: /* operation_definition: operation_type name variable_definitions_opt directives_list_opt selection_set  */
+#line 126 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                                      {
         yyval = rb_funcall(GraphQL_Language_Nodes_OperationDefinition, rb_intern("from_a"), 7,
           rb_ary_entry(yyvsp[-4], 1),
@@ -1914,11 +1920,11 @@ yyreduce:
           yyvsp[0]
         );
       }
-#line 1918 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 1924 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 11: /* operation_definition: name variable_definitions_opt directives_list_opt selection_set  */
-#line 136 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 12: /* operation_definition: name variable_definitions_opt directives_list_opt selection_set  */
+#line 137 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                       {
         yyval = rb_funcall(GraphQL_Language_Nodes_OperationDefinition, rb_intern("from_a"), 7,
           rb_ary_entry(yyvsp[-3], 1),
@@ -1930,11 +1936,11 @@ yyreduce:
           yyvsp[0]
         );
       }
-#line 1934 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 1940 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 12: /* operation_definition: operation_type variable_definitions_opt directives_list_opt selection_set  */
-#line 147 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 13: /* operation_definition: operation_type variable_definitions_opt directives_list_opt selection_set  */
+#line 148 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                                 {
         yyval = rb_funcall(GraphQL_Language_Nodes_OperationDefinition, rb_intern("from_a"), 7,
           rb_ary_entry(yyvsp[-3], 1),
@@ -1946,11 +1952,11 @@ yyreduce:
           yyvsp[0]
         );
       }
-#line 1950 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 1956 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 13: /* operation_definition: LCURLY selection_list RCURLY  */
-#line 158 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 14: /* operation_definition: LCURLY selection_list RCURLY  */
+#line 159 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                    {
         yyval = rb_funcall(GraphQL_Language_Nodes_OperationDefinition, rb_intern("from_a"), 7,
           rb_ary_entry(yyvsp[-2], 1),
@@ -1962,11 +1968,11 @@ yyreduce:
           yyvsp[-1]
         );
       }
-#line 1966 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 1972 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 14: /* operation_definition: LCURLY RCURLY  */
-#line 169 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 15: /* operation_definition: LCURLY RCURLY  */
+#line 170 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                     {
         yyval = rb_funcall(GraphQL_Language_Nodes_OperationDefinition, rb_intern("from_a"), 7,
           rb_ary_entry(yyvsp[-1], 1),
@@ -1978,35 +1984,35 @@ yyreduce:
           GraphQL_Language_Nodes_NONE
         );
       }
-#line 1982 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 18: /* variable_definitions_opt: %empty  */
-#line 187 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                              { yyval = GraphQL_Language_Nodes_NONE; }
 #line 1988 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 19: /* variable_definitions_opt: LPAREN variable_definitions_list RPAREN  */
+  case 19: /* variable_definitions_opt: %empty  */
 #line 188 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                              { yyval = yyvsp[-1]; }
+                                              { yyval = GraphQL_Language_Nodes_NONE; }
 #line 1994 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 20: /* variable_definitions_list: variable_definition  */
-#line 191 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                                    { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
+  case 20: /* variable_definitions_opt: LPAREN variable_definitions_list RPAREN  */
+#line 189 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                              { yyval = yyvsp[-1]; }
 #line 2000 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 21: /* variable_definitions_list: variable_definitions_list variable_definition  */
+  case 21: /* variable_definitions_list: variable_definition  */
 #line 192 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                                    { rb_ary_push(yyval, yyvsp[0]); }
+                                                    { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
 #line 2006 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 22: /* variable_definition: VAR_SIGN name COLON type default_value_opt  */
-#line 195 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 22: /* variable_definitions_list: variable_definitions_list variable_definition  */
+#line 193 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                                    { rb_ary_push(yyval, yyvsp[0]); }
+#line 2012 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 23: /* variable_definition: VAR_SIGN name COLON type default_value_opt  */
+#line 196 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                  {
         yyval = rb_funcall(GraphQL_Language_Nodes_VariableDefinition, rb_intern("from_a"), 5,
           rb_ary_entry(yyvsp[-4], 1),
@@ -2016,47 +2022,47 @@ yyreduce:
           yyvsp[0]
         );
       }
-#line 2020 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 23: /* default_value_opt: %empty  */
-#line 206 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                            { yyval = Qnil; }
 #line 2026 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 24: /* default_value_opt: EQUALS literal_value  */
+  case 24: /* default_value_opt: %empty  */
 #line 207 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                            { yyval = yyvsp[0]; }
+                            { yyval = Qnil; }
 #line 2032 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 25: /* selection_list: selection  */
-#line 210 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
+  case 25: /* default_value_opt: EQUALS literal_value  */
+#line 208 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                            { yyval = yyvsp[0]; }
 #line 2038 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 26: /* selection_list: selection_list selection  */
+  case 26: /* selection_list: selection  */
 #line 211 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                { rb_ary_push(yyval, yyvsp[0]); }
+                                { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
 #line 2044 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 30: /* selection_set: LCURLY selection_list RCURLY  */
-#line 219 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                   { yyval = yyvsp[-1]; }
+  case 27: /* selection_list: selection_list selection  */
+#line 212 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                { rb_ary_push(yyval, yyvsp[0]); }
 #line 2050 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 31: /* selection_set_opt: %empty  */
-#line 222 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                    { yyval = rb_ary_new(); }
+  case 31: /* selection_set: LCURLY selection_list RCURLY  */
+#line 220 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                   { yyval = yyvsp[-1]; }
 #line 2056 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 33: /* field: name COLON name arguments_opt directives_list_opt selection_set_opt  */
-#line 226 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 32: /* selection_set_opt: %empty  */
+#line 223 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                    { yyval = rb_ary_new(); }
+#line 2062 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 34: /* field: name COLON name arguments_opt directives_list_opt selection_set_opt  */
+#line 227 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                         {
       yyval = rb_funcall(GraphQL_Language_Nodes_Field, rb_intern("from_a"), 7,
         rb_ary_entry(yyvsp[-5], 1),
@@ -2068,11 +2074,11 @@ yyreduce:
         yyvsp[0] // subselections
       );
     }
-#line 2072 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2078 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 34: /* field: name arguments_opt directives_list_opt selection_set_opt  */
-#line 237 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 35: /* field: name arguments_opt directives_list_opt selection_set_opt  */
+#line 238 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                {
       yyval = rb_funcall(GraphQL_Language_Nodes_Field, rb_intern("from_a"), 7,
         rb_ary_entry(yyvsp[-3], 1),
@@ -2084,35 +2090,35 @@ yyreduce:
         yyvsp[0] // subselections
       );
     }
-#line 2088 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 35: /* arguments_opt: %empty  */
-#line 250 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                    { yyval = Qnil; }
 #line 2094 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 36: /* arguments_opt: LPAREN arguments_list RPAREN  */
+  case 36: /* arguments_opt: %empty  */
 #line 251 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                    { yyval = yyvsp[-1]; }
+                                    { yyval = Qnil; }
 #line 2100 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 37: /* arguments_list: argument  */
-#line 254 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                              { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
+  case 37: /* arguments_opt: LPAREN arguments_list RPAREN  */
+#line 252 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                    { yyval = yyvsp[-1]; }
 #line 2106 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 38: /* arguments_list: arguments_list argument  */
+  case 38: /* arguments_list: argument  */
 #line 255 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                              { rb_ary_push(yyval, yyvsp[0]); }
+                              { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
 #line 2112 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 39: /* argument: name COLON input_value  */
-#line 258 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 39: /* arguments_list: arguments_list argument  */
+#line 256 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                              { rb_ary_push(yyval, yyvsp[0]); }
+#line 2118 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 40: /* argument: name COLON input_value  */
+#line 259 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                              {
         yyval = rb_funcall(GraphQL_Language_Nodes_Argument, rb_intern("from_a"), 4,
           rb_ary_entry(yyvsp[-2], 1),
@@ -2121,41 +2127,41 @@ yyreduce:
           yyvsp[0]
         );
       }
-#line 2125 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 40: /* literal_value: FLOAT  */
-#line 268 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                  { yyval = rb_funcall(rb_ary_entry(yyvsp[0], 3), rb_intern("to_f"), 0); }
 #line 2131 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 41: /* literal_value: INT  */
+  case 41: /* literal_value: FLOAT  */
 #line 269 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                  { yyval = rb_funcall(rb_ary_entry(yyvsp[0], 3), rb_intern("to_i"), 0); }
+                  { yyval = rb_funcall(rb_ary_entry(yyvsp[0], 3), rb_intern("to_f"), 0); }
 #line 2137 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 42: /* literal_value: STRING  */
+  case 42: /* literal_value: INT  */
 #line 270 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                  { yyval = rb_ary_entry(yyvsp[0], 3); }
+                  { yyval = rb_funcall(rb_ary_entry(yyvsp[0], 3), rb_intern("to_i"), 0); }
 #line 2143 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 43: /* literal_value: TRUE_LITERAL  */
+  case 43: /* literal_value: STRING  */
 #line 271 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                          { yyval = Qtrue; }
+                  { yyval = rb_ary_entry(yyvsp[0], 3); }
 #line 2149 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 44: /* literal_value: FALSE_LITERAL  */
+  case 44: /* literal_value: TRUE_LITERAL  */
 #line 272 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                          { yyval = Qfalse; }
+                          { yyval = Qtrue; }
 #line 2155 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 52: /* null_value: NULL_LITERAL  */
-#line 283 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 45: /* literal_value: FALSE_LITERAL  */
+#line 273 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                          { yyval = Qfalse; }
+#line 2161 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 53: /* null_value: NULL_LITERAL  */
+#line 284 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                            {
     yyval = rb_funcall(GraphQL_Language_Nodes_NullValue, rb_intern("from_a"), 3,
       rb_ary_entry(yyvsp[0], 1),
@@ -2163,11 +2169,11 @@ yyreduce:
       rb_ary_entry(yyvsp[0], 3)
     );
   }
-#line 2167 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2173 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 53: /* variable: VAR_SIGN name  */
-#line 291 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 54: /* variable: VAR_SIGN name  */
+#line 292 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                           {
     yyval = rb_funcall(GraphQL_Language_Nodes_VariableIdentifier, rb_intern("from_a"), 3,
       rb_ary_entry(yyvsp[-1], 1),
@@ -2175,35 +2181,35 @@ yyreduce:
       rb_ary_entry(yyvsp[0], 3)
     );
   }
-#line 2179 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 54: /* list_value: LBRACKET RBRACKET  */
-#line 300 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                        { yyval = GraphQL_Language_Nodes_NONE; }
 #line 2185 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 55: /* list_value: LBRACKET list_value_list RBRACKET  */
+  case 55: /* list_value: LBRACKET RBRACKET  */
 #line 301 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                        { yyval = yyvsp[-1]; }
+                                        { yyval = GraphQL_Language_Nodes_NONE; }
 #line 2191 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 56: /* list_value_list: input_value  */
-#line 304 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                  { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
+  case 56: /* list_value: LBRACKET list_value_list RBRACKET  */
+#line 302 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                        { yyval = yyvsp[-1]; }
 #line 2197 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 57: /* list_value_list: list_value_list input_value  */
+  case 57: /* list_value_list: input_value  */
 #line 305 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                  { rb_ary_push(yyval, yyvsp[0]); }
+                                  { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
 #line 2203 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 64: /* enum_value: enum_name  */
-#line 315 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 58: /* list_value_list: list_value_list input_value  */
+#line 306 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                  { rb_ary_push(yyval, yyvsp[0]); }
+#line 2209 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 65: /* enum_value: enum_name  */
+#line 316 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                         {
     yyval = rb_funcall(GraphQL_Language_Nodes_Enum, rb_intern("from_a"), 3,
       rb_ary_entry(yyvsp[0], 1),
@@ -2211,11 +2217,11 @@ yyreduce:
       rb_ary_entry(yyvsp[0], 3)
     );
   }
-#line 2215 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2221 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 66: /* object_value: LCURLY object_value_list_opt RCURLY  */
-#line 324 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 67: /* object_value: LCURLY object_value_list_opt RCURLY  */
+#line 325 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                           {
       yyval = rb_funcall(GraphQL_Language_Nodes_InputObject, rb_intern("from_a"), 3,
         rb_ary_entry(yyvsp[-2], 1),
@@ -2223,29 +2229,29 @@ yyreduce:
         yyvsp[-1]
       );
     }
-#line 2227 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 67: /* object_value_list_opt: %empty  */
-#line 333 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                        { yyval = GraphQL_Language_Nodes_NONE; }
 #line 2233 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 69: /* object_value_list: object_value_field  */
-#line 337 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                            { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
+  case 68: /* object_value_list_opt: %empty  */
+#line 334 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                        { yyval = GraphQL_Language_Nodes_NONE; }
 #line 2239 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 70: /* object_value_list: object_value_list object_value_field  */
+  case 70: /* object_value_list: object_value_field  */
 #line 338 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                            { rb_ary_push(yyval, yyvsp[0]); }
+                                            { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
 #line 2245 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 71: /* object_value_field: name COLON input_value  */
-#line 341 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 71: /* object_value_list: object_value_list object_value_field  */
+#line 339 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                            { rb_ary_push(yyval, yyvsp[0]); }
+#line 2251 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 72: /* object_value_field: name COLON input_value  */
+#line 342 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                              {
         yyval = rb_funcall(GraphQL_Language_Nodes_Argument, rb_intern("from_a"), 4,
           rb_ary_entry(yyvsp[-2], 1),
@@ -2254,11 +2260,11 @@ yyreduce:
           yyvsp[0]
         );
       }
-#line 2258 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2264 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 72: /* object_literal_value: LCURLY object_literal_value_list_opt RCURLY  */
-#line 352 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 73: /* object_literal_value: LCURLY object_literal_value_list_opt RCURLY  */
+#line 353 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                   {
         yyval = rb_funcall(GraphQL_Language_Nodes_InputObject, rb_intern("from_a"), 3,
           rb_ary_entry(yyvsp[-2], 1),
@@ -2266,29 +2272,29 @@ yyreduce:
           yyvsp[-1]
         );
       }
-#line 2270 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 73: /* object_literal_value_list_opt: %empty  */
-#line 361 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                { yyval = GraphQL_Language_Nodes_NONE; }
 #line 2276 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 75: /* object_literal_value_list: object_literal_value_field  */
-#line 365 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                                            { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
+  case 74: /* object_literal_value_list_opt: %empty  */
+#line 362 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                { yyval = GraphQL_Language_Nodes_NONE; }
 #line 2282 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 76: /* object_literal_value_list: object_literal_value_list object_literal_value_field  */
+  case 76: /* object_literal_value_list: object_literal_value_field  */
 #line 366 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                                            { rb_ary_push(yyval, yyvsp[0]); }
+                                                            { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
 #line 2288 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 77: /* object_literal_value_field: name COLON literal_value  */
-#line 369 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 77: /* object_literal_value_list: object_literal_value_list object_literal_value_field  */
+#line 367 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                                            { rb_ary_push(yyval, yyvsp[0]); }
+#line 2294 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 78: /* object_literal_value_field: name COLON literal_value  */
+#line 370 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                {
         yyval = rb_funcall(GraphQL_Language_Nodes_Argument, rb_intern("from_a"), 4,
           rb_ary_entry(yyvsp[-2], 1),
@@ -2297,29 +2303,29 @@ yyreduce:
           yyvsp[0]
         );
       }
-#line 2301 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 78: /* directives_list_opt: %empty  */
-#line 380 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                      { yyval = GraphQL_Language_Nodes_NONE; }
 #line 2307 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 80: /* directives_list: directive  */
-#line 384 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
+  case 79: /* directives_list_opt: %empty  */
+#line 381 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                      { yyval = GraphQL_Language_Nodes_NONE; }
 #line 2313 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 81: /* directives_list: directives_list directive  */
+  case 81: /* directives_list: directive  */
 #line 385 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                { rb_ary_push(yyval, yyvsp[0]); }
+                                { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
 #line 2319 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 82: /* directive: DIR_SIGN name arguments_opt  */
-#line 387 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 82: /* directives_list: directives_list directive  */
+#line 386 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                { rb_ary_push(yyval, yyvsp[0]); }
+#line 2325 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 83: /* directive: DIR_SIGN name arguments_opt  */
+#line 388 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                          {
     yyval = rb_funcall(GraphQL_Language_Nodes_Directive, rb_intern("from_a"), 4,
       rb_ary_entry(yyvsp[-2], 1),
@@ -2328,11 +2334,11 @@ yyreduce:
       yyvsp[0]
     );
   }
-#line 2332 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2338 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 104: /* fragment_spread: ELLIPSIS name_without_on directives_list_opt  */
-#line 427 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 105: /* fragment_spread: ELLIPSIS name_without_on directives_list_opt  */
+#line 428 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                    {
         yyval = rb_funcall(GraphQL_Language_Nodes_FragmentSpread, rb_intern("from_a"), 4,
           rb_ary_entry(yyvsp[-2], 1),
@@ -2341,11 +2347,11 @@ yyreduce:
           yyvsp[0]
         );
       }
-#line 2345 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2351 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 105: /* inline_fragment: ELLIPSIS ON type directives_list_opt selection_set  */
-#line 437 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 106: /* inline_fragment: ELLIPSIS ON type directives_list_opt selection_set  */
+#line 438 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                          {
         yyval = rb_funcall(GraphQL_Language_Nodes_InlineFragment, rb_intern("from_a"), 5,
           rb_ary_entry(yyvsp[-4], 1),
@@ -2355,11 +2361,11 @@ yyreduce:
           yyvsp[0]
         );
       }
-#line 2359 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2365 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 106: /* inline_fragment: ELLIPSIS directives_list_opt selection_set  */
-#line 446 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 107: /* inline_fragment: ELLIPSIS directives_list_opt selection_set  */
+#line 447 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                  {
         yyval = rb_funcall(GraphQL_Language_Nodes_InlineFragment, rb_intern("from_a"), 5,
           rb_ary_entry(yyvsp[-2], 1),
@@ -2369,11 +2375,11 @@ yyreduce:
           yyvsp[0]
         );
       }
-#line 2373 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2379 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 107: /* fragment_definition: FRAGMENT fragment_name_opt ON type directives_list_opt selection_set  */
-#line 457 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 108: /* fragment_definition: FRAGMENT fragment_name_opt ON type directives_list_opt selection_set  */
+#line 458 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                          {
       yyval = rb_funcall(GraphQL_Language_Nodes_FragmentDefinition, rb_intern("from_a"), 6,
         rb_ary_entry(yyvsp[-5], 1),
@@ -2384,29 +2390,29 @@ yyreduce:
         yyvsp[0]
       );
     }
-#line 2388 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 108: /* fragment_name_opt: %empty  */
-#line 469 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                 { yyval = Qnil; }
 #line 2394 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 109: /* fragment_name_opt: name_without_on  */
+  case 109: /* fragment_name_opt: %empty  */
 #line 470 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                      { yyval = rb_ary_entry(yyvsp[0], 3); }
+                 { yyval = Qnil; }
 #line 2400 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 111: /* type: nullable_type BANG  */
-#line 474 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                              { yyval = rb_funcall(GraphQL_Language_Nodes_NonNullType, rb_intern("from_a"), 3, rb_funcall(yyvsp[-1], rb_intern("line"), 0), rb_funcall(yyvsp[-1], rb_intern("col"), 0), yyvsp[-1]); }
+  case 110: /* fragment_name_opt: name_without_on  */
+#line 471 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                      { yyval = rb_ary_entry(yyvsp[0], 3); }
 #line 2406 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 112: /* nullable_type: name  */
-#line 477 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 112: /* type: nullable_type BANG  */
+#line 475 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                              { yyval = rb_funcall(GraphQL_Language_Nodes_NonNullType, rb_intern("from_a"), 3, rb_funcall(yyvsp[-1], rb_intern("line"), 0), rb_funcall(yyvsp[-1], rb_intern("col"), 0), yyvsp[-1]); }
+#line 2412 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 113: /* nullable_type: name  */
+#line 478 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                              {
         yyval = rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3,
           rb_ary_entry(yyvsp[0], 1),
@@ -2414,11 +2420,11 @@ yyreduce:
           rb_ary_entry(yyvsp[0], 3)
         );
       }
-#line 2418 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2424 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 113: /* nullable_type: LBRACKET type RBRACKET  */
-#line 484 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 114: /* nullable_type: LBRACKET type RBRACKET  */
+#line 485 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                              {
         yyval = rb_funcall(GraphQL_Language_Nodes_ListType, rb_intern("from_a"), 3,
           rb_funcall(yyvsp[-1], rb_intern("line"), 0),
@@ -2426,11 +2432,11 @@ yyreduce:
           yyvsp[-1]
         );
       }
-#line 2430 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2436 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 117: /* schema_definition: SCHEMA directives_list_opt LCURLY operation_type_definition_list RCURLY  */
-#line 498 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 118: /* schema_definition: SCHEMA directives_list_opt LCURLY operation_type_definition_list RCURLY  */
+#line 499 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                               {
         yyval = rb_funcall(GraphQL_Language_Nodes_SchemaDefinition, rb_intern("from_a"), 6,
           rb_ary_entry(yyvsp[-4], 1),
@@ -2442,28 +2448,28 @@ yyreduce:
           rb_hash_aref(yyvsp[-1], rb_str_new_cstr("subscription"))
         );
       }
-#line 2446 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2452 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 119: /* operation_type_definition_list: operation_type_definition_list operation_type_definition  */
-#line 512 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 120: /* operation_type_definition_list: operation_type_definition_list operation_type_definition  */
+#line 513 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                {
       rb_funcall(yyval, rb_intern("merge!"), 1, yyvsp[-1]);
     }
-#line 2454 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2460 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 120: /* operation_type_definition: operation_type COLON name  */
-#line 517 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 121: /* operation_type_definition: operation_type COLON name  */
+#line 518 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                 {
         yyval = rb_hash_new();
         rb_hash_aset(yyval, rb_ary_entry(yyvsp[-2], 3), rb_ary_entry(yyvsp[0], 3));
       }
-#line 2463 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2469 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 130: /* scalar_type_definition: description_opt SCALAR name directives_list_opt  */
-#line 537 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 131: /* scalar_type_definition: description_opt SCALAR name directives_list_opt  */
+#line 538 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                       {
         yyval = rb_funcall(GraphQL_Language_Nodes_ScalarTypeDefinition, rb_intern("from_a"), 5,
           rb_ary_entry(yyvsp[-2], 1),
@@ -2474,28 +2480,28 @@ yyreduce:
           yyvsp[0]
         );
       }
-#line 2478 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2484 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 131: /* object_type_definition: description_opt TYPE_LITERAL name implements_opt directives_list_opt field_definition_list_opt  */
-#line 549 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 132: /* object_type_definition: description_opt TYPE_LITERAL name implements_opt directives_list_opt field_definition_list_opt  */
+#line 550 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                                                      {
         yyval = rb_funcall(GraphQL_Language_Nodes_ObjectTypeDefinition, rb_intern("from_a"), 7,
           rb_ary_entry(yyvsp[-4], 1),
           rb_ary_entry(yyvsp[-4], 2),
           rb_ary_entry(yyvsp[-3], 3),
+          yyvsp[-2], // implements
           // TODO see get_description for reading a description from comments
           (RB_TEST(yyvsp[-5]) ? rb_ary_entry(yyvsp[-5], 3) : Qnil),
-          yyvsp[-2],
           yyvsp[-1],
           yyvsp[0]
         );
       }
-#line 2495 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2501 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 132: /* object_type_definition: TYPE_LITERAL name field_definition_list_opt  */
-#line 561 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 133: /* object_type_definition: TYPE_LITERAL name field_definition_list_opt  */
+#line 562 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                   {
         yyval = rb_funcall(GraphQL_Language_Nodes_ObjectTypeDefinition, rb_intern("from_a"), 7,
           rb_ary_entry(yyvsp[-2], 1),
@@ -2507,35 +2513,35 @@ yyreduce:
           yyvsp[0]
         );
       }
-#line 2511 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 133: /* implements_opt: %empty  */
-#line 574 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                 { yyval = GraphQL_Language_Nodes_NONE; }
 #line 2517 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 135: /* implements: IMPLEMENTS AMP interfaces_list  */
-#line 578 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                     { yyval = yyvsp[0]; }
+  case 134: /* implements_opt: %empty  */
+#line 575 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                 { yyval = GraphQL_Language_Nodes_NONE; }
 #line 2523 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 136: /* implements: IMPLEMENTS interfaces_list  */
+  case 136: /* implements: IMPLEMENTS AMP interfaces_list  */
 #line 579 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                 { yyval = yyvsp[0]; }
+                                     { yyval = yyvsp[0]; }
 #line 2529 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 137: /* implements: IMPLEMENTS legacy_interfaces_list  */
+  case 137: /* implements: IMPLEMENTS interfaces_list  */
 #line 580 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                        { yyval = yyvsp[0]; }
+                                 { yyval = yyvsp[0]; }
 #line 2535 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 138: /* interfaces_list: name  */
-#line 583 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 138: /* implements: IMPLEMENTS legacy_interfaces_list  */
+#line 581 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                        { yyval = yyvsp[0]; }
+#line 2541 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 139: /* interfaces_list: name  */
+#line 584 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
            {
         yyval = rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3,
           rb_ary_entry(yyvsp[0], 1),
@@ -2543,19 +2549,19 @@ yyreduce:
           rb_ary_entry(yyvsp[0], 3)
         );
       }
-#line 2547 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2553 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 139: /* interfaces_list: interfaces_list AMP name  */
-#line 590 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 140: /* interfaces_list: interfaces_list AMP name  */
+#line 591 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                {
       rb_ary_push(yyval, rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3, rb_ary_entry(yyvsp[0], 1), rb_ary_entry(yyvsp[0], 2), rb_ary_entry(yyvsp[0], 3)));
     }
-#line 2555 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2561 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 140: /* legacy_interfaces_list: name  */
-#line 595 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 141: /* legacy_interfaces_list: name  */
+#line 596 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
            {
         yyval = rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3,
           rb_ary_entry(yyvsp[0], 1),
@@ -2563,107 +2569,107 @@ yyreduce:
           rb_ary_entry(yyvsp[0], 3)
         );
       }
-#line 2567 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2573 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 141: /* legacy_interfaces_list: legacy_interfaces_list name  */
-#line 602 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 142: /* legacy_interfaces_list: legacy_interfaces_list name  */
+#line 603 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                   {
       rb_ary_push(yyval, rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3, rb_ary_entry(yyvsp[0], 1), rb_ary_entry(yyvsp[0], 2), rb_ary_entry(yyvsp[0], 3)));
     }
-#line 2575 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2581 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 142: /* input_value_definition: description_opt name COLON type default_value_opt directives_list_opt  */
-#line 607 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 143: /* input_value_definition: description_opt name COLON type default_value_opt directives_list_opt  */
+#line 608 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                             {
         yyval = rb_funcall(GraphQL_Language_Nodes_InputValueDefinition, rb_intern("from_a"), 7,
           rb_ary_entry(yyvsp[-4], 1),
           rb_ary_entry(yyvsp[-4], 2),
           rb_ary_entry(yyvsp[-4], 3),
-          // TODO see get_description for reading a description from comments
-          Qnil,
           yyvsp[-2],
           yyvsp[-1],
+          // TODO see get_description for reading a description from comments
+          (RB_TEST(yyvsp[-5]) ? rb_ary_entry(yyvsp[-5], 3) : Qnil),
           yyvsp[0]
         );
       }
-#line 2592 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 143: /* input_value_definition_list: input_value_definition  */
-#line 621 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                                         { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
 #line 2598 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 144: /* input_value_definition_list: input_value_definition_list input_value_definition  */
+  case 144: /* input_value_definition_list: input_value_definition  */
 #line 622 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                                         { rb_ary_push(yyval, yyvsp[-1]); }
+                                                         { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
 #line 2604 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 145: /* arguments_definitions_opt: %empty  */
-#line 625 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                 { yyval = GraphQL_Language_Nodes_NONE; }
+  case 145: /* input_value_definition_list: input_value_definition_list input_value_definition  */
+#line 623 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                                         { rb_ary_push(yyval, yyvsp[-1]); }
 #line 2610 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 146: /* arguments_definitions_opt: LPAREN input_value_definition_list RPAREN  */
+  case 146: /* arguments_definitions_opt: %empty  */
 #line 626 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                                { yyval = yyvsp[-1]; }
+                 { yyval = GraphQL_Language_Nodes_NONE; }
 #line 2616 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 147: /* field_definition: description_opt name arguments_definitions_opt COLON type directives_list_opt  */
-#line 629 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 147: /* arguments_definitions_opt: LPAREN input_value_definition_list RPAREN  */
+#line 627 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                                { yyval = yyvsp[-1]; }
+#line 2622 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 148: /* field_definition: description_opt name arguments_definitions_opt COLON type directives_list_opt  */
+#line 630 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                                     {
         yyval = rb_funcall(GraphQL_Language_Nodes_FieldDefinition, rb_intern("from_a"), 7,
           rb_ary_entry(yyvsp[-4], 1),
           rb_ary_entry(yyvsp[-4], 2),
           rb_ary_entry(yyvsp[-4], 3),
+          yyvsp[-1],
           // TODO see get_description for reading a description from comments
-          Qnil,
-          Qnil,
-          Qnil,
-          Qnil
+          (RB_TEST(yyvsp[-5]) ? rb_ary_entry(yyvsp[-5], 3) : Qnil),
+          yyvsp[-3],
+          yyvsp[0]
         );
       }
-#line 2633 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 148: /* field_definition_list_opt: %empty  */
-#line 643 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-               { yyval = GraphQL_Language_Nodes_NONE; }
 #line 2639 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 149: /* field_definition_list_opt: LCURLY field_definition_list RCURLY  */
+  case 149: /* field_definition_list_opt: %empty  */
 #line 644 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                          { yyval = yyvsp[-1]; }
+               { yyval = GraphQL_Language_Nodes_NONE; }
 #line 2645 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 150: /* field_definition_list: %empty  */
-#line 647 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                                                                { yyval = GraphQL_Language_Nodes_NONE; }
+  case 150: /* field_definition_list_opt: LCURLY field_definition_list RCURLY  */
+#line 645 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                          { yyval = yyvsp[-1]; }
 #line 2651 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 151: /* field_definition_list: field_definition  */
+  case 151: /* field_definition_list: %empty  */
 #line 648 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                             { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
+                                                                                { yyval = GraphQL_Language_Nodes_NONE; }
 #line 2657 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 152: /* field_definition_list: field_definition_list field_definition  */
+  case 152: /* field_definition_list: field_definition  */
 #line 649 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                             { rb_ary_push(yyval, yyvsp[0]); }
+                                             { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
 #line 2663 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 153: /* interface_type_definition: description_opt INTERFACE name implements_opt directives_list_opt field_definition_list_opt  */
-#line 652 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 153: /* field_definition_list: field_definition_list field_definition  */
+#line 650 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                             { rb_ary_push(yyval, yyvsp[0]); }
+#line 2669 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 154: /* interface_type_definition: description_opt INTERFACE name implements_opt directives_list_opt field_definition_list_opt  */
+#line 653 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                                                   {
         yyval = rb_funcall(GraphQL_Language_Nodes_InterfaceTypeDefinition, rb_intern("from_a"), 7,
           rb_ary_entry(yyvsp[-4], 1),
@@ -2676,11 +2682,11 @@ yyreduce:
           yyvsp[0]
         );
       }
-#line 2680 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2686 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 154: /* union_members: name  */
-#line 666 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 155: /* union_members: name  */
+#line 667 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
            {
         yyval = rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3,
           rb_ary_entry(yyvsp[0], 1),
@@ -2688,35 +2694,35 @@ yyreduce:
           rb_ary_entry(yyvsp[0], 3)
         );
       }
-#line 2692 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2698 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 155: /* union_members: union_members PIPE name  */
-#line 673 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 156: /* union_members: union_members PIPE name  */
+#line 674 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                               {
         rb_ary_push(yyval, rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3, rb_ary_entry(yyvsp[0], 1), rb_ary_entry(yyvsp[0], 2), rb_ary_entry(yyvsp[0], 3)));
       }
-#line 2700 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2706 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 156: /* union_type_definition: description_opt UNION name directives_list_opt EQUALS union_members  */
-#line 678 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 157: /* union_type_definition: description_opt UNION name directives_list_opt EQUALS union_members  */
+#line 679 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                           {
         yyval = rb_funcall(GraphQL_Language_Nodes_UnionTypeDefinition, rb_intern("from_a"),  6,
           rb_ary_entry(yyvsp[-4], 1),
           rb_ary_entry(yyvsp[-4], 2),
           rb_ary_entry(yyvsp[-3], 3),
+          yyvsp[-1], // types
           // TODO see get_description for reading a description from comments
           (RB_TEST(yyvsp[-5]) ? rb_ary_entry(yyvsp[-5], 3) : Qnil),
-          yyvsp[-2],
-          yyvsp[-1]
+          yyvsp[-2]
         );
       }
-#line 2716 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2722 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 157: /* enum_type_definition: description_opt ENUM name directives_list_opt LCURLY enum_value_definitions RCURLY  */
-#line 691 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 158: /* enum_type_definition: description_opt ENUM name directives_list_opt LCURLY enum_value_definitions RCURLY  */
+#line 692 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                                          {
         yyval = rb_funcall(GraphQL_Language_Nodes_EnumTypeDefinition, rb_intern("from_a"),  6,
           rb_ary_entry(yyvsp[-5], 1),
@@ -2725,14 +2731,14 @@ yyreduce:
           // TODO see get_description for reading a description from comments
           (RB_TEST(yyvsp[-6]) ? rb_ary_entry(yyvsp[-6], 3) : Qnil),
           yyvsp[-3],
-          yyvsp[-2]
+          yyvsp[-1]
         );
       }
-#line 2732 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2738 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 158: /* enum_value_definition: description_opt enum_name directives_list_opt  */
-#line 704 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 159: /* enum_value_definition: description_opt enum_name directives_list_opt  */
+#line 705 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                   {
       yyval = rb_funcall(GraphQL_Language_Nodes_EnumValueDefinition, rb_intern("from_a"), 5,
         rb_ary_entry(yyvsp[-1], 1),
@@ -2743,25 +2749,23 @@ yyreduce:
         yyvsp[0]
       );
     }
-#line 2747 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 159: /* enum_value_definitions: enum_value_definition  */
-#line 716 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                                   { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
 #line 2753 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 160: /* enum_value_definitions: enum_value_definitions enum_value_definition  */
+  case 160: /* enum_value_definitions: enum_value_definition  */
 #line 717 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                                   {
-      rb_ary_push(yyval, yyvsp[0]);
-     }
-#line 2761 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+                                                   { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
+#line 2759 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 161: /* input_object_type_definition: description_opt INPUT name directives_list_opt LCURLY input_value_definition_list RCURLY  */
-#line 722 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 161: /* enum_value_definitions: enum_value_definitions enum_value_definition  */
+#line 718 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                                   { rb_ary_push(yyval, yyvsp[0]); }
+#line 2765 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 162: /* input_object_type_definition: description_opt INPUT name directives_list_opt LCURLY input_value_definition_list RCURLY  */
+#line 721 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                                                {
         yyval = rb_funcall(GraphQL_Language_Nodes_InputObjectTypeDefinition, rb_intern("from_a"), 6,
           rb_ary_entry(yyvsp[-5], 1),
@@ -2773,40 +2777,40 @@ yyreduce:
           yyvsp[-1]
         );
       }
-#line 2777 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2781 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 162: /* directive_definition: description_opt DIRECTIVE DIR_SIGN name arguments_definitions_opt directive_repeatable_opt ON directive_locations  */
-#line 735 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 163: /* directive_definition: description_opt DIRECTIVE DIR_SIGN name arguments_definitions_opt directive_repeatable_opt ON directive_locations  */
+#line 734 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                                                                         {
         yyval = rb_funcall(GraphQL_Language_Nodes_DirectiveDefinition, rb_intern("from_a"), 7,
           rb_ary_entry(yyvsp[-6], 1),
           rb_ary_entry(yyvsp[-6], 2),
           rb_ary_entry(yyvsp[-4], 3),
+          (RB_TEST(yyvsp[-2]) ? Qtrue : Qfalse), // repeatable
           // TODO see get_description for reading a description from comments
           (RB_TEST(yyvsp[-7]) ? rb_ary_entry(yyvsp[-7], 3) : Qnil),
-          (RB_TEST(yyvsp[-2]) ? Qtrue : Qfalse), // repeatable
           yyvsp[-3],
           yyvsp[0]
         );
       }
-#line 2794 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2798 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 165: /* directive_locations: name  */
-#line 753 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 166: /* directive_locations: name  */
+#line 752 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                     { yyval = rb_ary_new_from_args(1, rb_funcall(GraphQL_Language_Nodes_DirectiveLocation, rb_intern("from_a"), 3, rb_ary_entry(yyvsp[0], 1), rb_ary_entry(yyvsp[0], 2), rb_ary_entry(yyvsp[0], 3))); }
-#line 2800 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2804 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 166: /* directive_locations: directive_locations PIPE name  */
-#line 754 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 167: /* directive_locations: directive_locations PIPE name  */
+#line 753 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                     { rb_ary_push(yyval, rb_funcall(GraphQL_Language_Nodes_DirectiveLocation, rb_intern("from_a"), 3, rb_ary_entry(yyvsp[0], 1), rb_ary_entry(yyvsp[0], 2), rb_ary_entry(yyvsp[0], 3))); }
-#line 2806 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2810 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
 
-#line 2810 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2814 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
 
       default: break;
     }
@@ -3030,7 +3034,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 756 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+#line 755 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
 
 
 // Custom functions

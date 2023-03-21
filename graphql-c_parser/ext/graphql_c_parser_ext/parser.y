@@ -109,7 +109,8 @@ SETUP_NODE_CLASS_VARIABLE(SchemaDefinition)
   }
 
   definitions_list:
-      definition                    { $$ = rb_ary_new_from_args(1, $1); }
+    /* none */                      { $$ = GraphQL_Language_Nodes_NONE; }
+    | definition                    { $$ = rb_ary_new_from_args(1, $1); }
     | definitions_list definition   { rb_ary_push($$, $2); }
 
   definition:
@@ -551,9 +552,9 @@ type_system_definition:
           rb_ary_entry($2, 1),
           rb_ary_entry($2, 2),
           rb_ary_entry($3, 3),
+          $4, // implements
           // TODO see get_description for reading a description from comments
           (RB_TEST($1) ? rb_ary_entry($1, 3) : Qnil),
-          $4,
           $5,
           $6
         );
@@ -609,10 +610,10 @@ type_system_definition:
           rb_ary_entry($2, 1),
           rb_ary_entry($2, 2),
           rb_ary_entry($2, 3),
-          // TODO see get_description for reading a description from comments
-          Qnil,
           $4,
           $5,
+          // TODO see get_description for reading a description from comments
+          (RB_TEST($1) ? rb_ary_entry($1, 3) : Qnil),
           $6
         );
       }
@@ -631,11 +632,11 @@ type_system_definition:
           rb_ary_entry($2, 1),
           rb_ary_entry($2, 2),
           rb_ary_entry($2, 3),
+          $5,
           // TODO see get_description for reading a description from comments
-          Qnil,
-          Qnil,
-          Qnil,
-          Qnil
+          (RB_TEST($1) ? rb_ary_entry($1, 3) : Qnil),
+          $3,
+          $6
         );
       }
 
@@ -680,10 +681,10 @@ type_system_definition:
           rb_ary_entry($2, 1),
           rb_ary_entry($2, 2),
           rb_ary_entry($3, 3),
+          $5, // types
           // TODO see get_description for reading a description from comments
           (RB_TEST($1) ? rb_ary_entry($1, 3) : Qnil),
-          $4,
-          $5
+          $4
         );
       }
 
@@ -696,7 +697,7 @@ type_system_definition:
           // TODO see get_description for reading a description from comments
           (RB_TEST($1) ? rb_ary_entry($1, 3) : Qnil),
           $4,
-          $5
+          $6
         );
       }
 
@@ -714,9 +715,7 @@ type_system_definition:
 
   enum_value_definitions:
       enum_value_definition                        { $$ = rb_ary_new_from_args(1, $1); }
-    | enum_value_definitions enum_value_definition {
-      rb_ary_push($$, $2);
-     }
+    | enum_value_definitions enum_value_definition { rb_ary_push($$, $2); }
 
   input_object_type_definition:
       description_opt INPUT name directives_list_opt LCURLY input_value_definition_list RCURLY {
@@ -737,9 +736,9 @@ type_system_definition:
           rb_ary_entry($2, 1),
           rb_ary_entry($2, 2),
           rb_ary_entry($4, 3),
+          (RB_TEST($6) ? Qtrue : Qfalse), // repeatable
           // TODO see get_description for reading a description from comments
           (RB_TEST($1) ? rb_ary_entry($1, 3) : Qnil),
-          (RB_TEST($6) ? Qtrue : Qfalse), // repeatable
           $5,
           $8
         );

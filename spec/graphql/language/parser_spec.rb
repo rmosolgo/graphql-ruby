@@ -59,7 +59,7 @@ describe GraphQL::Language::Parser do
       "Thing description"
       type Thing {
         "field description"
-        field("arg description" arg: Stuff): Stuff
+        field("arg description" arg: Stuff @yikes): Stuff @wow
       }
       GRAPHQL
 
@@ -70,10 +70,12 @@ describe GraphQL::Language::Parser do
       field_defn = thing_defn.fields[0]
       assert_equal "field", field_defn.name
       assert_equal "field description", field_defn.description
+      assert_equal ["wow"], field_defn.directives.map(&:name)
 
       arg_defn = field_defn.arguments[0]
       assert_equal "arg", arg_defn.name
       assert_equal "arg description", arg_defn.description
+      assert_equal ["yikes"], arg_defn.directives.map(&:name)
     end
 
     it "is parsed for interface definitions" do
@@ -169,6 +171,11 @@ describe GraphQL::Language::Parser do
     schema_string = GraphQL::Schema::Printer.print_schema(schema)
     document = subject.parse(schema_string)
     assert_equal schema_string.chomp, document.to_query_string
+  end
+
+  it "Returns an empty document from a blank string" do
+    doc = subject.parse("")
+    assert_equal [], doc.definitions
   end
 
   describe "parse errors" do

@@ -67,10 +67,12 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     GraphQL::Language::Lexer.tokenize(graphql_string)
   end
 
+  # TODO move this to Cparser gem
   def self.scan_with_c(graphql_string)
     GraphQL::Language::CLexer.tokenize(graphql_string)
   end
 
+  # TODO move this to Cparser Gem
   def self.parse_with_c(string, filename: nil, trace: GraphQL::Tracing::NullTrace)
     # TODO handle other arguments here
     if string.nil?
