@@ -109,51 +109,33 @@ SETUP_NODE_CLASS_VARIABLE(SchemaDefinition)
   }
 
   definitions_list:
-    /* none */                      { $$ = GraphQL_Language_Nodes_NONE; }
-    | definition                    { $$ = rb_ary_new_from_args(1, $1); }
-    | definitions_list definition   { rb_ary_push($$, $2); }
-
-  definition:
-    executable_definition
-    | type_system_definition
-    /* TODO | type_system_extension */
+      /* none */                  { $$ = GraphQL_Language_Nodes_NONE; }
+    | executable_definitions      { $$ = $1; }
+    | type_system_definitions     { $$ = $1; }
 
   executable_definition:
       operation_definition
     | fragment_definition
 
+  executable_definitions:
+      executable_definition { $$ = rb_ary_new_from_args(1, $1); }
+    | executable_definitions executable_definition { rb_ary_push($$, $2); }
+
+  type_system_definitions:
+      type_system_definition { $$ = rb_ary_new_from_args(1, $1); }
+    | type_system_definitions type_definition { rb_ary_push($$, $2); }
+    /* TODO type system extensions */
+
   operation_definition:
-      operation_type name variable_definitions_opt directives_list_opt selection_set {
+      operation_type operation_name_opt variable_definitions_opt directives_list_opt selection_set {
         $$ = rb_funcall(GraphQL_Language_Nodes_OperationDefinition, rb_intern("from_a"), 7,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           rb_ary_entry($1, 3),
-          rb_ary_entry($2, 3),
+          (RB_TEST($2) ? rb_ary_entry($2, 3) : Qnil),
           $3,
           $4,
           $5
-        );
-      }
-    | name variable_definitions_opt directives_list_opt selection_set {
-        $$ = rb_funcall(GraphQL_Language_Nodes_OperationDefinition, rb_intern("from_a"), 7,
-          rb_ary_entry($1, 1),
-          rb_ary_entry($1, 2),
-          r_string_query,
-          rb_ary_entry($1, 3),
-          $2,
-          $3,
-          $4
-        );
-      }
-    | operation_type variable_definitions_opt directives_list_opt selection_set {
-        $$ = rb_funcall(GraphQL_Language_Nodes_OperationDefinition, rb_intern("from_a"), 7,
-          rb_ary_entry($1, 1),
-          rb_ary_entry($1, 2),
-          rb_ary_entry($1, 3),
-          Qnil,
-          $2,
-          $3,
-          $4
         );
       }
     | LCURLY selection_list RCURLY {
@@ -183,6 +165,10 @@ SETUP_NODE_CLASS_VARIABLE(SchemaDefinition)
       QUERY
     | MUTATION
     | SUBSCRIPTION
+
+  operation_name_opt:
+      /* none */ { $$ = Qnil; }
+    | name
 
   variable_definitions_opt:
       /* none */                              { $$ = GraphQL_Language_Nodes_NONE; }
@@ -248,7 +234,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaDefinition)
     }
 
   arguments_opt:
-      /* none */                    { $$ = Qnil; }
+      /* none */                    { $$ = GraphQL_Language_Nodes_NONE; }
     | LPAREN arguments_list RPAREN  { $$ = $2; }
 
   arguments_list:
@@ -398,11 +384,6 @@ SETUP_NODE_CLASS_VARIABLE(SchemaDefinition)
       name_without_on
     | ON
 
-  operation_type:
-      QUERY
-    | MUTATION
-    | SUBSCRIPTION
-
  schema_keyword:
       SCHEMA
     | SCALAR
@@ -531,7 +512,7 @@ type_system_definition:
   description: STRING
 
   description_opt:
-      /* none */
+      /* none */      { $$ = Qnil; }
     | description
 
   scalar_type_definition:
@@ -559,46 +540,35 @@ type_system_definition:
           $6
         );
       }
-    | TYPE_LITERAL name field_definition_list_opt {
-        $$ = rb_funcall(GraphQL_Language_Nodes_ObjectTypeDefinition, rb_intern("from_a"), 7,
-          rb_ary_entry($1, 1),
-          rb_ary_entry($1, 2),
-          rb_ary_entry($2, 3),
-          Qnil,
-          Qnil,
-          Qnil,
-          $3
-        );
-      }
 
   implements_opt:
       /* none */ { $$ = GraphQL_Language_Nodes_NONE; }
-    | implements
-
-  implements:
-      IMPLEMENTS AMP interfaces_list { $$ = $3; }
+    | IMPLEMENTS AMP interfaces_list { $$ = $3; }
     | IMPLEMENTS interfaces_list { $$ = $2; }
     | IMPLEMENTS legacy_interfaces_list { $$ = $2; }
 
   interfaces_list:
       name {
-        $$ = rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3,
+        VALUE new_name = rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           rb_ary_entry($1, 3)
         );
+        $$ = rb_ary_new_from_args(1, new_name);
       }
     | interfaces_list AMP name {
-      rb_ary_push($$, rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3, rb_ary_entry($3, 1), rb_ary_entry($3, 2), rb_ary_entry($3, 3)));
+      VALUE new_name =  rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3, rb_ary_entry($3, 1), rb_ary_entry($3, 2), rb_ary_entry($3, 3));
+      rb_ary_push($$, new_name);
     }
 
   legacy_interfaces_list:
       name {
-        $$ = rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3,
+        VALUE new_name = rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           rb_ary_entry($1, 3)
         );
+        $$ = rb_ary_new_from_args(1, new_name);
       }
     | legacy_interfaces_list name {
       rb_ary_push($$, rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3, rb_ary_entry($2, 1), rb_ary_entry($2, 2), rb_ary_entry($2, 3)));
@@ -620,10 +590,10 @@ type_system_definition:
 
   input_value_definition_list:
       input_value_definition                             { $$ = rb_ary_new_from_args(1, $1); }
-    | input_value_definition_list input_value_definition { rb_ary_push($$, $1); }
+    | input_value_definition_list input_value_definition { rb_ary_push($$, $2); }
 
   arguments_definitions_opt:
-      /* none */ { $$ = GraphQL_Language_Nodes_NONE; }
+      /* none */                                { $$ = GraphQL_Language_Nodes_NONE; }
     | LPAREN input_value_definition_list RPAREN { $$ = $2; }
 
   field_definition:
@@ -665,11 +635,12 @@ type_system_definition:
 
   union_members:
       name {
-        $$ = rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3,
+        VALUE new_member = rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           rb_ary_entry($1, 3)
         );
+        $$ = rb_ary_new_from_args(1, new_member);
       }
     | union_members PIPE name {
         rb_ary_push($$, rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3, rb_ary_entry($3, 1), rb_ary_entry($3, 2), rb_ary_entry($3, 3)));
@@ -681,7 +652,7 @@ type_system_definition:
           rb_ary_entry($2, 1),
           rb_ary_entry($2, 2),
           rb_ary_entry($3, 3),
-          $5, // types
+          $6, // types
           // TODO see get_description for reading a description from comments
           (RB_TEST($1) ? rb_ary_entry($1, 3) : Qnil),
           $4
@@ -783,7 +754,7 @@ void yyerror(VALUE parser, const char *msg) {
       rb_str_new_cstr(msg),
       rb_ary_entry(this_token, 1),
       rb_ary_entry(this_token, 2),
-      Qnil // TODO pass the whole query string from the parser object
+      rb_ivar_get(parser, rb_intern("@query_string"))
   );
 
   rb_exc_raise(exception);

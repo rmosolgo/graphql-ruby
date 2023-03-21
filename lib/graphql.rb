@@ -78,7 +78,11 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     if string.nil?
       raise GraphQL::ParseError.new("No query string was present", nil, nil, string)
     end
-    GraphQL::Language::CParser.parse(string)
+    document = GraphQL::Language::CParser.parse(string, trace)
+    if document.definitions.size == 0
+      raise GraphQL::ParseError.new("Unexpected end of document", 1, 1, string)
+    end
+    document
   end
 
   NOT_CONFIGURED = Object.new

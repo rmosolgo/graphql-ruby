@@ -166,6 +166,87 @@ describe GraphQL::Language::Parser do
     assert_equal "b\\", document.definitions[0].selections[0].arguments[0].value
   end
 
+  it "parses a great big object type" do
+    str = <<-GRAPHQL
+"""
+Query root of the system
+"""
+type Query {
+  allAnimal: [Animal]!
+  allAnimalAsCow: [AnimalAsCow]!
+  allDairy(executionErrorAtIndex: Int): [DairyProduct]
+  allEdible: [Edible]
+  allEdibleAsMilk: [EdibleAsMilk]
+
+  """
+  Find a Dummy::Cheese by id
+  """
+  cheese(id: Int!): Cheese
+
+  """
+  Find the only Dummy::Cow
+  """
+  cow: Cow
+
+  """
+  Find the only Dummy::Dairy
+  """
+  dairy: Dairy
+  deepNonNull: DeepNonNull!
+
+  """
+  Raise an error
+  """
+  error: String
+  executionError: String
+  executionErrorWithExtensions: Int
+  executionErrorWithOptions: Int
+
+  """
+  My favorite food
+  """
+  favoriteEdible: Edible
+
+  """
+  Cheese from source
+  """
+  fromSource(oldSource: String @deprecated, source: DairyAnimal = COW): [Cheese]
+  hugeInteger: Int
+  maybeNull: MaybeNull
+
+  """
+  Find a Dummy::Milk by id
+  """
+  milk(id: ID!): Milk
+  multipleErrorsOnNonNullableField: String!
+  multipleErrorsOnNonNullableListField: [String!]!
+  root: String
+
+  """
+  Find dairy products matching a description
+  """
+  searchDairy(expiresAfter: Time, oldProduct: [DairyProductInput!] @deprecated, product: [DairyProductInput] = [{source: SHEEP}], productIds: [String!] @deprecated, singleProduct: DairyProductInput): DairyProduct!
+  tracingScalar: TracingScalar
+  valueWithExecutionError: Int!
+}
+    GRAPHQL
+
+    doc = subject.parse(str)
+    assert_equal str.chomp, doc.to_query_string
+  end
+
+  it "parses input types" do
+    doc = subject.parse <<~GRAPHQL
+input ReplaceValuesInput {
+  values: [Int!]!
+}
+GRAPHQL
+    input_t = doc.definitions.first
+    assert_equal "ReplaceValuesInput", input_t.name
+    assert_equal ["values"], input_t.fields.map(&:name)
+    assert_equal [nil], input_t.fields.map(&:description)
+  end
+
   it "parses the test schema" do
     schema = Dummy::Schema
     schema_string = GraphQL::Schema::Printer.print_schema(schema)
@@ -173,9 +254,29 @@ describe GraphQL::Language::Parser do
     assert_equal schema_string.chomp, document.to_query_string
   end
 
-  it "Returns an empty document from a blank string" do
-    doc = subject.parse("")
-    assert_equal [], doc.definitions
+  it "parses various implements" do
+    doc = subject.parse <<-GRAPHQL
+    type Milk implements AnimalProduct & Edible & EdibleAsMilk & LocalProduct {
+      executionError: String
+    }
+    GRAPHQL
+    expected_names = ["AnimalProduct", "Edible", "EdibleAsMilk", "LocalProduct"]
+
+    assert_equal expected_names, doc.definitions.first.interfaces.map(&:name)
+    doc2 = subject.parse <<-GRAPHQL
+    type Milk implements & AnimalProduct & Edible & EdibleAsMilk & LocalProduct {
+      executionError: String
+    }
+    GRAPHQL
+
+    assert_equal expected_names, doc2.definitions.first.interfaces.map(&:name)
+
+    doc3 = subject.parse <<-GRAPHQL
+    type Milk implements AnimalProduct, Edible, EdibleAsMilk  LocalProduct {
+      executionError: String
+    }
+    GRAPHQL
+    assert_equal expected_names, doc3.definitions.first.interfaces.map(&:name)
   end
 
   describe "parse errors" do
@@ -238,7 +339,7 @@ describe GraphQL::Language::Parser do
       tracer(TestTracing)
     end
     query = GraphQL::Query.new(schema, "{ t: __typename }")
-    GraphQL.parse("{ t: __typename }", trace: query.current_trace)
+    subject.parse("{ t: __typename }", trace: query.current_trace)
     traces = TestTracing.traces
     assert_equal 2, traces.length
     lex_trace, parse_trace = traces

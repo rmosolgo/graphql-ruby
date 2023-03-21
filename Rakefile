@@ -203,7 +203,7 @@ end
 
 task :build_yacc_parser do
   assert_dependency_version("Bison", "3.8", "yacc --version")
-  `yacc graphql-c_parser/ext/graphql_c_parser_ext/parser.y -o graphql-c_parser/ext/graphql_c_parser_ext/parser.c -Wno-yacc`
+  `yacc graphql-c_parser/ext/graphql_c_parser_ext/parser.y -o graphql-c_parser/ext/graphql_c_parser_ext/parser.c -Wyacc`
 end
 
 task :move_binary do
