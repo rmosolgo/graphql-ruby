@@ -740,6 +740,8 @@ module GraphQL
         end
         # if the line above doesn't raise, re-raise
         raise
+      rescue GraphQL::ExecutionError => err
+        err
       end
 
       # @param ctx [GraphQL::Query::Context]
