@@ -46,7 +46,7 @@ describe GraphQL::Schema::NonNull do
       }
       "
       expected_err = if USING_C_PARSER
-        "syntax error, unexpected BANG, expecting RPAREN or VAR_SIGN at [2, 21]"
+        "syntax error, unexpected BANG (\"!\"), expecting RPAREN or VAR_SIGN at [2, 21]"
       else
         'Parse error on "!" (BANG) at [2, 21]'
       end

@@ -116,8 +116,8 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
   }
 
   definitions_list:
-      /* none */                  { $$ = GraphQL_Language_Nodes_NONE; }
-    |  definition                 { $$ = rb_ary_new_from_args(1, $1); }
+      /* none */                  { $$ = rb_ary_new(); }
+    | definition                  { $$ = rb_ary_new_from_args(1, $1); }
     | definitions_list definition { rb_ary_push($$, $2); }
 
   definition:

@@ -1931,7 +1931,7 @@ yyreduce:
 
   case 4: /* definitions_list: %empty  */
 #line 119 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                  { yyval = GraphQL_Language_Nodes_NONE; }
+                                  { yyval = rb_ary_new(); }
 #line 1936 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
