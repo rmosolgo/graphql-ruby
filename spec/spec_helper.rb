@@ -156,3 +156,8 @@ module TestTracing
     end
   end
 end
+
+
+if !USING_C_PARSER && defined?(GraphQL::CParser::Parser)
+  raise "Load error: didn't opt in to C parser but GraphQL::CParser::Parser was defined"
+end
