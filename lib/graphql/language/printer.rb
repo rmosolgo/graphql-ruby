@@ -14,7 +14,7 @@ module GraphQL
           @truncate_size = truncate_size
         end
 
-        def <<(other)
+        def append(other)
           if @truncate_size && (@out.size + other.size) > @truncate_size
             @out << other.slice(0, @truncate_size - @out.size)
             raise(TruncateSizeReached, "Truncate size reached")
@@ -65,65 +65,65 @@ module GraphQL
       def print_document(document)
         document.definitions.each_with_index do |d, i|
           print_node(d)
-          @out << "\n\n" if i < document.definitions.size - 1
+          @out.append("\n\n") if i < document.definitions.size - 1
         end
       end
 
       def print_argument(argument)
-        @out << "#{argument.name}: "
+        @out.append("#{argument.name}: ")
         print_node(argument.value)
       end
 
       def print_input_object(input_object)
-        @out << "{"
+        @out.append("{")
         input_object.arguments.each_with_index do |a, i|
           print_argument(a)
-          @out << ", " if i < input_object.arguments.size - 1
+          @out.append(", ") if i < input_object.arguments.size - 1
         end
-        @out << "}"
+        @out.append("}")
       end
 
       def print_directive(directive)
-        @out << "@#{directive.name}"
+        @out.append("@#{directive.name}")
 
         if directive.arguments.any?
-          @out << "("
+          @out.append("(")
           directive.arguments.each_with_index do |a, i|
             print_argument(a)
-            @out << ", " if i < directive.arguments.size - 1
+            @out.append(", ") if i < directive.arguments.size - 1
           end
-          @out << ")"
+          @out.append(")")
         end
       end
 
       def print_enum(enum)
-        @out << enum.name
+        @out.append(enum.name)
       end
 
       def print_null_value
-        @out << "null"
+        @out.append("null")
       end
 
       def print_field(field, indent: "")
-        @out << indent
-        @out << "#{field.alias}: " if field.alias
-        @out << field.name
+        @out.append(indent)
+        @out.append("#{field.alias}: ") if field.alias
+        @out.append(field.name)
         if field.arguments.any?
-          @out << "("
+          @out.append("(")
           field.arguments.each_with_index do |a, i|
             print_argument(a)
-            @out << ", " if i < field.arguments.size - 1
+            @out.append(", ") if i < field.arguments.size - 1
           end
-          @out << ")"
+          @out.append(")")
         end
         print_directives(field.directives)
         print_selections(field.selections, indent: indent)
       end
 
       def print_fragment_definition(fragment_def, indent: "")
-        @out << "#{indent}fragment #{fragment_def.name}"
+        @out.append("#{indent}fragment #{fragment_def.name}")
         if fragment_def.type
-          @out << " on "
+          @out.append(" on ")
           print_node(fragment_def.type)
         end
         print_directives(fragment_def.directives)
@@ -131,14 +131,14 @@ module GraphQL
       end
 
       def print_fragment_spread(fragment_spread, indent: "")
-        @out << "#{indent}...#{fragment_spread.name}"
+        @out.append("#{indent}...#{fragment_spread.name}")
         print_directives(fragment_spread.directives)
       end
 
       def print_inline_fragment(inline_fragment, indent: "")
-        @out << "#{indent}..."
+        @out.append("#{indent}...")
         if inline_fragment.type
-          @out << " on "
+          @out.append(" on ")
           print_node(inline_fragment.type)
         end
         print_directives(inline_fragment.directives)
@@ -146,27 +146,27 @@ module GraphQL
       end
 
       def print_list_type(list_type)
-        @out << "["
+        @out.append("[")
         print_node(list_type.of_type)
-        @out << "]"
+        @out.append("]")
       end
 
       def print_non_null_type(non_null_type)
         print_node(non_null_type.of_type)
-        @out << "!"
+        @out.append("!")
       end
 
       def print_operation_definition(operation_definition, indent: "")
-        @out << "#{indent}#{operation_definition.operation_type}"
-        @out << " #{operation_definition.name}" if operation_definition.name
+        @out.append("#{indent}#{operation_definition.operation_type}")
+        @out.append(" #{operation_definition.name}") if operation_definition.name
 
         if operation_definition.variables.any?
-          @out << "("
+          @out.append("(")
           operation_definition.variables.each_with_index do |v, i|
             print_variable_definition(v)
-            @out << ", " if i < operation_definition.variables.size - 1
+            @out.append(", ") if i < operation_definition.variables.size - 1
           end
-          @out << ")"
+          @out.append(")")
         end
 
         print_directives(operation_definition.directives)
@@ -174,20 +174,20 @@ module GraphQL
       end
 
       def print_type_name(type_name)
-        @out << type_name.name
+        @out.append(type_name.name)
       end
 
       def print_variable_definition(variable_definition)
-        @out << "$#{variable_definition.name}: "
+        @out.append("$#{variable_definition.name}: ")
         print_node(variable_definition.type)
         unless variable_definition.default_value.nil?
-          @out << " = "
+          @out.append(" = ")
           print_node(variable_definition.default_value)
         end
       end
 
       def print_variable_identifier(variable_identifier)
-        @out << "$#{variable_identifier.name}"
+        @out.append("$#{variable_identifier.name}")
       end
 
 
@@ -201,54 +201,54 @@ module GraphQL
           return
         end
 
-        @out << "schema"
+        @out.append("schema")
 
         if schema.directives.any?
           schema.directives.each do |dir|
-            @out << "\n  "
+            @out.append("\n  ")
             print_node(dir)
           end
 
           if !has_conventional_names
-            @out << "\n"
+            @out.append("\n")
           end
         end
 
         if !has_conventional_names
           if schema.directives.empty?
-            @out << " "
+            @out.append(" ")
           end
-          @out << "{\n"
-          @out << "  query: #{schema.query}\n" if schema.query
-          @out << "  mutation: #{schema.mutation}\n" if schema.mutation
-          @out << "  subscription: #{schema.subscription}\n" if schema.subscription
-          @out << "}"
+          @out.append("{\n")
+          @out.append("  query: #{schema.query}\n") if schema.query
+          @out.append("  mutation: #{schema.mutation}\n") if schema.mutation
+          @out.append("  subscription: #{schema.subscription}\n") if schema.subscription
+          @out.append("}")
         end
       end
 
       def print_scalar_type_definition(scalar_type)
         print_description(scalar_type)
-        @out << "scalar #{scalar_type.name}"
+        @out.append("scalar #{scalar_type.name}")
         print_directives(scalar_type.directives)
       end
 
       def print_object_type_definition(object_type)
         print_description(object_type)
-        @out << "type #{object_type.name}"
+        @out.append("type #{object_type.name}")
         print_implements(object_type) unless object_type.interfaces.empty?
         print_directives(object_type.directives)
         print_field_definitions(object_type.fields)
       end
 
       def print_implements(type)
-        @out << " implements #{type.interfaces.map(&:name).join(" & ")}"
+        @out.append(" implements #{type.interfaces.map(&:name).join(" & ")}")
       end
 
       def print_input_value_definition(input_value)
-        @out << "#{input_value.name}: "
+        @out.append("#{input_value.name}: ")
         print_node(input_value.type)
         unless input_value.default_value.nil?
-          @out << " = "
+          @out.append(" = ")
           print_node(input_value.default_value)
         end
         print_directives(input_value.directives)
@@ -256,38 +256,38 @@ module GraphQL
 
       def print_arguments(arguments, indent: "")
         if arguments.all? { |arg| !arg.description }
-          @out << "("
+          @out.append("(")
           arguments.each_with_index do |arg, i|
             print_input_value_definition(arg)
-            @out << ", " if i < arguments.size - 1
+            @out.append(", ") if i < arguments.size - 1
           end
-          @out << ")"
+          @out.append(")")
           return
         end
 
-        @out << "(\n"
+        @out.append("(\n")
         arguments.each_with_index do |arg, i|
           print_description(arg, indent: "  " + indent, first_in_block: i == 0)
-          @out << "  #{@indent}"
+          @out.append("  #{@indent}")
           print_input_value_definition(arg)
-          @out << "\n" if i < arguments.size - 1
+          @out.append("\n") if i < arguments.size - 1
         end
-        @out << "\n#{@indent})"
+        @out.append("\n#{@indent})")
       end
 
       def print_field_definition(field)
-        @out << field.name
+        @out.append(field.name)
         unless field.arguments.empty?
           print_arguments(field.arguments, indent: "  ")
         end
-        @out << ": "
+        @out.append(": ")
         print_node(field.type)
         print_directives(field.directives)
       end
 
       def print_interface_type_definition(interface_type)
         print_description(interface_type)
-        @out << "interface #{interface_type.name}"
+        @out.append("interface #{interface_type.name}")
         print_implements(interface_type) if interface_type.interfaces.any?
         print_directives(interface_type.directives)
         print_field_definitions(interface_type.fields)
@@ -295,83 +295,83 @@ module GraphQL
 
       def print_union_type_definition(union_type)
         print_description(union_type)
-        @out << "union #{union_type.name}"
+        @out.append("union #{union_type.name}")
         print_directives(union_type.directives)
-        @out << " = " + union_type.types.map(&:name).join(" | ")
+        @out.append(" = #{union_type.types.map(&:name).join(" | ")}")
       end
 
       def print_enum_type_definition(enum_type)
         print_description(enum_type)
-        @out << "enum #{enum_type.name}"
+        @out.append("enum #{enum_type.name}")
         print_directives(enum_type.directives)
-        @out << " {\n"
+        @out.append(" {\n")
         enum_type.values.each.with_index do |value, i|
           print_description(value, indent: "  ", first_in_block: i == 0)
           print_enum_value_definition(value)
         end
-        @out << "}"
+        @out.append("}")
       end
 
       def print_enum_value_definition(enum_value)
-        @out << "  #{enum_value.name}"
+        @out.append("  #{enum_value.name}")
         print_directives(enum_value.directives)
-        @out << "\n"
+        @out.append("\n")
       end
 
       def print_input_object_type_definition(input_object_type)
         print_description(input_object_type)
-        @out << "input #{input_object_type.name}"
+        @out.append("input #{input_object_type.name}")
         print_directives(input_object_type.directives)
         if !input_object_type.fields.empty?
-          @out << " {\n"
+          @out.append(" {\n")
           input_object_type.fields.each.with_index do |field, i|
             print_description(field, indent: "  ", first_in_block: i == 0)
-            @out << "  "
+            @out.append("  ")
             print_input_value_definition(field)
-            @out << "\n"
+            @out.append("\n")
           end
-          @out << "}"
+          @out.append("}")
         end
       end
 
       def print_directive_definition(directive)
         print_description(directive)
-        @out << "directive @#{directive.name}"
+        @out.append("directive @#{directive.name}")
 
         if directive.arguments.any?
           print_arguments(directive.arguments)
         end
 
         if directive.repeatable
-          @out << " repeatable"
+          @out.append(" repeatable")
         end
 
-        @out << " on #{directive.locations.map(&:name).join(" | ")}"
+        @out.append(" on #{directive.locations.map(&:name).join(" | ")}")
       end
 
       def print_description(node, indent: "", first_in_block: true)
         return unless node.description
 
-        @out << "\n" if indent != "" && !first_in_block
-        @out << GraphQL::Language::BlockString.print(node.description, indent: indent)
+        @out.append("\n") if indent != "" && !first_in_block
+        @out.append(GraphQL::Language::BlockString.print(node.description, indent: indent))
       end
 
       def print_field_definitions(fields)
-        @out << " {\n"
+        @out.append(" {\n")
         fields.each.with_index do |field, i|
           print_description(field, indent: "  ", first_in_block: i == 0)
-          @out << "  "
+          @out.append("  ")
           print_field_definition(field)
-          @out << "\n"
+          @out.append("\n")
         end
-        @out << "}"
+        @out.append("}")
       end
 
       def print_directives(directives)
         return if directives.empty?
 
         directives.each do |d|
-          @out << " "
+          @out.append(" ")
           print_directive(d)
         end
       end
@@ -379,12 +379,12 @@ module GraphQL
       def print_selections(selections, indent: "")
         return if selections.empty?
 
-        @out << " {\n"
+        @out.append(" {\n")
         selections.each do |selection|
           print_node(selection, indent: indent + "  ")
-          @out << "\n"
+          @out.append("\n")
         end
-        @out << "#{indent}}"
+        @out.append("#{indent}}")
       end
 
       def print_node(node, indent: "")
@@ -444,24 +444,24 @@ module GraphQL
         when Nodes::DirectiveDefinition
           print_directive_definition(node)
         when FalseClass, Float, Integer, NilClass, String, TrueClass, Symbol
-          @out << GraphQL::Language.serialize(node)
+          @out.append(GraphQL::Language.serialize(node))
         when Array
-          @out << "["
+          @out.append("[")
           node.each_with_index do |v, i|
             print_node(v)
-            @out << ", " if i < node.length - 1
+            @out.append(", ") if i < node.length - 1
           end
-          @out << "]"
+          @out.append("]")
         when Hash
-          @out << "{"
+          @out.append("{")
           node.each_with_index do |(k, v), i|
-            @out << "#{k}: "
+            @out.append("#{k}: ")
             print_node(v)
-            @out << ", " if i < node.length - 1
+            @out.append(", ") if i < node.length - 1
           end
-          @out << "}"
+          @out.append("}")
         else
-          @out << GraphQL::Language.serialize(node.to_s)
+          @out.append(GraphQL::Language.serialize(node.to_s))
         end
       end
     end
