@@ -54,7 +54,7 @@ module GraphQL
       def print(node, indent: "", truncate_size: nil)
         truncate_size = truncate_size ? [truncate_size - OMISSION.size, 0].max : nil
         @out = TruncatableBuffer.new(truncate_size:)
-        print_node(node, indent:)
+        print_node(node, indent: indent)
         @out.to_string
       rescue TruncatableBuffer::TruncateSizeReached
         @out.to_string << OMISSION
@@ -117,7 +117,7 @@ module GraphQL
           @out << ")"
         end
         print_directives(field.directives)
-        print_selections(field.selections, indent:)
+        print_selections(field.selections, indent: indent)
       end
 
       def print_fragment_definition(fragment_def, indent: "")
@@ -127,7 +127,7 @@ module GraphQL
           print_node(fragment_def.type)
         end
         print_directives(fragment_def.directives)
-        print_selections(fragment_def.selections, indent:)
+        print_selections(fragment_def.selections, indent: indent)
       end
 
       def print_fragment_spread(fragment_spread, indent: "")
@@ -142,7 +142,7 @@ module GraphQL
           print_node(inline_fragment.type)
         end
         print_directives(inline_fragment.directives)
-        print_selections(inline_fragment.selections, indent:)
+        print_selections(inline_fragment.selections, indent: indent)
       end
 
       def print_list_type(list_type)
@@ -170,7 +170,7 @@ module GraphQL
         end
 
         print_directives(operation_definition.directives)
-        print_selections(operation_definition.selections, indent:)
+        print_selections(operation_definition.selections, indent: indent)
       end
 
       def print_type_name(type_name)
