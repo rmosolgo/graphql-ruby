@@ -110,8 +110,8 @@ SETUP_NODE_CLASS_VARIABLE(SchemaDefinition)
 
   definitions_list:
       /* none */                  { $$ = GraphQL_Language_Nodes_NONE; }
-    | executable_definitions      { $$ = $1; }
-    | type_system_definitions     { $$ = $1; }
+    | executable_definitions
+    | type_system_definitions
 
   executable_definition:
       operation_definition
@@ -123,7 +123,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaDefinition)
 
   type_system_definitions:
       type_system_definition { $$ = rb_ary_new_from_args(1, $1); }
-    | type_system_definitions type_definition { rb_ary_push($$, $2); }
+    | type_system_definitions type_system_definition { rb_ary_push($$, $2); }
     /* TODO type system extensions */
 
   operation_definition:
@@ -481,11 +481,11 @@ type_system_definition:
         $$ = rb_funcall(GraphQL_Language_Nodes_SchemaDefinition, rb_intern("from_a"), 6,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
-          $2,
           // TODO use static strings:
           rb_hash_aref($4, rb_str_new_cstr("query")),
           rb_hash_aref($4, rb_str_new_cstr("mutation")),
-          rb_hash_aref($4, rb_str_new_cstr("subscription"))
+          rb_hash_aref($4, rb_str_new_cstr("subscription")),
+          $2
         );
       }
 
