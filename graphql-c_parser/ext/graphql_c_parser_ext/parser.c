@@ -109,8 +109,15 @@ SETUP_NODE_CLASS_VARIABLE(FieldDefinition)
 SETUP_NODE_CLASS_VARIABLE(InputValueDefinition)
 SETUP_NODE_CLASS_VARIABLE(SchemaDefinition)
 
+SETUP_NODE_CLASS_VARIABLE(ScalarTypeExtension)
+SETUP_NODE_CLASS_VARIABLE(ObjectTypeExtension)
+SETUP_NODE_CLASS_VARIABLE(InterfaceTypeExtension)
+SETUP_NODE_CLASS_VARIABLE(UnionTypeExtension)
+SETUP_NODE_CLASS_VARIABLE(EnumTypeExtension)
+SETUP_NODE_CLASS_VARIABLE(InputObjectTypeExtension)
+SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
 
-#line 114 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 121 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -296,80 +303,88 @@ enum yysymbol_kind_t
   YYSYMBOL_start = 41,                     /* start  */
   YYSYMBOL_document = 42,                  /* document  */
   YYSYMBOL_definitions_list = 43,          /* definitions_list  */
-  YYSYMBOL_executable_definition = 44,     /* executable_definition  */
-  YYSYMBOL_executable_definitions = 45,    /* executable_definitions  */
-  YYSYMBOL_type_system_definitions = 46,   /* type_system_definitions  */
-  YYSYMBOL_operation_definition = 47,      /* operation_definition  */
-  YYSYMBOL_operation_type = 48,            /* operation_type  */
-  YYSYMBOL_operation_name_opt = 49,        /* operation_name_opt  */
-  YYSYMBOL_variable_definitions_opt = 50,  /* variable_definitions_opt  */
-  YYSYMBOL_variable_definitions_list = 51, /* variable_definitions_list  */
-  YYSYMBOL_variable_definition = 52,       /* variable_definition  */
-  YYSYMBOL_default_value_opt = 53,         /* default_value_opt  */
-  YYSYMBOL_selection_list = 54,            /* selection_list  */
-  YYSYMBOL_selection = 55,                 /* selection  */
-  YYSYMBOL_selection_set = 56,             /* selection_set  */
-  YYSYMBOL_selection_set_opt = 57,         /* selection_set_opt  */
-  YYSYMBOL_field = 58,                     /* field  */
-  YYSYMBOL_arguments_opt = 59,             /* arguments_opt  */
-  YYSYMBOL_arguments_list = 60,            /* arguments_list  */
-  YYSYMBOL_argument = 61,                  /* argument  */
-  YYSYMBOL_literal_value = 62,             /* literal_value  */
-  YYSYMBOL_input_value = 63,               /* input_value  */
-  YYSYMBOL_null_value = 64,                /* null_value  */
-  YYSYMBOL_variable = 65,                  /* variable  */
-  YYSYMBOL_list_value = 66,                /* list_value  */
-  YYSYMBOL_list_value_list = 67,           /* list_value_list  */
-  YYSYMBOL_enum_name = 68,                 /* enum_name  */
-  YYSYMBOL_enum_value = 69,                /* enum_value  */
-  YYSYMBOL_object_value = 70,              /* object_value  */
-  YYSYMBOL_object_value_list_opt = 71,     /* object_value_list_opt  */
-  YYSYMBOL_object_value_list = 72,         /* object_value_list  */
-  YYSYMBOL_object_value_field = 73,        /* object_value_field  */
-  YYSYMBOL_object_literal_value = 74,      /* object_literal_value  */
-  YYSYMBOL_object_literal_value_list_opt = 75, /* object_literal_value_list_opt  */
-  YYSYMBOL_object_literal_value_list = 76, /* object_literal_value_list  */
-  YYSYMBOL_object_literal_value_field = 77, /* object_literal_value_field  */
-  YYSYMBOL_directives_list_opt = 78,       /* directives_list_opt  */
-  YYSYMBOL_directives_list = 79,           /* directives_list  */
-  YYSYMBOL_directive = 80,                 /* directive  */
-  YYSYMBOL_name = 81,                      /* name  */
-  YYSYMBOL_schema_keyword = 82,            /* schema_keyword  */
-  YYSYMBOL_name_without_on = 83,           /* name_without_on  */
-  YYSYMBOL_fragment_spread = 84,           /* fragment_spread  */
-  YYSYMBOL_inline_fragment = 85,           /* inline_fragment  */
-  YYSYMBOL_fragment_definition = 86,       /* fragment_definition  */
-  YYSYMBOL_fragment_name_opt = 87,         /* fragment_name_opt  */
-  YYSYMBOL_type = 88,                      /* type  */
-  YYSYMBOL_nullable_type = 89,             /* nullable_type  */
-  YYSYMBOL_type_system_definition = 90,    /* type_system_definition  */
-  YYSYMBOL_schema_definition = 91,         /* schema_definition  */
-  YYSYMBOL_operation_type_definition_list = 92, /* operation_type_definition_list  */
-  YYSYMBOL_operation_type_definition = 93, /* operation_type_definition  */
-  YYSYMBOL_type_definition = 94,           /* type_definition  */
-  YYSYMBOL_description = 95,               /* description  */
-  YYSYMBOL_description_opt = 96,           /* description_opt  */
-  YYSYMBOL_scalar_type_definition = 97,    /* scalar_type_definition  */
-  YYSYMBOL_object_type_definition = 98,    /* object_type_definition  */
-  YYSYMBOL_implements_opt = 99,            /* implements_opt  */
-  YYSYMBOL_interfaces_list = 100,          /* interfaces_list  */
-  YYSYMBOL_legacy_interfaces_list = 101,   /* legacy_interfaces_list  */
-  YYSYMBOL_input_value_definition = 102,   /* input_value_definition  */
-  YYSYMBOL_input_value_definition_list = 103, /* input_value_definition_list  */
-  YYSYMBOL_arguments_definitions_opt = 104, /* arguments_definitions_opt  */
-  YYSYMBOL_field_definition = 105,         /* field_definition  */
-  YYSYMBOL_field_definition_list_opt = 106, /* field_definition_list_opt  */
-  YYSYMBOL_field_definition_list = 107,    /* field_definition_list  */
-  YYSYMBOL_interface_type_definition = 108, /* interface_type_definition  */
-  YYSYMBOL_union_members = 109,            /* union_members  */
-  YYSYMBOL_union_type_definition = 110,    /* union_type_definition  */
-  YYSYMBOL_enum_type_definition = 111,     /* enum_type_definition  */
-  YYSYMBOL_enum_value_definition = 112,    /* enum_value_definition  */
-  YYSYMBOL_enum_value_definitions = 113,   /* enum_value_definitions  */
-  YYSYMBOL_input_object_type_definition = 114, /* input_object_type_definition  */
-  YYSYMBOL_directive_definition = 115,     /* directive_definition  */
-  YYSYMBOL_directive_repeatable_opt = 116, /* directive_repeatable_opt  */
-  YYSYMBOL_directive_locations = 117       /* directive_locations  */
+  YYSYMBOL_definition = 44,                /* definition  */
+  YYSYMBOL_executable_definition = 45,     /* executable_definition  */
+  YYSYMBOL_operation_definition = 46,      /* operation_definition  */
+  YYSYMBOL_operation_type = 47,            /* operation_type  */
+  YYSYMBOL_operation_name_opt = 48,        /* operation_name_opt  */
+  YYSYMBOL_variable_definitions_opt = 49,  /* variable_definitions_opt  */
+  YYSYMBOL_variable_definitions_list = 50, /* variable_definitions_list  */
+  YYSYMBOL_variable_definition = 51,       /* variable_definition  */
+  YYSYMBOL_default_value_opt = 52,         /* default_value_opt  */
+  YYSYMBOL_selection_list = 53,            /* selection_list  */
+  YYSYMBOL_selection = 54,                 /* selection  */
+  YYSYMBOL_selection_set = 55,             /* selection_set  */
+  YYSYMBOL_selection_set_opt = 56,         /* selection_set_opt  */
+  YYSYMBOL_field = 57,                     /* field  */
+  YYSYMBOL_arguments_opt = 58,             /* arguments_opt  */
+  YYSYMBOL_arguments_list = 59,            /* arguments_list  */
+  YYSYMBOL_argument = 60,                  /* argument  */
+  YYSYMBOL_literal_value = 61,             /* literal_value  */
+  YYSYMBOL_input_value = 62,               /* input_value  */
+  YYSYMBOL_null_value = 63,                /* null_value  */
+  YYSYMBOL_variable = 64,                  /* variable  */
+  YYSYMBOL_list_value = 65,                /* list_value  */
+  YYSYMBOL_list_value_list = 66,           /* list_value_list  */
+  YYSYMBOL_enum_name = 67,                 /* enum_name  */
+  YYSYMBOL_enum_value = 68,                /* enum_value  */
+  YYSYMBOL_object_value = 69,              /* object_value  */
+  YYSYMBOL_object_value_list_opt = 70,     /* object_value_list_opt  */
+  YYSYMBOL_object_value_list = 71,         /* object_value_list  */
+  YYSYMBOL_object_value_field = 72,        /* object_value_field  */
+  YYSYMBOL_object_literal_value = 73,      /* object_literal_value  */
+  YYSYMBOL_object_literal_value_list_opt = 74, /* object_literal_value_list_opt  */
+  YYSYMBOL_object_literal_value_list = 75, /* object_literal_value_list  */
+  YYSYMBOL_object_literal_value_field = 76, /* object_literal_value_field  */
+  YYSYMBOL_directives_list_opt = 77,       /* directives_list_opt  */
+  YYSYMBOL_directives_list = 78,           /* directives_list  */
+  YYSYMBOL_directive = 79,                 /* directive  */
+  YYSYMBOL_name = 80,                      /* name  */
+  YYSYMBOL_schema_keyword = 81,            /* schema_keyword  */
+  YYSYMBOL_name_without_on = 82,           /* name_without_on  */
+  YYSYMBOL_fragment_spread = 83,           /* fragment_spread  */
+  YYSYMBOL_inline_fragment = 84,           /* inline_fragment  */
+  YYSYMBOL_fragment_definition = 85,       /* fragment_definition  */
+  YYSYMBOL_fragment_name_opt = 86,         /* fragment_name_opt  */
+  YYSYMBOL_type = 87,                      /* type  */
+  YYSYMBOL_nullable_type = 88,             /* nullable_type  */
+  YYSYMBOL_type_system_definition = 89,    /* type_system_definition  */
+  YYSYMBOL_schema_definition = 90,         /* schema_definition  */
+  YYSYMBOL_operation_type_definition_list = 91, /* operation_type_definition_list  */
+  YYSYMBOL_operation_type_definition = 92, /* operation_type_definition  */
+  YYSYMBOL_type_definition = 93,           /* type_definition  */
+  YYSYMBOL_description = 94,               /* description  */
+  YYSYMBOL_description_opt = 95,           /* description_opt  */
+  YYSYMBOL_scalar_type_definition = 96,    /* scalar_type_definition  */
+  YYSYMBOL_object_type_definition = 97,    /* object_type_definition  */
+  YYSYMBOL_implements_opt = 98,            /* implements_opt  */
+  YYSYMBOL_interfaces_list = 99,           /* interfaces_list  */
+  YYSYMBOL_legacy_interfaces_list = 100,   /* legacy_interfaces_list  */
+  YYSYMBOL_input_value_definition = 101,   /* input_value_definition  */
+  YYSYMBOL_input_value_definition_list = 102, /* input_value_definition_list  */
+  YYSYMBOL_arguments_definitions_opt = 103, /* arguments_definitions_opt  */
+  YYSYMBOL_field_definition = 104,         /* field_definition  */
+  YYSYMBOL_field_definition_list_opt = 105, /* field_definition_list_opt  */
+  YYSYMBOL_field_definition_list = 106,    /* field_definition_list  */
+  YYSYMBOL_interface_type_definition = 107, /* interface_type_definition  */
+  YYSYMBOL_union_members = 108,            /* union_members  */
+  YYSYMBOL_union_type_definition = 109,    /* union_type_definition  */
+  YYSYMBOL_enum_type_definition = 110,     /* enum_type_definition  */
+  YYSYMBOL_enum_value_definition = 111,    /* enum_value_definition  */
+  YYSYMBOL_enum_value_definitions = 112,   /* enum_value_definitions  */
+  YYSYMBOL_input_object_type_definition = 113, /* input_object_type_definition  */
+  YYSYMBOL_directive_definition = 114,     /* directive_definition  */
+  YYSYMBOL_directive_repeatable_opt = 115, /* directive_repeatable_opt  */
+  YYSYMBOL_directive_locations = 116,      /* directive_locations  */
+  YYSYMBOL_type_system_extension = 117,    /* type_system_extension  */
+  YYSYMBOL_schema_extension = 118,         /* schema_extension  */
+  YYSYMBOL_type_extension = 119,           /* type_extension  */
+  YYSYMBOL_scalar_type_extension = 120,    /* scalar_type_extension  */
+  YYSYMBOL_object_type_extension = 121,    /* object_type_extension  */
+  YYSYMBOL_interface_type_extension = 122, /* interface_type_extension  */
+  YYSYMBOL_union_type_extension = 123,     /* union_type_extension  */
+  YYSYMBOL_enum_type_extension = 124,      /* enum_type_extension  */
+  YYSYMBOL_input_object_type_extension = 125 /* input_object_type_extension  */
 };
 typedef enum yysymbol_kind_t yysymbol_kind_t;
 
@@ -695,18 +710,18 @@ union yyalloc
 #endif /* !YYCOPY_NEEDED */
 
 /* YYFINAL -- State number of the termination state.  */
-#define YYFINAL  61
+#define YYFINAL  77
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   757
+#define YYLAST   781
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  40
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  78
+#define YYNNTS  86
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  163
+#define YYNRULES  181
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  262
+#define YYNSTATES  309
 
 /* YYMAXUTOK -- Last valid token kind.  */
 #define YYMAXUTOK   257
@@ -755,23 +770,25 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    92,    92,    94,   112,   113,   114,   117,   118,   121,
-     122,   125,   126,   130,   141,   152,   165,   166,   167,   170,
-     171,   174,   175,   178,   179,   182,   193,   194,   197,   198,
-     201,   202,   203,   206,   209,   210,   213,   224,   237,   238,
-     241,   242,   245,   255,   256,   257,   258,   259,   260,   261,
-     262,   263,   266,   267,   268,   270,   278,   287,   288,   291,
-     292,   295,   296,   297,   298,   299,   300,   302,   311,   320,
-     321,   324,   325,   328,   339,   348,   349,   352,   353,   356,
-     367,   368,   371,   372,   374,   384,   385,   388,   389,   390,
-     391,   392,   393,   394,   395,   396,   399,   400,   401,   402,
-     403,   404,   405,   409,   419,   428,   439,   451,   452,   455,
-     456,   459,   466,   475,   476,   477,   480,   493,   494,   499,
-     505,   506,   507,   508,   509,   510,   512,   515,   516,   519,
-     531,   545,   546,   547,   548,   551,   559,   565,   573,   578,
-     592,   593,   596,   597,   600,   614,   615,   618,   619,   620,
-     623,   637,   645,   650,   663,   676,   688,   689,   692,   705,
-     718,   720,   723,   724
+       0,    99,    99,   101,   119,   120,   121,   124,   125,   126,
+     129,   130,   133,   144,   155,   168,   169,   170,   173,   174,
+     177,   178,   181,   182,   185,   196,   197,   200,   201,   204,
+     205,   206,   209,   212,   213,   216,   227,   240,   241,   244,
+     245,   248,   258,   259,   260,   261,   262,   263,   264,   265,
+     266,   269,   270,   271,   273,   281,   290,   291,   294,   295,
+     298,   299,   300,   301,   302,   303,   305,   314,   323,   324,
+     327,   328,   331,   342,   351,   352,   355,   356,   359,   370,
+     371,   374,   375,   377,   387,   388,   391,   392,   393,   394,
+     395,   396,   397,   398,   399,   402,   403,   404,   405,   406,
+     407,   408,   412,   422,   431,   442,   454,   455,   458,   459,
+     462,   469,   478,   479,   480,   483,   496,   497,   502,   508,
+     509,   510,   511,   512,   513,   515,   518,   519,   522,   534,
+     548,   549,   550,   551,   554,   562,   568,   576,   581,   595,
+     596,   599,   600,   603,   617,   618,   621,   622,   623,   626,
+     640,   648,   653,   666,   679,   691,   692,   695,   708,   721,
+     723,   726,   727,   731,   732,   735,   746,   758,   759,   760,
+     761,   762,   763,   765,   775,   787,   799,   808,   819,   828,
+     839,   848
 };
 #endif
 
@@ -795,8 +812,7 @@ yysymbol_name (yysymbol_kind_t yysymbol)
   "MUTATION", "NULL_LITERAL", "ON", "PIPE", "QUERY", "RBRACKET", "RCURLY",
   "REPEATABLE", "RPAREN", "SCALAR", "SCHEMA", "STRING", "SUBSCRIPTION",
   "TRUE_LITERAL", "TYPE_LITERAL", "UNION", "VAR_SIGN", "$accept", "start",
-  "document", "definitions_list", "executable_definition",
-  "executable_definitions", "type_system_definitions",
+  "document", "definitions_list", "definition", "executable_definition",
   "operation_definition", "operation_type", "operation_name_opt",
   "variable_definitions_opt", "variable_definitions_list",
   "variable_definition", "default_value_opt", "selection_list",
@@ -821,18 +837,21 @@ yysymbol_name (yysymbol_kind_t yysymbol)
   "enum_type_definition", "enum_value_definition",
   "enum_value_definitions", "input_object_type_definition",
   "directive_definition", "directive_repeatable_opt",
-  "directive_locations", YY_NULLPTR
+  "directive_locations", "type_system_extension", "schema_extension",
+  "type_extension", "scalar_type_extension", "object_type_extension",
+  "interface_type_extension", "union_type_extension",
+  "enum_type_extension", "input_object_type_extension", YY_NULLPTR
   };
   return yy_sname[yysymbol];
 }
 #endif
 
-#define YYPACT_NINF (-175)
+#define YYPACT_NINF (-185)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
 
-#define YYTABLE_NINF (-148)
+#define YYTABLE_NINF (-147)
 
 #define yytable_value_is_error(Yyn) \
   0
@@ -841,33 +860,37 @@ yysymbol_name (yysymbol_kind_t yysymbol)
    STATE-NUM.  */
 static const yytype_int16 yypact[] =
 {
-       9,   686,   422,  -175,  -175,    26,  -175,  -175,    39,  -175,
-    -175,  -175,    14,    12,  -175,   653,  -175,  -175,  -175,  -175,
-    -175,   115,  -175,  -175,  -175,  -175,  -175,  -175,  -175,  -175,
-    -175,  -175,  -175,  -175,  -175,  -175,  -175,  -175,  -175,  -175,
-    -175,  -175,  -175,  -175,  -175,  -175,    15,   521,  -175,  -175,
-     455,  -175,  -175,     5,  -175,  -175,  -175,   653,    42,    26,
-    -175,  -175,  -175,  -175,    49,  -175,    65,   653,   653,   653,
-     653,   653,   653,   554,   554,    54,    26,  -175,  -175,   653,
-     653,    26,    62,    -6,  -175,   -13,    26,   653,    26,    26,
-      73,    26,    73,    26,   554,  -175,    26,    88,    26,   587,
-    -175,  -175,    62,   620,  -175,    89,    54,  -175,    94,    29,
-    -175,   653,   -15,  -175,    54,    80,    83,    85,   254,    26,
-    -175,    26,   101,    84,    54,  -175,    54,   488,    26,  -175,
-    -175,   355,  -175,  -175,   653,  -175,  -175,   108,  -175,  -175,
-    -175,    86,    87,    86,    86,   653,   148,   111,   653,   103,
-     103,   653,  -175,  -175,  -175,  -175,    54,  -175,  -175,  -175,
-    -175,  -175,   287,   653,  -175,  -175,  -175,  -175,  -175,   653,
-    -175,  -175,  -175,  -175,  -175,  -175,  -175,  -175,  -175,  -175,
-    -175,  -175,   554,   653,  -175,    19,  -175,    97,   719,  -175,
-     -14,    45,  -175,   111,   653,  -175,    53,  -175,  -175,  -175,
-     104,  -175,  -175,  -175,   321,    98,   653,  -175,   100,   653,
-    -175,   128,  -175,   126,   133,  -175,  -175,   653,    26,  -175,
-    -175,  -175,  -175,   653,  -175,    57,   653,  -175,  -175,  -175,
-    -175,   134,  -175,  -175,   135,   355,   389,  -175,   554,  -175,
-     116,  -175,    80,  -175,  -175,  -175,   355,   389,  -175,  -175,
-     653,  -175,   126,   653,   136,  -175,    26,  -175,   554,  -175,
-      26,  -175
+     205,   204,   743,   479,  -185,  -185,    10,  -185,  -185,    21,
+    -185,   126,  -185,  -185,  -185,   710,  -185,  -185,  -185,  -185,
+    -185,    79,  -185,  -185,  -185,  -185,  -185,  -185,  -185,  -185,
+    -185,  -185,  -185,  -185,  -185,  -185,  -185,  -185,   710,   710,
+     710,   710,    10,   710,   710,  -185,  -185,  -185,  -185,  -185,
+    -185,  -185,  -185,  -185,  -185,  -185,  -185,  -185,  -185,  -185,
+    -185,  -185,     2,   578,  -185,  -185,   512,  -185,  -185,     6,
+    -185,  -185,  -185,   710,    12,    10,  -185,  -185,  -185,    27,
+    -185,    44,   710,   710,   710,   710,   710,   710,    10,    10,
+      45,    10,    47,    22,    45,    10,   611,   611,    53,    10,
+    -185,  -185,   710,   710,    10,    56,    -1,  -185,    49,    10,
+     710,    10,    10,    45,    10,    45,    10,    71,    22,    83,
+      22,   305,    10,    10,    -1,    10,    98,    32,   611,  -185,
+      10,   109,    10,   644,  -185,  -185,    56,   677,  -185,   122,
+      53,  -185,   128,    67,  -185,   710,   -16,  -185,    53,   113,
+     118,   124,    10,  -185,    10,   138,   116,   116,   710,   264,
+     148,   710,   131,    74,   131,   710,   135,    53,  -185,    53,
+     545,    10,  -185,  -185,   412,  -185,  -185,   710,  -185,  -185,
+     149,  -185,  -185,  -185,   116,   136,   116,   116,   131,   131,
+     710,   250,  -185,    42,   710,  -185,    43,  -185,   148,   710,
+    -185,    57,  -185,  -185,  -185,  -185,   130,  -185,  -185,  -185,
+    -185,    53,  -185,  -185,  -185,  -185,  -185,   338,   710,  -185,
+    -185,  -185,  -185,  -185,   710,  -185,  -185,  -185,  -185,  -185,
+    -185,  -185,  -185,  -185,  -185,  -185,  -185,   611,   112,  -185,
+     140,    76,    85,  -185,  -185,   130,    10,  -185,  -185,   163,
+    -185,  -185,  -185,   710,  -185,   102,   710,  -185,  -185,  -185,
+     378,   142,   710,  -185,   143,   710,  -185,   168,  -185,   165,
+    -185,   710,  -185,  -185,  -185,   611,   113,  -185,  -185,  -185,
+    -185,  -185,  -185,  -185,   173,  -185,  -185,   176,   412,   446,
+    -185,  -185,   156,   165,   178,   412,   446,  -185,  -185,   710,
+    -185,   710,    10,   611,  -185,  -185,  -185,    10,  -185
 };
 
 /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -875,59 +898,65 @@ static const yytype_int16 yypact[] =
    means the default is an error.  */
 static const yytype_uint8 yydefact[] =
 {
-     127,   107,     0,    17,    16,    80,   126,    18,     0,     2,
-       3,     9,     5,   127,     7,    19,     8,    11,   113,   114,
-     128,     0,   120,   121,   122,   123,   124,   125,   115,    95,
-      93,   100,    97,    96,    94,    90,    91,    98,    88,    87,
-      99,    89,    92,   101,   102,   108,     0,    80,    86,    15,
-       0,    28,    30,    38,    85,    31,    32,     0,     0,    81,
-      82,     1,    10,    12,    21,    20,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,    80,    14,    29,     0,
-       0,    80,    38,     0,    83,     0,    80,     0,    80,    80,
-     131,    80,   131,    80,     0,   111,    80,   109,    80,     0,
-     105,   103,    38,     0,    40,     0,    34,    84,     0,     0,
-     117,     0,     0,    23,     0,   142,     0,     0,     0,    80,
-     129,    80,     0,     0,     0,   110,     0,     0,    80,    39,
-      41,     0,    35,    37,     0,   116,   118,     0,    22,    24,
-      13,   127,   160,   127,   127,     0,   135,   133,   134,   145,
-     145,     0,   112,   106,   104,    33,    34,    47,    43,    62,
-      61,    44,     0,    69,    55,    64,    63,    45,    46,     0,
-      65,    52,    42,    48,    53,    50,    67,    49,    54,    51,
-      66,   119,     0,     0,   140,   127,   161,     0,     0,   156,
-     127,   127,   135,   132,     0,   138,   127,   150,   130,   151,
-     153,    36,    57,    59,     0,     0,    70,    71,     0,    76,
-      77,     0,    56,    26,     0,   143,   141,     0,    80,   154,
-     157,   158,   136,     0,   148,   127,     0,    58,    60,    68,
-      72,     0,    74,    78,     0,     0,     0,    25,     0,   162,
-     159,   155,   142,   146,   149,   152,     0,     0,    52,    73,
-      75,    27,    26,     0,     0,    79,    80,   163,     0,   139,
-      80,   144
+       4,     0,   106,     0,    16,    15,    79,   125,    17,     0,
+       2,   126,     5,     7,    10,    18,    11,     8,   112,   113,
+     127,     0,   119,   120,   121,   122,   123,   124,   114,     9,
+     163,   164,   167,   168,   169,   170,   171,   172,     0,     0,
+       0,     0,    79,     0,     0,    94,    92,    99,    96,    95,
+      93,    89,    90,    97,    87,    86,    98,    88,    91,   100,
+     101,   107,     0,    79,    85,    14,     0,    27,    29,    37,
+      84,    30,    31,     0,     0,    80,    81,     1,     6,    20,
+      19,     0,     0,     0,     0,     0,     0,     0,    79,    79,
+     130,     0,     0,   166,   130,    79,     0,     0,     0,    79,
+      13,    28,     0,     0,    79,    37,     0,    82,     0,    79,
+       0,    79,    79,   130,    79,   130,    79,     0,   179,     0,
+     181,     0,    79,   173,     0,    79,     0,   177,     0,   110,
+      79,   108,    79,     0,   104,   102,    37,     0,    39,     0,
+      33,    83,     0,     0,   116,     0,     0,    22,     0,   141,
+       0,     0,    79,   128,    79,     0,   126,   126,     0,   134,
+     132,   133,   144,     0,   144,     0,     0,     0,   109,     0,
+       0,    79,    38,    40,     0,    34,    36,     0,   115,   117,
+       0,    21,    23,    12,   126,   159,   126,   126,   144,   144,
+       0,     0,   155,   126,     0,   139,   126,   134,   131,     0,
+     137,   126,   175,   165,   174,   150,   176,   111,   105,   103,
+      32,    33,    46,    42,    61,    60,    43,     0,    68,    54,
+      63,    62,    44,    45,     0,    64,    51,    41,    47,    52,
+      49,    66,    48,    53,    50,    65,   118,     0,   126,   160,
+       0,   126,   126,   149,   129,   152,    79,   178,   156,     0,
+     180,   140,   135,     0,   147,   126,     0,    35,    56,    58,
+       0,     0,    69,    70,     0,    75,    76,     0,    55,    25,
+     142,     0,   153,   157,   154,     0,   141,   145,   148,   151,
+      57,    59,    67,    71,     0,    73,    77,     0,     0,     0,
+      24,   161,   158,    25,     0,     0,     0,    51,    72,    74,
+      26,     0,    79,     0,    78,   162,   138,    79,   143
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int16 yypgoto[] =
 {
-    -175,  -175,  -175,  -175,   138,  -175,  -175,  -175,     6,  -175,
-    -175,  -175,    33,  -104,    52,   -46,   -67,    -1,  -175,   -71,
-    -175,    51,  -174,  -124,  -175,  -175,  -175,  -175,   -32,  -175,
-    -175,  -175,  -175,   -49,  -175,  -175,  -175,   -51,     7,  -175,
-     105,    -2,  -128,     4,  -175,  -175,  -175,  -175,   -72,  -175,
-     146,  -175,  -175,    60,  -175,  -175,     1,  -175,  -175,    78,
-      27,  -175,  -166,    30,   -66,   -48,    32,  -175,  -175,  -175,
-    -175,  -175,   -11,  -175,  -175,  -175,  -175,  -175
+    -185,  -185,  -185,  -185,   175,  -185,  -185,    14,  -185,  -185,
+    -185,    38,  -104,    65,   -64,   -94,   -12,  -185,   -89,  -185,
+      63,  -164,  -171,  -185,  -185,  -185,  -185,    11,  -185,  -185,
+    -185,  -185,   -58,  -185,  -185,  -185,   -57,    81,   -36,   -62,
+      -3,  -167,     3,  -185,  -185,  -185,  -185,   -96,  -185,  -185,
+    -185,    86,  -133,  -185,  -185,     8,  -185,  -185,   -46,    59,
+    -185,  -178,   -72,   -54,   -41,  -144,  -185,  -185,    28,  -185,
+    -185,  -184,    39,  -185,  -185,  -185,  -185,  -185,  -185,  -185,
+    -185,  -185,  -185,  -185,  -185,  -185
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
-static const yytype_uint8 yydefgoto[] =
+static const yytype_int16 yydefgoto[] =
 {
-       0,     8,     9,    10,    11,    12,    13,    14,    43,    64,
-      86,   112,   113,   237,    50,    51,   132,   133,    52,    81,
-     103,   104,   171,   249,   173,   174,   175,   204,   176,   177,
-     178,   205,   206,   207,   179,   208,   209,   210,    58,    59,
-      60,    95,    44,    54,    55,    56,    16,    46,    96,    97,
-      17,    18,   109,   110,    19,    20,   183,    22,    23,   119,
-     147,   148,   184,   185,   142,   224,   197,   225,    24,   200,
-      25,    26,   189,   190,    27,    28,   187,   240
+       0,     9,    10,    11,    12,    13,    14,    59,    79,   109,
+     146,   147,   290,    66,    67,   175,   176,    68,   104,   137,
+     138,   226,   298,   228,   229,   230,   260,   231,   232,   233,
+     261,   262,   263,   234,   264,   265,   266,    74,    75,    76,
+     129,    60,    70,    71,    72,    16,    62,   130,   131,    17,
+      18,   143,   144,    19,    20,   194,    22,    23,   122,   160,
+     161,   195,   196,   185,   254,   202,   255,    24,   206,    25,
+      26,   192,   193,    27,    28,   240,   292,    29,    30,    31,
+      32,    33,    34,    35,    36,    37
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -935,239 +964,253 @@ static const yytype_uint8 yydefgoto[] =
    number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int16 yytable[] =
 {
-      53,    21,    98,   180,    78,    45,    15,   172,   100,    -4,
-      79,   107,    -6,    65,    21,   219,   138,     3,    15,   216,
-       6,     4,   123,     1,   111,   216,   111,    80,     1,     7,
-       2,   128,     3,    57,   180,     2,     4,     3,   203,    61,
-      73,     4,     5,     6,     7,     5,     6,   140,    53,     7,
-     215,    76,     3,     6,    75,    82,     4,   153,   135,   154,
-     180,   248,   251,    83,     7,    88,    89,    90,    91,    92,
-      93,    85,    87,   255,   221,    99,   180,   102,   105,     6,
-     228,    78,  -147,   101,    80,   115,   243,     6,   106,   108,
-     118,     6,   125,   114,   131,   116,   117,    53,   120,   134,
-     122,   105,   141,   124,   143,   126,   144,   180,   180,   137,
-     213,   151,   152,   182,   194,   108,   146,   186,   180,   180,
-       6,    66,   217,    67,   196,    53,   149,   229,   150,   232,
-     226,    68,   181,   235,    69,   156,   236,   170,   238,   246,
-     247,   258,   253,   192,   188,   139,   195,    70,   256,   199,
-      62,   127,    71,    72,   130,   201,   218,   230,   233,    63,
-    -137,   211,  -137,  -137,    84,  -137,   252,   212,   170,   136,
-     121,  -137,   193,  -137,   191,  -137,   254,   244,  -137,   220,
-       0,   214,   198,  -137,  -137,     0,   260,     0,     0,     0,
-       0,   188,   222,     0,   170,     0,     0,   223,     0,     0,
-       0,     0,     0,     0,   231,     0,     0,   234,     0,     0,
-     170,     0,     0,     0,     0,   239,     0,     0,     0,     0,
-       0,   242,     0,     0,   245,   241,   223,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,   170,   170,     0,     0,     0,     0,     0,   234,     0,
-       0,   257,   170,   170,     0,     0,     0,   145,     0,     0,
-      29,     0,    30,   259,     0,     0,    31,   261,    32,    33,
-      34,    35,     0,    36,     0,     0,     0,     3,     0,    48,
-       0,     4,     0,     0,    37,     0,    38,    39,     0,     7,
-      40,    41,    42,    29,     0,    30,     0,     0,     0,   157,
-     158,   159,   160,    34,    35,   161,    36,   162,   163,     0,
-       3,   164,   165,     0,     4,   202,     0,   166,     0,    38,
-      39,   167,     7,   168,    41,    42,   169,    29,     0,    30,
-       0,     0,     0,   157,   158,   159,   160,    34,    35,   161,
-      36,   162,   163,     0,     3,   164,   165,     0,     4,   227,
-       0,   166,     0,    38,    39,   167,     7,   168,    41,    42,
-     169,    29,     0,    30,     0,     0,     0,   157,   158,   159,
-     160,    34,    35,   161,    36,   162,   163,     0,     3,   164,
-     165,     0,     4,     0,     0,   166,     0,    38,    39,   167,
-       7,   168,    41,    42,   169,    29,     0,    30,     0,     0,
-       0,   157,   158,   159,   160,    34,    35,   161,    36,   162,
-     250,     0,     3,   164,   165,     0,     4,     0,     0,   166,
-       0,    38,    39,   167,     7,   168,    41,    42,    29,     0,
-      30,    47,     0,     0,    31,     0,    32,    33,    34,    35,
-       0,    36,     0,     0,     0,     3,     0,    48,     0,     4,
-       0,    49,    37,     0,    38,    39,     0,     7,    40,    41,
-      42,    29,     0,    30,    47,     0,     0,    31,     0,    32,
-      33,    34,    35,     0,    36,     0,     0,     0,     3,     0,
-      48,     0,     4,     0,    77,    37,     0,    38,    39,     0,
-       7,    40,    41,    42,    29,     0,    30,    47,     0,     0,
-      31,     0,    32,    33,    34,    35,     0,    36,     0,     0,
-       0,     3,     0,    48,     0,     4,     0,   155,    37,     0,
-      38,    39,     0,     7,    40,    41,    42,    29,    57,    30,
-       0,     0,     0,    31,     0,    32,    33,    34,    35,     0,
-      36,     0,     0,     0,     3,     0,    74,     0,     4,     0,
-       0,    37,     0,    38,    39,     0,     7,    40,    41,    42,
-      29,     0,    30,     0,     0,     0,    31,     0,    32,    33,
-      34,    35,     0,    36,    94,     0,     0,     3,     0,    48,
-       0,     4,     0,     0,    37,     0,    38,    39,     0,     7,
-      40,    41,    42,    29,     0,    30,    47,     0,     0,    31,
-       0,    32,    33,    34,    35,     0,    36,     0,     0,     0,
-       3,     0,    48,     0,     4,     0,     0,    37,     0,    38,
-      39,     0,     7,    40,    41,    42,    29,     0,    30,     0,
-       0,     0,    31,     0,    32,    33,    34,    35,     0,    36,
-       0,     0,     0,     3,     0,    48,     0,     4,     0,     0,
-      37,   129,    38,    39,     0,     7,    40,    41,    42,    29,
-       0,    30,     0,     0,     0,    31,     0,    32,    33,    34,
-      35,     0,    36,     0,     0,     0,     3,     0,    48,     0,
-       4,     0,     0,    37,     0,    38,    39,     0,     7,    40,
-      41,    42,    29,     0,    30,     0,     0,     0,    31,     0,
-      32,    33,    34,    35,     0,    36,     0,     0,     0,     3,
-       0,     0,     0,     4,     0,     0,    37,     0,    38,    39,
-       0,     7,    40,    41,    42,    29,     0,    30,     0,     0,
-       0,     0,     0,   159,   160,    34,    35,     0,    36,     0,
-       0,     0,     3,     0,   165,     0,     4,     0,     0,   166,
-       0,    38,    39,     0,     7,     0,    41,    42
+      69,   132,   101,   227,   134,    61,    93,   235,    21,   248,
+     179,   102,    80,   107,    15,   181,   141,    73,   251,    21,
+     204,    77,     4,   145,   235,    15,     5,    96,   103,    73,
+     179,   107,   166,   106,     8,    88,    89,    90,    91,    73,
+      94,    95,   -80,   -80,   243,   244,   259,   171,   125,   108,
+     235,   110,   118,   120,   183,   123,   107,   248,   107,   127,
+     251,   107,   121,    69,   251,   107,    99,   152,   124,   154,
+     105,   247,   250,   208,   133,   209,     7,     7,   103,   111,
+     112,   113,   114,   115,   116,    81,  -146,    82,   145,   281,
+       4,     7,   156,   235,     5,    83,   178,     4,    84,   136,
+     139,     5,     8,   203,   157,   272,   101,   149,   165,     8,
+       7,    85,   238,   168,   273,   242,    86,    87,   159,     7,
+     142,   235,   235,    92,   297,   300,    -3,   174,   235,   235,
+      69,   277,   304,   177,   139,   184,     7,     1,   142,   186,
+       2,   269,   180,   270,    98,   187,     7,     3,   190,     4,
+       7,   199,   201,     5,   237,   197,   256,   142,   200,     6,
+       7,     8,   205,   207,   191,   271,   239,    69,   275,   117,
+     119,   282,   285,   288,   236,   289,   126,   142,   295,   293,
+     135,   296,   301,   303,   182,   140,    78,   205,   225,   302,
+     148,   249,   150,   151,   191,   153,   252,   155,   170,   257,
+     173,   191,   246,   162,   283,   225,   164,   307,   286,   253,
+     163,   167,    38,   169,   278,   267,     1,   198,   245,     2,
+      39,   268,   294,    40,     0,   241,     3,     0,     4,     0,
+       0,   225,     5,   188,     0,   189,    41,    42,     6,     7,
+       8,    43,    44,     0,     0,     0,     0,     0,     0,   191,
+     276,     0,   211,   279,     0,     0,    45,     0,    46,   284,
+       0,     0,   287,   253,   214,   215,    50,    51,   291,    52,
+       0,     0,     0,     4,   225,   220,  -136,     5,     0,  -136,
+     221,  -136,    54,    55,     0,     8,     0,    57,    58,  -136,
+       0,     0,     0,     0,  -136,     0,   287,     0,   305,     0,
+    -136,     0,   225,   225,     0,     0,     0,     0,   158,   225,
+     225,    45,     0,    46,     0,     0,     0,    47,     0,    48,
+      49,    50,    51,     0,    52,     0,     0,   274,     4,     0,
+      64,     0,     5,     0,     0,    53,     0,    54,    55,     0,
+       8,    56,    57,    58,    45,     0,    46,     0,     0,     0,
+     212,   213,   214,   215,    50,    51,   216,    52,   217,   218,
+       0,     4,   219,   220,     0,     5,   258,     0,   221,     0,
+      54,    55,   222,     8,   223,    57,    58,   224,     0,     0,
+       0,     0,     0,   306,    45,     0,    46,     0,   308,     0,
+     212,   213,   214,   215,    50,    51,   216,    52,   217,   218,
+       0,     4,   219,   220,     0,     5,   280,     0,   221,     0,
+      54,    55,   222,     8,   223,    57,    58,   224,    45,     0,
+      46,     0,     0,     0,   212,   213,   214,   215,    50,    51,
+     216,    52,   217,   218,     0,     4,   219,   220,     0,     5,
+       0,     0,   221,     0,    54,    55,   222,     8,   223,    57,
+      58,   224,    45,     0,    46,     0,     0,     0,   212,   213,
+     214,   215,    50,    51,   216,    52,   217,   299,     0,     4,
+     219,   220,     0,     5,     0,     0,   221,     0,    54,    55,
+     222,     8,   223,    57,    58,    45,     0,    46,    63,     0,
+       0,    47,     0,    48,    49,    50,    51,     0,    52,     0,
+       0,     0,     4,     0,    64,     0,     5,     0,    65,    53,
+       0,    54,    55,     0,     8,    56,    57,    58,    45,     0,
+      46,    63,     0,     0,    47,     0,    48,    49,    50,    51,
+       0,    52,     0,     0,     0,     4,     0,    64,     0,     5,
+       0,   100,    53,     0,    54,    55,     0,     8,    56,    57,
+      58,    45,     0,    46,    63,     0,     0,    47,     0,    48,
+      49,    50,    51,     0,    52,     0,     0,     0,     4,     0,
+      64,     0,     5,     0,   210,    53,     0,    54,    55,     0,
+       8,    56,    57,    58,    45,    73,    46,     0,     0,     0,
+      47,     0,    48,    49,    50,    51,     0,    52,     0,     0,
+       0,     4,     0,    97,     0,     5,     0,     0,    53,     0,
+      54,    55,     0,     8,    56,    57,    58,    45,     0,    46,
+       0,     0,     0,    47,     0,    48,    49,    50,    51,     0,
+      52,   128,     0,     0,     4,     0,    64,     0,     5,     0,
+       0,    53,     0,    54,    55,     0,     8,    56,    57,    58,
+      45,     0,    46,    63,     0,     0,    47,     0,    48,    49,
+      50,    51,     0,    52,     0,     0,     0,     4,     0,    64,
+       0,     5,     0,     0,    53,     0,    54,    55,     0,     8,
+      56,    57,    58,    45,     0,    46,     0,     0,     0,    47,
+       0,    48,    49,    50,    51,     0,    52,     0,     0,     0,
+       4,     0,    64,     0,     5,     0,     0,    53,   172,    54,
+      55,     0,     8,    56,    57,    58,    45,     0,    46,     0,
+       0,     0,    47,     0,    48,    49,    50,    51,     0,    52,
+       0,     0,     0,     4,     0,    64,     0,     5,     0,     0,
+      53,     0,    54,    55,     0,     8,    56,    57,    58,    45,
+       0,    46,     0,     0,     0,    47,     0,    48,    49,    50,
+      51,     0,    52,     0,     0,     0,     4,     0,     0,     0,
+       5,     0,     0,    53,     0,    54,    55,     0,     8,    56,
+      57,    58
 };
 
 static const yytype_int16 yycheck[] =
 {
-       2,     0,    74,   131,    50,     1,     0,   131,    75,     0,
-       5,    82,     0,    15,    13,    29,    31,    23,    12,   185,
-      34,    27,    94,    14,    39,   191,    39,    22,    14,    35,
-      21,   102,    23,     7,   162,    21,    27,    23,   162,     0,
-      25,    27,    33,    34,    35,    33,    34,   114,    50,    35,
-      31,    47,    23,    34,    47,    57,    27,   124,    29,   126,
-     188,   235,   236,    21,    35,    67,    68,    69,    70,    71,
-      72,    22,     7,   247,    29,    21,   204,    79,    80,    34,
-     204,   127,    29,    76,    22,    87,    29,    34,    81,    83,
-      17,    34,     4,    86,     5,    88,    89,    99,    91,     5,
-      93,   103,    22,    96,    21,    98,    21,   235,   236,   111,
-     182,    10,    28,     5,     3,   109,   118,    30,   246,   247,
-      34,     6,    25,     8,    21,   127,   119,    29,   121,    29,
-      26,    16,   134,     5,    19,   128,    10,   131,     5,     5,
-       5,     5,    26,   145,   143,   112,   148,    32,   252,   151,
-      12,    99,    37,    38,   103,   156,   188,   206,   209,    13,
-      12,   163,    14,    15,    59,    17,   238,   169,   162,   109,
-      92,    23,   145,    25,   144,    27,   242,   225,    30,   190,
-      -1,   183,   150,    35,    36,    -1,   258,    -1,    -1,    -1,
-      -1,   190,   194,    -1,   188,    -1,    -1,   196,    -1,    -1,
-      -1,    -1,    -1,    -1,   206,    -1,    -1,   209,    -1,    -1,
-     204,    -1,    -1,    -1,    -1,   217,    -1,    -1,    -1,    -1,
-      -1,   223,    -1,    -1,   226,   218,   225,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
-      -1,   235,   236,    -1,    -1,    -1,    -1,    -1,   250,    -1,
-      -1,   253,   246,   247,    -1,    -1,    -1,     3,    -1,    -1,
-       6,    -1,     8,   256,    -1,    -1,    12,   260,    14,    15,
-      16,    17,    -1,    19,    -1,    -1,    -1,    23,    -1,    25,
-      -1,    27,    -1,    -1,    30,    -1,    32,    33,    -1,    35,
-      36,    37,    38,     6,    -1,     8,    -1,    -1,    -1,    12,
-      13,    14,    15,    16,    17,    18,    19,    20,    21,    -1,
-      23,    24,    25,    -1,    27,    28,    -1,    30,    -1,    32,
-      33,    34,    35,    36,    37,    38,    39,     6,    -1,     8,
-      -1,    -1,    -1,    12,    13,    14,    15,    16,    17,    18,
-      19,    20,    21,    -1,    23,    24,    25,    -1,    27,    28,
-      -1,    30,    -1,    32,    33,    34,    35,    36,    37,    38,
-      39,     6,    -1,     8,    -1,    -1,    -1,    12,    13,    14,
-      15,    16,    17,    18,    19,    20,    21,    -1,    23,    24,
-      25,    -1,    27,    -1,    -1,    30,    -1,    32,    33,    34,
-      35,    36,    37,    38,    39,     6,    -1,     8,    -1,    -1,
-      -1,    12,    13,    14,    15,    16,    17,    18,    19,    20,
-      21,    -1,    23,    24,    25,    -1,    27,    -1,    -1,    30,
-      -1,    32,    33,    34,    35,    36,    37,    38,     6,    -1,
+       3,    97,    66,   174,    98,     2,    42,   174,     0,   193,
+     143,     5,    15,    75,     0,    31,   105,     7,   196,    11,
+     164,     0,    23,    39,   191,    11,    27,    25,    22,     7,
+     163,    93,   128,    21,    35,    38,    39,    40,    41,     7,
+      43,    44,    10,    21,   188,   189,   217,   136,    94,    22,
+     217,     7,    88,    89,   148,    91,   118,   241,   120,    95,
+     238,   123,    17,    66,   242,   127,    63,   113,    21,   115,
+      73,    29,    29,   167,    21,   169,    34,    34,    22,    82,
+      83,    84,    85,    86,    87,     6,    29,     8,    39,   260,
+      23,    34,    21,   260,    27,    16,    29,    23,    19,   102,
+     103,    27,    35,    29,    21,    29,   170,   110,    10,    35,
+      34,    32,   184,     4,    29,   187,    37,    38,   121,    34,
+     106,   288,   289,    42,   288,   289,     0,     5,   295,   296,
+     133,    29,   296,     5,   137,    22,    34,    11,   124,    21,
+      14,   237,   145,    31,    63,    21,    34,    21,    10,    23,
+      34,     3,    21,    27,     5,   158,    26,   143,   161,    33,
+      34,    35,   165,    28,   156,    25,    30,   170,     5,    88,
+      89,    29,    29,     5,   177,    10,    95,   163,     5,   275,
+      99,     5,    26,     5,   146,   104,    11,   190,   174,   293,
+     109,   194,   111,   112,   186,   114,   199,   116,   133,   211,
+     137,   193,   191,   122,   262,   191,   125,   303,   265,   201,
+     124,   130,     8,   132,   255,   218,    11,   158,   190,    14,
+      16,   224,   276,    19,    -1,   186,    21,    -1,    23,    -1,
+      -1,   217,    27,   152,    -1,   154,    32,    33,    33,    34,
+      35,    37,    38,    -1,    -1,    -1,    -1,    -1,    -1,   241,
+     253,    -1,   171,   256,    -1,    -1,     6,    -1,     8,   262,
+      -1,    -1,   265,   255,    14,    15,    16,    17,   271,    19,
+      -1,    -1,    -1,    23,   260,    25,    12,    27,    -1,    15,
+      30,    17,    32,    33,    -1,    35,    -1,    37,    38,    25,
+      -1,    -1,    -1,    -1,    30,    -1,   299,    -1,   301,    -1,
+      36,    -1,   288,   289,    -1,    -1,    -1,    -1,     3,   295,
+     296,     6,    -1,     8,    -1,    -1,    -1,    12,    -1,    14,
+      15,    16,    17,    -1,    19,    -1,    -1,   246,    23,    -1,
+      25,    -1,    27,    -1,    -1,    30,    -1,    32,    33,    -1,
+      35,    36,    37,    38,     6,    -1,     8,    -1,    -1,    -1,
+      12,    13,    14,    15,    16,    17,    18,    19,    20,    21,
+      -1,    23,    24,    25,    -1,    27,    28,    -1,    30,    -1,
+      32,    33,    34,    35,    36,    37,    38,    39,    -1,    -1,
+      -1,    -1,    -1,   302,     6,    -1,     8,    -1,   307,    -1,
+      12,    13,    14,    15,    16,    17,    18,    19,    20,    21,
+      -1,    23,    24,    25,    -1,    27,    28,    -1,    30,    -1,
+      32,    33,    34,    35,    36,    37,    38,    39,     6,    -1,
+       8,    -1,    -1,    -1,    12,    13,    14,    15,    16,    17,
+      18,    19,    20,    21,    -1,    23,    24,    25,    -1,    27,
+      -1,    -1,    30,    -1,    32,    33,    34,    35,    36,    37,
+      38,    39,     6,    -1,     8,    -1,    -1,    -1,    12,    13,
+      14,    15,    16,    17,    18,    19,    20,    21,    -1,    23,
+      24,    25,    -1,    27,    -1,    -1,    30,    -1,    32,    33,
+      34,    35,    36,    37,    38,     6,    -1,     8,     9,    -1,
+      -1,    12,    -1,    14,    15,    16,    17,    -1,    19,    -1,
+      -1,    -1,    23,    -1,    25,    -1,    27,    -1,    29,    30,
+      -1,    32,    33,    -1,    35,    36,    37,    38,     6,    -1,
        8,     9,    -1,    -1,    12,    -1,    14,    15,    16,    17,
       -1,    19,    -1,    -1,    -1,    23,    -1,    25,    -1,    27,
       -1,    29,    30,    -1,    32,    33,    -1,    35,    36,    37,
       38,     6,    -1,     8,     9,    -1,    -1,    12,    -1,    14,
       15,    16,    17,    -1,    19,    -1,    -1,    -1,    23,    -1,
       25,    -1,    27,    -1,    29,    30,    -1,    32,    33,    -1,
-      35,    36,    37,    38,     6,    -1,     8,     9,    -1,    -1,
+      35,    36,    37,    38,     6,     7,     8,    -1,    -1,    -1,
       12,    -1,    14,    15,    16,    17,    -1,    19,    -1,    -1,
-      -1,    23,    -1,    25,    -1,    27,    -1,    29,    30,    -1,
-      32,    33,    -1,    35,    36,    37,    38,     6,     7,     8,
+      -1,    23,    -1,    25,    -1,    27,    -1,    -1,    30,    -1,
+      32,    33,    -1,    35,    36,    37,    38,     6,    -1,     8,
       -1,    -1,    -1,    12,    -1,    14,    15,    16,    17,    -1,
-      19,    -1,    -1,    -1,    23,    -1,    25,    -1,    27,    -1,
+      19,    20,    -1,    -1,    23,    -1,    25,    -1,    27,    -1,
       -1,    30,    -1,    32,    33,    -1,    35,    36,    37,    38,
-       6,    -1,     8,    -1,    -1,    -1,    12,    -1,    14,    15,
-      16,    17,    -1,    19,    20,    -1,    -1,    23,    -1,    25,
+       6,    -1,     8,     9,    -1,    -1,    12,    -1,    14,    15,
+      16,    17,    -1,    19,    -1,    -1,    -1,    23,    -1,    25,
       -1,    27,    -1,    -1,    30,    -1,    32,    33,    -1,    35,
-      36,    37,    38,     6,    -1,     8,     9,    -1,    -1,    12,
+      36,    37,    38,     6,    -1,     8,    -1,    -1,    -1,    12,
       -1,    14,    15,    16,    17,    -1,    19,    -1,    -1,    -1,
-      23,    -1,    25,    -1,    27,    -1,    -1,    30,    -1,    32,
+      23,    -1,    25,    -1,    27,    -1,    -1,    30,    31,    32,
       33,    -1,    35,    36,    37,    38,     6,    -1,     8,    -1,
       -1,    -1,    12,    -1,    14,    15,    16,    17,    -1,    19,
       -1,    -1,    -1,    23,    -1,    25,    -1,    27,    -1,    -1,
-      30,    31,    32,    33,    -1,    35,    36,    37,    38,     6,
+      30,    -1,    32,    33,    -1,    35,    36,    37,    38,     6,
       -1,     8,    -1,    -1,    -1,    12,    -1,    14,    15,    16,
-      17,    -1,    19,    -1,    -1,    -1,    23,    -1,    25,    -1,
+      17,    -1,    19,    -1,    -1,    -1,    23,    -1,    -1,    -1,
       27,    -1,    -1,    30,    -1,    32,    33,    -1,    35,    36,
-      37,    38,     6,    -1,     8,    -1,    -1,    -1,    12,    -1,
-      14,    15,    16,    17,    -1,    19,    -1,    -1,    -1,    23,
-      -1,    -1,    -1,    27,    -1,    -1,    30,    -1,    32,    33,
-      -1,    35,    36,    37,    38,     6,    -1,     8,    -1,    -1,
-      -1,    -1,    -1,    14,    15,    16,    17,    -1,    19,    -1,
-      -1,    -1,    23,    -1,    25,    -1,    27,    -1,    -1,    30,
-      -1,    32,    33,    -1,    35,    -1,    37,    38
+      37,    38
 };
 
 /* YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
    state STATE-NUM.  */
 static const yytype_int8 yystos[] =
 {
-       0,    14,    21,    23,    27,    33,    34,    35,    41,    42,
-      43,    44,    45,    46,    47,    48,    86,    90,    91,    94,
-      95,    96,    97,    98,   108,   110,   111,   114,   115,     6,
-       8,    12,    14,    15,    16,    17,    19,    30,    32,    33,
-      36,    37,    38,    48,    82,    83,    87,     9,    25,    29,
-      54,    55,    58,    81,    83,    84,    85,     7,    78,    79,
-      80,     0,    44,    90,    49,    81,     6,     8,    16,    19,
-      32,    37,    38,    25,    25,    78,    83,    29,    55,     5,
-      22,    59,    81,    21,    80,    22,    50,     7,    81,    81,
-      81,    81,    81,    81,    20,    81,    88,    89,    88,    21,
-      56,    78,    81,    60,    61,    81,    78,    59,    48,    92,
-      93,    39,    51,    52,    78,    81,    78,    78,    17,    99,
-      78,    99,    78,    88,    78,     4,    78,    54,    59,    31,
-      61,     5,    56,    57,     5,    29,    93,    81,    31,    52,
-      56,    22,   104,    21,    21,     3,    81,   100,   101,    78,
-      78,    10,    28,    56,    56,    29,    78,    12,    13,    14,
-      15,    18,    20,    21,    24,    25,    30,    34,    36,    39,
-      48,    62,    63,    64,    65,    66,    68,    69,    70,    74,
-      82,    81,     5,    96,   102,   103,    30,   116,    96,   112,
-     113,   103,    81,   100,     3,    81,    21,   106,   106,    81,
-     109,    57,    28,    63,    67,    71,    72,    73,    75,    76,
-      77,    81,    81,    88,    81,    31,   102,    25,    68,    29,
-     112,    29,    81,    96,   105,   107,    26,    28,    63,    29,
-      73,    81,    29,    77,    81,     5,    10,    53,     5,    81,
-     117,    78,    81,    29,   105,    81,     5,     5,    62,    63,
-      21,    62,    88,    26,   104,    62,    53,    81,     5,    78,
-      88,    78
+       0,    11,    14,    21,    23,    27,    33,    34,    35,    41,
+      42,    43,    44,    45,    46,    47,    85,    89,    90,    93,
+      94,    95,    96,    97,   107,   109,   110,   113,   114,   117,
+     118,   119,   120,   121,   122,   123,   124,   125,     8,    16,
+      19,    32,    33,    37,    38,     6,     8,    12,    14,    15,
+      16,    17,    19,    30,    32,    33,    36,    37,    38,    47,
+      81,    82,    86,     9,    25,    29,    53,    54,    57,    80,
+      82,    83,    84,     7,    77,    78,    79,     0,    44,    48,
+      80,     6,     8,    16,    19,    32,    37,    38,    80,    80,
+      80,    80,    77,    78,    80,    80,    25,    25,    77,    82,
+      29,    54,     5,    22,    58,    80,    21,    79,    22,    49,
+       7,    80,    80,    80,    80,    80,    80,    77,    78,    77,
+      78,    17,    98,    78,    21,    98,    77,    78,    20,    80,
+      87,    88,    87,    21,    55,    77,    80,    59,    60,    80,
+      77,    58,    47,    91,    92,    39,    50,    51,    77,    80,
+      77,    77,    98,    77,    98,    77,    21,    21,     3,    80,
+      99,   100,    77,    91,    77,    10,    87,    77,     4,    77,
+      53,    58,    31,    60,     5,    55,    56,     5,    29,    92,
+      80,    31,    51,    55,    22,   103,    21,    21,    77,    77,
+      10,    95,   111,   112,    95,   101,   102,    80,    99,     3,
+      80,    21,   105,    29,   105,    80,   108,    28,    55,    55,
+      29,    77,    12,    13,    14,    15,    18,    20,    21,    24,
+      25,    30,    34,    36,    39,    47,    61,    62,    63,    64,
+      65,    67,    68,    69,    73,    81,    80,     5,   102,    30,
+     115,   112,   102,   105,   105,   108,    67,    29,   111,    80,
+      29,   101,    80,    95,   104,   106,    26,    56,    28,    62,
+      66,    70,    71,    72,    74,    75,    76,    80,    80,    87,
+      31,    25,    29,    29,    77,     5,    80,    29,   104,    80,
+      28,    62,    29,    72,    80,    29,    76,    80,     5,    10,
+      52,    80,   116,    87,   103,     5,     5,    61,    62,    21,
+      61,    26,    52,     5,    61,    80,    77,    87,    77
 };
 
 /* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr1[] =
 {
-       0,    40,    41,    42,    43,    43,    43,    44,    44,    45,
-      45,    46,    46,    47,    47,    47,    48,    48,    48,    49,
-      49,    50,    50,    51,    51,    52,    53,    53,    54,    54,
-      55,    55,    55,    56,    57,    57,    58,    58,    59,    59,
-      60,    60,    61,    62,    62,    62,    62,    62,    62,    62,
-      62,    62,    63,    63,    63,    64,    65,    66,    66,    67,
-      67,    68,    68,    68,    68,    68,    68,    69,    70,    71,
-      71,    72,    72,    73,    74,    75,    75,    76,    76,    77,
-      78,    78,    79,    79,    80,    81,    81,    82,    82,    82,
-      82,    82,    82,    82,    82,    82,    83,    83,    83,    83,
-      83,    83,    83,    84,    85,    85,    86,    87,    87,    88,
-      88,    89,    89,    90,    90,    90,    91,    92,    92,    93,
-      94,    94,    94,    94,    94,    94,    95,    96,    96,    97,
-      98,    99,    99,    99,    99,   100,   100,   101,   101,   102,
-     103,   103,   104,   104,   105,   106,   106,   107,   107,   107,
-     108,   109,   109,   110,   111,   112,   113,   113,   114,   115,
-     116,   116,   117,   117
+       0,    40,    41,    42,    43,    43,    43,    44,    44,    44,
+      45,    45,    46,    46,    46,    47,    47,    47,    48,    48,
+      49,    49,    50,    50,    51,    52,    52,    53,    53,    54,
+      54,    54,    55,    56,    56,    57,    57,    58,    58,    59,
+      59,    60,    61,    61,    61,    61,    61,    61,    61,    61,
+      61,    62,    62,    62,    63,    64,    65,    65,    66,    66,
+      67,    67,    67,    67,    67,    67,    68,    69,    70,    70,
+      71,    71,    72,    73,    74,    74,    75,    75,    76,    77,
+      77,    78,    78,    79,    80,    80,    81,    81,    81,    81,
+      81,    81,    81,    81,    81,    82,    82,    82,    82,    82,
+      82,    82,    83,    84,    84,    85,    86,    86,    87,    87,
+      88,    88,    89,    89,    89,    90,    91,    91,    92,    93,
+      93,    93,    93,    93,    93,    94,    95,    95,    96,    97,
+      98,    98,    98,    98,    99,    99,   100,   100,   101,   102,
+     102,   103,   103,   104,   105,   105,   106,   106,   106,   107,
+     108,   108,   109,   110,   111,   112,   112,   113,   114,   115,
+     115,   116,   116,   117,   117,   118,   118,   119,   119,   119,
+     119,   119,   119,   120,   121,   122,   123,   123,   124,   124,
+     125,   125
 };
 
 /* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr2[] =
 {
-       0,     2,     1,     1,     0,     1,     1,     1,     1,     1,
-       2,     1,     2,     5,     3,     2,     1,     1,     1,     0,
-       1,     0,     3,     1,     2,     5,     0,     2,     1,     2,
-       1,     1,     1,     3,     0,     1,     6,     4,     0,     3,
-       1,     2,     3,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     1,     1,     1,     2,     2,     3,     1,
-       2,     1,     1,     1,     1,     1,     1,     1,     3,     0,
-       1,     1,     2,     3,     3,     0,     1,     1,     2,     3,
-       0,     1,     1,     2,     3,     1,     1,     1,     1,     1,
+       0,     2,     1,     1,     0,     1,     2,     1,     1,     1,
+       1,     1,     5,     3,     2,     1,     1,     1,     0,     1,
+       0,     3,     1,     2,     5,     0,     2,     1,     2,     1,
+       1,     1,     3,     0,     1,     6,     4,     0,     3,     1,
+       2,     3,     1,     1,     1,     1,     1,     1,     1,     1,
+       1,     1,     1,     1,     1,     2,     2,     3,     1,     2,
+       1,     1,     1,     1,     1,     1,     1,     3,     0,     1,
+       1,     2,     3,     3,     0,     1,     1,     2,     3,     0,
+       1,     1,     2,     3,     1,     1,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     3,     5,     3,     6,     0,     1,     1,
-       2,     1,     3,     1,     1,     1,     5,     1,     2,     3,
-       1,     1,     1,     1,     1,     1,     1,     0,     1,     4,
-       6,     0,     3,     2,     2,     1,     3,     1,     2,     6,
-       1,     2,     0,     3,     6,     0,     3,     0,     1,     2,
-       6,     1,     3,     6,     7,     3,     1,     2,     7,     8,
-       0,     1,     1,     3
+       1,     1,     3,     5,     3,     6,     0,     1,     1,     2,
+       1,     3,     1,     1,     1,     5,     1,     2,     3,     1,
+       1,     1,     1,     1,     1,     1,     0,     1,     4,     6,
+       0,     3,     2,     2,     1,     3,     1,     2,     6,     1,
+       2,     0,     3,     6,     0,     3,     0,     1,     2,     6,
+       1,     3,     6,     7,     3,     1,     2,     7,     8,     0,
+       1,     1,     3,     1,     1,     6,     3,     1,     1,     1,
+       1,     1,     1,     4,     6,     6,     6,     4,     7,     4,
+       7,     4
 };
 
 
@@ -1860,13 +1903,13 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* start: document  */
-#line 92 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+#line 99 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                   { rb_ivar_set(parser, rb_intern("@result"), yyvsp[0]); }
-#line 1866 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 1909 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
   case 3: /* document: definitions_list  */
-#line 94 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+#line 101 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                              {
     VALUE position_source = rb_ary_entry(yyvsp[0], 0);
     VALUE line, col;
@@ -1883,41 +1926,29 @@ yyreduce:
       yyvsp[0]
     );
   }
-#line 1887 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 1930 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
   case 4: /* definitions_list: %empty  */
-#line 112 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+#line 119 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                   { yyval = GraphQL_Language_Nodes_NONE; }
-#line 1893 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 1936 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 9: /* executable_definitions: executable_definition  */
+  case 5: /* definitions_list: definition  */
+#line 120 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                  { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
+#line 1942 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 6: /* definitions_list: definitions_list definition  */
 #line 121 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                            { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
-#line 1899 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+                                  { rb_ary_push(yyval, yyvsp[0]); }
+#line 1948 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 10: /* executable_definitions: executable_definitions executable_definition  */
-#line 122 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                                   { rb_ary_push(yyval, yyvsp[0]); }
-#line 1905 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 11: /* type_system_definitions: type_system_definition  */
-#line 125 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                             { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
-#line 1911 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 12: /* type_system_definitions: type_system_definitions type_system_definition  */
-#line 126 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                                     { rb_ary_push(yyval, yyvsp[0]); }
-#line 1917 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 13: /* operation_definition: operation_type operation_name_opt variable_definitions_opt directives_list_opt selection_set  */
-#line 130 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 12: /* operation_definition: operation_type operation_name_opt variable_definitions_opt directives_list_opt selection_set  */
+#line 133 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                                                    {
         yyval = rb_funcall(GraphQL_Language_Nodes_OperationDefinition, rb_intern("from_a"), 7,
           rb_ary_entry(yyvsp[-4], 1),
@@ -1929,11 +1960,11 @@ yyreduce:
           yyvsp[0]
         );
       }
-#line 1933 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 1964 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 14: /* operation_definition: LCURLY selection_list RCURLY  */
-#line 141 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 13: /* operation_definition: LCURLY selection_list RCURLY  */
+#line 144 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                    {
         yyval = rb_funcall(GraphQL_Language_Nodes_OperationDefinition, rb_intern("from_a"), 7,
           rb_ary_entry(yyvsp[-2], 1),
@@ -1945,11 +1976,11 @@ yyreduce:
           yyvsp[-1]
         );
       }
-#line 1949 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 1980 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 15: /* operation_definition: LCURLY RCURLY  */
-#line 152 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 14: /* operation_definition: LCURLY RCURLY  */
+#line 155 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                     {
         yyval = rb_funcall(GraphQL_Language_Nodes_OperationDefinition, rb_intern("from_a"), 7,
           rb_ary_entry(yyvsp[-1], 1),
@@ -1961,41 +1992,41 @@ yyreduce:
           GraphQL_Language_Nodes_NONE
         );
       }
-#line 1965 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 1996 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 19: /* operation_name_opt: %empty  */
-#line 170 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 18: /* operation_name_opt: %empty  */
+#line 173 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                  { yyval = Qnil; }
-#line 1971 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2002 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 21: /* variable_definitions_opt: %empty  */
-#line 174 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 20: /* variable_definitions_opt: %empty  */
+#line 177 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                               { yyval = GraphQL_Language_Nodes_NONE; }
-#line 1977 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2008 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 22: /* variable_definitions_opt: LPAREN variable_definitions_list RPAREN  */
-#line 175 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                              { yyval = yyvsp[-1]; }
-#line 1983 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 23: /* variable_definitions_list: variable_definition  */
+  case 21: /* variable_definitions_opt: LPAREN variable_definitions_list RPAREN  */
 #line 178 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                              { yyval = yyvsp[-1]; }
+#line 2014 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 22: /* variable_definitions_list: variable_definition  */
+#line 181 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                     { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
-#line 1989 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2020 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 24: /* variable_definitions_list: variable_definitions_list variable_definition  */
-#line 179 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                                    { rb_ary_push(yyval, yyvsp[0]); }
-#line 1995 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 25: /* variable_definition: VAR_SIGN name COLON type default_value_opt  */
+  case 23: /* variable_definitions_list: variable_definitions_list variable_definition  */
 #line 182 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                                    { rb_ary_push(yyval, yyvsp[0]); }
+#line 2026 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 24: /* variable_definition: VAR_SIGN name COLON type default_value_opt  */
+#line 185 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                  {
         yyval = rb_funcall(GraphQL_Language_Nodes_VariableDefinition, rb_intern("from_a"), 5,
           rb_ary_entry(yyvsp[-4], 1),
@@ -2005,47 +2036,47 @@ yyreduce:
           yyvsp[0]
         );
       }
-#line 2009 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2040 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 26: /* default_value_opt: %empty  */
-#line 193 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 25: /* default_value_opt: %empty  */
+#line 196 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                             { yyval = Qnil; }
-#line 2015 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2046 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 27: /* default_value_opt: EQUALS literal_value  */
-#line 194 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                            { yyval = yyvsp[0]; }
-#line 2021 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 28: /* selection_list: selection  */
+  case 26: /* default_value_opt: EQUALS literal_value  */
 #line 197 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                            { yyval = yyvsp[0]; }
+#line 2052 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 27: /* selection_list: selection  */
+#line 200 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                 { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
-#line 2027 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2058 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 29: /* selection_list: selection_list selection  */
-#line 198 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 28: /* selection_list: selection_list selection  */
+#line 201 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                 { rb_ary_push(yyval, yyvsp[0]); }
-#line 2033 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2064 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 33: /* selection_set: LCURLY selection_list RCURLY  */
-#line 206 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                   { yyval = yyvsp[-1]; }
-#line 2039 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 34: /* selection_set_opt: %empty  */
+  case 32: /* selection_set: LCURLY selection_list RCURLY  */
 #line 209 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                    { yyval = rb_ary_new(); }
-#line 2045 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+                                   { yyval = yyvsp[-1]; }
+#line 2070 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 36: /* field: name COLON name arguments_opt directives_list_opt selection_set_opt  */
-#line 213 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 33: /* selection_set_opt: %empty  */
+#line 212 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                    { yyval = rb_ary_new(); }
+#line 2076 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 35: /* field: name COLON name arguments_opt directives_list_opt selection_set_opt  */
+#line 216 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                         {
       yyval = rb_funcall(GraphQL_Language_Nodes_Field, rb_intern("from_a"), 7,
         rb_ary_entry(yyvsp[-5], 1),
@@ -2057,11 +2088,11 @@ yyreduce:
         yyvsp[0] // subselections
       );
     }
-#line 2061 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2092 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 37: /* field: name arguments_opt directives_list_opt selection_set_opt  */
-#line 224 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 36: /* field: name arguments_opt directives_list_opt selection_set_opt  */
+#line 227 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                {
       yyval = rb_funcall(GraphQL_Language_Nodes_Field, rb_intern("from_a"), 7,
         rb_ary_entry(yyvsp[-3], 1),
@@ -2073,35 +2104,35 @@ yyreduce:
         yyvsp[0] // subselections
       );
     }
-#line 2077 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2108 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 38: /* arguments_opt: %empty  */
-#line 237 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 37: /* arguments_opt: %empty  */
+#line 240 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                     { yyval = GraphQL_Language_Nodes_NONE; }
-#line 2083 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2114 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 39: /* arguments_opt: LPAREN arguments_list RPAREN  */
-#line 238 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                    { yyval = yyvsp[-1]; }
-#line 2089 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 40: /* arguments_list: argument  */
+  case 38: /* arguments_opt: LPAREN arguments_list RPAREN  */
 #line 241 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                    { yyval = yyvsp[-1]; }
+#line 2120 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 39: /* arguments_list: argument  */
+#line 244 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                               { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
-#line 2095 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2126 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 41: /* arguments_list: arguments_list argument  */
-#line 242 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                              { rb_ary_push(yyval, yyvsp[0]); }
-#line 2101 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 42: /* argument: name COLON input_value  */
+  case 40: /* arguments_list: arguments_list argument  */
 #line 245 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                              { rb_ary_push(yyval, yyvsp[0]); }
+#line 2132 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 41: /* argument: name COLON input_value  */
+#line 248 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                              {
         yyval = rb_funcall(GraphQL_Language_Nodes_Argument, rb_intern("from_a"), 4,
           rb_ary_entry(yyvsp[-2], 1),
@@ -2110,41 +2141,41 @@ yyreduce:
           yyvsp[0]
         );
       }
-#line 2114 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2145 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 43: /* literal_value: FLOAT  */
-#line 255 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                  { yyval = rb_funcall(rb_ary_entry(yyvsp[0], 3), rb_intern("to_f"), 0); }
-#line 2120 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 44: /* literal_value: INT  */
-#line 256 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                  { yyval = rb_funcall(rb_ary_entry(yyvsp[0], 3), rb_intern("to_i"), 0); }
-#line 2126 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 45: /* literal_value: STRING  */
-#line 257 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                  { yyval = rb_ary_entry(yyvsp[0], 3); }
-#line 2132 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 46: /* literal_value: TRUE_LITERAL  */
+  case 42: /* literal_value: FLOAT  */
 #line 258 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                          { yyval = Qtrue; }
-#line 2138 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+                  { yyval = rb_funcall(rb_ary_entry(yyvsp[0], 3), rb_intern("to_f"), 0); }
+#line 2151 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 47: /* literal_value: FALSE_LITERAL  */
+  case 43: /* literal_value: INT  */
 #line 259 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                          { yyval = Qfalse; }
-#line 2144 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+                  { yyval = rb_funcall(rb_ary_entry(yyvsp[0], 3), rb_intern("to_i"), 0); }
+#line 2157 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 55: /* null_value: NULL_LITERAL  */
-#line 270 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 44: /* literal_value: STRING  */
+#line 260 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                  { yyval = rb_ary_entry(yyvsp[0], 3); }
+#line 2163 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 45: /* literal_value: TRUE_LITERAL  */
+#line 261 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                          { yyval = Qtrue; }
+#line 2169 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 46: /* literal_value: FALSE_LITERAL  */
+#line 262 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                          { yyval = Qfalse; }
+#line 2175 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 54: /* null_value: NULL_LITERAL  */
+#line 273 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                            {
     yyval = rb_funcall(GraphQL_Language_Nodes_NullValue, rb_intern("from_a"), 3,
       rb_ary_entry(yyvsp[0], 1),
@@ -2152,11 +2183,11 @@ yyreduce:
       rb_ary_entry(yyvsp[0], 3)
     );
   }
-#line 2156 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2187 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 56: /* variable: VAR_SIGN name  */
-#line 278 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 55: /* variable: VAR_SIGN name  */
+#line 281 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                           {
     yyval = rb_funcall(GraphQL_Language_Nodes_VariableIdentifier, rb_intern("from_a"), 3,
       rb_ary_entry(yyvsp[-1], 1),
@@ -2164,35 +2195,35 @@ yyreduce:
       rb_ary_entry(yyvsp[0], 3)
     );
   }
-#line 2168 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2199 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 57: /* list_value: LBRACKET RBRACKET  */
-#line 287 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 56: /* list_value: LBRACKET RBRACKET  */
+#line 290 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                         { yyval = GraphQL_Language_Nodes_NONE; }
-#line 2174 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2205 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 58: /* list_value: LBRACKET list_value_list RBRACKET  */
-#line 288 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                        { yyval = yyvsp[-1]; }
-#line 2180 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 59: /* list_value_list: input_value  */
+  case 57: /* list_value: LBRACKET list_value_list RBRACKET  */
 #line 291 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                        { yyval = yyvsp[-1]; }
+#line 2211 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 58: /* list_value_list: input_value  */
+#line 294 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                   { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
-#line 2186 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2217 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 60: /* list_value_list: list_value_list input_value  */
-#line 292 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 59: /* list_value_list: list_value_list input_value  */
+#line 295 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                   { rb_ary_push(yyval, yyvsp[0]); }
-#line 2192 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2223 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 67: /* enum_value: enum_name  */
-#line 302 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 66: /* enum_value: enum_name  */
+#line 305 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                         {
     yyval = rb_funcall(GraphQL_Language_Nodes_Enum, rb_intern("from_a"), 3,
       rb_ary_entry(yyvsp[0], 1),
@@ -2200,11 +2231,11 @@ yyreduce:
       rb_ary_entry(yyvsp[0], 3)
     );
   }
-#line 2204 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2235 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 68: /* object_value: LCURLY object_value_list_opt RCURLY  */
-#line 311 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 67: /* object_value: LCURLY object_value_list_opt RCURLY  */
+#line 314 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                         {
       yyval = rb_funcall(GraphQL_Language_Nodes_InputObject, rb_intern("from_a"), 3,
         rb_ary_entry(yyvsp[-2], 1),
@@ -2212,29 +2243,29 @@ yyreduce:
         yyvsp[-1]
       );
     }
-#line 2216 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2247 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 69: /* object_value_list_opt: %empty  */
-#line 320 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 68: /* object_value_list_opt: %empty  */
+#line 323 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                         { yyval = GraphQL_Language_Nodes_NONE; }
-#line 2222 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2253 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 71: /* object_value_list: object_value_field  */
-#line 324 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 70: /* object_value_list: object_value_field  */
+#line 327 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                             { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
-#line 2228 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2259 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 72: /* object_value_list: object_value_list object_value_field  */
-#line 325 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                            { rb_ary_push(yyval, yyvsp[0]); }
-#line 2234 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 73: /* object_value_field: name COLON input_value  */
+  case 71: /* object_value_list: object_value_list object_value_field  */
 #line 328 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                            { rb_ary_push(yyval, yyvsp[0]); }
+#line 2265 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 72: /* object_value_field: name COLON input_value  */
+#line 331 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                              {
         yyval = rb_funcall(GraphQL_Language_Nodes_Argument, rb_intern("from_a"), 4,
           rb_ary_entry(yyvsp[-2], 1),
@@ -2243,11 +2274,11 @@ yyreduce:
           yyvsp[0]
         );
       }
-#line 2247 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2278 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 74: /* object_literal_value: LCURLY object_literal_value_list_opt RCURLY  */
-#line 339 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 73: /* object_literal_value: LCURLY object_literal_value_list_opt RCURLY  */
+#line 342 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                   {
         yyval = rb_funcall(GraphQL_Language_Nodes_InputObject, rb_intern("from_a"), 3,
           rb_ary_entry(yyvsp[-2], 1),
@@ -2255,29 +2286,29 @@ yyreduce:
           yyvsp[-1]
         );
       }
-#line 2259 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2290 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 75: /* object_literal_value_list_opt: %empty  */
-#line 348 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 74: /* object_literal_value_list_opt: %empty  */
+#line 351 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                 { yyval = GraphQL_Language_Nodes_NONE; }
-#line 2265 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2296 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 77: /* object_literal_value_list: object_literal_value_field  */
-#line 352 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 76: /* object_literal_value_list: object_literal_value_field  */
+#line 355 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                             { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
-#line 2271 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2302 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 78: /* object_literal_value_list: object_literal_value_list object_literal_value_field  */
-#line 353 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                                            { rb_ary_push(yyval, yyvsp[0]); }
-#line 2277 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 79: /* object_literal_value_field: name COLON literal_value  */
+  case 77: /* object_literal_value_list: object_literal_value_list object_literal_value_field  */
 #line 356 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                                            { rb_ary_push(yyval, yyvsp[0]); }
+#line 2308 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 78: /* object_literal_value_field: name COLON literal_value  */
+#line 359 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                {
         yyval = rb_funcall(GraphQL_Language_Nodes_Argument, rb_intern("from_a"), 4,
           rb_ary_entry(yyvsp[-2], 1),
@@ -2286,29 +2317,29 @@ yyreduce:
           yyvsp[0]
         );
       }
-#line 2290 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2321 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 80: /* directives_list_opt: %empty  */
-#line 367 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 79: /* directives_list_opt: %empty  */
+#line 370 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                       { yyval = GraphQL_Language_Nodes_NONE; }
-#line 2296 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2327 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 82: /* directives_list: directive  */
-#line 371 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
-#line 2302 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 83: /* directives_list: directives_list directive  */
-#line 372 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                { rb_ary_push(yyval, yyvsp[0]); }
-#line 2308 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 84: /* directive: DIR_SIGN name arguments_opt  */
+  case 81: /* directives_list: directive  */
 #line 374 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
+#line 2333 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 82: /* directives_list: directives_list directive  */
+#line 375 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                { rb_ary_push(yyval, yyvsp[0]); }
+#line 2339 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 83: /* directive: DIR_SIGN name arguments_opt  */
+#line 377 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                          {
     yyval = rb_funcall(GraphQL_Language_Nodes_Directive, rb_intern("from_a"), 4,
       rb_ary_entry(yyvsp[-2], 1),
@@ -2317,11 +2348,11 @@ yyreduce:
       yyvsp[0]
     );
   }
-#line 2321 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2352 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 103: /* fragment_spread: ELLIPSIS name_without_on directives_list_opt  */
-#line 409 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 102: /* fragment_spread: ELLIPSIS name_without_on directives_list_opt  */
+#line 412 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                    {
         yyval = rb_funcall(GraphQL_Language_Nodes_FragmentSpread, rb_intern("from_a"), 4,
           rb_ary_entry(yyvsp[-2], 1),
@@ -2330,11 +2361,11 @@ yyreduce:
           yyvsp[0]
         );
       }
-#line 2334 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2365 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 104: /* inline_fragment: ELLIPSIS ON type directives_list_opt selection_set  */
-#line 419 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 103: /* inline_fragment: ELLIPSIS ON type directives_list_opt selection_set  */
+#line 422 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                          {
         yyval = rb_funcall(GraphQL_Language_Nodes_InlineFragment, rb_intern("from_a"), 5,
           rb_ary_entry(yyvsp[-4], 1),
@@ -2344,11 +2375,11 @@ yyreduce:
           yyvsp[0]
         );
       }
-#line 2348 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2379 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 105: /* inline_fragment: ELLIPSIS directives_list_opt selection_set  */
-#line 428 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 104: /* inline_fragment: ELLIPSIS directives_list_opt selection_set  */
+#line 431 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                  {
         yyval = rb_funcall(GraphQL_Language_Nodes_InlineFragment, rb_intern("from_a"), 5,
           rb_ary_entry(yyvsp[-2], 1),
@@ -2358,11 +2389,11 @@ yyreduce:
           yyvsp[0]
         );
       }
-#line 2362 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2393 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 106: /* fragment_definition: FRAGMENT fragment_name_opt ON type directives_list_opt selection_set  */
-#line 439 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 105: /* fragment_definition: FRAGMENT fragment_name_opt ON type directives_list_opt selection_set  */
+#line 442 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                          {
       yyval = rb_funcall(GraphQL_Language_Nodes_FragmentDefinition, rb_intern("from_a"), 6,
         rb_ary_entry(yyvsp[-5], 1),
@@ -2373,29 +2404,29 @@ yyreduce:
         yyvsp[0]
       );
     }
-#line 2377 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2408 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 107: /* fragment_name_opt: %empty  */
-#line 451 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 106: /* fragment_name_opt: %empty  */
+#line 454 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                  { yyval = Qnil; }
-#line 2383 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2414 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 108: /* fragment_name_opt: name_without_on  */
-#line 452 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 107: /* fragment_name_opt: name_without_on  */
+#line 455 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                       { yyval = rb_ary_entry(yyvsp[0], 3); }
-#line 2389 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2420 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 110: /* type: nullable_type BANG  */
-#line 456 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                              { yyval = rb_funcall(GraphQL_Language_Nodes_NonNullType, rb_intern("from_a"), 3, rb_funcall(yyvsp[-1], rb_intern("line"), 0), rb_funcall(yyvsp[-1], rb_intern("col"), 0), yyvsp[-1]); }
-#line 2395 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 111: /* nullable_type: name  */
+  case 109: /* type: nullable_type BANG  */
 #line 459 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                              { yyval = rb_funcall(GraphQL_Language_Nodes_NonNullType, rb_intern("from_a"), 3, rb_funcall(yyvsp[-1], rb_intern("line"), 0), rb_funcall(yyvsp[-1], rb_intern("col"), 0), yyvsp[-1]); }
+#line 2426 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 110: /* nullable_type: name  */
+#line 462 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                              {
         yyval = rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3,
           rb_ary_entry(yyvsp[0], 1),
@@ -2403,11 +2434,11 @@ yyreduce:
           rb_ary_entry(yyvsp[0], 3)
         );
       }
-#line 2407 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2438 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 112: /* nullable_type: LBRACKET type RBRACKET  */
-#line 466 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 111: /* nullable_type: LBRACKET type RBRACKET  */
+#line 469 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                              {
         yyval = rb_funcall(GraphQL_Language_Nodes_ListType, rb_intern("from_a"), 3,
           rb_funcall(yyvsp[-1], rb_intern("line"), 0),
@@ -2415,11 +2446,11 @@ yyreduce:
           yyvsp[-1]
         );
       }
-#line 2419 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2450 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 116: /* schema_definition: SCHEMA directives_list_opt LCURLY operation_type_definition_list RCURLY  */
-#line 480 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 115: /* schema_definition: SCHEMA directives_list_opt LCURLY operation_type_definition_list RCURLY  */
+#line 483 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                               {
         yyval = rb_funcall(GraphQL_Language_Nodes_SchemaDefinition, rb_intern("from_a"), 6,
           rb_ary_entry(yyvsp[-4], 1),
@@ -2431,34 +2462,34 @@ yyreduce:
           yyvsp[-3]
         );
       }
-#line 2435 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2466 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 118: /* operation_type_definition_list: operation_type_definition_list operation_type_definition  */
-#line 494 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 117: /* operation_type_definition_list: operation_type_definition_list operation_type_definition  */
+#line 497 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                {
       rb_funcall(yyval, rb_intern("merge!"), 1, yyvsp[-1]);
     }
-#line 2443 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2474 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 119: /* operation_type_definition: operation_type COLON name  */
-#line 499 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 118: /* operation_type_definition: operation_type COLON name  */
+#line 502 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                 {
         yyval = rb_hash_new();
         rb_hash_aset(yyval, rb_ary_entry(yyvsp[-2], 3), rb_ary_entry(yyvsp[0], 3));
       }
-#line 2452 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2483 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 127: /* description_opt: %empty  */
-#line 515 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 126: /* description_opt: %empty  */
+#line 518 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                       { yyval = Qnil; }
-#line 2458 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2489 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 129: /* scalar_type_definition: description_opt SCALAR name directives_list_opt  */
-#line 519 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 128: /* scalar_type_definition: description_opt SCALAR name directives_list_opt  */
+#line 522 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                       {
         yyval = rb_funcall(GraphQL_Language_Nodes_ScalarTypeDefinition, rb_intern("from_a"), 5,
           rb_ary_entry(yyvsp[-2], 1),
@@ -2469,11 +2500,11 @@ yyreduce:
           yyvsp[0]
         );
       }
-#line 2473 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2504 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 130: /* object_type_definition: description_opt TYPE_LITERAL name implements_opt directives_list_opt field_definition_list_opt  */
-#line 531 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 129: /* object_type_definition: description_opt TYPE_LITERAL name implements_opt directives_list_opt field_definition_list_opt  */
+#line 534 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                                                      {
         yyval = rb_funcall(GraphQL_Language_Nodes_ObjectTypeDefinition, rb_intern("from_a"), 7,
           rb_ary_entry(yyvsp[-4], 1),
@@ -2486,35 +2517,35 @@ yyreduce:
           yyvsp[0]
         );
       }
-#line 2490 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2521 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 131: /* implements_opt: %empty  */
-#line 545 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                 { yyval = GraphQL_Language_Nodes_NONE; }
-#line 2496 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 132: /* implements_opt: IMPLEMENTS AMP interfaces_list  */
-#line 546 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                     { yyval = yyvsp[0]; }
-#line 2502 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 133: /* implements_opt: IMPLEMENTS interfaces_list  */
-#line 547 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                 { yyval = yyvsp[0]; }
-#line 2508 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 134: /* implements_opt: IMPLEMENTS legacy_interfaces_list  */
+  case 130: /* implements_opt: %empty  */
 #line 548 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                        { yyval = yyvsp[0]; }
-#line 2514 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+                 { yyval = GraphQL_Language_Nodes_NONE; }
+#line 2527 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 135: /* interfaces_list: name  */
+  case 131: /* implements_opt: IMPLEMENTS AMP interfaces_list  */
+#line 549 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                     { yyval = yyvsp[0]; }
+#line 2533 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 132: /* implements_opt: IMPLEMENTS interfaces_list  */
+#line 550 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                 { yyval = yyvsp[0]; }
+#line 2539 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 133: /* implements_opt: IMPLEMENTS legacy_interfaces_list  */
 #line 551 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                        { yyval = yyvsp[0]; }
+#line 2545 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 134: /* interfaces_list: name  */
+#line 554 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
            {
         VALUE new_name = rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3,
           rb_ary_entry(yyvsp[0], 1),
@@ -2523,20 +2554,20 @@ yyreduce:
         );
         yyval = rb_ary_new_from_args(1, new_name);
       }
-#line 2527 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2558 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 136: /* interfaces_list: interfaces_list AMP name  */
-#line 559 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 135: /* interfaces_list: interfaces_list AMP name  */
+#line 562 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                {
       VALUE new_name =  rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3, rb_ary_entry(yyvsp[0], 1), rb_ary_entry(yyvsp[0], 2), rb_ary_entry(yyvsp[0], 3));
       rb_ary_push(yyval, new_name);
     }
-#line 2536 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2567 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 137: /* legacy_interfaces_list: name  */
-#line 565 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 136: /* legacy_interfaces_list: name  */
+#line 568 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
            {
         VALUE new_name = rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3,
           rb_ary_entry(yyvsp[0], 1),
@@ -2545,19 +2576,19 @@ yyreduce:
         );
         yyval = rb_ary_new_from_args(1, new_name);
       }
-#line 2549 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2580 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 138: /* legacy_interfaces_list: legacy_interfaces_list name  */
-#line 573 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 137: /* legacy_interfaces_list: legacy_interfaces_list name  */
+#line 576 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                   {
       rb_ary_push(yyval, rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3, rb_ary_entry(yyvsp[0], 1), rb_ary_entry(yyvsp[0], 2), rb_ary_entry(yyvsp[0], 3)));
     }
-#line 2557 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2588 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 139: /* input_value_definition: description_opt name COLON type default_value_opt directives_list_opt  */
-#line 578 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 138: /* input_value_definition: description_opt name COLON type default_value_opt directives_list_opt  */
+#line 581 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                             {
         yyval = rb_funcall(GraphQL_Language_Nodes_InputValueDefinition, rb_intern("from_a"), 7,
           rb_ary_entry(yyvsp[-4], 1),
@@ -2570,35 +2601,35 @@ yyreduce:
           yyvsp[0]
         );
       }
-#line 2574 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2605 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 140: /* input_value_definition_list: input_value_definition  */
-#line 592 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 139: /* input_value_definition_list: input_value_definition  */
+#line 595 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                          { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
-#line 2580 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2611 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 141: /* input_value_definition_list: input_value_definition_list input_value_definition  */
-#line 593 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                                         { rb_ary_push(yyval, yyvsp[0]); }
-#line 2586 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 142: /* arguments_definitions_opt: %empty  */
+  case 140: /* input_value_definition_list: input_value_definition_list input_value_definition  */
 #line 596 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                                         { rb_ary_push(yyval, yyvsp[0]); }
+#line 2617 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 141: /* arguments_definitions_opt: %empty  */
+#line 599 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                 { yyval = GraphQL_Language_Nodes_NONE; }
-#line 2592 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2623 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 143: /* arguments_definitions_opt: LPAREN input_value_definition_list RPAREN  */
-#line 597 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                                { yyval = yyvsp[-1]; }
-#line 2598 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 144: /* field_definition: description_opt name arguments_definitions_opt COLON type directives_list_opt  */
+  case 142: /* arguments_definitions_opt: LPAREN input_value_definition_list RPAREN  */
 #line 600 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                                { yyval = yyvsp[-1]; }
+#line 2629 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 143: /* field_definition: description_opt name arguments_definitions_opt COLON type directives_list_opt  */
+#line 603 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                                     {
         yyval = rb_funcall(GraphQL_Language_Nodes_FieldDefinition, rb_intern("from_a"), 7,
           rb_ary_entry(yyvsp[-4], 1),
@@ -2611,41 +2642,41 @@ yyreduce:
           yyvsp[0]
         );
       }
-#line 2615 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2646 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 145: /* field_definition_list_opt: %empty  */
-#line 614 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 144: /* field_definition_list_opt: %empty  */
+#line 617 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                { yyval = GraphQL_Language_Nodes_NONE; }
-#line 2621 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2652 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 146: /* field_definition_list_opt: LCURLY field_definition_list RCURLY  */
-#line 615 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                          { yyval = yyvsp[-1]; }
-#line 2627 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 147: /* field_definition_list: %empty  */
+  case 145: /* field_definition_list_opt: LCURLY field_definition_list RCURLY  */
 #line 618 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                          { yyval = yyvsp[-1]; }
+#line 2658 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 146: /* field_definition_list: %empty  */
+#line 621 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                                 { yyval = GraphQL_Language_Nodes_NONE; }
-#line 2633 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2664 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 148: /* field_definition_list: field_definition  */
-#line 619 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 147: /* field_definition_list: field_definition  */
+#line 622 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                              { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
-#line 2639 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2670 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 149: /* field_definition_list: field_definition_list field_definition  */
-#line 620 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                             { rb_ary_push(yyval, yyvsp[0]); }
-#line 2645 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 150: /* interface_type_definition: description_opt INTERFACE name implements_opt directives_list_opt field_definition_list_opt  */
+  case 148: /* field_definition_list: field_definition_list field_definition  */
 #line 623 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                             { rb_ary_push(yyval, yyvsp[0]); }
+#line 2676 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 149: /* interface_type_definition: description_opt INTERFACE name implements_opt directives_list_opt field_definition_list_opt  */
+#line 626 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                                                   {
         yyval = rb_funcall(GraphQL_Language_Nodes_InterfaceTypeDefinition, rb_intern("from_a"), 7,
           rb_ary_entry(yyvsp[-4], 1),
@@ -2658,11 +2689,11 @@ yyreduce:
           yyvsp[0]
         );
       }
-#line 2662 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2693 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 151: /* union_members: name  */
-#line 637 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 150: /* union_members: name  */
+#line 640 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
            {
         VALUE new_member = rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3,
           rb_ary_entry(yyvsp[0], 1),
@@ -2671,19 +2702,19 @@ yyreduce:
         );
         yyval = rb_ary_new_from_args(1, new_member);
       }
-#line 2675 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2706 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 152: /* union_members: union_members PIPE name  */
-#line 645 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 151: /* union_members: union_members PIPE name  */
+#line 648 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                               {
         rb_ary_push(yyval, rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3, rb_ary_entry(yyvsp[0], 1), rb_ary_entry(yyvsp[0], 2), rb_ary_entry(yyvsp[0], 3)));
       }
-#line 2683 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2714 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 153: /* union_type_definition: description_opt UNION name directives_list_opt EQUALS union_members  */
-#line 650 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 152: /* union_type_definition: description_opt UNION name directives_list_opt EQUALS union_members  */
+#line 653 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                           {
         yyval = rb_funcall(GraphQL_Language_Nodes_UnionTypeDefinition, rb_intern("from_a"),  6,
           rb_ary_entry(yyvsp[-4], 1),
@@ -2695,11 +2726,11 @@ yyreduce:
           yyvsp[-2]
         );
       }
-#line 2699 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2730 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 154: /* enum_type_definition: description_opt ENUM name directives_list_opt LCURLY enum_value_definitions RCURLY  */
-#line 663 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 153: /* enum_type_definition: description_opt ENUM name directives_list_opt LCURLY enum_value_definitions RCURLY  */
+#line 666 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                                          {
         yyval = rb_funcall(GraphQL_Language_Nodes_EnumTypeDefinition, rb_intern("from_a"),  6,
           rb_ary_entry(yyvsp[-5], 1),
@@ -2711,11 +2742,11 @@ yyreduce:
           yyvsp[-1]
         );
       }
-#line 2715 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2746 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 155: /* enum_value_definition: description_opt enum_name directives_list_opt  */
-#line 676 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 154: /* enum_value_definition: description_opt enum_name directives_list_opt  */
+#line 679 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                   {
       yyval = rb_funcall(GraphQL_Language_Nodes_EnumValueDefinition, rb_intern("from_a"), 5,
         rb_ary_entry(yyvsp[-1], 1),
@@ -2726,23 +2757,23 @@ yyreduce:
         yyvsp[0]
       );
     }
-#line 2730 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2761 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 156: /* enum_value_definitions: enum_value_definition  */
-#line 688 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 155: /* enum_value_definitions: enum_value_definition  */
+#line 691 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                    { yyval = rb_ary_new_from_args(1, yyvsp[0]); }
-#line 2736 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2767 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 157: /* enum_value_definitions: enum_value_definitions enum_value_definition  */
-#line 689 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
-                                                   { rb_ary_push(yyval, yyvsp[0]); }
-#line 2742 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
-    break;
-
-  case 158: /* input_object_type_definition: description_opt INPUT name directives_list_opt LCURLY input_value_definition_list RCURLY  */
+  case 156: /* enum_value_definitions: enum_value_definitions enum_value_definition  */
 #line 692 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                                   { rb_ary_push(yyval, yyvsp[0]); }
+#line 2773 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 157: /* input_object_type_definition: description_opt INPUT name directives_list_opt LCURLY input_value_definition_list RCURLY  */
+#line 695 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                                                {
         yyval = rb_funcall(GraphQL_Language_Nodes_InputObjectTypeDefinition, rb_intern("from_a"), 6,
           rb_ary_entry(yyvsp[-5], 1),
@@ -2754,11 +2785,11 @@ yyreduce:
           yyvsp[-1]
         );
       }
-#line 2758 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2789 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 159: /* directive_definition: description_opt DIRECTIVE DIR_SIGN name arguments_definitions_opt directive_repeatable_opt ON directive_locations  */
-#line 705 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 158: /* directive_definition: description_opt DIRECTIVE DIR_SIGN name arguments_definitions_opt directive_repeatable_opt ON directive_locations  */
+#line 708 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                                                                                                         {
         yyval = rb_funcall(GraphQL_Language_Nodes_DirectiveDefinition, rb_intern("from_a"), 7,
           rb_ary_entry(yyvsp[-6], 1),
@@ -2771,23 +2802,181 @@ yyreduce:
           yyvsp[0]
         );
       }
-#line 2775 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2806 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 162: /* directive_locations: name  */
-#line 723 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 161: /* directive_locations: name  */
+#line 726 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                     { yyval = rb_ary_new_from_args(1, rb_funcall(GraphQL_Language_Nodes_DirectiveLocation, rb_intern("from_a"), 3, rb_ary_entry(yyvsp[0], 1), rb_ary_entry(yyvsp[0], 2), rb_ary_entry(yyvsp[0], 3))); }
-#line 2781 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2812 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
-  case 163: /* directive_locations: directive_locations PIPE name  */
-#line 724 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+  case 162: /* directive_locations: directive_locations PIPE name  */
+#line 727 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
                                     { rb_ary_push(yyval, rb_funcall(GraphQL_Language_Nodes_DirectiveLocation, rb_intern("from_a"), 3, rb_ary_entry(yyvsp[0], 1), rb_ary_entry(yyvsp[0], 2), rb_ary_entry(yyvsp[0], 3))); }
-#line 2787 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2818 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 165: /* schema_extension: EXTEND SCHEMA directives_list_opt LCURLY operation_type_definition_list RCURLY  */
+#line 735 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                                                                     {
+        yyval = rb_funcall(GraphQL_Language_Nodes_SchemaExtension, rb_intern("from_a"), 6,
+          rb_ary_entry(yyvsp[-5], 1),
+          rb_ary_entry(yyvsp[-5], 2),
+          // TODO use static strings:
+          rb_hash_aref(yyvsp[-1], rb_str_new_cstr("query")),
+          rb_hash_aref(yyvsp[-1], rb_str_new_cstr("mutation")),
+          rb_hash_aref(yyvsp[-1], rb_str_new_cstr("subscription")),
+          yyvsp[-3]
+        );
+      }
+#line 2834 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 166: /* schema_extension: EXTEND SCHEMA directives_list  */
+#line 746 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                    {
+        yyval = rb_funcall(GraphQL_Language_Nodes_SchemaExtension, rb_intern("from_a"), 6,
+          rb_ary_entry(yyvsp[-2], 1),
+          rb_ary_entry(yyvsp[-2], 2),
+          Qnil,
+          Qnil,
+          Qnil,
+          yyvsp[0]
+        );
+      }
+#line 2849 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 173: /* scalar_type_extension: EXTEND SCALAR name directives_list  */
+#line 765 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                                            {
+    yyval = rb_funcall(GraphQL_Language_Nodes_ScalarTypeExtension, rb_intern("from_a"), 4,
+      rb_ary_entry(yyvsp[-3], 1),
+      rb_ary_entry(yyvsp[-3], 2),
+      rb_ary_entry(yyvsp[-1], 3),
+      yyvsp[0]
+    );
+  }
+#line 2862 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 174: /* object_type_extension: EXTEND TYPE_LITERAL name implements_opt directives_list_opt field_definition_list_opt  */
+#line 775 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                                                                            {
+        yyval = rb_funcall(GraphQL_Language_Nodes_ObjectTypeExtension, rb_intern("from_a"), 6,
+          rb_ary_entry(yyvsp[-5], 1),
+          rb_ary_entry(yyvsp[-5], 2),
+          rb_ary_entry(yyvsp[-3], 3),
+          yyvsp[-2], // implements
+          yyvsp[-1],
+          yyvsp[0]
+        );
+      }
+#line 2877 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 175: /* interface_type_extension: EXTEND INTERFACE name implements_opt directives_list_opt field_definition_list_opt  */
+#line 787 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                                                                         {
+        yyval = rb_funcall(GraphQL_Language_Nodes_InterfaceTypeExtension, rb_intern("from_a"), 6,
+          rb_ary_entry(yyvsp[-5], 1),
+          rb_ary_entry(yyvsp[-5], 2),
+          rb_ary_entry(yyvsp[-3], 3),
+          yyvsp[-2],
+          yyvsp[-1],
+          yyvsp[0]
+        );
+      }
+#line 2892 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 176: /* union_type_extension: EXTEND UNION name directives_list_opt EQUALS union_members  */
+#line 799 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                                                 {
+        yyval = rb_funcall(GraphQL_Language_Nodes_UnionTypeExtension, rb_intern("from_a"), 5,
+          rb_ary_entry(yyvsp[-5], 1),
+          rb_ary_entry(yyvsp[-5], 2),
+          rb_ary_entry(yyvsp[-3], 3),
+          yyvsp[0], // types
+          yyvsp[-2]
+        );
+      }
+#line 2906 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 177: /* union_type_extension: EXTEND UNION name directives_list  */
+#line 808 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                        {
+        yyval = rb_funcall(GraphQL_Language_Nodes_UnionTypeExtension, rb_intern("from_a"), 5,
+          rb_ary_entry(yyvsp[-3], 1),
+          rb_ary_entry(yyvsp[-3], 2),
+          rb_ary_entry(yyvsp[-1], 3),
+          GraphQL_Language_Nodes_NONE, // types
+          yyvsp[0]
+        );
+      }
+#line 2920 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 178: /* enum_type_extension: EXTEND ENUM name directives_list_opt LCURLY enum_value_definitions RCURLY  */
+#line 819 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                                                                {
+        yyval = rb_funcall(GraphQL_Language_Nodes_EnumTypeExtension, rb_intern("from_a"), 5,
+          rb_ary_entry(yyvsp[-6], 1),
+          rb_ary_entry(yyvsp[-6], 2),
+          rb_ary_entry(yyvsp[-4], 3),
+          yyvsp[-3],
+          yyvsp[-1]
+        );
+      }
+#line 2934 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 179: /* enum_type_extension: EXTEND ENUM name directives_list  */
+#line 828 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                       {
+        yyval = rb_funcall(GraphQL_Language_Nodes_EnumTypeExtension, rb_intern("from_a"), 5,
+          rb_ary_entry(yyvsp[-3], 1),
+          rb_ary_entry(yyvsp[-3], 2),
+          rb_ary_entry(yyvsp[-1], 3),
+          yyvsp[0],
+          GraphQL_Language_Nodes_NONE
+        );
+      }
+#line 2948 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 180: /* input_object_type_extension: EXTEND INPUT name directives_list_opt LCURLY input_value_definition_list RCURLY  */
+#line 839 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                                                                      {
+        yyval = rb_funcall(GraphQL_Language_Nodes_InputObjectTypeExtension, rb_intern("from_a"), 5,
+          rb_ary_entry(yyvsp[-6], 1),
+          rb_ary_entry(yyvsp[-6], 2),
+          rb_ary_entry(yyvsp[-4], 3),
+          yyvsp[-3],
+          yyvsp[-1]
+        );
+      }
+#line 2962 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+    break;
+
+  case 181: /* input_object_type_extension: EXTEND INPUT name directives_list  */
+#line 848 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+                                        {
+        yyval = rb_funcall(GraphQL_Language_Nodes_InputObjectTypeExtension, rb_intern("from_a"), 5,
+          rb_ary_entry(yyvsp[-3], 1),
+          rb_ary_entry(yyvsp[-3], 2),
+          rb_ary_entry(yyvsp[-1], 3),
+          yyvsp[0],
+          GraphQL_Language_Nodes_NONE
+        );
+      }
+#line 2976 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
     break;
 
 
-#line 2791 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
+#line 2980 "graphql-c_parser/ext/graphql_c_parser_ext/parser.c"
 
       default: break;
     }
@@ -3011,7 +3200,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 726 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
+#line 858 "graphql-c_parser/ext/graphql_c_parser_ext/parser.y"
 
 
 // Custom functions
@@ -3083,4 +3272,12 @@ void initialize_node_class_variables() {
   INITIALIZE_NODE_CLASS_VARIABLE(FieldDefinition)
   INITIALIZE_NODE_CLASS_VARIABLE(InputValueDefinition)
   INITIALIZE_NODE_CLASS_VARIABLE(SchemaDefinition)
+
+  INITIALIZE_NODE_CLASS_VARIABLE(ScalarTypeExtension)
+  INITIALIZE_NODE_CLASS_VARIABLE(ObjectTypeExtension)
+  INITIALIZE_NODE_CLASS_VARIABLE(InterfaceTypeExtension)
+  INITIALIZE_NODE_CLASS_VARIABLE(UnionTypeExtension)
+  INITIALIZE_NODE_CLASS_VARIABLE(EnumTypeExtension)
+  INITIALIZE_NODE_CLASS_VARIABLE(InputObjectTypeExtension)
+  INITIALIZE_NODE_CLASS_VARIABLE(SchemaExtension)
 }

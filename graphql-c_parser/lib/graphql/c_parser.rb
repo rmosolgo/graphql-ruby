@@ -12,6 +12,9 @@ module GraphQL
     end
 
     def self.prepare_parse_error(message, parser)
+      if message.start_with?("memory exhausted")
+        return GraphQL::ParseError.new("This query is too large to execute.", nil, nil, parser.query_string, filename: parser.filename)
+      end
       token = parser.tokens[parser.next_token_index - 1]
       line = token[1]
       col = token[2]

@@ -43,6 +43,13 @@ SETUP_NODE_CLASS_VARIABLE(FieldDefinition)
 SETUP_NODE_CLASS_VARIABLE(InputValueDefinition)
 SETUP_NODE_CLASS_VARIABLE(SchemaDefinition)
 
+SETUP_NODE_CLASS_VARIABLE(ScalarTypeExtension)
+SETUP_NODE_CLASS_VARIABLE(ObjectTypeExtension)
+SETUP_NODE_CLASS_VARIABLE(InterfaceTypeExtension)
+SETUP_NODE_CLASS_VARIABLE(UnionTypeExtension)
+SETUP_NODE_CLASS_VARIABLE(EnumTypeExtension)
+SETUP_NODE_CLASS_VARIABLE(InputObjectTypeExtension)
+SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
 %}
 
 %param {VALUE parser}
@@ -110,21 +117,17 @@ SETUP_NODE_CLASS_VARIABLE(SchemaDefinition)
 
   definitions_list:
       /* none */                  { $$ = GraphQL_Language_Nodes_NONE; }
-    | executable_definitions
-    | type_system_definitions
+    |  definition                 { $$ = rb_ary_new_from_args(1, $1); }
+    | definitions_list definition { rb_ary_push($$, $2); }
+
+  definition:
+      executable_definition
+    | type_system_definition
+    | type_system_extension
 
   executable_definition:
       operation_definition
     | fragment_definition
-
-  executable_definitions:
-      executable_definition { $$ = rb_ary_new_from_args(1, $1); }
-    | executable_definitions executable_definition { rb_ary_push($$, $2); }
-
-  type_system_definitions:
-      type_system_definition { $$ = rb_ary_new_from_args(1, $1); }
-    | type_system_definitions type_system_definition { rb_ary_push($$, $2); }
-    /* TODO type system extensions */
 
   operation_definition:
       operation_type operation_name_opt variable_definitions_opt directives_list_opt selection_set {
@@ -723,6 +726,135 @@ type_system_definition:
       name                          { $$ = rb_ary_new_from_args(1, rb_funcall(GraphQL_Language_Nodes_DirectiveLocation, rb_intern("from_a"), 3, rb_ary_entry($1, 1), rb_ary_entry($1, 2), rb_ary_entry($1, 3))); }
     | directive_locations PIPE name { rb_ary_push($$, rb_funcall(GraphQL_Language_Nodes_DirectiveLocation, rb_intern("from_a"), 3, rb_ary_entry($3, 1), rb_ary_entry($3, 2), rb_ary_entry($3, 3))); }
 
+
+  type_system_extension:
+      schema_extension
+    | type_extension
+
+  schema_extension:
+      EXTEND SCHEMA directives_list_opt LCURLY operation_type_definition_list RCURLY {
+        $$ = rb_funcall(GraphQL_Language_Nodes_SchemaExtension, rb_intern("from_a"), 6,
+          rb_ary_entry($1, 1),
+          rb_ary_entry($1, 2),
+          // TODO use static strings:
+          rb_hash_aref($5, rb_str_new_cstr("query")),
+          rb_hash_aref($5, rb_str_new_cstr("mutation")),
+          rb_hash_aref($5, rb_str_new_cstr("subscription")),
+          $3
+        );
+      }
+    | EXTEND SCHEMA directives_list {
+        $$ = rb_funcall(GraphQL_Language_Nodes_SchemaExtension, rb_intern("from_a"), 6,
+          rb_ary_entry($1, 1),
+          rb_ary_entry($1, 2),
+          Qnil,
+          Qnil,
+          Qnil,
+          $3
+        );
+      }
+
+  type_extension:
+      scalar_type_extension
+    | object_type_extension
+    | interface_type_extension
+    | union_type_extension
+    | enum_type_extension
+    | input_object_type_extension
+
+  scalar_type_extension: EXTEND SCALAR name directives_list {
+    $$ = rb_funcall(GraphQL_Language_Nodes_ScalarTypeExtension, rb_intern("from_a"), 4,
+      rb_ary_entry($1, 1),
+      rb_ary_entry($1, 2),
+      rb_ary_entry($3, 3),
+      $4
+    );
+  }
+
+  object_type_extension:
+      EXTEND TYPE_LITERAL name implements_opt directives_list_opt field_definition_list_opt {
+        $$ = rb_funcall(GraphQL_Language_Nodes_ObjectTypeExtension, rb_intern("from_a"), 6,
+          rb_ary_entry($1, 1),
+          rb_ary_entry($1, 2),
+          rb_ary_entry($3, 3),
+          $4, // implements
+          $5,
+          $6
+        );
+      }
+
+  interface_type_extension:
+      EXTEND INTERFACE name implements_opt directives_list_opt field_definition_list_opt {
+        $$ = rb_funcall(GraphQL_Language_Nodes_InterfaceTypeExtension, rb_intern("from_a"), 6,
+          rb_ary_entry($1, 1),
+          rb_ary_entry($1, 2),
+          rb_ary_entry($3, 3),
+          $4,
+          $5,
+          $6
+        );
+      }
+
+  union_type_extension:
+      EXTEND UNION name directives_list_opt EQUALS union_members {
+        $$ = rb_funcall(GraphQL_Language_Nodes_UnionTypeExtension, rb_intern("from_a"), 5,
+          rb_ary_entry($1, 1),
+          rb_ary_entry($1, 2),
+          rb_ary_entry($3, 3),
+          $6, // types
+          $4
+        );
+      }
+    | EXTEND UNION name directives_list {
+        $$ = rb_funcall(GraphQL_Language_Nodes_UnionTypeExtension, rb_intern("from_a"), 5,
+          rb_ary_entry($1, 1),
+          rb_ary_entry($1, 2),
+          rb_ary_entry($3, 3),
+          GraphQL_Language_Nodes_NONE, // types
+          $4
+        );
+      }
+
+  enum_type_extension:
+      EXTEND ENUM name directives_list_opt LCURLY enum_value_definitions RCURLY {
+        $$ = rb_funcall(GraphQL_Language_Nodes_EnumTypeExtension, rb_intern("from_a"), 5,
+          rb_ary_entry($1, 1),
+          rb_ary_entry($1, 2),
+          rb_ary_entry($3, 3),
+          $4,
+          $6
+        );
+      }
+    | EXTEND ENUM name directives_list {
+        $$ = rb_funcall(GraphQL_Language_Nodes_EnumTypeExtension, rb_intern("from_a"), 5,
+          rb_ary_entry($1, 1),
+          rb_ary_entry($1, 2),
+          rb_ary_entry($3, 3),
+          $4,
+          GraphQL_Language_Nodes_NONE
+        );
+      }
+
+  input_object_type_extension:
+      EXTEND INPUT name directives_list_opt LCURLY input_value_definition_list RCURLY {
+        $$ = rb_funcall(GraphQL_Language_Nodes_InputObjectTypeExtension, rb_intern("from_a"), 5,
+          rb_ary_entry($1, 1),
+          rb_ary_entry($1, 2),
+          rb_ary_entry($3, 3),
+          $4,
+          $6
+        );
+      }
+    | EXTEND INPUT name directives_list {
+        $$ = rb_funcall(GraphQL_Language_Nodes_InputObjectTypeExtension, rb_intern("from_a"), 5,
+          rb_ary_entry($1, 1),
+          rb_ary_entry($1, 2),
+          rb_ary_entry($3, 3),
+          $4,
+          GraphQL_Language_Nodes_NONE
+        );
+      }
+
 %%
 
 // Custom functions
@@ -794,4 +926,12 @@ void initialize_node_class_variables() {
   INITIALIZE_NODE_CLASS_VARIABLE(FieldDefinition)
   INITIALIZE_NODE_CLASS_VARIABLE(InputValueDefinition)
   INITIALIZE_NODE_CLASS_VARIABLE(SchemaDefinition)
+
+  INITIALIZE_NODE_CLASS_VARIABLE(ScalarTypeExtension)
+  INITIALIZE_NODE_CLASS_VARIABLE(ObjectTypeExtension)
+  INITIALIZE_NODE_CLASS_VARIABLE(InterfaceTypeExtension)
+  INITIALIZE_NODE_CLASS_VARIABLE(UnionTypeExtension)
+  INITIALIZE_NODE_CLASS_VARIABLE(EnumTypeExtension)
+  INITIALIZE_NODE_CLASS_VARIABLE(InputObjectTypeExtension)
+  INITIALIZE_NODE_CLASS_VARIABLE(SchemaExtension)
 }
