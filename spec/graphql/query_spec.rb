@@ -654,12 +654,24 @@ describe GraphQL::Query do
     it "adds an entry to the errors key" do
       res = schema.execute(" { ")
       assert_equal 1, res["errors"].length
-      assert_equal "Unexpected end of document", res["errors"][0]["message"]
-      assert_equal [], res["errors"][0]["locations"]
+      if USING_C_PARSER
+        expected_err = "syntax error, unexpected end of file at [1, 2]"
+        expected_locations = [{"line" => 1, "column" => 2}]
+      else
+        expected_err = "Unexpected end of document"
+        expected_locations = []
+      end
+      assert_equal expected_err, res["errors"][0]["message"]
+      assert_equal expected_locations, res["errors"][0]["locations"]
 
       res = schema.execute(invalid_query_string)
       assert_equal 1, res["errors"].length
-      assert_equal %|Parse error on "1" (INT) at [4, 26]|, res["errors"][0]["message"]
+      expected_error = if USING_C_PARSER
+        "syntax error, unexpected INT (\"1\") at [4, 26]"
+      else
+        %|Parse error on "1" (INT) at [4, 26]|
+      end
+      assert_equal expected_error, res["errors"][0]["message"]
       assert_equal({"line" => 4, "column" => 26}, res["errors"][0]["locations"][0])
     end
 

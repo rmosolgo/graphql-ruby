@@ -25,7 +25,9 @@ module GraphQL
         end
       end
 
-      message.sub!(/, unexpected ([a-zA-Z ]+),/, ", unexpected \\1 (#{token[3].inspect}),")
+      if !message.include?("end of file")
+        message.sub!(/, unexpected ([a-zA-Z ]+)(,| at)/, ", unexpected \\1 (#{token[3].inspect})\\2")
+      end
 
       GraphQL::ParseError.new(message, line, col, parser.query_string, filename: parser.filename)
     end
