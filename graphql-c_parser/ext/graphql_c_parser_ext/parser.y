@@ -308,7 +308,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaDefinition)
   }
 
   object_value:
-    | LCURLY object_value_list_opt RCURLY {
+    LCURLY object_value_list_opt RCURLY {
       $$ = rb_funcall(GraphQL_Language_Nodes_InputObject, rb_intern("from_a"), 3,
         rb_ary_entry($1, 1),
         rb_ary_entry($1, 2),
@@ -743,20 +743,14 @@ int yylex (YYSTYPE *lvalp, VALUE parser) {
 }
 
 void yyerror(VALUE parser, const char *msg) {
-  VALUE next_token_idx = rb_ivar_get(parser, rb_intern("@next_token_index"));
-  int this_token_idx = FIX2INT(next_token_idx) - 1;
-  VALUE tokens = rb_ivar_get(parser, rb_intern("@tokens"));
-  VALUE this_token = rb_ary_entry(tokens, this_token_idx);
   VALUE mGraphQL = rb_const_get_at(rb_cObject, rb_intern("GraphQL"));
-  VALUE cParseError = rb_const_get_at(mGraphQL, rb_intern("ParseError"));
+  VALUE mCParser = rb_const_get_at(mGraphQL, rb_intern("CParser"));
+  VALUE rb_message = rb_str_new_cstr(msg);
   VALUE exception = rb_funcall(
-      cParseError, rb_intern("new"), 4,
-      rb_str_new_cstr(msg),
-      rb_ary_entry(this_token, 1),
-      rb_ary_entry(this_token, 2),
-      rb_ivar_get(parser, rb_intern("@query_string"))
+      mCParser, rb_intern("prepare_parse_error"), 2,
+      rb_message,
+      parser
   );
-
   rb_exc_raise(exception);
 }
 

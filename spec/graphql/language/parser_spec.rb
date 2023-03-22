@@ -16,11 +16,13 @@ describe GraphQL::Language::Parser do
     err = assert_raises(GraphQL::ParseError) {
       GraphQL.parse('query 😘 { a b }')
     }
-    if ENV["GRAPHQL_CLEXER"]
-      assert_equal "Parse error on \"\\xF0\" (error) at [1, 7]", err.message
+    expected_msg = if USING_C_PARSER
+      "syntax error, unexpected invalid token (\"\\xF0\"), expecting LCURLY at [1, 7]"
     else
-      assert_equal "Parse error on \"😘\" (error) at [1, 7]", err.message
+      "Parse error on \"😘\" (error) at [1, 7]"
     end
+
+    assert_equal expected_msg, err.message
   end
 
   describe "anonymous fragment extension" do
@@ -300,7 +302,7 @@ GRAPHQL
       query_with_malformed_argument_value = '{ node(id:) { name } }'
 
       assert_raises(GraphQL::ParseError) {
-        subject.parse(query_with_malformed_argument_value)
+        pp subject.parse(query_with_malformed_argument_value)
       }
     end
   end

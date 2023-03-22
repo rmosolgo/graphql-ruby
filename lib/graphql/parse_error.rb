@@ -7,13 +7,6 @@ module GraphQL
         message += " (#{filename})"
       end
 
-      if line && col && query
-        message += "\n\n"
-        line_txt = query.split("\n", line + 1)[line - 1]
-        message += "\n    #{line_txt}"
-        message += "\n    #{" " * (col - 1)}^ at #{line}:#{col}\n"
-      end
-
       super(message)
       @line = line
       @col = col

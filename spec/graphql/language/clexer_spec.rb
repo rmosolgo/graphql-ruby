@@ -3,8 +3,8 @@ require "spec_helper"
 require "graphql/c_parser"
 require_relative "./lexer_examples"
 
-describe GraphQL::Language::CLexer do
-  subject { GraphQL::Language::CLexer }
+describe GraphQL::CParser::Lexer do
+  subject { GraphQL::CParser::Lexer }
 
   it "makes tokens like the other lexer" do
     str = "{ f1(arg: \"str\") ...F2 }\nfragment F2 on SomeType { f2 }"

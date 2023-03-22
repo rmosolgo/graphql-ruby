@@ -8,18 +8,12 @@ Bundler.require
 ENV["BACKTRACE"] = "1"
 
 require "graphql"
-if ENV["GRAPHQL_CLEXER"]
-  puts "Opting in to GraphQL::Language::CLexer"
+if ENV["GRAPHQL_CPARSER"]
+  USING_C_PARSER = true
+  puts "Opting in to GraphQL::CParser"
   require "graphql-c_parser"
-  module GraphQL
-    def self.scan(str)
-      scan_with_c(str)
-    end
-
-    def self.parse(*args, **kwargs)
-      parse_with_c(*args, **kwargs)
-    end
-  end
+else
+  USING_C_PARSER = false
 end
 
 require "rake"

@@ -67,24 +67,6 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     GraphQL::Language::Lexer.tokenize(graphql_string)
   end
 
-  # TODO move this to Cparser gem
-  def self.scan_with_c(graphql_string)
-    GraphQL::Language::CLexer.tokenize(graphql_string)
-  end
-
-  # TODO move this to Cparser Gem
-  def self.parse_with_c(string, filename: nil, trace: GraphQL::Tracing::NullTrace)
-    # TODO handle other arguments here
-    if string.nil?
-      raise GraphQL::ParseError.new("No query string was present", nil, nil, string)
-    end
-    document = GraphQL::Language::CParser.parse(string, trace)
-    if document.definitions.size == 0
-      raise GraphQL::ParseError.new("Unexpected end of document", 1, 1, string)
-    end
-    document
-  end
-
   NOT_CONFIGURED = Object.new
   private_constant :NOT_CONFIGURED
 end

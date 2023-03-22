@@ -37,19 +37,19 @@ module GraphQLBenchmark
         x.report("validate - big query") { BIG_SCHEMA.validate(BIG_QUERY) }
         x.report("validate - fields will merge") { FIELDS_WILL_MERGE_SCHEMA.validate(FIELDS_WILL_MERGE_QUERY) }
       when "scan"
-        x.report("scan c - introspection") { GraphQL::Language::CLexer.tokenize(QUERY_STRING) }
-        x.report("scan - introspection") { GraphQL.scan(QUERY_STRING) }
-        x.report("scan c - fragments") { GraphQL::Language::CLexer.tokenize(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
-        x.report("scan - fragments") { GraphQL.scan(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
-        x.report("scan c - big query") { GraphQL::Language::CLexer.tokenize(BIG_QUERY_STRING) }
-        x.report("scan - big query") { GraphQL.scan(BIG_QUERY_STRING) }
+        x.report("scan c - introspection") { GraphQL.scan_with_c(QUERY_STRING) }
+        x.report("scan - introspection") { GraphQL.scan_with_ruby(QUERY_STRING) }
+        x.report("scan c - fragments") { GraphQL.scan_with_c(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
+        x.report("scan - fragments") { GraphQL.scan_with_ruby(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
+        x.report("scan c - big query") { GraphQL.scan_with_c(BIG_QUERY_STRING) }
+        x.report("scan - big query") { GraphQL.scan_with_ruby(BIG_QUERY_STRING) }
       when "parse"
         x.report("parse c - introspection") { GraphQL.parse_with_c(QUERY_STRING) }
-        x.report("parse - introspection") { GraphQL.parse(QUERY_STRING) }
+        x.report("parse - introspection") { GraphQL.parse_with_racc(QUERY_STRING) }
         x.report("parse c - fragments") { GraphQL.parse_with_c(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
-        x.report("parse - fragments") { GraphQL.parse(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
+        x.report("parse - fragments") { GraphQL.parse_with_racc(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
         x.report("parse c - big query") { GraphQL.parse_with_c(BIG_QUERY_STRING) }
-        x.report("parse - big query") { GraphQL.parse(BIG_QUERY_STRING) }
+        x.report("parse - big query") { GraphQL.parse_with_racc(BIG_QUERY_STRING) }
       else
         raise("Unexpected task #{task}")
       end
