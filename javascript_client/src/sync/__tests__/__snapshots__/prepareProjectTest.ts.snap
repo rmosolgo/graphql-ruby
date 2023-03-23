@@ -1,8 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`merging a project builds out separate operations 1`] = `
-Array [
-  Object {
+[
+  {
     "alias": "",
     "body": "query GetStuff2 {
   stuff
@@ -23,7 +23,7 @@ fragment Frag3 on Query {
 }",
     "name": "GetStuff2",
   },
-  Object {
+  {
     "alias": "",
     "body": "query GetStuff {
   ...Frag1
@@ -38,8 +38,8 @@ fragment Frag1 on Query {
 `;
 
 exports[`merging a project with --add-typename builds out operation with __typename fields 1`] = `
-Array [
-  Object {
+[
+  {
     "alias": "",
     "body": "query GetStuff3 {
   stuff {
