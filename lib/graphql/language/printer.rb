@@ -53,7 +53,7 @@ module GraphQL
       # @return [String] Valid GraphQL for `node`
       def print(node, indent: "", truncate_size: nil)
         truncate_size = truncate_size ? [truncate_size - OMISSION.size, 0].max : nil
-        @out = TruncatableBuffer.new(truncate_size:)
+        @out = TruncatableBuffer.new(truncate_size: truncate_size)
         print_node(node, indent: indent)
         @out.to_string
       rescue TruncatableBuffer::TruncateSizeReached
