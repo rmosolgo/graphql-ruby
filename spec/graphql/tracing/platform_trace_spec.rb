@@ -34,7 +34,11 @@ describe GraphQL::Tracing::PlatformTrace do
 
     def platform_execute_field(platform_key)
       TRACE << platform_key
-      yield
+      res = yield
+      if res.is_a?(GraphQL::ExecutionError)
+        TRACE << "returned error"
+      end
+      res
     end
 
     def platform_field_key(field)
@@ -61,6 +65,12 @@ describe GraphQL::Tracing::PlatformTrace do
 
     it "runs the introspection query (handles late-bound types)" do
       assert schema.execute(GraphQL::Introspection::INTROSPECTION_QUERY)
+    end
+
+    it "gets execution errors raised from field resolution" do
+      scalar_schema = Class.new(Dummy::Schema) { trace_with(CustomPlatformTrace, trace_scalars: true) }
+      scalar_schema.execute("{ executionError }")
+      assert_includes CustomPlatformTrace::TRACE, "returned error"
     end
 
     it "calls the platform's own method with its own keys" do
