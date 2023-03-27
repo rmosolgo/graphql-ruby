@@ -6,8 +6,10 @@ require "rake/testtask"
 require_relative "guides/_tasks/site"
 require_relative "lib/graphql/rake_task/validate"
 require 'rake/extensiontask'
-require "ruby_memcheck"
-RubyMemcheck.config(binary_name: 'graphql/graphql_c_parser_ext')
+if ENV["GRAPHQL_CPARSER"]
+  require "ruby_memcheck"
+  RubyMemcheck.config(binary_name: 'graphql/graphql_c_parser_ext')
+end
 
 test_config = lambda do |t|
   t.libs << "spec" << "lib" << "graphql-c_parser/lib"
@@ -34,8 +36,10 @@ test_config = lambda do |t|
 end
 
 Rake::TestTask.new(&test_config)
-namespace :test do
-  RubyMemcheck::TestTask.new(valgrind: :build_ext, &test_config)
+if ENV["GRAPHQL_CPARSER"]
+  namespace :test do
+    RubyMemcheck::TestTask.new(valgrind: :build_ext, &test_config)
+  end
 end
 
 require 'rubocop/rake_task'
