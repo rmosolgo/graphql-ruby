@@ -6,7 +6,7 @@ class GraphQLGeneratorsInputGeneratorTest < BaseGeneratorTest
   tests Graphql::Generators::InputGenerator
 
   ActiveRecord::Schema.define do
-    create_table :input_test_users do |t|
+    create_table :input_test_users, force: true do |t|
       t.datetime :created_at
       t.date :birthday
       t.integer :points

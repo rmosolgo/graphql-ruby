@@ -9,5 +9,6 @@ gem "pry-stack_explorer", platform: :ruby
 gem "rails", "~> 6.1.0", require: "rails/all"
 gem "pg", platform: :ruby
 gem "sequel"
+gem "ruby_memcheck"
 
 gemspec path: "../"

@@ -6,8 +6,10 @@ require "rake/testtask"
 require_relative "guides/_tasks/site"
 require_relative "lib/graphql/rake_task/validate"
 require 'rake/extensiontask'
+require "ruby_memcheck"
+RubyMemcheck.config(binary_name: 'graphql/graphql_c_parser_ext')
 
-Rake::TestTask.new do |t|
+test_config = lambda do |t|
   t.libs << "spec" << "lib" << "graphql-c_parser/lib"
 
   exclude_integrations = []
@@ -29,6 +31,11 @@ Rake::TestTask.new do |t|
   end
 
   t.warning = false
+end
+
+Rake::TestTask.new(&test_config)
+namespace :test do
+  RubyMemcheck::TestTask.new(valgrind: :build_ext, &test_config)
 end
 
 require 'rubocop/rake_task'
