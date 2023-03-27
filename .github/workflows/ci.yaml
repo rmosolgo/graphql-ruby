@@ -106,7 +106,7 @@ jobs:
       with:
         ruby-version: 2.7
         bundler-cache: true
-    - run: bundle exec rake compile test
+    - run: bundle exec rake compile test:valgrind
   mongodb_test:
     strategy:
       fail-fast: false
