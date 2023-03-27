@@ -38,7 +38,7 @@ end
 Rake::TestTask.new(&test_config)
 if ENV["GRAPHQL_CPARSER"]
   namespace :test do
-    RubyMemcheck::TestTask.new(valgrind: :build_ext, &test_config)
+    RubyMemcheck::TestTask.new(valgrind: :compile, &test_config)
   end
 end
 
