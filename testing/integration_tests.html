@@ -223,7 +223,7 @@
     <span class="ss">headers: </span><span class="p">{</span> <span class="s2">"Authorization"</span> <span class="o">=&gt;</span> <span class="s2">"Bearer </span><span class="si">#{</span><span class="n">user</span><span class="p">.</span><span class="nf">auth_token</span><span class="si">}</span><span class="s2">"</span> <span class="p">}</span>
 
   <span class="n">json_response</span> <span class="o">=</span> <span class="no">JSON</span><span class="p">.</span><span class="nf">parse</span><span class="p">(</span><span class="vi">@response</span><span class="p">.</span><span class="nf">body</span><span class="p">)</span>
-  <span class="n">assert_equal</span> <span class="n">user</span><span class="p">.</span><span class="nf">username</span><span class="p">,</span> <span class="n">json_response</span><span class="p">[</span><span class="s2">"data"</span><span class="p">][</span><span class="s2">"viewer"</span><span class="p">],</span> <span class="s2">"Authenticated requests load the viewer"</span>
+  <span class="n">assert_equal</span> <span class="n">user</span><span class="p">.</span><span class="nf">username</span><span class="p">,</span> <span class="n">json_response</span><span class="p">[</span><span class="s2">"data"</span><span class="p">][</span><span class="s2">"viewer"</span><span class="p">][</span><span class="s2">"username"</span><span class="p">],</span> <span class="s2">"Authenticated requests load the viewer"</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
