@@ -11,6 +11,11 @@ module GraphQL
       parser.result
     end
 
+    def self.parse_file(filename)
+      contents = File.read(filename)
+      parse(contents, filename: filename)
+    end
+
     def self.prepare_parse_error(message, parser)
       if message.start_with?("memory exhausted")
         return GraphQL::ParseError.new("This query is too large to execute.", nil, nil, parser.query_string, filename: parser.filename)
@@ -34,6 +39,9 @@ module GraphQL
 
     class Parser
       def initialize(query_string, filename, trace)
+        if query_string.nil?
+          raise GraphQL::ParseError.new("No query string was present", nil, nil, query_string)
+        end
         @query_string = query_string
         @filename = filename
         @tokens = nil

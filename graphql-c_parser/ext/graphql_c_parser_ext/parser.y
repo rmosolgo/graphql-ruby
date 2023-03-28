@@ -493,15 +493,17 @@ type_system_definition:
       }
 
   operation_type_definition_list:
-      operation_type_definition
+      operation_type_definition {
+        $$ = rb_hash_new();
+        rb_hash_aset($$, rb_ary_entry($1, 0), rb_ary_entry($1, 1));
+      }
     | operation_type_definition_list operation_type_definition {
-      rb_funcall($$, rb_intern("merge!"), 1, $1);
+      rb_hash_aset($$, rb_ary_entry($2, 0), rb_ary_entry($2, 1));
     }
 
   operation_type_definition:
       operation_type COLON name {
-        $$ = rb_hash_new();
-        rb_hash_aset($$, rb_ary_entry($1, 3), rb_ary_entry($3, 3));
+        $$ = rb_ary_new_from_args(2, rb_ary_entry($1, 3), rb_ary_entry($3, 3));
       }
 
   type_definition:
@@ -719,8 +721,8 @@ type_system_definition:
       }
 
   directive_repeatable_opt:
-    /* nothing */
-    | REPEATABLE
+    /* nothing */   { $$ = Qnil; }
+    | REPEATABLE    { $$ = Qtrue; }
 
   directive_locations:
       name                          { $$ = rb_ary_new_from_args(1, rb_funcall(GraphQL_Language_Nodes_DirectiveLocation, rb_intern("from_a"), 3, rb_ary_entry($1, 1), rb_ary_entry($1, 2), rb_ary_entry($1, 3))); }
