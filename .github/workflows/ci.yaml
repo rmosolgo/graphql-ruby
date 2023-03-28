@@ -99,7 +99,7 @@ jobs:
     - run: echo BUNDLE_GEMFILE='gemfiles/rails_6.1_postgresql.gemfile' > $GITHUB_ENV
     - run: echo DATABASE='POSTGRESQL' > $GITHUB_ENV
     - run: echo PGPASSWORD='postgres' > $GITHUB_ENV
-    - run: echo GRAPHQL_CLEXER=1 > $GITHUB_ENV
+    - run: echo GRAPHQL_CPARSER=1 > $GITHUB_ENV
     - uses: actions/checkout@v3
     - uses: ruby/setup-ruby@v1
       with:

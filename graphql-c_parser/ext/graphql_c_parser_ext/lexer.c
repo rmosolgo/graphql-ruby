@@ -729,46 +729,47 @@ static VALUE GraphQL_true_str;
 static VALUE GraphQL_false_str;
 static VALUE GraphQL_null_str;
 typedef enum TokenType {
-	INT,
-	FLOAT,
-	ON,
-	FRAGMENT,
-	TRUE_LITERAL,
-	FALSE_LITERAL,
-	NULL_LITERAL,
-	QUERY,
-	MUTATION,
-	SUBSCRIPTION,
-	SCHEMA,
-	SCALAR,
-	TYPE_LITERAL,
-	EXTEND,
-	IMPLEMENTS,
-	INTERFACE,
-	UNION,
-	ENUM,
-	INPUT,
-	DIRECTIVE,
-	REPEATABLE,
-	RCURLY,
-	LCURLY,
-	RPAREN,
-	LPAREN,
-	RBRACKET,
-	LBRACKET,
+	AMP,
+	BANG,
 	COLON,
-	QUOTED_STRING,
-	BLOCK_STRING,
-	VAR_SIGN,
+	DIRECTIVE,
 	DIR_SIGN,
+	ENUM,
 	ELLIPSIS,
 	EQUALS,
-	BANG,
-	PIPE,
-	AMP,
+	EXTEND,
+	FALSE_LITERAL,
+	FLOAT,
+	FRAGMENT,
 	IDENTIFIER,
-	COMMENT,
-	UNKNOWN_CHAR
+	INPUT,
+	IMPLEMENTS,
+	INT,
+	INTERFACE,
+	LBRACKET,
+	LCURLY,
+	LPAREN,
+	MUTATION,
+	NULL_LITERAL,
+	ON,
+	PIPE,
+	QUERY,
+	RBRACKET,
+	RCURLY,
+	REPEATABLE,
+	RPAREN,
+	SCALAR,
+	SCHEMA,
+	STRING,
+	SUBSCRIPTION,
+	TRUE_LITERAL,
+	TYPE_LITERAL,
+	UNION,
+	VAR_SIGN,
+	BLOCK_STRING,
+	QUOTED_STRING,
+	UNKNOWN_CHAR,
+	COMMENT
 } TokenType;
 
 typedef struct Meta {
@@ -868,6 +869,9 @@ void emit(TokenType tt, char *ts, char *te, Meta *meta) {
 		token_content = rb_utf8_str_new(ts + quotes_length, (te - ts - (2 * quotes_length)));
 		line_incr = FIX2INT(rb_funcall(token_content, rb_intern("count"), 1, rb_str_new_cstr("\n")));
 		break;
+		case STRING:
+		// This is used only by the parser, this is never reached
+		break;
 	}
 	
 	if (token_sym != Qnil) {
@@ -894,16 +898,19 @@ void emit(TokenType tt, char *ts, char *te, Meta *meta) {
 			} else {
 				token_sym = ID2SYM(rb_intern("BAD_UNICODE_ESCAPE"));
 			}
+			// The parser doesn't distinguish between these:
+			tt = STRING;
 		}
 		
-		VALUE token_data[5] = {
+		VALUE token_data[] = {
 			token_sym,
 			rb_int2inum(meta->line),
 			rb_int2inum(meta->col),
 			token_content,
 			meta->previous_token,
+			INT2FIX(200 + (int)tt)
 		};
-		VALUE token = rb_ary_new_from_values(5, token_data);
+		VALUE token = rb_ary_new_from_values(6, token_data);
 		// COMMENTs are retained as `previous_token` but aren't pushed to the normal token list
 		if (tt != COMMENT) {
 			rb_ary_push(meta->tokens, token);
@@ -928,7 +935,7 @@ VALUE tokenize(VALUE query_rbstr) {
 	Meta *meta = &meta_s;
 	
 	
-#line 932 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 939 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 	{
 		cs = (int)graphql_c_lexer_start;
 		ts = 0;
@@ -936,10 +943,10 @@ VALUE tokenize(VALUE query_rbstr) {
 		act = 0;
 	}
 	
-#line 344 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl"
+#line 351 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl"
 	
 	
-#line 943 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 950 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 	{
 		unsigned int _trans = 0;
 		const char * _keys;
@@ -954,7 +961,7 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1 "NONE"
 					{ts = p;}}
 				
-#line 958 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 965 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 				
 				
 				break; 
@@ -992,7 +999,7 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1 "NONE"
 						{te = p+1;}}
 					
-#line 996 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1003 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1005,7 +1012,7 @@ VALUE tokenize(VALUE query_rbstr) {
 								emit(RCURLY, ts, te, meta); }
 						}}
 					
-#line 1009 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1016 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1018,7 +1025,7 @@ VALUE tokenize(VALUE query_rbstr) {
 								emit(LCURLY, ts, te, meta); }
 						}}
 					
-#line 1022 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1029 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1031,7 +1038,7 @@ VALUE tokenize(VALUE query_rbstr) {
 								emit(RPAREN, ts, te, meta); }
 						}}
 					
-#line 1035 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1042 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1044,7 +1051,7 @@ VALUE tokenize(VALUE query_rbstr) {
 								emit(LPAREN, ts, te, meta); }
 						}}
 					
-#line 1048 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1055 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1057,7 +1064,7 @@ VALUE tokenize(VALUE query_rbstr) {
 								emit(RBRACKET, ts, te, meta); }
 						}}
 					
-#line 1061 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1068 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1070,7 +1077,7 @@ VALUE tokenize(VALUE query_rbstr) {
 								emit(LBRACKET, ts, te, meta); }
 						}}
 					
-#line 1074 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1081 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1083,7 +1090,7 @@ VALUE tokenize(VALUE query_rbstr) {
 								emit(COLON, ts, te, meta); }
 						}}
 					
-#line 1087 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1094 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1096,7 +1103,7 @@ VALUE tokenize(VALUE query_rbstr) {
 								emit(BLOCK_STRING, ts, te, meta); }
 						}}
 					
-#line 1100 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1107 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1109,7 +1116,7 @@ VALUE tokenize(VALUE query_rbstr) {
 								emit(QUOTED_STRING, ts, te, meta); }
 						}}
 					
-#line 1113 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1120 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1122,7 +1129,7 @@ VALUE tokenize(VALUE query_rbstr) {
 								emit(VAR_SIGN, ts, te, meta); }
 						}}
 					
-#line 1126 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1133 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1135,7 +1142,7 @@ VALUE tokenize(VALUE query_rbstr) {
 								emit(DIR_SIGN, ts, te, meta); }
 						}}
 					
-#line 1139 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1146 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1148,7 +1155,7 @@ VALUE tokenize(VALUE query_rbstr) {
 								emit(ELLIPSIS, ts, te, meta); }
 						}}
 					
-#line 1152 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1159 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1161,7 +1168,7 @@ VALUE tokenize(VALUE query_rbstr) {
 								emit(EQUALS, ts, te, meta); }
 						}}
 					
-#line 1165 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1172 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1174,7 +1181,7 @@ VALUE tokenize(VALUE query_rbstr) {
 								emit(BANG, ts, te, meta); }
 						}}
 					
-#line 1178 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1185 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1187,7 +1194,7 @@ VALUE tokenize(VALUE query_rbstr) {
 								emit(PIPE, ts, te, meta); }
 						}}
 					
-#line 1191 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1198 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1200,7 +1207,7 @@ VALUE tokenize(VALUE query_rbstr) {
 								emit(AMP, ts, te, meta); }
 						}}
 					
-#line 1204 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1211 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1216,7 +1223,7 @@ VALUE tokenize(VALUE query_rbstr) {
 							}
 						}}
 					
-#line 1220 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1227 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1229,7 +1236,7 @@ VALUE tokenize(VALUE query_rbstr) {
 								emit(UNKNOWN_CHAR, ts, te, meta); }
 						}}
 					
-#line 1233 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1240 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1242,7 +1249,7 @@ VALUE tokenize(VALUE query_rbstr) {
 								emit(INT, ts, te, meta); }
 						}}
 					
-#line 1246 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1253 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1255,7 +1262,7 @@ VALUE tokenize(VALUE query_rbstr) {
 								emit(FLOAT, ts, te, meta); }
 						}}
 					
-#line 1259 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1266 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1268,7 +1275,7 @@ VALUE tokenize(VALUE query_rbstr) {
 								emit(BLOCK_STRING, ts, te, meta); }
 						}}
 					
-#line 1272 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1279 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1281,7 +1288,7 @@ VALUE tokenize(VALUE query_rbstr) {
 								emit(QUOTED_STRING, ts, te, meta); }
 						}}
 					
-#line 1285 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1292 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1294,7 +1301,7 @@ VALUE tokenize(VALUE query_rbstr) {
 								emit(IDENTIFIER, ts, te, meta); }
 						}}
 					
-#line 1298 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1305 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1307,7 +1314,7 @@ VALUE tokenize(VALUE query_rbstr) {
 								emit(COMMENT, ts, te, meta); }
 						}}
 					
-#line 1311 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1318 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1320,7 +1327,7 @@ VALUE tokenize(VALUE query_rbstr) {
 								meta->col += te - ts; }
 						}}
 					
-#line 1324 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1331 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1333,7 +1340,7 @@ VALUE tokenize(VALUE query_rbstr) {
 								emit(UNKNOWN_CHAR, ts, te, meta); }
 						}}
 					
-#line 1337 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1344 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1347,7 +1354,7 @@ VALUE tokenize(VALUE query_rbstr) {
 								emit(INT, ts, te, meta); }
 						}}
 					
-#line 1351 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1358 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1361,7 +1368,7 @@ VALUE tokenize(VALUE query_rbstr) {
 								emit(UNKNOWN_CHAR, ts, te, meta); }
 						}}
 					
-#line 1365 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1372 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1541,7 +1548,7 @@ VALUE tokenize(VALUE query_rbstr) {
 							}}
 					}
 					
-#line 1545 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1552 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1551,13 +1558,13 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1 "NONE"
 						{te = p+1;}}
 					
-#line 1555 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1562 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					{
 #line 54 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl"
 						{act = 1;}}
 					
-#line 1561 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1568 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1567,13 +1574,13 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1 "NONE"
 						{te = p+1;}}
 					
-#line 1571 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1578 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					{
 #line 55 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl"
 						{act = 2;}}
 					
-#line 1577 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1584 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1583,13 +1590,13 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1 "NONE"
 						{te = p+1;}}
 					
-#line 1587 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1594 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					{
 #line 56 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl"
 						{act = 3;}}
 					
-#line 1593 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1600 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1599,13 +1606,13 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1 "NONE"
 						{te = p+1;}}
 					
-#line 1603 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1610 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					{
 #line 57 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl"
 						{act = 4;}}
 					
-#line 1609 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1616 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1615,13 +1622,13 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1 "NONE"
 						{te = p+1;}}
 					
-#line 1619 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1626 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					{
 #line 58 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl"
 						{act = 5;}}
 					
-#line 1625 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1632 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1631,13 +1638,13 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1 "NONE"
 						{te = p+1;}}
 					
-#line 1635 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1642 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					{
 #line 59 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl"
 						{act = 6;}}
 					
-#line 1641 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1648 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1647,13 +1654,13 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1 "NONE"
 						{te = p+1;}}
 					
-#line 1651 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1658 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					{
 #line 60 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl"
 						{act = 7;}}
 					
-#line 1657 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1664 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1663,13 +1670,13 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1 "NONE"
 						{te = p+1;}}
 					
-#line 1667 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1674 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					{
 #line 61 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl"
 						{act = 8;}}
 					
-#line 1673 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1680 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1679,13 +1686,13 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1 "NONE"
 						{te = p+1;}}
 					
-#line 1683 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1690 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					{
 #line 62 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl"
 						{act = 9;}}
 					
-#line 1689 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1696 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1695,13 +1702,13 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1 "NONE"
 						{te = p+1;}}
 					
-#line 1699 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1706 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					{
 #line 63 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl"
 						{act = 10;}}
 					
-#line 1705 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1712 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1711,13 +1718,13 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1 "NONE"
 						{te = p+1;}}
 					
-#line 1715 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1722 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					{
 #line 64 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl"
 						{act = 11;}}
 					
-#line 1721 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1728 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1727,13 +1734,13 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1 "NONE"
 						{te = p+1;}}
 					
-#line 1731 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1738 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					{
 #line 65 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl"
 						{act = 12;}}
 					
-#line 1737 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1744 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1743,13 +1750,13 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1 "NONE"
 						{te = p+1;}}
 					
-#line 1747 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1754 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					{
 #line 66 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl"
 						{act = 13;}}
 					
-#line 1753 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1760 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1759,13 +1766,13 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1 "NONE"
 						{te = p+1;}}
 					
-#line 1763 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1770 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					{
 #line 67 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl"
 						{act = 14;}}
 					
-#line 1769 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1776 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1775,13 +1782,13 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1 "NONE"
 						{te = p+1;}}
 					
-#line 1779 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1786 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					{
 #line 68 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl"
 						{act = 15;}}
 					
-#line 1785 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1792 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1791,13 +1798,13 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1 "NONE"
 						{te = p+1;}}
 					
-#line 1795 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1802 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					{
 #line 69 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl"
 						{act = 16;}}
 					
-#line 1801 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1808 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1807,13 +1814,13 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1 "NONE"
 						{te = p+1;}}
 					
-#line 1811 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1818 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					{
 #line 70 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl"
 						{act = 17;}}
 					
-#line 1817 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1824 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1823,13 +1830,13 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1 "NONE"
 						{te = p+1;}}
 					
-#line 1827 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1834 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					{
 #line 71 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl"
 						{act = 18;}}
 					
-#line 1833 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1840 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1839,13 +1846,13 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1 "NONE"
 						{te = p+1;}}
 					
-#line 1843 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1850 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					{
 #line 72 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl"
 						{act = 19;}}
 					
-#line 1849 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1856 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1855,13 +1862,13 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1 "NONE"
 						{te = p+1;}}
 					
-#line 1859 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1866 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					{
 #line 73 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl"
 						{act = 20;}}
 					
-#line 1865 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1872 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1871,13 +1878,13 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1 "NONE"
 						{te = p+1;}}
 					
-#line 1875 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1882 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					{
 #line 74 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl"
 						{act = 21;}}
 					
-#line 1881 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1888 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1887,13 +1894,13 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1 "NONE"
 						{te = p+1;}}
 					
-#line 1891 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1898 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					{
 #line 82 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl"
 						{act = 29;}}
 					
-#line 1897 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1904 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1903,13 +1910,13 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1 "NONE"
 						{te = p+1;}}
 					
-#line 1907 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1914 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					{
 #line 83 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl"
 						{act = 30;}}
 					
-#line 1913 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1920 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1919,13 +1926,13 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1 "NONE"
 						{te = p+1;}}
 					
-#line 1923 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1930 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					{
 #line 91 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl"
 						{act = 38;}}
 					
-#line 1929 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1936 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1945,7 +1952,7 @@ VALUE tokenize(VALUE query_rbstr) {
 #line 1 "NONE"
 						{ts = 0;}}
 					
-#line 1949 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
+#line 1956 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.c"
 					
 					
 					break; 
@@ -1958,7 +1965,7 @@ VALUE tokenize(VALUE query_rbstr) {
 		_out: {}
 	}
 	
-#line 345 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl"
+#line 352 "graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl"
 	
 	
 	return tokens;
