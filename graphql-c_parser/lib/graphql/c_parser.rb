@@ -6,7 +6,7 @@ require "graphql/graphql_c_parser_ext"
 
 module GraphQL
   module CParser
-    def self.parse(query_str, filename, trace)
+    def self.parse(query_str, filename: nil, trace: GraphQL::Tracing::NullTrace)
       parser = Parser.new(query_str, filename, trace)
       parser.result
     end
@@ -67,19 +67,12 @@ module GraphQL
     if string.nil?
       raise GraphQL::ParseError.new("No query string was present", nil, nil, string)
     end
-    document = GraphQL::CParser.parse(string, filename, trace)
+    document = GraphQL::CParser.parse(string, filename: filename, trace: trace)
     if document.definitions.size == 0
       raise GraphQL::ParseError.new("Unexpected end of document", 1, 1, string)
     end
     document
   end
 
-  # Call CParser implementations by default:
-  def self.scan(str)
-    scan_with_c(str)
-  end
-
-  def self.parse(*args, **kwargs)
-    parse_with_c(*args, **kwargs)
-  end
+  self.default_parser = GraphQL::CParser
 end

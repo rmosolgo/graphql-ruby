@@ -340,8 +340,8 @@ module GraphQL
         attr_reader :description
         scalar_methods :name, :repeatable
         children_methods(
-          locations: Nodes::DirectiveLocation,
           arguments: Nodes::Argument,
+          locations: Nodes::DirectiveLocation,
         )
       end
 

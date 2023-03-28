@@ -460,7 +460,7 @@ def parse_document
   @document ||= begin
     # Break the string into tokens
     @trace.lex(query_string: @query_string) do
-      @tokens ||= GraphQL.scan(@query_string)
+      @tokens ||= GraphQL::Language::Lexer.tokenize(@query_string)
     end
     # From the tokens, build an AST
     @trace.parse(query_string: @query_string) do

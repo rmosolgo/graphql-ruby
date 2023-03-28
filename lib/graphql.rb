@@ -43,7 +43,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   # @param graphql_string [String] a GraphQL query string or schema definition
   # @return [GraphQL::Language::Nodes::Document]
   def self.parse(graphql_string, trace: GraphQL::Tracing::NullTrace)
-    parse_with_racc(graphql_string, trace: trace)
+    default_parser.parse(graphql_string, trace: trace)
   end
 
   # Read the contents of `filename` and parse them as GraphQL
@@ -51,16 +51,16 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   # @return [GraphQL::Language::Nodes::Document]
   def self.parse_file(filename)
     content = File.read(filename)
-    parse_with_racc(content, filename: filename)
-  end
-
-  def self.parse_with_racc(string, filename: nil, trace: GraphQL::Tracing::NullTrace)
-    GraphQL::Language::Parser.parse(string, filename: filename, trace: trace)
+    default_parser.parse(content, filename: filename)
   end
 
   # @return [Array<Array>]
   def self.scan(graphql_string)
-    scan_with_ruby(graphql_string)
+    default_parser.scan(graphql_string)
+  end
+
+  def self.parse_with_racc(string, filename: nil, trace: GraphQL::Tracing::NullTrace)
+    GraphQL::Language::Parser.parse(string, filename: filename, trace: trace)
   end
 
   def self.scan_with_ruby(graphql_string)
