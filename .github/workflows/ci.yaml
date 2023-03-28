@@ -96,7 +96,17 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-    - run: sudo apt install valgrind
+    # We cannot use Valgrind from apt because we need at least Valgrind 3.20.0
+    # to support DWARF 5
+    - run: sudo apt-get install -y libc6-dbg
+    - name: Install Valgrind from source
+      run: |
+        wget https://sourceware.org/pub/valgrind/valgrind-3.20.0.tar.bz2
+        tar xvf valgrind-3.20.0.tar.bz2
+        cd valgrind-3.20.0
+        ./configure
+        make
+        sudo make install
     - run: echo BUNDLE_GEMFILE='gemfiles/rails_6.1_postgresql.gemfile' > $GITHUB_ENV
     - run: echo DATABASE='POSTGRESQL' > $GITHUB_ENV
     - run: echo PGPASSWORD='postgres' > $GITHUB_ENV
