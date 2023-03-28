@@ -6,11 +6,14 @@
 // C Declarations
 #include <ruby.h>
 #define YYSTYPE VALUE
-int yylex(YYSTYPE *, VALUE);
-void yyerror(VALUE, const char*);
+int yylex(YYSTYPE *, VALUE, VALUE);
+void yyerror(VALUE, VALUE, const char*);
 
 static VALUE GraphQL_Language_Nodes_NONE;
 static VALUE r_string_query;
+
+#define MAKE_AST_NODE(node_class_name, nargs, ...) rb_funcall(GraphQL_Language_Nodes_##node_class_name, rb_intern("from_a"), nargs + 1, filename,__VA_ARGS__)
+
 #define SETUP_NODE_CLASS_VARIABLE(node_class_name) static VALUE GraphQL_Language_Nodes_##node_class_name;
 
 SETUP_NODE_CLASS_VARIABLE(Argument)
@@ -53,6 +56,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
 %}
 
 %param {VALUE parser}
+%param {VALUE filename}
 
 // YACC Declarations
 %token AMP 200
@@ -108,16 +112,11 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
       line = INT2FIX(1);
       col = INT2FIX(1);
     }
-    $$ = rb_funcall(GraphQL_Language_Nodes_Document, rb_intern("from_a"), 3,
-      line,
-      col,
-      $1
-    );
+    $$ = MAKE_AST_NODE(Document, 3, line, col, $1);
   }
 
   definitions_list:
-      /* none */                  { $$ = rb_ary_new(); }
-    | definition                  { $$ = rb_ary_new_from_args(1, $1); }
+      definition                  { $$ = rb_ary_new_from_args(1, $1); }
     | definitions_list definition { rb_ary_push($$, $2); }
 
   definition:
@@ -131,7 +130,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
 
   operation_definition:
       operation_type operation_name_opt variable_definitions_opt directives_list_opt selection_set {
-        $$ = rb_funcall(GraphQL_Language_Nodes_OperationDefinition, rb_intern("from_a"), 7,
+        $$ = MAKE_AST_NODE(OperationDefinition, 7,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           rb_ary_entry($1, 3),
@@ -142,7 +141,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
         );
       }
     | LCURLY selection_list RCURLY {
-        $$ = rb_funcall(GraphQL_Language_Nodes_OperationDefinition, rb_intern("from_a"), 7,
+        $$ = MAKE_AST_NODE(OperationDefinition, 7,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           r_string_query,
@@ -153,7 +152,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
         );
       }
     | LCURLY RCURLY {
-        $$ = rb_funcall(GraphQL_Language_Nodes_OperationDefinition, rb_intern("from_a"), 7,
+        $$ = MAKE_AST_NODE(OperationDefinition, 7,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           r_string_query,
@@ -183,7 +182,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
 
   variable_definition:
       VAR_SIGN name COLON type default_value_opt {
-        $$ = rb_funcall(GraphQL_Language_Nodes_VariableDefinition, rb_intern("from_a"), 5,
+        $$ = MAKE_AST_NODE(VariableDefinition, 5,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           rb_ary_entry($2, 3),
@@ -214,7 +213,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
 
   field:
     name COLON name arguments_opt directives_list_opt selection_set_opt {
-      $$ = rb_funcall(GraphQL_Language_Nodes_Field, rb_intern("from_a"), 7,
+      $$ = MAKE_AST_NODE(Field, 7,
         rb_ary_entry($1, 1),
         rb_ary_entry($1, 2),
         rb_ary_entry($1, 3), // alias
@@ -225,7 +224,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
       );
     }
     | name arguments_opt directives_list_opt selection_set_opt {
-      $$ = rb_funcall(GraphQL_Language_Nodes_Field, rb_intern("from_a"), 7,
+      $$ = MAKE_AST_NODE(Field, 7,
         rb_ary_entry($1, 1),
         rb_ary_entry($1, 2),
         Qnil, // alias
@@ -246,7 +245,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
 
   argument:
       name COLON input_value {
-        $$ = rb_funcall(GraphQL_Language_Nodes_Argument, rb_intern("from_a"), 4,
+        $$ = MAKE_AST_NODE(Argument, 4,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           rb_ary_entry($1, 3),
@@ -271,7 +270,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
     | object_value
 
   null_value: NULL_LITERAL {
-    $$ = rb_funcall(GraphQL_Language_Nodes_NullValue, rb_intern("from_a"), 3,
+    $$ = MAKE_AST_NODE(NullValue, 3,
       rb_ary_entry($1, 1),
       rb_ary_entry($1, 2),
       rb_ary_entry($1, 3)
@@ -279,7 +278,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
   }
 
   variable: VAR_SIGN name {
-    $$ = rb_funcall(GraphQL_Language_Nodes_VariableIdentifier, rb_intern("from_a"), 3,
+    $$ = MAKE_AST_NODE(VariableIdentifier, 3,
       rb_ary_entry($1, 1),
       rb_ary_entry($1, 2),
       rb_ary_entry($2, 3)
@@ -303,7 +302,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
     | schema_keyword
 
   enum_value: enum_name {
-    $$ = rb_funcall(GraphQL_Language_Nodes_Enum, rb_intern("from_a"), 3,
+    $$ = MAKE_AST_NODE(Enum, 3,
       rb_ary_entry($1, 1),
       rb_ary_entry($1, 2),
       rb_ary_entry($1, 3)
@@ -312,7 +311,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
 
   object_value:
     LCURLY object_value_list_opt RCURLY {
-      $$ = rb_funcall(GraphQL_Language_Nodes_InputObject, rb_intern("from_a"), 3,
+      $$ = MAKE_AST_NODE(InputObject, 3,
         rb_ary_entry($1, 1),
         rb_ary_entry($1, 2),
         $2
@@ -329,7 +328,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
 
   object_value_field:
       name COLON input_value {
-        $$ = rb_funcall(GraphQL_Language_Nodes_Argument, rb_intern("from_a"), 4,
+        $$ = MAKE_AST_NODE(Argument, 4,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           rb_ary_entry($1, 3),
@@ -340,7 +339,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
   /* like the previous, but with literals only: */
   object_literal_value:
       LCURLY object_literal_value_list_opt RCURLY {
-        $$ = rb_funcall(GraphQL_Language_Nodes_InputObject, rb_intern("from_a"), 3,
+        $$ = MAKE_AST_NODE(InputObject, 3,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           $2
@@ -357,7 +356,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
 
   object_literal_value_field:
       name COLON literal_value {
-        $$ = rb_funcall(GraphQL_Language_Nodes_Argument, rb_intern("from_a"), 4,
+        $$ = MAKE_AST_NODE(Argument, 4,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           rb_ary_entry($1, 3),
@@ -375,7 +374,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
     | directives_list directive { rb_ary_push($$, $2); }
 
   directive: DIR_SIGN name arguments_opt {
-    $$ = rb_funcall(GraphQL_Language_Nodes_Directive, rb_intern("from_a"), 4,
+    $$ = MAKE_AST_NODE(Directive, 4,
       rb_ary_entry($1, 1),
       rb_ary_entry($1, 2),
       rb_ary_entry($2, 3),
@@ -410,7 +409,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
 
   fragment_spread:
       ELLIPSIS name_without_on directives_list_opt {
-        $$ = rb_funcall(GraphQL_Language_Nodes_FragmentSpread, rb_intern("from_a"), 4,
+        $$ = MAKE_AST_NODE(FragmentSpread, 4,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           rb_ary_entry($2, 3),
@@ -420,7 +419,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
 
   inline_fragment:
       ELLIPSIS ON type directives_list_opt selection_set {
-        $$ = rb_funcall(GraphQL_Language_Nodes_InlineFragment, rb_intern("from_a"), 5,
+        $$ = MAKE_AST_NODE(InlineFragment, 5,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           $3,
@@ -429,7 +428,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
         );
       }
     | ELLIPSIS directives_list_opt selection_set {
-        $$ = rb_funcall(GraphQL_Language_Nodes_InlineFragment, rb_intern("from_a"), 5,
+        $$ = MAKE_AST_NODE(InlineFragment, 5,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           Qnil,
@@ -440,7 +439,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
 
   fragment_definition:
     FRAGMENT fragment_name_opt ON type directives_list_opt selection_set {
-      $$ = rb_funcall(GraphQL_Language_Nodes_FragmentDefinition, rb_intern("from_a"), 6,
+      $$ = MAKE_AST_NODE(FragmentDefinition, 6,
         rb_ary_entry($1, 1),
         rb_ary_entry($1, 2),
         $2,
@@ -456,18 +455,18 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
 
   type:
       nullable_type
-    | nullable_type BANG      { $$ = rb_funcall(GraphQL_Language_Nodes_NonNullType, rb_intern("from_a"), 3, rb_funcall($1, rb_intern("line"), 0), rb_funcall($1, rb_intern("col"), 0), $1); }
+    | nullable_type BANG      { $$ = MAKE_AST_NODE(NonNullType, 3, rb_funcall($1, rb_intern("line"), 0), rb_funcall($1, rb_intern("col"), 0), $1); }
 
   nullable_type:
       name                   {
-        $$ = rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3,
+        $$ = MAKE_AST_NODE(TypeName, 3,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           rb_ary_entry($1, 3)
         );
       }
     | LBRACKET type RBRACKET {
-        $$ = rb_funcall(GraphQL_Language_Nodes_ListType, rb_intern("from_a"), 3,
+        $$ = MAKE_AST_NODE(ListType, 3,
           rb_funcall($2, rb_intern("line"), 0),
           rb_funcall($2, rb_intern("col"), 0),
           $2
@@ -481,7 +480,7 @@ type_system_definition:
 
   schema_definition:
       SCHEMA directives_list_opt LCURLY operation_type_definition_list RCURLY {
-        $$ = rb_funcall(GraphQL_Language_Nodes_SchemaDefinition, rb_intern("from_a"), 6,
+        $$ = MAKE_AST_NODE(SchemaDefinition, 6,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           // TODO use static strings:
@@ -522,7 +521,7 @@ type_system_definition:
 
   scalar_type_definition:
       description_opt SCALAR name directives_list_opt {
-        $$ = rb_funcall(GraphQL_Language_Nodes_ScalarTypeDefinition, rb_intern("from_a"), 5,
+        $$ = MAKE_AST_NODE(ScalarTypeDefinition, 5,
           rb_ary_entry($2, 1),
           rb_ary_entry($2, 2),
           rb_ary_entry($3, 3),
@@ -534,7 +533,7 @@ type_system_definition:
 
   object_type_definition:
       description_opt TYPE_LITERAL name implements_opt directives_list_opt field_definition_list_opt {
-        $$ = rb_funcall(GraphQL_Language_Nodes_ObjectTypeDefinition, rb_intern("from_a"), 7,
+        $$ = MAKE_AST_NODE(ObjectTypeDefinition, 7,
           rb_ary_entry($2, 1),
           rb_ary_entry($2, 2),
           rb_ary_entry($3, 3),
@@ -554,7 +553,7 @@ type_system_definition:
 
   interfaces_list:
       name {
-        VALUE new_name = rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3,
+        VALUE new_name = MAKE_AST_NODE(TypeName, 3,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           rb_ary_entry($1, 3)
@@ -562,13 +561,13 @@ type_system_definition:
         $$ = rb_ary_new_from_args(1, new_name);
       }
     | interfaces_list AMP name {
-      VALUE new_name =  rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3, rb_ary_entry($3, 1), rb_ary_entry($3, 2), rb_ary_entry($3, 3));
+      VALUE new_name =  MAKE_AST_NODE(TypeName, 3, rb_ary_entry($3, 1), rb_ary_entry($3, 2), rb_ary_entry($3, 3));
       rb_ary_push($$, new_name);
     }
 
   legacy_interfaces_list:
       name {
-        VALUE new_name = rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3,
+        VALUE new_name = MAKE_AST_NODE(TypeName, 3,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           rb_ary_entry($1, 3)
@@ -576,12 +575,12 @@ type_system_definition:
         $$ = rb_ary_new_from_args(1, new_name);
       }
     | legacy_interfaces_list name {
-      rb_ary_push($$, rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3, rb_ary_entry($2, 1), rb_ary_entry($2, 2), rb_ary_entry($2, 3)));
+      rb_ary_push($$, MAKE_AST_NODE(TypeName, 3, rb_ary_entry($2, 1), rb_ary_entry($2, 2), rb_ary_entry($2, 3)));
     }
 
   input_value_definition:
       description_opt name COLON type default_value_opt directives_list_opt {
-        $$ = rb_funcall(GraphQL_Language_Nodes_InputValueDefinition, rb_intern("from_a"), 7,
+        $$ = MAKE_AST_NODE(InputValueDefinition, 7,
           rb_ary_entry($2, 1),
           rb_ary_entry($2, 2),
           rb_ary_entry($2, 3),
@@ -603,7 +602,7 @@ type_system_definition:
 
   field_definition:
       description_opt name arguments_definitions_opt COLON type directives_list_opt {
-        $$ = rb_funcall(GraphQL_Language_Nodes_FieldDefinition, rb_intern("from_a"), 7,
+        $$ = MAKE_AST_NODE(FieldDefinition, 7,
           rb_ary_entry($2, 1),
           rb_ary_entry($2, 2),
           rb_ary_entry($2, 3),
@@ -626,7 +625,7 @@ type_system_definition:
 
   interface_type_definition:
       description_opt INTERFACE name implements_opt directives_list_opt field_definition_list_opt {
-        $$ = rb_funcall(GraphQL_Language_Nodes_InterfaceTypeDefinition, rb_intern("from_a"), 7,
+        $$ = MAKE_AST_NODE(InterfaceTypeDefinition, 7,
           rb_ary_entry($2, 1),
           rb_ary_entry($2, 2),
           rb_ary_entry($3, 3),
@@ -640,7 +639,7 @@ type_system_definition:
 
   union_members:
       name {
-        VALUE new_member = rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3,
+        VALUE new_member = MAKE_AST_NODE(TypeName, 3,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           rb_ary_entry($1, 3)
@@ -648,12 +647,12 @@ type_system_definition:
         $$ = rb_ary_new_from_args(1, new_member);
       }
     | union_members PIPE name {
-        rb_ary_push($$, rb_funcall(GraphQL_Language_Nodes_TypeName, rb_intern("from_a"), 3, rb_ary_entry($3, 1), rb_ary_entry($3, 2), rb_ary_entry($3, 3)));
+        rb_ary_push($$, MAKE_AST_NODE(TypeName, 3, rb_ary_entry($3, 1), rb_ary_entry($3, 2), rb_ary_entry($3, 3)));
       }
 
   union_type_definition:
       description_opt UNION name directives_list_opt EQUALS union_members {
-        $$ = rb_funcall(GraphQL_Language_Nodes_UnionTypeDefinition, rb_intern("from_a"),  6,
+        $$ = MAKE_AST_NODE(UnionTypeDefinition,  6,
           rb_ary_entry($2, 1),
           rb_ary_entry($2, 2),
           rb_ary_entry($3, 3),
@@ -666,7 +665,7 @@ type_system_definition:
 
   enum_type_definition:
       description_opt ENUM name directives_list_opt LCURLY enum_value_definitions RCURLY {
-        $$ = rb_funcall(GraphQL_Language_Nodes_EnumTypeDefinition, rb_intern("from_a"),  6,
+        $$ = MAKE_AST_NODE(EnumTypeDefinition,  6,
           rb_ary_entry($2, 1),
           rb_ary_entry($2, 2),
           rb_ary_entry($3, 3),
@@ -679,7 +678,7 @@ type_system_definition:
 
   enum_value_definition:
     description_opt enum_name directives_list_opt {
-      $$ = rb_funcall(GraphQL_Language_Nodes_EnumValueDefinition, rb_intern("from_a"), 5,
+      $$ = MAKE_AST_NODE(EnumValueDefinition, 5,
         rb_ary_entry($2, 1),
         rb_ary_entry($2, 2),
         rb_ary_entry($2, 3),
@@ -695,7 +694,7 @@ type_system_definition:
 
   input_object_type_definition:
       description_opt INPUT name directives_list_opt LCURLY input_value_definition_list RCURLY {
-        $$ = rb_funcall(GraphQL_Language_Nodes_InputObjectTypeDefinition, rb_intern("from_a"), 6,
+        $$ = MAKE_AST_NODE(InputObjectTypeDefinition, 6,
           rb_ary_entry($2, 1),
           rb_ary_entry($2, 2),
           rb_ary_entry($3, 3),
@@ -708,7 +707,7 @@ type_system_definition:
 
   directive_definition:
       description_opt DIRECTIVE DIR_SIGN name arguments_definitions_opt directive_repeatable_opt ON directive_locations {
-        $$ = rb_funcall(GraphQL_Language_Nodes_DirectiveDefinition, rb_intern("from_a"), 7,
+        $$ = MAKE_AST_NODE(DirectiveDefinition, 7,
           rb_ary_entry($2, 1),
           rb_ary_entry($2, 2),
           rb_ary_entry($4, 3),
@@ -725,8 +724,8 @@ type_system_definition:
     | REPEATABLE    { $$ = Qtrue; }
 
   directive_locations:
-      name                          { $$ = rb_ary_new_from_args(1, rb_funcall(GraphQL_Language_Nodes_DirectiveLocation, rb_intern("from_a"), 3, rb_ary_entry($1, 1), rb_ary_entry($1, 2), rb_ary_entry($1, 3))); }
-    | directive_locations PIPE name { rb_ary_push($$, rb_funcall(GraphQL_Language_Nodes_DirectiveLocation, rb_intern("from_a"), 3, rb_ary_entry($3, 1), rb_ary_entry($3, 2), rb_ary_entry($3, 3))); }
+      name                          { $$ = rb_ary_new_from_args(1, MAKE_AST_NODE(DirectiveLocation, 3, rb_ary_entry($1, 1), rb_ary_entry($1, 2), rb_ary_entry($1, 3))); }
+    | directive_locations PIPE name { rb_ary_push($$, MAKE_AST_NODE(DirectiveLocation, 3, rb_ary_entry($3, 1), rb_ary_entry($3, 2), rb_ary_entry($3, 3))); }
 
 
   type_system_extension:
@@ -735,7 +734,7 @@ type_system_definition:
 
   schema_extension:
       EXTEND SCHEMA directives_list_opt LCURLY operation_type_definition_list RCURLY {
-        $$ = rb_funcall(GraphQL_Language_Nodes_SchemaExtension, rb_intern("from_a"), 6,
+        $$ = MAKE_AST_NODE(SchemaExtension, 6,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           // TODO use static strings:
@@ -746,7 +745,7 @@ type_system_definition:
         );
       }
     | EXTEND SCHEMA directives_list {
-        $$ = rb_funcall(GraphQL_Language_Nodes_SchemaExtension, rb_intern("from_a"), 6,
+        $$ = MAKE_AST_NODE(SchemaExtension, 6,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           Qnil,
@@ -765,7 +764,7 @@ type_system_definition:
     | input_object_type_extension
 
   scalar_type_extension: EXTEND SCALAR name directives_list {
-    $$ = rb_funcall(GraphQL_Language_Nodes_ScalarTypeExtension, rb_intern("from_a"), 4,
+    $$ = MAKE_AST_NODE(ScalarTypeExtension, 4,
       rb_ary_entry($1, 1),
       rb_ary_entry($1, 2),
       rb_ary_entry($3, 3),
@@ -775,7 +774,7 @@ type_system_definition:
 
   object_type_extension:
       EXTEND TYPE_LITERAL name implements_opt directives_list_opt field_definition_list_opt {
-        $$ = rb_funcall(GraphQL_Language_Nodes_ObjectTypeExtension, rb_intern("from_a"), 6,
+        $$ = MAKE_AST_NODE(ObjectTypeExtension, 6,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           rb_ary_entry($3, 3),
@@ -787,7 +786,7 @@ type_system_definition:
 
   interface_type_extension:
       EXTEND INTERFACE name implements_opt directives_list_opt field_definition_list_opt {
-        $$ = rb_funcall(GraphQL_Language_Nodes_InterfaceTypeExtension, rb_intern("from_a"), 6,
+        $$ = MAKE_AST_NODE(InterfaceTypeExtension, 6,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           rb_ary_entry($3, 3),
@@ -799,7 +798,7 @@ type_system_definition:
 
   union_type_extension:
       EXTEND UNION name directives_list_opt EQUALS union_members {
-        $$ = rb_funcall(GraphQL_Language_Nodes_UnionTypeExtension, rb_intern("from_a"), 5,
+        $$ = MAKE_AST_NODE(UnionTypeExtension, 5,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           rb_ary_entry($3, 3),
@@ -808,7 +807,7 @@ type_system_definition:
         );
       }
     | EXTEND UNION name directives_list {
-        $$ = rb_funcall(GraphQL_Language_Nodes_UnionTypeExtension, rb_intern("from_a"), 5,
+        $$ = MAKE_AST_NODE(UnionTypeExtension, 5,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           rb_ary_entry($3, 3),
@@ -819,7 +818,7 @@ type_system_definition:
 
   enum_type_extension:
       EXTEND ENUM name directives_list_opt LCURLY enum_value_definitions RCURLY {
-        $$ = rb_funcall(GraphQL_Language_Nodes_EnumTypeExtension, rb_intern("from_a"), 5,
+        $$ = MAKE_AST_NODE(EnumTypeExtension, 5,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           rb_ary_entry($3, 3),
@@ -828,7 +827,7 @@ type_system_definition:
         );
       }
     | EXTEND ENUM name directives_list {
-        $$ = rb_funcall(GraphQL_Language_Nodes_EnumTypeExtension, rb_intern("from_a"), 5,
+        $$ = MAKE_AST_NODE(EnumTypeExtension, 5,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           rb_ary_entry($3, 3),
@@ -839,7 +838,7 @@ type_system_definition:
 
   input_object_type_extension:
       EXTEND INPUT name directives_list_opt LCURLY input_value_definition_list RCURLY {
-        $$ = rb_funcall(GraphQL_Language_Nodes_InputObjectTypeExtension, rb_intern("from_a"), 5,
+        $$ = MAKE_AST_NODE(InputObjectTypeExtension, 5,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           rb_ary_entry($3, 3),
@@ -848,7 +847,7 @@ type_system_definition:
         );
       }
     | EXTEND INPUT name directives_list {
-        $$ = rb_funcall(GraphQL_Language_Nodes_InputObjectTypeExtension, rb_intern("from_a"), 5,
+        $$ = MAKE_AST_NODE(InputObjectTypeExtension, 5,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           rb_ary_entry($3, 3),
@@ -860,7 +859,7 @@ type_system_definition:
 %%
 
 // Custom functions
-int yylex (YYSTYPE *lvalp, VALUE parser) {
+int yylex (YYSTYPE *lvalp, VALUE parser, VALUE filename) {
   int next_token_idx = FIX2INT(rb_ivar_get(parser, rb_intern("@next_token_index")));
   VALUE tokens = rb_ivar_get(parser, rb_intern("@tokens"));
   VALUE next_token = rb_ary_entry(tokens, next_token_idx);
@@ -876,7 +875,7 @@ int yylex (YYSTYPE *lvalp, VALUE parser) {
   return next_token_type;
 }
 
-void yyerror(VALUE parser, const char *msg) {
+void yyerror(VALUE parser, VALUE filename, const char *msg) {
   VALUE mGraphQL = rb_const_get_at(rb_cObject, rb_intern("GraphQL"));
   VALUE mCParser = rb_const_get_at(mGraphQL, rb_intern("CParser"));
   VALUE rb_message = rb_str_new_cstr(msg);

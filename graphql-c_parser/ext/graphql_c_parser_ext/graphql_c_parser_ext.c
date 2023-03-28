@@ -5,7 +5,7 @@ VALUE GraphQL_CParser_Lexer_tokenize(VALUE self, VALUE query_string) {
 }
 
 VALUE GraphQL_CParser_Parser_c_parse(VALUE self) {
-  yyparse(self);
+  yyparse(self, rb_ivar_get(self, rb_intern("@filename")));
   return Qnil;
 }
 

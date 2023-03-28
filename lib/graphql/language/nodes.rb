@@ -290,8 +290,8 @@ module GraphQL
                   #{assignments.join("\n")}
                 end
 
-                def self.from_a(line, col, #{(scalar_method_names + @children_methods.keys).join(", ")})
-                  self.new(line: line, col: col, #{keywords.join(", ")})
+                def self.from_a(filename, line, col, #{(scalar_method_names + @children_methods.keys).join(", ")})
+                  self.new(filename: filename, line: line, col: col, #{keywords.join(", ")})
                 end
               RUBY
             end
@@ -374,8 +374,8 @@ module GraphQL
           @alias = attributes[:alias]
         end
 
-        def self.from_a(line, col, graphql_alias, name, arguments, directives, selections)
-          self.new(line: line, col: col, alias: graphql_alias, name: name, arguments: arguments, directives: directives, selections: selections)
+        def self.from_a(filename, line, col, graphql_alias, name, arguments, directives, selections)
+          self.new(filename: filename, line: line, col: col, alias: graphql_alias, name: name, arguments: arguments, directives: directives, selections: selections)
         end
 
         # Override this because default is `:fields`
@@ -396,8 +396,8 @@ module GraphQL
           @selections = selections
         end
 
-        def self.from_a(line, col, name, type, directives, selections)
-          self.new(line: line, col: col, name: name, type: type, directives: directives, selections: selections)
+        def self.from_a(filename, line, col, name, type, directives, selections)
+          self.new(filename: filename, line: line, col: col, name: name, type: type, directives: directives, selections: selections)
         end
 
         scalar_methods :name, :type

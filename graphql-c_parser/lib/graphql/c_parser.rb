@@ -21,17 +21,20 @@ module GraphQL
         return GraphQL::ParseError.new("This query is too large to execute.", nil, nil, parser.query_string, filename: parser.filename)
       end
       token = parser.tokens[parser.next_token_index - 1]
-      line = token[1]
-      col = token[2]
-      if line && col
-        location_str = " at [#{line}, #{col}]"
-        if !message.include?(location_str)
-          message += location_str
+      if token
+        # There might not be a token if it's a comments-only string
+        line = token[1]
+        col = token[2]
+        if line && col
+          location_str = " at [#{line}, #{col}]"
+          if !message.include?(location_str)
+            message += location_str
+          end
         end
-      end
 
-      if !message.include?("end of file")
-        message.sub!(/, unexpected ([a-zA-Z ]+)(,| at)/, ", unexpected \\1 (#{token[3].inspect})\\2")
+        if !message.include?("end of file")
+          message.sub!(/, unexpected ([a-zA-Z ]+)(,| at)/, ", unexpected \\1 (#{token[3].inspect})\\2")
+        end
       end
 
       GraphQL::ParseError.new(message, line, col, parser.query_string, filename: parser.filename)
