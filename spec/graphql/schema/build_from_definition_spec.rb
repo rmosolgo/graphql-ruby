@@ -203,7 +203,8 @@ union U = Hello
 
       assert_schema_and_compare_output(schema)
 
-      built_schema = GraphQL::Schema.from_definition(schema)
+      # TODO: GraphQL::CParser doesn't support definition_line yet.
+      built_schema = GraphQL::Schema.from_definition(schema, parser: GraphQL::Language::Parser)
       # The schema's are the same since there's no description
       assert_equal 1, built_schema.ast_node.line
       assert_equal 1, built_schema.ast_node.definition_line
