@@ -61,7 +61,7 @@ describe GraphQL::Schema do
     describe "when the return value is nil" do
       it "returns nil" do
         result = relay_schema.resolve_type(123, nil, GraphQL::Query::NullContext)
-        assert_equal(nil, result)
+        assert_equal([nil, nil], result)
       end
     end
 

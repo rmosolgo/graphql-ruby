@@ -799,11 +799,7 @@ module GraphQL
             end
 
             if resolved_type.nil? || (resolved_type.is_a?(Module) && resolved_type.respond_to?(:kind))
-              if resolved_value
-                [resolved_type, resolved_value]
-              else
-                resolved_type
-              end
+              [resolved_type, resolved_value]
             else
               raise ".resolve_type should return a type definition, but got #{resolved_type.inspect} (#{resolved_type.class}) from `resolve_type(#{type}, #{obj}, #{ctx})`"
             end
