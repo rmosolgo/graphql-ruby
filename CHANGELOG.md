@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 2.0.17.2 (29 March 2023)
+
+### Bug fixes
+
+- Unions and Interfaces: support returning `[type_module, false]` from `resolve_type` #4413
+
 # 2.0.17.1 (27 March 2023)
 
 ### Bug fixes
