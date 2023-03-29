@@ -374,7 +374,7 @@ module GraphQL
           @alias = attributes[:alias]
         end
 
-        def self.from_a(filename, line, col, graphql_alias, name, arguments, directives, selections)
+        def self.from_a(filename, line, col, graphql_alias, name, arguments, directives, selections) # rubocop:disable Metrics/ParameterLists
           self.new(filename: filename, line: line, col: col, alias: graphql_alias, name: name, arguments: arguments, directives: directives, selections: selections)
         end
 
