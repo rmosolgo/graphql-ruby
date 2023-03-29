@@ -2,7 +2,7 @@
 require "spec_helper"
 
 describe GraphQL::Language::Printer do
-  let(:document) { GraphQL::Language::Parser.parse(query_string) }
+  let(:document) { GraphQL.parse(query_string) }
   let(:query_string) {%|
     query getStuff($someVar: Int = 1, $anotherVar: [String!], $skipNested: Boolean! = false) @skip(if: false) {
       myField: someField(someArg: $someVar, ok: 1.4) @skip(if: $anotherVar) @thing(or: "Whatever")

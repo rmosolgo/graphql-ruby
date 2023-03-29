@@ -6,9 +6,14 @@ require "graphql/graphql_c_parser_ext"
 
 module GraphQL
   module CParser
-    def self.parse(query_str, filename, trace)
+    def self.parse(query_str, filename: nil, trace: GraphQL::Tracing::NullTrace)
       parser = Parser.new(query_str, filename, trace)
       parser.result
+    end
+
+    def self.parse_file(filename)
+      contents = File.read(filename)
+      parse(contents, filename: filename)
     end
 
     def self.prepare_parse_error(message, parser)
@@ -16,17 +21,20 @@ module GraphQL
         return GraphQL::ParseError.new("This query is too large to execute.", nil, nil, parser.query_string, filename: parser.filename)
       end
       token = parser.tokens[parser.next_token_index - 1]
-      line = token[1]
-      col = token[2]
-      if line && col
-        location_str = " at [#{line}, #{col}]"
-        if !message.include?(location_str)
-          message += location_str
+      if token
+        # There might not be a token if it's a comments-only string
+        line = token[1]
+        col = token[2]
+        if line && col
+          location_str = " at [#{line}, #{col}]"
+          if !message.include?(location_str)
+            message += location_str
+          end
         end
-      end
 
-      if !message.include?("end of file")
-        message.sub!(/, unexpected ([a-zA-Z ]+)(,| at)/, ", unexpected \\1 (#{token[3].inspect})\\2")
+        if !message.include?("end of file")
+          message.sub!(/, unexpected ([a-zA-Z ]+)(,| at)/, ", unexpected \\1 (#{token[3].inspect})\\2")
+        end
       end
 
       GraphQL::ParseError.new(message, line, col, parser.query_string, filename: parser.filename)
@@ -34,6 +42,9 @@ module GraphQL
 
     class Parser
       def initialize(query_string, filename, trace)
+        if query_string.nil?
+          raise GraphQL::ParseError.new("No query string was present", nil, nil, query_string)
+        end
         @query_string = query_string
         @filename = filename
         @tokens = nil
@@ -67,19 +78,12 @@ module GraphQL
     if string.nil?
       raise GraphQL::ParseError.new("No query string was present", nil, nil, string)
     end
-    document = GraphQL::CParser.parse(string, filename, trace)
+    document = GraphQL::CParser.parse(string, filename: filename, trace: trace)
     if document.definitions.size == 0
       raise GraphQL::ParseError.new("Unexpected end of document", 1, 1, string)
     end
     document
   end
 
-  # Call CParser implementations by default:
-  def self.scan(str)
-    scan_with_c(str)
-  end
-
-  def self.parse(*args, **kwargs)
-    parse_with_c(*args, **kwargs)
-  end
+  self.default_parser = GraphQL::CParser
 end

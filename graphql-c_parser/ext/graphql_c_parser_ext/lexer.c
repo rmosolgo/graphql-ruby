@@ -902,15 +902,15 @@ void emit(TokenType tt, char *ts, char *te, Meta *meta) {
 			tt = STRING;
 		}
 		
-		VALUE token_data[] = {
-			token_sym,
-			rb_int2inum(meta->line),
-			rb_int2inum(meta->col),
-			token_content,
-			meta->previous_token,
-			INT2FIX(200 + (int)tt)
-		};
-		VALUE token = rb_ary_new_from_values(6, token_data);
+		VALUE token = rb_ary_new_from_args(6,
+		token_sym,
+		rb_int2inum(meta->line),
+		rb_int2inum(meta->col),
+		token_content,
+		meta->previous_token,
+		INT2FIX(200 + (int)tt)
+		);
+		
 		// COMMENTs are retained as `previous_token` but aren't pushed to the normal token list
 		if (tt != COMMENT) {
 			rb_ary_push(meta->tokens, token);
