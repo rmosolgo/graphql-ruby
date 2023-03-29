@@ -987,4 +987,27 @@ describe GraphQL::Query do
       end
     end
   end
+
+  describe "using GraphQL.default_parser" do
+    module DummyParser
+      DOC = GraphQL::Language::Parser.parse("{ __typename }")
+      def self.parse(query_str, trace: nil, filename: nil)
+        DOC
+      end
+    end
+
+    before do
+      @previous_parser = GraphQL.default_parser
+      GraphQL.default_parser = DummyParser
+    end
+
+    after do
+      GraphQL.default_parser = @previous_parser
+    end
+
+    it "uses it for queries" do
+      res = Dummy::Schema.execute("blah blah blah")
+      assert_equal "Query", res["data"]["__typename"]
+    end
+  end
 end
