@@ -152,11 +152,7 @@
 <p>For example:</p>
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Load Apollo stuff</span>
-<span class="k">import</span> <span class="p">{</span> <span class="nx">ApolloLink</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-link</span><span class="dl">'</span><span class="p">;</span>
-<span class="k">import</span> <span class="p">{</span> <span class="nx">ApolloClient</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-client</span><span class="dl">'</span><span class="p">;</span>
-<span class="k">import</span> <span class="p">{</span> <span class="nx">HttpLink</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-link-http</span><span class="dl">'</span><span class="p">;</span>
-<span class="k">import</span> <span class="p">{</span> <span class="nx">InMemoryCache</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-cache-inmemory</span><span class="dl">'</span><span class="p">;</span>
-
+<span class="k">import</span> <span class="p">{</span> <span class="nx">ApolloClient</span><span class="p">,</span> <span class="nx">HttpLink</span><span class="p">,</span> <span class="nx">ApolloLink</span><span class="p">,</span> <span class="nx">InMemoryCache</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">@apollo/client</span><span class="dl">"</span><span class="p">;</span>
 <span class="c1">// Load PusherLink from graphql-ruby-client</span>
 <span class="k">import</span> <span class="nx">PusherLink</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">graphql-ruby-client/subscriptions/PusherLink</span><span class="dl">'</span><span class="p">;</span>
 
@@ -214,10 +210,7 @@
 <p>For example:</p>
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Load Apollo stuff</span>
-<span class="k">import</span> <span class="p">{</span> <span class="nx">ApolloLink</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-link</span><span class="dl">'</span><span class="p">;</span>
-<span class="k">import</span> <span class="p">{</span> <span class="nx">ApolloClient</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-client</span><span class="dl">'</span><span class="p">;</span>
-<span class="k">import</span> <span class="p">{</span> <span class="nx">HttpLink</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-link-http</span><span class="dl">'</span><span class="p">;</span>
-<span class="k">import</span> <span class="p">{</span> <span class="nx">InMemoryCache</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-cache-inmemory</span><span class="dl">'</span><span class="p">;</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">ApolloClient</span><span class="p">,</span> <span class="nx">HttpLink</span><span class="p">,</span> <span class="nx">ApolloLink</span><span class="p">,</span> <span class="nx">InMemoryCache</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">@apollo/client</span><span class="dl">'</span><span class="p">;</span>
 <span class="c1">// Load Ably subscriptions link</span>
 <span class="k">import</span> <span class="nx">AblyLink</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">graphql-ruby-client/subscriptions/AblyLink</span><span class="dl">'</span>
 <span class="c1">// Load Ably and create a client</span>
@@ -264,10 +257,7 @@
 
 <p>For example:</p>
 
-<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="p">{</span> <span class="nx">ApolloLink</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-link</span><span class="dl">'</span><span class="p">;</span>
-<span class="k">import</span> <span class="p">{</span> <span class="nx">ApolloClient</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-client</span><span class="dl">'</span><span class="p">;</span>
-<span class="k">import</span> <span class="p">{</span> <span class="nx">HttpLink</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-link-http</span><span class="dl">'</span><span class="p">;</span>
-<span class="k">import</span> <span class="p">{</span> <span class="nx">InMemoryCache</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">apollo-cache-inmemory</span><span class="dl">'</span><span class="p">;</span>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="p">{</span> <span class="nx">ApolloClient</span><span class="p">,</span> <span class="nx">HttpLink</span><span class="p">,</span> <span class="nx">ApolloLink</span><span class="p">,</span> <span class="nx">InMemoryCache</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">@apollo/client</span><span class="dl">'</span><span class="p">;</span>
 <span class="k">import</span> <span class="p">{</span> <span class="nx">createConsumer</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">@rails/actioncable</span><span class="dl">'</span><span class="p">;</span>
 <span class="k">import</span> <span class="nx">ActionCableLink</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">graphql-ruby-client/subscriptions/ActionCableLink</span><span class="dl">'</span><span class="p">;</span>
 
