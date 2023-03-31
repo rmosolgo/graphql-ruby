@@ -92,7 +92,7 @@ module GraphQL
 
       class IntrospectionPrinter < GraphQL::Language::Printer
         def print_schema_definition(schema)
-          "schema {\n  query: Root\n}"
+          print_string("schema {\n  query: Root\n}")
         end
       end
     end

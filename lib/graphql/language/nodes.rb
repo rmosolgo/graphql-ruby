@@ -517,7 +517,7 @@ module GraphQL
       # @example Creating a custom string from a document
       #  class VariableScrubber < GraphQL::Language::Printer
       #    def print_argument(arg)
-      #      "#{arg.name}: <HIDDEN>"
+      #      print_string("#{arg.name}: <HIDDEN>")
       #    end
       #  end
       #

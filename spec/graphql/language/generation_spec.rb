@@ -10,7 +10,7 @@ describe GraphQL::Language::Generation do
     let(:custom_printer_class) {
       Class.new(GraphQL::Language::Printer) {
         def print_field_definition(print_field_definition)
-          "<Field Hidden>"
+          print_string("<Field Hidden>")
         end
       }
     }
