@@ -23,6 +23,13 @@ describe GraphQL::Tracing::AppsignalTrace do
       def str; "blah"; end
     end
 
+    class Named < GraphQL::Schema::Union
+      possible_types Thing
+      def self.resolve_type(obj, ctx)
+        Thing
+      end
+    end
+
     class Query < GraphQL::Schema::Object
       include GraphQL::Types::Relay::HasNodeField
 
@@ -34,6 +41,8 @@ describe GraphQL::Tracing::AppsignalTrace do
 
       field :thing, Thing
       def thing; :thing; end
+
+      field :named, Named, resolver_method: :thing
     end
 
     class TestSchema < GraphQL::Schema
@@ -47,7 +56,7 @@ describe GraphQL::Tracing::AppsignalTrace do
   end
 
   it "traces events" do
-    _res = AppsignalTraceTest::TestSchema.execute("{ int thing { str } }")
+    _res = AppsignalTraceTest::TestSchema.execute("{ int thing { str } named { ... on Thing { str } } }")
     expected_trace = [
       "execute.graphql",
       "analyze.graphql",
@@ -59,7 +68,10 @@ describe GraphQL::Tracing::AppsignalTrace do
       "Query.authorized.graphql",
       "Query.thing.graphql",
       "Thing.authorized.graphql",
-      "execute.graphql"
+      "Query.named.graphql",
+      "Named.resolve_type.graphql",
+      "Thing.authorized.graphql",
+      "execute.graphql",
     ]
     assert_equal expected_trace, Appsignal.instrumented
   end
