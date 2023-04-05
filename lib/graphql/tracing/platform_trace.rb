@@ -29,28 +29,30 @@ module GraphQL
           child_class.instance_method(:platform_execute_field).arity != 1
 
         [:execute_field, :execute_field_lazy].each do |field_trace_method|
-          child_class.module_eval <<-RUBY, __FILE__, __LINE__
-            def #{field_trace_method}(query:, field:, ast_node:, arguments:, object:)
-              return_type = field.type.unwrap
-              trace_field = if return_type.kind.scalar? || return_type.kind.enum?
-                (field.trace.nil? && @trace_scalars) || field.trace
-              else
-                true
-              end
-              platform_key = if trace_field
-                @platform_field_key_cache[field]
-              else
-                nil
-              end
-              if platform_key && trace_field
-                platform_#{field_trace_method}(platform_key#{pass_data_to_execute_field ? ", { query: query, field: field, ast_node: ast_node, arguments: arguments, object: object }" : ""}) do
+          if !child_class.method_defined?(field_trace_method)
+            child_class.module_eval <<-RUBY, __FILE__, __LINE__
+              def #{field_trace_method}(query:, field:, ast_node:, arguments:, object:)
+                return_type = field.type.unwrap
+                trace_field = if return_type.kind.scalar? || return_type.kind.enum?
+                  (field.trace.nil? && @trace_scalars) || field.trace
+                else
+                  true
+                end
+                platform_key = if trace_field
+                  @platform_field_key_cache[field]
+                else
+                  nil
+                end
+                if platform_key && trace_field
+                  platform_#{field_trace_method}(platform_key#{pass_data_to_execute_field ? ", { query: query, field: field, ast_node: ast_node, arguments: arguments, object: object }" : ""}) do
+                    super
+                  end
+                else
                   super
                 end
-              else
-                super
               end
-            end
-          RUBY
+            RUBY
+          end
         end
 
 

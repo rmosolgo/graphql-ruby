@@ -27,8 +27,6 @@ Rake::TestTask.new do |t|
     puts "+ #{f}" unless excluded
     excluded
   end
-
-  t.warning = false
 end
 
 require 'rubocop/rake_task'

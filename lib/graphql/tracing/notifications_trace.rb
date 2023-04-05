@@ -6,7 +6,6 @@ module GraphQL
     # ActiveSupport::Notifications or Dry::Monitor::Notifications)
     # with a `graphql` suffix.
     module NotificationsTrace
-      include PlatformTrace
       # Initialize a new NotificationsTracing instance
       #
       # @param engine [#instrument(key, metadata, block)] The notifications engine to use
@@ -36,6 +35,8 @@ module GraphQL
           end
         RUBY
       end
+
+      include PlatformTrace
     end
   end
 end
