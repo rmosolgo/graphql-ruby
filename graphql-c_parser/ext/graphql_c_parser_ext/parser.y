@@ -479,17 +479,21 @@ type_system_definition:
    | directive_definition
 
   schema_definition:
-      SCHEMA directives_list_opt LCURLY operation_type_definition_list RCURLY {
+      SCHEMA directives_list_opt operation_type_definition_list_opt {
         $$ = MAKE_AST_NODE(SchemaDefinition, 6,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           // TODO use static strings:
-          rb_hash_aref($4, rb_str_new_cstr("query")),
-          rb_hash_aref($4, rb_str_new_cstr("mutation")),
-          rb_hash_aref($4, rb_str_new_cstr("subscription")),
+          rb_hash_aref($3, rb_str_new_cstr("query")),
+          rb_hash_aref($3, rb_str_new_cstr("mutation")),
+          rb_hash_aref($3, rb_str_new_cstr("subscription")),
           $2
         );
       }
+
+  operation_type_definition_list_opt:
+      /* none */ { $$ = rb_hash_new(); }
+    | LCURLY operation_type_definition_list RCURLY { $$ = $2; }
 
   operation_type_definition_list:
       operation_type_definition {

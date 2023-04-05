@@ -919,6 +919,8 @@ directive @Directive (
   argument: String
 ) on SCHEMA
 
+directive @custom(thing: Boolean) on SCHEMA
+
 type Type implements Interface {
   field(argument: String): String
 }
@@ -944,7 +946,7 @@ type Type implements Interface {
       assert_equal [23, 3], schema.types["Input"].arguments["argument"].ast_node.position
       assert_equal [26, 1], schema.directives["Directive"].ast_node.position
       assert_equal [28, 3], schema.directives["Directive"].arguments["argument"].ast_node.position
-      assert_equal [31, 22], schema.types["Type"].ast_node.interfaces[0].position
+      assert_equal [33, 22], schema.types["Type"].ast_node.interfaces[0].position
     end
 
     it 'can build a schema from a file path' do
@@ -1572,15 +1574,21 @@ type ReachableType implements Node {
 
   it "supports extending schemas with directives" do
     schema_sdl = <<~EOS
-      directive @link(url: String, import: [String]) on SCHEMA
+    schema
+      @link(import: ["@key", "@shareable"], url: "https://specs.apollo.dev/federation/v2.0")
 
-      extend schema
-        @link(url: "https://specs.apollo.dev/federation/v2.0",
-              import: ["@key", "@shareable"])
+    directive @link(as: String, for: link__Purpose, import: [link__Import], url: String!) repeatable on SCHEMA
 
-      type Query {
-        something: Int
-      }
+    type Query {
+      something: Int
+    }
+
+    scalar link__Import
+
+    enum link__Purpose {
+      EXECUTION
+      SECURITY
+    }
     EOS
 
     schema = GraphQL::Schema.from_definition(schema_sdl)
@@ -1588,17 +1596,7 @@ type ReachableType implements Node {
     assert_equal({ url: "https://specs.apollo.dev/federation/v2.0", import: ["@key", "@shareable"] },
       schema.schema_directives.first.arguments.to_h)
 
-    expected_schema = <<~GRAPHQL
-      schema
-        @link(url: "https://specs.apollo.dev/federation/v2.0", import: ["@key", "@shareable"])
-
-      directive @link(import: [String], url: String) on SCHEMA
-
-      type Query {
-        something: Int
-      }
-    GRAPHQL
-    assert_equal expected_schema, schema.to_definition
+    assert_equal schema_sdl, schema.to_definition
   end
 
 
