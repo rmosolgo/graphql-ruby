@@ -349,7 +349,7 @@ describe GraphQL::Schema::Field do
           end
         end
 
-        assert_match /^Invalid complexity:/, err.message
+        assert_match(/^Invalid complexity:/, err.message)
       end
 
       it 'fails if the proc does not accept 3 parameters' do
@@ -363,7 +363,7 @@ describe GraphQL::Schema::Field do
           end
         end
 
-        assert_match /^A complexity proc should always accept 3 parameters/, err.message
+        assert_match(/^A complexity proc should always accept 3 parameters/, err.message)
       end
 
       it 'fails if second argument is a mutation instead of a type' do
@@ -380,7 +380,7 @@ describe GraphQL::Schema::Field do
           end
         end
 
-        assert_match /^Use `field :complexityTest, mutation: Mutation, ...` to provide a mutation to this field instead/, err.message
+        assert_match(/^Use `field :complexityTest, mutation: Mutation, ...` to provide a mutation to this field instead/, err.message)
       end
     end
   end

@@ -2,7 +2,7 @@
 require "spec_helper"
 
 describe GraphQL::Tracing::StatsdTracing do
-  module MockStatsd
+  module TraceMockStatsd
     class << self
       def time(key)
         self.timings << key
@@ -38,11 +38,11 @@ describe GraphQL::Tracing::StatsdTracing do
 
     query(Query)
 
-    trace_with GraphQL::Tracing::StatsdTrace, statsd: MockStatsd
+    trace_with GraphQL::Tracing::StatsdTrace, statsd: TraceMockStatsd
   end
 
   before do
-    MockStatsd.clear
+    TraceMockStatsd.clear
   end
 
   it "gathers timings" do
@@ -60,6 +60,6 @@ describe GraphQL::Tracing::StatsdTracing do
       "graphql.authorized.Thing",
       "graphql.execute_query_lazy"
     ]
-    assert_equal expected_timings, MockStatsd.timings
+    assert_equal expected_timings, TraceMockStatsd.timings
   end
 end
