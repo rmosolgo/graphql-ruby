@@ -256,7 +256,7 @@ module GraphQL
         if !include_built_in_directives
           dirs_to_build = dirs_to_build.reject { |directive| directive.default_directive? }
         end
-        dir_nodes = build_directive_nodes(warden.directives)
+        dir_nodes = build_directive_nodes(dirs_to_build)
 
         type_nodes = build_type_definition_nodes(warden.reachable_types)
 
