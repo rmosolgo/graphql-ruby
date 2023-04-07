@@ -22,6 +22,7 @@ module GraphQL
         @include_introspection_types = include_introspection_types
         @include_built_in_scalars = include_built_in_scalars
         @include_built_in_directives = include_built_in_directives
+        @include_one_of = false
 
         filter = GraphQL::Filter.new(only: only, except: except)
         if @schema.respond_to?(:visible?)
@@ -245,20 +246,30 @@ module GraphQL
       end
 
       def build_directive_nodes(directives)
-        if !include_built_in_directives
-          directives = directives.reject { |directive| directive.default_directive? }
-        end
-
         directives
           .map { |directive| build_directive_node(directive) }
           .sort_by(&:name)
       end
 
       def build_definition_nodes
-        definitions = []
-        definitions << build_schema_node if include_schema_node?
-        definitions += build_directive_nodes(warden.directives)
-        definitions += build_type_definition_nodes(warden.reachable_types)
+        dirs_to_build = warden.directives
+        if !include_built_in_directives
+          dirs_to_build = dirs_to_build.reject { |directive| directive.default_directive? }
+        end
+        dir_nodes = build_directive_nodes(dirs_to_build)
+
+        type_nodes = build_type_definition_nodes(warden.reachable_types)
+
+        if @include_one_of
+          # This may have been set to true when iterating over all types
+          dir_nodes.concat(build_directive_nodes([GraphQL::Schema::Directive::OneOf]))
+        end
+
+        definitions = [*dir_nodes, *type_nodes]
+        if include_schema_node?
+          definitions.unshift(build_schema_node)
+        end
+
         definitions
       end
 
@@ -318,6 +329,11 @@ module GraphQL
                 )
               end
             end
+
+            # If this schema uses this built-in directive definition,
+            # include it in the print-out since it's not part of the spec yet.
+            @include_one_of ||= dir.class == GraphQL::Schema::Directive::OneOf
+
             GraphQL::Language::Nodes::Directive.new(
               name: dir.class.graphql_name,
               arguments: args

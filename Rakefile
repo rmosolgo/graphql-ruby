@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require "bundler/setup"
+require "bundler/gem_helper"
 Bundler::GemHelper.install_tasks
 
 require "rake/testtask"
@@ -201,5 +201,15 @@ Rake::ExtensionTask.new("graphql_c_parser_ext") do |t|
   t.lib_dir = "graphql-c_parser/lib/graphql"
 end
 
+task :build_yacc_parser do
+  assert_dependency_version("Bison", "3.8", "yacc --version")
+  `yacc graphql-c_parser/ext/graphql_c_parser_ext/parser.y -o graphql-c_parser/ext/graphql_c_parser_ext/parser.c -Wyacc`
+end
+
+task :move_binary do
+  # For some reason my local env doesn't respect the `lib_dir` configured above
+  `mv graphql-c_parser/lib/*.bundle graphql-c_parser/lib/graphql`
+end
+
 desc "Build the C Extension"
-task build_ext: [:build_c_lexer, "compile:graphql_c_parser_ext"]
+task build_ext: [:build_c_lexer, :build_yacc_parser, "compile:graphql_c_parser_ext", :move_binary]

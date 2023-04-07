@@ -37,13 +37,16 @@ module GraphQLBenchmark
         x.report("validate - big query") { BIG_SCHEMA.validate(BIG_QUERY) }
         x.report("validate - fields will merge") { FIELDS_WILL_MERGE_SCHEMA.validate(FIELDS_WILL_MERGE_QUERY) }
       when "scan"
-        x.report("scan c - introspection") { GraphQL::Language::CLexer.tokenize(QUERY_STRING) }
-        x.report("scan - introspection") { GraphQL.scan(QUERY_STRING) }
-        x.report("scan c - fragments") { GraphQL::Language::CLexer.tokenize(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
-        x.report("scan - fragments") { GraphQL.scan(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
-        x.report("scan c - big query") { GraphQL::Language::CLexer.tokenize(BIG_QUERY_STRING) }
-        x.report("scan - big query") { GraphQL.scan(BIG_QUERY_STRING) }
+        require "graphql/c_parser"
+        x.report("scan c - introspection") { GraphQL.scan_with_c(QUERY_STRING) }
+        x.report("scan - introspection") { GraphQL.scan_with_ruby(QUERY_STRING) }
+        x.report("scan c - fragments") { GraphQL.scan_with_c(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
+        x.report("scan - fragments") { GraphQL.scan_with_ruby(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
+        x.report("scan c - big query") { GraphQL.scan_with_c(BIG_QUERY_STRING) }
+        x.report("scan - big query") { GraphQL.scan_with_ruby(BIG_QUERY_STRING) }
       when "parse"
+        # Uncomment this to use the C parser:
+        # require "graphql/c_parser"
         x.report("parse - introspection") { GraphQL.parse(QUERY_STRING) }
         x.report("parse - fragments") { GraphQL.parse(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
         x.report("parse - big query") { GraphQL.parse(BIG_QUERY_STRING) }
@@ -54,11 +57,8 @@ module GraphQLBenchmark
   end
 
   def self.profile_parse
-    GraphQL.module_eval do
-      def self.scan(str)
-        GraphQL::Clexer.tokenize(str)
-      end
-    end
+    # To profile the C parser instead:
+    # require "graphql/c_parser"
 
     report = MemoryProfiler.report do
       GraphQL.parse(BIG_QUERY_STRING)

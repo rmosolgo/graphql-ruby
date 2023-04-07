@@ -284,7 +284,11 @@ rule
    | directive_definition
 
   schema_definition:
-      SCHEMA directives_list_opt LCURLY operation_type_definition_list RCURLY { result = make_node(:SchemaDefinition, position_source: val[0], definition_line: val[0][1], directives: val[1], **val[3]) }
+      SCHEMA directives_list_opt operation_type_definition_list_opt { result = make_node(:SchemaDefinition, position_source: val[0], definition_line: val[0][1], directives: val[1], **val[2]) }
+
+  operation_type_definition_list_opt:
+      /* none */ { result = {} }
+    | LCURLY operation_type_definition_list RCURLY { result = val[1] }
 
   operation_type_definition_list:
       operation_type_definition
@@ -460,7 +464,7 @@ def parse_document
   @document ||= begin
     # Break the string into tokens
     @trace.lex(query_string: @query_string) do
-      @tokens ||= GraphQL.scan(@query_string)
+      @tokens ||= GraphQL::Language::Lexer.tokenize(@query_string)
     end
     # From the tokens, build an AST
     @trace.parse(query_string: @query_string) do
