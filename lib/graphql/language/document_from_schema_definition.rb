@@ -24,7 +24,7 @@ module GraphQL
         @include_built_in_directives = include_built_in_directives
         @include_one_of = false
 
-        filter = GraphQL::Filter.new(only: only, except: except)
+        filter = GraphQL::Filter.new(only: only, except: except, silence_deprecation_warning: true)
         if @schema.respond_to?(:visible?)
           filter = filter.merge(only: @schema.method(:visible?))
         end

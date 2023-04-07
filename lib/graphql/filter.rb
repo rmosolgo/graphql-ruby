@@ -1,9 +1,13 @@
 # frozen_string_literal: true
+require "graphql/deprecation"
+
 module GraphQL
   # @api private
   class Filter
-    def initialize(only: nil, except: nil)
-      GraphQL::Deprecation.warn("GraphQL::Filter is deprecated and will be removed in v2.1.0. Implement `visible?` on your schema members instead (https://graphql-ruby.org/authorization/visibility.html).")
+    def initialize(only: nil, except: nil, silence_deprecation_warning: false)
+      if !silence_deprecation_warning
+        GraphQL::Deprecation.warn("GraphQL::Filter is deprecated and will be removed in v2.1.0. Implement `visible?` on your schema members instead (https://graphql-ruby.org/authorization/visibility.html).")
+      end
       @only = only
       @except = except
     end
@@ -18,7 +22,7 @@ module GraphQL
       onlies = [self].concat(Array(only))
       merged_only = MergedOnly.build(onlies)
       merged_except = MergedExcept.build(Array(except))
-      self.class.new(only: merged_only, except: merged_except)
+      self.class.new(only: merged_only, except: merged_except, silence_deprecation_warning: true)
     end
 
     private
