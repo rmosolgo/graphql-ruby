@@ -3,6 +3,7 @@ module GraphQL
   # @api private
   class Filter
     def initialize(only: nil, except: nil)
+      GraphQL::Deprecation.warn("GraphQL::Filter is deprecated and will be removed in v2.1.0. Implement `visible?` on your schema members instead (https://graphql-ruby.org/authorization/visibility.html).")
       @only = only
       @except = except
     end
