@@ -505,6 +505,8 @@ module GraphQL
             end
 
             st = get_current_runtime_state
+            st.current_field = field_defn
+            st.current_object = object
             st.current_arguments = resolved_arguments
             st.current_result_name = result_name
             st.current_result = selection_result
@@ -790,7 +792,7 @@ module GraphQL
                   st = get_current_runtime_state
                   st.current_object = continue_value
                   st.current_result_name = nil
-                  st.current_result = nil
+                  st.current_result = this_result
 
                   call_method_on_directives(:resolve, continue_value, selections.graphql_directives) do
                     evaluate_selections(
