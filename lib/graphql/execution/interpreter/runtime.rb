@@ -8,6 +8,18 @@ module GraphQL
       #
       # @api private
       class Runtime
+        class CurrentState
+          def initialize
+            @current_object = nil
+            @current_field = nil
+            @current_arguments = nil
+            @current_result_name = nil
+            @current_result = nil
+          end
+
+          attr_accessor :current_result, :current_result_name,
+            :current_arguments, :current_field, :current_object
+        end
 
         module GraphQLResult
           def initialize(result_name, parent_result)
@@ -182,11 +194,6 @@ module GraphQL
           @fields_cache = Hash.new { |h, k| h[k] = {} }
           # { Class => Boolean }
           @lazy_cache = {}
-          @current_object = nil
-          @current_field = nil
-          @current_arguments = nil
-          @current_result_name = nil
-          @current_result = nil
         end
 
         attr_reader :current_object, :current_field, :current_arguments, :current_result_name, :current_result
@@ -216,11 +223,7 @@ module GraphQL
           root_operation = query.selected_operation
           root_op_type = root_operation.operation_type || "query"
           root_type = schema.root_type_for_operation(root_op_type)
-          @current_object = query.root_value
-          @current_field = nil
-          @current_arguments = nil
-          @current_result_name = nil
-          @current_result = @response
+          set_current_runtime_state(object: query.root_value, field: nil, arguments: nil, result_name: nil, result: @response)
           object_proxy = authorized_new(root_type, query.root_value, context)
           object_proxy = schema.sync_lazy(object_proxy)
 
@@ -247,12 +250,8 @@ module GraphQL
                 end
 
                 @dataloader.append_job {
-                  set_current_runtime
-                  @current_object = query.root_value
-                  @current_field = nil
-                  @current_arguments = nil
-                  @current_result_name = nil
-                  @current_result = selection_response
+                  set_current_runtime_state(object: query.root_value, field: nil, arguments: nil, result_name: nil, result: selection_response)
+
                   call_method_on_directives(:resolve, object_proxy, selections.graphql_directives) do
                     evaluate_selections(
                       object_proxy,
@@ -371,9 +370,9 @@ module GraphQL
 
         # @return [void]
         def evaluate_selections(owner_object, owner_type, is_eager_selection, gathered_selections, selections_result, target_result, parent_object) # rubocop:disable Metrics/ParameterLists
-          set_current_runtime
-          @current_object = owner_object
-          @current_result = selections_result
+          st = get_current_runtime_state
+          set_current_runtime_state(object: owner_object, field: st.current_field, arguments: st.current_arguments, result_name: st.current_result_name, result: selections_result)
+
           finished_jobs = 0
           enqueued_jobs = gathered_selections.size
           gathered_selections.each do |result_name, field_ast_nodes_or_ast_node|
@@ -430,10 +429,8 @@ module GraphQL
             (selections_result.graphql_non_null_field_names ||= []).push(result_name)
           end
           # Set this before calling `run_with_directives`, so that the directive can have the latest path
-          set_current_runtime
-          @current_field = field_defn
-          @current_result_name = result_name
-          @current_result = selections_result
+          st = get_current_runtime_state
+          set_current_runtime_state(field: field_defn, result_name: result_name, result: selections_result, object: st.current_object, arguments: st.current_arguments)
 
           object = owner_object
 
@@ -501,10 +498,8 @@ module GraphQL
               resolved_arguments.keyword_arguments
             end
 
-            set_current_runtime
-            @current_arguments = resolved_arguments
-            @current_result_name = result_name
-            @current_result = selection_result
+            st = get_current_runtime_state
+            set_current_runtime_state(arguments: resolved_arguments, result_name: result_name, result: selection_result, object: st.current_object, field: st.current_field)
             # Optimize for the case that field is selected only once
             if field_ast_nodes.nil? || field_ast_nodes.size == 1
               next_selections = ast_node.selections
@@ -781,11 +776,10 @@ module GraphQL
                     final_result = nil
                   end
                   # reset this mutable state
-                  set_current_runtime
-                  @current_object = continue_value
                   # Unset `result_name` here because it's already included in the new response hash
-                  @current_result_name = nil
-                  @current_result = this_result
+                  st = get_current_runtime_state
+                  set_current_runtime_state(object: continue_value, result_name: nil, result: this_result, field: st.current_field, arguments: st.current_arguments)
+
                   call_method_on_directives(:resolve, continue_value, selections.graphql_directives) do
                     evaluate_selections(
                       continue_value,
@@ -850,9 +844,8 @@ module GraphQL
         end
 
         def resolve_list_item(inner_value, inner_type, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type) # rubocop:disable Metrics/ParameterLists
-          set_current_runtime
-          @current_result_name = this_idx
-          @current_result = response_list
+          st = get_current_runtime_state
+          set_current_runtime_state(result_name: this_idx, result: response_list, object: st.current_object, arguments: st.current_arguments, field: st.current_field)
           call_method_on_directives(:resolve_each, owner_object, ast_node.directives) do
             # This will update `response_list` with the lazy
             after_lazy(inner_value, owner: inner_type, ast_node: ast_node, field: field, owner_object: owner_object, arguments: arguments, result_name: this_idx, result: response_list) do |inner_inner_value|
@@ -908,8 +901,17 @@ module GraphQL
           true
         end
 
-        def set_current_runtime
-          Thread.current[:__graphql_runtime] = self
+        def get_current_runtime_state
+          Thread.current[:__graphql_runtime] ||= CurrentState.new
+        end
+
+        def set_current_runtime_state(object:, field:, arguments:, result_name:, result:)
+          state = get_current_runtime_state
+          state.current_object = object
+          state.current_field = field
+          state.current_arguments = arguments
+          state.current_result_name = result_name
+          state.current_result = result
         end
 
         # @param obj [Object] Some user-returned value that may want to be batched
@@ -921,12 +923,7 @@ module GraphQL
           if lazy?(lazy_obj)
             orig_result = result
             lazy = GraphQL::Execution::Lazy.new(field: field) do
-              set_current_runtime
-              @current_object = owner_object
-              @current_field = field
-              @current_arguments = arguments
-              @current_result_name = result_name
-              @current_result = orig_result
+              set_current_runtime_state(object: owner_object, field: field, arguments: arguments, result_name: result_name, result: orig_result)
               # Wrap the execution of _this_ method with tracing,
               # but don't wrap the continuation below
               inner_obj = begin
@@ -962,12 +959,7 @@ module GraphQL
               lazy
             end
           else
-            set_current_runtime
-            @current_object = owner_object
-            @current_field = field
-            @current_arguments = arguments
-            @current_result_name = result_name
-            @current_result = result
+            set_current_runtime_state(object: owner_object, field: field, arguments: arguments, result_name: result_name, result: orig_result)
             yield(lazy_obj)
           end
         end
