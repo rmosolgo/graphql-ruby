@@ -31,6 +31,16 @@ describe GraphQL::Language::Printer do
       assert_equal query_string.gsub(/^    /, "").strip, printer.print(document)
     end
 
+    it "prints a truncated query string" do
+      expected = query_string.gsub(/^    /, "").strip[0, 50 - GraphQL::Language::Printer::OMISSION.size]
+      expected = "#{expected}#{GraphQL::Language::Printer::OMISSION}"
+
+      assert_equal(
+        expected,
+        printer.print(document, truncate_size: 50),
+      )
+    end
+
     describe "inputs" do
       let(:query_string) {%|
         query {
