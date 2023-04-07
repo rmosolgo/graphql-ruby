@@ -8,6 +8,18 @@ module GraphQL
       #
       # @api private
       class Runtime
+        class CurrentState
+          def initialize
+            @current_object = nil
+            @current_field = nil
+            @current_arguments = nil
+            @current_result_name = nil
+            @current_result = nil
+          end
+
+          attr_accessor :current_result, :current_result_name,
+            :current_arguments, :current_field, :current_object
+        end
 
         module GraphQLResult
           def initialize(result_name, parent_result)
@@ -157,15 +169,6 @@ module GraphQL
         # @return [GraphQL::Query::Context]
         attr_reader :context
 
-        def thread_info
-          info = Thread.current[:__graphql_runtime_info]
-          if !info
-            new_ti = {}
-            info = Thread.current[:__graphql_runtime_info] = new_ti
-          end
-          info
-        end
-
         def initialize(query:, lazies_at_depth:)
           @query = query
           @dataloader = query.multiplex.dataloader
@@ -218,7 +221,9 @@ module GraphQL
           root_operation = query.selected_operation
           root_op_type = root_operation.operation_type || "query"
           root_type = schema.root_type_for_operation(root_op_type)
-          set_all_interpreter_context(query.root_value, nil, nil, nil, @response)
+          st = get_current_runtime_state
+          st.current_object = query.root_value
+          st.current_result = @response
           object_proxy = authorized_new(root_type, query.root_value, context)
           object_proxy = schema.sync_lazy(object_proxy)
 
@@ -245,7 +250,10 @@ module GraphQL
                 end
 
                 @dataloader.append_job {
-                  set_all_interpreter_context(query.root_value, nil, nil, nil, selection_response)
+                  st = get_current_runtime_state
+                  st.current_object = query.root_value
+                  st.current_result = selection_response
+
                   call_method_on_directives(:resolve, object_proxy, selections.graphql_directives) do
                     evaluate_selections(
                       object_proxy,
@@ -364,7 +372,10 @@ module GraphQL
 
         # @return [void]
         def evaluate_selections(owner_object, owner_type, is_eager_selection, gathered_selections, selections_result, target_result, parent_object) # rubocop:disable Metrics/ParameterLists
-          set_all_interpreter_context(owner_object, nil, nil, nil, selections_result)
+          st = get_current_runtime_state
+          st.current_object = owner_object
+          st.current_result_name = nil
+          st.current_result = selections_result
 
           finished_jobs = 0
           enqueued_jobs = gathered_selections.size
@@ -422,7 +433,11 @@ module GraphQL
             (selections_result.graphql_non_null_field_names ||= []).push(result_name)
           end
           # Set this before calling `run_with_directives`, so that the directive can have the latest path
-          set_all_interpreter_context(nil, field_defn, nil, result_name, selections_result)
+          st = get_current_runtime_state
+          st.current_field = field_defn
+          st.current_result = selections_result
+          st.current_result_name = result_name
+
           object = owner_object
 
           if is_introspection
@@ -489,8 +504,12 @@ module GraphQL
               resolved_arguments.keyword_arguments
             end
 
-            set_all_interpreter_context(nil, nil, resolved_arguments, result_name, selection_result)
-
+            st = get_current_runtime_state
+            st.current_field = field_defn
+            st.current_object = object
+            st.current_arguments = resolved_arguments
+            st.current_result_name = result_name
+            st.current_result = selection_result
             # Optimize for the case that field is selected only once
             if field_ast_nodes.nil? || field_ast_nodes.size == 1
               next_selections = ast_node.selections
@@ -588,11 +607,10 @@ module GraphQL
         end
 
         def current_path
-          ti = thread_info
-          path = ti &&
-            (result = ti[:current_result]) &&
-            (result.path)
-          if path && (rn = ti[:current_result_name])
+          st = get_current_runtime_state
+          result = st.current_result
+          path = result && result.path
+          if path && (rn = st.current_result_name)
             path = path.dup
             path.push(rn)
           end
@@ -769,8 +787,13 @@ module GraphQL
                     this_result = response_hash
                     final_result = nil
                   end
-                  # Don't pass `result_name` here because it's already included in the new response hash
-                  set_all_interpreter_context(continue_value, nil, nil, nil, this_result) # reset this mutable state
+                  # reset this mutable state
+                  # Unset `result_name` here because it's already included in the new response hash
+                  st = get_current_runtime_state
+                  st.current_object = continue_value
+                  st.current_result_name = nil
+                  st.current_result = this_result
+
                   call_method_on_directives(:resolve, continue_value, selections.graphql_directives) do
                     evaluate_selections(
                       continue_value,
@@ -835,7 +858,9 @@ module GraphQL
         end
 
         def resolve_list_item(inner_value, inner_type, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type) # rubocop:disable Metrics/ParameterLists
-          set_all_interpreter_context(nil, nil, nil, this_idx, response_list)
+          st = get_current_runtime_state
+          st.current_result_name = this_idx
+          st.current_result = response_list
           call_method_on_directives(:resolve_each, owner_object, ast_node.directives) do
             # This will update `response_list` with the lazy
             after_lazy(inner_value, owner: inner_type, ast_node: ast_node, field: field, owner_object: owner_object, arguments: arguments, result_name: this_idx, result: response_list) do |inner_inner_value|
@@ -891,21 +916,8 @@ module GraphQL
           true
         end
 
-        def set_all_interpreter_context(object, field, arguments, result_name, result)
-          ti = thread_info
-          if object
-            ti[:current_object] = object
-          end
-          if field
-            ti[:current_field] = field
-          end
-          if arguments
-            ti[:current_arguments] = arguments
-          end
-          ti[:current_result_name] = result_name
-          if result
-            ti[:current_result] = result
-          end
+        def get_current_runtime_state
+          Thread.current[:__graphql_runtime_info] ||= CurrentState.new
         end
 
         # @param obj [Object] Some user-returned value that may want to be batched
@@ -917,7 +929,12 @@ module GraphQL
           if lazy?(lazy_obj)
             orig_result = result
             lazy = GraphQL::Execution::Lazy.new(field: field) do
-              set_all_interpreter_context(owner_object, field, arguments, result_name, orig_result)
+              st = get_current_runtime_state
+              st.current_object = owner_object
+              st.current_field = field
+              st.current_arguments = arguments
+              st.current_result_name = result_name
+              st.current_result = orig_result
               # Wrap the execution of _this_ method with tracing,
               # but don't wrap the continuation below
               inner_obj = begin
@@ -953,7 +970,7 @@ module GraphQL
               lazy
             end
           else
-            set_all_interpreter_context(owner_object, field, arguments, result_name, result)
+            # Don't need to reset state here because it _wasn't_ lazy.
             yield(lazy_obj)
           end
         end
@@ -968,13 +985,7 @@ module GraphQL
         end
 
         def delete_all_interpreter_context
-          if (ti = thread_info)
-            ti.delete(:current_result)
-            ti.delete(:current_result_name)
-            ti.delete(:current_field)
-            ti.delete(:current_object)
-            ti.delete(:current_arguments)
-          end
+          Thread.current[:__graphql_runtime_info] = nil
         end
 
         def resolve_type(type, value)
