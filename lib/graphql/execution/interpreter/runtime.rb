@@ -177,7 +177,7 @@ module GraphQL
           @context = query.context
           @multiplex_context = query.multiplex.context
           # Start this off empty:
-          Thread.current[:__graphql_runtime] = nil
+          Thread.current[:__graphql_runtime_info] = nil
           @response = GraphQLResultHash.new(nil, nil)
           # Identify runtime directives by checking which of this schema's directives have overridden `def self.resolve`
           @runtime_directive_names = []
@@ -195,8 +195,6 @@ module GraphQL
           # { Class => Boolean }
           @lazy_cache = {}
         end
-
-        attr_reader :current_object, :current_field, :current_arguments, :current_result_name, :current_result
 
         def final_result
           @response && @response.graphql_result_data
@@ -371,7 +369,7 @@ module GraphQL
         # @return [void]
         def evaluate_selections(owner_object, owner_type, is_eager_selection, gathered_selections, selections_result, target_result, parent_object) # rubocop:disable Metrics/ParameterLists
           st = get_current_runtime_state
-          set_current_runtime_state(object: owner_object, field: st.current_field, arguments: st.current_arguments, result_name: st.current_result_name, result: selections_result)
+          set_current_runtime_state(object: owner_object, field: st.current_field, arguments: st.current_arguments, result_name: nil, result: selections_result)
 
           finished_jobs = 0
           enqueued_jobs = gathered_selections.size
@@ -597,8 +595,10 @@ module GraphQL
         end
 
         def current_path
-          path = @current_result && @current_result.path
-          if path && (rn = @current_result_name)
+          st = get_current_runtime_state
+          result = st.current_result
+          path = result && result.path
+          if path && (rn = st.current_result_name)
             path = path.dup
             path.push(rn)
           end
@@ -902,7 +902,7 @@ module GraphQL
         end
 
         def get_current_runtime_state
-          Thread.current[:__graphql_runtime] ||= CurrentState.new
+          Thread.current[:__graphql_runtime_info] ||= CurrentState.new
         end
 
         def set_current_runtime_state(object:, field:, arguments:, result_name:, result:)
@@ -959,7 +959,7 @@ module GraphQL
               lazy
             end
           else
-            set_current_runtime_state(object: owner_object, field: field, arguments: arguments, result_name: result_name, result: orig_result)
+            set_current_runtime_state(object: owner_object, field: field, arguments: arguments, result_name: result_name, result: result)
             yield(lazy_obj)
           end
         end
@@ -974,7 +974,7 @@ module GraphQL
         end
 
         def delete_all_interpreter_context
-          Thread.current[:__graphql_runtime] = nil
+          Thread.current[:__graphql_runtime_info] = nil
         end
 
         def resolve_type(type, value)
