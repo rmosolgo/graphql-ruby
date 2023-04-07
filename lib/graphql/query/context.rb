@@ -226,8 +226,8 @@ module GraphQL
           if key == :current_path
             current_path
           else
-            (current_runtime = Thread.current[:__graphql_runtime]) &&
-              (current_runtime.public_send(key))
+            (current_runtime_state = Thread.current[:__graphql_runtime]) &&
+              (current_runtime_state.public_send(key))
           end
         else
           # not found
@@ -236,11 +236,11 @@ module GraphQL
       end
 
       def current_path
-        current_runtime = Thread.current[:__graphql_runtime]
-        path = current_runtime &&
-          (result = current_runtime.current_result) &&
+        current_runtime_state = Thread.current[:__graphql_runtime]
+        path = current_runtime_state &&
+          (result = current_runtime_state.current_result) &&
           (result.path)
-        if path && (rn = current_runtime.current_result_name)
+        if path && (rn = current_runtime_state.current_result_name)
           path = path.dup
           path.push(rn)
         end
@@ -276,8 +276,8 @@ module GraphQL
 
       def dig(key, *other_keys)
         if RUNTIME_METADATA_KEYS.include?(key)
-          (current_runtime = Thread.current[:__graphql_runtime]) &&
-            (obj = current_runtime.public_send(key)) &&
+          (current_runtime_state = Thread.current[:__graphql_runtime]) &&
+            (obj = current_runtime_state.public_send(key)) &&
             obj.dig(*other_keys)
         elsif @scoped_context.key?(key)
           @scoped_context.dig(key, *other_keys)
