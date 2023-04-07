@@ -608,15 +608,16 @@ module GraphQL
           # The resolver _instance_ will check itself during `resolve()`
           @resolver_class.authorized?(object, context)
         else
-          if (arg_values = context[:current_arguments])
-            # ^^ that's provided by the interpreter at runtime, and includes info about whether the default value was used or not.
-            using_arg_values = true
-            arg_values = arg_values.argument_values
-          else
-            arg_values = args
-            using_arg_values = false
-          end
           if args.size > 0
+            if (arg_values = context[:current_arguments])
+              # ^^ that's provided by the interpreter at runtime, and includes info about whether the default value was used or not.
+              using_arg_values = true
+              arg_values = arg_values.argument_values
+            else
+              arg_values = args
+              using_arg_values = false
+            end
+
             args = context.warden.arguments(self)
             args.each do |arg|
               arg_key = arg.keyword
