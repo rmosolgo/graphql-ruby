@@ -322,6 +322,41 @@ describe GraphQL::Schema do
     end
   end
 
+  describe ".new_trace" do
+    module NewTrace1
+      def initialize(**opts)
+        @trace_opts = opts
+      end
+
+      attr_reader :trace_opts
+    end
+
+    module NewTrace2
+    end
+
+    it "returns an instance of the configured trace_class with trace_options" do
+      parent_schema = Class.new(GraphQL::Schema) do
+        trace_with NewTrace1, a: 1
+      end
+
+      child_schema = Class.new(parent_schema) do
+        trace_with NewTrace2, b: 2
+      end
+
+      parent_trace = parent_schema.new_trace
+      assert_equal({a: 1}, parent_trace.trace_opts)
+      assert_kind_of NewTrace1, parent_trace
+      refute_kind_of NewTrace2, parent_trace
+      assert_kind_of GraphQL::Tracing::Trace, parent_trace
+
+      child_trace = child_schema.new_trace
+      assert_equal({a: 1, b: 2}, child_trace.trace_opts)
+      assert_kind_of NewTrace1, child_trace
+      assert_kind_of NewTrace2, child_trace
+      assert_kind_of GraphQL::Tracing::Trace, child_trace
+    end
+  end
+
   describe ".possible_types" do
     it "returns a single item for objects" do
       assert_equal [Dummy::Cheese], Dummy::Schema.possible_types(Dummy::Cheese)

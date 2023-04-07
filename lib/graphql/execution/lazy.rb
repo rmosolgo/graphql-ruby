@@ -12,16 +12,14 @@ module GraphQL
     # - It has no error-catching functionality
     # @api private
     class Lazy
-      attr_reader :path, :field
+      attr_reader :field
 
       # Create a {Lazy} which will get its inner value by calling the block
-      # @param path [Array<String, Integer>]
       # @param field [GraphQL::Schema::Field]
       # @param get_value_func [Proc] a block to get the inner value (later)
-      def initialize(path: nil, field: nil, &get_value_func)
+      def initialize(field: nil, &get_value_func)
         @get_value_func = get_value_func
         @resolved = false
-        @path = path
         @field = field
       end
 
@@ -29,15 +27,11 @@ module GraphQL
       def value
         if !@resolved
           @resolved = true
-          @value = begin
-            v = @get_value_func.call
-            if v.is_a?(Lazy)
-              v = v.value
-            end
-            v
-          rescue GraphQL::ExecutionError => err
-            err
+          v = @get_value_func.call
+          if v.is_a?(Lazy)
+            v = v.value
           end
+          @value = v
         end
 
         # `SKIP` was made into a subclass of `GraphQL::Error` to improve runtime performance

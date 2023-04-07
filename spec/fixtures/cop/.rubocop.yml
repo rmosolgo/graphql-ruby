@@ -2,6 +2,7 @@ require:
   - graphql/rubocop
 
 AllCops:
+  TargetRubyVersion: 2.4
   DisabledByDefault: true
 
 GraphQL/DefaultNullTrue:

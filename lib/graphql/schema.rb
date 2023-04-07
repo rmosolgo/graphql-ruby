@@ -143,6 +143,20 @@ module GraphQL
         @subscriptions = new_implementation
       end
 
+      def trace_class(new_class = nil)
+        if new_class
+          @trace_class = new_class
+        elsif !defined?(@trace_class)
+          parent_trace_class = if superclass.respond_to?(:trace_class)
+            superclass.trace_class
+          else
+            GraphQL::Tracing::Trace
+          end
+          @trace_class = Class.new(parent_trace_class)
+        end
+        @trace_class
+      end
+
       # Returns the JSON response of {Introspection::INTROSPECTION_QUERY}.
       # @see {#as_json}
       # @return [String]
@@ -741,7 +755,7 @@ module GraphQL
         if handler
           obj = context[:current_object]
           args = context[:current_arguments]
-          args = args && args.keyword_arguments
+          args = args && args.respond_to?(:keyword_arguments) ? args.keyword_arguments : nil
           field = context[:current_field]
           if obj.is_a?(GraphQL::Schema::Object)
             obj = obj.object
@@ -771,11 +785,7 @@ module GraphQL
             end
 
             if resolved_type.nil? || (resolved_type.is_a?(Module) && resolved_type.respond_to?(:kind))
-              if resolved_value
-                [resolved_type, resolved_value]
-              else
-                resolved_type
-              end
+              [resolved_type, resolved_value]
             else
               raise ".resolve_type should return a type definition, but got #{resolved_type.inspect} (#{resolved_type.class}) from `resolve_type(#{type}, #{obj}, #{ctx})`"
             end
@@ -812,10 +822,6 @@ module GraphQL
         member.visible?(ctx)
       end
 
-      def accessible?(member, ctx)
-        member.accessible?(ctx)
-      end
-
       def schema_directive(dir_class, **options)
         @own_schema_directives ||= []
         Member::HasDirectives.add_directive(self, @own_schema_directives, dir_class, options)
@@ -823,18 +829,6 @@ module GraphQL
 
       def schema_directives
         Member::HasDirectives.get_directives(self, @own_schema_directives, :schema_directives)
-      end
-
-      # This hook is called when a client tries to access one or more
-      # fields that fail the `accessible?` check.
-      #
-      # By default, an error is added to the response. Override this hook to
-      # track metrics or return a different error to the client.
-      #
-      # @param error [InaccessibleFieldsError] The analysis error for this check
-      # @return [AnalysisError, nil] Return an error to skip the query
-      def inaccessible_fields(error)
-        error
       end
 
       # This hook is called when an object fails an `authorized?` check.
@@ -928,11 +922,39 @@ module GraphQL
       end
 
       def tracer(new_tracer)
+        if defined?(@trace_class) && !(@trace_class < GraphQL::Tracing::LegacyTrace)
+          raise ArgumentError, "Can't add tracer after configuring a `trace_class`, use GraphQL::Tracing::LegacyTrace to merge legacy tracers into a trace class instead."
+        elsif !defined?(@trace_class)
+          @trace_class = Class.new(GraphQL::Tracing::LegacyTrace)
+        end
+
         own_tracers << new_tracer
       end
 
       def tracers
         find_inherited_value(:tracers, EMPTY_ARRAY) + own_tracers
+      end
+
+      # Mix `trace_mod` into this schema's `Trace` class so that its methods
+      # will be called at runtime.
+      #
+      # @param trace_mod [Module] A module that implements tracing methods
+      # @param options [Hash] Keywords that will be passed to the tracing class during `#initialize`
+      # @return [void]
+      def trace_with(trace_mod, **options)
+        trace_options.merge!(options)
+        trace_class.include(trace_mod)
+      end
+
+      def trace_options
+        @trace_options ||= superclass.respond_to?(:trace_options) ? superclass.trace_options.dup : {}
+      end
+
+      def new_trace(**options)
+        if defined?(@trace_options)
+          options = trace_options.merge(options)
+        end
+        trace_class.new(**options)
       end
 
       def query_analyzer(new_analyzer)

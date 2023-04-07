@@ -21,7 +21,7 @@ module GraphQL
       def analyze_multiplex(multiplex, analyzers)
         multiplex_analyzers = analyzers.map { |analyzer| analyzer.new(multiplex) }
 
-        multiplex.trace("analyze_multiplex", { multiplex: multiplex }) do
+        multiplex.current_trace.analyze_multiplex(multiplex: multiplex) do
           query_results = multiplex.queries.map do |query|
             if query.valid?
               analyze_query(
@@ -48,7 +48,7 @@ module GraphQL
       # @param analyzers [Array<GraphQL::Analysis::AST::Analyzer>]
       # @return [Array<Any>] Results from those analyzers
       def analyze_query(query, analyzers, multiplex_analyzers: [])
-        query.trace("analyze_query", { query: query }) do
+        query.current_trace.analyze_query(query: query) do
           query_analyzers = analyzers
             .map { |analyzer| analyzer.new(query) }
             .select { |analyzer| analyzer.analyze? }

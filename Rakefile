@@ -1,15 +1,14 @@
 # frozen_string_literal: true
-require "bundler/setup"
-Bundler.require
+require "bundler/gem_helper"
 Bundler::GemHelper.install_tasks
 
 require "rake/testtask"
 require_relative "guides/_tasks/site"
 require_relative "lib/graphql/rake_task/validate"
-
+require 'rake/extensiontask'
 
 Rake::TestTask.new do |t|
-  t.libs << "spec" << "lib"
+  t.libs << "spec" << "lib" << "graphql-c_parser/lib"
 
   exclude_integrations = []
   ['Mongoid', 'Rails'].each do |integration|
@@ -42,31 +41,29 @@ else
   task(default: default_tasks)
 end
 
-desc "Use Racc & Ragel to regenerate parser.rb & lexer.rb from configuration files"
-task :build_parser do
-  def assert_dependency_version(dep_name, required_version, check_script)
-    version = `#{check_script}`
-    if !version.include?(required_version)
-      raise <<-ERR
+def assert_dependency_version(dep_name, required_version, check_script)
+  version = `#{check_script}`
+  if !version.include?(required_version)
+    raise <<-ERR
 build_parser requires #{dep_name} version "#{required_version}", but found:
 
-    $ #{check_script}
-    > #{version}
+  $ #{check_script}
+  > #{version}
 
 To fix this issue:
 
 - Update #{dep_name} to the required version
 - Update the assertion in `Rakefile` to match the current version
 ERR
-    end
   end
+end
 
-  assert_dependency_version("Ragel", "7.0.0.9", "ragel -v")
-  assert_dependency_version("Racc", "1.6.0", %|ruby -e "require 'racc'; puts Racc::VERSION"|)
+desc "Use Racc to regenerate parser.rb from configuration files"
+task :build_parser do
+  assert_dependency_version("Racc", "1.6.2", %|ruby -e "require 'racc'; puts Racc::VERSION"|)
 
-  `rm -f lib/graphql/language/parser.rb lib/graphql/language/lexer.rb `
+  `rm -f lib/graphql/language/parser.rb `
   `racc lib/graphql/language/parser.y -o lib/graphql/language/parser.rb`
-  `ragel -R -F1 lib/graphql/language/lexer.rl`
 end
 
 namespace :bench do
@@ -79,6 +76,12 @@ namespace :bench do
   task :parse do
     prepare_benchmark
     GraphQLBenchmark.run("parse")
+  end
+
+  desc "Benchmark lexical analysis"
+  task :scan do
+    prepare_benchmark
+    GraphQLBenchmark.run("scan")
   end
 
   desc "Benchmark the introspection query"
@@ -140,6 +143,12 @@ namespace :bench do
     prepare_benchmark
     GraphQLBenchmark.profile_large_analysis
   end
+
+  desc "Run analysis on parsing"
+  task :profile_parse do
+    prepare_benchmark
+    GraphQLBenchmark.profile_parse
+  end
 end
 
 namespace :test do
@@ -181,3 +190,26 @@ namespace :js do
   end
   task all: [:install, :build, :test]
 end
+
+task :build_c_lexer do
+  assert_dependency_version("Ragel", "7.0.4", "ragel -v")
+  `ragel -F1 graphql-c_parser/ext/graphql_c_parser_ext/lexer.rl`
+end
+
+Rake::ExtensionTask.new("graphql_c_parser_ext") do |t|
+  t.ext_dir = 'graphql-c_parser/ext/graphql_c_parser_ext'
+  t.lib_dir = "graphql-c_parser/lib/graphql"
+end
+
+task :build_yacc_parser do
+  assert_dependency_version("Bison", "3.8", "yacc --version")
+  `yacc graphql-c_parser/ext/graphql_c_parser_ext/parser.y -o graphql-c_parser/ext/graphql_c_parser_ext/parser.c -Wyacc`
+end
+
+task :move_binary do
+  # For some reason my local env doesn't respect the `lib_dir` configured above
+  `mv graphql-c_parser/lib/*.bundle graphql-c_parser/lib/graphql`
+end
+
+desc "Build the C Extension"
+task build_ext: [:build_c_lexer, :build_yacc_parser, "compile:graphql_c_parser_ext", :move_binary]

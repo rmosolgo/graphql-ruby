@@ -20,6 +20,11 @@ jobs:
       with:
         ruby-version: 2.7.3
         bundler-cache: true
+    - run: bundle exec rake compile
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 2.7.3
+        bundler-cache: true
       env:
         BUNDLE_GEMFILE: ./spec/dummy/Gemfile
     - run: bundle exec rails test:system
@@ -39,7 +44,6 @@ jobs:
         include:
           - gemfile: Gemfile
             ruby: 3.1
-            bundler: "1"
           - gemfile: gemfiles/rails_4.2.gemfile
             ruby: 2.4
             bundler: "1"
@@ -50,6 +54,10 @@ jobs:
             ruby: 3.1
           - gemfile: gemfiles/rails_master.gemfile
             ruby: 3.1
+          - gemfile: gemfiles/rails_7.0.gemfile
+            ruby: 3.2
+          - gemfile: gemfiles/rails_master.gemfile
+            ruby: 3.2
     runs-on: ubuntu-latest
     steps:
     - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > $GITHUB_ENV
@@ -59,6 +67,7 @@ jobs:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
         bundler: ${{ matrix.bundler || 'default' }}
+    - run: bundle exec rake compile
     - run: bundle exec rake test
   javascript_test:
     runs-on: ubuntu-latest
@@ -90,12 +99,13 @@ jobs:
     - run: echo BUNDLE_GEMFILE='gemfiles/rails_6.1_postgresql.gemfile' > $GITHUB_ENV
     - run: echo DATABASE='POSTGRESQL' > $GITHUB_ENV
     - run: echo PGPASSWORD='postgres' > $GITHUB_ENV
+    - run: echo GRAPHQL_CPARSER=1 > $GITHUB_ENV
     - uses: actions/checkout@v3
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: 2.7
         bundler-cache: true
-    - run: bundle exec rake test
+    - run: bundle exec rake compile test
   mongodb_test:
     strategy:
       fail-fast: false
@@ -116,4 +126,4 @@ jobs:
       with:
         ruby-version: 2.7
         bundler-cache: true
-    - run: bundle exec rake test
+    - run: bundle exec rake compile test

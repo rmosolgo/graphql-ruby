@@ -349,6 +349,13 @@ describe GraphQL::Schema::Argument do
     it "has an assignment method" do
       arg.deprecation_reason = "another new deprecation reason"
       assert_equal "another new deprecation reason", arg.deprecation_reason
+      assert_equal 1, arg.directives.size
+      arg.deprecation_reason = "something else"
+      assert_equal "something else", arg.deprecation_reason
+      assert_equal 1, arg.directives.size
+      arg.deprecation_reason = nil
+      assert_nil arg.deprecation_reason
+      assert_equal 0, arg.directives.size
     end
 
     it "disallows deprecating required arguments in the constructor" do
@@ -694,6 +701,48 @@ describe GraphQL::Schema::Argument do
       assert_equal "argument-default-2", get_echo_for(:visible_2)
       assert_equal "dynamic-fallback", get_echo_for(:visible_3)
       assert_equal "method-default", get_echo_for(:visible_4) # no match
+    end
+  end
+
+  describe "multiple argument validations with rescue_from" do
+    let(:schema) do
+      Class.new(GraphQL::Schema) do
+        rescue_from(StandardError) do |exception, _obj, _args, _context, _field|
+          raise exception
+        end
+
+        query_type = Class.new(GraphQL::Schema::Object) do
+          graphql_name 'TestQueryType'
+
+          field :test, Integer, null: false do
+            argument :a, Integer, validates: { numericality: { greater_than_or_equal_to: 1 } }
+            argument :b, Integer, validates: { numericality: { greater_than_or_equal_to: 1 } }
+          end
+
+          def test; end
+        end
+
+        query(query_type)
+        lazy_resolve(Proc, :call)
+      end
+    end
+
+    it 'validates both arguments' do
+      expected_errors = [
+        {
+          "message"=>"a must be greater than or equal to 1",
+          "locations"=>[{ "line"=>1, "column"=>3 }],
+          "path"=>["test"]
+        },
+        {
+          "message"=>"b must be greater than or equal to 1",
+          "locations"=>[{"line"=>1, "column"=>3}],
+          "path"=>["test"]
+        }
+      ]
+      query = "{ test(a: -4, b: -5) }"
+
+      assert_equal expected_errors, schema.execute(query).to_h['errors']
     end
   end
 end

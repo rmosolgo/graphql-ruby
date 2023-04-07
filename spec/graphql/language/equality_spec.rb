@@ -3,8 +3,8 @@ require "spec_helper"
 
 describe GraphQL::Language::Nodes::AbstractNode do
   describe ".eql?" do
-    let(:document1) { GraphQL::Language::Parser.parse(query_string1) }
-    let(:document2) { GraphQL::Language::Parser.parse(query_string2) }
+    let(:document1) { GraphQL.parse(query_string1) }
+    let(:document2) { GraphQL.parse(query_string2) }
 
     describe "large identical document" do
       let(:query_string1) {%|

@@ -149,10 +149,6 @@ module GraphQL
         true
       end
 
-      def accessible?(context)
-        true
-      end
-
       def authorized?(obj, value, ctx)
         authorized_as_type?(obj, value, ctx, as_type: type)
       end

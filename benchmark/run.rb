@@ -36,18 +36,38 @@ module GraphQLBenchmark
         x.report("validate - abstract fragments 2") { CARD_SCHEMA.validate(ABSTRACT_FRAGMENTS_2) }
         x.report("validate - big query") { BIG_SCHEMA.validate(BIG_QUERY) }
         x.report("validate - fields will merge") { FIELDS_WILL_MERGE_SCHEMA.validate(FIELDS_WILL_MERGE_QUERY) }
+      when "scan"
+        require "graphql/c_parser"
+        x.report("scan c - introspection") { GraphQL.scan_with_c(QUERY_STRING) }
+        x.report("scan - introspection") { GraphQL.scan_with_ruby(QUERY_STRING) }
+        x.report("scan c - fragments") { GraphQL.scan_with_c(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
+        x.report("scan - fragments") { GraphQL.scan_with_ruby(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
+        x.report("scan c - big query") { GraphQL.scan_with_c(BIG_QUERY_STRING) }
+        x.report("scan - big query") { GraphQL.scan_with_ruby(BIG_QUERY_STRING) }
       when "parse"
-        x.report("scan - introspection") { GraphQL.scan(QUERY_STRING) }
+        # Uncomment this to use the C parser:
+        # require "graphql/c_parser"
         x.report("parse - introspection") { GraphQL.parse(QUERY_STRING) }
-        x.report("scan - fragments") { GraphQL.scan(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
         x.report("parse - fragments") { GraphQL.parse(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
-        x.report("scan - big query") { GraphQL.scan(BIG_QUERY_STRING) }
         x.report("parse - big query") { GraphQL.parse(BIG_QUERY_STRING) }
       else
         raise("Unexpected task #{task}")
       end
     end
   end
+
+  def self.profile_parse
+    # To profile the C parser instead:
+    # require "graphql/c_parser"
+
+    report = MemoryProfiler.report do
+      GraphQL.parse(BIG_QUERY_STRING)
+      GraphQL.parse(QUERY_STRING)
+      GraphQL.parse(ABSTRACT_FRAGMENTS_2_QUERY_STRING)
+    end
+    report.pretty_print
+  end
+
 
   def self.validate_memory
     FIELDS_WILL_MERGE_SCHEMA.validate(FIELDS_WILL_MERGE_QUERY)
@@ -146,16 +166,24 @@ module GraphQLBenchmark
         query_str << "  field#{f}(arg: \"a\")\n"
       end
       query_str << "  selfField { selfField { selfField { __typename } } }\n"
-      query_str << "  int0Field { ...Int0Fields }"
+      # query_str << "  int0Field { ...Int0Fields }"
       query_str << "}\n"
     end
-    query_str << "fragment Int0Fields on Interface0 { __typename }"
+    # query_str << "fragment Int0Fields on Interface0 { __typename }"
     query = GraphQL::Query.new(SILLY_LARGE_SCHEMA, query_str)
-    analyzers = [GraphQL::Analysis::AST::FieldUsage]
+    analyzers = [
+      GraphQL::Analysis::AST::FieldUsage,
+      GraphQL::Analysis::AST::QueryDepth,
+      GraphQL::Analysis::AST::QueryComplexity
+    ]
     Benchmark.ips do |x|
       x.report("Running introspection") {
         GraphQL::Analysis::AST.analyze_query(query, analyzers)
       }
+    end
+
+    StackProf.run(mode: :wall, out: "last-stackprof.dump", interval: 1) do
+      GraphQL::Analysis::AST.analyze_query(query, analyzers)
     end
 
     result = StackProf.run(mode: :wall, interval: 1) do
@@ -194,19 +222,23 @@ module GraphQLBenchmark
   end
 
   module ProfileLargeResult
+    def self.eager_or_proc(value)
+      ENV["EAGER"] ? value : -> { value }
+    end
+
     DATA = 1000.times.map {
-      {
-        id:             SecureRandom.uuid,
-        int1:           SecureRandom.random_number(100000),
-        int2:           SecureRandom.random_number(100000),
-        string1:        SecureRandom.base64,
-        string2:        SecureRandom.base64,
-        boolean1:       SecureRandom.random_number(1) == 0,
-        boolean2:       SecureRandom.random_number(1) == 0,
-        int_array:      10.times.map { SecureRandom.random_number(100000) },
-        string_array:   10.times.map { SecureRandom.base64 },
-        boolean_array:  10.times.map { SecureRandom.random_number(1) == 0 },
-      }
+      eager_or_proc({
+          id:             SecureRandom.uuid,
+          int1:           SecureRandom.random_number(100000),
+          int2:           SecureRandom.random_number(100000),
+          string1:        eager_or_proc(SecureRandom.base64),
+          string2:        SecureRandom.base64,
+          boolean1:       SecureRandom.random_number(1) == 0,
+          boolean2:       SecureRandom.random_number(1) == 0,
+          int_array:      eager_or_proc(10.times.map { eager_or_proc(SecureRandom.random_number(100000)) } ),
+          string_array:   10.times.map { SecureRandom.base64 },
+          boolean_array:  10.times.map { SecureRandom.random_number(1) == 0 },
+      })
     }
 
     module Bar
@@ -266,6 +298,7 @@ module GraphQLBenchmark
     class Schema < GraphQL::Schema
       query QueryType
       # use GraphQL::Dataloader
+      lazy_resolve Proc, :call
     end
 
     ALL_FIELDS = GraphQL.parse <<-GRAPHQL

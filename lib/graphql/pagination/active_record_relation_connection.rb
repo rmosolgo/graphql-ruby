@@ -7,14 +7,6 @@ module GraphQL
     class ActiveRecordRelationConnection < Pagination::RelationConnection
       private
 
-      def relation_larger_than(relation, initial_offset, size)
-        if already_loaded?(relation)
-          (relation.size + initial_offset) > size
-        else
-          set_offset(sliced_nodes, initial_offset + size).exists?
-        end
-      end
-
       def relation_count(relation)
         int_or_hash = if already_loaded?(relation)
           relation.size

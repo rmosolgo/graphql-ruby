@@ -91,22 +91,31 @@ module GraphQL
       end
 
       class ScopedContext
+        NO_PATH = [].freeze
+        NO_CONTEXT = {}.freeze
+
         def initialize(query_context)
           @query_context = query_context
-          @scoped_contexts = {}
-          @no_path = [].freeze
+          @scoped_contexts = nil
+          @all_keys = nil
         end
 
         def merged_context
-          merged_ctx = {}
-          each_present_path_ctx do |path_ctx|
-            merged_ctx = path_ctx.merge(merged_ctx)
+          if @scoped_contexts.nil?
+            NO_CONTEXT
+          else
+            merged_ctx = {}
+            each_present_path_ctx do |path_ctx|
+              merged_ctx = path_ctx.merge(merged_ctx)
+            end
+            merged_ctx
           end
-          merged_ctx
         end
 
         def merge!(hash)
-          ctx = @scoped_contexts
+          @all_keys ||= Set.new
+          @all_keys.merge(hash.keys)
+          ctx = @scoped_contexts ||= {}
           current_path.each do |path_part|
             ctx = ctx[path_part] ||= { parent: ctx }
           end
@@ -114,15 +123,12 @@ module GraphQL
           this_scoped_ctx.merge!(hash)
         end
 
-        def current_path
-          thread_info = Thread.current[:__graphql_runtime_info]
-          (thread_info && thread_info[:current_path]) || @no_path
-        end
-
         def key?(key)
-          each_present_path_ctx do |path_ctx|
-            if path_ctx.key?(key)
-              return true
+          if @all_keys && @all_keys.include?(key)
+            each_present_path_ctx do |path_ctx|
+              if path_ctx.key?(key)
+                return true
+              end
             end
           end
           false
@@ -135,6 +141,10 @@ module GraphQL
             end
           end
           nil
+        end
+
+        def current_path
+          @query_context.current_path || NO_PATH
         end
 
         def dig(key, *other_keys)
@@ -157,19 +167,23 @@ module GraphQL
         # but look up the tree for previously-assigned scoped values
         def each_present_path_ctx
           ctx = @scoped_contexts
-          current_path.each do |path_part|
-            if ctx.key?(path_part)
-              ctx = ctx[path_part]
-            else
-              break
+          if ctx.nil?
+            # no-op
+          else
+            current_path.each do |path_part|
+              if ctx.key?(path_part)
+                ctx = ctx[path_part]
+              else
+                break
+              end
             end
-          end
 
-          while ctx
-            if (scoped_ctx = ctx[:scoped_context])
-              yield(scoped_ctx)
+            while ctx
+              if (scoped_ctx = ctx[:scoped_context])
+                yield(scoped_ctx)
+              end
+              ctx = ctx[:parent]
             end
-            ctx = ctx[:parent]
           end
         end
       end
@@ -209,12 +223,28 @@ module GraphQL
         elsif @provided_values.key?(key)
           @provided_values[key]
         elsif RUNTIME_METADATA_KEYS.include?(key)
-          thread_info = Thread.current[:__graphql_runtime_info]
-          thread_info && thread_info[key]
+          if key == :current_path
+            current_path
+          else
+            thread_info = Thread.current[:__graphql_runtime_info]
+            thread_info && thread_info[key]
+          end
         else
           # not found
           nil
         end
+      end
+
+      def current_path
+        thread_info = Thread.current[:__graphql_runtime_info]
+        path = thread_info &&
+          (result = thread_info[:current_result]) &&
+          (result.path)
+        if path && (rn = thread_info[:current_result_name])
+          path = path.dup
+          path.push(rn)
+        end
+        path
       end
 
       def delete(key)

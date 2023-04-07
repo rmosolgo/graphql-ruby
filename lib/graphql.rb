@@ -42,8 +42,8 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   # Turn a query string or schema definition into an AST
   # @param graphql_string [String] a GraphQL query string or schema definition
   # @return [GraphQL::Language::Nodes::Document]
-  def self.parse(graphql_string, tracer: GraphQL::Tracing::NullTracer)
-    parse_with_racc(graphql_string, tracer: tracer)
+  def self.parse(graphql_string, trace: GraphQL::Tracing::NullTrace)
+    default_parser.parse(graphql_string, trace: trace)
   end
 
   # Read the contents of `filename` and parse them as GraphQL
@@ -51,21 +51,24 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   # @return [GraphQL::Language::Nodes::Document]
   def self.parse_file(filename)
     content = File.read(filename)
-    parse_with_racc(content, filename: filename)
+    default_parser.parse(content, filename: filename)
   end
 
-  def self.parse_with_racc(string, filename: nil, tracer: GraphQL::Tracing::NullTracer)
-    GraphQL::Language::Parser.parse(string, filename: filename, tracer: tracer)
-  end
-
-  # @return [Array<GraphQL::Language::Token>]
+  # @return [Array<Array>]
   def self.scan(graphql_string)
-    scan_with_ragel(graphql_string)
+    default_parser.scan(graphql_string)
   end
 
-  def self.scan_with_ragel(graphql_string)
+  def self.parse_with_racc(string, filename: nil, trace: GraphQL::Tracing::NullTrace)
+    GraphQL::Language::Parser.parse(string, filename: filename, trace: trace)
+  end
+
+  def self.scan_with_ruby(graphql_string)
     GraphQL::Language::Lexer.tokenize(graphql_string)
   end
+
+  NOT_CONFIGURED = Object.new
+  private_constant :NOT_CONFIGURED
 end
 
 # Order matters for these:

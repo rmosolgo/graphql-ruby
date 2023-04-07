@@ -43,11 +43,11 @@ module GraphQL
         private
 
         def inherited(subclass)
-          super
           subclass.class_eval do
             @to_non_null_type ||= nil
             @to_list_type ||= nil
           end
+          super
         end
       end
     end

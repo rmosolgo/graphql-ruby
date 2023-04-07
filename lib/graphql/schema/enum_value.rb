@@ -73,7 +73,6 @@ module GraphQL
       end
 
       def visible?(_ctx); true; end
-      def accessible?(_ctx); true; end
       def authorized?(_ctx); true; end
     end
   end

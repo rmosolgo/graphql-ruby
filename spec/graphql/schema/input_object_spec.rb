@@ -1168,6 +1168,7 @@ describe GraphQL::Schema::InputObject do
     it "prints in the SDL" do
       sdl = OneOfSchema.to_definition
       assert_includes sdl, "input OneOfInput @oneOf {\n"
+      assert_includes sdl, "directive @oneOf on INPUT_OBJECT"
     end
 
     it "shows in the introspection query" do

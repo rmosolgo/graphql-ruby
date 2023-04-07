@@ -33,7 +33,8 @@ Gem::Specification.new do |s|
   s.add_development_dependency "minitest-focus", "~> 1.1"
   s.add_development_dependency "minitest-reporters", "~>1.0"
   s.add_development_dependency "racc", "~> 1.4"
-  s.add_development_dependency "rake", "~> 12"
+  s.add_development_dependency "rake"
+  s.add_development_dependency 'rake-compiler'
   s.add_development_dependency "rubocop", "1.12" # for Ruby 2.4 enforcement
   # website stuff
   s.add_development_dependency "jekyll"

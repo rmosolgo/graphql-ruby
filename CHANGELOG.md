@@ -10,6 +10,88 @@
 
 ### Bug fixes
 
+# 2.0.20 (30 March 2023)
+
+### Bug fixes
+
+- `.resolve_type`: fix returning `[Type, false]` from resolve_type #4412
+- Parsing: improve usage of `GraphQL.default_parser` #4411
+- AppsignalTrace: implement missing methods #4390
+- Runtime: Fix `current_depth` method in some lazy lists #4386
+- Performance: improve `Object` object shape #4365
+- Tracing: return execution errors raised from field resolution to `execute_field` hooks #4398
+
+# 2.0.19 (14 March 2023)
+
+### Bug fixes
+
+- Scoped context: fix `context.scoped_context.current_path` #4376
+- Tracing: fix `tracer` inheritance in Schema classes #4379
+- Timeout: fix `Timeout` plugin when other tracers are used #4383
+- Performance: use Arrays instead of `GraphQL::Language::Token`s when scanning #4366
+
+# 2.0.18 (9 March 2023)
+
+### Breaking Changes
+
+- Tracing: `"execute_field"` events on fields defined on interface types will now receive the _interface_ type as `data[:owner]` instead of the current object type. To get the old behavior, use `data[:object].class` instead. #4292
+
+### New features
+
+- Add `TypeKind#leaf?` #4352
+
+### Bug fixes
+
+- Tracing: use the interface type as `data[:owner]` instead of the object type #4292
+- Performance: improve Shape compatibility of `GraphQL::Schema::Field` #4360
+- Performance: improve Shape compatibility of `GraphQL::Schema::Warden` #4361
+- Performance: rewrite the token scanner in plain Ruby #4369
+- Performance: make `deprecation_reason` faster #4356
+- Performance: improve lazy value resolution in execution #4333
+- Performance: create `current_path` only when the application needs it #4342
+- Performance: add `GraphQL::Tracing::Trace` as a lower-overhead tracing API #4344
+- Connections: fix `hasNextPage` for already-loaded ActiveRecord Relations #4349
+
+
+# 2.0.17.2 (29 March 2023)
+
+### Bug fixes
+
+- Unions and Interfaces: support returning `[type_module, false]` from `resolve_type` #4413
+
+# 2.0.17.1 (27 March 2023)
+
+### Bug fixes
+
+- Tracing: restore behavior returning execution errors raised during field resolution #4402
+
+# 2.0.17 (14 February 2023)
+
+### Breaking changes
+
+- Enums: require at least one value in a definition #4278
+
+### New features
+
+- Enums: support `nil` as a Ruby value #4311
+
+### Bug fixes
+
+- Don't re-encode ASCII strings as UTF-8 #4319, #4343
+- Fix `handle_or_reraise` with arguments validation #4341
+- Performance: Remove error handling from `Lazy#value` (unused) #4335
+- Performance: Use codegen instead of dynamic dispatch in `Language::Visitor` and `Analysis::AST::Visitor` #4338
+- Performance: reduce indirection in `#introspection?` and `#graphql_name` #4327
+- Clean up thread-based state after running queries #4329
+- JSON types: don't pass raw NullValue AST nodes to `coerce_input` #4324, #4320
+- Performance: reduce `.is_a?` calls at runtime #4318
+- Performance: cache interface type memberships #4311
+- Performance: eagerly define some type instance variables for Shape friendliness #4300 #4295 #4297
+- Performance: reduce argument overhead, don't scope introspection by default, reduce duplicate call to Field#type #4317
+- Fix anonymous `eval` usage #4288
+- Authorization: fix field auth fail call after lazy #4289
+- Subscriptions: fix `loads:`/`as:`
+
 # 2.0.16 (19 December 2022)
 
 ### Breaking changes
@@ -222,6 +304,28 @@ Oops, this version was accidentally released to RubyGems as "2.10.0". I yanked i
 
 - __None, ideally.__ If you have an application that ran without warnings on v1.13, you should be able to update to 2.0.0 without a hitch. If this isn't the case, please [open an issue](https://github.com/rmosolgo/graphql-ruby/issues/new?template=bug_report.md&title=[2.0%20update]%20describe%20your%20problem) and let me know what happened! I plan to maintain 1.13 for a while in order to ensure a smooth transition.
 - But, many legacy code components were removed, so if there are any more references to those, there will be name errors! See #3729 for a list of removed components.
+
+# 1.13.19 (2 February 2023)
+
+### Bug fixes
+
+- Performance: don't re-encode schema member names #4323
+- Performance: fix a duplicate field.type call #4316
+- Performance: use `scope: false` for introspection types #4315
+- Performance: improve argument coercion and validation #4312
+- Performance: improve interface type membership lookup #4309
+
+# 1.13.18 (10 January 2023)
+
+### New Features
+
+- `hash_key:`: perform `[...]` lookups even when the underlying object isn't a Hash #4286
+
+# 1.13.17 (17 November 2022)
+
+### Bug fixes
+
+- Handle ExecutionErrors from prepare hooks when calculating complexity #4248
 
 # 1.13.16 (31 August 2022)
 

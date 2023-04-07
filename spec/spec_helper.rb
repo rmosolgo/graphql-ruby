@@ -8,6 +8,14 @@ Bundler.require
 ENV["BACKTRACE"] = "1"
 
 require "graphql"
+if ENV["GRAPHQL_CPARSER"]
+  USING_C_PARSER = true
+  puts "Opting in to GraphQL::CParser"
+  require "graphql-c_parser"
+else
+  USING_C_PARSER = false
+end
+
 require "rake"
 require "graphql/rake_task"
 require "benchmark"
@@ -20,6 +28,44 @@ Minitest::Reporters.use! Minitest::Reporters::DefaultReporter.new(color: true)
 
 Minitest::Spec.make_my_diffs_pretty!
 
+module CheckWardenShape
+  DEFAULT_SHAPE = GraphQL::Schema::Warden.new(nil, context: {}, schema: GraphQL::Schema).instance_variables
+
+  class CheckShape
+    def initialize(warden)
+      @warden = warden
+    end
+
+    def call(_obj_id)
+      ivars = @warden.instance_variables
+      if ivars != DEFAULT_SHAPE
+        raise <<-ERR
+Object Shape Failed (#{@warden.class}):
+  - Expected: #{DEFAULT_SHAPE.inspect}
+  - Actual: #{ivars.inspect}
+ERR
+      # else # To make sure it's running properly:
+      #   puts "OK Warden #{@warden.object_id}"
+      end
+    end
+  end
+
+  def prepare_ast
+    super
+    setup_finalizer
+  end
+
+  private
+
+  def setup_finalizer
+    if !@finalizer_defined
+      @finalizer_defined = true
+      ObjectSpace.define_finalizer(self, CheckShape.new(warden))
+    end
+  end
+end
+
+GraphQL::Query.prepend(CheckWardenShape)
 # Filter out Minitest backtrace while allowing backtrace from other libraries
 # to be shown.
 Minitest.backtrace_filter = Minitest::BacktraceFilter.new
@@ -109,4 +155,9 @@ module TestTracing
       result
     end
   end
+end
+
+
+if !USING_C_PARSER && defined?(GraphQL::CParser::Parser)
+  raise "Load error: didn't opt in to C parser but GraphQL::CParser::Parser was defined"
 end

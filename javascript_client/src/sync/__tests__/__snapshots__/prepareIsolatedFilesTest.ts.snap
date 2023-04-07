@@ -1,8 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`builds out single operations 1`] = `
-Array [
-  Object {
+[
+  {
     "alias": "",
     "body": "query GetStuffIsolated {
   ...FragIsolated
@@ -18,7 +18,7 @@ fragment FragIsolated on Query {
 }",
     "name": "GetStuffIsolated",
   },
-  Object {
+  {
     "alias": "",
     "body": "query GetStuffIsolated2 {
   things {
@@ -31,8 +31,8 @@ fragment FragIsolated on Query {
 `;
 
 exports[`with --add-typename builds out single operations with __typename fields 1`] = `
-Array [
-  Object {
+[
+  {
     "alias": "",
     "body": "query GetStuffIsolated {
   ...FragIsolated
@@ -50,7 +50,7 @@ fragment FragIsolated on Query {
 }",
     "name": "GetStuffIsolated",
   },
-  Object {
+  {
     "alias": "",
     "body": "query GetStuffIsolated2 {
   things {
