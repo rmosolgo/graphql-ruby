@@ -887,7 +887,31 @@ module GraphQL
         ctx.errors.push(parse_err)
       end
 
+      module GraphQLLazyTrue
+        def graphql_lazy?
+          true
+        end
+        def self.graphql_lazy_resolve(method_name)
+          Module.new do
+            module_eval <<-RUBY
+              def graphql_lazy_resolve
+                #{method_name}
+              end
+
+              def graphql_lazy?
+                true
+              end
+
+              def self.included(child_cls)
+                child_cls.const_set(:GraphQLLazyResolve, self)
+              end
+            RUBY
+          end
+        end
+      end
+
       def lazy_resolve(lazy_class, value_method)
+        lazy_class.include(GraphQLLazyTrue.graphql_lazy_resolve(value_method))
         lazy_methods.set(lazy_class, value_method)
       end
 
@@ -1070,13 +1094,13 @@ module GraphQL
       # @return [Object] A GraphQL-ready (non-lazy) object
       # @api private
       def sync_lazy(value)
-        lazy_method = lazy_method_name(value)
-        if lazy_method
-          synced_value = value.public_send(lazy_method)
-          sync_lazy(synced_value)
+        if value.graphql_lazy?
+          value = value.graphql_lazy_resolve
+          sync_lazy(value)
         else
           value
         end
+        # TODO clean up old lazy method handling
       end
 
       # @return [Symbol, nil] The method name to lazily resolve `obj`, or nil if `obj`'s class wasn't registered with {#lazy_resolve}.
@@ -1164,6 +1188,8 @@ module GraphQL
             # this isn't _completely_ inherited :S (Things added after `dup` won't work)
             @lazy_methods = inherited_map.dup
           else
+            GraphQL::Execution::Lazy.include(GraphQLLazyTrue.graphql_lazy_resolve(:value))
+            GraphQL::Dataloader::Request.include(GraphQLLazyTrue.graphql_lazy_resolve(:load))
             @lazy_methods = GraphQL::Execution::Lazy::LazyMethodMap.new
             @lazy_methods.set(GraphQL::Execution::Lazy, :value)
             @lazy_methods.set(GraphQL::Dataloader::Request, :load)

@@ -1037,9 +1037,7 @@ module GraphQL
         end
 
         def lazy?(object)
-          @lazy_cache.fetch(object.class) {
-            @lazy_cache[object.class] = @schema.lazy?(object)
-          }
+          object.graphql_lazy?
         end
       end
     end
