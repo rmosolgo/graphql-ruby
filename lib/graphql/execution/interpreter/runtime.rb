@@ -429,7 +429,8 @@ module GraphQL
           # This seems janky, but we need to know
           # the field's return type at this path in order
           # to propagate `null`
-          if return_type.non_null?
+          return_type_non_null = return_type.non_null?
+          if return_type_non_null
             (selections_result.graphql_non_null_field_names ||= []).push(result_name)
           end
           # Set this before calling `run_with_directives`, so that the directive can have the latest path
@@ -449,22 +450,22 @@ module GraphQL
             resolved_arguments = GraphQL::Execution::Interpreter::Arguments::EMPTY
             if field_defn.extras.size == 0
               evaluate_selection_with_resolved_keyword_args(
-                NO_ARGS, resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selections_result, parent_object, return_type,
+                NO_ARGS, resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selections_result, parent_object, return_type, return_type_non_null
               )
             else
-              evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selections_result, parent_object, return_type)
+              evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selections_result, parent_object, return_type, return_type_non_null)
             end
           else
             @query.arguments_cache.dataload_for(ast_node, field_defn, object) do |resolved_arguments|
-              evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selections_result, parent_object, return_type)
+              evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selections_result, parent_object, return_type, return_type_non_null)
             end
           end
         end
 
-        def evaluate_selection_with_args(arguments, field_defn, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selection_result, parent_object, return_type)  # rubocop:disable Metrics/ParameterLists
+        def evaluate_selection_with_args(arguments, field_defn, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selection_result, parent_object, return_type, return_type_non_null)  # rubocop:disable Metrics/ParameterLists
           after_lazy(arguments, owner: owner_type, field: field_defn, ast_node: ast_node, owner_object: object, arguments: arguments, result_name: result_name, result: selection_result) do |resolved_arguments|
             if resolved_arguments.is_a?(GraphQL::ExecutionError) || resolved_arguments.is_a?(GraphQL::UnauthorizedError)
-              continue_value(resolved_arguments, owner_type, field_defn, return_type.non_null?, ast_node, result_name, selection_result)
+              continue_value(resolved_arguments, owner_type, field_defn, return_type_non_null, ast_node, result_name, selection_result)
               next
             end
 
@@ -513,11 +514,11 @@ module GraphQL
               resolved_arguments.keyword_arguments
             end
 
-            evaluate_selection_with_resolved_keyword_args(kwarg_arguments, resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selection_result, parent_object, return_type)
+            evaluate_selection_with_resolved_keyword_args(kwarg_arguments, resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selection_result, parent_object, return_type, return_type_non_null)
           end
         end
 
-        def evaluate_selection_with_resolved_keyword_args(kwarg_arguments, resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selection_result, parent_object, return_type)  # rubocop:disable Metrics/ParameterLists
+        def evaluate_selection_with_resolved_keyword_args(kwarg_arguments, resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selection_result, parent_object, return_type, return_type_non_null)  # rubocop:disable Metrics/ParameterLists
           st = get_current_runtime_state
           st.current_field = field_defn
           st.current_object = object
@@ -553,7 +554,7 @@ module GraphQL
               end
             end
             after_lazy(app_result, owner: owner_type, field: field_defn, ast_node: ast_node, owner_object: object, arguments: resolved_arguments, result_name: result_name, result: selection_result) do |inner_result|
-              continue_value = continue_value(inner_result, owner_type, field_defn, return_type.non_null?, ast_node, result_name, selection_result)
+              continue_value = continue_value(inner_result, owner_type, field_defn, return_type_non_null, ast_node, result_name, selection_result)
               if HALT != continue_value
                 continue_field(continue_value, owner_type, field_defn, return_type, ast_node, next_selections, false, object, resolved_arguments, result_name, selection_result)
               end
@@ -573,7 +574,7 @@ module GraphQL
 
 
         def dead_result?(selection_result)
-          selection_result.graphql_dead || ((parent = selection_result.graphql_parent) && parent.graphql_dead)
+          selection_result.graphql_dead  # || ((parent = selection_result.graphql_parent) && parent.graphql_dead)
         end
 
         def set_result(selection_result, result_name, value)
@@ -827,21 +828,21 @@ module GraphQL
             inner_type = current_type.of_type
             # This is true for objects, unions, and interfaces
             use_dataloader_job = !inner_type.unwrap.kind.input?
+            inner_type_non_null = inner_type.non_null?
             response_list = GraphQLResultArray.new(result_name, selection_result)
-            response_list.graphql_non_null_list_items = inner_type.non_null?
+            response_list.graphql_non_null_list_items = inner_type_non_null
             set_result(selection_result, result_name, response_list)
             idx = 0
             list_value = begin
               value.each do |inner_value|
-                break if dead_result?(response_list)
                 this_idx = idx
                 idx += 1
                 if use_dataloader_job
                   @dataloader.append_job do
-                    resolve_list_item(inner_value, inner_type, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type)
+                    resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type)
                   end
                 else
-                  resolve_list_item(inner_value, inner_type, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type)
+                  resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type)
                 end
               end
 
@@ -871,14 +872,14 @@ module GraphQL
           end
         end
 
-        def resolve_list_item(inner_value, inner_type, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type) # rubocop:disable Metrics/ParameterLists
+        def resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type) # rubocop:disable Metrics/ParameterLists
           st = get_current_runtime_state
           st.current_result_name = this_idx
           st.current_result = response_list
           call_method_on_directives(:resolve_each, owner_object, ast_node.directives) do
             # This will update `response_list` with the lazy
             after_lazy(inner_value, owner: inner_type, ast_node: ast_node, field: field, owner_object: owner_object, arguments: arguments, result_name: this_idx, result: response_list) do |inner_inner_value|
-              continue_value = continue_value(inner_inner_value, owner_type, field, inner_type.non_null?, ast_node, this_idx, response_list)
+              continue_value = continue_value(inner_inner_value, owner_type, field, inner_type_non_null, ast_node, this_idx, response_list)
               if HALT != continue_value
                 continue_field(continue_value, owner_type, field, inner_type, ast_node, next_selections, false, owner_object, arguments, this_idx, response_list)
               end
