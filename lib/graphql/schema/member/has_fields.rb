@@ -14,42 +14,6 @@ module GraphQL
           field_defn
         end
 
-        # @return [Hash<String => GraphQL::Schema::Field>] Fields on this object, keyed by name, including inherited fields
-        def fields(context = GraphQL::Query::NullContext)
-          warden = Warden.from_context(context)
-          is_object = self.respond_to?(:kind) && self.kind.object?
-          # Local overrides take precedence over inherited fields
-          visible_fields = {}
-          for ancestor in ancestors
-            if ancestor.respond_to?(:own_fields) &&
-                (is_object ? visible_interface_implementation?(ancestor, context, warden) : true)
-
-              ancestor.own_fields.each do |field_name, fields_entry|
-                # Choose the most local definition that passes `.visible?` --
-                # stop checking for fields by name once one has been found.
-                if !visible_fields.key?(field_name) && (f = Warden.visible_entry?(:visible_field?, fields_entry, context, warden))
-                  visible_fields[field_name] = f
-                end
-              end
-            end
-          end
-          visible_fields
-        end
-
-        def get_field(field_name, context = GraphQL::Query::NullContext)
-          warden = Warden.from_context(context)
-          is_object = self.respond_to?(:kind) && self.kind.object?
-          for ancestor in ancestors
-            if ancestor.respond_to?(:own_fields) &&
-                (is_object ? visible_interface_implementation?(ancestor, context, warden) : true) &&
-                (f_entry = ancestor.own_fields[field_name]) &&
-                (f = Warden.visible_entry?(:visible_field?, f_entry, context, warden))
-              return f
-            end
-          end
-          nil
-        end
-
         # A list of Ruby keywords.
         #
         # @api private
@@ -130,6 +94,86 @@ module GraphQL
           all_fields = all_fields.values
           all_fields.flatten!
           all_fields
+        end
+
+        module InterfaceMethods
+          def get_field(field_name, context = GraphQL::Query::NullContext)
+            warden = Warden.from_context(context)
+            for ancestor in ancestors
+              if ancestor.respond_to?(:own_fields) &&
+                  (f_entry = ancestor.own_fields[field_name]) &&
+                  (f = Warden.visible_entry?(:visible_field?, f_entry, context, warden))
+                return f
+              end
+            end
+            nil
+          end
+
+          # @return [Hash<String => GraphQL::Schema::Field>] Fields on this object, keyed by name, including inherited fields
+          def fields(context = GraphQL::Query::NullContext)
+            warden = Warden.from_context(context)
+            # Local overrides take precedence over inherited fields
+            visible_fields = {}
+            for ancestor in ancestors
+              if ancestor.respond_to?(:own_fields)
+                ancestor.own_fields.each do |field_name, fields_entry|
+                  # Choose the most local definition that passes `.visible?` --
+                  # stop checking for fields by name once one has been found.
+                  if !visible_fields.key?(field_name) && (f = Warden.visible_entry?(:visible_field?, fields_entry, context, warden))
+                    visible_fields[field_name] = f
+                  end
+                end
+              end
+            end
+            visible_fields
+          end
+        end
+
+        module ObjectMethods
+          def get_field(field_name, context = GraphQL::Query::NullContext)
+            # Objects need to check that the interface implementation is visible, too
+            warden = Warden.from_context(context)
+            for ancestor in ancestors
+              if ancestor.respond_to?(:own_fields) &&
+                  visible_interface_implementation?(ancestor, context, warden) &&
+                  (f_entry = ancestor.own_fields[field_name]) &&
+                  (f = Warden.visible_entry?(:visible_field?, f_entry, context, warden))
+                return f
+              end
+            end
+            nil
+          end
+
+          # @return [Hash<String => GraphQL::Schema::Field>] Fields on this object, keyed by name, including inherited fields
+          def fields(context = GraphQL::Query::NullContext)
+            # Objects need to check that the interface implementation is visible, too
+            warden = Warden.from_context(context)
+            # Local overrides take precedence over inherited fields
+            visible_fields = {}
+            for ancestor in ancestors
+              if ancestor.respond_to?(:own_fields) && visible_interface_implementation?(ancestor, context, warden)
+                ancestor.own_fields.each do |field_name, fields_entry|
+                  # Choose the most local definition that passes `.visible?` --
+                  # stop checking for fields by name once one has been found.
+                  if !visible_fields.key?(field_name) && (f = Warden.visible_entry?(:visible_field?, fields_entry, context, warden))
+                    visible_fields[field_name] = f
+                  end
+                end
+              end
+            end
+            visible_fields
+          end
+        end
+
+        def self.included(child_class)
+          # Included in an interface definition methods module
+          child_class.include(InterfaceMethods)
+          super
+        end
+
+        def self.extended(child_class)
+          child_class.extend(ObjectMethods)
+          super
         end
 
         private

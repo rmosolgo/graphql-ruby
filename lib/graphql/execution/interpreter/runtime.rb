@@ -448,9 +448,14 @@ module GraphQL
           total_args_count = field_defn.arguments(context).size
           if total_args_count == 0
             resolved_arguments = GraphQL::Execution::Interpreter::Arguments::EMPTY
-            evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selections_result, parent_object, return_type, return_type_non_null)
+            if field_defn.extras.size == 0
+              evaluate_selection_with_resolved_keyword_args(
+                NO_ARGS, resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selections_result, parent_object, return_type, return_type_non_null
+              )
+            else
+              evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selections_result, parent_object, return_type, return_type_non_null)
+            end
           else
-            # TODO remove all arguments(...) usages?
             @query.arguments_cache.dataload_for(ast_node, field_defn, object) do |resolved_arguments|
               evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selections_result, parent_object, return_type, return_type_non_null)
             end
@@ -464,9 +469,13 @@ module GraphQL
               next
             end
 
-            kwarg_arguments = if resolved_arguments.empty? && field_defn.extras.empty?
-              # We can avoid allocating the `{ Symbol => Object }` hash in this case
-              NO_ARGS
+            kwarg_arguments = if field_defn.extras.empty?
+              if resolved_arguments.empty?
+                # We can avoid allocating the `{ Symbol => Object }` hash in this case
+                NO_ARGS
+              else
+                resolved_arguments.keyword_arguments
+              end
             else
               # Bundle up the extras, then make a new arguments instance
               # that includes the extras, too.
@@ -505,59 +514,64 @@ module GraphQL
               resolved_arguments.keyword_arguments
             end
 
-            st = get_current_runtime_state
-            st.current_field = field_defn
-            st.current_object = object
-            st.current_arguments = resolved_arguments
-            st.current_result_name = result_name
-            st.current_result = selection_result
-            # Optimize for the case that field is selected only once
-            if field_ast_nodes.nil? || field_ast_nodes.size == 1
-              next_selections = ast_node.selections
-              directives = ast_node.directives
-            else
-              next_selections = []
-              directives = []
-              field_ast_nodes.each { |f|
-                next_selections.concat(f.selections)
-                directives.concat(f.directives)
-              }
-            end
-
-            field_result = call_method_on_directives(:resolve, object, directives) do
-              # Actually call the field resolver and capture the result
-              app_result = begin
-                query.current_trace.execute_field(field: field_defn, ast_node: ast_node, query: query, object: object, arguments: kwarg_arguments) do
-                  field_defn.resolve(object, kwarg_arguments, context)
-                end
-              rescue GraphQL::ExecutionError => err
-                err
-              rescue StandardError => err
-                begin
-                  query.handle_or_reraise(err)
-                rescue GraphQL::ExecutionError => ex_err
-                  ex_err
-                end
-              end
-              after_lazy(app_result, owner: owner_type, field: field_defn, ast_node: ast_node, owner_object: object, arguments: resolved_arguments, result_name: result_name, result: selection_result) do |inner_result|
-                continue_value = continue_value(inner_result, owner_type, field_defn, return_type.non_null?, ast_node, result_name, selection_result)
-                if HALT != continue_value
-                  continue_field(continue_value, owner_type, field_defn, return_type, ast_node, next_selections, false, object, resolved_arguments, result_name, selection_result)
-                end
-              end
-            end
-
-            # If this field is a root mutation field, immediately resolve
-            # all of its child fields before moving on to the next root mutation field.
-            # (Subselections of this mutation will still be resolved level-by-level.)
-            if is_eager_field
-              Interpreter::Resolve.resolve_all([field_result], @dataloader)
-            else
-              # Return this from `after_lazy` because it might be another lazy that needs to be resolved
-              field_result
-            end
+            evaluate_selection_with_resolved_keyword_args(kwarg_arguments, resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selection_result, parent_object, return_type, return_type_non_null)
           end
         end
+
+        def evaluate_selection_with_resolved_keyword_args(kwarg_arguments, resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selection_result, parent_object, return_type, return_type_non_null)  # rubocop:disable Metrics/ParameterLists
+          st = get_current_runtime_state
+          st.current_field = field_defn
+          st.current_object = object
+          st.current_arguments = resolved_arguments
+          st.current_result_name = result_name
+          st.current_result = selection_result
+          # Optimize for the case that field is selected only once
+          if field_ast_nodes.nil? || field_ast_nodes.size == 1
+            next_selections = ast_node.selections
+            directives = ast_node.directives
+          else
+            next_selections = []
+            directives = []
+            field_ast_nodes.each { |f|
+              next_selections.concat(f.selections)
+              directives.concat(f.directives)
+            }
+          end
+
+          field_result = call_method_on_directives(:resolve, object, directives) do
+            # Actually call the field resolver and capture the result
+            app_result = begin
+              query.current_trace.execute_field(field: field_defn, ast_node: ast_node, query: query, object: object, arguments: kwarg_arguments) do
+                field_defn.resolve(object, kwarg_arguments, context)
+              end
+            rescue GraphQL::ExecutionError => err
+              err
+            rescue StandardError => err
+              begin
+                query.handle_or_reraise(err)
+              rescue GraphQL::ExecutionError => ex_err
+                ex_err
+              end
+            end
+            after_lazy(app_result, owner: owner_type, field: field_defn, ast_node: ast_node, owner_object: object, arguments: resolved_arguments, result_name: result_name, result: selection_result) do |inner_result|
+              continue_value = continue_value(inner_result, owner_type, field_defn, return_type_non_null, ast_node, result_name, selection_result)
+              if HALT != continue_value
+                continue_field(continue_value, owner_type, field_defn, return_type, ast_node, next_selections, false, object, resolved_arguments, result_name, selection_result)
+              end
+            end
+          end
+
+          # If this field is a root mutation field, immediately resolve
+          # all of its child fields before moving on to the next root mutation field.
+          # (Subselections of this mutation will still be resolved level-by-level.)
+          if is_eager_field
+            Interpreter::Resolve.resolve_all([field_result], @dataloader)
+          else
+            # Return this from `after_lazy` because it might be another lazy that needs to be resolved
+            field_result
+          end
+        end
+
 
         def dead_result?(selection_result)
           selection_result.graphql_dead  # || ((parent = selection_result.graphql_parent) && parent.graphql_dead)
