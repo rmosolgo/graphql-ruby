@@ -144,26 +144,25 @@ module GraphQL
             nil
           end
 
-
-        # @return [Hash<String => GraphQL::Schema::Field>] Fields on this object, keyed by name, including inherited fields
-        def fields(context = GraphQL::Query::NullContext)
-          # Objects need to check that the interface implementation is visible, too
-          warden = Warden.from_context(context)
-          # Local overrides take precedence over inherited fields
-          visible_fields = {}
-          for ancestor in ancestors
-            if ancestor.respond_to?(:own_fields) && visible_interface_implementation?(ancestor, context, warden)
-              ancestor.own_fields.each do |field_name, fields_entry|
-                # Choose the most local definition that passes `.visible?` --
-                # stop checking for fields by name once one has been found.
-                if !visible_fields.key?(field_name) && (f = Warden.visible_entry?(:visible_field?, fields_entry, context, warden))
-                  visible_fields[field_name] = f
+          # @return [Hash<String => GraphQL::Schema::Field>] Fields on this object, keyed by name, including inherited fields
+          def fields(context = GraphQL::Query::NullContext)
+            # Objects need to check that the interface implementation is visible, too
+            warden = Warden.from_context(context)
+            # Local overrides take precedence over inherited fields
+            visible_fields = {}
+            for ancestor in ancestors
+              if ancestor.respond_to?(:own_fields) && visible_interface_implementation?(ancestor, context, warden)
+                ancestor.own_fields.each do |field_name, fields_entry|
+                  # Choose the most local definition that passes `.visible?` --
+                  # stop checking for fields by name once one has been found.
+                  if !visible_fields.key?(field_name) && (f = Warden.visible_entry?(:visible_field?, fields_entry, context, warden))
+                    visible_fields[field_name] = f
+                  end
                 end
               end
             end
+            visible_fields
           end
-          visible_fields
-        end
         end
 
         def self.included(child_class)
