@@ -455,7 +455,6 @@ module GraphQL
               evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selections_result, parent_object, return_type)
             end
           else
-            # TODO remove all arguments(...) usages?
             @query.arguments_cache.dataload_for(ast_node, field_defn, object) do |resolved_arguments|
               evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selections_result, parent_object, return_type)
             end
@@ -469,9 +468,13 @@ module GraphQL
               next
             end
 
-            kwarg_arguments = if resolved_arguments.empty? && field_defn.extras.empty?
-              # We can avoid allocating the `{ Symbol => Object }` hash in this case
-              NO_ARGS
+            kwarg_arguments = if field_defn.extras.empty?
+              if resolved_arguments.empty?
+                # We can avoid allocating the `{ Symbol => Object }` hash in this case
+                NO_ARGS
+              else
+                resolved_arguments.keyword_arguments
+              end
             else
               # Bundle up the extras, then make a new arguments instance
               # that includes the extras, too.
@@ -510,7 +513,7 @@ module GraphQL
               resolved_arguments.keyword_arguments
             end
 
-            evaluate_selection_with_resolved_keyword_args(kwarg_arguments, arguments, field_defn, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selection_result, parent_object, return_type)
+            evaluate_selection_with_resolved_keyword_args(kwarg_arguments, resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selection_result, parent_object, return_type)
           end
         end
 
