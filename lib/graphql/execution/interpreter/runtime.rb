@@ -396,6 +396,7 @@ module GraphQL
 
         # @return [void]
         def evaluate_selection(result_name, field_ast_nodes_or_ast_node, owner_object, owner_type, is_eager_field, selections_result, parent_object) # rubocop:disable Metrics/ParameterLists
+          return if dead_result?(selections_result)
           # As a performance optimization, the hash key will be a `Node` if
           # there's only one selection of the field. But if there are multiple
           # selections of the field, it will be an Array of nodes
@@ -559,7 +560,7 @@ module GraphQL
         end
 
         def dead_result?(selection_result)
-          selection_result.graphql_dead || ((parent = selection_result.graphql_parent) && parent.graphql_dead)
+          selection_result.graphql_dead  # || ((parent = selection_result.graphql_parent) && parent.graphql_dead)
         end
 
         def set_result(selection_result, result_name, value)
