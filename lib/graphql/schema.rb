@@ -888,12 +888,11 @@ module GraphQL
       end
 
       module GraphQLLazyTrue
-        def graphql_lazy?
-          true
-        end
-        def self.graphql_lazy_resolve(method_name)
-          Module.new do
-            module_eval <<-RUBY
+        def self.graphql_lazy_resolve(child_cls, method_name)
+          source_line = caller(2, 1).first
+          source_file, source_line_no = source_line.split(":")
+          lazy_resolve_methods = Module.new do
+            module_eval(<<-RUBY, source_file, source_line_no.to_i)
               def graphql_lazy_resolve
                 #{method_name}
               end
@@ -901,17 +900,15 @@ module GraphQL
               def graphql_lazy?
                 true
               end
-
-              def self.included(child_cls)
-                child_cls.const_set(:GraphQLLazyResolve, self)
-              end
             RUBY
           end
+          # TODO don't include this in some cases
+          child_cls.include(lazy_resolve_methods)
         end
       end
 
       def lazy_resolve(lazy_class, value_method)
-        lazy_class.include(GraphQLLazyTrue.graphql_lazy_resolve(value_method))
+        GraphQLLazyTrue.graphql_lazy_resolve(lazy_class, value_method)
         lazy_methods.set(lazy_class, value_method)
       end
 
@@ -1188,8 +1185,8 @@ module GraphQL
             # this isn't _completely_ inherited :S (Things added after `dup` won't work)
             @lazy_methods = inherited_map.dup
           else
-            GraphQL::Execution::Lazy.include(GraphQLLazyTrue.graphql_lazy_resolve(:value))
-            GraphQL::Dataloader::Request.include(GraphQLLazyTrue.graphql_lazy_resolve(:load))
+            GraphQLLazyTrue.graphql_lazy_resolve(GraphQL::Execution::Lazy, :value)
+            GraphQLLazyTrue.graphql_lazy_resolve(GraphQL::Dataloader::Request, :load)
             @lazy_methods = GraphQL::Execution::Lazy::LazyMethodMap.new
             @lazy_methods.set(GraphQL::Execution::Lazy, :value)
             @lazy_methods.set(GraphQL::Dataloader::Request, :load)
