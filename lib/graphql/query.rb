@@ -105,7 +105,7 @@ module GraphQL
       end
 
       if context_tracers.any? && !(schema.trace_class <= GraphQL::Tracing::LegacyTrace)
-        raise ArgumentError, "context[:tracers] and context[:backtrace] are not supported without `tracer_class(GraphQL::Tracing::LegacyTrace)` in the schema configuration, please add it."
+        raise ArgumentError, "context[:tracers] and context[:backtrace] are not supported without `trace_class(GraphQL::Tracing::LegacyTrace)` in the schema configuration, please add it."
       end
 
 

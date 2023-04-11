@@ -10,6 +10,16 @@
 
 ### Bug fixes
 
+# 2.0.20 (30 March 2023)
+
+### Bug fixes
+
+- `.resolve_type`: fix returning `[Type, false]` from resolve_type #4412
+- Parsing: improve usage of `GraphQL.default_parser` #4411
+- AppsignalTrace: implement missing methods #4390
+- Runtime: Fix `current_depth` method in some lazy lists #4386
+- Performance: improve `Object` object shape #4365
+- Tracing: return execution errors raised from field resolution to `execute_field` hooks #4398
 
 # 2.0.19 (14 March 2023)
 
@@ -41,6 +51,19 @@
 - Performance: create `current_path` only when the application needs it #4342
 - Performance: add `GraphQL::Tracing::Trace` as a lower-overhead tracing API #4344
 - Connections: fix `hasNextPage` for already-loaded ActiveRecord Relations #4349
+
+
+# 2.0.17.2 (29 March 2023)
+
+### Bug fixes
+
+- Unions and Interfaces: support returning `[type_module, false]` from `resolve_type` #4413
+
+# 2.0.17.1 (27 March 2023)
+
+### Bug fixes
+
+- Tracing: restore behavior returning execution errors raised during field resolution #4402
 
 # 2.0.17 (14 February 2023)
 

@@ -99,6 +99,16 @@ module GraphQL
               raise InvalidDocumentError.new("Specified subscription type \"#{schema_definition.subscription}\" not found in document.") unless types[schema_definition.subscription]
               subscription_root_type = types[schema_definition.subscription]
             end
+
+            if schema_definition.query.nil? &&
+                schema_definition.mutation.nil? &&
+                schema_definition.subscription.nil?
+              # This schema may have been given with directives only,
+              # check for defaults:
+              query_root_type = types['Query']
+              mutation_root_type = types['Mutation']
+              subscription_root_type = types['Subscription']
+            end
           else
             query_root_type = types['Query']
             mutation_root_type = types['Mutation']
@@ -106,6 +116,8 @@ module GraphQL
           end
 
           raise InvalidDocumentError.new('Must provide schema definition with query type or a type named Query.') unless query_root_type
+
+          builder = self
 
           schema_class = Class.new(schema_superclass) do
             begin
@@ -134,6 +146,7 @@ module GraphQL
 
             if schema_definition
               ast_node(schema_definition)
+              builder.build_directives(self, schema_definition, type_resolver)
             end
 
             using.each do |plugin, options|

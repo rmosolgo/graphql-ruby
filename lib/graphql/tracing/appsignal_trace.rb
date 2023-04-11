@@ -55,6 +55,12 @@ module GraphQL
         end
       end
 
+      def platform_resolve_type(platform_key)
+        Appsignal.instrument(platform_key) do
+          yield
+        end
+      end
+
       def platform_field_key(field)
         "#{field.owner.graphql_name}.#{field.graphql_name}.graphql"
       end

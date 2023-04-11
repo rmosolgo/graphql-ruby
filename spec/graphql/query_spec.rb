@@ -654,12 +654,24 @@ describe GraphQL::Query do
     it "adds an entry to the errors key" do
       res = schema.execute(" { ")
       assert_equal 1, res["errors"].length
-      assert_equal "Unexpected end of document", res["errors"][0]["message"]
-      assert_equal [], res["errors"][0]["locations"]
+      if USING_C_PARSER
+        expected_err = "syntax error, unexpected end of file at [1, 2]"
+        expected_locations = [{"line" => 1, "column" => 2}]
+      else
+        expected_err = "Unexpected end of document"
+        expected_locations = []
+      end
+      assert_equal expected_err, res["errors"][0]["message"]
+      assert_equal expected_locations, res["errors"][0]["locations"]
 
       res = schema.execute(invalid_query_string)
       assert_equal 1, res["errors"].length
-      assert_equal %|Parse error on "1" (INT) at [4, 26]|, res["errors"][0]["message"]
+      expected_error = if USING_C_PARSER
+        "syntax error, unexpected INT (\"1\") at [4, 26]"
+      else
+        %|Parse error on "1" (INT) at [4, 26]|
+      end
+      assert_equal expected_error, res["errors"][0]["message"]
       assert_equal({"line" => 4, "column" => 26}, res["errors"][0]["locations"][0])
     end
 
@@ -973,6 +985,29 @@ describe GraphQL::Query do
       it "returns errors" do
         refute_nil(result["errors"])
       end
+    end
+  end
+
+  describe "using GraphQL.default_parser" do
+    module DummyParser
+      DOC = GraphQL::Language::Parser.parse("{ __typename }")
+      def self.parse(query_str, trace: nil, filename: nil)
+        DOC
+      end
+    end
+
+    before do
+      @previous_parser = GraphQL.default_parser
+      GraphQL.default_parser = DummyParser
+    end
+
+    after do
+      GraphQL.default_parser = @previous_parser
+    end
+
+    it "uses it for queries" do
+      res = Dummy::Schema.execute("blah blah blah")
+      assert_equal "Query", res["data"]["__typename"]
     end
   end
 end
