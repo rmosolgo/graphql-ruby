@@ -2,7 +2,6 @@
 require "spec_helper"
 
 describe GraphQL::Tracing::LegacyTrace do
-
   it "calls tracers on a parent schema class" do
     custom_tracer = Module.new do
       def self.trace(key, data)
