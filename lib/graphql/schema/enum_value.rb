@@ -25,19 +25,16 @@ module GraphQL
       include GraphQL::Schema::Member::HasDirectives
       include GraphQL::Schema::Member::HasDeprecationReason
 
-      UNDEFINED_VALUE = Object.new.freeze
-      private_constant :UNDEFINED_VALUE
-
       attr_reader :graphql_name
 
       # @return [Class] The enum type that owns this value
       attr_reader :owner
 
-      def initialize(graphql_name, desc = nil, owner:, ast_node: nil, directives: nil, description: nil, value: UNDEFINED_VALUE, deprecation_reason: nil, &block)
+      def initialize(graphql_name, desc = nil, owner:, ast_node: nil, directives: nil, description: nil, value: NOT_CONFIGURED, deprecation_reason: nil, &block)
         @graphql_name = graphql_name.to_s
         GraphQL::NameValidator.validate!(@graphql_name)
         @description = desc || description
-        @value = value === UNDEFINED_VALUE ? @graphql_name : value
+        @value = value === NOT_CONFIGURED ? @graphql_name : value
         if deprecation_reason
           self.deprecation_reason = deprecation_reason
         end
