@@ -38,7 +38,9 @@ module GraphQL
     # @api private
     class Warden
       def self.from_context(context)
-        (context.respond_to?(:warden) && context.warden) || PassThruWarden
+        context.warden # this might be a hash which won't respond to this
+      rescue
+        PassThruWarden
       end
 
       # @param visibility_method [Symbol] a Warden method to call for this entry
