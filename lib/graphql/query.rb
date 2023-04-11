@@ -318,8 +318,8 @@ module GraphQL
     # @param value [Object] Any runtime value
     # @return [GraphQL::ObjectType, nil] The runtime type of `value` from {Schema#resolve_type}
     # @see {#possible_types} to apply filtering from `only` / `except`
-    def resolve_type(abstract_type, value = NOT_DEFINED)
-      if value.is_a?(Symbol) && value == NOT_DEFINED
+    def resolve_type(abstract_type, value = NOT_CONFIGURED)
+      if value.is_a?(Symbol) && value == NOT_CONFIGURED
         # Old method signature
         value = abstract_type
         abstract_type = nil
