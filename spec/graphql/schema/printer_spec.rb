@@ -673,8 +673,13 @@ SCHEMA
       end
     }
 
-    context = { names: ["Query", "Post"] }
-    assert_equal expected, schema.to_definition(context: context, only: only_filter)
+    context = { names: ["Query", "Post"], only_filter: only_filter }
+    only_schema = Class.new(schema) do
+      def self.visible?(member, ctx)
+        ctx[:only_filter].call(member, ctx)
+      end
+    end
+    assert_equal expected, only_schema.to_definition(context: context)
   end
 
 
@@ -773,9 +778,13 @@ SCHEMA
     except_filter = ->(member, ctx) {
       ctx[:names].include?(member.graphql_name) || (member.respond_to?(:deprecation_reason) && member.deprecation_reason)
     }
-
-    context = { names: ["Varied", "Image", "Sub"] }
-    assert_equal expected, schema.to_definition(context: context, except: except_filter)
+    except_schema = Class.new(schema) do
+      def self.visible?(member, ctx)
+        !ctx[:except].call(member, ctx)
+      end
+    end
+    context = { names: ["Varied", "Image", "Sub"], except: except_filter }
+    assert_equal expected, except_schema.to_definition(context: context)
   end
 
   describe "#print_type" do

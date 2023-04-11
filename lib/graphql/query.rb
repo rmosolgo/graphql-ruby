@@ -81,13 +81,10 @@ module GraphQL
     # @param root_value [Object] the object used to resolve fields on the root type
     # @param max_depth [Numeric] the maximum number of nested selections allowed for this query (falls back to schema-level value)
     # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
-    # @param except [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns truthy
-    # @param only [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns false
-    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, except: nil, only: nil, warden: nil)
+    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, warden: nil)
       # Even if `variables: nil` is passed, use an empty hash for simpler logic
       variables ||= {}
       @schema = schema
-      @filter = schema.default_filter.merge(except: except, only: only)
       @context = schema.context_class.new(query: self, object: root_value, values: context)
       @warden = warden
       @subscription_topic = subscription_topic
@@ -147,11 +144,6 @@ module GraphQL
 
       @result_values = nil
       @executed = false
-
-      # TODO add a general way to define schema-level filters
-      if @schema.respond_to?(:visible?)
-        merge_filters(only: @schema.method(:visible?))
-      end
     end
 
     # If a document was provided to `GraphQL::Schema#execute` instead of the raw query string, we will need to get it from the document
@@ -317,7 +309,7 @@ module GraphQL
     # @param abstract_type [GraphQL::UnionType, GraphQL::InterfaceType]
     # @param value [Object] Any runtime value
     # @return [GraphQL::ObjectType, nil] The runtime type of `value` from {Schema#resolve_type}
-    # @see {#possible_types} to apply filtering from `only` / `except`
+    # @see {#possible_types} to apply filtering from `visible?` methods
     def resolve_type(abstract_type, value = :__undefined__)
       if value.is_a?(Symbol) && value == :__undefined__
         # Old method signature
@@ -336,16 +328,6 @@ module GraphQL
 
     def query?
       with_prepared_ast { @query }
-    end
-
-    # @return [void]
-    def merge_filters(only: nil, except: nil)
-      if @prepared_ast
-        raise "Can't add filters after preparing the query"
-      else
-        @filter = @filter.merge(only: only, except: except)
-      end
-      nil
     end
 
     def subscription?
@@ -371,7 +353,7 @@ module GraphQL
 
     def prepare_ast
       @prepared_ast = true
-      @warden ||= GraphQL::Schema::Warden.new(@filter, schema: @schema, context: @context)
+      @warden ||= GraphQL::Schema::Warden.new(schema: @schema, context: @context)
       parse_error = nil
       @document ||= begin
         if query_string

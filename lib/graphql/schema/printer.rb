@@ -36,15 +36,11 @@ module GraphQL
 
       # @param schema [GraphQL::Schema]
       # @param context [Hash]
-      # @param only [<#call(member, ctx)>]
-      # @param except [<#call(member, ctx)>]
       # @param introspection [Boolean] Should include the introspection types in the string?
-      def initialize(schema, context: nil, only: nil, except: nil, introspection: false)
+      def initialize(schema, context: nil, introspection: false)
         @document_from_schema = GraphQL::Language::DocumentFromSchemaDefinition.new(
           schema,
           context: context,
-          only: only,
-          except: except,
           include_introspection_types: introspection,
         )
 
@@ -58,11 +54,15 @@ module GraphQL
           graphql_name "Root"
           field :throwaway_field, String
         end
-        schema = Class.new(GraphQL::Schema) { query(query_root) }
+        schema = Class.new(GraphQL::Schema) {
+          query(query_root)
+          def self.visible?(member, _ctx)
+            member.graphql_name != "Root"
+          end
+        }
 
         introspection_schema_ast = GraphQL::Language::DocumentFromSchemaDefinition.new(
           schema,
-          except: ->(member, _) { member.graphql_name == "Root" },
           include_introspection_types: true,
           include_built_in_directives: true,
         ).document

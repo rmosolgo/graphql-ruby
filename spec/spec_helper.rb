@@ -29,7 +29,7 @@ Minitest::Reporters.use! Minitest::Reporters::DefaultReporter.new(color: true)
 Minitest::Spec.make_my_diffs_pretty!
 
 module CheckWardenShape
-  DEFAULT_SHAPE = GraphQL::Schema::Warden.new(nil, context: {}, schema: GraphQL::Schema).instance_variables
+  DEFAULT_SHAPE = GraphQL::Schema::Warden.new(context: {}, schema: GraphQL::Schema).instance_variables
 
   class CheckShape
     def initialize(warden)
