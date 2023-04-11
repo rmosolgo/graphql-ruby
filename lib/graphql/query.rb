@@ -100,12 +100,16 @@ module GraphQL
 
       # Support `ctx[:backtrace] = true` for wrapping backtraces
       if context && context[:backtrace] && !@tracers.include?(GraphQL::Backtrace::Tracer)
-        context_tracers += [GraphQL::Backtrace::Tracer]
-        @tracers << GraphQL::Backtrace::Tracer
+        if schema.trace_class <= GraphQL::Tracing::LegacyTrace
+          context_tracers += [GraphQL::Backtrace::Tracer]
+          @tracers << GraphQL::Backtrace::Tracer
+        elsif !(current_trace.class <= GraphQL::Backtrace::Trace)
+          raise "Invariant: `backtrace: true` should have provided a trace class with Backtrace mixed in, but it didnt. (Found: #{current_trace.class.ancestors}). This is a bug in GraphQL-Ruby, please report it on GitHub."
+        end
       end
 
       if context_tracers.any? && !(schema.trace_class <= GraphQL::Tracing::LegacyTrace)
-        raise ArgumentError, "context[:tracers] and context[:backtrace] are not supported without `trace_class(GraphQL::Tracing::LegacyTrace)` in the schema configuration, please add it."
+        raise ArgumentError, "context[:tracers] are not supported without `trace_class(GraphQL::Tracing::LegacyTrace)` in the schema configuration, please add it."
       end
 
 
