@@ -10,6 +10,27 @@
 
 ### Bug fixes
 
+# 2.0.21 (11 April 2023)
+
+### Deprecations
+
+- Deprecate `GraphQL::Filter` (use `visible?` methods instead) #4424
+
+### New features
+
+- PrometheusTracing: support histograms #4418
+
+### Bug fixes
+
+- Backtrace: improve compatibility with `trace_with` #4437
+- Consolidate internally-used empty value constants #4434
+- Fix some warnings #4422
+- Performance: improve runtime speed #4436 #4433 #4428 #4430 #4427 #4399
+- Validation: fix inline fragment selection on scalar #4429
+- `@oneOf`: print definition in the SDL when it's used
+- SDL: load schema directives when they're used
+- Appsignal tracing: Fix `resolve_type` definition
+
 # 2.0.20 (30 March 2023)
 
 ### Bug fixes
