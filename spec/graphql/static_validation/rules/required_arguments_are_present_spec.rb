@@ -92,7 +92,7 @@ describe GraphQL::StaticValidation::RequiredArgumentsArePresent do
 
     it "Doesn't require a hidden input" do
       res = HiddenArgSchema.execute("{ int }")
-      assert_equal -1, res["data"]["int"]
+      assert_equal(-1, res["data"]["int"])
     end
   end
 end
