@@ -991,7 +991,7 @@ module GraphQL
         if defined?(@trace_options)
           options = trace_options.merge(options)
         end
-        trace_mode = if (target = options[:query] || options[:multiplex]) && (use_backtrace = target.context[:backtrace])
+        trace_mode = if (target = options[:query] || options[:multiplex]) && target.context[:backtrace]
           :default_backtrace
         else
           :default
