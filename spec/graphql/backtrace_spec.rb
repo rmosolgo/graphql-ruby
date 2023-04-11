@@ -81,7 +81,6 @@ describe GraphQL::Backtrace do
     schema_class.class_exec {
       lazy_resolve(LazyError, :raise_err)
       query_analyzer(ErrorAnalyzer)
-      trace_class(GraphQL::Tracing::LegacyTrace)
     }
     schema_class
   }

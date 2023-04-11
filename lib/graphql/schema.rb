@@ -145,17 +145,40 @@ module GraphQL
 
       def trace_class(new_class = nil)
         if new_class
-          @trace_class = new_class
-        elsif !defined?(@trace_class)
-          parent_trace_class = if superclass.respond_to?(:trace_class)
-            superclass.trace_class
+          trace_mode(:default, new_class)
+          backtrace_class = Class.new(new_class)
+          backtrace_class.include(GraphQL::Backtrace::Trace)
+          trace_mode(:default_backtrace, backtrace_class)
+        end
+        trace_class_for(:default)
+      end
+
+      # @return [Class] Return the trace class to use for this mode, looking one up on the superclass if this Schema doesn't have one defined.
+      def trace_class_for(mode)
+        @trace_modes ||= {}
+        @trace_modes[mode] ||= begin
+          base_class = if superclass.respond_to?(:trace_class_for)
+            superclass.trace_class_for(mode)
+          elsif mode == :default_backtrace
+            GraphQL::Backtrace::DefaultBacktraceTrace
           else
             GraphQL::Tracing::Trace
           end
-          @trace_class = Class.new(parent_trace_class)
+          Class.new(base_class)
         end
-        @trace_class
       end
+
+      # Configure `trace_class` to be used whenever `context: { trace_mode: mode_name }` is requested.
+      # `:default` is used when no `trace_mode: ...` is requested.
+      # @param mode_name [Symbol]
+      # @param trace_class [Class] subclass of GraphQL::Tracing::Trace
+      # @return void
+      def trace_mode(mode_name, trace_class)
+        @trace_modes ||= {}
+        @trace_modes[mode_name] = trace_class
+        nil
+      end
+
 
       # Returns the JSON response of {Introspection::INTROSPECTION_QUERY}.
       # @see {#as_json}
@@ -936,10 +959,10 @@ module GraphQL
       end
 
       def tracer(new_tracer)
-        if defined?(@trace_class) && !(@trace_class < GraphQL::Tracing::LegacyTrace)
+        if defined?(@trace_modes) && !(trace_class_for(:default) < GraphQL::Tracing::LegacyTrace)
           raise ArgumentError, "Can't add tracer after configuring a `trace_class`, use GraphQL::Tracing::LegacyTrace to merge legacy tracers into a trace class instead."
-        elsif !defined?(@trace_class)
-          @trace_class = Class.new(GraphQL::Tracing::LegacyTrace)
+        else
+          trace_mode(:default, Class.new(GraphQL::Tracing::LegacyTrace))
         end
 
         own_tracers << new_tracer
@@ -968,7 +991,13 @@ module GraphQL
         if defined?(@trace_options)
           options = trace_options.merge(options)
         end
-        trace_class.new(**options)
+        trace_mode = if (target = options[:query] || options[:multiplex]) && target.context[:backtrace]
+          :default_backtrace
+        else
+          :default
+        end
+        trace = trace_class_for(trace_mode).new(**options)
+        trace
       end
 
       def query_analyzer(new_analyzer)
