@@ -807,6 +807,9 @@ ERR
         end
       end
 
+      class ExtendedState
+        attr_accessor :arguments, :object, :memos, :added_extras
+      end
       # Wrap execution with hooks.
       # Written iteratively to avoid big stack traces.
       # @return [Object] Whatever the
@@ -817,20 +820,20 @@ ERR
           # This is a hack to get the _last_ value for extended obj and args,
           # in case one of the extensions doesn't `yield`.
           # (There's another implementation that uses multiple-return, but I'm wary of the perf cost of the extra arrays)
-          extended = nil
-          value = run_extensions_before_resolve(obj, args, ctx, extended) do |obj, args, ext_extended|
-            # `ext_extended` may have been built up by the extensions:
-            extended = ext_extended
-            if extended && (added_extras = extended[:added_extras])
+          extended = ExtendedState.new
+          extended.arguments = args
+          extended.object = obj
+          value = run_extensions_before_resolve(obj, args, ctx, extended) do |obj, args|
+            if (added_extras = extended.added_extras)
               args = args.dup
               added_extras.each { |e| args.delete(e) }
             end
             yield(obj, args)
           end
 
-          extended_obj = extended && extended.key?(:obj) ? extended[:obj] : obj
-          extended_args = extended && extended.key?(:args) ? extended[:args] : args
-          memos = extended && extended.key?(:memos) ? extended[:memos] : EMPTY_HASH
+          extended_obj = extended.object
+          extended_args = extended.arguments
+          memos = extended.memos || EMPTY_HASH
 
           ctx.schema.after_lazy(value) do |resolved_value|
             idx = 0
@@ -850,27 +853,18 @@ ERR
         if extension
           extension.resolve(object: obj, arguments: args, context: ctx) do |extended_obj, extended_args, memo|
             if memo
-              extended ||= {}
-              memos = extended[:memos] ||= {}
+              memos = extended.memos ||= {}
               memos[idx] = memo
             end
 
             if (extras = extension.added_extras)
-              extended ||= {}
-              ae = extended[:added_extras] ||= []
+              ae = extended.added_extras ||= []
               ae.concat(extras)
             end
 
-            if !extended_obj.equal?(obj)
-              extended ||= {}
-              extended[:obj] = extended_obj
-            end
-
-            if !extended_args.equal?(args)
-              extended ||= {}
-              extended[:args] = extended_args
-            end
-            run_extensions_before_resolve(extended_obj, extended_args, ctx, extended, idx: idx + 1) { |o, a, ext| yield(o, a, ext) }
+            extended.object = extended_obj
+            extended.arguments = extended_args
+            run_extensions_before_resolve(extended_obj, extended_args, ctx, extended, idx: idx + 1) { |o, a| yield(o, a) }
           end
         else
           yield(obj, args, extended)
