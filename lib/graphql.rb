@@ -69,6 +69,10 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
 
   NOT_CONFIGURED = Object.new
   private_constant :NOT_CONFIGURED
+  module EmptyObjects
+    EMPTY_HASH = {}.freeze
+    EMPTY_ARRAY = [].freeze
+  end
 end
 
 # Order matters for these:

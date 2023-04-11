@@ -2,7 +2,7 @@
 module GraphQL
   module Language
     module Nodes
-      NONE = [].freeze
+      NONE = GraphQL::EmptyObjects::EMPTY_ARRAY
       # {AbstractNode} is the base class for all nodes in a GraphQL AST.
       #
       # It provides some APIs for working with ASTs:
@@ -51,7 +51,7 @@ module GraphQL
             other.children == self.children
         end
 
-        NO_CHILDREN = [].freeze
+        NO_CHILDREN = GraphQL::EmptyObjects::EMPTY_ARRAY
 
         # @return [Array<GraphQL::Language::Nodes::AbstractNode>] all nodes in the tree below this one
         def children

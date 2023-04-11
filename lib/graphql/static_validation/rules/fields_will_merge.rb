@@ -9,7 +9,7 @@ module GraphQL
       # without ambiguity.
       #
       # Original Algorithm: https://github.com/graphql/graphql-js/blob/master/src/validation/rules/OverlappingFieldsCanBeMerged.js
-      NO_ARGS = {}.freeze
+      NO_ARGS = GraphQL::EmptyObjects::EMPTY_HASH
 
       Field = Struct.new(:node, :definition, :owner_type, :parents)
       FragmentSpread = Struct.new(:name, :parents)
@@ -323,7 +323,7 @@ module GraphQL
         end
       end
 
-      NO_SELECTIONS = [{}.freeze, [].freeze].freeze
+      NO_SELECTIONS = [GraphQL::EmptyObjects::EMPTY_HASH, GraphQL::EmptyObjects::EMPTY_ARRAY].freeze
 
       def fields_and_fragments_from_selection(node, owner_type:, parents:)
         if node.selections.empty?

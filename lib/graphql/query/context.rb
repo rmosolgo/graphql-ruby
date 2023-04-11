@@ -91,8 +91,8 @@ module GraphQL
       end
 
       class ScopedContext
-        NO_PATH = [].freeze
-        NO_CONTEXT = {}.freeze
+        NO_PATH = GraphQL::EmptyObjects::EMPTY_ARRAY
+        NO_CONTEXT = GraphQL::EmptyObjects::EMPTY_HASH
 
         def initialize(query_context)
           @query_context = query_context

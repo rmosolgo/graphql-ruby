@@ -21,6 +21,7 @@ module GraphQL
 
       # @api private
       module Builder
+        include GraphQL::EmptyObjects
         extend self
 
         def build(schema_superclass, document, default_resolve:, using: {}, relay:)
@@ -374,8 +375,6 @@ module GraphQL
           end
         end
 
-        NO_DEFAULT_VALUE = {}.freeze
-
         def build_arguments(type_class, arguments, type_resolver)
           builder = self
 
@@ -383,7 +382,7 @@ module GraphQL
             default_value_kwargs = if !argument_defn.default_value.nil?
               { default_value: builder.build_default_value(argument_defn.default_value) }
             else
-              NO_DEFAULT_VALUE
+              EMPTY_HASH
             end
 
             type_class.argument(

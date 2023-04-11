@@ -379,7 +379,7 @@ module GraphQL
           selections_to_run || selections_by_name
         end
 
-        NO_ARGS = {}.freeze
+        NO_ARGS = GraphQL::EmptyObjects::EMPTY_HASH
 
         # @return [void]
         def evaluate_selections(owner_object, owner_type, is_eager_selection, gathered_selections, selections_result, target_result, parent_object) # rubocop:disable Metrics/ParameterLists

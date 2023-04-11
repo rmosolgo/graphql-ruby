@@ -58,7 +58,7 @@ module GraphQL
       # @param arguments [Hash] The arguments to the field that returned the collection wrapped by this connection
       # @param max_page_size [Integer, nil] A configured value to cap the result size. Applied as `first` if neither first or last are given and no `default_page_size` is set.
       # @param default_page_size [Integer, nil] A configured value to determine the result size when neither first or last are given.
-      def initialize(items, parent: nil, field: nil, context: nil, first: nil, after: nil, max_page_size: :not_given, default_page_size: :not_given, last: nil, before: nil, edge_class: nil, arguments: nil)
+      def initialize(items, parent: nil, field: nil, context: nil, first: nil, after: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, last: nil, before: nil, edge_class: nil, arguments: nil)
         @items = items
         @parent = parent
         @context = context
@@ -71,14 +71,14 @@ module GraphQL
         @edge_class = edge_class || self.class::Edge
         # This is only true if the object was _initialized_ with an override
         # or if one is assigned later.
-        @has_max_page_size_override = max_page_size != :not_given
-        @max_page_size = if max_page_size == :not_given
+        @has_max_page_size_override = max_page_size != NOT_CONFIGURED
+        @max_page_size = if max_page_size == NOT_CONFIGURED
           nil
         else
           max_page_size
         end
-        @has_default_page_size_override = default_page_size != :not_given
-        @default_page_size = if default_page_size == :not_given
+        @has_default_page_size_override = default_page_size != NOT_CONFIGURED
+        @default_page_size = if default_page_size == NOT_CONFIGURED
           nil
         else
           default_page_size

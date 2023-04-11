@@ -11,7 +11,7 @@ module GraphQL
       include GraphQL::Schema::Member::HasPath
       include GraphQL::Schema::Member::HasValidators
       extend GraphQL::Schema::FindInheritedValue
-      include GraphQL::Schema::FindInheritedValue::EmptyObjects
+      include GraphQL::EmptyObjects
       include GraphQL::Schema::Member::HasDirectives
       include GraphQL::Schema::Member::HasDeprecationReason
 
@@ -219,7 +219,7 @@ module GraphQL
       # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
       # @param validates [Array<Hash>] Configurations for validating this field
       # @fallback_value [Object] A fallback value if the method is not defined
-      def initialize(type: nil, name: nil, owner: nil, null: nil, description: NOT_CONFIGURED, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: NOT_CONFIGURED, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: :not_given, &definition_block)
+      def initialize(type: nil, name: nil, owner: nil, null: nil, description: NOT_CONFIGURED, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: NOT_CONFIGURED, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: NOT_CONFIGURED, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -685,7 +685,7 @@ module GraphQL
                 if hash_value == false
                   hash_value
                 else
-                  hash_value || (@fallback_value != :not_given ? @fallback_value : nil)
+                  hash_value || (@fallback_value != NOT_CONFIGURED ? @fallback_value : nil)
                 end
               elsif obj.respond_to?(resolver_method)
                 method_to_call = resolver_method
@@ -703,7 +703,7 @@ module GraphQL
                   inner_object[@method_sym]
                 elsif inner_object.key?(@method_str)
                   inner_object[@method_str]
-                elsif @fallback_value != :not_given
+                elsif @fallback_value != NOT_CONFIGURED
                   @fallback_value
                 else
                   nil
@@ -716,7 +716,7 @@ module GraphQL
                 else
                   inner_object.public_send(@method_sym)
                 end
-              elsif @fallback_value != :not_given
+              elsif @fallback_value != NOT_CONFIGURED
                 @fallback_value
               else
                 raise <<-ERR
