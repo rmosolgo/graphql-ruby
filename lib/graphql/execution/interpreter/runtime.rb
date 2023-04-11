@@ -66,7 +66,7 @@ module GraphQL
 
           attr_accessor :graphql_merged_into
 
-          def []=(key, value)
+          def set_leaf(key, value)
             # This is a hack.
             # Basically, this object is merged into the root-level result at some point.
             # But the problem is, some lazies are created whose closures retain reference to _this_
@@ -76,20 +76,24 @@ module GraphQL
             # In order to return a proper partial result (eg, for a directive), we have to update this object, too.
             # Yowza.
             if (t = @graphql_merged_into)
-              t[key] = value
+              t.set_leaf(key, value)
             end
 
-            if value.respond_to?(:graphql_result_data)
-              @graphql_result_data[key] = value.graphql_result_data
-              # If we encounter some part of this response that requires metadata tracking,
-              # then create the metadata hash if necessary. It will be kept up-to-date after this.
-              (@graphql_metadata ||= @graphql_result_data.dup)[key] = value
-            else
-              @graphql_result_data[key] = value
-              # keep this up-to-date if it's been initialized
-              @graphql_metadata && @graphql_metadata[key] = value
-            end
+            @graphql_result_data[key] = value
+            # keep this up-to-date if it's been initialized
+            @graphql_metadata && @graphql_metadata[key] = value
 
+            value
+          end
+
+          def set_child_result(key, value)
+            if (t = @graphql_merged_into)
+              t.set_child_result(key, value)
+            end
+            @graphql_result_data[key] = value.graphql_result_data
+            # If we encounter some part of this response that requires metadata tracking,
+            # then create the metadata hash if necessary. It will be kept up-to-date after this.
+            (@graphql_metadata ||= @graphql_result_data.dup)[key] = value
             value
           end
 
@@ -113,6 +117,29 @@ module GraphQL
           def [](k)
             (@graphql_metadata || @graphql_result_data)[k]
           end
+
+          def merge_into(into_result)
+            self.each do |key, value|
+              case value
+              when GraphQLResultHash
+                next_into = into_result[key]
+                if next_into
+                  value.merge_into(next_into)
+                else
+                  into_result.set_child_result(key, value)
+                end
+              when GraphQLResultArray
+                # There's no special handling of arrays because currently, there's no way to split the execution
+                # of a list over several concurrent flows.
+                next_result.set_child_result(key, value)
+              else
+                # We have to assume that, since this passed the `fields_will_merge` selection,
+                # that the old and new values are the same.
+                into_result.set_leaf(key, value)
+              end
+            end
+            @graphql_merged_into = into_result
+          end
         end
 
         class GraphQLResultArray
@@ -135,19 +162,25 @@ module GraphQL
             @graphql_result_data.delete_at(delete_at_index)
           end
 
-          def []=(idx, value)
+          def set_leaf(idx, value)
             if @skip_indices
               offset_by = @skip_indices.count { |skipped_idx| skipped_idx < idx }
               idx -= offset_by
             end
-            if value.respond_to?(:graphql_result_data)
-              @graphql_result_data[idx] = value.graphql_result_data
-              (@graphql_metadata ||= @graphql_result_data.dup)[idx] = value
-            else
-              @graphql_result_data[idx] = value
-              @graphql_metadata && @graphql_metadata[idx] = value
-            end
+            @graphql_result_data[idx] = value
+            @graphql_metadata && @graphql_metadata[idx] = value
+            value
+          end
 
+          def set_child_result(idx, value)
+            if @skip_indices
+              offset_by = @skip_indices.count { |skipped_idx| skipped_idx < idx }
+              idx -= offset_by
+            end
+            @graphql_result_data[idx] = value.graphql_result_data
+            # If we encounter some part of this response that requires metadata tracking,
+            # then create the metadata hash if necessary. It will be kept up-to-date after this.
+            (@graphql_metadata ||= @graphql_result_data.dup)[idx] = value
             value
           end
 
@@ -273,28 +306,6 @@ module GraphQL
           nil
         end
 
-        # @return [void]
-        def deep_merge_selection_result(from_result, into_result)
-          from_result.each do |key, value|
-            if !into_result.key?(key)
-              into_result[key] = value
-            else
-              case value
-              when GraphQLResultHash
-                deep_merge_selection_result(value, into_result[key])
-              else
-                # We have to assume that, since this passed the `fields_will_merge` selection,
-                # that the old and new values are the same.
-                # There's no special handling of arrays because currently, there's no way to split the execution
-                # of a list over several concurrent flows.
-                into_result[key] = value
-              end
-            end
-          end
-          from_result.graphql_merged_into = into_result
-          nil
-        end
-
         def gather_selections(owner_object, owner_type, selections, selections_to_run = nil, selections_by_name = GraphQLSelectionSet.new)
           selections.each do |node|
             # Skip gathering this if the directive says so
@@ -386,7 +397,7 @@ module GraphQL
               )
               finished_jobs += 1
               if target_result && finished_jobs == enqueued_jobs
-                deep_merge_selection_result(selections_result, target_result)
+                selections_result.merge_into(target_result)
               end
             }
           end
@@ -577,7 +588,7 @@ module GraphQL
           selection_result.graphql_dead  # || ((parent = selection_result.graphql_parent) && parent.graphql_dead)
         end
 
-        def set_result(selection_result, result_name, value)
+        def set_result(selection_result, result_name, value, is_child_result)
           if !dead_result?(selection_result)
             if value.nil? &&
                 ( # there are two conditions under which `nil` is not allowed in the response:
@@ -597,11 +608,13 @@ module GraphQL
               if parent.nil? # This is a top-level result hash
                 @response = nil
               else
-                set_result(parent, name_in_parent, nil)
+                set_result(parent, name_in_parent, nil, false)
                 set_graphql_dead(selection_result)
               end
+            elsif is_child_result
+              selection_result.set_child_result(result_name, value)
             else
-              selection_result[result_name] = value
+              selection_result.set_leaf(result_name, value)
             end
           end
         end
@@ -637,13 +650,13 @@ module GraphQL
           case value
           when nil
             if is_non_null
-              set_result(selection_result, result_name, nil) do
+              set_result(selection_result, result_name, nil, false) do
                 # This block is called if `result_name` is not dead. (Maybe a previous invalid nil caused it be marked dead.)
                 err = parent_type::InvalidNullError.new(parent_type, field, value)
                 schema.type_error(err, context)
               end
             else
-              set_result(selection_result, result_name, nil)
+              set_result(selection_result, result_name, nil, false)
             end
             HALT
           when GraphQL::Error
@@ -656,7 +669,7 @@ module GraphQL
                 value.ast_node ||= ast_node
                 context.errors << value
                 if selection_result
-                  set_result(selection_result, result_name, nil)
+                  set_result(selection_result, result_name, nil, false)
                 end
               end
               HALT
@@ -710,9 +723,9 @@ module GraphQL
                 if selection_result
                   if list_type_at_all
                     result_without_errors = value.map { |v| v.is_a?(GraphQL::ExecutionError) ? nil : v }
-                    set_result(selection_result, result_name, result_without_errors)
+                    set_result(selection_result, result_name, result_without_errors, false)
                   else
-                    set_result(selection_result, result_name, nil)
+                    set_result(selection_result, result_name, nil, false)
                   end
                 end
               end
@@ -722,7 +735,7 @@ module GraphQL
             end
           when GraphQL::Execution::Interpreter::RawValue
             # Write raw value directly to the response without resolving nested objects
-            set_result(selection_result, result_name, value.resolve)
+            set_result(selection_result, result_name, value.resolve, false)
             HALT
           else
             value
@@ -750,7 +763,7 @@ module GraphQL
             rescue StandardError => err
               schema.handle_or_reraise(context, err)
             end
-            set_result(selection_result, result_name, r)
+            set_result(selection_result, result_name, r, false)
             r
           when "UNION", "INTERFACE"
             resolved_type_or_lazy = resolve_type(current_type, value)
@@ -768,7 +781,7 @@ module GraphQL
                 err_class = current_type::UnresolvedTypeError
                 type_error = err_class.new(resolved_value, field, parent_type, resolved_type, possible_types)
                 schema.type_error(type_error, context)
-                set_result(selection_result, result_name, nil)
+                set_result(selection_result, result_name, nil, false)
                 nil
               else
                 continue_field(resolved_value, owner_type, field, resolved_type, ast_node, next_selections, is_non_null, owner_object, arguments, result_name, selection_result)
@@ -784,7 +797,7 @@ module GraphQL
               continue_value = continue_value(inner_object, owner_type, field, is_non_null, ast_node, result_name, selection_result)
               if HALT != continue_value
                 response_hash = GraphQLResultHash.new(result_name, selection_result)
-                set_result(selection_result, result_name, response_hash)
+                set_result(selection_result, result_name, response_hash, true)
                 gathered_selections = gather_selections(continue_value, current_type, next_selections)
                 # There are two possibilities for `gathered_selections`:
                 # 1. All selections of this object should be evaluated together (there are no runtime directives modifying execution).
@@ -831,7 +844,7 @@ module GraphQL
             inner_type_non_null = inner_type.non_null?
             response_list = GraphQLResultArray.new(result_name, selection_result)
             response_list.graphql_non_null_list_items = inner_type_non_null
-            set_result(selection_result, result_name, response_list)
+            set_result(selection_result, result_name, response_list, true)
             idx = 0
             list_value = begin
               value.each do |inner_value|
@@ -975,7 +988,7 @@ module GraphQL
             if eager
               lazy.value
             else
-              set_result(result, result_name, lazy)
+              set_result(result, result_name, lazy, false)
               current_depth = 0
               while result
                 current_depth += 1
