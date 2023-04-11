@@ -821,7 +821,7 @@ ERR
           # in case one of the extensions doesn't `yield`.
           # (There's another implementation that uses multiple-return, but I'm wary of the perf cost of the extra arrays)
           extended = ExtendedState.new
-          extended.arguments = args
+          extended.arguments = args # rubocop:disable Development/ContextIsPassedCop
           extended.object = obj
           value = run_extensions_before_resolve(obj, args, ctx, extended) do |obj, args|
             if (added_extras = extended.added_extras)
