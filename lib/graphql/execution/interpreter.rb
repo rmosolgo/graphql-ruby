@@ -14,7 +14,7 @@ module GraphQL
       class << self
         # Used internally to signal that the query shouldn't be executed
         # @api private
-        NO_OPERATION = {}.freeze
+        NO_OPERATION = GraphQL::EmptyObjects::EMPTY_HASH
 
         # @param schema [GraphQL::Schema]
         # @param queries [Array<GraphQL::Query, Hash>]

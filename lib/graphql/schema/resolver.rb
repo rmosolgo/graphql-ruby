@@ -311,8 +311,8 @@ module GraphQL
         # (`nil` means "unlimited max page size".)
         # @param max_page_size [Integer, nil] Set a new value
         # @return [Integer, nil] The `max_page_size` assigned to fields that use this resolver
-        def max_page_size(new_max_page_size = :not_given)
-          if new_max_page_size != :not_given
+        def max_page_size(new_max_page_size = NOT_CONFIGURED)
+          if new_max_page_size != NOT_CONFIGURED
             @max_page_size = new_max_page_size
           elsif defined?(@max_page_size)
             @max_page_size
@@ -332,8 +332,8 @@ module GraphQL
         # (`nil` means "unlimited default page size".)
         # @param default_page_size [Integer, nil] Set a new value
         # @return [Integer, nil] The `default_page_size` assigned to fields that use this resolver
-        def default_page_size(new_default_page_size = :not_given)
-          if new_default_page_size != :not_given
+        def default_page_size(new_default_page_size = NOT_CONFIGURED)
+          if new_default_page_size != NOT_CONFIGURED
             @default_page_size = new_default_page_size
           elsif defined?(@default_page_size)
             @default_page_size

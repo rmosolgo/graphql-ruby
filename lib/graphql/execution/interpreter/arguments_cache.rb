@@ -55,9 +55,8 @@ module GraphQL
 
         private
 
-        NO_ARGUMENTS = {}.freeze
-
-        NO_VALUE_GIVEN = Object.new
+        NO_ARGUMENTS = GraphQL::EmptyObjects::EMPTY_HASH
+        NO_VALUE_GIVEN = NOT_CONFIGURED
 
         def self.prepare_args_hash(query, ast_arg_or_hash_or_value)
           case ast_arg_or_hash_or_value

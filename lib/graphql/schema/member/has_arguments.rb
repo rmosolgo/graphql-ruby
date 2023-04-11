@@ -413,7 +413,7 @@ module GraphQL
           end
         end
 
-        NO_ARGUMENTS = {}.freeze
+        NO_ARGUMENTS =  GraphQL::EmptyObjects::EMPTY_HASH
         def own_arguments
           @own_arguments || NO_ARGUMENTS
         end
