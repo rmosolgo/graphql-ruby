@@ -76,7 +76,7 @@ module GraphQL
             # In order to return a proper partial result (eg, for a directive), we have to update this object, too.
             # Yowza.
             if (t = @graphql_merged_into)
-              t[key] = value
+              t.set_leaf(key, value)
             end
 
             @graphql_result_data[key] = value
@@ -88,7 +88,7 @@ module GraphQL
 
           def set_child_result(key, value)
             if (t = @graphql_merged_into)
-              t[key] = value
+              t.set_child_result(key, value)
             end
             @graphql_result_data[key] = value.graphql_result_data
             # If we encounter some part of this response that requires metadata tracking,
