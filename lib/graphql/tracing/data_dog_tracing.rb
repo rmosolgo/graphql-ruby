@@ -15,6 +15,13 @@ module GraphQL
       }
 
       def platform_trace(platform_key, key, data)
+        # When tracing a field, use a common span name and put the type and
+        # field name (from platform_field_key) as the resource
+        if key == 'execute_field' || key == 'execute_field_lazy'
+          field_name = platform_key
+          platform_key = 'field.graphql'
+        end
+
         tracer.trace(platform_key, service: service_name) do |span|
           span.span_type = 'custom'
           if defined?(Datadog::Tracing::Metadata::Ext) # Introduced in ddtrace 1.0
@@ -43,6 +50,10 @@ module GraphQL
             span.set_tag(:selected_operation_name, data[:query].selected_operation_name)
             span.set_tag(:selected_operation_type, data[:query].selected_operation.operation_type)
             span.set_tag(:query_string, data[:query].query_string)
+          end
+
+          if key == 'execute_field' || key == 'execute_field_lazy'
+            span.resource = field_name
           end
 
           prepare_span(key, data, span)
