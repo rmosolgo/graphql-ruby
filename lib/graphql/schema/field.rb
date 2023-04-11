@@ -811,8 +811,16 @@ ERR
       end
 
       class ExtendedState
+        def initialize(args, object)
+          @arguments = args
+          @object = object
+          @memos = nil
+          @added_extras = nil
+        end
+
         attr_accessor :arguments, :object, :memos, :added_extras
       end
+
       # Wrap execution with hooks.
       # Written iteratively to avoid big stack traces.
       # @return [Object] Whatever the
@@ -823,9 +831,7 @@ ERR
           # This is a hack to get the _last_ value for extended obj and args,
           # in case one of the extensions doesn't `yield`.
           # (There's another implementation that uses multiple-return, but I'm wary of the perf cost of the extra arrays)
-          extended = ExtendedState.new
-          extended.arguments = args # rubocop:disable Development/ContextIsPassedCop
-          extended.object = obj
+          extended = ExtendedState.new(args, obj)
           value = run_extensions_before_resolve(obj, args, ctx, extended) do |obj, args|
             if (added_extras = extended.added_extras)
               args = args.dup
@@ -835,7 +841,7 @@ ERR
           end
 
           extended_obj = extended.object
-          extended_args = extended.arguments
+          extended_args = extended.arguments # rubocop:disable Development/ContextIsPassedCop
           memos = extended.memos || EMPTY_HASH
 
           ctx.schema.after_lazy(value) do |resolved_value|
