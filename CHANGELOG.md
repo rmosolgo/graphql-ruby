@@ -859,6 +859,24 @@ Since this version, GraphQL-Ruby is tested on Ruby 2.4+ and Rails 4+ only.
 
 ### Bug fixes
 
+# 1.11.10 (5 Nov 2021)
+
+### Bug fixes
+
+- Properly hook up `Schema.max_validation_errors` at query runtime #3690
+
+# 1.11.9 (1 Nov 2021)
+
+### New Features
+
+- `Schema.max_validation_errors(val)` limits the number of errors that can be added during static validation #3675
+
+# 1.11.8 (12 Feb 2021)
+
+### Bug fixes
+
+- Improve performance of `Schema.possible_types(t)` for object types #3172
+
 # 1.11.7 (18 January 2021)
 
 ### Breaking changes
