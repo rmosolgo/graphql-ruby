@@ -8,6 +8,10 @@
 
 ### Bug Fix
 
+# 1.24.3 (14 April 2023)
+
+- `OperationStore`: fix when used with Changesets (or other ways of defining arguments with the same name) #4440
+
 # 1.24.2 (20 Mar 2023)
 
 - Remove debug output, oops
