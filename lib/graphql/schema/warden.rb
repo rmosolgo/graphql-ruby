@@ -87,6 +87,33 @@ module GraphQL
         end
       end
 
+      class NullWarden
+        def initialize(_filter, context:, schema:)
+          @schema = schema
+          # TODO consider per-query caches even though there's no filtering
+        end
+
+        def visible_field?(field_defn, _ctx = nil, owner = nil); true; end
+        def visible_argument?(arg_defn, _ctx = nil); true; end
+        def visible_type?(type_defn, _ctx = nil); true; end
+        def visible_enum_value?(enum_value, _ctx = nil); true; end
+        def visible_type_membership?(type_membership, _ctx = nil); true; end
+        def interface_type_memberships(obj_type, _ctx = nil); obj_type.interface_type_memberships; end
+        def get_type(type_name); @schema.get_type(type_name); end
+        def arguments(argument_owner, ctx = nil); argument_owner.arguments(ctx).values; end
+        def enum_values(enum_defn); enum_defn.enum_values; end
+        def get_argument(parent_type, argument_name); parent_type.get_argument(argument_name); end
+        def types; @schema.types; end
+        def root_type_for_operation(op_name); @schema.root_type_for_operation(op_name); end
+        def directives; @schema.directives.values; end
+        def fields(type_defn); type_defn.fields; end
+        def get_field(parent_type, field_name); @schema.get_field(parent_type, field_name); end
+        def reachable_type?(type_name); true; end
+        def reachable_types; @schema.types.values; end
+        def possible_types(type_defn); @schema.possible_types(type_defn); end
+        def interfaces(obj_type); obj_type.interfaces; end
+      end
+
       # @param filter [<#call(member)>] Objects are hidden when `.call(member, ctx)` returns true
       # @param context [GraphQL::Query::Context]
       # @param schema [GraphQL::Schema]

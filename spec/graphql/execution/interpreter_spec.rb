@@ -261,6 +261,8 @@ describe GraphQL::Execution::Interpreter do
       mutation(Mutation)
       lazy_resolve(Box, :value)
 
+      self.warden_class = GraphQL::Schema::Warden::NullWarden
+
       def self.object_from_id(id, ctx)
         OpenStruct.new(id: id)
       end

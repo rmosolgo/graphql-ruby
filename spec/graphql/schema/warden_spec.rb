@@ -948,4 +948,15 @@ describe GraphQL::Schema::Warden do
       end
     end
   end
+
+  describe "NullWarden" do
+    it "implements all Warden methods" do
+      warden_methods = GraphQL::Schema::Warden.instance_methods - Object.methods
+      warden_methods.each do |method_name|
+        warden_params =  GraphQL::Schema::Warden.instance_method(method_name).parameters
+        assert GraphQL::Schema::Warden::NullWarden.method_defined?(method_name), "Null warden also responds to #{method_name} (#{warden_params})"
+        assert_equal warden_params, GraphQL::Schema::Warden::NullWarden.instance_method(method_name).parameters,"#{method_name} has the same parameters"
+      end
+    end
+  end
 end

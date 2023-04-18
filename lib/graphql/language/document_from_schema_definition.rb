@@ -30,7 +30,7 @@ module GraphQL
         end
 
         schema_context = schema.context_class.new(query: nil, object: nil, schema: schema, values: context)
-        @warden = GraphQL::Schema::Warden.new(
+        @warden = @schema.warden_class.new(
           filter,
           schema: @schema,
           context: schema_context,
