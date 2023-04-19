@@ -1018,7 +1018,12 @@ module GraphQL
 
         def delete_all_interpreter_context
           per_query_state = Thread.current[:__graphql_runtime_info]
-          per_query_state && per_query_state.delete(@query)
+          if per_query_state
+            per_query_state.delete(@query)
+            if per_query_state.size == 0
+              Thread.current[:__graphql_runtime_info] = nil
+            end
+          end
           nil
         end
 

@@ -228,6 +228,23 @@ describe GraphQL::Execution::Interpreter do
 
       include GraphQL::Types::Relay::HasNodeField
       include GraphQL::Types::Relay::HasNodesField
+
+      class NestedQueryResult < GraphQL::Schema::Object
+        field :result, String
+        field :current_path, [String]
+      end
+
+      field :nested_query, NestedQueryResult do
+        argument :query, String
+      end
+
+      def nested_query(query:)
+        result = context.schema.multiplex([{query: query}], context: { allow_pending_thread_state: true }).first
+        {
+          result: JSON.dump(result),
+          current_path: context[:current_path],
+        }
+      end
     end
 
     class Counter < GraphQL::Schema::Object
@@ -286,6 +303,21 @@ describe GraphQL::Execution::Interpreter do
         end
       end
       tracer EnsureArgsAreObject
+
+      class EnsureThreadCleanedUp
+        def self.before_multiplex(_multiplex); end
+        def self.after_multiplex(multiplex)
+          runtime_info = Thread.current[:__graphql_runtime_info]
+          if !runtime_info.nil? && runtime_info != {}
+            if !multiplex.context[:allow_pending_thread_state]
+              # `nestedQuery` can allow this
+              raise "Query did not clean up runtime state, found: #{runtime_info.inspect}"
+            end
+          end
+        end
+      end
+
+      instrument :multiplex, EnsureThreadCleanedUp
     end
   end
 
@@ -335,6 +367,15 @@ describe GraphQL::Execution::Interpreter do
       {"__typename" => "Expansion", "sym" => "RAV"},
     ]
     assert_equal expected_abstract_list, result["data"]["find"]
+    assert_nil Thread.current[:__graphql_runtime_info]
+  end
+
+  it "runs a nested query and maintains proper state" do
+    query_str = "query($queryStr: String!) { nestedQuery(query: $queryStr) { result currentPath } }"
+    result = InterpreterTest::Schema.execute(query_str, variables: { queryStr: "{ __typename }" })
+    assert_equal '{"data":{"__typename":"Query"}}', result["data"]["nestedQuery"]["result"]
+    assert_equal ["nestedQuery"], result["data"]["nestedQuery"]["currentPath"]
+    assert_nil Thread.current[:__graphql_runtime_info]
   end
 
   it "runs mutation roots atomically and sequentially" do
@@ -385,6 +426,7 @@ describe GraphQL::Execution::Interpreter do
       "exp5" => {"name" => "Ravnica, City of Guilds"},
     }
     assert_equal expected_data, result["data"]
+    assert_nil Thread.current[:__graphql_runtime_info]
   end
 
   describe "temporary interpreter flag" do
@@ -433,6 +475,7 @@ describe GraphQL::Execution::Interpreter do
       # propagated to here
       assert_nil res["data"].fetch("expansion")
       assert_equal ["Cannot return null for non-nullable field Expansion.name"], res["errors"].map { |e| e["message"] }
+      assert_nil Thread.current[:__graphql_runtime_info]
     end
 
     it "propagates nulls in lists" do
