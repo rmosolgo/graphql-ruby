@@ -209,8 +209,6 @@ module GraphQL
           @schema = query.schema
           @context = query.context
           @multiplex_context = query.multiplex.context
-          # Start this off empty:
-          Thread.current[:__graphql_runtime_info] = nil
           @response = GraphQLResultHash.new(nil, nil)
           # Identify runtime directives by checking which of this schema's directives have overridden `def self.resolve`
           @runtime_directive_names = []
@@ -945,7 +943,13 @@ module GraphQL
         end
 
         def get_current_runtime_state
-          Thread.current[:__graphql_runtime_info] ||= CurrentState.new
+          current_state = Thread.current[:__graphql_runtime_info] ||= begin
+            per_query_state = {}
+            per_query_state.compare_by_identity
+            per_query_state
+          end
+
+          current_state[@query] ||= CurrentState.new
         end
 
         # @param obj [Object] Some user-returned value that may want to be batched
@@ -1013,7 +1017,9 @@ module GraphQL
         end
 
         def delete_all_interpreter_context
-          Thread.current[:__graphql_runtime_info] = nil
+          per_query_state = Thread.current[:__graphql_runtime_info]
+          per_query_state && per_query_state.delete(@query)
+          nil
         end
 
         def resolve_type(type, value)

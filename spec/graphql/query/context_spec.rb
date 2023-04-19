@@ -94,7 +94,7 @@ describe GraphQL::Query::Context do
 
     it "allows you to read values of contexts using dig" do
       assert_equal(1, context.dig(:a, :b))
-      Thread.current[:__graphql_runtime_info] = OpenStruct.new(current_arguments: {c: 1})
+      Thread.current[:__graphql_runtime_info] = { context.query => OpenStruct.new(current_arguments: {c: 1}) }
       assert_equal 1, context.dig(:current_arguments, :c)
     end
   end
@@ -111,7 +111,7 @@ describe GraphQL::Query::Context do
 
   it "can override values set by runtime" do
     context = GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: {a: {b: 1}}, object: nil)
-    Thread.current[:__graphql_runtime_info] = OpenStruct.new({ current_object: :runtime_value })
+    Thread.current[:__graphql_runtime_info] = { context.query => OpenStruct.new({ current_object: :runtime_value }) }
     assert_equal :runtime_value, context[:current_object]
     context[:current_object] = :override_value
     assert_equal :override_value, context[:current_object]
@@ -384,7 +384,7 @@ describe GraphQL::Query::Context do
     it "always retrieves a scoped context value if set" do
       context = GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil, object: nil)
       dummy_runtime = OpenStruct.new(current_result: nil)
-      Thread.current[:__graphql_runtime_info] = dummy_runtime
+      Thread.current[:__graphql_runtime_info] = { context.query => dummy_runtime }
       dummy_runtime.current_result = OpenStruct.new(path: ["somewhere"])
       expected_key = :a
       expected_value = :test
@@ -446,7 +446,7 @@ describe GraphQL::Query::Context do
     it "has a #current_path method" do
       context = GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil, object: nil)
       current_result = OpenStruct.new(path: ["somewhere", "child", "grandchild"])
-      Thread.current[:__graphql_runtime_info] = OpenStruct.new(current_result: current_result)
+      Thread.current[:__graphql_runtime_info] = { context.query => OpenStruct.new(current_result: current_result) }
       assert_equal ["somewhere", "child", "grandchild"], context.scoped_context.current_path
     end
   end
