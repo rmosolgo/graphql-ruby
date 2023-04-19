@@ -2,6 +2,12 @@
 require "spec_helper"
 
 describe GraphQL::Query::Context do
+  after do
+    # Clean up test fixtures so they don't pollute later tests
+    # (Usually this is cleaned up by execution code, but many tests here don't actually execute queries)
+    Thread.current[:__graphql_runtime_info] = nil
+  end
+
   class ContextTestSchema < GraphQL::Schema
     class Query < GraphQL::Schema::Object
       field :context, String, resolver_method: :fetch_context_key do
