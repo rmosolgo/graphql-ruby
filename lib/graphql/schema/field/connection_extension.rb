@@ -26,7 +26,7 @@ module GraphQL
           # rename some inputs to avoid conflicts inside the block
           maybe_lazy = value
           value = nil
-          context.schema.after_lazy(maybe_lazy) do |resolved_value|
+          context.query.after_lazy(maybe_lazy) do |resolved_value|
             value = resolved_value
             if value.is_a? GraphQL::ExecutionError
               # This isn't even going to work because context doesn't have ast_node anymore

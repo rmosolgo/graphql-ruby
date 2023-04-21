@@ -11,7 +11,7 @@ module GraphQL
             h[ast_node] = Hash.new do |h2, arg_owner|
               h2[arg_owner] = Hash.new do |h3, parent_object|
                 dataload_for(ast_node, arg_owner, parent_object) do |kwarg_arguments|
-                  h3[parent_object] = @query.schema.after_lazy(kwarg_arguments) do |resolved_args|
+                  h3[parent_object] = @query.after_lazy(kwarg_arguments) do |resolved_args|
                     h3[parent_object] = resolved_args
                   end
                 end

@@ -12,6 +12,9 @@ module GraphQL
       end
 
       class NullQuery
+        def after_lazy(value)
+          yield(value)
+        end
       end
 
       class NullSchema < GraphQL::Schema

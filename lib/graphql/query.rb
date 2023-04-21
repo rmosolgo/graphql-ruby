@@ -361,6 +361,10 @@ module GraphQL
       schema.handle_or_reraise(context, err)
     end
 
+    def after_lazy(value, &block)
+      @schema.after_lazy(value, &block)
+    end
+
     private
 
     def find_operation(operations, operation_name)
