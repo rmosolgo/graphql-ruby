@@ -51,7 +51,7 @@ module GraphQL
               class_eval <<-RUBY, __FILE__, __LINE__ + 1
               def #{method_owner}load_#{arg_defn.keyword}(values, context = nil)
                 argument = get_argument("#{arg_defn.graphql_name}")
-                (context || self.context).schema.after_lazy(values) do |values2|
+                (context || self.context).query.after_lazy(values) do |values2|
                   GraphQL::Execution::Lazy.all(values2.map { |value| load_application_object(argument, value, context || self.context) })
                 end
               end
@@ -363,7 +363,7 @@ module GraphQL
           end
 
           def authorize_application_object(argument, id, context, loaded_application_object)
-            context.schema.after_lazy(loaded_application_object) do |application_object|
+            context.query.after_lazy(loaded_application_object) do |application_object|
               if application_object.nil?
                 err = GraphQL::LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
                 load_application_object_failed(err)
@@ -371,7 +371,7 @@ module GraphQL
               # Double-check that the located object is actually of this type
               # (Don't want to allow arbitrary access to objects this way)
               maybe_lazy_resolve_type = context.schema.resolve_type(argument.loads, application_object, context)
-              context.schema.after_lazy(maybe_lazy_resolve_type) do |resolve_type_result|
+              context.query.after_lazy(maybe_lazy_resolve_type) do |resolve_type_result|
                 if resolve_type_result.is_a?(Array) && resolve_type_result.size == 2
                   application_object_type, application_object = resolve_type_result
                 else
@@ -386,7 +386,7 @@ module GraphQL
                   # This object was loaded successfully
                   # and resolved to the right type,
                   # now apply the `.authorized?` class method if there is one
-                  context.schema.after_lazy(application_object_type.authorized?(application_object, context)) do |authed|
+                  context.query.after_lazy(application_object_type.authorized?(application_object, context)) do |authed|
                     if authed
                       application_object
                     else

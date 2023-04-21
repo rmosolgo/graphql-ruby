@@ -661,7 +661,7 @@ module GraphQL
 
         Schema::Validator.validate!(validators, application_object, query_ctx, args)
 
-        query_ctx.schema.after_lazy(self.authorized?(application_object, args, query_ctx)) do |is_authorized|
+        query_ctx.query.after_lazy(self.authorized?(application_object, args, query_ctx)) do |is_authorized|
           if is_authorized
             with_extensions(object, args, query_ctx) do |obj, ruby_kwargs|
               method_args = ruby_kwargs
@@ -833,7 +833,7 @@ ERR
           extended_args = extended[:args]
           memos = extended[:memos] || EMPTY_HASH
 
-          ctx.schema.after_lazy(value) do |resolved_value|
+          ctx.query.after_lazy(value) do |resolved_value|
             idx = 0
             @extensions.each do |ext|
               memo = memos[idx]
