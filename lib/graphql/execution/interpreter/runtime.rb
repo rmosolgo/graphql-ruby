@@ -951,6 +951,18 @@ module GraphQL
           Thread.current[:__graphql_runtime_info] ||= CurrentState.new
         end
 
+        def minimal_after_lazy(value, &block)
+          if lazy?(value)
+            GraphQL::Execution::Lazy.new do
+              result = @schema.sync_lazy(value)
+              # The returned result might also be lazy, so check it, too
+              minimal_after_lazy(result, &block)
+            end
+          else
+            yield(value)
+          end
+        end
+
         # @param obj [Object] Some user-returned value that may want to be batched
         # @param field [GraphQL::Schema::Field]
         # @param eager [Boolean] Set to `true` for mutation root fields only

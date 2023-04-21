@@ -362,7 +362,15 @@ module GraphQL
     end
 
     def after_lazy(value, &block)
-      @schema.after_lazy(value, &block)
+      if !defined?(@runtime_instance)
+        @runtime_instance = context.namespace(:interpreter_runtime)[:runtime]
+      end
+
+      if @runtime_instance
+        @runtime_instance.minimal_after_lazy(value, &block)
+      else
+        @schema.after_lazy(value, &block)
+      end
     end
 
     private
