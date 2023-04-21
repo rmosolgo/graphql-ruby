@@ -204,6 +204,7 @@ module GraphQLBenchmark
     schema = ProfileLargeResult::Schema
     document = ProfileLargeResult::ALL_FIELDS
     Benchmark.ips do |x|
+      x.config(time: 10)
       x.report("Querying for #{ProfileLargeResult::DATA.size} objects") {
         schema.execute(document: document)
       }
