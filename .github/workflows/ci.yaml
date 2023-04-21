@@ -20,11 +20,6 @@ jobs:
       with:
         ruby-version: 2.7.3
         bundler-cache: true
-    - run: bundle exec rake compile
-    - uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: 2.7.3
-        bundler-cache: true
       env:
         BUNDLE_GEMFILE: ./spec/dummy/Gemfile
     - run: bundle exec rails test:system
@@ -67,7 +62,6 @@ jobs:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true
         bundler: ${{ matrix.bundler || 'default' }}
-    - run: bundle exec rake compile
     - run: bundle exec rake test
   javascript_test:
     runs-on: ubuntu-latest
@@ -116,7 +110,7 @@ jobs:
       with:
         ruby-version: 3.2
         bundler-cache: true
-    - run: bundle exec rake compile test:valgrind
+    - run: bundle exec rake test
   mongodb_test:
     strategy:
       fail-fast: false
@@ -137,4 +131,14 @@ jobs:
       with:
         ruby-version: 2.7
         bundler-cache: true
-    - run: bundle exec rake compile test
+    - run: bundle exec rake test
+cparser_test:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo GRAPHQL_CPARSER=1 > $GITHUB_ENV
+    - uses: actions/checkout@v3
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 3.2
+        bundler-cache: true
+    - run: bundle exec rake compile test:valgrind
