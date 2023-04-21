@@ -35,7 +35,11 @@ Rake::TestTask.new(&test_config)
 if ENV["GRAPHQL_CPARSER"]
   begin
     require "ruby_memcheck"
-    RubyMemcheck.config(binary_name: 'graphql/graphql_c_parser_ext', filter_all_errors: true)
+    RubyMemcheck.config(
+      binary_name: 'graphql/graphql_c_parser_ext',
+      filter_all_errors: true,
+      valgrind_generate_suppressions: true,
+    )
     namespace :test do
       RubyMemcheck::TestTask.new(valgrind: :compile, &test_config)
     end
