@@ -33,10 +33,14 @@ end
 
 Rake::TestTask.new(&test_config)
 if ENV["GRAPHQL_CPARSER"]
-  require "ruby_memcheck"
-  RubyMemcheck.config(binary_name: 'graphql/graphql_c_parser_ext', filter_all_errors: true)
-  namespace :test do
-    RubyMemcheck::TestTask.new(valgrind: :compile, &test_config)
+  begin
+    require "ruby_memcheck"
+    RubyMemcheck.config(binary_name: 'graphql/graphql_c_parser_ext', filter_all_errors: true)
+    namespace :test do
+      RubyMemcheck::TestTask.new(valgrind: :compile, &test_config)
+    end
+  rescue LoadError => err
+    puts "Skipping RubyMemcheck: #{err.message} (#{err.backtrace[0]})"
   end
 end
 
