@@ -38,7 +38,7 @@ if ENV["GRAPHQL_CPARSER"]
     RubyMemcheck.config(
       binary_name: 'graphql/graphql_c_parser_ext',
       filter_all_errors: true,
-      valgrind_generate_suppressions: true,
+      valgrind_suppressions_dir: "graphql-c_parser",
     )
     namespace :test do
       RubyMemcheck::TestTask.new(valgrind: :compile, &test_config)
