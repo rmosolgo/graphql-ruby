@@ -280,8 +280,8 @@ module GraphQL
                   st = get_current_runtime_state
                   st.current_object = query.root_value
                   st.current_result = selection_response
-
-                  call_method_on_directives(:resolve, object_proxy, selections.graphql_directives) do
+                  directives = selections.respond_to?(:graphql_directives) ? selections.graphql_directives : nil
+                  call_method_on_directives(:resolve, object_proxy, directives) do
                     evaluate_selections(
                       object_proxy,
                       root_type,
@@ -300,7 +300,7 @@ module GraphQL
           nil
         end
 
-        def gather_selections(owner_object, owner_type, selections, selections_to_run = nil, selections_by_name = GraphQLSelectionSet.new)
+        def gather_selections(owner_object, owner_type, selections, selections_to_run = nil, selections_by_name = {})
           selections.each do |node|
             # Skip gathering this if the directive says so
             if !directives_include?(node, owner_object, owner_type)
@@ -810,7 +810,8 @@ module GraphQL
                   st.current_result_name = nil
                   st.current_result = this_result
 
-                  call_method_on_directives(:resolve, continue_value, selections.graphql_directives) do
+                  directives = selections.respond_to?(:graphql_directives) ? selections.graphql_directives : nil
+                  call_method_on_directives(:resolve, continue_value, directives) do
                     evaluate_selections(
                       continue_value,
                       current_type,
