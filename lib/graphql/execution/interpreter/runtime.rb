@@ -197,11 +197,11 @@ module GraphQL
 
         def initialize(query:, lazies_at_depth:)
           @query = query
+          @current_trace = query.current_trace
           @dataloader = query.multiplex.dataloader
           @lazies_at_depth = lazies_at_depth
           @schema = query.schema
           @context = query.context
-          @multiplex_context = query.multiplex.context
           @response = GraphQLResultHash.new(nil, nil, false)
           # Identify runtime directives by checking which of this schema's directives have overridden `def self.resolve`
           @runtime_directive_names = []
@@ -543,7 +543,7 @@ module GraphQL
           field_result = call_method_on_directives(:resolve, object, directives) do
             # Actually call the field resolver and capture the result
             app_result = begin
-              query.current_trace.execute_field(field: field_defn, ast_node: ast_node, query: query, object: object, arguments: kwarg_arguments) do
+              @current_trace.execute_field(field: field_defn, ast_node: ast_node, query: query, object: object, arguments: kwarg_arguments) do
                 field_defn.resolve(object, kwarg_arguments, context)
               end
             rescue GraphQL::ExecutionError => err
@@ -974,7 +974,7 @@ module GraphQL
               # but don't wrap the continuation below
               inner_obj = begin
                 if trace
-                  query.current_trace.execute_field_lazy(field: field, query: query, object: owner_object, arguments: arguments, ast_node: ast_node) do
+                  @current_trace.execute_field_lazy(field: field, query: query, object: owner_object, arguments: arguments, ast_node: ast_node) do
                     schema.sync_lazy(lazy_obj)
                   end
                 else
@@ -1031,13 +1031,13 @@ module GraphQL
         end
 
         def resolve_type(type, value)
-          resolved_type, resolved_value = query.current_trace.resolve_type(query: query, type: type, object: value) do
+          resolved_type, resolved_value = @current_trace.resolve_type(query: query, type: type, object: value) do
             query.resolve_type(type, value)
           end
 
           if lazy?(resolved_type)
             GraphQL::Execution::Lazy.new do
-              query.current_trace.resolve_type_lazy(query: query, type: type, object: value) do
+              @current_trace.resolve_type_lazy(query: query, type: type, object: value) do
                 schema.sync_lazy(resolved_type)
               end
             end
