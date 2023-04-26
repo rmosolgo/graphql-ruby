@@ -52,7 +52,6 @@ module GraphQL
         class GraphQLResultHash < Hash
           def initialize(_result_name, _parent_result, _is_non_null_in_parent)
             super
-            @storing_graphql_metadata = false
             @graphql_result_data = {}
           end
 
@@ -75,7 +74,7 @@ module GraphQL
 
             @graphql_result_data[key] = value
             # keep this up-to-date if it's being used
-            if @storing_graphql_metadata
+            if any?
               self[key] = value
             end
 
@@ -88,8 +87,7 @@ module GraphQL
             end
             # If we encounter some part of this response that requires metadata tracking,
             # then create the metadata hash if necessary. It will be kept up-to-date after this.
-            if !@storing_graphql_metadata
-              @storing_graphql_metadata = true
+            if !any?
               self.merge!(@graphql_result_data)
             end
 
@@ -104,19 +102,19 @@ module GraphQL
           end
 
           def each(&block)
-            @storing_graphql_metadata ? super(&block) : @graphql_result_data.each(&block)
+            any? ? super(&block) : @graphql_result_data.each(&block)
           end
 
           def values
-            @storing_graphql_metadata ? super : @graphql_result_data.values
+            any? ? super : @graphql_result_data.values
           end
 
           def key?(k)
-            @storing_graphql_metadata ? super : @graphql_result_data.key?(k)
+            any? ? super : @graphql_result_data.key?(k)
           end
 
           def [](k)
-            @storing_graphql_metadata ? super : @graphql_result_data[k]
+            any? ? super : @graphql_result_data[k]
           end
 
           def merge_into(into_result)
