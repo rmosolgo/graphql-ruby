@@ -2,6 +2,6 @@
 
 module GraphQL
   module CParser
-    VERSION = "1.0.0"
+    VERSION = "1.0.1"
   end
 end

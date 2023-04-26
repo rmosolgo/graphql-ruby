@@ -21,7 +21,7 @@ Gem::Specification.new do |s|
     "mailing_list_uri"  => "https://tinyletter.com/graphql-ruby",
   }
 
-  s.files = Dir["{lib}/**/*"]
+  s.files = Dir["{lib,ext}/**/*.{rb,h,c,y,rl}"]
   s.extensions << "ext/graphql_c_parser_ext/extconf.rb"
   s.add_dependency "graphql"
 end
