@@ -58,6 +58,12 @@ jobs:
             ruby: 3.2
           - gemfile: gemfiles/rails_master.gemfile
             ruby: 3.2
+          # Stable TruffleRuby and Rails
+          - gemfile: gemfiles/rails_7.0.gemfile
+            ruby: truffleruby
+            experimental: true
+        experimental: [false]
+    continue-on-error: ${{ matrix.experimental }}
     runs-on: ubuntu-latest
     steps:
     - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > $GITHUB_ENV
