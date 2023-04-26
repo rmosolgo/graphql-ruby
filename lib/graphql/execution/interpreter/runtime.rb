@@ -49,9 +49,10 @@ module GraphQL
           attr_accessor :graphql_result_data
         end
 
-        class GraphQLResultHash
+        class GraphQLResultHash < Hash
           def initialize(_result_name, _parent_result, _is_non_null_in_parent)
             super
+            @storing_graphql_metadata = false
             @graphql_result_data = {}
           end
 
@@ -73,8 +74,10 @@ module GraphQL
             end
 
             @graphql_result_data[key] = value
-            # keep this up-to-date if it's been initialized
-            @graphql_metadata && @graphql_metadata[key] = value
+            # keep this up-to-date if it's being used
+            if @storing_graphql_metadata
+              self[key] = value
+            end
 
             value
           end
@@ -83,32 +86,37 @@ module GraphQL
             if (t = @graphql_merged_into)
               t.set_child_result(key, value)
             end
-            @graphql_result_data[key] = value.graphql_result_data
             # If we encounter some part of this response that requires metadata tracking,
             # then create the metadata hash if necessary. It will be kept up-to-date after this.
-            (@graphql_metadata ||= @graphql_result_data.dup)[key] = value
+            if !@storing_graphql_metadata
+              @storing_graphql_metadata = true
+              self.merge!(@graphql_result_data)
+            end
+
+            @graphql_result_data[key] = value.graphql_result_data
+            self[key] = value
             value
           end
 
           def delete(key)
-            @graphql_metadata && @graphql_metadata.delete(key)
             @graphql_result_data.delete(key)
+            super
           end
 
-          def each
-            (@graphql_metadata || @graphql_result_data).each { |k, v| yield(k, v) }
+          def each(&block)
+            @storing_graphql_metadata ? super(&block) : @graphql_result_data.each(&block)
           end
 
           def values
-            (@graphql_metadata || @graphql_result_data).values
+            @storing_graphql_metadata ? super : @graphql_result_data.values
           end
 
           def key?(k)
-            @graphql_result_data.key?(k)
+            @storing_graphql_metadata ? super : @graphql_result_data.key?(k)
           end
 
           def [](k)
-            (@graphql_metadata || @graphql_result_data)[k]
+            @storing_graphql_metadata ? super : @graphql_result_data[k]
           end
 
           def merge_into(into_result)
