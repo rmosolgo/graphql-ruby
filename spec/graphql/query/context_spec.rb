@@ -102,6 +102,7 @@ describe GraphQL::Query::Context do
       assert_equal(1, context.dig(:a, :b))
       Thread.current[:__graphql_runtime_info] = { context.query => OpenStruct.new(current_arguments: {c: 1}) }
       assert_equal 1, context.dig(:current_arguments, :c)
+      assert_equal({c: 1}, context.dig(:current_arguments))
     end
   end
 
