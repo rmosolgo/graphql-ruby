@@ -182,10 +182,6 @@ module GraphQL
           end
         end
 
-        class GraphQLSelectionSet < Hash
-          attr_accessor :graphql_directives
-        end
-
         # @return [GraphQL::Query]
         attr_reader :query
 
@@ -280,7 +276,10 @@ module GraphQL
                   st = get_current_runtime_state
                   st.current_object = query.root_value
                   st.current_result = selection_response
-                  directives = selections.respond_to?(:graphql_directives) ? selections.graphql_directives : nil
+                  # This is a less-frequent case; use a fast check since it's often not there.
+                  if (directives = selections[:graphql_directives])
+                    selections.delete(:graphql_directives)
+                  end
                   call_method_on_directives(:resolve, object_proxy, directives) do
                     evaluate_selections(
                       object_proxy,
@@ -326,8 +325,8 @@ module GraphQL
             else
               # This is an InlineFragment or a FragmentSpread
               if @runtime_directive_names.any? && node.directives.any? { |d| @runtime_directive_names.include?(d.name) }
-                next_selections = GraphQLSelectionSet.new
-                next_selections.graphql_directives = node.directives
+                next_selections = {}
+                next_selections[:graphql_directives] = node.directives
                 if selections_to_run
                   selections_to_run << next_selections
                 else
@@ -810,7 +809,10 @@ module GraphQL
                   st.current_result_name = nil
                   st.current_result = this_result
 
-                  directives = selections.respond_to?(:graphql_directives) ? selections.graphql_directives : nil
+                  # This is a less-frequent case; use a fast check since it's often not there.
+                  if (directives = selections[:graphql_directives])
+                    selections.delete(:graphql_directives)
+                  end
                   call_method_on_directives(:resolve, continue_value, directives) do
                     evaluate_selections(
                       continue_value,
