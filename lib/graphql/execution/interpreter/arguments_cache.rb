@@ -15,7 +15,9 @@ module GraphQL
               end
             else
               args_by_parent = Hash.new do |h2, parent_object|
-                h2[parent_object] = {}
+                args_by_node = {}
+                args_by_node.compare_by_identity
+                h2[parent_object] = args_by_node
               end
             end
             args_by_parent.compare_by_identity
@@ -25,12 +27,12 @@ module GraphQL
         end
 
         def fetch(ast_node, argument_owner, parent_object)
-          args_hash = self.class.prepare_args_hash(@query, ast_node)
           # This runs eagerly if no block is given
-          @storage[argument_owner][parent_object][args_hash] ||= begin
+          @storage[argument_owner][parent_object][ast_node] ||= begin
+            args_hash = self.class.prepare_args_hash(@query, ast_node)
             kwarg_arguments = argument_owner.coerce_arguments(parent_object, args_hash, @query.context)
             @query.after_lazy(kwarg_arguments) do |resolved_args|
-              @storage[argument_owner][parent_object][args_hash] = resolved_args
+              @storage[argument_owner][parent_object][ast_node] = resolved_args
             end
           end
 
@@ -39,13 +41,13 @@ module GraphQL
         # @yield [Interpreter::Arguments, Lazy<Interpreter::Arguments>] The finally-loaded arguments
         def dataload_for(ast_node, argument_owner, parent_object, &block)
           # First, normalize all AST or Ruby values to a plain Ruby hash
-          args_hash = self.class.prepare_args_hash(@query, ast_node)
           arg_storage = @storage[argument_owner][parent_object]
-          if (args = arg_storage[args_hash])
+          if (args = arg_storage[ast_node])
             yield(args)
           else
+            args_hash = self.class.prepare_args_hash(@query, ast_node)
             argument_owner.coerce_arguments(parent_object, args_hash, @query.context) do |resolved_args|
-              arg_storage[args_hash] = resolved_args
+              arg_storage[ast_node] = resolved_args
               yield(resolved_args)
             end
           end
