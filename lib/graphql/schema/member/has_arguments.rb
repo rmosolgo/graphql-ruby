@@ -320,9 +320,11 @@ module GraphQL
         end
 
         def arguments_statically_coercible?
-          return @arguments_statically_coercible if defined?(@arguments_statically_coercible)
-
-          @arguments_statically_coercible = all_argument_definitions.all?(&:statically_coercible?)
+          if defined?(@arguments_statically_coercible) && !@arguments_statically_coercible.nil?
+            @arguments_statically_coercible
+          else
+            @arguments_statically_coercible = all_argument_definitions.all?(&:statically_coercible?)
+          end
         end
 
         module ArgumentClassAccessor

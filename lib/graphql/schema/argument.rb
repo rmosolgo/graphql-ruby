@@ -198,8 +198,8 @@ module GraphQL
 
       def statically_coercible?
         return @statically_coercible if defined?(@statically_coercible)
-
-        @statically_coercible = !@prepare.is_a?(String) && !@prepare.is_a?(Symbol)
+        requires_parent_object = @prepare.is_a?(String) || @prepare.is_a?(Symbol) || @own_validators
+        @statically_coercible = !requires_parent_object
       end
 
       # Apply the {prepare} configuration to `value`, using methods from `obj`.
