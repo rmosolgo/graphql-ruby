@@ -50,7 +50,7 @@ In this example, one object is loaded, then another object is loaded _based on_ 
 
   That call returns a `Promise`, which is stored by GraphQL-Ruby, and finally `.sync`ed.
 
-- With __GraphQL-Dataloader__, `.load(...)` returns the requested object (after a potential `Fiber` pause), so other method calls are necessary:
+- With __GraphQL-Dataloader__, `.load(...)` returns the requested object (after a potential `Fiber` pause), so no other method calls are necessary:
 
   ```ruby
   record = dataloader.with(Sources::Record).load(1)
