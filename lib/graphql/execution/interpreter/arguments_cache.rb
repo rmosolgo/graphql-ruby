@@ -14,7 +14,7 @@ module GraphQL
                 h2[ignored_parent_object] = shared_values_cache
               end
             else
-              args_by_parent = Hash.new do |h2, parent_object|
+              Hash.new do |h2, parent_object|
                 args_by_node = {}
                 args_by_node.compare_by_identity
                 h2[parent_object] = args_by_node
