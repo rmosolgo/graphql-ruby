@@ -166,7 +166,7 @@
     <p>That call returns a <code class="language-plaintext highlighter-rouge">Promise</code>, which is stored by GraphQL-Ruby, and finally <code class="language-plaintext highlighter-rouge">.sync</code>ed.</p>
   </li>
   <li>
-    <p>With <strong>GraphQL-Dataloader</strong>, <code class="language-plaintext highlighter-rouge">.load(...)</code> returns the requested object (after a potential <code class="language-plaintext highlighter-rouge">Fiber</code> pause), so other method calls are necessary:</p>
+    <p>With <strong>GraphQL-Dataloader</strong>, <code class="language-plaintext highlighter-rouge">.load(...)</code> returns the requested object (after a potential <code class="language-plaintext highlighter-rouge">Fiber</code> pause), so no other method calls are necessary:</p>
 
     <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">record</span> <span class="o">=</span> <span class="n">dataloader</span><span class="p">.</span><span class="nf">with</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">Record</span><span class="p">).</span><span class="nf">load</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">dataloader</span><span class="p">.</span><span class="nf">with</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">OtherRecord</span><span class="p">).</span><span class="nf">load</span><span class="p">(</span><span class="n">record</span><span class="p">.</span><span class="nf">other_record_id</span><span class="p">)</span>
