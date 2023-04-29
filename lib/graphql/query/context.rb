@@ -283,7 +283,11 @@ module GraphQL
           (current_runtime_state = Thread.current[:__graphql_runtime_info]) &&
             (query_runtime_state = current_runtime_state[@query]) &&
             (obj = query_runtime_state.public_send(key)) &&
-            obj.dig(*other_keys)
+            if other_keys.empty?
+              obj
+            else
+              obj.dig(*other_keys)
+            end
         elsif @scoped_context.key?(key)
           @scoped_context.dig(key, *other_keys)
         else
