@@ -87,7 +87,11 @@ module GraphQL
       # Even if `variables: nil` is passed, use an empty hash for simpler logic
       variables ||= {}
       @schema = schema
-      @filter = schema.default_filter.merge(except: except, only: only)
+      @filter = if only || except
+        schema.default_filter.merge(except: except, only: only)
+      else
+        nil
+      end
       @context = schema.context_class.new(query: self, object: root_value, values: context)
       @warden = warden
       @subscription_topic = subscription_topic
@@ -151,11 +155,6 @@ module GraphQL
 
       @result_values = nil
       @executed = false
-
-      # TODO add a general way to define schema-level filters
-      if @schema.respond_to?(:visible?)
-        merge_filters(only: @schema.method(:visible?))
-      end
     end
 
     # If a document was provided to `GraphQL::Schema#execute` instead of the raw query string, we will need to get it from the document

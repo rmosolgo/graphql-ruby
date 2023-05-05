@@ -24,17 +24,21 @@ module GraphQL
         @include_built_in_directives = include_built_in_directives
         @include_one_of = false
 
-        filter = GraphQL::Filter.new(only: only, except: except, silence_deprecation_warning: true)
-        if @schema.respond_to?(:visible?)
-          filter = filter.merge(only: @schema.method(:visible?))
+        schema_context = schema.context_class.new(query: nil, object: nil, schema: schema, values: context)
+
+        @warden = if only || except
+          filter = GraphQL::Filter
+            .new(only: only, except: except)
+            .merge(only: @schema.method(:visible?))
+          GraphQL::Schema::Warden.new(
+              filter,
+              schema: @schema,
+              context: schema_context,
+            )
+        else
+          GraphQL::Schema::Warden.new(schema: @schema, context: schema_context)
         end
 
-        schema_context = schema.context_class.new(query: nil, object: nil, schema: schema, values: context)
-        @warden = GraphQL::Schema::Warden.new(
-          filter,
-          schema: @schema,
-          context: schema_context,
-        )
         schema_context.warden = @warden
       end
 
