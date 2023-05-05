@@ -319,9 +319,23 @@ describe GraphQL::Dataloader do
       end
     end
 
+    class Mutation3 < GraphQL::Schema::Mutation
+      argument :label, String
+      type String
+
+      def resolve(label:)
+        log = context[:mutation_log] ||= []
+        log << "begin #{label}"
+        dataloader.with(DataObject).load(1)
+        log << "end #{label}"
+        label
+      end
+    end
+
     class Mutation < GraphQL::Schema::Object
       field :mutation_1, mutation: Mutation1
       field :mutation_2, mutation: Mutation2
+      field :mutation_3, mutation: Mutation3
     end
 
     mutation(Mutation)
@@ -401,6 +415,18 @@ describe GraphQL::Dataloader do
           }
           assert_equal expected_data, res
           assert_equal [[:mget, ["5", "6"]], [:mget, ["2", "3"]]], database_log
+        end
+
+        it "runs mutations sequentially" do
+          res = schema.execute <<-GRAPHQL
+            mutation {
+              first: mutation3(label: "first")
+              second: mutation3(label: "second")
+            }
+          GRAPHQL
+
+          assert_equal({ "first" => "first", "second" => "second" }, res["data"])
+          assert_equal ["begin first", "end first", "begin second", "end second"], res.context[:mutation_log]
         end
 
         it "batch-loads" do

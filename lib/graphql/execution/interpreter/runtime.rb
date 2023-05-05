@@ -393,6 +393,12 @@ module GraphQL
                 selections_result.merge_into(target_result)
               end
             }
+            # Field resolution may pause the fiber,
+            # so it wouldn't get to the `Resolve` call that happens below.
+            # So instead trigger a run from this outer context.
+            if is_eager_selection
+              @dataloader.run
+            end
           end
 
           selections_result
