@@ -346,6 +346,7 @@ module GraphQL
       if @prepared_ast
         raise "Can't add filters after preparing the query"
       else
+        @filter ||= GraphQL::Filter.new(only: ->(m, ctx){ @schema.visible?(m, ctx) })
         @filter = @filter.merge(only: only, except: except)
       end
       nil
