@@ -1019,8 +1019,8 @@ describe GraphQL::Dataloader do
     res = FiberSchema.execute("mutation { mutation1(argument1: \"abc\") { __typename } mutation2(argument2: \"def\") { __typename } }")
     assert_equal({"mutation1"=>nil, "mutation2"=>nil}, res["data"])
     expected_errors = [
-      "FieldTestError @ [\"mutation2\"], Mutation.mutation2 / Mutation.mutation2",
       "FieldTestError @ [\"mutation1\"], Mutation.mutation1 / Mutation.mutation1",
+      "FieldTestError @ [\"mutation2\"], Mutation.mutation2 / Mutation.mutation2",
     ]
     assert_equal expected_errors, res.context[:errors]
   end
