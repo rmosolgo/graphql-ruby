@@ -836,7 +836,7 @@ describe GraphQL::Query do
 
   it "Accepts a passed-in warden" do
     schema_class = Class.new(Jazz::Schema) do
-      def self.visible?(ctx)
+      def self.visible?(member, ctx)
         false
       end
     end
