@@ -220,6 +220,7 @@ module MaskHelpers
   end
 
   def self.query_with_mask(str, mask, variables: {})
+    # TODO Why isn't this warning?
     run_query(str, except: mask, root_value: Data, variables: variables)
   end
 

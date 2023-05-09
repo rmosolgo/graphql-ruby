@@ -6,7 +6,8 @@ module GraphQL
   class Filter
     def initialize(only: nil, except: nil, silence_deprecation_warning: false)
       if !silence_deprecation_warning
-        GraphQL::Deprecation.warn("GraphQL::Filter, `only:`, `except:`, and `.merge_filters` are deprecated and will be removed in v2.1.0. Implement `visible?` on your schema members instead (https://graphql-ruby.org/authorization/visibility.html).")
+        line = caller(2, 10).find { |l| !l.include?("lib/graphql") }
+        GraphQL::Deprecation.warn("GraphQL::Filter, `only:`, `except:`, and `.merge_filters` are deprecated and will be removed in v2.1.0. Implement `visible?` on your schema members instead (https://graphql-ruby.org/authorization/visibility.html).\n  #{line}")
       end
       @only = only
       @except = except
