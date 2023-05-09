@@ -52,6 +52,12 @@ module LexerExamples
         |}
         let(:tokens) { subject.tokenize(query_string) }
 
+        it "force encodes to utf-8" do
+          # string that will be invalid utf-8 once force encoded
+          string = "vandflyver \xC5rhus".dup.force_encoding("ASCII-8BIT")
+          assert_equal :BAD_UNICODE_ESCAPE, subject.tokenize(string).first.name
+        end
+
         it "makes utf-8 comments" do
           tokens = subject.tokenize("# 不要!\n{")
           comment_token = tokens.first.prev_token

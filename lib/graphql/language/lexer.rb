@@ -95,12 +95,14 @@ module GraphQL
           previous_token: nil,
         }
 
-        unless string.valid_encoding?
-          emit(:BAD_UNICODE_ESCAPE, 0, 0, meta, string)
+        value = string.dup.force_encoding(Encoding::UTF_8)
+
+        unless value.valid_encoding?
+          emit(:BAD_UNICODE_ESCAPE, 0, 0, meta, value)
           return meta[:tokens]
         end
 
-        scan = StringScanner.new string
+        scan = StringScanner.new value
 
         while !scan.eos?
           pos = scan.pos
