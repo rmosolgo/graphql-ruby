@@ -359,6 +359,20 @@ describe GraphQL::Schema do
       assert_kind_of NewTrace2, child_trace
       assert_kind_of GraphQL::Tracing::Trace, child_trace
     end
+
+    it "returns an instance of the parent configured trace_class with trace_options" do
+      parent_schema = Class.new(GraphQL::Schema) do
+        trace_with NewTrace1, a: 1
+      end
+
+      child_schema = Class.new(parent_schema) do
+      end
+
+      child_trace = child_schema.new_trace
+      assert_equal({a: 1}, child_trace.trace_opts)
+      assert_kind_of NewTrace1, child_trace
+      assert_kind_of GraphQL::Tracing::Trace, child_trace
+    end
   end
 
   describe ".possible_types" do
