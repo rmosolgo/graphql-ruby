@@ -13,6 +13,20 @@ describe GraphQL::Schema::EnumValue do
     end
   end
 
+  it "can accept a proc as a value" do
+    enum = Class.new(GraphQL::Schema::Enum) do
+      graphql_name "SortBy"
+      value 'BY_NAME', value: -> (scope, direction: :asc) {
+        scope.order(name: direction)
+      }
+      value 'BY_EMAIL', value: -> (scope, direction: :asc) {
+        scope.order(email: direction)
+      }
+    end
+
+    assert_instance_of Proc, enum.values["BY_NAME"].value
+  end
+
   describe "#deprecation_reason" do
     it "can be written and read" do
       enum_value = GraphQL::Schema::EnumValue.new(:x, owner: nil)

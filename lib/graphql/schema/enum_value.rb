@@ -34,7 +34,7 @@ module GraphQL
         @graphql_name = graphql_name.to_s
         GraphQL::NameValidator.validate!(@graphql_name)
         @description = desc || description
-        @value = value === NOT_CONFIGURED ? @graphql_name : value
+        @value = value == NOT_CONFIGURED ? @graphql_name : value
         if deprecation_reason
           self.deprecation_reason = deprecation_reason
         end
