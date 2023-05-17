@@ -87,10 +87,8 @@ module GraphQL
       # Even if `variables: nil` is passed, use an empty hash for simpler logic
       variables ||= {}
       @schema = schema
-      @filter = if only || except
-        schema.default_filter.merge(except: except, only: only)
-      else
-        nil
+      if only || except
+        merge_filters(except: except, only: only)
       end
       @context = schema.context_class.new(query: self, object: root_value, values: context)
       @warden = warden
@@ -346,7 +344,7 @@ module GraphQL
       if @prepared_ast
         raise "Can't add filters after preparing the query"
       else
-        @filter ||= GraphQL::Filter.new(only: ->(m, ctx){ @schema.visible?(m, ctx) })
+        @filter ||= @schema.default_filter
         @filter = @filter.merge(only: only, except: except)
       end
       nil

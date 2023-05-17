@@ -244,11 +244,13 @@ module GraphQL
       end
 
       def default_filter
-        GraphQL::Filter.new(except: default_mask, silence_deprecation_warning: true)
+        GraphQL::Filter.new(except: default_mask)
       end
 
       def default_mask(new_mask = nil)
         if new_mask
+          line = caller(2, 10).find { |l| !l.include?("lib/graphql") }
+          GraphQL::Deprecation.warn("GraphQL::Filter and Schema.mask are deprecated and will be removed in v2.1.0. Implement `visible?` on your schema members instead (https://graphql-ruby.org/authorization/visibility.html).\n  #{line}")
           @own_default_mask = new_mask
         else
           @own_default_mask || find_inherited_value(:default_mask, Schema::NullMask)
