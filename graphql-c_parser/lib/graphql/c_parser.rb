@@ -40,6 +40,26 @@ module GraphQL
       GraphQL::ParseError.new(message, line, col, parser.query_string, filename: parser.filename)
     end
 
+    module Lexer
+      def self.tokenize(graphql_string)
+        if !(graphql_string.encoding == Encoding::UTF_8 || graphql_string.ascii_only?)
+          graphql_string = graphql_string.dup.force_encoding(Encoding::UTF_8)
+        end
+        if !graphql_string.valid_encoding?
+          return [
+            [
+              :BAD_UNICODE_ESCAPE,
+              1,
+              1,
+              graphql_string,
+              nil
+            ]
+          ]
+        end
+        tokenize_with_c(graphql_string)
+      end
+    end
+
     class Parser
       def initialize(query_string, filename, trace)
         if query_string.nil?
@@ -56,7 +76,7 @@ module GraphQL
       def result
         if @result.nil?
           @tokens = @trace.lex(query_string: @query_string) do
-            GraphQL::CParser::Lexer.tokenize(@query_string)
+            GraphQL::CParser.scan_with_c(@query_string)
           end
           @trace.parse(query_string: @query_string) do
             c_parse
