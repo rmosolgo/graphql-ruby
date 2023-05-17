@@ -16,10 +16,10 @@ describe GraphQL::Schema::EnumValue do
   it "can accept a proc as a value" do
     enum = Class.new(GraphQL::Schema::Enum) do
       graphql_name "SortBy"
-      value 'BY_NAME', value: -> (scope, direction: :asc) {
+      value 'BY_NAME', value: ->(scope, direction: :asc) {
         scope.order(name: direction)
       }
-      value 'BY_EMAIL', value: -> (scope, direction: :asc) {
+      value 'BY_EMAIL', value: ->(scope, direction: :asc) {
         scope.order(email: direction)
       }
     end
