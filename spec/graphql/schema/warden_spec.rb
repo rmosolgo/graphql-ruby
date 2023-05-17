@@ -477,10 +477,11 @@ describe GraphQL::Schema::Warden do
         query(Query)
 
         def self.visible?(member, context)
-          super(member, context) && if context[:except]
+          res = super(member, context)
+          if res && context[:except]
             !context[:except].call(member, context)
           else
-            true
+            res
           end
         end
       end
@@ -539,10 +540,11 @@ describe GraphQL::Schema::Warden do
 
       schema = GraphQL::Schema.from_definition(sdl)
       schema.define_singleton_method(:visible?) do |member, context|
-        super(member, context) && if context[:except]
+        res = super(member, context)
+        if res && context[:except]
           !context[:except].call(member, context)
         else
-          true
+          res
         end
       end
 
