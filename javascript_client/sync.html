@@ -241,7 +241,7 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
     <span class="na">operationName</span><span class="p">:</span> <span class="nx">operation</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span>
   <span class="p">}</span>
 
-  <span class="nf">if </span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span> <span class="o">===</span> <span class="dl">"</span><span class="s2">production</span><span class="dl">"</span><span class="p">)</span>
+  <span class="k">if </span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span> <span class="o">===</span> <span class="dl">"</span><span class="s2">production</span><span class="dl">"</span><span class="p">)</span>
     <span class="c1">// In production, use the stored operation</span>
     <span class="nx">requestParams</span><span class="p">.</span><span class="nx">operationId</span> <span class="o">=</span> <span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nf">getOperationId</span><span class="p">(</span><span class="nx">operation</span><span class="p">.</span><span class="nx">name</span><span class="p">)</span>
   <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
@@ -315,7 +315,7 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 
 <span class="c1">// attach it as middleware in production</span>
 <span class="c1">// (in development, send queries to the server as normal)</span>
-<span class="nf">if </span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span> <span class="o">===</span> <span class="dl">"</span><span class="s2">production</span><span class="dl">"</span><span class="p">)</span> <span class="p">{</span>
+<span class="k">if </span><span class="p">(</span><span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span> <span class="o">===</span> <span class="dl">"</span><span class="s2">production</span><span class="dl">"</span><span class="p">)</span> <span class="p">{</span>
   <span class="nx">MyNetworkInterface</span><span class="p">.</span><span class="nf">use</span><span class="p">([</span><span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nx">apolloMiddleware</span><span class="p">])</span>
 <span class="p">}</span>
 </code></pre></div></div>
@@ -335,7 +335,7 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 <span class="kd">var</span> <span class="nx">OperationStoreClient</span> <span class="o">=</span> <span class="nf">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">./OperationStoreClient</span><span class="dl">"</span><span class="p">)</span>
 
 <span class="c1">// Integrate the link to another link:</span>
-<span class="kd">const</span> <span class="nx">link</span> <span class="o">=</span> <span class="nx">ApolloLink</span><span class="p">.</span><span class="nf">from</span><span class="p">([</span>
+<span class="kd">const</span> <span class="nx">link</span> <span class="o">=</span> <span class="nx">ApolloLink</span><span class="p">.</span><span class="k">from</span><span class="p">([</span>
   <span class="nx">authLink</span><span class="p">,</span>
   <span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nx">apolloLink</span><span class="p">,</span>
   <span class="nx">httpLink</span><span class="p">,</span>

@@ -170,7 +170,7 @@
 <span class="kd">const</span> <span class="nx">pusherLink</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">PusherLink</span><span class="p">({</span><span class="na">pusher</span><span class="p">:</span> <span class="nx">pusherClient</span><span class="p">})</span>
 
 <span class="c1">// Combine the two links to work together</span>
-<span class="kd">const</span> <span class="nx">link</span> <span class="o">=</span> <span class="nx">ApolloLink</span><span class="p">.</span><span class="nf">from</span><span class="p">([</span><span class="nx">pusherLink</span><span class="p">,</span> <span class="nx">httpLink</span><span class="p">])</span>
+<span class="kd">const</span> <span class="nx">link</span> <span class="o">=</span> <span class="nx">ApolloLink</span><span class="p">.</span><span class="k">from</span><span class="p">([</span><span class="nx">pusherLink</span><span class="p">,</span> <span class="nx">httpLink</span><span class="p">])</span>
 
 <span class="c1">// Initialize the client</span>
 <span class="kd">const</span> <span class="nx">client</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ApolloClient</span><span class="p">({</span>
@@ -227,7 +227,7 @@
 <span class="kd">const</span> <span class="nx">ablyLink</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">AblyLink</span><span class="p">({</span><span class="na">ably</span><span class="p">:</span> <span class="nx">ablyClient</span><span class="p">})</span>
 
 <span class="c1">// Combine the two links to work together</span>
-<span class="kd">const</span> <span class="nx">link</span> <span class="o">=</span> <span class="nx">ApolloLink</span><span class="p">.</span><span class="nf">from</span><span class="p">([</span><span class="nx">ablyLink</span><span class="p">,</span> <span class="nx">httpLink</span><span class="p">])</span>
+<span class="kd">const</span> <span class="nx">link</span> <span class="o">=</span> <span class="nx">ApolloLink</span><span class="p">.</span><span class="k">from</span><span class="p">([</span><span class="nx">ablyLink</span><span class="p">,</span> <span class="nx">httpLink</span><span class="p">])</span>
 
 <span class="c1">// Initialize the client</span>
 <span class="kd">const</span> <span class="nx">client</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ApolloClient</span><span class="p">({</span>

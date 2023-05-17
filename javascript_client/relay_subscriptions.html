@@ -269,7 +269,7 @@
     <span class="na">operationName</span><span class="p">:</span> <span class="nx">operation</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span>
   <span class="p">}</span>
   <span class="kd">const</span> <span class="nx">useStoredOperations</span> <span class="o">=</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">NODE_ENV</span> <span class="o">===</span> <span class="dl">"</span><span class="s2">production</span><span class="dl">"</span>
-  <span class="nf">if </span><span class="p">(</span><span class="nx">useStoredOperations</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if </span><span class="p">(</span><span class="nx">useStoredOperations</span><span class="p">)</span> <span class="p">{</span>
     <span class="c1">// In production, use the stored operation</span>
     <span class="nx">bodyValues</span><span class="p">.</span><span class="nx">operationId</span> <span class="o">=</span> <span class="nx">OperationStoreClient</span><span class="p">.</span><span class="nf">getOperationId</span><span class="p">(</span><span class="nx">operation</span><span class="p">.</span><span class="nx">name</span><span class="p">)</span>
   <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
