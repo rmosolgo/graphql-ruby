@@ -10,6 +10,26 @@
 
 ### Bug fixes
 
+# 2.0.22 (17 May 2023)
+
+### New features
+
+- Warden: manually instantiating doesn't require a `filter` instance #4462
+
+### Bug fixes
+
+- Enum: fix procs for enum values #4474
+- Lexer: force UTF-8 encoding #4467
+- Trace: inherit superclass `trace_options` #4470
+- Dataloader: properly run mutations in sequence #4461
+- NotificationsTrace: Add `execute_multiplex.graphql` event #4460
+- Fix `Context#dig` when called with one key #4458
+- Performance: Use a plain hash for selection sets at runtime #4453
+- Performance: Memoize current trace #4450, #4452
+- Performance: Pass is_non_null to runtime check #4449
+- Performance: Use `compare_by_identity` on some runtime caches
+- Properly support nested queries (fix `Thread.current` clash) #4445
+
 # 2.0.21 (11 April 2023)
 
 ### Deprecations
