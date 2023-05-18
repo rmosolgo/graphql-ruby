@@ -76,7 +76,7 @@ module GraphQL
       def result
         if @result.nil?
           @tokens = @trace.lex(query_string: @query_string) do
-            GraphQL::CParser.scan_with_c(@query_string)
+            GraphQL::CParser::Lexer.tokenize(@query_string)
           end
           @trace.parse(query_string: @query_string) do
             c_parse
