@@ -121,7 +121,8 @@
 </a><ol class='contents-list'><li class='contents-entry'><a href='#checking-for-deferrals'>Checking for deferrals
 </a></li><li class='contents-entry'><a href='#working-with-deferrals'>Working with deferrals
 </a></li><li class='contents-entry'><a href='#example-rails-with-apollo-client'>Example: Rails with Apollo Client
-</a></li></ol></li><li class='contents-entry'><a href='#next-steps'>Next Steps
+</a></li></ol></li><li class='contents-entry'><a href='#with-graphql-batch'>With GraphQL-Batch
+</a></li><li class='contents-entry'><a href='#next-steps'>Next Steps
 </a></li></ol>
 </div>
 </div>
@@ -132,6 +133,7 @@
   <li>Update <code class="language-plaintext highlighter-rouge">graphql</code> and <code class="language-plaintext highlighter-rouge">graphql-pro</code> gems</li>
   <li>Add <code class="language-plaintext highlighter-rouge">@defer</code> to your GraphQL schema</li>
   <li>Update your HTTP handlers (eg, Rails controllers) to send streaming responses</li>
+  <li>Optionally, customize <code class="language-plaintext highlighter-rouge">@defer</code> to work with GraphQL-Batch</li>
 </ul>
 
 <p>You can also see a <a href="https://github.com/rmosolgo/graphql_defer_example">full Rails &amp; Apollo-Client demo</a>.</p>
@@ -206,7 +208,7 @@
 
 <ul>
   <li><code class="language-plaintext highlighter-rouge">.to_h</code> returns a hash with <code class="language-plaintext highlighter-rouge">path:</code>, <code class="language-plaintext highlighter-rouge">data:</code>, and/or <code class="language-plaintext highlighter-rouge">errors:</code>. (There is no <code class="language-plaintext highlighter-rouge">path:</code> for the root result.)</li>
-  <li><code class="language-plaintext highlighter-rouge">.to_http_multipart</code> returns a string which works with Apollo client’s <code class="language-plaintext highlighter-rouge">@defer</code> support.</li>
+  <li><code class="language-plaintext highlighter-rouge">.to_http_multipart(incremental: true)</code> returns a string which works with Apollo client’s <code class="language-plaintext highlighter-rouge">@defer</code> support. (Use <code class="language-plaintext highlighter-rouge">incremental: true</code> to format patches for the forthcoming spec.)</li>
   <li><code class="language-plaintext highlighter-rouge">.path</code> returns the path to this patch in the response</li>
   <li><code class="language-plaintext highlighter-rouge">.data</code> returns successfully-resolved results of the patch</li>
   <li><code class="language-plaintext highlighter-rouge">.errors</code> returns an array of errors, if there were any</li>
@@ -231,7 +233,7 @@
       <span class="c1"># Required for Rack 2.2+, see https://github.com/rack/rack/issues/1619</span>
       <span class="n">response</span><span class="p">.</span><span class="nf">headers</span><span class="p">[</span><span class="s1">'Last-Modified'</span><span class="p">]</span> <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">httpdate</span>
       <span class="c1"># Use built-in `stream_http_multipart` with Apollo-Client &amp; ActionController::Live</span>
-      <span class="n">deferred</span><span class="p">.</span><span class="nf">stream_http_multipart</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+      <span class="n">deferred</span><span class="p">.</span><span class="nf">stream_http_multipart</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="ss">incremental: </span><span class="kp">true</span><span class="p">)</span>
     <span class="k">else</span>
       <span class="c1"># Return a plain, non-deferred result</span>
       <span class="n">render</span> <span class="ss">json: </span><span class="n">result</span>
@@ -245,6 +247,41 @@
 
 <p>You can also investigate a <a href="https://github.com/rmosolgo/graphql_defer_example">full Rails &amp; Apollo-Client demo</a></p>
 
+<h2 id="with-graphql-batch">With GraphQL-Batch</h2>
+
+<p><code class="language-plaintext highlighter-rouge">GraphQL-Batch</code> is a third-party data loading library that wraps GraphQL-Ruby execution. Deferred resolution happens outside the normal execution flow, so to work with GraphQL-Batch, you have to customize <code class="language-plaintext highlighter-rouge">GraphQL::Pro::Defer</code> a bit. Also, you’ll need GraphQL-Pro <code class="language-plaintext highlighter-rouge">v1.24.6</code> or later. Here’s a custom <code class="language-plaintext highlighter-rouge">Defer</code> implementation:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/directives/defer.rb</span>
+<span class="k">module</span> <span class="nn">Directives</span>
+  <span class="c1"># Modify the library's `@defer` implementation to work with GraphQL-Batch</span>
+  <span class="k">class</span> <span class="nc">Defer</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Defer</span>
+    <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">resolve</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">arguments</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+      <span class="c1"># While the query is running, store the batch executor to re-use later</span>
+      <span class="n">context</span><span class="p">[</span><span class="ss">:graphql_batch_executor</span><span class="p">]</span> <span class="o">||=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Batch</span><span class="o">::</span><span class="no">Executor</span><span class="p">.</span><span class="nf">current</span>
+      <span class="k">super</span>
+    <span class="k">end</span>
+
+    <span class="k">class</span> <span class="nc">Deferral</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">Defer</span><span class="o">::</span><span class="no">Deferral</span>
+      <span class="k">def</span> <span class="nf">resolve</span>
+        <span class="c1"># Before calling the deferred execution,</span>
+        <span class="c1"># set GraphQL-Batch back up:</span>
+        <span class="n">prev_executor</span> <span class="o">=</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Batch</span><span class="o">::</span><span class="no">Executor</span><span class="p">.</span><span class="nf">current</span>
+        <span class="no">GraphQL</span><span class="o">::</span><span class="no">Batch</span><span class="o">::</span><span class="no">Executor</span><span class="p">.</span><span class="nf">current</span> <span class="o">||=</span> <span class="vi">@context</span><span class="p">[</span><span class="ss">:graphql_batch_executor</span><span class="p">]</span>
+        <span class="k">super</span>
+      <span class="k">ensure</span>
+        <span class="c1"># Clean up afterward:</span>
+        <span class="no">GraphQL</span><span class="o">::</span><span class="no">Batch</span><span class="o">::</span><span class="no">Executor</span><span class="p">.</span><span class="nf">current</span> <span class="o">=</span> <span class="n">prev_executor</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>And update your schema to use your custom defer implementation:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Use our GraphQL-Batch-compatible defer:</span>
+<span class="n">use</span> <span class="no">Directives</span><span class="o">::</span><span class="no">Defer</span>
+</code></pre></div></div>
 <h2 id="next-steps">Next Steps</h2>
 
 <p>Read about <a href="/defer/usage">client usage</a> of <code class="language-plaintext highlighter-rouge">@defer</code>.</p>
