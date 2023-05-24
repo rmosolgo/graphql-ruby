@@ -8,6 +8,10 @@
 
 ### Bug Fix
 
+# 1.24.5 (24 May 2023)
+
+- Stable relation connection: Quote table names and column names in selects and orders #4485
+
 # 1.24.4 (18 April 2023)
 
 ### Bug Fix
