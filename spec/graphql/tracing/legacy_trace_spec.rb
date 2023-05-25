@@ -76,6 +76,6 @@ describe GraphQL::Tracing::LegacyTrace do
 
     res2 = child_schema.execute("{ int }")
     assert_equal true, res2.context[:trace_module_ran]
-    assert_equal true, res1.context[:tracer_ran]
+    assert_equal true, res2.context[:tracer_ran]
   end
 end
