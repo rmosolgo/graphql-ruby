@@ -513,7 +513,7 @@ module GraphQL
             end
           when Array
             # It's an array full of execution errors; add them all.
-            if value.any? && value.all? { |v| v.is_a?(GraphQL::ExecutionError) }
+            if value.any? && value.all?(GraphQL::ExecutionError)
               list_type_at_all = (field && (field.type.list?))
               if selection_result.nil? || !dead_result?(selection_result)
                 value.each_with_index do |error, index|
