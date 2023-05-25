@@ -961,10 +961,8 @@ module GraphQL
       end
 
       def tracer(new_tracer)
-        if defined?(@trace_modes) && !(trace_class_for(:default) < GraphQL::Tracing::LegacyTrace)
-          raise ArgumentError, "Can't add tracer after configuring a `trace_class`, use GraphQL::Tracing::LegacyTrace to merge legacy tracers into a trace class instead."
-        else
-          trace_mode(:default, Class.new(GraphQL::Tracing::LegacyTrace))
+        if !(trace_class_for(:default) < GraphQL::Tracing::CallLegacyTracers)
+          trace_with(GraphQL::Tracing::CallLegacyTracers)
         end
 
         own_tracers << new_tracer
