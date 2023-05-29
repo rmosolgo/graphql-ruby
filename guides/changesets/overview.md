@@ -21,7 +21,7 @@ Changesets are a _complementary_ evolution technique to continuous additions. In
 For example, if you add a values to an Enum, you can just add it to the existing schema:
 
 ```diff
-  class Types::RecipeFlag < Types::BaseEnum
+  class Types::RecipeTag < Types::BaseEnum
     value "LOW_FAT"
     value "LOW_CARB"
 +   value "VEGAN"
@@ -33,11 +33,9 @@ For example, if you add a values to an Enum, you can just add it to the existing
 However, if you want to change the schema in ways that would _break_ previous queries, you can do that with a Changeset:
 
 ```ruby
-class RemoveIrrelevantFlags < GraphQL::Enterprise::Changeset
-  modifies Types::RecipeFlag do
-    # Turns out this makes you sick:
-    remove_value "GRAPEFRUIT_DIET"
-  end
+class Types::RecipeTag < Types::BaseEnum
+  # Turns out this makes you sick:
+  value "GRAPEFRUIT_DIET", removed_in: Changesets::RemoveLegacyDiets
 end
 ```
 
