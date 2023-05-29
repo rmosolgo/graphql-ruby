@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "graphql/tracing/platform_trace"
+
 module GraphQL
   module Tracing
     # This implementation forwards events to a notification handler (i.e.
@@ -20,6 +22,7 @@ module GraphQL
         "validate" => "validate.graphql",
         "analyze_multiplex" => "analyze_multiplex.graphql",
         "analyze_query" => "analyze_query.graphql",
+        "execute_multiplex" => "execute_multiplex.graphql",
         "execute_query" => "execute_query.graphql",
         "execute_query_lazy" => "execute_query_lazy.graphql",
         "execute_field" => "execute_field.graphql",

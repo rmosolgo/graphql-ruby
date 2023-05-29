@@ -60,7 +60,7 @@ module GraphQL
           super()
         end
 
-        context.schema.after_lazy(return_value) do |return_hash|
+        context.query.after_lazy(return_value) do |return_hash|
           # It might be an error
           if return_hash.is_a?(Hash)
             return_hash[:client_mutation_id] = client_mutation_id

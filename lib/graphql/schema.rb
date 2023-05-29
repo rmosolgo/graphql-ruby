@@ -244,11 +244,13 @@ module GraphQL
       end
 
       def default_filter
-        GraphQL::Filter.new(except: default_mask, silence_deprecation_warning: true)
+        GraphQL::Filter.new(except: default_mask)
       end
 
       def default_mask(new_mask = nil)
         if new_mask
+          line = caller(2, 10).find { |l| !l.include?("lib/graphql") }
+          GraphQL::Deprecation.warn("GraphQL::Filter and Schema.mask are deprecated and will be removed in v2.1.0. Implement `visible?` on your schema members instead (https://graphql-ruby.org/authorization/visibility.html).\n  #{line}")
           @own_default_mask = new_mask
         else
           @own_default_mask || find_inherited_value(:default_mask, Schema::NullMask)
@@ -971,10 +973,8 @@ module GraphQL
       end
 
       def tracer(new_tracer)
-        if defined?(@trace_modes) && !(trace_class_for(:default) < GraphQL::Tracing::LegacyTrace)
-          raise ArgumentError, "Can't add tracer after configuring a `trace_class`, use GraphQL::Tracing::LegacyTrace to merge legacy tracers into a trace class instead."
-        else
-          trace_mode(:default, Class.new(GraphQL::Tracing::LegacyTrace))
+        if !(trace_class_for(:default) < GraphQL::Tracing::CallLegacyTracers)
+          trace_with(GraphQL::Tracing::CallLegacyTracers)
         end
 
         own_tracers << new_tracer
@@ -1000,9 +1000,7 @@ module GraphQL
       end
 
       def new_trace(**options)
-        if defined?(@trace_options)
-          options = trace_options.merge(options)
-        end
+        options = trace_options.merge(options)
         trace_mode = if (target = options[:query] || options[:multiplex]) && target.context[:backtrace]
           :default_backtrace
         else

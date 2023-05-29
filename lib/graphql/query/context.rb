@@ -227,7 +227,8 @@ module GraphQL
             current_path
           else
             (current_runtime_state = Thread.current[:__graphql_runtime_info]) &&
-              (current_runtime_state.public_send(key))
+              (query_runtime_state = current_runtime_state[@query]) &&
+              (query_runtime_state.public_send(key))
           end
         else
           # not found
@@ -237,10 +238,12 @@ module GraphQL
 
       def current_path
         current_runtime_state = Thread.current[:__graphql_runtime_info]
-        path = current_runtime_state &&
-          (result = current_runtime_state.current_result) &&
+        query_runtime_state = current_runtime_state && current_runtime_state[@query]
+
+        path = query_runtime_state &&
+          (result = query_runtime_state.current_result) &&
           (result.path)
-        if path && (rn = current_runtime_state.current_result_name)
+        if path && (rn = query_runtime_state.current_result_name)
           path = path.dup
           path.push(rn)
         end
@@ -260,7 +263,8 @@ module GraphQL
       def fetch(key, default = UNSPECIFIED_FETCH_DEFAULT)
         if RUNTIME_METADATA_KEYS.include?(key)
           (runtime = Thread.current[:__graphql_runtime_info]) &&
-            (runtime.public_send(key))
+            (query_runtime_state = runtime[@query]) &&
+            (query_runtime_state.public_send(key))
         elsif @scoped_context.key?(key)
           scoped_context[key]
         elsif @provided_values.key?(key)
@@ -277,8 +281,13 @@ module GraphQL
       def dig(key, *other_keys)
         if RUNTIME_METADATA_KEYS.include?(key)
           (current_runtime_state = Thread.current[:__graphql_runtime_info]) &&
-            (obj = current_runtime_state.public_send(key)) &&
-            obj.dig(*other_keys)
+            (query_runtime_state = current_runtime_state[@query]) &&
+            (obj = query_runtime_state.public_send(key)) &&
+            if other_keys.empty?
+              obj
+            else
+              obj.dig(*other_keys)
+            end
         elsif @scoped_context.key?(key)
           @scoped_context.dig(key, *other_keys)
         else

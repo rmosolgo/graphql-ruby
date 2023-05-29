@@ -4,12 +4,18 @@ module GraphQL
     # This object can be `ctx` in places where there is no query
     class NullContext
       class NullQuery
+        def after_lazy(value)
+          yield(value)
+        end
       end
 
       class NullSchema < GraphQL::Schema
       end
 
+      extend Forwardable
+
       attr_reader :schema, :query, :warden, :dataloader
+      def_delegators GraphQL::EmptyObjects::EMPTY_HASH, :[], :fetch, :dig, :key?
 
       def initialize
         @query = NullQuery.new
@@ -18,8 +24,6 @@ module GraphQL
         @warden = Schema::Warden::NullWarden.new(nil, context: self, schema: @schema)
       end
 
-      def [](key); end
-
       def interpreter?
         true
       end
@@ -27,13 +31,11 @@ module GraphQL
       class << self
         extend Forwardable
 
-        def [](key); end
-
         def instance
           @instance ||= self.new
         end
 
-        def_delegators :instance, :query, :warden, :schema, :interpreter?, :dataloader
+        def_delegators :instance, :query, :warden, :schema, :interpreter?, :dataloader, :[], :fetch, :dig, :key?
       end
     end
   end

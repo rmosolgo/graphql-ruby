@@ -117,14 +117,20 @@ module GraphQL
       # @param filter [<#call(member)>] Objects are hidden when `.call(member, ctx)` returns true
       # @param context [GraphQL::Query::Context]
       # @param schema [GraphQL::Schema]
-      def initialize(filter, context:, schema:)
+      def initialize(filter = nil, context:, schema:)
         @schema = schema
         # Cache these to avoid repeated hits to the inheritance chain when one isn't present
         @query = @schema.query
         @mutation = @schema.mutation
         @subscription = @schema.subscription
         @context = context
-        @visibility_cache = read_through { |m| filter.call(m, context) }
+        @visibility_cache = if filter
+          read_through { |m| filter.call(m, context) }
+        else
+          read_through { |m| schema.visible?(m, context) }
+        end
+
+        @visibility_cache.compare_by_identity
         # Initialize all ivars to improve object shape consistency:
         @types = @visible_types = @reachable_types = @visible_parent_fields =
           @visible_possible_types = @visible_fields = @visible_arguments = @visible_enum_arrays =

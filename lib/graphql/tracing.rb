@@ -14,6 +14,7 @@ require "graphql/tracing/statsd_tracing"
 require "graphql/tracing/prometheus_tracing"
 
 # New Tracing:
+require "graphql/tracing/active_support_notifications_trace"
 require "graphql/tracing/platform_trace"
 require "graphql/tracing/appoptics_trace"
 require "graphql/tracing/appsignal_trace"

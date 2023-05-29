@@ -4,7 +4,7 @@ module GraphQL
     # This trace class calls legacy-style tracer with payload hashes.
     # New-style `trace_with` modules significantly reduce the overhead of tracing,
     # but that advantage is lost when legacy-style tracers are also used (since the payload hashes are still constructed).
-    class LegacyTrace < Trace
+    module CallLegacyTracers
       def lex(query_string:)
         (@multiplex || @query).trace("lex", { query_string: query_string }) { super }
       end
@@ -60,6 +60,10 @@ module GraphQL
       def resolve_type_lazy(query:, type:, object:)
         query.trace("resolve_type_lazy", { context: query.context, type: type, object: object, path: query.context[:current_path] }) { super }
       end
+    end
+
+    class LegacyTrace < Trace
+      include CallLegacyTracers
     end
   end
 end

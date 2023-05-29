@@ -187,19 +187,6 @@ module MaskHelpers
     end
   end
 
-  module FilterInstrumentation
-    def self.before_query(query)
-      if query.context[:filters]
-        query.merge_filters(
-          only: query.context[:filters][:only],
-          except: query.context[:filters][:except],
-        )
-      end
-    end
-
-    def self.after_query(q); end
-  end
-
   class Schema < GraphQL::Schema
     query QueryType
     mutation MutationType
@@ -209,7 +196,18 @@ module MaskHelpers
       PhonemeType
     end
 
-    instrument :query, FilterInstrumentation
+    def self.visible?(member, context)
+      result = super(member, context)
+      if result && (f = context[:filters])
+        if f[:only] && !Array(f[:only]).all? { |func| func.call(member, context) }
+          return false
+        end
+        if f[:except] && Array(f[:except]).any? { |func| func.call(member, context) }
+          return false
+        end
+      end
+      result
+    end
   end
 
   module Data
@@ -220,10 +218,21 @@ module MaskHelpers
   end
 
   def self.query_with_mask(str, mask, variables: {})
-    run_query(str, except: mask, root_value: Data, variables: variables)
+    run_query(str, context: { filters: { except: mask } }, root_value: Data, variables: variables)
   end
 
   def self.run_query(str, **kwargs)
+    filters = {}
+    if (only = kwargs.delete(:only))
+      filters[:only] = only
+    end
+    if (except = kwargs.delete(:except))
+      filters[:except] = except
+    end
+    if filters.any?
+      context = kwargs[:context] ||= {}
+      context[:filters] = filters
+    end
     Schema.execute(str, **kwargs.merge(root_value: Data))
   end
 end
@@ -432,6 +441,9 @@ describe GraphQL::Schema::Warden do
       |
 
       schema = GraphQL::Schema.from_definition(sdl)
+      schema.define_singleton_method(:visible?) do |member, ctx|
+        super(member, ctx) && (ctx[:hiding] ? member.graphql_name != "Repository" : true)
+      end
 
       query_string = %|
         {
@@ -441,7 +453,7 @@ describe GraphQL::Schema::Warden do
       res = schema.execute(query_string)
       assert res["data"]["Node"]
 
-      res = schema.execute(query_string, except: ->(m, _) { m.graphql_name == "Repository" })
+      res = schema.execute(query_string, context: { hiding: true })
       assert_nil res["data"]["Node"]
     end
 
@@ -463,6 +475,15 @@ describe GraphQL::Schema::Warden do
         end
 
         query(Query)
+
+        def self.visible?(member, context)
+          res = super(member, context)
+          if res && context[:except]
+            !context[:except].call(member, context)
+          else
+            res
+          end
+        end
       end
 
       schema = PossibleTypesSchema
@@ -479,17 +500,17 @@ describe GraphQL::Schema::Warden do
       assert_equal ["bag"], res["data"]["Query"]["fields"].map { |f| f["name"] }
 
       # Hide the union when all its possible types are gone. This will cause the field to be hidden too.
-      res = schema.execute(query_string, except: ->(m, _) { ["A", "B", "C"].include?(m.graphql_name) })
+      res = schema.execute(query_string, context: { except: ->(m, _) { ["A", "B", "C"].include?(m.graphql_name) } })
       assert_nil res["data"]["BagOfThings"]
       assert_equal [], res["data"]["Query"]["fields"]
 
-      res = schema.execute(query_string, except: ->(m, _) { m.graphql_name == "bag" })
+      res = schema.execute(query_string, context: { except: ->(m, _) { m.graphql_name == "bag" } })
       assert_nil res["data"]["BagOfThings"]
       assert_equal [], res["data"]["Query"]["fields"]
 
       # Unreferenced but still visible because orphan type
       schema.orphan_types([schema.find("BagOfThings")])
-      res = schema.execute(query_string, except: ->(m, _) { m.graphql_name == "bag" })
+      res = schema.execute(query_string, context: { except: ->(m, _) { m.graphql_name == "bag" } })
       assert res["data"]["BagOfThings"]
     end
 
@@ -518,6 +539,14 @@ describe GraphQL::Schema::Warden do
       "
 
       schema = GraphQL::Schema.from_definition(sdl)
+      schema.define_singleton_method(:visible?) do |member, context|
+        res = super(member, context)
+        if res && context[:except]
+          !context[:except].call(member, context)
+        else
+          res
+        end
+      end
 
       query_string = %|
         {
@@ -531,13 +560,13 @@ describe GraphQL::Schema::Warden do
       assert_equal ["a", "node"], res["data"]["Query"]["fields"].map { |f| f["name"] }
 
       # When the possible types are all hidden, hide the interface and fields pointing to it
-      res = schema.execute(query_string, except: ->(m, _) { ["A", "B", "C"].include?(m.graphql_name) })
+      res = schema.execute(query_string, context: { except: ->(m, _) { ["A", "B", "C"].include?(m.graphql_name) } })
       assert_nil res["data"]["Node"]
       assert_equal [], res["data"]["Query"]["fields"]
 
       # Even when it's not the return value of a field,
       # still show the interface since it allows code reuse
-      res = schema.execute(query_string, except: ->(m, _) { m.graphql_name == "node" })
+      res = schema.execute(query_string, context: { except: ->(m, _) { m.graphql_name == "node" } })
       assert_equal "Node", res["data"]["Node"]["name"]
       assert_equal [{"name" => "a"}], res["data"]["Query"]["fields"]
     end
@@ -853,33 +882,6 @@ describe GraphQL::Schema::Warden do
       assert_raises(expected_class) {
         MaskHelpers.query_with_mask(query_string, mask)
       }
-    end
-  end
-
-  describe "default_mask" do
-    let(:default_mask) {
-      ->(member, ctx) { MaskHelpers.has_flag?(member, :hidden_enum_value) }
-    }
-    let(:schema) {
-      m = default_mask
-      Class.new(MaskHelpers::Schema) do
-        default_mask(m)
-      end
-    }
-    let(:query_str) { <<-GRAPHQL
-      {
-        enum: __type(name: "Manner") { enumValues { name } }
-        input: __type(name: "WithinInput") { name }
-      }
-    GRAPHQL
-    }
-
-    it "is additive with query filters" do
-      query_except = ->(member, ctx) { MaskHelpers.has_flag?(member, :hidden_input_object_type) }
-      res = schema.execute(query_str, except: query_except)
-      assert_nil res["data"]["input"]
-      enum_values = res["data"]["enum"]["enumValues"].map { |v| v["name"] }
-      refute_includes enum_values, "TRILL"
     end
   end
 

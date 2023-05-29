@@ -68,7 +68,7 @@ module GraphQL
             maybe_lazy_auth_val
           end
 
-          context.schema.after_lazy(auth_val) do |is_authorized|
+          context.query.after_lazy(auth_val) do |is_authorized|
             if is_authorized
               self.new(object, context)
             else

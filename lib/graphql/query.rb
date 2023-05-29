@@ -87,7 +87,9 @@ module GraphQL
       # Even if `variables: nil` is passed, use an empty hash for simpler logic
       variables ||= {}
       @schema = schema
-      @filter = schema.default_filter.merge(except: except, only: only)
+      if only || except
+        merge_filters(except: except, only: only)
+      end
       @context = schema.context_class.new(query: self, object: root_value, values: context)
       @warden = warden
       @subscription_topic = subscription_topic
@@ -100,7 +102,7 @@ module GraphQL
 
       # Support `ctx[:backtrace] = true` for wrapping backtraces
       if context && context[:backtrace] && !@tracers.include?(GraphQL::Backtrace::Tracer)
-        if schema.trace_class <= GraphQL::Tracing::LegacyTrace
+        if schema.trace_class <= GraphQL::Tracing::CallLegacyTracers
           context_tracers += [GraphQL::Backtrace::Tracer]
           @tracers << GraphQL::Backtrace::Tracer
         elsif !(current_trace.class <= GraphQL::Backtrace::Trace)
@@ -108,8 +110,8 @@ module GraphQL
         end
       end
 
-      if context_tracers.any? && !(schema.trace_class <= GraphQL::Tracing::LegacyTrace)
-        raise ArgumentError, "context[:tracers] are not supported without `trace_class(GraphQL::Tracing::LegacyTrace)` in the schema configuration, please add it."
+      if context_tracers.any? && !(schema.trace_class <= GraphQL::Tracing::CallLegacyTracers)
+        raise ArgumentError, "context[:tracers] are not supported without `trace_with(GraphQL::Tracing::CallLegacyTracers)` in the schema configuration, please add it."
       end
 
 
@@ -151,11 +153,6 @@ module GraphQL
 
       @result_values = nil
       @executed = false
-
-      # TODO add a general way to define schema-level filters
-      if @schema.respond_to?(:visible?)
-        merge_filters(only: @schema.method(:visible?))
-      end
     end
 
     # If a document was provided to `GraphQL::Schema#execute` instead of the raw query string, we will need to get it from the document
@@ -347,6 +344,7 @@ module GraphQL
       if @prepared_ast
         raise "Can't add filters after preparing the query"
       else
+        @filter ||= @schema.default_filter
         @filter = @filter.merge(only: only, except: except)
       end
       nil
@@ -359,6 +357,18 @@ module GraphQL
     # @api private
     def handle_or_reraise(err)
       schema.handle_or_reraise(context, err)
+    end
+
+    def after_lazy(value, &block)
+      if !defined?(@runtime_instance)
+        @runtime_instance = context.namespace(:interpreter_runtime)[:runtime]
+      end
+
+      if @runtime_instance
+        @runtime_instance.minimal_after_lazy(value, &block)
+      else
+        @schema.after_lazy(value, &block)
+      end
     end
 
     private
