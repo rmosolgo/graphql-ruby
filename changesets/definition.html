@@ -115,53 +115,83 @@
 <h1 class="guide-header">Defining Changesets</h1>
 <div class="guide-table-of-contents"><div class="table-of-contents">
   <h3 class="contents-header">Contents</h3>
-  <ol class='contents-list'><li class='contents-entry'><a href='#fields'>Fields
+  <ol class='contents-list'><li class='contents-entry'><a href='#changeset-classes'>Changeset Classes
+</a></li><li class='contents-entry'><a href='#publishing-with-added_in'>Publishing with <code>added_in:</code>
+</a></li><li class='contents-entry'><a href='#removing-with-removed_in'>Removing with <code>removed_in:</code>
+</a></li><li class='contents-entry'><a href='#examples'>Examples
+</a><ol class='contents-list'><li class='contents-entry'><a href='#fields'>Fields
 </a></li><li class='contents-entry'><a href='#arguments'>Arguments
 </a></li><li class='contents-entry'><a href='#enum-values'>Enum Values
 </a></li><li class='contents-entry'><a href='#unions'>Unions
 </a></li><li class='contents-entry'><a href='#interfaces'>Interfaces
 </a></li><li class='contents-entry'><a href='#types'>Types
-</a></li><li class='contents-entry'><a href='#runtime'>Runtime
+</a></li></ol></li><li class='contents-entry'><a href='#runtime'>Runtime
 </a></li></ol>
 </div>
 </div>
 <div class="guide-container">
-  <p>After <a href="/changesets/installation">installing Changeset integrations</a> in your schema, you can create Changesets which modify parts of the schema. Changesets extend <code class="language-plaintext highlighter-rouge">GraphQL::Enterprise::Changeset</code> and include a <code class="language-plaintext highlighter-rouge">release</code> and some <code class="language-plaintext highlighter-rouge">modifies ...</code> configurations.</p>
+  <p>After <a href="/changesets/installation">installing Changeset integrations</a> in your schema, you can create Changesets which modify parts of the schema. Changesets extend <code class="language-plaintext highlighter-rouge">GraphQL::Enterprise::Changeset</code> and include a <code class="language-plaintext highlighter-rouge">release</code> string. Once a Changeset class is defined, it can be referenced with <code class="language-plaintext highlighter-rouge">added_in: ...</code> or <code class="language-plaintext highlighter-rouge">removed_in: ...</code> configurations in the schema.</p>
 
-<p>For example, this Changeset marks the old <code class="language-plaintext highlighter-rouge">Recipe.flag</code> field as deprecated:</p>
+<p><strong>Note:</strong> Before GraphQL-Enterprise 1.3.0, Changesets were configured with <code class="language-plaintext highlighter-rouge">modifies ...</code> blocks. These blocks are still supported and you can find the documentation for that API <a href="https://github.com/rmosolgo/graphql-ruby/blob/v2.0.22/guides/changesets/definition.md">on GitHub</a>.</p>
+
+<h2 id="changeset-classes">Changeset Classes</h2>
+
+<p>This Changeset will be available to any client whose <code class="language-plaintext highlighter-rouge">context[:changeset_version]</code> is on or after <code class="language-plaintext highlighter-rouge">2020-12-01</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/changesets/deprecate_recipe_flag.rb</span>
-<span class="k">class</span> <span class="nc">Changesets::DeprecateRecipeFlag</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">Changeset</span>
+<span class="k">class</span> <span class="nc">Changesets::DeprecateRecipeTags</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">Changeset</span>
   <span class="n">release</span> <span class="s2">"2020-12-01"</span>
-  <span class="n">modifies</span> <span class="no">Types</span><span class="o">::</span><span class="no">Recipe</span> <span class="k">do</span>
-    <span class="n">field</span> <span class="ss">:flag</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">RecipeFlag</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">deprecation_reason: </span><span class="s2">"Recipes now have multiple flags, use `flags` instead."</span>
-  <span class="k">end</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Then this Changeset removes <code class="language-plaintext highlighter-rouge">Recipe.flag</code> entirely:</p>
+<p>Additionally, Changesets must be <a href="/changesets/releases">released</a> for their changes to be published.</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/changesets/remove_recipe_flag.rb</span>
-<span class="k">class</span> <span class="nc">Changesets::RemoveRecipeFlag</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">Changeset</span>
-  <span class="n">release</span> <span class="s2">"2021-03-01"</span>
-  <span class="n">modifies</span> <span class="no">Types</span><span class="o">::</span><span class="no">Recipe</span> <span class="k">do</span>
-    <span class="n">remove_field</span> <span class="ss">:flag</span>
-  <span class="k">end</span>
+<h2 id="publishing-with-added_in">Publishing with <code class="language-plaintext highlighter-rouge">added_in:</code></h2>
+
+<p>New things can be published in a changeset by adding <code class="language-plaintext highlighter-rouge">added_in: SomeChangeset</code> to their configuration. For example, to add a new argument to a field:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:search_recipes</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">Recipe</span><span class="p">]</span> <span class="k">do</span>
+  <span class="n">argument</span> <span class="ss">:query</span><span class="p">,</span> <span class="no">String</span>
+  <span class="n">argument</span> <span class="ss">:tags</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">RecipeTag</span><span class="p">],</span> <span class="ss">required: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">added_in: </span><span class="no">Changesets</span><span class="o">::</span><span class="no">AddRecipeTags</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Additionally, the Changesets must be added to the schema (see the <a href="/changesets/releases">Releases guide</a>):</p>
+<p>You can also provide a <em>replacement</em> implementation by using <code class="language-plaintext highlighter-rouge">added_in:</code>. When a new definition has the same name as an existing definition, it implicitly replaces the previous definition in new versions of the API. For example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyAppSchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="c1"># ...</span>
-  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">Changeset</span><span class="o">::</span><span class="no">Release</span><span class="p">,</span> <span class="ss">changesets: </span><span class="p">[</span>
-    <span class="no">Changesets</span><span class="o">::</span><span class="no">DeprecateRecipeFlag</span><span class="p">,</span>
-    <span class="no">Changesets</span><span class="o">::</span><span class="no">RemoveRecipeFlag</span><span class="p">,</span>
-  <span class="p">]</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:rating</span><span class="p">,</span> <span class="no">Integer</span><span class="p">,</span> <span class="s2">"A 1-5 score for this recipe"</span> <span class="c1"># This definition will be superseded by the following one</span>
+<span class="n">field</span> <span class="ss">:rating</span><span class="p">,</span> <span class="no">Float</span><span class="p">,</span> <span class="s2">"A 1.0-5.0 score for this recipe"</span><span class="p">,</span> <span class="ss">added_in: </span><span class="no">Changesets</span><span class="o">::</span><span class="no">FloatingPointRatings</span>
+</code></pre></div></div>
+
+<p>Here, a new implementation for <code class="language-plaintext highlighter-rouge">rating</code> will be used when clients requests an API version that includes <code class="language-plaintext highlighter-rouge">Changesets::FloatingPointRatings</code>. (If the client requests a version <em>before</em> that changeset, then the preceding implementation would be used instead.)</p>
+
+<h2 id="removing-with-removed_in">Removing with <code class="language-plaintext highlighter-rouge">removed_in:</code></h2>
+
+<p>A <code class="language-plaintext highlighter-rouge">removed_in:</code> configuration removes something in the named changeset. For example, these enum values are replaced with more clearly-named ones:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::RecipeTag</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseEnum</span>
+  <span class="c1"># These are replaced by *_HEAT below:</span>
+  <span class="n">value</span> <span class="ss">:SPICY</span><span class="p">,</span> <span class="ss">removed_in: </span><span class="no">Changesets</span><span class="o">::</span><span class="no">ClarifyHeatTags</span>
+  <span class="n">value</span> <span class="ss">:MEDIUM</span><span class="p">,</span> <span class="ss">removed_in: </span><span class="no">Changesets</span><span class="o">::</span><span class="no">ClarifyHeatTags</span>
+  <span class="n">value</span> <span class="ss">:MILD</span><span class="p">,</span> <span class="ss">removed_in: </span><span class="no">Changesets</span><span class="o">::</span><span class="no">ClarifyHeatTags</span>
+  <span class="c1"># These new tags are more clear:</span>
+  <span class="n">value</span> <span class="ss">:SPICY_HEAT</span><span class="p">,</span> <span class="ss">added_in: </span><span class="no">Changesets</span><span class="o">::</span><span class="no">ClarifyHeatTags</span>
+  <span class="n">value</span> <span class="ss">:MEDIUM_HEAT</span><span class="p">,</span> <span class="ss">added_in: </span><span class="no">Changesets</span><span class="o">::</span><span class="no">ClarifyHeatTags</span>
+  <span class="n">value</span> <span class="ss">:MILD_HEAT</span><span class="p">,</span> <span class="ss">added_in: </span><span class="no">Changesets</span><span class="o">::</span><span class="no">ClarifyHeatTags</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Although the changesets above have one modification each, a changeset may have any number of modifications in it.</p>
+<p>If something has been defined several times, a <code class="language-plaintext highlighter-rouge">removed_in:</code> configuration removes <em>all</em> definitions:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::SubmitRecipeRating</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
+  <span class="c1"># This is replaced in future API versions by the following argument</span>
+  <span class="n">argument</span> <span class="ss">:rating</span><span class="p">,</span> <span class="no">Integer</span>
+  <span class="c1"># This replaces the previous, but in another future version,</span>
+  <span class="c1"># it is removed completely (and so is the previous one)</span>
+  <span class="n">argument</span> <span class="ss">:rating</span><span class="p">,</span> <span class="no">Float</span><span class="p">,</span> <span class="ss">added_in: </span><span class="no">Changesets</span><span class="o">::</span><span class="no">FloatingPointRatings</span><span class="p">,</span> <span class="ss">removed_in: </span><span class="no">Changesets</span><span class="o">::</span><span class="no">RemoveRatingsCompletely</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h2 id="examples">Examples</h2>
 
 <p>See below for the different kind of modifications you can make in a changeset:</p>
 
@@ -175,118 +205,115 @@
   <li><a href="#runtime">Runtime</a>: choosing a behavior at runtime based on the current request and changeset</li>
 </ul>
 
-<h2 id="fields">Fields</h2>
+<h3 id="fields">Fields</h3>
 
-<p>In a Changeset, you can add, redefine, or remove fields that belong to object types, interface types, or resolvers. First, use <code class="language-plaintext highlighter-rouge">modifies ... do ... end</code>, naming the owner of the field:</p>
+<p>To add or redefine a field, use <code class="language-plaintext highlighter-rouge">field(..., added_in: ...)</code>, including all configuration values for the new implementation (see <a href="/api-doc/2.0.22/GraphQL/Schema/Field#initialize-instance_method" target="_blank" title="API docs for GraphQL::Schema::Field#initialize"><code>GraphQL::Schema::Field#initialize</code></a>). The definition given here will override the previous definition (if there was one) whenever this Changeset applies.</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Changesets::RecipeMigration</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">Changeset</span>
-  <span class="n">modifies</span> <span class="no">Types</span><span class="o">::</span><span class="no">Recipe</span> <span class="k">do</span>
-    <span class="c1"># modify `Recipe`'s fields here</span>
-  <span class="k">end</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::Recipe</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+  <span class="c1"># This new field is available when `context[:changeset_version]`</span>
+  <span class="c1"># is on or after the release date of `AddRecipeTags`</span>
+  <span class="n">field</span> <span class="ss">:tags</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">RecipeTag</span><span class="p">],</span> <span class="ss">added_in: </span><span class="no">Changeset</span><span class="o">::</span><span class="no">AddRecipeTags</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Then…</p>
+<p>To remove a field, add a <code class="language-plaintext highlighter-rouge">removed_in: ...</code> configuration to the last definition of the field:</p>
 
-<ul>
-  <li>To add or redefine a field, use <code class="language-plaintext highlighter-rouge">field(...)</code>, including the same configurations you’d use in a type definition (see <a href="/api-doc/2.0.22/GraphQL/Schema/Field#initialize-instance_method" target="_blank" title="API docs for GraphQL::Schema::Field#initialize"><code>GraphQL::Schema::Field#initialize</code></a>). The definition given here will override the previous definition (if there was one) whenever this Changeset applies.</li>
-  <li>To remove a field, use <code class="language-plaintext highlighter-rouge">remove_field(field_name)</code>, where <code class="language-plaintext highlighter-rouge">field_name</code> is the name given to <code class="language-plaintext highlighter-rouge">field(...)</code> (usually an underscore-cased symbol)</li>
-</ul>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::Recipe</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+  <span class="c1"># Even after migrating to floating point values,</span>
+  <span class="c1"># the "rating" feature never took off,</span>
+  <span class="c1"># so we removed it entirely eventually.</span>
+  <span class="n">field</span> <span class="ss">:rating</span><span class="p">,</span> <span class="no">Integer</span>
+  <span class="n">field</span> <span class="ss">:rating</span><span class="p">,</span> <span class="no">Float</span><span class="p">,</span> <span class="ss">added_in: </span><span class="no">Changeset</span><span class="o">::</span><span class="no">FloatingPointRatings</span><span class="p">,</span>
+    <span class="ss">removed_in: </span><span class="no">Changeset</span><span class="o">::</span><span class="no">RemoveRatings</span>
+<span class="k">end</span>
+</code></pre></div></div>
 
 <p>When a field is removed, queries that request that field will be invalid, unless the client has requested a previous API version where the field is still available.</p>
 
-<h2 id="arguments">Arguments</h2>
+<h3 id="arguments">Arguments</h3>
 
-<p>In a Changeset, you can add, redefine, or remove arguments that belong to fields, input objects, or resolvers. Use <code class="language-plaintext highlighter-rouge">modifies</code> to select the argument owner, for example:</p>
+<p>You can add, redefine, or remove arguments that belong to fields, input objects, or resolvers. Use <code class="language-plaintext highlighter-rouge">added_in: ...</code> to provide a new (or updated) definition for an argument, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Changesets::FilterMigration</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">Changeset</span>
-  <span class="n">modifies</span> <span class="no">Types</span><span class="o">::</span><span class="no">IngredientsFilter</span> <span class="k">do</span>
-    <span class="c1"># modify input object arguments here</span>
-  <span class="k">end</span>
-  <span class="c1"># ...</span>
-</code></pre></div></div>
-
-<p>When versioning field arguments, use a second <code class="language-plaintext highlighter-rouge">modifies(field_name) { ... }</code> call to select the field to modify:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="c1"># ...</span>
-  <span class="n">modifies</span> <span class="no">Types</span><span class="o">::</span><span class="no">Query</span> <span class="k">do</span>
-    <span class="n">modifies</span> <span class="ss">:ingredients</span> <span class="k">do</span>
-      <span class="c1"># modify the arguments of `Query.ingredients(...)` here</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::RecipesFilter</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseInputObject</span>
+  <span class="n">argument</span> <span class="ss">:rating</span><span class="p">,</span> <span class="no">Integer</span>
+  <span class="c1"># This new definition is available when</span>
+  <span class="c1"># the client's `context[:changeset_version]` includes `FloatingPointRatings`</span>
+  <span class="n">argument</span> <span class="ss">:rating</span><span class="p">,</span> <span class="no">Float</span><span class="p">,</span> <span class="ss">added_in: </span><span class="no">Changesets</span><span class="o">::</span><span class="no">FloatingPointRatings</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Then…</p>
+<p>To remove an argument entirely, add a <code class="language-plaintext highlighter-rouge">removed_in: ...</code> configuration to the last definition. It will remove <em>all</em> implementations for that argument. For example:</p>
 
-<ul>
-  <li>To add or redefine an argument, use <code class="language-plaintext highlighter-rouge">argument(...)</code>, passing the same configurations you’d usually pass to <code class="language-plaintext highlighter-rouge">argument(...)</code> (see <a href="/api-doc/2.0.22/GraphQL/Schema/Argument#initialize-instance_method" target="_blank" title="API docs for GraphQL::Schema::Argument#initialize"><code>GraphQL::Schema::Argument#initialize</code></a>). The redefined argument will override any previous definitions whenever this Changeset is active.</li>
-  <li>To remove an argument, use <code class="language-plaintext highlighter-rouge">remove_argument(argument_name)</code>, where <code class="language-plaintext highlighter-rouge">argument_name</code> is the name given to <code class="language-plaintext highlighter-rouge">field(...)</code> (usually an underscore-cased symbol)</li>
-</ul>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Mutations::SubmitRating</span> <span class="o">&lt;</span> <span class="no">Mutations</span><span class="o">::</span><span class="no">BaseMutation</span>
+  <span class="c1"># Remove this because it's irrelevant:</span>
+  <span class="n">argument</span> <span class="ss">:phone_number</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">removed_in: </span><span class="no">Changesets</span><span class="o">::</span><span class="no">StopCollectingPersonalInformation</span>
+<span class="k">end</span>
+</code></pre></div></div>
 
 <p>When arguments are removed, the schema will reject any queries which use them unless the client has requested a previous API version where the argument is still allowed.</p>
 
-<h2 id="enum-values">Enum Values</h2>
+<h3 id="enum-values">Enum Values</h3>
 
-<p>In a Changeset, you can add, redefine, or remove enum values. First, use <code class="language-plaintext highlighter-rouge">modifies ... do ... end</code>, naming the enum type:</p>
+<p>With Changesets, you can add, redefine, or remove enum values. To add a new value (or provide a new implementation for a value), include <code class="language-plaintext highlighter-rouge">added_in:</code> in the <code class="language-plaintext highlighter-rouge">value(...)</code> configuration:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Changesets::RecipeFlagMigration</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">Changeset</span>
-  <span class="n">modifies</span> <span class="no">Types</span><span class="o">::</span><span class="no">RecipeFlag</span> <span class="k">do</span>
-    <span class="c1"># Modify `RecipeFlag`'s values here</span>
-  <span class="k">end</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::RecipeTag</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseEnum</span>
+  <span class="c1"># This enum will accept and return `KETO` only when the client's API version</span>
+  <span class="c1"># includes `AddKetoDietSupport`'s release date.</span>
+  <span class="n">value</span> <span class="ss">:KETO</span><span class="p">,</span> <span class="ss">added_in: </span><span class="no">Changesets</span><span class="o">::</span><span class="no">AddKetoDietSupport</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Then…</p>
+<p>Values can be removed with <code class="language-plaintext highlighter-rouge">removed_in:</code>, for example:</p>
 
-<ul>
-  <li>To add a value, use <code class="language-plaintext highlighter-rouge">value(...)</code>, passing the same configurations you’d usually pass to <code class="language-plaintext highlighter-rouge">value(...)</code> in an enum type (see <a href="/api-doc/2.0.22/GraphQL/Schema/Enum#value-class_method" target="_blank" title="API docs for GraphQL::Schema::Enum.value"><code>GraphQL::Schema::Enum.value</code></a>). The configuration given here will override previous configurations whenever this Changeset applies.</li>
-  <li>To remove a value, use <code class="language-plaintext highlighter-rouge">remove_value(name)</code>, where <code class="language-plaintext highlighter-rouge">name</code> is the name given to <code class="language-plaintext highlighter-rouge">value(...)</code> (an all-caps string)</li>
-</ul>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::RecipeTag</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseEnum</span>
+  <span class="c1"># Old API versions will serve this value;</span>
+  <span class="c1"># new versions won't accept it or return it.</span>
+  <span class="n">value</span> <span class="ss">:GRAPEFRUIT_DIET</span><span class="p">,</span> <span class="ss">removed_in: </span><span class="no">Changesets</span><span class="o">::</span><span class="no">RemoveLegacyDiets</span>
+<span class="k">end</span>
+</code></pre></div></div>
 
 <p>When enum values are removed, they won’t be accepted as input and they won’t be allowed as return values from fields unless the client has requested a previous API version where those values are still allowed.</p>
 
-<h2 id="unions">Unions</h2>
+<h3 id="unions">Unions</h3>
 
-<p>In a Changeset, you can add to or remove from a union’s possible types. First, use <code class="language-plaintext highlighter-rouge">modifies ...</code>, naming the union type:</p>
+<p>You can add to or remove from a union’s possible types. To release a new union member, include <code class="language-plaintext highlighter-rouge">added_in:</code> in the <code class="language-plaintext highlighter-rouge">possible_types</code> configuration:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Changesets::MigrateLegacyCookingTechniques</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">Changeset</span>
-  <span class="n">modifies</span> <span class="no">Types</span><span class="o">::</span><span class="no">CookingTechnique</span> <span class="k">do</span>
-    <span class="c1"># change the possible_types of the `CookingTechnique` union here</span>
-  <span class="k">end</span>
-<span class="k">end</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::Cookable</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseUnion</span>
+ <span class="n">possible_types</span> <span class="no">Types</span><span class="o">::</span><span class="no">Recipe</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Ingredient</span>
+ <span class="c1"># Add this to the union when clients opt in to our new feature:</span>
+ <span class="n">possible_types</span> <span class="no">Types</span><span class="o">::</span><span class="no">Cuisine</span><span class="p">,</span> <span class="ss">added_in: </span><span class="no">Changeset</span><span class="o">::</span><span class="no">ReleaseCuisines</span>
 </code></pre></div></div>
 
-<p>Then…</p>
+<p>To remove a member from a union, move it to a <code class="language-plaintext highlighter-rouge">possible_types</code> call with <code class="language-plaintext highlighter-rouge">removed_in: ...</code>:</p>
 
-<ul>
-  <li>To add one or more possible types, use <code class="language-plaintext highlighter-rouge">possible_types(*object_types)</code>, passing one or more object type classes. The given types will be <em>added</em> to the union’s set of possible types whenever this Changeset is active.</li>
-  <li>To remove one or more more possible types, use <code class="language-plaintext highlighter-rouge">remove_possible_types(*object_types)</code>, passing one or more object type classes</li>
-</ul>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Stop including this in the union in new API versions:</span>
+<span class="n">possible_types</span> <span class="no">Types</span><span class="o">::</span><span class="no">Chef</span><span class="p">,</span> <span class="ss">removed_in: </span><span class="no">Changeset</span><span class="o">::</span><span class="no">LessChefHype</span>
+</code></pre></div></div>
 
 <p>When a possible type is removed, it will not be associated with the union type in introspection queries or schema dumps.</p>
 
-<h2 id="interfaces">Interfaces</h2>
+<h3 id="interfaces">Interfaces</h3>
 
-<p>In a Changeset, you can add to or remove from an object type’s interface definitions. First, use <code class="language-plaintext highlighter-rouge">modifies ...</code>, naming the object type:</p>
+<p>You can add to or remove from an object type’s interface definitions. To add one or more interface implementations, use <code class="language-plaintext highlighter-rouge">implements(..., added_in:)</code>. This will add the interface and its fields to the object whenever this Changeset is active, for example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Changesets::ModifyImplements</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">Changeset</span>
-  <span class="n">modifies</span> <span class="no">Types</span><span class="o">::</span><span class="no">Ingredient</span> <span class="k">do</span>
-    <span class="c1"># change `Ingredient`'s interface implementations here</span>
-  <span class="k">end</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::Recipe</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+  <span class="c1"># Add this new implementation in new API versions only:</span>
+  <span class="n">implements</span> <span class="no">Types</span><span class="o">::</span><span class="no">RssSubject</span><span class="p">,</span> <span class="ss">added_in: </span><span class="no">Changesets</span><span class="o">::</span><span class="no">AddRssSupport</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Then…</p>
+<p>To remove one or more more interface implementations, add <code class="language-plaintext highlighter-rouge">removed_in:</code> to the <code class="language-plaintext highlighter-rouge">implements ...</code> configuration, for example:</p>
 
-<ul>
-  <li>To add one or more interface implementations, use <code class="language-plaintext highlighter-rouge">implements(*interface_types)</code>, passing one or more interface type modules. This will add the interface and its fields to the object whenever this Changeset is active.</li>
-  <li>To remove one or more more interface implementations, use <code class="language-plaintext highlighter-rouge">remove_implements(*interface_types)</code>, passing one or more interface type modules</li>
-</ul>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="n">implements</span> <span class="no">Types</span><span class="o">::</span><span class="no">RssSubject</span><span class="p">,</span>
+    <span class="ss">added_in: </span><span class="no">Changesets</span><span class="o">::</span><span class="no">AddRssSupport</span><span class="p">,</span>
+    <span class="c1"># Sadly, nobody seems to want to use this,</span>
+    <span class="c1"># so we removed it all:</span>
+    <span class="ss">removed_in: </span><span class="no">Changesets</span><span class="o">::</span><span class="no">RemoveRssSupport</span>
+</code></pre></div></div>
 
 <p>When an interface implementation is removed, then the interface will not be associated with the object in introspection queries or schema dumps. Also, any fields inherited from the interface will be hidden from clients. (If the object defines the field itself, it will still be visible.)</p>
 
-<h2 id="types">Types</h2>
+<h3 id="types">Types</h3>
 
 <p>Using Changesets, it’s possible to define a new type using the same name as an old type. (Only one type per name is allowed for each query, but different queries can use different types for the same name.)</p>
 
@@ -294,19 +321,19 @@
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/types/legacy_recipe_flag.rb</span>
 
-<span class="c1"># In the old version of the schema, "recipe flags" were limited to defined set of values.</span>
-<span class="c1"># This enum was renamed from `Types::RecipeFlag`, then `graphql_name("RecipeFlag")`</span>
+<span class="c1"># In the old version of the schema, "recipe tags" were limited to defined set of values.</span>
+<span class="c1"># This enum was renamed from `Types::RecipeTag`, then `graphql_name("RecipeTag")`</span>
 <span class="c1"># was added for GraphQL.</span>
-<span class="k">class</span> <span class="nc">Types::LegacyRecipeFlag</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseEnum</span>
-  <span class="n">graphql_name</span> <span class="s2">"RecipeFlag"</span>
+<span class="k">class</span> <span class="nc">Types::LegacyRecipeTag</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseEnum</span>
+  <span class="n">graphql_name</span> <span class="s2">"RecipeTag"</span>
   <span class="c1"># ...</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/types/recipe_flag.rb</span>
 
-<span class="c1"># But in the new schema, each flag is a full-fledge object with fields of its own</span>
-<span class="k">class</span> <span class="nc">Types::RecipeFlag</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+<span class="c1"># But in the new schema, each tag is a full-fledged object with fields of its own</span>
+<span class="k">class</span> <span class="nc">Types::RecipeTag</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
   <span class="n">field</span> <span class="ss">:is_vegetarian</span><span class="p">,</span> <span class="no">Boolean</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
   <span class="c1"># ...</span>
@@ -315,26 +342,32 @@
 
 <p>Then, add or update fields or arguments to use the <em>new</em> type instead of the old one. For example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Changesets::MigrateRecipeFlagToObject</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">Changeset</span>
-  <span class="n">modifies</span> <span class="no">Types</span><span class="o">::</span><span class="no">Recipe</span> <span class="k">do</span>
-    <span class="c1"># in types/recipe.rb, this is defined with `field :flags, [Types::LegacyRecipeFlag]`</span>
-    <span class="c1"># Here, update the field to use the _object_ instead:</span>
-    <span class="n">update_field</span> <span class="ss">:flags</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">RecipeFlag</span><span class="p">]</span>
-  <span class="k">end</span>
-<span class="k">end</span>
+<div class="language-diff highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  class Types::Recipe &lt; Types::BaseObject
+<span class="err">
+</span># Change this definition to point at the newly-renamed _legacy_ type
+# (It's the same type definition, but the Ruby class has a new name)
+<span class="gd">-   field :tags, [Types::RecipeTag]
+</span><span class="gi">+   field :tags, [Types::LegacyRecipeTag]
+</span><span class="err">
+</span># And add a new field for the new type:
+<span class="gi">+   field :tags, [Types::RecipeTag], added_in: Changesets::MigrateRecipeTagToObject
+</span>  end
 </code></pre></div></div>
 
-<p>With that Changeset, <code class="language-plaintext highlighter-rouge">Recipe.flags</code> will return an object type instead of an enum type. Clients requesting older versions will still receive enum values from that field.</p>
+<p>With that Changeset, <code class="language-plaintext highlighter-rouge">Recipe.tags</code> will return an object type instead of an enum type. Clients requesting older versions will still receive enum values from that field.</p>
 
 <p>The resolver will probably need an update, too, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::Recipe</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
-  <span class="c1"># Here's the original definition, which is modified by `MigrateRecipeFlagToObject`:</span>
-  <span class="n">field</span> <span class="ss">:flags</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">LegacyRecipeFlag</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span>
+  <span class="c1"># Here's the original definition which returns enum values:</span>
+  <span class="n">field</span> <span class="ss">:tags</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">LegacyRecipeTag</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span>
+  <span class="c1"># Here's the new definition which replaces the previous one on new API versions:</span>
+  <span class="n">field</span> <span class="ss">:tags</span><span class="p">,</span> <span class="p">[</span><span class="no">Types</span><span class="o">::</span><span class="no">RecipeTag</span><span class="p">],</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">added_in: </span><span class="no">Changesets</span><span class="o">::</span><span class="no">MigrateRecipeTagToObject</span>
 
   <span class="k">def</span> <span class="nf">flags</span>
     <span class="n">all_flag_objects</span> <span class="o">=</span> <span class="n">object</span><span class="p">.</span><span class="nf">flag_objects</span>
-    <span class="k">if</span> <span class="no">Changesets</span><span class="o">::</span><span class="no">MigrateRecipeFlagToObject</span><span class="p">.</span><span class="nf">active?</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+    <span class="k">if</span> <span class="no">Changesets</span><span class="o">::</span><span class="no">MigrateRecipeTagToObject</span><span class="p">.</span><span class="nf">active?</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+      <span class="c1"># Here's the new behavior, returning full objects:</span>
       <span class="n">all_flag_objects</span>
     <span class="k">else</span>
       <span class="c1"># Convert this to enum values, for legacy behavior:</span>

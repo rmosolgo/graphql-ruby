@@ -121,7 +121,16 @@
 </div>
 </div>
 <div class="guide-container">
-  <p>To be available to clients, Changesets added to the schema with <code class="language-plaintext highlighter-rouge">use GraphQL::Enterprise::Changeset::Release</code>:</p>
+  <p>To be available to clients, Changesets added to the schema with <code class="language-plaintext highlighter-rouge">use GraphQL::Enterprise::Changeset::Release changeset_dir: "..."</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyAppSchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">Changeset</span><span class="o">::</span><span class="no">Release</span><span class="p">,</span> <span class="ss">changeset_dir: </span><span class="s2">"app/graphql/changesets"</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>This attaches each Changeset defined in <code class="language-plaintext highlighter-rouge">app/graphql/changesets/*.rb</code> to the schema. (It assumes Rails conventions, where an underscored file like <code class="language-plaintext highlighter-rouge">app/graphql/changesets/add_some_feature.rb</code> contains a class like <code class="language-plaintext highlighter-rouge">Changesets::AddSomeFeature</code>.)</p>
+
+<p>Alternatively, Changesets can be explicitly attached using <code class="language-plaintext highlighter-rouge">changesets: [...]</code>, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MyAppSchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">Changeset</span><span class="o">::</span><span class="no">Release</span><span class="p">,</span> <span class="ss">changesets: </span><span class="p">[</span>
@@ -131,7 +140,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Only changesets on the list will be shown to clients. The <code class="language-plaintext highlighter-rouge">release ...</code> configuration in the changeset will be compared to <code class="language-plaintext highlighter-rouge">context[:changeset_version]</code> to determine if the changeset applies to the current request.</p>
+<p>Only changesets in the directory (or in the array) will be shown to clients. The <code class="language-plaintext highlighter-rouge">release ...</code> configuration in the changeset will be compared to <code class="language-plaintext highlighter-rouge">context[:changeset_version]</code> to determine if the changeset applies to the current request.</p>
 
 <h2 id="inspecting-releases">Inspecting Releases</h2>
 

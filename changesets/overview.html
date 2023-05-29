@@ -131,7 +131,7 @@
 
 <p>For example, if you add a values to an Enum, you can just add it to the existing schema:</p>
 
-<div class="language-diff highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  class Types::RecipeFlag &lt; Types::BaseEnum
+<div class="language-diff highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  class Types::RecipeTag &lt; Types::BaseEnum
     value "LOW_FAT"
     value "LOW_CARB"
 <span class="gi">+   value "VEGAN"
@@ -142,11 +142,9 @@
 
 <p>However, if you want to change the schema in ways that would <em>break</em> previous queries, you can do that with a Changeset:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">RemoveIrrelevantFlags</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">Changeset</span>
-  <span class="n">modifies</span> <span class="no">Types</span><span class="o">::</span><span class="no">RecipeFlag</span> <span class="k">do</span>
-    <span class="c1"># Turns out this makes you sick:</span>
-    <span class="n">remove_value</span> <span class="s2">"GRAPEFRUIT_DIET"</span>
-  <span class="k">end</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::RecipeTag</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseEnum</span>
+  <span class="c1"># Turns out this makes you sick:</span>
+  <span class="n">value</span> <span class="s2">"GRAPEFRUIT_DIET"</span><span class="p">,</span> <span class="ss">removed_in: </span><span class="no">Changesets</span><span class="o">::</span><span class="no">RemoveLegacyDiets</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
