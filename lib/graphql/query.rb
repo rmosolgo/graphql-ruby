@@ -102,7 +102,7 @@ module GraphQL
 
       # Support `ctx[:backtrace] = true` for wrapping backtraces
       if context && context[:backtrace] && !@tracers.include?(GraphQL::Backtrace::Tracer)
-        if schema.trace_class <= GraphQL::Tracing::LegacyTrace
+        if schema.trace_class <= GraphQL::Tracing::CallLegacyTracers
           context_tracers += [GraphQL::Backtrace::Tracer]
           @tracers << GraphQL::Backtrace::Tracer
         elsif !(current_trace.class <= GraphQL::Backtrace::Trace)
@@ -110,8 +110,8 @@ module GraphQL
         end
       end
 
-      if context_tracers.any? && !(schema.trace_class <= GraphQL::Tracing::LegacyTrace)
-        raise ArgumentError, "context[:tracers] are not supported without `trace_class(GraphQL::Tracing::LegacyTrace)` in the schema configuration, please add it."
+      if context_tracers.any? && !(schema.trace_class <= GraphQL::Tracing::CallLegacyTracers)
+        raise ArgumentError, "context[:tracers] are not supported without `trace_with(GraphQL::Tracing::CallLegacyTracers)` in the schema configuration, please add it."
       end
 
 
@@ -385,7 +385,7 @@ module GraphQL
 
     def prepare_ast
       @prepared_ast = true
-      @warden ||= GraphQL::Schema::Warden.new(@filter, schema: @schema, context: @context)
+      @warden ||= @schema.warden_class.new(@filter, schema: @schema, context: @context)
       parse_error = nil
       @document ||= begin
         if query_string

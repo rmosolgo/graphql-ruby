@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require "graphql/schema/addition"
+require "graphql/schema/always_visible"
 require "graphql/schema/base_64_encoder"
 require "graphql/schema/find_inherited_value"
 require "graphql/schema/finder"
@@ -419,6 +420,18 @@ module GraphQL
       def root_types
         @root_types
       end
+
+      def warden_class
+        if defined?(@warden_class)
+          @warden_class
+        elsif superclass.respond_to?(:warden_class)
+          superclass.warden_class
+        else
+          GraphQL::Schema::Warden
+        end
+      end
+
+      attr_writer :warden_class
 
       # @param type [Module] The type definition whose possible types you want to see
       # @return [Hash<String, Module>] All possible types, if no `type` is given.
@@ -961,10 +974,8 @@ module GraphQL
       end
 
       def tracer(new_tracer)
-        if defined?(@trace_modes) && !(trace_class_for(:default) < GraphQL::Tracing::LegacyTrace)
-          raise ArgumentError, "Can't add tracer after configuring a `trace_class`, use GraphQL::Tracing::LegacyTrace to merge legacy tracers into a trace class instead."
-        else
-          trace_mode(:default, Class.new(GraphQL::Tracing::LegacyTrace))
+        if !(trace_class_for(:default) < GraphQL::Tracing::CallLegacyTracers)
+          trace_with(GraphQL::Tracing::CallLegacyTracers)
         end
 
         own_tracers << new_tracer

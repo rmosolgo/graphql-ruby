@@ -36,7 +36,10 @@ module GraphQL
               context: schema_context,
             )
         else
-          GraphQL::Schema::Warden.new(schema: @schema, context: schema_context)
+          @schema.warden_class.new(
+            schema: @schema,
+            context: schema_context,
+          )
         end
 
         schema_context.warden = @warden
