@@ -99,13 +99,13 @@ module GraphQL
         def visible_type_membership?(type_membership, _ctx = nil); true; end
         def interface_type_memberships(obj_type, _ctx = nil); obj_type.interface_type_memberships; end
         def get_type(type_name); @schema.get_type(type_name); end # rubocop:disable Development/ContextIsPassedCop
-        def arguments(argument_owner, ctx = nil); argument_owner.arguments(ctx).values; end
+        def arguments(argument_owner, ctx = nil); argument_owner.all_argument_definitions; end
         def enum_values(enum_defn); enum_defn.enum_values; end # rubocop:disable Development/ContextIsPassedCop
         def get_argument(parent_type, argument_name); parent_type.get_argument(argument_name); end # rubocop:disable Development/ContextIsPassedCop
         def types; @schema.types; end # rubocop:disable Development/ContextIsPassedCop
         def root_type_for_operation(op_name); @schema.root_type_for_operation(op_name); end
         def directives; @schema.directives.values; end
-        def fields(type_defn); type_defn.fields; end # rubocop:disable Development/ContextIsPassedCop
+        def fields(type_defn); type_defn.all_field_definitions; end # rubocop:disable Development/ContextIsPassedCop
         def get_field(parent_type, field_name); @schema.get_field(parent_type, field_name); end
         def reachable_type?(type_name); true; end
         def reachable_types; @schema.types.values; end # rubocop:disable Development/ContextIsPassedCop
