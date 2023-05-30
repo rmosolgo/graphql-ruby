@@ -385,7 +385,7 @@ module GraphQL
 
     def prepare_ast
       @prepared_ast = true
-      @warden ||= GraphQL::Schema::Warden.new(@filter, schema: @schema, context: @context)
+      @warden ||= @schema.warden_class.new(@filter, schema: @schema, context: @context)
       parse_error = nil
       @document ||= begin
         if query_string

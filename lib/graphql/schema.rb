@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require "graphql/schema/addition"
+require "graphql/schema/always_visible"
 require "graphql/schema/base_64_encoder"
 require "graphql/schema/find_inherited_value"
 require "graphql/schema/finder"
@@ -419,6 +420,18 @@ module GraphQL
       def root_types
         @root_types
       end
+
+      def warden_class
+        if defined?(@warden_class)
+          @warden_class
+        elsif superclass.respond_to?(:warden_class)
+          superclass.warden_class
+        else
+          GraphQL::Schema::Warden
+        end
+      end
+
+      attr_writer :warden_class
 
       # @param type [Module] The type definition whose possible types you want to see
       # @return [Hash<String, Module>] All possible types, if no `type` is given.
