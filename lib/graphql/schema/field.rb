@@ -876,7 +876,7 @@ ERR
             run_extensions_before_resolve(extended_obj, extended_args, ctx, extended, idx: idx + 1) { |o, a| yield(o, a) }
           end
         else
-          yield(obj, args, extended)
+          yield(obj, args)
         end
       end
     end
