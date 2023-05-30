@@ -130,6 +130,28 @@ describe GraphQL::Schema::Scalar do
       query(Query)
     end
 
+    describe "runtime info in the error message" do
+      class ScalarRuntimeContextSchema < GraphQL::Schema
+        class QueryRoot < GraphQL::Schema::Object
+          field :val, Integer, null: true do |f|
+            f.argument :int, Integer, required: true
+          end
+
+          def val(int:)
+            int
+          end
+        end
+        query(QueryRoot)
+      end
+
+      it "is there" do
+        query_str = "query { val(int: 2147483648) }"
+        res = ScalarRuntimeContextSchema.execute(query_str)
+        expected_err = "Argument 'int' on Field 'val' has an invalid value (2147483648). Expected type 'Int!'."
+        assert_equal [expected_err], res["errors"].map { |err| err["message"] }
+      end
+    end
+
     it "makes a nice validation error" do
       result = CoercionErrorSchema.execute("{ f1(arg: \"a\") }")
       expected_error = {
