@@ -21,7 +21,7 @@ module GraphQL
         @query = NullQuery.new
         @dataloader = GraphQL::Dataloader::NullDataloader.new
         @schema = NullSchema
-        @warden = Schema::Warden::NullWarden.new(nil, context: self, schema: @schema)
+        @warden = Schema::Warden::NullWarden.new(context: self, schema: @schema)
       end
 
       def interpreter?

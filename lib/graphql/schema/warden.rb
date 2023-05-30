@@ -88,9 +88,8 @@ module GraphQL
       end
 
       class NullWarden
-        def initialize(_filter, context:, schema:)
+        def initialize(_filter = nil, context:, schema:)
           @schema = schema
-          # TODO consider per-query caches even though there's no filtering
         end
 
         def visible_field?(field_defn, _ctx = nil, owner = nil); true; end
