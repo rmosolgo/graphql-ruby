@@ -60,7 +60,9 @@ ERR
   def setup_finalizer
     if !@finalizer_defined
       @finalizer_defined = true
-      ObjectSpace.define_finalizer(self, CheckShape.new(warden))
+      if warden.is_a?(GraphQL::Schema::Warden)
+        ObjectSpace.define_finalizer(self, CheckShape.new(warden))
+      end
     end
   end
 end

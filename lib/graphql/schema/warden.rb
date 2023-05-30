@@ -38,7 +38,9 @@ module GraphQL
     # @api private
     class Warden
       def self.from_context(context)
-        (context.respond_to?(:warden) && context.warden) || PassThruWarden
+        context.warden # this might be a hash which won't respond to this
+      rescue
+        PassThruWarden
       end
 
       # @param visibility_method [Symbol] a Warden method to call for this entry
@@ -85,17 +87,49 @@ module GraphQL
         end
       end
 
+      class NullWarden
+        def initialize(_filter = nil, context:, schema:)
+          @schema = schema
+        end
+
+        def visible_field?(field_defn, _ctx = nil, owner = nil); true; end
+        def visible_argument?(arg_defn, _ctx = nil); true; end
+        def visible_type?(type_defn, _ctx = nil); true; end
+        def visible_enum_value?(enum_value, _ctx = nil); true; end
+        def visible_type_membership?(type_membership, _ctx = nil); true; end
+        def interface_type_memberships(obj_type, _ctx = nil); obj_type.interface_type_memberships; end
+        def get_type(type_name); @schema.get_type(type_name); end # rubocop:disable Development/ContextIsPassedCop
+        def arguments(argument_owner, ctx = nil); argument_owner.arguments(ctx).values; end
+        def enum_values(enum_defn); enum_defn.enum_values; end # rubocop:disable Development/ContextIsPassedCop
+        def get_argument(parent_type, argument_name); parent_type.get_argument(argument_name); end # rubocop:disable Development/ContextIsPassedCop
+        def types; @schema.types; end # rubocop:disable Development/ContextIsPassedCop
+        def root_type_for_operation(op_name); @schema.root_type_for_operation(op_name); end
+        def directives; @schema.directives.values; end
+        def fields(type_defn); type_defn.fields; end # rubocop:disable Development/ContextIsPassedCop
+        def get_field(parent_type, field_name); @schema.get_field(parent_type, field_name); end
+        def reachable_type?(type_name); true; end
+        def reachable_types; @schema.types.values; end # rubocop:disable Development/ContextIsPassedCop
+        def possible_types(type_defn); @schema.possible_types(type_defn); end
+        def interfaces(obj_type); obj_type.interfaces; end
+      end
+
       # @param filter [<#call(member)>] Objects are hidden when `.call(member, ctx)` returns true
       # @param context [GraphQL::Query::Context]
       # @param schema [GraphQL::Schema]
-      def initialize(filter, context:, schema:)
+      def initialize(filter = nil, context:, schema:)
         @schema = schema
         # Cache these to avoid repeated hits to the inheritance chain when one isn't present
         @query = @schema.query
         @mutation = @schema.mutation
         @subscription = @schema.subscription
         @context = context
-        @visibility_cache = read_through { |m| filter.call(m, context) }
+        @visibility_cache = if filter
+          read_through { |m| filter.call(m, context) }
+        else
+          read_through { |m| schema.visible?(m, context) }
+        end
+
+        @visibility_cache.compare_by_identity
         # Initialize all ivars to improve object shape consistency:
         @types = @visible_types = @reachable_types = @visible_parent_fields =
           @visible_possible_types = @visible_fields = @visible_arguments = @visible_enum_arrays =

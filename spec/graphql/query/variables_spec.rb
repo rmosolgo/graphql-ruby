@@ -24,7 +24,7 @@ describe "GraphQL::Query::Variables" do
   let(:query_string) { "query($a: Int!, $b: Int!, $c: Int!) { items(a: $a, b: $b, c: $c)}" }
 
   describe "when there are no variable errors" do
-    let(:schema) { VariablesTest::MaxValidationSchema } 
+    let(:schema) { VariablesTest::MaxValidationSchema }
     let(:variables) { {a: 1, b: 1, c: 1} }
 
     it "does not return any error" do
@@ -34,7 +34,7 @@ describe "GraphQL::Query::Variables" do
   end
 
   describe "when validate_max_errors is nil" do
-    let(:schema) { VariablesTest::MaxValidationSchema } 
+    let(:schema) { VariablesTest::MaxValidationSchema }
 
     it "returns all errors" do
       res = schema.execute(query_string, variables: variables)
@@ -52,7 +52,7 @@ describe "GraphQL::Query::Variables" do
       it "raises only as many errors as the validate_max_errors value and appends the too many errors message" do
         res = schema.execute(query_string, variables: variables)
         assert_equal 3, res["errors"].count
-        assert_match /Too many errors processing variables/, res["errors"].last["message"]
+        assert_match(/Too many errors processing variables/, res["errors"].last["message"])
       end
     end
 
@@ -64,14 +64,14 @@ describe "GraphQL::Query::Variables" do
         assert_equal 2, res["errors"].count
       end
     end
-    
+
     describe "when variables are empty" do
       let(:variables) { {} }
 
       it "raises all errors" do
         res = schema.execute(query_string, variables: variables)
         assert_equal 3, res["errors"].count
-        assert_match /Too many errors processing variables/, res["errors"].last["message"]
+        assert_match(/Too many errors processing variables/, res["errors"].last["message"])
       end
     end
   end

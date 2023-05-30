@@ -8,11 +8,35 @@
 
 ### Bug Fix
 
+# 1.24.6 (24 May 2023)
+
+- Defer: Add `incremental: true` for new proposed wire format, add example for working with GraphQL-Batch #4477
+
+# 1.24.5 (24 May 2023)
+
+- Stable relation connection: Quote table names and column names in selects and orders #4485
+
+# 1.24.4 (18 April 2023)
+
+### Bug Fix
+
+- `@defer`: update `context[:current_path]` usage to fix `path:` on deferred errors
+
+# 1.24.3 (14 April 2023)
+
+### Bug Fix
+
+- `OperationStore`: fix when used with Changesets (or other ways of defining arguments with the same name) #4440
+
 # 1.24.2 (20 Mar 2023)
+
+### Bug Fix
 
 - Remove debug output, oops
 
 # 1.24.1 (20 Mar 2023)
+
+### Bug Fix
 
 - Fix `OperationStore` with new module-based execution traces (#4389)
 

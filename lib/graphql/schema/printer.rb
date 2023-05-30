@@ -57,12 +57,14 @@ module GraphQL
         query_root = Class.new(GraphQL::Schema::Object) do
           graphql_name "Root"
           field :throwaway_field, String
+          def self.visible?(ctx)
+            false
+          end
         end
         schema = Class.new(GraphQL::Schema) { query(query_root) }
 
         introspection_schema_ast = GraphQL::Language::DocumentFromSchemaDefinition.new(
           schema,
-          except: ->(member, _) { member.graphql_name == "Root" },
           include_introspection_types: true,
           include_built_in_directives: true,
         ).document

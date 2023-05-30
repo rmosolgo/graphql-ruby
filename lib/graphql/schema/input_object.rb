@@ -211,7 +211,7 @@ module GraphQL
 
           arguments = coerce_arguments(nil, value, ctx)
 
-          ctx.schema.after_lazy(arguments) do |resolved_arguments|
+          ctx.query.after_lazy(arguments) do |resolved_arguments|
             if resolved_arguments.is_a?(GraphQL::Error)
               raise resolved_arguments
             else

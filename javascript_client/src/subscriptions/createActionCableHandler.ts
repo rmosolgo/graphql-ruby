@@ -10,6 +10,7 @@ import type { Consumer } from "@rails/actioncable"
 interface ActionCableHandlerOptions {
   cable: Consumer
   operations?: { getOperationId: Function}
+  channelName?: string
 }
 
 function createActionCableHandler(options: ActionCableHandlerOptions) {
@@ -21,7 +22,7 @@ function createActionCableHandler(options: ActionCableHandlerOptions) {
 
     // Register the subscription by subscribing to the channel
     const channel = cable.subscriptions.create({
-      channel: "GraphqlChannel",
+      channel: options.channelName || "GraphqlChannel",
       channelId: channelId,
     }, {
       connected: function() {

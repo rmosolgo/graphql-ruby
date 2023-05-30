@@ -3,7 +3,7 @@ module GraphQL
   class Schema
     class Member
       module HasValidators
-        include Schema::FindInheritedValue::EmptyObjects
+        include GraphQL::EmptyObjects
 
         # Build {GraphQL::Schema::Validator}s based on the given configuration
         # and use them for this schema member
@@ -28,7 +28,7 @@ module GraphQL
           end
 
           module ClassValidators
-            include Schema::FindInheritedValue::EmptyObjects
+            include GraphQL::EmptyObjects
 
             def validators
               inherited_validators = superclass.validators
