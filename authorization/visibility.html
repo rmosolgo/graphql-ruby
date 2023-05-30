@@ -114,6 +114,7 @@
 </a></li><li class='contents-entry'><a href='#object-visibility'>Object Visibility
 </a></li><li class='contents-entry'><a href='#field-visibility'>Field Visibility
 </a></li><li class='contents-entry'><a href='#argument-visibility'>Argument Visibility
+</a></li><li class='contents-entry'><a href='#opting-out'>Opting Out
 </a></li></ol>
 </div>
 </div>
@@ -209,6 +210,19 @@
 </code></pre></div></div>
 
 <p>For this to work, the base argument class must be <a href="/type_definitions/extensions.html#customizing-arguments">configured with other GraphQL types</a>.</p>
+
+<h2 id="opting-out">Opting Out</h2>
+
+<p>By default, GraphQL-Ruby always runs visibility checks. You can opt out of this by adding to your schema class:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="c1"># ...</span>
+  <span class="c1"># Opt out of GraphQL-Ruby's visibility feature:</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">AlwaysVisible</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>For big schemas, this can be a worthwhile speed-up.</p>
 
 </div>
 <p class="guide-footer">
