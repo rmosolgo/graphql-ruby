@@ -168,7 +168,7 @@ module GraphQL
 
     # @return [GraphQL::Tracing::Trace]
     def current_trace
-      @current_trace ||= multiplex ? multiplex.current_trace : schema.new_trace(multiplex: multiplex, query: self)
+      @current_trace ||= context[:trace] || (multiplex ? multiplex.current_trace : schema.new_trace(multiplex: multiplex, query: self))
     end
 
     def subscription_update?
