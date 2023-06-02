@@ -350,14 +350,14 @@ This is useful for interface or union types which are backed by a domain object 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">Types::RetailItem</span>
   <span class="kp">include</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseInterface</span>
   <span class="c1"># ...</span>
-  <span class="n">orphan_types</span> <span class="no">Types</span><span class="o">::</span><span class="no">Comment</span>
+  <span class="n">orphan_types</span> <span class="no">Types</span><span class="o">::</span><span class="no">Car</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
 <p>Alternatively you can add the object types to the schema’s <code class="language-plaintext highlighter-rouge">orphan_types</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="n">orphan_types</span> <span class="no">Types</span><span class="o">::</span><span class="no">Comment</span>
+  <span class="n">orphan_types</span> <span class="no">Types</span><span class="o">::</span><span class="no">Car</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
