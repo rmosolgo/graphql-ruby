@@ -155,22 +155,6 @@ module GraphQL
       end
 
       # @return [Class] Return the trace class to use for this mode, looking one up on the superclass if this Schema doesn't have one defined.
-      # def trace_class_for(mode)
-      #   @trace_modes ||= {}
-      #   @trace_modes[mode] ||= begin
-      #     base_class = if superclass.respond_to?(:trace_class_for)
-      #       superclass.trace_class_for(mode)
-      #     elsif mode == :default_backtrace
-      #       GraphQL::Backtrace::DefaultBacktraceTrace
-      #     else
-      #       GraphQL::Tracing::Trace
-      #     end
-      #     Class.new(base_class)
-      #   end
-      # end
-
-
-      # @return [Class] Return the trace class to use for this mode, looking one up on the superclass if this Schema doesn't have one defined.
       def trace_class_for(mode)
         @trace_modes ||= {}
         @trace_modes[mode] ||= begin
