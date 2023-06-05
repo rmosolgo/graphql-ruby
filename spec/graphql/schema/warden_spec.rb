@@ -961,4 +961,15 @@ describe GraphQL::Schema::Warden do
       end
     end
   end
+
+  describe "PassThruWarden is used when no warden is used" do
+    it "uses PassThruWarden when a hash is used for context" do
+      assert_equal GraphQL::Schema::Warden::PassThruWarden, GraphQL::Schema::Warden.from_context({})
+    end
+
+    it "uses PassThruWarden when a warden on the context nor query" do
+      context = GraphQL::Query::Context.new(query: OpenStruct.new(schema: GraphQL::Schema.new), values: {}, object: nil)
+      assert_equal GraphQL::Schema::Warden::PassThruWarden, GraphQL::Schema::Warden.from_context(context)
+    end
+  end
 end
