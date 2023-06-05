@@ -38,8 +38,9 @@ module GraphQL
     # @api private
     class Warden
       def self.from_context(context)
-        context.warden # this might be a hash which won't respond to this
-      rescue
+        context.warden || PassThruWarden
+      rescue NoMethodError
+        # this might be a hash which won't respond to #warden
         PassThruWarden
       end
 
