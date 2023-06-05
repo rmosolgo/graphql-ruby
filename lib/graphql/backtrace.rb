@@ -55,9 +55,5 @@ module GraphQL
         @parent_frame = parent_frame
       end
     end
-
-    class DefaultBacktraceTrace < GraphQL::Tracing::Trace
-      include GraphQL::Backtrace::Trace
-    end
   end
 end
