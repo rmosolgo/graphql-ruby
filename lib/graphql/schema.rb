@@ -1047,6 +1047,7 @@ module GraphQL
           {
             backtrace: ctx[:backtrace],
             tracers: ctx[:tracers],
+            trace: ctx[:trace],
             dataloader: ctx[:dataloader],
           }
         else
