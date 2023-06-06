@@ -158,14 +158,17 @@ module GraphQL
       def trace_class_for(mode)
         @trace_modes ||= {}
         @trace_modes[mode] ||= begin
-          base_class = if superclass.respond_to?(:trace_class_for)
-            superclass.trace_class_for(mode)
-          elsif mode == :default_backtrace
-            GraphQL::Backtrace::DefaultBacktraceTrace
+          if mode == :default_backtrace
+            schema_base_class = trace_class_for(:default)
+            Class.new(schema_base_class) do
+              include(GraphQL::Backtrace::Trace)
+            end
+          elsif superclass.respond_to?(:trace_class_for)
+            superclass_base_class = superclass.trace_class_for(mode)
+            Class.new(superclass_base_class)
           else
-            GraphQL::Tracing::Trace
+            Class.new(GraphQL::Tracing::Trace)
           end
-          Class.new(base_class)
         end
       end
 

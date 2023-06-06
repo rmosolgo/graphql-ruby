@@ -273,4 +273,13 @@ describe GraphQL::Backtrace do
 
     assert_equal expected_res, res
   end
+
+  it "includes other trace modules when backtrace is active" do
+    custom_trace = Module.new
+    schema = Class.new(GraphQL::Schema) do
+      trace_with(custom_trace)
+    end
+    query = GraphQL::Query.new(schema, "{ __typename }", context: { backtrace: true })
+    assert_includes query.current_trace.class.ancestors, custom_trace
+  end
 end
