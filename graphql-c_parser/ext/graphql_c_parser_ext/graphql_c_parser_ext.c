@@ -1,6 +1,6 @@
 #include "graphql_c_parser_ext.h"
 
-VALUE GraphQL_CParser_Lexer_tokenize(VALUE self, VALUE query_string) {
+VALUE GraphQL_CParser_Lexer_tokenize_with_c(VALUE self, VALUE query_string) {
   return tokenize(query_string);
 }
 
@@ -13,7 +13,7 @@ void Init_graphql_c_parser_ext() {
   VALUE GraphQL = rb_define_module("GraphQL");
   VALUE CParser = rb_define_module_under(GraphQL, "CParser");
   VALUE Lexer = rb_define_module_under(CParser, "Lexer");
-  rb_define_singleton_method(Lexer, "tokenize", GraphQL_CParser_Lexer_tokenize, 1);
+  rb_define_singleton_method(Lexer, "tokenize_with_c", GraphQL_CParser_Lexer_tokenize_with_c, 1);
   setup_static_token_variables();
 
   VALUE Parser = rb_define_class_under(CParser, "Parser", rb_cObject);

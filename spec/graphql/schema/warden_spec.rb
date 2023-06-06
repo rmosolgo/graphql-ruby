@@ -950,4 +950,26 @@ describe GraphQL::Schema::Warden do
       end
     end
   end
+
+  describe "NullWarden" do
+    it "implements all Warden methods" do
+      warden_methods = GraphQL::Schema::Warden.instance_methods - Object.methods
+      warden_methods.each do |method_name|
+        warden_params =  GraphQL::Schema::Warden.instance_method(method_name).parameters
+        assert GraphQL::Schema::Warden::NullWarden.method_defined?(method_name), "Null warden also responds to #{method_name} (#{warden_params})"
+        assert_equal warden_params, GraphQL::Schema::Warden::NullWarden.instance_method(method_name).parameters,"#{method_name} has the same parameters"
+      end
+    end
+  end
+
+  describe "PassThruWarden is used when no warden is used" do
+    it "uses PassThruWarden when a hash is used for context" do
+      assert_equal GraphQL::Schema::Warden::PassThruWarden, GraphQL::Schema::Warden.from_context({})
+    end
+
+    it "uses PassThruWarden when a warden on the context nor query" do
+      context = GraphQL::Query::Context.new(query: OpenStruct.new(schema: GraphQL::Schema.new), values: {}, object: nil)
+      assert_equal GraphQL::Schema::Warden::PassThruWarden, GraphQL::Schema::Warden.from_context(context)
+    end
+  end
 end

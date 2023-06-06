@@ -24,7 +24,10 @@ require "minitest/autorun"
 require "minitest/focus"
 require "minitest/reporters"
 
-Minitest::Reporters.use! Minitest::Reporters::DefaultReporter.new(color: true)
+running_in_rubymine = ENV["RM_INFO"]
+unless running_in_rubymine
+  Minitest::Reporters.use! Minitest::Reporters::DefaultReporter.new(color: true)
+end
 
 Minitest::Spec.make_my_diffs_pretty!
 
@@ -60,7 +63,9 @@ ERR
   def setup_finalizer
     if !@finalizer_defined
       @finalizer_defined = true
-      ObjectSpace.define_finalizer(self, CheckShape.new(warden))
+      if warden.is_a?(GraphQL::Schema::Warden)
+        ObjectSpace.define_finalizer(self, CheckShape.new(warden))
+      end
     end
   end
 end
