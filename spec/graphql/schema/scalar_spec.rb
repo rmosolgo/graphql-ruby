@@ -133,8 +133,8 @@ describe GraphQL::Schema::Scalar do
     describe "runtime info in the error message" do
       class ScalarRuntimeContextSchema < GraphQL::Schema
         class QueryRoot < GraphQL::Schema::Object
-          field :val, Integer, null: true do |f|
-            f.argument :int, Integer, required: true
+          field :val, Integer do |f|
+            f.argument :int, Integer
           end
 
           def val(int:)
