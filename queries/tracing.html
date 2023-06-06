@@ -156,6 +156,8 @@
 
 <p>For a full list of methods and their arguments, see <a href="/api-doc/2.0.22/GraphQL/Tracing/Trace" target="_blank" title="API docs for GraphQL::Tracing::Trace"><code>GraphQL::Tracing::Trace</code></a>.</p>
 
+<p>By default, GraphQL-Ruby makes a new trace instance when it runs a query. You can pass an existing instance as <code class="language-plaintext highlighter-rouge">context: { trace: ... }</code>. Also, <code class="language-plaintext highlighter-rouge">GraphQL.parse( ..., trace: ...)</code> accepts a trace instance.</p>
+
 <h2 id="activesupportnotifications">ActiveSupport::Notifications</h2>
 
 <p>You can emit events to <code class="language-plaintext highlighter-rouge">ActiveSupport::Notifications</code> with an experimental tracer, <code class="language-plaintext highlighter-rouge">ActiveSupportNotificationsTrace</code>.</p>
