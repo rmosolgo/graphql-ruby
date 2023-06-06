@@ -157,7 +157,7 @@ describe GraphQL::Schema::Scalar do
 
       it "is there" do
         query_str = "query { val(int: 2147483648) }"
-        res = ScalarRuntimeContextSchema.execute(query_str)
+        res = GraphQL::Query.new(ScalarRuntimeContextSchema, query_str).result
         expected_errs = [
           # This error was from validation, there wasn't any runtime context yet:
           "Error: \"Integer out of bounds: 2147483648. \\nConsider using GraphQL::Types::BigInt instead.\" from nil",
