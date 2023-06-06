@@ -810,6 +810,17 @@ ERR
         end
       end
 
+      class ExtendedState
+        def initialize(args, object)
+          @arguments = args
+          @object = object
+          @memos = nil
+          @added_extras = nil
+        end
+
+        attr_accessor :arguments, :object, :memos, :added_extras
+      end
+
       # Wrap execution with hooks.
       # Written iteratively to avoid big stack traces.
       # @return [Object] Whatever the
@@ -820,18 +831,18 @@ ERR
           # This is a hack to get the _last_ value for extended obj and args,
           # in case one of the extensions doesn't `yield`.
           # (There's another implementation that uses multiple-return, but I'm wary of the perf cost of the extra arrays)
-          extended = { args: args, obj: obj, memos: nil, added_extras: nil }
+          extended = ExtendedState.new(args, obj)
           value = run_extensions_before_resolve(obj, args, ctx, extended) do |obj, args|
-            if (added_extras = extended[:added_extras])
+            if (added_extras = extended.added_extras)
               args = args.dup
               added_extras.each { |e| args.delete(e) }
             end
             yield(obj, args)
           end
 
-          extended_obj = extended[:obj]
-          extended_args = extended[:args]
-          memos = extended[:memos] || EMPTY_HASH
+          extended_obj = extended.object
+          extended_args = extended.arguments # rubocop:disable Development/ContextIsPassedCop
+          memos = extended.memos || EMPTY_HASH
 
           ctx.query.after_lazy(value) do |resolved_value|
             idx = 0
@@ -851,17 +862,17 @@ ERR
         if extension
           extension.resolve(object: obj, arguments: args, context: ctx) do |extended_obj, extended_args, memo|
             if memo
-              memos = extended[:memos] ||= {}
+              memos = extended.memos ||= {}
               memos[idx] = memo
             end
 
             if (extras = extension.added_extras)
-              ae = extended[:added_extras] ||= []
+              ae = extended.added_extras ||= []
               ae.concat(extras)
             end
 
-            extended[:obj] = extended_obj
-            extended[:args] = extended_args
+            extended.object = extended_obj
+            extended.arguments = extended_args
             run_extensions_before_resolve(extended_obj, extended_args, ctx, extended, idx: idx + 1) { |o, a| yield(o, a) }
           end
         else

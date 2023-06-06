@@ -256,11 +256,14 @@ module GraphQLBenchmark
     end
 
 
+    class ExampleExtension < GraphQL::Schema::FieldExtension
+    end
+
     class FooType < GraphQL::Schema::Object
       implements Baz
-      field :id, ID, null: false
-      field :int1, Integer, null: false
-      field :int2, Integer, null: false
+      field :id, ID, null: false, extensions: [ExampleExtension]
+      field :int1, Integer, null: false, extensions: [ExampleExtension]
+      field :int2, Integer, null: false, extensions: [ExampleExtension]
       field :string1, String, null: false do
         argument :arg1, String, required: false
         argument :arg2, String, required: false
