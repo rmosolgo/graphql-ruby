@@ -343,12 +343,8 @@ module GraphQL
                 if node.type
                   type_defn = schema.get_type(node.type.name, context)
 
-                  # Faster than .map{}.include?()
-                  query.warden.possible_types(type_defn).each do |t|
-                    if t == owner_type
-                      gather_selections(owner_object, owner_type, node.selections, selections_to_run, next_selections)
-                      break
-                    end
+                  if query.warden.possible_types(type_defn).include?(owner_type)
+                    gather_selections(owner_object, owner_type, node.selections, selections_to_run, next_selections)
                   end
                 else
                   # it's an untyped fragment, definitely continue
@@ -357,12 +353,8 @@ module GraphQL
               when GraphQL::Language::Nodes::FragmentSpread
                 fragment_def = query.fragments[node.name]
                 type_defn = query.get_type(fragment_def.type.name)
-                possible_types = query.warden.possible_types(type_defn)
-                possible_types.each do |t|
-                  if t == owner_type
-                    gather_selections(owner_object, owner_type, fragment_def.selections, selections_to_run, next_selections)
-                    break
-                  end
+                if query.warden.possible_types(type_defn).include?(owner_type)
+                  gather_selections(owner_object, owner_type, fragment_def.selections, selections_to_run, next_selections)
                 end
               else
                 raise "Invariant: unexpected selection class: #{node.class}"
