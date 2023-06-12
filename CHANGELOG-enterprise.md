@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.3.1 (12 June 2023)
+
+### Bug Fix
+
+- Add missing `require "graphql"` #4511
+
 # 1.3.0 (29 May 2023)
 
 ### New Features
