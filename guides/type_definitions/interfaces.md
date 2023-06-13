@@ -237,7 +237,7 @@ If you add an object type which implements an interface, but that object type do
 module Types::RetailItem
   include Types::BaseInterface
   # ...
-  orphan_types Types::Comment
+  orphan_types Types::Car
 end
 ```
 
@@ -245,7 +245,7 @@ Alternatively you can add the object types to the schema's `orphan_types`:
 
 ```ruby
 class MySchema < GraphQL::Schema
-  orphan_types Types::Comment
+  orphan_types Types::Car
 end
 ```
 

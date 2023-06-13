@@ -25,10 +25,13 @@ module GraphQL
         @include_one_of = false
 
         schema_context = schema.context_class.new(query: nil, object: nil, schema: schema, values: context)
-        @warden = GraphQL::Schema::Warden.new(
+
+
+        @warden = @schema.warden_class.new(
           schema: @schema,
           context: schema_context,
         )
+
         schema_context.warden = @warden
       end
 

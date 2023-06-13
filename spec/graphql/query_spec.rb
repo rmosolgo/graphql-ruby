@@ -835,12 +835,13 @@ describe GraphQL::Query do
   end
 
   it "Accepts a passed-in warden" do
-    schema = Class.new(Jazz::Schema) do
-      def self.visible?(_m, _ctx)
+    schema_class = Class.new(Jazz::Schema) do
+      def self.visible?(member, ctx)
         false
       end
     end
-    warden = GraphQL::Schema::Warden.new(schema: schema, context: nil)
+
+    warden = GraphQL::Schema::Warden.new(schema: schema_class, context: nil)
     res = Jazz::Schema.execute("{ __typename } ", warden: warden)
     assert_equal ["Schema is not configured for queries"], res["errors"].map { |e| e["message"] }
   end
@@ -1013,6 +1014,51 @@ describe GraphQL::Query do
     it "uses it for queries" do
       res = Dummy::Schema.execute("blah blah blah")
       assert_equal "Query", res["data"]["__typename"]
+    end
+  end
+
+  describe "context[:trace]" do
+    class QueryTraceSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        field :int, Integer
+        def int; 1; end
+      end
+
+      class Trace < GraphQL::Tracing::Trace
+        def execute_multiplex(multiplex:)
+          @execute_multiplex_count ||= 0
+          @execute_multiplex_count += 1
+          super
+        end
+
+        def execute_query(query:)
+          @execute_query_count ||= 0
+          @execute_query_count += 1
+          super
+        end
+
+        def execute_field(**rest)
+          @execute_field_count ||= 0
+          @execute_field_count += 1
+          super
+        end
+
+        attr_reader :execute_multiplex_count, :execute_query_count, :execute_field_count
+      end
+
+      query(Query)
+    end
+
+    it "uses it instead of making a new trace" do
+      query_str = "{ int __typename }"
+      trace_instance = QueryTraceSchema::Trace.new
+      res = QueryTraceSchema.execute(query_str, context: { trace: trace_instance })
+
+      assert_equal 1, res["data"]["int"]
+
+      assert_equal 1, trace_instance.execute_multiplex_count
+      assert_equal 1, trace_instance.execute_query_count
+      assert_equal 2, trace_instance.execute_field_count
     end
   end
 end

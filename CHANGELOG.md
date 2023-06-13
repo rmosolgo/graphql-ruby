@@ -10,6 +10,47 @@
 
 ### Bug fixes
 
+# 2.0.22 (17 May 2023)
+
+### New features
+
+- Warden: manually instantiating doesn't require a `filter` instance #4462
+
+### Bug fixes
+
+- Enum: fix procs for enum values #4474
+- Lexer: force UTF-8 encoding #4467
+- Trace: inherit superclass `trace_options` #4470
+- Dataloader: properly run mutations in sequence #4461
+- NotificationsTrace: Add `execute_multiplex.graphql` event #4460
+- Fix `Context#dig` when called with one key #4458
+- Performance: Use a plain hash for selection sets at runtime #4453
+- Performance: Memoize current trace #4450, #4452
+- Performance: Pass is_non_null to runtime check #4449
+- Performance: Use `compare_by_identity` on some runtime caches
+- Properly support nested queries (fix `Thread.current` clash) #4445
+
+# 2.0.21 (11 April 2023)
+
+### Deprecations
+
+- Deprecate `GraphQL::Filter` (use `visible?` methods instead) #4424
+
+### New features
+
+- PrometheusTracing: support histograms #4418
+
+### Bug fixes
+
+- Backtrace: improve compatibility with `trace_with` #4437
+- Consolidate internally-used empty value constants #4434
+- Fix some warnings #4422
+- Performance: improve runtime speed #4436 #4433 #4428 #4430 #4427 #4399
+- Validation: fix inline fragment selection on scalar #4429
+- `@oneOf`: print definition in the SDL when it's used
+- SDL: load schema directives when they're used
+- Appsignal tracing: Fix `resolve_type` definition
+
 # 2.0.20 (30 March 2023)
 
 ### Bug fixes
@@ -837,6 +878,24 @@ Since this version, GraphQL-Ruby is tested on Ruby 2.4+ and Rails 4+ only.
 - Schema definition supports schema directives #3224
 
 ### Bug fixes
+
+# 1.11.10 (5 Nov 2021)
+
+### Bug fixes
+
+- Properly hook up `Schema.max_validation_errors` at query runtime #3690
+
+# 1.11.9 (1 Nov 2021)
+
+### New Features
+
+- `Schema.max_validation_errors(val)` limits the number of errors that can be added during static validation #3675
+
+# 1.11.8 (12 Feb 2021)
+
+### Bug fixes
+
+- Improve performance of `Schema.possible_types(t)` for object types #3172
 
 # 1.11.7 (18 January 2021)
 

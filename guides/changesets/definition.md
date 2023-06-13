@@ -9,45 +9,74 @@ desc: Creating a set of modifications to release in an API version
 index: 2
 ---
 
-After {% internal_link "installing Changeset integrations", "/changesets/installation" %} in your schema, you can create Changesets which modify parts of the schema. Changesets extend `GraphQL::Enterprise::Changeset` and include a `release` and some `modifies ...` configurations.
+After {% internal_link "installing Changeset integrations", "/changesets/installation" %} in your schema, you can create Changesets which modify parts of the schema. Changesets extend `GraphQL::Enterprise::Changeset` and include a `release` string. Once a Changeset class is defined, it can be referenced with `added_in: ...` or `removed_in: ...` configurations in the schema.
 
-For example, this Changeset marks the old `Recipe.flag` field as deprecated:
+__Note:__ Before GraphQL-Enterprise 1.3.0, Changesets were configured with `modifies ...` blocks. These blocks are still supported and you can find the documentation for that API [on GitHub](https://github.com/rmosolgo/graphql-ruby/blob/v2.0.22/guides/changesets/definition.md).
+
+
+## Changeset Classes
+
+This Changeset will be available to any client whose `context[:changeset_version]` is on or after `2020-12-01`:
 
 ```ruby
 # app/graphql/changesets/deprecate_recipe_flag.rb
-class Changesets::DeprecateRecipeFlag < GraphQL::Enterprise::Changeset
+class Changesets::DeprecateRecipeTags < GraphQL::Enterprise::Changeset
   release "2020-12-01"
-  modifies Types::Recipe do
-    field :flag, Types::RecipeFlag, null: false, deprecation_reason: "Recipes now have multiple flags, use `flags` instead."
-  end
 end
 ```
 
-  Then this Changeset removes `Recipe.flag` entirely:
+Additionally, Changesets must be {% internal_link "released", "/changesets/releases" %} for their changes to be published.
+
+## Publishing with `added_in:`
+
+New things can be published in a changeset by adding `added_in: SomeChangeset` to their configuration. For example, to add a new argument to a field:
 
 ```ruby
-# app/graphql/changesets/remove_recipe_flag.rb
-class Changesets::RemoveRecipeFlag < GraphQL::Enterprise::Changeset
-  release "2021-03-01"
-  modifies Types::Recipe do
-    remove_field :flag
-  end
+field :search_recipes, [Types::Recipe] do
+  argument :query, String
+  argument :tags, [Types::RecipeTag], required: false, added_in: Changesets::AddRecipeTags
 end
 ```
 
-Additionally, the Changesets must be added to the schema (see the {% internal_link "Releases guide", "/changesets/releases" %}):
+You can also provide a _replacement_ implementation by using `added_in:`. When a new definition has the same name as an existing definition, it implicitly replaces the previous definition in new versions of the API. For example:
 
 ```ruby
-class MyAppSchema < GraphQL::Schema
-  # ...
-  use GraphQL::Enterprise::Changeset::Release, changesets: [
-    Changesets::DeprecateRecipeFlag,
-    Changesets::RemoveRecipeFlag,
-  ]
+field :rating, Integer, "A 1-5 score for this recipe" # This definition will be superseded by the following one
+field :rating, Float, "A 1.0-5.0 score for this recipe", added_in: Changesets::FloatingPointRatings
+```
+
+Here, a new implementation for `rating` will be used when clients requests an API version that includes `Changesets::FloatingPointRatings`. (If the client requests a version _before_ that changeset, then the preceding implementation would be used instead.)
+
+## Removing with `removed_in:`
+
+A `removed_in:` configuration removes something in the named changeset. For example, these enum values are replaced with more clearly-named ones:
+
+```ruby
+class Types::RecipeTag < Types::BaseEnum
+  # These are replaced by *_HEAT below:
+  value :SPICY, removed_in: Changesets::ClarifyHeatTags
+  value :MEDIUM, removed_in: Changesets::ClarifyHeatTags
+  value :MILD, removed_in: Changesets::ClarifyHeatTags
+  # These new tags are more clear:
+  value :SPICY_HEAT, added_in: Changesets::ClarifyHeatTags
+  value :MEDIUM_HEAT, added_in: Changesets::ClarifyHeatTags
+  value :MILD_HEAT, added_in: Changesets::ClarifyHeatTags
 end
 ```
 
-Although the changesets above have one modification each, a changeset may have any number of modifications in it.
+If something has been defined several times, a `removed_in:` configuration removes _all_ definitions:
+
+```ruby
+class Mutations::SubmitRecipeRating < Mutations::BaseMutation
+  # This is replaced in future API versions by the following argument
+  argument :rating, Integer
+  # This replaces the previous, but in another future version,
+  # it is removed completely (and so is the previous one)
+  argument :rating, Float, added_in: Changesets::FloatingPointRatings, removed_in: Changesets::RemoveRatingsCompletely
+end
+```
+
+## Examples
 
 See below for the different kind of modifications you can make in a changeset:
 
@@ -59,114 +88,126 @@ See below for the different kind of modifications you can make in a changeset:
 - [Types](#types): changing one type definition for another
 - [Runtime](#runtime): choosing a behavior at runtime based on the current request and changeset
 
-## Fields
+### Fields
 
-In a Changeset, you can add, redefine, or remove fields that belong to object types, interface types, or resolvers. First, use `modifies ... do ... end`, naming the owner of the field:
+To add or redefine a field, use `field(..., added_in: ...)`, including all configuration values for the new implementation (see {{ "GraphQL::Schema::Field#initialize" | api_doc }}). The definition given here will override the previous definition (if there was one) whenever this Changeset applies.
 
 ```ruby
-class Changesets::RecipeMigration < GraphQL::Enterprise::Changeset
-  modifies Types::Recipe do
-    # modify `Recipe`'s fields here
-  end
+class Types::Recipe < Types::BaseObject
+  # This new field is available when `context[:changeset_version]`
+  # is on or after the release date of `AddRecipeTags`
+  field :tags, [Types::RecipeTag], added_in: Changeset::AddRecipeTags
 end
 ```
 
-Then...
+To remove a field, add a `removed_in: ...` configuration to the last definition of the field:
 
-- To add or redefine a field, use `field(...)`, including the same configurations you'd use in a type definition (see {{ "GraphQL::Schema::Field#initialize" | api_doc }}). The definition given here will override the previous definition (if there was one) whenever this Changeset applies.
-- To remove a field, use `remove_field(field_name)`, where `field_name` is the name given to `field(...)` (usually an underscore-cased symbol)
+```ruby
+class Types::Recipe < Types::BaseObject
+  # Even after migrating to floating point values,
+  # the "rating" feature never took off,
+  # so we removed it entirely eventually.
+  field :rating, Integer
+  field :rating, Float, added_in: Changeset::FloatingPointRatings,
+    removed_in: Changeset::RemoveRatings
+end
+```
 
 When a field is removed, queries that request that field will be invalid, unless the client has requested a previous API version where the field is still available.
 
-## Arguments
+### Arguments
 
-In a Changeset, you can add, redefine, or remove arguments that belong to fields, input objects, or resolvers. Use `modifies` to select the argument owner, for example:
-
-```ruby
-class Changesets::FilterMigration < GraphQL::Enterprise::Changeset
-  modifies Types::IngredientsFilter do
-    # modify input object arguments here
-  end
-  # ...
-```
-
-When versioning field arguments, use a second `modifies(field_name) { ... }` call to select the field to modify:
+You can add, redefine, or remove arguments that belong to fields, input objects, or resolvers. Use `added_in: ...` to provide a new (or updated) definition for an argument, for example:
 
 ```ruby
-  # ...
-  modifies Types::Query do
-    modifies :ingredients do
-      # modify the arguments of `Query.ingredients(...)` here
-    end
-  end
+class Types::RecipesFilter < Types::BaseInputObject
+  argument :rating, Integer
+  # This new definition is available when
+  # the client's `context[:changeset_version]` includes `FloatingPointRatings`
+  argument :rating, Float, added_in: Changesets::FloatingPointRatings
 end
 ```
 
-Then...
+To remove an argument entirely, add a `removed_in: ...` configuration to the last definition. It will remove _all_ implementations for that argument. For example:
 
-- To add or redefine an argument, use `argument(...)`, passing the same configurations you'd usually pass to `argument(...)` (see {{ "GraphQL::Schema::Argument#initialize" | api_doc }}). The redefined argument will override any previous definitions whenever this Changeset is active.
-- To remove an argument, use `remove_argument(argument_name)`, where `argument_name` is the name given to `field(...)` (usually an underscore-cased symbol)
+```ruby
+class Mutations::SubmitRating < Mutations::BaseMutation
+  # Remove this because it's irrelevant:
+  argument :phone_number, String, removed_in: Changesets::StopCollectingPersonalInformation
+end
+```
 
 When arguments are removed, the schema will reject any queries which use them unless the client has requested a previous API version where the argument is still allowed.
 
-## Enum Values
+### Enum Values
 
-In a Changeset, you can add, redefine, or remove enum values. First, use `modifies ... do ... end`, naming the enum type:
+With Changesets, you can add, redefine, or remove enum values. To add a new value (or provide a new implementation for a value), include `added_in:` in the `value(...)` configuration:
 
 ```ruby
-class Changesets::RecipeFlagMigration < GraphQL::Enterprise::Changeset
-  modifies Types::RecipeFlag do
-    # Modify `RecipeFlag`'s values here
-  end
+class Types::RecipeTag < Types::BaseEnum
+  # This enum will accept and return `KETO` only when the client's API version
+  # includes `AddKetoDietSupport`'s release date.
+  value :KETO, added_in: Changesets::AddKetoDietSupport
 end
 ```
 
-Then...
+Values can be removed with `removed_in:`, for example:
 
-- To add a value, use `value(...)`, passing the same configurations you'd usually pass to `value(...)` in an enum type (see {{ "GraphQL::Schema::Enum.value" | api_doc }}). The configuration given here will override previous configurations whenever this Changeset applies.
-- To remove a value, use `remove_value(name)`, where `name` is the name given to `value(...)` (an all-caps string)
+```ruby
+class Types::RecipeTag < Types::BaseEnum
+  # Old API versions will serve this value;
+  # new versions won't accept it or return it.
+  value :GRAPEFRUIT_DIET, removed_in: Changesets::RemoveLegacyDiets
+end
+```
 
 When enum values are removed, they won't be accepted as input and they won't be allowed as return values from fields unless the client has requested a previous API version where those values are still allowed.
 
-## Unions
+### Unions
 
-In a Changeset, you can add to or remove from a union's possible types. First, use `modifies ...`, naming the union type:
+You can add to or remove from a union's possible types. To release a new union member, include `added_in:` in the `possible_types` configuration:
 
 ```ruby
-class Changesets::MigrateLegacyCookingTechniques < GraphQL::Enterprise::Changeset
-  modifies Types::CookingTechnique do
-    # change the possible_types of the `CookingTechnique` union here
-  end
-end
+class Types::Cookable < Types::BaseUnion
+ possible_types Types::Recipe, Types::Ingredient
+ # Add this to the union when clients opt in to our new feature:
+ possible_types Types::Cuisine, added_in: Changeset::ReleaseCuisines
 ```
 
-Then...
+To remove a member from a union, move it to a `possible_types` call with `removed_in: ...`:
 
-- To add one or more possible types, use `possible_types(*object_types)`, passing one or more object type classes. The given types will be _added_ to the union's set of possible types whenever this Changeset is active.
-- To remove one or more more possible types, use `remove_possible_types(*object_types)`, passing one or more object type classes
+```ruby
+# Stop including this in the union in new API versions:
+possible_types Types::Chef, removed_in: Changeset::LessChefHype
+```
 
 When a possible type is removed, it will not be associated with the union type in introspection queries or schema dumps.
 
-## Interfaces
+### Interfaces
 
-In a Changeset, you can add to or remove from an object type's interface definitions. First, use `modifies ...`, naming the object type:
+You can add to or remove from an object type's interface definitions. To add one or more interface implementations, use `implements(..., added_in:)`. This will add the interface and its fields to the object whenever this Changeset is active, for example:
 
 ```ruby
-class Changesets::ModifyImplements < GraphQL::Enterprise::Changeset
-  modifies Types::Ingredient do
-    # change `Ingredient`'s interface implementations here
-  end
+class Types::Recipe < Types::BaseObject
+  # Add this new implementation in new API versions only:
+  implements Types::RssSubject, added_in: Changesets::AddRssSupport
 end
 ```
 
-Then...
 
-- To add one or more interface implementations, use `implements(*interface_types)`, passing one or more interface type modules. This will add the interface and its fields to the object whenever this Changeset is active.
-- To remove one or more more interface implementations, use `remove_implements(*interface_types)`, passing one or more interface type modules
+To remove one or more more interface implementations, add `removed_in:` to the `implements ...` configuration, for example:
+
+```ruby
+  implements Types::RssSubject,
+    added_in: Changesets::AddRssSupport,
+    # Sadly, nobody seems to want to use this,
+    # so we removed it all:
+    removed_in: Changesets::RemoveRssSupport
+```
 
 When an interface implementation is removed, then the interface will not be associated with the object in introspection queries or schema dumps. Also, any fields inherited from the interface will be hidden from clients. (If the object defines the field itself, it will still be visible.)
 
-## Types
+### Types
 
 Using Changesets, it's possible to define a new type using the same name as an old type. (Only one type per name is allowed for each query, but different queries can use different types for the same name.)
 
@@ -175,11 +216,11 @@ First, to define two types with the same name, make two different type definitio
 ```ruby
 # app/graphql/types/legacy_recipe_flag.rb
 
-# In the old version of the schema, "recipe flags" were limited to defined set of values.
-# This enum was renamed from `Types::RecipeFlag`, then `graphql_name("RecipeFlag")`
+# In the old version of the schema, "recipe tags" were limited to defined set of values.
+# This enum was renamed from `Types::RecipeTag`, then `graphql_name("RecipeTag")`
 # was added for GraphQL.
-class Types::LegacyRecipeFlag < Types::BaseEnum
-  graphql_name "RecipeFlag"
+class Types::LegacyRecipeTag < Types::BaseEnum
+  graphql_name "RecipeTag"
   # ...
 end
 ```
@@ -187,8 +228,8 @@ end
 ```ruby
 # app/graphql/types/recipe_flag.rb
 
-# But in the new schema, each flag is a full-fledge object with fields of its own
-class Types::RecipeFlag < Types::BaseObject
+# But in the new schema, each tag is a full-fledged object with fields of its own
+class Types::RecipeTag < Types::BaseObject
   field :name, String, null: false
   field :is_vegetarian, Boolean, null: false
   # ...
@@ -197,28 +238,34 @@ end
 
 Then, add or update fields or arguments to use the _new_ type instead of the old one. For example:
 
-```ruby
-class Changesets::MigrateRecipeFlagToObject < GraphQL::Enterprise::Changeset
-  modifies Types::Recipe do
-    # in types/recipe.rb, this is defined with `field :flags, [Types::LegacyRecipeFlag]`
-    # Here, update the field to use the _object_ instead:
-    update_field :flags, [Types::RecipeFlag]
+```diff
+  class Types::Recipe < Types::BaseObject
+
+# Change this definition to point at the newly-renamed _legacy_ type
+# (It's the same type definition, but the Ruby class has a new name)
+-   field :tags, [Types::RecipeTag]
++   field :tags, [Types::LegacyRecipeTag]
+
+# And add a new field for the new type:
++   field :tags, [Types::RecipeTag], added_in: Changesets::MigrateRecipeTagToObject
   end
-end
 ```
 
-With that Changeset, `Recipe.flags` will return an object type instead of an enum type. Clients requesting older versions will still receive enum values from that field.
+With that Changeset, `Recipe.tags` will return an object type instead of an enum type. Clients requesting older versions will still receive enum values from that field.
 
 The resolver will probably need an update, too, for example:
 
 ```ruby
 class Types::Recipe < Types::BaseObject
-  # Here's the original definition, which is modified by `MigrateRecipeFlagToObject`:
-  field :flags, [Types::LegacyRecipeFlag], null: false
+  # Here's the original definition which returns enum values:
+  field :tags, [Types::LegacyRecipeTag], null: false
+  # Here's the new definition which replaces the previous one on new API versions:
+  field :tags, [Types::RecipeTag], null: false, added_in: Changesets::MigrateRecipeTagToObject
 
   def flags
     all_flag_objects = object.flag_objects
-    if Changesets::MigrateRecipeFlagToObject.active?(context)
+    if Changesets::MigrateRecipeTagToObject.active?(context)
+      # Here's the new behavior, returning full objects:
       all_flag_objects
     else
       # Convert this to enum values, for legacy behavior:

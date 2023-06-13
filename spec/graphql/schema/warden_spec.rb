@@ -214,19 +214,6 @@ module MaskHelpers
     end
   end
 
-  module FilterInstrumentation
-    def self.before_query(query)
-      if query.context[:filters]
-        query.context[:except] = MaskHelpers.build_mask(
-          only: query.context[:filters][:only],
-          except: query.context[:filters][:except],
-        )
-      end
-    end
-
-    def self.after_query(q); end
-  end
-
   class Schema < GraphQL::Schema
     query QueryType
     mutation MutationType
@@ -236,16 +223,15 @@ module MaskHelpers
       PhonemeType
     end
 
-    instrument :query, FilterInstrumentation
-
     def self.visible?(member, context)
-      visible_by_mask = if context[:except]
-        !context[:except].call(member, context)
-      else
-        true
+      result = super(member, context)
+      if result && context[:only] && !Array(context[:only]).all? { |func| func.call(member, context) }
+        return false
       end
-
-      visible_by_mask && super
+      if result && context[:except] && Array(context[:except]).any? { |func| func.call(member, context) }
+        return false
+      end
+      result
     end
   end
 
@@ -261,6 +247,17 @@ module MaskHelpers
   end
 
   def self.run_query(str, **kwargs)
+    filters = {}
+    if (only = kwargs.delete(:only))
+      filters[:only] = only
+    end
+    if (except = kwargs.delete(:except))
+      filters[:except] = except
+    end
+    if filters.any?
+      context = kwargs[:context] ||= {}
+      context[:filters] = filters
+    end
     Schema.execute(str, **kwargs.merge(root_value: Data))
   end
 end
@@ -465,16 +462,8 @@ describe GraphQL::Schema::Warden do
       |
 
       schema = GraphQL::Schema.from_definition(sdl)
-      schema.class_eval do
-        def self.visible?(member, context)
-          visible_by_mask = if context[:except]
-            !context[:except].call(member, context)
-          else
-            true
-          end
-
-          visible_by_mask && super
-        end
+      schema.define_singleton_method(:visible?) do |member, ctx|
+        super(member, ctx) && (ctx[:hiding] ? member.graphql_name != "Repository" : true)
       end
 
       query_string = %|
@@ -485,7 +474,7 @@ describe GraphQL::Schema::Warden do
       res = schema.execute(query_string)
       assert res["data"]["Node"]
 
-      res = schema.execute(query_string, context: { except: ->(m, _) { m.graphql_name == "Repository" } })
+      res = schema.execute(query_string, context: { hiding: true })
       assert_nil res["data"]["Node"]
     end
 
@@ -509,13 +498,12 @@ describe GraphQL::Schema::Warden do
         query(Query)
 
         def self.visible?(member, context)
-          visible_by_mask = if context[:except]
+          res = super(member, context)
+          if res && context[:except]
             !context[:except].call(member, context)
           else
-            true
+            res
           end
-
-          visible_by_mask && super
         end
       end
 
@@ -572,15 +560,12 @@ describe GraphQL::Schema::Warden do
       "
 
       schema = GraphQL::Schema.from_definition(sdl)
-      schema.class_eval do
-        def self.visible?(member, context)
-          visible_by_mask = if context[:except]
-            !context[:except].call(member, context)
-          else
-            true
-          end
-
-          visible_by_mask && super
+      schema.define_singleton_method(:visible?) do |member, context|
+        res = super(member, context)
+        if res && context[:except]
+          !context[:except].call(member, context)
+        else
+          res
         end
       end
 
@@ -921,35 +906,6 @@ describe GraphQL::Schema::Warden do
     end
   end
 
-  describe "default_mask" do
-    let(:default_mask) {
-      ->(member, ctx) { MaskHelpers.has_flag?(member, :hidden_enum_value) }
-    }
-    let(:schema) {
-      m = default_mask
-      Class.new(MaskHelpers::Schema) do
-        define_singleton_method(:visible?) do |member, context|
-          (!m.call(member, context)) && super(member, context)
-        end
-      end
-    }
-    let(:query_str) { <<-GRAPHQL
-      {
-        enum: __type(name: "Manner") { enumValues { name } }
-        input: __type(name: "WithinInput") { name }
-      }
-    GRAPHQL
-    }
-
-    it "is additive with query filters" do
-      query_except = ->(member, ctx) { MaskHelpers.has_flag?(member, :hidden_input_object_type) }
-      res = schema.execute(query_str, context: { except: query_except })
-      assert_nil res["data"]["input"]
-      enum_values = res["data"]["enum"]["enumValues"].map { |v| v["name"] }
-      refute_includes enum_values, "TRILL"
-    end
-  end
-
   describe "multiple filters" do
     let(:visible_enum_value) { ->(member, ctx) { !MaskHelpers.has_flag?(member, :hidden_enum_value) } }
     let(:visible_abstract_type) { ->(member, ctx) { !MaskHelpers.has_flag?(member, :hidden_abstract_type) } }
@@ -1005,11 +961,11 @@ describe GraphQL::Schema::Warden do
       end
 
       it "applies multiple filters" do
-        filters = {
+        context = {
           only: [visible_enum_value, visible_abstract_type],
           except: [hidden_input_object, hidden_type],
         }
-        res = MaskHelpers.run_query(query_str, context: { filters: filters })
+        res = MaskHelpers.run_query(query_str, context: context)
         assert_nil res["data"]["input"]
         enum_values = res["data"]["enum"]["enumValues"].map { |v| v["name"] }
         assert_equal 5, enum_values.length
@@ -1018,6 +974,28 @@ describe GraphQL::Schema::Warden do
         assert_equal 0, res["data"]["abstractType"]["interfaces"].length
         assert_nil res["data"]["type"]
       end
+    end
+  end
+
+  describe "NullWarden" do
+    it "implements all Warden methods" do
+      warden_methods = GraphQL::Schema::Warden.instance_methods - Object.methods
+      warden_methods.each do |method_name|
+        warden_params =  GraphQL::Schema::Warden.instance_method(method_name).parameters
+        assert GraphQL::Schema::Warden::NullWarden.method_defined?(method_name), "Null warden also responds to #{method_name} (#{warden_params})"
+        assert_equal warden_params, GraphQL::Schema::Warden::NullWarden.instance_method(method_name).parameters,"#{method_name} has the same parameters"
+      end
+    end
+  end
+
+  describe "PassThruWarden is used when no warden is used" do
+    it "uses PassThruWarden when a hash is used for context" do
+      assert_equal GraphQL::Schema::Warden::PassThruWarden, GraphQL::Schema::Warden.from_context({})
+    end
+
+    it "uses PassThruWarden when a warden on the context nor query" do
+      context = GraphQL::Query::Context.new(query: OpenStruct.new(schema: GraphQL::Schema.new), values: {}, object: nil)
+      assert_equal GraphQL::Schema::Warden::PassThruWarden, GraphQL::Schema::Warden.from_context(context)
     end
   end
 end

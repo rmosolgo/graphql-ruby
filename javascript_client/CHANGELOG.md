@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.11.8 (9 May 2023)
+
+- ActionCable: accept a custom `channelName` for `createActionCableHandler` and `addGraphQLSubscriptions` #4463
+
 # 1.11.7 (24 February 2023)
 
 - ActionCableLink: fix race condition #4359

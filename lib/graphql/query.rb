@@ -97,14 +97,17 @@ module GraphQL
 
       # Support `ctx[:backtrace] = true` for wrapping backtraces
       if context && context[:backtrace] && !@tracers.include?(GraphQL::Backtrace::Tracer)
-        context_tracers += [GraphQL::Backtrace::Tracer]
-        @tracers << GraphQL::Backtrace::Tracer
+        if schema.trace_class <= GraphQL::Tracing::CallLegacyTracers
+          context_tracers += [GraphQL::Backtrace::Tracer]
+          @tracers << GraphQL::Backtrace::Tracer
+        elsif !(current_trace.class <= GraphQL::Backtrace::Trace)
+          raise "Invariant: `backtrace: true` should have provided a trace class with Backtrace mixed in, but it didnt. (Found: #{current_trace.class.ancestors}). This is a bug in GraphQL-Ruby, please report it on GitHub."
+        end
       end
 
-      if context_tracers.any? && !(schema.trace_class <= GraphQL::Tracing::LegacyTrace)
-        raise ArgumentError, "context[:tracers] and context[:backtrace] are not supported without `trace_class(GraphQL::Tracing::LegacyTrace)` in the schema configuration, please add it."
+      if context_tracers.any? && !(schema.trace_class <= GraphQL::Tracing::CallLegacyTracers)
+        raise ArgumentError, "context[:tracers] are not supported without `trace_with(GraphQL::Tracing::CallLegacyTracers)` in the schema configuration, please add it."
       end
-
 
       @analysis_errors = []
       if variables.is_a?(String)
@@ -159,7 +162,7 @@ module GraphQL
 
     # @return [GraphQL::Tracing::Trace]
     def current_trace
-      @current_trace ||= multiplex ? multiplex.current_trace : schema.new_trace(multiplex: multiplex, query: self)
+      @current_trace ||= context[:trace] || (multiplex ? multiplex.current_trace : schema.new_trace(multiplex: multiplex, query: self))
     end
 
     def subscription_update?
@@ -309,7 +312,7 @@ module GraphQL
     # @param abstract_type [GraphQL::UnionType, GraphQL::InterfaceType]
     # @param value [Object] Any runtime value
     # @return [GraphQL::ObjectType, nil] The runtime type of `value` from {Schema#resolve_type}
-    # @see {#possible_types} to apply filtering from `visible?` methods
+    # @see {#possible_types} to apply filtering from `only` / `except`
     def resolve_type(abstract_type, value = NOT_CONFIGURED)
       if value.is_a?(Symbol) && value == NOT_CONFIGURED
         # Old method signature
@@ -339,6 +342,18 @@ module GraphQL
       schema.handle_or_reraise(context, err)
     end
 
+    def after_lazy(value, &block)
+      if !defined?(@runtime_instance)
+        @runtime_instance = context.namespace(:interpreter_runtime)[:runtime]
+      end
+
+      if @runtime_instance
+        @runtime_instance.minimal_after_lazy(value, &block)
+      else
+        @schema.after_lazy(value, &block)
+      end
+    end
+
     private
 
     def find_operation(operations, operation_name)
@@ -353,7 +368,7 @@ module GraphQL
 
     def prepare_ast
       @prepared_ast = true
-      @warden ||= GraphQL::Schema::Warden.new(schema: @schema, context: @context)
+      @warden ||= @schema.warden_class.new(schema: @schema, context: @context)
       parse_error = nil
       @document ||= begin
         if query_string

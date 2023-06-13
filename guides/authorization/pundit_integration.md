@@ -411,11 +411,11 @@ Here's an example of how the custom hooks can be installed:
 ```ruby
 module CustomPolicyLookup
   # Lookup policies in the `SystemAdmin::` namespace for system_admin users
+  # @return [Class]
   def pundit_policy_class_for(object, context)
     current_user = context[:current_user]
     if current_user.system_admin?
-      policy_class = SystemAdmin.const_get("#{object.class.name}Policy")
-      policy_class.new(current_user, object)
+      SystemAdmin.const_get("#{object.class.name}Policy")
     else
       super
     end

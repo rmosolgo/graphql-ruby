@@ -53,6 +53,9 @@ module GraphQL
         query_root = Class.new(GraphQL::Schema::Object) do
           graphql_name "Root"
           field :throwaway_field, String
+          def self.visible?(ctx)
+            false
+          end
         end
         schema = Class.new(GraphQL::Schema) {
           query(query_root)

@@ -649,37 +649,33 @@ type Query {
 }
 SCHEMA
 
-    only_filter = ->(member, ctx) {
-      case member
-      when Module
-        if !member.respond_to?(:kind)
-          true
-        else
-          case member.kind.name
-          when "SCALAR"
+    custom_filter_schema = Class.new(schema) do
+      def self.visible?(member, ctx)
+        case member
+        when Module
+          if !member.respond_to?(:kind)
             true
-          when "OBJECT", "UNION", "INTERFACE"
-            ctx[:names].include?(member.graphql_name)
           else
-            false
+            case member.kind.name
+            when "SCALAR"
+              true
+            when "OBJECT", "UNION", "INTERFACE"
+              ctx[:names].include?(member.graphql_name)
+            else
+              false
+            end
+          end
+        when GraphQL::Schema::Argument
+          member.graphql_name != "id"
+        else
+          if member.respond_to?(:deprecation_reason)
+            member.deprecation_reason.nil?
           end
         end
-      when GraphQL::Schema::Argument
-        member.graphql_name != "id"
-      else
-        if member.respond_to?(:deprecation_reason)
-          member.deprecation_reason.nil?
-        end
-      end
-    }
-
-    context = { names: ["Query", "Post"], only_filter: only_filter }
-    only_schema = Class.new(schema) do
-      def self.visible?(member, ctx)
-        ctx[:only_filter].call(member, ctx)
       end
     end
-    assert_equal expected, only_schema.to_definition(context: context)
+    context = { names: ["Query", "Post"] }
+    assert_equal expected, custom_filter_schema.to_definition(context: context)
   end
 
 
@@ -775,16 +771,14 @@ type Subscription {
 }
 SCHEMA
 
-    except_filter = ->(member, ctx) {
-      ctx[:names].include?(member.graphql_name) || (member.respond_to?(:deprecation_reason) && member.deprecation_reason)
-    }
-    except_schema = Class.new(schema) do
+    custom_filter_schema = Class.new(schema) do
       def self.visible?(member, ctx)
-        !ctx[:except].call(member, ctx)
+        !(ctx[:names].include?(member.graphql_name) || (member.respond_to?(:deprecation_reason) && member.deprecation_reason))
       end
     end
-    context = { names: ["Varied", "Image", "Sub"], except: except_filter }
-    assert_equal expected, except_schema.to_definition(context: context)
+
+    context = { names: ["Varied", "Image", "Sub"] }
+    assert_equal expected, custom_filter_schema.to_definition(context: context)
   end
 
   describe "#print_type" do

@@ -70,7 +70,7 @@ module GraphQL
         else
           ready?
         end
-        context.schema.after_lazy(ready_val) do |is_ready, ready_early_return|
+        context.query.after_lazy(ready_val) do |is_ready, ready_early_return|
           if ready_early_return
             if is_ready != false
               raise "Unexpected result from #ready? (expected `true`, `false` or `[false, {...}]`): [#{is_ready.inspect}, #{ready_early_return.inspect}]"
@@ -81,7 +81,7 @@ module GraphQL
             # Then call each prepare hook, which may return a different value
             # for that argument, or may return a lazy object
             load_arguments_val = load_arguments(args)
-            context.schema.after_lazy(load_arguments_val) do |loaded_args|
+            context.query.after_lazy(load_arguments_val) do |loaded_args|
               @prepared_arguments = loaded_args
               Schema::Validator.validate!(self.class.validators, object, context, loaded_args, as: @field)
               # Then call `authorized?`, which may raise or may return a lazy object
@@ -90,7 +90,7 @@ module GraphQL
               else
                 authorized?
               end
-              context.schema.after_lazy(authorized_val) do |(authorized_result, early_return)|
+              context.query.after_lazy(authorized_val) do |(authorized_result, early_return)|
                 # If the `authorized?` returned two values, `false, early_return`,
                 # then use the early return value instead of continuing
                 if early_return
@@ -185,7 +185,7 @@ module GraphQL
           if arg_defn
             prepped_value = prepared_args[key] = arg_defn.load_and_authorize_value(self, value, context)
             if context.schema.lazy?(prepped_value)
-              prepare_lazies << context.schema.after_lazy(prepped_value) do |finished_prepped_value|
+              prepare_lazies << context.query.after_lazy(prepped_value) do |finished_prepped_value|
                 prepared_args[key] = finished_prepped_value
               end
             end

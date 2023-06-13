@@ -332,7 +332,13 @@ type Query {
       }
 
       let(:document) {
-        subject.new(schema).document
+        doc_schema = Class.new(schema) do
+          def self.visible?(m, _ctx)
+            m.respond_to?(:graphql_name) && m.graphql_name != "Type"
+          end
+        end
+
+        subject.new(doc_schema).document
       }
 
       it "returns the IDL minus the filtered members" do
@@ -388,7 +394,13 @@ type Query {
       }
 
       let(:document) {
-        subject.new(schema).document
+        doc_schema = Class.new(schema) do
+          def self.visible?(m, _ctx)
+            !(m.respond_to?(:kind) && m.kind.scalar? && m.name == "CustomScalar")
+          end
+        end
+
+        subject.new(doc_schema).document
       }
 
       it "returns the IDL minus the filtered members" do

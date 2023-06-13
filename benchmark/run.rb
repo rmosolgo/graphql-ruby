@@ -132,12 +132,13 @@ module GraphQLBenchmark
   def self.profile_large_introspection
     schema = SILLY_LARGE_SCHEMA
     Benchmark.ips do |x|
+      x.config(time: 10)
       x.report("Run large introspection") {
         schema.to_json
       }
     end
 
-    result = StackProf.run(mode: :wall, interval: 10) do
+    result = StackProf.run(mode: :wall) do
       schema.to_json
     end
     StackProf::Report.new(result).print_text
@@ -204,6 +205,7 @@ module GraphQLBenchmark
     schema = ProfileLargeResult::Schema
     document = ProfileLargeResult::ALL_FIELDS
     Benchmark.ips do |x|
+      x.config(time: 10)
       x.report("Querying for #{ProfileLargeResult::DATA.size} objects") {
         schema.execute(document: document)
       }
@@ -254,11 +256,14 @@ module GraphQLBenchmark
     end
 
 
+    class ExampleExtension < GraphQL::Schema::FieldExtension
+    end
+
     class FooType < GraphQL::Schema::Object
       implements Baz
-      field :id, ID, null: false
-      field :int1, Integer, null: false
-      field :int2, Integer, null: false
+      field :id, ID, null: false, extensions: [ExampleExtension]
+      field :int1, Integer, null: false, extensions: [ExampleExtension]
+      field :int2, Integer, null: false, extensions: [ExampleExtension]
       field :string1, String, null: false do
         argument :arg1, String, required: false
         argument :arg2, String, required: false

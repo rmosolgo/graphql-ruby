@@ -198,8 +198,8 @@ module GraphQL
 
       def statically_coercible?
         return @statically_coercible if defined?(@statically_coercible)
-
-        @statically_coercible = !@prepare.is_a?(String) && !@prepare.is_a?(Symbol)
+        requires_parent_object = @prepare.is_a?(String) || @prepare.is_a?(Symbol) || @own_validators
+        @statically_coercible = !requires_parent_object
       end
 
       # Apply the {prepare} configuration to `value`, using methods from `obj`.
@@ -264,7 +264,7 @@ module GraphQL
 
         # If this isn't lazy, then the block returns eagerly and assigns the result here
         # If it _is_ lazy, then we write the lazy to the hash, then update it later
-        argument_values[arg_key] = context.schema.after_lazy(coerced_value) do |resolved_coerced_value|
+        argument_values[arg_key] = context.query.after_lazy(coerced_value) do |resolved_coerced_value|
           owner.validate_directive_argument(self, resolved_coerced_value)
           prepared_value = begin
             prepare_value(parent_object, resolved_coerced_value, context: context)
@@ -281,7 +281,7 @@ module GraphQL
           end
 
           maybe_loaded_value = loaded_value || prepared_value
-          context.schema.after_lazy(maybe_loaded_value) do |resolved_loaded_value|
+          context.query.after_lazy(maybe_loaded_value) do |resolved_loaded_value|
             # TODO code smell to access such a deeply-nested constant in a distant module
             argument_values[arg_key] = GraphQL::Execution::Interpreter::ArgumentValue.new(
               value: resolved_loaded_value,
@@ -303,7 +303,7 @@ module GraphQL
           else
             load_method_owner.public_send(arg_load_method, coerced_value)
           end
-          context.schema.after_lazy(custom_loaded_value) do |custom_value|
+          context.query.after_lazy(custom_loaded_value) do |custom_value|
             if loads
               if type.list?
                 loaded_values = custom_value.each_with_index.map { |custom_val, idx|
