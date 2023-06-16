@@ -131,7 +131,7 @@ module GraphQL
         "$#{variable_identifier.name}".dup
       end
 
-      def print_schema_definition(schema)
+      def print_schema_definition(schema, extension: false)
         has_conventional_names = (schema.query.nil? || schema.query == 'Query') &&
           (schema.mutation.nil? || schema.mutation == 'Mutation') &&
           (schema.subscription.nil? || schema.subscription == 'Subscription')
@@ -140,7 +140,7 @@ module GraphQL
           return
         end
 
-        out = "schema".dup
+        out = extension ? "extend schema".dup : "schema".dup
         if schema.directives.any?
           schema.directives.each do |dir|
             out << "\n  "
@@ -164,14 +164,14 @@ module GraphQL
         out
       end
 
-      def print_scalar_type_definition(scalar_type)
-        out = print_description(scalar_type)
+      def print_scalar_type_definition(scalar_type, extension: false)
+        out = extension ? "extend ".dup : print_description(scalar_type)
         out << "scalar #{scalar_type.name}"
         out << print_directives(scalar_type.directives)
       end
 
-      def print_object_type_definition(object_type)
-        out = print_description(object_type)
+      def print_object_type_definition(object_type, extension: false)
+        out = extension ? "extend ".dup : print_description(object_type)
         out << "type #{object_type.name}"
         out << print_implements(object_type) unless object_type.interfaces.empty?
         out << print_directives(object_type.directives)
@@ -210,23 +210,23 @@ module GraphQL
         out << print_directives(field.directives)
       end
 
-      def print_interface_type_definition(interface_type)
-        out = print_description(interface_type)
+      def print_interface_type_definition(interface_type, extension: false)
+        out = extension ? "extend ".dup : print_description(interface_type)
         out << "interface #{interface_type.name}"
         out << print_implements(interface_type) if interface_type.interfaces.any?
         out << print_directives(interface_type.directives)
         out << print_field_definitions(interface_type.fields)
       end
 
-      def print_union_type_definition(union_type)
-        out = print_description(union_type)
+      def print_union_type_definition(union_type, extension: false)
+        out = extension ? "extend ".dup : print_description(union_type)
         out << "union #{union_type.name}"
         out << print_directives(union_type.directives)
         out << " = " + union_type.types.map(&:name).join(" | ")
       end
 
-      def print_enum_type_definition(enum_type)
-        out = print_description(enum_type)
+      def print_enum_type_definition(enum_type, extension: false)
+        out = extension ? "extend ".dup : print_description(enum_type)
         out << "enum #{enum_type.name}#{print_directives(enum_type.directives)} {\n"
         enum_type.values.each.with_index do |value, i|
           out << print_description(value, indent: '  ', first_in_block: i == 0)
@@ -241,8 +241,8 @@ module GraphQL
         out << "\n"
       end
 
-      def print_input_object_type_definition(input_object_type)
-        out = print_description(input_object_type)
+      def print_input_object_type_definition(input_object_type, extension: false)
+        out = extension ? "extend ".dup : print_description(input_object_type)
         out << "input #{input_object_type.name}"
         out << print_directives(input_object_type.directives)
         if !input_object_type.fields.empty?
@@ -347,24 +347,38 @@ module GraphQL
           print_variable_identifier(node)
         when Nodes::SchemaDefinition
           print_schema_definition(node)
+        when Nodes::SchemaExtension
+          print_schema_definition(node, extension: true)
         when Nodes::ScalarTypeDefinition
           print_scalar_type_definition(node)
+        when Nodes::ScalarTypeExtension
+          print_scalar_type_definition(node, extension: true)
         when Nodes::ObjectTypeDefinition
           print_object_type_definition(node)
+        when Nodes::ObjectTypeExtension
+          print_object_type_definition(node, extension: true)
         when Nodes::InputValueDefinition
           print_input_value_definition(node)
         when Nodes::FieldDefinition
           print_field_definition(node)
         when Nodes::InterfaceTypeDefinition
           print_interface_type_definition(node)
+        when Nodes::InterfaceTypeExtension
+          print_interface_type_definition(node, extension: true)
         when Nodes::UnionTypeDefinition
           print_union_type_definition(node)
+        when Nodes::UnionTypeExtension
+          print_union_type_definition(node, extension: true)
         when Nodes::EnumTypeDefinition
           print_enum_type_definition(node)
+        when Nodes::EnumTypeExtension
+          print_enum_type_definition(node, extension: true)
         when Nodes::EnumValueDefinition
           print_enum_value_definition(node)
         when Nodes::InputObjectTypeDefinition
           print_input_object_type_definition(node)
+        when Nodes::InputObjectTypeExtension
+          print_input_object_type_definition(node, extension: true)
         when Nodes::DirectiveDefinition
           print_directive_definition(node)
         when FalseClass, Float, Integer, NilClass, String, TrueClass, Symbol
