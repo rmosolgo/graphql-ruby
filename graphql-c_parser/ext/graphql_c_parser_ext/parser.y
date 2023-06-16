@@ -864,7 +864,8 @@ type_system_definition:
 
 // Custom functions
 int yylex (YYSTYPE *lvalp, VALUE parser, VALUE filename) {
-  int next_token_idx = FIX2INT(rb_ivar_get(parser, rb_intern("@next_token_index")));
+  VALUE next_token_idx_rb_int = rb_ivar_get(parser, rb_intern("@next_token_index"));
+  int next_token_idx = FIX2INT(next_token_idx_rb_int);
   VALUE tokens = rb_ivar_get(parser, rb_intern("@tokens"));
   VALUE next_token = rb_ary_entry(tokens, next_token_idx);
 
@@ -874,7 +875,15 @@ int yylex (YYSTYPE *lvalp, VALUE parser, VALUE filename) {
   rb_ivar_set(parser, rb_intern("@next_token_index"), INT2FIX(next_token_idx + 1));
   VALUE token_type_rb_int = rb_ary_entry(next_token, 5);
   int next_token_type = FIX2INT(token_type_rb_int);
-
+  if (next_token_type == 241) { // BAD_UNICODE_ESCAPE
+    VALUE mGraphQL = rb_const_get_at(rb_cObject, rb_intern("GraphQL"));
+    VALUE mCParser = rb_const_get_at(mGraphQL, rb_intern("CParser"));
+    VALUE bad_unicode_error = rb_funcall(
+        mCParser, rb_intern("prepare_bad_unicode_error"), 1,
+        parser
+    );
+    rb_exc_raise(bad_unicode_error);
+  }
   *lvalp = next_token;
   return next_token_type;
 }

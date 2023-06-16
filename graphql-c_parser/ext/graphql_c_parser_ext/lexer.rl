@@ -183,7 +183,8 @@ typedef enum TokenType {
   BLOCK_STRING,
   QUOTED_STRING,
   UNKNOWN_CHAR,
-  COMMENT
+  COMMENT,
+  BAD_UNICODE_ESCAPE
 } TokenType;
 
 typedef struct Meta {
@@ -299,6 +300,10 @@ void emit(TokenType tt, char *ts, char *te, Meta *meta) {
         token_content = rb_funcall(mGraphQLLanguageBlockString, rb_intern("trim_whitespace"), 1, token_content);
       }
 
+      // The parser doesn't distinguish between these,
+      // Maybe updated below if it's invalid UTF-8
+      tt = STRING;
+
       if (
         RB_TEST(rb_funcall(token_content, rb_intern("valid_encoding?"), 0)) &&
           RB_TEST(rb_funcall(token_content, rb_intern("match?"), 1, valid_string_pattern))
@@ -306,14 +311,12 @@ void emit(TokenType tt, char *ts, char *te, Meta *meta) {
         rb_funcall(mGraphQLLanguageLexer, rb_intern("replace_escaped_characters_in_place"), 1, token_content);
         if (!RB_TEST(rb_funcall(token_content, rb_intern("valid_encoding?"), 0))) {
           token_sym = ID2SYM(rb_intern("BAD_UNICODE_ESCAPE"));
+          tt = BAD_UNICODE_ESCAPE;
         }
-
-
       } else {
         token_sym = ID2SYM(rb_intern("BAD_UNICODE_ESCAPE"));
+        tt = BAD_UNICODE_ESCAPE;
       }
-      // The parser doesn't distinguish between these:
-      tt = STRING;
     }
 
     VALUE token = rb_ary_new_from_args(6,
