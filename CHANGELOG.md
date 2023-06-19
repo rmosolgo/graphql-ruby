@@ -10,6 +10,26 @@
 
 ### Bug fixes
 
+# 2.0.23 (19 Jun 2023)
+
+### New features
+
+- Printer: print extensions in SDL #4516
+- Trace: accept trace instances during query execution  #4497
+- AlwaysVisible: Make a way to bypass type visibility #4442, #4491
+
+### Bug fixes
+
+- Tests: fix assertion for Ruby 3.3.0-dev #4515
+- Performance: improve fragment possible type lookup #4506
+- Docs: document Timeout can handle floats #4505
+- Performance: use a dedicated object for field extension state #4401
+- Backtrace: fix `backtrace: true` with other trace modules #4505
+- Handle `context.warden` being nil #4503
+- Dev: disable Minitest::Reporters for RubyMin #4494
+- Trace: fix compatibility with inheritance #4487
+- Context: fix NullContext compatibility with fetch, dig and key? #4483
+
 # 2.0.22 (17 May 2023)
 
 ### New features
