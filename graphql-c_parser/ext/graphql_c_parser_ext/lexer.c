@@ -1981,7 +1981,7 @@ rb_funcall(GraphQLTokenString##token_name, rb_intern("-@"), 0); \
 rb_global_variable(&GraphQLTokenString##token_name); \
 
 #define SETUP_STATIC_STRING(var_name, str_content) \
-var_name = rb_str_new_cstr(str_content); \
+var_name = rb_utf8_str_new(str_content); \
 rb_global_variable(&var_name); \
 rb_str_freeze(var_name); \
 
