@@ -58,6 +58,12 @@ module LexerExamples
           assert_equal :BAD_UNICODE_ESCAPE, subject.tokenize(string).first.name
         end
 
+        it "makes utf-8 arguments named type" do
+          str = "{ a(type: 1) }"
+          tokens = subject.tokenize(str)
+          assert_equal Encoding::UTF_8, tokens[2].value.encoding
+        end
+
         it "makes utf-8 comments" do
           tokens = subject.tokenize("# 不要!\n{")
           comment_token = tokens.first.prev_token
