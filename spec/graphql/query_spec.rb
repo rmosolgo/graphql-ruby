@@ -752,6 +752,67 @@ describe GraphQL::Query do
     end
   end
 
+  describe "static_validator" do
+    module ZebraRule
+      def on_field(node, _parent)
+        if node.name != "zebra"
+          add_error(GraphQL::StaticValidation::Error.new("Invalid field name", nodes: node))
+        else
+          super
+        end
+      end
+    end
+
+    it "provides a custom validator for the query" do
+      validator = GraphQL::StaticValidation::Validator.new(schema: schema, rules: [ZebraRule])
+
+      query = GraphQL::Query.new(schema, "{ zebra }")
+      query.static_validator = validator
+      assert_equal true, query.valid?
+      assert_equal 0, query.static_errors.length
+
+      query = GraphQL::Query.new(schema, "{ zebra }", static_validator: validator)
+      assert_equal true, query.valid?
+      assert_equal 0, query.static_errors.length
+
+      query = GraphQL::Query.new(schema, "{ arbez }", static_validator: validator)
+      assert_equal false, query.valid?
+      assert_equal 1, query.static_errors.length
+    end
+
+    it "must be a GraphQL::StaticValidation::Validator" do
+      invalid_validator = {}
+
+      err1 = assert_raises ArgumentError do
+        GraphQL::Query.new(schema, "{ zebra }", static_validator: invalid_validator)
+      end
+
+      err2 = assert_raises ArgumentError do
+        GraphQL::Query.new(schema, "{ zebra }")
+        query.static_validator = invalid_validator
+      end
+
+      expected_message = "Expected a `GraphQL::StaticValidation::Validator` instance."
+      assert_equal expected_message, err1.message
+      assert_equal expected_message, err2.message
+    end
+
+    it "can't be reassigned after validating" do
+      query = GraphQL::Query.new(schema, "{ zebra }")
+
+      query.static_validator = GraphQL::StaticValidation::Validator.new(schema: schema, rules: [ZebraRule])
+      assert_equal true, query.valid?
+      assert_equal 0, query.static_errors.length
+
+      err = assert_raises ArgumentError do
+        query.static_validator = GraphQL::StaticValidation::Validator.new(schema: schema, rules: [ZebraRule])
+      end
+
+      expected_message = "Can't reassign Query#static_validator= after validation has run, remove this assignment."
+      assert_equal expected_message, err.message
+    end
+  end
+
   describe "validating with optional arguments and variables: nil" do
     it "works" do
       query_str = <<-GRAPHQL
