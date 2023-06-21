@@ -1,5 +1,9 @@
 # GraphQL::CParser
 
+## 1.0.4
+
+- Use UTF-8 encoding for static strings #4526
+
 ## 1.0.3
 
 - Raise a `ParseError` on bad Unicode escapes (like the Ruby parser) #4514
