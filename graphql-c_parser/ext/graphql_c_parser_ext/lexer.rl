@@ -282,7 +282,7 @@ void emit(TokenType tt, char *ts, char *te, Meta *meta) {
       token_sym = ID2SYM(rb_intern("STRING"));
       quotes_length = 3;
       token_content = rb_utf8_str_new(ts + quotes_length, (te - ts - (2 * quotes_length)));
-      line_incr = FIX2INT(rb_funcall(token_content, rb_intern("count"), 1, rb_str_new_cstr("\n")));
+      line_incr = FIX2INT(rb_funcall(token_content, rb_intern("count"), 1, rb_utf8_str_new_cstr("\n")));
       break;
     case STRING:
       // This is used only by the parser, this is never reached
@@ -359,12 +359,12 @@ VALUE tokenize(VALUE query_rbstr) {
 
 
 #define SETUP_STATIC_TOKEN_VARIABLE(token_name, token_content) \
-  GraphQLTokenString##token_name = rb_str_new_cstr(token_content); \
+  GraphQLTokenString##token_name = rb_utf8_str_new_cstr(token_content); \
   rb_funcall(GraphQLTokenString##token_name, rb_intern("-@"), 0); \
   rb_global_variable(&GraphQLTokenString##token_name); \
 
 #define SETUP_STATIC_STRING(var_name, str_content) \
-  var_name = rb_str_new_cstr(str_content); \
+  var_name = rb_utf8_str_new_cstr(str_content); \
   rb_global_variable(&var_name); \
   rb_str_freeze(var_name); \
 
