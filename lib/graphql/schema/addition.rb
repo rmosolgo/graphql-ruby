@@ -49,7 +49,12 @@ module GraphQL
 
       def add_type_and_traverse(new_types)
         late_types = []
-        new_types.each { |t| add_type(t, owner: nil, late_types: late_types, path: [t.graphql_name]) }
+        path = []
+        new_types.each do |t|
+          path.push(t.graphql_name)
+          add_type(t, owner: nil, late_types: late_types, path: path)
+          path.pop
+        end
         missed_late_types = 0
         while (late_type_vals = late_types.shift)
           type_owner, lt = late_type_vals
@@ -160,7 +165,9 @@ module GraphQL
           type.all_argument_definitions.each do |arg|
             arg_type = arg.type.unwrap
             references_to(arg_type, from: arg)
-            add_type(arg_type, owner: arg, late_types: late_types, path: path + [arg.graphql_name])
+            path.push(arg.graphql_name)
+            add_type(arg_type, owner: arg, late_types: late_types, path: path)
+            path.pop
             if arg.default_value?
               @arguments_with_default_values << arg
             end
@@ -181,18 +188,21 @@ module GraphQL
               name = field.graphql_name
               field_type = field.type.unwrap
               references_to(field_type, from: field)
-              field_path = path + [name]
-              add_type(field_type, owner: field, late_types: late_types, path: field_path)
+              path.push(name)
+              add_type(field_type, owner: field, late_types: late_types, path: path)
               add_directives_from(field)
               field.all_argument_definitions.each do |arg|
                 add_directives_from(arg)
                 arg_type = arg.type.unwrap
                 references_to(arg_type, from: arg)
-                add_type(arg_type, owner: arg, late_types: late_types, path: field_path + [arg.graphql_name])
+                path.push(arg.graphql_name)
+                add_type(arg_type, owner: arg, late_types: late_types, path: path)
+                path.pop
                 if arg.default_value?
                   @arguments_with_default_values << arg
                 end
               end
+              path.pop
             end
           end
           if type.kind.input_object?
@@ -200,7 +210,9 @@ module GraphQL
               add_directives_from(arg)
               arg_type = arg.type.unwrap
               references_to(arg_type, from: arg)
-              add_type(arg_type, owner: arg, late_types: late_types, path: path + [arg.graphql_name])
+              path.push(arg.graphql_name)
+              add_type(arg_type, owner: arg, late_types: late_types, path: path)
+              path.pop
               if arg.default_value?
                 @arguments_with_default_values << arg
               end
@@ -208,14 +220,18 @@ module GraphQL
           end
           if type.kind.union?
             @possible_types[type.graphql_name] = type.all_possible_types
+            path.push("possible_types")
             type.all_possible_types.each do |t|
-              add_type(t, owner: type, late_types: late_types, path: path + ["possible_types"])
+              add_type(t, owner: type, late_types: late_types, path: path)
             end
+            path.pop
           end
           if type.kind.interface?
+            path.push("orphan_types")
             type.orphan_types.each do |t|
-              add_type(t, owner: type, late_types: late_types, path: path + ["orphan_types"])
+              add_type(t, owner: type, late_types: late_types, path: path)
             end
+            path.pop
           end
           if type.kind.object?
             possible_types_for_this_name = @possible_types[type.graphql_name] ||= []
@@ -223,6 +239,7 @@ module GraphQL
           end
 
           if type.kind.object? || type.kind.interface?
+            path.push("implements")
             type.interface_type_memberships.each do |interface_type_membership|
               case interface_type_membership
               when Schema::TypeMembership
@@ -237,8 +254,9 @@ module GraphQL
               else
                 raise ArgumentError, "Invariant: unexpected type membership for #{type.graphql_name}: #{interface_type_membership.class} (#{interface_type_membership.inspect})"
               end
-              add_type(interface_type, owner: type, late_types: late_types, path: path + ["implements"])
+              add_type(interface_type, owner: type, late_types: late_types, path: path)
             end
+            path.pop
           end
         end
       end
