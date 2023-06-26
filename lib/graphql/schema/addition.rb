@@ -40,9 +40,11 @@ module GraphQL
       end
 
       def add_directives_from(owner)
-        dirs = owner.directives.map(&:class)
-        @directives.merge(dirs)
-        add_type_and_traverse(dirs)
+        if (dir_instances = owner.directives).any?
+          dirs = dir_instances.map(&:class)
+          @directives.merge(dirs)
+          add_type_and_traverse(dirs)
+        end
       end
 
       def add_type_and_traverse(new_types)
