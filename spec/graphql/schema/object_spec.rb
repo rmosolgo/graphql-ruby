@@ -406,4 +406,74 @@ describe GraphQL::Schema::Object do
 
     assert_equal expected_default_shapes, type_defn_shapes
   end
+
+  describe "overriding wrap" do
+    class WrapOverrideSchema < GraphQL::Schema
+      module LogTrace
+        def trace(key, data)
+          if ((q = data[:query]) && (c = q.context))
+            c[:log] << key
+          end
+          yield
+        end
+        ["parse", "lex", "validate",
+        "analyze_query", "analyze_multiplex",
+        "execute_query", "execute_multiplex",
+        "execute_field", "execute_field_lazy",
+        "authorized", "authorized_lazy",
+        "resolve_type", "resolve_type_lazy",
+        "execute_query_lazy"].each do |method_name|
+          define_method(method_name) do |**data, &block|
+            trace(method_name, data, &block)
+          end
+        end
+      end
+
+      class SimpleMethodCallField < GraphQL::Schema::Field
+        def resolve(obj, args, ctx)
+          obj.public_send("resolve_#{@original_name}")
+        end
+      end
+
+      module CustomIntrospection
+        class DynamicFields < GraphQL::Introspection::DynamicFields
+          field_class(SimpleMethodCallField)
+          field :__typename, String
+
+          def self.wrap(obj, ctx)
+            OpenStruct.new(resolve___typename: "Wrapped")
+          end
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field_class(SimpleMethodCallField)
+        def self.wrap(obj, ctx)
+          OpenStruct.new(resolve_int: 5)
+        end
+        field :int, Integer, null: false
+      end
+
+      query(Query)
+      introspection(CustomIntrospection)
+      trace_with(LogTrace)
+    end
+
+    it "avoids calls to Object.authorized? and uses the returned object" do
+      log = []
+      res = WrapOverrideSchema.execute("{ __typename int }", context: { log: log })
+      assert_equal "Wrapped", res["data"]["__typename"]
+      assert_equal 5, res["data"]["int"]
+      expected_log = [
+        "validate",
+        "analyze_query",
+        "execute_query",
+        "execute_field",
+        "execute_field",
+        "execute_query_lazy"
+      ]
+
+      assert_equal expected_log, log
+    end
+  end
 end
