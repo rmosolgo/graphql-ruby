@@ -10,6 +10,18 @@
 
 ### Bug fixes
 
+# 2.0.24 (27 Jun 2023)
+
+### New features
+
+- `Schema::Object.wrap` can be used to customize how objects are (or aren't) wrapped by `GraphQL::Schema::Object` instances at runtime #5424
+- `Query`: accept a `static_validator:` option in `#initialize` to use instead of the default validation configuration.
+
+### Bug fixes
+
+- Performance: Reduce memory usage when adding types to a schema #4533
+- Performance, `Dataloader`: when loading specific keys, only run dataloader until those specific keys are resolved #4519
+
 # 2.0.23 (19 Jun 2023)
 
 ### New features
