@@ -92,42 +92,75 @@ module GraphQLBenchmark
     StackProf::Report.new(result).print_text
   end
 
-  SILLY_LARGE_SCHEMA = Class.new(GraphQL::Schema) do
-    query_t = Class.new(GraphQL::Schema::Object) do
-      graphql_name("Query")
-      int_ts = 5.times.map do |i|
-        int_t = Module.new do
-          include GraphQL::Schema::Interface
-          graphql_name "Interface#{i}"
-          5.times do |n2|
-            field :"field#{n2}", String do
-              argument :arg, String
+  def self.build_large_schema
+    Class.new(GraphQL::Schema) do
+      query_t = Class.new(GraphQL::Schema::Object) do
+        graphql_name("Query")
+        int_ts = 5.times.map do |i|
+          int_t = Module.new do
+            include GraphQL::Schema::Interface
+            graphql_name "Interface#{i}"
+            5.times do |n2|
+              field :"field#{n2}", String do
+                argument :arg, String
+              end
             end
           end
+          field :"int_field_#{i}", int_t
+          int_t
         end
-        field :"int_field_#{i}", int_t
-        int_t
-      end
 
-      100.times do |n|
-        obj_t = Class.new(GraphQL::Schema::Object) do
-          graphql_name("Object#{n}")
-          implements(*int_ts)
-          20.times do |n2|
-            field :"field#{n2}", String do
-              argument :arg, String
+        obj_ts = 100.times.map do |n|
+          obj_t = Class.new(GraphQL::Schema::Object) do
+            graphql_name("Object#{n}")
+            implements(*int_ts)
+            20.times do |n2|
+              field :"field#{n2}", String do
+                argument :arg, String
+              end
+
             end
-
+            field :self_field, self
+            field :int_0_field, int_ts[0]
           end
-          field :self_field, self
-          field :int_0_field, int_ts[0]
+
+          field :"rootfield#{n}", obj_t
+          obj_t
         end
 
-        field :"rootfield#{n}", obj_t
+        10.times do |n|
+          union_t = Class.new(GraphQL::Schema::Union) do
+            graphql_name "Union#{n}"
+            possible_types(*obj_ts.sample(10))
+          end
+          field :"unionfield#{n}", union_t
+        end
       end
+      query(query_t)
     end
-    query(query_t)
   end
+
+  def self.profile_boot
+    Benchmark.ips do |x|
+      x.config(time: 10)
+      x.report("Booting large schema") {
+        build_large_schema
+      }
+    end
+
+    result = StackProf.run(mode: :wall, interval: 1) do
+      build_large_schema
+    end
+    StackProf::Report.new(result).print_text
+
+    report = MemoryProfiler.report do
+      build_large_schema
+    end
+
+    report.pretty_print
+  end
+
+  SILLY_LARGE_SCHEMA = build_large_schema
 
   def self.profile_large_introspection
     schema = SILLY_LARGE_SCHEMA

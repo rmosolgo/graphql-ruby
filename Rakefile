@@ -120,6 +120,12 @@ namespace :bench do
     GraphQLBenchmark.profile_batch_loaders
   end
 
+  desc "Run benchmarks on schema creation"
+  task :profile_boot do
+    prepare_benchmark
+    GraphQLBenchmark.profile_boot
+  end
+
   desc "Check the memory footprint of a large schema"
   task :profile_schema_memory_footprint do
     prepare_benchmark

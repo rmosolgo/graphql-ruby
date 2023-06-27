@@ -339,7 +339,7 @@ module GraphQL
           self.validates(validates)
         end
 
-        if definition_block
+        if block_given?
           if definition_block.arity == 1
             yield self
           else
