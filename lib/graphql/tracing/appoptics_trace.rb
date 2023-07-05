@@ -55,20 +55,39 @@ module GraphQL
         RUBY
       end
 
-      def platform_execute_field(platform_key, data)
-        return super if !defined?(AppOpticsAPM) || gql_config[:enabled] == false
-        layer = platform_key
-        kvs = metadata(data, layer)
-
-        ::AppOpticsAPM::SDK.trace(layer, kvs) do
-          kvs.clear # we don't have to send them twice
-          yield
+      def execute_field(query:, field:, ast_node:, arguments:, object:)
+        return_type = field.type.unwrap
+        trace_field = if return_type.kind.scalar? || return_type.kind.enum?
+          (field.trace.nil? && @trace_scalars) || field.trace
+        else
+          true
         end
+        platform_key = if trace_field
+          @platform_key_cache[AppOpticsTrace].platform_field_key_cache[field]
+        else
+          nil
+        end
+        if platform_key && trace_field
+          return super if !defined?(AppOpticsAPM) || gql_config[:enabled] == false
+          layer = platform_key
+          kvs = metadata({query: query, field: field, ast_node: ast_node, arguments: arguments, object: object}, layer)
+
+          ::AppOpticsAPM::SDK.trace(layer, kvs) do
+            kvs.clear # we don't have to send them twice
+            super
+          end
+        else
+          super
+        end
+      end
+
+      def execute_field_lazy(query:, field:, ast_node:, arguments:, object:)
+        execute_field(query: query, field: field, ast_node: ast_node, arguments: arguments, object: object)
       end
 
       def authorized(**data)
         return super if !defined?(AppOpticsAPM) || gql_config[:enabled] == false
-        layer = @platform_authorized_key_cache[data[:type]]
+        layer = @platform_key_cache[AppOpticsTrace].platform_authorized_key_cache[data[:type]]
         kvs = metadata(data, layer)
 
         ::AppOpticsAPM::SDK.trace(layer, kvs) do
@@ -79,7 +98,7 @@ module GraphQL
 
       def authorized_lazy(**data)
         return super if !defined?(AppOpticsAPM) || gql_config[:enabled] == false
-        layer = @platform_authorized_key_cache[data[:type]]
+        layer = @platform_key_cache[AppOpticsTrace].platform_authorized_key_cache[data[:type]]
         kvs = metadata(data, layer)
 
         ::AppOpticsAPM::SDK.trace(layer, kvs) do
@@ -90,7 +109,8 @@ module GraphQL
 
       def resolve_type(**data)
         return super if !defined?(AppOpticsAPM) || gql_config[:enabled] == false
-        layer = @platform_resolve_type_key_cache[data[:type]]
+        layer = @platform_key_cache[AppOpticsTrace].platform_resolve_type_key_cache[data[:type]]
+
         kvs = metadata(data, layer)
 
         ::AppOpticsAPM::SDK.trace(layer, kvs) do
@@ -101,7 +121,7 @@ module GraphQL
 
       def resolve_type_lazy(**data)
         return super if !defined?(AppOpticsAPM) || gql_config[:enabled] == false
-        layer = @platform_resolve_type_key_cache[data[:type]]
+        layer = @platform_key_cache[AppOpticsTrace].platform_resolve_type_key_cache[data[:type]]
         kvs = metadata(data, layer)
 
         ::AppOpticsAPM::SDK.trace(layer, kvs) do
