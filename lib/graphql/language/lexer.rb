@@ -22,7 +22,7 @@ module GraphQL
         NULL =          /null\b/
         QUERY =         /query\b/
         MUTATION =      /mutation\b/
-        SUBSCRIPTION =  /subscription\b/
+        SUBSCRIPTION=  /subscription\b/
         SCHEMA =        /schema\b/
         SCALAR =        /scalar\b/
         TYPE =          /type\b/
