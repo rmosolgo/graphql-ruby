@@ -27,7 +27,9 @@ module GraphQL
           # This is a hack to avoid breaking the public API.
           query_options = query_options.map do |opts|
             opts = opts.dup
-            opts.delete(:enable_introspection_entry_points)
+            if opts.key?(:enable_introspection_entry_points)
+              opts.delete(:enable_introspection_entry_points)
+            end
             opts
           end
           queries = query_options.map do |opts|
