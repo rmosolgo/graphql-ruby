@@ -97,7 +97,7 @@ module GraphQL
     # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
     # @param except [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns truthy
     # @param only [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns false
-    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, static_validator: nil, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, except: nil, only: nil, warden: nil)
+    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, static_validator: nil, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, except: nil, only: nil, warden: nil, disable_introspection_entry_points: true)
       # Even if `variables: nil` is passed, use an empty hash for simpler logic
       variables ||= {}
       @schema = schema
@@ -114,6 +114,7 @@ module GraphQL
       self.static_validator = static_validator if static_validator
       context_tracers = (context ? context.fetch(:tracers, []) : [])
       @tracers = schema.tracers + context_tracers
+      @disable_introspection_entry_points = disable_introspection_entry_points
 
       # Support `ctx[:backtrace] = true` for wrapping backtraces
       if context && context[:backtrace] && !@tracers.include?(GraphQL::Backtrace::Tracer)

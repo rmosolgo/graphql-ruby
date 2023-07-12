@@ -712,6 +712,11 @@ module GraphQL
         @introspection_system = nil
       end
 
+      def enable_introspection_entry_points
+        @disable_introspection_entry_points = false
+        introspection_system
+      end
+
       def disable_schema_introspection_entry_point
         @disable_schema_introspection_entry_point = true
         # TODO: this clears the cache made in `def types`. But this is not a great solution.
@@ -1045,6 +1050,7 @@ module GraphQL
         if query_str
           kwargs[:query] = query_str
         end
+        enable_introspection_entry_points if kwargs[:enable_introspection_entry_points]
         # Some of the query context _should_ be passed to the multiplex, too
         multiplex_context = if (ctx = kwargs[:context])
           {

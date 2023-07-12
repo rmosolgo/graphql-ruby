@@ -22,6 +22,14 @@ module GraphQL
         # @param max_complexity [Integer, nil]
         # @return [Array<Hash>] One result per query
         def run_all(schema, query_options, context: {}, max_complexity: schema.max_complexity)
+          # Remove 'enable_introspection_entry_points' from the options hash
+          # before passing it to the query.
+          # This is a hack to avoid breaking the public API.
+          query_options = query_options.map do |opts|
+            opts = opts.dup
+            opts.delete(:enable_introspection_entry_points)
+            opts
+          end
           queries = query_options.map do |opts|
             case opts
             when Hash
