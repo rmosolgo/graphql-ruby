@@ -35,6 +35,9 @@ module GraphQL
               schema: @schema,
               context: schema_context,
             )
+        elsif (shape_name = schema_context[:schema_shape])
+          shape = @schema.shape_for(shape_name)
+          shape.warden
         else
           @schema.warden_class.new(
             schema: @schema,

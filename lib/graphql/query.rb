@@ -105,6 +105,11 @@ module GraphQL
         merge_filters(except: except, only: only)
       end
       @context = schema.context_class.new(query: self, object: root_value, values: context)
+      shape_name = @context[:schema_shape]
+      if shape_name && warden.nil?
+        shape = @schema.shape_for(shape_name)
+        warden = shape.warden
+      end
       @warden = warden
       @subscription_topic = subscription_topic
       @root_value = root_value

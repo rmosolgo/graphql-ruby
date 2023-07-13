@@ -13,6 +13,7 @@ require "graphql/schema/type_expression"
 require "graphql/schema/unique_within_type"
 require "graphql/schema/warden"
 require "graphql/schema/build_from_definition"
+require "graphql/schema/shape"
 
 require "graphql/schema/validator"
 require "graphql/schema/member"
@@ -1161,7 +1162,27 @@ module GraphQL
         end
       end
 
+      def shape(name, context: {})
+        own_shapes[name] = GraphQL::Schema::Shape.new(name: name, schema: self, context: context)
+        nil
+      end
+
+      def shape_for(name)
+        # TODO:
+        # - inheritance
+        # - test error case
+        own_shapes[name] || raise(ArgumentError, "No defined shape for #{name.inspect} (#{@own_shapes.size} defined shapes: #{@own_shapes.keys.map(&:inspect)})")
+      end
+
       private
+
+      def own_shapes
+        @own_shapes ||= begin
+          os = {}
+          os[:default] =  GraphQL::Schema::Shape.new(name: :default, schema: self, context: {})
+          os
+        end
+      end
 
       # @param t [Module, Array<Module>]
       # @return [void]

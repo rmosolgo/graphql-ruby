@@ -36,6 +36,14 @@ module GraphQL
           )
         end
 
+        def shapes(*new_shapes)
+          if new_shapes.any?
+            @own_shapes = new_shapes
+          else
+            @own_shapes || (superclass.respond_to?(:shapes) ? superclass.shapes : GraphQL::EmptyObjects::EMPTY_ARRAY)
+          end
+        end
+
         # Call this method to provide a new description; OR
         # call it without an argument to get the description
         # @param new_description [String]
@@ -56,6 +64,7 @@ module GraphQL
           def inherited(child_class)
             child_class.introspection(introspection)
             child_class.description(description)
+            child_class.shapes(*shapes)
             child_class.default_graphql_name = nil
 
             if defined?(@graphql_name) && @graphql_name && (self.name.nil? || graphql_name != default_graphql_name)
@@ -107,7 +116,8 @@ module GraphQL
         end
 
         def visible?(context)
-          true
+          # TODO use a Set for @own_shapes ?
+          @own_shapes ? @own_shapes.include?(context[:shape_name]) : true
         end
 
         def authorized?(object, context)
