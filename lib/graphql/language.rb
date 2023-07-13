@@ -29,7 +29,7 @@ module GraphQL
 
         "[#{serialized_array}]"
       else
-        JSON.generate(value, quirks_mode: true)
+        JSON.generate(value)
       end
     end
   end

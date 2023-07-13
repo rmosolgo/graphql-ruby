@@ -24,7 +24,7 @@ module GraphQL
       # @param obj [Object] Some subscription-related data to dump
       # @return [String] The stringified object
       def dump(obj)
-        JSON.generate(dump_value(obj), quirks_mode: true)
+        JSON.generate(dump_value(obj))
       end
 
       # This is for turning objects into subscription scopes.

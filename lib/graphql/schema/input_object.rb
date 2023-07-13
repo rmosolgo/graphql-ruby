@@ -151,12 +151,12 @@ module GraphQL
           warden = ctx.warden
 
           if input.is_a?(Array)
-            return GraphQL::Query::InputValidationResult.from_problem(INVALID_OBJECT_MESSAGE % { object: JSON.generate(input, quirks_mode: true) })
+            return GraphQL::Query::InputValidationResult.from_problem(INVALID_OBJECT_MESSAGE % { object: JSON.generate(input) })
           end
 
           if !(input.respond_to?(:to_h) || input.respond_to?(:to_unsafe_h))
             # We're not sure it'll act like a hash, so reject it:
-            return GraphQL::Query::InputValidationResult.from_problem(INVALID_OBJECT_MESSAGE % { object: JSON.generate(input, quirks_mode: true) })
+            return GraphQL::Query::InputValidationResult.from_problem(INVALID_OBJECT_MESSAGE % { object: JSON.generate(input) })
           end
 
           # Inject missing required arguments
