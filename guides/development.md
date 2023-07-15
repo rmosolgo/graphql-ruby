@@ -75,6 +75,23 @@ BUNDLE_GEMFILE=gemfiles/rails_6.1.gemfile bundle install
 BUNDLE_GEMFILE=gemfiles/rails_6.1.gemfile bundle exec rake test TEST=spec/integration/rails/graphql/relay/array_connection_spec.rb
 ```
 
+### GraphQL-CParser tests
+
+To test the `graphql_cparser` gem, you have to build the binary first:
+
+```
+bundle exec rake build_ext
+```
+
+Then, run the test suite with `GRAPHQL_CPARSER=1`:
+
+```
+GRAPHQL_CPARSER=1 bundle exec rake test
+```
+
+(Add `TEST=` to pick a certain file.)
+
+
 ### Other tests
 
 There are system tests for checking ActionCable behavior, use:
