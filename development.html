@@ -108,6 +108,7 @@
 </a></li><li class='contents-entry'><a href='#running-the-tests'>Running the Tests
 </a><ol class='contents-list'><li class='contents-entry'><a href='#unit-tests'>Unit tests
 </a></li><li class='contents-entry'><a href='#integration-tests'>Integration tests
+</a></li><li class='contents-entry'><a href='#graphql-cparser-tests'>GraphQL-CParser tests
 </a></li><li class='contents-entry'><a href='#other-tests'>Other tests
 </a></li></ol></li><li class='contents-entry'><a href='#gemfiles-gemfiles-gemfiles'>Gemfiles, Gemfiles, Gemfiles
 </a></li><li class='contents-entry'><a href='#debugging-with-pry'>Debugging with Pry
@@ -190,6 +191,20 @@ bundle exec rake test   # tests only
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>BUNDLE_GEMFILE=gemfiles/rails_6.1.gemfile bundle install
 BUNDLE_GEMFILE=gemfiles/rails_6.1.gemfile bundle exec rake test TEST=spec/integration/rails/graphql/relay/array_connection_spec.rb
 </code></pre></div></div>
+
+<h3 id="graphql-cparser-tests">GraphQL-CParser tests</h3>
+
+<p>To test the <code class="language-plaintext highlighter-rouge">graphql_cparser</code> gem, you have to build the binary first:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle exec rake build_ext
+</code></pre></div></div>
+
+<p>Then, run the test suite with <code class="language-plaintext highlighter-rouge">GRAPHQL_CPARSER=1</code>:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>GRAPHQL_CPARSER=1 bundle exec rake test
+</code></pre></div></div>
+
+<p>(Add <code class="language-plaintext highlighter-rouge">TEST=</code> to pick a certain file.)</p>
 
 <h3 id="other-tests">Other tests</h3>
 
