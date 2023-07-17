@@ -28,7 +28,7 @@ describe GraphQL::Schema::Scalar do
     it "handles infinity values" do
       query_str = <<-GRAPHQL
       {
-        find(id: 9999e9999) {
+        find(id: 9999.0e9999) {
           __typename
         }
       }

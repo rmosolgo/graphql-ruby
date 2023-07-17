@@ -6,7 +6,7 @@
   BLANK   =       [, \t]+;
   COMMENT =       '#' [^\n\r]*;
   INT =           '-'? ('0'|[1-9][0-9]*);
-  FLOAT =         INT ('.'[0-9]+)? (('e' | 'E')?('+' | '-')?[0-9]+)?;
+  FLOAT =         INT ('.'[0-9]+) (('e' | 'E')?('+' | '-')?[0-9]+)?;
   ON =            'on';
   FRAGMENT =      'fragment';
   TRUE_LITERAL =  'true';
