@@ -1,5 +1,9 @@
 # GraphQL::CParser
 
+## 1.0.5
+
+- Properly parse integers with leading zeros as Integers, not Floats #4556
+
 ## 1.0.4
 
 - Use UTF-8 encoding for static strings #4526
