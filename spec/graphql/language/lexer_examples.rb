@@ -74,6 +74,11 @@ module LexerExamples
           assert_equal tokens[0], tokens[1].prev_token
         end
 
+        it "handles integers with a leading zero" do
+          tokens = subject.tokenize("{ a(id: 04) }")
+          assert_equal :INT, tokens[5].name
+        end
+
         it "allows escaped quotes in strings" do
           tokens = subject.tokenize('"a\\"b""c"')
           assert_equal 'a"b', tokens[0].value
