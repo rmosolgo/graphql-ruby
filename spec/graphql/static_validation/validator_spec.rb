@@ -7,6 +7,13 @@ describe GraphQL::StaticValidation::Validator do
   let(:validate) { true }
   let(:errors) { validator.validate(query, validate: validate)[:errors].map(&:to_h) }
 
+  describe "name" do
+    it "may have a name" do
+      validator = GraphQL::StaticValidation::Validator.new(schema: Dummy::Schema, name: "Some Ruleset")
+      assert_equal "Some Ruleset", validator.name
+    end
+  end
+
   describe "tracing" do
     let(:query_string) { "{ t: __typename }"}
     let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, context: {tracers: [TestTracing]}) }

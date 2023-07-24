@@ -13,11 +13,14 @@ module GraphQL
     #   errors = validator.validate(query)[:errors]
     #
     class Validator
+      attr_reader :name
+
       # @param schema [GraphQL::Schema]
       # @param rules [Array<#validate(context)>] a list of rules to use when validating
-      def initialize(schema:, rules: GraphQL::StaticValidation::ALL_RULES)
+      def initialize(schema:, rules: GraphQL::StaticValidation::ALL_RULES, name: nil)
         @schema = schema
         @rules = rules
+        @name = name
       end
 
       # Validate `query` against the schema. Returns an array of message hashes.
