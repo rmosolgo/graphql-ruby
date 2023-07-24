@@ -17,6 +17,7 @@ module GraphQL
 
       # @param schema [GraphQL::Schema]
       # @param rules [Array<#validate(context)>] a list of rules to use when validating
+      # @param name [String] an optional instrumentation name for the ruleset
       def initialize(schema:, rules: GraphQL::StaticValidation::ALL_RULES, name: nil)
         @schema = schema
         @rules = rules
