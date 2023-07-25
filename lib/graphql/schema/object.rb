@@ -30,6 +30,11 @@ module GraphQL
         # @see authorized_new to make instances
         protected :new
 
+        # This is called by the runtime to return an object to call methods on.
+        def wrap(object, context)
+          authorized_new(object, context)
+        end
+
         # Make a new instance of this type _if_ the auth check passes,
         # otherwise, raise an error.
         #
@@ -68,7 +73,7 @@ module GraphQL
             maybe_lazy_auth_val
           end
 
-          context.schema.after_lazy(auth_val) do |is_authorized|
+          context.query.after_lazy(auth_val) do |is_authorized|
             if is_authorized
               self.new(object, context)
             else

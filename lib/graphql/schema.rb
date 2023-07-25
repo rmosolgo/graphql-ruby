@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require "graphql/schema/addition"
+require "graphql/schema/always_visible"
 require "graphql/schema/base_64_encoder"
 require "graphql/schema/find_inherited_value"
 require "graphql/schema/finder"
@@ -145,12 +146,43 @@ module GraphQL
 
       def trace_class(new_class = nil)
         if new_class
-          @trace_class = new_class
-        elsif !defined?(@trace_class)
-          @trace_class = Class.new(GraphQL::Tracing::Trace)
+          trace_mode(:default, new_class)
+          backtrace_class = Class.new(new_class)
+          backtrace_class.include(GraphQL::Backtrace::Trace)
+          trace_mode(:default_backtrace, backtrace_class)
         end
-        @trace_class
+        trace_class_for(:default)
       end
+
+      # @return [Class] Return the trace class to use for this mode, looking one up on the superclass if this Schema doesn't have one defined.
+      def trace_class_for(mode)
+        @trace_modes ||= {}
+        @trace_modes[mode] ||= begin
+          if mode == :default_backtrace
+            schema_base_class = trace_class_for(:default)
+            Class.new(schema_base_class) do
+              include(GraphQL::Backtrace::Trace)
+            end
+          elsif superclass.respond_to?(:trace_class_for)
+            superclass_base_class = superclass.trace_class_for(mode)
+            Class.new(superclass_base_class)
+          else
+            Class.new(GraphQL::Tracing::Trace)
+          end
+        end
+      end
+
+      # Configure `trace_class` to be used whenever `context: { trace_mode: mode_name }` is requested.
+      # `:default` is used when no `trace_mode: ...` is requested.
+      # @param mode_name [Symbol]
+      # @param trace_class [Class] subclass of GraphQL::Tracing::Trace
+      # @return void
+      def trace_mode(mode_name, trace_class)
+        @trace_modes ||= {}
+        @trace_modes[mode_name] = trace_class
+        nil
+      end
+
 
       # Returns the JSON response of {Introspection::INTROSPECTION_QUERY}.
       # @see {#as_json}
@@ -169,7 +201,7 @@ module GraphQL
       # @param include_specified_by_url [Boolean] If true, scalar types' `specifiedByUrl:` will be included in the response
       # @param include_is_one_of [Boolean] If true, `isOneOf: true|false` will be included with input objects
       # @return [Hash] GraphQL result
-      def as_json(only: nil, except: nil, context: {}, include_deprecated_args: true, include_schema_description: false, include_is_repeatable: false, include_specified_by_url: false, include_is_one_of: false)
+      def as_json(context: {}, include_deprecated_args: true, include_schema_description: false, include_is_repeatable: false, include_specified_by_url: false, include_is_one_of: false)
         introspection_query = Introspection.query(
           include_deprecated_args: include_deprecated_args,
           include_schema_description: include_schema_description,
@@ -178,16 +210,14 @@ module GraphQL
           include_specified_by_url: include_specified_by_url,
         )
 
-        execute(introspection_query, only: only, except: except, context: context).to_h
+        execute(introspection_query, context: context).to_h
       end
 
       # Return the GraphQL IDL for the schema
       # @param context [Hash]
-      # @param only [<#call(member, ctx)>]
-      # @param except [<#call(member, ctx)>]
       # @return [String]
-      def to_definition(only: nil, except: nil, context: {})
-        GraphQL::Schema::Printer.print_schema(self, only: only, except: except, context: context)
+      def to_definition(context: {})
+        GraphQL::Schema::Printer.print_schema(self, context: context)
       end
 
       # Return the GraphQL::Language::Document IDL AST for the schema
@@ -213,18 +243,6 @@ module GraphQL
           @finder ||= GraphQL::Schema::Finder.new(self)
         end
         @find_cache[path] ||= @finder.find(path)
-      end
-
-      def default_filter
-        GraphQL::Filter.new(except: default_mask)
-      end
-
-      def default_mask(new_mask = nil)
-        if new_mask
-          @own_default_mask = new_mask
-        else
-          @own_default_mask || find_inherited_value(:default_mask, Schema::NullMask)
-        end
       end
 
       def static_validator
@@ -389,6 +407,18 @@ module GraphQL
       def root_types
         @root_types
       end
+
+      def warden_class
+        if defined?(@warden_class)
+          @warden_class
+        elsif superclass.respond_to?(:warden_class)
+          superclass.warden_class
+        else
+          GraphQL::Schema::Warden
+        end
+      end
+
+      attr_writer :warden_class
 
       # @param type [Module] The type definition whose possible types you want to see
       # @return [Hash<String, Module>] All possible types, if no `type` is given.
@@ -794,11 +824,7 @@ module GraphQL
             end
 
             if resolved_type.nil? || (resolved_type.is_a?(Module) && resolved_type.respond_to?(:kind))
-              if resolved_value
-                [resolved_type, resolved_value]
-              else
-                resolved_type
-              end
+              [resolved_type, resolved_value]
             else
               raise ".resolve_type should return a type definition, but got #{resolved_type.inspect} (#{resolved_type.class}) from `resolve_type(#{type}, #{obj}, #{ctx})`"
             end
@@ -935,10 +961,8 @@ module GraphQL
       end
 
       def tracer(new_tracer)
-        if defined?(@trace_class) && !(@trace_class < GraphQL::Tracing::LegacyTrace)
-          raise ArgumentError, "Can't add tracer after configuring a `trace_class`, use GraphQL::Tracing::LegacyTrace to merge legacy tracers into a trace class instead."
-        elsif !defined?(@trace_class)
-          @trace_class = Class.new(GraphQL::Tracing::LegacyTrace)
+        if !(trace_class_for(:default) < GraphQL::Tracing::CallLegacyTracers)
+          trace_with(GraphQL::Tracing::CallLegacyTracers)
         end
 
         own_tracers << new_tracer
@@ -955,16 +979,23 @@ module GraphQL
       # @param options [Hash] Keywords that will be passed to the tracing class during `#initialize`
       # @return [void]
       def trace_with(trace_mod, **options)
-        @trace_options ||= {}
-        @trace_options.merge!(options)
+        trace_options.merge!(options)
         trace_class.include(trace_mod)
       end
 
+      def trace_options
+        @trace_options ||= superclass.respond_to?(:trace_options) ? superclass.trace_options.dup : {}
+      end
+
       def new_trace(**options)
-        if defined?(@trace_options)
-          options = @trace_options.merge(options)
+        options = trace_options.merge(options)
+        trace_mode = if (target = options[:query] || options[:multiplex]) && target.context[:backtrace]
+          :default_backtrace
+        else
+          :default
         end
-        trace_class.new(**options)
+        trace = trace_class_for(trace_mode).new(**options)
+        trace
       end
 
       def query_analyzer(new_analyzer)
@@ -1003,6 +1034,7 @@ module GraphQL
           {
             backtrace: ctx[:backtrace],
             tracers: ctx[:tracers],
+            trace: ctx[:trace],
             dataloader: ctx[:dataloader],
           }
         else

@@ -27,6 +27,7 @@ Then, install the dependencies:
 
 - Install SQLite3 and MongoDB (eg, `brew install sqlite && brew tap mongodb/brew && brew install mongodb-community`)
 - `bundle install`
+- `rake compile # If you get warnings at this step, you can ignore them.`
 - Optional: [Ragel](https://www.colm.net/open-source/ragel/) is required to build the lexer
 
 ## Running the Tests
@@ -73,6 +74,23 @@ You need to pick a specific gemfile from gemfiles/ to run integration tests. For
 BUNDLE_GEMFILE=gemfiles/rails_6.1.gemfile bundle install
 BUNDLE_GEMFILE=gemfiles/rails_6.1.gemfile bundle exec rake test TEST=spec/integration/rails/graphql/relay/array_connection_spec.rb
 ```
+
+### GraphQL-CParser tests
+
+To test the `graphql_cparser` gem, you have to build the binary first:
+
+```
+bundle exec rake build_ext
+```
+
+Then, run the test suite with `GRAPHQL_CPARSER=1`:
+
+```
+GRAPHQL_CPARSER=1 bundle exec rake test
+```
+
+(Add `TEST=` to pick a certain file.)
+
 
 ### Other tests
 

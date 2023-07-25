@@ -8,6 +8,18 @@
 
 ### Bug Fix
 
+# 1.3.1 (12 June 2023)
+
+### Bug Fix
+
+- Add missing `require "graphql"` #4511
+
+# 1.3.0 (29 May 2023)
+
+### New Features
+
+- Changesets: Add `added_in: ...` and `removed_in: ...` for inline definition changes
+
 # 1.2.0 (10 February 2023)
 
 ### New Features

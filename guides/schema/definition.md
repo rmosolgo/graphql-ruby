@@ -176,7 +176,7 @@ Then, during execution, `context` will be an instance of `CustomContext`.
 
 ```ruby
 class MySchema < GraphQL::Schema
-  max_depth 10
+  max_depth 15
   max_complexity 300
   default_max_page_size 20
 end

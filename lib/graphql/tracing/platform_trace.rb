@@ -5,11 +5,21 @@ module GraphQL
     module PlatformTrace
       def initialize(trace_scalars: false, **_options)
         @trace_scalars = trace_scalars
-        @platform_field_key_cache = Hash.new { |h, k| h[k] = platform_field_key(k) }
-        @platform_authorized_key_cache = Hash.new { |h, k| h[k] = platform_authorized_key(k) }
-        @platform_resolve_type_key_cache = Hash.new { |h, k| h[k] = platform_resolve_type_key(k) }
+
+        @platform_key_cache = Hash.new { |h, mod| h[mod] = mod::KeyCache.new }
         super
       end
+
+      module BaseKeyCache
+        def initialize
+          @platform_field_key_cache = Hash.new { |h, k| h[k] = platform_field_key(k) }
+          @platform_authorized_key_cache = Hash.new { |h, k| h[k] = platform_authorized_key(k) }
+          @platform_resolve_type_key_cache = Hash.new { |h, k| h[k] = platform_resolve_type_key(k) }
+        end
+
+        attr_reader :platform_field_key_cache, :platform_authorized_key_cache, :platform_resolve_type_key_cache
+      end
+
 
       def platform_execute_field_lazy(*args, &block)
         platform_execute_field(*args, &block)
@@ -24,33 +34,36 @@ module GraphQL
       end
 
       def self.included(child_class)
-        # Don't gather this unless necessary
-        pass_data_to_execute_field = child_class.method_defined?(:platform_execute_field) &&
-          child_class.instance_method(:platform_execute_field).arity != 1
-
+        key_methods_class = Class.new {
+          include(child_class)
+          include(BaseKeyCache)
+        }
+        child_class.const_set(:KeyCache, key_methods_class)
         [:execute_field, :execute_field_lazy].each do |field_trace_method|
-          child_class.module_eval <<-RUBY, __FILE__, __LINE__
-            def #{field_trace_method}(query:, field:, ast_node:, arguments:, object:)
-              return_type = field.type.unwrap
-              trace_field = if return_type.kind.scalar? || return_type.kind.enum?
-                (field.trace.nil? && @trace_scalars) || field.trace
-              else
-                true
-              end
-              platform_key = if trace_field
-                @platform_field_key_cache[field]
-              else
-                nil
-              end
-              if platform_key && trace_field
-                platform_#{field_trace_method}(platform_key#{pass_data_to_execute_field ? ", { query: query, field: field, ast_node: ast_node, arguments: arguments, object: object }" : ""}) do
+          if !child_class.method_defined?(field_trace_method)
+            child_class.module_eval <<-RUBY, __FILE__, __LINE__
+              def #{field_trace_method}(query:, field:, ast_node:, arguments:, object:)
+                return_type = field.type.unwrap
+                trace_field = if return_type.kind.scalar? || return_type.kind.enum?
+                  (field.trace.nil? && @trace_scalars) || field.trace
+                else
+                  true
+                end
+                platform_key = if trace_field
+                  @platform_key_cache[#{child_class}].platform_field_key_cache[field]
+                else
+                  nil
+                end
+                if platform_key && trace_field
+                  platform_#{field_trace_method}(platform_key) do
+                    super
+                  end
+                else
                   super
                 end
-              else
-                super
               end
-            end
-          RUBY
+            RUBY
+          end
         end
 
 
@@ -58,7 +71,7 @@ module GraphQL
           if !child_class.method_defined?(auth_trace_method)
             child_class.module_eval <<-RUBY, __FILE__, __LINE__
               def #{auth_trace_method}(type:, query:, object:)
-                platform_key = @platform_authorized_key_cache[type]
+                platform_key = @platform_key_cache[#{child_class}].platform_authorized_key_cache[type]
                 platform_#{auth_trace_method}(platform_key) do
                   super
                 end
@@ -71,7 +84,7 @@ module GraphQL
           if !child_class.method_defined?(rt_trace_method)
             child_class.module_eval <<-RUBY, __FILE__, __LINE__
               def #{rt_trace_method}(query:, type:, object:)
-                platform_key = @platform_resolve_type_key_cache[type]
+                platform_key = @platform_key_cache[#{child_class}].platform_resolve_type_key_cache[type]
                 platform_#{rt_trace_method}(platform_key) do
                   super
                 end
@@ -80,8 +93,6 @@ module GraphQL
           end
         end
       end
-
-
 
       private
 

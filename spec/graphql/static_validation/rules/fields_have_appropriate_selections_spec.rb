@@ -17,7 +17,7 @@ describe GraphQL::StaticValidation::FieldsHaveAppropriateSelections do
     assert_equal(4, errors.length)
 
     illegal_selection_error = {
-      "message"=>"Selections can't be made on scalars (field 'id' returns Int but has selections [something, someFields])",
+      "message"=>"Selections can't be made on scalars (field 'id' returns Int but has selections [\"something\", \"someFields\"])",
       "locations"=>[{"line"=>6, "column"=>47}],
       "path"=>["query getCheese", "illegalSelectionCheese", "id"],
       "extensions"=>{"code"=>"selectionMismatch", "nodeName"=>"field 'id'", "typeName"=>"Int"}
@@ -41,7 +41,7 @@ describe GraphQL::StaticValidation::FieldsHaveAppropriateSelections do
     assert_includes(errors, interfaces_selection_required_error, "finds interfaces without selections")
 
     incorrect_fragment_error = {
-      "message"=>"Selections can't be made on scalars (field 'flavor' returns String but has inline fragments [String])",
+      "message"=>"Selections can't be made on scalars (field 'flavor' returns String but has selections [\"... on String { ... }\"])",
       "locations"=>[{"line"=>7, "column"=>48}],
       "path"=>["query getCheese", "incorrectFragmentSpread", "flavor"],
       "extensions"=>{"code"=>"selectionMismatch", "nodeName"=>"field 'flavor'", "typeName"=>"String"}
@@ -61,6 +61,30 @@ describe GraphQL::StaticValidation::FieldsHaveAppropriateSelections do
         "extensions"=>{"code"=>"selectionMismatch", "nodeName"=>"anonymous query", "typeName"=>"Query"}
       }
       assert_includes(errors, selections_required_error)
+    end
+  end
+
+  describe "selections and inline fragments on scalars" do
+    let(:query_string) {"
+    {
+      cheese(id: 1) {
+        fatContent {
+          name
+          ... on User {
+            id
+          }
+          ... F
+        }
+      }
+    }
+
+    fragment F on Cheese {
+      id
+    }
+    "}
+    it "returns an error" do
+      expected_err = "Selections can't be made on scalars (field 'fatContent' returns Float but has selections [\"name\", \"... on User { ... }\", \"F\"])"
+      assert_includes(errors.map { |e| e["message"] }, expected_err)
     end
   end
 end

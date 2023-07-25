@@ -2,7 +2,7 @@
 require "spec_helper"
 
 describe GraphQL::Language::Printer do
-  let(:document) { GraphQL::Language::Parser.parse(query_string) }
+  let(:document) { GraphQL.parse(query_string) }
   let(:query_string) {%|
     query getStuff($someVar: Int = 1, $anotherVar: [String!], $skipNested: Boolean! = false) @skip(if: false) {
       myField: someField(someArg: $someVar, ok: 1.4) @skip(if: $anotherVar) @thing(or: "Whatever")
@@ -29,6 +29,16 @@ describe GraphQL::Language::Printer do
   describe "#print" do
     it "prints the query string" do
       assert_equal query_string.gsub(/^    /, "").strip, printer.print(document)
+    end
+
+    it "prints a truncated query string" do
+      expected = query_string.gsub(/^    /, "").strip[0, 50 - GraphQL::Language::Printer::OMISSION.size]
+      expected = "#{expected}#{GraphQL::Language::Printer::OMISSION}"
+
+      assert_equal(
+        expected,
+        printer.print(document, truncate_size: 50),
+      )
     end
 
     describe "inputs" do
@@ -208,6 +218,46 @@ describe GraphQL::Language::Printer do
 
         it "doesn't mutate the document" do
           assert_equal printer.print(document), printer.print(document)
+        end
+      end
+
+      describe "schema extension" do
+        let(:query_string) do
+          <<-SCHEMA
+          extend schema
+            @onSchema
+          {
+            query: QueryType
+            mutation: MutationType
+          }
+
+          extend union AnnotatedUnion @onUnion = A | B
+
+          extend type Foo implements Bar @onType {
+            one: Type
+            two(argument: InputType!): Type
+          }
+
+          extend scalar CustomScalar @onScalar
+
+          extend interface Bar @onInterface {
+            one: Type
+          }
+
+          extend enum Site @onEnum {
+            DESKTOP
+            MOBILE
+          }
+
+          extend input InputType @onInputType {
+            key: String!
+            answer: Int = 42
+          }
+          SCHEMA
+        end
+
+        it "generates correctly" do
+          assert_equal query_string.gsub(/^          /, "").strip, printer.print(document)
         end
       end
     end

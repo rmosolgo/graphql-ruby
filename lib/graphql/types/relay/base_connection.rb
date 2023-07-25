@@ -35,7 +35,7 @@ module GraphQL
       #     # Alternatively, you can call the class methods followed by your edge type
       #     # edges_nullable true
       #     # edge_nullable true
-      #     # nodes_nullable true
+      #     # node_nullable true
       #     # has_nodes_field true
       #     # edge_type Types::PostEdge
       #   end

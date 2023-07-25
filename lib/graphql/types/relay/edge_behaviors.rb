@@ -8,11 +8,21 @@ module GraphQL
           child_class.description("An edge in a connection.")
           child_class.field(:cursor, String, null: false, description: "A cursor for use in pagination.")
           child_class.extend(ClassMethods)
-          child_class.extend(GraphQL::Types::Relay::DefaultRelay)
+          child_class.class_eval { self.node_type = nil }
           child_class.node_nullable(true)
         end
 
         module ClassMethods
+          def inherited(child_class)
+            super
+            child_class.node_type = nil
+            child_class.node_nullable = nil
+          end
+
+          def default_relay?
+            true
+          end
+
           # Get or set the Object type that this edge wraps.
           #
           # @param node_type [Class] A `Schema::Object` subclass
@@ -49,11 +59,15 @@ module GraphQL
           # Use `node_nullable(false)` in your base class to make non-null `node` field.
           def node_nullable(new_value = nil)
             if new_value.nil?
-              defined?(@node_nullable) ? @node_nullable : superclass.node_nullable
+              @node_nullable != nil ? @node_nullable : superclass.node_nullable
             else
               @node_nullable = new_value
             end
           end
+
+          protected
+
+          attr_writer :node_type, :node_nullable
         end
       end
     end

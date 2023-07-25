@@ -81,7 +81,7 @@ module GraphQL
 
             error
           else
-            yield
+            super
           end
         end
       end
@@ -90,7 +90,7 @@ module GraphQL
       # The default implementation returns the `max_seconds:` value from installing this plugin.
       #
       # @param query [GraphQL::Query] The query that's about to run
-      # @return [Integer, false] The number of seconds after which to interrupt query execution and call {#handle_error}, or `false` to bypass the timeout.
+      # @return [Numeric, false] The number of seconds after which to interrupt query execution and call {#handle_error}, or `false` to bypass the timeout.
       def max_seconds(query)
         @max_seconds
       end

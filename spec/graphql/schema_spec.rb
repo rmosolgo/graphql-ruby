@@ -150,8 +150,12 @@ describe GraphQL::Schema do
       assert_equal base_schema.query_analyzers + [query_analyzer], schema.query_analyzers
       assert_equal base_schema.multiplex_analyzers + [multiplex_analyzer], schema.multiplex_analyzers
       assert_equal [GraphQL::Backtrace, GraphQL::Subscriptions::ActionCableSubscriptions, CustomSubscriptions], schema.plugins.map(&:first)
-      assert_equal [GraphQL::Tracing::DataDogTracing, GraphQL::Backtrace::Tracer], base_schema.tracers
-      assert_equal [GraphQL::Tracing::DataDogTracing, GraphQL::Backtrace::Tracer, GraphQL::Tracing::NewRelicTracing], schema.tracers
+      assert_equal [GraphQL::Tracing::DataDogTracing], base_schema.tracers
+      assert_includes base_schema.trace_class.ancestors, GraphQL::Tracing::CallLegacyTracers
+      assert_equal [GraphQL::Tracing::DataDogTracing, GraphQL::Tracing::NewRelicTracing], schema.tracers
+      assert_includes schema.trace_class.ancestors, GraphQL::Tracing::CallLegacyTracers
+
+
       assert_instance_of CustomSubscriptions, schema.subscriptions
     end
   end
@@ -319,6 +323,55 @@ describe GraphQL::Schema do
         assert_equal true, query.context[:no_op_analyzer_ran_on_leave_field]
         assert_equal true, query.context[:no_op_analyzer_ran_result]
       end
+    end
+  end
+
+  describe ".new_trace" do
+    module NewTrace1
+      def initialize(**opts)
+        @trace_opts = opts
+      end
+
+      attr_reader :trace_opts
+    end
+
+    module NewTrace2
+    end
+
+    it "returns an instance of the configured trace_class with trace_options" do
+      parent_schema = Class.new(GraphQL::Schema) do
+        trace_with NewTrace1, a: 1
+      end
+
+      child_schema = Class.new(parent_schema) do
+        trace_with NewTrace2, b: 2
+      end
+
+      parent_trace = parent_schema.new_trace
+      assert_equal({a: 1}, parent_trace.trace_opts)
+      assert_kind_of NewTrace1, parent_trace
+      refute_kind_of NewTrace2, parent_trace
+      assert_kind_of GraphQL::Tracing::Trace, parent_trace
+
+      child_trace = child_schema.new_trace
+      assert_equal({a: 1, b: 2}, child_trace.trace_opts)
+      assert_kind_of NewTrace1, child_trace
+      assert_kind_of NewTrace2, child_trace
+      assert_kind_of GraphQL::Tracing::Trace, child_trace
+    end
+
+    it "returns an instance of the parent configured trace_class with trace_options" do
+      parent_schema = Class.new(GraphQL::Schema) do
+        trace_with NewTrace1, a: 1
+      end
+
+      child_schema = Class.new(parent_schema) do
+      end
+
+      child_trace = child_schema.new_trace
+      assert_equal({a: 1}, child_trace.trace_opts)
+      assert_kind_of NewTrace1, child_trace
+      assert_kind_of GraphQL::Tracing::Trace, child_trace
     end
   end
 

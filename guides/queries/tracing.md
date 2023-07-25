@@ -14,7 +14,7 @@ index: 11
 module CustomTrace
   def parse(query_string:)
     # measure, log, etc
-    yield
+    super
   end
 
   # ...
@@ -32,16 +32,18 @@ end
 
 For a full list of methods and their arguments, see {{ "GraphQL::Tracing::Trace" | api_doc }}.
 
+By default, GraphQL-Ruby makes a new trace instance when it runs a query. You can pass an existing instance as `context: { trace: ... }`. Also, `GraphQL.parse( ..., trace: ...)` accepts a trace instance.
+
 ## ActiveSupport::Notifications
 
-You can emit events to `ActiveSupport::Notifications` with an experimental tracer, `ActiveSupportNotificationsTracing`.
+You can emit events to `ActiveSupport::Notifications` with an experimental tracer, `ActiveSupportNotificationsTrace`.
 
 To enable it, install the tracer:
 
 ```ruby
 # Send execution events to ActiveSupport::Notifications
 class MySchema < GraphQL::Schema
-  tracer(GraphQL::Tracing::ActiveSupportNotificationsTracing)
+  trace_with(GraphQL::Tracing::ActiveSupportNotificationsTrace)
 end
 ```
 

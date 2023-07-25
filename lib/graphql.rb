@@ -43,7 +43,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   # @param graphql_string [String] a GraphQL query string or schema definition
   # @return [GraphQL::Language::Nodes::Document]
   def self.parse(graphql_string, trace: GraphQL::Tracing::NullTrace)
-    parse_with_racc(graphql_string, trace: trace)
+    default_parser.parse(graphql_string, trace: trace)
   end
 
   # Read the contents of `filename` and parse them as GraphQL
@@ -51,24 +51,28 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   # @return [GraphQL::Language::Nodes::Document]
   def self.parse_file(filename)
     content = File.read(filename)
-    parse_with_racc(content, filename: filename)
+    default_parser.parse(content, filename: filename)
+  end
+
+  # @return [Array<Array>]
+  def self.scan(graphql_string)
+    default_parser.scan(graphql_string)
   end
 
   def self.parse_with_racc(string, filename: nil, trace: GraphQL::Tracing::NullTrace)
     GraphQL::Language::Parser.parse(string, filename: filename, trace: trace)
   end
 
-  # @return [Array<GraphQL::Language::Token>]
-  def self.scan(graphql_string)
-    scan_with_ragel(graphql_string)
-  end
-
-  def self.scan_with_ragel(graphql_string)
+  def self.scan_with_ruby(graphql_string)
     GraphQL::Language::Lexer.tokenize(graphql_string)
   end
 
   NOT_CONFIGURED = Object.new
   private_constant :NOT_CONFIGURED
+  module EmptyObjects
+    EMPTY_HASH = {}.freeze
+    EMPTY_ARRAY = [].freeze
+  end
 end
 
 # Order matters for these:
@@ -99,7 +103,6 @@ require "graphql/schema"
 require "graphql/query"
 require "graphql/types"
 require "graphql/dataloader"
-require "graphql/filter"
 require "graphql/static_validation"
 require "graphql/execution"
 require "graphql/schema/built_in_types"

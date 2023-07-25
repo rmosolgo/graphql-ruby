@@ -46,7 +46,7 @@ module GraphQL
           elsif defined?(@description)
             @description
           else
-            nil
+            @description = nil
           end
         end
 
@@ -56,8 +56,12 @@ module GraphQL
           def inherited(child_class)
             child_class.introspection(introspection)
             child_class.description(description)
-            if defined?(@graphql_name) && (self.name.nil? || graphql_name != default_graphql_name)
+            child_class.default_graphql_name = nil
+
+            if defined?(@graphql_name) && @graphql_name && (self.name.nil? || graphql_name != default_graphql_name)
               child_class.graphql_name(graphql_name)
+            else
+              child_class.graphql_name = nil
             end
             super
           end
@@ -98,7 +102,8 @@ module GraphQL
         def default_graphql_name
           @default_graphql_name ||= begin
             raise GraphQL::RequiredImplementationMissingError, 'Anonymous class should declare a `graphql_name`' if name.nil?
-            -name.split("::").last.sub(/Type\Z/, "")          end
+            -name.split("::").last.sub(/Type\Z/, "")
+          end
         end
 
         def visible?(context)
@@ -109,16 +114,13 @@ module GraphQL
           true
         end
 
+        def default_relay
+          false
+        end
+
         protected
 
-        attr_writer :default_graphql_name
-
-        private
-
-        def inherited(subclass)
-          super
-          subclass.default_graphql_name = nil
-        end
+        attr_writer :default_graphql_name, :graphql_name
       end
     end
   end

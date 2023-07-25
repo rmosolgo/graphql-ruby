@@ -36,18 +36,38 @@ module GraphQLBenchmark
         x.report("validate - abstract fragments 2") { CARD_SCHEMA.validate(ABSTRACT_FRAGMENTS_2) }
         x.report("validate - big query") { BIG_SCHEMA.validate(BIG_QUERY) }
         x.report("validate - fields will merge") { FIELDS_WILL_MERGE_SCHEMA.validate(FIELDS_WILL_MERGE_QUERY) }
+      when "scan"
+        require "graphql/c_parser"
+        x.report("scan c - introspection") { GraphQL.scan_with_c(QUERY_STRING) }
+        x.report("scan - introspection") { GraphQL.scan_with_ruby(QUERY_STRING) }
+        x.report("scan c - fragments") { GraphQL.scan_with_c(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
+        x.report("scan - fragments") { GraphQL.scan_with_ruby(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
+        x.report("scan c - big query") { GraphQL.scan_with_c(BIG_QUERY_STRING) }
+        x.report("scan - big query") { GraphQL.scan_with_ruby(BIG_QUERY_STRING) }
       when "parse"
-        x.report("scan - introspection") { GraphQL.scan(QUERY_STRING) }
+        # Uncomment this to use the C parser:
+        # require "graphql/c_parser"
         x.report("parse - introspection") { GraphQL.parse(QUERY_STRING) }
-        x.report("scan - fragments") { GraphQL.scan(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
         x.report("parse - fragments") { GraphQL.parse(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
-        x.report("scan - big query") { GraphQL.scan(BIG_QUERY_STRING) }
         x.report("parse - big query") { GraphQL.parse(BIG_QUERY_STRING) }
       else
         raise("Unexpected task #{task}")
       end
     end
   end
+
+  def self.profile_parse
+    # To profile the C parser instead:
+    # require "graphql/c_parser"
+
+    report = MemoryProfiler.report do
+      GraphQL.parse(BIG_QUERY_STRING)
+      GraphQL.parse(QUERY_STRING)
+      GraphQL.parse(ABSTRACT_FRAGMENTS_2_QUERY_STRING)
+    end
+    report.pretty_print
+  end
+
 
   def self.validate_memory
     FIELDS_WILL_MERGE_SCHEMA.validate(FIELDS_WILL_MERGE_QUERY)
@@ -72,52 +92,86 @@ module GraphQLBenchmark
     StackProf::Report.new(result).print_text
   end
 
-  SILLY_LARGE_SCHEMA = Class.new(GraphQL::Schema) do
-    query_t = Class.new(GraphQL::Schema::Object) do
-      graphql_name("Query")
-      int_ts = 5.times.map do |i|
-        int_t = Module.new do
-          include GraphQL::Schema::Interface
-          graphql_name "Interface#{i}"
-          5.times do |n2|
-            field :"field#{n2}", String do
-              argument :arg, String
+  def self.build_large_schema
+    Class.new(GraphQL::Schema) do
+      query_t = Class.new(GraphQL::Schema::Object) do
+        graphql_name("Query")
+        int_ts = 5.times.map do |i|
+          int_t = Module.new do
+            include GraphQL::Schema::Interface
+            graphql_name "Interface#{i}"
+            5.times do |n2|
+              field :"field#{n2}", String do
+                argument :arg, String
+              end
             end
           end
+          field :"int_field_#{i}", int_t
+          int_t
         end
-        field :"int_field_#{i}", int_t
-        int_t
-      end
 
-      100.times do |n|
-        obj_t = Class.new(GraphQL::Schema::Object) do
-          graphql_name("Object#{n}")
-          implements(*int_ts)
-          20.times do |n2|
-            field :"field#{n2}", String do
-              argument :arg, String
+        obj_ts = 100.times.map do |n|
+          obj_t = Class.new(GraphQL::Schema::Object) do
+            graphql_name("Object#{n}")
+            implements(*int_ts)
+            20.times do |n2|
+              field :"field#{n2}", String do
+                argument :arg, String
+              end
+
             end
-
+            field :self_field, self
+            field :int_0_field, int_ts[0]
           end
-          field :self_field, self
-          field :int_0_field, int_ts[0]
+
+          field :"rootfield#{n}", obj_t
+          obj_t
         end
 
-        field :"rootfield#{n}", obj_t
+        10.times do |n|
+          union_t = Class.new(GraphQL::Schema::Union) do
+            graphql_name "Union#{n}"
+            possible_types(*obj_ts.sample(10))
+          end
+          field :"unionfield#{n}", union_t
+        end
       end
+      query(query_t)
     end
-    query(query_t)
   end
+
+  def self.profile_boot
+    Benchmark.ips do |x|
+      x.config(time: 10)
+      x.report("Booting large schema") {
+        build_large_schema
+      }
+    end
+
+    result = StackProf.run(mode: :wall, interval: 1) do
+      build_large_schema
+    end
+    StackProf::Report.new(result).print_text
+
+    report = MemoryProfiler.report do
+      build_large_schema
+    end
+
+    report.pretty_print
+  end
+
+  SILLY_LARGE_SCHEMA = build_large_schema
 
   def self.profile_large_introspection
     schema = SILLY_LARGE_SCHEMA
     Benchmark.ips do |x|
+      x.config(time: 10)
       x.report("Run large introspection") {
         schema.to_json
       }
     end
 
-    result = StackProf.run(mode: :wall, interval: 10) do
+    result = StackProf.run(mode: :wall) do
       schema.to_json
     end
     StackProf::Report.new(result).print_text
@@ -184,6 +238,7 @@ module GraphQLBenchmark
     schema = ProfileLargeResult::Schema
     document = ProfileLargeResult::ALL_FIELDS
     Benchmark.ips do |x|
+      x.config(time: 10)
       x.report("Querying for #{ProfileLargeResult::DATA.size} objects") {
         schema.execute(document: document)
       }
@@ -234,11 +289,14 @@ module GraphQLBenchmark
     end
 
 
+    class ExampleExtension < GraphQL::Schema::FieldExtension
+    end
+
     class FooType < GraphQL::Schema::Object
       implements Baz
-      field :id, ID, null: false
-      field :int1, Integer, null: false
-      field :int2, Integer, null: false
+      field :id, ID, null: false, extensions: [ExampleExtension]
+      field :int1, Integer, null: false, extensions: [ExampleExtension]
+      field :int2, Integer, null: false, extensions: [ExampleExtension]
       field :string1, String, null: false do
         argument :arg1, String, required: false
         argument :arg2, String, required: false

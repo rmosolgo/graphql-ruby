@@ -39,7 +39,7 @@ module GraphQL
           result_for(key)
         else
           @pending_keys << key
-          sync
+          sync([key])
           result_for(key)
         end
       end
@@ -50,7 +50,7 @@ module GraphQL
         if keys.any? { |k| !@results.key?(k) }
           pending_keys = keys.select { |k| !@results.key?(k) }
           @pending_keys.concat(pending_keys)
-          sync
+          sync(pending_keys)
         end
 
         keys.map { |k| result_for(k) }
@@ -67,8 +67,7 @@ module GraphQL
       # Wait for a batch, if there's anything to batch.
       # Then run the batch and update the cache.
       # @return [void]
-      def sync
-        pending_keys = @pending_keys.dup
+      def sync(pending_keys)
         @dataloader.yield
         iterations = 0
         while pending_keys.any? { |k| !@results.key?(k) }

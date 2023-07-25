@@ -8,6 +8,14 @@ Bundler.require
 ENV["BACKTRACE"] = "1"
 
 require "graphql"
+if ENV["GRAPHQL_CPARSER"]
+  USING_C_PARSER = true
+  puts "Opting in to GraphQL::CParser"
+  require "graphql-c_parser"
+else
+  USING_C_PARSER = false
+end
+
 require "rake"
 require "graphql/rake_task"
 require "pry"
@@ -16,12 +24,15 @@ require "minitest/autorun"
 require "minitest/focus"
 require "minitest/reporters"
 
-Minitest::Reporters.use! Minitest::Reporters::DefaultReporter.new(color: true)
+running_in_rubymine = ENV["RM_INFO"]
+unless running_in_rubymine
+  Minitest::Reporters.use! Minitest::Reporters::DefaultReporter.new(color: true)
+end
 
 Minitest::Spec.make_my_diffs_pretty!
 
 module CheckWardenShape
-  DEFAULT_SHAPE = GraphQL::Schema::Warden.new(nil, context: {}, schema: GraphQL::Schema).instance_variables
+  DEFAULT_SHAPE = GraphQL::Schema::Warden.new(context: {}, schema: GraphQL::Schema).instance_variables
 
   class CheckShape
     def initialize(warden)
@@ -52,7 +63,9 @@ ERR
   def setup_finalizer
     if !@finalizer_defined
       @finalizer_defined = true
-      ObjectSpace.define_finalizer(self, CheckShape.new(warden))
+      if warden.is_a?(GraphQL::Schema::Warden)
+        ObjectSpace.define_finalizer(self, CheckShape.new(warden))
+      end
     end
   end
 end
@@ -147,4 +160,9 @@ module TestTracing
       result
     end
   end
+end
+
+
+if !USING_C_PARSER && defined?(GraphQL::CParser::Parser)
+  raise "Load error: didn't opt in to C parser but GraphQL::CParser::Parser was defined"
 end

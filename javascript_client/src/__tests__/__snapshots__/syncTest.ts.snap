@@ -1,8 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`sync operations Input files Merges fragments and operations across files 1`] = `
-Array [
-  Object {
+[
+  {
     "alias": "4568c28d403794e011363caf815ec827",
     "body": "fragment Frag1 on Query {
   moreStuff
@@ -13,7 +13,7 @@ query GetStuff {
 }",
     "name": "GetStuff",
   },
-  Object {
+  {
     "alias": "faf462be033e16dd2a56130d56a9192f",
     "body": "fragment Frag1 on Query {
   moreStuff
@@ -34,7 +34,7 @@ query GetStuff2 {
 }",
     "name": "GetStuff2",
   },
-  Object {
+  {
     "alias": "aab385a1685772ad520fc70d468030fa",
     "body": "fragment Frag2 on Query {
   ...Frag3
@@ -59,7 +59,7 @@ query GetStuff3 {
 }",
     "name": "GetStuff3",
   },
-  Object {
+  {
     "alias": "b2cb0b317d071f9f38905fba21d73258",
     "body": "query GetStuffIsolated {
   ...FragIsolated
@@ -75,7 +75,7 @@ fragment FragIsolated on Query {
 }",
     "name": "GetStuffIsolated",
   },
-  Object {
+  {
     "alias": "6cdae165fd6dc5dc5900e5a2bba90cc2",
     "body": "query GetStuffIsolated2 {
   things {
@@ -88,29 +88,29 @@ fragment FragIsolated on Query {
 `;
 
 exports[`sync operations Input files Uses mode: file to process each file separately 1`] = `
-Array [
-  Object {
+[
+  {
     "alias": "664225b943e29ea8c6aae40bbde8923a",
     "body": "fragment Frag1 on Query {
   moreStuff
 }",
     "name": "",
   },
-  Object {
+  {
     "alias": "269bbe8bbe7f6a0b9dae7f98b45a9675",
     "body": "fragment Frag2 on Query {
   ...Frag3
 }",
     "name": "",
   },
-  Object {
+  {
     "alias": "d12578840c6518c746b125ae2e7a8ab1",
     "body": "fragment Frag3 on Query {
   evenMoreStuff
 }",
     "name": "",
   },
-  Object {
+  {
     "alias": "1a1b6154fb1db8bc6652edfbd7d9ac8a",
     "body": "fragment Frag4 on Query {
   evenMoreStuff {
@@ -119,14 +119,14 @@ Array [
 }",
     "name": "",
   },
-  Object {
+  {
     "alias": "8ab1711fcbb7befc98d06ef7d155fd81",
     "body": "query GetStuff {
   ...Frag1
 }",
     "name": "GetStuff",
   },
-  Object {
+  {
     "alias": "cf517696fbd9ec204cd402f48c831090",
     "body": "query GetStuff2 {
   stuff
@@ -135,7 +135,7 @@ Array [
 }",
     "name": "GetStuff2",
   },
-  Object {
+  {
     "alias": "1e5290206d87a4da749118d84f7e2c65",
     "body": "query GetStuff3 {
   stuff {
@@ -146,7 +146,7 @@ Array [
 }",
     "name": "GetStuff3",
   },
-  Object {
+  {
     "alias": "b2cb0b317d071f9f38905fba21d73258",
     "body": "query GetStuffIsolated {
   ...FragIsolated
@@ -162,7 +162,7 @@ fragment FragIsolated on Query {
 }",
     "name": "GetStuffIsolated",
   },
-  Object {
+  {
     "alias": "6cdae165fd6dc5dc5900e5a2bba90cc2",
     "body": "query GetStuffIsolated2 {
   things {
@@ -174,128 +174,128 @@ fragment FragIsolated on Query {
 ]
 `;
 
-exports[`sync operations Logging Can be quieted with quiet: true 1`] = `Array []`;
+exports[`sync operations Logging Can be quieted with quiet: true 1`] = `[]`;
 
 exports[`sync operations Logging Logs progress 1`] = `
-Array [
-  Array [
+[
+  [
     "Syncing 5 operations to [1mbogus[0m...",
   ],
-  Array [
+  [
     "Generating client module in [1msrc/OperationStoreClient.js[0m...",
   ],
-  Array [
+  [
     "[32m✓ Done![0m",
   ],
 ]
 `;
 
 exports[`sync operations Printing the result prints failure and sends the message to the promise 1`] = `
-Array [
-  Array [
+[
+  [
     "Syncing 5 operations to [1mhttp://example.com/stored_operations/sync[0m...",
   ],
-  Array [
+  [
     "[Sync] 2 Headers:",
   ],
-  Array [
+  [
     "[Sync]    Content-Type: application/json",
   ],
-  Array [
+  [
     "[Sync]    Content-Length: 1132",
   ],
-  Array [
+  [
     "[Sync] Data:",
-    "{\\"operations\\":[{\\"name\\":\\"GetStuff\\",\\"body\\":\\"fragment Frag1 on Query {\\\\n  moreStuff\\\\n}\\\\n\\\\nquery GetStuff {\\\\n  ...Frag1\\\\n}\\",\\"alias\\":\\"4568c28d403794e011363caf815ec827\\"},{\\"name\\":\\"GetStuff2\\",\\"body\\":\\"fragment Frag1 on Query {\\\\n  moreStuff\\\\n}\\\\n\\\\nfragment Frag2 on Query {\\\\n  ...Frag3\\\\n}\\\\n\\\\nfragment Frag3 on Query {\\\\n  evenMoreStuff\\\\n}\\\\n\\\\nquery GetStuff2 {\\\\n  stuff\\\\n  ...Frag1\\\\n  ...Frag2\\\\n}\\",\\"alias\\":\\"faf462be033e16dd2a56130d56a9192f\\"},{\\"name\\":\\"GetStuff3\\",\\"body\\":\\"fragment Frag2 on Query {\\\\n  ...Frag3\\\\n}\\\\n\\\\nfragment Frag3 on Query {\\\\n  evenMoreStuff\\\\n}\\\\n\\\\nfragment Frag4 on Query {\\\\n  evenMoreStuff {\\\\n    stuffInside\\\\n  }\\\\n}\\\\n\\\\nquery GetStuff3 {\\\\n  stuff {\\\\n    withStuffInside\\\\n  }\\\\n  ...Frag2\\\\n  ...Frag4\\\\n}\\",\\"alias\\":\\"aab385a1685772ad520fc70d468030fa\\"},{\\"name\\":\\"GetStuffIsolated\\",\\"body\\":\\"query GetStuffIsolated {\\\\n  ...FragIsolated\\\\n  things {\\\\n    existHere\\\\n  }\\\\n}\\\\n\\\\nfragment FragIsolated on Query {\\\\n  evenMoreStuff {\\\\n    stuffInside\\\\n  }\\\\n}\\",\\"alias\\":\\"b2cb0b317d071f9f38905fba21d73258\\"},{\\"name\\":\\"GetStuffIsolated2\\",\\"body\\":\\"query GetStuffIsolated2 {\\\\n  things {\\\\n    existHere\\\\n  }\\\\n}\\",\\"alias\\":\\"6cdae165fd6dc5dc5900e5a2bba90cc2\\"}]}",
+    "{"operations":[{"name":"GetStuff","body":"fragment Frag1 on Query {\\n  moreStuff\\n}\\n\\nquery GetStuff {\\n  ...Frag1\\n}","alias":"4568c28d403794e011363caf815ec827"},{"name":"GetStuff2","body":"fragment Frag1 on Query {\\n  moreStuff\\n}\\n\\nfragment Frag2 on Query {\\n  ...Frag3\\n}\\n\\nfragment Frag3 on Query {\\n  evenMoreStuff\\n}\\n\\nquery GetStuff2 {\\n  stuff\\n  ...Frag1\\n  ...Frag2\\n}","alias":"faf462be033e16dd2a56130d56a9192f"},{"name":"GetStuff3","body":"fragment Frag2 on Query {\\n  ...Frag3\\n}\\n\\nfragment Frag3 on Query {\\n  evenMoreStuff\\n}\\n\\nfragment Frag4 on Query {\\n  evenMoreStuff {\\n    stuffInside\\n  }\\n}\\n\\nquery GetStuff3 {\\n  stuff {\\n    withStuffInside\\n  }\\n  ...Frag2\\n  ...Frag4\\n}","alias":"aab385a1685772ad520fc70d468030fa"},{"name":"GetStuffIsolated","body":"query GetStuffIsolated {\\n  ...FragIsolated\\n  things {\\n    existHere\\n  }\\n}\\n\\nfragment FragIsolated on Query {\\n  evenMoreStuff {\\n    stuffInside\\n  }\\n}","alias":"b2cb0b317d071f9f38905fba21d73258"},{"name":"GetStuffIsolated2","body":"query GetStuffIsolated2 {\\n  things {\\n    existHere\\n  }\\n}","alias":"6cdae165fd6dc5dc5900e5a2bba90cc2"}]}",
   ],
-  Array [
+  [
     "[Sync] Response Headers: ",
-    "{\\"content-type\\":\\"application/json\\"}",
+    "{"content-type":"application/json"}",
   ],
-  Array [
+  [
     "[Sync] Response Body: ",
-    "{\\"errors\\":{\\"4568c28d403794e011363caf815ec827\\":[\\"something\\"]},\\"failed\\":[\\"4568c28d403794e011363caf815ec827\\"],\\"added\\":[\\"defg\\"],\\"not_modified\\":[]}",
+    "{"errors":{"4568c28d403794e011363caf815ec827":["something"]},"failed":["4568c28d403794e011363caf815ec827"],"added":["defg"],"not_modified":[]}",
   ],
-  Array [
+  [
     "  [2m0 added[0m",
   ],
-  Array [
+  [
     "  [2m0 not modified[0m",
   ],
-  Array [
+  [
     "  [31m1 failed[0m",
   ],
 ]
 `;
 
 exports[`sync operations Printing the result prints failure and sends the message to the promise 2`] = `
-Array [
-  Array [
+[
+  [
     "Sync failed, errors:",
   ],
-  Array [
+  [
     "  GetStuff:",
   ],
-  Array [
+  [
     "    [31m✘[0m something",
   ],
 ]
 `;
 
 exports[`sync operations Printing the result prints success 1`] = `
-Array [
-  Array [
+[
+  [
     "Syncing 5 operations to [1mhttp://example.com/stored_operations/sync[0m...",
   ],
-  Array [
+  [
     "[Sync] 2 Headers:",
   ],
-  Array [
+  [
     "[Sync]    Content-Type: application/json",
   ],
-  Array [
+  [
     "[Sync]    Content-Length: 1132",
   ],
-  Array [
+  [
     "[Sync] Data:",
-    "{\\"operations\\":[{\\"name\\":\\"GetStuff\\",\\"body\\":\\"fragment Frag1 on Query {\\\\n  moreStuff\\\\n}\\\\n\\\\nquery GetStuff {\\\\n  ...Frag1\\\\n}\\",\\"alias\\":\\"4568c28d403794e011363caf815ec827\\"},{\\"name\\":\\"GetStuff2\\",\\"body\\":\\"fragment Frag1 on Query {\\\\n  moreStuff\\\\n}\\\\n\\\\nfragment Frag2 on Query {\\\\n  ...Frag3\\\\n}\\\\n\\\\nfragment Frag3 on Query {\\\\n  evenMoreStuff\\\\n}\\\\n\\\\nquery GetStuff2 {\\\\n  stuff\\\\n  ...Frag1\\\\n  ...Frag2\\\\n}\\",\\"alias\\":\\"faf462be033e16dd2a56130d56a9192f\\"},{\\"name\\":\\"GetStuff3\\",\\"body\\":\\"fragment Frag2 on Query {\\\\n  ...Frag3\\\\n}\\\\n\\\\nfragment Frag3 on Query {\\\\n  evenMoreStuff\\\\n}\\\\n\\\\nfragment Frag4 on Query {\\\\n  evenMoreStuff {\\\\n    stuffInside\\\\n  }\\\\n}\\\\n\\\\nquery GetStuff3 {\\\\n  stuff {\\\\n    withStuffInside\\\\n  }\\\\n  ...Frag2\\\\n  ...Frag4\\\\n}\\",\\"alias\\":\\"aab385a1685772ad520fc70d468030fa\\"},{\\"name\\":\\"GetStuffIsolated\\",\\"body\\":\\"query GetStuffIsolated {\\\\n  ...FragIsolated\\\\n  things {\\\\n    existHere\\\\n  }\\\\n}\\\\n\\\\nfragment FragIsolated on Query {\\\\n  evenMoreStuff {\\\\n    stuffInside\\\\n  }\\\\n}\\",\\"alias\\":\\"b2cb0b317d071f9f38905fba21d73258\\"},{\\"name\\":\\"GetStuffIsolated2\\",\\"body\\":\\"query GetStuffIsolated2 {\\\\n  things {\\\\n    existHere\\\\n  }\\\\n}\\",\\"alias\\":\\"6cdae165fd6dc5dc5900e5a2bba90cc2\\"}]}",
+    "{"operations":[{"name":"GetStuff","body":"fragment Frag1 on Query {\\n  moreStuff\\n}\\n\\nquery GetStuff {\\n  ...Frag1\\n}","alias":"4568c28d403794e011363caf815ec827"},{"name":"GetStuff2","body":"fragment Frag1 on Query {\\n  moreStuff\\n}\\n\\nfragment Frag2 on Query {\\n  ...Frag3\\n}\\n\\nfragment Frag3 on Query {\\n  evenMoreStuff\\n}\\n\\nquery GetStuff2 {\\n  stuff\\n  ...Frag1\\n  ...Frag2\\n}","alias":"faf462be033e16dd2a56130d56a9192f"},{"name":"GetStuff3","body":"fragment Frag2 on Query {\\n  ...Frag3\\n}\\n\\nfragment Frag3 on Query {\\n  evenMoreStuff\\n}\\n\\nfragment Frag4 on Query {\\n  evenMoreStuff {\\n    stuffInside\\n  }\\n}\\n\\nquery GetStuff3 {\\n  stuff {\\n    withStuffInside\\n  }\\n  ...Frag2\\n  ...Frag4\\n}","alias":"aab385a1685772ad520fc70d468030fa"},{"name":"GetStuffIsolated","body":"query GetStuffIsolated {\\n  ...FragIsolated\\n  things {\\n    existHere\\n  }\\n}\\n\\nfragment FragIsolated on Query {\\n  evenMoreStuff {\\n    stuffInside\\n  }\\n}","alias":"b2cb0b317d071f9f38905fba21d73258"},{"name":"GetStuffIsolated2","body":"query GetStuffIsolated2 {\\n  things {\\n    existHere\\n  }\\n}","alias":"6cdae165fd6dc5dc5900e5a2bba90cc2"}]}",
   ],
 ]
 `;
 
 exports[`sync operations Printing the result prints success 2`] = `
-Array [
-  Array [
+[
+  [
     "[Sync] Response Headers: ",
-    "{\\"content-type\\":\\"application/json\\"}",
+    "{"content-type":"application/json"}",
   ],
-  Array [
+  [
     "[Sync] Response Body: ",
-    "{\\"errors\\":{},\\"failed\\":[],\\"added\\":[\\"defg\\"],\\"not_modified\\":[\\"xyz\\",\\"123\\"]}",
+    "{"errors":{},"failed":[],"added":["defg"],"not_modified":["xyz","123"]}",
   ],
-  Array [
+  [
     "  [32m1 added[0m",
   ],
-  Array [
+  [
     "  [0m2 not modified[0m",
   ],
-  Array [
+  [
     "  [2m0 failed[0m",
   ],
-  Array [
+  [
     "Generating client module in [1msrc/OperationStoreClient.js[0m...",
   ],
-  Array [
+  [
     "[32m✓ Done![0m",
   ],
 ]
 `;
 
-exports[`sync operations Printing the result prints success 3`] = `Array []`;
+exports[`sync operations Printing the result prints success 3`] = `[]`;
 
 exports[`sync operations Relay support Uses Apollo Android OperationOutput JSON files 1`] = `
-Array [
-  Object {
+[
+  {
     "alias": "aba626ea9bdf465954e89e5590eb2c1a",
     "body": "mutation RemoveTodoMutation($input: RemoveTodoInput!) {
   removeTodo(input: $input) {
@@ -308,7 +308,7 @@ Array [
   }
 }",
   },
-  Object {
+  {
     "alias": "67c2bc8aa3185a209d6651b4feb63c04",
     "body": "query appQuery(
   $userId: String
@@ -385,7 +385,7 @@ fragment Todo_user on User {
 }
 ",
   },
-  Object {
+  {
     "alias": "db9904c31d91416f21d45fe3d153884c",
     "body": "mutation MarkAllTodosMutation(
   $input: MarkAllTodosInput!
@@ -403,7 +403,7 @@ fragment Todo_user on User {
 }
 ",
   },
-  Object {
+  {
     "alias": "2eb8c9941fdb3117fdbc08d15fab62d0",
     "body": "mutation AddTodoMutation(
   $input: AddTodoInput!
@@ -426,7 +426,7 @@ fragment Todo_user on User {
 }
 ",
   },
-  Object {
+  {
     "alias": "d970fd7dbf118794415dec7324d463e3",
     "body": "mutation RenameTodoMutation(
   $input: RenameTodoInput!
@@ -440,7 +440,7 @@ fragment Todo_user on User {
 }
 ",
   },
-  Object {
+  {
     "alias": "a49217db31a8be3f4107763b957d5fca",
     "body": "mutation RemoveCompletedTodosMutation(
   $input: RemoveCompletedTodosInput!
@@ -456,7 +456,7 @@ fragment Todo_user on User {
 }
 ",
   },
-  Object {
+  {
     "alias": "d7dda774dcfa32fe0d9661e01cac9a4a",
     "body": "mutation ChangeTodoStatusMutation(
   $input: ChangeTodoStatusInput!
@@ -478,8 +478,8 @@ fragment Todo_user on User {
 `;
 
 exports[`sync operations Relay support Uses Apollo Codegen JSON files 1`] = `
-Array [
-  Object {
+[
+  {
     "alias": "22cc98c61c1402c92b230b7c515e07eb793a5152c388b015e86df4652ec58156",
     "body": "mutation UpdateSomething($name: String!) {
   updateSomething(name: $name) {
@@ -489,7 +489,7 @@ Array [
 }",
     "name": "UpdateSomething",
   },
-  Object {
+  {
     "alias": "688df2ea182541c70a34c55ca056dc249014bf9f33c64eee527120c714e936fc",
     "body": "query getHelloWorld {
   helloWorld
@@ -504,8 +504,8 @@ fragment MoreFields on Query {
 `;
 
 exports[`sync operations Relay support Uses Relay generated .js files 1`] = `
-Array [
-  Object {
+[
+  {
     "alias": "353e010cb78d082b29cb63ee7e9027b3",
     "body": "query AppFeedQuery {
   feed(type: NEW, limit: 5) {
@@ -542,8 +542,8 @@ fragment FeedEntry on Entry {
 `;
 
 exports[`sync operations Relay support Uses relay --persist-output JSON files 1`] = `
-Array [
-  Object {
+[
+  {
     "alias": "aba626ea9bdf465954e89e5590eb2c1a",
     "body": "mutation RemoveTodoMutation(
   $input: RemoveTodoInput!
@@ -559,7 +559,7 @@ Array [
 }
 ",
   },
-  Object {
+  {
     "alias": "67c2bc8aa3185a209d6651b4feb63c04",
     "body": "query appQuery(
   $userId: String
@@ -636,7 +636,7 @@ fragment Todo_user on User {
 }
 ",
   },
-  Object {
+  {
     "alias": "db9904c31d91416f21d45fe3d153884c",
     "body": "mutation MarkAllTodosMutation(
   $input: MarkAllTodosInput!
@@ -654,7 +654,7 @@ fragment Todo_user on User {
 }
 ",
   },
-  Object {
+  {
     "alias": "2eb8c9941fdb3117fdbc08d15fab62d0",
     "body": "mutation AddTodoMutation(
   $input: AddTodoInput!
@@ -677,7 +677,7 @@ fragment Todo_user on User {
 }
 ",
   },
-  Object {
+  {
     "alias": "d970fd7dbf118794415dec7324d463e3",
     "body": "mutation RenameTodoMutation(
   $input: RenameTodoInput!
@@ -691,7 +691,7 @@ fragment Todo_user on User {
 }
 ",
   },
-  Object {
+  {
     "alias": "a49217db31a8be3f4107763b957d5fca",
     "body": "mutation RemoveCompletedTodosMutation(
   $input: RemoveCompletedTodosInput!
@@ -707,7 +707,7 @@ fragment Todo_user on User {
 }
 ",
   },
-  Object {
+  {
     "alias": "d7dda774dcfa32fe0d9661e01cac9a4a",
     "body": "mutation ChangeTodoStatusMutation(
   $input: ChangeTodoStatusInput!
@@ -729,8 +729,8 @@ fragment Todo_user on User {
 `;
 
 exports[`sync operations custom file processing options Adds .graphql to the glob if needed 1`] = `
-Array [
-  Object {
+[
+  {
     "alias": "b8086942c2fbb6ac69b97cbade848033",
     "body": "query GetStuff {
   stuff
@@ -741,8 +741,8 @@ Array [
 `;
 
 exports[`sync operations custom file processing options Adds .graphql to the glob if needed 2`] = `
-Array [
-  Object {
+[
+  {
     "alias": "b8086942c2fbb6ac69b97cbade848033",
     "body": "query GetStuff {
   stuff
@@ -753,8 +753,8 @@ Array [
 `;
 
 exports[`sync operations custom file processing options Uses a custom hash function if provided 1`] = `
-Array [
-  Object {
+[
+  {
     "alias": "GETSTUFF",
     "body": "query GetStuff {
   stuff
@@ -777,7 +777,7 @@ exports[`sync operations generating artifacts without syncing works without a UR
      * @private
     */
     var _aliases = {
-  \\"GetStuff\\": \\"b8086942c2fbb6ac69b97cbade848033\\"
+  "GetStuff": "b8086942c2fbb6ac69b97cbade848033"
 }
 
     /**
@@ -785,7 +785,7 @@ exports[`sync operations generating artifacts without syncing works without a UR
      * @return {String}
      * @private
     */
-    var _client = \\"test-1\\"
+    var _client = "test-1"
 
     var OperationStoreClient = {
       /**
@@ -794,7 +794,7 @@ exports[`sync operations generating artifacts without syncing works without a UR
        * @return {String} stored operation ID
       */
       getOperationId: function(operationName) {
-        return _client + \\"/\\" + OperationStoreClient.getPersistedQueryAlias(operationName)
+        return _client + "/" + OperationStoreClient.getPersistedQueryAlias(operationName)
       },
 
       /**
@@ -805,7 +805,7 @@ exports[`sync operations generating artifacts without syncing works without a UR
       getPersistedQueryAlias: function(operationName) {
         var persistedAlias = _aliases[operationName]
         if (!persistedAlias) {
-          throw new Error(\\"Failed to find persisted alias for operation name: \\" + operationName)
+          throw new Error("Failed to find persisted alias for operation name: " + operationName)
         } else {
           return persistedAlias
         }
@@ -865,27 +865,27 @@ exports[`sync operations generating artifacts without syncing works without a UR
 `;
 
 exports[`sync operations verbose Adds debug output 1`] = `
-Array [
-  Array [
+[
+  [
     "[Sync] glob: ",
     "./src/__tests__/documents**/*.graphql*",
   ],
-  Array [
+  [
     "[Sync] 1 files:",
   ],
-  Array [
+  [
     "[Sync]   - ./src/__tests__/documents/doc1.graphql",
   ],
-  Array [
+  [
     "Syncing 1 operations to [1mbogus[0m...",
   ],
-  Array [
+  [
     "Verbose!",
   ],
-  Array [
+  [
     "Generating client module in [1msrc/OperationStoreClient.js[0m...",
   ],
-  Array [
+  [
     "[32m✓ Done![0m",
   ],
 ]

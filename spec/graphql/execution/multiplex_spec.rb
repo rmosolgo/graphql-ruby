@@ -242,4 +242,41 @@ describe GraphQL::Execution::Multiplex do
       assert_equal unhandled_err_json, InspectQueryInstrumentation.last_json
     end
   end
+
+  describe "context[:trace]" do
+    class MultiplexTraceSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        field :int, Integer
+        def int; 1; end
+      end
+
+      class Trace < GraphQL::Tracing::Trace
+        def execute_multiplex(multiplex:)
+          @execute_multiplex_count ||= 0
+          @execute_multiplex_count += 1
+          super
+        end
+
+        def execute_query(query:)
+          @execute_query_count ||= 0
+          @execute_query_count += 1
+          super
+        end
+
+        attr_reader :execute_multiplex_count, :execute_query_count
+      end
+
+      query(Query)
+    end
+
+    it "uses it instead of making a new trace" do
+      query_str = "{ int }"
+      trace_instance = MultiplexTraceSchema::Trace.new
+      res = MultiplexTraceSchema.multiplex([{query: query_str}, {query: query_str}], context: { trace: trace_instance })
+      assert_equal [1, 1], res.map { |r| r["data"]["int"]}
+
+      assert_equal 1, trace_instance.execute_multiplex_count
+      assert_equal 2, trace_instance.execute_query_count
+    end
+  end
 end

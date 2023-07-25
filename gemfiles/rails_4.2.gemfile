@@ -1,6 +1,7 @@
 source "https://rubygems.org"
 
 gem "rails", "~> 4.2", require: "rails/all"
+gem 'loofah', '~>2.19.1' # Trying to fix Nokogiri incompatibility
 gem "activerecord", "~> 4.2.4"
 gem "actionpack", "~> 4.2.4"
 gem "concurrent-ruby", "~> 1.0"
