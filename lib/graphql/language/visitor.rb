@@ -65,7 +65,9 @@ module GraphQL
       # Visit `document` and all children, applying hooks as you go
       # @return [void]
       def visit
-        result = on_node_with_modifications(@document, nil)
+        # `@document` may be any kind of node:
+        visit_method = :"#{@document.visit_method}_with_modifications"
+        result = public_send(visit_method, @document, nil)
         @result = if result.is_a?(Array)
           result.first
         else
@@ -74,104 +76,210 @@ module GraphQL
         end
       end
 
-      # Call the user-defined handler for `node`.
-      def visit_node(node, parent)
-        public_send(node.visit_method, node, parent)
-      end
+      # We don't use `alias` here because it breaks `super`
+      def self.make_visit_methods(ast_node_class)
+        node_method = ast_node_class.visit_method
+        children_of_type = ast_node_class.children_of_type
+        child_visit_method = :"#{node_method}_children"
 
-      # The default implementation for visiting an AST node.
-      # It doesn't _do_ anything, but it continues to visiting the node's children.
-      # To customize this hook, override one of its make_visit_methodes (or the base method?)
-      # in your subclasses.
-      #
-      # For compatibility, it calls hook procs, too.
-      # @param node [GraphQL::Language::Nodes::AbstractNode] the node being visited
-      # @param parent [GraphQL::Language::Nodes::AbstractNode, nil] the previously-visited node, or `nil` if this is the root node.
-      # @return [Array, nil] If there were modifications, it returns an array of new nodes, otherwise, it returns `nil`.
-      def on_abstract_node(node, parent)
-        if node.equal?(DELETE_NODE)
-          # This might be passed to `super(DELETE_NODE, ...)`
-          # by a user hook, don't want to keep visiting in that case.
-          nil
-        else
-          # Run hooks if there are any
-          new_node = node
-          no_hooks = !@visitors.key?(node.class)
-          if no_hooks || begin_visit(new_node, parent)
-            node.children.each do |child_node|
-              new_child_and_node = on_node_with_modifications(child_node, new_node)
-              # Reassign `node` in case the child hook makes a modification
-              if new_child_and_node.is_a?(Array)
-                new_node = new_child_and_node[1]
+        class_eval(<<-RUBY, __FILE__, __LINE__ + 1)
+          # The default implementation for visiting an AST node.
+          # It doesn't _do_ anything, but it continues to visiting the node's children.
+          # To customize this hook, override one of its make_visit_methods (or the base method?)
+          # in your subclasses.
+          #
+          # For compatibility, it calls hook procs, too.
+          # @param node [GraphQL::Language::Nodes::AbstractNode] the node being visited
+          # @param parent [GraphQL::Language::Nodes::AbstractNode, nil] the previously-visited node, or `nil` if this is the root node.
+          # @return [Array, nil] If there were modifications, it returns an array of new nodes, otherwise, it returns `nil`.
+          def #{node_method}(node, parent)
+            if node.equal?(DELETE_NODE)
+              # This might be passed to `super(DELETE_NODE, ...)`
+              # by a user hook, don't want to keep visiting in that case.
+              [node, parent]
+            else
+              # Run hooks if there are any
+              new_node = node
+              no_hooks = !@visitors.key?(node.class)
+              if no_hooks || begin_visit(new_node, parent)
+                #{
+                  if method_defined?(child_visit_method)
+                    "new_node = #{child_visit_method}(new_node)"
+                  elsif children_of_type
+                    children_of_type.map do |child_accessor, child_class|
+                      "node.#{child_accessor}.each do |child_node|
+                        new_child_and_node = #{child_class.visit_method}_with_modifications(child_node, new_node)
+                        # Reassign `node` in case the child hook makes a modification
+                        if new_child_and_node.is_a?(Array)
+                          new_node = new_child_and_node[1]
+                        end
+                      end"
+                    end.join("\n")
+                  else
+                    ""
+                  end
+                }
+              end
+              end_visit(new_node, parent) unless no_hooks
+
+              if new_node.equal?(node)
+                [node, parent]
+              else
+                [new_node, parent]
               end
             end
           end
-          end_visit(new_node, parent) unless no_hooks
 
-          if new_node.equal?(node)
-            nil
-          else
-            [new_node, parent]
-          end
-        end
-      end
-
-      # We don't use `alias` here because it breaks `super`
-      def self.make_visit_method(node_method)
-        class_eval(<<-RUBY, __FILE__, __LINE__ + 1)
-          def #{node_method}(node, parent)
-            child_mod = on_abstract_node(node, parent)
-            # If visiting the children returned changes, continue passing those.
-            child_mod || [node, parent]
+          def #{node_method}_with_modifications(node, parent)
+            new_node_and_new_parent = #{node_method}(node, parent)
+            apply_modifications(node, parent, new_node_and_new_parent)
           end
         RUBY
       end
 
-      make_visit_method :on_argument
-      make_visit_method :on_directive
-      make_visit_method :on_directive_definition
-      make_visit_method :on_directive_location
-      make_visit_method :on_document
-      make_visit_method :on_enum
-      make_visit_method :on_enum_type_definition
-      make_visit_method :on_enum_type_extension
-      make_visit_method :on_enum_value_definition
-      make_visit_method :on_field
-      make_visit_method :on_field_definition
-      make_visit_method :on_fragment_definition
-      make_visit_method :on_fragment_spread
-      make_visit_method :on_inline_fragment
-      make_visit_method :on_input_object
-      make_visit_method :on_input_object_type_definition
-      make_visit_method :on_input_object_type_extension
-      make_visit_method :on_input_value_definition
-      make_visit_method :on_interface_type_definition
-      make_visit_method :on_interface_type_extension
-      make_visit_method :on_list_type
-      make_visit_method :on_non_null_type
-      make_visit_method :on_null_value
-      make_visit_method :on_object_type_definition
-      make_visit_method :on_object_type_extension
-      make_visit_method :on_operation_definition
-      make_visit_method :on_scalar_type_definition
-      make_visit_method :on_scalar_type_extension
-      make_visit_method :on_schema_definition
-      make_visit_method :on_schema_extension
-      make_visit_method :on_type_name
-      make_visit_method :on_union_type_definition
-      make_visit_method :on_union_type_extension
-      make_visit_method :on_variable_definition
-      make_visit_method :on_variable_identifier
+      def on_document_children(document_node)
+        new_node = document_node
+        document_node.children.each do |child_node|
+          visit_method = :"#{child_node.visit_method}_with_modifications"
+          new_child_and_node = public_send(visit_method, child_node, new_node)
+          # Reassign `node` in case the child hook makes a modification
+          if new_child_and_node.is_a?(Array)
+            new_node = new_child_and_node[1]
+          end
+        end
+        new_node
+      end
+
+      def on_field_children(new_node)
+        new_node.arguments.each do |arg_node| # rubocop:disable Development/ContextIsPassedCop
+          new_child_and_node = on_argument_with_modifications(arg_node, new_node)
+          # Reassign `node` in case the child hook makes a modification
+          if new_child_and_node.is_a?(Array)
+            new_node = new_child_and_node[1]
+          end
+        end
+        new_node = visit_directives(new_node)
+        new_node = visit_selections(new_node)
+        new_node
+      end
+
+      def visit_directives(new_node)
+        new_node.directives.each do |dir_node|
+          new_child_and_node = on_directive_with_modifications(dir_node, new_node)
+          # Reassign `node` in case the child hook makes a modification
+          if new_child_and_node.is_a?(Array)
+            new_node = new_child_and_node[1]
+          end
+        end
+        new_node
+      end
+
+      def visit_selections(new_node)
+        new_node.selections.each do |selection|
+          new_child_and_node = case selection
+          when GraphQL::Language::Nodes::Field
+            on_field_with_modifications(selection, new_node)
+          when GraphQL::Language::Nodes::InlineFragment
+            on_inline_fragment_with_modifications(selection, new_node)
+          when GraphQL::Language::Nodes::FragmentSpread
+            on_fragment_spread_with_modifications(selection, new_node)
+          else
+            raise ArgumentError, "Invariant: unexpected field selection #{selection.class} (#{selection.inspect})"
+          end
+          # Reassign `node` in case the child hook makes a modification
+          if new_child_and_node.is_a?(Array)
+            new_node = new_child_and_node[1]
+          end
+        end
+        new_node
+      end
+
+      def on_fragment_definition_children(new_node)
+        new_node = visit_directives(new_node)
+        new_node = visit_selections(new_node)
+        new_node
+      end
+
+      alias :on_inline_fragment_children :on_fragment_definition_children
+
+      def on_operation_definition_children(new_node)
+        new_node.variables.each do |arg_node|
+          new_child_and_node = on_variable_definition_with_modifications(arg_node, new_node)
+          # Reassign `node` in case the child hook makes a modification
+          if new_child_and_node.is_a?(Array)
+            new_node = new_child_and_node[1]
+          end
+        end
+        new_node = visit_directives(new_node)
+        new_node = visit_selections(new_node)
+        new_node
+      end
+
+      def on_argument_children(new_node)
+        new_node.children.each do |value_node|
+          new_child_and_node = case value_node
+          when Language::Nodes::VariableIdentifier
+            on_variable_identifier_with_modifications(value_node, new_node)
+          when Language::Nodes::InputObject
+            on_input_object_with_modifications(value_node, new_node)
+          when Language::Nodes::Enum
+            on_enum_with_modifications(value_node, new_node)
+          when Language::Nodes::NullValue
+            on_null_value_with_modifications(value_node, new_node)
+          else
+            raise ArgumentError, "Invariant: unexpected argument value node #{value_node.class} (#{value_node.inspect})"
+          end
+          # Reassign `node` in case the child hook makes a modification
+          if new_child_and_node.is_a?(Array)
+            new_node = new_child_and_node[1]
+          end
+        end
+        new_node
+      end
+
+      [
+        Language::Nodes::Argument,
+        Language::Nodes::Directive,
+        Language::Nodes::DirectiveDefinition,
+        Language::Nodes::DirectiveLocation,
+        Language::Nodes::Document,
+        Language::Nodes::Enum,
+        Language::Nodes::EnumTypeDefinition,
+        Language::Nodes::EnumTypeExtension,
+        Language::Nodes::EnumValueDefinition,
+        Language::Nodes::Field,
+        Language::Nodes::FieldDefinition,
+        Language::Nodes::FragmentDefinition,
+        Language::Nodes::FragmentSpread,
+        Language::Nodes::InlineFragment,
+        Language::Nodes::InputObject,
+        Language::Nodes::InputObjectTypeDefinition,
+        Language::Nodes::InputObjectTypeExtension,
+        Language::Nodes::InputValueDefinition,
+        Language::Nodes::InterfaceTypeDefinition,
+        Language::Nodes::InterfaceTypeExtension,
+        Language::Nodes::ListType,
+        Language::Nodes::NonNullType,
+        Language::Nodes::NullValue,
+        Language::Nodes::ObjectTypeDefinition,
+        Language::Nodes::ObjectTypeExtension,
+        Language::Nodes::OperationDefinition,
+        Language::Nodes::ScalarTypeDefinition,
+        Language::Nodes::ScalarTypeExtension,
+        Language::Nodes::SchemaDefinition,
+        Language::Nodes::SchemaExtension,
+        Language::Nodes::TypeName,
+        Language::Nodes::UnionTypeDefinition,
+        Language::Nodes::UnionTypeExtension,
+        Language::Nodes::VariableDefinition,
+        Language::Nodes::VariableIdentifier,
+      ].each do |ast_node_class|
+        make_visit_methods(ast_node_class)
+      end
 
       private
 
-      # Run the hooks for `node`, and if the hooks return a copy of `node`,
-      # copy `parent` so that it contains the copy of that node as a child,
-      # then return the copies
-      # If a non-array value is returned, consuming functions should ignore
-      # said value
-      def on_node_with_modifications(node, parent)
-        new_node_and_new_parent = visit_node(node, parent)
+      def apply_modifications(node, parent, new_node_and_new_parent)
         if new_node_and_new_parent.is_a?(Array)
           new_node = new_node_and_new_parent[0]
           new_parent = new_node_and_new_parent[1]

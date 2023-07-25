@@ -125,7 +125,7 @@ describe GraphQL::Backtrace do
       assert_backtrace_includes(b, file: "backtrace_spec.rb", method: "block")
       assert_backtrace_includes(b, file: "field.rb", method: "resolve")
       assert_backtrace_includes(b, file: "runtime.rb", method: "evaluate_selections")
-      assert_backtrace_includes(b, file: "interpreter.rb", method: "begin_query")
+      assert_backtrace_includes(b, file: "interpreter.rb", method: "run_all")
 
       # GraphQL backtrace is present
       expected_graphql_backtrace = [
@@ -169,7 +169,7 @@ describe GraphQL::Backtrace do
       b = err.cause.backtrace
       assert_backtrace_includes(b, file: "backtrace_spec.rb", method: "raise_err")
       assert_backtrace_includes(b, file: "schema.rb", method: "sync_lazy")
-      assert_backtrace_includes(b, file: "interpreter.rb", method: "sync_lazies")
+      assert_backtrace_includes(b, file: "interpreter.rb", method: "run_all")
 
       expected_graphql_backtrace = [
         "1:27: OtherThing.strField",
@@ -272,5 +272,14 @@ describe GraphQL::Backtrace do
     ]
 
     assert_equal expected_res, res
+  end
+
+  it "includes other trace modules when backtrace is active" do
+    custom_trace = Module.new
+    schema = Class.new(GraphQL::Schema) do
+      trace_with(custom_trace)
+    end
+    query = GraphQL::Query.new(schema, "{ __typename }", context: { backtrace: true })
+    assert_includes query.current_trace.class.ancestors, custom_trace
   end
 end

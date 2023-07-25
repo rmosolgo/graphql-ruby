@@ -62,6 +62,33 @@ describe GraphQL::Schema::Enum do
     end
   end
 
+  describe "when it fails to coerce to a valid value" do
+    class EnumValueCoerceSchema < GraphQL::Schema
+      class Value < GraphQL::Schema::Enum
+        value "ONE"
+        value "TWO"
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :value, Value
+
+        def value
+          "THREE"
+        end
+      end
+
+      query(Query)
+      rescue_from StandardError do
+        raise GraphQL::ExecutionError, "Sorry, something went wrong."
+      end
+    end
+
+    it "calls the schema error handlers" do
+      res = EnumValueCoerceSchema.execute("{ value }")
+      assert_equal ["Sorry, something went wrong."], res["errors"].map { |e| e["message"] }
+    end
+  end
+
   describe "in queries" do
     it "works as return values" do
       query_str = "{ instruments { family } }"
@@ -91,10 +118,50 @@ describe GraphQL::Schema::Enum do
       end
       expected_message = "Found two visible definitions for `MultipleNameTestEnum.B`: #<GraphQL::Schema::EnumValue MultipleNameTestEnum.B @value=:a>, #<GraphQL::Schema::EnumValue MultipleNameTestEnum.B @value=:b>"
       assert_equal expected_message, err.message
+      assert_equal "MultipleNameTestEnum.B", err.duplicated_name
     end
 
     it "returns them all in all_enum_value_definitions" do
       assert_equal 3, MultipleNameTestEnum.all_enum_value_definitions.size
+    end
+  end
+
+  describe "missing values at runtime" do
+    class EmptyEnumSchema < GraphQL::Schema
+      class EmptyEnum < GraphQL::Schema::Enum
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :empty_enum, EmptyEnum
+
+        def empty_enum
+          :something
+        end
+      end
+
+      query(Query)
+
+      rescue_from(GraphQL::Schema::Enum::MissingValuesError) do |err, obj, args, ctx, field|
+        if ctx[:handle_error]
+          raise GraphQL::ExecutionError, "Something went wrong!!"
+        else
+          raise err
+        end
+      end
+    end
+
+    it "requires at least one value at runtime" do
+      err = assert_raises GraphQL::Schema::Enum::MissingValuesError do
+        EmptyEnumSchema.execute("{ emptyEnum }")
+      end
+
+      expected_message = "Enum types require at least one value, but EmptyEnum didn't provide any for this query. Make sure at least one value is defined and visible for this query."
+      assert_equal expected_message, err.message
+    end
+
+    it "can be rescued by rescue_error" do
+      res = EmptyEnumSchema.execute("{ emptyEnum }", context: { handle_error: true })
+      assert_equal ["Something went wrong!!"], res["errors"].map { |e| e["message"] }
     end
   end
 
@@ -104,6 +171,7 @@ describe GraphQL::Schema::Enum do
     it "coerces names to underlying values" do
       assert_equal("YAK", enum.coerce_isolated_input("YAK"))
       assert_equal(1, enum.coerce_isolated_input("COW"))
+      assert_equal(nil, enum.coerce_isolated_input("NONE"))
     end
 
     it "coerces invalid names to nil" do
@@ -111,6 +179,7 @@ describe GraphQL::Schema::Enum do
     end
 
     it "coerces result values to value's value" do
+      assert_equal("NONE", enum.coerce_isolated_result(nil))
       assert_equal("YAK", enum.coerce_isolated_result("YAK"))
       assert_equal("COW", enum.coerce_isolated_result(1))
       assert_equal("REINDEER", enum.coerce_isolated_result('reindeer'))
@@ -215,7 +284,7 @@ describe GraphQL::Schema::Enum do
         assert(!result.valid?)
         assert_equal(
           result.problems.first['explanation'],
-          "Expected \"bad enum\" to be one of: COW, DONKEY, GOAT, REINDEER, SHEEP, YAK"
+          "Expected \"bad enum\" to be one of: NONE, COW, DONKEY, GOAT, REINDEER, SHEEP, YAK"
         )
       end
     end

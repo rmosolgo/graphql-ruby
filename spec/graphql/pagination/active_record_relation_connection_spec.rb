@@ -27,13 +27,15 @@ if testing_rails?
         total_count_connection_class: RelationConnectionWithTotalCount,
         get_items: -> {
           if Food.respond_to?(:scoped)
-            Food.scoped # Rails 3-friendly version of .all
+            Food.scoped.limit(limit) # Rails 3-friendly version of .all
           else
-            Food.all
+            Food.all.limit(limit)
           end
         }
       )
     }
+
+    let(:limit) { nil }
 
     include ConnectionAssertions
 
@@ -61,6 +63,33 @@ if testing_rails?
       }")
       assert_equal ["Cucumber", "Dill"], results["data"]["offsetItems"]["nodes"].map { |n| n["name"] }
     end
+
+    describe 'with application-provided limit, which is smaller than the max_page_size' do
+      let(:limit) { 1 }
+
+      it "maintains an application-provided limit" do
+        results = schema.execute("{
+          limitedItems {
+            nodes { name }
+          }
+        }")
+        assert_equal ["Avocado"], results["data"]["limitedItems"]["nodes"].map { |n| n["name"] }
+      end
+    end
+
+    describe 'with application-provided limit, which is larger than the max_page_size' do
+      let(:limit) { 3 }
+
+      it "applies a field-level max-page-size configuration" do
+        results = schema.execute("{
+          limitedItems {
+            nodes { name }
+          }
+        }")
+        assert_equal ["Avocado", "Beet"], results["data"]["limitedItems"]["nodes"].map { |n| n["name"] }
+      end
+    end
+
 
     it "doesn't run pageInfo queries when not necessary" do
       results = nil
@@ -168,8 +197,8 @@ if testing_rails?
         log = with_active_record_log do
           results = schema.execute(ALREADY_LOADED_QUERY_STRING)
         end
-        # The max_page_size of 6 is applied to the results
-        assert_equal 6, results["data"]["preloadedItems"]["nodes"].size
+        # The default_page_size of 4 is applied to the results
+        assert_equal 4, results["data"]["preloadedItems"]["nodes"].size
         assert_equal 1, log.split("\n").size, "It runs only one query"
         decolorized_log = log.gsub(/\e\[([;\d]+)?m/, '').chomp
         assert_operator decolorized_log, :end_with?, 'SELECT "foods".* FROM "foods"', "it's an unbounded select from the resolver"

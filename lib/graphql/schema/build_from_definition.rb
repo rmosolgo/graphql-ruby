@@ -6,24 +6,25 @@ module GraphQL
     module BuildFromDefinition
       class << self
         # @see {Schema.from_definition}
-        def from_definition(definition_string, parser: GraphQL.default_parser, **kwargs)
-          from_document(parser.parse(definition_string), **kwargs)
+        def from_definition(schema_superclass, definition_string, parser: GraphQL.default_parser, **kwargs)
+          from_document(schema_superclass, parser.parse(definition_string), **kwargs)
         end
 
-        def from_definition_path(definition_path, parser: GraphQL.default_parser, **kwargs)
-          from_document(parser.parse_file(definition_path), **kwargs)
+        def from_definition_path(schema_superclass, definition_path, parser: GraphQL.default_parser, **kwargs)
+          from_document(schema_superclass, parser.parse_file(definition_path), **kwargs)
         end
 
-        def from_document(document, default_resolve:, using: {}, relay: false)
-          Builder.build(document, default_resolve: default_resolve || {}, relay: relay, using: using)
+        def from_document(schema_superclass, document, default_resolve:, using: {}, relay: false)
+          Builder.build(schema_superclass, document, default_resolve: default_resolve || {}, relay: relay, using: using)
         end
       end
 
       # @api private
       module Builder
+        include GraphQL::EmptyObjects
         extend self
 
-        def build(document, default_resolve:, using: {}, relay:)
+        def build(schema_superclass, document, default_resolve:, using: {}, relay:)
           raise InvalidDocumentError.new('Must provide a document ast.') if !document || !document.is_a?(GraphQL::Language::Nodes::Document)
 
           if default_resolve.is_a?(Hash)
@@ -36,7 +37,7 @@ module GraphQL
           end
           schema_definition = schema_defns.first
           types = {}
-          directives = {}
+          directives = schema_superclass.directives.dup
           type_resolver = build_resolve_type(types, directives, ->(type_name) { types[type_name] ||= Schema::LateBoundType.new(type_name)})
           # Make a different type resolver because we need to coerce directive arguments
           # _while_ building the schema.
@@ -55,21 +56,24 @@ module GraphQL
             end
           })
 
+          directives.merge!(GraphQL::Schema.default_directives)
           document.definitions.each do |definition|
             if definition.is_a?(GraphQL::Language::Nodes::DirectiveDefinition)
               directives[definition.name] = build_directive(definition, directive_type_resolver)
             end
           end
 
-          directives = GraphQL::Schema.default_directives.merge(directives)
-
           # In case any directives referenced built-in types for their arguments:
           replace_late_bound_types_with_built_in(types)
 
+          schema_extensions = nil
           document.definitions.each do |definition|
             case definition
             when GraphQL::Language::Nodes::SchemaDefinition, GraphQL::Language::Nodes::DirectiveDefinition
               nil # already handled
+            when GraphQL::Language::Nodes::SchemaExtension
+              schema_extensions ||= []
+              schema_extensions << definition
             else
               # It's possible that this was already loaded by the directives
               prev_type = types[definition.name]
@@ -96,6 +100,16 @@ module GraphQL
               raise InvalidDocumentError.new("Specified subscription type \"#{schema_definition.subscription}\" not found in document.") unless types[schema_definition.subscription]
               subscription_root_type = types[schema_definition.subscription]
             end
+
+            if schema_definition.query.nil? &&
+                schema_definition.mutation.nil? &&
+                schema_definition.subscription.nil?
+              # This schema may have been given with directives only,
+              # check for defaults:
+              query_root_type = types['Query']
+              mutation_root_type = types['Mutation']
+              subscription_root_type = types['Subscription']
+            end
           else
             query_root_type = types['Query']
             mutation_root_type = types['Mutation']
@@ -104,7 +118,9 @@ module GraphQL
 
           raise InvalidDocumentError.new('Must provide schema definition with query type or a type named Query.') unless query_root_type
 
-          Class.new(GraphQL::Schema) do
+          builder = self
+
+          schema_class = Class.new(schema_superclass) do
             begin
               # Add these first so that there's some chance of resolving late-bound types
               orphan_types types.values
@@ -131,6 +147,7 @@ module GraphQL
 
             if schema_definition
               ast_node(schema_definition)
+              builder.build_directives(self, schema_definition, type_resolver)
             end
 
             using.each do |plugin, options|
@@ -158,6 +175,14 @@ module GraphQL
               child_class.definition_default_resolve = self.definition_default_resolve
             end
           end
+
+          if schema_extensions
+            schema_extensions.each do |ext|
+              build_directives(schema_class, ext, type_resolver)
+            end
+          end
+
+          schema_class
         end
 
         NullResolveType = ->(type, obj, ctx) {
@@ -197,13 +222,18 @@ module GraphQL
 
         def build_directives(definition, ast_node, type_resolver)
           dirs = prepare_directives(ast_node, type_resolver)
-          dirs.each do |dir_class, options|
-            definition.directive(dir_class, **options)
+          dirs.each do |(dir_class, options)|
+            if definition.respond_to?(:schema_directive)
+              # it's a schema
+              definition.schema_directive(dir_class, **options)
+            else
+              definition.directive(dir_class, **options)
+            end
           end
         end
 
         def prepare_directives(ast_node, type_resolver)
-          dirs = {}
+          dirs = []
           ast_node.directives.each do |dir_node|
             if dir_node.name == "deprecated"
               # This is handled using `deprecation_reason`
@@ -211,10 +241,10 @@ module GraphQL
             else
               dir_class = type_resolver.call(dir_node.name)
               if dir_class.nil?
-                raise ArgumentError, "No definition for @#{dir_node.name} on #{ast_node.name} at #{ast_node.line}:#{ast_node.col}"
+                raise ArgumentError, "No definition for @#{dir_node.name} #{ast_node.respond_to?(:name) ? "on #{ast_node.name} " : ""}at #{ast_node.line}:#{ast_node.col}"
               end
               options = args_to_kwargs(dir_class, dir_node)
-              dirs[dir_class] = options
+              dirs << [dir_class, options]
             end
           end
           dirs
@@ -345,8 +375,6 @@ module GraphQL
           end
         end
 
-        NO_DEFAULT_VALUE = {}.freeze
-
         def build_arguments(type_class, arguments, type_resolver)
           builder = self
 
@@ -354,7 +382,7 @@ module GraphQL
             default_value_kwargs = if !argument_defn.default_value.nil?
               { default_value: builder.build_default_value(argument_defn.default_value) }
             else
-              NO_DEFAULT_VALUE
+              EMPTY_HASH
             end
 
             type_class.argument(
@@ -390,7 +418,6 @@ module GraphQL
             graphql_name(interface_type_definition.name)
             description(interface_type_definition.description)
             interface_type_definition.interfaces.each do |interface_name|
-              "Implements: #{interface_type_definition} -> #{interface_name}"
               interface_defn = type_resolver.call(interface_name)
               implements(interface_defn)
             end

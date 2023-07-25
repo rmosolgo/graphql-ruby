@@ -8,53 +8,42 @@ desc: Observation hooks for execution
 index: 11
 ---
 
-{{ "GraphQL::Tracing" | api_doc }} provides a `.trace` hook to observe events from the GraphQL runtime.
-
-A tracer must implement `.trace`, for example:
+{{ "GraphQL::Tracing::Trace" | api_doc }} provides hooks to observe and modify events during runtime. Tracing hooks are methods, defined in modules and mixed in with {{ "Schema.trace_with" | api_doc }}.
 
 ```ruby
-class MyCustomTracer
-  def self.trace(key, data)
-    # do stuff with key & data
-    yield
+module CustomTrace
+  def parse(query_string:)
+    # measure, log, etc
+    super
   end
+
+  # ...
 end
 ```
 
-`.trace` is called with:
-
-- `key`: the event happening in the runtime
-- `data`: a hash of metadata about the event
-- `&block`: the event itself, it must be `yield`ed and the value must be returned
-
-To run a tracer for __every query__, add it to the schema with `tracer`:
+To include a trace module when running queries, add it to the schema with `trace_with`:
 
 ```ruby
-# Run `MyCustomTracer` for all queries
+# Run `MyCustomTrace` for all queries
 class MySchema < GraphQL::Schema
-  tracer(MyCustomTracer)
+  trace_with(MyCustomTrace)
 end
 ```
 
-Or, to run a tracer for __one query only__, add it to `context:` as `tracers: [...]`, for example:
+For a full list of methods and their arguments, see {{ "GraphQL::Tracing::Trace" | api_doc }}.
 
-```ruby
-# Run `MyCustomTracer` for this query
-MySchema.execute(..., context: { tracers: [MyCustomTracer]})
-```
-
-For a full list of events, see the {{ "GraphQL::Tracing" | api_doc }} API docs.
+By default, GraphQL-Ruby makes a new trace instance when it runs a query. You can pass an existing instance as `context: { trace: ... }`. Also, `GraphQL.parse( ..., trace: ...)` accepts a trace instance.
 
 ## ActiveSupport::Notifications
 
-You can emit events to `ActiveSupport::Notifications` with an experimental tracer, `ActiveSupportNotificationsTracing`.
+You can emit events to `ActiveSupport::Notifications` with an experimental tracer, `ActiveSupportNotificationsTrace`.
 
 To enable it, install the tracer:
 
 ```ruby
 # Send execution events to ActiveSupport::Notifications
 class MySchema < GraphQL::Schema
-  tracer(GraphQL::Tracing::ActiveSupportNotificationsTracing)
+  trace_with(GraphQL::Tracing::ActiveSupportNotificationsTrace)
 end
 ```
 
@@ -63,8 +52,6 @@ end
 Several monitoring platforms are supported out-of-the box by GraphQL-Ruby (see platforms below).
 
 Leaf fields are _not_ monitored (to avoid high cardinality in the metrics service).
-
-Implementations are based on {{ "Tracing::PlatformTracing" | api_doc }}.
 
 ## AppOptics
 
@@ -157,8 +144,6 @@ You may provide `options` as a `Hash` with the following values:
 
 | Key | Description | Default |
 | --- | ----------- | ------- |
-| `analytics_enabled` | Enable analytics for spans. `true` for on, `nil` to defer to Datadog global setting, `false` for off. | `false` |
-| `analytics_sample_rate` | Rate which tracing data should be sampled for Datadog analytics. Must be a float between `0` and `1.0`. | `1.0` |
 | `service` | Service name used for `graphql` instrumentation | `'ruby-graphql'` |
 | `tracer` | `Datadog::Tracer` used to perform instrumentation. Usually you don't need to set this. | `Datadog.tracer` |
 
@@ -181,10 +166,11 @@ The PrometheusExporter server must be run with a custom type collector that exte
 
 ```ruby
 # lib/graphql_collector.rb
+if defined?(PrometheusExporter::Server)
+  require 'graphql/tracing'
 
-require 'graphql/tracing'
-
-class GraphQLCollector < GraphQL::Tracing::PrometheusTracing::GraphQLCollector
+  class GraphQLCollector < GraphQL::Tracing::PrometheusTracing::GraphQLCollector
+  end
 end
 ```
 

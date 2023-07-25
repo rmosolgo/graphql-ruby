@@ -134,6 +134,24 @@ describe GraphQL::Types::ISO8601DateTime do
       assert_equal(expected_res, res)
     end
 
+    it "parses dates without times or dashes" do
+      res = parse_date("20180827")
+      # It uses the system default timezone when none is given
+      system_default_tz = Date.iso8601("2018-08-27").to_time.zone
+      system_default_offset = Date.iso8601("2018-08-27").to_time.utc_offset
+      expected_res = {
+        "year" => 2018,
+        "month" => 8,
+        "day" => 27,
+        "hour" => 0,
+        "minute" => 0,
+        "second" => 0,
+        "zone" => system_default_tz,
+        "utcOffset" => system_default_offset,
+      }
+      assert_equal(expected_res, res)
+    end
+
     it "rejects partial times" do
       expected_errors = ["Variable $date of type ISO8601DateTime! was provided invalid value"]
       assert_equal expected_errors, parse_date("2018-06-07T12:12").map { |e| e["message"] }

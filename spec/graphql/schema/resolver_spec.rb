@@ -184,6 +184,19 @@ describe GraphQL::Schema::Resolver do
       end
     end
 
+    class ResolverWithInvalidReady < GraphQL::Schema::Mutation
+      argument :int, Integer
+      field :int, Integer
+
+      def ready?(**args)
+        return [1,2,3]
+      end
+
+      def resolve(int:)
+        { int: int }
+      end
+    end
+
     module HasValue
       include GraphQL::Schema::Interface
       field :value, Integer, null: false
@@ -388,6 +401,7 @@ describe GraphQL::Schema::Resolver do
     class Mutation < GraphQL::Schema::Object
       field :mutation_with_nullable_loads_argument, mutation: MutationWithNullableLoadsArgument
       field :mutation_with_required_loads_argument, mutation: MutationWithRequiredLoadsArgument
+      field :resolver_with_invalid_ready, resolver: ResolverWithInvalidReady
     end
 
     class Query < GraphQL::Schema::Object
@@ -640,6 +654,13 @@ describe GraphQL::Schema::Resolver do
         res = exec_query("{ int: prepResolver7(int: 213) { errors int } }")
         assert_equal 213, res["data"]["int"]["int"]
       end
+
+      it 'raises the correct error on invalid return type' do
+        err = assert_raises(RuntimeError) do
+          exec_query("mutation { resolverWithInvalidReady(int: 2) { int } }")
+        end
+        assert_match("Unexpected result from #ready?", err.message)
+      end
     end
 
     describe "loading arguments" do
@@ -884,6 +905,50 @@ describe GraphQL::Schema::Resolver do
 
       it "is passed along to the field" do
         assert_equal 10, ObjectWithMaxPageSizeResolver.fields["items"].max_page_size
+      end
+    end
+
+    describe "default_page_size" do
+      class NoDefaultPageSizeResolver < GraphQL::Schema::Resolver
+      end
+
+      class DefaultPageSizeBaseResolver < GraphQL::Schema::Resolver
+        default_page_size 10
+      end
+
+      class DefaultPageSizeSubclass < DefaultPageSizeBaseResolver
+      end
+
+      class DefaultPageSizeOverrideSubclass < DefaultPageSizeBaseResolver
+        default_page_size nil
+      end
+
+      class ObjectWithDefaultPageSizeResolver < GraphQL::Schema::Object
+        field :items, [String], null: false, resolver: DefaultPageSizeBaseResolver
+      end
+
+      it "defaults to absent" do
+        assert_nil NoDefaultPageSizeResolver.default_page_size
+        refute NoDefaultPageSizeResolver.has_default_page_size?
+      end
+
+      it "implements has_default_page_size?" do
+        assert DefaultPageSizeBaseResolver.has_default_page_size?
+        assert DefaultPageSizeSubclass.has_default_page_size?
+        assert DefaultPageSizeOverrideSubclass.has_default_page_size?
+      end
+
+      it "is inherited" do
+        assert_equal 10, DefaultPageSizeBaseResolver.default_page_size
+        assert_equal 10, DefaultPageSizeSubclass.default_page_size
+      end
+
+      it "is overridden by nil" do
+        assert_nil DefaultPageSizeOverrideSubclass.default_page_size
+      end
+
+      it "is passed along to the field" do
+        assert_equal 10, ObjectWithDefaultPageSizeResolver.fields["items"].default_page_size
       end
     end
   end

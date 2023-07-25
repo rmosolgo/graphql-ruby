@@ -14,6 +14,7 @@ Before using `@defer` in queries, you have to:
 - Update `graphql` and `graphql-pro` gems
 - Add `@defer` to your GraphQL schema
 - Update your HTTP handlers (eg, Rails controllers) to send streaming responses
+- Optionally, customize `@defer` to work with GraphQL-Batch
 
 You can also see a [full Rails & Apollo-Client demo](https://github.com/rmosolgo/graphql_defer_example).
 
@@ -87,7 +88,7 @@ The initial result is _also_ present in the deferrals, so you can treat it just 
 Each deferred patch has a few methods for building a response:
 
 - `.to_h` returns a hash with `path:`, `data:`, and/or `errors:`. (There is no `path:` for the root result.)
-- `.to_http_multipart` returns a string which works with Apollo client's `@defer` support.
+- `.to_http_multipart(incremental: true)` returns a string which works with Apollo client's `@defer` support. (Use `incremental: true` to format patches for the forthcoming spec.)
 - `.path` returns the path to this patch in the response
 - `.data` returns successfully-resolved results of the patch
 - `.errors` returns an array of errors, if there were any
@@ -112,7 +113,7 @@ class GraphqlController < ApplicationController
       # Required for Rack 2.2+, see https://github.com/rack/rack/issues/1619
       response.headers['Last-Modified'] = Time.now.httpdate
       # Use built-in `stream_http_multipart` with Apollo-Client & ActionController::Live
-      deferred.stream_http_multipart(response)
+      deferred.stream_http_multipart(response, incremental: true)
     else
       # Return a plain, non-deferred result
       render json: result
@@ -126,6 +127,43 @@ end
 
 You can also investigate a [full Rails & Apollo-Client demo](https://github.com/rmosolgo/graphql_defer_example)
 
+## With GraphQL-Batch
+
+`GraphQL-Batch` is a third-party data loading library that wraps GraphQL-Ruby execution. Deferred resolution happens outside the normal execution flow, so to work with GraphQL-Batch, you have to customize `GraphQL::Pro::Defer` a bit. Also, you'll need GraphQL-Pro `v1.24.6` or later. Here's a custom `Defer` implementation:
+
+```ruby
+# app/graphql/directives/defer.rb
+module Directives
+  # Modify the library's `@defer` implementation to work with GraphQL-Batch
+  class Defer < GraphQL::Pro::Defer
+    def self.resolve(obj, arguments, context, &block)
+      # While the query is running, store the batch executor to re-use later
+      context[:graphql_batch_executor] ||= GraphQL::Batch::Executor.current
+      super
+    end
+
+    class Deferral < GraphQL::Pro::Defer::Deferral
+      def resolve
+        # Before calling the deferred execution,
+        # set GraphQL-Batch back up:
+        prev_executor = GraphQL::Batch::Executor.current
+        GraphQL::Batch::Executor.current ||= @context[:graphql_batch_executor]
+        super
+      ensure
+        # Clean up afterward:
+        GraphQL::Batch::Executor.current = prev_executor
+      end
+    end
+  end
+end
+```
+
+And update your schema to use your custom defer implementation:
+
+```ruby
+# Use our GraphQL-Batch-compatible defer:
+use Directives::Defer
+```
 ## Next Steps
 
 Read about {% internal_link "client usage", "/defer/usage" %} of `@defer`.

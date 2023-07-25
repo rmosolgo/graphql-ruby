@@ -56,11 +56,12 @@ Encrypt IDs by using encoders in `Schema.id_from_object` and `Schema.object_from
 
 ```ruby
 class MySchema < GraphQL::Schema
-  def id_from_object(object, type, ctx)
+  def self.id_from_object(object, type, ctx)
     id_data = "#{object.class.name}/#{object.id}"
     MyIDEncoder.encode(id_data)
   end
-  def object_from_id(id, ctx)
+
+  def self.object_from_id(id, ctx)
     id_data = MyIDEncoder.decode(id)
     class_name, id = id_data.split("/")
     class_name.constantize.find(id)

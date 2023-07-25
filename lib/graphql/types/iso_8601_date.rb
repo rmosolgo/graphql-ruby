@@ -14,6 +14,7 @@ module GraphQL
     # own Date type.
     class ISO8601Date < GraphQL::Schema::Scalar
       description "An ISO 8601-encoded date"
+      specified_by_url "https://tools.ietf.org/html/rfc3339"
 
       # @param value [Date,Time,DateTime,String]
       # @return [String]
@@ -22,7 +23,7 @@ module GraphQL
       end
 
       # @param str_value [String, Date, DateTime, Time]
-      # @return [Date]
+      # @return [Date, nil]
       def self.coerce_input(value, ctx)
         if value.is_a?(::Date)
           value
@@ -30,6 +31,8 @@ module GraphQL
           value.to_date
         elsif value.is_a?(::Time)
           value.to_date
+        elsif value.nil?
+          nil
         else
           Date.iso8601(value)
         end

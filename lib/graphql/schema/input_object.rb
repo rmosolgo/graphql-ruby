@@ -69,6 +69,19 @@ module GraphQL
         true
       end
 
+      def self.one_of
+        if !one_of?
+          if all_argument_definitions.any? { |arg| arg.type.non_null? }
+            raise ArgumentError, "`one_of` may not be used with required arguments -- add `required: false` to argument definitions to use `one_of`"
+          end
+          directive(GraphQL::Schema::Directive::OneOf)
+        end
+      end
+
+      def self.one_of?
+        directives.any? { |d| d.is_a?(GraphQL::Schema::Directive::OneOf) }
+      end
+
       def unwrap_value(value)
         case value
         when Array
@@ -109,6 +122,14 @@ module GraphQL
       class << self
         def argument(*args, **kwargs, &block)
           argument_defn = super(*args, **kwargs, &block)
+          if one_of?
+            if argument_defn.type.non_null?
+              raise ArgumentError, "Argument '#{argument_defn.path}' must be nullable because it is part of a OneOf type, add `required: false`."
+            end
+            if argument_defn.default_value?
+              raise ArgumentError, "Argument '#{argument_defn.path}' cannot have a default value because it is part of a OneOf type, remove `default_value: ...`."
+            end
+          end
           # Add a method access
           method_name = argument_defn.keyword
           class_eval <<-RUBY, __FILE__, __LINE__
@@ -126,7 +147,7 @@ module GraphQL
         # @api private
         INVALID_OBJECT_MESSAGE = "Expected %{object} to be a key-value object responding to `to_h` or `to_unsafe_h`."
 
-        def validate_non_null_input(input, ctx)
+        def validate_non_null_input(input, ctx, max_errors: nil)
           warden = ctx.warden
 
           if input.is_a?(Array)
@@ -166,6 +187,20 @@ module GraphQL
             end
           end
 
+          if one_of?
+            if input.size == 1
+              input.each do |name, value|
+                if value.nil?
+                  result ||= Query::InputValidationResult.new
+                  result.add_problem("'#{graphql_name}' requires exactly one argument, but '#{name}' was `null`.")
+                end
+              end
+            else
+              result ||= Query::InputValidationResult.new
+              result.add_problem("'#{graphql_name}' requires exactly one argument, but #{input.size} were provided.")
+            end
+          end
+
           result
         end
 
@@ -176,7 +211,7 @@ module GraphQL
 
           arguments = coerce_arguments(nil, value, ctx)
 
-          ctx.schema.after_lazy(arguments) do |resolved_arguments|
+          ctx.query.after_lazy(arguments) do |resolved_arguments|
             if resolved_arguments.is_a?(GraphQL::Error)
               raise resolved_arguments
             else

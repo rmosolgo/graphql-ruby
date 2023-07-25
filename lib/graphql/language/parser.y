@@ -162,7 +162,7 @@ rule
     | schema_keyword
 
   enum_value_definition:
-    description_opt enum_name directives_list_opt { result = make_node(:EnumValueDefinition, name: val[1], directives: val[2], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1]) }
+    description_opt enum_name directives_list_opt { result = make_node(:EnumValueDefinition, name: val[1], directives: val[2], description: val[0] || get_description(val[1]), definition_line: val[1][1], position_source: val[0] || val[1]) }
 
   enum_value_definitions:
       enum_value_definition                        { result = [val[0]] }
@@ -180,9 +180,9 @@ rule
       name COLON input_value { result = make_node(:Argument, name: val[0], value: val[2], position_source: val[0])}
 
   literal_value:
-      FLOAT       { result = val[0].to_f }
-    | INT         { result = val[0].to_i }
-    | STRING      { result = val[0].to_s }
+      FLOAT       { result = val[0][3].to_f }
+    | INT         { result = val[0][3].to_i }
+    | STRING      { result = val[0][3] }
     | TRUE        { result = true }
     | FALSE       { result = false }
     | null_value
@@ -284,14 +284,18 @@ rule
    | directive_definition
 
   schema_definition:
-      SCHEMA directives_list_opt LCURLY operation_type_definition_list RCURLY { result = make_node(:SchemaDefinition, position_source: val[0], definition_line: val[0].line, directives: val[1], **val[3]) }
+      SCHEMA directives_list_opt operation_type_definition_list_opt { result = make_node(:SchemaDefinition, position_source: val[0], definition_line: val[0][1], directives: val[1], **val[2]) }
+
+  operation_type_definition_list_opt:
+      /* none */ { result = {} }
+    | LCURLY operation_type_definition_list RCURLY { result = val[1] }
 
   operation_type_definition_list:
       operation_type_definition
     | operation_type_definition_list operation_type_definition { result = val[0].merge(val[1]) }
 
   operation_type_definition:
-      operation_type COLON name { result = { val[0].to_s.to_sym => val[2] } }
+      operation_type COLON name { result = { val[0][3].to_sym => val[2] } }
 
   type_definition:
       scalar_type_definition
@@ -321,13 +325,13 @@ rule
 
   object_type_extension:
       /* TODO - This first one shouldn't be necessary but parser is getting confused */
-      EXTEND TYPE name implements LCURLY field_definition_list RCURLY { result = make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: [], fields: val[5], position_source: val[0]) }
-    | EXTEND TYPE name implements_opt directives_list_opt LCURLY field_definition_list RCURLY { result = make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: val[6], position_source: val[0]) }
+      EXTEND TYPE name implements field_definition_list_opt { result = make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: [], fields: val[4], position_source: val[0]) }
+    | EXTEND TYPE name implements_opt directives_list_opt field_definition_list_opt { result = make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: val[5], position_source: val[0]) }
     | EXTEND TYPE name implements_opt directives_list { result = make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: [], position_source: val[0]) }
     | EXTEND TYPE name implements { result = make_node(:ObjectTypeExtension, name: val[2], interfaces: val[3], directives: [], fields: [], position_source: val[0]) }
 
   interface_type_extension:
-      EXTEND INTERFACE name implements_opt directives_list_opt LCURLY field_definition_list RCURLY { result = make_node(:InterfaceTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: val[6], position_source: val[0]) }
+      EXTEND INTERFACE name implements_opt directives_list_opt field_definition_list_opt { result = make_node(:InterfaceTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: val[5], position_source: val[0]) }
     | EXTEND INTERFACE name implements_opt directives_list { result = make_node(:InterfaceTypeExtension, name: val[2], interfaces: val[3], directives: val[4], fields: [], position_source: val[0]) }
     | EXTEND INTERFACE name implements { result = make_node(:InterfaceTypeExtension, name: val[2], interfaces: val[3], directives: [], fields: [], position_source: val[0]) }
 
@@ -351,12 +355,12 @@ rule
 
   scalar_type_definition:
       description_opt SCALAR name directives_list_opt {
-        result = make_node(:ScalarTypeDefinition, name: val[2], directives: val[3], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+        result = make_node(:ScalarTypeDefinition, name: val[2], directives: val[3], description: val[0] || get_description(val[1]), definition_line: val[1][1], position_source: val[0] || val[1])
       }
 
   object_type_definition:
-      description_opt TYPE name implements_opt directives_list_opt LCURLY field_definition_list RCURLY {
-        result = make_node(:ObjectTypeDefinition, name: val[2], interfaces: val[3], directives: val[4], fields: val[6], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+      description_opt TYPE name implements_opt directives_list_opt field_definition_list_opt {
+        result = make_node(:ObjectTypeDefinition, name: val[2], interfaces: val[3], directives: val[4], fields: val[5], description: val[0] || get_description(val[1]), definition_line: val[1][1], position_source: val[0] || val[1])
       }
 
   implements_opt:
@@ -378,7 +382,7 @@ rule
 
   input_value_definition:
       description_opt name COLON type default_value_opt directives_list_opt {
-        result = make_node(:InputValueDefinition, name: val[1], type: val[3], default_value: val[4], directives: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+        result = make_node(:InputValueDefinition, name: val[1], type: val[3], default_value: val[4], directives: val[5], description: val[0] || get_description(val[1]), definition_line: val[1][1], position_source: val[0] || val[1])
       }
 
   input_value_definition_list:
@@ -391,17 +395,21 @@ rule
 
   field_definition:
       description_opt name arguments_definitions_opt COLON type directives_list_opt {
-        result = make_node(:FieldDefinition, name: val[1], arguments: val[2], type: val[4], directives: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+        result = make_node(:FieldDefinition, name: val[1], arguments: val[2], type: val[4], directives: val[5], description: val[0] || get_description(val[1]), definition_line: val[1][1], position_source: val[0] || val[1])
       }
 
-  field_definition_list:
+  field_definition_list_opt:
     /* none */ { result = EMPTY_ARRAY }
+    | LCURLY field_definition_list RCURLY { result = val[1] }
+
+  field_definition_list:
+    /* none - this is not actually valid but graphql-ruby used to print this */ { result = EMPTY_ARRAY }
     | field_definition                       { result = [val[0]] }
     | field_definition_list field_definition { val[0] << val[1] }
 
   interface_type_definition:
-      description_opt INTERFACE name implements_opt directives_list_opt LCURLY field_definition_list RCURLY {
-        result = make_node(:InterfaceTypeDefinition, name: val[2], interfaces: val[3], directives: val[4], fields: val[6], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+      description_opt INTERFACE name implements_opt directives_list_opt field_definition_list_opt {
+        result = make_node(:InterfaceTypeDefinition, name: val[2], interfaces: val[3], directives: val[4], fields: val[5], description: val[0] || get_description(val[1]), definition_line: val[1][1], position_source: val[0] || val[1])
       }
 
   union_members:
@@ -410,22 +418,22 @@ rule
 
   union_type_definition:
       description_opt UNION name directives_list_opt EQUALS union_members {
-        result = make_node(:UnionTypeDefinition, name: val[2], directives: val[3], types: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+        result = make_node(:UnionTypeDefinition, name: val[2], directives: val[3], types: val[5], description: val[0] || get_description(val[1]), definition_line: val[1][1], position_source: val[0] || val[1])
       }
 
   enum_type_definition:
       description_opt ENUM name directives_list_opt LCURLY enum_value_definitions RCURLY {
-         result = make_node(:EnumTypeDefinition, name: val[2], directives: val[3], values: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+         result = make_node(:EnumTypeDefinition, name: val[2], directives: val[3], values: val[5], description: val[0] || get_description(val[1]), definition_line: val[1][1], position_source: val[0] || val[1])
       }
 
   input_object_type_definition:
       description_opt INPUT name directives_list_opt LCURLY input_value_definition_list RCURLY {
-        result = make_node(:InputObjectTypeDefinition, name: val[2], directives: val[3], fields: val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+        result = make_node(:InputObjectTypeDefinition, name: val[2], directives: val[3], fields: val[5], description: val[0] || get_description(val[1]), definition_line: val[1][1], position_source: val[0] || val[1])
       }
 
   directive_definition:
       description_opt DIRECTIVE DIR_SIGN name arguments_definitions_opt directive_repeatable_opt ON directive_locations {
-        result = make_node(:DirectiveDefinition, name: val[3], arguments: val[4], locations: val[7], repeatable: !!val[5], description: val[0] || get_description(val[1]), definition_line: val[1].line, position_source: val[0] || val[1])
+        result = make_node(:DirectiveDefinition, name: val[3], arguments: val[4], locations: val[7], repeatable: !!val[5], description: val[0] || get_description(val[1]), definition_line: val[1][1], position_source: val[0] || val[1])
       }
 
   directive_repeatable_opt:
@@ -433,8 +441,8 @@ rule
     | REPEATABLE
 
   directive_locations:
-      name                          { result = [make_node(:DirectiveLocation, name: val[0].to_s, position_source: val[0])] }
-    | directive_locations PIPE name { val[0] << make_node(:DirectiveLocation, name: val[2].to_s, position_source: val[2]) }
+      name                          { result = [make_node(:DirectiveLocation, name: val[0][3], position_source: val[0])] }
+    | directive_locations PIPE name { val[0] << make_node(:DirectiveLocation, name: val[2][3], position_source: val[2]) }
 end
 
 ---- header ----
@@ -444,22 +452,22 @@ end
 
 EMPTY_ARRAY = [].freeze
 
-def initialize(query_string, filename:, tracer: Tracing::NullTracer)
+def initialize(query_string, filename:, trace: Tracing::NullTrace)
   raise GraphQL::ParseError.new("No query string was present", nil, nil, query_string) if query_string.nil?
   @query_string = query_string
   @filename = filename
-  @tracer = tracer
+  @trace = trace
   @reused_next_token = [nil, nil]
 end
 
 def parse_document
   @document ||= begin
     # Break the string into tokens
-    @tracer.trace("lex", {query_string: @query_string}) do
-      @tokens ||= GraphQL.scan(@query_string)
+    @trace.lex(query_string: @query_string) do
+      @tokens ||= GraphQL::Language::Lexer.tokenize(@query_string)
     end
     # From the tokens, build an AST
-    @tracer.trace("parse", {query_string: @query_string}) do
+    @trace.parse(query_string: @query_string) do
       if @tokens.empty?
         raise GraphQL::ParseError.new("Unexpected end of document", nil, nil, @query_string)
       else
@@ -472,17 +480,17 @@ end
 class << self
   attr_accessor :cache
 
-  def parse(query_string, filename: nil, tracer: GraphQL::Tracing::NullTracer)
-    new(query_string, filename: filename, tracer: tracer).parse_document
+  def parse(query_string, filename: nil, trace: GraphQL::Tracing::NullTrace)
+    new(query_string, filename: filename, trace: trace).parse_document
   end
 
-  def parse_file(filename, tracer: GraphQL::Tracing::NullTracer)
+  def parse_file(filename, trace: GraphQL::Tracing::NullTrace)
     if cache
       cache.fetch(filename) do
-        parse(File.read(filename), filename: filename, tracer: tracer)
+        parse(File.read(filename), filename: filename, trace: trace)
       end
     else
-      parse(File.read(filename), filename: filename, tracer: tracer)
+      parse(File.read(filename), filename: filename, trace: trace)
     end
   end
 end
@@ -494,7 +502,7 @@ def next_token
   if lexer_token.nil?
     nil
   else
-    @reused_next_token[0] = lexer_token.name
+    @reused_next_token[0] = lexer_token[0]
     @reused_next_token[1] = lexer_token
     @reused_next_token
   end
@@ -505,13 +513,13 @@ def get_description(token)
 
   loop do
     prev_token = token
-    token = token.prev_token
+    token = token[4]
 
     break if token.nil?
-    break if token.name != :COMMENT
-    break if prev_token.line != token.line + 1
+    break if token[0] != :COMMENT
+    break if prev_token[1] != token[1] + 1
 
-    comments.unshift(token.to_s.sub(/^#\s*/, ""))
+    comments.unshift(token[3].sub(/^#\s*/, ""))
   end
 
   return nil if comments.empty?
@@ -527,11 +535,12 @@ def on_error(parser_token_id, lexer_token, vstack)
     if parser_token_name.nil?
       raise GraphQL::ParseError.new("Parse Error on unknown token: {token_id: #{parser_token_id}, lexer_token: #{lexer_token}} from #{@query_string}", nil, nil, @query_string, filename: @filename)
     else
-      line, col = lexer_token.line_and_column
-      if lexer_token.name == :BAD_UNICODE_ESCAPE
-        raise GraphQL::ParseError.new("Parse error on bad Unicode escape sequence: #{lexer_token.to_s.inspect} (#{parser_token_name}) at [#{line}, #{col}]", line, col, @query_string, filename: @filename)
+      line = lexer_token[1]
+      col = lexer_token[2]
+      if lexer_token[0] == :BAD_UNICODE_ESCAPE
+        raise GraphQL::ParseError.new("Parse error on bad Unicode escape sequence: #{lexer_token[3].inspect} (#{parser_token_name}) at [#{line}, #{col}]", line, col, @query_string, filename: @filename)
       else
-        raise GraphQL::ParseError.new("Parse error on #{lexer_token.to_s.inspect} (#{parser_token_name}) at [#{line}, #{col}]", line, col, @query_string, filename: @filename)
+        raise GraphQL::ParseError.new("Parse error on #{lexer_token[3].inspect} (#{parser_token_name}) at [#{line}, #{col}]", line, col, @query_string, filename: @filename)
       end
     end
   end
@@ -539,8 +548,8 @@ end
 
 def make_node(node_name, assigns)
   assigns.each do |key, value|
-    if key != :position_source && value.is_a?(GraphQL::Language::Token)
-      assigns[key] = value.to_s
+    if key != :position_source && value.is_a?(Array) && value[0].is_a?(Symbol)
+      assigns[key] = value[3]
     end
   end
 

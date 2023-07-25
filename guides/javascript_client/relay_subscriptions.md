@@ -125,7 +125,7 @@ var OperationStoreClient = require("./OperationStoreClient")
 
 // Create a Relay Modern-compatible handler
 var subscriptionHandler = createRelaySubscriptionHandler({
-  cable: cable,
+  cable: createConsumer(...),
   operations: OperationStoreClient,
 })
 

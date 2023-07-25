@@ -24,7 +24,7 @@ This subscription implementation uses a hybrid approach:
 So, the lifecycle goes like this:
 
 - A `subscription` query is sent by HTTP Post to your server (just like a `query` or `mutation`)
-- The response contains a Ably channel ID (as an HTTP header) which the client may subscribe to
+- The response contains an Ably channel ID (as an HTTP header) which the client may subscribe to
 - The client opens that Ably channel
 - When the server triggers updates, they're delivered over the Ably channel
 - When the client unsubscribes, the server receives a webhook and responds by removing its subscription data
@@ -118,6 +118,16 @@ There are also two configurations for managing persistence:
 - `stale_ttl_s:` expires subscription data after the given number of seconds without any update. After `stale_ttl_s` has passed, the data will expire from Redis. Each time a subscription receives an update, its TTL is refreshed. (Generally, this isn't required because the backend is built to clean itself up. But, if you find that Redis is collecting stale queries, you can set them to expire after some very long time as a safeguard.)
 - `cleanup_delay_s:` (default: `5`) prevents deleting a subscription during those first seconds after it's created. Usually, a longer delay isn't necessary, but if you observe latency between the subscription's initial response and the client's subscription to the delivery channel, you can set this configuration to account for it.
 
+### Connection Pool
+
+For better performance reading and writing to Redis, you can pass a `connection_pool:` instead of `redis:`, using the [`connection_pool` gem]():
+
+```ruby
+  use GraphQL::Pro::AblySubscriptions,
+    connection_pool: ConnectionPool.new(size: 5, timeout: 5) { Redis.new },
+    ably: Ably::Rest.new(key: ABLY_API_KEY)
+```
+
 ## Execution configuration
 
 During execution, GraphQL will assign a `subscription_id` to the `context` hash. The client will use that ID to listen for updates, so you must return the `subscription_id` in the response headers.
@@ -181,16 +191,16 @@ mount lazy_routes.ably_webhooks_client, at: "/ably_webhooks"
 ### Ably
 
 1. Go to the Ably dashboard
-2. Click on your application.
-3. Select the "Reactor" tab
-4. Click on the "+ New Reactor Rule" button
-5. Click on the "Choose" button for "Reactor Event"
-6. Click on the "Choose" button for "WebHooks"
-7. Enter your url (including the webhooks path from above) in the URL field.
-8. Select "Batch request" for "Request Mode"
-9. Under "Source" select "Channel Lifecycle"
-10. Under "Sign with key" select the API Key prefix that matches the prefix of the ABLY_API_KEY you provided.
-11. Click "Create"
+2. Click on your application
+3. Select the **"Integrations"** tab
+4. Click on the **"+ New Integration Rule"** button
+5. Click on the "Choose" button for **"Webhook"**
+6. Click on the "Choose" button for **"Webhook"** (again)
+7. Enter **your URL (including the webhooks path from above)** in the URL field.
+8. Select **"Batch request"** for "Request Mode"
+9. Under "Source", select **"Presence"**
+10. Under "Sign with key", select the API Key prefix that matches the prefix of the `ABLY_API_KEY` you provided
+11. Click **"Create"**
 
 ## Authorization
 

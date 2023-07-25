@@ -34,12 +34,18 @@ module GraphQL
         used_directives = {}
         node.directives.each do |ast_directive|
           directive_name = ast_directive.name
-          if used_directives[directive_name]
-            add_error(GraphQL::StaticValidation::UniqueDirectivesPerLocationError.new(
-              "The directive \"#{directive_name}\" can only be used once at this location.",
-              nodes: [used_directives[directive_name], ast_directive],
-              directive: directive_name,
-            ))
+          if (first_node = used_directives[directive_name])
+            @directives_are_unique_errors_by_first_node ||= {}
+            err = @directives_are_unique_errors_by_first_node[first_node] ||= begin
+              error = GraphQL::StaticValidation::UniqueDirectivesPerLocationError.new(
+                "The directive \"#{directive_name}\" can only be used once at this location.",
+                nodes: [used_directives[directive_name]],
+                directive: directive_name,
+              )
+              add_error(error)
+              error
+            end
+            err.nodes << ast_directive
           elsif !((dir_defn = context.schema_directives[directive_name]) && dir_defn.repeatable?)
             used_directives[directive_name] = ast_directive
           end

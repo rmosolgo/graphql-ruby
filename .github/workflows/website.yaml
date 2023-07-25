@@ -3,26 +3,25 @@ on:
   push:
     branches: [master]
 
+permissions: {}
 jobs:
   build:
+    permissions:
+      contents: write # for git push (s0/git-publish-subdir-action)
     name: Publish Website
     runs-on: ubuntu-latest
     steps:
       - name: Checkout master
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Checkout GitHub pages branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: gh-pages
           ref: gh-pages
-      - uses: actions/setup-ruby@v1
+      - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '2.7'
-      - name: Bundle install
-        run: |
-          gem install bundler
-          bundle config path vendor/bundle
-          bundle install --jobs 4 --retry 3
+          ruby-version: '3.1'
+          bundler-cache: true
       - name: Build HTML, reindex
         env:
           ALGOLIA_API_KEY: ${{ secrets.ALGOLIA_API_KEY }}
@@ -30,8 +29,8 @@ jobs:
           bundle exec rake site:fetch_latest site:build_doc site:update_search_index site:clean_html site:build_html
       - name: Commit changes as last committer
         run: |
-          git config --global user.name "%(git log --format="%aN" -n 1)"
-          git config --global user.email "%(git log --format="%aE" -n 1)"
+          git config --global user.name "$(git log --format="%aN" -n 1)"
+          git config --global user.email "$(git log --format="%aE" -n 1)"
           bundle exec rake site:commit_changes
       - name: Deploy to GitHub pages via gh-pages branch
         uses: s0/git-publish-subdir-action@master

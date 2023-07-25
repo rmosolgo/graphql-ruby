@@ -116,6 +116,12 @@ def after_resolve(value:, **rest)
 end
 ```
 
+If you use the `extensions: [...]` option, you can pass options using a hash:
+
+```ruby
+field :name, String, null: false, extensions: [LimitExtension => { limit: 20 }]
+```
+
 ## Using `extras`
 
 Extensions can have the same `extras` as fields (see {% internal_link "Extra Field Metadata", "fields/introduction#extra-field-metadata" %}). Add them by calling `extras` in the class definition:

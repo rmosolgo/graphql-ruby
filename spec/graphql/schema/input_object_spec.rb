@@ -126,6 +126,24 @@ describe GraphQL::Schema::InputObject do
         end
       end
 
+      class Thing < GraphQL::Schema::Object
+        field :name, String
+      end
+
+      class PreparedInputObj < GraphQL::Schema::InputObject
+        argument :thing_id, ID, loads: Thing, prepare: ->(val, ctx) { "thing-#{val}" }
+      end
+
+      class ResolverPrepares < GraphQL::Schema::Resolver
+        argument :input_object, PreparedInputObj
+        argument :thing_id, ID, loads: Thing, prepare: ->(val, ctx) { "thing-#{val}" }
+        type [String], null: false
+
+        def resolve(thing:, input_object:)
+          [thing.name, input_object[:thing].name]
+        end
+      end
+
       class Query < GraphQL::Schema::Object
         field :inputs, [String], null: false do
           argument :input, InputObj
@@ -134,6 +152,20 @@ describe GraphQL::Schema::InputObject do
         def inputs(input:)
           [input.to_kwargs.inspect, input.instrument.name]
         end
+
+        field :multiple_prepares, [String] do
+          argument :input_object, PreparedInputObj
+          argument :thing_id, ID, loads: Thing, prepare: ->(val, ctx) { "thing-#{val}" }
+        end
+
+        def multiple_prepares(thing:, input_object:)
+          [thing.name, input_object[:thing].name]
+        end
+
+        field :resolver_prepares, resolver: ResolverPrepares
+
+
+        field :t, Thing
       end
 
       class Mutation < GraphQL::Schema::Object
@@ -193,7 +225,13 @@ describe GraphQL::Schema::InputObject do
         lazy_resolve(Proc, :call)
 
         def self.object_from_id(id, ctx)
-          -> { Jazz::GloballyIdentifiableType.find(id) }
+          -> {
+            if id.start_with?("thing-")
+              OpenStruct.new(name: id)
+            else
+              Jazz::GloballyIdentifiableType.find(id)
+            end
+          }
         end
 
         def self.resolve_type(type, obj, ctx)
@@ -203,6 +241,14 @@ describe GraphQL::Schema::InputObject do
         orphan_types [Jazz::InstrumentType]
         max_complexity 100
       end
+    end
+
+    it "always prepares before loading" do
+      res = InputObjectPrepareTest::Schema.execute("{ resolverPrepares(thingId: \"abc\", inputObject: { thingId: \"def\" }) }")
+      assert_equal ["thing-abc", "thing-def"], res["data"]["resolverPrepares"]
+
+      res = InputObjectPrepareTest::Schema.execute("{ multiplePrepares(thingId: \"abc\", inputObject: { thingId: \"def\" }) }")
+      assert_equal ["thing-abc", "thing-def"], res["data"]["multiplePrepares"]
     end
 
     it "calls methods on the input object" do
@@ -1096,6 +1142,142 @@ describe GraphQL::Schema::InputObject do
     it "handles a lazy failed load of an argument with a nice error" do
       res = FailedLoadSchema.execute("{ getThings(things: [{id: \"1\"}]) { id } }")
       assert_equal ["No object found for `id: \"1\"`"], res["errors"].map { |e| e["message"] }
+    end
+  end
+
+  describe "@oneOf" do
+    class OneOfSchema < GraphQL::Schema
+      class OneOfInput < GraphQL::Schema::InputObject
+        one_of
+        argument :arg_1, Int, required: false
+        argument :arg_2, Int, required: false
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :f, String do
+          argument :a, OneOfInput
+        end
+
+        def f(a:)
+          "Got: #{a.values.first}"
+        end
+      end
+      query(Query)
+    end
+
+    it "prints in the SDL" do
+      sdl = OneOfSchema.to_definition
+      assert_includes sdl, "input OneOfInput @oneOf {\n"
+      assert_includes sdl, "directive @oneOf on INPUT_OBJECT"
+    end
+
+    it "shows in the introspection query" do
+      res = OneOfSchema.execute("{ __type(name: \"OneOfInput\") { isOneOf } }")
+      assert_equal true, res["data"]["__type"]["isOneOf"]
+    end
+
+    it "is inherited" do
+      subclass = Class.new(OneOfSchema::OneOfInput)
+      assert subclass.one_of?
+    end
+
+    it "doesn't work without required: false" do
+      err1 = assert_raises ArgumentError do
+        Class.new(GraphQL::Schema::InputObject) do
+          graphql_name "OneOfThing"
+          argument :arg_1, GraphQL::Types::Int
+          one_of
+        end
+      end
+
+      assert_equal "`one_of` may not be used with required arguments -- add `required: false` to argument definitions to use `one_of`", err1.message
+
+      err2 = assert_raises ArgumentError do
+        Class.new(GraphQL::Schema::InputObject) do
+          graphql_name "OneOfThing"
+          one_of
+          argument :arg_2, GraphQL::Types::Int
+        end
+      end
+
+      assert_equal "Argument 'OneOfThing.arg2' must be nullable because it is part of a OneOf type, add `required: false`.", err2.message
+    end
+
+    it "allows queries with only one value" do
+      res = OneOfSchema.execute("{ f(a: { arg1: 5 }) }")
+      assert_equal "Got: 5", res["data"]["f"]
+
+      res = OneOfSchema.execute("{ f(a: { arg2: 8 }) }")
+      assert_equal "Got: 8", res["data"]["f"]
+
+      q_str = "query($args: OneOfInput!) { f(a: $args) }"
+      res = OneOfSchema.execute(q_str, variables: { args: { arg1: 9 } })
+      assert_equal "Got: 9", res["data"]["f"]
+
+      res = OneOfSchema.execute(q_str, variables: { args: { arg2: 10 } })
+      assert_equal "Got: 10", res["data"]["f"]
+    end
+
+    it "rejects queries with multiple values" do
+      res = OneOfSchema.execute("{ f(a: { arg1: 5 , arg2: 4 }) }")
+      assert_equal ["OneOf Input Object 'OneOfInput' must specify exactly one key."], res["errors"].map { |e| e["message"] }
+
+      res = OneOfSchema.execute("{ f(a: {}) }")
+      assert_equal ["OneOf Input Object 'OneOfInput' must specify exactly one key."], res["errors"].map { |e| e["message"] }
+
+      res = OneOfSchema.execute("{ f(a: { arg1: 5 , arg2: null }) }")
+      assert_equal ["OneOf Input Object 'OneOfInput' must specify exactly one key."], res["errors"].map { |e| e["message"] }
+
+      res = OneOfSchema.execute("query($arg2: Int!) { f(a: { arg1: 5 , arg2: $arg2 }) }", variables: { arg2: nil })
+      assert_equal ["OneOf Input Object 'OneOfInput' must specify exactly one key."], res["errors"].map { |e| e["message"] }
+
+
+      res = OneOfSchema.execute("{ f(a: { arg2: null }) }")
+      assert_equal ["Argument 'OneOfInput.arg2' must be non-null."], res["errors"].map { |e| e["message"] }
+
+
+      q_str = "query($args: OneOfInput!) { f(a: $args) }"
+      res = OneOfSchema.execute(q_str, variables: { args: { arg1: 1, arg2: 2 } })
+      assert_equal ["'OneOfInput' requires exactly one argument, but 2 were provided."], res["errors"].map { |e| e["extensions"]["problems"].map { |p| p["explanation"] } }.flatten
+
+      res = OneOfSchema.execute(q_str, variables: { args: { arg1: nil, arg2: 2 } })
+      assert_equal ["'OneOfInput' requires exactly one argument, but 2 were provided."], res["errors"].map { |e| e["extensions"]["problems"].map { |p| p["explanation"] } }.flatten
+
+      res = OneOfSchema.execute(q_str, variables: { args: { arg1: nil } })
+      assert_equal ["'OneOfInput' requires exactly one argument, but 'arg1' was `null`."], res["errors"].map { |e| e["extensions"]["problems"].map { |p| p["explanation"] } }.flatten
+    end
+
+    it "works with a subclass" do
+      one_of_object_class = Class.new(GraphQL::Schema::InputObject) do
+        one_of
+
+        def self.member(*args, **kwargs, &block)
+          argument(*args, required: false, **kwargs, &block)
+        end
+      end
+
+      one_of_concrete_class = Class.new(one_of_object_class) do
+        graphql_name "OneOfInput"
+        member :a, Integer
+        member :b, Integer
+      end
+
+      assert one_of_concrete_class.one_of?
+      refute one_of_concrete_class.arguments["a"].type.non_null?
+
+      query_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Query"
+        field :f, Integer do
+          argument :i, one_of_concrete_class
+        end
+      end
+
+      schema = Class.new(GraphQL::Schema) do
+        query(query_type)
+      end
+
+      schema_sdl = schema.to_definition
+      assert_includes schema_sdl, "input OneOfInput @oneOf {\n"
     end
   end
 end

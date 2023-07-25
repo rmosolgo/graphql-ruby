@@ -12,7 +12,9 @@ module GraphQL
             if ret_type.respond_to?(:scope_items)
               scoped_items = ret_type.scope_items(value, context)
               if !scoped_items.eql?(value) # A different object was returned
-                context.namespace(:interpreter)[:was_scoped] = true
+                current_runtime_state = Thread.current[:__graphql_runtime_info]
+                query_runtime_state = current_runtime_state[context.query]
+                query_runtime_state.was_scoped = true
               end
               scoped_items
             else

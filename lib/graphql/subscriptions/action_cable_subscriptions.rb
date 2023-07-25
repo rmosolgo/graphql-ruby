@@ -91,7 +91,13 @@ module GraphQL
         # A per-process map of subscriptions to deliver.
         # This is provided by Rails, so let's use it
         @subscriptions = Concurrent::Map.new
-        @events = Concurrent::Map.new { |h, k| h[k] = Concurrent::Map.new { |h2, k2| h2[k2] = Concurrent::Array.new } }
+        @events = Concurrent::Map.new do |h, k|
+          h.compute_if_absent(k) do
+            Concurrent::Map.new do |h2, k2|
+              h2.compute_if_absent(k2) { Concurrent::Array.new }
+            end
+          end
+        end
         @action_cable = action_cable
         @action_cable_coder = action_cable_coder
         @serializer = serializer

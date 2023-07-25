@@ -79,7 +79,7 @@ Once installed, your {% internal_link "GraphQL-Pro dashboard", "/pro/dashboard" 
 
 {{ "/limiters/active_operation_limiter_dashboard.png" | link_to_img:"GraphQL Active Operation Limiter Dashboard" }}
 
-See [Instrumentation](#instrumentation) below for more details on limiter metrics.
+See [Instrumentation](#instrumentation) below for more details on limiter metrics. To disable dashboard charts, add `use(... dashboard_charts: false)` to your configuration.
 
 Also, the dashboard includes a link to enable or disable "soft mode":
 

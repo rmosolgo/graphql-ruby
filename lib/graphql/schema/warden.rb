@@ -4,41 +4,19 @@ require 'set'
 
 module GraphQL
   class Schema
-    # Restrict access to a {GraphQL::Schema} with a user-defined filter.
+    # Restrict access to a {GraphQL::Schema} with a user-defined `visible?` implementations.
     #
     # When validating and executing a query, all access to schema members
     # should go through a warden. If you access the schema directly,
     # you may show a client something that it shouldn't be allowed to see.
     #
-    # @example Hiding private fields
-    #   private_members = -> (member, ctx) { member.metadata[:private] }
-    #   result = Schema.execute(query_string, except: private_members)
-    #
-    # @example Custom filter implementation
-    #   # It must respond to `#call(member)`.
-    #   class MissingRequiredFlags
-    #     def initialize(user)
-    #       @user = user
-    #     end
-    #
-    #     # Return `false` if any required flags are missing
-    #     def call(member, ctx)
-    #       member.metadata[:required_flags].any? do |flag|
-    #         !@user.has_flag?(flag)
-    #       end
-    #     end
-    #   end
-    #
-    #   # Then, use the custom filter in query:
-    #   missing_required_flags = MissingRequiredFlags.new(current_user)
-    #
-    #   # This query can only access members which match the user's flags
-    #   result = Schema.execute(query_string, except: missing_required_flags)
-    #
     # @api private
     class Warden
       def self.from_context(context)
-        (context.respond_to?(:warden) && context.warden) || PassThruWarden
+        context.warden || PassThruWarden
+      rescue NoMethodError
+        # this might be a hash which won't respond to #warden
+        PassThruWarden
       end
 
       # @param visibility_method [Symbol] a Warden method to call for this entry
@@ -55,7 +33,9 @@ module GraphQL
               if visible_item.nil?
                 visible_item = item
               else
-                raise Schema::DuplicateNamesError, "Found two visible definitions for `#{item.path}`: #{visible_item.inspect}, #{item.inspect}"
+                raise DuplicateNamesError.new(
+                  duplicated_name: item.path, duplicated_definition_1: visible_item.inspect, duplicated_definition_2: item.inspect
+                )
               end
             end
           end
@@ -78,20 +58,55 @@ module GraphQL
           def visible_type?(type, ctx); type.visible?(ctx); end
           def visible_enum_value?(ev, ctx); ev.visible?(ctx); end
           def visible_type_membership?(tm, ctx); tm.visible?(ctx); end
+          def interface_type_memberships(obj_t, ctx); obj_t.interface_type_memberships; end
+          def arguments(owner, ctx); owner.arguments(ctx); end
         end
       end
 
-      # @param filter [<#call(member)>] Objects are hidden when `.call(member, ctx)` returns true
+      class NullWarden
+        def initialize(_filter = nil, context:, schema:)
+          @schema = schema
+        end
+
+        def visible_field?(field_defn, _ctx = nil, owner = nil); true; end
+        def visible_argument?(arg_defn, _ctx = nil); true; end
+        def visible_type?(type_defn, _ctx = nil); true; end
+        def visible_enum_value?(enum_value, _ctx = nil); true; end
+        def visible_type_membership?(type_membership, _ctx = nil); true; end
+        def interface_type_memberships(obj_type, _ctx = nil); obj_type.interface_type_memberships; end
+        def get_type(type_name); @schema.get_type(type_name); end # rubocop:disable Development/ContextIsPassedCop
+        def arguments(argument_owner, ctx = nil); argument_owner.all_argument_definitions; end
+        def enum_values(enum_defn); enum_defn.enum_values; end # rubocop:disable Development/ContextIsPassedCop
+        def get_argument(parent_type, argument_name); parent_type.get_argument(argument_name); end # rubocop:disable Development/ContextIsPassedCop
+        def types; @schema.types; end # rubocop:disable Development/ContextIsPassedCop
+        def root_type_for_operation(op_name); @schema.root_type_for_operation(op_name); end
+        def directives; @schema.directives.values; end
+        def fields(type_defn); type_defn.all_field_definitions; end # rubocop:disable Development/ContextIsPassedCop
+        def get_field(parent_type, field_name); @schema.get_field(parent_type, field_name); end
+        def reachable_type?(type_name); true; end
+        def reachable_types; @schema.types.values; end # rubocop:disable Development/ContextIsPassedCop
+        def possible_types(type_defn); @schema.possible_types(type_defn); end
+        def interfaces(obj_type); obj_type.interfaces; end
+      end
+
       # @param context [GraphQL::Query::Context]
       # @param schema [GraphQL::Schema]
-      def initialize(filter, context:, schema:)
+      def initialize(context:, schema:)
         @schema = schema
         # Cache these to avoid repeated hits to the inheritance chain when one isn't present
         @query = @schema.query
         @mutation = @schema.mutation
         @subscription = @schema.subscription
         @context = context
-        @visibility_cache = read_through { |m| filter.call(m, context) }
+        @visibility_cache = read_through { |m| schema.visible?(m, context) }
+        @visibility_cache.compare_by_identity
+        # Initialize all ivars to improve object shape consistency:
+        @types = @visible_types = @reachable_types = @visible_parent_fields =
+          @visible_possible_types = @visible_fields = @visible_arguments = @visible_enum_arrays =
+          @visible_enum_values = @visible_interfaces = @type_visibility = @type_memberships =
+          @visible_and_reachable_type = @unions = @unfiltered_interfaces = @references_to =
+          @reachable_type_set =
+            nil
       end
 
       # @return [Hash<String, GraphQL::BaseType>] Visible types in the schema
@@ -172,14 +187,20 @@ module GraphQL
 
       # @param argument_owner [GraphQL::Field, GraphQL::InputObjectType]
       # @return [Array<GraphQL::Argument>] Visible arguments on `argument_owner`
-      def arguments(argument_owner)
-        @visible_arguments ||= read_through { |o| o.arguments(@context).each_value.select { |a| visible_argument?(a) } }
+      def arguments(argument_owner, ctx = nil)
+        @visible_arguments ||= read_through { |o| o.arguments(@context).each_value.select { |a| visible_argument?(a, @context) } }
         @visible_arguments[argument_owner]
       end
 
       # @return [Array<GraphQL::EnumType::EnumValue>] Visible members of `enum_defn`
       def enum_values(enum_defn)
-        @visible_enum_arrays ||= read_through { |e| e.enum_values(@context) }
+        @visible_enum_arrays ||= read_through { |e|
+          values = e.enum_values(@context)
+          if values.size == 0
+            raise GraphQL::Schema::Enum::MissingValuesError.new(e)
+          end
+          values
+        }
         @visible_enum_arrays[enum_defn]
       end
 
@@ -229,6 +250,13 @@ module GraphQL
 
       def visible_type_membership?(type_membership, _ctx = nil)
         visible?(type_membership)
+      end
+
+      def interface_type_memberships(obj_type, _ctx = nil)
+        @type_memberships ||= read_through do |obj_t|
+          obj_t.interface_type_memberships
+        end
+        @type_memberships[obj_type]
       end
 
       private
@@ -330,7 +358,7 @@ module GraphQL
       end
 
       def reachable_type_set
-        return @reachable_type_set if defined?(@reachable_type_set)
+        return @reachable_type_set if @reachable_type_set
 
         @reachable_type_set = Set.new
         rt_hash = {}
@@ -362,7 +390,9 @@ module GraphQL
           if @reachable_type_set.add?(type)
             type_by_name = rt_hash[type.graphql_name] ||= type
             if type_by_name != type
-              raise DuplicateNamesError, "Found two visible type definitions for `#{type.graphql_name}`: #{type.inspect}, #{type_by_name.inspect}"
+              raise DuplicateNamesError.new(
+                duplicated_name: type.graphql_name, duplicated_definition_1: type.inspect, duplicated_definition_2: type_by_name.inspect
+              )
             end
             if type.kind.input_object?
               # recurse into visible arguments

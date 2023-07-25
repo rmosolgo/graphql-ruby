@@ -125,6 +125,12 @@ describe GraphQL::Dataloader do
       include GraphQL::Schema::Interface
       field :name, String, null: false
       field :id, ID, null: false
+
+      field :name_by_scoped_context, String
+
+      def name_by_scoped_context
+        context[:ingredient_name]
+      end
     end
 
     class Grain < GraphQL::Schema::Object
@@ -180,7 +186,9 @@ describe GraphQL::Dataloader do
       end
 
       def ingredient_by_name(name:)
-        dataloader.with(DataObject, :name).load(name)
+        ing = dataloader.with(DataObject, :name).load(name)
+        context.scoped_set!(:ingredient_name, "Scoped:#{name}")
+        ing
       end
 
       field :nested_ingredient, Ingredient do
@@ -263,7 +271,6 @@ describe GraphQL::Dataloader do
         argument :input, CommonIngredientsInput
       end
 
-
       def common_ingredients_from_input_object(input:)
         recipe_1 = input[:recipe_1]
         recipe_2 = input[:recipe_2]
@@ -278,6 +285,15 @@ describe GraphQL::Dataloader do
 
       def ingredient_with_custom_batch_key(id:, batch_key:)
         dataloader.with(CustomBatchKeySource, batch_key).load(id)
+      end
+
+      field :recursive_ingredient_name, String do
+        argument :id, ID
+      end
+
+      def recursive_ingredient_name(id:)
+        res = context.schema.execute("{ ingredient(id: #{id}) { name } }")
+        res["data"]["ingredient"]["name"]
       end
     end
 
@@ -303,9 +319,23 @@ describe GraphQL::Dataloader do
       end
     end
 
+    class Mutation3 < GraphQL::Schema::Mutation
+      argument :label, String
+      type String
+
+      def resolve(label:)
+        log = context[:mutation_log] ||= []
+        log << "begin #{label}"
+        dataloader.with(DataObject).load(1)
+        log << "end #{label}"
+        label
+      end
+    end
+
     class Mutation < GraphQL::Schema::Object
       field :mutation_1, mutation: Mutation1
       field :mutation_2, mutation: Mutation2
+      field :mutation_3, mutation: Mutation3
     end
 
     mutation(Mutation)
@@ -385,6 +415,18 @@ describe GraphQL::Dataloader do
           }
           assert_equal expected_data, res
           assert_equal [[:mget, ["5", "6"]], [:mget, ["2", "3"]]], database_log
+        end
+
+        it "runs mutations sequentially" do
+          res = schema.execute <<-GRAPHQL
+            mutation {
+              first: mutation3(label: "first")
+              second: mutation3(label: "second")
+            }
+          GRAPHQL
+
+          assert_equal({ "first" => "first", "second" => "second" }, res["data"])
+          assert_equal ["begin first", "end first", "begin second", "end second"], res.context[:mutation_log]
         end
 
         it "batch-loads" do
@@ -718,7 +760,6 @@ describe GraphQL::Dataloader do
           assert_equal expected_log, database_log
         end
 
-
         it "supports general usage" do
           a = b = c = nil
 
@@ -750,6 +791,29 @@ describe GraphQL::Dataloader do
           assert_equal ["Corn", "Butter"], c.map { |d| d[:name] }
         end
 
+        it "works with scoped context" do
+          query_str = <<-GRAPHQL
+            {
+              i1: ingredientByName(name: "Corn") { nameByScopedContext }
+              i2: ingredientByName(name: "Wheat") { nameByScopedContext }
+              i3: ingredientByName(name: "Butter") { nameByScopedContext }
+            }
+          GRAPHQL
+
+          expected_data = {
+            "i1" => { "nameByScopedContext" => "Scoped:Corn" },
+            "i2" => { "nameByScopedContext" => "Scoped:Wheat" },
+            "i3" => { "nameByScopedContext" => "Scoped:Butter" },
+          }
+          result = schema.execute(query_str)
+          assert_equal expected_data, result["data"]
+        end
+
+        it "works when the schema calls itself" do
+          result = schema.execute("{ recursiveIngredientName(id: 1) }")
+          assert_equal "Wheat", result["data"]["recursiveIngredientName"]
+        end
+
         it "uses .batch_key_for in source classes" do
           query_str = <<-GRAPHQL
           {
@@ -773,6 +837,21 @@ describe GraphQL::Dataloader do
           ]
           assert_equal expected_log, database_log
         end
+
+        it "uses cached values from .merge" do
+          query_str = "{ ingredient(id: 1) { id name } }"
+          assert_equal "Wheat", schema.execute(query_str)["data"]["ingredient"]["name"]
+          assert_equal [[:mget, ["1"]]], database_log
+          database_log.clear
+
+          dataloader = schema.dataloader_class.new
+          data_source = dataloader.with(FiberSchema::DataObject)
+          data_source.merge({ "1" => { name: "Kamut", id: "1", type: "Grain" } })
+          assert_equal "Kamut", data_source.load("1")[:name]
+          res = schema.execute(query_str, context: { dataloader: dataloader })
+          assert_equal [], database_log
+          assert_equal "Kamut", res["data"]["ingredient"]["name"]
+        end
       end
     end
   end
@@ -795,6 +874,25 @@ describe GraphQL::Dataloader do
       end
 
       include DataloaderAssertions
+    end
+
+    if RUBY_ENGINE == "ruby" && !ENV["GITHUB_ACTIONS"]
+      describe "nonblocking: true with libev" do
+        require "libev_scheduler"
+        let(:schema) { Class.new(FiberSchema) do
+          use GraphQL::Dataloader, nonblocking: true
+        end }
+
+        before do
+          Fiber.set_scheduler(Libev::Scheduler.new)
+        end
+
+        after do
+          Fiber.set_scheduler(nil)
+        end
+
+        include DataloaderAssertions
+      end
     end
   end
 
@@ -921,8 +1019,8 @@ describe GraphQL::Dataloader do
     res = FiberSchema.execute("mutation { mutation1(argument1: \"abc\") { __typename } mutation2(argument2: \"def\") { __typename } }")
     assert_equal({"mutation1"=>nil, "mutation2"=>nil}, res["data"])
     expected_errors = [
-      "FieldTestError @ [\"mutation2\"], Mutation.mutation2 / Mutation.mutation2",
       "FieldTestError @ [\"mutation1\"], Mutation.mutation1 / Mutation.mutation1",
+      "FieldTestError @ [\"mutation2\"], Mutation.mutation2 / Mutation.mutation2",
     ]
     assert_equal expected_errors, res.context[:errors]
   end
@@ -939,6 +1037,9 @@ describe GraphQL::Dataloader do
     assert :world, value
   end
 
+  class CanaryDataloader < GraphQL::Dataloader::NullDataloader
+  end
+
   it "uses context[:dataloader] when given" do
     res = Class.new(GraphQL::Schema) do
       query_type = Class.new(GraphQL::Schema::Object) do
@@ -950,8 +1051,8 @@ describe GraphQL::Dataloader do
     res = FiberSchema.execute("{ __typename }")
     assert_instance_of GraphQL::Dataloader, res.context.dataloader
     refute res.context.dataloader.nonblocking?
-    res = FiberSchema.execute("{ __typename }", context: { dataloader: :blah } )
-    assert_equal :blah, res.context.dataloader
+    res = FiberSchema.execute("{ __typename }", context: { dataloader: CanaryDataloader.new } )
+    assert_instance_of CanaryDataloader, res.context.dataloader
 
     if Fiber.respond_to?(:scheduler)
       Fiber.set_scheduler(::DummyScheduler.new)
@@ -1118,5 +1219,65 @@ describe GraphQL::Dataloader do
     assert_equal({ "data" => { "nested" => "nested" } }, NestedDataloaderCallsSchema.execute("{ nested }"))
     assert_equal({ "data" => { "nested2" => "nested2" } }, NestedDataloaderCallsSchema.execute("{ nested2 }"))
     assert_equal({ "data" => { "nested" => "nested", "nested2" => "nested2" } }, NestedDataloaderCallsSchema.execute("{ nested nested2 }"))
+  end
+
+  describe "with lazy authorization hooks" do
+    class LazyAuthHookSchema < GraphQL::Schema
+      class Source < ::GraphQL::Dataloader::Source
+        def fetch(ids)
+          return ids.map {|i| i * 2}
+        end
+      end
+
+      class BarType < GraphQL::Schema::Object
+        field :id, Integer
+
+        def id
+          object
+        end
+
+        def self.authorized?(object, context)
+          -> { true }
+        end
+      end
+
+      class FooType < GraphQL::Schema::Object
+        field :dataloader_value, BarType
+
+        def self.authorized?(object, context)
+          -> { true }
+        end
+
+        def dataloader_value
+          dataloader.with(Source).load(1)
+        end
+      end
+
+      class QueryType < GraphQL::Schema::Object
+        field :foo, FooType
+
+        def foo
+          {}
+        end
+      end
+
+      use GraphQL::Dataloader
+      query QueryType
+      lazy_resolve Proc, :call
+    end
+
+    it "resolves everything" do
+      dataloader_query = """
+        query {
+          foo {
+            dataloaderValue {
+              id
+            }
+          }
+        }
+      """
+      dataloader_result = LazyAuthHookSchema.execute(dataloader_query)
+      assert_equal 2, dataloader_result["data"]["foo"]["dataloaderValue"]["id"]
+    end
   end
 end

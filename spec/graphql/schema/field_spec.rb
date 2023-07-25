@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 require "spec_helper"
-
 describe GraphQL::Schema::Field do
   describe "graphql definition" do
     let(:object_class) { Jazz::Query }
@@ -68,7 +67,7 @@ describe GraphQL::Schema::Field do
       assert_equal "A Description.", object.fields["test"].description
     end
 
-    it "accepts a block for defintion and yields the field if the block has an arity of one" do
+    it "accepts a block for definition and yields the field if the block has an arity of one" do
       object = Class.new(Jazz::BaseObject) do
         graphql_name "JustAName"
 
@@ -208,7 +207,7 @@ describe GraphQL::Schema::Field do
           err = assert_raises GraphQL::Schema::Field::FieldImplementationFailed do
             ArgumentErrorSchema.execute("{ f1(something: 12) }")
           end
-          assert_equal "Failed to call f1 on #<ArgumentErrorSchema::Query> because the Ruby method params were incompatible with the GraphQL arguments:
+          assert_equal "Failed to call `:f1` on #<ArgumentErrorSchema::Query> because the Ruby method params were incompatible with the GraphQL arguments:
 
 - `something: 12` was given by GraphQL but not defined in the Ruby method. Add `something:` to the method parameters.
 ", err.message
@@ -218,7 +217,7 @@ describe GraphQL::Schema::Field do
           err = assert_raises GraphQL::Schema::Field::FieldImplementationFailed do
             ArgumentErrorSchema.execute("{ f2(something: 12) }")
           end
-          assert_equal "Failed to call field_2 on #<ArgumentErrorSchema::Query> because the Ruby method params were incompatible with the GraphQL arguments:
+          assert_equal "Failed to call `:field_2` on #<ArgumentErrorSchema::Query> because the Ruby method params were incompatible with the GraphQL arguments:
 
 - `something: 12` was given by GraphQL but not defined in the Ruby method. Add `something:` to the method parameters.
 ", err.message
@@ -227,7 +226,7 @@ describe GraphQL::Schema::Field do
           err = assert_raises GraphQL::Schema::Field::FieldImplementationFailed do
             ArgumentErrorSchema.execute("{ f3(something: 1) }")
           end
-          assert_equal "Failed to call f3 on #<ArgumentErrorSchema::Query> because the Ruby method params were incompatible with the GraphQL arguments:
+          assert_equal "Failed to call `:f3` on #<ArgumentErrorSchema::Query> because the Ruby method params were incompatible with the GraphQL arguments:
 
 - `something: 1` was given by GraphQL but not defined in the Ruby method. Add `something:` to the method parameters.
 - `always_missing:` is required by Ruby, but not by GraphQL. Consider `always_missing: nil` instead, or making this argument required in GraphQL.
@@ -236,7 +235,7 @@ describe GraphQL::Schema::Field do
           err = assert_raises GraphQL::Schema::Field::FieldImplementationFailed do
             ArgumentErrorSchema.execute("{ f4 }")
           end
-          assert_equal "Failed to call f4 on #<ArgumentErrorSchema::Query> because the Ruby method params were incompatible with the GraphQL arguments:
+          assert_equal "Failed to call `:f4` on #<ArgumentErrorSchema::Query> because the Ruby method params were incompatible with the GraphQL arguments:
 
 - `never_positional` is required by Ruby, but GraphQL doesn't pass positional arguments. If it's meant to be a GraphQL argument, use `never_positional:` instead. Otherwise, remove it.
 ", err.message
@@ -350,7 +349,7 @@ describe GraphQL::Schema::Field do
           end
         end
 
-        assert_match /^Invalid complexity:/, err.message
+        assert_match(/^Invalid complexity:/, err.message)
       end
 
       it 'fails if the proc does not accept 3 parameters' do
@@ -364,7 +363,7 @@ describe GraphQL::Schema::Field do
           end
         end
 
-        assert_match /^A complexity proc should always accept 3 parameters/, err.message
+        assert_match(/^A complexity proc should always accept 3 parameters/, err.message)
       end
 
       it 'fails if second argument is a mutation instead of a type' do
@@ -381,7 +380,7 @@ describe GraphQL::Schema::Field do
           end
         end
 
-        assert_match /^Use `field :complexityTest, mutation: Mutation, ...` to provide a mutation to this field instead/, err.message
+        assert_match(/^Use `field :complexityTest, mutation: Mutation, ...` to provide a mutation to this field instead/, err.message)
       end
     end
   end
@@ -596,6 +595,12 @@ describe GraphQL::Schema::Field do
         field :Capital, String, camelize: false, null: true
         field :Other, String, camelize: true, null: true
         field :OtherCapital, String, camelize: false, null: true, hash_key: "OtherCapital"
+        # regression test against https://github.com/rmosolgo/graphql-ruby/issues/3944
+        field :method, String, camelize: false, null: false, hash_key: "some_random_key"
+        field :stringified_hash_key, String, null: false, hash_key: :stringified_hash_key
+        field :boolean_true_with_hash_key, Boolean, null: false, hash_key: :boolean_true_with_hash_key
+        field :boolean_false_with_hash_key, Boolean, null: false, hash_key: :boolean_false_with_hash_key
+        field :boolean_false_with_symbolized_hash_key, Boolean, null: false, hash_key: :boolean_false_with_symbolized_hash_key
       end
 
       class QueryType < GraphQL::Schema::Object
@@ -605,8 +610,19 @@ describe GraphQL::Schema::Field do
             "lowercase" => "lowercase-works",
             "Capital" => "capital-camelize-false-works",
             "Other" => "capital-camelize-true-works",
-            "OtherCapital" => "explicit-hash-key-works"
+            "OtherCapital" => "explicit-hash-key-works",
+            "some_random_key" => "hash-key-works-when-underlying-object-responds-to-field-name",
+            "stringified_hash_key" => "hash-key-is-tried-as-string",
+            "boolean_true_with_hash_key" => true,
+            "boolean_false_with_hash_key" => false,
+            :boolean_false_with_symbolized_hash_key => false
           }
+        end
+
+        field :ostruct_results, ResultType, null: false
+
+        def ostruct_results
+          OpenStruct.new(search_results)
         end
       end
 
@@ -617,10 +633,15 @@ describe GraphQL::Schema::Field do
       res = HashKeySchema.execute <<-GRAPHQL
       {
         searchResults {
+          method
           lowercase
           Capital
           Other
           OtherCapital
+          stringifiedHashKey
+          booleanTrueWithHashKey
+          booleanFalseWithHashKey
+          booleanFalseWithSymbolizedHashKey
         }
       }
       GRAPHQL
@@ -630,9 +651,52 @@ describe GraphQL::Schema::Field do
         "lowercase" => "lowercase-works",
         "Capital" => "capital-camelize-false-works",
         "Other" => "capital-camelize-true-works",
-        "OtherCapital" => "explicit-hash-key-works"
+        "OtherCapital" => "explicit-hash-key-works",
+        "method" => "hash-key-works-when-underlying-object-responds-to-field-name",
+        "stringifiedHashKey" => "hash-key-is-tried-as-string",
+        "booleanTrueWithHashKey" => true,
+        "booleanFalseWithHashKey" => false,
+        "booleanFalseWithSymbolizedHashKey" => false
+
       }
       assert_equal expected_result, search_results
+    end
+
+    it "works with non-hash instances" do
+      res = HashKeySchema.execute <<-GRAPHQL
+      {
+        ostructResults {
+          method
+          lowercase
+          Capital
+          Other
+          OtherCapital
+          stringifiedHashKey
+          booleanTrueWithHashKey
+          booleanFalseWithHashKey
+          booleanFalseWithSymbolizedHashKey
+        }
+      }
+      GRAPHQL
+
+      search_results = res["data"]["ostructResults"]
+      expected_result = {
+        "lowercase" => "lowercase-works",
+        "Capital" => "capital-camelize-false-works",
+        "Other" => "capital-camelize-true-works",
+        "OtherCapital" => "explicit-hash-key-works",
+        "method" => "hash-key-works-when-underlying-object-responds-to-field-name",
+        "stringifiedHashKey" => "hash-key-is-tried-as-string",
+        "booleanTrueWithHashKey" => true,
+        "booleanFalseWithHashKey" => false,
+        "booleanFalseWithSymbolizedHashKey" => false
+      }
+      assert_equal expected_result, search_results
+    end
+
+    it "populates `method_str`" do
+      hash_key_field = HashKeySchema.get_field("Result", "method")
+      assert_equal "some_random_key", hash_key_field.method_str
     end
   end
 
@@ -693,5 +757,66 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     assert_equal [:blah, :foo], field.extras
     assert_equal [:b, :c, :a], field.all_argument_definitions.map(&:keyword)
     assert_equal false, field.scoped?
+  end
+
+  it "accepts partial overrides for type an nullability" do
+    nonnull_float_resolver = Class.new(GraphQL::Schema::Resolver) do
+      type GraphQL::Types::Float, null: false
+    end
+
+    nullable_field = GraphQL::Schema::Field.new(name: "blah", owner: nil, resolver_class: nonnull_float_resolver, null: true)
+    assert_equal "Float", nullable_field.type.to_type_signature
+
+    int_field = GraphQL::Schema::Field.new(name: "blah", owner: nil, resolver_class: nonnull_float_resolver, type: GraphQL::Types::Int)
+    assert_equal "Int!", int_field.type.to_type_signature
+  end
+
+  class ResolverConnectionOverrideSchema < GraphQL::Schema
+    class Query < GraphQL::Schema::Object
+      class Resolver < GraphQL::Schema::Resolver
+        type [Int], null: false
+
+        def resolve
+          [1, 2, 3]
+        end
+      end
+
+      field :f, GraphQL::Types::Int.connection_type, resolver: Resolver
+    end
+
+    query(Query)
+  end
+
+  it "uses the overridden type for detecting connections" do
+    res = ResolverConnectionOverrideSchema.execute("{ f { nodes } }")
+    assert_equal [1,2,3], res["data"]["f"]["nodes"]
+  end
+
+  it "has a consistent Object shape" do
+    # This test will be inherently flaky: the `Field` instances
+    # on the heap depends on what tests ran before this one and
+    # whether or not GC ran since then.
+    shapes = Set.new
+
+    # This is custom state added by some test schemas:
+    custom_ivars = [:@upcase, :@future_schema, :@visible, :@allow_for, :@metadata]
+
+    ObjectSpace.each_object(GraphQL::Schema::Field) do |field_obj|
+      field_ivars = field_obj.instance_variables
+      custom_ivars.each do |ivar|
+        if field_ivars.delete(ivar) && field_obj.class == GraphQL::Schema::Field
+          raise "Invariant: a built-in-based field instance has an ivar that was expected to be custom state(#{ivar.inspect}): #{field_obj.path} (#{field_obj.inspect})"
+        end
+      end
+      shapes.add(field_ivars)
+    end
+    # To see the different shapes, uncomment this:
+    # File.open("field_shapes.txt", "wb+") do |f|
+    #   shapes.to_a.each do |shape|
+    #     f.puts(shape.inspect + "\n")
+    #   end
+    # end
+    default_field_shape = GraphQL::Introspection::TypeType.get_field("name").instance_variables
+    assert_equal [default_field_shape], shapes.to_a
   end
 end

@@ -5,32 +5,37 @@ on:
     # Sequence of patterns matched against refs/tags
     tags:
       - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+  # for re-running on old tags
+  workflow_dispatch:
+    inputs:
+      publish_version:
+        required: true
+        type: string
 
+permissions: {}
 jobs:
   build:
+    permissions:
+      contents: write # for git push (s0/git-publish-subdir-action)
     name: Publish API Docs
     runs-on: ubuntu-latest
     steps:
       - name: Checkout release tag
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ env.GITHUB_REF }}
       - name: Checkout GitHub pages branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: gh-pages
           ref: gh-pages
-      - uses: actions/setup-ruby@v1
+      - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '2.7'
-      - name: Bundle install
-        run: |
-          gem install bundler
-          bundle config path vendor/bundle
-          bundle install --jobs 4 --retry 3
+          ruby-version: '3.2'
+          bundler-cache: true
       - name: Build API docs
         run: |
-          bundle exec rake site:fetch_latest apidocs:gen_version
+          bundle exec rake site:fetch_latest apidocs:gen_version["${{ inputs.publish_version || env.GITHUB_REF }}"]
       - name: Commit changes as last committer
         run: |
           git config --global user.name rmosolgo

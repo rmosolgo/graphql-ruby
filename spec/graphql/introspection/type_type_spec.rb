@@ -8,13 +8,14 @@ describe GraphQL::Introspection::TypeType do
        milkType:      __type(name: "Milk") { interfaces { name }, fields { type { kind, name, ofType { name } } } }
        dairyAnimal:   __type(name: "DairyAnimal") { name, kind, enumValues(includeDeprecated: false) { name, isDeprecated } }
        dairyProduct:  __type(name: "DairyProduct") { name, kind, possibleTypes { name } }
-       animalProduct: __type(name: "AnimalProduct") { name, kind, specifiedByUrl, possibleTypes { name }, fields { name } }
+       animalProduct: __type(name: "AnimalProduct") { name, kind, specifiedByURL, possibleTypes { name }, fields { name } }
        missingType:   __type(name: "NotAType") { name }
-       timeType:      __type(name: "Time") { specifiedByUrl }
+       timeType:      __type(name: "Time") { specifiedByURL }
      }
   |}
   let(:result) { Dummy::Schema.execute(query_string, context: {}, variables: {"cheeseId" => 2}) }
   let(:cheese_fields) {[
+    {"name"=>"dairyProduct", "isDeprecated" => false, "type"=>{"kind"=>"UNION", "name"=>"DairyProduct", "ofType"=>nil}},
     {"name"=>"deeplyNullableCheese", "isDeprecated" => false, "type"=>{ "kind" => "OBJECT", "name" => "Cheese", "ofType" => nil}},
     {"name"=>"flavor",      "isDeprecated" => false, "type" => { "kind" => "NON_NULL", "name" => nil, "ofType" => { "name" => "String"}}},
     {"name"=>"id",          "isDeprecated" => false, "type" => { "kind" => "NON_NULL", "name" => nil, "ofType" => { "name" => "Int"}}},
@@ -26,6 +27,7 @@ describe GraphQL::Introspection::TypeType do
   ]}
 
   let(:dairy_animals) {[
+    {"name"=>"NONE",       "isDeprecated"=> false },
     {"name"=>"COW",       "isDeprecated"=> false },
     {"name"=>"DONKEY",    "isDeprecated"=> false },
     {"name"=>"GOAT",      "isDeprecated"=> false },
@@ -70,14 +72,14 @@ describe GraphQL::Introspection::TypeType do
       "animalProduct" => {
         "name"=>"AnimalProduct",
         "kind"=>"INTERFACE",
-        "specifiedByUrl" => nil,
+        "specifiedByURL" => nil,
         "possibleTypes"=>[{"name"=>"Cheese"}, {"name"=>"Honey"}, {"name"=>"Milk"}],
         "fields"=>[
           {"name"=>"source"},
         ]
       },
       "missingType" => nil,
-      "timeType" => { "specifiedByUrl" => "https://time.graphql"}
+      "timeType" => { "specifiedByURL" => "https://time.graphql"}
     }}
     assert_equal(expected, result.to_h)
   end

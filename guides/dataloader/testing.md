@@ -47,7 +47,7 @@ You can also test `Dataloader` behavior outside of GraphQL using {{ "GraphQL::Da
 
 ```ruby
 def test_it_fetches_objects_by_id
-  user_1, user_2, user_3 = 3.times { User.create! }
+  user_1, user_2, user_3 = 3.times.map { User.create! }
 
   database_queries = 0
   callback = lambda {|_name, _started, _finished, _unique_id, _payload| database_queries += 1 }

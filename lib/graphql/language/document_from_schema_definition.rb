@@ -14,7 +14,7 @@ module GraphQL
     # @param include_built_in_directives [Boolean] Whether or not to include built in directives in the AST
     class DocumentFromSchemaDefinition
       def initialize(
-        schema, context: nil, only: nil, except: nil, include_introspection_types: false,
+        schema, context: nil, include_introspection_types: false,
         include_built_in_directives: false, include_built_in_scalars: false, always_include_schema: false
       )
         @schema = schema
@@ -22,18 +22,16 @@ module GraphQL
         @include_introspection_types = include_introspection_types
         @include_built_in_scalars = include_built_in_scalars
         @include_built_in_directives = include_built_in_directives
-
-        filter = GraphQL::Filter.new(only: only, except: except)
-        if @schema.respond_to?(:visible?)
-          filter = filter.merge(only: @schema.method(:visible?))
-        end
+        @include_one_of = false
 
         schema_context = schema.context_class.new(query: nil, object: nil, schema: schema, values: context)
-        @warden = GraphQL::Schema::Warden.new(
-          filter,
+
+
+        @warden = @schema.warden_class.new(
           schema: @schema,
           context: schema_context,
         )
+
         schema_context.warden = @warden
       end
 
@@ -44,16 +42,18 @@ module GraphQL
       end
 
       def build_schema_node
-        GraphQL::Language::Nodes::SchemaDefinition.new(
-          query: (q = warden.root_type_for_operation("query")) && q.graphql_name,
-          mutation: (m = warden.root_type_for_operation("mutation")) && m.graphql_name,
-          subscription: (s = warden.root_type_for_operation("subscription")) && s.graphql_name,
-          # This only supports directives from parsing,
-          # use a custom printer to add to this list.
-          #
+        schema_options = {
           # `@schema.directives` is covered by `build_definition_nodes`
-          directives: ast_directives(@schema),
-        )
+          directives: definition_directives(@schema, :schema_directives),
+        }
+        if !schema_respects_root_name_conventions?(@schema)
+          schema_options.merge!({
+            query: (q = warden.root_type_for_operation("query")) && q.graphql_name,
+            mutation: (m = warden.root_type_for_operation("mutation")) && m.graphql_name,
+            subscription: (s = warden.root_type_for_operation("subscription")) && s.graphql_name,
+          })
+        end
+        GraphQL::Language::Nodes::SchemaDefinition.new(schema_options)
       end
 
       def build_object_type_node(object_type)
@@ -243,20 +243,30 @@ module GraphQL
       end
 
       def build_directive_nodes(directives)
-        if !include_built_in_directives
-          directives = directives.reject { |directive| directive.default_directive? }
-        end
-
         directives
           .map { |directive| build_directive_node(directive) }
           .sort_by(&:name)
       end
 
       def build_definition_nodes
-        definitions = []
-        definitions << build_schema_node if include_schema_node?
-        definitions += build_directive_nodes(warden.directives)
-        definitions += build_type_definition_nodes(warden.reachable_types)
+        dirs_to_build = warden.directives
+        if !include_built_in_directives
+          dirs_to_build = dirs_to_build.reject { |directive| directive.default_directive? }
+        end
+        dir_nodes = build_directive_nodes(dirs_to_build)
+
+        type_nodes = build_type_definition_nodes(warden.reachable_types)
+
+        if @include_one_of
+          # This may have been set to true when iterating over all types
+          dir_nodes.concat(build_directive_nodes([GraphQL::Schema::Directive::OneOf]))
+        end
+
+        definitions = [*dir_nodes, *type_nodes]
+        if include_schema_node?
+          definitions.unshift(build_schema_node)
+        end
+
         definitions
       end
 
@@ -283,7 +293,9 @@ module GraphQL
       private
 
       def include_schema_node?
-        always_include_schema || !schema_respects_root_name_conventions?(schema)
+        always_include_schema ||
+          !schema_respects_root_name_conventions?(schema) ||
+          !schema.schema_directives.empty?
       end
 
       def schema_respects_root_name_conventions?(schema)
@@ -293,14 +305,14 @@ module GraphQL
       end
 
       def directives(member)
-        definition_directives(member)
+        definition_directives(member, :directives)
       end
 
-      def definition_directives(member)
-        dirs = if !member.respond_to?(:directives) || member.directives.empty?
+      def definition_directives(member, directives_method)
+        dirs = if !member.respond_to?(directives_method) || member.directives.empty?
           []
         else
-          member.directives.map do |dir|
+          member.public_send(directives_method).map do |dir|
             args = []
             dir.arguments.argument_values.each_value do |arg_value| # rubocop:disable Development/ContextIsPassedCop -- directive instance method
               arg_defn = arg_value.definition
@@ -314,6 +326,11 @@ module GraphQL
                 )
               end
             end
+
+            # If this schema uses this built-in directive definition,
+            # include it in the print-out since it's not part of the spec yet.
+            @include_one_of ||= dir.class == GraphQL::Schema::Directive::OneOf
+
             GraphQL::Language::Nodes::Directive.new(
               name: dir.class.graphql_name,
               arguments: args
@@ -322,10 +339,6 @@ module GraphQL
         end
 
         dirs
-      end
-
-      def ast_directives(member)
-        member.ast_node ? member.ast_node.directives : []
       end
 
       attr_reader :schema, :warden, :always_include_schema,

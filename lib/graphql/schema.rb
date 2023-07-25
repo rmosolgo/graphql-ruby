@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require "graphql/schema/addition"
+require "graphql/schema/always_visible"
 require "graphql/schema/base_64_encoder"
 require "graphql/schema/find_inherited_value"
 require "graphql/schema/finder"
@@ -31,6 +32,7 @@ require "graphql/schema/union"
 require "graphql/schema/directive"
 require "graphql/schema/directive/deprecated"
 require "graphql/schema/directive/include"
+require "graphql/schema/directive/one_of"
 require "graphql/schema/directive/skip"
 require "graphql/schema/directive/feature"
 require "graphql/schema/directive/flagged"
@@ -61,7 +63,7 @@ module GraphQL
   # Schemas can specify how queries should be executed against them.
   # `query_execution_strategy`, `mutation_execution_strategy` and `subscription_execution_strategy`
   # each apply to corresponding root types.
-  #  #
+  #
   # @example defining a schema
   #   class MySchema < GraphQL::Schema
   #     query QueryType
@@ -73,13 +75,15 @@ module GraphQL
     extend GraphQL::Schema::Member::HasAstNode
     extend GraphQL::Schema::FindInheritedValue
 
-    class DuplicateTypeNamesError < GraphQL::Error
-      def initialize(type_name:, first_definition:, second_definition:, path:)
-        super("Multiple definitions for `#{type_name}`. Previously found #{first_definition.inspect} (#{first_definition.class}), then found #{second_definition.inspect} (#{second_definition.class}) at #{path.join(".")}")
+    class DuplicateNamesError < GraphQL::Error
+      attr_reader :duplicated_name
+      def initialize(duplicated_name:, duplicated_definition_1:, duplicated_definition_2:)
+        @duplicated_name = duplicated_name
+        super(
+          "Found two visible definitions for `#{duplicated_name}`: #{duplicated_definition_1}, #{duplicated_definition_2}"
+        )
       end
     end
-
-    class DuplicateNamesError < GraphQL::Error; end
 
     class UnresolvedLateBoundTypeError < GraphQL::Error
       attr_reader :type
@@ -107,9 +111,10 @@ module GraphQL
       # @param using [Hash] Plugins to attach to the created schema with `use(key, value)`
       # @return [Class] the schema described by `document`
       def from_definition(definition_or_path, default_resolve: nil, parser: GraphQL.default_parser, using: {})
-        # If the file ends in `.graphql`, treat it like a filepath
-        if definition_or_path.end_with?(".graphql")
+        # If the file ends in `.graphql` or `.graphqls`, treat it like a filepath
+        if definition_or_path.end_with?(".graphql") || definition_or_path.end_with?(".graphqls")
           GraphQL::Schema::BuildFromDefinition.from_definition_path(
+            self,
             definition_or_path,
             default_resolve: default_resolve,
             parser: parser,
@@ -117,6 +122,7 @@ module GraphQL
           )
         else
           GraphQL::Schema::BuildFromDefinition.from_definition(
+            self,
             definition_or_path,
             default_resolve: default_resolve,
             parser: parser,
@@ -130,7 +136,53 @@ module GraphQL
       end
 
       # @return [GraphQL::Subscriptions]
-      attr_accessor :subscriptions
+      def subscriptions(inherited: true)
+        defined?(@subscriptions) ? @subscriptions : (inherited ? find_inherited_value(:subscriptions, nil) : nil)
+      end
+
+      def subscriptions=(new_implementation)
+        @subscriptions = new_implementation
+      end
+
+      def trace_class(new_class = nil)
+        if new_class
+          trace_mode(:default, new_class)
+          backtrace_class = Class.new(new_class)
+          backtrace_class.include(GraphQL::Backtrace::Trace)
+          trace_mode(:default_backtrace, backtrace_class)
+        end
+        trace_class_for(:default)
+      end
+
+      # @return [Class] Return the trace class to use for this mode, looking one up on the superclass if this Schema doesn't have one defined.
+      def trace_class_for(mode)
+        @trace_modes ||= {}
+        @trace_modes[mode] ||= begin
+          if mode == :default_backtrace
+            schema_base_class = trace_class_for(:default)
+            Class.new(schema_base_class) do
+              include(GraphQL::Backtrace::Trace)
+            end
+          elsif superclass.respond_to?(:trace_class_for)
+            superclass_base_class = superclass.trace_class_for(mode)
+            Class.new(superclass_base_class)
+          else
+            Class.new(GraphQL::Tracing::Trace)
+          end
+        end
+      end
+
+      # Configure `trace_class` to be used whenever `context: { trace_mode: mode_name }` is requested.
+      # `:default` is used when no `trace_mode: ...` is requested.
+      # @param mode_name [Symbol]
+      # @param trace_class [Class] subclass of GraphQL::Tracing::Trace
+      # @return void
+      def trace_mode(mode_name, trace_class)
+        @trace_modes ||= {}
+        @trace_modes[mode_name] = trace_class
+        nil
+      end
+
 
       # Returns the JSON response of {Introspection::INTROSPECTION_QUERY}.
       # @see {#as_json}
@@ -143,18 +195,29 @@ module GraphQL
       # @param context [Hash]
       # @param only [<#call(member, ctx)>]
       # @param except [<#call(member, ctx)>]
+      # @param include_deprecated_args [Boolean] If true, deprecated arguments will be included in the JSON response
+      # @param include_schema_description [Boolean] If true, the schema's description will be queried and included in the response
+      # @param include_is_repeatable [Boolean] If true, `isRepeatable: true|false` will be included with the schema's directives
+      # @param include_specified_by_url [Boolean] If true, scalar types' `specifiedByUrl:` will be included in the response
+      # @param include_is_one_of [Boolean] If true, `isOneOf: true|false` will be included with input objects
       # @return [Hash] GraphQL result
-      def as_json(only: nil, except: nil, context: {})
-        execute(Introspection.query(include_deprecated_args: true), only: only, except: except, context: context).to_h
+      def as_json(context: {}, include_deprecated_args: true, include_schema_description: false, include_is_repeatable: false, include_specified_by_url: false, include_is_one_of: false)
+        introspection_query = Introspection.query(
+          include_deprecated_args: include_deprecated_args,
+          include_schema_description: include_schema_description,
+          include_is_repeatable: include_is_repeatable,
+          include_is_one_of: include_is_one_of,
+          include_specified_by_url: include_specified_by_url,
+        )
+
+        execute(introspection_query, context: context).to_h
       end
 
       # Return the GraphQL IDL for the schema
       # @param context [Hash]
-      # @param only [<#call(member, ctx)>]
-      # @param except [<#call(member, ctx)>]
       # @return [String]
-      def to_definition(only: nil, except: nil, context: {})
-        GraphQL::Schema::Printer.print_schema(self, only: only, except: except, context: context)
+      def to_definition(context: {})
+        GraphQL::Schema::Printer.print_schema(self, context: context)
       end
 
       # Return the GraphQL::Language::Document IDL AST for the schema
@@ -180,18 +243,6 @@ module GraphQL
           @finder ||= GraphQL::Schema::Finder.new(self)
         end
         @find_cache[path] ||= @finder.find(path)
-      end
-
-      def default_filter
-        GraphQL::Filter.new(except: default_mask)
-      end
-
-      def default_mask(new_mask = nil)
-        if new_mask
-          @own_default_mask = new_mask
-        else
-          @own_default_mask || find_inherited_value(:default_mask, Schema::NullMask)
-        end
       end
 
       def static_validator
@@ -225,7 +276,9 @@ module GraphQL
                 if visible_t.nil?
                   visible_t = t
                 else
-                  raise DuplicateNamesError, "Found two visible type definitions for `#{k}`: #{visible_t.inspect}, #{t.inspect}"
+                  raise DuplicateNamesError.new(
+                    duplicated_name: k, duplicated_definition_1: visible_t.inspect, duplicated_definition_2: t.inspect
+                  )
                 end
               end
             end
@@ -252,7 +305,9 @@ module GraphQL
               if visible_t.nil?
                 visible_t = t
               else
-                raise DuplicateNamesError, "Found two visible type definitions for `#{type_name}`: #{visible_t.inspect}, #{t.inspect}"
+                raise DuplicateNamesError.new(
+                  duplicated_name: type_name, duplicated_definition_1: visible_t.inspect, duplicated_definition_2: t.inspect
+                )
               end
             end
           end
@@ -352,6 +407,18 @@ module GraphQL
       def root_types
         @root_types
       end
+
+      def warden_class
+        if defined?(@warden_class)
+          @warden_class
+        elsif superclass.respond_to?(:warden_class)
+          superclass.warden_class
+        else
+          GraphQL::Schema::Warden
+        end
+      end
+
+      attr_writer :warden_class
 
       # @param type [Module] The type definition whose possible types you want to see
       # @return [Hash<String, Module>] All possible types, if no `type` is given.
@@ -497,6 +564,14 @@ module GraphQL
           @default_max_page_size = new_default_max_page_size
         else
           @default_max_page_size || find_inherited_value(:default_max_page_size)
+        end
+      end
+
+      def default_page_size(new_default_page_size = nil)
+        if new_default_page_size
+          @default_page_size = new_default_page_size
+        else
+          @default_page_size || find_inherited_value(:default_page_size)
         end
       end
 
@@ -717,11 +792,10 @@ module GraphQL
       def handle_or_reraise(context, err)
         handler = Execution::Errors.find_handler_for(self, err.class)
         if handler
-          runtime_info = context.namespace(:interpreter) || {}
-          obj = runtime_info[:current_object]
-          args = runtime_info[:current_arguments]
-          args = args && args.keyword_arguments
-          field = runtime_info[:current_field]
+          obj = context[:current_object]
+          args = context[:current_arguments]
+          args = args && args.respond_to?(:keyword_arguments) ? args.keyword_arguments : nil
+          field = context[:current_field]
           if obj.is_a?(GraphQL::Schema::Object)
             obj = obj.object
           end
@@ -734,19 +808,23 @@ module GraphQL
       # rubocop:disable Lint/DuplicateMethods
       module ResolveTypeWithType
         def resolve_type(type, obj, ctx)
-          first_resolved_type, resolved_value = if type.is_a?(Module) && type.respond_to?(:resolve_type)
+          maybe_lazy_resolve_type_result = if type.is_a?(Module) && type.respond_to?(:resolve_type)
             type.resolve_type(obj, ctx)
           else
             super
           end
 
-          after_lazy(first_resolved_type) do |resolved_type|
+          after_lazy(maybe_lazy_resolve_type_result) do |resolve_type_result|
+            if resolve_type_result.is_a?(Array) && resolve_type_result.size == 2
+              resolved_type = resolve_type_result[0]
+              resolved_value = resolve_type_result[1]
+            else
+              resolved_type = resolve_type_result
+              resolved_value = obj
+            end
+
             if resolved_type.nil? || (resolved_type.is_a?(Module) && resolved_type.respond_to?(:kind))
-              if resolved_value
-                [resolved_type, resolved_value]
-              else
-                resolved_type
-              end
+              [resolved_type, resolved_value]
             else
               raise ".resolve_type should return a type definition, but got #{resolved_type.inspect} (#{resolved_type.class}) from `resolve_type(#{type}, #{obj}, #{ctx})`"
             end
@@ -783,20 +861,13 @@ module GraphQL
         member.visible?(ctx)
       end
 
-      def accessible?(member, ctx)
-        member.accessible?(ctx)
+      def schema_directive(dir_class, **options)
+        @own_schema_directives ||= []
+        Member::HasDirectives.add_directive(self, @own_schema_directives, dir_class, options)
       end
 
-      # This hook is called when a client tries to access one or more
-      # fields that fail the `accessible?` check.
-      #
-      # By default, an error is added to the response. Override this hook to
-      # track metrics or return a different error to the client.
-      #
-      # @param error [InaccessibleFieldsError] The analysis error for this check
-      # @return [AnalysisError, nil] Return an error to skip the query
-      def inaccessible_fields(error)
-        error
+      def schema_directives
+        Member::HasDirectives.get_directives(self, @own_schema_directives, :schema_directives)
       end
 
       # This hook is called when an object fails an `authorized?` check.
@@ -848,7 +919,7 @@ module GraphQL
       # A function to call when {#execute} receives an invalid query string
       #
       # The default is to add the error to `context.errors`
-      # @param err [GraphQL::ParseError] The error encountered during parsing
+      # @param parse_err [GraphQL::ParseError] The error encountered during parsing
       # @param ctx [GraphQL::Query::Context] The context for the query where the error occurred
       # @return void
       def parse_error(parse_err, ctx)
@@ -885,15 +956,46 @@ module GraphQL
           "include" => GraphQL::Schema::Directive::Include,
           "skip" => GraphQL::Schema::Directive::Skip,
           "deprecated" => GraphQL::Schema::Directive::Deprecated,
+          "oneOf" => GraphQL::Schema::Directive::OneOf,
         }.freeze
       end
 
       def tracer(new_tracer)
+        if !(trace_class_for(:default) < GraphQL::Tracing::CallLegacyTracers)
+          trace_with(GraphQL::Tracing::CallLegacyTracers)
+        end
+
         own_tracers << new_tracer
       end
 
       def tracers
         find_inherited_value(:tracers, EMPTY_ARRAY) + own_tracers
+      end
+
+      # Mix `trace_mod` into this schema's `Trace` class so that its methods
+      # will be called at runtime.
+      #
+      # @param trace_mod [Module] A module that implements tracing methods
+      # @param options [Hash] Keywords that will be passed to the tracing class during `#initialize`
+      # @return [void]
+      def trace_with(trace_mod, **options)
+        trace_options.merge!(options)
+        trace_class.include(trace_mod)
+      end
+
+      def trace_options
+        @trace_options ||= superclass.respond_to?(:trace_options) ? superclass.trace_options.dup : {}
+      end
+
+      def new_trace(**options)
+        options = trace_options.merge(options)
+        trace_mode = if (target = options[:query] || options[:multiplex]) && target.context[:backtrace]
+          :default_backtrace
+        else
+          :default
+        end
+        trace = trace_class_for(trace_mode).new(**options)
+        trace
       end
 
       def query_analyzer(new_analyzer)
@@ -932,6 +1034,8 @@ module GraphQL
           {
             backtrace: ctx[:backtrace],
             tracers: ctx[:tracers],
+            trace: ctx[:trace],
+            dataloader: ctx[:dataloader],
           }
         else
           {}
@@ -961,7 +1065,7 @@ module GraphQL
       # @param context [Hash] Multiplex-level context
       # @return [Array<Hash>] One result for each query in the input
       def multiplex(queries, **kwargs)
-        GraphQL::Execution::Multiplex.run_all(self, queries, **kwargs)
+        GraphQL::Execution::Interpreter.run_all(self, queries, **kwargs)
       end
 
       def instrumenters
@@ -976,7 +1080,9 @@ module GraphQL
         if !defined?(@subscription_extension_added) && subscription && self.subscriptions
           @subscription_extension_added = true
           subscription.all_field_definitions.each do |field|
-            field.extension(Subscriptions::DefaultSubscriptionResolveExtension)
+            if !field.extensions.any? { |ext| ext.is_a?(Subscriptions::DefaultSubscriptionResolveExtension) }
+              field.extension(Subscriptions::DefaultSubscriptionResolveExtension)
+            end
           end
         end
       end

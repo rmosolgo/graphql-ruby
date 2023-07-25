@@ -8,6 +8,98 @@
 
 ### Bug Fix
 
+# 1.3.1 (12 June 2023)
+
+### Bug Fix
+
+- Add missing `require "graphql"` #4511
+
+# 1.3.0 (29 May 2023)
+
+### New Features
+
+- Changesets: Add `added_in: ...` and `removed_in: ...` for inline definition changes
+
+# 1.2.0 (10 February 2023)
+
+### New Features
+
+- Support the `redis-client` gem as `redis:` (requires graphql-pro 1.24.0+)
+
+# 1.1.14 (3 November 2022)
+
+### New Features
+
+- Limiters: Support `dashboard_charts: false` to disable built-in instrumentation
+- Limiters: Support `assign_as:` to use a different accessor method for storing limiter instances on schema classes (add a corresponding `class << self; attr_accessor ...; end` to the schema class to use it)
+- Limiters: Support `context_key:` to put runtime info in a different key in query context
+- Runtime Limiter: Add `window_ms:` to runtime info
+
+# 1.1.13 (21 October 2022)
+
+### Bug Fix
+
+- Limiter: handle missing fields in MutationLimiter
+
+# 1.1.12 (18 October 2022)
+
+### New Features
+
+- Limiters: add MutationLimiter
+
+### Bug Fix
+
+- ObjectCache: Update Redis calls to support redis-rb 5.0
+
+# 1.1.11 (25 August 2022)
+
+### Bug Fix
+
+- ObjectCache: also update `delete` to handle more than 1000 objects in Lua
+
+# 1.1.10 (19 August 2022)
+
+### Bug Fix
+
+- ObjectCache: read and write objects 1000-at-a-time to avoid overloading Lua scripts in Redis
+
+# 1.1.9 (3 August 2022)
+
+### New Features
+
+- ObjectCache: Add a message to context when a type or field causes a query to be treated as "private"
+
+### Bug Fix
+
+- ObjectCache: skip the query analyzer when `context[:skip_object_cache]` is present
+
+# 1.1.8 (1 August 2022)
+
+### New Features
+
+- ObjectCache: Add `ObjectType.cache_dependencies_for(object, context)` to customize dependencies for an object
+
+### Bug Fix
+
+- ObjectCache: Fix to make `context[:object_cache][:objects]` a Set
+# 1.1.7 (28 July 2022)
+
+### Bug Fix
+
+- ObjectCache: remove needless `resolve_type` calls
+
+# 1.1.6 (28 July 2022)
+
+### Bug Fix
+
+- ObjectCache: persist the type names of cached objects, pass them to `Schema.resolve_type` when validating cached responses.
+
+# 1.1.5 (22 July 2022)
+
+### New Features
+
+- ObjectCache: add `cache_introspection: { ttl: ... }` for setting an expiration (in seconds) on introspection fields.
+
 # 1.1.4 (19 March 2022)
 
 ### Bug Fix

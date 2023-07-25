@@ -46,6 +46,10 @@ describe GraphQL::Tracing::NewRelicTracing do
     NewRelic.clear_all
   end
 
+  it "Actually uses the new-style trace under the hood" do
+    assert NewRelicTest::SchemaWithoutTransactionName.trace_class < GraphQL::Tracing::NewRelicTrace
+  end
+
   it "works with the built-in node field, even though it doesn't have an @owner" do
     res = NewRelicTest::SchemaWithoutTransactionName.execute '{ node(id: "1") { __typename } }'
     assert_equal "Thing", res["data"]["node"]["__typename"]

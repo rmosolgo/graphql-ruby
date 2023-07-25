@@ -15,7 +15,7 @@ describe GraphQL::Schema::Finder do
         finder.find("DoesNotExist")
       end
 
-      assert_match /Could not find type `DoesNotExist` in schema./, exception.message
+      assert_match(/Could not find type `DoesNotExist` in schema./, exception.message)
     end
 
     it "finds a valid directive" do
@@ -28,7 +28,7 @@ describe GraphQL::Schema::Finder do
         finder.find("@yolo")
       end
 
-      assert_match /Could not find directive `@yolo` in schema./, exception.message
+      assert_match(/Could not find directive `@yolo` in schema./, exception.message)
     end
 
     it "finds a valid field" do
@@ -46,7 +46,7 @@ describe GraphQL::Schema::Finder do
         finder.find("Ensemble.nope")
       end
 
-      assert_match /Could not find field `nope` on object type `Ensemble`./, exception.message
+      assert_match(/Could not find field `nope` on object type `Ensemble`./, exception.message)
     end
 
     it "finds a valid argument" do
@@ -59,7 +59,7 @@ describe GraphQL::Schema::Finder do
         finder.find("Query.find.thisArgumentIsInvalid")
       end
 
-      assert_match /Could not find argument `thisArgumentIsInvalid` on field `find`./, exception.message
+      assert_match(/Could not find argument `thisArgumentIsInvalid` on field `find`./, exception.message)
     end
 
     it "raises when selecting on an argument" do
@@ -67,7 +67,7 @@ describe GraphQL::Schema::Finder do
         finder.find("Query.find.id.whyYouDoThis")
       end
 
-      assert_match /Cannot select member `whyYouDoThis` on a field./, exception.message
+      assert_match(/Cannot select member `whyYouDoThis` on a field./, exception.message)
     end
 
     it "finds a valid interface" do
@@ -90,7 +90,7 @@ describe GraphQL::Schema::Finder do
         finder.find("LegacyInput.wat")
       end
 
-      assert_match /Could not find input field `wat` on input object type `LegacyInput`./, exception.message
+      assert_match(/Could not find input field `wat` on input object type `LegacyInput`./, exception.message)
     end
 
     it "finds a valid union type" do
@@ -103,7 +103,7 @@ describe GraphQL::Schema::Finder do
         finder.find("PerformingAct.Musician")
       end
 
-      assert_match /Cannot select union possible type `Musician`. Select the type directly instead./, exception.message
+      assert_match(/Cannot select union possible type `Musician`. Select the type directly instead./, exception.message)
     end
 
     it "finds a valid enum type" do
@@ -121,7 +121,7 @@ describe GraphQL::Schema::Finder do
         finder.find("Family.THISISNOTASTATUS")
       end
 
-      assert_match /Could not find enum value `THISISNOTASTATUS` on enum type `Family`./, exception.message
+      assert_match(/Could not find enum value `THISISNOTASTATUS` on enum type `Family`./, exception.message)
     end
 
     it "raises when selecting on an enum value" do
@@ -129,7 +129,7 @@ describe GraphQL::Schema::Finder do
         finder.find("Family.BRASS.wat")
       end
 
-      assert_match /Cannot select member `wat` on an enum value./, exception.message
+      assert_match(/Cannot select member `wat` on an enum value./, exception.message)
     end
   end
 end

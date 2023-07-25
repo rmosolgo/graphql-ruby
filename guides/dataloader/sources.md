@@ -21,7 +21,7 @@ Sources will receive two kinds of inputs from `GraphQL::Dataloader`:
 
   Under the hood, each Source instance maintains a `key => object` cache.
 
-- _batch parameters_, which are the basis of batched groups. For example, if you're loading records from different database tables, the the table name would be a batch parameter.
+- _batch parameters_, which are the basis of batched groups. For example, if you're loading records from different database tables, the table name would be a batch parameter.
 
   Batch parameters are given to `dataloader.with(source_class, *batch_parameters)`, and the default is _no batch parameters_. When you define a source, you should add the batch parameters to `def initialize(...)` and store them in instance variables.
 
@@ -135,3 +135,16 @@ end
 For a more robust asynchronous task primitive, check out [`Concurrent::Future`](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Future.html).
 
 Ruby 3.0 added built-in support for yielding Fibers that make I/O calls -- hopefully a future GraphQL-Ruby version will work with that!
+
+## Filling the Dataloader Cache
+
+If you load records from the database, you can use them to populate a source's cache by using {{ "Dataloader::Source#merge" | api_doc }}. For example:
+
+```ruby
+# Build a `{ key => value }` map to populate the cache
+comments_by_id = post.comments.each_with_object({}) { |comment, hash| hash[comment.id] = comment }
+# Merge the map into the source's cache
+dataloader.with(Sources::ActiveRecordObject, Comment).merge(comments_by_id)
+```
+
+After that, any calls to `.load(id)` will use those already-loaded records if they're available.

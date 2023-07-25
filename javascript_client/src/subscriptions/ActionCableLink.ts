@@ -34,7 +34,7 @@ class ActionCableLink extends ApolloLink {
         channelId: channelId
       }, connectionParams), {
         connected: function() {
-          channel.perform(
+          this.perform(
             actionName,
             {
               query: operation.query ? print(operation.query) : null,
@@ -46,7 +46,7 @@ class ActionCableLink extends ApolloLink {
           )
         },
         received: function(payload) {
-          if (payload.result.data || payload.result.errors) {
+          if (payload?.result?.data || payload?.result?.errors) {
             observer.next(payload.result)
           }
 

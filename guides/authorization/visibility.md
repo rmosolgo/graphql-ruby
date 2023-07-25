@@ -86,10 +86,24 @@ class Types::BaseArgument < GraphQL::Schema::Argument
     super(*args, **kwargs, &block)
   end
 
-  def authorized?(ctx)
+  def visible?(ctx)
     super && (@require_logged_in ? ctx[:viewer].present? : true)
   end
 end
 ```
 
 For this to work, the base argument class must be {% internal_link "configured with other GraphQL types", "/type_definitions/extensions.html#customizing-arguments" %}.
+
+## Opting Out
+
+By default, GraphQL-Ruby always runs visibility checks. You can opt out of this by adding to your schema class:
+
+```ruby
+class MySchema < GraphQL::Schema
+  # ...
+  # Opt out of GraphQL-Ruby's visibility feature:
+  use GraphQL::Schema::AlwaysVisible
+end
+```
+
+For big schemas, this can be a worthwhile speed-up.

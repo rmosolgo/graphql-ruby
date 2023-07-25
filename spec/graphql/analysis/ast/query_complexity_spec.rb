@@ -8,7 +8,8 @@ describe GraphQL::Analysis::AST::QueryComplexity do
     GraphQL::Analysis::AST.analyze_multiplex(multiplex, [GraphQL::Analysis::AST::QueryComplexity])
   }
   let(:variables) { {} }
-  let(:query) { GraphQL::Query.new(schema, query_string, variables: variables) }
+  let(:query_context) { {} }
+  let(:query) { GraphQL::Query.new(schema, query_string, context: query_context, variables: variables) }
   let(:multiplex) {
     GraphQL::Execution::Multiplex.new(
       schema: schema,
@@ -319,6 +320,42 @@ describe GraphQL::Analysis::AST::QueryComplexity do
         assert_equal 1 + 1 + 1 + (3 * 1) + 1, complexity
       end
     end
+
+    describe "Field-level default_page_size" do
+      let(:query_string) {%|
+      {
+        rebels {
+          shipsWithDefaultPageSize {
+            nodes { id }
+          }
+        }
+      }
+      |}
+
+      it "uses field default_page_size" do
+        complexity = reduce_result.first
+        assert_equal 1 + 1 + 1 + (500 * 1), complexity
+      end
+    end
+
+    describe "Schema-level default_page_size" do
+      let(:query) { GraphQL::Query.new(StarWars::SchemaWithDefaultPageSize, query_string) }
+      let(:query_string) {%|
+      {
+        rebels {
+          bases {
+            nodes { id }
+            totalCount
+          }
+        }
+      }
+      |}
+
+      it "uses schema default_page_size" do
+        complexity = reduce_result.first
+        assert_equal 1 + 1 + 1 + (2 * 1) + 1, complexity
+      end
+    end
   end
 
   describe "calucation complexity for a multiplex" do
@@ -377,8 +414,18 @@ describe GraphQL::Analysis::AST::QueryComplexity do
 
       class Query < GraphQL::Schema::Object
         field :complexity, SingleComplexity do
-          argument :int_value, Int, required: false
+          argument :int_value, Int, required: false, prepare: ->(val, ctx) {
+            if ctx[:raise_prepare_error]
+              raise GraphQL::ExecutionError, "Boom"
+            else
+              val
+            end
+          }
           complexity ->(ctx, args, child_complexity) { args[:int_value] + child_complexity }
+        end
+
+        def complexity(int_value:)
+          { value: int_value }
         end
 
         field :inner_complexity, ComplexityInterface do
@@ -390,7 +437,7 @@ describe GraphQL::Analysis::AST::QueryComplexity do
       orphan_types(DoubleComplexity)
     end
 
-    let(:query) { GraphQL::Query.new(complexity_schema, query_string) }
+    let(:query) { GraphQL::Query.new(complexity_schema, query_string, context: query_context) }
     let(:complexity_schema) { CustomComplexitySchema }
     let(:query_string) {%|
       {
@@ -424,6 +471,18 @@ describe GraphQL::Analysis::AST::QueryComplexity do
         complexity = reduce_result.first
         # 1 for innerComplexity + 4 for DoubleComplexity.value
         assert_equal 5, complexity
+      end
+    end
+
+    describe "when prepare raises an error" do
+      let(:query_string) { "{ complexity(intValue: 3) { value } }"}
+      let(:query_context) { { raise_prepare_error: true } }
+
+      it "handles it nicely" do
+        result = query.result
+        assert_equal ["Boom"], result["errors"].map { |e| e["message"] }
+        complexity = reduce_result.first
+        assert_equal 0.1, complexity
       end
     end
   end

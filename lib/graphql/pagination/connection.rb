@@ -56,8 +56,9 @@ module GraphQL
       # @param last [Integer, nil] Limit parameter from the client, if provided
       # @param before [String, nil] A cursor for pagination, if the client provided one.
       # @param arguments [Hash] The arguments to the field that returned the collection wrapped by this connection
-      # @param max_page_size [Integer, nil] A configured value to cap the result size. Applied as `first` if neither first or last are given.
-      def initialize(items, parent: nil, field: nil, context: nil, first: nil, after: nil, max_page_size: :not_given, last: nil, before: nil, edge_class: nil, arguments: nil)
+      # @param max_page_size [Integer, nil] A configured value to cap the result size. Applied as `first` if neither first or last are given and no `default_page_size` is set.
+      # @param default_page_size [Integer, nil] A configured value to determine the result size when neither first or last are given.
+      def initialize(items, parent: nil, field: nil, context: nil, first: nil, after: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, last: nil, before: nil, edge_class: nil, arguments: nil)
         @items = items
         @parent = parent
         @context = context
@@ -70,11 +71,17 @@ module GraphQL
         @edge_class = edge_class || self.class::Edge
         # This is only true if the object was _initialized_ with an override
         # or if one is assigned later.
-        @has_max_page_size_override = max_page_size != :not_given
-        @max_page_size = if max_page_size == :not_given
+        @has_max_page_size_override = max_page_size != NOT_CONFIGURED
+        @max_page_size = if max_page_size == NOT_CONFIGURED
           nil
         else
           max_page_size
+        end
+        @has_default_page_size_override = default_page_size != NOT_CONFIGURED
+        @default_page_size = if default_page_size == NOT_CONFIGURED
+          nil
+        else
+          default_page_size
         end
       end
 
@@ -95,16 +102,36 @@ module GraphQL
         @has_max_page_size_override
       end
 
+      def default_page_size=(new_value)
+        @has_default_page_size_override = true
+        @default_page_size = new_value
+      end
+
+      def default_page_size
+        if @has_default_page_size_override
+          @default_page_size
+        else
+          context.schema.default_page_size
+        end
+      end
+
+      def has_default_page_size_override?
+        @has_default_page_size_override
+      end
+
       attr_writer :first
       # @return [Integer, nil]
       #   A clamped `first` value.
       #   (The underlying instance variable doesn't have limits on it.)
-      #   If neither `first` nor `last` is given, but `max_page_size` is present, max_page_size is used for first.
+      #   If neither `first` nor `last` is given, but `default_page_size` is
+      #   present, default_page_size is used for first. If `default_page_size`
+      #   is greater than `max_page_size``, it'll be clamped down to
+      #   `max_page_size`. If `default_page_size` is nil, use `max_page_size`.
       def first
         @first ||= begin
           capped = limit_pagination_argument(@first_value, max_page_size)
           if capped.nil? && last.nil?
-            capped = max_page_size
+            capped = limit_pagination_argument(default_page_size, max_page_size) || max_page_size
           end
           capped
         end

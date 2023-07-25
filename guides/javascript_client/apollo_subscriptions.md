@@ -8,23 +8,23 @@ desc: GraphQL subscriptions with GraphQL-Ruby and Apollo Client
 index: 2
 ---
 
-GraphQL-Ruby's JavaScript client includes four kinds of support for Apollo Client:
+GraphQL-Ruby's JavaScript client includes several kinds of support for Apollo Client:
 
-- Apollo 2.x:
-  - [Overview](#apollo-2)
-  - [Pusher](#apollo-2--pusher)
-  - [Ably](#apollo-2--ably)
-  - [ActionCable](#apollo-2--actioncable)
+- Apollo Link (2.x, 3.x):
+  - [Overview](#apollo-link)
+  - [Pusher](#apollo-link--pusher)
+  - [Ably](#apollo-link--ably)
+  - [ActionCable](#apollo-link--actioncable)
 - Apollo 1.x:
   - [Overview](#apollo-1)
   - [Pusher](#apollo-1--pusher)
   - [ActionCable](#apollo-1--actioncable)
 
-## Apollo 2
+## Apollo Link
 
-Apollo 2 is supported by implementing Apollo Links.
+Apollo Links are used by Apollo client 2.x and 3.x.
 
-## Apollo 2 -- Pusher
+## Apollo Link -- Pusher
 
 `graphql-ruby-client` includes support for subscriptions with Pusher and ApolloLink.
 
@@ -34,11 +34,7 @@ For example:
 
 ```js
 // Load Apollo stuff
-import { ApolloLink } from 'apollo-link';
-import { ApolloClient } from 'apollo-client';
-import { HttpLink } from 'apollo-link-http';
-import { InMemoryCache } from 'apollo-cache-inmemory';
-
+import { ApolloClient, HttpLink, ApolloLink, InMemoryCache } from "@apollo/client";
 // Load PusherLink from graphql-ruby-client
 import PusherLink from 'graphql-ruby-client/subscriptions/PusherLink';
 
@@ -88,7 +84,7 @@ const pusherLink = new PusherLink({
 })
 ```
 
-## Apollo 2 -- Ably
+## Apollo Link -- Ably
 
 `graphql-ruby-client` includes support for subscriptions with Ably and ApolloLink.
 
@@ -98,10 +94,7 @@ For example:
 
 ```js
 // Load Apollo stuff
-import { ApolloLink } from 'apollo-link';
-import { ApolloClient } from 'apollo-client';
-import { HttpLink } from 'apollo-link-http';
-import { InMemoryCache } from 'apollo-cache-inmemory';
+import { ApolloClient, HttpLink, ApolloLink, InMemoryCache } from '@apollo/client';
 // Load Ably subscriptions link
 import AblyLink from 'graphql-ruby-client/subscriptions/AblyLink'
 // Load Ably and create a client
@@ -133,7 +126,7 @@ For your __app key__, make a key with "Subscribe" and "Presence" privileges and 
 
 {{ "/javascript_client/ably_key.png" | link_to_img:"Ably Subscription Key Privileges" }}
 
-## Apollo 2 -- ActionCable
+## Apollo Link -- ActionCable
 
 `graphql-ruby-client` includes support for subscriptions with ActionCable and ApolloLink.
 
@@ -145,10 +138,7 @@ To use it, construct a split link that routes:
 For example:
 
 ```js
-import { ApolloLink } from 'apollo-link';
-import { ApolloClient } from 'apollo-client';
-import { HttpLink } from 'apollo-link-http';
-import { InMemoryCache } from 'apollo-cache-inmemory';
+import { ApolloClient, HttpLink, ApolloLink, InMemoryCache } from '@apollo/client';
 import { createConsumer } from '@rails/actioncable';
 import ActionCableLink from 'graphql-ruby-client/subscriptions/ActionCableLink';
 

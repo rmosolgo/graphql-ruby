@@ -1,13 +1,13 @@
-import { visit, ASTNode, FieldNode, InlineFragmentNode } from "graphql"
+import { visit, ASTNode, FieldNode, InlineFragmentNode, Kind } from "graphql"
 
 const TYPENAME_FIELD: FieldNode = {
-  kind: "Field",
+  kind: Kind.FIELD,
   name: {
-    kind: "Name",
+    kind: Kind.NAME,
     value: "__typename",
   },
   selectionSet: {
-    kind: "SelectionSet",
+    kind: Kind.SELECTION_SET,
     selections: []
   }
 }
@@ -53,4 +53,3 @@ export {
   addTypenameToSelectionSet,
   addTypenameIfAbsent
 }
-

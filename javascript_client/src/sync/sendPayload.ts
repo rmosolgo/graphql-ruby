@@ -2,12 +2,15 @@ import http from "http"
 import https from "https"
 import url from "url"
 import crypto from 'crypto'
+import Logger from './logger'
 
 interface SendPayloadOptions {
   url: string,
+  logger: Logger,
   secret?: string,
   client?: string,
-  verbose?: boolean
+  headers?: { [key: string]: string },
+  changesetVersion?: string,
 }
 /**
  * Use HTTP POST to send this payload to the endpoint.
@@ -19,14 +22,15 @@ interface SendPayloadOptions {
  * @param {String} options.url - Target URL
  * @param {String} options.secret - (optional) used for HMAC header if provided
  * @param {String} options.client - (optional) used for HMAC header if provided
- * @param {Boolean} options.verbose - (optional) if true, print extra info for debugging
+ * @param {Logger} options.logger - A logger for when `verbose` is true
+ * @param {Object<String, String>} options.headers - (optional) extra headers for the request
  * @return {Promise}
 */
 function sendPayload(payload: any, options: SendPayloadOptions) {
   var syncUrl = options.url
   var key = options.secret
   var clientName = options.client
-  var verbose = options.verbose
+  var logger = options.logger
   // Prepare JS object as form data
   var postData = JSON.stringify(payload)
 
@@ -39,6 +43,12 @@ function sendPayload(payload: any, options: SendPayloadOptions) {
     'Content-Length': Buffer.byteLength(postData).toString()
   }
 
+  if (options.changesetVersion) {
+    logger.log("Changeset Version: ", logger.bright(options.changesetVersion))
+    defaultHeaders["Changeset-Version"] = options.changesetVersion
+  }
+  var allHeaders = Object.assign({}, options.headers, defaultHeaders)
+
   var httpOptions = {
     protocol: parsedURL.protocol,
     hostname: parsedURL.hostname,
@@ -46,7 +56,7 @@ function sendPayload(payload: any, options: SendPayloadOptions) {
     path: parsedURL.path,
     auth: parsedURL.auth,
     method: 'POST',
-    headers: defaultHeaders,
+    headers: allHeaders,
   };
 
   // If an auth key was provided, add a HMAC header
@@ -56,12 +66,15 @@ function sendPayload(payload: any, options: SendPayloadOptions) {
       .update(postData)
       .digest('hex')
     var header = "GraphQL::Pro " + clientName + " " + authDigest
-    if (verbose) {
-      console.log("[Sync] Header: ", header)
-      console.log("[Sync] Data:", postData)
-    }
     httpOptions.headers["Authorization"] = header
   }
+
+  var headerNames = Object.keys(httpOptions.headers)
+  logger.log("[Sync] " + headerNames.length + " Headers:")
+  headerNames.forEach((headerName) => {
+    logger.log("[Sync]    " + headerName + ": " + httpOptions.headers[headerName])
+  })
+  logger.log("[Sync] Data:", postData)
 
   var httpClient = parsedURL.protocol === "https:" ? https : http
   var promise = new Promise(function(resolve, reject) {
@@ -76,10 +89,8 @@ function sendPayload(payload: any, options: SendPayloadOptions) {
       });
 
       res.on("end", () => {
-        if (verbose) {
-          console.log("[Sync] Response Headers: ", res.headers)
-          console.log("[Sync] Response Body: ", body)
-        }
+        logger.log("[Sync] Response Headers: ", JSON.stringify(res.headers))
+        logger.log("[Sync] Response Body: ", body)
 
         var status = res.statusCode
         // 422 gets special treatment because

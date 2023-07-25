@@ -31,7 +31,12 @@ class InMemoryBackend
           query_string: query.query_string,
           operation_name: query.operation_name,
           variables: query.provided_variables,
-          context: { me: query.context[:me] },
+          context: {
+            me: query.context[:me],
+            validate_update: query.context[:validate_update],
+            other_int: query.context[:other_int],
+            hidden_event: query.context[:hidden_event],
+          },
           transport: :socket,
         }
       else
@@ -108,7 +113,21 @@ end
 class ClassBasedInMemoryBackend < InMemoryBackend
   class Payload < GraphQL::Schema::Object
     field :str, String, null: false
-    field :int, Integer, null: false
+    field :int, Integer, null: false do
+      def visible?(context)
+        !context[:other_int]
+      end
+    end
+
+    field :int, Integer, null: false, resolver_method: :other_int do
+      def visible?(context)
+        !!context[:other_int]
+      end
+    end
+
+    def other_int
+      1000 + object.int
+    end
   end
 
   class PayloadType < GraphQL::Schema::Enum
@@ -125,7 +144,7 @@ class ClassBasedInMemoryBackend < InMemoryBackend
   end
 
   class EventSubscription < GraphQL::Schema::Subscription
-    argument :user_id, ID
+    argument :user_id, ID, as: :user
     argument :payload_type, PayloadType, required: false, default_value: "ONE", prepare: ->(e, ctx) { e ? e.downcase : e }
     field :payload, Payload
   end
@@ -173,6 +192,12 @@ class ClassBasedInMemoryBackend < InMemoryBackend
     end
 
     field :filtered_stream, subscription: FilteredStream
+
+    field :hidden_event, Payload do
+      def visible?(context)
+        !!context[:hidden_event]
+      end
+    end
   end
 
   class Query < GraphQL::Schema::Object
@@ -352,6 +377,20 @@ describe GraphQL::Subscriptions do
           # These received updates from the second set of triggers:
           assert_equal 2, deliveries["4"].size
           assert_equal 1, deliveries["5"].size
+        end
+
+        it "runs visibility checks when calling .trigger" do
+          query_str = "subscription { hiddenEvent { int } }"
+          res_1 = schema.execute(query_str, context: { socket: "1", hidden_event: true }, root_value: root_object)
+          assert_equal({}, res_1["data"])
+
+          schema.subscriptions.trigger(:hidden_event, {}, root_object.payload, context: { hidden_event: true })
+          assert_equal({"hiddenEvent" => { "int" => 1 }}, deliveries["1"][0]["data"])
+
+          err = assert_raises GraphQL::Subscriptions::InvalidTriggerError do
+            schema.subscriptions.trigger(:hidden_event, {}, root_object.payload)
+          end
+          assert_equal "No subscription matching trigger: hidden_event (looked for Subscription.hiddenEvent)", err.message
         end
       end
 
@@ -639,6 +678,9 @@ describe GraphQL::Subscriptions do
               }
             end
             assert_equal expected_sub_count, subscriptions_by_topic
+
+            schema.subscriptions.trigger(:event_subscription, { user_id: 3 }, {})
+            assert_equal 1, deliveries["1"].size
           end
 
           it "doesn't apply for plain fields" do
@@ -870,6 +912,76 @@ describe GraphQL::Subscriptions do
       # Socket 3 received 2, 3
       expected_values = [[1,1], [1,2], [2,3]]
       assert_equal expected_values, delivered_values
+    end
+  end
+
+  class SkipUpdateValidationSchema < GraphQL::Schema
+    COUNTERS = Hash.new(0)
+    class ValidationDetectionTracer
+      def self.trace(event, data)
+        if event == "validate"
+          COUNTERS["validate_#{data[:validate]}"] += 1
+          data[:query].context[:was_validated] = data[:validate]
+        end
+        yield
+      end
+    end
+
+    class Subscription < GraphQL::Schema::Object
+      class Counter < GraphQL::Schema::Subscription
+        argument :id, ID
+        field :value, Integer, null: false
+
+        def update(id:)
+          {
+            value: COUNTERS["counter_#{id}"] += 1
+          }
+        end
+      end
+
+      field :counter, subscription: Counter
+    end
+    subscription(Subscription)
+    tracer(ValidationDetectionTracer)
+    use InMemoryBackend::Subscriptions, extra: nil, validate_update: false
+  end
+
+  class SometimesSkipUpdateValidationSchema < GraphQL::Schema
+    COUNTERS = SkipUpdateValidationSchema::COUNTERS
+    class SometimesSkipSubscriptions < InMemoryBackend::Subscriptions
+      def validate_update?(context:, **_rest)
+        !!context[:validate_update]
+      end
+    end
+
+    subscription(SkipUpdateValidationSchema::Subscription)
+    tracer(SkipUpdateValidationSchema::ValidationDetectionTracer)
+    use(SometimesSkipSubscriptions, extra: nil)
+  end
+
+  describe "Skipping validation on updates" do
+    before do
+      schema::COUNTERS.clear
+    end
+
+    let(:schema) { SkipUpdateValidationSchema }
+    it "Skips validation when configured" do
+      res = schema.execute("subscription { counter(id: \"1\") { value } }", context: { socket: "1" })
+      assert res.context[:was_validated]
+      assert_equal({"validate_true" => 1}, schema::COUNTERS)
+      schema.subscriptions.trigger(:counter, {id: "1"}, {})
+      assert_equal({"validate_true" => 1, "validate_false" => 1, "counter_1" => 1}, schema::COUNTERS)
+    end
+
+    describe "when the method is overriden" do
+      let(:schema) { SometimesSkipUpdateValidationSchema }
+      it "calls `validate_update?`" do
+        schema.execute("subscription { counter(id: \"3\") { value } }", context: { socket: "2" })
+        schema.execute("subscription { counter(id: \"3\") { value } }", context: { socket: "3", validate_update: true })
+        assert_equal({"validate_true" => 2}, schema::COUNTERS)
+        schema.subscriptions.trigger(:counter, {id: "3"}, {})
+        assert_equal({"validate_true" => 3, "validate_false" => 1, "counter_3" => 2}, schema::COUNTERS)
+      end
     end
   end
 end

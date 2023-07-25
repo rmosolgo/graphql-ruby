@@ -70,6 +70,7 @@ module GraphQL
             parent: parent,
             field: field,
             max_page_size: field.has_max_page_size? ? field.max_page_size : context.schema.default_max_page_size,
+            default_page_size: field.has_default_page_size? ? field.default_page_size : context.schema.default_page_size,
             first: arguments[:first],
             after: arguments[:after],
             last: arguments[:last],

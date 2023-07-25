@@ -35,9 +35,11 @@ module GraphQL
       def load_nodes
         @nodes ||= begin
           sliced_nodes = if before && after
-            items[index_from_cursor(after)..index_from_cursor(before)-1] || []
+            end_idx = index_from_cursor(before)-1
+            end_idx < 0 ? [] : items[index_from_cursor(after)..end_idx] || []
           elsif before
-            items[0..index_from_cursor(before)-2] || []
+            end_idx = index_from_cursor(before)-2
+            end_idx < 0 ? [] : items[0..end_idx] || []
           elsif after
             items[index_from_cursor(after)..-1] || []
           else

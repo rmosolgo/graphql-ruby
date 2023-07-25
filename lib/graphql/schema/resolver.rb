@@ -70,10 +70,10 @@ module GraphQL
         else
           ready?
         end
-        context.schema.after_lazy(ready_val) do |is_ready, ready_early_return|
+        context.query.after_lazy(ready_val) do |is_ready, ready_early_return|
           if ready_early_return
             if is_ready != false
-              raise "Unexpected result from #ready? (expected `true`, `false` or `[false, {...}]`): [#{authorized_result.inspect}, #{ready_early_return.inspect}]"
+              raise "Unexpected result from #ready? (expected `true`, `false` or `[false, {...}]`): [#{is_ready.inspect}, #{ready_early_return.inspect}]"
             else
               ready_early_return
             end
@@ -81,7 +81,7 @@ module GraphQL
             # Then call each prepare hook, which may return a different value
             # for that argument, or may return a lazy object
             load_arguments_val = load_arguments(args)
-            context.schema.after_lazy(load_arguments_val) do |loaded_args|
+            context.query.after_lazy(load_arguments_val) do |loaded_args|
               @prepared_arguments = loaded_args
               Schema::Validator.validate!(self.class.validators, object, context, loaded_args, as: @field)
               # Then call `authorized?`, which may raise or may return a lazy object
@@ -90,7 +90,7 @@ module GraphQL
               else
                 authorized?
               end
-              context.schema.after_lazy(authorized_val) do |(authorized_result, early_return)|
+              context.query.after_lazy(authorized_val) do |(authorized_result, early_return)|
                 # If the `authorized?` returned two values, `false, early_return`,
                 # then use the early return value instead of continuing
                 if early_return
@@ -185,7 +185,7 @@ module GraphQL
           if arg_defn
             prepped_value = prepared_args[key] = arg_defn.load_and_authorize_value(self, value, context)
             if context.schema.lazy?(prepped_value)
-              prepare_lazies << context.schema.after_lazy(prepped_value) do |finished_prepped_value|
+              prepare_lazies << context.query.after_lazy(prepped_value) do |finished_prepped_value|
                 prepared_args[key] = finished_prepped_value
               end
             end
@@ -216,8 +216,8 @@ module GraphQL
           get_argument(name, context)
         end
 
-        def own_field_arguments
-          own_arguments
+        def all_field_argument_definitions
+          all_argument_definitions
         end
 
         # Default `:resolve` set below.
@@ -311,8 +311,8 @@ module GraphQL
         # (`nil` means "unlimited max page size".)
         # @param max_page_size [Integer, nil] Set a new value
         # @return [Integer, nil] The `max_page_size` assigned to fields that use this resolver
-        def max_page_size(new_max_page_size = :not_given)
-          if new_max_page_size != :not_given
+        def max_page_size(new_max_page_size = NOT_CONFIGURED)
+          if new_max_page_size != NOT_CONFIGURED
             @max_page_size = new_max_page_size
           elsif defined?(@max_page_size)
             @max_page_size
@@ -326,6 +326,27 @@ module GraphQL
         # @return [Boolean] `true` if this resolver or a superclass has an assigned `max_page_size`
         def has_max_page_size?
           (!!defined?(@max_page_size)) || (superclass.respond_to?(:has_max_page_size?) && superclass.has_max_page_size?)
+        end
+
+        # Get or set the `default_page_size:` which will be configured for fields using this resolver
+        # (`nil` means "unlimited default page size".)
+        # @param default_page_size [Integer, nil] Set a new value
+        # @return [Integer, nil] The `default_page_size` assigned to fields that use this resolver
+        def default_page_size(new_default_page_size = NOT_CONFIGURED)
+          if new_default_page_size != NOT_CONFIGURED
+            @default_page_size = new_default_page_size
+          elsif defined?(@default_page_size)
+            @default_page_size
+          elsif superclass.respond_to?(:default_page_size)
+            superclass.default_page_size
+          else
+            nil
+          end
+        end
+
+        # @return [Boolean] `true` if this resolver or a superclass has an assigned `default_page_size`
+        def has_default_page_size?
+          (!!defined?(@default_page_size)) || (superclass.respond_to?(:has_default_page_size?) && superclass.has_default_page_size?)
         end
 
         # A non-normalized type configuration, without `null` applied

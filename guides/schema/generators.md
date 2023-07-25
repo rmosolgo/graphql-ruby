@@ -45,7 +45,7 @@ After installing you can see your new schema by:
 - `--relay` will add [Relay](https://facebook.github.io/relay/)-specific code to your schema
 - `--batch` will add [GraphQL::Batch](https://github.com/Shopify/graphql-batch) to your gemfile and include the setup in your schema
 - `--playground` will include `graphql_playground-rails` in the setup (mounted at `/playground`)
-- `--no-graphiql` will exclude `graphiql-rails` from the setup
+- `--skip-graphiql` will exclude `graphiql-rails` from the setup
 - `--schema=MySchemaName` will be used for naming the schema (default is `#{app_name}Schema`)
 
 ## Scaffolding Types

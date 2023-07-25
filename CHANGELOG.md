@@ -10,6 +10,341 @@
 
 ### Bug fixes
 
+# 2.0.24 (27 Jun 2023)
+
+### New features
+
+- `Schema::Object.wrap` can be used to customize how objects are (or aren't) wrapped by `GraphQL::Schema::Object` instances at runtime #5424
+- `Query`: accept a `static_validator:` option in `#initialize` to use instead of the default validation configuration.
+
+### Bug fixes
+
+- Performance: Reduce memory usage when adding types to a schema #4533
+- Performance, `Dataloader`: when loading specific keys, only run dataloader until those specific keys are resolved #4519
+
+# 2.0.23 (19 Jun 2023)
+
+### New features
+
+- Printer: print extensions in SDL #4516
+- Trace: accept trace instances during query execution  #4497
+- AlwaysVisible: Make a way to bypass type visibility #4442, #4491
+
+### Bug fixes
+
+- Tests: fix assertion for Ruby 3.3.0-dev #4515
+- Performance: improve fragment possible type lookup #4506
+- Docs: document Timeout can handle floats #4505
+- Performance: use a dedicated object for field extension state #4401
+- Backtrace: fix `backtrace: true` with other trace modules #4505
+- Handle `context.warden` being nil #4503
+- Dev: disable Minitest::Reporters for RubyMin #4494
+- Trace: fix compatibility with inheritance #4487
+- Context: fix NullContext compatibility with fetch, dig and key? #4483
+
+# 2.0.22 (17 May 2023)
+
+### New features
+
+- Warden: manually instantiating doesn't require a `filter` instance #4462
+
+### Bug fixes
+
+- Enum: fix procs for enum values #4474
+- Lexer: force UTF-8 encoding #4467
+- Trace: inherit superclass `trace_options` #4470
+- Dataloader: properly run mutations in sequence #4461
+- NotificationsTrace: Add `execute_multiplex.graphql` event #4460
+- Fix `Context#dig` when called with one key #4458
+- Performance: Use a plain hash for selection sets at runtime #4453
+- Performance: Memoize current trace #4450, #4452
+- Performance: Pass is_non_null to runtime check #4449
+- Performance: Use `compare_by_identity` on some runtime caches
+- Properly support nested queries (fix `Thread.current` clash) #4445
+
+# 2.0.21 (11 April 2023)
+
+### Deprecations
+
+- Deprecate `GraphQL::Filter` (use `visible?` methods instead) #4424
+
+### New features
+
+- PrometheusTracing: support histograms #4418
+
+### Bug fixes
+
+- Backtrace: improve compatibility with `trace_with` #4437
+- Consolidate internally-used empty value constants #4434
+- Fix some warnings #4422
+- Performance: improve runtime speed #4436 #4433 #4428 #4430 #4427 #4399
+- Validation: fix inline fragment selection on scalar #4429
+- `@oneOf`: print definition in the SDL when it's used
+- SDL: load schema directives when they're used
+- Appsignal tracing: Fix `resolve_type` definition
+
+# 2.0.20 (30 March 2023)
+
+### Bug fixes
+
+- `.resolve_type`: fix returning `[Type, false]` from resolve_type #4412
+- Parsing: improve usage of `GraphQL.default_parser` #4411
+- AppsignalTrace: implement missing methods #4390
+- Runtime: Fix `current_depth` method in some lazy lists #4386
+- Performance: improve `Object` object shape #4365
+- Tracing: return execution errors raised from field resolution to `execute_field` hooks #4398
+
+# 2.0.19 (14 March 2023)
+
+### Bug fixes
+
+- Scoped context: fix `context.scoped_context.current_path` #4376
+- Tracing: fix `tracer` inheritance in Schema classes #4379
+- Timeout: fix `Timeout` plugin when other tracers are used #4383
+- Performance: use Arrays instead of `GraphQL::Language::Token`s when scanning #4366
+
+# 2.0.18 (9 March 2023)
+
+### Breaking Changes
+
+- Tracing: `"execute_field"` events on fields defined on interface types will now receive the _interface_ type as `data[:owner]` instead of the current object type. To get the old behavior, use `data[:object].class` instead. #4292
+
+### New features
+
+- Add `TypeKind#leaf?` #4352
+
+### Bug fixes
+
+- Tracing: use the interface type as `data[:owner]` instead of the object type #4292
+- Performance: improve Shape compatibility of `GraphQL::Schema::Field` #4360
+- Performance: improve Shape compatibility of `GraphQL::Schema::Warden` #4361
+- Performance: rewrite the token scanner in plain Ruby #4369
+- Performance: make `deprecation_reason` faster #4356
+- Performance: improve lazy value resolution in execution #4333
+- Performance: create `current_path` only when the application needs it #4342
+- Performance: add `GraphQL::Tracing::Trace` as a lower-overhead tracing API #4344
+- Connections: fix `hasNextPage` for already-loaded ActiveRecord Relations #4349
+
+
+# 2.0.17.2 (29 March 2023)
+
+### Bug fixes
+
+- Unions and Interfaces: support returning `[type_module, false]` from `resolve_type` #4413
+
+# 2.0.17.1 (27 March 2023)
+
+### Bug fixes
+
+- Tracing: restore behavior returning execution errors raised during field resolution #4402
+
+# 2.0.17 (14 February 2023)
+
+### Breaking changes
+
+- Enums: require at least one value in a definition #4278
+
+### New features
+
+- Enums: support `nil` as a Ruby value #4311
+
+### Bug fixes
+
+- Don't re-encode ASCII strings as UTF-8 #4319, #4343
+- Fix `handle_or_reraise` with arguments validation #4341
+- Performance: Remove error handling from `Lazy#value` (unused) #4335
+- Performance: Use codegen instead of dynamic dispatch in `Language::Visitor` and `Analysis::AST::Visitor` #4338
+- Performance: reduce indirection in `#introspection?` and `#graphql_name` #4327
+- Clean up thread-based state after running queries #4329
+- JSON types: don't pass raw NullValue AST nodes to `coerce_input` #4324, #4320
+- Performance: reduce `.is_a?` calls at runtime #4318
+- Performance: cache interface type memberships #4311
+- Performance: eagerly define some type instance variables for Shape friendliness #4300 #4295 #4297
+- Performance: reduce argument overhead, don't scope introspection by default, reduce duplicate call to Field#type #4317
+- Fix anonymous `eval` usage #4288
+- Authorization: fix field auth fail call after lazy #4289
+- Subscriptions: fix `loads:`/`as:`
+
+# 2.0.16 (19 December 2022)
+
+### Breaking changes
+
+- `Union`: Only accept Object types in `possible_types` (previously, other types were also accepted, but this was against the spec) #4269
+
+### New features
+
+- Rake: support introspection query options in the `RakeTask` #4247
+- Subscriptions: Merge `.trigger(... context: { ... })` into the query context when running updates #4242
+
+### Bug fixes
+
+- Make BaseEdge and subclasses return true for `.default_relay?` #4272
+- Validation: return a proper error for duplicate-named fragments when used indirectly #4268
+- Don't re-apply `scope_items` to `nodes { ... }` or `edges { ... }` arrays #4263
+- Fix `Concurrent::Map` initialization to prevent race conditions
+- Speed up scoped context lookup #4245
+- Support overriding built-in context keys #4239
+- Context: properly `dig` into `:current_arguments` #4249
+
+# 2.0.15 (22 October 2022)
+
+### New features
+
+- SDL: support extensions on the schema itself #4203
+- SDL: recognize `.graphqls` files in `.from_definition` #4204
+- Schema: add a reader method of `TypeMembership#options` #4209
+
+### Bug fixes
+
+- Node Behaviors: call the id-from-object hook with the type definition, not the type instance #4233
+- RelayClassicMutation: add a period to the generated description of the payload type #4229
+- Dataloader: make scoped context work with Dataloader #4220
+- SDL: fix parsing repeatable directives #4218
+- Lookahead: reduce more allocations in `.selects?` #4212
+- Introspection Query: strip blank lines from generated query strings #4208
+- Enums: Add error handling to result coercion #4206
+- Lookahead: add `selected_type:` to `.selects?` #4194
+- Lookahead: fix `.selects?` on unions #4193
+- Fields: use field-local `connection:` config over resolver config #4191
+
+# 2.0.14 (8 September 2022)
+
+### New features
+
+- Input Objects: support `one_of` for input objects that allow exactly one argument #4184
+- Dataloader: add `source.merge({ ... })` for adding objects to dataloader source caches #4186
+- Validation: generate new schemas with a suggested `validate_max_errors` of 100 #4179
+
+### Bug fixes
+
+- Lookahead: improve performance when field names are given as symbols #4189
+- Runtime: simplify some internal code #4183
+- Datadog tracing: remove deprecated options #4159
+
+# 2.0.13 (12 August 2022)
+
+### New features
+
+- Fields: add configuration methods for `default_value` and `prepare` #4156
+- Static validation: merge directive errors when they're on the same location or directive
+
+### Bug fixes
+
+- Subscriptions: properly use the given `.trigger(... context: )` for determining subscription root field visibility #4160
+- Fix fields that use `hash_key:` and have a falsy value for that key #4132
+- Variable validation: respect `validate_max_error` limit
+- Performance: use `Array#+` to add objects during execution #4142
+
+# 2.0.12 (19 July 2022)
+
+### New features
+
+- Support returning `[Type, nil]` from `resolve_type` #4130
+
+### Bug fixes
+
+- SDL: Don't print empty braces for input objects with no arguments #4138
+- Arguments: always call `prepare` before loading objects based on ID (`loads:`) #4128
+- Don't support re-assigning `Query#validate=` after validation has run #4127
+
+# 2.0.11 (20 June 2022)
+
+### New features
+
+- Support full unicode range #4090
+
+### Bug fixes
+
+- Subscriptions: support overriding subscriptions in subclasses #4108
+- Schema: support types with duplicate names and cyclical references #4107
+- Connections: don't exceed application-applied `LIMIT` with `max_page_size` #4104
+- Field: add `Field#relay_nodes_field` config reader #4103
+- Remove partial `opentelementry` implementation, oops #4086
+- Remove unused method `Lazy.resolve`
+
+# 2.0.10 (20 June 2022)
+
+Oops, this version was accidentally released to RubyGems as "2.10.0". I yanked it. See 2.0.11 instead.
+
+# 2.0.9 (31 May 2022)
+
+### New features
+
+- Connections: use `Schema.default_page_size`, `Field#default_page_size`, or `Resolver.default_page_size` when one of them is available and no `first` or `last` is given #4081
+- Tracing: Add `OpenTelementryTracing` #4077
+
+### Bug fixes
+
+- Field usage analyzer: don't crash on null input objects #4078
+- Complexity: properly handle `ExecutionError`s raised in `prepare:` hooks #4079
+
+# 2.0.8 (24 May 2022)
+
+### New Features
+
+- Fields: return `fallback_value:` when method or hash key field resolution fails #4069
+- Support `hash_key:` lookups on Hash-like objects #4072
+- Datadog tracing: support `prepare_span` hook for adding custom tags #4067
+
+### Bug fixes
+
+- Fields: When `hash_key:` is given, populate `#method_str` based on it #4072
+- Errors: rescue errors raised when calling `.each` on list values #4052
+- Date type: continue accepting dates without hyphens #4061
+- Parser: properly parse empty type definitions #4046
+
+# 2.0.7 (25 April 2022)
+
+### New Features
+
+- Subscriptions: support `validate_update: false` to disable validation when running subscription updates #4039
+- Expose duplicated name on `DuplicateNamesError` #4022
+
+### Bug Fixes
+
+- Datadog: improve tracer #4038
+- `hash_key:` try stringified hash key when resolving fields (this restores previous behavior) #4043
+- Printer: Don't print empty field set when types have no fields (`{\n}`) #4042
+- Dataloader: improve handoff between lazy resolution and dataloader resolution #4036
+- Remove unused `Lazy::Resolve` module from legacy execution code #4035
+
+# 2.0.6 (14 April 2022)
+
+### Bug fixes
+
+- Dataloader: make multiplexes use custom dataloaders #4026
+- ISO8601Date: properly accept `nil` as input #4025
+- Mutation: fix error message when `ready?` returns an invalid result #4029
+- ISO8601 scalars: add `specified_by_url` configs #4014
+- Array connection: don't return all items when `before` is the first cursor #4012
+- Introspection: fix typo `specifiedByUrl` -> `specifiedByURL`
+- Fields: fix `hash_key` to take priority over method lookup #4015
+
+# 2.0.5 (28 March 2022)
+
+### Bug Fixes
+
+- Resolvers: fix inheriting arguments when parent classes aren't hooked up directly to the schema #4006
+
+# 2.0.4 (21 March 2022)
+
+### Bug fixes
+
+- Fields: make sure `null:` config overrides a default from a resolver #4000
+
+# 2.0.3 (21 March 2022)
+
+### Bug fixes
+
+- Fields: make sure field configs override resolver defaults #3975
+- Fix `Field#scoped?` when the field uses a resolver #3990
+- Allow schema members to have multiple of `repeatable` directives #3986
+- Remove some legacy code #3979 #9995
+- SDL: fix indirect interface implementation when loading a schema #3982
+- Datadog tracing: Support ddtrace 1.0 #3978
+- Fix `Node` implementation when connection types include built-in behavior modules #3967
+- Small stack trace size reduction #3957
+
 # 2.0.2 (1 March 2022)
 
 ### New features
@@ -42,6 +377,67 @@
 
 - __None, ideally.__ If you have an application that ran without warnings on v1.13, you should be able to update to 2.0.0 without a hitch. If this isn't the case, please [open an issue](https://github.com/rmosolgo/graphql-ruby/issues/new?template=bug_report.md&title=[2.0%20update]%20describe%20your%20problem) and let me know what happened! I plan to maintain 1.13 for a while in order to ensure a smooth transition.
 - But, many legacy code components were removed, so if there are any more references to those, there will be name errors! See #3729 for a list of removed components.
+
+# 1.13.19 (2 February 2023)
+
+### Bug fixes
+
+- Performance: don't re-encode schema member names #4323
+- Performance: fix a duplicate field.type call #4316
+- Performance: use `scope: false` for introspection types #4315
+- Performance: improve argument coercion and validation #4312
+- Performance: improve interface type membership lookup #4309
+
+# 1.13.18 (10 January 2023)
+
+### New Features
+
+- `hash_key:`: perform `[...]` lookups even when the underlying object isn't a Hash #4286
+
+# 1.13.17 (17 November 2022)
+
+### Bug fixes
+
+- Handle ExecutionErrors from prepare hooks when calculating complexity #4248
+
+# 1.13.16 (31 August 2022)
+
+### New Features
+
+- Make variable validation respect `validate_max_errors` #4178
+
+# 1.13.15 (30 June 2022)
+
+### Bug fixes
+
+- Remove partial OpenTelementry tracing #4086
+- Properly use `Query#validate` to skip static validation #3881
+
+# 1.13.14 (20 June 2022)
+
+### New Features
+
+- Add `Field#relay_nodes_field` reader #4103
+- Datadog: detect tracing module #4100
+
+# 1.13.13 (31 May 2022)
+
+### New features
+
+- Datadog: update tracer for ddtrace 1.0 #4038
+- Datadog: Add `#prepare_span` hook for custom tags #4067
+- Tracing: Add `OpenTelementry` tracing #4077
+
+# 1.13.12 (14 April 2022)
+
+- Pass `context[:dataloader]` to multiplex context #4026
+- Add a deprecation warning to `.accepts_definitions` #4002
+
+# 1.13.11 (21 March 2022)
+
+### Deprecations
+
+- `RangeAdd` warns when `context:` isn't provided (it's required in GraphQL-Ruby 2.0) #3996
 
 # 1.13.10
 
@@ -139,7 +535,7 @@
 
 ### Deprecations
 
-- `GraphQL::Relay::NodeField` and `GraphQL::Relay::NodesField` are deprecated; use `GraphQL::Relay::HasNodesField` or `GraphQL::Relay::HasNodeField` instead. (The underlying field instances require a reference to their owner type, but `NodeField` and `NodesField` can't do that, since they're shared instances) #3791
+- `GraphQL::Relay::NodeField` and `GraphQL::Relay::NodesField` are deprecated; use `GraphQL::Types::Relay::HasNodesField` or `GraphQL::Types::Relay::HasNodeField` instead. (The underlying field instances require a reference to their owner type, but `NodeField` and `NodesField` can't do that, since they're shared instances) #3791
 
 ### New features
 
@@ -268,7 +664,7 @@ Since this version, GraphQL-Ruby is tested on Ruby 2.4+ and Rails 4+ only.
 ### New features
 
 - Subscriptions: Add `NO_UPDATE` constant for skipping subscription updates #3664
-- Validation: Add `Schema.max_validation_errors(integer)` for halting validation when it reaches a certain number #3683
+- Validation: Add `Schema.validate_max_errors(integer)` for halting validation when it reaches a certain number #3683
 - Call `self.load_...` methods on Input objects for loading arguments #3682
 - Use `import_methods` in Refinements when available #3674
 - `AppsignalTracing`: Add `set_action_name` #3659
@@ -514,6 +910,24 @@ Since this version, GraphQL-Ruby is tested on Ruby 2.4+ and Rails 4+ only.
 - Schema definition supports schema directives #3224
 
 ### Bug fixes
+
+# 1.11.10 (5 Nov 2021)
+
+### Bug fixes
+
+- Properly hook up `Schema.max_validation_errors` at query runtime #3690
+
+# 1.11.9 (1 Nov 2021)
+
+### New Features
+
+- `Schema.max_validation_errors(val)` limits the number of errors that can be added during static validation #3675
+
+# 1.11.8 (12 Feb 2021)
+
+### Bug fixes
+
+- Improve performance of `Schema.possible_types(t)` for object types #3172
 
 # 1.11.7 (18 January 2021)
 

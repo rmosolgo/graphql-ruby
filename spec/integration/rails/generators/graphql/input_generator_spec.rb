@@ -9,9 +9,9 @@ class GraphQLGeneratorsInputGeneratorTest < BaseGeneratorTest
     create_table :input_test_users do |t|
       t.datetime :created_at
       t.date :birthday
-      t.integer :points, required: false
-      t.decimal :rating, required: false
-      t.references :friend, required: false, foreign_key: { to_table: :input_test_users} 
+      t.integer :points
+      t.decimal :rating
+      t.references :friend, foreign_key: { to_table: :input_test_users}
     end
   end
 

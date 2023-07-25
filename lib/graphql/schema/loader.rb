@@ -142,7 +142,7 @@ module GraphQL
               Class.new(GraphQL::Schema::Scalar) do
                 graphql_name(type["name"])
                 description(type["description"])
-                specified_by_url(type["specifiedByUrl"])
+                specified_by_url(type["specifiedByURL"])
               end
             end
           when "UNION"

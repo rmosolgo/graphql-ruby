@@ -128,6 +128,10 @@ module StarWars
       argument :name_includes, String, required: false
     end
 
+    field :ships_with_default_page_size, ShipConnectionWithParentType, method: :ships, connection: true, default_page_size: 500, null: true do
+      argument :name_includes, String, required: false
+    end
+
     field :shipsByResolver, resolver: ShipsByResolver, connection: true
 
     def ships(name_includes: nil)
@@ -169,7 +173,10 @@ module StarWars
       if complex_order
         all_bases = all_bases.order("bases.name DESC")
       end
-      all_bases
+
+      # Emulates ActiveRecord::Base.connected_to(role: :reading) do
+      # https://github.com/rails/rails/blob/d18fc329993df5a583ef721330cffb248ef9a213/activerecord/lib/active_record/connection_handling.rb#L355
+      all_bases.load
     end
 
     field :bases_clone, BaseConnection
@@ -416,5 +423,12 @@ module StarWars
 
     lazy_resolve(LazyWrapper, :value)
     lazy_resolve(LazyLoader, :value)
+  end
+
+  # Create a secondary schema with a default_page_size set. This prevents us
+  # from breaking the existing default_max_page_size tests, while still
+  # allowing us to test the logic involved with default_page_size.
+  class SchemaWithDefaultPageSize < Schema
+    default_page_size 2
   end
 end

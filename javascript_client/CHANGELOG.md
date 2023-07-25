@@ -1,5 +1,52 @@
 # graphql-ruby-client
 
+# 1.11.8 (9 May 2023)
+
+- ActionCable: accept a custom `channelName` for `createActionCableHandler` and `addGraphQLSubscriptions` #4463
+
+# 1.11.7 (24 February 2023)
+
+- ActionCableLink: fix race condition #4359
+
+# 1.11.6 (14 February 2023)
+
+- Sync: fix `--changeset-version` #4328
+- Improve verbose logging #4328
+
+# 1.11.5 (27 January 2023)
+
+- Sync: add a `--changeset-version` for use with Changesets #4304
+- Sync: fix handling of `--header` with a single header
+
+# 1.11.4 (4 January 2023)
+
+- PusherLink: pass initial response along to the client #4282
+
+# 1.11.3 (13 October 2022)
+
+- `createAblySubscriptions`: don't use `Error.captureStackTrace` which isn't supported in all JS runtimes #4223
+- `createAblySubscriptions`: properly handle empty initial response from the interpreter (`{}`) #4226
+
+# 1.11.2 (26 August 2022)
+
+- Sync: Add a `--header` option for custom headers #4171
+
+# 1.11.1 (19 July 2022)
+
+- Subscriptions: ActionCableLink: only forward the result if `data` or `errors` is present #4114
+
+# 1.11.0 (4 July 2022)
+
+- Subscriptions: Add `urql` support for Pusher #4129
+
+# 1.10.7 (29 Mar 2022)
+
+- Dependencies: loosen apollo client and graphql version requirements to accept newer versions #4008
+
+# 1.10.6 (10 Jan 2022)
+
+- Pusher Link: Don't pass along the `complete` handler because Apollo unsubscribes if you do #3830
+
 # 1.10.5 (17 Dec 2021)
 
 - Dependencies: replace `actioncable` with `@rails/actioncable` #3773

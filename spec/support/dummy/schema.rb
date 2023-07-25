@@ -61,6 +61,7 @@ module Dummy
 
   class DairyAnimal < BaseEnum
     description "An animal which can yield milk"
+    value("NONE",     "No animal", value: nil)
     value("COW",      "Animal with black and white spots", value: 1)
     value("DONKEY",   "Animal with fur", value: :donkey)
     value("GOAT",     "Animal with horns")
@@ -109,12 +110,17 @@ module Dummy
       end
     end
 
-    field :nullable_cheese, Cheese, "Cheeses like this one" do
+    field :nullable_cheese, Cheese, "Not really a Cheese at all" do
       argument :source, [DairyAnimal], required: false
     end
     def nullable_cheese; raise("NotImplemented"); end
 
-    field :deeply_nullable_cheese, Cheese, "Cheeses like this one" do
+    field :dairy_product, "Dummy::DairyProduct", "Some related dairy product, perhaps" do
+      argument :input, "Dummy::DairyProductInput", required: false
+    end
+    def dairy_product; raise("NotImplemented"); end
+
+    field :deeply_nullable_cheese, Cheese, "Definitely not a cheese" do
       argument :source, [[DairyAnimal, null: true], null: true], required: false
     end
     def deeply_nullable_cheese; raise("NotImplemented"); end
@@ -511,6 +517,7 @@ module Dummy
     subscription Subscription
     max_depth 5
     orphan_types Honey, Beverage
+    trace_with GraphQL::Tracing::CallLegacyTracers
 
     rescue_from(NoSuchDairyError) { |err| raise GraphQL::ExecutionError, err.message  }
 

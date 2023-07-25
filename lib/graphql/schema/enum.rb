@@ -1,24 +1,24 @@
 # frozen_string_literal: true
 
 module GraphQL
-  # Extend this class to define GraphQL enums in your schema.
-  #
-  # By default, GraphQL enum values are translated into Ruby strings.
-  # You can provide a custom value with the `value:` keyword.
-  #
-  # @example
-  #   # equivalent to
-  #   # enum PizzaTopping {
-  #   #   MUSHROOMS
-  #   #   ONIONS
-  #   #   PEPPERS
-  #   # }
-  #   class PizzaTopping < GraphQL::Enum
-  #     value :MUSHROOMS
-  #     value :ONIONS
-  #     value :PEPPERS
-  #   end
   class Schema
+    # Extend this class to define GraphQL enums in your schema.
+    #
+    # By default, GraphQL enum values are translated into Ruby strings.
+    # You can provide a custom value with the `value:` keyword.
+    #
+    # @example
+    #   # equivalent to
+    #   # enum PizzaTopping {
+    #   #   MUSHROOMS
+    #   #   ONIONS
+    #   #   PEPPERS
+    #   # }
+    #   class PizzaTopping < GraphQL::Enum
+    #     value :MUSHROOMS
+    #     value :ONIONS
+    #     value :PEPPERS
+    #   end
     class Enum < GraphQL::Schema::Member
       extend GraphQL::Schema::Member::ValidatesInput
 
@@ -31,6 +31,13 @@ module GraphQL
             "`#{value.inspect}` was returned for `#{enum.graphql_name}`#{fix_message}"
           end
           super(message)
+        end
+      end
+
+      class MissingValuesError < GraphQL::Error
+        def initialize(enum_type)
+          @enum_type = enum_type
+          super("Enum types require at least one value, but #{enum_type.graphql_name} didn't provide any for this query. Make sure at least one value is defined and visible for this query.")
         end
       end
 
@@ -122,7 +129,7 @@ module GraphQL
           GraphQL::TypeKinds::ENUM
         end
 
-        def validate_non_null_input(value_name, ctx)
+        def validate_non_null_input(value_name, ctx, max_errors: nil)
           allowed_values = ctx.warden.enum_values(self)
           matching_value = allowed_values.find { |v| v.graphql_name == value_name }
 

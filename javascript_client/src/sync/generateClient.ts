@@ -85,6 +85,7 @@ function gatherOperations(options: GenerateClientCodeOptions) {
     // Update the operations with the hash of the body
     operations.forEach(function(op) {
       op.alias = hashFunc(op.body)
+      // console.log("operation", op.alias, op.body)
     })
   }
   return { operations: operations }

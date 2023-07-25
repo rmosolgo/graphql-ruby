@@ -5,7 +5,7 @@ module GraphQL
     class PrometheusTracing < PlatformTracing
       class GraphQLCollector < ::PrometheusExporter::Server::TypeCollector
         def initialize
-          @graphql_gauge = PrometheusExporter::Metric::Summary.new(
+          @graphql_gauge = PrometheusExporter::Metric::Base.default_aggregation.new(
             'graphql_duration_seconds',
             'Time spent in GraphQL operations, in seconds'
           )

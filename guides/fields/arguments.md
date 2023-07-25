@@ -171,8 +171,8 @@ end
 
 Only certain types are valid for arguments:
 
-- {{ "GraphQL::ScalarType" | api_doc }}, including built-in scalars (string, int, float, boolean, ID)
-- {{ "GraphQL::EnumType" | api_doc }}
-- {{ "GraphQL::InputObjectType" | api_doc }}, which allows key-value pairs as input
-- {{ "GraphQL::ListType" | api_doc }}s of a valid input type
-- {{ "GraphQL::NonNullType" | api_doc }}s of a valid input type
+- {{ "GraphQL::Schema::Scalar" | api_doc }}, including built-in scalars (string, int, float, boolean, ID)
+- {{ "GraphQL::Schema::Enum" | api_doc }}
+- {{ "GraphQL::Schema::InputObject" | api_doc }}, which allows key-value pairs as input
+- {{ "GraphQL::Schema::List" | api_doc }}s of a valid input type, configured using `[...]`
+- {{ "GraphQL::Schema::NonNull" | api_doc }}s of a valid input type (arguments are non-null by default; use `required: false` to make optional arguments)

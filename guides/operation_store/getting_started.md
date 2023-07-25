@@ -37,15 +37,21 @@ To hook up the storage to your schema, add the plugin:
 
 ```ruby
 class MySchema < GraphQL::Schema
+  # Add it _after_ other tracing-related features, for example:
+  # use GraphQL::Tracing::DataDogTracing
   # ...
   use GraphQL::Pro::OperationStore
 end
 ```
 
+Make sure to add this feature _after_ other {% internal_link "Tracing", "/queries/tracing" %}-based features so that those other features will have access to the loaded query string. Otherwise, you may get `"No query string was present"` errors.
+
 By default, it uses `ActiveRecord`. It also accepts:
 
 - `redis:`, for using a {% internal_link "Redis backend", "/operation_store/redis_backend" %}; OR
 - `backend_class:`, for implementing custom persistence.
+
+Also, you can disable updates to "last used at" with `default_touch_last_used_at: false`. (This can also be configured per-query with `context[:operation_store_touch_last_used_at] = true|false`.)
 
 ## Add Routes
 

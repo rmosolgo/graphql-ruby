@@ -36,18 +36,38 @@ module GraphQLBenchmark
         x.report("validate - abstract fragments 2") { CARD_SCHEMA.validate(ABSTRACT_FRAGMENTS_2) }
         x.report("validate - big query") { BIG_SCHEMA.validate(BIG_QUERY) }
         x.report("validate - fields will merge") { FIELDS_WILL_MERGE_SCHEMA.validate(FIELDS_WILL_MERGE_QUERY) }
+      when "scan"
+        require "graphql/c_parser"
+        x.report("scan c - introspection") { GraphQL.scan_with_c(QUERY_STRING) }
+        x.report("scan - introspection") { GraphQL.scan_with_ruby(QUERY_STRING) }
+        x.report("scan c - fragments") { GraphQL.scan_with_c(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
+        x.report("scan - fragments") { GraphQL.scan_with_ruby(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
+        x.report("scan c - big query") { GraphQL.scan_with_c(BIG_QUERY_STRING) }
+        x.report("scan - big query") { GraphQL.scan_with_ruby(BIG_QUERY_STRING) }
       when "parse"
-        x.report("scan - introspection") { GraphQL.scan(QUERY_STRING) }
+        # Uncomment this to use the C parser:
+        # require "graphql/c_parser"
         x.report("parse - introspection") { GraphQL.parse(QUERY_STRING) }
-        x.report("scan - fragments") { GraphQL.scan(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
         x.report("parse - fragments") { GraphQL.parse(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
-        x.report("scan - big query") { GraphQL.scan(BIG_QUERY_STRING) }
         x.report("parse - big query") { GraphQL.parse(BIG_QUERY_STRING) }
       else
         raise("Unexpected task #{task}")
       end
     end
   end
+
+  def self.profile_parse
+    # To profile the C parser instead:
+    # require "graphql/c_parser"
+
+    report = MemoryProfiler.report do
+      GraphQL.parse(BIG_QUERY_STRING)
+      GraphQL.parse(QUERY_STRING)
+      GraphQL.parse(ABSTRACT_FRAGMENTS_2_QUERY_STRING)
+    end
+    report.pretty_print
+  end
+
 
   def self.validate_memory
     FIELDS_WILL_MERGE_SCHEMA.validate(FIELDS_WILL_MERGE_QUERY)
@@ -72,17 +92,159 @@ module GraphQLBenchmark
     StackProf::Report.new(result).print_text
   end
 
+  def self.build_large_schema
+    Class.new(GraphQL::Schema) do
+      query_t = Class.new(GraphQL::Schema::Object) do
+        graphql_name("Query")
+        int_ts = 5.times.map do |i|
+          int_t = Module.new do
+            include GraphQL::Schema::Interface
+            graphql_name "Interface#{i}"
+            5.times do |n2|
+              field :"field#{n2}", String do
+                argument :arg, String
+              end
+            end
+          end
+          field :"int_field_#{i}", int_t
+          int_t
+        end
+
+        obj_ts = 100.times.map do |n|
+          obj_t = Class.new(GraphQL::Schema::Object) do
+            graphql_name("Object#{n}")
+            implements(*int_ts)
+            20.times do |n2|
+              field :"field#{n2}", String do
+                argument :arg, String
+              end
+
+            end
+            field :self_field, self
+            field :int_0_field, int_ts[0]
+          end
+
+          field :"rootfield#{n}", obj_t
+          obj_t
+        end
+
+        10.times do |n|
+          union_t = Class.new(GraphQL::Schema::Union) do
+            graphql_name "Union#{n}"
+            possible_types(*obj_ts.sample(10))
+          end
+          field :"unionfield#{n}", union_t
+        end
+      end
+      query(query_t)
+    end
+  end
+
+  def self.profile_boot
+    Benchmark.ips do |x|
+      x.config(time: 10)
+      x.report("Booting large schema") {
+        build_large_schema
+      }
+    end
+
+    result = StackProf.run(mode: :wall, interval: 1) do
+      build_large_schema
+    end
+    StackProf::Report.new(result).print_text
+
+    report = MemoryProfiler.report do
+      build_large_schema
+    end
+
+    report.pretty_print
+  end
+
+  SILLY_LARGE_SCHEMA = build_large_schema
+
+  def self.profile_large_introspection
+    schema = SILLY_LARGE_SCHEMA
+    Benchmark.ips do |x|
+      x.config(time: 10)
+      x.report("Run large introspection") {
+        schema.to_json
+      }
+    end
+
+    result = StackProf.run(mode: :wall) do
+      schema.to_json
+    end
+    StackProf::Report.new(result).print_text
+
+    report = MemoryProfiler.report do
+      schema.to_json
+    end
+    puts "\n\n"
+    report.pretty_print
+  end
+
+  def self.profile_large_analysis
+    query_str = "query {\n".dup
+    5.times do |n|
+      query_str << "  intField#{n} { "
+      20.times do |o|
+        query_str << "...Obj#{o}Fields "
+      end
+      query_str << "}\n"
+    end
+    query_str << "}"
+
+    20.times do |o|
+      query_str << "fragment Obj#{o}Fields on Object#{o} { "
+      20.times do |f|
+        query_str << "  field#{f}(arg: \"a\")\n"
+      end
+      query_str << "  selfField { selfField { selfField { __typename } } }\n"
+      # query_str << "  int0Field { ...Int0Fields }"
+      query_str << "}\n"
+    end
+    # query_str << "fragment Int0Fields on Interface0 { __typename }"
+    query = GraphQL::Query.new(SILLY_LARGE_SCHEMA, query_str)
+    analyzers = [
+      GraphQL::Analysis::AST::FieldUsage,
+      GraphQL::Analysis::AST::QueryDepth,
+      GraphQL::Analysis::AST::QueryComplexity
+    ]
+    Benchmark.ips do |x|
+      x.report("Running introspection") {
+        GraphQL::Analysis::AST.analyze_query(query, analyzers)
+      }
+    end
+
+    StackProf.run(mode: :wall, out: "last-stackprof.dump", interval: 1) do
+      GraphQL::Analysis::AST.analyze_query(query, analyzers)
+    end
+
+    result = StackProf.run(mode: :wall, interval: 1) do
+      GraphQL::Analysis::AST.analyze_query(query, analyzers)
+    end
+
+    StackProf::Report.new(result).print_text
+
+    report = MemoryProfiler.report do
+      GraphQL::Analysis::AST.analyze_query(query, analyzers)
+    end
+    puts "\n\n"
+    report.pretty_print
+  end
+
   # Adapted from https://github.com/rmosolgo/graphql-ruby/issues/861
   def self.profile_large_result
     schema = ProfileLargeResult::Schema
     document = ProfileLargeResult::ALL_FIELDS
     Benchmark.ips do |x|
+      x.config(time: 10)
       x.report("Querying for #{ProfileLargeResult::DATA.size} objects") {
         schema.execute(document: document)
       }
     end
 
-    result = StackProf.run(mode: :wall) do
+    result = StackProf.run(mode: :wall, interval: 1) do
       schema.execute(document: document)
     end
     StackProf::Report.new(result).print_text
@@ -95,33 +257,72 @@ module GraphQLBenchmark
   end
 
   module ProfileLargeResult
+    def self.eager_or_proc(value)
+      ENV["EAGER"] ? value : -> { value }
+    end
+
     DATA = 1000.times.map {
-      {
-        id:             SecureRandom.uuid,
-        int1:           SecureRandom.random_number(100000),
-        int2:           SecureRandom.random_number(100000),
-        string1:        SecureRandom.base64,
-        string2:        SecureRandom.base64,
-        boolean1:       SecureRandom.random_number(1) == 0,
-        boolean2:       SecureRandom.random_number(1) == 0,
-        int_array:      10.times.map { SecureRandom.random_number(100000) },
-        string_array:   10.times.map { SecureRandom.base64 },
-        boolean_array:  10.times.map { SecureRandom.random_number(1) == 0 },
-      }
+      eager_or_proc({
+          id:             SecureRandom.uuid,
+          int1:           SecureRandom.random_number(100000),
+          int2:           SecureRandom.random_number(100000),
+          string1:        eager_or_proc(SecureRandom.base64),
+          string2:        SecureRandom.base64,
+          boolean1:       SecureRandom.random_number(1) == 0,
+          boolean2:       SecureRandom.random_number(1) == 0,
+          int_array:      eager_or_proc(10.times.map { eager_or_proc(SecureRandom.random_number(100000)) } ),
+          string_array:   10.times.map { SecureRandom.base64 },
+          boolean_array:  10.times.map { SecureRandom.random_number(1) == 0 },
+      })
     }
 
-
-    class FooType < GraphQL::Schema::Object
-      field :id, ID, null: false
-      field :int1, Integer, null: false
-      field :int2, Integer, null: false
-      field :string1, String, null: false
-      field :string2, String, null: false
-      field :boolean1, Boolean, null: false
-      field :boolean2, Boolean, null: false
+    module Bar
+      include GraphQL::Schema::Interface
       field :string_array, [String], null: false
+    end
+
+    module Baz
+      include GraphQL::Schema::Interface
+      implements Bar
       field :int_array, [Integer], null: false
       field :boolean_array, [Boolean], null: false
+    end
+
+
+    class ExampleExtension < GraphQL::Schema::FieldExtension
+    end
+
+    class FooType < GraphQL::Schema::Object
+      implements Baz
+      field :id, ID, null: false, extensions: [ExampleExtension]
+      field :int1, Integer, null: false, extensions: [ExampleExtension]
+      field :int2, Integer, null: false, extensions: [ExampleExtension]
+      field :string1, String, null: false do
+        argument :arg1, String, required: false
+        argument :arg2, String, required: false
+        argument :arg3, String, required: false
+        argument :arg4, String, required: false
+      end
+
+      field :string2, String, null: false do
+        argument :arg1, String, required: false
+        argument :arg2, String, required: false
+        argument :arg3, String, required: false
+        argument :arg4, String, required: false
+      end
+
+      field :boolean1, Boolean, null: false do
+        argument :arg1, String, required: false
+        argument :arg2, String, required: false
+        argument :arg3, String, required: false
+        argument :arg4, String, required: false
+      end
+      field :boolean2, Boolean, null: false do
+        argument :arg1, String, required: false
+        argument :arg2, String, required: false
+        argument :arg3, String, required: false
+        argument :arg4, String, required: false
+      end
     end
 
     class QueryType < GraphQL::Schema::Object
@@ -134,7 +335,8 @@ module GraphQLBenchmark
 
     class Schema < GraphQL::Schema
       query QueryType
-      use GraphQL::Dataloader
+      # use GraphQL::Dataloader
+      lazy_resolve Proc, :call
     end
 
     ALL_FIELDS = GraphQL.parse <<-GRAPHQL
@@ -324,9 +526,9 @@ module GraphQLBenchmark
     }
     GRAPHQL
 
-    very_lazy_res = StackDepthSchema.execute(query_str, variables: { lazyThing: true, lazyStackTrace: true })
-    lazy_res = StackDepthSchema.execute(query_str, variables: { lazyThing: true, lazyStackTrace: false })
     eager_res = StackDepthSchema.execute(query_str, variables: { lazyThing: false, lazyStackTrace: false })
+    lazy_res = StackDepthSchema.execute(query_str, variables: { lazyThing: true, lazyStackTrace: false })
+    very_lazy_res = StackDepthSchema.execute(query_str, variables: { lazyThing: true, lazyStackTrace: true })
     get_depth = ->(result) { result["data"]["thing"]["thing"]["thing"]["thing"]["thing"]["stackTraceDepth"] }
 
     puts <<~RESULT

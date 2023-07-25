@@ -61,7 +61,7 @@ describe GraphQL::Schema do
     describe "when the return value is nil" do
       it "returns nil" do
         result = relay_schema.resolve_type(123, nil, GraphQL::Query::NullContext)
-        assert_equal(nil, result)
+        assert_equal([nil, nil], result)
       end
     end
 
@@ -149,11 +149,12 @@ describe GraphQL::Schema do
       it "contains built-in directives" do
         schema = GraphQL::Schema
 
-        assert_equal ['deprecated', 'include', 'skip'], schema.directives.keys.sort
+        assert_equal ['deprecated', 'include', 'oneOf', 'skip'], schema.directives.keys.sort
 
         assert_equal GraphQL::Schema::Directive::Deprecated, schema.directives['deprecated']
         assert_equal GraphQL::Schema::Directive::Include, schema.directives['include']
         assert_equal GraphQL::Schema::Directive::Skip, schema.directives['skip']
+        assert_equal GraphQL::Schema::Directive::OneOf, schema.directives['oneOf']
       end
     end
   end

@@ -8,6 +8,136 @@
 
 ### Bug Fix
 
+# 1.24.7 (16 June 2023)
+
+### Bug Fix
+
+- Stable relation connections: quote table names and column names in `WHERE` clauses #4508
+
+# 1.24.6 (24 May 2023)
+
+### New Features
+
+- Defer: Add `incremental: true` for new proposed wire format, add example for working with GraphQL-Batch #4477
+
+# 1.24.5 (24 May 2023)
+
+### Bug Fix
+
+- Stable relation connection: Quote table names and column names in selects and orders #4485
+
+# 1.24.4 (18 April 2023)
+
+### Bug Fix
+
+- `@defer`: update `context[:current_path]` usage to fix `path:` on deferred errors
+
+# 1.24.3 (14 April 2023)
+
+### Bug Fix
+
+- `OperationStore`: fix when used with Changesets (or other ways of defining arguments with the same name) #4440
+
+# 1.24.2 (20 Mar 2023)
+
+### Bug Fix
+
+- Remove debug output, oops
+
+# 1.24.1 (20 Mar 2023)
+
+### Bug Fix
+
+- Fix `OperationStore` with new module-based execution traces (#4389)
+
+# 1.24.0 (10 Feb 2023)
+
+### New Features
+
+- Support the `redis-client` gem as `redis:`
+
+# 1.23.9 (2 Feb 2023)
+
+### Bug Fix
+
+- Dashboard: Support Ruby 3.2.0
+
+# 1.23.8 (27 Jan 2023)
+
+### New Features
+
+- OperationStore: Support `Changeset-Version` header for syncing with changesets #4304
+
+# 1.23.7 (25 Jan 2023)
+
+### Bug Fix
+
+- Stable Relation Connections: Fix handling of Postgres JSON accesses
+
+# 1.23.6
+
+### New Features
+
+- Subscriptions: accept `connection_pool:` instead of `redis:` for use with the `connection_pool` gem
+
+### Bug Fix
+
+- Stable connections: rescue `ActiveRecord::StatementInvalid` when loading nodes and return a client-facing error instead
+
+# 1.23.5 (29 December 2022)
+
+### New Features
+
+- Ably subscriptions: Also listen for `presence.leave` webhooks to clean up subscriptions more quickly
+
+# 1.23.4 (20 December 2022)
+
+### Bug Fix
+
+- Dashboard: nicely render subscriptions that are not found or cleaned up by `read_subscription_failed_error`
+
+# 1.23.3 (19 December 2022)
+
+### New Features
+
+- Add `GraphQL::Pro::Subscriptions#read_subscription_failed_error` for handling errors that are raised when reloading queries from storage
+
+# 1.23.2 (18 October 2022)
+
+### New Features
+
+- Add dashboard component for Enterprise mutation limiter
+
+# 1.23.1 (25 August 2022)
+
+### Bug Fix
+
+- Redis: update redis usage to be forward-compatible with redis 5.x #4167
+
+# 1.23.0 (2 August 2022)
+
+### New Features
+
+- Stable connections: support SQL queries that sort by `IS NOT NULL` #4153
+
+# 1.22.3 (26 July 2022)
+
+### Bug Fix
+
+- Stable connections: handle `edges {...}` when an invalid cursor is given #4148
+
+# 1.22.2 (20 April 2022)
+
+### Bug Fix
+
+- Use `deprecated_accepts_definitions` to stop warnings when loading this gem on 1.13.x
+
+# 1.22.1 (22 March 2022)
+
+### Bug Fix
+
+- Pusher subscriptions: don't try to send empty trigger batches to Pusher
+
 # 1.22.0 (19 March 2022)
 
 ### New Features
