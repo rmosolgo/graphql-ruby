@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require "test_helper"
 
+Webdrivers::Chromedriver.required_version = "114.0.5735.90"
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   driven_by :selenium,
     using: :chrome,
