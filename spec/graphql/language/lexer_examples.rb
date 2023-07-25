@@ -58,6 +58,12 @@ module LexerExamples
           assert_equal :BAD_UNICODE_ESCAPE, subject.tokenize(string).first.name
         end
 
+        it "makes utf-8 arguments named type" do
+          str = "{ a(type: 1) }"
+          tokens = subject.tokenize(str)
+          assert_equal Encoding::UTF_8, tokens[2].value.encoding
+        end
+
         it "makes utf-8 comments" do
           tokens = subject.tokenize("# 不要!\n{")
           comment_token = tokens.first.prev_token
@@ -66,6 +72,11 @@ module LexerExamples
 
         it "keeps track of previous_token" do
           assert_equal tokens[0], tokens[1].prev_token
+        end
+
+        it "handles integers with a leading zero" do
+          tokens = subject.tokenize("{ a(id: 04) }")
+          assert_equal :INT, tokens[5].name
         end
 
         it "allows escaped quotes in strings" do

@@ -8,11 +8,21 @@
 
 ### Bug Fix
 
+# 1.24.7 (16 June 2023)
+
+### Bug Fix
+
+- Stable relation connections: quote table names and column names in `WHERE` clauses #4508
+
 # 1.24.6 (24 May 2023)
+
+### New Features
 
 - Defer: Add `incremental: true` for new proposed wire format, add example for working with GraphQL-Batch #4477
 
 # 1.24.5 (24 May 2023)
+
+### Bug Fix
 
 - Stable relation connection: Quote table names and column names in selects and orders #4485
 

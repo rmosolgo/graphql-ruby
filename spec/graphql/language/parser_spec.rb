@@ -4,6 +4,14 @@ require "spec_helper"
 describe GraphQL::Language::Parser do
   subject { GraphQL }
 
+  it "returns an error on bad UTF-8" do
+    err = assert_raises GraphQL::ParseError do
+      subject.parse("{ foo(query: \"\xBF\") }")
+    end
+    expected_message = 'Parse error on bad Unicode escape sequence: "{ foo(query: \"\xBF\") }" (error) at [1, 1]'
+    assert_equal expected_message, err.message
+  end
+
   describe "when there are no selections" do
     it 'raises a ParseError' do
       assert_raises(GraphQL::ParseError) {

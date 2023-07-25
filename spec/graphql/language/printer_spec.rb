@@ -220,6 +220,46 @@ describe GraphQL::Language::Printer do
           assert_equal printer.print(document), printer.print(document)
         end
       end
+
+      describe "schema extension" do
+        let(:query_string) do
+          <<-SCHEMA
+          extend schema
+            @onSchema
+          {
+            query: QueryType
+            mutation: MutationType
+          }
+
+          extend union AnnotatedUnion @onUnion = A | B
+
+          extend type Foo implements Bar @onType {
+            one: Type
+            two(argument: InputType!): Type
+          }
+
+          extend scalar CustomScalar @onScalar
+
+          extend interface Bar @onInterface {
+            one: Type
+          }
+
+          extend enum Site @onEnum {
+            DESKTOP
+            MOBILE
+          }
+
+          extend input InputType @onInputType {
+            key: String!
+            answer: Int = 42
+          }
+          SCHEMA
+        end
+
+        it "generates correctly" do
+          assert_equal query_string.gsub(/^          /, "").strip, printer.print(document)
+        end
+      end
     end
   end
 end

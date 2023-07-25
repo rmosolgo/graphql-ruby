@@ -45,6 +45,20 @@ module GraphQL
       end
     end
 
+    # @return [GraphQL::StaticValidation::Validator] if present, the query will validate with these rules.
+    attr_reader :static_validator
+
+    # @param new_validate [GraphQL::StaticValidation::Validator] if present, the query will validate with these rules. This can't be reasssigned after validation.
+    def static_validator=(new_validator)
+      if defined?(@validation_pipeline) && @validation_pipeline && @validation_pipeline.has_validated?
+        raise ArgumentError, "Can't reassign Query#static_validator= after validation has run, remove this assignment."
+      elsif !new_validator.is_a?(GraphQL::StaticValidation::Validator)
+        raise ArgumentError, "Expected a `GraphQL::StaticValidation::Validator` instance."
+      else
+        @static_validator = new_validator
+      end
+    end
+
     attr_writer :query_string
 
     # @return [GraphQL::Language::Nodes::Document]
@@ -81,7 +95,7 @@ module GraphQL
     # @param root_value [Object] the object used to resolve fields on the root type
     # @param max_depth [Numeric] the maximum number of nested selections allowed for this query (falls back to schema-level value)
     # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
-    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, warden: nil)
+    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, static_validator: nil, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, warden: nil)
       # Even if `variables: nil` is passed, use an empty hash for simpler logic
       variables ||= {}
       @schema = schema
@@ -92,6 +106,7 @@ module GraphQL
       @fragments = nil
       @operations = nil
       @validate = validate
+      self.static_validator = static_validator if static_validator
       context_tracers = (context ? context.fetch(:tracers, []) : [])
       @tracers = schema.tracers + context_tracers
 

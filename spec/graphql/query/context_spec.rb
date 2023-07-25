@@ -401,7 +401,7 @@ describe GraphQL::Query::Context do
       refute(context.key?(expected_key))
       assert_raises(KeyError) { context.fetch(expected_key) }
       assert_nil(context.fetch(expected_key, nil))
-      assert_nil(context.dig(expected_key)) if RUBY_VERSION >= '2.3.0'
+      assert_nil(context.dig(expected_key))
 
       context.scoped_merge!(expected_key => nil)
       context[expected_key] = expected_value
@@ -410,7 +410,7 @@ describe GraphQL::Query::Context do
       assert_equal({ expected_key => nil }, context.to_h)
       assert(context.key?(expected_key))
       assert_nil(context.fetch(expected_key))
-      assert_nil(context.dig(expected_key)) if RUBY_VERSION >= '2.3.0'
+      assert_nil(context.dig(expected_key))
 
       dummy_runtime.current_result = OpenStruct.new(path: ["something", "new"])
 
@@ -418,7 +418,7 @@ describe GraphQL::Query::Context do
       assert_equal({ expected_key => expected_value}, context.to_h)
       assert(context.key?(expected_key))
       assert_equal(expected_value, context.fetch(expected_key))
-      assert_equal(expected_value, context.dig(expected_key)) if RUBY_VERSION >= '2.3.0'
+      assert_equal(expected_value, context.dig(expected_key))
 
       # Enter a child field:
       dummy_runtime.current_result = OpenStruct.new(path: ["somewhere", "child"])
@@ -426,7 +426,7 @@ describe GraphQL::Query::Context do
       assert_equal({ expected_key => nil }, context.to_h)
       assert(context.key?(expected_key))
       assert_nil(context.fetch(expected_key))
-      assert_nil(context.dig(expected_key)) if RUBY_VERSION >= '2.3.0'
+      assert_nil(context.dig(expected_key))
 
       # And a grandchild field
       dummy_runtime.current_result = OpenStruct.new(path: ["somewhere", "child", "grandchild"])
@@ -436,7 +436,7 @@ describe GraphQL::Query::Context do
       assert_equal({ expected_key => :something_else, another_key: :another_value }, context.to_h)
       assert(context.key?(expected_key))
       assert_equal(:something_else, context.fetch(expected_key))
-      assert_equal(:something_else, context.dig(expected_key)) if RUBY_VERSION >= '2.3.0'
+      assert_equal(:something_else, context.dig(expected_key))
     end
 
     it "sets a value using #scoped_set!" do

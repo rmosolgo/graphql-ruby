@@ -247,15 +247,15 @@ module GraphQL
           st = get_current_runtime_state
           st.current_object = query.root_value
           st.current_result = @response
-          object_proxy = authorized_new(root_type, query.root_value, context)
-          object_proxy = schema.sync_lazy(object_proxy)
+          runtime_object = root_type.wrap(query.root_value, context)
+          runtime_object = schema.sync_lazy(runtime_object)
 
-          if object_proxy.nil?
+          if runtime_object.nil?
             # Root .authorized? returned false.
             @response = nil
           else
-            call_method_on_directives(:resolve, object_proxy, root_operation.directives) do # execute query level directives
-              gathered_selections = gather_selections(object_proxy, root_type, root_operation.selections)
+            call_method_on_directives(:resolve, runtime_object, root_operation.directives) do # execute query level directives
+              gathered_selections = gather_selections(runtime_object, root_type, root_operation.selections)
               # This is kind of a hack -- `gathered_selections` is an Array if any of the selections
               # require isolation during execution (because of runtime directives). In that case,
               # make a new, isolated result hash for writing the result into. (That isolated response
@@ -280,9 +280,9 @@ module GraphQL
                   if (directives = selections[:graphql_directives])
                     selections.delete(:graphql_directives)
                   end
-                  call_method_on_directives(:resolve, object_proxy, directives) do
+                  call_method_on_directives(:resolve, runtime_object, directives) do
                     evaluate_selections(
-                      object_proxy,
+                      runtime_object,
                       root_type,
                       root_op_type == "mutation",
                       selections,
@@ -438,10 +438,8 @@ module GraphQL
           st.current_result = selections_result
           st.current_result_name = result_name
 
-          object = owner_object
-
           if is_introspection
-            object = authorized_new(field_defn.owner, object, context)
+            owner_object = field_defn.owner.wrap(owner_object, context)
           end
 
           total_args_count = field_defn.arguments(context).size
@@ -449,14 +447,14 @@ module GraphQL
             resolved_arguments = GraphQL::Execution::Interpreter::Arguments::EMPTY
             if field_defn.extras.size == 0
               evaluate_selection_with_resolved_keyword_args(
-                NO_ARGS, resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selections_result, parent_object, return_type, return_type_non_null
+                NO_ARGS, resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, owner_object, is_eager_field, result_name, selections_result, parent_object, return_type, return_type_non_null
               )
             else
-              evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selections_result, parent_object, return_type, return_type_non_null)
+              evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, owner_object, is_eager_field, result_name, selections_result, parent_object, return_type, return_type_non_null)
             end
           else
-            @query.arguments_cache.dataload_for(ast_node, field_defn, object) do |resolved_arguments|
-              evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selections_result, parent_object, return_type, return_type_non_null)
+            @query.arguments_cache.dataload_for(ast_node, field_defn, owner_object) do |resolved_arguments|
+              evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, owner_object, is_eager_field, result_name, selections_result, parent_object, return_type, return_type_non_null)
             end
           end
         end
@@ -774,7 +772,7 @@ module GraphQL
             end
           when "OBJECT"
             object_proxy = begin
-              authorized_new(current_type, value, context)
+              current_type.wrap(value, context)
             rescue GraphQL::ExecutionError => err
               err
             end
@@ -1044,10 +1042,6 @@ module GraphQL
           else
             [resolved_type, resolved_value]
           end
-        end
-
-        def authorized_new(type, value, context)
-          type.authorized_new(value, context)
         end
 
         def lazy?(object)

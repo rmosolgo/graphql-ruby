@@ -40,6 +40,19 @@ module GraphQL
       GraphQL::ParseError.new(message, line, col, parser.query_string, filename: parser.filename)
     end
 
+    def self.prepare_bad_unicode_error(parser)
+      token = parser.tokens[parser.next_token_index - 1]
+      line = token[1]
+      col = token[2]
+      GraphQL::ParseError.new(
+        "Parse error on bad Unicode escape sequence: #{token[3].inspect} (error) at [#{line}, #{col}]",
+        line,
+        col,
+        parser.query_string,
+        filename: parser.filename
+      )
+    end
+
     module Lexer
       def self.tokenize(graphql_string)
         if !(graphql_string.encoding == Encoding::UTF_8 || graphql_string.ascii_only?)
@@ -52,7 +65,8 @@ module GraphQL
               1,
               1,
               graphql_string,
-              nil
+              nil, # prev token
+              241 # BAD_UNICODE_ESCAPE in lexer.rl
             ]
           ]
         end
