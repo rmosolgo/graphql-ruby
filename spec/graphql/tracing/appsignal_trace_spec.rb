@@ -98,9 +98,9 @@ describe GraphQL::Tracing::AppsignalTrace do
     it "traces with both systems" do
       _res = AppsignalAndDatadogTestSchema.execute("{ int thing { str } named { ... on Thing { str } } }")
       expected_appsignal_trace = [
-        "execute.graphql",
         "lex.graphql",
         "parse.graphql",
+        "execute.graphql",
         "analyze.graphql",
         "validate.graphql",
         "analyze.graphql",
@@ -140,9 +140,9 @@ describe GraphQL::Tracing::AppsignalTrace do
     it "works when the modules are included in reverse order" do
       _res = AppsignalAndDatadogReverseOrderTestSchema.execute("{ int thing { str } named { ... on Thing { str } } }")
       expected_appsignal_trace = [
+        "execute.graphql",
         "lex.graphql",
         "parse.graphql",
-        "execute.graphql",
         "analyze.graphql",
         "validate.graphql",
         "analyze.graphql",

@@ -47,7 +47,7 @@ describe GraphQL::Tracing::NewRelicTracing do
   end
 
   it "Actually uses the new-style trace under the hood" do
-    assert NewRelicTest::SchemaWithoutTransactionName.trace_class < GraphQL::Tracing::NewRelicTrace
+    assert NewRelicTest::SchemaWithoutTransactionName.trace_mods[:default].include?(GraphQL::Tracing::NewRelicTrace)
   end
 
   it "works with the built-in node field, even though it doesn't have an @owner" do
