@@ -19,7 +19,14 @@ module GraphQL
       attr_reader :items
 
       # @return [GraphQL::Query::Context]
-      attr_accessor :context
+      attr_reader :context
+
+      def context=(new_ctx)
+        current_runtime_state = Thread.current[:__graphql_runtime_info]
+        query_runtime_state = current_runtime_state[new_ctx.query]
+        @was_scoped = query_runtime_state.was_scoped
+        @context = new_ctx
+      end
 
       # @return [Object] the object this collection belongs to
       attr_accessor :parent
@@ -83,23 +90,17 @@ module GraphQL
         else
           default_page_size
         end
-        @was_scoped = nil
+        @was_scoped = if @context
+          current_runtime_state = Thread.current[:__graphql_runtime_info]
+          query_runtime_state = current_runtime_state[@context.query]
+          query_runtime_state.was_scoped
+        else
+          nil
+        end
       end
 
       def was_scoped?
-        if @was_scoped.nil?
-          # Don't calculate this in `#initialize` because custom-instantiated
-          # connections get `context` assigned later.
-          @was_scoped = if @context
-            current_runtime_state = Thread.current[:__graphql_runtime_info]
-            query_runtime_state = current_runtime_state[@context.query]
-            query_runtime_state.was_scoped
-          else
-            false
-          end
-        else
-          @was_scoped
-        end
+        @was_scoped
       end
 
       def max_page_size=(new_value)
