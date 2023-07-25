@@ -15,10 +15,11 @@ module GraphQL
             @current_arguments = nil
             @current_result_name = nil
             @current_result = nil
+            @was_authorized_by_scope_items = nil
           end
 
           attr_accessor :current_result, :current_result_name,
-            :current_arguments, :current_field, :current_object
+            :current_arguments, :current_field, :current_object, :was_authorized_by_scope_items
         end
 
         module GraphQLResult
@@ -244,6 +245,7 @@ module GraphQL
           root_operation = query.selected_operation
           root_op_type = root_operation.operation_type || "query"
           root_type = schema.root_type_for_operation(root_op_type)
+
           st = get_current_runtime_state
           st.current_object = query.root_value
           st.current_result = @response
@@ -426,12 +428,6 @@ module GraphQL
             end
           end
 
-          return_type = field_defn.type
-
-          # This seems janky, but we need to know
-          # the field's return type at this path in order
-          # to propagate `null`
-          return_type_non_null = return_type.non_null?
           # Set this before calling `run_with_directives`, so that the directive can have the latest path
           st = get_current_runtime_state
           st.current_field = field_defn
@@ -441,26 +437,27 @@ module GraphQL
           if is_introspection
             owner_object = field_defn.owner.wrap(owner_object, context)
           end
-
+          return_type = field_defn.type
           total_args_count = field_defn.arguments(context).size
           if total_args_count == 0
             resolved_arguments = GraphQL::Execution::Interpreter::Arguments::EMPTY
             if field_defn.extras.size == 0
               evaluate_selection_with_resolved_keyword_args(
-                NO_ARGS, resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, owner_object, is_eager_field, result_name, selections_result, parent_object, return_type, return_type_non_null
+                NO_ARGS, resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, owner_object, is_eager_field, result_name, selections_result, parent_object, return_type, return_type.non_null?
               )
             else
-              evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, owner_object, is_eager_field, result_name, selections_result, parent_object, return_type, return_type_non_null)
+              evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, owner_object, is_eager_field, result_name, selections_result, parent_object, return_type)
             end
           else
             @query.arguments_cache.dataload_for(ast_node, field_defn, owner_object) do |resolved_arguments|
-              evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, owner_object, is_eager_field, result_name, selections_result, parent_object, return_type, return_type_non_null)
+              evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, owner_object, is_eager_field, result_name, selections_result, parent_object, return_type)
             end
           end
         end
 
-        def evaluate_selection_with_args(arguments, field_defn, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selection_result, parent_object, return_type, return_type_non_null)  # rubocop:disable Metrics/ParameterLists
+        def evaluate_selection_with_args(arguments, field_defn, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selection_result, parent_object, return_type)  # rubocop:disable Metrics/ParameterLists
           after_lazy(arguments, field: field_defn, ast_node: ast_node, owner_object: object, arguments: arguments, result_name: result_name, result: selection_result) do |resolved_arguments|
+            return_type_non_null = return_type.non_null?
             if resolved_arguments.is_a?(GraphQL::ExecutionError) || resolved_arguments.is_a?(GraphQL::UnauthorizedError)
               continue_value(resolved_arguments, owner_type, field_defn, return_type_non_null, ast_node, result_name, selection_result)
               next
@@ -553,7 +550,10 @@ module GraphQL
             after_lazy(app_result, field: field_defn, ast_node: ast_node, owner_object: object, arguments: resolved_arguments, result_name: result_name, result: selection_result) do |inner_result|
               continue_value = continue_value(inner_result, owner_type, field_defn, return_type_non_null, ast_node, result_name, selection_result)
               if HALT != continue_value
-                continue_field(continue_value, owner_type, field_defn, return_type, ast_node, next_selections, false, object, resolved_arguments, result_name, selection_result)
+                st = get_current_runtime_state
+                was_scoped = st.was_authorized_by_scope_items
+                st.was_authorized_by_scope_items = nil
+                continue_field(continue_value, owner_type, field_defn, return_type, ast_node, next_selections, false, object, resolved_arguments, result_name, selection_result, was_scoped)
               end
             end
           end
@@ -733,7 +733,7 @@ module GraphQL
         # Location information from `path` and `ast_node`.
         #
         # @return [Lazy, Array, Hash, Object] Lazy, Array, and Hash are all traversed to resolve lazy values later
-        def continue_field(value, owner_type, field, current_type, ast_node, next_selections, is_non_null, owner_object, arguments, result_name, selection_result) # rubocop:disable Metrics/ParameterLists
+        def continue_field(value, owner_type, field, current_type, ast_node, next_selections, is_non_null, owner_object, arguments, result_name, selection_result, was_scoped) # rubocop:disable Metrics/ParameterLists
           if current_type.non_null?
             current_type = current_type.of_type
             is_non_null = true
@@ -767,12 +767,12 @@ module GraphQL
                 set_result(selection_result, result_name, nil, false, is_non_null)
                 nil
               else
-                continue_field(resolved_value, owner_type, field, resolved_type, ast_node, next_selections, is_non_null, owner_object, arguments, result_name, selection_result)
+                continue_field(resolved_value, owner_type, field, resolved_type, ast_node, next_selections, is_non_null, owner_object, arguments, result_name, selection_result, was_scoped)
               end
             end
           when "OBJECT"
             object_proxy = begin
-              current_type.wrap(value, context)
+              was_scoped ? current_type.wrap_scoped(value, context) : current_type.wrap(value, context)
             rescue GraphQL::ExecutionError => err
               err
             end
@@ -838,10 +838,10 @@ module GraphQL
                 idx += 1
                 if use_dataloader_job
                   @dataloader.append_job do
-                    resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type)
+                    resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type, was_scoped)
                   end
                 else
-                  resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type)
+                  resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type, was_scoped)
                 end
               end
 
@@ -872,7 +872,7 @@ module GraphQL
           end
         end
 
-        def resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type) # rubocop:disable Metrics/ParameterLists
+        def resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type, was_scoped) # rubocop:disable Metrics/ParameterLists
           st = get_current_runtime_state
           st.current_result_name = this_idx
           st.current_result = response_list
@@ -881,7 +881,7 @@ module GraphQL
             after_lazy(inner_value, ast_node: ast_node, field: field, owner_object: owner_object, arguments: arguments, result_name: this_idx, result: response_list) do |inner_inner_value|
               continue_value = continue_value(inner_inner_value, owner_type, field, inner_type_non_null, ast_node, this_idx, response_list)
               if HALT != continue_value
-                continue_field(continue_value, owner_type, field, inner_type, ast_node, next_selections, false, owner_object, arguments, this_idx, response_list)
+                continue_field(continue_value, owner_type, field, inner_type, ast_node, next_selections, false, owner_object, arguments, this_idx, response_list, was_scoped)
               end
             end
           end
@@ -961,6 +961,8 @@ module GraphQL
         def after_lazy(lazy_obj, field:, owner_object:, arguments:, ast_node:, result:, result_name:, eager: false, trace: true, &block)
           if lazy?(lazy_obj)
             orig_result = result
+            st = get_current_runtime_state
+            was_authorized_by_scope_items = st.was_authorized_by_scope_items
             lazy = GraphQL::Execution::Lazy.new(field: field) do
               st = get_current_runtime_state
               st.current_object = owner_object
@@ -968,6 +970,7 @@ module GraphQL
               st.current_arguments = arguments
               st.current_result_name = result_name
               st.current_result = orig_result
+              st.was_authorized_by_scope_items = was_authorized_by_scope_items
               # Wrap the execution of _this_ method with tracing,
               # but don't wrap the continuation below
               inner_obj = begin
