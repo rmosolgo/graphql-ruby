@@ -4,6 +4,7 @@ gem "rails", "~> 7.0.0", require: "rails/all"
 gem "sqlite3", "~> 1.4", platform: :ruby
 gem "sequel"
 gem "evt"
+gem "libev_scheduler"
 gem "fiber_scheduler", github: "bruno-/fiber_scheduler"
 gem "async"
 gem "pry"
