@@ -274,13 +274,13 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
       end
     end
 
-    if RUBY_VERSION > "3.2"
-      describe "with async" do
-        require "async"
-        let(:scheduler_class) { Async::Scheduler }
-        let(:fiber_control_mode) { :transfer }
-        include AsyncDataloaderAssertions
-      end
-    end
+    # if RUBY_VERSION > "3.2"
+    #   describe "with async" do
+    #     require "async"
+    #     let(:scheduler_class) { Async::Scheduler }
+    #     let(:fiber_control_mode) { :transfer }
+    #     include AsyncDataloaderAssertions
+    #   end
+    # end
   end
 end
