@@ -349,7 +349,7 @@ describe GraphQL::Schema::Field do
           end
         end
 
-        assert_match /^Invalid complexity:/, err.message
+        assert_match(/^Invalid complexity:/, err.message)
       end
 
       it 'fails if the proc does not accept 3 parameters' do
@@ -363,7 +363,7 @@ describe GraphQL::Schema::Field do
           end
         end
 
-        assert_match /^A complexity proc should always accept 3 parameters/, err.message
+        assert_match(/^A complexity proc should always accept 3 parameters/, err.message)
       end
 
       it 'fails if second argument is a mutation instead of a type' do
@@ -380,7 +380,7 @@ describe GraphQL::Schema::Field do
           end
         end
 
-        assert_match /^Use `field :complexityTest, mutation: Mutation, ...` to provide a mutation to this field instead/, err.message
+        assert_match(/^Use `field :complexityTest, mutation: Mutation, ...` to provide a mutation to this field instead/, err.message)
       end
     end
   end
@@ -787,9 +787,36 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     query(Query)
   end
 
-
   it "uses the overridden type for detecting connections" do
     res = ResolverConnectionOverrideSchema.execute("{ f { nodes } }")
     assert_equal [1,2,3], res["data"]["f"]["nodes"]
+  end
+
+  it "has a consistent Object shape" do
+    # This test will be inherently flaky: the `Field` instances
+    # on the heap depends on what tests ran before this one and
+    # whether or not GC ran since then.
+    shapes = Set.new
+
+    # This is custom state added by some test schemas:
+    custom_ivars = [:@upcase, :@future_schema, :@visible, :@allow_for, :@metadata]
+
+    ObjectSpace.each_object(GraphQL::Schema::Field) do |field_obj|
+      field_ivars = field_obj.instance_variables
+      custom_ivars.each do |ivar|
+        if field_ivars.delete(ivar) && field_obj.class == GraphQL::Schema::Field
+          raise "Invariant: a built-in-based field instance has an ivar that was expected to be custom state(#{ivar.inspect}): #{field_obj.path} (#{field_obj.inspect})"
+        end
+      end
+      shapes.add(field_ivars)
+    end
+    # To see the different shapes, uncomment this:
+    # File.open("field_shapes.txt", "wb+") do |f|
+    #   shapes.to_a.each do |shape|
+    #     f.puts(shape.inspect + "\n")
+    #   end
+    # end
+    default_field_shape = GraphQL::Introspection::TypeType.get_field("name").instance_variables
+    assert_equal [default_field_shape], shapes.to_a
   end
 end

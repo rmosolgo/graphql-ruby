@@ -25,7 +25,7 @@ module GraphQL
         when "execute_field", "execute_field_lazy"
           query = metadata[:query]
           multiplex = query.multiplex
-          push_key = metadata[:path]
+          push_key = query.context[:current_path]
           parent_frame = multiplex.context[:graphql_backtrace_contexts][push_key[0..-2]]
 
           if parent_frame.is_a?(GraphQL::Query)

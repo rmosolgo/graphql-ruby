@@ -3,6 +3,7 @@ require "graphql/backtrace/inspect_result"
 require "graphql/backtrace/table"
 require "graphql/backtrace/traced_error"
 require "graphql/backtrace/tracer"
+require "graphql/backtrace/trace"
 module GraphQL
   # Wrap unhandled errors with {TracedError}.
   #
@@ -23,7 +24,7 @@ module GraphQL
     def_delegators :to_a, :each, :[]
 
     def self.use(schema_defn)
-      schema_defn.tracer(self::Tracer)
+      schema_defn.trace_with(self::Trace)
     end
 
     def initialize(context, value: nil)

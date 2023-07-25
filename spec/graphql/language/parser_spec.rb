@@ -2,7 +2,15 @@
 require "spec_helper"
 
 describe GraphQL::Language::Parser do
-  subject { GraphQL::Language::Parser }
+  subject { GraphQL }
+
+  it "returns an error on bad UTF-8" do
+    err = assert_raises GraphQL::ParseError do
+      subject.parse("{ foo(query: \"\xBF\") }")
+    end
+    expected_message = 'Parse error on bad Unicode escape sequence: "{ foo(query: \"\xBF\") }" (error) at [1, 1]'
+    assert_equal expected_message, err.message
+  end
 
   describe "when there are no selections" do
     it 'raises a ParseError' do
@@ -16,7 +24,13 @@ describe GraphQL::Language::Parser do
     err = assert_raises(GraphQL::ParseError) {
       GraphQL.parse('query 😘 { a b }')
     }
-    assert_equal "Parse error on \"\\xF0\" (error) at [1, 7]", err.message
+    expected_msg = if USING_C_PARSER
+      "syntax error, unexpected invalid token (\"\\xF0\"), expecting LCURLY at [1, 7]"
+    else
+      "Parse error on \"😘\" (error) at [1, 7]"
+    end
+
+    assert_equal expected_msg, err.message
   end
 
   describe "anonymous fragment extension" do
@@ -45,7 +59,6 @@ describe GraphQL::Language::Parser do
         "Thing description"
         scalar Thing
       GRAPHQL
-
       thing_defn = document.definitions[0]
       assert_equal "Thing", thing_defn.name
       assert_equal "Thing description", thing_defn.description
@@ -56,7 +69,7 @@ describe GraphQL::Language::Parser do
       "Thing description"
       type Thing {
         "field description"
-        field("arg description" arg: Stuff): Stuff
+        field("arg description" arg: Stuff @yikes): Stuff @wow
       }
       GRAPHQL
 
@@ -67,10 +80,12 @@ describe GraphQL::Language::Parser do
       field_defn = thing_defn.fields[0]
       assert_equal "field", field_defn.name
       assert_equal "field description", field_defn.description
+      assert_equal ["wow"], field_defn.directives.map(&:name)
 
       arg_defn = field_defn.arguments[0]
       assert_equal "arg", arg_defn.name
       assert_equal "arg description", arg_defn.description
+      assert_equal ["yikes"], arg_defn.directives.map(&:name)
     end
 
     it "is parsed for interface definitions" do
@@ -161,11 +176,117 @@ describe GraphQL::Language::Parser do
     assert_equal "b\\", document.definitions[0].selections[0].arguments[0].value
   end
 
+  it "parses a great big object type" do
+    str = <<-GRAPHQL
+"""
+Query root of the system
+"""
+type Query {
+  allAnimal: [Animal]!
+  allAnimalAsCow: [AnimalAsCow]!
+  allDairy(executionErrorAtIndex: Int): [DairyProduct]
+  allEdible: [Edible]
+  allEdibleAsMilk: [EdibleAsMilk]
+
+  """
+  Find a Dummy::Cheese by id
+  """
+  cheese(id: Int!): Cheese
+
+  """
+  Find the only Dummy::Cow
+  """
+  cow: Cow
+
+  """
+  Find the only Dummy::Dairy
+  """
+  dairy: Dairy
+  deepNonNull: DeepNonNull!
+
+  """
+  Raise an error
+  """
+  error: String
+  executionError: String
+  executionErrorWithExtensions: Int
+  executionErrorWithOptions: Int
+
+  """
+  My favorite food
+  """
+  favoriteEdible: Edible
+
+  """
+  Cheese from source
+  """
+  fromSource(oldSource: String @deprecated, source: DairyAnimal = COW): [Cheese]
+  hugeInteger: Int
+  maybeNull: MaybeNull
+
+  """
+  Find a Dummy::Milk by id
+  """
+  milk(id: ID!): Milk
+  multipleErrorsOnNonNullableField: String!
+  multipleErrorsOnNonNullableListField: [String!]!
+  root: String
+
+  """
+  Find dairy products matching a description
+  """
+  searchDairy(expiresAfter: Time, oldProduct: [DairyProductInput!] @deprecated, product: [DairyProductInput] = [{source: SHEEP}], productIds: [String!] @deprecated, singleProduct: DairyProductInput): DairyProduct!
+  tracingScalar: TracingScalar
+  valueWithExecutionError: Int!
+}
+    GRAPHQL
+
+    doc = subject.parse(str)
+    assert_equal str.chomp, doc.to_query_string
+  end
+
+  it "parses input types" do
+    doc = subject.parse <<~GRAPHQL
+input ReplaceValuesInput {
+  values: [Int!]!
+}
+GRAPHQL
+    input_t = doc.definitions.first
+    assert_equal "ReplaceValuesInput", input_t.name
+    assert_equal ["values"], input_t.fields.map(&:name)
+    assert_equal [nil], input_t.fields.map(&:description)
+  end
+
   it "parses the test schema" do
     schema = Dummy::Schema
     schema_string = GraphQL::Schema::Printer.print_schema(schema)
     document = subject.parse(schema_string)
     assert_equal schema_string.chomp, document.to_query_string
+  end
+
+  it "parses various implements" do
+    doc = subject.parse <<-GRAPHQL
+    type Milk implements AnimalProduct & Edible & EdibleAsMilk & LocalProduct {
+      executionError: String
+    }
+    GRAPHQL
+    expected_names = ["AnimalProduct", "Edible", "EdibleAsMilk", "LocalProduct"]
+
+    assert_equal expected_names, doc.definitions.first.interfaces.map(&:name)
+    doc2 = subject.parse <<-GRAPHQL
+    type Milk implements & AnimalProduct & Edible & EdibleAsMilk & LocalProduct {
+      executionError: String
+    }
+    GRAPHQL
+
+    assert_equal expected_names, doc2.definitions.first.interfaces.map(&:name)
+
+    doc3 = subject.parse <<-GRAPHQL
+    type Milk implements AnimalProduct, Edible, EdibleAsMilk  LocalProduct {
+      executionError: String
+    }
+    GRAPHQL
+    assert_equal expected_names, doc3.definitions.first.interfaces.map(&:name)
   end
 
   describe "parse errors" do
@@ -189,7 +310,7 @@ describe GraphQL::Language::Parser do
       query_with_malformed_argument_value = '{ node(id:) { name } }'
 
       assert_raises(GraphQL::ParseError) {
-        subject.parse(query_with_malformed_argument_value)
+        pp subject.parse(query_with_malformed_argument_value)
       }
     end
   end
@@ -224,7 +345,11 @@ describe GraphQL::Language::Parser do
 
   it "serves traces" do
     TestTracing.clear
-    GraphQL.parse("{ t: __typename }", tracer: TestTracing)
+    schema = Class.new(GraphQL::Schema) do
+      tracer(TestTracing)
+    end
+    query = GraphQL::Query.new(schema, "{ t: __typename }")
+    subject.parse("{ t: __typename }", trace: query.current_trace)
     traces = TestTracing.traces
     assert_equal 2, traces.length
     lex_trace, parse_trace = traces

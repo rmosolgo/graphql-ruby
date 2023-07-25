@@ -1,5 +1,27 @@
 # graphql-ruby-client
 
+# 1.11.8 (9 May 2023)
+
+- ActionCable: accept a custom `channelName` for `createActionCableHandler` and `addGraphQLSubscriptions` #4463
+
+# 1.11.7 (24 February 2023)
+
+- ActionCableLink: fix race condition #4359
+
+# 1.11.6 (14 February 2023)
+
+- Sync: fix `--changeset-version` #4328
+- Improve verbose logging #4328
+
+# 1.11.5 (27 January 2023)
+
+- Sync: add a `--changeset-version` for use with Changesets #4304
+- Sync: fix handling of `--header` with a single header
+
+# 1.11.4 (4 January 2023)
+
+- PusherLink: pass initial response along to the client #4282
+
 # 1.11.3 (13 October 2022)
 
 - `createAblySubscriptions`: don't use `Error.captureStackTrace` which isn't supported in all JS runtimes #4223

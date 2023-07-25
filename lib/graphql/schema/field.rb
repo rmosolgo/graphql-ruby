@@ -6,11 +6,12 @@ module GraphQL
   class Schema
     class Field
       include GraphQL::Schema::Member::HasArguments
+      include GraphQL::Schema::Member::HasArguments::FieldConfigured
       include GraphQL::Schema::Member::HasAstNode
       include GraphQL::Schema::Member::HasPath
       include GraphQL::Schema::Member::HasValidators
       extend GraphQL::Schema::FindInheritedValue
-      include GraphQL::Schema::FindInheritedValue::EmptyObjects
+      include GraphQL::EmptyObjects
       include GraphQL::Schema::Member::HasDirectives
       include GraphQL::Schema::Member::HasDeprecationReason
 
@@ -218,7 +219,7 @@ module GraphQL
       # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
       # @param validates [Array<Hash>] Configurations for validating this field
       # @fallback_value [Object] A fallback value if the method is not defined
-      def initialize(type: nil, name: nil, owner: nil, null: nil, description: :not_given, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: :not_given, default_page_size: :not_given, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: nil, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: :not_given, &definition_block)
+      def initialize(type: nil, name: nil, owner: nil, null: nil, description: NOT_CONFIGURED, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: NOT_CONFIGURED, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: NOT_CONFIGURED, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -229,11 +230,13 @@ module GraphQL
         end
         @original_name = name
         name_s = -name.to_s
+
         @underscored_name = -Member::BuildType.underscore(name_s)
         @name = -(camelize ? Member::BuildType.camelize(name_s) : name_s)
-        if description != :not_given
-          @description = description
-        end
+
+        @description = description
+        @type = @owner_type = @own_validators = @own_directives = @own_arguments = @arguments_statically_coercible = nil # these will be prepared later if necessary
+
         self.deprecation_reason = deprecation_reason
 
         if method && hash_key && dig
@@ -255,6 +258,9 @@ module GraphQL
         if hash_key
           @hash_key = hash_key
           @hash_key_str = hash_key.to_s
+        else
+          @hash_key = NOT_CONFIGURED
+          @hash_key_str = NOT_CONFIGURED
         end
 
         @method_str = -method_name.to_s
@@ -270,15 +276,11 @@ module GraphQL
           true
         end
         @connection = connection
-        @has_max_page_size = max_page_size != :not_given
-        @max_page_size = max_page_size == :not_given ? nil : max_page_size
-        @has_default_page_size = default_page_size != :not_given
-        @default_page_size = default_page_size == :not_given ? nil : default_page_size
+        @max_page_size = max_page_size
+        @default_page_size = default_page_size
         @introspection = introspection
         @extras = extras
-        if !broadcastable.nil?
-          @broadcastable = broadcastable
-        end
+        @broadcastable = broadcastable
         @resolver_class = resolver_class
         @scope = scope
         @trace = trace
@@ -337,7 +339,7 @@ module GraphQL
           self.validates(validates)
         end
 
-        if definition_block
+        if block_given?
           if definition_block.arity == 1
             yield self
           else
@@ -353,7 +355,7 @@ module GraphQL
       # @return [Boolean, nil]
       # @see GraphQL::Subscriptions::BroadcastAnalyzer
       def broadcastable?
-        if defined?(@broadcastable)
+        if !NOT_CONFIGURED.equal?(@broadcastable)
           @broadcastable
         elsif @resolver_class
           @resolver_class.broadcastable?
@@ -367,10 +369,10 @@ module GraphQL
       def description(text = nil)
         if text
           @description = text
-        elsif defined?(@description)
+        elsif !NOT_CONFIGURED.equal?(@description)
           @description
         elsif @resolver_class
-          @description || @resolver_class.description
+          @resolver_class.description
         else
           nil
         end
@@ -542,22 +544,34 @@ module GraphQL
 
       # @return [Boolean] True if this field's {#max_page_size} should override the schema default.
       def has_max_page_size?
-        @has_max_page_size || (@resolver_class && @resolver_class.has_max_page_size?)
+        !NOT_CONFIGURED.equal?(@max_page_size) || (@resolver_class && @resolver_class.has_max_page_size?)
       end
 
       # @return [Integer, nil] Applied to connections if {#has_max_page_size?}
       def max_page_size
-        @max_page_size || (@resolver_class && @resolver_class.max_page_size)
+        if !NOT_CONFIGURED.equal?(@max_page_size)
+          @max_page_size
+        elsif @resolver_class && @resolver_class.has_max_page_size?
+          @resolver_class.max_page_size
+        else
+          nil
+        end
       end
 
       # @return [Boolean] True if this field's {#default_page_size} should override the schema default.
       def has_default_page_size?
-        @has_default_page_size || (@resolver_class && @resolver_class.has_default_page_size?)
+        !NOT_CONFIGURED.equal?(@default_page_size) || (@resolver_class && @resolver_class.has_default_page_size?)
       end
 
       # @return [Integer, nil] Applied to connections if {#has_default_page_size?}
       def default_page_size
-        @default_page_size || (@resolver_class && @resolver_class.default_page_size)
+        if !NOT_CONFIGURED.equal?(@default_page_size)
+          @default_page_size
+        elsif @resolver_class && @resolver_class.has_default_page_size?
+          @resolver_class.default_page_size
+        else
+          nil
+        end
       end
 
       class MissingReturnTypeError < GraphQL::Error; end
@@ -589,48 +603,43 @@ module GraphQL
         end
       end
 
-      def accessible?(context)
-        if @resolver_class
-          @resolver_class.accessible?(context)
-        else
-          true
-        end
-      end
-
       def authorized?(object, args, context)
         if @resolver_class
           # The resolver _instance_ will check itself during `resolve()`
           @resolver_class.authorized?(object, context)
         else
-          if (arg_values = context[:current_arguments])
-            # ^^ that's provided by the interpreter at runtime, and includes info about whether the default value was used or not.
-            using_arg_values = true
-            arg_values = arg_values.argument_values
-          else
-            arg_values = args
-            using_arg_values = false
-          end
-          # Faster than `.any?`
-          arguments(context).each_value do |arg|
-            arg_key = arg.keyword
-            if arg_values.key?(arg_key)
-              arg_value = arg_values[arg_key]
-              if using_arg_values
-                if arg_value.default_used?
-                  # pass -- no auth required for default used
-                  next
-                else
-                  application_arg_value = arg_value.value
-                  if application_arg_value.is_a?(GraphQL::Execution::Interpreter::Arguments)
-                    application_arg_value.keyword_arguments
-                  end
-                end
-              else
-                application_arg_value = arg_value
-              end
+          if args.size > 0
+            if (arg_values = context[:current_arguments])
+              # ^^ that's provided by the interpreter at runtime, and includes info about whether the default value was used or not.
+              using_arg_values = true
+              arg_values = arg_values.argument_values
+            else
+              arg_values = args
+              using_arg_values = false
+            end
 
-              if !arg.authorized?(object, application_arg_value, context)
-                return false
+            args = context.warden.arguments(self)
+            args.each do |arg|
+              arg_key = arg.keyword
+              if arg_values.key?(arg_key)
+                arg_value = arg_values[arg_key]
+                if using_arg_values
+                  if arg_value.default_used?
+                    # pass -- no auth required for default used
+                    next
+                  else
+                    application_arg_value = arg_value.value
+                    if application_arg_value.is_a?(GraphQL::Execution::Interpreter::Arguments)
+                      application_arg_value.keyword_arguments
+                    end
+                  end
+                else
+                  application_arg_value = arg_value
+                end
+
+                if !arg.authorized?(object, application_arg_value, context)
+                  return false
+                end
               end
             end
           end
@@ -652,7 +661,7 @@ module GraphQL
 
         Schema::Validator.validate!(validators, application_object, query_ctx, args)
 
-        query_ctx.schema.after_lazy(self.authorized?(application_object, args, query_ctx)) do |is_authorized|
+        query_ctx.query.after_lazy(self.authorized?(application_object, args, query_ctx)) do |is_authorized|
           if is_authorized
             with_extensions(object, args, query_ctx) do |obj, ruby_kwargs|
               method_args = ruby_kwargs
@@ -665,7 +674,7 @@ module GraphQL
 
               inner_object = obj.object
 
-              if defined?(@hash_key)
+              if !NOT_CONFIGURED.equal?(@hash_key)
                 hash_value = if inner_object.is_a?(Hash)
                   inner_object.key?(@hash_key) ? inner_object[@hash_key] : inner_object[@hash_key_str]
                 elsif inner_object.respond_to?(:[])
@@ -676,7 +685,7 @@ module GraphQL
                 if hash_value == false
                   hash_value
                 else
-                  hash_value || (@fallback_value != :not_given ? @fallback_value : nil)
+                  hash_value || (@fallback_value != NOT_CONFIGURED ? @fallback_value : nil)
                 end
               elsif obj.respond_to?(resolver_method)
                 method_to_call = resolver_method
@@ -694,7 +703,7 @@ module GraphQL
                   inner_object[@method_sym]
                 elsif inner_object.key?(@method_str)
                   inner_object[@method_str]
-                elsif @fallback_value != :not_given
+                elsif @fallback_value != NOT_CONFIGURED
                   @fallback_value
                 else
                   nil
@@ -707,7 +716,7 @@ module GraphQL
                 else
                   inner_object.public_send(@method_sym)
                 end
-              elsif @fallback_value != :not_given
+              elsif @fallback_value != NOT_CONFIGURED
                 @fallback_value
               else
                 raise <<-ERR
@@ -744,6 +753,8 @@ module GraphQL
         end
         # if the line above doesn't raise, re-raise
         raise
+      rescue GraphQL::ExecutionError => err
+        err
       end
 
       # @param ctx [GraphQL::Query::Context]
@@ -799,6 +810,17 @@ ERR
         end
       end
 
+      class ExtendedState
+        def initialize(args, object)
+          @arguments = args
+          @object = object
+          @memos = nil
+          @added_extras = nil
+        end
+
+        attr_accessor :arguments, :object, :memos, :added_extras
+      end
+
       # Wrap execution with hooks.
       # Written iteratively to avoid big stack traces.
       # @return [Object] Whatever the
@@ -809,20 +831,20 @@ ERR
           # This is a hack to get the _last_ value for extended obj and args,
           # in case one of the extensions doesn't `yield`.
           # (There's another implementation that uses multiple-return, but I'm wary of the perf cost of the extra arrays)
-          extended = { args: args, obj: obj, memos: nil, added_extras: nil }
+          extended = ExtendedState.new(args, obj)
           value = run_extensions_before_resolve(obj, args, ctx, extended) do |obj, args|
-            if (added_extras = extended[:added_extras])
+            if (added_extras = extended.added_extras)
               args = args.dup
               added_extras.each { |e| args.delete(e) }
             end
             yield(obj, args)
           end
 
-          extended_obj = extended[:obj]
-          extended_args = extended[:args]
-          memos = extended[:memos] || EMPTY_HASH
+          extended_obj = extended.object
+          extended_args = extended.arguments # rubocop:disable Development/ContextIsPassedCop
+          memos = extended.memos || EMPTY_HASH
 
-          ctx.schema.after_lazy(value) do |resolved_value|
+          ctx.query.after_lazy(value) do |resolved_value|
             idx = 0
             @extensions.each do |ext|
               memo = memos[idx]
@@ -840,17 +862,17 @@ ERR
         if extension
           extension.resolve(object: obj, arguments: args, context: ctx) do |extended_obj, extended_args, memo|
             if memo
-              memos = extended[:memos] ||= {}
+              memos = extended.memos ||= {}
               memos[idx] = memo
             end
 
             if (extras = extension.added_extras)
-              ae = extended[:added_extras] ||= []
+              ae = extended.added_extras ||= []
               ae.concat(extras)
             end
 
-            extended[:obj] = extended_obj
-            extended[:args] = extended_args
+            extended.object = extended_obj
+            extended.arguments = extended_args
             run_extensions_before_resolve(extended_obj, extended_args, ctx, extended, idx: idx + 1) { |o, a| yield(o, a) }
           end
         else

@@ -203,7 +203,8 @@ union U = Hello
 
       assert_schema_and_compare_output(schema)
 
-      built_schema = GraphQL::Schema.from_definition(schema)
+      # TODO: GraphQL::CParser doesn't support definition_line yet.
+      built_schema = GraphQL::Schema.from_definition(schema, parser: GraphQL::Language::Parser)
       # The schema's are the same since there's no description
       assert_equal 1, built_schema.ast_node.line
       assert_equal 1, built_schema.ast_node.definition_line
@@ -918,6 +919,8 @@ directive @Directive (
   argument: String
 ) on SCHEMA
 
+directive @custom(thing: Boolean) on SCHEMA
+
 type Type implements Interface {
   field(argument: String): String
 }
@@ -943,7 +946,7 @@ type Type implements Interface {
       assert_equal [23, 3], schema.types["Input"].arguments["argument"].ast_node.position
       assert_equal [26, 1], schema.directives["Directive"].ast_node.position
       assert_equal [28, 3], schema.directives["Directive"].arguments["argument"].ast_node.position
-      assert_equal [31, 22], schema.types["Type"].ast_node.interfaces[0].position
+      assert_equal [33, 22], schema.types["Type"].ast_node.interfaces[0].position
     end
 
     it 'can build a schema from a file path' do
@@ -1571,15 +1574,21 @@ type ReachableType implements Node {
 
   it "supports extending schemas with directives" do
     schema_sdl = <<~EOS
-      directive @link(url: String, import: [String]) on SCHEMA
+    schema
+      @link(import: ["@key", "@shareable"], url: "https://specs.apollo.dev/federation/v2.0")
 
-      extend schema
-        @link(url: "https://specs.apollo.dev/federation/v2.0",
-              import: ["@key", "@shareable"])
+    directive @link(as: String, for: link__Purpose, import: [link__Import], url: String!) repeatable on SCHEMA
 
-      type Query {
-        something: Int
-      }
+    type Query {
+      something: Int
+    }
+
+    scalar link__Import
+
+    enum link__Purpose {
+      EXECUTION
+      SECURITY
+    }
     EOS
 
     schema = GraphQL::Schema.from_definition(schema_sdl)
@@ -1587,17 +1596,7 @@ type ReachableType implements Node {
     assert_equal({ url: "https://specs.apollo.dev/federation/v2.0", import: ["@key", "@shareable"] },
       schema.schema_directives.first.arguments.to_h)
 
-    expected_schema = <<~GRAPHQL
-      schema
-        @link(url: "https://specs.apollo.dev/federation/v2.0", import: ["@key", "@shareable"])
-
-      directive @link(import: [String], url: String) on SCHEMA
-
-      type Query {
-        something: Int
-      }
-    GRAPHQL
-    assert_equal expected_schema, schema.to_definition
+    assert_equal schema_sdl, schema.to_definition
   end
 
 
@@ -1653,5 +1652,82 @@ type ReachableType implements Node {
       }
     GRAPHQL
     assert_equal expected_schema, schema.to_definition
+  end
+
+  describe "JSON type" do
+    class JsonTypeApplication
+      SCHEMA_STRING = <<~EOS
+        scalar JsonValue
+
+        type Query {
+          echoJsonValue(arg: JsonValue): JsonValue
+        }
+      EOS
+
+      def initialize
+        @schema = GraphQL::Schema.from_definition(SCHEMA_STRING, default_resolve: self)
+      end
+
+      def execute_query(query_string, **vars)
+        @schema.execute(query_string, variables: vars)
+      end
+
+      def call(parent_type, field, object, args, context)
+        args.fetch(:arg)
+      end
+
+      def coerce_input(type, value, ctx)
+        nils = ctx[:nils] ||= []
+        if value.is_a?(Array)
+          nils << value[2]
+        else
+          nils << value["abc"]
+        end
+        ::JSON.generate(value)
+      end
+
+      def coerce_result(type, value, ctx)
+        ::JSON.parse(value)
+      end
+    end
+
+    it "Sends normal ruby values to schema coercion" do
+      app = JsonTypeApplication.new
+
+      res_1 = app.execute_query(<<~EOS, arg: [3, "abc", nil, 7])
+        query WithArg($arg: JsonValue) {
+          echoJsonValue(arg: $arg)
+        }
+      EOS
+
+      assert_equal([3, "abc", nil, 7], res_1["data"]["echoJsonValue"])
+      assert_equal [nil, nil], res_1.context[:nils]
+
+      res_2 = app.execute_query(<<~EOS)
+        query {
+          echoJsonValue(arg: [3, "abc", null, 7])
+        }
+      EOS
+      assert_equal([3, "abc", nil, 7], res_2["data"]["echoJsonValue"])
+      assert_equal [nil, nil], res_2.context[:nils]
+
+      res_3 = app.execute_query(<<~EOS, arg: { "abc" => nil, "def" => 7 })
+      query WithArg($arg: JsonValue) {
+        echoJsonValue(arg: $arg)
+      }
+      EOS
+
+      assert_equal({ "abc" => nil, "def" => 7 }, res_3["data"]["echoJsonValue"])
+      assert_equal [nil, nil], res_3.context[:nils]
+
+      res_4 = app.execute_query(<<~EOS)
+      query {
+        echoJsonValue(arg: { abc: null, def: 7, ghi: { jkl: null } })
+      }
+      EOS
+
+      assert_equal({ "abc" => nil, "def" => 7, "ghi"=>{"jkl"=>nil} }, res_4["data"]["echoJsonValue"])
+      assert_equal [nil, nil], res_4.context[:nils]
+    end
   end
 end

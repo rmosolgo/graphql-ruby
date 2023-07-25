@@ -15,7 +15,6 @@ Want to add something? Please open a pull request [on GitHub](https://github.com
 - `graphql-ruby` + Sinatra demo ([src](https://github.com/robinjmurphy/ruby-graphql-server-example) / [heroku](https://ruby-graphql-server-example.herokuapp.com/))
 - [`graphql-batch`](https://github.com/shopify/graphql-batch), a batched query execution strategy
 - [`graphql-cache`](https://github.com/stackshareio/graphql-cache), a resolver-level caching solution
-- [`graphql-libgraphqlparser`](https://github.com/rmosolgo/graphql-libgraphqlparser-ruby), bindings to [libgraphqlparser](https://github.com/graphql/libgraphqlparser), a C-level parser.
 - [`graphql-devise`](https://github.com/graphql-devise/graphql_devise), a gql interface to handle authentication with Devise
 - [`graphql-docs`](https://github.com/gjtorikian/graphql-docs), a tool to automatically generate static HTML documentation from your GraphQL implementation
 - [`graphql-metrics`](https://github.com/Shopify/graphql-metrics), a plugin to extract fine-grain metrics of GraphQL queries received by your server
@@ -41,9 +40,6 @@ Want to add something? Please open a pull request [on GitHub](https://github.com
 -  Building a blog in GraphQL and Relay on Rails [Introduction](https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-getting-started-955a49d251de), [Part 1]( https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-creating-types-and-schema-b3f9b232ccfc), [Part 2](https://medium.com/@gauravtiwari/graphql-and-relay-on-rails-first-relay-powered-react-component-cb3f9ee95eca)
 - https://medium.com/@khor/relay-facebook-on-rails-8b4af2057152
 - https://blog.jacobwgillespie.com/from-rest-to-graphql-b4e95e94c26b#.4cjtklrwt
-- http://mgiroux.me/2015/getting-started-with-rails-graphql-relay/
-- http://mgiroux.me/2015/uploading-files-using-relay-with-rails/
-- http://mgiroux.me/2016/journey-into-graphql-ruby-query-execution/
 - https://jonsimpson.ca/parallel-graphql-resolvers-with-futures/
 - Active Storage meets GraphQL: [Direct uploads](https://evilmartians.com/chronicles/active-storage-meets-graphql-direct-uploads) and [Exposing attachment URLs](https://evilmartians.com/chronicles/active-storage-meets-graphql-pt-2-exposing-attachment-urls)
 - [Exposing permissions in GraphQL APIs with Action Policy](https://evilmartians.com/chronicles/exposing-permissions-in-graphql-apis-with-action-policy)

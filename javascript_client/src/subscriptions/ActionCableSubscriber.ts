@@ -11,10 +11,12 @@ interface ApolloNetworkInterface {
 class ActionCableSubscriber {
   _cable: Consumer
   _networkInterface: ApolloNetworkInterface
+  _channelName: string
 
-  constructor(cable: Consumer, networkInterface: ApolloNetworkInterface) {
+  constructor(cable: Consumer, networkInterface: ApolloNetworkInterface, channelName?: string) {
     this._cable = cable
     this._networkInterface = networkInterface
+    this._channelName = channelName || "GraphqlChannel"
   }
 
   /**
@@ -31,7 +33,7 @@ class ActionCableSubscriber {
     // unique-ish
     var channelId = Math.round(Date.now() + Math.random() * 100000).toString(16)
     var channel = this._cable.subscriptions.create({
-      channel: "GraphqlChannel",
+      channel: this._channelName,
       channelId: channelId,
     }, {
       // After connecting, send the data over ActionCable

@@ -7,9 +7,7 @@ module GraphQL
       include GraphQL::Schema::Member::HasDirectives
       include GraphQL::Schema::Member::HasDeprecationReason
       include GraphQL::Schema::Member::HasValidators
-      include GraphQL::Schema::FindInheritedValue::EmptyObjects
-
-      NO_DEFAULT = :__no_default__
+      include GraphQL::EmptyObjects
 
       # @return [String] the GraphQL name for this argument, camelized unless `camelize: false` is provided
       attr_reader :name
@@ -20,8 +18,8 @@ module GraphQL
 
       # @param new_prepare [Method, Proc]
       # @return [Symbol] A method or proc to call to transform this value before sending it to field resolution method
-      def prepare(new_prepare = NO_DEFAULT)
-        if new_prepare != NO_DEFAULT
+      def prepare(new_prepare = NOT_CONFIGURED)
+        if new_prepare != NOT_CONFIGURED
           @prepare = new_prepare
         end
         @prepare
@@ -52,7 +50,7 @@ module GraphQL
       # @param deprecation_reason [String]
       # @param validates [Hash, nil] Options for building validators, if any should be applied
       # @param replace_null_with_default [Boolean] if `true`, incoming values of `null` will be replaced with the configured `default_value`
-      def initialize(arg_name = nil, type_expr = nil, desc = nil, required: true, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NO_DEFAULT, as: nil, from_resolver: false, camelize: true, prepare: nil, owner:, validates: nil, directives: nil, deprecation_reason: nil, replace_null_with_default: false, &definition_block)
+      def initialize(arg_name = nil, type_expr = nil, desc = nil, required: true, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NOT_CONFIGURED, as: nil, from_resolver: false, camelize: true, prepare: nil, owner:, validates: nil, directives: nil, deprecation_reason: nil, replace_null_with_default: false, &definition_block)
         arg_name ||= name
         @name = -(camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s)
         @type_expr = type_expr || type
@@ -104,8 +102,8 @@ module GraphQL
 
       # @param default_value [Object] The value to use when the client doesn't provide one
       # @return [Object] the value used when the client doesn't provide a value for this argument
-      def default_value(new_default_value = NO_DEFAULT)
-        if new_default_value != NO_DEFAULT
+      def default_value(new_default_value = NOT_CONFIGURED)
+        if new_default_value != NOT_CONFIGURED
           @default_value = new_default_value
         end
         @default_value
@@ -113,7 +111,7 @@ module GraphQL
 
       # @return [Boolean] True if this argument has a default value
       def default_value?
-        @default_value != NO_DEFAULT
+        @default_value != NOT_CONFIGURED
       end
 
       def replace_null_with_default?
@@ -146,10 +144,6 @@ module GraphQL
       end
 
       def visible?(context)
-        true
-      end
-
-      def accessible?(context)
         true
       end
 
@@ -204,8 +198,8 @@ module GraphQL
 
       def statically_coercible?
         return @statically_coercible if defined?(@statically_coercible)
-
-        @statically_coercible = !@prepare.is_a?(String) && !@prepare.is_a?(Symbol)
+        requires_parent_object = @prepare.is_a?(String) || @prepare.is_a?(Symbol) || @own_validators
+        @statically_coercible = !requires_parent_object
       end
 
       # Apply the {prepare} configuration to `value`, using methods from `obj`.
@@ -270,7 +264,7 @@ module GraphQL
 
         # If this isn't lazy, then the block returns eagerly and assigns the result here
         # If it _is_ lazy, then we write the lazy to the hash, then update it later
-        argument_values[arg_key] = context.schema.after_lazy(coerced_value) do |resolved_coerced_value|
+        argument_values[arg_key] = context.query.after_lazy(coerced_value) do |resolved_coerced_value|
           owner.validate_directive_argument(self, resolved_coerced_value)
           prepared_value = begin
             prepare_value(parent_object, resolved_coerced_value, context: context)
@@ -287,7 +281,7 @@ module GraphQL
           end
 
           maybe_loaded_value = loaded_value || prepared_value
-          context.schema.after_lazy(maybe_loaded_value) do |resolved_loaded_value|
+          context.query.after_lazy(maybe_loaded_value) do |resolved_loaded_value|
             # TODO code smell to access such a deeply-nested constant in a distant module
             argument_values[arg_key] = GraphQL::Execution::Interpreter::ArgumentValue.new(
               value: resolved_loaded_value,
@@ -309,7 +303,7 @@ module GraphQL
           else
             load_method_owner.public_send(arg_load_method, coerced_value)
           end
-          context.schema.after_lazy(custom_loaded_value) do |custom_value|
+          context.query.after_lazy(custom_loaded_value) do |custom_value|
             if loads
               if type.list?
                 loaded_values = custom_value.each_with_index.map { |custom_val, idx|

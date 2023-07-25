@@ -129,12 +129,14 @@ You can also reject queries based on the depth of their nesting. You can define 
 # Schema-level:
 class MySchema < GraphQL::Schema
   # ...
-  max_depth 10
+  max_depth 15
 end
 
 # Query-level, which overrides the schema-level setting:
-MySchema.execute(query_string, max_depth: 10)
+MySchema.execute(query_string, max_depth: 20)
 ```
+
+(**Note:** the default introspection query from GraphiQL requires at least `max_depth 13`.)
 
 You can use `nil` to disable the validation:
 

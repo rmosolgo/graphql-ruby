@@ -68,7 +68,8 @@ module GraphQL
         elsif @operation_name_error
           @validation_errors << @operation_name_error
         else
-          validation_result = @schema.static_validator.validate(@query, validate: @query.validate, timeout: @schema.validate_timeout, max_errors: @schema.validate_max_errors)
+          validator = @query.static_validator || @schema.static_validator
+          validation_result = validator.validate(@query, validate: @query.validate, timeout: @schema.validate_timeout, max_errors: @schema.validate_max_errors)
           @validation_errors.concat(validation_result[:errors])
 
           if @validation_errors.empty?

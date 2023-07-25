@@ -102,7 +102,7 @@ module GraphQL
 
       self.all_validators = {}
 
-      include Schema::FindInheritedValue::EmptyObjects
+      include GraphQL::EmptyObjects
 
       class ValidationFailedError < GraphQL::ExecutionError
         attr_reader :errors

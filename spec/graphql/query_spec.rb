@@ -654,12 +654,24 @@ describe GraphQL::Query do
     it "adds an entry to the errors key" do
       res = schema.execute(" { ")
       assert_equal 1, res["errors"].length
-      assert_equal "Unexpected end of document", res["errors"][0]["message"]
-      assert_equal [], res["errors"][0]["locations"]
+      if USING_C_PARSER
+        expected_err = "syntax error, unexpected end of file at [1, 2]"
+        expected_locations = [{"line" => 1, "column" => 2}]
+      else
+        expected_err = "Unexpected end of document"
+        expected_locations = []
+      end
+      assert_equal expected_err, res["errors"][0]["message"]
+      assert_equal expected_locations, res["errors"][0]["locations"]
 
       res = schema.execute(invalid_query_string)
       assert_equal 1, res["errors"].length
-      assert_equal %|Parse error on "1" (INT) at [4, 26]|, res["errors"][0]["message"]
+      expected_error = if USING_C_PARSER
+        "syntax error, unexpected INT (\"1\") at [4, 26]"
+      else
+        %|Parse error on "1" (INT) at [4, 26]|
+      end
+      assert_equal expected_error, res["errors"][0]["message"]
       assert_equal({"line" => 4, "column" => 26}, res["errors"][0]["locations"][0])
     end
 
@@ -737,6 +749,67 @@ describe GraphQL::Query do
       expected_message = "Can't reassign Query#validate= after validation has run, remove this assignment."
       assert_equal expected_message, err.message
       assert_equal expected_message, err2.message
+    end
+  end
+
+  describe "static_validator" do
+    module ZebraRule
+      def on_field(node, _parent)
+        if node.name != "zebra"
+          add_error(GraphQL::StaticValidation::Error.new("Invalid field name", nodes: node))
+        else
+          super
+        end
+      end
+    end
+
+    it "provides a custom validator for the query" do
+      validator = GraphQL::StaticValidation::Validator.new(schema: schema, rules: [ZebraRule])
+
+      query = GraphQL::Query.new(schema, "{ zebra }")
+      query.static_validator = validator
+      assert_equal true, query.valid?
+      assert_equal 0, query.static_errors.length
+
+      query = GraphQL::Query.new(schema, "{ zebra }", static_validator: validator)
+      assert_equal true, query.valid?
+      assert_equal 0, query.static_errors.length
+
+      query = GraphQL::Query.new(schema, "{ arbez }", static_validator: validator)
+      assert_equal false, query.valid?
+      assert_equal 1, query.static_errors.length
+    end
+
+    it "must be a GraphQL::StaticValidation::Validator" do
+      invalid_validator = {}
+
+      err1 = assert_raises ArgumentError do
+        GraphQL::Query.new(schema, "{ zebra }", static_validator: invalid_validator)
+      end
+
+      err2 = assert_raises ArgumentError do
+        GraphQL::Query.new(schema, "{ zebra }")
+        query.static_validator = invalid_validator
+      end
+
+      expected_message = "Expected a `GraphQL::StaticValidation::Validator` instance."
+      assert_equal expected_message, err1.message
+      assert_equal expected_message, err2.message
+    end
+
+    it "can't be reassigned after validating" do
+      query = GraphQL::Query.new(schema, "{ zebra }")
+
+      query.static_validator = GraphQL::StaticValidation::Validator.new(schema: schema, rules: [ZebraRule])
+      assert_equal true, query.valid?
+      assert_equal 0, query.static_errors.length
+
+      err = assert_raises ArgumentError do
+        query.static_validator = GraphQL::StaticValidation::Validator.new(schema: schema, rules: [ZebraRule])
+      end
+
+      expected_message = "Can't reassign Query#static_validator= after validation has run, remove this assignment."
+      assert_equal expected_message, err.message
     end
   end
 
@@ -823,7 +896,13 @@ describe GraphQL::Query do
   end
 
   it "Accepts a passed-in warden" do
-    warden = GraphQL::Schema::Warden.new(->(t, ctx) { false }, schema: Jazz::Schema, context: nil)
+    schema_class = Class.new(Jazz::Schema) do
+      def self.visible?(member, ctx)
+        false
+      end
+    end
+
+    warden = GraphQL::Schema::Warden.new(schema: schema_class, context: nil)
     res = Jazz::Schema.execute("{ __typename } ", warden: warden)
     assert_equal ["Schema is not configured for queries"], res["errors"].map { |e| e["message"] }
   end
@@ -973,6 +1052,74 @@ describe GraphQL::Query do
       it "returns errors" do
         refute_nil(result["errors"])
       end
+    end
+  end
+
+  describe "using GraphQL.default_parser" do
+    module DummyParser
+      DOC = GraphQL::Language::Parser.parse("{ __typename }")
+      def self.parse(query_str, trace: nil, filename: nil)
+        DOC
+      end
+    end
+
+    before do
+      @previous_parser = GraphQL.default_parser
+      GraphQL.default_parser = DummyParser
+    end
+
+    after do
+      GraphQL.default_parser = @previous_parser
+    end
+
+    it "uses it for queries" do
+      res = Dummy::Schema.execute("blah blah blah")
+      assert_equal "Query", res["data"]["__typename"]
+    end
+  end
+
+  describe "context[:trace]" do
+    class QueryTraceSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        field :int, Integer
+        def int; 1; end
+      end
+
+      class Trace < GraphQL::Tracing::Trace
+        def execute_multiplex(multiplex:)
+          @execute_multiplex_count ||= 0
+          @execute_multiplex_count += 1
+          super
+        end
+
+        def execute_query(query:)
+          @execute_query_count ||= 0
+          @execute_query_count += 1
+          super
+        end
+
+        def execute_field(**rest)
+          @execute_field_count ||= 0
+          @execute_field_count += 1
+          super
+        end
+
+        attr_reader :execute_multiplex_count, :execute_query_count, :execute_field_count
+      end
+
+      query(Query)
+    end
+
+    it "uses it instead of making a new trace" do
+      query_str = "{ int __typename }"
+      trace_instance = QueryTraceSchema::Trace.new
+      res = QueryTraceSchema.execute(query_str, context: { trace: trace_instance })
+
+      assert_equal 1, res["data"]["int"]
+
+      assert_equal 1, trace_instance.execute_multiplex_count
+      assert_equal 1, trace_instance.execute_query_count
+      assert_equal 2, trace_instance.execute_field_count
     end
   end
 end

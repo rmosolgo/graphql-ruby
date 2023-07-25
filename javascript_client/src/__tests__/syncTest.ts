@@ -1,4 +1,5 @@
 import sync from "../sync"
+import Logger from "../sync/logger"
 var fs = require("fs")
 var nock = require("nock")
 
@@ -53,16 +54,18 @@ describe("sync operations", () => {
         headers: {
           "X-Something-Special": "🎂",
         },
+        changesetVersion: "2023-05-05",
         quiet: true,
-        send: (_sendPayload: object, options: { url: string, headers: {[key: string]: string} }) => {
+        send: (_sendPayload: object, options: { url: string, headers: {[key: string]: string}, changesetVersion: string }) => {
           url = options.url
           Object.keys(options.headers).forEach((h) => {
             url += "?" + h + "=" + options.headers[h]
           })
+          url += "&changesetVersion=" + options.changesetVersion
         },
       }
       return sync(options).then(function() {
-        expect(url).toEqual("bogus?X-Something-Special=🎂")
+        expect(url).toEqual("bogus?X-Something-Special=🎂&changesetVersion=2023-05-05")
       })
     })
   })
@@ -75,10 +78,8 @@ describe("sync operations", () => {
         path: "./src/__tests__/documents",
         url: "bogus",
         verbose: true,
-        send: (_sendPayload: string, opts: { verbose: boolean }) => {
-          if (opts.verbose) {
-            console.log("Verbose!")
-          }
+        send: (_sendPayload: string, opts: { logger: Logger }) => {
+          opts.logger.log("Verbose!")
         },
       }
       return sync(options).then(function() {

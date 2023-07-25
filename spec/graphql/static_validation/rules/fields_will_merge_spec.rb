@@ -579,6 +579,38 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     end
   end
 
+  describe "nested spreads on the same type with a conflict" do
+    let(:query_string) {%|
+      {
+        dog {
+          name
+          ...D
+        }
+      }
+
+      fragment D on Dog {
+        ...D2
+      }
+
+      fragment D2 on Dog {
+        name: __typename
+      }
+    |}
+
+    it "finds a conflict" do
+      assert_equal [
+        {"message"=>"Field 'name' has a field conflict: name or __typename?",
+          "locations"=>[{"line"=>4, "column"=>11}, {"line"=>14, "column"=>9}],
+          "path"=>[],
+          "extensions"=>
+          {"code"=>"fieldConflict",
+           "fieldName"=>"name",
+           "conflicts"=>"name or __typename"}
+        }
+      ], errors
+    end
+  end
+
   describe "same aliases not allowed on different interfaces" do
     let(:query_string) {%|
       {

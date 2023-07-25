@@ -2,7 +2,7 @@
 require "spec_helper"
 
 describe GraphQL::Language::DefinitionSlice do
-  let(:document) { GraphQL::Language::Parser.parse(query_string) }
+  let(:document) { GraphQL.parse(query_string) }
 
   describe "anonymous query with no dependencies" do
     let(:query_string) {%|

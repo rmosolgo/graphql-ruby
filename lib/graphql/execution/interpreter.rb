@@ -14,7 +14,7 @@ module GraphQL
       class << self
         # Used internally to signal that the query shouldn't be executed
         # @api private
-        NO_OPERATION = {}.freeze
+        NO_OPERATION = GraphQL::EmptyObjects::EMPTY_HASH
 
         # @param schema [GraphQL::Schema]
         # @param queries [Array<GraphQL::Query, Hash>]
@@ -34,11 +34,12 @@ module GraphQL
           end
 
           multiplex = Execution::Multiplex.new(schema: schema, queries: queries, context: context, max_complexity: max_complexity)
-          multiplex.trace("execute_multiplex", { multiplex: multiplex }) do
+          multiplex.current_trace.execute_multiplex(multiplex: multiplex) do
             schema = multiplex.schema
             queries = multiplex.queries
             query_instrumenters = schema.instrumenters[:query]
             multiplex_instrumenters = schema.instrumenters[:multiplex]
+            lazies_at_depth = Hash.new { |h, k| h[k] = [] }
 
             # First, run multiplex instrumentation, then query instrumentation for each query
             call_hooks(multiplex_instrumenters, multiplex, :before_multiplex, :after_multiplex) do
@@ -67,10 +68,10 @@ module GraphQL
                           # Although queries in a multiplex _share_ an Interpreter instance,
                           # they also have another item of state, which is private to that query
                           # in particular, assign it here:
-                          runtime = Runtime.new(query: query)
+                          runtime = Runtime.new(query: query, lazies_at_depth: lazies_at_depth)
                           query.context.namespace(:interpreter_runtime)[:runtime] = runtime
 
-                          query.trace("execute_query", {query: query}) do
+                          query.current_trace.execute_query(query: query) do
                             runtime.run_eager
                           end
                         rescue GraphQL::ExecutionError => err
@@ -86,7 +87,6 @@ module GraphQL
 
                   # Then, work through lazy results in a breadth-first way
                   multiplex.dataloader.append_job {
-                    tracer = multiplex
                     query = multiplex.queries.length == 1 ? multiplex.queries[0] : nil
                     queries = multiplex ? multiplex.queries : [query]
                     final_values = queries.map do |query|
@@ -95,16 +95,13 @@ module GraphQL
                       runtime ? runtime.final_result : nil
                     end
                     final_values.compact!
-                    tracer.trace("execute_query_lazy", {multiplex: multiplex, query: query}) do
-                      Interpreter::Resolve.resolve_all(final_values, multiplex.dataloader)
+                    multiplex.current_trace.execute_query_lazy(multiplex: multiplex, query: query) do
+                      Interpreter::Resolve.resolve_each_depth(lazies_at_depth, multiplex.dataloader)
                     end
                     queries.each do |query|
                       runtime = query.context.namespace(:interpreter_runtime)[:runtime]
                       if runtime
-                        runtime.delete_interpreter_context(:current_path)
-                        runtime.delete_interpreter_context(:current_field)
-                        runtime.delete_interpreter_context(:current_object)
-                        runtime.delete_interpreter_context(:current_arguments)
+                        runtime.delete_all_interpreter_context
                       end
                     end
                   }
@@ -146,6 +143,13 @@ module GraphQL
                   # Assign values here so that the query's `@executed` becomes true
                   queries.map { |q| q.result_values ||= {} }
                   raise
+                ensure
+                  queries.map { |query|
+                    runtime = query.context.namespace(:interpreter_runtime)[:runtime]
+                    if runtime
+                      runtime.delete_all_interpreter_context
+                    end
+                  }
                 end
               end
             end

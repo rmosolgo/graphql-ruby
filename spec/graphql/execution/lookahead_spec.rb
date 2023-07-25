@@ -102,6 +102,10 @@ describe GraphQL::Execution::Lookahead do
       query(Query)
       instrument :query, LookaheadInstrumenter
     end
+
+    class AlwaysVisibleSchema < Schema
+      use GraphQL::Schema::AlwaysVisible
+    end
   end
 
   describe "looking ahead" do
@@ -118,8 +122,9 @@ describe GraphQL::Execution::Lookahead do
       }
       GRAPHQL
     }
+    let(:schema) { LookaheadTest::Schema }
     let(:query) {
-      GraphQL::Query.new(LookaheadTest::Schema, document: document, variables: { name: "Cardinal" })
+      GraphQL::Query.new(schema, document: document, variables: { name: "Cardinal" })
     }
 
     it "has a good test setup" do
@@ -137,6 +142,18 @@ describe GraphQL::Execution::Lookahead do
 
     it "detects by name, not by alias" do
       assert_equal true, query.lookahead.selects?("__typename")
+    end
+
+    describe "with a NullWarden" do
+      let(:schema) { LookaheadTest::AlwaysVisibleSchema }
+
+      it "works" do
+        lookahead = query.lookahead.selection("findBirdSpecies")
+        assert_equal true, lookahead.selects?("similarSpecies")
+        assert_equal true, lookahead.selects?(:similar_species)
+        assert_equal false, lookahead.selects?("isWaterfowl")
+        assert_equal false, lookahead.selects?(:is_waterfowl)
+      end
     end
 
     describe "on unions" do

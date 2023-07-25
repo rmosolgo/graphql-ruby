@@ -4,6 +4,16 @@ module GraphQL
   class Schema
     class Member
       module HasDirectives
+        def self.extended(child_cls)
+          super
+          child_cls.module_eval { self.own_directives = nil }
+        end
+
+        def inherited(child_cls)
+          super
+          child_cls.own_directives = nil
+        end
+
         # Create an instance of `dir_class` for `self`, using `options`.
         #
         # It removes a previously-attached instance of `dir_class`, if there is one.
@@ -22,8 +32,6 @@ module GraphQL
           HasDirectives.remove_directive(@own_directives, dir_class)
           nil
         end
-
-        NO_DIRECTIVES = [].freeze
 
         def directives
           HasDirectives.get_directives(self, @own_directives, :directives)
@@ -45,7 +53,7 @@ module GraphQL
               inherited_directives = if schema_member.superclass.respond_to?(directives_method)
                 get_directives(schema_member.superclass, schema_member.superclass.public_send(directives_method), directives_method)
               else
-                NO_DIRECTIVES
+                GraphQL::EmptyObjects::EMPTY_ARRAY
               end
               if inherited_directives.any? && directives
                 dirs = []
@@ -57,7 +65,7 @@ module GraphQL
               elsif inherited_directives.any?
                 inherited_directives
               else
-                NO_DIRECTIVES
+                GraphQL::EmptyObjects::EMPTY_ARRAY
               end
             when Module
               dirs = nil
@@ -72,9 +80,9 @@ module GraphQL
                 dirs ||= []
                 merge_directives(dirs, directives)
               end
-              dirs || NO_DIRECTIVES
+              dirs || GraphQL::EmptyObjects::EMPTY_ARRAY
             when HasDirectives
-              directives || NO_DIRECTIVES
+              directives || GraphQL::EmptyObjects::EMPTY_ARRAY
             else
               raise "Invariant: how could #{schema_member} not be a Class, Module, or instance of HasDirectives?"
             end
@@ -101,12 +109,9 @@ module GraphQL
           end
         end
 
-
         protected
 
-        def own_directives
-          @own_directives
-        end
+        attr_accessor :own_directives
       end
     end
   end

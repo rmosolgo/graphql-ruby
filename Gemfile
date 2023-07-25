@@ -10,6 +10,9 @@ gem 'pry-stack_explorer', platform: :ruby
 gem 'graphql-batch'
 gem 'pry-byebug'
 
+# For Ruby 3.2 compat:
+gem "yard", github: "lsegal/yard", ref: "b51bf26"
+
 if RUBY_VERSION >= "3.0"
   gem "libev_scheduler"
   gem "evt"

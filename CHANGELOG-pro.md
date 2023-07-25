@@ -8,6 +8,81 @@
 
 ### Bug Fix
 
+# 1.24.7 (16 June 2023)
+
+### Bug Fix
+
+- Stable relation connections: quote table names and column names in `WHERE` clauses #4508
+
+# 1.24.6 (24 May 2023)
+
+### New Features
+
+- Defer: Add `incremental: true` for new proposed wire format, add example for working with GraphQL-Batch #4477
+
+# 1.24.5 (24 May 2023)
+
+### Bug Fix
+
+- Stable relation connection: Quote table names and column names in selects and orders #4485
+
+# 1.24.4 (18 April 2023)
+
+### Bug Fix
+
+- `@defer`: update `context[:current_path]` usage to fix `path:` on deferred errors
+
+# 1.24.3 (14 April 2023)
+
+### Bug Fix
+
+- `OperationStore`: fix when used with Changesets (or other ways of defining arguments with the same name) #4440
+
+# 1.24.2 (20 Mar 2023)
+
+### Bug Fix
+
+- Remove debug output, oops
+
+# 1.24.1 (20 Mar 2023)
+
+### Bug Fix
+
+- Fix `OperationStore` with new module-based execution traces (#4389)
+
+# 1.24.0 (10 Feb 2023)
+
+### New Features
+
+- Support the `redis-client` gem as `redis:`
+
+# 1.23.9 (2 Feb 2023)
+
+### Bug Fix
+
+- Dashboard: Support Ruby 3.2.0
+
+# 1.23.8 (27 Jan 2023)
+
+### New Features
+
+- OperationStore: Support `Changeset-Version` header for syncing with changesets #4304
+
+# 1.23.7 (25 Jan 2023)
+
+### Bug Fix
+
+- Stable Relation Connections: Fix handling of Postgres JSON accesses
+
+# 1.23.6
+
+### New Features
+
+- Subscriptions: accept `connection_pool:` instead of `redis:` for use with the `connection_pool` gem
+
+### Bug Fix
+
+- Stable connections: rescue `ActiveRecord::StatementInvalid` when loading nodes and return a client-facing error instead
 
 # 1.23.5 (29 December 2022)
 

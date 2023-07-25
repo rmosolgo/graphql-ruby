@@ -61,6 +61,7 @@ module Dummy
 
   class DairyAnimal < BaseEnum
     description "An animal which can yield milk"
+    value("NONE",     "No animal", value: nil)
     value("COW",      "Animal with black and white spots", value: 1)
     value("DONKEY",   "Animal with fur", value: :donkey)
     value("GOAT",     "Animal with horns")
@@ -516,6 +517,7 @@ module Dummy
     subscription Subscription
     max_depth 5
     orphan_types Honey, Beverage
+    trace_with GraphQL::Tracing::CallLegacyTracers
 
     rescue_from(NoSuchDairyError) { |err| raise GraphQL::ExecutionError, err.message  }
 

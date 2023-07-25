@@ -2,6 +2,13 @@
 require "spec_helper"
 
 describe GraphQL::Schema::Timeout do
+  module OtherTrace
+    def execute_field(query:, **opts)
+      query.context[:other_trace_worked] = true
+      super
+    end
+  end
+
   let(:max_seconds) { 1 }
   let(:timeout_class) { GraphQL::Schema::Timeout }
   let(:timeout_schema) {
@@ -48,6 +55,7 @@ describe GraphQL::Schema::Timeout do
 
     schema = Class.new(GraphQL::Schema) do
       query query_type
+      trace_with OtherTrace
     end
     schema.use timeout_class, max_seconds: max_seconds
     schema
@@ -88,6 +96,7 @@ describe GraphQL::Schema::Timeout do
       ]
       assert_equal expected_data, result["data"]
       assert_equal expected_errors, result["errors"]
+      assert_equal true, result.context[:other_trace_worked], "It works with other traces"
     end
   end
 

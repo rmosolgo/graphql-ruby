@@ -1,24 +1,24 @@
 # frozen_string_literal: true
 
 module GraphQL
-  # Extend this class to define GraphQL enums in your schema.
-  #
-  # By default, GraphQL enum values are translated into Ruby strings.
-  # You can provide a custom value with the `value:` keyword.
-  #
-  # @example
-  #   # equivalent to
-  #   # enum PizzaTopping {
-  #   #   MUSHROOMS
-  #   #   ONIONS
-  #   #   PEPPERS
-  #   # }
-  #   class PizzaTopping < GraphQL::Enum
-  #     value :MUSHROOMS
-  #     value :ONIONS
-  #     value :PEPPERS
-  #   end
   class Schema
+    # Extend this class to define GraphQL enums in your schema.
+    #
+    # By default, GraphQL enum values are translated into Ruby strings.
+    # You can provide a custom value with the `value:` keyword.
+    #
+    # @example
+    #   # equivalent to
+    #   # enum PizzaTopping {
+    #   #   MUSHROOMS
+    #   #   ONIONS
+    #   #   PEPPERS
+    #   # }
+    #   class PizzaTopping < GraphQL::Enum
+    #     value :MUSHROOMS
+    #     value :ONIONS
+    #     value :PEPPERS
+    #   end
     class Enum < GraphQL::Schema::Member
       extend GraphQL::Schema::Member::ValidatesInput
 
