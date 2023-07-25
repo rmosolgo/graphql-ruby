@@ -83,6 +83,23 @@ module GraphQL
         else
           default_page_size
         end
+        @was_scoped = nil
+      end
+
+      def was_scoped?
+        if @was_scoped.nil?
+          # Don't calculate this in `#initialize` because custom-instantiated
+          # connections get `context` assigned later.
+          @was_scoped = if @context
+            current_runtime_state = Thread.current[:__graphql_runtime_info]
+            query_runtime_state = current_runtime_state[@context.query]
+            query_runtime_state.was_scoped
+          else
+            false
+          end
+        else
+          @was_scoped
+        end
       end
 
       def max_page_size=(new_value)
@@ -246,6 +263,10 @@ module GraphQL
 
         def cursor
           @cursor ||= @connection.cursor_for(@node)
+        end
+
+        def was_scoped?
+          @connection.was_scoped?
         end
       end
     end

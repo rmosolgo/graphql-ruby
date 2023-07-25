@@ -175,7 +175,7 @@ module GraphQL
           # already happened at the connection level.
           current_runtime_state = Thread.current[:__graphql_runtime_info]
           query_runtime_state = current_runtime_state[context.query]
-          query_runtime_state.was_scoped = true
+          query_runtime_state.was_scoped = @object.was_scoped?
           @object.edges
         end
 
@@ -184,7 +184,7 @@ module GraphQL
           # already happened at the connection level.
           current_runtime_state = Thread.current[:__graphql_runtime_info]
           query_runtime_state = current_runtime_state[context.query]
-          query_runtime_state.was_scoped = true
+          query_runtime_state.was_scoped = @object.was_scoped?
           @object.nodes
         end
       end
