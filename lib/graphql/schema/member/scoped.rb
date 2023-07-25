@@ -18,13 +18,20 @@ module GraphQL
 
         def reauthorize_scoped_objects(new_value = nil)
           if new_value.nil?
-            if defined?(@reauthorize_scoped_objects)
+            if @reauthorize_scoped_objects != nil
               @reauthorize_scoped_objects
             else
               find_inherited_value(:reauthorize_scoped_objects, nil)
             end
           else
             @reauthorize_scoped_objects = new_value
+          end
+        end
+
+        def inherited(subclass)
+          super
+          subclass.class_eval do
+            @reauthorize_scoped_objects = nil
           end
         end
       end
