@@ -380,7 +380,7 @@ Resolvers are authorized just like [mutations](#authorizing-mutations), and requ
 class Resolvers::BaseResolver < GraphQL::Schema::Resolver
   include GraphQL::Pro::PunditIntegration::ResolverIntegration
   argument_class BaseArgument
-  # pundit_policy(nil) # to disable authorization by default
+  # pundit_role nil # to disable authorization by default
 end
 ```
 
