@@ -24,7 +24,7 @@ module GraphQL
       def context=(new_ctx)
         current_runtime_state = Thread.current[:__graphql_runtime_info]
         query_runtime_state = current_runtime_state[new_ctx.query]
-        @was_scoped = query_runtime_state.was_scoped
+        @was_authorized_by_scope_items = query_runtime_state.was_authorized_by_scope_items
         @context = new_ctx
       end
 
@@ -90,17 +90,17 @@ module GraphQL
         else
           default_page_size
         end
-        @was_scoped = if @context
+        @was_authorized_by_scope_items = if @context
           current_runtime_state = Thread.current[:__graphql_runtime_info]
           query_runtime_state = current_runtime_state[@context.query]
-          query_runtime_state.was_scoped
+          query_runtime_state.was_authorized_by_scope_items
         else
           nil
         end
       end
 
-      def was_scoped?
-        @was_scoped
+      def was_authorized_by_scope_items?
+        @was_authorized_by_scope_items
       end
 
       def max_page_size=(new_value)
@@ -266,8 +266,8 @@ module GraphQL
           @cursor ||= @connection.cursor_for(@node)
         end
 
-        def was_scoped?
-          @connection.was_scoped?
+        def was_authorized_by_scope_items?
+          @connection.was_authorized_by_scope_items?
         end
       end
     end
