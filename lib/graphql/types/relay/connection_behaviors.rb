@@ -69,8 +69,6 @@ module GraphQL
               description: "A list of edges.",
               scope: false, # Assume that the connection was already scoped.
               connection: false,
-              # Assume that the connection was scoped before this step:
-              scope: false,
             }
 
             if field_options
@@ -173,6 +171,8 @@ module GraphQL
         end
 
         def edges
+          # Assume that whatever authorization needed to happen
+          # already happened at the connection level.
           current_runtime_state = Thread.current[:__graphql_runtime_info]
           query_runtime_state = current_runtime_state[context.query]
           query_runtime_state.was_scoped = true
@@ -180,6 +180,8 @@ module GraphQL
         end
 
         def nodes
+          # Assume that whatever authorization needed to happen
+          # already happened at the connection level.
           current_runtime_state = Thread.current[:__graphql_runtime_info]
           query_runtime_state = current_runtime_state[context.query]
           query_runtime_state.was_scoped = true

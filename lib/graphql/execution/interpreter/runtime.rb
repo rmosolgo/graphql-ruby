@@ -249,7 +249,7 @@ module GraphQL
           st = get_current_runtime_state
           st.current_object = query.root_value
           st.current_result = @response
-          runtime_object = root_type.wrap(query.root_value, context, scoped: false)
+          runtime_object = root_type.wrap(query.root_value, context)
           runtime_object = schema.sync_lazy(runtime_object)
 
           if runtime_object.nil?
@@ -441,7 +441,7 @@ module GraphQL
           st.current_result_name = result_name
 
           if is_introspection
-            owner_object = field_defn.owner.wrap(owner_object, context, scoped: false)
+            owner_object = field_defn.owner.wrap(owner_object, context)
           end
 
           total_args_count = field_defn.arguments(context).size
@@ -777,7 +777,7 @@ module GraphQL
             end
           when "OBJECT"
             object_proxy = begin
-              current_type.wrap(value, context, scoped: was_scoped)
+              was_scoped ? current_type.wrap_scoped(value, context) : current_type.wrap(value, context)
             rescue GraphQL::ExecutionError => err
               err
             end
