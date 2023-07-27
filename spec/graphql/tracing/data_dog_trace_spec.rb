@@ -23,9 +23,17 @@ describe GraphQL::Tracing::DataDogTrace do
       def thing; :thing; end
     end
 
+    module CustomQueryStringTrace
+      def execute_query(query:)
+        query.query_string += "\n# custom addition"
+        super
+      end
+    end
+
     class TestSchema < GraphQL::Schema
       query(Query)
       trace_with(GraphQL::Tracing::DataDogTrace)
+      trace_with(CustomQueryStringTrace)
     end
 
     class CustomTracerTestSchema < GraphQL::Schema
@@ -36,6 +44,7 @@ describe GraphQL::Tracing::DataDogTrace do
         end
       end
       query(Query)
+      trace_with(CustomQueryStringTrace)
       trace_with(CustomDataDogTracing)
     end
   end
@@ -47,6 +56,15 @@ describe GraphQL::Tracing::DataDogTrace do
   it "falls back to a :tracing_fallback_transaction_name when provided" do
     DataDogTraceTest::TestSchema.execute("{ int }", context: { tracing_fallback_transaction_name: "Abcd" })
     assert_equal ["Abcd"], Datadog::SPAN_RESOURCE_NAMES
+  end
+
+  it "uses a modified query string, regardless of load order" do
+    DataDogTraceTest::CustomTracerTestSchema.execute("query Ab { int }")
+    assert_includes Datadog::SPAN_TAGS, [:query_string, "query Ab { int }\n# custom addition"]
+
+    DataDogTraceTest::TestSchema.execute("query Ab { int }")
+    assert_includes Datadog::SPAN_TAGS, [:query_string, "query Ab { int }\n# custom addition"]
+
   end
 
   it "does not use the :tracing_fallback_transaction_name if an operation name is present" do
