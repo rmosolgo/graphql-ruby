@@ -148,3 +148,23 @@ dataloader.with(Sources::ActiveRecordObject, Comment).merge(comments_by_id)
 ```
 
 After that, any calls to `.load(id)` will use those already-loaded records if they're available.
+
+## De-duplicating equivalent objects
+
+Sometimes, _different_ objects in the application should load the same object from `fetch`. You can customize this behavior by implementing `def result_key_for(key)` in your application. For example, to map records from your ORM to their database ID:
+
+```ruby
+# Load the `created_by` person for a record from our database
+class CreatedBySource < GraphQL::Dataloader::Source
+  def result_key_for(key)
+    key.id # Use the record's ID to deduplicate different `.load` calls
+  end
+
+  # Fetch a `person` for each of `records`, based on their created_by_id
+  def fetch(records)
+    PersonService.find_each(records.map(&:created_by_id))
+  end
+end
+```
+
+In this case, `records` will include the _first_ object for each unique `record.id` -- subsequent records with the same `.id` will be assumed to be duplicates. Under the hood, the `Source` will cache the result based on the record's `id`.

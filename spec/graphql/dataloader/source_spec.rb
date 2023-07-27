@@ -26,6 +26,35 @@ describe GraphQL::Dataloader::Source do
     assert source_cache[FailsToLoadSource][[{}]].pending?
   end
 
+  class CustomKeySource < GraphQL::Dataloader::Source
+    def result_key_for(record)
+      record[:id]
+    end
+
+    def fetch(records)
+      records.map { |r| r[:value] * 10 }
+    end
+  end
+
+  it "uses a custom key when configured" do
+    values = nil
+
+    GraphQL::Dataloader.with_dataloading do |dl|
+      first_req = dl.with(CustomKeySource).request({ id: 1, value: 10 })
+      second_rec = dl.with(CustomKeySource).request({ id: 2, value: 20 })
+      third_rec = dl.with(CustomKeySource).request({id: 1, value: 30 })
+
+      values = [
+        first_req.load,
+        second_rec.load,
+        third_rec.load
+      ]
+    end
+
+    # There wasn't a `300` because the third requested value was de-duped to the first one.
+    assert_equal [100, 200, 100], values
+  end
+
   class NoDataloaderSchema < GraphQL::Schema
     class ThingSource < GraphQL::Dataloader::Source
       def fetch(ids)
