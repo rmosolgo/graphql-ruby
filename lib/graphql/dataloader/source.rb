@@ -43,7 +43,7 @@ module GraphQL
             @pending[res_key] ||= v
           end
         end
-        Dataloader::RequestAll.new(self, keys)
+        Dataloader::RequestAll.new(self, values)
       end
 
       # @param value [Object] A loading value which will be passed to {#fetch} if it isn't already in the internal cache.
