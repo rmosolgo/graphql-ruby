@@ -59,7 +59,14 @@ module GraphQL
                     Datadog::Contrib::Analytics.set_sample_rate(span, @analytics_sample_rate)
                   end
                   RUBY
-                elsif trace_method == 'execute_query'
+                end
+              }
+              if @has_prepare_span
+                prepare_span("#{trace_method.sub("platform_", "")}", data, span)
+              end
+              result = super
+              #{
+                if trace_method == 'execute_query'
                   <<-RUBY
                   span.set_tag(:selected_operation_name, data[:query].selected_operation_name)
                   span.set_tag(:selected_operation_type, data[:query].selected_operation.operation_type)
@@ -67,10 +74,7 @@ module GraphQL
                   RUBY
                 end
               }
-              if @has_prepare_span
-                prepare_span("#{trace_method.sub("platform_", "")}", data, span)
-              end
-              super
+              result
             end
           end
         RUBY
