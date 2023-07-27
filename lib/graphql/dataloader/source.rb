@@ -138,7 +138,7 @@ module GraphQL
         end
         nil
       rescue StandardError => error
-        fetch_h.each { |(key, _v)| @results[key] = error }
+        fetch_h.each_key { |key| @results[key] = error }
       ensure
         fetch_h && fetch_h.each_key { |k| @fetching.delete(k) }
       end
@@ -161,9 +161,7 @@ module GraphQL
         [*batch_args, **batch_kwargs]
       end
 
-      def pending_keys
-        @pending.keys
-      end
+      attr_reader :pending
 
       private
 
