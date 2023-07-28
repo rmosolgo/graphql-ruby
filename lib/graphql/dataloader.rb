@@ -111,8 +111,8 @@ module GraphQL
       @source_cache.each do |source_class, batched_sources|
         batched_sources.each do |batch_args, batched_source_instance|
           if batched_source_instance.pending?
-            prev_pending_keys[batched_source_instance] = batched_source_instance.pending_keys.dup
-            batched_source_instance.pending_keys.clear
+            prev_pending_keys[batched_source_instance] = batched_source_instance.pending.dup
+            batched_source_instance.pending.clear
           end
         end
       end
@@ -127,8 +127,8 @@ module GraphQL
       res
     ensure
       @pending_jobs = prev_queue
-      prev_pending_keys.each do |source_instance, pending_keys|
-        source_instance.pending_keys.concat(pending_keys)
+      prev_pending_keys.each do |source_instance, pending|
+        source_instance.pending.merge!(pending)
       end
     end
 
