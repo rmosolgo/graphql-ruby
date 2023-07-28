@@ -168,3 +168,11 @@ end
 ```
 
 In this case, `records` will include the _first_ object for each unique `record.id` -- subsequent records with the same `.id` will be assumed to be duplicates. Under the hood, the `Source` will cache the result based on the record's `id`.
+
+Alternatively, you could use this to make the `Source` retain each incoming object, even when they would _otherwise_ be treated as duplicates. (This would come in handy when you need `def fetch` to mutate each object). For example, to treat _every_ incoming object as distinct:
+
+```ruby
+def result_key_for(record)
+  record.object_id # even if the records are equivalent, handle each distinct Ruby object separately
+end
+```
