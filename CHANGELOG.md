@@ -14,7 +14,7 @@
 
 ### New features
 
-- `Schema::Object.wrap` can be used to customize how objects are (or aren't) wrapped by `GraphQL::Schema::Object` instances at runtime #5424
+- `Schema::Object.wrap` can be used to customize how objects are (or aren't) wrapped by `GraphQL::Schema::Object` instances at runtime #4524
 - `Query`: accept a `static_validator:` option in `#initialize` to use instead of the default validation configuration.
 
 ### Bug fixes
