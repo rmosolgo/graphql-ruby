@@ -116,6 +116,7 @@
 </a></li><li class='contents-entry'><a href='#example-batched-calculations'>Example: Batched Calculations
 </a></li><li class='contents-entry'><a href='#example-loading-in-a-background-thread'>Example: Loading in a background thread
 </a></li><li class='contents-entry'><a href='#filling-the-dataloader-cache'>Filling the Dataloader Cache
+</a></li><li class='contents-entry'><a href='#de-duplicating-equivalent-objects'>De-duplicating equivalent objects
 </a></li></ol>
 </div>
 </div>
@@ -258,6 +259,32 @@
 </code></pre></div></div>
 
 <p>After that, any calls to <code class="language-plaintext highlighter-rouge">.load(id)</code> will use those already-loaded records if they’re available.</p>
+
+<h2 id="de-duplicating-equivalent-objects">De-duplicating equivalent objects</h2>
+
+<p>Sometimes, <em>different</em> objects in the application should load the same object from <code class="language-plaintext highlighter-rouge">fetch</code>. You can customize this behavior by implementing <code class="language-plaintext highlighter-rouge">def result_key_for(key)</code> in your application. For example, to map records from your ORM to their database ID:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Load the `created_by` person for a record from our database</span>
+<span class="k">class</span> <span class="nc">CreatedBySource</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Dataloader</span><span class="o">::</span><span class="no">Source</span>
+  <span class="k">def</span> <span class="nf">result_key_for</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+    <span class="n">key</span><span class="p">.</span><span class="nf">id</span> <span class="c1"># Use the record's ID to deduplicate different `.load` calls</span>
+  <span class="k">end</span>
+
+  <span class="c1"># Fetch a `person` for each of `records`, based on their created_by_id</span>
+  <span class="k">def</span> <span class="nf">fetch</span><span class="p">(</span><span class="n">records</span><span class="p">)</span>
+    <span class="no">PersonService</span><span class="p">.</span><span class="nf">find_each</span><span class="p">(</span><span class="n">records</span><span class="p">.</span><span class="nf">map</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:created_by_id</span><span class="p">))</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>In this case, <code class="language-plaintext highlighter-rouge">records</code> will include the <em>first</em> object for each unique <code class="language-plaintext highlighter-rouge">record.id</code> – subsequent records with the same <code class="language-plaintext highlighter-rouge">.id</code> will be assumed to be duplicates. Under the hood, the <code class="language-plaintext highlighter-rouge">Source</code> will cache the result based on the record’s <code class="language-plaintext highlighter-rouge">id</code>.</p>
+
+<p>Alternatively, you could use this to make the <code class="language-plaintext highlighter-rouge">Source</code> retain each incoming object, even when they would <em>otherwise</em> be treated as duplicates. (This would come in handy when you need <code class="language-plaintext highlighter-rouge">def fetch</code> to mutate each object). For example, to treat <em>every</em> incoming object as distinct:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">result_key_for</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+  <span class="n">record</span><span class="p">.</span><span class="nf">object_id</span> <span class="c1"># even if the records are equivalent, handle each distinct Ruby object separately</span>
+<span class="k">end</span>
+</code></pre></div></div>
 
 </div>
 <p class="guide-footer">
