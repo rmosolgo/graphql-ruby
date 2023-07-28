@@ -158,16 +158,24 @@ module GraphQL
       def trace_class_for(mode)
         @trace_modes ||= {}
         @trace_modes[mode] ||= begin
-          if mode == :default_backtrace
+          case mode
+          when :default
+            superclass_base_class = if superclass.respond_to?(:trace_class_for)
+              superclass.trace_class_for(mode)
+            else
+              GraphQL::Tracing::Trace
+            end
+            Class.new(superclass_base_class)
+          when :default_backtrace
             schema_base_class = trace_class_for(:default)
             Class.new(schema_base_class) do
               include(GraphQL::Backtrace::Trace)
             end
-          elsif superclass.respond_to?(:trace_class_for)
-            superclass_base_class = superclass.trace_class_for(mode)
-            Class.new(superclass_base_class)
           else
-            Class.new(GraphQL::Tracing::Trace)
+            mods = trace_modules_for(mode)
+            Class.new(trace_class_for(:default)) do
+              mods.any? && include(*mods)
+            end
           end
         end
       end
@@ -181,6 +189,19 @@ module GraphQL
         @trace_modes ||= {}
         @trace_modes[mode_name] = trace_class
         nil
+      end
+
+      def own_trace_modules
+        @own_trace_modules ||= Hash.new { |h, k| h[k] = [] }
+      end
+
+      # @return [Array<Module>] Modules added for tracing in `trace_mode`, including inherited ones
+      def trace_modules_for(trace_mode)
+        modules = own_trace_modules[trace_mode]
+        if superclass.respond_to?(:trace_modules_for)
+          modules += superclass.trace_modules_for(trace_mode)
+        end
+        modules
       end
 
 
@@ -988,13 +1009,6 @@ module GraphQL
         find_inherited_value(:tracers, EMPTY_ARRAY) + own_tracers
       end
 
-      def trace_mods
-        inherited_trace_mods = find_inherited_value(:trace_mods) || Hash.new { |h,k| h[k] = [] }
-        inherited_trace_mods.merge(own_trace_mods) do |_step, inherited, own|
-          inherited + own
-        end
-      end
-
       # Mix `trace_mod` into this schema's `Trace` class so that its methods
       # will be called at runtime.
       #
@@ -1003,12 +1017,31 @@ module GraphQL
       # @param options [Hash] Keywords that will be passed to the tracing class during `#initialize`
       # @return [void]
       def trace_with(trace_mod, mode: :default, **options)
-        own_trace_mods[mode] << trace_mod
-        trace_options.merge!(options)
+        if mode.is_a?(Array)
+          mode.each { |m| trace_with(trace_mod, mode: m, **options) }
+        else
+          tc = trace_class_for(mode)
+          tc.include(trace_mod)
+          if mode != :default
+            own_trace_modules[mode] << trace_mod
+          end
+          t_opts = trace_options_for(mode)
+          t_opts.merge!(options)
+        end
+        nil
       end
 
-      def trace_options
-        @trace_options ||= superclass.respond_to?(:trace_options) ? superclass.trace_options.dup : {}
+      # The options hash for this trace mode
+      # @return [Hash]
+      def trace_options_for(mode)
+        @trace_options_for_mode ||= {}
+        @trace_options_for_mode[mode] ||= begin
+          if superclass.respond_to?(:trace_options_for)
+            superclass.trace_options_for(mode).dup
+          else
+            {}
+          end
+        end
       end
 
       # Create a trace instance which will include the trace modules specified for the optional mode.
@@ -1017,22 +1050,21 @@ module GraphQL
       # @param options [Hash] Keywords that will be passed to the tracing class during `#initialize`
       # @return [Tracing::Trace]
       def new_trace(mode: nil, **options)
-        options = trace_options.merge(options)
+        target = options[:query] || options[:multiplex]
+        mode ||= target && target.context[:trace_mode]
 
         trace_mode = if mode
           mode
-        elsif (target = options[:query] || options[:multiplex]) && target.context[:backtrace]
+        elsif target && target.context[:backtrace]
           :default_backtrace
         else
           :default
         end
 
-        modules = trace_mods[:default]
-        modules += trace_mods[trace_mode] if trace_mode != :default
-
-        trace_class = trace_class_for(trace_mode)
-        trace_class.include(*modules) if modules.any?
-        trace_class.new(**options)
+        base_trace_options = trace_options_for(trace_mode)
+        trace_options = base_trace_options.merge(options)
+        trace_class_for_mode = trace_class_for(trace_mode)
+        trace_class_for_mode.new(**trace_options)
       end
 
       def query_analyzer(new_analyzer)
@@ -1073,6 +1105,7 @@ module GraphQL
             tracers: ctx[:tracers],
             trace: ctx[:trace],
             dataloader: ctx[:dataloader],
+            trace_mode: ctx[:trace_mode],
           }
         else
           {}
@@ -1285,10 +1318,6 @@ module GraphQL
 
       def own_tracers
         @own_tracers ||= []
-      end
-
-      def own_trace_mods
-        @own_trace_mods ||= Hash.new { |h,k| h[k] = [] }
       end
 
       def own_query_analyzers
