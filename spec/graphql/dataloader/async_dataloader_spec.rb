@@ -82,6 +82,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
 
     def with_scheduler
       prev_scheduler = Fiber.scheduler
+      p "Setting a new scheduler (#{scheduler_class})"
       Fiber.set_scheduler(scheduler_class.new)
       yield
     ensure
