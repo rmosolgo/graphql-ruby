@@ -120,7 +120,8 @@
 <h1 class="guide-header">Tracing</h1>
 <div class="guide-table-of-contents"><div class="table-of-contents">
   <h3 class="contents-header">Contents</h3>
-  <ol class='contents-list'><li class='contents-entry'><a href='#activesupport-notifications'>ActiveSupport::Notifications
+  <ol class='contents-list'><li class='contents-entry'><a href='#trace-modes'>Trace Modes
+</a></li><li class='contents-entry'><a href='#activesupport-notifications'>ActiveSupport::Notifications
 </a></li><li class='contents-entry'><a href='#monitoring'>Monitoring
 </a></li><li class='contents-entry'><a href='#appoptics'>AppOptics
 </a></li><li class='contents-entry'><a href='#appsignal'>Appsignal
@@ -157,6 +158,17 @@
 <p>For a full list of methods and their arguments, see <a href="/api-doc/2.0.24/GraphQL/Tracing/Trace" target="_blank" title="API docs for GraphQL::Tracing::Trace"><code>GraphQL::Tracing::Trace</code></a>.</p>
 
 <p>By default, GraphQL-Ruby makes a new trace instance when it runs a query. You can pass an existing instance as <code class="language-plaintext highlighter-rouge">context: { trace: ... }</code>. Also, <code class="language-plaintext highlighter-rouge">GraphQL.parse( ..., trace: ...)</code> accepts a trace instance.</p>
+
+<h2 id="trace-modes">Trace Modes</h2>
+
+<p>You can attach a trace module to run only in some circumstances by using <code class="language-plaintext highlighter-rouge">mode:</code>. For example, to add detailed tracing for only some requests:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">trace_with</span> <span class="no">DetailedTracing</span><span class="p">,</span> <span class="ss">mode: :detailed_metrics</span>
+</code></pre></div></div>
+
+<p>Then, to opt into that trace, use <code class="language-plaintext highlighter-rouge">context: { trace_mode: :detailed_metrics, ... }</code> when executing queries.</p>
+
+<p>Any custom trace modes <em>also</em> include the default <code class="language-plaintext highlighter-rouge">trace_with ...</code> modules (that is, those added <em>without</em> any particular <code class="language-plaintext highlighter-rouge">mode: ...</code> configuration).</p>
 
 <h2 id="activesupportnotifications">ActiveSupport::Notifications</h2>
 
