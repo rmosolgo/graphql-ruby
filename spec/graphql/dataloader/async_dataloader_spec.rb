@@ -6,7 +6,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
     class SleepSource < GraphQL::Dataloader::Source
       def fetch(keys)
         max_sleep = keys.max
-        `sleep #{max_sleep}`
+        @dataloader.do_sleep(max_sleep)
         keys.map { |_k| max_sleep }
       end
     end
@@ -19,7 +19,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
       def fetch(waits)
         max_wait = waits.max
         # puts "[#{Time.now.to_f}] Waiting #{max_wait} for #{@tag}"
-        `sleep #{max_wait}`
+        @dataloader.do_sleep(max_wait)
         # puts "[#{Time.now.to_f}] Finished for #{@tag}"
         waits.map { |_w| @tag }
       end
@@ -31,7 +31,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
       end
 
       def sleep(duration:)
-        `sleep #{duration}`
+        dataloader.do_sleep(duration)
         duration
       end
 
@@ -65,7 +65,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
       end
 
       def sleep(duration:)
-        `sleep #{duration}`
+        dataloader.do_sleep(duration)
         duration
       end
 
@@ -95,9 +95,15 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
         if fiber_mode
           opts[:fiber_control_mode] = fiber_mode
         end
+        sleepable_mod = sleepable
+
+        custom_dataloader = Class.new(GraphQL::Dataloader) do
+          include sleepable_mod
+        end
         @async_schema = Class.new(GraphQL::Schema) do
+          extend sleepable_mod
           query(Query)
-          use GraphQL::Dataloader, **opts
+          use custom_dataloader, **opts
         end
       end
 
@@ -106,9 +112,9 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
           it "runs IO in parallel by default" do
             dataloader = @async_schema.dataloader_class.new
             results = {}
-            dataloader.append_job { `sleep 0.1`; results[:a] = 1 }
-            dataloader.append_job { `sleep 0.2`; results[:b] = 2 }
-            dataloader.append_job { `sleep 0.3`; results[:c] = 3 }
+            dataloader.append_job { @async_schema.do_sleep(0.1); results[:a] = 1 }
+            dataloader.append_job { @async_schema.do_sleep(0.2); results[:b] = 2 }
+            dataloader.append_job { @async_schema.do_sleep(0.3); results[:c] = 3 }
 
             assert_equal({}, results, "Nothing ran yet")
             started_at = Time.now
@@ -243,9 +249,22 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
       end
     end
 
+    module BacktickSleep
+      def do_sleep(duration)
+        `sleep #{duration}`
+      end
+    end
+
+    module SystemSleep
+      def do_sleep(duration)
+        system("sleep #{duration}")
+      end
+    end
+
     describe "With the toy scheduler from Ruby's tests" do
       let(:scheduler_class) { ::DummyScheduler }
       let(:fiber_control_mode) { nil }
+      let(:sleepable) { BacktickSleep }
       include AsyncDataloaderAssertions
     end
 
@@ -254,6 +273,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
         require "libev_scheduler"
         let(:scheduler_class) { Libev::Scheduler }
         let(:fiber_control_mode) { nil }
+        let(:sleepable) { BacktickSleep }
         include AsyncDataloaderAssertions
       end
     end
@@ -262,25 +282,26 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
       require "evt"
       let(:scheduler_class) { Evt::Scheduler }
       let(:fiber_control_mode) { nil }
+      let(:sleepable) { BacktickSleep }
       include AsyncDataloaderAssertions
     end
 
-    if RUBY_VERSION < "3.2.0"
+
+    if RUBY_VERSION > "3.2"
       describe "with fiber_scheduler" do
         require "fiber_scheduler"
         let(:scheduler_class) { FiberScheduler }
         let(:fiber_control_mode) { :transfer }
+        let(:sleepable) { SystemSleep }
+        include AsyncDataloaderAssertions
+      end
+      describe "with async" do
+        require "async"
+        let(:scheduler_class) { Async::Scheduler }
+        let(:fiber_control_mode) { :transfer }
+        let(:sleepable) { SystemSleep }
         include AsyncDataloaderAssertions
       end
     end
-
-    # if RUBY_VERSION > "3.2"
-    #   describe "with async" do
-    #     require "async"
-    #     let(:scheduler_class) { Async::Scheduler }
-    #     let(:fiber_control_mode) { :transfer }
-    #     include AsyncDataloaderAssertions
-    #   end
-    # end
   end
 end
