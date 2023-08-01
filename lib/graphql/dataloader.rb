@@ -183,11 +183,7 @@ module GraphQL
         while @pending_jobs.any?
           # Create a Fiber to consume jobs until one of the jobs yields
           # or jobs run out
-          f = spawn_fiber {
-            while (job = @pending_jobs.shift)
-              job.call
-            end
-          }
+          f = spawn_fiber(RunPendingJobs.new(@pending_jobs))
           resume(f)
           # In this case, the job yielded. Queue it up to run again after
           # we load whatever it's waiting for.
@@ -272,9 +268,7 @@ module GraphQL
         #
         # This design could probably be improved by maintaining a `@pending_sources` queue which is shared by the fibers,
         # similar to `@pending_jobs`. That way, when a fiber is resumed, it would never pick up work that was finished by a different fiber.
-        source_fiber = spawn_fiber do
-          pending_sources.each(&:run_pending_keys)
-        end
+        source_fiber = spawn_fiber(RunPendingSources.new(pending_sources))
       end
 
       source_fiber
@@ -296,7 +290,7 @@ module GraphQL
     # behave as expected.
     #
     # @see https://github.com/rmosolgo/graphql-ruby/issues/3449
-    def spawn_fiber
+    def spawn_fiber(work)
       fiber_locals = {}
 
       Thread.current.keys.each do |fiber_var_key|
@@ -311,13 +305,35 @@ module GraphQL
       if @nonblocking
         Fiber.new(blocking: false) do
           fiber_locals.each { |k, v| Thread.current[k] = v }
-          yield
+          work.call
         end
       else
         Fiber.new do
           fiber_locals.each { |k, v| Thread.current[k] = v }
-          yield
+          work.call
         end
+      end
+    end
+
+    class RunPendingJobs
+      def initialize(jobs)
+        @jobs = jobs
+      end
+
+      def call
+        while (job = @jobs.shift)
+          job.call
+        end
+      end
+    end
+
+    class RunPendingSources
+      def initialize(sources)
+        @sources = sources
+      end
+
+      def call
+        @sources.each(&:run_pending_keys)
       end
     end
   end
