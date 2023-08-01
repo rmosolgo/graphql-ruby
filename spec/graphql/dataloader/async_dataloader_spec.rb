@@ -296,13 +296,39 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
         let(:sleepable) { SystemSleep }
         include AsyncDataloaderAssertions
       end
-      # describe "with async" do
-      #   require "async"
-      #   let(:scheduler_class) { Async::Scheduler }
-      #   let(:fiber_control_mode) { :transfer }
-      #   let(:sleepable) { SystemSleep }
-      #   include AsyncDataloaderAssertions
-      # end
+
+      describe "with async" do
+        require "async"
+        let(:scheduler_class) { Async::Scheduler }
+        let(:fiber_control_mode) { :transfer }
+        let(:sleepable) { SystemSleep }
+        # include AsyncDataloaderAssertions
+
+        it "Runs a minimal reproduction" do
+          class MySchema < GraphQL::Schema
+            class Query < GraphQL::Schema::Object
+              field :value, Float
+
+              def value
+                duration = [0.1, 0.3, 0.5].sample
+                # `sleep #{duration}`
+                system("sleep #{duration}")
+                duration
+              end
+            end
+
+            query(Query)
+            use GraphQL::Dataloader, nonblocking: true, fiber_control_mode: :transfer
+          end
+
+          start = Time.now
+          puts "Starting..."
+          Fiber.set_scheduler(Async::Scheduler.new)
+          pp MySchema.execute("{ v1: value v2: value }").to_h
+          puts "Ended"
+          pp [:duration, Time.now - start]
+        end
+      end
     end
   end
 end
