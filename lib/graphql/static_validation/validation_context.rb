@@ -8,9 +8,6 @@ module GraphQL
     # It provides access to the schema & fragments which validators may read from.
     #
     # It holds a list of errors which each validator may add to.
-    #
-    # It also provides limited access to the {TypeStack} instance,
-    # which tracks state as you climb in and out of different fields.
     class ValidationContext
       extend Forwardable
 
