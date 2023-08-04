@@ -4,7 +4,7 @@ require "strscan"
 
 module GraphQL
   module Language
-    module Lexer
+    class Lexer
       IDENTIFIER =    /[_A-Za-z][_0-9A-Za-z]*/
       NEWLINE =       /[\c\r\n]/
       BLANK   =       /[, \t]+/
@@ -87,65 +87,86 @@ module GraphQL
       # # catch-all for anything else. must be at the bottom for precedence.
       UNKNOWN_CHAR =         /./
 
-      def self.tokenize string
-        meta = {
-          line: 1,
-          col: 1,
-          tokens: [],
-          previous_token: nil,
-        }
+      def initialize(value)
+        @line = 1
+        @col = 1
+        @previous_token = nil
 
-        value = string.dup.force_encoding(Encoding::UTF_8)
-
-        unless value.valid_encoding?
-          emit(:BAD_UNICODE_ESCAPE, 0, 0, meta, value)
-          return meta[:tokens]
-        end
-
-        scan = StringScanner.new value
-
-        while !scan.eos?
-          pos = scan.pos
-
-          case
-          when str = scan.scan(FLOAT)         then emit(:FLOAT, pos, scan.pos, meta, str)
-          when str = scan.scan(INT)           then emit(:INT, pos, scan.pos, meta, str)
-          when str = scan.scan(LIT)           then emit(LIT_NAME_LUT[str], pos, scan.pos, meta, -str)
-          when str = scan.scan(IDENTIFIER)    then emit(:IDENTIFIER, pos, scan.pos, meta, str)
-          when str = scan.scan(BLOCK_STRING)  then emit_block(pos, scan.pos, meta, str.gsub(/^#{BLOCK_QUOTE}|#{BLOCK_QUOTE}$/, ''))
-          when str = scan.scan(QUOTED_STRING) then emit_string(pos, scan.pos, meta, str.gsub(/^"|"$/, ''))
-          when str = scan.scan(COMMENT)       then record_comment(pos, scan.pos, meta, str)
-          when str = scan.scan(NEWLINE)
-            meta[:line] += 1
-            meta[:col] = 1
-          when scan.scan(BLANK)
-            meta[:col] += scan.pos - pos
-          when str = scan.scan(UNKNOWN_CHAR) then emit(:UNKNOWN_CHAR, pos, scan.pos, meta, str)
-          else
-            # This should never happen since `UNKNOWN_CHAR` ensures we make progress
-            raise "Unknown string?"
-          end
-        end
-
-        meta[:tokens]
+        @scan = scanner value
       end
 
-      def self.emit(token_name, ts, te, meta, token_value)
-        meta[:tokens] << token = [
+      class BadEncoding < Lexer # :nodoc:
+        def scanner(value)
+          [emit(:BAD_UNICODE_ESCAPE, 0, 0, value)]
+        end
+
+        def next_token
+          @scan.pop
+        end
+      end
+
+      def self.tokenize(string)
+        value = string.dup.force_encoding(Encoding::UTF_8)
+
+        scanner = if value.valid_encoding?
+          new value
+        else
+          BadEncoding.new value
+        end
+
+        toks = []
+
+        while tok = scanner.next_token
+          toks << tok
+        end
+
+        toks
+      end
+
+      def next_token
+        return if @scan.eos?
+
+        pos = @scan.pos
+
+        case
+        when str = @scan.scan(FLOAT)         then emit(:FLOAT, pos, @scan.pos, str)
+        when str = @scan.scan(INT)           then emit(:INT, pos, @scan.pos, str)
+        when str = @scan.scan(LIT)           then emit(LIT_NAME_LUT[str], pos, @scan.pos, -str)
+        when str = @scan.scan(IDENTIFIER)    then emit(:IDENTIFIER, pos, @scan.pos, str)
+        when str = @scan.scan(BLOCK_STRING)  then emit_block(pos, @scan.pos, str.gsub(/^#{BLOCK_QUOTE}|#{BLOCK_QUOTE}$/, ''))
+        when str = @scan.scan(QUOTED_STRING) then emit_string(pos, @scan.pos, str.gsub(/^"|"$/, ''))
+        when str = @scan.scan(COMMENT)       then record_comment(pos, @scan.pos, str)
+        when str = @scan.scan(NEWLINE)
+          @line += 1
+          @col = 1
+          next_token
+        when @scan.scan(BLANK)
+          @col += @scan.pos - pos
+          next_token
+        when str = @scan.scan(UNKNOWN_CHAR) then emit(:UNKNOWN_CHAR, pos, @scan.pos, str)
+        else
+          # This should never happen since `UNKNOWN_CHAR` ensures we make progress
+          raise "Unknown string?"
+        end
+      end
+
+      def emit(token_name, ts, te, token_value)
+        token = [
           token_name,
-          meta[:line],
-          meta[:col],
+          @line,
+          @col,
           token_value,
-          meta[:previous_token],
+          @previous_token,
         ]
-        meta[:previous_token] = token
+        @previous_token = token
         # Bump the column counter for the next token
-        meta[:col] += te - ts
+        @col += te - ts
+        token
       end
 
       # Replace any escaped unicode or whitespace with the _actual_ characters
       # To avoid allocating more strings, this modifies the string passed into it
-      def self.replace_escaped_characters_in_place(raw_string)
+      def replace_escaped_characters_in_place(raw_string)
         raw_string.gsub!(ESCAPES, ESCAPES_REPLACE)
         raw_string.gsub!(UTF_8) do |_matched_str|
           codepoint_1 = ($1 || $2).to_i(16)
@@ -169,18 +190,19 @@ module GraphQL
         nil
       end
 
-      def self.record_comment(ts, te, meta, str)
+      def record_comment(ts, te, str)
         token = [
           :COMMENT,
-          meta[:line],
-          meta[:col],
+          @line,
+          @col,
           str,
-          meta[:previous_token],
+          @previous_token,
         ]
 
-        meta[:previous_token] = token
+        @previous_token = token
 
-        meta[:col] += te - ts
+        @col += te - ts
+        next_token
       end
 
       ESCAPES = /\\["\\\/bfnrt]/
@@ -197,26 +219,34 @@ module GraphQL
       UTF_8 = /\\u(?:([\dAa-f]{4})|\{([\da-f]{4,})\})(?:\\u([\dAa-f]{4}))?/i
       VALID_STRING = /\A(?:[^\\]|#{ESCAPES}|#{UTF_8})*\z/o
 
-      def self.emit_block(ts, te, meta, value)
+      def emit_block(ts, te, value)
         line_incr = value.count("\n")
         value = GraphQL::Language::BlockString.trim_whitespace(value)
-        emit_string(ts, te, meta, value)
-        meta[:line] += line_incr
+        tok = emit_string(ts, te, value)
+        @line += line_incr
+        tok
       end
 
-      def self.emit_string(ts, te, meta, value)
+      def emit_string(ts, te, value)
         if !value.valid_encoding? || !value.match?(VALID_STRING)
-          emit(:BAD_UNICODE_ESCAPE, ts, te, meta, value)
+          emit(:BAD_UNICODE_ESCAPE, ts, te, value)
         else
           replace_escaped_characters_in_place(value)
 
           if !value.valid_encoding?
-            emit(:BAD_UNICODE_ESCAPE, ts, te, meta, value)
+            emit(:BAD_UNICODE_ESCAPE, ts, te, value)
           else
-            emit(:STRING, ts, te, meta, value)
+            emit(:STRING, ts, te, value)
           end
         end
       end
+
+      private
+
+      def scanner(value)
+        StringScanner.new value
+      end
+
     end
   end
 end
