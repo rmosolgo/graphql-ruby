@@ -10,6 +10,17 @@
 
 ### Bug fixes
 
+# 2.0.25 (7 Aug 2023)
+
+### New features
+
+- Tracing: add trace modes #4571
+- Dataloader: add `Source#result_key_for` for customizing cache keys in sources #4569
+
+### Bug fixes
+
+- Tracing: Support multiple tracing platforms at once #4543
+
 # 2.0.24 (27 Jun 2023)
 
 ### New features
