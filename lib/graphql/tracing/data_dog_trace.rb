@@ -106,8 +106,8 @@ module GraphQL
         end
       end
 
-      def execute_field_lazy(query:, field:, ast_node:, arguments:, object:)
-        execute_field("execute_field_lazy", query: query, field: field, ast_node: ast_node, arguments: arguments, object: object)
+      def execute_field_lazy(query:, field:, ast_node:, arguments:, object:, &block)
+        execute_field("execute_field_lazy", query: query, field: field, ast_node: ast_node, arguments: arguments, object: object, &block)
       end
 
       def authorized(object:, type:, query:, span_key: "authorized")
