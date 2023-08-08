@@ -35,34 +35,14 @@ module GraphQL
       def resolve_with_support(**inputs)
         input = inputs[:input].to_kwargs
 
-        new_extras = field ? field.extras : []
-        all_extras = self.class.extras + new_extras
-
-        # Transfer these from the top-level hash to the
-        # shortcutted `input:` object
-        all_extras.each do |ext|
-          # It's possible that the `extra` was not passed along by this point,
-          # don't re-add it if it wasn't given here.
-          if inputs.key?(ext)
-            input[ext] = inputs[ext]
-          end
-        end
-
         if input
           # This is handled by Relay::Mutation::Resolve, a bit hacky, but here we are.
           input_kwargs = input.to_h
           client_mutation_id = input_kwargs.delete(:client_mutation_id)
-        else
-          # Relay Classic Mutations with no `argument`s
-          # don't require `input:`
-          input_kwargs = {}
+          inputs[:input] = input_kwargs
         end
 
-        return_value = if input_kwargs.any?
-          super(**input_kwargs)
-        else
-          super()
-        end
+        return_value = super(**inputs)
 
         context.query.after_lazy(return_value) do |return_hash|
           # It might be an error
@@ -70,34 +50,6 @@ module GraphQL
             return_hash[:client_mutation_id] = client_mutation_id
           end
           return_hash
-        end
-      end
-
-      class << self
-        def dummy
-          @dummy ||= begin
-            d = Class.new(GraphQL::Schema::Resolver)
-            d.argument_class(self.argument_class)
-            # TODO make this lazier?
-            d.argument(:input, input_type, description: "Parameters for #{self.graphql_name}")
-            d
-          end
-        end
-
-        def field_arguments(context = GraphQL::Query::NullContext)
-          dummy.arguments(context)
-        end
-
-        def get_field_argument(name, context = GraphQL::Query::NullContext)
-          dummy.get_argument(name, context)
-        end
-
-        def own_field_arguments
-          dummy.own_arguments
-        end
-
-        def all_field_argument_definitions
-          dummy.all_argument_definitions
         end
       end
     end

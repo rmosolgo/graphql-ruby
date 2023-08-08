@@ -3,12 +3,74 @@
 module GraphQL
   class Schema
     module HasSingleInputArgument
+      def resolve_with_support(**inputs)
+        if inputs[:input].is_a?(InputObject)
+          input = inputs[:input].to_kwargs
+          p input.class
+        else
+          input = inputs[:input]
+        end
+
+        new_extras = field ? field.extras : []
+        all_extras = self.class.extras + new_extras
+
+        # Transfer these from the top-level hash to the
+        # shortcutted `input:` object
+        all_extras.each do |ext|
+          # It's possible that the `extra` was not passed along by this point,
+          # don't re-add it if it wasn't given here.
+          if inputs.key?(ext)
+            input[ext] = inputs[ext]
+          end
+        end
+
+        if input
+          # This is handled by Relay::Mutation::Resolve, a bit hacky, but here we are.
+          input_kwargs = input.to_h
+        else
+          # Relay Classic Mutations with no `argument`s
+          # don't require `input:`
+          input_kwargs = {}
+        end
+
+        if input_kwargs.any?
+          super(**input_kwargs)
+        else
+          super()
+        end
+      end
 
       def self.included(base)
         base.extend(ClassMethods)
       end
 
       module ClassMethods
+        def dummy
+          @dummy ||= begin
+            d = Class.new(GraphQL::Schema::Resolver)
+            d.argument_class(self.argument_class)
+            # TODO make this lazier?
+            d.argument(:input, input_type, description: "Parameters for #{self.graphql_name}")
+            d
+          end
+        end
+
+        def field_arguments(context = GraphQL::Query::NullContext)
+          dummy.arguments(context)
+        end
+
+        def get_field_argument(name, context = GraphQL::Query::NullContext)
+          dummy.get_argument(name, context)
+        end
+
+        def own_field_arguments
+          dummy.own_arguments
+        end
+
+        def all_field_argument_definitions
+          dummy.all_argument_definitions
+        end
+
         # Also apply this argument to the input type:
         def argument(*args, own_argument: false, **kwargs, &block)
           it = input_type # make sure any inherited arguments are already added to it
