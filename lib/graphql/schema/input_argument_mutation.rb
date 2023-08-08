@@ -75,7 +75,6 @@ module GraphQL
             mutation_args.each do |arg|
               add_argument(arg)
             end
-            argument :client_mutation_id, String, "A unique identifier for the client performing the mutation.", required: false
           end
         end
       end
