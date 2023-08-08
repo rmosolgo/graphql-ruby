@@ -21,7 +21,7 @@ module GraphQL
     # @see {GraphQL::Schema::Mutation} for an example, it's basically the same.
     #
     class RelayClassicMutation < GraphQL::Schema::Mutation
-      include GraphQL::Schema::InputArgumentMutation
+      include GraphQL::Schema::HasSingleInputArgument
 
       argument :client_mutation_id, String, "A unique identifier for the client performing the mutation.", required: false
 

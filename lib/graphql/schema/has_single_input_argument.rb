@@ -2,7 +2,7 @@
 
 module GraphQL
   class Schema
-    module InputArgumentMutation
+    module HasSingleInputArgument
 
       def self.included(base)
         base.extend(ClassMethods)

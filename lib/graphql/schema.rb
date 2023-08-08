@@ -41,7 +41,7 @@ require "graphql/schema/type_membership"
 
 require "graphql/schema/resolver"
 require "graphql/schema/mutation"
-require "graphql/schema/input_argument_mutation"
+require "graphql/schema/has_single_input_argument"
 require "graphql/schema/relay_classic_mutation"
 require "graphql/schema/subscription"
 
