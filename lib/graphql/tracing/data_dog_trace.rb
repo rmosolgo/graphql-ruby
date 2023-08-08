@@ -76,7 +76,7 @@ module GraphQL
         RUBY
       end
 
-      def execute_field(span_key = "execute_field", query:, field:, ast_node:, arguments:, object:)
+      def execute_field_span(span_key, query, field, ast_node, arguments, object)
         return_type = field.type.unwrap
         trace_field = if return_type.kind.scalar? || return_type.kind.enum?
           (field.trace.nil? && @trace_scalars) || field.trace
@@ -99,18 +99,31 @@ module GraphQL
               prepare_span_data = { query: query, field: field, ast_node: ast_node, arguments: arguments, object: object }
               prepare_span(span_key, prepare_span_data, span)
             end
-            super(query: query, field: field, ast_node: ast_node, arguments: arguments, object: object)
+            yield
           end
         else
+          yield
+        end
+      end
+      def execute_field(query:, field:, ast_node:, arguments:, object:)
+        execute_field_span("execute_field", query, field, ast_node, arguments, object) do
           super(query: query, field: field, ast_node: ast_node, arguments: arguments, object: object)
         end
       end
 
-      def execute_field_lazy(query:, field:, ast_node:, arguments:, object:, &block)
-        execute_field("execute_field_lazy", query: query, field: field, ast_node: ast_node, arguments: arguments, object: object, &block)
+      def execute_field_lazy(query:, field:, ast_node:, arguments:, object:)
+        execute_field_span("execute_field_lazy", query, field, ast_node, arguments, object) do
+          super(query: query, field: field, ast_node: ast_node, arguments: arguments, object: object)
+        end
       end
 
-      def authorized(object:, type:, query:, span_key: "authorized")
+      def authorized(query:, type:, object:)
+        authorized_span("authorized", object, type, query) do
+          super(query: query, type: type, object: object)
+        end
+      end
+
+      def authorized_span(span_key, object, type, query)
         platform_key = @platform_key_cache[DataDogTrace].platform_authorized_key_cache[type]
         @tracer.trace(platform_key, service: @service_name) do |span|
           span.span_type = 'custom'
@@ -121,15 +134,29 @@ module GraphQL
           if @has_prepare_span
             prepare_span(span_key, {object: object, type: type, query: query}, span)
           end
+          yield
+        end
+      end
+
+      def authorized_lazy(object:, type:, query:)
+        authorized_span("authorized_lazy", object, type, query) do
           super(query: query, type: type, object: object)
         end
       end
 
-      def authorized_lazy(**kwargs, &block)
-        authorized(span_key: "authorized_lazy", **kwargs, &block)
+      def resolve_type(object:, type:, query:)
+        resolve_type_span("resolve_type", object, type, query) do
+          super(object: object, query: query, type: type)
+        end
       end
 
-      def resolve_type(object:, type:, query:, span_key: "resolve_type")
+      def resolve_type_lazy(object:, type:, query:)
+        resolve_type_span("resolve_type_lazy", object, type, query) do
+          super(object: object, query: query, type: type)
+        end
+      end
+
+      def resolve_type_span(span_key, object, type, query)
         platform_key = @platform_key_cache[DataDogTrace].platform_resolve_type_key_cache[type]
         @tracer.trace(platform_key, service: @service_name) do |span|
           span.span_type = 'custom'
@@ -140,12 +167,8 @@ module GraphQL
           if @has_prepare_span
             prepare_span(span_key, {object: object, type: type, query: query}, span)
           end
-          super(query: query, type: type, object: object)
+          yield
         end
-      end
-
-      def resolve_type_lazy(**kwargs, &block)
-        resolve_type(span_key: "resolve_type_lazy", **kwargs, &block)
       end
 
       include PlatformTrace
