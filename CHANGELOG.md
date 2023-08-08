@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 2.0.26 (8 Aug 2023)
+
+### Bug fixes
+
+- Datadog Tracing: fix LocalJumpError #4579
+
 # 2.0.25 (7 Aug 2023)
 
 ### New features
