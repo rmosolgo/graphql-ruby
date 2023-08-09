@@ -6,7 +6,6 @@ module GraphQL
       def resolve_with_support(**inputs)
         if inputs[:input].is_a?(InputObject)
           input = inputs[:input].to_kwargs
-          p input.class
         else
           input = inputs[:input]
         end
