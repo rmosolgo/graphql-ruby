@@ -184,6 +184,20 @@ GRAPHQL
           assert_equal '(RPAREN ")" [1:11])', rparen_token.inspect
         end
 
+        it "tokenizes block quotes with triple quotes correctly" do
+          doc = <<-eos
+"""
+
+string with \\"""
+
+"""
+          eos
+          tokens = subject.tokenize doc
+          token = tokens.first
+          assert_equal :STRING, token.name
+          assert_equal 'string with """', token.value
+        end
+
         it "counts block string line properly" do
           str = <<-GRAPHQL
           """
