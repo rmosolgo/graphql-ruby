@@ -151,9 +151,9 @@ describe GraphQL::Schema do
       assert_equal base_schema.multiplex_analyzers + [multiplex_analyzer], schema.multiplex_analyzers
       assert_equal [GraphQL::Backtrace, GraphQL::Subscriptions::ActionCableSubscriptions, CustomSubscriptions], schema.plugins.map(&:first)
       assert_equal [GraphQL::Tracing::DataDogTracing], base_schema.tracers
-      assert_includes base_schema.trace_class.ancestors, GraphQL::Tracing::CallLegacyTracers
+      assert_includes base_schema.new_trace.class.ancestors, GraphQL::Tracing::CallLegacyTracers
       assert_equal [GraphQL::Tracing::DataDogTracing, GraphQL::Tracing::NewRelicTracing], schema.tracers
-      assert_includes schema.trace_class.ancestors, GraphQL::Tracing::CallLegacyTracers
+      assert_includes schema.new_trace.class.ancestors, GraphQL::Tracing::CallLegacyTracers
 
 
       assert_instance_of CustomSubscriptions, schema.subscriptions

@@ -34,6 +34,18 @@ For a full list of methods and their arguments, see {{ "GraphQL::Tracing::Trace"
 
 By default, GraphQL-Ruby makes a new trace instance when it runs a query. You can pass an existing instance as `context: { trace: ... }`. Also, `GraphQL.parse( ..., trace: ...)` accepts a trace instance.
 
+## Trace Modes
+
+You can attach a trace module to run only in some circumstances by using `mode:`. For example, to add detailed tracing for only some requests:
+
+```ruby
+trace_with DetailedTracing, mode: :detailed_metrics
+```
+
+Then, to opt into that trace, use `context: { trace_mode: :detailed_metrics, ... }` when executing queries.
+
+Any custom trace modes _also_ include the default `trace_with ...` modules (that is, those added _without_ any particular `mode: ...` configuration).
+
 ## ActiveSupport::Notifications
 
 You can emit events to `ActiveSupport::Notifications` with an experimental tracer, `ActiveSupportNotificationsTrace`.

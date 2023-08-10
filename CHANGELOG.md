@@ -10,11 +10,28 @@
 
 ### Bug fixes
 
+# 2.0.26 (8 Aug 2023)
+
+### Bug fixes
+
+- Datadog Tracing: fix LocalJumpError #4579
+
+# 2.0.25 (7 Aug 2023)
+
+### New features
+
+- Tracing: add trace modes #4571
+- Dataloader: add `Source#result_key_for` for customizing cache keys in sources #4569
+
+### Bug fixes
+
+- Tracing: Support multiple tracing platforms at once #4543
+
 # 2.0.24 (27 Jun 2023)
 
 ### New features
 
-- `Schema::Object.wrap` can be used to customize how objects are (or aren't) wrapped by `GraphQL::Schema::Object` instances at runtime #5424
+- `Schema::Object.wrap` can be used to customize how objects are (or aren't) wrapped by `GraphQL::Schema::Object` instances at runtime #4524
 - `Query`: accept a `static_validator:` option in `#initialize` to use instead of the default validation configuration.
 
 ### Bug fixes
