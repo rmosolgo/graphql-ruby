@@ -39,7 +39,6 @@ module GraphQL
 
       def initialize(document)
         @document = document
-        @visitors = {}
         @result = nil
       end
 
@@ -72,7 +71,6 @@ module GraphQL
           # To customize this hook, override one of its make_visit_methods (or the base method?)
           # in your subclasses.
           #
-          # For compatibility, it calls hook procs, too.
           # @param node [GraphQL::Language::Nodes::AbstractNode] the node being visited
           # @param parent [GraphQL::Language::Nodes::AbstractNode, nil] the previously-visited node, or `nil` if this is the root node.
           # @return [Array, nil] If there were modifications, it returns an array of new nodes, otherwise, it returns `nil`.
