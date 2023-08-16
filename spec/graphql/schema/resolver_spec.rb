@@ -184,15 +184,15 @@ describe GraphQL::Schema::Resolver do
       end
     end
 
-    class ResolverWithNilValueReady < BaseResolver
-      type Integer, null: true
+    class ResolverWithFalseyValueReady < BaseResolver
+      type Boolean, null: true
 
       def ready?
-        return false, nil
+        return false, false
       end
 
       def resolve
-        123
+        true
       end
     end
 
@@ -329,9 +329,15 @@ describe GraphQL::Schema::Resolver do
       end
     end
 
-    class PrepResolverWithNilValueAuthorized < PrepResolver10
-      def authorized?(int1:, integer_2:)
-        return false, nil
+    class ResolverWithFalseyValueAuthorized < BaseResolver
+      type Boolean, null: true
+
+      def authorized?
+        return false, false
+      end
+
+      def resolve
+        true
       end
     end
 
@@ -469,8 +475,8 @@ describe GraphQL::Schema::Resolver do
       field :prep_resolver_12, resolver: PrepResolver12
       field :prep_resolver_13, resolver: PrepResolver13
       field :prep_resolver_14, resolver: PrepResolver14
-      field :resolver_with_nil_value_ready, resolver: ResolverWithNilValueReady
-      field :prep_resolver_with_nil_value_authorized, resolver: PrepResolverWithNilValueAuthorized
+      field :resolver_with_falsey_value_ready, resolver: ResolverWithFalseyValueReady
+      field :resolver_with_falsey_value_authorized, resolver: ResolverWithFalseyValueAuthorized
       field :resolver_with_auth_args, resolver: ResolverWithAuthArgs
       field :resolver_with_error_handler, resolver: ResolverWithErrorHandler
     end
@@ -675,9 +681,9 @@ describe GraphQL::Schema::Resolver do
         assert_equal 213, res["data"]["int"]["int"]
       end
 
-      it "can return false and nil" do
-        res = exec_query("{ int: resolverWithNilValueReady }")
-        assert_nil res["data"]["int"]
+      it "can return false and falsey data" do
+        res = exec_query("{ result: resolverWithFalseyValueReady }")
+        assert_equal false, res["data"]["result"] # must be `false`, not just falsey
         assert_nil res["errors"]
       end
 
@@ -745,9 +751,9 @@ describe GraphQL::Schema::Resolver do
           assert_equal 7, res["data"]["prepResolver12"]["value"]
         end
 
-        it "can return nil data early" do
-          res = exec_query("{ result: prepResolverWithNilValueAuthorized(int1: 9, int2: 5) }", context: { max_int: 9 })
-          assert_nil res["data"]["result"]
+        it "can return falsey data early" do
+          res = exec_query("{ result: resolverWithFalseyValueAuthorized }")
+          assert_equal false, res["data"]["result"] # must be actual `false`, not just a falsey `nil`
           assert_nil res["errors"]
         end
 
