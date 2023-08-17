@@ -135,6 +135,12 @@ module MaskHelpers
     field :name, String, null: false
   end
 
+  class CheremeWithInterface < BaseObject
+    description "A basic unit of signed communication"
+    implements LanguageMemberType
+    field :name, String, null: false
+  end
+
   class Character < BaseObject
     implements LanguageMemberType
     field :code, Int, null: false
@@ -155,6 +161,10 @@ module MaskHelpers
     end
 
     field :chereme, Chereme, null: false do
+      metadata :hidden_field, true
+    end
+
+    field :chereme_with_interface, CheremeWithInterface, null: false do
       metadata :hidden_field, true
     end
 
@@ -332,6 +342,17 @@ describe GraphQL::Schema::Warden do
        res = MaskHelpers.query_with_mask(query_string, mask)
        assert_nil res["data"]["Chereme"]
      end
+
+    it "hides types if no other fields are using it (with interface)" do
+      query_string = %|
+         {
+           CheremeWithInterface: __type(name: "CheremeWithInterface") { fields { name } }
+         }
+       |
+
+      res = MaskHelpers.query_with_mask(query_string, mask)
+      assert_nil res["data"]["CheremeWithInterface"]
+    end
 
     it "causes validation errors" do
       query_string = %|{ phoneme(symbol: "ϕ") { name } }|
