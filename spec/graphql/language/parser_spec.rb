@@ -20,6 +20,10 @@ describe GraphQL::Language::Parser do
     end
   end
 
+  it "allows fragments, fields and arguments named null" do
+    assert GraphQL.parse("{ field(null: false) ... null } fragment null on Query { null }")
+  end
+
   it "raises an error when unicode is used as names" do
     err = assert_raises(GraphQL::ParseError) {
       GraphQL.parse('query 😘 { a b }')
