@@ -302,7 +302,13 @@ module GraphQL
           elsif type_defn.kind.interface?
             visible_possible_types?(type_defn)
           else
-            referenced?(type_defn) || visible_abstract_type?(type_defn)
+            if referenced?(type_defn)
+              true
+            elsif type_defn.kind.object?
+              interfaces(type_defn).any? || union_memberships(type_defn).any?
+            else
+              false
+            end
           end
         end
 
@@ -367,13 +373,6 @@ module GraphQL
 
       def orphan_type?(type_defn)
         @schema.orphan_types.include?(type_defn)
-      end
-
-      def visible_abstract_type?(type_defn)
-        type_defn.kind.object? && (
-            interfaces(type_defn).any? ||
-            union_memberships(type_defn).any?
-          )
       end
 
       def visible_possible_types?(type_defn)
