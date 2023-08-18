@@ -305,7 +305,9 @@ module GraphQL
             if referenced?(type_defn)
               true
             elsif type_defn.kind.object?
-              interfaces(type_defn).any? || union_memberships(type_defn).any?
+              # Show this object if it belongs to ...
+              interfaces(type_defn).any? { |t| referenced?(t) } ||  # an interface which is referenced in the schema
+                union_memberships(type_defn).any? { |t| referenced?(t) || orphan_type?(t) } # or a union which is referenced or added via orphan_types
             else
               false
             end
