@@ -307,7 +307,8 @@ module GraphQL
             elsif type_defn.kind.object?
               # Show this object if it belongs to ...
               interfaces(type_defn).any? { |t| referenced?(t) } ||  # an interface which is referenced in the schema
-                union_memberships(type_defn).any? { |t| referenced?(t) || orphan_type?(t) } # or a union which is referenced or added via orphan_types
+                union_memberships(type_defn).any? { |t| referenced?(t) || orphan_type?(t) } || # or a union which is referenced or added via orphan_types
+                orphan_type?(type_defn) # or it's added directly as an orphan type
             else
               false
             end
