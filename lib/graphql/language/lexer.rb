@@ -133,7 +133,7 @@ module GraphQL
         when str = @scan.scan(INT)           then emit(:INT, pos, @scan.pos, str)
         when str = @scan.scan(LIT)           then emit(LIT_NAME_LUT[str], pos, @scan.pos, -str)
         when str = @scan.scan(IDENTIFIER)    then emit(:IDENTIFIER, pos, @scan.pos, str)
-        when str = @scan.scan(BLOCK_STRING)  then emit_block(pos, @scan.pos, str.gsub(/A#{BLOCK_QUOTE}|#{BLOCK_QUOTE}\z/, ''))
+        when str = @scan.scan(BLOCK_STRING)  then emit_block(pos, @scan.pos, str.gsub(/\A#{BLOCK_QUOTE}|#{BLOCK_QUOTE}\z/, ''))
         when str = @scan.scan(QUOTED_STRING) then emit_string(pos, @scan.pos, str.gsub(/^"|"$/, ''))
         when str = @scan.scan(COMMENT)       then record_comment(pos, @scan.pos, str)
         when str = @scan.scan(NEWLINE)
