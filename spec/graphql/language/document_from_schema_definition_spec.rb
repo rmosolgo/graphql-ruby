@@ -112,6 +112,48 @@ type Query {
       end
     end
 
+    describe "when it has an enum_value with an adjacent custom directive" do
+      let(:schema_idl) { <<-GRAPHQL
+directive @customEnumValueDirective(fakeArgument: String!) on ENUM_VALUE
+
+enum FakeEnum {
+  VALUE1
+  VALUE2 @customEnumValueDirective(fakeArgument: "Value1 is better...")
+}
+
+type Query {
+  fakeQueryField: FakeEnum!
+}
+      GRAPHQL
+      }
+
+      class EnumValueDirectiveSchema < GraphQL::Schema
+        class CustomEnumValueDirective < GraphQL::Schema::Directive
+          locations GraphQL::Schema::Directive::ENUM_VALUE
+
+          argument :fake_argument, String, required: true
+        end
+
+        class FakeEnum < GraphQL::Schema::Enum
+          value "VALUE1"
+          value "VALUE2" do
+            directive CustomEnumValueDirective, fake_argument: "Value1 is better..."
+          end
+        end
+
+        class Query < GraphQL::Schema::Object
+          field :fake_query_field, FakeEnum, null: false
+        end
+
+        query(Query)
+        # directive(CustomEnumValueDirective)  # <-- Fails if this is not included
+      end
+
+      it "dumps the custom directive definition to the IDL" do
+        assert_equal schema_idl, EnumValueDirectiveSchema.to_definition
+      end
+    end
+
     describe "when printing and schema respects root name conventions" do
       let(:schema_idl) { <<-GRAPHQL
         type Query {
