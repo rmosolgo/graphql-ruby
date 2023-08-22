@@ -19,9 +19,17 @@ describe GraphQL::Execution::Interpreter do
       end
     end
 
-    class Expansion < GraphQL::Schema::Object
+    class BaseField < GraphQL::Schema::Field
+      dataload_by_default(false)
+    end
+
+    class BaseObject < GraphQL::Schema::Object
+      field_class(BaseField)
+    end
+
+    class Expansion < BaseObject
       field :sym, String, null: false
-      field :lazy_sym, String, null: false
+      field :lazy_sym, String, null: false, dataload: true
       field :name, String, null: false
       field :cards, ["InterpreterTest::Card"], null: false
 
@@ -52,7 +60,7 @@ describe GraphQL::Execution::Interpreter do
       end
     end
 
-    class Card < GraphQL::Schema::Object
+    class Card < BaseObject
       field :name, String, null: false
       field :colors, "[InterpreterTest::Color]", null: false
       field :expansion, Expansion, null: false
@@ -89,7 +97,7 @@ describe GraphQL::Execution::Interpreter do
       end
     end
 
-    class FieldCounter < GraphQL::Schema::Object
+    class FieldCounter < BaseObject
       implements GraphQL::Types::Relay::Node
 
       field :field_counter, FieldCounter, null: false
@@ -117,7 +125,7 @@ describe GraphQL::Execution::Interpreter do
         inspect_context
       end
 
-      field :lazy_runtime_info, String, null: false do
+      field :lazy_runtime_info, String, null: false, dataload: true do
         argument :a, Integer, required: false
         argument :b, Integer, required: false
       end
@@ -150,13 +158,13 @@ describe GraphQL::Execution::Interpreter do
       end
     end
 
-    class Query < GraphQL::Schema::Object
+    class Query < BaseObject
       # Try a root-level authorized hook that returns a lazy value
       def self.authorized?(obj, ctx)
         Box.new(value: true)
       end
 
-      field :card, Card do
+      field :card, Card, dataload: true do
         argument :name, String
       end
 
@@ -229,7 +237,7 @@ describe GraphQL::Execution::Interpreter do
       include GraphQL::Types::Relay::HasNodeField
       include GraphQL::Types::Relay::HasNodesField
 
-      class NestedQueryResult < GraphQL::Schema::Object
+      class NestedQueryResult < BaseObject
         field :result, String
         field :current_path, [String]
       end
@@ -247,9 +255,9 @@ describe GraphQL::Execution::Interpreter do
       end
     end
 
-    class Counter < GraphQL::Schema::Object
+    class Counter < BaseObject
       field :value, Integer, null: false
-      field :lazy_value, Integer, null: false
+      field :lazy_value, Integer, null: false, dataload: true
 
       def lazy_value
         Box.new { object.value }
@@ -263,7 +271,7 @@ describe GraphQL::Execution::Interpreter do
       end
     end
 
-    class Mutation < GraphQL::Schema::Object
+    class Mutation < BaseObject
       field :increment_counter, Counter, null: false
 
       def increment_counter
@@ -634,7 +642,7 @@ describe GraphQL::Execution::Interpreter do
           context.skip
         end
 
-        field :lazy_skip, String
+        field :lazy_skip, String, dataload: true
         def lazy_skip
           -> { context.skip }
         end
@@ -663,7 +671,7 @@ describe GraphQL::Execution::Interpreter do
       end
 
       class Subscription < GraphQL::Schema::Object
-        field :nothing, subscription: NothingSubscription
+        field :nothing, subscription: NothingSubscription, dataload: true
       end
 
       query Query

@@ -32,6 +32,18 @@ module GraphQL
       attr_reader :hash_key
       attr_reader :dig_keys
 
+      def dataload?
+        @dataload
+      end
+
+      def self.dataload_by_default(new_value = NOT_CONFIGURED)
+        if NOT_CONFIGURED == new_value
+          defined?(@dataload_by_default) ? @dataload_by_default : (superclass.respond_to?(:dataload_by_default) ? superclass.dataload_by_default : true)
+        else
+          @dataload_by_default = new_value
+        end
+      end
+
       # @return [Symbol] The method on the type to look up
       def resolver_method
         if @resolver_class
@@ -218,8 +230,9 @@ module GraphQL
       # @param ast_node [Language::Nodes::FieldDefinition, nil] If this schema was parsed from definition, this AST node defined the field
       # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
       # @param validates [Array<Hash>] Configurations for validating this field
-      # @fallback_value [Object] A fallback value if the method is not defined
-      def initialize(type: nil, name: nil, owner: nil, null: nil, description: NOT_CONFIGURED, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: NOT_CONFIGURED, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: NOT_CONFIGURED, &definition_block)
+      # @param dataload [Boolean] If true, use GraphQL-Ruby's batch loading mechanism to resolve this field's return value
+      # @param fallback_value [Object] A fallback value if the method is not defined
+      def initialize(type: nil, name: nil, owner: nil, null: nil, description: NOT_CONFIGURED, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, dataload: self.class.dataload_by_default, broadcastable: NOT_CONFIGURED, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: NOT_CONFIGURED, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -275,6 +288,9 @@ module GraphQL
         else
           true
         end
+
+        @dataload = dataload
+
         @connection = connection
         @max_page_size = max_page_size
         @default_page_size = default_page_size
