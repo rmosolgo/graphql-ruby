@@ -92,7 +92,7 @@ module GraphQL
       # @param resolver [Class] A {GraphQL::Schema::Resolver} class to use for field configuration
       # @param mutation [Class] A {GraphQL::Schema::Mutation} class to use for field configuration
       # @param subscription [Class] A {GraphQL::Schema::Subscription} class to use for field configuration
-      # @return [GraphQL::Schema:Field] an instance of `self
+      # @return [GraphQL::Schema:Field] an instance of `self`
       # @see {.initialize} for other options
       def self.from_options(name = nil, type = nil, desc = nil, resolver: nil, mutation: nil, subscription: nil,**kwargs, &block)
         if (resolver_class = resolver || mutation || subscription)
