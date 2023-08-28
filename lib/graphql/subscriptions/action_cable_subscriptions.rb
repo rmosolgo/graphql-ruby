@@ -124,7 +124,8 @@ module GraphQL
       # This subscription was re-evaluated.
       # Send it to the specific stream where this client was waiting.
       def deliver(subscription_id, result)
-        payload = { result: result.to_h, more: true }
+        has_more = !result.context.namespace(:subscriptions)[:final_update]
+        payload = { result: result.to_h, more: has_more }
         @action_cable.server.broadcast(stream_subscription_name(subscription_id), payload)
       end
 

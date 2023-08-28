@@ -21,6 +21,7 @@
 <button onClick="triggerWithFingerprint('1')">Trigger with fingerprint 1</button>
 <button onClick="serverSideUnsubscribeWithFingerprint('1')">Server-side unsubscribe with fingerprint 1</button>
 <button onClick="unsubscribeWithFingerprint('1')">Unsubscribe with fingerprint 1</button>
+<button onClick="serverSideUnsubscribeWithMessageWithFingerprint('1')">Unsubscribe with message with fingerprint 1</button>
 
 <br>
 
@@ -104,6 +105,18 @@ function unsubscribeWithFingerprint(key) {
     sub.unsubscribe()
   })
   fingerprintSubscriptions[key] = []
+}
+
+function serverSideUnsubscribeWithMessageWithFingerprint(key) {
+  var subs = fingerprintSubscriptions[key]
+  if (subs) {
+    var sub = subs[0]
+    if (sub) {
+      sub.trigger({field: "counterIncremented", arguments: {}, value: "server-unsubscribe-with-message"})
+      // Assume it's removed:
+      subs.shift()
+    }
+  }
 }
 
 function serverSideUnsubscribeWithFingerprint(key) {

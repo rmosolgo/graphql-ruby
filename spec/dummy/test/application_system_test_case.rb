@@ -1,15 +1,8 @@
 # frozen_string_literal: true
 require "test_helper"
 
-Webdrivers::Chromedriver.required_version = "114.0.5735.90"
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
-  driven_by :selenium,
-    using: :chrome,
-    screen_size: [1400, 1400],
-    options: {
-      args: ["headless", "disable-gpu", "no-sandbox", "disable-dev-shm-usage"]
-    }
-
+  driven_by :selenium, using: :chrome, screen_size: [1400, 1400]
 
   teardown do
     # Adapted from https://medium.com/@coorasse/catch-javascript-errors-in-your-system-tests-89c2fe6773b1

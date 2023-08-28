@@ -21,8 +21,12 @@ class GraphqlChannel < ActionCable::Channel::Base
     field :new_value, Integer, null: false
 
     def update
-      if object && object.value == "server-unsubscribe"
-        unsubscribe
+      if object
+        if object.value == "server-unsubscribe"
+          unsubscribe
+        elsif object.value == "server-unsubscribe-with-message"
+          unsubscribe({ new_value: 9999 })
+        end
       end
       result = {
         new_value: @@call_count += 1
