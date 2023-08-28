@@ -146,7 +146,6 @@ type Query {
         end
 
         query(Query)
-        # directive(CustomEnumValueDirective)  # <-- Fails if this is not included
       end
 
       it "dumps the custom directive definition to the IDL" do
