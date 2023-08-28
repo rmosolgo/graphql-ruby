@@ -403,6 +403,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
     | REPEATABLE
     | TRUE_LITERAL
     | FALSE_LITERAL
+    | NULL_LITERAL
     | operation_type
     | schema_keyword
 
