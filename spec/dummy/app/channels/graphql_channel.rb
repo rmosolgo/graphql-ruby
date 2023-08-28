@@ -87,12 +87,12 @@ class GraphqlChannel < ActionCable::Channel::Base
     }
 
     puts "[GraphQLSchema.execute] #{query} || #{variables}"
-    result = GraphQLSchema.execute({
+    result = GraphQLSchema.execute(
       query: query,
       context: context,
       variables: variables,
       operation_name: operation_name
-    })
+    )
 
     payload = {
       result: result.to_h,

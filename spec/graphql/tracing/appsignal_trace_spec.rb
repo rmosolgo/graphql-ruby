@@ -16,6 +16,13 @@ module Appsignal
 end
 
 describe GraphQL::Tracing::AppsignalTrace do
+  class IntBox
+    def initialize(value)
+      @value = value
+    end
+    attr_reader :value
+  end
+
   module AppsignalTraceTest
     class Thing < GraphQL::Schema::Object
       field :str, String
@@ -36,7 +43,7 @@ describe GraphQL::Tracing::AppsignalTrace do
       field :int, Integer, null: false
 
       def int
-        1
+        IntBox.new(1)
       end
 
       field :thing, Thing
@@ -48,6 +55,7 @@ describe GraphQL::Tracing::AppsignalTrace do
     class TestSchema < GraphQL::Schema
       query(Query)
       trace_with(GraphQL::Tracing::AppsignalTrace)
+      lazy_resolve(IntBox, :value)
     end
   end
 
@@ -81,6 +89,7 @@ describe GraphQL::Tracing::AppsignalTrace do
       query(AppsignalTraceTest::Query)
       trace_with(GraphQL::Tracing::DataDogTrace)
       trace_with(GraphQL::Tracing::AppsignalTrace)
+      lazy_resolve(IntBox, :value)
     end
 
     class AppsignalAndDatadogReverseOrderTestSchema < GraphQL::Schema
@@ -88,6 +97,7 @@ describe GraphQL::Tracing::AppsignalTrace do
       # Include these modules in different order than above:
       trace_with(GraphQL::Tracing::AppsignalTrace)
       trace_with(GraphQL::Tracing::DataDogTrace)
+      lazy_resolve(IntBox, :value)
     end
 
 

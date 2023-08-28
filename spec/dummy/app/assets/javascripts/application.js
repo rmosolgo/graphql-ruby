@@ -40,11 +40,12 @@
             })
             console.log("Connected", query, variables)
           },
-          received: function(data) {
-            console.log("received", query, variables, data)
-            if (data.more) {
-              receivedCallback(data)
-            } else {
+          received: function(payload) {
+            console.log("received", query, variables, payload)
+            if (payload.result) {
+              receivedCallback(payload)
+            }
+            if (!payload.more) {
               this.unsubscribe()
               App.logToBody("Remaining ActionCable subscriptions: " + App.cable.subscriptions.subscriptions.length)
             }

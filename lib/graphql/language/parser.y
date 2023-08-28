@@ -150,6 +150,7 @@ rule
     | REPEATABLE
     | TRUE
     | FALSE
+    | NULL
     | operation_type
     | schema_keyword
 

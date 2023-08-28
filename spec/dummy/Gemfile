@@ -2,15 +2,11 @@
 source 'https://rubygems.org'
 
 gem 'bootsnap'
-gem 'rails', '~> 6.1'
+gem 'rails', '~>7.0'
+gem 'sprockets-rails'
 gem 'puma'
 gem 'capybara'
-gem 'selenium-webdriver', "4.11.0"
+gem 'selenium-webdriver'
 gem 'graphql', path: File.expand_path('../../', __dir__)
-gem "rexml"
 
-group :development do
-  gem 'listen'
-end
-
-gem "webdrivers", "~> 4.1"
+gem "listen", group: :development

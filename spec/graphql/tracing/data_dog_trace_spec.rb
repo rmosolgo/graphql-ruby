@@ -4,10 +4,17 @@ require "spec_helper"
 
 describe GraphQL::Tracing::DataDogTrace do
   module DataDogTraceTest
+    class Box
+      def initialize(value)
+        @value = value
+      end
+      attr_reader :value
+    end
+
     class Thing < GraphQL::Schema::Object
       field :str, String
 
-      def str; "blah"; end
+      def str; Box.new("blah"); end
     end
 
     class Query < GraphQL::Schema::Object
@@ -26,6 +33,7 @@ describe GraphQL::Tracing::DataDogTrace do
     class TestSchema < GraphQL::Schema
       query(Query)
       trace_with(GraphQL::Tracing::DataDogTrace)
+      lazy_resolve(Box, :value)
     end
 
     class CustomTracerTestSchema < GraphQL::Schema
@@ -37,6 +45,7 @@ describe GraphQL::Tracing::DataDogTrace do
       end
       query(Query)
       trace_with(CustomDataDogTracing)
+      lazy_resolve(Box, :value)
     end
   end
 
