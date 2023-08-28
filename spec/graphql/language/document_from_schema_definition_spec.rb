@@ -131,7 +131,7 @@ type Query {
         class CustomEnumValueDirective < GraphQL::Schema::Directive
           locations GraphQL::Schema::Directive::ENUM_VALUE
 
-          argument :fake_argument, String, required: true
+          argument :fake_argument, String
         end
 
         class FakeEnum < GraphQL::Schema::Enum
