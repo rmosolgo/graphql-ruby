@@ -290,13 +290,13 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
 
 
     if RUBY_VERSION > "3.2"
-      # describe "with fiber_scheduler" do
-      #   require "fiber_scheduler"
-      #   let(:scheduler_class) { FiberScheduler }
-      #   let(:fiber_control_mode) { :transfer }
-      #   let(:sleepable) { SystemSleep }
-      #   include AsyncDataloaderAssertions
-      # end
+      describe "with fiber_scheduler" do
+        require "fiber_scheduler"
+        let(:scheduler_class) { FiberScheduler }
+        let(:fiber_control_mode) { :transfer }
+        let(:sleepable) { SystemSleep }
+        include AsyncDataloaderAssertions
+      end
 
       describe "with async" do
         require "async"
