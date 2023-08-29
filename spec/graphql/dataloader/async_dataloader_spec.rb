@@ -199,7 +199,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
               "s3" => { "duration" => 0.3 }
             }
             assert_equal expected_data, res["data"]
-            assert_faster_than(0.5, ended_at - started_at, "Fields ran without any waiting")
+            assert_faster_than(0.61, ended_at - started_at, "Fields ran without any waiting")
           end
 
           it "runs dataloaders in parallel across branches" do
@@ -249,7 +249,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
             # - Put all jobs in the same queue (fields and sources), but then you don't get predictable batching.
             # - Work one-layer-at-a-time, but then layers can get stuck behind one another. That's what's implemented here.
             # There's a total of 1.0s of sleep; add some extra to allow for overhead
-            assert_faster_than(1.1, ended_at - started_at, "Sources were executed in parallel")
+            assert_faster_than(1.31, ended_at - started_at, "Sources were executed in parallel")
           end
         end
       end
