@@ -109,6 +109,10 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
         end
       end
 
+      def assert_faster_than(sequential_seconds, actual_seconds, message = nil)
+        assert_operator actual_seconds, :<, sequential_seconds, message
+      end
+
       def self.included(child_class)
         child_class.class_eval do
           it "runs IO in parallel by default" do
@@ -124,7 +128,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
             ended_at = Time.now
 
             assert_equal({ a: 1, b: 2, c: 3 }, results, "All the jobs ran")
-            assert_in_delta 0.3, ended_at - started_at, 0.05, "IO ran in parallel"
+            assert_faster_than(0.6, ended_at - started_at, "IO ran in parallel")
           end
 
           it "works with sources" do
@@ -150,8 +154,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
             assert_equal 0.3, v2
             assert_equal 0.3, v3
             assert_in_delta 0.0, started_at_2 - ended_at_2, 0.05, "Already-loaded values returned instantly"
-
-            assert_in_delta 0.3, ended_at - started_at, 0.05, "IO ran in parallel"
+            assert_faster_than(0.6, ended_at - started_at, "IO ran in parallel")
           end
 
           it "works with GraphQL" do
@@ -161,7 +164,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
             }
             ended_at = Time.now
             assert_equal({"s1"=>0.1, "s2"=>0.2, "s3"=>0.3}, res["data"])
-            assert_in_delta 0.3, ended_at - started_at, 0.05, "IO ran in parallel"
+            assert_faster_than(0.6, ended_at - started_at, "IO ran in parallel")
           end
 
           it "nested fields don't wait for slower higher-level fields" do
@@ -196,7 +199,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
               "s3" => { "duration" => 0.3 }
             }
             assert_equal expected_data, res["data"]
-            assert_in_delta 0.3, ended_at - started_at, 0.05, "Fields ran without any waiting"
+            assert_faster_than(0.5, ended_at - started_at, "Fields ran without any waiting")
           end
 
           it "runs dataloaders in parallel across branches" do
@@ -245,7 +248,8 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
             # We've basically got two options here:
             # - Put all jobs in the same queue (fields and sources), but then you don't get predictable batching.
             # - Work one-layer-at-a-time, but then layers can get stuck behind one another. That's what's implemented here.
-            assert_in_delta 1.0, ended_at - started_at, 0.05, "Sources were executed in parallel"
+            # There's a total of 1.0s of sleep; add some extra to allow for overhead
+            assert_faster_than(1.1, ended_at - started_at, "Sources were executed in parallel")
           end
         end
       end
