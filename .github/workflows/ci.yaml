@@ -61,6 +61,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > $GITHUB_ENV
+    - run: echo IO_EVENT_SELECTOR=Select > $GITHUB_ENV
     - uses: actions/checkout@v3
     - uses: ruby/setup-ruby@v1
       with:
