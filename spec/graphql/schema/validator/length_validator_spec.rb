@@ -111,10 +111,10 @@ describe GraphQL::Schema::Validator::LengthValidator do
     assert_nil result["data"].fetch("validated")
     assert_equal ["Instead, make value have length less than 5"], result["errors"].map { |e| e["message"] }
 
-    schema = build_schema(String, {length: { minimum: 50, message: "NO, BAD! %{validated} %{count}" }})
+    schema = build_schema(String, {length: { minimum: 50, message: "NO, BAD! %{validated} %{count} %{value}" }})
     result = schema.execute("{ validated(value: \"is-invalid\") }")
     assert_nil result["data"].fetch("validated")
-    assert_equal ["NO, BAD! value 50"], result["errors"].map { |e| e["message"] }
+    assert_equal ["NO, BAD! value 50 \"is-invalid\""], result["errors"].map { |e| e["message"] }
   end
 
   list_expectations = [
