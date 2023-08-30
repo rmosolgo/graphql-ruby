@@ -284,6 +284,15 @@ mutation createPost($postParams: PostInput!, $createdById: ID!){
 
 <p><code class="language-plaintext highlighter-rouge">context.scoped_merge!({ ... })</code> is also available for setting multiple keys at once.</p>
 
+<p><strong>Note</strong>: With batched data loading (eg, GraphQL-Batch), scoped context might not work because of GraphQL-Ruby’s control flow jumps from one field to the next. In that case, use <code class="language-plaintext highlighter-rouge">scoped_ctx = context.scoped</code> to grab a scoped context reference <em>before</em> calling a loader, then used <code class="language-plaintext highlighter-rouge">scoped_ctx.set!</code> or <code class="language-plaintext highlighter-rouge">scoped_ctx.merge!</code> to modify scoped context inside the promise body. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># For use with GraphQL-Batch promises:</span>
+<span class="n">scoped_ctx</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="nf">scoped</span>
+<span class="no">SomethingLoader</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span><span class="ss">:something</span><span class="p">).</span><span class="nf">then</span> <span class="k">do</span> <span class="o">|</span><span class="n">thing</span><span class="o">|</span>
+  <span class="n">scoped_ctx</span><span class="p">.</span><span class="nf">set!</span><span class="p">(</span><span class="ss">:thing_name</span><span class="p">,</span> <span class="n">thing</span><span class="p">.</span><span class="nf">name</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
 <h2 id="root-value">Root Value</h2>
 
 <p>You can provide a root <code class="language-plaintext highlighter-rouge">object</code> value with <code class="language-plaintext highlighter-rouge">root_value:</code>. For example, to base the query off of the current organization:</p>
