@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/2.0.26/GraphQL/RakeTask" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.0.27/GraphQL/RakeTask" />
   </head>
   <body>
     <p>Class: GraphQL::RakeTask &lt; Object
@@ -9,8 +9,8 @@ A rake task for dumping a schema as IDL or JSON.
 By default, schemas are looked up by name as constants using
 <code class="language-plaintext highlighter-rouge">schema_name:</code>. You can provide a <code class="language-plaintext highlighter-rouge">load_schema</code> function to return
 your schema another way. 
-<code class="language-plaintext highlighter-rouge">load_context:</code>, <code class="language-plaintext highlighter-rouge">only:</code> and <code class="language-plaintext highlighter-rouge">except:</code> are supported so that you can
-keep an eye on how filters affect your schema. 
+Use <code class="language-plaintext highlighter-rouge">load_context:</code> and <code class="language-plaintext highlighter-rouge">visible?</code> to dump schemas under certain
+visibility constraints. 
 Examples:</p>
 <h1 id="dump-a-schema-to-graphql--json-files">Dump a Schema to .graphql + .json files</h1>
 <p>require “graphql/rake_task”

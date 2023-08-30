@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/2.0.26/GraphQL/Language/Nodes/Document" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.0.27/GraphQL/Language/Nodes/Document" />
   </head>
   <body>
     <p>Class: GraphQL::Language::Nodes::Document &lt; GraphQL::Language::Nodes…
@@ -15,7 +15,7 @@ Examples:</p>
 <h1 id="creating-a-custom-string-from-a-document">Creating a custom string from a document</h1>
 <p>class VariableScrubber &lt; GraphQL::Language::Printer
 def print_argument(arg)
-“#{arg.name}: <HIDDEN>"
+print_string(“#{arg.name}: <HIDDEN>")
 end
 end
 document.to_query_string(printer: VariableScrubber.new)

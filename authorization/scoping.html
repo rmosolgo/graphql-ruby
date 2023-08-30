@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/2.0.26/">API</a>
+          <a href="/api-doc/2.0.27/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -112,11 +112,12 @@
   <h3 class="contents-header">Contents</h3>
   <ol class='contents-list'><li class='contents-entry'><a href='#scope-option'><code>scope:</code> option
 </a></li><li class='contents-entry'><a href='#scope_items-items-ctx-method'><code>.scope_items(items, ctx)</code> method
+</a></li><li class='contents-entry'><a href='#bypassing-object-level-authorization'>Bypassing object-level authorization
 </a></li></ol>
 </div>
 </div>
 <div class="guide-container">
-  <p><em>Scoping</em> is a complementary consideration to authorization. Rather than checking “can this user see this thing?”, scoping takes a list of items filters it to the subset which is appropriate for the current viewer and context. The resulting subset is authorized as normal, and, assuming that it was properly scoped, each item should pass authorization checks.</p>
+  <p><em>Scoping</em> is a complementary consideration to authorization. Rather than checking “can this user see this thing?”, scoping takes a list of items filters it to the subset which is appropriate for the current viewer and context.</p>
 
 <p>For similar features, see <a href="https://github.com/varvet/pundit#scopes">Pundit scopes</a> and <a href="https://github.com/cancancommunity/cancancan/wiki/Fetching-Records">Cancan’s <code class="language-plaintext highlighter-rouge">.accessible_by</code></a>.</p>
 
@@ -148,6 +149,27 @@
 </code></pre></div></div>
 
 <p>The method should return a new list with only the appropriate items for the current <code class="language-plaintext highlighter-rouge">context</code>.</p>
+
+<h2 id="bypassing-object-level-authorization">Bypassing object-level authorization</h2>
+
+<p>If you know that any items returned from <code class="language-plaintext highlighter-rouge">.scope_items</code> should be visible to the current client, you can skip the normal <code class="language-plaintext highlighter-rouge">.authorized?(obj, ctx)</code> checks by configuring <code class="language-plaintext highlighter-rouge">reauthorize_scoped_objects(false)</code> in your type definition. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::Product</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+  <span class="c1"># Check that singly-loaded objects are visible to the current viewer</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">authorized?</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+    <span class="n">object</span><span class="p">.</span><span class="nf">visible_to?</span><span class="p">(</span><span class="n">context</span><span class="p">[</span><span class="ss">:viewer</span><span class="p">])</span>
+  <span class="k">end</span>
+
+  <span class="c1"># Filter any list to only include objects that are visible to the current viewer</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">scope_items</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+    <span class="n">items</span><span class="p">.</span><span class="nf">visible_for</span><span class="p">(</span><span class="n">context</span><span class="p">[</span><span class="ss">:viewer</span><span class="p">])</span>
+  <span class="k">end</span>
+
+  <span class="c1"># If an object of this type was returned from `.scope_items`,</span>
+  <span class="c1"># don't call `.authorized?` with it.</span>
+  <span class="n">reauthorize_scoped_objects</span><span class="p">(</span><span class="kp">false</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
 
 </div>
 <p class="guide-footer">

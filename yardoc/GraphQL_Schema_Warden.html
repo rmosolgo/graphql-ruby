@@ -1,36 +1,16 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/2.0.26/GraphQL/Schema/Warden" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.0.27/GraphQL/Schema/Warden" />
   </head>
   <body>
     <p>Class: GraphQL::Schema::Warden &lt; Object
 This class is part of a private API.
-Restrict access to a GraphQL::Schema with a user-defined filter. 
+Restrict access to a GraphQL::Schema with a user-defined <code class="language-plaintext highlighter-rouge">visible?</code>
+implementations. 
 When validating and executing a query, all access to schema members
 should go through a warden. If you access the schema directly, you
 may show a client something that it shouldn’t be allowed to see. 
-Examples:</p>
-<h1 id="hiding-private-fields">Hiding private fields</h1>
-<p>private_members = -&gt; (member, ctx) { member.metadata[:private] }
-result = Schema.execute(query_string, except: private_members)</p>
-<h1 id="custom-filter-implementation">Custom filter implementation</h1>
-<h1 id="it-must-respond-to-callmember">It must respond to <code class="language-plaintext highlighter-rouge">#call(member)</code>.</h1>
-<p>class MissingRequiredFlags
-def initialize(user)
-@user = user
-end</p>
-<h1 id="return-false-if-any-required-flags-are-missing">Return <code class="language-plaintext highlighter-rouge">false</code> if any required flags are missing</h1>
-<p>def call(member, ctx)
-member.metadata[:required_flags].any? do |flag|
-!@user.has_flag?(flag)
-end
-end
-end</p>
-<h1 id="then-use-the-custom-filter-in-query">Then, use the custom filter in query:</h1>
-<p>missing_required_flags = MissingRequiredFlags.new(current_user)</p>
-<h1 id="this-query-can-only-access-members-which-match-the-users-flags">This query can only access members which match the user’s flags</h1>
-<p>result = Schema.execute(query_string, except: missing_required_flags)
 Class methods:
 from_context, visible_entry?
 Instance methods:
