@@ -9,8 +9,7 @@ module GraphQL
   # By default, schemas are looked up by name as constants using `schema_name:`.
   # You can provide a `load_schema` function to return your schema another way.
   #
-  # `load_context:`, `only:` and `except:` are supported so that
-  # you can keep an eye on how filters affect your schema.
+  # Use `load_context:` and `visible?` to dump schemas under certain visibility constraints.
   #
   # @example Dump a Schema to .graphql + .json files
   #   require "graphql/rake_task"
@@ -36,8 +35,6 @@ module GraphQL
       schema_name: nil,
       load_schema: ->(task) { Object.const_get(task.schema_name) },
       load_context: ->(task) { {} },
-      only: nil,
-      except: nil,
       directory: ".",
       idl_outfile: "schema.graphql",
       json_outfile: "schema.json",
@@ -67,12 +64,6 @@ module GraphQL
 
     # @return [<#call(task)>] A callable for loading the query context
     attr_accessor :load_context
-
-    # @return [<#call(member, ctx)>, nil] A filter for this task
-    attr_accessor :only
-
-    # @return [<#call(member, ctx)>, nil] A filter for this task
-    attr_accessor :except
 
     # @return [String] target for IDL task
     attr_accessor :idl_outfile
@@ -117,10 +108,10 @@ module GraphQL
           include_is_repeatable: include_is_repeatable,
           include_specified_by_url: include_specified_by_url,
           include_schema_description: include_schema_description,
-          only: @only, except: @except, context: context
+          context: context
         )
       when :to_definition
-        schema.to_definition(only: @only, except: @except, context: context)
+        schema.to_definition(context: context)
       else
         raise ArgumentError, "Unexpected schema dump method: #{method_name.inspect}"
       end

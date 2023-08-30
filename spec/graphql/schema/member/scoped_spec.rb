@@ -27,7 +27,26 @@ describe GraphQL::Schema::Member::Scoped do
         end
       end
 
+      def self.authorized?(obj, ctx)
+        if ctx[:allow_unscoped]
+          true
+        else
+          raise "This should never be called (#{ctx[:current_path]}, #{ctx[:current_field].path})"
+        end
+      end
+
+      reauthorize_scoped_objects(false)
+
       field :name, String, null: false
+    end
+
+    class ReauthorizeItem < Item
+      reauthorize_scoped_objects(true)
+
+      def self.authorized?(_obj, context)
+        context[:was_authorized] = true
+        true
+      end
     end
 
     class FrenchItem < Item
@@ -84,6 +103,8 @@ describe GraphQL::Schema::Member::Scoped do
         ]
       end
 
+      field :reauthorize_items, [ReauthorizeItem], resolver_method: :items
+
       field :things, [Thing], null: false
       def things
         items + [OpenStruct.new(name: "Turbine")]
@@ -120,7 +141,7 @@ describe GraphQL::Schema::Member::Scoped do
     end
 
     it "is bypassed when scope: false" do
-      assert_equal ["Trombone", "Paperclip"], get_item_names_with_context({}, field_name: "unscopedItems")
+      assert_equal ["Trombone", "Paperclip"], get_item_names_with_context({ allow_unscoped: true }, field_name: "unscopedItems")
     end
 
     it "returns null when the value is nil" do
@@ -211,6 +232,14 @@ describe GraphQL::Schema::Member::Scoped do
       assert_equal ["Trombone"], names
       names2 = res["data"]["lazyItems"].map { |e| e["name"] }
       assert_equal ["Trombone"], names2
+    end
+
+    it "doesn't shortcut authorization when `reauthorize_scoped_objects(true)`" do
+      query_str = "{ reauthorizeItems { name } }"
+      res = ScopeSchema.execute(query_str, context: { french: true })
+      assert_equal 1, res["data"]["reauthorizeItems"].length
+      assert_equal 1, res.context[:scope_calls]
+      assert res.context[:was_authorized]
     end
 
     it "is called for abstract types" do
