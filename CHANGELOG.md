@@ -10,6 +10,21 @@
 
 ### Bug fixes
 
+# 2.0.27 (30 Aug 2023)
+
+### New features
+
+- Validators: Support `%{value}` in custom messages #4601
+
+### Bug fixes
+
+- Resolvers: Support `return false, nil` from `ready?` and `authorized?` #4585
+- Enums: properly load directives from Schema IDL #4596
+- Language: faster scanner #4576
+- Language: support fields and arguments named `"null"` #4586
+- Language: fix block string quote unescaping #4580
+- Generator: use generated node type in Relay-related fields #4598
+
 # 2.0.26 (8 Aug 2023)
 
 ### Bug fixes
