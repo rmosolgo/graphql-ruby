@@ -54,23 +54,9 @@ module GraphQL
                 value.edge_class = custom_t
               end
               value
-            elsif context.schema.new_connections?
+            else
               context.namespace(:connections)[:all_wrappers] ||= context.schema.connections.all_wrappers
               context.schema.connections.wrap(field, object.object, value, original_arguments, context)
-            else
-              if object.is_a?(GraphQL::Schema::Object)
-                object = object.object
-              end
-              connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(value)
-              connection_class.new(
-                value,
-                original_arguments,
-                field: field,
-                max_page_size: field.max_page_size,
-                default_page_size: field.default_page_size,
-                parent: object,
-                context: context,
-              )
             end
           end
         end
