@@ -170,6 +170,16 @@ end
 
 `context.scoped_merge!({ ... })` is also available for setting multiple keys at once.
 
+**Note**: With batched data loading (eg, GraphQL-Batch), scoped context might not work because of GraphQL-Ruby's control flow jumps from one field to the next. In that case, use `scoped_ctx = context.scoped` to grab a scoped context reference _before_ calling a loader, then used `scoped_ctx.set!` or `scoped_ctx.merge!` to modify scoped context inside the promise body. For example:
+
+```ruby
+# For use with GraphQL-Batch promises:
+scoped_ctx = context.scoped
+SomethingLoader.load(:something).then do |thing|
+  scoped_ctx.set!(:thing_name, thing.name)
+end
+```
+
 ## Root Value
 
 You can provide a root `object` value with `root_value:`. For example, to base the query off of the current organization:
