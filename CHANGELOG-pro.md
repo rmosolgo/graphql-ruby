@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.24.8 (29 Aug 2023)
+
+### Bug Fix
+
+- OperationStore: search for operation during `Query#initialize` to avoid races with other instrumentation. Add `use ... trace: true` to get the old behavior.
+
 # 1.24.7 (16 June 2023)
 
 ### Bug Fix
