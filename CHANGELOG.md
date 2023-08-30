@@ -10,6 +10,21 @@
 
 ### Bug fixes
 
+# 2.1.0 (30 Aug 2023)
+
+### Breaking changes
+
+- Visitor: legacy-style proc-based visitors are no longer supported #4577 #4583
+- Deprecated `GraphQL::Filter` is removed #4325
+- Authorization: items loaded in a list are not re-authorized after the list is loaded
+- Language::Printer has been re-written to append to a buffer; custom printers will need to be updated #4394
+
+### New features
+
+- Authorized: Items in a list are no longer re-authorized after the list is authorized #3994
+- Subscriptions: `unsubscribe(...)` accepts a value to be used to return a result along with unsubscribing #4283
+- Language::Printer is much faster #4394
+
 # 2.0.27 (30 Aug 2023)
 
 ### New features
