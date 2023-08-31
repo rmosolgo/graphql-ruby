@@ -1,4 +1,6 @@
 # frozen_string_literal: true
+require "graphql/query/context/scoped_context"
+
 module GraphQL
   class Query
     # Expose some query-specific info to field resolve functions.
@@ -88,104 +90,6 @@ module GraphQL
         @value = nil
         @context = self # for SharedMethods TODO delete sharedmethods
         @scoped_context = ScopedContext.new(self)
-      end
-
-      class ScopedContext
-        NO_PATH = GraphQL::EmptyObjects::EMPTY_ARRAY
-        NO_CONTEXT = GraphQL::EmptyObjects::EMPTY_HASH
-
-        def initialize(query_context)
-          @query_context = query_context
-          @scoped_contexts = nil
-          @all_keys = nil
-        end
-
-        def merged_context
-          if @scoped_contexts.nil?
-            NO_CONTEXT
-          else
-            merged_ctx = {}
-            each_present_path_ctx do |path_ctx|
-              merged_ctx = path_ctx.merge(merged_ctx)
-            end
-            merged_ctx
-          end
-        end
-
-        def merge!(hash)
-          @all_keys ||= Set.new
-          @all_keys.merge(hash.keys)
-          ctx = @scoped_contexts ||= {}
-          current_path.each do |path_part|
-            ctx = ctx[path_part] ||= { parent: ctx }
-          end
-          this_scoped_ctx = ctx[:scoped_context] ||= {}
-          this_scoped_ctx.merge!(hash)
-        end
-
-        def key?(key)
-          if @all_keys && @all_keys.include?(key)
-            each_present_path_ctx do |path_ctx|
-              if path_ctx.key?(key)
-                return true
-              end
-            end
-          end
-          false
-        end
-
-        def [](key)
-          each_present_path_ctx do |path_ctx|
-            if path_ctx.key?(key)
-              return path_ctx[key]
-            end
-          end
-          nil
-        end
-
-        def current_path
-          @query_context.current_path || NO_PATH
-        end
-
-        def dig(key, *other_keys)
-          each_present_path_ctx do |path_ctx|
-            if path_ctx.key?(key)
-              found_value = path_ctx[key]
-              if other_keys.any?
-                return found_value.dig(*other_keys)
-              else
-                return found_value
-              end
-            end
-          end
-          nil
-        end
-
-        private
-
-        # Start at the current location,
-        # but look up the tree for previously-assigned scoped values
-        def each_present_path_ctx
-          ctx = @scoped_contexts
-          if ctx.nil?
-            # no-op
-          else
-            current_path.each do |path_part|
-              if ctx.key?(path_part)
-                ctx = ctx[path_part]
-              else
-                break
-              end
-            end
-
-            while ctx
-              if (scoped_ctx = ctx[:scoped_context])
-                yield(scoped_ctx)
-              end
-              ctx = ctx[:parent]
-            end
-          end
-        end
       end
 
       # @return [Hash] A hash that will be added verbatim to the result hash, as `"extensions" => { ... }`
@@ -344,6 +248,36 @@ module GraphQL
       def scoped_set!(key, value)
         scoped_merge!(key => value)
         nil
+      end
+
+      # Use this when you need to do a scoped set _inside_ a lazy-loaded (or batch-loaded)
+      # block of code.
+      #
+      # @example using scoped context inside a promise
+      #   scoped_ctx = context.scoped
+      #   SomeBatchLoader.load(...).then do |thing|
+      #     # use a scoped_ctx which was created _before_ dataloading:
+      #     scoped_ctx.set!(:thing, thing)
+      #   end
+      # @return [Context::Scoped]
+      def scoped
+        Scoped.new(@scoped_context, current_path)
+      end
+
+      class Scoped
+        def initialize(scoped_context, path)
+          @path = path
+          @scoped_context = scoped_context
+        end
+
+        def merge!(hash)
+          @scoped_context.merge!(hash, at: @path)
+        end
+
+        def set!(key, value)
+          @scoped_context.merge!({ key => value }, at: @path)
+          nil
+        end
       end
     end
   end

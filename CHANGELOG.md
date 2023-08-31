@@ -10,11 +10,58 @@
 
 ### Bug fixes
 
+# 2.1.0 (30 Aug 2023)
+
+### Breaking changes
+
+- Visitor: legacy-style proc-based visitors are no longer supported #4577 #4583
+- Deprecated `GraphQL::Filter` is removed #4325
+- Authorization: items loaded in a list are not re-authorized after the list is loaded
+- Language::Printer has been re-written to append to a buffer; custom printers will need to be updated #4394
+
+### New features
+
+- Authorized: Items in a list are no longer re-authorized after the list is authorized #3994
+- Subscriptions: `unsubscribe(...)` accepts a value to be used to return a result along with unsubscribing #4283
+- Language::Printer is much faster #4394
+
+# 2.0.27 (30 Aug 2023)
+
+### New features
+
+- Validators: Support `%{value}` in custom messages #4601
+
+### Bug fixes
+
+- Resolvers: Support `return false, nil` from `ready?` and `authorized?` #4585
+- Enums: properly load directives from Schema IDL #4596
+- Language: faster scanner #4576
+- Language: support fields and arguments named `"null"` #4586
+- Language: fix block string quote unescaping #4580
+- Generator: use generated node type in Relay-related fields #4598
+
+# 2.0.26 (8 Aug 2023)
+
+### Bug fixes
+
+- Datadog Tracing: fix LocalJumpError #4579
+
+# 2.0.25 (7 Aug 2023)
+
+### New features
+
+- Tracing: add trace modes #4571
+- Dataloader: add `Source#result_key_for` for customizing cache keys in sources #4569
+
+### Bug fixes
+
+- Tracing: Support multiple tracing platforms at once #4543
+
 # 2.0.24 (27 Jun 2023)
 
 ### New features
 
-- `Schema::Object.wrap` can be used to customize how objects are (or aren't) wrapped by `GraphQL::Schema::Object` instances at runtime #5424
+- `Schema::Object.wrap` can be used to customize how objects are (or aren't) wrapped by `GraphQL::Schema::Object` instances at runtime #4524
 - `Query`: accept a `static_validator:` option in `#initialize` to use instead of the default validation configuration.
 
 ### Bug fixes

@@ -60,12 +60,12 @@ class ActionCableSubscriber {
       // - more: true if this channel should stay open
       // - result: the GraphQL response for this result
       received: function(payload) {
-        if (!payload.more) {
-          registry.unsubscribe(id)
-        }
         var result = payload.result
         if (result) {
           handler(result.errors, result.data)
+        }
+        if (!payload.more) {
+          registry.unsubscribe(id)
         }
       },
     })

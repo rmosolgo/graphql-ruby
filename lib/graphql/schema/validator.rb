@@ -133,7 +133,7 @@ module GraphQL
             if all_errors.frozen? # It's empty
               all_errors = []
             end
-            interpolation_vars = { validated: validated.graphql_name }
+            interpolation_vars = { validated: validated.graphql_name, value: value.inspect }
             if errors.is_a?(String)
               all_errors << (errors % interpolation_vars)
             else

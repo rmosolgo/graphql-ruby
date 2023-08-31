@@ -4,36 +4,11 @@ require 'set'
 
 module GraphQL
   class Schema
-    # Restrict access to a {GraphQL::Schema} with a user-defined filter.
+    # Restrict access to a {GraphQL::Schema} with a user-defined `visible?` implementations.
     #
     # When validating and executing a query, all access to schema members
     # should go through a warden. If you access the schema directly,
     # you may show a client something that it shouldn't be allowed to see.
-    #
-    # @example Hiding private fields
-    #   private_members = -> (member, ctx) { member.metadata[:private] }
-    #   result = Schema.execute(query_string, except: private_members)
-    #
-    # @example Custom filter implementation
-    #   # It must respond to `#call(member)`.
-    #   class MissingRequiredFlags
-    #     def initialize(user)
-    #       @user = user
-    #     end
-    #
-    #     # Return `false` if any required flags are missing
-    #     def call(member, ctx)
-    #       member.metadata[:required_flags].any? do |flag|
-    #         !@user.has_flag?(flag)
-    #       end
-    #     end
-    #   end
-    #
-    #   # Then, use the custom filter in query:
-    #   missing_required_flags = MissingRequiredFlags.new(current_user)
-    #
-    #   # This query can only access members which match the user's flags
-    #   result = Schema.execute(query_string, except: missing_required_flags)
     #
     # @api private
     class Warden
@@ -114,22 +89,16 @@ module GraphQL
         def interfaces(obj_type); obj_type.interfaces; end
       end
 
-      # @param filter [<#call(member)>] Objects are hidden when `.call(member, ctx)` returns true
       # @param context [GraphQL::Query::Context]
       # @param schema [GraphQL::Schema]
-      def initialize(filter = nil, context:, schema:)
+      def initialize(context:, schema:)
         @schema = schema
         # Cache these to avoid repeated hits to the inheritance chain when one isn't present
         @query = @schema.query
         @mutation = @schema.mutation
         @subscription = @schema.subscription
         @context = context
-        @visibility_cache = if filter
-          read_through { |m| filter.call(m, context) }
-        else
-          read_through { |m| schema.visible?(m, context) }
-        end
-
+        @visibility_cache = read_through { |m| schema.visible?(m, context) }
         @visibility_cache.compare_by_identity
         # Initialize all ivars to improve object shape consistency:
         @types = @visible_types = @reachable_types = @visible_parent_fields =

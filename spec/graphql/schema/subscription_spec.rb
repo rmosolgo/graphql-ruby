@@ -80,6 +80,10 @@ describe GraphQL::Schema::Subscription do
           # don't update for one's own toots.
           # (IRL it would make more sense to implement this in `#subscribe`)
           NO_UPDATE
+        elsif context[:update_and_unsubscribe]
+          unsubscribe(super)
+        elsif context[:update_error_and_unsubscribe]
+          unsubscribe(GraphQL::ExecutionError.new("Boom!"))
         else
           # This assumes that trigger object can fulfill `{toot:, user:}`,
           # for testing that the default implementation is `return object`
@@ -444,6 +448,40 @@ describe GraphQL::Schema::Subscription do
       assert_equal [], mailbox2
       # `NO_UPDATE` doesn't cause an unsubscribe
       assert_equal 2, in_memory_subscription_count
+    end
+
+    it "can unsubscribe with a final update" do
+      res = exec_query(<<-GRAPHQL, context: { update_and_unsubscribe: true })
+      subscription {
+        tootWasTooted(handle: "matz") {
+          toot { body }
+        }
+      }
+      GRAPHQL
+      assert_equal 1, in_memory_subscription_count
+      toot = OpenStruct.new(toot: { body: "Merry Christmas, here's a new Ruby version" }, user: SubscriptionFieldSchema::USERS["matz"])
+      SubscriptionFieldSchema.subscriptions.trigger(:toot_was_tooted, {handle: "matz"}, toot)
+
+      mailbox = res.context[:subscription_mailbox]
+      assert_equal ["Merry Christmas, here's a new Ruby version"], mailbox.map { |m| m["data"]["tootWasTooted"]["toot"]["body"] }
+      assert_equal 0, in_memory_subscription_count
+    end
+
+    it "can unsubscribe with an error" do
+      res = exec_query(<<-GRAPHQL, context: { update_error_and_unsubscribe: true })
+      subscription {
+        tootWasTooted(handle: "matz") {
+          toot { body }
+        }
+      }
+      GRAPHQL
+      assert_equal 1, in_memory_subscription_count
+      toot = OpenStruct.new(toot: { body: "Merry Christmas, here's a new Ruby version" }, user: SubscriptionFieldSchema::USERS["matz"])
+      SubscriptionFieldSchema.subscriptions.trigger(:toot_was_tooted, {handle: "matz"}, toot)
+
+      mailbox = res.context[:subscription_mailbox]
+      assert_equal ["Boom!"], mailbox.map { |m| m["errors"][0]["message"] }
+      assert_equal 0, in_memory_subscription_count
     end
 
     it "unsubscribes if a `loads:` argument is not found" do

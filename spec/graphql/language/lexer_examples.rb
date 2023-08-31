@@ -74,6 +74,11 @@ module LexerExamples
           assert_equal tokens[0], tokens[1].prev_token
         end
 
+        it "handles integers with a leading zero" do
+          tokens = subject.tokenize("{ a(id: 04) }")
+          assert_equal :INT, tokens[5].name
+        end
+
         it "allows escaped quotes in strings" do
           tokens = subject.tokenize('"a\\"b""c"')
           assert_equal 'a"b', tokens[0].value
@@ -177,6 +182,20 @@ GRAPHQL
           assert_equal '(STRING "c" [1:8])', str_token.inspect
           rparen_token = tokens[6]
           assert_equal '(RPAREN ")" [1:11])', rparen_token.inspect
+        end
+
+        it "tokenizes block quotes with triple quotes correctly" do
+          doc = <<-eos
+"""
+
+string with \\"""
+
+"""
+          eos
+          tokens = subject.tokenize doc
+          token = tokens.first
+          assert_equal :STRING, token.name
+          assert_equal 'string with """', token.value
         end
 
         it "counts block string line properly" do

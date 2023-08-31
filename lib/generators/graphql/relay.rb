@@ -6,7 +6,24 @@ module Graphql
         # Add Node, `node(id:)`, and `nodes(ids:)`
         template("node_type.erb", "#{options[:directory]}/types/node_type.rb")
         in_root do
-          fields = "    # Add `node(id: ID!) and `nodes(ids: [ID!]!)`\n    include GraphQL::Types::Relay::HasNodeField\n    include GraphQL::Types::Relay::HasNodesField\n\n"
+          fields = <<-RUBY
+    field :node, Types::NodeType, null: true, description: "Fetches an object given its ID." do
+      argument :id, ID, required: true, description: "ID of the object."
+    end
+
+    def node(id:)
+      context.schema.object_from_id(id, context)
+    end
+
+    field :nodes, [Types::NodeType, null: true], null: true, description: "Fetches a list of objects given a list of IDs." do
+      argument :ids, [ID], required: true, description: "IDs of the objects."
+    end
+
+    def nodes(ids:)
+      ids.map { |id| context.schema.object_from_id(id, context) }
+    end
+
+    RUBY
           inject_into_file "#{options[:directory]}/types/query_type.rb", fields, after: /class .*QueryType\s*<\s*[^\s]+?\n/m, force: false
         end
 

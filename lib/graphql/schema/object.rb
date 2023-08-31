@@ -30,6 +30,10 @@ module GraphQL
         # @see authorized_new to make instances
         protected :new
 
+        def wrap_scoped(object, context)
+          scoped_new(object, context)
+        end
+
         # This is called by the runtime to return an object to call methods on.
         def wrap(object, context)
           authorized_new(object, context)
@@ -90,6 +94,10 @@ module GraphQL
               end
             end
           end
+        end
+
+        def scoped_new(object, context)
+          self.new(object, context)
         end
       end
 

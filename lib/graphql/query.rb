@@ -95,15 +95,10 @@ module GraphQL
     # @param root_value [Object] the object used to resolve fields on the root type
     # @param max_depth [Numeric] the maximum number of nested selections allowed for this query (falls back to schema-level value)
     # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
-    # @param except [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns truthy
-    # @param only [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns false
-    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, static_validator: nil, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, except: nil, only: nil, warden: nil)
+    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, static_validator: nil, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, warden: nil)
       # Even if `variables: nil` is passed, use an empty hash for simpler logic
       variables ||= {}
       @schema = schema
-      if only || except
-        merge_filters(except: except, only: only)
-      end
       @context = schema.context_class.new(query: self, object: root_value, values: context)
       shape_name = @context[:schema_shape]
       if shape_name && warden.nil?
@@ -133,7 +128,6 @@ module GraphQL
       if context_tracers.any? && !(schema.trace_class <= GraphQL::Tracing::CallLegacyTracers)
         raise ArgumentError, "context[:tracers] are not supported without `trace_with(GraphQL::Tracing::CallLegacyTracers)` in the schema configuration, please add it."
       end
-
 
       @analysis_errors = []
       if variables.is_a?(String)
@@ -359,17 +353,6 @@ module GraphQL
       with_prepared_ast { @query }
     end
 
-    # @return [void]
-    def merge_filters(only: nil, except: nil)
-      if @prepared_ast
-        raise "Can't add filters after preparing the query"
-      else
-        @filter ||= @schema.default_filter
-        @filter = @filter.merge(only: only, except: except)
-      end
-      nil
-    end
-
     def subscription?
       with_prepared_ast { @subscription }
     end
@@ -405,7 +388,7 @@ module GraphQL
 
     def prepare_ast
       @prepared_ast = true
-      @warden ||= @schema.warden_class.new(@filter, schema: @schema, context: @context)
+      @warden ||= @schema.warden_class.new(schema: @schema, context: @context)
       parse_error = nil
       @document ||= begin
         if query_string

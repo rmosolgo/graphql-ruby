@@ -14,7 +14,7 @@ module GraphQL
     # @param include_built_in_directives [Boolean] Whether or not to include built in directives in the AST
     class DocumentFromSchemaDefinition
       def initialize(
-        schema, context: nil, only: nil, except: nil, include_introspection_types: false,
+        schema, context: nil, include_introspection_types: false,
         include_built_in_directives: false, include_built_in_scalars: false, always_include_schema: false
       )
         @schema = schema
@@ -26,16 +26,7 @@ module GraphQL
 
         schema_context = schema.context_class.new(query: nil, object: nil, schema: schema, values: context)
 
-        @warden = if only || except
-          filter = GraphQL::Filter
-            .new(only: only, except: except)
-            .merge(only: @schema.method(:visible?))
-          GraphQL::Schema::Warden.new(
-              filter,
-              schema: @schema,
-              context: schema_context,
-            )
-        elsif (shape_name = schema_context[:schema_shape])
+        @warden = if (shape_name = schema_context[:schema_shape])
           shape = @schema.shape_for(shape_name)
           shape.warden
         else
@@ -44,7 +35,6 @@ module GraphQL
             context: schema_context,
           )
         end
-
         schema_context.warden = @warden
       end
 
