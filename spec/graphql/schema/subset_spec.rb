@@ -14,6 +14,28 @@ describe GraphQL::Schema::Subset do
       field :cost_of_goods_sold, Integer, subsets: [:admin]
     end
 
+    module Payable
+      include GraphQL::Schema::Interface
+      field :amount, Integer
+
+      def self.resolve_type(obj, ctx)
+        obj[:type]
+      end
+    end
+
+    class Bill < GraphQL::Schema::Object
+      implements Payable
+    end
+
+    class Bribe < GraphQL::Schema::Object
+      implements Payable, subsets: [:admin]
+    end
+
+    class Expense < GraphQL::Schema::Union
+      possible_types Dish
+      possible_types Bribe, subsets: [:admin]
+    end
+
     class Query < GraphQL::Schema::Object
       field :dishes, [Dish] do
         argument :yucky, Boolean, subsets: [:admin], required: false
@@ -47,6 +69,15 @@ describe GraphQL::Schema::Subset do
         end
         d
       end
+
+      field :expenses, [Expense]
+      field :dummy_bribe, Bribe # just to connect it to the schema
+      field :dummy_bill, Bill # just to connect it to the schema
+      field :payables, [Payable]
+
+      def payables
+        [{type: Bill, amount: 3000}, {type: Bribe, amount: 5000}]
+      end
     end
 
     query(Query)
@@ -65,6 +96,12 @@ describe GraphQL::Schema::Subset do
 
     assert_includes admin_schema, "type Recipe"
     refute_includes default_schema, "type Recipe"
+  end
+
+  it "works with no schema_subset" do
+    query_str = "{ dishes { name } }"
+    assert_equal 2, exec_query(query_str, :default)["data"]["dishes"].size
+    assert_equal 2, exec_query(query_str, nil)["data"]["dishes"].size
   end
 
   describe "runtime visibility" do
@@ -102,6 +139,27 @@ describe GraphQL::Schema::Subset do
 
       default_res = exec_query(query_str, :default)
       assert_equal ["Field 'costOfGoodsSold' doesn't exist on type 'Dish'"], default_res["errors"].map { |e| e["message"] }
+    end
+
+    it "hides union memberships" do
+      query_str = "{ __type(name: \"Expense\") { possibleTypes { name } } }"
+      admin_res = exec_query(query_str, :admin)
+      assert_equal ["Bribe", "Dish"], admin_res["data"]["__type"]["possibleTypes"].map { |pt| pt["name"] }
+
+      default_res = exec_query(query_str, :default)
+      assert_equal ["Dish"], default_res["data"]["__type"]["possibleTypes"].map { |pt| pt["name"] }
+      # But the type itself is still visible, only the membership is hidden:
+      default_res2 = exec_query("{ __type(name: \"Bribe\") { name } }", :default)
+      assert_equal "Bribe", default_res2["data"]["__type"]["name"]
+    end
+
+    it "hides inteface implementations" do
+      query_str = "{ payables { ... on Bribe { amount } } }"
+      admin_res = exec_query(query_str, :admin)
+      assert_equal [nil, 5000], admin_res["data"]["payables"].map { |p| p["amount"] }
+
+      default_res = exec_query(query_str, :default)
+      assert_equal ["Fragment on Bribe can't be spread inside Payable", "Field 'amount' doesn't exist on type 'Bribe'"], default_res["errors"].map { |e| e["message"]}
     end
   end
 

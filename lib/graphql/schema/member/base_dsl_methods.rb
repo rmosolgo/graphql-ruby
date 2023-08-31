@@ -116,7 +116,6 @@ module GraphQL
         end
 
         def visible?(context)
-          # TODO use a Set for @own_subsets ?
           @own_subsets ? @own_subsets.include?(context[:schema_subset]) : true
         end
 

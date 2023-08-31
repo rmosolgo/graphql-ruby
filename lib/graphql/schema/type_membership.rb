@@ -20,17 +20,19 @@ module GraphQL
       # @param abstract_type [Class<GraphQL::Schema::Union>, Module<GraphQL::Schema::Interface>]
       # @param object_type [Class<GraphQL::Schema::Object>]
       # @param options [Hash] Any options passed to `.possible_types` or `.implements`
-      def initialize(abstract_type, object_type, **options)
+      def initialize(abstract_type, object_type, subsets: nil, **options)
         @abstract_type = abstract_type
         @object_type = object_type
         @options = options
+        @subsets = subsets
       end
 
       # @return [Boolean] if false, {#object_type} will be treated as _not_ a member of {#abstract_type}
       def visible?(ctx)
         warden = Warden.from_context(ctx)
         (@object_type.respond_to?(:visible?) ? warden.visible_type?(@object_type, ctx) : true) &&
-          (@abstract_type.respond_to?(:visible?) ? warden.visible_type?(@abstract_type, ctx) : true)
+          (@abstract_type.respond_to?(:visible?) ? warden.visible_type?(@abstract_type, ctx) : true) &&
+          (@subsets ? @subsets.include?(ctx[:schema_subset]) : true)
       end
 
       def graphql_name
