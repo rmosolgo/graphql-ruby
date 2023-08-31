@@ -9,15 +9,17 @@ describe GraphQL::Schema::Subset do
     end
 
     class Dish < GraphQL::Schema::Object
-      field :price, Integer
+      field :name, String
       field :recipe, Recipe
     end
 
     class Query < GraphQL::Schema::Object
-      field :dishes, [Dish]
+      field :dishes, [Dish] do
+        argument :yucky, Boolean, subsets: [:admin], required: false
+      end
 
-      def dishes
-        [
+      def dishes(yucky: false)
+        d = [
           {
             name: "Sauerkraut",
             recipe: {
@@ -31,12 +33,25 @@ describe GraphQL::Schema::Subset do
             }
           },
         ]
+        if yucky
+          d << {
+            name: "Asparagus Pudding",
+            recipe: {
+              ingredients: ["Asparagus", "Milk", "Eggs"],
+            }
+          }
+        end
+        d
       end
     end
 
     query(Query)
 
     subset :admin
+  end
+
+  def exec_query(str, subset)
+    SubsetSchema.execute(str, context: { schema_subset: subset })
   end
 
   it "prints limited schema" do
@@ -48,13 +63,24 @@ describe GraphQL::Schema::Subset do
     refute_includes default_schema, "type Recipe"
   end
 
-  it "filters visibility at runtime" do
-    query_str = "{ dishes { recipe { ingredients } } }"
-    admin_res = SubsetSchema.execute(query_str, context: { schema_subset: :admin })
-    assert_equal [3, 5], admin_res["data"]["dishes"].map { |d| d["recipe"]["ingredients"].size }
+  describe "runtime visibility" do
+    it "hides fields whose types are hidden" do
+      query_str = "{ dishes { recipe { ingredients } } }"
+      admin_res = exec_query(query_str, :admin)
+      assert_equal [3, 5], admin_res["data"]["dishes"].map { |d| d["recipe"]["ingredients"].size }
 
-    default_res = SubsetSchema.execute(query_str, context: { schema_subset: :default })
-    assert_equal ["Field 'recipe' doesn't exist on type 'Dish'"], default_res["errors"].map { |e| e["message"] }
+      default_res = exec_query(query_str, :default)
+      assert_equal ["Field 'recipe' doesn't exist on type 'Dish'"], default_res["errors"].map { |e| e["message"] }
+    end
+
+    it "hides arguments" do
+      query_str = "{ dishes(yucky: true) { name } }"
+      admin_res = exec_query(query_str, :admin)
+      assert_equal "Asparagus Pudding", admin_res["data"]["dishes"][2]["name"]
+
+      default_res = exec_query(query_str, :default)
+      assert_equal ["Field 'dishes' doesn't accept argument 'yucky'"], default_res["errors"].map { |e| e["message"] }
+    end
   end
 
   it "has a cached warden" do

@@ -50,7 +50,7 @@ module GraphQL
       # @param deprecation_reason [String]
       # @param validates [Hash, nil] Options for building validators, if any should be applied
       # @param replace_null_with_default [Boolean] if `true`, incoming values of `null` will be replaced with the configured `default_value`
-      def initialize(arg_name = nil, type_expr = nil, desc = nil, required: true, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NOT_CONFIGURED, as: nil, from_resolver: false, camelize: true, prepare: nil, owner:, validates: nil, directives: nil, deprecation_reason: nil, replace_null_with_default: false, &definition_block)
+      def initialize(arg_name = nil, type_expr = nil, desc = nil, required: true, type: nil, name: nil, loads: nil, description: nil, ast_node: nil, default_value: NOT_CONFIGURED, as: nil, from_resolver: false, camelize: true, prepare: nil, owner:, validates: nil, directives: nil, deprecation_reason: nil, replace_null_with_default: false, subsets: nil, &definition_block)
         arg_name ||= name
         @name = -(camelize ? Member::BuildType.camelize(arg_name.to_s) : arg_name.to_s)
         @type_expr = type_expr || type
@@ -63,6 +63,8 @@ module GraphQL
           end
           @replace_null_with_default = true
         end
+
+        @subsets = subsets || EMPTY_ARRAY
 
         @owner = owner
         @as = as
@@ -99,6 +101,8 @@ module GraphQL
       def inspect
         "#<#{self.class} #{path}: #{type.to_type_signature}#{description ? " @description=#{description.inspect}" : ""}>"
       end
+
+      attr_reader :subsets
 
       # @param default_value [Object] The value to use when the client doesn't provide one
       # @return [Object] the value used when the client doesn't provide a value for this argument
@@ -144,7 +148,8 @@ module GraphQL
       end
 
       def visible?(context)
-        true
+        # TODO use a Set for @subsets ?
+        @subsets ? @subsets.include?(context[:schema_subset]) : true
       end
 
       def authorized?(obj, value, ctx)
