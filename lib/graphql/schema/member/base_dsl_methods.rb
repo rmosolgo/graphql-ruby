@@ -36,11 +36,11 @@ module GraphQL
           )
         end
 
-        def shapes(*new_shapes)
-          if new_shapes.any?
-            @own_shapes = new_shapes
+        def subsets(*new_subsets)
+          if new_subsets.any?
+            @own_subsets = new_subsets
           else
-            @own_shapes || (superclass.respond_to?(:shapes) ? superclass.shapes : GraphQL::EmptyObjects::EMPTY_ARRAY)
+            @own_subsets || (superclass.respond_to?(:subsets) ? superclass.subsets : GraphQL::EmptyObjects::EMPTY_ARRAY)
           end
         end
 
@@ -64,7 +64,7 @@ module GraphQL
           def inherited(child_class)
             child_class.introspection(introspection)
             child_class.description(description)
-            child_class.shapes(*shapes)
+            child_class.subsets(*subsets)
             child_class.default_graphql_name = nil
 
             if defined?(@graphql_name) && @graphql_name && (self.name.nil? || graphql_name != default_graphql_name)
@@ -116,8 +116,8 @@ module GraphQL
         end
 
         def visible?(context)
-          # TODO use a Set for @own_shapes ?
-          @own_shapes ? @own_shapes.include?(context[:shape_name]) : true
+          # TODO use a Set for @own_subsets ?
+          @own_subsets ? @own_subsets.include?(context[:schema_subset]) : true
         end
 
         def authorized?(object, context)

@@ -13,7 +13,7 @@ require "graphql/schema/type_expression"
 require "graphql/schema/unique_within_type"
 require "graphql/schema/warden"
 require "graphql/schema/build_from_definition"
-require "graphql/schema/shape"
+require "graphql/schema/subset"
 
 require "graphql/schema/validator"
 require "graphql/schema/member"
@@ -1162,26 +1162,24 @@ module GraphQL
         end
       end
 
-      def shape(name, context: {})
-        own_shapes[name] = GraphQL::Schema::Shape.new(name: name, schema: self, context: context)
+      def subset(name, context: {})
+        own_subset[name] = GraphQL::Schema::Subset.new(name: name, schema: self, context: context)
         nil
       end
 
-      def shape_for(name)
+      def subset_for(name)
         # TODO:
         # - inheritance
         # - test error case
-        own_shapes[name] || raise(ArgumentError, "No defined shape for #{name.inspect} (#{@own_shapes.size} defined shapes: #{@own_shapes.keys.map(&:inspect)})")
+        own_subset[name] || raise(ArgumentError, "No defined subset for #{name.inspect} (#{@own_subsets.size} defined subsets: #{@own_subset.keys.map(&:inspect)})")
       end
 
       private
 
-      def own_shapes
-        @own_shapes ||= begin
-          os = {}
-          os[:default] =  GraphQL::Schema::Shape.new(name: :default, schema: self, context: {})
-          os
-        end
+      def own_subset
+        @own_subset ||= {
+          default: GraphQL::Schema::Subset.new(name: :default, schema: self, context: {})
+        }
       end
 
       # @param t [Module, Array<Module>]
