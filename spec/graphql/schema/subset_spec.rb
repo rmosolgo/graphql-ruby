@@ -172,4 +172,83 @@ describe GraphQL::Schema::Subset do
     refute SubsetSchema.visible?(SubsetSchema::Recipe, { schema_subset: :default })
     refute SubsetSchema.visible?(SubsetSchema::Recipe, {})
   end
+
+  describe "Context-based subsets" do
+    class ContextSubsetSchema < GraphQL::Schema
+      module HasPermission
+        def initialize(*args, permission: nil, **kwargs, &block)
+          super(*args, **kwargs, &block)
+          @permission = permission
+        end
+
+        def permission(new_permission = nil)
+          if new_permission
+            @permission = new_permission
+          else
+            @permission
+          end
+        end
+
+        def visible?(ctx)
+          @permission ? ctx[:current_permission] >= @permission : true
+        end
+      end
+
+      class BaseField < GraphQL::Schema::Field
+        include HasPermission
+      end
+
+      class BaseObject < GraphQL::Schema::Object
+        field_class BaseField
+        extend HasPermission
+      end
+
+      class Agent < BaseObject
+        field :name, String
+        field :real_name, String, permission: 9000
+      end
+
+      class Mission < BaseObject
+        field :destination, String
+        field :objective, String, permission: 2
+        field :assignees, [Agent], permission: 3
+      end
+
+      class Query < BaseObject
+        field :missions, [Mission], permission: 1
+
+        def missions
+          [
+            {
+              destination: "Hong Kong",
+              objective: "Recover stolen jewels",
+              assignees: [{ name: "Tintin" }]
+            }
+          ]
+        end
+      end
+
+      query(Query)
+
+      subset :public, context: { current_permission: 0 }
+      subset :secret, context: { current_permission: 2 }
+      subset :top_secret, context: { current_permission: 5 }
+    end
+
+    def exec_query(str, subset)
+      ContextSubsetSchema.execute(str, context: { schema_subset: subset })
+    end
+
+    it "uses cached subsets based on the configured context" do
+      # As public:
+      assert_equal ["Field 'missions' doesn't exist on type 'Query'"], exec_query("{ missions { destination } }", :public)["errors"].map { |e| e["message"] }
+      # As secret:
+      assert_equal [["Hong Kong", "Recover stolen jewels"]], exec_query("{ missions { destination objective } }", :secret)["data"]["missions"].map { |m| [m["destination"], m["objective"]] }
+      assert_equal ["Field 'assignees' doesn't exist on type 'Mission'"], exec_query("{ missions { assignees } }", :secret)["errors"].map { |e| e["message"] }
+
+      # As top_secret:
+      assert_equal [["Tintin"]], exec_query("{ missions { assignees { name } } }", :top_secret)["data"]["missions"].map { |m| m["assignees"].map { |a| a["name"] } }
+      assert_equal ["Field 'realName' doesn't exist on type 'Agent'"], exec_query("{ missions { assignees { realName } } }", :top_secret)["errors"].map { |e| e["message"] }
+    end
+  end
 end

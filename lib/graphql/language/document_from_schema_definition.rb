@@ -26,8 +26,8 @@ module GraphQL
 
         schema_context = schema.context_class.new(query: nil, object: nil, schema: schema, values: context)
 
-        @warden = if (shape_name = schema_context[:schema_shape])
-          shape = @schema.shape_for(shape_name)
+        @warden = if (subset_name = schema_context[:schema_subset])
+          shape = @schema.subset_for(subset_name)
           shape.warden
         else
           @schema.warden_class.new(

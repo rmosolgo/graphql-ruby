@@ -100,9 +100,9 @@ module GraphQL
       variables ||= {}
       @schema = schema
       @context = schema.context_class.new(query: self, object: root_value, values: context)
-      shape_name = @context[:schema_shape]
+      shape_name = @context[:schema_subset]
       if shape_name && warden.nil?
-        shape = @schema.shape_for(shape_name)
+        shape = @schema.subset_for(shape_name)
         warden = shape.warden
       end
       @warden = warden

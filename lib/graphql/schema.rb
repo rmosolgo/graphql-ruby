@@ -1201,7 +1201,7 @@ module GraphQL
       end
 
       def subset(name, context: {})
-        own_subset[name] = GraphQL::Schema::Subset.new(name: name, schema: self, context: context)
+        own_subsets[name] = GraphQL::Schema::Subset.new(name: name, schema: self, context: context)
         nil
       end
 
@@ -1209,13 +1209,13 @@ module GraphQL
         # TODO:
         # - inheritance
         # - test error case
-        own_subset[name] || raise(ArgumentError, "No defined subset for #{name.inspect} (#{@own_subsets.size} defined subsets: #{@own_subset.keys.map(&:inspect)})")
+        own_subsets[name] || raise(ArgumentError, "No defined subset for #{name.inspect} (#{@own_subsets.size} defined subsets: #{@own_subset.keys.map(&:inspect)})")
       end
 
       private
 
-      def own_subset
-        @own_subset ||= {
+      def own_subsets
+        @own_subsets ||= {
           default: GraphQL::Schema::Subset.new(name: :default, schema: self, context: {})
         }
       end
