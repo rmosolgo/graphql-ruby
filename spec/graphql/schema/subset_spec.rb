@@ -245,7 +245,6 @@ describe GraphQL::Schema::Subset do
       # As secret:
       assert_equal [["Hong Kong", "Recover stolen jewels"]], exec_query("{ missions { destination objective } }", :secret)["data"]["missions"].map { |m| [m["destination"], m["objective"]] }
       assert_equal ["Field 'assignees' doesn't exist on type 'Mission'"], exec_query("{ missions { assignees } }", :secret)["errors"].map { |e| e["message"] }
-
       # As top_secret:
       assert_equal [["Tintin"]], exec_query("{ missions { assignees { name } } }", :top_secret)["data"]["missions"].map { |m| m["assignees"].map { |a| a["name"] } }
       assert_equal ["Field 'realName' doesn't exist on type 'Agent'"], exec_query("{ missions { assignees { realName } } }", :top_secret)["errors"].map { |e| e["message"] }
