@@ -11,6 +11,7 @@ describe GraphQL::Schema::Subset do
     class Dish < GraphQL::Schema::Object
       field :name, String
       field :recipe, Recipe
+      field :cost_of_goods_sold, Integer, subsets: [:admin]
     end
 
     class Query < GraphQL::Schema::Object
@@ -24,13 +25,15 @@ describe GraphQL::Schema::Subset do
             name: "Sauerkraut",
             recipe: {
               ingredients: ["Cabbage", "Salt", "Caraway Seed"]
-            }
+            },
+            cost_of_goods_sold: 50,
           },
           {
             name: "Curtido",
             recipe: {
               ingredients: ["Cabbage", "Carrot", "Onion", "Salt", "Oregano"]
-            }
+            },
+            cost_of_goods_sold: 54,
           },
         ]
         if yucky
@@ -38,7 +41,8 @@ describe GraphQL::Schema::Subset do
             name: "Asparagus Pudding",
             recipe: {
               ingredients: ["Asparagus", "Milk", "Eggs"],
-            }
+            },
+            cost_of_goods_sold: 125,
           }
         end
         d
@@ -73,6 +77,15 @@ describe GraphQL::Schema::Subset do
       assert_equal ["Field 'recipe' doesn't exist on type 'Dish'"], default_res["errors"].map { |e| e["message"] }
     end
 
+    it "hides types" do
+      query_str = "{ __type(name: \"Recipe\") { name } }"
+      admin_res = exec_query(query_str, :admin)
+      assert_equal "Recipe", admin_res["data"]["__type"]["name"]
+
+      default_res = exec_query(query_str, :default)
+      assert_nil default_res["data"].fetch("__type")
+    end
+
     it "hides arguments" do
       query_str = "{ dishes(yucky: true) { name } }"
       admin_res = exec_query(query_str, :admin)
@@ -80,6 +93,15 @@ describe GraphQL::Schema::Subset do
 
       default_res = exec_query(query_str, :default)
       assert_equal ["Field 'dishes' doesn't accept argument 'yucky'"], default_res["errors"].map { |e| e["message"] }
+    end
+
+    it "hides fields" do
+      query_str = "{ dishes { costOfGoodsSold } }"
+      admin_res = exec_query(query_str, :admin)
+      assert_equal [50, 54], admin_res["data"]["dishes"].map { |d| d["costOfGoodsSold"] }
+
+      default_res = exec_query(query_str, :default)
+      assert_equal ["Field 'costOfGoodsSold' doesn't exist on type 'Dish'"], default_res["errors"].map { |e| e["message"] }
     end
   end
 

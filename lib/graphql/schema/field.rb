@@ -219,7 +219,7 @@ module GraphQL
       # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
       # @param validates [Array<Hash>] Configurations for validating this field
       # @fallback_value [Object] A fallback value if the method is not defined
-      def initialize(type: nil, name: nil, owner: nil, null: nil, description: NOT_CONFIGURED, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: NOT_CONFIGURED, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: NOT_CONFIGURED, &definition_block)
+      def initialize(type: nil, name: nil, owner: nil, null: nil, description: NOT_CONFIGURED, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: NOT_CONFIGURED, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: NOT_CONFIGURED, subsets: nil, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -289,7 +289,7 @@ module GraphQL
         @ast_node = ast_node
         @method_conflict_warning = method_conflict_warning
         @fallback_value = fallback_value
-
+        @subsets = subsets
         arguments.each do |name, arg|
           case arg
           when Hash
@@ -596,10 +596,15 @@ module GraphQL
       end
 
       def visible?(context)
-        if @resolver_class
-          @resolver_class.visible?(context)
+        subset_visible = @subsets ? @subsets.include?(context[:schema_subset]) : true
+        if subset_visible
+          if @resolver_class
+            @resolver_class.visible?(context)
+          else
+            true
+          end
         else
-          true
+          false
         end
       end
 

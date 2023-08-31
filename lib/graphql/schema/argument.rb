@@ -64,7 +64,7 @@ module GraphQL
           @replace_null_with_default = true
         end
 
-        @subsets = subsets || EMPTY_ARRAY
+        @subsets = subsets
 
         @owner = owner
         @as = as
