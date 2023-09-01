@@ -1206,10 +1206,12 @@ module GraphQL
       end
 
       def subset_for(name)
-        # TODO:
-        # - inheritance
-        # - test error case
-        own_subsets[name] || raise(ArgumentError, "No defined subset for #{name.inspect} (#{@own_subsets.size} defined subsets: #{@own_subset.keys.map(&:inspect)})")
+        if (own_s = own_subsets[name])
+          own_s
+        elsif superclass.respond_to?(:subset_for)
+          superclass_s = superclass.subset_for(name) rescue nil
+          superclass_s || raise(ArgumentError, "No defined subset for `#{name.inspect}` (#{@own_subsets.size} defined subsets: #{@own_subsets.keys})")
+        end
       end
 
       private

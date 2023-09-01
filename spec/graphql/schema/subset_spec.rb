@@ -173,8 +173,15 @@ describe GraphQL::Schema::Subset do
     refute SubsetSchema.visible?(SubsetSchema::Recipe, {})
   end
 
+  it "raises an error for missing subsets" do
+    err = assert_raises ArgumentError do
+      SubsetSchema.subset_for(:nonsense)
+    end
+    assert_equal "No defined subset for `:nonsense` (2 defined subsets: [:default, :admin])", err.message
+  end
+
   describe "Context-based subsets" do
-    class ContextSubsetSchema < GraphQL::Schema
+    class ContextSubsetParentSchema < GraphQL::Schema
       module HasPermission
         def initialize(*args, permission: nil, **kwargs, &block)
           super(*args, **kwargs, &block)
@@ -232,6 +239,10 @@ describe GraphQL::Schema::Subset do
 
       subset :public, context: { current_permission: 0 }
       subset :secret, context: { current_permission: 2 }
+    end
+
+    # Test inheritance:
+    class ContextSubsetSchema < ContextSubsetParentSchema
       subset :top_secret, context: { current_permission: 5 }
     end
 
