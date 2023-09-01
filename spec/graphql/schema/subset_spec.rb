@@ -90,18 +90,26 @@ describe GraphQL::Schema::Subset do
   end
 
   it "prints limited schema" do
-    default_schema = SubsetSchema.to_definition
-    admin_schema = SubsetSchema.to_definition(context: { schema_subset: :admin })
-    refute_equal default_schema, admin_schema
-
-    assert_includes admin_schema, "type Recipe"
+    default_schema = SubsetSchema.to_definition(context: { schema_subset: :default })
     refute_includes default_schema, "type Recipe"
+
+    admin_schema = SubsetSchema.to_definition(context: { schema_subset: :admin })
+    assert_includes admin_schema, "type Recipe"
+
+    full_schema = SubsetSchema.to_definition
+    refute_includes full_schema, "type Recipe"
+
+
+    refute_equal full_schema, admin_schema
+    assert_equal full_schema, default_schema
   end
 
-  it "works with no schema_subset" do
+  it "works with no schema_subset and nil schema subset" do
     query_str = "{ dishes { name } }"
-    assert_equal 2, exec_query(query_str, :default)["data"]["dishes"].size
     assert_equal 2, exec_query(query_str, nil)["data"]["dishes"].size
+
+    no_subset_res = SubsetSchema.execute(query_str, context: {})
+    assert_equal 2, no_subset_res["data"]["dishes"].size
   end
 
   describe "runtime visibility" do
@@ -112,12 +120,18 @@ describe GraphQL::Schema::Subset do
 
       default_res = exec_query(query_str, :default)
       assert_equal ["Field 'recipe' doesn't exist on type 'Dish'"], default_res["errors"].map { |e| e["message"] }
+
+      default_res = exec_query(query_str, nil)
+      assert_equal ["Field 'recipe' doesn't exist on type 'Dish'"], default_res["errors"].map { |e| e["message"] }
     end
 
     it "hides types" do
       query_str = "{ __type(name: \"Recipe\") { name } }"
       admin_res = exec_query(query_str, :admin)
       assert_equal "Recipe", admin_res["data"]["__type"]["name"]
+
+      default_res = exec_query(query_str, nil)
+      assert_nil default_res["data"].fetch("__type")
 
       default_res = exec_query(query_str, :default)
       assert_nil default_res["data"].fetch("__type")
@@ -128,6 +142,9 @@ describe GraphQL::Schema::Subset do
       admin_res = exec_query(query_str, :admin)
       assert_equal "Asparagus Pudding", admin_res["data"]["dishes"][2]["name"]
 
+      default_res = exec_query(query_str, nil)
+      assert_equal ["Field 'dishes' doesn't accept argument 'yucky'"], default_res["errors"].map { |e| e["message"] }
+
       default_res = exec_query(query_str, :default)
       assert_equal ["Field 'dishes' doesn't accept argument 'yucky'"], default_res["errors"].map { |e| e["message"] }
     end
@@ -136,6 +153,9 @@ describe GraphQL::Schema::Subset do
       query_str = "{ dishes { costOfGoodsSold } }"
       admin_res = exec_query(query_str, :admin)
       assert_equal [50, 54], admin_res["data"]["dishes"].map { |d| d["costOfGoodsSold"] }
+
+      default_res = exec_query(query_str, nil)
+      assert_equal ["Field 'costOfGoodsSold' doesn't exist on type 'Dish'"], default_res["errors"].map { |e| e["message"] }
 
       default_res = exec_query(query_str, :default)
       assert_equal ["Field 'costOfGoodsSold' doesn't exist on type 'Dish'"], default_res["errors"].map { |e| e["message"] }
@@ -146,10 +166,13 @@ describe GraphQL::Schema::Subset do
       admin_res = exec_query(query_str, :admin)
       assert_equal ["Bribe", "Dish"], admin_res["data"]["__type"]["possibleTypes"].map { |pt| pt["name"] }
 
+      default_res = exec_query(query_str, nil)
+      assert_equal ["Dish"], default_res["data"]["__type"]["possibleTypes"].map { |pt| pt["name"] }
+
       default_res = exec_query(query_str, :default)
       assert_equal ["Dish"], default_res["data"]["__type"]["possibleTypes"].map { |pt| pt["name"] }
       # But the type itself is still visible, only the membership is hidden:
-      default_res2 = exec_query("{ __type(name: \"Bribe\") { name } }", :default)
+      default_res2 = exec_query("{ __type(name: \"Bribe\") { name } }", nil)
       assert_equal "Bribe", default_res2["data"]["__type"]["name"]
     end
 
@@ -157,6 +180,9 @@ describe GraphQL::Schema::Subset do
       query_str = "{ payables { ... on Bribe { amount } } }"
       admin_res = exec_query(query_str, :admin)
       assert_equal [nil, 5000], admin_res["data"]["payables"].map { |p| p["amount"] }
+
+      default_res = exec_query(query_str, nil)
+      assert_equal ["Fragment on Bribe can't be spread inside Payable", "Field 'amount' doesn't exist on type 'Bribe'"], default_res["errors"].map { |e| e["message"]}
 
       default_res = exec_query(query_str, :default)
       assert_equal ["Fragment on Bribe can't be spread inside Payable", "Field 'amount' doesn't exist on type 'Bribe'"], default_res["errors"].map { |e| e["message"]}
@@ -169,6 +195,7 @@ describe GraphQL::Schema::Subset do
 
     assert admin_subset.warden.visible_type?(SubsetSchema::Recipe)
     refute default_subset.warden.visible_type?(SubsetSchema::Recipe)
+    assert SubsetSchema.visible?(SubsetSchema::Recipe, { schema_subset: :admin })
     refute SubsetSchema.visible?(SubsetSchema::Recipe, { schema_subset: :default })
     refute SubsetSchema.visible?(SubsetSchema::Recipe, {})
   end
@@ -177,7 +204,7 @@ describe GraphQL::Schema::Subset do
     err = assert_raises ArgumentError do
       SubsetSchema.subset_for(:nonsense)
     end
-    assert_equal "No defined subset for `:nonsense` (2 defined subsets: [:default, :admin])", err.message
+    assert_equal "No defined subset for `:nonsense` (2 defined subsets: :default, :admin)", err.message
   end
 
   describe "Context-based subsets" do
@@ -259,6 +286,13 @@ describe GraphQL::Schema::Subset do
       # As top_secret:
       assert_equal [["Tintin"]], exec_query("{ missions { assignees { name } } }", :top_secret)["data"]["missions"].map { |m| m["assignees"].map { |a| a["name"] } }
       assert_equal ["Field 'realName' doesn't exist on type 'Agent'"], exec_query("{ missions { assignees { realName } } }", :top_secret)["errors"].map { |e| e["message"] }
+    end
+
+    it "raises an error for missing subsets" do
+      err = assert_raises ArgumentError do
+        ContextSubsetSchema.subset_for(:nonsense)
+      end
+      assert_equal "No defined subset for `:nonsense` (4 defined subsets: :default, :public, :secret, :top_secret)", err.message
     end
   end
 end

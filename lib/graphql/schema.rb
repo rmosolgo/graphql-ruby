@@ -1210,7 +1210,15 @@ module GraphQL
           own_s
         elsif superclass.respond_to?(:subset_for)
           superclass_s = superclass.subset_for(name) rescue nil
-          superclass_s || raise(ArgumentError, "No defined subset for `#{name.inspect}` (#{@own_subsets.size} defined subsets: #{@own_subsets.keys})")
+          superclass_s || raise(ArgumentError, "No defined subset for `#{name.inspect}` (#{subsets.size} defined subset#{subsets.size == 1 ? "" : "s"}: #{subsets.keys.map(&:inspect).join(", ")})")
+        end
+      end
+
+      def subsets
+        if superclass.respond_to?(:subsets)
+          superclass.subsets.merge(own_subsets)
+        else
+          own_subsets
         end
       end
 

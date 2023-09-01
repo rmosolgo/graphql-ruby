@@ -49,6 +49,10 @@ context = {
 result = MyAppSchema.execute(params[:query], context: context, ...)
 ```
 
+## `:default` subset
+
+Every schema has a `:default` subset which includes the _whole_ schema. If you know that nothing in your schema will be hidden in the current query, you can use `context: { schema_subset: :default }` to skip all `visible?` checks at runtime.
+
 ## Tracking changes
 
 To manage your sub-schemas in development, keep a schema dump in your repository and keep it up to date ([blog post](https://rmosolgo.github.io/ruby/graphql/2017/03/16/tracking-schema-changes-with-graphql-ruby.html)). You can add `context:` to your schema dumps:
