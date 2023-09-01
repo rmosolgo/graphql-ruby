@@ -60,7 +60,7 @@ function createRelaySubscriptionHandler(options: ActionCableHandlerOptions | Pus
               }
               observer.next(res);
             },
-            onComplete: observer.complete,
+            onCompleted: observer.complete,
           }
         );
 
