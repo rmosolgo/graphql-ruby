@@ -133,8 +133,9 @@ However, "scoped context" is can be used to assign values into `context` that ar
 {
   posts {
     comments {
-      author
-      isOriginalPoster
+      author {
+        isOriginalPoster
+      }
     }
   }
 }
@@ -154,7 +155,7 @@ class Types::Post < Types::BaseObject
 end
 ```
 
-Then, inside `User`, you can check `context[:current_post]`:
+Then, inside `User` (assuming `author` resolves to `Types::User`), you can check `context[:current_post]`:
 
 ```ruby
 class Types::User < Types::BaseObject
