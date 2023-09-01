@@ -32,6 +32,12 @@ end
 
 Now, `Types::Invoice` will be hidden from any query that _doesn't_ have `context: { schema_subset: :admin, ... }`.
 
+You can also put fields and arguments in subsets with `subsets: [:admin]` in your `field` or `argument` definitions. When configured that way, fields and arguments will be hidden unless `context[:schema_subset]` matches one of its configured subsets.
+
+Interface implementations can be put in subsets by adding `implements ..., subsets: [:admin]`. That way, an object's implementation of an interface will be hidden when`context[:schema_subset]` isn't one of the subsets configured for the implementation. Also, any fields inherited from the interface (that is, not defined in the object type itself) will be hidden in that case.
+
+Union memberships can be put in subsets by adding `possible_types ..., subsets: [:admin]`. With that configuration, an object type won't appear as a union member when `context[:schema_subset]` isn't one of the configured subsets.
+
 ## Using subsets
 
 To specify a subset for executing a query, add `schema_subset: ...` to the query's `context: { ... }` hash. For example, in your GraphQL controller:
@@ -51,3 +57,24 @@ To manage your sub-schemas in development, keep a schema dump in your repository
 logged_out_schema_str = MyAppSchema.to_definition(context: { schema_subset: :logged_out })
 assert_equal logged_out_schema_str, File.read("test/logged_out_schema.graphql"), "The schema dump is up-to-date"
 ```
+
+## Context-based subsets
+
+The easiest way to define a schema subset is to use a _name_, with `subsets` configurations in your schema definition. But you can also define a subset by using an example context:
+
+```ruby
+class MySchema < GraphQL::Schema
+  # ...
+  subset :staff, context: { staff: true }
+  subset :superuser_staff, context: { staff: true, superuser: true }
+end
+```
+
+In that case, the subset will be created using the example `context`.  Queries may use `context[:schema_subset] = ...` to pick one of the prepared subsets, for example:
+
+```ruby
+# Use the prepared subset:
+MySchema.execute(query_str, context: { schema_subset: :superuser_staff })
+```
+
+In that case, the already-prepared subset will be used for this query. The `context` given to `subset :superuser_staff, ...` in the _schema definition_ was already passed to `visible?` methods on types and fields -- the runtime query context won't be used for that.
