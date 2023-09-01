@@ -249,8 +249,9 @@ mutation createPost($postParams: PostInput!, $createdById: ID!){
 <div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
   </span><span class="n">posts</span><span class="w"> </span><span class="p">{</span><span class="w">
     </span><span class="n">comments</span><span class="w"> </span><span class="p">{</span><span class="w">
-      </span><span class="n">author</span><span class="w">
-      </span><span class="n">isOriginalPoster</span><span class="w">
+      </span><span class="n">author</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="n">isOriginalPoster</span><span class="w">
+      </span><span class="p">}</span><span class="w">
     </span><span class="p">}</span><span class="w">
   </span><span class="p">}</span><span class="w">
 </span><span class="p">}</span><span class="w">
@@ -269,7 +270,7 @@ mutation createPost($postParams: PostInput!, $createdById: ID!){
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Then, inside <code class="language-plaintext highlighter-rouge">User</code>, you can check <code class="language-plaintext highlighter-rouge">context[:current_post]</code>:</p>
+<p>Then, inside <code class="language-plaintext highlighter-rouge">User</code> (assuming <code class="language-plaintext highlighter-rouge">author</code> resolves to <code class="language-plaintext highlighter-rouge">Types::User</code>), you can check <code class="language-plaintext highlighter-rouge">context[:current_post]</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::User</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="c1"># ...</span>
