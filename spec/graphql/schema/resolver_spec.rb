@@ -495,6 +495,12 @@ describe GraphQL::Schema::Resolver do
         end
       end
     end
+
+    class SchemaWithUnauthorizedFieldHook < Schema
+      def self.unauthorized_field(err)
+        raise GraphQL::ExecutionError, "Unauthorized Field #{err.field.path}"
+      end
+    end
   end
 
   def exec_query(*args, **kwargs)
@@ -751,10 +757,19 @@ describe GraphQL::Schema::Resolver do
           assert_equal 7, res["data"]["prepResolver12"]["value"]
         end
 
+        focus
         it "can return falsey data early" do
           res = exec_query("{ result: resolverWithFalseyValueAuthorized }")
           assert_equal false, res["data"]["result"] # must be actual `false`, not just a falsey `nil`
           assert_nil res["errors"]
+        end
+
+        focus
+        it "calls the unauthorized field hook" do
+          res = ResolverTest::SchemaWithUnauthorizedFieldHook.execute("{ result: resolverWithFalseyValueAuthorized }")
+          pp res
+          assert_nil res["data"]["result"]
+          assert_equal ["Unauthorized Field Query.resolverWithFalseyValueAuthorized"], res["errors"].map { |e| e["message"] }
         end
 
         it "can return data early in a promise" do

@@ -95,13 +95,20 @@ module GraphQL
                 # If the `authorized?` returned two values, `false, early_return`,
                 # then use the early return value instead of continuing
                 if authorized_val.is_a?(Array)
-                  authorized_result, early_return = authorized_val
+                  return_early = true
+                  authorized_result, early_return_value = authorized_val
+                else
+                  authorized_result = authorize_val
+                  return_early = false
+                end
+
+                if return_early
                   if authorized_result == false
-                    early_return
+                    early_return_value
                   else
-                    raise "Unexpected result from #authorized? (expected `true`, `false` or `[false, {...}]`): [#{authorized_result.inspect}, #{early_return.inspect}]"
+                    raise "Unexpected result from #authorized? (expected `true`, `false` or `[false, {...}]`): [#{authorized_result.inspect}, #{early_return_value.inspect}]"
                   end
-                elsif authorized_val
+                elsif authorized_result
                   # Finally, all the hooks have passed, so resolve it
                   if loaded_args.any?
                     public_send(self.class.resolve_method, **loaded_args)
