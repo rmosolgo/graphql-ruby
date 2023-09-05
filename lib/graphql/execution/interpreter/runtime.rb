@@ -391,7 +391,9 @@ module GraphQL
             # so it wouldn't get to the `Resolve` call that happens below.
             # So instead trigger a run from this outer context.
             if is_eager_selection
+              @dataloader.clear_cache
               @dataloader.run
+              @dataloader.clear_cache
             end
           end
 
