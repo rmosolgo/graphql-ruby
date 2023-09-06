@@ -958,19 +958,18 @@ module GraphQL
         def after_lazy(lazy_obj, field:, owner_object:, arguments:, ast_node:, result:, result_name:, eager: false, runtime_state:, trace: true, &block)
           if lazy?(lazy_obj)
             orig_result = result
-            st = runtime_state || get_current_runtime_state
-            was_authorized_by_scope_items = st.was_authorized_by_scope_items
+            was_authorized_by_scope_items = runtime_state.was_authorized_by_scope_items
             lazy = GraphQL::Execution::Lazy.new(field: field) do
               # This block might be called in a new fiber;
               # In that case, this will initialize a new state
               # to avoid conflicting with the parent fiber.
-              st = get_current_runtime_state
-              st.current_object = owner_object
-              st.current_field = field
-              st.current_arguments = arguments
-              st.current_result_name = result_name
-              st.current_result = orig_result
-              st.was_authorized_by_scope_items = was_authorized_by_scope_items
+              runtime_state = get_current_runtime_state
+              runtime_state.current_object = owner_object
+              runtime_state.current_field = field
+              runtime_state.current_arguments = arguments
+              runtime_state.current_result_name = result_name
+              runtime_state.current_result = orig_result
+              runtime_state.was_authorized_by_scope_items = was_authorized_by_scope_items
               # Wrap the execution of _this_ method with tracing,
               # but don't wrap the continuation below
               inner_obj = begin
@@ -990,7 +989,7 @@ module GraphQL
                   ex_err
                 end
               end
-              yield(inner_obj, st)
+              yield(inner_obj, runtime_state)
             end
 
             if eager
