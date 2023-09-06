@@ -172,12 +172,12 @@
     <span class="p">}</span>
   <span class="k">else</span>
     <span class="c1"># Convert Rails model errors into GraphQL-ready error hashes</span>
-    <span class="n">user_errors</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">map</span> <span class="k">do</span> <span class="o">|</span><span class="n">attribute</span><span class="p">,</span> <span class="n">message</span><span class="o">|</span>
+    <span class="n">user_errors</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">map</span> <span class="k">do</span> <span class="o">|</span><span class="n">error</span><span class="o">|</span>
       <span class="c1"># This is the GraphQL argument which corresponds to the validation error:</span>
-      <span class="n">path</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"attributes"</span><span class="p">,</span> <span class="n">attribute</span><span class="p">.</span><span class="nf">to_s</span><span class="p">.</span><span class="nf">camelize</span><span class="p">(</span><span class="ss">:lower</span><span class="p">)]</span>
+      <span class="n">path</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"attributes"</span><span class="p">,</span> <span class="n">error</span><span class="p">.</span><span class="nf">attribute</span><span class="p">.</span><span class="nf">to_s</span><span class="p">.</span><span class="nf">camelize</span><span class="p">(</span><span class="ss">:lower</span><span class="p">)]</span>
       <span class="p">{</span>
         <span class="ss">path: </span><span class="n">path</span><span class="p">,</span>
-        <span class="ss">message: </span><span class="n">message</span><span class="p">,</span>
+        <span class="ss">message: </span><span class="n">error</span><span class="p">.</span><span class="nf">message</span><span class="p">,</span>
       <span class="p">}</span>
     <span class="k">end</span>
     <span class="p">{</span>
