@@ -437,8 +437,7 @@ module GraphQL
             owner_object = field_defn.owner.wrap(owner_object, context)
           end
           return_type = field_defn.type
-          total_args_count = field_defn.arguments(context).size
-          if total_args_count == 0
+          if !field_defn.any_arguments?
             resolved_arguments = GraphQL::Execution::Interpreter::Arguments::EMPTY
             if field_defn.extras.size == 0
               evaluate_selection_with_resolved_keyword_args(
