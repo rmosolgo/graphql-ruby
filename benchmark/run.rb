@@ -68,7 +68,6 @@ module GraphQLBenchmark
     report.pretty_print
   end
 
-
   def self.validate_memory
     FIELDS_WILL_MERGE_SCHEMA.validate(FIELDS_WILL_MERGE_QUERY)
 
@@ -256,12 +255,59 @@ module GraphQLBenchmark
     report.pretty_print
   end
 
+  def self.profile_small_result
+    schema = ProfileLargeResult::Schema
+    document = GraphQL.parse <<-GRAPHQL
+      query {
+        foos(first: 5) {
+          __typename
+          id
+          int1
+          int2
+          string1
+          string2
+          foos(first: 5) {
+            __typename
+            string1
+            string2
+            foo {
+              __typename
+              int1
+            }
+          }
+        }
+      }
+    GRAPHQL
+
+    Benchmark.ips do |x|
+      x.config(time: 10)
+      x.report("Querying for #{ProfileLargeResult::DATA.size} objects") {
+        schema.execute(document: document)
+      }
+    end
+
+    StackProf.run(mode: :wall, interval: 1, out: "tmp/small.dump") do
+      schema.execute(document: document)
+    end
+
+    result = StackProf.run(mode: :wall, interval: 1) do
+      schema.execute(document: document)
+    end
+    StackProf::Report.new(result).print_text
+
+    report = MemoryProfiler.report do
+      schema.execute(document: document)
+    end
+
+    report.pretty_print
+  end
+
   module ProfileLargeResult
     def self.eager_or_proc(value)
       ENV["EAGER"] ? value : -> { value }
     end
-
-    DATA = 1000.times.map {
+    DATA_SIZE = 1000
+    DATA = DATA_SIZE.times.map {
       eager_or_proc({
           id:             SecureRandom.uuid,
           int1:           SecureRandom.random_number(100000),
@@ -323,13 +369,28 @@ module GraphQLBenchmark
         argument :arg3, String, required: false
         argument :arg4, String, required: false
       end
+
+      field :foos, [FooType], null: false, description: "Return a list of Foo objects" do
+        argument :first, Integer, default_value: DATA_SIZE
+      end
+
+      def foos(first:)
+        DATA.first(first)
+      end
+
+      field :foo, FooType
+      def foo
+        DATA.sample
+      end
     end
 
     class QueryType < GraphQL::Schema::Object
       description "Query root of the system"
-      field :foos, [FooType], null: false, description: "Return a list of Foo objects"
-      def foos
-        DATA
+      field :foos, [FooType], null: false, description: "Return a list of Foo objects" do
+        argument :first, Integer, default_value: DATA_SIZE
+      end
+      def foos(first:)
+        DATA.first(first)
       end
     end
 

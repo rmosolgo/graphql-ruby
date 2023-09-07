@@ -114,6 +114,12 @@ namespace :bench do
     GraphQLBenchmark.profile_large_result
   end
 
+  desc "Run benchmarks on a small result"
+  task :profile_small_result do
+    prepare_benchmark
+    GraphQLBenchmark.profile_small_result
+  end
+
   desc "Compare GraphQL-Batch and GraphQL-Dataloader"
   task :profile_batch_loaders do
     prepare_benchmark

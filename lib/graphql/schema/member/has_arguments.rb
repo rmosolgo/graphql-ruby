@@ -122,6 +122,10 @@ module GraphQL
           own_arguments_that_apply || own_arguments
         end
 
+        def any_arguments?
+          own_arguments.any?
+        end
+
         module ClassConfigured
           def inherited(child_class)
             super
@@ -143,6 +147,10 @@ module GraphQL
               else
                 inherited_arguments
               end
+            end
+
+            def any_arguments?
+              super || superclass.any_arguments?
             end
 
             def all_argument_definitions
