@@ -315,6 +315,7 @@ module GraphQL
           selections.each do |node|
             # Skip gathering this if the directive says so
             if !directives_include?(node, owner_object, owner_type)
+              should_cache = false
               next
             end
 
