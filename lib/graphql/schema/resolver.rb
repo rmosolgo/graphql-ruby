@@ -214,6 +214,10 @@ module GraphQL
           arguments(context)
         end
 
+        def any_field_arguments?
+          any_arguments?
+        end
+
         def get_field_argument(name, context = GraphQL::Query::NullContext)
           get_argument(name, context)
         end
