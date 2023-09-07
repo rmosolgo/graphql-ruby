@@ -92,7 +92,11 @@ module GraphQL
     #
     # @return [void]
     def yield
-      Fiber.yield
+      if (parent_fiber = Thread.current[:parent_fiber])
+        parent_fiber.transfer
+      else
+        Fiber.yield
+      end
       nil
     end
 
@@ -132,8 +136,104 @@ module GraphQL
       end
     end
 
-    # @api private Move along, move along
+    def create_job_worker_fiber
+      parent_fiber = Fiber.current
+      Fiber.new do
+        Thread.current[:parent_fiber] = parent_fiber
+        while job = @pending_jobs.shift
+          job.call
+        end
+      end
+    end
+
+    def create_source_worker_fiber
+      parent_fiber = Fiber.current
+      Fiber.new do
+        Thread.current[:parent_fiber] = parent_fiber
+        pending_sources = true
+        while pending_sources
+          pending_sources = nil
+          @source_cache.each_value do |source_by_batch_params|
+            source_by_batch_params.each_value do |source|
+              if source.pending?
+                pending_sources ||= []
+                pending_sources << source
+              end
+            end
+          end
+
+          if pending_sources
+            pending_sources.each(&:run_pending_keys)
+          end
+        end
+      end
+    end
+
+    def run_with_crazy_fibers
+      job_workers = []
+      source_workers = []
+      manager = Fiber.new do
+        while @pending_jobs.any?
+          job_worker = create_job_worker_fiber
+          job_workers << job_worker
+          job_worker.transfer
+        end
+
+        # It may not be _done_, it might have just yielded.
+        source_worker = create_source_worker_fiber
+        source_workers << source_worker
+        source_worker.transfer
+
+        while (job_worker = job_workers.shift) || @pending_jobs.any?
+          if job_worker.nil?
+            job_worker = create_job_worker_fiber
+          end
+          if job_worker.alive?
+            job_workers << job_worker
+            job_worker.transfer
+          end
+
+          # TODO refactor so this check code is only present once
+          any_pending_sources = @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
+
+          while (source_worker = source_workers.shift) || any_pending_sources
+            if source_worker.nil?
+              source_worker = create_source_worker_fiber
+            end
+            if source_worker.alive?
+              source_workers << source_worker
+              source_worker.transfer
+            end
+            any_pending_sources = @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
+          end
+        end
+      end
+
+      manager.transfer
+      remaining_pending_sources = 0
+      @source_cache.each_value do |source_by_batch_params|
+        source_by_batch_params.each_value do |source|
+          if source.pending?
+            remaining_pending_sources += 1
+          end
+        end
+      end
+
+      while manager.alive?
+        manager.transfer
+      end
+    end
+
     def run
+      if @nonblocking
+        run_with_crazy_fibers
+      else
+        old_run
+      end
+    end
+
+    # @api private Move along, move along
+    def old_run
       if @nonblocking && !Fiber.scheduler
         raise "`nonblocking: true` requires `Fiber.scheduler`, assign one with `Fiber.set_scheduler(...)` before executing GraphQL."
       end
