@@ -219,7 +219,11 @@ module GraphQL
           @lazy_cache = {}
           @lazy_cache.compare_by_identity
 
-          @gathered_selections_cache = {}
+          @gathered_selections_cache = Hash.new { |h, k|
+            cache = {}
+            cache.compare_by_identity
+            h[k] = cache
+          }
           @gathered_selections_cache.compare_by_identity
         end
 
@@ -305,7 +309,7 @@ module GraphQL
         end
 
         def gather_selections(owner_object, owner_type, ast_node_for_caching, selections, selections_to_run = nil, selections_by_name = nil)
-          if ast_node_for_caching && (cached_selections = @gathered_selections_cache[ast_node_for_caching])
+          if ast_node_for_caching && (cached_selections = @gathered_selections_cache[ast_node_for_caching][owner_type])
             return cached_selections
           end
           selections_by_name ||= {} # allocate this default here so we check the cache first
@@ -355,7 +359,6 @@ module GraphQL
               case node
               when GraphQL::Language::Nodes::InlineFragment
                 if node.type
-                  should_cache = false
                   type_defn = schema.get_type(node.type.name, context)
 
                   if query.warden.possible_types(type_defn).include?(owner_type)
@@ -366,7 +369,6 @@ module GraphQL
                   gather_selections(owner_object, owner_type, nil, node.selections, selections_to_run, next_selections)
                 end
               when GraphQL::Language::Nodes::FragmentSpread
-                should_cache = false
                 fragment_def = query.fragments[node.name]
                 type_defn = query.get_type(fragment_def.type.name)
                 if query.warden.possible_types(type_defn).include?(owner_type)
@@ -379,7 +381,7 @@ module GraphQL
           end
           result = selections_to_run || selections_by_name
           if should_cache
-            @gathered_selections_cache[ast_node_for_caching] = result
+            @gathered_selections_cache[ast_node_for_caching][owner_type] = result
           end
           result
         end
