@@ -304,10 +304,11 @@ module GraphQL
           nil
         end
 
-        def gather_selections(owner_object, owner_type, ast_node_for_caching, selections, selections_to_run = nil, selections_by_name = {})
+        def gather_selections(owner_object, owner_type, ast_node_for_caching, selections, selections_to_run = nil, selections_by_name = nil)
           if ast_node_for_caching && (cached_selections = @gathered_selections_cache[ast_node_for_caching])
             return cached_selections
           end
+          selections_by_name ||= {} # allocate this default here so we check the cache first
 
           should_cache = true
 
