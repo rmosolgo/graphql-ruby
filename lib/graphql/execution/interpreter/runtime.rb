@@ -209,12 +209,6 @@ module GraphQL
               @runtime_directive_names << name
             end
           end
-          # A cache of { Class => { String => Schema::Field } }
-          # Which assumes that MyObject.get_field("myField") will return the same field
-          # during the lifetime of a query
-          @fields_cache = Hash.new { |h, k| h[k] = {} }
-          # this can by by-identity since owners are the same object, but not the sub-hash, which uses strings.
-          @fields_cache.compare_by_identity
           # { Class => Boolean }
           @lazy_cache = {}
           @lazy_cache.compare_by_identity
