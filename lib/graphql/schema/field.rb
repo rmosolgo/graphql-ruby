@@ -267,6 +267,7 @@ module GraphQL
         @method_sym = method_name.to_sym
         @resolver_method = (resolver_method || name_s).to_sym
         @complexity = complexity
+        @dynamic_introspection = dynamic_introspection
         @return_type_expr = type
         @return_type_null = if !null.nil?
           null
@@ -349,8 +350,6 @@ module GraphQL
 
         self.extensions.each(&:after_define_apply)
         @call_after_define = true
-        # This may be set later
-        @dynamic_introspection = dynamic_introspection
       end
 
       attr_accessor :dynamic_introspection
