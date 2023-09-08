@@ -435,19 +435,26 @@ module GraphQL
           end
           field_name = ast_node.name
           # This can't use `query.get_field` because it gets confused on introspection below if `field_defn` isn't `nil`,
-          # because of how `is_introspection` is used to call `.authorized_new` later on.
-          field_defn = @fields_cache[owner_type][field_name] ||= owner_type.get_field(field_name, @context)
-          is_introspection = false
-          if field_defn.nil?
-            field_defn = if owner_type == schema.query && (entry_point_field = schema.introspection_system.entry_point(name: field_name))
-              is_introspection = true
-              entry_point_field
-            elsif (dynamic_field = schema.introspection_system.dynamic_field(name: field_name))
-              is_introspection = true
-              dynamic_field
+          # because of how `is_dynamic` is used to call `.authorized_new` later on.
+          field_defn = @fields_cache[owner_type][field_name] ||= begin
+            f = owner_type.get_field(field_name, @context)
+            if f.nil?
+              if owner_type == schema.query && (entry_point_field = schema.introspection_system.entry_point(name: field_name))
+                entry_point_field
+              elsif (dynamic_field = schema.introspection_system.dynamic_field(name: field_name))
+                dynamic_field
+              else
+                raise "Invariant: no field for #{owner_type}.#{field_name}"
+              end
             else
-              raise "Invariant: no field for #{owner_type}.#{field_name}"
+              f
             end
+          end
+
+          is_dynamic = if field_defn.owner != owner_type
+            field_defn.owner.graphql_name == "DynamicFields" || field_defn.owner.graphql_name == "EntryPoints"
+          else
+            false
           end
 
           # Set this before calling `run_with_directives`, so that the directive can have the latest path
@@ -456,9 +463,10 @@ module GraphQL
           st.current_result = selections_result
           st.current_result_name = result_name
 
-          if is_introspection
+          if is_dynamic
             owner_object = field_defn.owner.wrap(owner_object, context)
           end
+
           return_type = field_defn.type
           if !field_defn.any_arguments?
             resolved_arguments = GraphQL::Execution::Interpreter::Arguments::EMPTY

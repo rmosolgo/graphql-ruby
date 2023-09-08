@@ -659,7 +659,7 @@ module GraphQL
         method_to_call = nil
         method_args = nil
 
-        Schema::Validator.validate!(validators, application_object, query_ctx, args)
+        @own_validators && Schema::Validator.validate!(validators, application_object, query_ctx, args)
 
         query_ctx.query.after_lazy(self.authorized?(application_object, args, query_ctx)) do |is_authorized|
           if is_authorized
