@@ -430,19 +430,13 @@ module GraphQL
           field_name = ast_node.name
           field_defn = query.warden.get_field(owner_type, field_name)
 
-          is_dynamic = if field_defn.owner != owner_type
-            field_defn.owner.graphql_name == "DynamicFields" || field_defn.owner.graphql_name == "EntryPoints"
-          else
-            false
-          end
-
           # Set this before calling `run_with_directives`, so that the directive can have the latest path
           st = get_current_runtime_state
           st.current_field = field_defn
           st.current_result = selections_result
           st.current_result_name = result_name
 
-          if is_dynamic
+          if field_defn.dynamic_introspection
             owner_object = field_defn.owner.wrap(owner_object, context)
           end
 
