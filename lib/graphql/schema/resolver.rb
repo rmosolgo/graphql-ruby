@@ -65,54 +65,48 @@ module GraphQL
       # @api private
       def resolve_with_support(**args)
         # First call the ready? hook which may raise
-        raw_ready_val = if args.any?
+        ready_val = if args.any?
           ready?(**args)
         else
           ready?
         end
-        context.query.after_lazy(raw_ready_val) do |ready_val|
-          if ready_val.is_a?(Array)
-            is_ready, ready_early_return = ready_val
-            if is_ready != false
-              raise "Unexpected result from #ready? (expected `true`, `false` or `[false, {...}]`): [#{is_ready.inspect}, #{ready_early_return.inspect}]"
+        if ready_val.is_a?(Array)
+          is_ready, ready_early_return = ready_val
+          if is_ready != false
+            raise "Unexpected result from #ready? (expected `true`, `false` or `[false, {...}]`): [#{is_ready.inspect}, #{ready_early_return.inspect}]"
+          else
+            ready_early_return
+          end
+        elsif ready_val
+          # Then call each prepare hook, which may return a different value
+          # for that argument, or may return a lazy object
+          loaded_args = load_arguments(args)
+          @prepared_arguments = loaded_args
+          Schema::Validator.validate!(self.class.validators, object, context, loaded_args, as: @field)
+          # Then call `authorized?`, which may raise or may return a lazy object
+          authorized_val = if loaded_args.any?
+            authorized?(**loaded_args)
+          else
+            authorized?
+          end
+          # If the `authorized?` returned two values, `false, early_return`,
+          # then use the early return value instead of continuing
+          if authorized_val.is_a?(Array)
+            authorized_result, early_return = authorized_val
+            if authorized_result == false
+              early_return
             else
-              ready_early_return
+              raise "Unexpected result from #authorized? (expected `true`, `false` or `[false, {...}]`): [#{authorized_result.inspect}, #{early_return.inspect}]"
             end
-          elsif ready_val
-            # Then call each prepare hook, which may return a different value
-            # for that argument, or may return a lazy object
-            load_arguments_val = load_arguments(args)
-            context.query.after_lazy(load_arguments_val) do |loaded_args|
-              @prepared_arguments = loaded_args
-              Schema::Validator.validate!(self.class.validators, object, context, loaded_args, as: @field)
-              # Then call `authorized?`, which may raise or may return a lazy object
-              raw_authorized_val = if loaded_args.any?
-                authorized?(**loaded_args)
-              else
-                authorized?
-              end
-              context.query.after_lazy(raw_authorized_val) do |authorized_val|
-                # If the `authorized?` returned two values, `false, early_return`,
-                # then use the early return value instead of continuing
-                if authorized_val.is_a?(Array)
-                  authorized_result, early_return = authorized_val
-                  if authorized_result == false
-                    early_return
-                  else
-                    raise "Unexpected result from #authorized? (expected `true`, `false` or `[false, {...}]`): [#{authorized_result.inspect}, #{early_return.inspect}]"
-                  end
-                elsif authorized_val
-                  # Finally, all the hooks have passed, so resolve it
-                  if loaded_args.any?
-                    public_send(self.class.resolve_method, **loaded_args)
-                  else
-                    public_send(self.class.resolve_method)
-                  end
-                else
-                  raise GraphQL::UnauthorizedFieldError.new(context: context, object: object, type: field.owner, field: field)
-                end
-              end
+          elsif authorized_val
+            # Finally, all the hooks have passed, so resolve it
+            if loaded_args.any?
+              public_send(self.class.resolve_method, **loaded_args)
+            else
+              public_send(self.class.resolve_method)
             end
+          else
+            raise GraphQL::UnauthorizedFieldError.new(context: context, object: object, type: field.owner, field: field)
           end
         end
       end
@@ -186,11 +180,6 @@ module GraphQL
           arg_defn = @arguments_by_keyword[key]
           if arg_defn
             prepped_value = prepared_args[key] = arg_defn.load_and_authorize_value(self, value, context)
-            if context.schema.lazy?(prepped_value)
-              prepare_lazies << context.query.after_lazy(prepped_value) do |finished_prepped_value|
-                prepared_args[key] = finished_prepped_value
-              end
-            end
           else
             # these are `extras:`
             prepared_args[key] = value

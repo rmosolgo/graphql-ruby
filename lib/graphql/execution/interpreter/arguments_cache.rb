@@ -31,9 +31,7 @@ module GraphQL
           @storage[argument_owner][parent_object][ast_node] ||= begin
             args_hash = self.class.prepare_args_hash(@query, ast_node)
             kwarg_arguments = argument_owner.coerce_arguments(parent_object, args_hash, @query.context)
-            @query.after_lazy(kwarg_arguments) do |resolved_args|
-              @storage[argument_owner][parent_object][ast_node] = resolved_args
-            end
+            @storage[argument_owner][parent_object][ast_node] = kwarg_arguments
           end
 
         end

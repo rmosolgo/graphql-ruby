@@ -77,20 +77,18 @@ module GraphQL
             maybe_lazy_auth_val
           end
 
-          context.query.after_lazy(auth_val) do |is_authorized|
-            if is_authorized
-              self.new(object, context)
-            else
-              # It failed the authorization check, so go to the schema's authorized object hook
-              err = GraphQL::UnauthorizedError.new(object: object, type: self, context: context)
-              # If a new value was returned, wrap that instead of the original value
-              begin
-                new_obj = context.schema.unauthorized_object(err)
-                if new_obj
-                  self.new(new_obj, context)
-                else
-                  nil
-                end
+          if auth_val
+            self.new(object, context)
+          else
+            # It failed the authorization check, so go to the schema's authorized object hook
+            err = GraphQL::UnauthorizedError.new(object: object, type: self, context: context)
+            # If a new value was returned, wrap that instead of the original value
+            begin
+              new_obj = context.schema.unauthorized_object(err)
+              if new_obj
+                self.new(new_obj, context)
+              else
+                nil
               end
             end
           end

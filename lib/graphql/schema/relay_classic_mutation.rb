@@ -60,13 +60,11 @@ module GraphQL
           super()
         end
 
-        context.query.after_lazy(return_value) do |return_hash|
-          # It might be an error
-          if return_hash.is_a?(Hash)
-            return_hash[:client_mutation_id] = client_mutation_id
-          end
-          return_hash
+        # It might be an error
+        if return_value.is_a?(Hash)
+          return_hash[:client_mutation_id] = client_mutation_id
         end
+        return_value
       end
 
       class << self

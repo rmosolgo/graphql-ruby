@@ -981,7 +981,7 @@ module GraphQL
         # @param trace [Boolean] If `false`, don't wrap this with field tracing
         # @return [GraphQL::Execution::Lazy, Object] If loading `object` will be deferred, it's a wrapper over it.
         def after_lazy(lazy_obj, field:, owner_object:, arguments:, ast_node:, result:, result_name:, eager: false, trace: true, &block)
-          if lazy?(lazy_obj)
+          if false # lazy?(lazy_obj)
             orig_result = result
             st = get_current_runtime_state
             was_authorized_by_scope_items = st.was_authorized_by_scope_items

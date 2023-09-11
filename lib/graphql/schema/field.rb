@@ -661,78 +661,76 @@ module GraphQL
 
         Schema::Validator.validate!(validators, application_object, query_ctx, args)
 
-        query_ctx.query.after_lazy(self.authorized?(application_object, args, query_ctx)) do |is_authorized|
-          if is_authorized
-            with_extensions(object, args, query_ctx) do |obj, ruby_kwargs|
-              method_args = ruby_kwargs
-              if @resolver_class
-                if obj.is_a?(GraphQL::Schema::Object)
-                  obj = obj.object
-                end
-                obj = @resolver_class.new(object: obj, context: query_ctx, field: self)
+        if self.authorized?(application_object, args, query_ctx)
+          with_extensions(object, args, query_ctx) do |obj, ruby_kwargs|
+            method_args = ruby_kwargs
+            if @resolver_class
+              if obj.is_a?(GraphQL::Schema::Object)
+                obj = obj.object
               end
+              obj = @resolver_class.new(object: obj, context: query_ctx, field: self)
+            end
 
-              inner_object = obj.object
+            inner_object = obj.object
 
-              if !NOT_CONFIGURED.equal?(@hash_key)
-                hash_value = if inner_object.is_a?(Hash)
-                  inner_object.key?(@hash_key) ? inner_object[@hash_key] : inner_object[@hash_key_str]
-                elsif inner_object.respond_to?(:[])
-                  inner_object[@hash_key]
-                else
-                  nil
-                end
-                if hash_value == false
-                  hash_value
-                else
-                  hash_value || (@fallback_value != NOT_CONFIGURED ? @fallback_value : nil)
-                end
-              elsif obj.respond_to?(resolver_method)
-                method_to_call = resolver_method
-                method_receiver = obj
-                # Call the method with kwargs, if there are any
-                if ruby_kwargs.any?
-                  obj.public_send(resolver_method, **ruby_kwargs)
-                else
-                  obj.public_send(resolver_method)
-                end
-              elsif inner_object.is_a?(Hash)
-                if @dig_keys
-                  inner_object.dig(*@dig_keys)
-                elsif inner_object.key?(@method_sym)
-                  inner_object[@method_sym]
-                elsif inner_object.key?(@method_str)
-                  inner_object[@method_str]
-                elsif @fallback_value != NOT_CONFIGURED
-                  @fallback_value
-                else
-                  nil
-                end
-              elsif inner_object.respond_to?(@method_sym)
-                method_to_call = @method_sym
-                method_receiver = obj.object
-                if ruby_kwargs.any?
-                  inner_object.public_send(@method_sym, **ruby_kwargs)
-                else
-                  inner_object.public_send(@method_sym)
-                end
+            if !NOT_CONFIGURED.equal?(@hash_key)
+              hash_value = if inner_object.is_a?(Hash)
+                inner_object.key?(@hash_key) ? inner_object[@hash_key] : inner_object[@hash_key_str]
+              elsif inner_object.respond_to?(:[])
+                inner_object[@hash_key]
+              else
+                nil
+              end
+              if hash_value == false
+                hash_value
+              else
+                hash_value || (@fallback_value != NOT_CONFIGURED ? @fallback_value : nil)
+              end
+            elsif obj.respond_to?(resolver_method)
+              method_to_call = resolver_method
+              method_receiver = obj
+              # Call the method with kwargs, if there are any
+              if ruby_kwargs.any?
+                obj.public_send(resolver_method, **ruby_kwargs)
+              else
+                obj.public_send(resolver_method)
+              end
+            elsif inner_object.is_a?(Hash)
+              if @dig_keys
+                inner_object.dig(*@dig_keys)
+              elsif inner_object.key?(@method_sym)
+                inner_object[@method_sym]
+              elsif inner_object.key?(@method_str)
+                inner_object[@method_str]
               elsif @fallback_value != NOT_CONFIGURED
                 @fallback_value
               else
-                raise <<-ERR
-              Failed to implement #{@owner.graphql_name}.#{@name}, tried:
-
-              - `#{obj.class}##{resolver_method}`, which did not exist
-              - `#{inner_object.class}##{@method_sym}`, which did not exist
-              - Looking up hash key `#{@method_sym.inspect}` or `#{@method_str.inspect}` on `#{inner_object}`, but it wasn't a Hash
-
-              To implement this field, define one of the methods above (and check for typos), or supply a `fallback_value`.
-              ERR
+                nil
               end
+            elsif inner_object.respond_to?(@method_sym)
+              method_to_call = @method_sym
+              method_receiver = obj.object
+              if ruby_kwargs.any?
+                inner_object.public_send(@method_sym, **ruby_kwargs)
+              else
+                inner_object.public_send(@method_sym)
+              end
+            elsif @fallback_value != NOT_CONFIGURED
+              @fallback_value
+            else
+              raise <<-ERR
+            Failed to implement #{@owner.graphql_name}.#{@name}, tried:
+
+            - `#{obj.class}##{resolver_method}`, which did not exist
+            - `#{inner_object.class}##{@method_sym}`, which did not exist
+            - Looking up hash key `#{@method_sym.inspect}` or `#{@method_str.inspect}` on `#{inner_object}`, but it wasn't a Hash
+
+            To implement this field, define one of the methods above (and check for typos), or supply a `fallback_value`.
+            ERR
             end
-          else
-            raise GraphQL::UnauthorizedFieldError.new(object: application_object, type: object.class, context: query_ctx, field: self)
           end
+        else
+          raise GraphQL::UnauthorizedFieldError.new(object: application_object, type: object.class, context: query_ctx, field: self)
         end
       rescue GraphQL::UnauthorizedFieldError => err
         err.field ||= self
@@ -844,16 +842,13 @@ ERR
           extended_args = extended.arguments # rubocop:disable Development/ContextIsPassedCop
           memos = extended.memos || EMPTY_HASH
 
-          ctx.query.after_lazy(value) do |resolved_value|
-            idx = 0
-            @extensions.each do |ext|
-              memo = memos[idx]
-              # TODO after_lazy?
-              resolved_value = ext.after_resolve(object: extended_obj, arguments: extended_args, context: ctx, value: resolved_value, memo: memo)
-              idx += 1
-            end
-            resolved_value
+          idx = 0
+          @extensions.each do |ext|
+            memo = memos[idx]
+            value = ext.after_resolve(object: extended_obj, arguments: extended_args, context: ctx, value: value, memo: memo)
+            idx += 1
           end
+          value
         end
       end
 
