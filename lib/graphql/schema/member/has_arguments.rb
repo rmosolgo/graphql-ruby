@@ -380,8 +380,11 @@ module GraphQL
                   application_object_type = resolve_type_result
                   # application_object is already assigned
                 end
-                possible_object_types = context.warden.possible_types(argument.loads)
-                if !possible_object_types.include?(application_object_type)
+
+                if !(
+                    context.warden.possible_types(argument.loads).include?(application_object_type) ||
+                    context.warden.loadable?(argument.loads, context)
+                  )
                   err = GraphQL::LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
                   load_application_object_failed(err)
                 else

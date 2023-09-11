@@ -85,6 +85,7 @@ module GraphQL
           def visible_type_membership?(tm, ctx); tm.visible?(ctx); end
           def interface_type_memberships(obj_t, ctx); obj_t.interface_type_memberships; end
           def arguments(owner, ctx); owner.arguments(ctx); end
+          def loadable?(type, ctx); type.visible?(ctx); end
         end
       end
 
@@ -109,6 +110,7 @@ module GraphQL
         def fields(type_defn); type_defn.all_field_definitions; end # rubocop:disable Development/ContextIsPassedCop
         def get_field(parent_type, field_name); @schema.get_field(parent_type, field_name); end
         def reachable_type?(type_name); true; end
+        def loadable?(type, _ctx); true; end
         def reachable_types; @schema.types.values; end # rubocop:disable Development/ContextIsPassedCop
         def possible_types(type_defn); @schema.possible_types(type_defn); end
         def interfaces(obj_type); obj_type.interfaces; end
@@ -151,6 +153,11 @@ module GraphQL
           end
           vis_types
         end
+      end
+
+      # @return [Boolean] True if this type is used for `loads:` but not in the schema otherwise and not _explicitly_ hidden.
+      def loadable?(type, _ctx)
+        !reachable_type_set.include?(type) && visible_type?(type)
       end
 
       # @return [GraphQL::BaseType, nil] The type named `type_name`, if it exists (else `nil`)
@@ -307,8 +314,7 @@ module GraphQL
             elsif type_defn.kind.object?
               # Show this object if it belongs to ...
               interfaces(type_defn).any? { |t| referenced?(t) } ||  # an interface which is referenced in the schema
-                union_memberships(type_defn).any? { |t| referenced?(t) || orphan_type?(t) } || # or a union which is referenced or added via orphan_types
-                orphan_type?(type_defn) # or it's added directly as an orphan type
+                union_memberships(type_defn).any? { |t| referenced?(t) || orphan_type?(t) } # or a union which is referenced or added via orphan_types
             else
               false
             end
