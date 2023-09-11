@@ -12,9 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout master
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Checkout GitHub pages branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: gh-pages
           ref: gh-pages

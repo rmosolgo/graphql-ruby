@@ -209,15 +209,16 @@ module GraphQL
               @runtime_directive_names << name
             end
           end
-          # A cache of { Class => { String => Schema::Field } }
-          # Which assumes that MyObject.get_field("myField") will return the same field
-          # during the lifetime of a query
-          @fields_cache = Hash.new { |h, k| h[k] = {} }
-          # this can by by-identity since owners are the same object, but not the sub-hash, which uses strings.
-          @fields_cache.compare_by_identity
           # { Class => Boolean }
           @lazy_cache = {}
           @lazy_cache.compare_by_identity
+
+          @gathered_selections_cache = Hash.new { |h, k|
+            cache = {}
+            cache.compare_by_identity
+            h[k] = cache
+          }
+          @gathered_selections_cache.compare_by_identity
         end
 
         def final_result
@@ -257,7 +258,7 @@ module GraphQL
             @response = nil
           else
             call_method_on_directives(:resolve, runtime_object, root_operation.directives) do # execute query level directives
-              gathered_selections = gather_selections(runtime_object, root_type, root_operation.selections)
+              gathered_selections = gather_selections(runtime_object, root_type, nil, root_operation.selections)
               # This is kind of a hack -- `gathered_selections` is an Array if any of the selections
               # require isolation during execution (because of runtime directives). In that case,
               # make a new, isolated result hash for writing the result into. (That isolated response
@@ -301,10 +302,18 @@ module GraphQL
           nil
         end
 
-        def gather_selections(owner_object, owner_type, selections, selections_to_run = nil, selections_by_name = {})
+        def gather_selections(owner_object, owner_type, ast_node_for_caching, selections, selections_to_run = nil, selections_by_name = nil)
+          if ast_node_for_caching && (cached_selections = @gathered_selections_cache[ast_node_for_caching][owner_type])
+            return cached_selections
+          end
+          selections_by_name ||= {} # allocate this default here so we check the cache first
+
+          should_cache = true
+
           selections.each do |node|
             # Skip gathering this if the directive says so
             if !directives_include?(node, owner_object, owner_type)
+              should_cache = false
               next
             end
 
@@ -329,6 +338,7 @@ module GraphQL
               if @runtime_directive_names.any? && node.directives.any? { |d| @runtime_directive_names.include?(d.name) }
                 next_selections = {}
                 next_selections[:graphql_directives] = node.directives
+                should_cache = false
                 if selections_to_run
                   selections_to_run << next_selections
                 else
@@ -346,24 +356,28 @@ module GraphQL
                   type_defn = schema.get_type(node.type.name, context)
 
                   if query.warden.possible_types(type_defn).include?(owner_type)
-                    gather_selections(owner_object, owner_type, node.selections, selections_to_run, next_selections)
+                    gather_selections(owner_object, owner_type, nil, node.selections, selections_to_run, next_selections)
                   end
                 else
                   # it's an untyped fragment, definitely continue
-                  gather_selections(owner_object, owner_type, node.selections, selections_to_run, next_selections)
+                  gather_selections(owner_object, owner_type, nil, node.selections, selections_to_run, next_selections)
                 end
               when GraphQL::Language::Nodes::FragmentSpread
                 fragment_def = query.fragments[node.name]
                 type_defn = query.get_type(fragment_def.type.name)
                 if query.warden.possible_types(type_defn).include?(owner_type)
-                  gather_selections(owner_object, owner_type, fragment_def.selections, selections_to_run, next_selections)
+                  gather_selections(owner_object, owner_type, nil, fragment_def.selections, selections_to_run, next_selections)
                 end
               else
                 raise "Invariant: unexpected selection class: #{node.class}"
               end
             end
           end
-          selections_to_run || selections_by_name
+          result = selections_to_run || selections_by_name
+          if should_cache
+            @gathered_selections_cache[ast_node_for_caching][owner_type] = result
+          end
+          result
         end
 
         NO_ARGS = GraphQL::EmptyObjects::EMPTY_HASH
@@ -391,7 +405,9 @@ module GraphQL
             # so it wouldn't get to the `Resolve` call that happens below.
             # So instead trigger a run from this outer context.
             if is_eager_selection
+              @dataloader.clear_cache
               @dataloader.run
+              @dataloader.clear_cache
             end
           end
 
@@ -412,30 +428,17 @@ module GraphQL
             ast_node = field_ast_nodes_or_ast_node
           end
           field_name = ast_node.name
-          # This can't use `query.get_field` because it gets confused on introspection below if `field_defn` isn't `nil`,
-          # because of how `is_introspection` is used to call `.authorized_new` later on.
-          field_defn = @fields_cache[owner_type][field_name] ||= owner_type.get_field(field_name, @context)
-          is_introspection = false
-          if field_defn.nil?
-            field_defn = if owner_type == schema.query && (entry_point_field = schema.introspection_system.entry_point(name: field_name))
-              is_introspection = true
-              entry_point_field
-            elsif (dynamic_field = schema.introspection_system.dynamic_field(name: field_name))
-              is_introspection = true
-              dynamic_field
-            else
-              raise "Invariant: no field for #{owner_type}.#{field_name}"
-            end
-          end
+          field_defn = query.warden.get_field(owner_type, field_name)
 
           # Set this before calling `run_with_directives`, so that the directive can have the latest path
           runtime_state.current_field = field_defn
           runtime_state.current_result = selections_result
           runtime_state.current_result_name = result_name
 
-          if is_introspection
+          if field_defn.dynamic_introspection
             owner_object = field_defn.owner.wrap(owner_object, context)
           end
+
           return_type = field_defn.type
           if !field_defn.any_arguments?
             resolved_arguments = GraphQL::Execution::Interpreter::Arguments::EMPTY
@@ -778,7 +781,8 @@ module GraphQL
               if HALT != continue_value
                 response_hash = GraphQLResultHash.new(result_name, selection_result, is_non_null)
                 set_result(selection_result, result_name, response_hash, true, is_non_null)
-                gathered_selections = gather_selections(continue_value, current_type, next_selections)
+
+                gathered_selections = gather_selections(continue_value, current_type, ast_node, next_selections)
                 # There are two possibilities for `gathered_selections`:
                 # 1. All selections of this object should be evaluated together (there are no runtime directives modifying execution).
                 #    This case is handled below, and the result can be written right into the main `response_hash` above.
