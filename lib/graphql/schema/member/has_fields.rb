@@ -133,13 +133,16 @@ module GraphQL
           def get_field(field_name, context = GraphQL::Query::NullContext)
             # Objects need to check that the interface implementation is visible, too
             warden = Warden.from_context(context)
-            for ancestor in ancestors
+            ancs = ancestors
+            i = 0
+            while (ancestor = ancs[i])
               if ancestor.respond_to?(:own_fields) &&
                   visible_interface_implementation?(ancestor, context, warden) &&
                   (f_entry = ancestor.own_fields[field_name]) &&
                   (f = Warden.visible_entry?(:visible_field?, f_entry, context, warden))
                 return f
               end
+              i += 1
             end
             nil
           end

@@ -39,7 +39,9 @@ module GraphQL
             entry_point_fields.delete('__type') if schema.disable_type_introspection_entry_point?
             entry_point_fields
           end
+        @entry_point_fields.each { |k, v| v.dynamic_introspection = true }
         @dynamic_fields = get_fields_from_class(class_sym: :DynamicFields)
+        @dynamic_fields.each { |k, v| v.dynamic_introspection = true }
       end
 
       def entry_points

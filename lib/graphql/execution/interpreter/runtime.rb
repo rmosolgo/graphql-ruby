@@ -209,12 +209,6 @@ module GraphQL
               @runtime_directive_names << name
             end
           end
-          # A cache of { Class => { String => Schema::Field } }
-          # Which assumes that MyObject.get_field("myField") will return the same field
-          # during the lifetime of a query
-          @fields_cache = Hash.new { |h, k| h[k] = {} }
-          # this can by by-identity since owners are the same object, but not the sub-hash, which uses strings.
-          @fields_cache.compare_by_identity
           # { Class => Boolean }
           @lazy_cache = {}
           @lazy_cache.compare_by_identity
@@ -434,21 +428,7 @@ module GraphQL
             ast_node = field_ast_nodes_or_ast_node
           end
           field_name = ast_node.name
-          # This can't use `query.get_field` because it gets confused on introspection below if `field_defn` isn't `nil`,
-          # because of how `is_introspection` is used to call `.authorized_new` later on.
-          field_defn = @fields_cache[owner_type][field_name] ||= owner_type.get_field(field_name, @context)
-          is_introspection = false
-          if field_defn.nil?
-            field_defn = if owner_type == schema.query && (entry_point_field = schema.introspection_system.entry_point(name: field_name))
-              is_introspection = true
-              entry_point_field
-            elsif (dynamic_field = schema.introspection_system.dynamic_field(name: field_name))
-              is_introspection = true
-              dynamic_field
-            else
-              raise "Invariant: no field for #{owner_type}.#{field_name}"
-            end
-          end
+          field_defn = query.warden.get_field(owner_type, field_name)
 
           # Set this before calling `run_with_directives`, so that the directive can have the latest path
           st = get_current_runtime_state
@@ -456,9 +436,10 @@ module GraphQL
           st.current_result = selections_result
           st.current_result_name = result_name
 
-          if is_introspection
+          if field_defn.dynamic_introspection
             owner_object = field_defn.owner.wrap(owner_object, context)
           end
+
           return_type = field_defn.type
           if !field_defn.any_arguments?
             resolved_arguments = GraphQL::Execution::Interpreter::Arguments::EMPTY
