@@ -130,15 +130,29 @@ module MaskHelpers
     argument :name, String, required: false
   end
 
-  class Chereme < BaseObject
-    description "A basic unit of signed communication"
-    field :name, String, null: false
+  module PublicInterfaceType
+    include BaseInterface
+    field :other, String
+  end
+
+  class PublicType < BaseObject
+    implements PublicInterfaceType
+    field :test, String
   end
 
   class CheremeWithInterface < BaseObject
+    # Commenting this would make the test pass
+    implements PublicInterfaceType
+
+    field :name, String, null: false
+  end
+
+  class Chereme < BaseObject
     description "A basic unit of signed communication"
     implements LanguageMemberType
     field :name, String, null: false
+
+    field :chereme_with_interface, CheremeWithInterface
   end
 
   class Character < BaseObject
@@ -183,6 +197,9 @@ module MaskHelpers
     end
 
     field :manners, [MannerType], null: false
+
+    # Commenting this would make the test pass
+    field :test, PublicType, null: false
   end
 
   class MutationType < BaseObject
