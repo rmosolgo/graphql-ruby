@@ -132,7 +132,7 @@ module GraphQL
           else
             (current_runtime_state = Thread.current[:__graphql_runtime_info]) &&
               (query_runtime_state = current_runtime_state[@query]) &&
-              (query_runtime_state.public_send(key))
+              (query_runtime_state[key])
           end
         else
           # not found

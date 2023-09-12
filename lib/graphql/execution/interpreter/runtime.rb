@@ -9,17 +9,20 @@ module GraphQL
       # @api private
       class Runtime
         class CurrentState
+          KEYS = [:current_result, :current_result_name, :current_arguments, :current_field, :current_object, :was_authorized_by_scope_items]
+
           def initialize
-            @current_object = nil
-            @current_field = nil
-            @current_arguments = nil
-            @current_result_name = nil
-            @current_result = nil
-            @was_authorized_by_scope_items = nil
+            @data = {}
           end
 
-          attr_accessor :current_result, :current_result_name,
-            :current_arguments, :current_field, :current_object, :was_authorized_by_scope_items
+          def [](key)
+            @data[key]
+          end
+
+          KEYS.each do |k|
+            define_method(k) { @data[k] }
+            define_method(:"#{k}=") {|v| @data[k] = v }
+          end
         end
 
         module GraphQLResult
