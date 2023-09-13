@@ -37,6 +37,7 @@ require "graphql/schema/directive/skip"
 require "graphql/schema/directive/feature"
 require "graphql/schema/directive/flagged"
 require "graphql/schema/directive/transform"
+require "graphql/schema/directive/specified_by"
 require "graphql/schema/type_membership"
 
 require "graphql/schema/resolver"
@@ -978,6 +979,7 @@ module GraphQL
           "skip" => GraphQL::Schema::Directive::Skip,
           "deprecated" => GraphQL::Schema::Directive::Deprecated,
           "oneOf" => GraphQL::Schema::Directive::OneOf,
+          "specifiedBy" => GraphQL::Schema::Directive::SpecifiedBy,
         }.freeze
       end
 
