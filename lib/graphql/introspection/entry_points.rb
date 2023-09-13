@@ -2,8 +2,8 @@
 module GraphQL
   module Introspection
     class EntryPoints < Introspection::BaseObject
-      field :__schema, GraphQL::Schema::LateBoundType.new("__Schema"), "This GraphQL schema", null: false
-      field :__type, GraphQL::Schema::LateBoundType.new("__Type"), "A type in the GraphQL system" do
+      field :__schema, GraphQL::Schema::LateBoundType.new("__Schema"), "This GraphQL schema", null: false, dynamic_introspection: true
+      field :__type, GraphQL::Schema::LateBoundType.new("__Type"), "A type in the GraphQL system", dynamic_introspection: true do
         argument :name, String
       end
 

@@ -13,12 +13,15 @@ module GraphQL
 
       attr_reader :query, :errors, :visitor,
         :on_dependency_resolve_handlers,
-        :max_errors
+        :max_errors, :warden, :schema
 
-      def_delegators :@query, :schema, :document, :fragments, :operations, :warden
+
+      def_delegators :@query, :document, :fragments, :operations
 
       def initialize(query, visitor_class, max_errors)
         @query = query
+        @warden = query.warden
+        @schema = query.schema
         @literal_validator = LiteralValidator.new(context: query.context)
         @errors = []
         @max_errors = max_errors || Float::INFINITY

@@ -55,6 +55,8 @@ end
 RUBY
 
   EXPECTED_DELETE_MUTATION_TYPE = <<-RUBY
+# frozen_string_literal: true
+
 module Types
   class MutationType < Types::BaseObject
     field :name_delete, mutation: Mutations::Names::NameDelete

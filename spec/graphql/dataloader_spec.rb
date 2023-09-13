@@ -58,6 +58,12 @@ describe GraphQL::Dataloader do
       end
     end
 
+    class ToString < GraphQL::Dataloader::Source
+      def fetch(keys)
+        keys.map(&:to_s)
+      end
+    end
+
     class NestedDataObject < GraphQL::Dataloader::Source
       def fetch(ids)
         @dataloader.with(DataObject).load_all(ids)
@@ -332,10 +338,27 @@ describe GraphQL::Dataloader do
       end
     end
 
+    class GetCache < GraphQL::Schema::Mutation
+      type String
+      def resolve
+        dataloader.with(ToString).load(1)
+      end
+    end
+
     class Mutation < GraphQL::Schema::Object
       field :mutation_1, mutation: Mutation1
       field :mutation_2, mutation: Mutation2
       field :mutation_3, mutation: Mutation3
+      field :set_cache, String do
+        argument :input, String
+      end
+
+      def set_cache(input:)
+        dataloader.with(ToString).merge({ 1 => input })
+        input
+      end
+
+      field :get_cache, mutation: GetCache
     end
 
     mutation(Mutation)
@@ -427,6 +450,17 @@ describe GraphQL::Dataloader do
 
           assert_equal({ "first" => "first", "second" => "second" }, res["data"])
           assert_equal ["begin first", "end first", "begin second", "end second"], res.context[:mutation_log]
+        end
+
+        it "clears the cache between mutations" do
+          res = schema.execute <<-GRAPHQL
+            mutation {
+              setCache(input: "Salad")
+              getCache
+            }
+          GRAPHQL
+
+          assert_equal({"setCache" => "Salad", "getCache" => "1"}, res["data"])
         end
 
         it "batch-loads" do
