@@ -306,7 +306,7 @@ module GraphQL
 
       def query_runtime_state
         (current_runtime_state = Thread.current[:__graphql_runtime_info]) &&
-          (query_runtime_state = current_runtime_state[@query])
+          current_runtime_state[@query]
       end
     end
   end
