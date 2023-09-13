@@ -156,7 +156,7 @@ describe GraphQL::Schema::List do
         value "A"
         value "B"
       end
-      
+
       class Query < GraphQL::Schema::Object
         field :items, [Item], null: false do
           argument :ids, [Int]

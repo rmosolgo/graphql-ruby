@@ -104,6 +104,15 @@ module GraphQL
       nil
     end
 
+    # Clear any already-loaded objects from {Source} caches
+    # @return [void]
+    def clear_cache
+      @source_cache.each do |_source_class, batched_sources|
+        batched_sources.each_value(&:clear_cache)
+      end
+      nil
+    end
+
     # Use a self-contained queue for the work in the block.
     def run_isolated
       prev_queue = @pending_jobs

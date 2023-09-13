@@ -94,6 +94,11 @@ class AblyLink extends ApolloLink {
     // Subscribe for more update
     ablyChannel.subscribe("update", function(message) {
       var payload = message.data
+      const result = payload.result
+      if (result) {
+        // Send the new response to listeners
+        observer.next(result)
+      }
       if (!payload.more) {
         // This is the end, the server says to unsubscribe
         if (ablyClientId) {
@@ -103,11 +108,6 @@ class AblyLink extends ApolloLink {
         }
         ablyChannel.unsubscribe()
         observer.complete()
-      }
-      const result = payload.result
-      if (result) {
-        // Send the new response to listeners
-        observer.next(result)
       }
     })
   }

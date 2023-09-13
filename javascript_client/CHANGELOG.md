@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.11.9 (1 Sept 2023)
+
+- `createRelaySubscriptionHandler`: fix error handling in handler functions #4603
+
 # 1.11.8 (9 May 2023)
 
 - ActionCable: accept a custom `channelName` for `createActionCableHandler` and `addGraphQLSubscriptions` #4463

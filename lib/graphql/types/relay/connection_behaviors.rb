@@ -67,9 +67,8 @@ module GraphQL
               type: [edge_type_class, null: edge_nullable],
               null: edges_nullable,
               description: "A list of edges.",
+              scope: false, # Assume that the connection was already scoped.
               connection: false,
-              # Assume that the connection was scoped before this step:
-              scope: false,
             }
 
             if field_options
@@ -169,6 +168,24 @@ module GraphQL
           def add_page_info_field(obj_type)
             obj_type.field :page_info, GraphQL::Types::Relay::PageInfo, null: false, description: "Information to aid in pagination."
           end
+        end
+
+        def edges
+          # Assume that whatever authorization needed to happen
+          # already happened at the connection level.
+          current_runtime_state = Thread.current[:__graphql_runtime_info]
+          query_runtime_state = current_runtime_state[context.query]
+          query_runtime_state.was_authorized_by_scope_items = @object.was_authorized_by_scope_items?
+          @object.edges
+        end
+
+        def nodes
+          # Assume that whatever authorization needed to happen
+          # already happened at the connection level.
+          current_runtime_state = Thread.current[:__graphql_runtime_info]
+          query_runtime_state = current_runtime_state[context.query]
+          query_runtime_state.was_authorized_by_scope_items = @object.was_authorized_by_scope_items?
+          @object.nodes
         end
       end
     end

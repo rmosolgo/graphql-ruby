@@ -3,6 +3,33 @@ require "spec_helper"
 include ErrorBubblingHelpers
 
 module MaskHelpers
+  def self.build_mask(only:, except:)
+    ->(member, context) do
+      visible = true
+      if visible
+        only.each do |filter|
+          passes_filter = filter.call(member, context)
+          if !passes_filter
+            visible = false
+            break
+          end
+        end
+      end
+
+      if visible
+        except.each do |filter|
+          passes_filter = !filter.call(member, context)
+          if !passes_filter
+            visible = false
+            break
+          end
+        end
+      end
+
+      !visible
+    end
+  end
+
   # Returns true if `member.metadata` includes any of `flags`
   def self.has_flag?(member, *flags)
     if member.respond_to?(:metadata) && (m = member.metadata)
@@ -225,13 +252,11 @@ module MaskHelpers
 
     def self.visible?(member, context)
       result = super(member, context)
-      if result && (f = context[:filters])
-        if f[:only] && !Array(f[:only]).all? { |func| func.call(member, context) }
-          return false
-        end
-        if f[:except] && Array(f[:except]).any? { |func| func.call(member, context) }
-          return false
-        end
+      if result && context[:only] && !Array(context[:only]).all? { |func| func.call(member, context) }
+        return false
+      end
+      if result && context[:except] && Array(context[:except]).any? { |func| func.call(member, context) }
+        return false
       end
       result
     end
@@ -245,7 +270,7 @@ module MaskHelpers
   end
 
   def self.query_with_mask(str, mask, variables: {})
-    run_query(str, context: { filters: { except: mask } }, root_value: Data, variables: variables)
+    run_query(str, context: { except: mask }, root_value: Data, variables: variables)
   end
 
   def self.run_query(str, **kwargs)
@@ -413,10 +438,6 @@ describe GraphQL::Schema::Warden do
   end
 
   describe "hiding types" do
-    let(:whitelist) {
-      ->(member, ctx) { !MaskHelpers.has_flag?(member, :hidden_type) }
-    }
-
     it "hides types from introspection" do
       query_string = %|
       {
@@ -446,7 +467,7 @@ describe GraphQL::Schema::Warden do
       }
       |
 
-      res = MaskHelpers.run_query(query_string, only: whitelist)
+      res = MaskHelpers.run_query(query_string, context: { except: ->(member, ctx) { MaskHelpers.has_flag?(member, :hidden_type) } })
       # It's not visible by name
       assert_nil res["data"]["Phoneme"]
 
@@ -623,7 +644,7 @@ describe GraphQL::Schema::Warden do
       }
       |
 
-      res = MaskHelpers.run_query(query_string, only: whitelist)
+      res = MaskHelpers.run_query(query_string, context: { except: ->(member, ctx) { MaskHelpers.has_flag?(member, :hidden_type) } })
 
       expected_errors = [
         "No such type Phoneme, so it can't be a fragment condition",
@@ -640,7 +661,7 @@ describe GraphQL::Schema::Warden do
       |
 
       assert_raises(MaskHelpers::EmicUnitType::UnresolvedTypeError) {
-        MaskHelpers.run_query(query_string, only: whitelist)
+        MaskHelpers.run_query(query_string, context: { except: ->(member, ctx) { MaskHelpers.has_flag?(member, :hidden_type) } })
       }
     end
 
@@ -943,9 +964,14 @@ describe GraphQL::Schema::Warden do
       it "applies all of them" do
         res = MaskHelpers.run_query(
           query_str,
-          only: [visible_enum_value, visible_abstract_type],
-          except: [hidden_input_object, hidden_type],
+          context: {
+            except: MaskHelpers.build_mask(
+              only: [visible_enum_value, visible_abstract_type],
+              except: [hidden_input_object, hidden_type],
+            )
+          },
         )
+
         assert_nil res["data"]["input"]
         enum_values = res["data"]["enum"]["enumValues"].map { |v| v["name"] }
         assert_equal 5, enum_values.length
@@ -958,11 +984,11 @@ describe GraphQL::Schema::Warden do
 
     describe "adding filters in instrumentation" do
       it "applies only/except filters" do
-        filters = {
-          only: visible_enum_value,
-          except: hidden_input_object,
-        }
-        res = MaskHelpers.run_query(query_str, context: { filters: filters })
+        except = MaskHelpers.build_mask(
+          only: [visible_enum_value],
+          except: [hidden_input_object],
+        )
+        res = MaskHelpers.run_query(query_str, context: { except: except })
         assert_nil res["data"]["input"]
         enum_values = res["data"]["enum"]["enumValues"].map { |v| v["name"] }
         assert_equal 5, enum_values.length
@@ -973,11 +999,11 @@ describe GraphQL::Schema::Warden do
       end
 
       it "applies multiple filters" do
-        filters = {
+        context = {
           only: [visible_enum_value, visible_abstract_type],
           except: [hidden_input_object, hidden_type],
         }
-        res = MaskHelpers.run_query(query_str, context: { filters: filters })
+        res = MaskHelpers.run_query(query_str, context: context)
         assert_nil res["data"]["input"]
         enum_values = res["data"]["enum"]["enumValues"].map { |v| v["name"] }
         assert_equal 5, enum_values.length

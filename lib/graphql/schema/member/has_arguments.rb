@@ -122,6 +122,10 @@ module GraphQL
           own_arguments_that_apply || own_arguments
         end
 
+        def any_arguments?
+          own_arguments.any?
+        end
+
         module ClassConfigured
           def inherited(child_class)
             super
@@ -143,6 +147,10 @@ module GraphQL
               else
                 inherited_arguments
               end
+            end
+
+            def any_arguments?
+              super || superclass.any_arguments?
             end
 
             def all_argument_definitions
@@ -175,7 +183,7 @@ module GraphQL
         module FieldConfigured
           def arguments(context = GraphQL::Query::NullContext)
             own_arguments = super
-            if defined?(@resolver_class) && @resolver_class
+            if @resolver_class
               inherited_arguments = @resolver_class.field_arguments(context)
               if own_arguments.any?
                 if inherited_arguments.any?
@@ -191,8 +199,12 @@ module GraphQL
             end
           end
 
+          def any_arguments?
+            super || (@resolver_class && @resolver_class.any_field_arguments?)
+          end
+
           def all_argument_definitions
-            if defined?(@resolver_class) && @resolver_class
+            if @resolver_class
               all_defns = {}
               @resolver_class.all_field_argument_definitions.each do |arg_defn|
                 key = arg_defn.graphql_name
