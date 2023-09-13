@@ -9,6 +9,8 @@ class GraphQLGeneratorsLoaderGeneratorTest < BaseGeneratorTest
     run_generator(["RecordLoader"])
 
     expected_content = <<-RUBY
+# frozen_string_literal: true
+
 module Loaders
   class RecordLoader < GraphQL::Batch::Loader
     # Define `initialize` to store grouping arguments, eg
@@ -35,6 +37,8 @@ RUBY
     run_generator(["active_record::record_loader"])
 
     expected_content = <<-RUBY
+# frozen_string_literal: true
+
 module Loaders
   class ActiveRecord::RecordLoader < GraphQL::Batch::Loader
     # Define `initialize` to store grouping arguments, eg
