@@ -116,7 +116,6 @@ module GraphQL
 
       def_delegators :@query, :trace, :interpreter?
 
-      RUNTIME_METADATA_KEYS = Set.new([:current_object, :current_arguments, :current_field, :current_path])
       # @!method []=(key, value)
       #   Reassign `key` to the hash passed to {Schema#execute} as `context:`
 
@@ -126,14 +125,14 @@ module GraphQL
           @scoped_context[key]
         elsif @provided_values.key?(key)
           @provided_values[key]
-        elsif RUNTIME_METADATA_KEYS.include?(key)
-          if key == :current_path
-            current_path
-          else
-            (current_runtime_state = Thread.current[:__graphql_runtime_info]) &&
-              (query_runtime_state = current_runtime_state[@query]) &&
-              (query_runtime_state.public_send(key))
-          end
+        elsif key == :current_path
+          current_path
+        elsif key == :current_arguments
+          query_runtime_state&.current_arguments
+        elsif key == :current_field
+          query_runtime_state&.current_field
+        elsif key == :current_object
+          query_runtime_state&.current_object
         else
           # not found
           nil
@@ -165,10 +164,14 @@ module GraphQL
       UNSPECIFIED_FETCH_DEFAULT = Object.new
 
       def fetch(key, default = UNSPECIFIED_FETCH_DEFAULT)
-        if RUNTIME_METADATA_KEYS.include?(key)
-          (runtime = Thread.current[:__graphql_runtime_info]) &&
-            (query_runtime_state = runtime[@query]) &&
-            (query_runtime_state.public_send(key))
+        if key == :current_path
+          current_path
+        elsif key == :current_arguments
+          query_runtime_state&.current_arguments
+        elsif key == :current_field
+          query_runtime_state&.current_field
+        elsif key == :current_object
+          query_runtime_state&.current_object
         elsif @scoped_context.key?(key)
           scoped_context[key]
         elsif @provided_values.key?(key)
@@ -183,15 +186,34 @@ module GraphQL
       end
 
       def dig(key, *other_keys)
-        if RUNTIME_METADATA_KEYS.include?(key)
-          (current_runtime_state = Thread.current[:__graphql_runtime_info]) &&
-            (query_runtime_state = current_runtime_state[@query]) &&
-            (obj = query_runtime_state.public_send(key)) &&
-            if other_keys.empty?
-              obj
-            else
-              obj.dig(*other_keys)
-            end
+        if key == :current_path
+          value = current_path
+          if other_keys.empty? || value.nil?
+            value
+          else
+            value.dig(*other_keys)
+          end
+        elsif key == :current_object
+          value = query_runtime_state&.current_object
+          if other_keys.empty? || value.nil?
+            value
+          else
+            value.dig(*other_keys)
+          end
+        elsif key == :current_arguments
+          value = query_runtime_state&.current_arguments
+          if other_keys.empty? || value.nil?
+            value
+          else
+            value.dig(*other_keys)
+          end
+        elsif key == :current_field
+          value = query_runtime_state&.current_field
+          if other_keys.empty? || value.nil?
+            value
+          else
+            value.dig(*other_keys)
+          end
         elsif @scoped_context.key?(key)
           @scoped_context.dig(key, *other_keys)
         else
@@ -278,6 +300,13 @@ module GraphQL
           @scoped_context.merge!({ key => value }, at: @path)
           nil
         end
+      end
+
+      private
+
+      def query_runtime_state
+        (current_runtime_state = Thread.current[:__graphql_runtime_info]) &&
+          (query_runtime_state = current_runtime_state[@query])
       end
     end
   end
