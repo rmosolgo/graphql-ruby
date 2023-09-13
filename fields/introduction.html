@@ -108,7 +108,8 @@
 <h1 class="guide-header">Introduction</h1>
 <div class="guide-table-of-contents"><div class="table-of-contents">
   <h3 class="contents-header">Contents</h3>
-  <ol class='contents-list'><li class='contents-entry'><a href='#field-return-type'>Field Return Type
+  <ol class='contents-list'><li class='contents-entry'><a href='#field-names'>Field Names
+</a></li><li class='contents-entry'><a href='#field-return-type'>Field Return Type
 </a></li><li class='contents-entry'><a href='#field-documentation'>Field Documentation
 </a></li><li class='contents-entry'><a href='#field-resolution'>Field Resolution
 </a></li><li class='contents-entry'><a href='#field-arguments'>Field Arguments
@@ -128,6 +129,7 @@
 <p>The different elements of field definition are addressed below:</p>
 
 <ul>
+  <li><a href="#field-names">Names</a> identify the field in GraphQL</li>
   <li><a href="#field-return-type">Return types</a> say what kind of data this field returns</li>
   <li><a href="#field-documentation">Documentation</a> includes description and deprecation notes</li>
   <li><a href="#field-resolution">Resolution behavior</a> hooks up Ruby code to the GraphQL field</li>
@@ -135,6 +137,19 @@
   <li><a href="#extra-field-metadata">Extra field metadata</a> for low-level access to the GraphQL-Ruby runtime</li>
   <li><a href="#field-parameter-default-values">Add default values for field parameters</a></li>
 </ul>
+
+<h2 id="field-names">Field Names</h2>
+
+<p>A field’s name is provided as the first argument or as the <code class="language-plaintext highlighter-rouge">name:</code> option:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:team_captain</span><span class="p">,</span> <span class="o">...</span>
+<span class="c1"># or:</span>
+<span class="n">field</span> <span class="o">...</span><span class="p">,</span> <span class="ss">name: :team_captain</span>
+</code></pre></div></div>
+
+<p>Under the hood, GraphQL-Ruby <strong>camelizes</strong> field names, so <code class="language-plaintext highlighter-rouge">field :team_captain, ...</code> would be <code class="language-plaintext highlighter-rouge">{ teamCaptain }</code> in GraphQL. You can disable this behavior by adding <code class="language-plaintext highlighter-rouge">camelize: false</code> to your field definition or to the <a href="#field-parameter-default-values">default field options</a>.</p>
+
+<p>The field’s name is also used as the basis of <a href="#field-resolution">field resolution</a>.</p>
 
 <h2 id="field-return-type">Field Return Type</h2>
 
