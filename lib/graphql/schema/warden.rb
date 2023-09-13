@@ -434,8 +434,9 @@ module GraphQL
         if visited_type_set.add?(type) || (include_interface_possible_types && type.kind.interface? && included_interface_possible_types_set.add?(type))
           type_by_name = type_by_name_hash[type.graphql_name] ||= type
           if type_by_name != type
+            name_1, name_2 = [type.inspect, type_by_name.inspect].sort
             raise DuplicateNamesError.new(
-              duplicated_name: type.graphql_name, duplicated_definition_1: type.inspect, duplicated_definition_2: type_by_name.inspect
+              duplicated_name: type.graphql_name, duplicated_definition_1: name_1, duplicated_definition_2: name_2
             )
           end
           if type.kind.input_object?
