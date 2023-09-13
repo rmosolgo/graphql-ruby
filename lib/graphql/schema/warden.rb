@@ -420,50 +420,61 @@ module GraphQL
           end
         end
 
+        included_interface_possible_types_set = Set.new
+
         until unvisited_types.empty?
           type = unvisited_types.pop
-          if @reachable_type_set.add?(type)
-            type_by_name = rt_hash[type.graphql_name] ||= type
-            if type_by_name != type
-              raise DuplicateNamesError.new(
-                duplicated_name: type.graphql_name, duplicated_definition_1: type.inspect, duplicated_definition_2: type_by_name.inspect
-              )
+          visit_type(type, unvisited_types, @reachable_type_set, rt_hash, included_interface_possible_types_set, include_interface_possible_types: false)
+        end
+
+        @reachable_type_set
+      end
+
+      def visit_type(type, unvisited_types, visited_type_set, type_by_name_hash, included_interface_possible_types_set, include_interface_possible_types:)
+        if visited_type_set.add?(type) || (include_interface_possible_types && type.kind.interface? && included_interface_possible_types_set.add?(type))
+          type_by_name = type_by_name_hash[type.graphql_name] ||= type
+          if type_by_name != type
+            raise DuplicateNamesError.new(
+              duplicated_name: type.graphql_name, duplicated_definition_1: type.inspect, duplicated_definition_2: type_by_name.inspect
+            )
+          end
+          if type.kind.input_object?
+            # recurse into visible arguments
+            arguments(type).each do |argument|
+              argument_type = argument.type.unwrap
+              unvisited_types << argument_type
             end
-            if type.kind.input_object?
+          elsif type.kind.union?
+            # recurse into visible possible types
+            possible_types(type).each do |possible_type|
+              unvisited_types << possible_type
+            end
+          elsif type.kind.fields?
+            if type.kind.object?
+              # recurse into visible implemented interfaces
+              interfaces(type).each do |interface|
+                unvisited_types << interface
+              end
+            elsif include_interface_possible_types
+              possible_types(type).each do |pt|
+                unvisited_types << pt
+              end
+            end
+            # Don't visit interface possible types -- it's not enough to justify visibility
+
+            # recurse into visible fields
+            fields(type).each do |field|
+              field_type = field.type.unwrap
+              # In this case, if it's an interface, we want to include
+              visit_type(field_type, unvisited_types, visited_type_set, type_by_name_hash, included_interface_possible_types_set, include_interface_possible_types: true)
               # recurse into visible arguments
-              arguments(type).each do |argument|
+              arguments(field).each do |argument|
                 argument_type = argument.type.unwrap
                 unvisited_types << argument_type
-              end
-            elsif type.kind.union?
-              # recurse into visible possible types
-              possible_types(type).each do |possible_type|
-                unvisited_types << possible_type
-              end
-            elsif type.kind.fields?
-              if type.kind.object?
-                # recurse into visible implemented interfaces
-                interfaces(type).each do |interface|
-                  unvisited_types << interface
-                end
-              end
-              # Don't visit interface possible types -- it's not enough to justify visibility
-
-              # recurse into visible fields
-              fields(type).each do |field|
-                field_type = field.type.unwrap
-                unvisited_types << field_type
-                # recurse into visible arguments
-                arguments(field).each do |argument|
-                  argument_type = argument.type.unwrap
-                  unvisited_types << argument_type
-                end
               end
             end
           end
         end
-
-        @reachable_type_set
       end
     end
   end
