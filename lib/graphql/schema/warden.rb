@@ -441,17 +441,13 @@ module GraphQL
                 unvisited_types << possible_type
               end
             elsif type.kind.fields?
-              if type.kind.interface?
-                # recurse into visible possible types
-                possible_types(type).each do |possible_type|
-                  unvisited_types << possible_type
-                end
-              elsif type.kind.object?
+              if type.kind.object?
                 # recurse into visible implemented interfaces
                 interfaces(type).each do |interface|
                   unvisited_types << interface
                 end
               end
+              # Don't visit interface possible types -- it's not enough to justify visibility
 
               # recurse into visible fields
               fields(type).each do |field|
