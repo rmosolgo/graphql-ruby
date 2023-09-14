@@ -151,16 +151,13 @@ module GraphQL
       source_fibers = []
       next_source_fibers = []
       first_pass = true
-      st = get_fiber_state
-      manager = Fiber.new do
-        set_fiber_state(st)
-
+      manager = spawn_fiber do
         while first_pass || job_fibers.any?
           first_pass = false
 
           while (f = job_fibers.shift || spawn_job_fiber)
             if f.alive?
-              f.transfer
+              run_fiber(f)
               next_job_fibers << f
             end
           end
@@ -170,7 +167,7 @@ module GraphQL
             while any_pending_sources
               while (f = source_fibers.shift || spawn_source_fiber)
                 if f.alive?
-                  f.transfer
+                  run_fiber(f)
                   next_source_fibers << f
                 end
               end
@@ -187,14 +184,37 @@ module GraphQL
         end
       end
 
-      manager.transfer
+      run_fiber(manager)
 
       while manager.alive?
-        manager.transfer
+        run_fiber(manager)
       end
     rescue UncaughtThrowError => e
       throw e.tag, e.value
     end
+
+    def run_fiber(f)
+      if defined?(::DummyScheduler) && Fiber.scheduler.is_a?(::DummyScheduler)
+        f.resume
+      else
+        f.transfer
+      end
+    end
+
+    def spawn_fiber
+      st = get_fiber_state
+      parent_fiber = Fiber.current
+      Fiber.new {
+        if defined?(::DummyScheduler) && Fiber.scheduler.is_a?(::DummyScheduler)
+          # don't
+        else
+          Thread.current[:parent_fiber] = parent_fiber
+        end
+        set_fiber_state(st)
+        yield
+      }
+    end
+
 
     def get_fiber_state
       fiber_locals = {}
@@ -217,11 +237,7 @@ module GraphQL
 
     def spawn_job_fiber
       if @pending_jobs.any?
-        parent_fiber = Fiber.current
-        st = get_fiber_state
-        Fiber.new do
-          set_fiber_state(st)
-          Thread.current[:parent_fiber] = parent_fiber
+        spawn_fiber do
           while job = @pending_jobs.shift
             job.call
           end
@@ -230,7 +246,6 @@ module GraphQL
     end
 
     def spawn_source_fiber
-      parent_fiber = Fiber.current
       pending_sources = nil
       @source_cache.each_value do |source_by_batch_params|
         source_by_batch_params.each_value do |source|
@@ -242,10 +257,7 @@ module GraphQL
       end
 
       if pending_sources
-        st = get_fiber_state
-        Fiber.new do
-          set_fiber_state(st)
-          Thread.current[:parent_fiber] = parent_fiber
+        spawn_fiber do
           pending_sources.each(&:run_pending_keys)
         end
       end
