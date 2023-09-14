@@ -206,7 +206,7 @@ module GraphQL
     def spawn_fiber
       st = get_fiber_state
       parent_fiber = use_fiber_resume? ? nil : Fiber.current
-      Fiber.new {
+      Fiber.new(blocking: !@nonblocking) {
         set_fiber_state(st)
         if parent_fiber
           Thread.current[:parent_fiber] = parent_fiber
