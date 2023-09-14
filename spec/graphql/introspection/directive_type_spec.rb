@@ -81,6 +81,17 @@ describe GraphQL::Introspection::DirectiveType do
             "onOperation" => false,
           },
           {
+            "name" => "specifiedBy",
+            "args" => [
+              {"name"=>"url", "type"=>{"kind"=>"NON_NULL", "name"=>nil, "ofType"=>{"name"=>"String"}}}
+            ],
+            "locations"=>["SCALAR"],
+            "isRepeatable" => false,
+            "onField" => false,
+            "onFragment" => false,
+            "onOperation" => false,
+          },
+          {
             "name"=>"doStuff",
             "args"=>[],
             "locations"=>[],
