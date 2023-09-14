@@ -157,8 +157,10 @@ module GraphQL
 
           while (f = job_fibers.shift || spawn_job_fiber)
             if f.alive?
-              run_fiber(f)
-              next_job_fibers << f
+              finished = run_fiber(f)
+              if !finished
+                next_job_fibers << f
+              end
             end
           end
 
@@ -167,18 +169,20 @@ module GraphQL
             while any_pending_sources
               while (f = source_fibers.shift || spawn_source_fiber)
                 if f.alive?
-                  run_fiber(f)
-                  next_source_fibers << f
+                  finished = run_fiber(f)
+                  if !finished
+                    next_source_fibers << f
+                  end
                 end
               end
-
+              Fiber.scheduler&.run
               source_fibers.concat(next_source_fibers)
               next_source_fibers.clear
 
               any_pending_sources = @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
             end
           end
-
+          Fiber.scheduler&.run
           job_fibers.concat(next_job_fibers)
           next_job_fibers.clear
         end
@@ -186,9 +190,6 @@ module GraphQL
 
       run_fiber(manager)
 
-      while manager.alive?
-        run_fiber(manager)
-      end
     rescue UncaughtThrowError => e
       throw e.tag, e.value
     end
@@ -203,15 +204,17 @@ module GraphQL
 
     def spawn_fiber
       st = get_fiber_state
+      use_parent_fiber = !(defined?(::DummyScheduler) && Fiber.scheduler.is_a?(::DummyScheduler))
       parent_fiber = Fiber.current
       Fiber.new {
-        if defined?(::DummyScheduler) && Fiber.scheduler.is_a?(::DummyScheduler)
-          # don't
-        else
+        set_fiber_state(st)
+        if use_parent_fiber
           Thread.current[:parent_fiber] = parent_fiber
         end
-        set_fiber_state(st)
         yield
+        # With `.transfer`, you have to explicitly pass back to the parent --
+        # if the fiber is allowed to terminate normally, control is passed to the main fiber instead.
+        use_parent_fiber ? parent_fiber.transfer(true) : true
       }
     end
 
