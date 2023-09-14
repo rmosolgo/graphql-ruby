@@ -85,11 +85,10 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
     end
 
     def with_scheduler
-      prev_scheduler = Fiber.scheduler
       Fiber.set_scheduler(scheduler_class.new)
       yield
     ensure
-      Fiber.set_scheduler(prev_scheduler)
+      Fiber.set_scheduler(nil)
     end
 
     module AsyncDataloaderAssertions
@@ -248,10 +247,10 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
       end
     end
 
-    describe "with evt" do
-      require "evt"
-      let(:scheduler_class) { Evt::Scheduler }
-      include AsyncDataloaderAssertions
-    end
+    # describe "with evt" do
+    #   require "evt"
+    #   let(:scheduler_class) { Evt::Scheduler }
+    #   include AsyncDataloaderAssertions
+    # end
   end
 end

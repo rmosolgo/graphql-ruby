@@ -92,10 +92,11 @@ module GraphQL
     #
     # @return [void]
     def yield
-      if (parent_fiber = Thread.current[:parent_fiber])
-        parent_fiber.transfer
-      else
+      if use_fiber_resume?
         Fiber.yield
+      else
+        parent_fiber = Thread.current[:parent_fiber]
+        parent_fiber.transfer
       end
       nil
     end
@@ -195,7 +196,7 @@ module GraphQL
     end
 
     def run_fiber(f)
-      if defined?(::DummyScheduler) && Fiber.scheduler.is_a?(::DummyScheduler)
+      if use_fiber_resume?
         f.resume
       else
         f.transfer
@@ -204,17 +205,20 @@ module GraphQL
 
     def spawn_fiber
       st = get_fiber_state
-      use_parent_fiber = !(defined?(::DummyScheduler) && Fiber.scheduler.is_a?(::DummyScheduler))
-      parent_fiber = Fiber.current
+      parent_fiber = use_fiber_resume? ? nil : Fiber.current
       Fiber.new {
         set_fiber_state(st)
-        if use_parent_fiber
+        if parent_fiber
           Thread.current[:parent_fiber] = parent_fiber
         end
         yield
         # With `.transfer`, you have to explicitly pass back to the parent --
         # if the fiber is allowed to terminate normally, control is passed to the main fiber instead.
-        use_parent_fiber ? parent_fiber.transfer(true) : true
+        if parent_fiber
+          parent_fiber.transfer(true)
+        else
+          true
+        end
       }
     end
 
@@ -237,6 +241,12 @@ module GraphQL
     end
 
     private
+
+    def use_fiber_resume?
+      (defined?(::DummyScheduler) && Fiber.scheduler.is_a?(::DummyScheduler)) ||
+        (defined?(::Evt) && Fiber.scheduler.is_a?(::Evt::Scheduler)) ||
+        (defined?(::Libev) && Fiber.scheduler.is_a?(::Libev::Scheduler))
+    end
 
     def spawn_job_fiber
       if @pending_jobs.any?
