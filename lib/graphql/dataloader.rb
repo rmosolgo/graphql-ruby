@@ -244,7 +244,7 @@ module GraphQL
 
     def use_fiber_resume?
       (defined?(::DummyScheduler) && Fiber.scheduler.is_a?(::DummyScheduler)) ||
-        (defined?(::Evt) && Fiber.scheduler.is_a?(::Evt::Scheduler)) ||
+        (defined?(::Evt) && ::Evt::Scheduler.singleton_class::BACKENDS.any? { |be| Fiber.scheduler.is_a?(be) }) ||
         (defined?(::Libev) && Fiber.scheduler.is_a?(::Libev::Scheduler))
     end
 
