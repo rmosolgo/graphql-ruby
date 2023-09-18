@@ -78,7 +78,7 @@ module GraphQL
       end
 
       def analysis_errors(results)
-        results.flatten.select { |r| r.is_a?(GraphQL::AnalysisError) }
+        results.flatten.tap { _1.select! { |r| r.is_a?(GraphQL::AnalysisError) } }
       end
     end
   end
