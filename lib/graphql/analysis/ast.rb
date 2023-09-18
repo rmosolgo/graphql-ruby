@@ -51,22 +51,26 @@ module GraphQL
         query.current_trace.analyze_query(query: query) do
           query_analyzers = analyzers
             .map { |analyzer| analyzer.new(query) }
-            .select { |analyzer| analyzer.analyze? }
+            .tap { _1.select!(&:analyze?) }
 
           analyzers_to_run = query_analyzers + multiplex_analyzers
           if analyzers_to_run.any?
-            visitor = GraphQL::Analysis::AST::Visitor.new(
-              query: query,
-              analyzers: analyzers_to_run
-            )
 
-            visitor.visit
+            analyzers_to_run.select!(&:visit?)
+            if analyzers_to_run.any?
+              visitor = GraphQL::Analysis::AST::Visitor.new(
+                query: query,
+                analyzers: analyzers_to_run
+              )
 
-            if visitor.rescued_errors.any?
-              visitor.rescued_errors
-            else
-              query_analyzers.map(&:result)
+              visitor.visit
+
+              if visitor.rescued_errors.any?
+                return visitor.rescued_errors
+              end
             end
+
+            query_analyzers.map(&:result)
           else
             []
           end
