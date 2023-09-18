@@ -891,7 +891,7 @@ describe GraphQL::Dataloader do
   end
 
   let(:schema) { FiberSchema }
-  # include DataloaderAssertions
+  include DataloaderAssertions
 
   if Fiber.respond_to?(:scheduler)
     describe "nonblocking: true" do
@@ -925,7 +925,7 @@ describe GraphQL::Dataloader do
           Fiber.set_scheduler(nil)
         end
 
-        # include DataloaderAssertions
+        include DataloaderAssertions
       end
     end
   end
