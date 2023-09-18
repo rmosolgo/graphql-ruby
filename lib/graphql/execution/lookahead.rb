@@ -102,7 +102,7 @@ module GraphQL
             @query.warden
               .possible_types(selected_type)
               .map { |t| @query.warden.fields(t) }
-              .flatten
+              .tap(&:flatten!)
           end
 
           if (match_by_orig_name = all_fields.find { |f| f.original_name == field_name })

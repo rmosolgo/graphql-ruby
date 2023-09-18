@@ -36,7 +36,7 @@ module GraphQL
 
         required_fields = context.warden.arguments(parent_type)
           .select{|arg| arg.type.kind.non_null?}
-          .map(&:graphql_name)
+          .map!(&:graphql_name)
 
         present_fields = ast_node.arguments.map(&:name)
         missing_fields = required_fields - present_fields
