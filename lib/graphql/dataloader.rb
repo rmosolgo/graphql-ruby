@@ -243,9 +243,12 @@ module GraphQL
     private
 
     def use_fiber_resume?
-      (defined?(::DummyScheduler) && Fiber.scheduler.is_a?(::DummyScheduler)) ||
-        (defined?(::Evt) && ::Evt::Scheduler.singleton_class::BACKENDS.any? { |be| Fiber.scheduler.is_a?(be) }) ||
-        (defined?(::Libev) && Fiber.scheduler.is_a?(::Libev::Scheduler))
+      Fiber.respond_to?(:scheduler) &&
+        (
+          (defined?(::DummyScheduler) && Fiber.scheduler.is_a?(::DummyScheduler)) ||
+          (defined?(::Evt) && ::Evt::Scheduler.singleton_class::BACKENDS.any? { |be| Fiber.scheduler.is_a?(be) }) ||
+          (defined?(::Libev) && Fiber.scheduler.is_a?(::Libev::Scheduler))
+        )
     end
 
     def spawn_job_fiber
