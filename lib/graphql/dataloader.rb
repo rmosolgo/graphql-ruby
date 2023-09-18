@@ -176,16 +176,11 @@ module GraphQL
                   end
                 end
               end
-              Fiber.scheduler&.run
-              source_fibers.concat(next_source_fibers)
-              next_source_fibers.clear
-
+              join_queues(source_fibers, next_source_fibers)
               any_pending_sources = @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
             end
           end
-          Fiber.scheduler&.run
-          job_fibers.concat(next_job_fibers)
-          next_job_fibers.clear
+          join_queues(job_fibers, next_job_fibers)
         end
       end
 
@@ -241,6 +236,12 @@ module GraphQL
     end
 
     private
+
+    def join_queues(prev_queue, new_queue)
+      @nonblocking && Fiber.scheduler.run
+      prev_queue.concat(new_queue)
+      new_queue.clear
+    end
 
     def use_fiber_resume?
       Fiber.respond_to?(:scheduler) &&
