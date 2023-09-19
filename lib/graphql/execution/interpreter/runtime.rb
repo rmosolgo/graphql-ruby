@@ -124,7 +124,7 @@ module GraphQL
               when GraphQLResultArray
                 # There's no special handling of arrays because currently, there's no way to split the execution
                 # of a list over several concurrent flows.
-                next_result.set_child_result(key, value)
+                into_result.set_child_result(key, value)
               else
                 # We have to assume that, since this passed the `fields_will_merge` selection,
                 # that the old and new values are the same.
