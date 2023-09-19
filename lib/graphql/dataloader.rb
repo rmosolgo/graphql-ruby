@@ -203,9 +203,7 @@ module GraphQL
       parent_fiber = use_fiber_resume? ? nil : Fiber.current
       Fiber.new(blocking: !@nonblocking) {
         set_fiber_state(st)
-        if parent_fiber
-          Thread.current[:parent_fiber] = parent_fiber
-        end
+        Thread.current[:parent_fiber] = parent_fiber
         yield
         # With `.transfer`, you have to explicitly pass back to the parent --
         # if the fiber is allowed to terminate normally, control is passed to the main fiber instead.
