@@ -1247,8 +1247,6 @@ describe GraphQL::Dataloader do
     end
 
     it "sets the parent thread locals in the execution fiber" do
-      Thread.current[:test_thread_var] = 'foobarbaz'
-
       result = CustomThreadVariable::Schema.execute(<<-GRAPHQL)
       {
         threadVar(key: "test_thread_var") {
