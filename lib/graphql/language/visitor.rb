@@ -31,11 +31,6 @@ module GraphQL
     #   visitor.count
     #   # => 3
     class Visitor
-      # If any hook returns this value, the {Visitor} stops visiting this
-      # node right away
-      # @deprecated Use `super` to continue the visit; or don't call it to halt.
-      SKIP = :_skip
-
       class DeleteNode; end
 
       # When this is returned from a visitor method,
@@ -44,25 +39,13 @@ module GraphQL
 
       def initialize(document)
         @document = document
-        @visitors = {}
         @result = nil
       end
 
       # @return [GraphQL::Language::Nodes::Document] The document with any modifications applied
       attr_reader :result
 
-      # Get a {NodeVisitor} for `node_class`
-      # @param node_class [Class] The node class that you want to listen to
-      # @return [NodeVisitor]
-      #
-      # @example Run a hook whenever you enter a new Field
-      #   visitor[GraphQL::Language::Nodes::Field] << ->(node, parent) { p "Here's a field" }
-      # @deprecated see `on_` methods, like {#on_field}
-      def [](node_class)
-        @visitors[node_class] ||= NodeVisitor.new
-      end
-
-      # Visit `document` and all children, applying hooks as you go
+      # Visit `document` and all children
       # @return [void]
       def visit
         # `@document` may be any kind of node:
@@ -88,7 +71,6 @@ module GraphQL
           # To customize this hook, override one of its make_visit_methods (or the base method?)
           # in your subclasses.
           #
-          # For compatibility, it calls hook procs, too.
           # @param node [GraphQL::Language::Nodes::AbstractNode] the node being visited
           # @param parent [GraphQL::Language::Nodes::AbstractNode, nil] the previously-visited node, or `nil` if this is the root node.
           # @return [Array, nil] If there were modifications, it returns an array of new nodes, otherwise, it returns `nil`.
@@ -98,29 +80,24 @@ module GraphQL
               # by a user hook, don't want to keep visiting in that case.
               [node, parent]
             else
-              # Run hooks if there are any
               new_node = node
-              no_hooks = !@visitors.key?(node.class)
-              if no_hooks || begin_visit(new_node, parent)
-                #{
-                  if method_defined?(child_visit_method)
-                    "new_node = #{child_visit_method}(new_node)"
-                  elsif children_of_type
-                    children_of_type.map do |child_accessor, child_class|
-                      "node.#{child_accessor}.each do |child_node|
-                        new_child_and_node = #{child_class.visit_method}_with_modifications(child_node, new_node)
-                        # Reassign `node` in case the child hook makes a modification
-                        if new_child_and_node.is_a?(Array)
-                          new_node = new_child_and_node[1]
-                        end
-                      end"
-                    end.join("\n")
-                  else
-                    ""
-                  end
-                }
-              end
-              end_visit(new_node, parent) unless no_hooks
+              #{
+                if method_defined?(child_visit_method)
+                  "new_node = #{child_visit_method}(new_node)"
+                elsif children_of_type
+                  children_of_type.map do |child_accessor, child_class|
+                    "node.#{child_accessor}.each do |child_node|
+                      new_child_and_node = #{child_class.visit_method}_with_modifications(child_node, new_node)
+                      # Reassign `node` in case the child hook makes a modification
+                      if new_child_and_node.is_a?(Array)
+                        new_node = new_child_and_node[1]
+                      end
+                    end"
+                  end.join("\n")
+                else
+                  ""
+                end
+              }
 
               if new_node.equal?(node)
                 [node, parent]
@@ -303,46 +280,6 @@ module GraphQL
           # In fact, the hook might have returned who-knows-what, so
           # ignore the return value and use the original values.
           new_node_and_new_parent
-        end
-      end
-
-      def begin_visit(node, parent)
-        node_visitor = self[node.class]
-        self.class.apply_hooks(node_visitor.enter, node, parent)
-      end
-
-      # Should global `leave` visitors come first or last?
-      def end_visit(node, parent)
-        node_visitor = self[node.class]
-        self.class.apply_hooks(node_visitor.leave, node, parent)
-      end
-
-      # If one of the visitors returns SKIP, stop visiting this node
-      def self.apply_hooks(hooks, node, parent)
-        hooks.each do |proc|
-          return false if proc.call(node, parent) == SKIP
-        end
-        true
-      end
-
-      # Collect `enter` and `leave` hooks for classes in {GraphQL::Language::Nodes}
-      #
-      # Access {NodeVisitor}s via {GraphQL::Language::Visitor#[]}
-      class NodeVisitor
-        # @return [Array<Proc>] Hooks to call when entering a node of this type
-        attr_reader :enter
-        # @return [Array<Proc>] Hooks to call when leaving a node of this type
-        attr_reader :leave
-
-        def initialize
-          @enter = []
-          @leave = []
-        end
-
-        # Shorthand to add a hook to the {#enter} array
-        # @param hook [Proc] A hook to add
-        def <<(hook)
-          enter << hook
         end
       end
     end

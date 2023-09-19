@@ -33,7 +33,6 @@ Development/ContextIsPassedCop:
     - 'lib/graphql/schema/possible_types.rb'
     - 'lib/graphql/schema/validation.rb'
     - 'lib/graphql/compatibility/**/*'
-    - 'lib/graphql/static_validation/type_stack.rb'
     - 'lib/graphql/static_validation/literal_validator.rb'
     - 'lib/graphql/static_validation/rules/**/*.rb'
     - 'lib/graphql/internal_representation/**/*.rb'

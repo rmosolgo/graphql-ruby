@@ -28,14 +28,19 @@ module GraphQL
       def resolve_with_support(**args)
         result = nil
         unsubscribed = true
-        catch :graphql_subscription_unsubscribed do
+        unsubscribed_result = catch :graphql_subscription_unsubscribed do
           result = super
           unsubscribed = false
         end
 
 
         if unsubscribed
-          context.skip
+          if unsubscribed_result
+            context.namespace(:subscriptions)[:final_update] = true
+            unsubscribed_result
+          else
+            context.skip
+          end
         else
           result
         end
@@ -94,9 +99,11 @@ module GraphQL
       end
 
       # Call this to halt execution and remove this subscription from the system
-      def unsubscribe
+      # @param update_value [Object] if present, deliver this update before unsubscribing
+      # @return [void]
+      def unsubscribe(update_value = nil)
         context.namespace(:subscriptions)[:unsubscribed] = true
-        throw :graphql_subscription_unsubscribed
+        throw :graphql_subscription_unsubscribed, update_value
       end
 
       READING_SCOPE = ::Object.new

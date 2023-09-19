@@ -19,12 +19,27 @@ field :name, String, "The unique name of this list", null: false
 
 The different elements of field definition are addressed below:
 
+- [Names](#field-names) identify the field in GraphQL
 - [Return types](#field-return-type) say what kind of data this field returns
 - [Documentation](#field-documentation) includes description and deprecation notes
 - [Resolution behavior](#field-resolution) hooks up Ruby code to the GraphQL field
 - [Arguments](#field-arguments) allow fields to take input when they're queried
 - [Extra field metadata](#extra-field-metadata) for low-level access to the GraphQL-Ruby runtime
 - [Add default values for field parameters](#field-parameter-default-values)
+
+## Field Names
+
+A field's name is provided as the first argument or as the `name:` option:
+
+```ruby
+field :team_captain, ...
+# or:
+field ..., name: :team_captain
+```
+
+Under the hood, GraphQL-Ruby **camelizes** field names, so `field :team_captain, ...` would be `{ teamCaptain }` in GraphQL. You can disable this behavior by adding `camelize: false` to your field definition or to the [default field options](#field-parameter-default-values).
+
+The field's name is also used as the basis of [field resolution](#field-resolution).
 
 ## Field Return Type
 

@@ -111,7 +111,7 @@ module GraphQL
         # that required fields are missing
         required_field_names = @warden.arguments(type)
           .select { |argument| argument.type.kind.non_null? && @warden.get_argument(type, argument.name) }
-          .map(&:name)
+          .map!(&:name)
 
         present_field_names = ast_node.arguments.map(&:name)
         missing_required_field_names = required_field_names - present_field_names

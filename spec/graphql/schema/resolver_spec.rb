@@ -184,6 +184,18 @@ describe GraphQL::Schema::Resolver do
       end
     end
 
+    class ResolverWithFalseyValueReady < BaseResolver
+      type Boolean, null: true
+
+      def ready?
+        return false, false
+      end
+
+      def resolve
+        true
+      end
+    end
+
     class ResolverWithInvalidReady < GraphQL::Schema::Mutation
       argument :int, Integer
       field :int, Integer
@@ -314,6 +326,18 @@ describe GraphQL::Schema::Resolver do
     class PrepResolver11 < PrepResolver10
       def authorized?(int1:, integer_2:)
         LazyBlock.new { super(int1: int1 * 2, integer_2: integer_2) }
+      end
+    end
+
+    class ResolverWithFalseyValueAuthorized < BaseResolver
+      type Boolean, null: true
+
+      def authorized?
+        return false, false
+      end
+
+      def resolve
+        true
       end
     end
 
@@ -451,6 +475,8 @@ describe GraphQL::Schema::Resolver do
       field :prep_resolver_12, resolver: PrepResolver12
       field :prep_resolver_13, resolver: PrepResolver13
       field :prep_resolver_14, resolver: PrepResolver14
+      field :resolver_with_falsey_value_ready, resolver: ResolverWithFalseyValueReady
+      field :resolver_with_falsey_value_authorized, resolver: ResolverWithFalseyValueAuthorized
       field :resolver_with_auth_args, resolver: ResolverWithAuthArgs
       field :resolver_with_error_handler, resolver: ResolverWithErrorHandler
     end
@@ -655,6 +681,12 @@ describe GraphQL::Schema::Resolver do
         assert_equal 213, res["data"]["int"]["int"]
       end
 
+      it "can return false and falsey data" do
+        res = exec_query("{ result: resolverWithFalseyValueReady }")
+        assert_equal false, res["data"]["result"] # must be `false`, not just falsey
+        assert_nil res["errors"]
+      end
+
       it 'raises the correct error on invalid return type' do
         err = assert_raises(RuntimeError) do
           exec_query("mutation { resolverWithInvalidReady(int: 2) { int } }")
@@ -717,6 +749,12 @@ describe GraphQL::Schema::Resolver do
           # This works
           res = exec_query("{ prepResolver12(int1: 2, int2: 5) { value } }", context: { max_int: 9 })
           assert_equal 7, res["data"]["prepResolver12"]["value"]
+        end
+
+        it "can return falsey data early" do
+          res = exec_query("{ result: resolverWithFalseyValueAuthorized }")
+          assert_equal false, res["data"]["result"] # must be actual `false`, not just a falsey `nil`
+          assert_nil res["errors"]
         end
 
         it "can return data early in a promise" do

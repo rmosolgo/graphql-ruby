@@ -92,7 +92,7 @@ module GraphQL
       # @param resolver [Class] A {GraphQL::Schema::Resolver} class to use for field configuration
       # @param mutation [Class] A {GraphQL::Schema::Mutation} class to use for field configuration
       # @param subscription [Class] A {GraphQL::Schema::Subscription} class to use for field configuration
-      # @return [GraphQL::Schema:Field] an instance of `self
+      # @return [GraphQL::Schema:Field] an instance of `self`
       # @see {.initialize} for other options
       def self.from_options(name = nil, type = nil, desc = nil, resolver: nil, mutation: nil, subscription: nil,**kwargs, &block)
         if (resolver_class = resolver || mutation || subscription)
@@ -218,8 +218,8 @@ module GraphQL
       # @param ast_node [Language::Nodes::FieldDefinition, nil] If this schema was parsed from definition, this AST node defined the field
       # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
       # @param validates [Array<Hash>] Configurations for validating this field
-      # @fallback_value [Object] A fallback value if the method is not defined
-      def initialize(type: nil, name: nil, owner: nil, null: nil, description: NOT_CONFIGURED, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: NOT_CONFIGURED, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: NOT_CONFIGURED, &definition_block)
+      # @param fallback_value [Object] A fallback value if the method is not defined
+      def initialize(type: nil, name: nil, owner: nil, null: nil, description: NOT_CONFIGURED, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: NOT_CONFIGURED, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: NOT_CONFIGURED, dynamic_introspection: false, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -267,6 +267,7 @@ module GraphQL
         @method_sym = method_name.to_sym
         @resolver_method = (resolver_method || name_s).to_sym
         @complexity = complexity
+        @dynamic_introspection = dynamic_introspection
         @return_type_expr = type
         @return_type_null = if !null.nil?
           null
@@ -350,6 +351,8 @@ module GraphQL
         self.extensions.each(&:after_define_apply)
         @call_after_define = true
       end
+
+      attr_accessor :dynamic_introspection
 
       # If true, subscription updates with this field can be shared between viewers
       # @return [Boolean, nil]
@@ -659,7 +662,7 @@ module GraphQL
         method_to_call = nil
         method_args = nil
 
-        Schema::Validator.validate!(validators, application_object, query_ctx, args)
+        @own_validators && Schema::Validator.validate!(validators, application_object, query_ctx, args)
 
         query_ctx.query.after_lazy(self.authorized?(application_object, args, query_ctx)) do |is_authorized|
           if is_authorized
