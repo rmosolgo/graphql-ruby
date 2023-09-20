@@ -1730,4 +1730,38 @@ type ReachableType implements Node {
       assert_equal [nil, nil], res_4.context[:nils]
     end
   end
+
+  focus
+  it "works with extensions" do
+    schema_sdl = <<~EOS
+    schema {
+      query: CustomQuery
+    }
+
+
+    type CustomQuery {
+      something: Int
+    }
+
+    extend type CustomQuery {
+      somethingElse: Float
+    }
+
+    scalar link__Import
+
+    enum link__Purpose {
+      EXECUTION
+      SECURITY
+    }
+
+    directive @link(as: String, for: link__Purpose, import: [link__Import], url: String!) repeatable on SCHEMA
+
+    extend schema
+      @link(import: ["@key", "@shareable"], url: "https://specs.apollo.dev/federation/v2.0")
+
+    EOS
+
+    schema = GraphQL::Schema.from_definition(schema_sdl)
+    assert_equal schema_sdl, schema.to_definition
+  end
 end

@@ -203,6 +203,19 @@ module GraphQL
             build_scalar_type(definition, type_resolver, default_resolve: default_resolve)
           when GraphQL::Language::Nodes::InputObjectTypeDefinition
             build_input_object_type(definition, type_resolver)
+
+          when GraphQL::Language::Nodes::EnumTypeExtension
+            extend_enum_type(definition, type_resolver)
+          when GraphQL::Language::Nodes::ObjectTypeExtension
+            extend_object_type(definition, type_resolver)
+          when GraphQL::Language::Nodes::InterfaceTypeExtension
+            extend_interface_type(definition, type_resolver)
+          when GraphQL::Language::Nodes::UnionTypeExtension
+            extend_union_type(definition, type_resolver)
+          when GraphQL::Language::Nodes::ScalarTypeExtension
+            extend_scalar_type(definition, type_resolver, default_resolve: default_resolve)
+          when GraphQL::Language::Nodes::InputObjectTypeExtension
+            extend_input_object_type(definition, type_resolver)
           end
         end
 
