@@ -125,7 +125,6 @@ describe "Trace modes for schemas" do
     end
 
     class ChildCustomDefaultSchema < CustomDefaultSchema
-      trace_mode :custom_default, CustomDefaultTrace
     end
 
     it "inherits configuration" do
