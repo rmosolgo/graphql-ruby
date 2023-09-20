@@ -145,6 +145,19 @@ module GraphQL
         @subscriptions = new_implementation
       end
 
+      # @param new_mode [Symbol] If configured, this will be used when `context: { trace_mode: ... }` isn't set.
+      def default_trace_mode(new_mode = nil)
+        if new_mode
+          @default_trace_mode = new_mode
+        elsif defined?(@default_trace_mode)
+          @default_trace_mode
+        elsif superclass.respond_to?(:default_trace_mode)
+          superclass.default_trace_mode
+        else
+          :default
+        end
+      end
+
       def trace_class(new_class = nil)
         if new_class
           trace_mode(:default, new_class)
@@ -182,7 +195,7 @@ module GraphQL
       end
 
       # Configure `trace_class` to be used whenever `context: { trace_mode: mode_name }` is requested.
-      # `:default` is used when no `trace_mode: ...` is requested.
+      # {default_trace_mode} is used when no `trace_mode: ...` is requested.
       # @param mode_name [Symbol]
       # @param trace_class [Class] subclass of GraphQL::Tracing::Trace
       # @return void
@@ -1032,6 +1045,8 @@ module GraphQL
 
       # Create a trace instance which will include the trace modules specified for the optional mode.
       #
+      # If no `mode:` is given, then {default_trace_mode} will be used.
+      #
       # @param mode [Symbol] Trace modules for this trade mode will be included
       # @param options [Hash] Keywords that will be passed to the tracing class during `#initialize`
       # @return [Tracing::Trace]
@@ -1042,9 +1057,13 @@ module GraphQL
         trace_mode = if mode
           mode
         elsif target && target.context[:backtrace]
-          :default_backtrace
+          if default_trace_mode != :default
+            raise ArgumentError, "Can't use `context[:backtrace]` with a custom default trace mode (`#{dm.inspect}`)"
+          else
+            :default_backtrace
+          end
         else
-          :default
+          default_trace_mode
         end
 
         base_trace_options = trace_options_for(trace_mode)

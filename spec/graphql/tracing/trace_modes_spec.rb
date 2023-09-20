@@ -64,7 +64,7 @@ describe "Trace modes for schemas" do
     end
   end
 
-  it "traces are inherited from default modes and from superclass settings for special modes" do
+  it "traces are inherited from default modes" do
     res = TraceModesTest::ParentSchema.execute("{ greeting }")
     assert res.context[:global_trace]
     refute res.context[:grandchild_default]
@@ -76,8 +76,9 @@ describe "Trace modes for schemas" do
     res = TraceModesTest::GrandchildSchema.execute("{ greeting }")
     assert res.context[:global_trace]
     assert res.context[:grandchild_default]
+  end
 
-
+  it "inherits special modes" do
     res = TraceModesTest::ParentSchema.execute("{ greeting }", context: { trace_mode: :special })
     assert res.context[:global_trace]
     assert res.context[:special_trace]
@@ -107,5 +108,40 @@ describe "Trace modes for schemas" do
   it "Only requires and passes arguments for the modes that require them" do
     res = TraceModesTest::ParentSchema.execute("{ greeting }", context: { trace_mode: :options })
     assert_equal :was_configured, res.context[:configured_option]
+  end
+
+
+  describe "custom default trace mode" do
+    class CustomDefaultSchema < TraceModesTest::ParentSchema
+      class CustomDefaultTrace < GraphQL::Tracing::Trace
+        def execute_query(query:)
+          query.context[:custom_default_used] = true
+          super
+        end
+      end
+
+      trace_mode :custom_default, CustomDefaultTrace
+      default_trace_mode :custom_default
+    end
+
+    class ChildCustomDefaultSchema < CustomDefaultSchema
+      trace_mode :custom_default, CustomDefaultTrace
+    end
+
+    it "inherits configuration" do
+      assert_equal :default, TraceModesTest::ParentSchema.default_trace_mode
+      assert_equal :custom_default, CustomDefaultSchema.default_trace_mode
+      assert_equal :custom_default, ChildCustomDefaultSchema.default_trace_mode
+    end
+
+    it "uses the specified default when none is given" do
+      res = CustomDefaultSchema.execute("{ greeting }")
+      assert res.context[:custom_default_used]
+      refute res.context[:global_trace]
+
+      res2 = ChildCustomDefaultSchema.execute("{ greeting }")
+      assert res2.context[:custom_default_used]
+      refute res2.context[:global_trace]
+    end
   end
 end
