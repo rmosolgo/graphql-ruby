@@ -171,7 +171,7 @@ module GraphQL
       # @return [Class] Return the trace class to use for this mode, looking one up on the superclass if this Schema doesn't have one defined.
       def trace_class_for(mode, build: false)
         own_trace_modes[mode] ||
-          (superclass.respond_to?(:trace_class_for) && superclass.trace_class_for(mode))
+          (superclass.respond_to?(:trace_class_for) ? superclass.trace_class_for(mode) : nil)
       end
 
       # Configure `trace_class` to be used whenever `context: { trace_mode: mode_name }` is requested.
@@ -902,6 +902,7 @@ module GraphQL
 
       def inherited(child_class)
         if self == GraphQL::Schema
+          child_class.own_trace_modes[:default] = child_class.build_trace_mode(:default)
           child_class.directives(default_directives.values)
         end
         # Make sure the child class has these built out, so that
@@ -1026,7 +1027,8 @@ module GraphQL
       end
 
       def tracer(new_tracer)
-        if !(trace_class_for(:default) < GraphQL::Tracing::CallLegacyTracers)
+        default_trace = trace_class_for(:default)
+        if default_trace.nil? || !(default_trace < GraphQL::Tracing::CallLegacyTracers)
           trace_with(GraphQL::Tracing::CallLegacyTracers)
         end
 
@@ -1099,6 +1101,7 @@ module GraphQL
           if default_trace_mode != :default
             raise ArgumentError, "Can't use `context[:backtrace]` with a custom default trace mode (`#{dm.inspect}`)"
           else
+            own_trace_modes[:default_backtrace] ||= build_trace_mode(:default_backtrace)
             :default_backtrace
           end
         else
@@ -1107,7 +1110,7 @@ module GraphQL
 
         base_trace_options = trace_options_for(trace_mode)
         trace_options = base_trace_options.merge(options)
-        trace_class_for_mode = trace_class_for(trace_mode)
+        trace_class_for_mode = trace_class_for(trace_mode) || raise(ArgumentError, "#{self} has no trace class for mode: #{trace_mode.inspect}")
         trace_class_for_mode.new(**trace_options)
       end
 
