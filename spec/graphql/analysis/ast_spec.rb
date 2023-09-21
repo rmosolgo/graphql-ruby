@@ -59,6 +59,25 @@ describe GraphQL::Analysis::AST do
     end
   end
 
+  class AstPrecomputedAnalyzer < GraphQL::Analysis::AST::Analyzer
+    def initialize(query)
+      super
+      @i_have_been_visited = false
+    end
+
+    def visit?
+      query.context[:precomputed_result].nil?
+    end
+
+    def on_enter_field(node, parent, visitor)
+      @i_have_been_visited = true
+    end
+
+    def result
+      return query.context[:precomputed_result], @i_have_been_visited
+    end
+  end
+
   class AstErrorAnalyzer < GraphQL::Analysis::AST::Analyzer
     def result
       GraphQL::AnalysisError.new("An Error!")
@@ -189,6 +208,26 @@ describe GraphQL::Analysis::AST do
           argument, prev_argument = reduce_result.first
           assert_equal "DairyProductInput.source", argument.path
           assert_equal "Query.searchDairy.product", prev_argument.path
+        end
+      end
+    end
+
+    describe "precomputed analysis" do
+      let(:analyzers) { [AstPrecomputedAnalyzer] }
+
+      describe "when visit? returns true" do
+        let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables, context: {}) }
+
+        it "runs the analyzer with visitation" do
+          assert_equal [nil, true], reduce_result.first
+        end
+      end
+
+      describe "when visit? returns false" do
+        let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables, context: { precomputed_result: 23 }) }
+
+        it "runs the analyzer without visitation" do
+          assert_equal [23, false], reduce_result.first
         end
       end
     end
