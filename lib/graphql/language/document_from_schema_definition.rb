@@ -52,8 +52,12 @@ module GraphQL
             mutation: (m = warden.root_type_for_operation("mutation")) && m.graphql_name,
             subscription: (s = warden.root_type_for_operation("subscription")) && s.graphql_name,
           })
+          GraphQL::Language::Nodes::SchemaDefinition.new(schema_options)
+        else
+          # A plain `schema ...` _must_ include root type definitions.
+          # If the only difference is directives, then you have to use `extend schema`
+          GraphQL::Language::Nodes::SchemaExtension.new(schema_options)
         end
-        GraphQL::Language::Nodes::SchemaDefinition.new(schema_options)
       end
 
       def build_object_type_node(object_type)
