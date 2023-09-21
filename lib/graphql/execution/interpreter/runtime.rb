@@ -15,10 +15,11 @@ module GraphQL
             @current_arguments = nil
             @current_result_name = nil
             @current_result = nil
+            @was_authorized_by_scope_items = nil
           end
 
           attr_accessor :current_result, :current_result_name,
-            :current_arguments, :current_field, :current_object
+            :current_arguments, :current_field, :current_object, :was_authorized_by_scope_items
         end
 
         module GraphQLResult
@@ -124,7 +125,7 @@ module GraphQL
               when GraphQLResultArray
                 # There's no special handling of arrays because currently, there's no way to split the execution
                 # of a list over several concurrent flows.
-                next_result.set_child_result(key, value)
+                into_result.set_child_result(key, value)
               else
                 # We have to assume that, since this passed the `fields_will_merge` selection,
                 # that the old and new values are the same.
@@ -208,15 +209,16 @@ module GraphQL
               @runtime_directive_names << name
             end
           end
-          # A cache of { Class => { String => Schema::Field } }
-          # Which assumes that MyObject.get_field("myField") will return the same field
-          # during the lifetime of a query
-          @fields_cache = Hash.new { |h, k| h[k] = {} }
-          # this can by by-identity since owners are the same object, but not the sub-hash, which uses strings.
-          @fields_cache.compare_by_identity
           # { Class => Boolean }
           @lazy_cache = {}
           @lazy_cache.compare_by_identity
+
+          @gathered_selections_cache = Hash.new { |h, k|
+            cache = {}
+            cache.compare_by_identity
+            h[k] = cache
+          }
+          @gathered_selections_cache.compare_by_identity
         end
 
         def final_result
@@ -244,6 +246,7 @@ module GraphQL
           root_operation = query.selected_operation
           root_op_type = root_operation.operation_type || "query"
           root_type = schema.root_type_for_operation(root_op_type)
+
           st = get_current_runtime_state
           st.current_object = query.root_value
           st.current_result = @response
@@ -255,7 +258,7 @@ module GraphQL
             @response = nil
           else
             call_method_on_directives(:resolve, runtime_object, root_operation.directives) do # execute query level directives
-              gathered_selections = gather_selections(runtime_object, root_type, root_operation.selections)
+              gathered_selections = gather_selections(runtime_object, root_type, nil, root_operation.selections)
               # This is kind of a hack -- `gathered_selections` is an Array if any of the selections
               # require isolation during execution (because of runtime directives). In that case,
               # make a new, isolated result hash for writing the result into. (That isolated response
@@ -299,10 +302,18 @@ module GraphQL
           nil
         end
 
-        def gather_selections(owner_object, owner_type, selections, selections_to_run = nil, selections_by_name = {})
+        def gather_selections(owner_object, owner_type, ast_node_for_caching, selections, selections_to_run = nil, selections_by_name = nil)
+          if ast_node_for_caching && (cached_selections = @gathered_selections_cache[ast_node_for_caching][owner_type])
+            return cached_selections
+          end
+          selections_by_name ||= {} # allocate this default here so we check the cache first
+
+          should_cache = true
+
           selections.each do |node|
             # Skip gathering this if the directive says so
             if !directives_include?(node, owner_object, owner_type)
+              should_cache = false
               next
             end
 
@@ -327,6 +338,7 @@ module GraphQL
               if @runtime_directive_names.any? && node.directives.any? { |d| @runtime_directive_names.include?(d.name) }
                 next_selections = {}
                 next_selections[:graphql_directives] = node.directives
+                should_cache = false
                 if selections_to_run
                   selections_to_run << next_selections
                 else
@@ -344,24 +356,28 @@ module GraphQL
                   type_defn = schema.get_type(node.type.name, context)
 
                   if query.warden.possible_types(type_defn).include?(owner_type)
-                    gather_selections(owner_object, owner_type, node.selections, selections_to_run, next_selections)
+                    gather_selections(owner_object, owner_type, nil, node.selections, selections_to_run, next_selections)
                   end
                 else
                   # it's an untyped fragment, definitely continue
-                  gather_selections(owner_object, owner_type, node.selections, selections_to_run, next_selections)
+                  gather_selections(owner_object, owner_type, nil, node.selections, selections_to_run, next_selections)
                 end
               when GraphQL::Language::Nodes::FragmentSpread
                 fragment_def = query.fragments[node.name]
                 type_defn = query.get_type(fragment_def.type.name)
                 if query.warden.possible_types(type_defn).include?(owner_type)
-                  gather_selections(owner_object, owner_type, fragment_def.selections, selections_to_run, next_selections)
+                  gather_selections(owner_object, owner_type, nil, fragment_def.selections, selections_to_run, next_selections)
                 end
               else
                 raise "Invariant: unexpected selection class: #{node.class}"
               end
             end
           end
-          selections_to_run || selections_by_name
+          result = selections_to_run || selections_by_name
+          if should_cache
+            @gathered_selections_cache[ast_node_for_caching][owner_type] = result
+          end
+          result
         end
 
         NO_ARGS = GraphQL::EmptyObjects::EMPTY_HASH
@@ -389,7 +405,9 @@ module GraphQL
             # so it wouldn't get to the `Resolve` call that happens below.
             # So instead trigger a run from this outer context.
             if is_eager_selection
+              @dataloader.clear_cache
               @dataloader.run
+              @dataloader.clear_cache
             end
           end
 
@@ -410,57 +428,38 @@ module GraphQL
             ast_node = field_ast_nodes_or_ast_node
           end
           field_name = ast_node.name
-          # This can't use `query.get_field` because it gets confused on introspection below if `field_defn` isn't `nil`,
-          # because of how `is_introspection` is used to call `.authorized_new` later on.
-          field_defn = @fields_cache[owner_type][field_name] ||= owner_type.get_field(field_name, @context)
-          is_introspection = false
-          if field_defn.nil?
-            field_defn = if owner_type == schema.query && (entry_point_field = schema.introspection_system.entry_point(name: field_name))
-              is_introspection = true
-              entry_point_field
-            elsif (dynamic_field = schema.introspection_system.dynamic_field(name: field_name))
-              is_introspection = true
-              dynamic_field
-            else
-              raise "Invariant: no field for #{owner_type}.#{field_name}"
-            end
-          end
+          field_defn = query.warden.get_field(owner_type, field_name)
 
-          return_type = field_defn.type
-
-          # This seems janky, but we need to know
-          # the field's return type at this path in order
-          # to propagate `null`
-          return_type_non_null = return_type.non_null?
           # Set this before calling `run_with_directives`, so that the directive can have the latest path
           st = get_current_runtime_state
           st.current_field = field_defn
           st.current_result = selections_result
           st.current_result_name = result_name
 
-          if is_introspection
+          if field_defn.dynamic_introspection
             owner_object = field_defn.owner.wrap(owner_object, context)
           end
 
-          total_args_count = field_defn.arguments(context).size
-          if total_args_count == 0
+          return_type = field_defn.type
+          if !field_defn.any_arguments?
             resolved_arguments = GraphQL::Execution::Interpreter::Arguments::EMPTY
             if field_defn.extras.size == 0
               evaluate_selection_with_resolved_keyword_args(
-                NO_ARGS, resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, owner_object, is_eager_field, result_name, selections_result, parent_object, return_type, return_type_non_null
+                NO_ARGS, resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, owner_object, is_eager_field, result_name, selections_result, parent_object, return_type, return_type.non_null?
               )
             else
-              evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, owner_object, is_eager_field, result_name, selections_result, parent_object, return_type, return_type_non_null)
+              evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, owner_object, is_eager_field, result_name, selections_result, parent_object, return_type)
             end
           else
             @query.arguments_cache.dataload_for(ast_node, field_defn, owner_object) do |resolved_arguments|
-              evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, owner_object, is_eager_field, result_name, selections_result, parent_object, return_type, return_type_non_null)
+              evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_type, owner_object, is_eager_field, result_name, selections_result, parent_object, return_type)
             end
           end
         end
 
-        def evaluate_selection_with_args(arguments, field_defn, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selection_result, parent_object, return_type, return_type_non_null)  # rubocop:disable Metrics/ParameterLists
+        def evaluate_selection_with_args(arguments, field_defn, ast_node, field_ast_nodes, owner_type, object, is_eager_field, result_name, selection_result, parent_object, return_type)  # rubocop:disable Metrics/ParameterLists
           after_lazy(arguments, field: field_defn, ast_node: ast_node, owner_object: object, arguments: arguments, result_name: result_name, result: selection_result) do |resolved_arguments|
+            return_type_non_null = return_type.non_null?
             if resolved_arguments.is_a?(GraphQL::ExecutionError) || resolved_arguments.is_a?(GraphQL::UnauthorizedError)
               continue_value(resolved_arguments, owner_type, field_defn, return_type_non_null, ast_node, result_name, selection_result)
               next
@@ -553,7 +552,10 @@ module GraphQL
             after_lazy(app_result, field: field_defn, ast_node: ast_node, owner_object: object, arguments: resolved_arguments, result_name: result_name, result: selection_result) do |inner_result|
               continue_value = continue_value(inner_result, owner_type, field_defn, return_type_non_null, ast_node, result_name, selection_result)
               if HALT != continue_value
-                continue_field(continue_value, owner_type, field_defn, return_type, ast_node, next_selections, false, object, resolved_arguments, result_name, selection_result)
+                st = get_current_runtime_state
+                was_scoped = st.was_authorized_by_scope_items
+                st.was_authorized_by_scope_items = nil
+                continue_field(continue_value, owner_type, field_defn, return_type, ast_node, next_selections, false, object, resolved_arguments, result_name, selection_result, was_scoped)
               end
             end
           end
@@ -733,7 +735,7 @@ module GraphQL
         # Location information from `path` and `ast_node`.
         #
         # @return [Lazy, Array, Hash, Object] Lazy, Array, and Hash are all traversed to resolve lazy values later
-        def continue_field(value, owner_type, field, current_type, ast_node, next_selections, is_non_null, owner_object, arguments, result_name, selection_result) # rubocop:disable Metrics/ParameterLists
+        def continue_field(value, owner_type, field, current_type, ast_node, next_selections, is_non_null, owner_object, arguments, result_name, selection_result, was_scoped) # rubocop:disable Metrics/ParameterLists
           if current_type.non_null?
             current_type = current_type.of_type
             is_non_null = true
@@ -767,12 +769,12 @@ module GraphQL
                 set_result(selection_result, result_name, nil, false, is_non_null)
                 nil
               else
-                continue_field(resolved_value, owner_type, field, resolved_type, ast_node, next_selections, is_non_null, owner_object, arguments, result_name, selection_result)
+                continue_field(resolved_value, owner_type, field, resolved_type, ast_node, next_selections, is_non_null, owner_object, arguments, result_name, selection_result, was_scoped)
               end
             end
           when "OBJECT"
             object_proxy = begin
-              current_type.wrap(value, context)
+              was_scoped ? current_type.wrap_scoped(value, context) : current_type.wrap(value, context)
             rescue GraphQL::ExecutionError => err
               err
             end
@@ -781,7 +783,8 @@ module GraphQL
               if HALT != continue_value
                 response_hash = GraphQLResultHash.new(result_name, selection_result, is_non_null)
                 set_result(selection_result, result_name, response_hash, true, is_non_null)
-                gathered_selections = gather_selections(continue_value, current_type, next_selections)
+
+                gathered_selections = gather_selections(continue_value, current_type, ast_node, next_selections)
                 # There are two possibilities for `gathered_selections`:
                 # 1. All selections of this object should be evaluated together (there are no runtime directives modifying execution).
                 #    This case is handled below, and the result can be written right into the main `response_hash` above.
@@ -804,7 +807,6 @@ module GraphQL
                   st.current_object = continue_value
                   st.current_result_name = nil
                   st.current_result = this_result
-
                   # This is a less-frequent case; use a fast check since it's often not there.
                   if (directives = selections[:graphql_directives])
                     selections.delete(:graphql_directives)
@@ -839,10 +841,10 @@ module GraphQL
                 idx += 1
                 if use_dataloader_job
                   @dataloader.append_job do
-                    resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type)
+                    resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type, was_scoped)
                   end
                 else
-                  resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type)
+                  resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type, was_scoped)
                 end
               end
 
@@ -873,7 +875,7 @@ module GraphQL
           end
         end
 
-        def resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type) # rubocop:disable Metrics/ParameterLists
+        def resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type, was_scoped) # rubocop:disable Metrics/ParameterLists
           st = get_current_runtime_state
           st.current_result_name = this_idx
           st.current_result = response_list
@@ -882,7 +884,7 @@ module GraphQL
             after_lazy(inner_value, ast_node: ast_node, field: field, owner_object: owner_object, arguments: arguments, result_name: this_idx, result: response_list) do |inner_inner_value|
               continue_value = continue_value(inner_inner_value, owner_type, field, inner_type_non_null, ast_node, this_idx, response_list)
               if HALT != continue_value
-                continue_field(continue_value, owner_type, field, inner_type, ast_node, next_selections, false, owner_object, arguments, this_idx, response_list)
+                continue_field(continue_value, owner_type, field, inner_type, ast_node, next_selections, false, owner_object, arguments, this_idx, response_list, was_scoped)
               end
             end
           end
@@ -962,6 +964,8 @@ module GraphQL
         def after_lazy(lazy_obj, field:, owner_object:, arguments:, ast_node:, result:, result_name:, eager: false, trace: true, &block)
           if lazy?(lazy_obj)
             orig_result = result
+            st = get_current_runtime_state
+            was_authorized_by_scope_items = st.was_authorized_by_scope_items
             lazy = GraphQL::Execution::Lazy.new(field: field) do
               st = get_current_runtime_state
               st.current_object = owner_object
@@ -969,6 +973,7 @@ module GraphQL
               st.current_arguments = arguments
               st.current_result_name = result_name
               st.current_result = orig_result
+              st.was_authorized_by_scope_items = was_authorized_by_scope_items
               # Wrap the execution of _this_ method with tracing,
               # but don't wrap the continuation below
               inner_obj = begin

@@ -21,8 +21,12 @@ class GraphqlChannel < ActionCable::Channel::Base
     field :new_value, Integer, null: false
 
     def update
-      if object && object.value == "server-unsubscribe"
-        unsubscribe
+      if object
+        if object.value == "server-unsubscribe"
+          unsubscribe
+        elsif object.value == "server-unsubscribe-with-message"
+          unsubscribe({ new_value: 9999 })
+        end
       end
       result = {
         new_value: @@call_count += 1
@@ -83,12 +87,12 @@ class GraphqlChannel < ActionCable::Channel::Base
     }
 
     puts "[GraphQLSchema.execute] #{query} || #{variables}"
-    result = GraphQLSchema.execute({
+    result = GraphQLSchema.execute(
       query: query,
       context: context,
       variables: variables,
       operation_name: operation_name
-    })
+    )
 
     payload = {
       result: result.to_h,

@@ -258,6 +258,12 @@ module GraphQL
             end
             path.pop
           end
+
+          if type.kind.enum?
+            type.all_enum_value_definitions.each do |value_definition|
+              add_directives_from(value_definition)
+            end
+          end
         end
       end
     end

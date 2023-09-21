@@ -161,6 +161,13 @@ module GraphQL
         [*batch_args, **batch_kwargs]
       end
 
+      # Clear any already-loaded objects for this source
+      # @return [void]
+      def clear_cache
+        @results.clear
+        nil
+      end
+
       attr_reader :pending
 
       private

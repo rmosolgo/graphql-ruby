@@ -323,7 +323,7 @@ module GraphQL
         #   @return [String, Float, Integer, Boolean, Array, InputObject, VariableIdentifier] The value passed for this key
 
         def children
-          @children ||= Array(value).flatten.select { |v| v.is_a?(AbstractNode) }
+          @children ||= Array(value).flatten.tap { _1.select! { |v| v.is_a?(AbstractNode) } }
         end
       end
 
@@ -535,7 +535,7 @@ module GraphQL
       # @example Creating a custom string from a document
       #  class VariableScrubber < GraphQL::Language::Printer
       #    def print_argument(arg)
-      #      "#{arg.name}: <HIDDEN>"
+      #      print_string("#{arg.name}: <HIDDEN>")
       #    end
       #  end
       #

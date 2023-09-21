@@ -45,6 +45,8 @@ class GraphQLGeneratorsInstallGeneratorTest < Rails::Generators::TestCase
     end
 
     expected_schema = <<-RUBY
+# frozen_string_literal: true
+
 class DummySchema < GraphQL::Schema
   mutation(Types::MutationType)
   query(Types::QueryType)
@@ -75,6 +77,8 @@ RUBY
     assert_file "app/graphql/dummy_schema.rb", expected_schema
 
     expected_base_mutation = <<-RUBY
+# frozen_string_literal: true
+
 module Mutations
   class BaseMutation < GraphQL::Schema::RelayClassicMutation
     argument_class Types::BaseArgument
@@ -87,6 +91,8 @@ RUBY
     assert_file "app/graphql/mutations/base_mutation.rb", expected_base_mutation
 
     expected_query_type = <<-RUBY
+# frozen_string_literal: true
+
 module Types
   class QueryType < Types::BaseObject
     # Add root-level fields here.
@@ -105,6 +111,8 @@ RUBY
     assert_file "app/graphql/types/query_type.rb", expected_query_type
     assert_file "app/controllers/graphql_controller.rb", EXPECTED_GRAPHQLS_CONTROLLER
     expected_base_field = <<-RUBY
+# frozen_string_literal: true
+
 module Types
   class BaseField < GraphQL::Schema::Field
     argument_class Types::BaseArgument
@@ -114,6 +122,8 @@ RUBY
     assert_file "app/graphql/types/base_field.rb", expected_base_field
 
     expected_base_argument = <<-RUBY
+# frozen_string_literal: true
+
 module Types
   class BaseArgument < GraphQL::Schema::Argument
   end
@@ -122,6 +132,8 @@ RUBY
     assert_file "app/graphql/types/base_argument.rb", expected_base_argument
 
     expected_base_object = <<-RUBY
+# frozen_string_literal: true
+
 module Types
   class BaseObject < GraphQL::Schema::Object
     field_class Types::BaseField
@@ -131,6 +143,8 @@ RUBY
     assert_file "app/graphql/types/base_object.rb", expected_base_object
 
     expected_base_interface = <<-RUBY
+# frozen_string_literal: true
+
 module Types
   module BaseInterface
     include GraphQL::Schema::Interface
@@ -193,11 +207,25 @@ RUBY
       end
 
       expected_query_type = <<-RUBY
+# frozen_string_literal: true
+
 module Types
   class QueryType < Types::BaseObject
-    # Add `node(id: ID!) and `nodes(ids: [ID!]!)`
-    include GraphQL::Types::Relay::HasNodeField
-    include GraphQL::Types::Relay::HasNodesField
+    field :node, Types::NodeType, null: true, description: "Fetches an object given its ID." do
+      argument :id, ID, required: true, description: "ID of the object."
+    end
+
+    def node(id:)
+      context.schema.object_from_id(id, context)
+    end
+
+    field :nodes, [Types::NodeType, null: true], null: true, description: "Fetches a list of objects given a list of IDs." do
+      argument :ids, [ID], required: true, description: "IDs of the objects."
+    end
+
+    def nodes(ids:)
+      ids.map { |id| context.schema.object_from_id(id, context) }
+    end
 
     # Add root-level fields here.
     # They will be entry points for queries on your schema.
@@ -266,6 +294,8 @@ RUBY
   end
 
   EXPECTED_GRAPHQLS_CONTROLLER = <<-'RUBY'
+# frozen_string_literal: true
+
 class GraphqlController < ApplicationController
   # If accessing from outside this domain, nullify the session
   # This allows for outside API access while preventing CSRF attacks,
@@ -318,7 +348,9 @@ class GraphqlController < ApplicationController
 end
 RUBY
 
-  EXPECTED_RELAY_BATCH_SCHEMA = 'class DummySchema < GraphQL::Schema
+  EXPECTED_RELAY_BATCH_SCHEMA = '# frozen_string_literal: true
+
+class DummySchema < GraphQL::Schema
   mutation(Types::MutationType)
   query(Types::QueryType)
 

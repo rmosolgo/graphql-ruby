@@ -37,6 +37,7 @@ require "graphql/schema/directive/skip"
 require "graphql/schema/directive/feature"
 require "graphql/schema/directive/flagged"
 require "graphql/schema/directive/transform"
+require "graphql/schema/directive/specified_by"
 require "graphql/schema/type_membership"
 
 require "graphql/schema/resolver"
@@ -223,7 +224,7 @@ module GraphQL
       # @param include_specified_by_url [Boolean] If true, scalar types' `specifiedByUrl:` will be included in the response
       # @param include_is_one_of [Boolean] If true, `isOneOf: true|false` will be included with input objects
       # @return [Hash] GraphQL result
-      def as_json(only: nil, except: nil, context: {}, include_deprecated_args: true, include_schema_description: false, include_is_repeatable: false, include_specified_by_url: false, include_is_one_of: false)
+      def as_json(context: {}, include_deprecated_args: true, include_schema_description: false, include_is_repeatable: false, include_specified_by_url: false, include_is_one_of: false)
         introspection_query = Introspection.query(
           include_deprecated_args: include_deprecated_args,
           include_schema_description: include_schema_description,
@@ -232,16 +233,14 @@ module GraphQL
           include_specified_by_url: include_specified_by_url,
         )
 
-        execute(introspection_query, only: only, except: except, context: context).to_h
+        execute(introspection_query, context: context).to_h
       end
 
       # Return the GraphQL IDL for the schema
       # @param context [Hash]
-      # @param only [<#call(member, ctx)>]
-      # @param except [<#call(member, ctx)>]
       # @return [String]
-      def to_definition(only: nil, except: nil, context: {})
-        GraphQL::Schema::Printer.print_schema(self, only: only, except: except, context: context)
+      def to_definition(context: {})
+        GraphQL::Schema::Printer.print_schema(self, context: context)
       end
 
       # Return the GraphQL::Language::Document IDL AST for the schema
@@ -267,20 +266,6 @@ module GraphQL
           @finder ||= GraphQL::Schema::Finder.new(self)
         end
         @find_cache[path] ||= @finder.find(path)
-      end
-
-      def default_filter
-        GraphQL::Filter.new(except: default_mask)
-      end
-
-      def default_mask(new_mask = nil)
-        if new_mask
-          line = caller(2, 10).find { |l| !l.include?("lib/graphql") }
-          GraphQL::Deprecation.warn("GraphQL::Filter and Schema.mask are deprecated and will be removed in v2.1.0. Implement `visible?` on your schema members instead (https://graphql-ruby.org/authorization/visibility.html).\n  #{line}")
-          @own_default_mask = new_mask
-        else
-          @own_default_mask || find_inherited_value(:default_mask, Schema::NullMask)
-        end
       end
 
       def static_validator
@@ -995,6 +980,7 @@ module GraphQL
           "skip" => GraphQL::Schema::Directive::Skip,
           "deprecated" => GraphQL::Schema::Directive::Deprecated,
           "oneOf" => GraphQL::Schema::Directive::OneOf,
+          "specifiedBy" => GraphQL::Schema::Directive::SpecifiedBy,
         }.freeze
       end
 
