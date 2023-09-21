@@ -302,6 +302,30 @@ module GraphQLBenchmark
     report.pretty_print
   end
 
+  def self.profile_small_introspection
+    schema = ProfileLargeResult::Schema
+    document = GraphQL.parse(GraphQL::Introspection::INTROSPECTION_QUERY)
+
+    Benchmark.ips do |x|
+      x.config(time: 5)
+      x.report("Introspection") {
+        schema.execute(document: document)
+      }
+    end
+
+    result = StackProf.run(mode: :wall, interval: 1) do
+      schema.execute(document: document)
+    end
+
+    StackProf::Report.new(result).print_text
+
+    report = MemoryProfiler.report do
+      schema.execute(document: document)
+    end
+
+    report.pretty_print
+  end
+
   module ProfileLargeResult
     def self.eager_or_proc(value)
       ENV["EAGER"] ? value : -> { value }

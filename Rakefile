@@ -120,6 +120,12 @@ namespace :bench do
     GraphQLBenchmark.profile_small_result
   end
 
+  desc "Run introspection on a small schema"
+  task :profile_small_introspection do
+    prepare_benchmark
+    GraphQLBenchmark.profile_small_introspection
+  end
+
   desc "Compare GraphQL-Batch and GraphQL-Dataloader"
   task :profile_batch_loaders do
     prepare_benchmark
