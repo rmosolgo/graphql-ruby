@@ -98,12 +98,6 @@ module GraphQL
                     multiplex.current_trace.execute_query_lazy(multiplex: multiplex, query: query) do
                       Interpreter::Resolve.resolve_each_depth(lazies_at_depth, multiplex.dataloader)
                     end
-                    queries.each do |query|
-                      runtime = query.context.namespace(:interpreter_runtime)[:runtime]
-                      if runtime
-                        runtime.delete_all_interpreter_context
-                      end
-                    end
                   }
                   multiplex.dataloader.run
 
