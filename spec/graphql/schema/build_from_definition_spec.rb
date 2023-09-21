@@ -1731,20 +1731,16 @@ type ReachableType implements Node {
     end
   end
 
-  focus
   it "works with extensions" do
     schema_sdl = <<~EOS
     schema {
       query: CustomQuery
     }
 
+    directive @link(as: String, for: link__Purpose, import: [link__Import], url: String!) repeatable on SCHEMA
 
     type CustomQuery {
       something: Int
-    }
-
-    extend type CustomQuery {
-      somethingElse: Float
     }
 
     scalar link__Import
@@ -1754,11 +1750,12 @@ type ReachableType implements Node {
       SECURITY
     }
 
-    directive @link(as: String, for: link__Purpose, import: [link__Import], url: String!) repeatable on SCHEMA
-
     extend schema
       @link(import: ["@key", "@shareable"], url: "https://specs.apollo.dev/federation/v2.0")
 
+    extend type CustomQuery {
+      somethingElse: Float
+    }
     EOS
 
     schema = GraphQL::Schema.from_definition(schema_sdl)

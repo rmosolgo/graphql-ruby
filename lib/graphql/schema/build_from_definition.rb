@@ -79,6 +79,8 @@ module GraphQL
               prev_type = types[definition.name]
               if prev_type.nil? || prev_type.is_a?(Schema::LateBoundType)
                 types[definition.name] = build_definition_from_node(definition, type_resolver, default_resolve)
+              else
+                build_definition_from_node(definition, type_resolver, default_resolve)
               end
             end
           end
@@ -147,6 +149,7 @@ module GraphQL
 
             if schema_definition
               ast_node(schema_definition)
+              ast_extensions(schema_extensions)
               builder.build_directives(self, schema_definition, type_resolver)
             end
 
@@ -217,6 +220,16 @@ module GraphQL
           when GraphQL::Language::Nodes::InputObjectTypeExtension
             extend_input_object_type(definition, type_resolver)
           end
+        end
+
+        def extend_object_type(definition, type_resolver)
+          type = type_resolver.call(definition.name)
+          if type.nil?
+            p [definition.name, type]
+            binding.pry
+          end
+          exts = type.ast_extensions ||= []
+          exts << definition
         end
 
         # Modify `types`, replacing any late-bound references to built-in types
@@ -493,7 +506,7 @@ module GraphQL
             when GraphQL::Language::Nodes::ListType
               resolve_type_proc.call(ast_node.of_type).to_list_type
             when String
-              directives[ast_node]
+              directives[ast_node] || lookup_hash[ast_node]
             else
               raise "Unexpected ast_node: #{ast_node.inspect}"
             end

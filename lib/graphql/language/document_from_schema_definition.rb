@@ -255,7 +255,9 @@ module GraphQL
         end
         dir_nodes = build_directive_nodes(dirs_to_build)
 
-        type_nodes = build_type_definition_nodes(warden.reachable_types)
+        type_nodes = []
+        extensions_nodes = []
+        build_type_definition_nodes(warden.reachable_types, type_nodes, extensions_nodes)
 
         if @include_one_of
           # This may have been set to true when iterating over all types
@@ -264,24 +266,34 @@ module GraphQL
 
         definitions = [*dir_nodes, *type_nodes]
         if include_schema_node?
-          definitions.unshift(build_schema_node)
+          definitions.unshift(@schema.ast_node || build_schema_node)
         end
+
+        if (exts = @schema.ast_extensions)
+          definitions.concat(exts)
+        end
+        definitions.concat(extensions_nodes)
 
         definitions
       end
 
-      def build_type_definition_nodes(types)
-        if !include_introspection_types
-          types = types.reject { |type| type.introspection? }
+      def build_type_definition_nodes(types, type_nodes, type_extensions_nodes)
+        types.each do |type|
+          if !include_introspection_types && type.introspection?
+            next
+          elsif !include_built_in_scalars && type.kind.scalar? && type.default_scalar?
+            next
+          else
+            type_nodes << (type.ast_node || build_type_definition_node(type))
+            if (exts = type.ast_extensions)
+              type_extensions_nodes.concat(exts)
+            end
+          end
         end
 
-        if !include_built_in_scalars
-          types = types.reject { |type| type.kind.scalar? && type.default_scalar? }
-        end
+        type_nodes.sort_by!(&:name)
 
-        types
-          .map { |type| build_type_definition_node(type) }
-          .sort_by(&:name)
+        type_nodes
       end
 
       def build_field_nodes(fields)
