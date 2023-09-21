@@ -1847,8 +1847,5 @@ type ReachableType implements Node {
     GRAPHQL
 
     assert_equal expected_merged_schema_sdl, schema.to_definition, "It also prints the merged schema as one"
-
-
-    # assert_includes schema.to_definition, "scalar String @extra", "it prints default scalars when they've been modified"
   end
 end
