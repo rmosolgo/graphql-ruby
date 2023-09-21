@@ -1574,7 +1574,7 @@ type ReachableType implements Node {
 
   it "supports extending schemas with directives" do
     schema_sdl = <<~EOS
-    schema
+    extend schema
       @link(import: ["@key", "@shareable"], url: "https://specs.apollo.dev/federation/v2.0")
 
     directive @link(as: String, for: link__Purpose, import: [link__Import], url: String!) repeatable on SCHEMA
@@ -1638,7 +1638,7 @@ type ReachableType implements Node {
       schema.schema_directives.first.arguments.to_h)
 
     expected_schema = <<~GRAPHQL
-      schema
+      extend schema
         @link(url: "https://specs.apollo.dev/federation/v2.0", import: ["@key", "@shareable"])
 
       directive @link(as: String, for: Purpose, import: Import, url: String!) repeatable on SCHEMA
@@ -1847,5 +1847,21 @@ type ReachableType implements Node {
     GRAPHQL
 
     assert_equal expected_merged_schema_sdl, schema.to_definition, "It also prints the merged schema as one"
+  end
+
+  it "reprints schema with extend when root types match" do
+    schema_str = <<~EOS
+      extend schema
+        @customDirective
+
+      directive @customDirective repeatable on SCHEMA
+
+      type Query {
+        foo: Int
+      }
+    EOS
+
+    schema = GraphQL::Schema.from_definition(schema_str)
+    assert_equal schema_str, schema.to_definition
   end
 end
