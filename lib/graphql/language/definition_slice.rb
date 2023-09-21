@@ -15,7 +15,7 @@ module GraphQL
 
       private
 
-      class DependencyVisitor < GraphQL::Language::Visitor
+      class DependencyVisitor < GraphQL::Language::StaticVisitor
         def initialize(doc, definitions, names)
           @names = names
           @definitions = definitions

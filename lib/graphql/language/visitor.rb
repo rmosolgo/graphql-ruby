@@ -30,6 +30,8 @@ module GraphQL
     #   # Check the result
     #   visitor.count
     #   # => 3
+    #
+    # @see GraphQL::Language::StaticVisitor for a faster visitor that doesn't support modifying the document
     class Visitor
       class DeleteNode; end
 

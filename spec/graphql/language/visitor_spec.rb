@@ -17,7 +17,7 @@ describe GraphQL::Language::Visitor do
     fragment cheeseFields on Cheese { flavor }
     ")}
 
-  class VisitorSpecVisitor < GraphQL::Language::Visitor
+  module CountWhileVisiting
     attr_reader :counts
     def initialize(document)
       @counts = {fields_entered: 0, arguments_entered: 0, arguments_left: 0, argument_names: []}
@@ -43,6 +43,14 @@ describe GraphQL::Language::Visitor do
     end
   end
 
+  class VisitorSpecVisitor < GraphQL::Language::Visitor
+    include CountWhileVisiting
+  end
+
+  class VisitorSpecStaticVisitor < GraphQL::Language::StaticVisitor
+    include CountWhileVisiting
+  end
+
   let(:visitor) { VisitorSpecVisitor.new(document) }
   let(:counts) { visitor.counts }
 
@@ -53,6 +61,16 @@ describe GraphQL::Language::Visitor do
     assert_equal(2, counts[:arguments_left])
     assert_equal(["id", "first"], counts[:argument_names])
     assert(counts[:finished])
+
+    static_visitor = VisitorSpecStaticVisitor.new(document)
+    static_visitor.visit
+    static_counts = static_visitor.counts
+
+    assert_equal(6, static_counts[:fields_entered])
+    assert_equal(2, static_counts[:arguments_entered])
+    assert_equal(2, static_counts[:arguments_left])
+    assert_equal(["id", "first"], static_counts[:argument_names])
+    assert(static_counts[:finished])
   end
 
   class SkippingVisitor < VisitorSpecVisitor
