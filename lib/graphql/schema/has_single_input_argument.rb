@@ -66,6 +66,10 @@ module GraphQL
           dummy.own_arguments
         end
 
+        def any_field_arguments?
+          dummy.any_arguments?
+        end
+
         def all_field_argument_definitions
           dummy.all_argument_definitions
         end
