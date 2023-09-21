@@ -223,10 +223,7 @@ module GraphQL
         end
 
         def extend_object_type(definition, type_resolver)
-          type = type_resolver.call(definition.name)
-          exts = type.ast_extensions ||= []
-          exts << definition
-
+          type = append_extension(definition, type_resolver)
           build_directives(type, definition, type_resolver)
           definition.interfaces.each do |interface_name|
             interface_defn = type_resolver.call(interface_name)
@@ -262,37 +259,28 @@ module GraphQL
         end
 
         def extend_union_type(definition, type_resolver)
-          type = type_resolver.call(definition.name)
-          exts = type.ast_extensions ||= []
-          exts << definition
-
+          type = append_extension(definition, type_resolver)
           build_directives(type, definition, type_resolver)
           type.possible_types(*definition.types.map { |type_name| type_resolver.call(type_name) })
         end
 
         def extend_enum_type(definition, type_resolver)
-          type = type_resolver.call(definition.name)
-          exts = type.ast_extensions ||= []
-          exts << definition
-
+          type = append_extension(definition, type_resolver)
           build_directives(type, definition, type_resolver)
-          definition.values.each do |enum_value_definition|
-            type.value(enum_value_definition.name,
-              value: enum_value_definition.name,
-              deprecation_reason: build_deprecation_reason(enum_value_definition.directives),
-              description: enum_value_definition.description,
-              directives: prepare_directives(enum_value_definition, type_resolver),
-              ast_node: enum_value_definition,
-            )
-          end
+          build_enum_values(type, definition, type_resolver)
         end
 
         def extend_input_object_type(definition, type_resolver)
+          type = append_extension(definition, type_resolver)
+          build_directives(type, definition, type_resolver)
+          build_arguments(type, definition.fields, type_resolver)
+        end
+
+        def append_extension(definition, type_resolver)
           type = type_resolver.call(definition.name)
           exts = type.ast_extensions ||= []
           exts << definition
-          build_directives(type, definition, type_resolver)
-          build_arguments(type, definition.fields, type_resolver)
+          type
         end
 
         # Modify `types`, replacing any late-bound references to built-in types
@@ -364,15 +352,19 @@ module GraphQL
             builder.build_directives(self, enum_type_definition, type_resolver)
             description(enum_type_definition.description)
             ast_node(enum_type_definition)
-            enum_type_definition.values.each do |enum_value_definition|
-              value(enum_value_definition.name,
-                value: enum_value_definition.name,
-                deprecation_reason: builder.build_deprecation_reason(enum_value_definition.directives),
-                description: enum_value_definition.description,
-                directives: builder.prepare_directives(enum_value_definition, type_resolver),
-                ast_node: enum_value_definition,
-              )
-            end
+            builder.build_enum_values(self, enum_type_definition, type_resolver)
+          end
+        end
+
+        def build_enum_values(enum_type, definition, type_resolver)
+          definition.values.each do |enum_value_definition|
+            enum_type.value(enum_value_definition.name,
+              value: enum_value_definition.name,
+              deprecation_reason: build_deprecation_reason(enum_value_definition.directives),
+              description: enum_value_definition.description,
+              directives: prepare_directives(enum_value_definition, type_resolver),
+              ast_node: enum_value_definition,
+            )
           end
         end
 
