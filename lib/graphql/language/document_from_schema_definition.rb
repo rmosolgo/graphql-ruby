@@ -12,10 +12,12 @@ module GraphQL
     # @param include_introspection_types [Boolean] Whether or not to include introspection types in the AST
     # @param include_built_in_scalars [Boolean] Whether or not to include built in scalars in the AST
     # @param include_built_in_directives [Boolean] Whether or not to include built in directives in the AST
+    # @param from_ast [Boolean] If true, use the `ast_node` and `ast_extensions` which originally constructed this schema
     class DocumentFromSchemaDefinition
       def initialize(
         schema, context: nil, include_introspection_types: false,
-        include_built_in_directives: false, include_built_in_scalars: false, always_include_schema: false
+        include_built_in_directives: false, include_built_in_scalars: false, always_include_schema: false,
+        from_ast: false
       )
         @schema = schema
         @always_include_schema = always_include_schema
@@ -23,6 +25,7 @@ module GraphQL
         @include_built_in_scalars = include_built_in_scalars
         @include_built_in_directives = include_built_in_directives
         @include_one_of = false
+        @from_ast = from_ast
 
         schema_context = schema.context_class.new(query: nil, object: nil, schema: schema, values: context)
 
@@ -266,10 +269,10 @@ module GraphQL
 
         definitions = [*dir_nodes, *type_nodes]
         if include_schema_node?
-          definitions.unshift(@schema.ast_node || build_schema_node)
+          definitions.unshift(@from_ast ? @schema.ast_node : build_schema_node)
         end
 
-        if (exts = @schema.ast_extensions)
+        if @from_ast && (exts = @schema.ast_extensions)
           definitions.concat(exts)
         end
         definitions.concat(extensions_nodes)
@@ -284,9 +287,13 @@ module GraphQL
           elsif !include_built_in_scalars && type.kind.scalar? && type.default_scalar?
             next
           else
-            type_nodes << (type.ast_node || build_type_definition_node(type))
-            if (exts = type.ast_extensions)
-              type_extensions_nodes.concat(exts)
+            if @from_ast
+              type_nodes << type.ast_node
+              if (exts = type.ast_extensions)
+                type_extensions_nodes.concat(exts)
+              end
+            else
+              type_nodes << build_type_definition_node(type)
             end
           end
         end

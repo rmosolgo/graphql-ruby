@@ -1731,7 +1731,7 @@ type ReachableType implements Node {
     end
   end
 
-  it "works with extensions" do
+  it "works with extensions with `from_ast: true`" do
     schema_sdl = <<~EOS
     schema {
       query: CustomQuery
@@ -1759,6 +1759,6 @@ type ReachableType implements Node {
     EOS
 
     schema = GraphQL::Schema.from_definition(schema_sdl)
-    assert_equal schema_sdl, schema.to_definition
+    assert_equal schema_sdl, schema.to_definition(from_ast: true)
   end
 end

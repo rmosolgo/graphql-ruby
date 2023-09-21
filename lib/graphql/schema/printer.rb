@@ -37,11 +37,12 @@ module GraphQL
       # @param schema [GraphQL::Schema]
       # @param context [Hash]
       # @param introspection [Boolean] Should include the introspection types in the string?
-      def initialize(schema, context: nil, introspection: false)
+      def initialize(schema, context: nil, introspection: false, from_ast: false)
         @document_from_schema = GraphQL::Language::DocumentFromSchemaDefinition.new(
           schema,
           context: context,
           include_introspection_types: introspection,
+          from_ast: from_ast
         )
 
         @document = @document_from_schema.document

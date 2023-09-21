@@ -238,8 +238,8 @@ module GraphQL
       # Return the GraphQL IDL for the schema
       # @param context [Hash]
       # @return [String]
-      def to_definition(context: {})
-        GraphQL::Schema::Printer.print_schema(self, context: context)
+      def to_definition(context: {}, from_ast: false)
+        GraphQL::Schema::Printer.print_schema(self, context: context, from_ast: from_ast)
       end
 
       # Return the GraphQL::Language::Document IDL AST for the schema
