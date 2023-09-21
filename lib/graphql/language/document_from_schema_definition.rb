@@ -61,9 +61,15 @@ module GraphQL
       end
 
       def build_object_type_node(object_type)
+        ints = warden.interfaces(object_type)
+        if ints.any?
+          ints.sort_by!(&:graphql_name)
+          ints.map! { |iface| build_type_name_node(iface) }
+        end
+
         GraphQL::Language::Nodes::ObjectTypeDefinition.new(
           name: object_type.graphql_name,
-          interfaces: warden.interfaces(object_type).sort_by(&:graphql_name).map { |iface| build_type_name_node(iface) },
+          interfaces: ints,
           fields: build_field_nodes(warden.fields(object_type)),
           description: object_type.description,
           directives: directives(object_type),
@@ -241,9 +247,13 @@ module GraphQL
       end
 
       def build_argument_nodes(arguments)
-        arguments
-          .map { |arg| build_argument_node(arg) }
-          .sort_by(&:name)
+        if arguments.any?
+          nodes = arguments.map { |arg| build_argument_node(arg) }
+          nodes.sort_by!(&:name)
+          nodes
+        else
+          arguments
+        end
       end
 
       def build_directive_nodes(directives)
@@ -314,7 +324,7 @@ module GraphQL
 
       def definition_directives(member, directives_method)
         dirs = if !member.respond_to?(directives_method) || member.directives.empty?
-          []
+          EmptyObjects::EMPTY_ARRAY
         else
           member.public_send(directives_method).map do |dir|
             args = []

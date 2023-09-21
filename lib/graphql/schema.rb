@@ -963,7 +963,12 @@ module GraphQL
           new_directives.flatten.each { |d| directive(d) }
         end
 
-        find_inherited_value(:directives, default_directives).merge(own_directives)
+        inherited_dirs = find_inherited_value(:directives, default_directives)
+        if own_directives.any?
+          inherited_dirs.merge(own_directives)
+        else
+          inherited_dirs
+        end
       end
 
       # Attach a single directive to this schema
