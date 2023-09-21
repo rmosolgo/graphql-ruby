@@ -237,6 +237,7 @@ module GraphQL
 
       # Return the GraphQL IDL for the schema
       # @param context [Hash]
+      # @param from_ast [Boolean] if true, re-print the parsed SDL definitions and extensions from each type instead of printing the schema from Ruby
       # @return [String]
       def to_definition(context: {}, from_ast: false)
         GraphQL::Schema::Printer.print_schema(self, context: context, from_ast: from_ast)
