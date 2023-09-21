@@ -5,12 +5,12 @@ module GraphQL
       # Depth first traversal through a query AST, calling AST analyzers
       # along the way.
       #
-      # The visitor is a special case of GraphQL::Language::Visitor, visiting
+      # The visitor is a special case of GraphQL::Language::StaticVisitor, visiting
       # only the selected operation, providing helpers for common use cases such
       # as skipped fields and visiting fragment spreads.
       #
       # @see {GraphQL::Analysis::AST::Analyzer} AST Analyzers for queries
-      class Visitor < GraphQL::Language::Visitor
+      class Visitor < GraphQL::Language::StaticVisitor
         def initialize(query:, analyzers:)
           @analyzers = analyzers
           @path = []
