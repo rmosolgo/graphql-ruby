@@ -369,7 +369,9 @@ module GraphQL
       end
 
       def read_through
-        Hash.new { |h, k| h[k] = yield(k) }
+        h = Hash.new { |h, k| h[k] = yield(k) }
+        h.compare_by_identity
+        h
       end
 
       def reachable_type_set

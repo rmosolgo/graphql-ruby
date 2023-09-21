@@ -42,21 +42,17 @@ module GraphQL
       end
 
       def build_schema_node
-        schema_options = {
-          # `@schema.directives` is covered by `build_definition_nodes`
-          directives: definition_directives(@schema, :schema_directives),
-        }
         if !schema_respects_root_name_conventions?(@schema)
-          schema_options.merge!({
+          GraphQL::Language::Nodes::SchemaDefinition.new(
             query: (q = warden.root_type_for_operation("query")) && q.graphql_name,
             mutation: (m = warden.root_type_for_operation("mutation")) && m.graphql_name,
             subscription: (s = warden.root_type_for_operation("subscription")) && s.graphql_name,
-          })
-          GraphQL::Language::Nodes::SchemaDefinition.new(schema_options)
+            directives: definition_directives(@schema, :schema_directives)
+          )
         else
           # A plain `schema ...` _must_ include root type definitions.
           # If the only difference is directives, then you have to use `extend schema`
-          GraphQL::Language::Nodes::SchemaExtension.new(schema_options)
+          GraphQL::Language::Nodes::SchemaExtension.new(directives: definition_directives(@schema, :schema_directives))
         end
       end
 
@@ -267,16 +263,16 @@ module GraphQL
         if !include_built_in_directives
           dirs_to_build = dirs_to_build.reject { |directive| directive.default_directive? }
         end
-        dir_nodes = build_directive_nodes(dirs_to_build)
+        definitions = build_directive_nodes(dirs_to_build)
 
         type_nodes = build_type_definition_nodes(warden.reachable_types)
 
         if @include_one_of
           # This may have been set to true when iterating over all types
-          dir_nodes.concat(build_directive_nodes([GraphQL::Schema::Directive::OneOf]))
+          definitions.concat(build_directive_nodes([GraphQL::Schema::Directive::OneOf]))
         end
 
-        definitions = [*dir_nodes, *type_nodes]
+        definitions.concat(type_nodes)
         if include_schema_node?
           definitions.unshift(build_schema_node)
         end
@@ -299,9 +295,9 @@ module GraphQL
       end
 
       def build_field_nodes(fields)
-        fields
-          .map { |field| build_field_node(field) }
-          .sort_by(&:name)
+        f_nodes = fields.map { |field| build_field_node(field) }
+        f_nodes.sort_by!(&:name)
+        f_nodes
       end
 
       private

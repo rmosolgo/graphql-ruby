@@ -237,7 +237,8 @@ module GraphQL
 
       def print_object_type_definition(object_type, extension: false)
         extension ? print_string("extend ") : print_description(object_type)
-        print_string("type #{object_type.name}")
+        print_string("type ")
+        print_string(object_type.name)
         print_implements(object_type) unless object_type.interfaces.empty?
         print_directives(object_type.directives)
         print_field_definitions(object_type.fields)
@@ -248,7 +249,8 @@ module GraphQL
       end
 
       def print_input_value_definition(input_value)
-        print_string("#{input_value.name}: ")
+        print_string(input_value.name)
+        print_string(": ")
         print_node(input_value.type)
         unless input_value.default_value.nil?
           print_string(" = ")
@@ -363,11 +365,13 @@ module GraphQL
         return if fields.empty?
 
         print_string(" {\n")
-        fields.each.with_index do |field, i|
+        i = 0
+        fields.each do |field|
           print_description(field, indent: "  ", first_in_block: i == 0)
           print_string("  ")
           print_field_definition(field)
           print_string("\n")
+          i += 1
         end
         print_string("}")
       end
