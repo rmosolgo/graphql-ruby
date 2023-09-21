@@ -283,9 +283,13 @@ module GraphQL
       def build_type_definition_nodes(types, type_nodes, type_extensions_nodes)
         types.each do |type|
           if !include_introspection_types && type.introspection?
-            next
+            # Nothing
           elsif !include_built_in_scalars && type.kind.scalar? && type.default_scalar?
-            next
+            if @from_ast && (exts = type.ast_extensions)
+              type_extensions_nodes.concat(exts)
+            elsif type.directives.any?
+              type_nodes << build_type_definition_node(type)
+            end
           else
             if @from_ast
               type_nodes << type.ast_node
@@ -299,6 +303,7 @@ module GraphQL
         end
 
         type_nodes.sort_by!(&:name)
+        type_extensions_nodes.sort_by!(&:name)
 
         type_nodes
       end

@@ -45,9 +45,9 @@ module GraphQL
           directive_type_resolver = nil
           directive_type_resolver = build_resolve_type(types, directives, ->(type_name) {
             types[type_name] ||= begin
-              defn = document.definitions.find { |d| d.respond_to?(:name) && d.name == type_name }
+              defn = document.definitions.find { |d| d.respond_to?(:name) && d.name == type_name && d.class.name.include?("Definition") }
               if defn
-                build_definition_from_node(defn, directive_type_resolver, default_resolve)
+                build_definition_from_node(types, defn, directive_type_resolver, default_resolve)
               elsif (built_in_defn = GraphQL::Schema::BUILT_IN_TYPES[type_name])
                 built_in_defn
               else
@@ -78,9 +78,9 @@ module GraphQL
               # It's possible that this was already loaded by the directives
               prev_type = types[definition.name]
               if prev_type.nil? || prev_type.is_a?(Schema::LateBoundType)
-                types[definition.name] = build_definition_from_node(definition, type_resolver, default_resolve)
+                types[definition.name] = build_definition_from_node(types, definition, type_resolver, default_resolve)
               else
-                build_definition_from_node(definition, type_resolver, default_resolve)
+                build_definition_from_node(types, definition, type_resolver, default_resolve)
               end
             end
           end
@@ -192,7 +192,7 @@ module GraphQL
           raise(GraphQL::RequiredImplementationMissingError, "Generated Schema cannot use Interface or Union types for execution. Implement resolve_type on your resolver.")
         }
 
-        def build_definition_from_node(definition, type_resolver, default_resolve)
+        def build_definition_from_node(types, definition, type_resolver, default_resolve)
           case definition
           when GraphQL::Language::Nodes::EnumTypeDefinition
             build_enum_type(definition, type_resolver)
@@ -216,7 +216,7 @@ module GraphQL
           when GraphQL::Language::Nodes::UnionTypeExtension
             extend_union_type(definition, type_resolver)
           when GraphQL::Language::Nodes::ScalarTypeExtension
-            extend_scalar_type(definition, type_resolver, default_resolve: default_resolve)
+            extend_scalar_type(types, definition, type_resolver)
           when GraphQL::Language::Nodes::InputObjectTypeExtension
             extend_input_object_type(definition, type_resolver)
           end
@@ -224,12 +224,75 @@ module GraphQL
 
         def extend_object_type(definition, type_resolver)
           type = type_resolver.call(definition.name)
-          if type.nil?
-            p [definition.name, type]
-            binding.pry
+          exts = type.ast_extensions ||= []
+          exts << definition
+
+          build_directives(type, definition, type_resolver)
+          definition.interfaces.each do |interface_name|
+            interface_defn = type_resolver.call(interface_name)
+            type.implements(interface_defn)
+          end
+          build_fields(type, definition.fields, type_resolver, default_resolve: true)
+        end
+
+        def extend_scalar_type(types, definition, type_resolver)
+          name = definition.name
+          type = type_resolver.call(name)
+          if type.nil? && (built_in_type = GraphQL::Schema::BUILT_IN_TYPES[name])
+            # TODO make other uses of this use custom scalars
+            type = Class.new(built_in_type)
+            types[name] = type
           end
           exts = type.ast_extensions ||= []
           exts << definition
+          build_directives(type, definition, type_resolver)
+        end
+
+        def extend_interface_type(definition, type_resolver)
+          type = type_resolver.call(definition.name)
+          exts = type.ast_extensions ||= []
+          exts << definition
+
+          build_directives(type, definition, type_resolver)
+          definition.interfaces.each do |interface_name|
+            interface_defn = type_resolver.call(interface_name)
+            type.implements(interface_defn)
+          end
+          build_fields(type, definition.fields, type_resolver, default_resolve: true)
+        end
+
+        def extend_union_type(definition, type_resolver)
+          type = type_resolver.call(definition.name)
+          exts = type.ast_extensions ||= []
+          exts << definition
+
+          build_directives(type, definition, type_resolver)
+          type.possible_types(*definition.types.map { |type_name| type_resolver.call(type_name) })
+        end
+
+        def extend_enum_type(definition, type_resolver)
+          type = type_resolver.call(definition.name)
+          exts = type.ast_extensions ||= []
+          exts << definition
+
+          build_directives(type, definition, type_resolver)
+          definition.values.each do |enum_value_definition|
+            type.value(enum_value_definition.name,
+              value: enum_value_definition.name,
+              deprecation_reason: build_deprecation_reason(enum_value_definition.directives),
+              description: enum_value_definition.description,
+              directives: prepare_directives(enum_value_definition, type_resolver),
+              ast_node: enum_value_definition,
+            )
+          end
+        end
+
+        def extend_input_object_type(definition, type_resolver)
+          type = type_resolver.call(definition.name)
+          exts = type.ast_extensions ||= []
+          exts << definition
+          build_directives(type, definition, type_resolver)
+          build_arguments(type, definition.fields, type_resolver)
         end
 
         # Modify `types`, replacing any late-bound references to built-in types

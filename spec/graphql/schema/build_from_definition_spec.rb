@@ -1737,28 +1737,118 @@ type ReachableType implements Node {
       query: CustomQuery
     }
 
-    directive @link(as: String, for: link__Purpose, import: [link__Import], url: String!) repeatable on SCHEMA
+    directive @extra on ENUM | INPUT_OBJECT | INTERFACE | OBJECT | SCALAR | SCHEMA | UNION
+
+    interface CustomInterface {
+      something: CustomScalar
+    }
+
+    interface CustomInterface2 {
+      something2: Int
+    }
+
+    type CustomObject implements CustomInterface2 {
+      something: CustomScalar
+      something2: Int
+    }
 
     type CustomQuery {
-      something: Int
+      something: CustomScalar
+      field3: CustomObject
+      things: Things
+      option(arg: Input): SomeOption
     }
 
-    scalar link__Import
+    scalar CustomScalar
 
-    enum link__Purpose {
-      EXECUTION
-      SECURITY
+    input Input {
+      arg1: Float
     }
+
+    enum SomeOption {
+      A
+      B
+    }
+
+    union Things = CustomQuery
 
     extend schema
-      @link(import: ["@key", "@shareable"], url: "https://specs.apollo.dev/federation/v2.0")
+      @extra
 
-    extend type CustomQuery {
+    extend interface CustomInterface2 implements CustomInterface @extra {
+      something: CustomScalar
+    }
+
+    extend type CustomQuery implements CustomInterface @extra {
       somethingElse: Float
     }
+
+    extend scalar CustomScalar @extra
+
+    extend input Input @extra {
+      arg2: Int
+    }
+
+    extend enum SomeOption @extra {
+      C
+    }
+
+    extend union Things @extra = CustomObject
     EOS
 
     schema = GraphQL::Schema.from_definition(schema_sdl)
-    assert_equal schema_sdl, schema.to_definition(from_ast: true)
+    assert_equal schema_sdl, schema.to_definition(from_ast: true), "It reprints exactly when using from_ast: true"
+
+    expected_merged_schema_sdl = <<~GRAPHQL
+    schema
+      @extra
+    {
+      query: CustomQuery
+    }
+
+    directive @extra on ENUM | INPUT_OBJECT | INTERFACE | OBJECT | SCALAR | SCHEMA | UNION
+
+    interface CustomInterface {
+      something: CustomScalar
+    }
+
+    interface CustomInterface2 implements CustomInterface @extra {
+      something: CustomScalar
+      something2: Int
+    }
+
+    type CustomObject implements CustomInterface2 {
+      something: CustomScalar
+      something2: Int
+    }
+
+    type CustomQuery implements CustomInterface @extra {
+      field3: CustomObject
+      option(arg: Input): SomeOption
+      something: CustomScalar
+      somethingElse: Float
+      things: Things
+    }
+
+    scalar CustomScalar @extra
+
+    input Input @extra {
+      arg1: Float
+      arg2: Int
+    }
+
+    enum SomeOption @extra {
+      A
+      B
+      C
+    }
+
+    union Things @extra = CustomObject | CustomQuery
+    GRAPHQL
+
+    assert_equal expected_merged_schema_sdl, schema.to_definition, "It also prints the merged schema as one"
+
+
+    # assert_includes schema.to_definition, "scalar String @extra", "it prints default scalars when they've been modified"
   end
 end
