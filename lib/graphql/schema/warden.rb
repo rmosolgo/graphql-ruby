@@ -226,7 +226,7 @@ module GraphQL
             ints.select! { |i| visible_type?(i) }
           end
           ints
-          }
+        }
         @visible_interfaces[obj_type]
       end
 
