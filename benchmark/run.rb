@@ -444,7 +444,8 @@ module GraphQLBenchmark
 
   def self.profile_to_definition
     require_relative "./batch_loading"
-    schema = BatchLoading::GraphQLNoBatchingSchema
+    schema = ProfileLargeResult::Schema
+    schema.to_definition
 
     Benchmark.ips do |x|
       x.report("to_definition") { schema.to_definition }

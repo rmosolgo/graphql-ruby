@@ -102,7 +102,8 @@ module GraphQL
         def default_graphql_name
           @default_graphql_name ||= begin
             raise GraphQL::RequiredImplementationMissingError, 'Anonymous class should declare a `graphql_name`' if name.nil?
-            -name.split("::").last.sub(/Type\Z/, "")
+            g_name = -name.split("::").last
+            g_name.end_with?("Type") ? g_name.sub(/Type\Z/, "") : g_name
           end
         end
 

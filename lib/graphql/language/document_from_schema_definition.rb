@@ -186,7 +186,8 @@ module GraphQL
             of_type: build_type_name_node(type.of_type)
           )
         else
-          GraphQL::Language::Nodes::TypeName.new(name: type.graphql_name)
+          @cached_type_name_nodes ||= {}
+          @cached_type_name_nodes[type.graphql_name] ||= GraphQL::Language::Nodes::TypeName.new(name: type.graphql_name)
         end
       end
 

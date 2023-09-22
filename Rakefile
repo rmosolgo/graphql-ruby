@@ -60,7 +60,7 @@ end
 
 desc "Use Racc to regenerate parser.rb from configuration files"
 task :build_parser do
-  assert_dependency_version("Racc", "1.6.2", %|ruby -e "require 'racc'; puts Racc::VERSION"|)
+  assert_dependency_version("Racc", "1.7.1", %|ruby -e "require 'racc'; puts Racc::VERSION"|)
 
   `rm -f lib/graphql/language/parser.rb `
   `racc lib/graphql/language/parser.y -o lib/graphql/language/parser.rb`
