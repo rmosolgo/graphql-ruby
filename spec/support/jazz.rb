@@ -565,9 +565,7 @@ module Jazz
     end
   end
 
-  class AddEnsembleRelay < GraphQL::Schema::Mutation
-    include GraphQL::Schema::HasSingleInputArgument
-
+  class AddEnsembleRelay < GraphQL::Schema::RelayClassicMutation
     argument :ensemble, EnsembleInput
     field :ensemble, Ensemble, null: false
 
@@ -578,9 +576,7 @@ module Jazz
     end
   end
 
-  class AddSitar < GraphQL::Schema::Mutation
-    include GraphQL::Schema::HasSingleInputArgument
-
+  class AddSitar < GraphQL::Schema::RelayClassicMutation
     null true
     description "Get Sitar to musical instrument"
 
@@ -592,9 +588,7 @@ module Jazz
     end
   end
 
-  class HasExtras < GraphQL::Schema::Mutation
-    include GraphQL::Schema::HasSingleInputArgument
-
+  class HasExtras < GraphQL::Schema::RelayClassicMutation
     null true
     description "Test extras in RelayClassicMutation"
 
@@ -612,9 +606,7 @@ module Jazz
     end
   end
 
-  class HasFieldExtras < GraphQL::Schema::Mutation
-    include GraphQL::Schema::HasSingleInputArgument
-
+  class HasFieldExtras < GraphQL::Schema::RelayClassicMutation
     null true
     description "Test field with extras in RelayClassicMutation"
 
@@ -631,9 +623,7 @@ module Jazz
     end
   end
 
-  class StripsExtras < GraphQL::Schema::Mutation
-    include GraphQL::Schema::HasSingleInputArgument
-
+  class StripsExtras < GraphQL::Schema::RelayClassicMutation
     extras [:lookahead]
     def resolve_with_support(lookahead: , **rest)
       context[:has_lookahead] = !!lookahead
