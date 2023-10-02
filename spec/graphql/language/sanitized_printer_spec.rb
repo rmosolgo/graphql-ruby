@@ -353,7 +353,7 @@ describe GraphQL::Language::SanitizedPrinter do
 
       class Query < GraphQL::Schema::Object
         field :things, [String] do
-          argument :group, Grouping, required: true
+          argument :group, Grouping
         end
 
         def things(group:)
