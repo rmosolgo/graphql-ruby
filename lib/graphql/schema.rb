@@ -762,7 +762,16 @@ module GraphQL
           own_orphan_types.concat(new_orphan_types.flatten)
         end
 
-        find_inherited_value(:orphan_types, EMPTY_ARRAY) + own_orphan_types
+        inherited_ot = find_inherited_value(:orphan_types, nil)
+        if inherited_ot
+          if own_orphan_types.any?
+            inherited_ot + own_orphan_types
+          else
+            inherited_ot
+          end
+        else
+          own_orphan_types
+        end
       end
 
       def default_execution_strategy
@@ -964,7 +973,12 @@ module GraphQL
           new_directives.flatten.each { |d| directive(d) }
         end
 
-        find_inherited_value(:directives, default_directives).merge(own_directives)
+        inherited_dirs = find_inherited_value(:directives, default_directives)
+        if own_directives.any?
+          inherited_dirs.merge(own_directives)
+        else
+          inherited_dirs
+        end
       end
 
       # Attach a single directive to this schema

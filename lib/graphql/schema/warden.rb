@@ -188,7 +188,16 @@ module GraphQL
       # @param argument_owner [GraphQL::Field, GraphQL::InputObjectType]
       # @return [Array<GraphQL::Argument>] Visible arguments on `argument_owner`
       def arguments(argument_owner, ctx = nil)
-        @visible_arguments ||= read_through { |o| o.arguments(@context).each_value.select { |a| visible_argument?(a, @context) } }
+        @visible_arguments ||= read_through { |o|
+          args = o.arguments(@context)
+          if args.any?
+            args = args.values
+            args.select! { |a| visible_argument?(a, @context) }
+            args
+          else
+            EmptyObjects::EMPTY_ARRAY
+          end
+        }
         @visible_arguments[argument_owner]
       end
 
@@ -211,7 +220,13 @@ module GraphQL
 
       # @return [Array<GraphQL::InterfaceType>] Visible interfaces implemented by `obj_type`
       def interfaces(obj_type)
-        @visible_interfaces ||= read_through { |t| t.interfaces(@context).select { |i| visible_type?(i) } }
+        @visible_interfaces ||= read_through { |t|
+          ints = t.interfaces(@context)
+          if ints.any?
+            ints.select! { |i| visible_type?(i) }
+          end
+          ints
+        }
         @visible_interfaces[obj_type]
       end
 
@@ -354,7 +369,9 @@ module GraphQL
       end
 
       def read_through
-        Hash.new { |h, k| h[k] = yield(k) }
+        h = Hash.new { |h, k| h[k] = yield(k) }
+        h.compare_by_identity
+        h
       end
 
       def reachable_type_set

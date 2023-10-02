@@ -442,6 +442,27 @@ module GraphQLBenchmark
     GRAPHQL
   end
 
+  def self.profile_to_definition
+    require_relative "./batch_loading"
+    schema = ProfileLargeResult::Schema
+    schema.to_definition
+
+    Benchmark.ips do |x|
+      x.report("to_definition") { schema.to_definition }
+    end
+
+    result = StackProf.run(mode: :wall, interval: 1) do
+      schema.to_definition
+    end
+    StackProf::Report.new(result).print_text
+
+    report = MemoryProfiler.report do
+      schema.to_definition
+    end
+
+    report.pretty_print
+  end
+
   def self.profile_batch_loaders
     require_relative "./batch_loading"
     include BatchLoading
