@@ -10,6 +10,28 @@
 
 ### Bug fixes
 
+# 2.1.1 (2 Oct 2023)
+
+### New features
+
+- Mutations: `HasSingleInput` provides Relay Classic-like `input: ...` argument behavior #4581
+- Add `@specifiedBy` default directive #4633
+- Analysis: support `visit?` hook to skip visit but still return a value
+- Add `context.scoped` for a long-lived reference to the current scoped context #4605
+
+### Bug fixes
+
+- Sanitized printer: Correctly print enum variable defaults #4652
+- Schema printer: use `extend schema` when the schema has directives #4647
+- Performance: pass runtime state through interpreter code #4621
+- Performance: add `StaticVisitor` for faster AST visits #4645
+- Fix merging results after calling directives #4639
+- Performance: faster field lookup #4626
+- Improve generator templates #4627
+- Dataloader: clear cache between root mutation fields #4617
+- Performance: Improve argument checks #4622
+- Remove unused legacy connection code #4606
+
 # 2.1.0 (30 Aug 2023)
 
 ### Breaking changes
