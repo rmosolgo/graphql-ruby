@@ -700,7 +700,7 @@ module GraphQL
                   obj.public_send(resolver_method)
                 end
               elsif inner_object.is_a?(Hash)
-                hash_value = if @dig_keys
+                if @dig_keys
                   inner_object.dig(*@dig_keys)
                 elsif inner_object.key?(@method_sym)
                   inner_object[@method_sym]
