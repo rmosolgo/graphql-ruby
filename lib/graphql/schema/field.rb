@@ -700,16 +700,22 @@ module GraphQL
                   obj.public_send(resolver_method)
                 end
               elsif inner_object.is_a?(Hash)
-                if @dig_keys
+                hash_value = if @dig_keys
                   inner_object.dig(*@dig_keys)
                 elsif inner_object.key?(@method_sym)
                   inner_object[@method_sym]
                 elsif inner_object.key?(@method_str)
                   inner_object[@method_str]
-                elsif @fallback_value != NOT_CONFIGURED
-                  @fallback_value
                 else
-                  nil
+                  # Maybe the Hash will provide a default value, even though `.key?` was false:
+                  v = inner_object[@method_sym] || inner_object[@method_str]
+                  # Technically, this could still be wrong, if the hash-provided default value
+                  # was `nil`, then the `@fallback_value` shouldn't be used. But that probably won't happen.
+                  if v.nil? && @fallback_value != NOT_CONFIGURED
+                    @fallback_value
+                  else
+                    v
+                  end
                 end
               elsif inner_object.respond_to?(@method_sym)
                 method_to_call = @method_sym
