@@ -823,8 +823,8 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   it "works with implicit hash key and default value" do
     class HashDefautSchema < GraphQL::Schema
       class Example < GraphQL::Schema::Object
-        field :implicit_lookup, [String, null: true], null: true
-        field :explicit_lookup, [String, null: true], null: true, hash_key: :nonexistent
+        field :implicit_lookup, [String, null: true]
+        field :explicit_lookup, [String, null: true], hash_key: :nonexistent
       end
 
       class Query < GraphQL::Schema::Object
