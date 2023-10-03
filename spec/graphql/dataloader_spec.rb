@@ -1219,7 +1219,7 @@ describe GraphQL::Dataloader do
       end
 
       class CustomDataloader < GraphQL::Dataloader
-        def initial_fiber_vars
+        def get_fiber_variables
           { test_thread_var: "bazbarfoo" }
         end
       end
