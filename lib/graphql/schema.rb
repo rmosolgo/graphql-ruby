@@ -146,6 +146,19 @@ module GraphQL
         @subscriptions = new_implementation
       end
 
+      # @param new_mode [Symbol] If configured, this will be used when `context: { trace_mode: ... }` isn't set.
+      def default_trace_mode(new_mode = nil)
+        if new_mode
+          @default_trace_mode = new_mode
+        elsif defined?(@default_trace_mode)
+          @default_trace_mode
+        elsif superclass.respond_to?(:default_trace_mode)
+          superclass.default_trace_mode
+        else
+          :default
+        end
+      end
+
       def trace_class(new_class = nil)
         if new_class
           trace_mode(:default, new_class)
@@ -157,40 +170,64 @@ module GraphQL
       end
 
       # @return [Class] Return the trace class to use for this mode, looking one up on the superclass if this Schema doesn't have one defined.
-      def trace_class_for(mode)
-        @trace_modes ||= {}
-        @trace_modes[mode] ||= begin
-          case mode
-          when :default
-            superclass_base_class = if superclass.respond_to?(:trace_class_for)
-              superclass.trace_class_for(mode)
-            else
-              GraphQL::Tracing::Trace
-            end
-            Class.new(superclass_base_class)
-          when :default_backtrace
-            schema_base_class = trace_class_for(:default)
-            Class.new(schema_base_class) do
-              include(GraphQL::Backtrace::Trace)
-            end
-          else
-            mods = trace_modules_for(mode)
-            Class.new(trace_class_for(:default)) do
-              mods.any? && include(*mods)
-            end
-          end
-        end
+      def trace_class_for(mode, build: false)
+        own_trace_modes[mode] ||
+          (superclass.respond_to?(:trace_class_for) ? superclass.trace_class_for(mode) : nil)
       end
 
       # Configure `trace_class` to be used whenever `context: { trace_mode: mode_name }` is requested.
-      # `:default` is used when no `trace_mode: ...` is requested.
+      # {default_trace_mode} is used when no `trace_mode: ...` is requested.
+      #
+      # When a `trace_class` is added this way, it will _not_ receive other modules added with `trace_with(...)`
+      # unless `trace_mode` is explicitly given. (This class will not recieve any default trace modules.)
+      #
+      # Subclasses of the schema will use `trace_class` as a base class for this mode and those
+      # subclass also will _not_ receive default tracing modules.
+      #
       # @param mode_name [Symbol]
       # @param trace_class [Class] subclass of GraphQL::Tracing::Trace
       # @return void
       def trace_mode(mode_name, trace_class)
-        @trace_modes ||= {}
-        @trace_modes[mode_name] = trace_class
+        own_trace_modes[mode_name] = trace_class
         nil
+      end
+
+      def own_trace_modes
+        @own_trace_modes ||= {}
+      end
+
+      module DefaultTraceClass
+      end
+
+      private_constant :DefaultTraceClass
+
+      def build_trace_mode(mode)
+        case mode
+        when :default
+          # Use the superclass's default mode if it has one, or else start an inheritance chain at the built-in base class.
+          base_class = (superclass.respond_to?(:trace_class_for) && superclass.trace_class_for(mode)) || GraphQL::Tracing::Trace
+          Class.new(base_class) do
+            include DefaultTraceClass
+          end
+        when :default_backtrace
+          schema_base_class = trace_class_for(:default)
+          Class.new(schema_base_class) do
+            include(GraphQL::Backtrace::Trace)
+          end
+        else
+          # First, see if the superclass has a custom-defined class for this.
+          # Then, if it doesn't, use this class's default trace
+          base_class = (superclass.respond_to?(:trace_class_for) && superclass.trace_class_for(mode)) || trace_class_for(:default)
+          # Prepare the default trace class if it hasn't been initialized yet
+          base_class ||= (own_trace_modes[:default] = build_trace_mode(:default))
+          mods = trace_modules_for(mode)
+          if base_class < DefaultTraceClass
+            mods = trace_modules_for(:default) + mods
+          end
+          Class.new(base_class) do
+            mods.any? && include(*mods)
+          end
+        end
       end
 
       def own_trace_modules
@@ -875,7 +912,13 @@ module GraphQL
 
       def inherited(child_class)
         if self == GraphQL::Schema
+          child_class.own_trace_modes[:default] = child_class.build_trace_mode(:default)
           child_class.directives(default_directives.values)
+        end
+        # Make sure the child class has these built out, so that
+        # subclasses can be modified by later calls to `trace_with`
+        own_trace_modes.each do |name, _class|
+          child_class.own_trace_modes[name] = child_class.build_trace_mode(name)
         end
         child_class.singleton_class.prepend(ResolveTypeWithType)
         super
@@ -999,7 +1042,8 @@ module GraphQL
       end
 
       def tracer(new_tracer)
-        if !(trace_class_for(:default) < GraphQL::Tracing::CallLegacyTracers)
+        default_trace = trace_class_for(:default)
+        if default_trace.nil? || !(default_trace < GraphQL::Tracing::CallLegacyTracers)
           trace_with(GraphQL::Tracing::CallLegacyTracers)
         end
 
@@ -1021,10 +1065,20 @@ module GraphQL
         if mode.is_a?(Array)
           mode.each { |m| trace_with(trace_mod, mode: m, **options) }
         else
-          tc = trace_class_for(mode)
+          tc = own_trace_modes[mode] ||= build_trace_mode(mode)
           tc.include(trace_mod)
-          if mode != :default
-            own_trace_modules[mode] << trace_mod
+          own_trace_modules[mode] << trace_mod
+
+          if mode == :default
+            # This module is being added as a default tracer. If any other mode classes
+            # have already been created, but get their default behavior from a superclass,
+            # Then mix this into this schema's subclass.
+            # (But don't mix it into mode classes that aren't default-based.)
+            own_trace_modes.each do |other_mode_name, other_mode_class|
+              if other_mode_class < DefaultTraceClass && !(other_mode_class < trace_mod)
+                other_mode_class.include(trace_mod)
+              end
+            end
           end
           t_opts = trace_options_for(mode)
           t_opts.merge!(options)
@@ -1047,6 +1101,8 @@ module GraphQL
 
       # Create a trace instance which will include the trace modules specified for the optional mode.
       #
+      # If no `mode:` is given, then {default_trace_mode} will be used.
+      #
       # @param mode [Symbol] Trace modules for this trade mode will be included
       # @param options [Hash] Keywords that will be passed to the tracing class during `#initialize`
       # @return [Tracing::Trace]
@@ -1057,14 +1113,19 @@ module GraphQL
         trace_mode = if mode
           mode
         elsif target && target.context[:backtrace]
-          :default_backtrace
+          if default_trace_mode != :default
+            raise ArgumentError, "Can't use `context[:backtrace]` with a custom default trace mode (`#{dm.inspect}`)"
+          else
+            own_trace_modes[:default_backtrace] ||= build_trace_mode(:default_backtrace)
+            :default_backtrace
+          end
         else
-          :default
+          default_trace_mode
         end
 
         base_trace_options = trace_options_for(trace_mode)
         trace_options = base_trace_options.merge(options)
-        trace_class_for_mode = trace_class_for(trace_mode)
+        trace_class_for_mode = trace_class_for(trace_mode) || raise(ArgumentError, "#{self} has no trace class for mode: #{trace_mode.inspect}")
         trace_class_for_mode.new(**trace_options)
       end
 
