@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.24.9 (4 Oct 2023)
+
+### Bug Fix
+
+- OperationStore: Preserve variable default values of `false` when normalizing queries
+
 # 1.24.8 (29 Aug 2023)
 
 ### Bug Fix
