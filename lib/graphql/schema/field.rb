@@ -704,7 +704,7 @@ module GraphQL
                   inner_object.dig(*@dig_keys)
                 elsif inner_object.key?(@method_sym)
                   inner_object[@method_sym]
-                elsif inner_object.key?(@method_str)
+                elsif inner_object.key?(@method_str) || !inner_object.default_proc.nil?
                   inner_object[@method_str]
                 elsif @fallback_value != NOT_CONFIGURED
                   @fallback_value
