@@ -61,6 +61,32 @@ module GraphQL
       @nonblocking
     end
 
+    # This is called before the fiber is spawned, from the parent context (i.e. from
+    # the thread or fiber that it is scheduled from).
+    #
+    # @return [Hash<Symbol, Object>] Current fiber-local variables
+    def get_fiber_variables
+      fiber_vars = {}
+      Thread.current.keys.each do |fiber_var_key|
+        # This variable should be fresh in each new fiber
+        if fiber_var_key != :__graphql_runtime_info
+          fiber_vars[fiber_var_key] = Thread.current[fiber_var_key]
+        end
+      end
+      fiber_vars
+    end
+
+    # Set up the fiber variables in a new fiber.
+    #
+    # This is called within the fiber, right after it is spawned.
+    #
+    # @param vars [Hash<Symbol, Object>] Fiber-local variables from {get_fiber_variables}
+    # @return [void]
+    def set_fiber_variables(vars)
+      vars.each { |k, v| Thread.current[k] = v }
+      nil
+    end
+
     # Get a Source instance from this dataloader, for calling `.load(...)` or `.request(...)` on.
     #
     # @param source_class [Class<GraphQL::Dataloader::Source]
@@ -295,23 +321,16 @@ module GraphQL
     #
     # @see https://github.com/rmosolgo/graphql-ruby/issues/3449
     def spawn_fiber
-      fiber_locals = {}
-
-      Thread.current.keys.each do |fiber_var_key|
-        # This variable should be fresh in each new fiber
-        if fiber_var_key != :__graphql_runtime_info
-          fiber_locals[fiber_var_key] = Thread.current[fiber_var_key]
-        end
-      end
+      fiber_vars = get_fiber_variables
 
       if @nonblocking
         Fiber.new(blocking: false) do
-          fiber_locals.each { |k, v| Thread.current[k] = v }
+          set_fiber_variables(fiber_vars)
           yield
         end
       else
         Fiber.new do
-          fiber_locals.each { |k, v| Thread.current[k] = v }
+          set_fiber_variables(fiber_vars)
           yield
         end
       end

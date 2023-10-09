@@ -1211,6 +1211,61 @@ describe GraphQL::Dataloader do
     end
   end
 
+  describe "thread-local variables with custom dataloader" do
+    module CustomThreadVariable
+      class Type < GraphQL::Schema::Object
+        field :key, String, null: false
+        field :value, String, null: false
+      end
+
+      class CustomDataloader < GraphQL::Dataloader
+        def get_fiber_variables
+          { test_thread_var: "bazbarfoo" }
+        end
+      end
+
+      class Source < GraphQL::Dataloader::Source
+        def fetch(keys)
+          keys.map { |key| OpenStruct.new(key: key, value: Thread.current[key.to_sym]) }
+        end
+      end
+
+      class QueryType < GraphQL::Schema::Object
+        field :thread_var, CustomThreadVariable::Type do
+          argument :key, GraphQL::Types::String
+        end
+
+        def thread_var(key:)
+          dataloader.with(CustomThreadVariable::Source).load(key)
+        end
+      end
+
+      class Schema < GraphQL::Schema
+        query CustomThreadVariable::QueryType
+        use CustomDataloader
+      end
+    end
+
+    it "sets the parent thread locals in the execution fiber" do
+      result = CustomThreadVariable::Schema.execute(<<-GRAPHQL)
+      {
+        threadVar(key: "test_thread_var") {
+          key
+          value
+        }
+      }
+      GRAPHQL
+
+      expected_result = {
+        "data" => {
+          "threadVar" => { "key" => "test_thread_var", "value" => "bazbarfoo" }
+        }
+      }
+
+      assert_equal expected_result, result.to_h
+    end
+  end
+
   describe "dataloader calls from inside sources" do
     class NestedDataloaderCallsSchema < GraphQL::Schema
       class Echo < GraphQL::Dataloader::Source
