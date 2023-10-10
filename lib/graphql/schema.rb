@@ -740,13 +740,22 @@ module GraphQL
 
       attr_writer :max_depth
 
-      def max_depth(new_max_depth = nil)
+      def max_depth(new_max_depth = nil, count_introspection_fields: true)
         if new_max_depth
           @max_depth = new_max_depth
+          @count_introspection_fields = count_introspection_fields
         elsif defined?(@max_depth)
           @max_depth
         else
           find_inherited_value(:max_depth)
+        end
+      end
+
+      def count_introspection_fields
+        if defined?(@count_introspection_fields)
+          @count_introspection_fields
+        else
+          find_inherited_value(:count_introspection_fields, true)
         end
       end
 

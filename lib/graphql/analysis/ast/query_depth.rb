@@ -28,17 +28,22 @@ module GraphQL
         def initialize(query)
           @max_depth = 0
           @current_depth = 0
+          @count_introspection_fields = query.schema.count_introspection_fields
           super
         end
 
         def on_enter_field(node, parent, visitor)
-          return if visitor.skipping? || visitor.visiting_fragment_definition?
+          return if visitor.skipping? ||
+            visitor.visiting_fragment_definition? ||
+              (@count_introspection_fields == false && visitor.field_definition.introspection?)
 
           @current_depth += 1
         end
 
         def on_leave_field(node, parent, visitor)
-          return if visitor.skipping? || visitor.visiting_fragment_definition?
+          return if visitor.skipping? ||
+            visitor.visiting_fragment_definition? ||
+            (@count_introspection_fields == false && visitor.field_definition.introspection?)
 
           if @max_depth < @current_depth
             @max_depth = @current_depth

@@ -136,7 +136,7 @@ end
 MySchema.execute(query_string, max_depth: 20)
 ```
 
-(**Note:** the default introspection query from GraphiQL requires at least `max_depth 13`.)
+By default, **introspection fields are counted**. The default introspection query requires at least `max_depth 13`. You can also configure your schema not to count introspection fields with `max_depth ..., count_introspection_fields: false`.
 
 You can use `nil` to disable the validation:
 
