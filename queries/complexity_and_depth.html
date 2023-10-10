@@ -251,7 +251,7 @@
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">max_depth: </span><span class="mi">20</span><span class="p">)</span>
 </code></pre></div></div>
 
-<p>(<strong>Note:</strong> the default introspection query from GraphiQL requires at least <code class="language-plaintext highlighter-rouge">max_depth 13</code>.)</p>
+<p>By default, <strong>introspection fields are counted</strong>. The default introspection query requires at least <code class="language-plaintext highlighter-rouge">max_depth 13</code>. You can also configure your schema not to count introspection fields with <code class="language-plaintext highlighter-rouge">max_depth ..., count_introspection_fields: false</code>.</p>
 
 <p>You can use <code class="language-plaintext highlighter-rouge">nil</code> to disable the validation:</p>
 
