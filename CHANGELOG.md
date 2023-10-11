@@ -10,6 +10,21 @@
 
 ### Bug fixes
 
+# 2.1.2 (11 Oct 2023)
+
+### New features
+
+- Depth: accept `count_introspection_fields: false` #4658
+- Dataloader: add `get_fiber_variables` and `set_fiber_variables` #4593
+- Trace: Add `Schema.default_trace_mode` #4642
+
+### Bug fixes
+
+- Fix merging results after calling directives #4639 #4660
+- Visibility: don't reveal implementors of hidden abstract types #4589
+- Bump required Ruby version to 2.7 since numbered block arguments are used  #4659
+- `hash_key:`: use the configured hash key when the underlying Hash has a default value Proc #4656
+
 # 2.1.1 (2 Oct 2023)
 
 ### New features
@@ -25,7 +40,6 @@
 - Schema printer: use `extend schema` when the schema has directives #4647
 - Performance: pass runtime state through interpreter code #4621
 - Performance: add `StaticVisitor` for faster AST visits #4645
-- Fix merging results after calling directives #4639
 - Performance: faster field lookup #4626
 - Improve generator templates #4627
 - Dataloader: clear cache between root mutation fields #4617
