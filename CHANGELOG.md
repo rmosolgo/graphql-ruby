@@ -10,6 +10,13 @@
 
 ### Bug fixes
 
+# 2.1.3 (12 Oct 2023)
+
+### Bug fixes
+
+- Tracing: fix legacy tracers added to `GraphQL::Schema` #4663
+- Add `racc` as a dependency because it's not included by default in Ruby 3.3 #4661
+
 # 2.1.2 (11 Oct 2023)
 
 ### New features
