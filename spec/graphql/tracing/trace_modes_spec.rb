@@ -112,11 +112,17 @@ describe "Trace modes for schemas" do
 
   describe "inheriting from GraphQL::Schema" do
     it "gets CallLegacyTracers" do
+      # Use a new base trace mode class to avoid polluting the base class
+      # which already-initialized schemas have in their inheritance chain
+      # (It causes `CallLegacyTracers` to end up in the chain twice otherwise)
+      GraphQL::Schema.own_trace_modes[:default] = GraphQL::Schema.build_trace_mode(:default)
+
       child_class = Class.new(GraphQL::Schema)
 
       # Initialize the trace class, make sure no legacy tracers are present at this point:
       refute_includes child_class.trace_class_for(:default).ancestors, GraphQL::Tracing::CallLegacyTracers
       tracer_class = Class.new
+
       # add a legacy tracer
       GraphQL::Schema.tracer(tracer_class)
       # A newly created child class gets the right setup:
@@ -124,9 +130,11 @@ describe "Trace modes for schemas" do
       assert_includes new_child_class.trace_class_for(:default).ancestors, GraphQL::Tracing::CallLegacyTracers
       # But what about an already-created child class?
       assert_includes child_class.trace_class_for(:default).ancestors, GraphQL::Tracing::CallLegacyTracers
-    ensure
+
+      # Reset GraphQL::Schema tracer state:
       GraphQL::Schema.send(:own_tracers).delete(tracer_class)
-      GraphQL::Schema.own_trace_modes.delete(:default)
+      GraphQL::Schema.own_trace_modes[:default] = GraphQL::Schema.build_trace_mode(:default)
+      refute_includes GraphQL::Schema.new_trace.class.ancestors, GraphQL::Tracing::CallLegacyTracers
     end
   end
 
