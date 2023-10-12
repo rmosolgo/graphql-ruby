@@ -110,6 +110,23 @@ describe "Trace modes for schemas" do
     assert_equal :was_configured, res.context[:configured_option]
   end
 
+  describe "inheriting from GraphQL::Schema" do
+    it "gets CallLegacyTracers" do
+      base_class = Class.new(GraphQL::Schema)
+      child_class = Class.new(base_class)
+
+      # Initialize the trace classes, make sure no legacy tracers are present at this point:
+      refute_includes base_class.trace_class_for(:default).ancestors, GraphQL::Tracing::CallLegacyTracers
+      refute_includes child_class.trace_class_for(:default).ancestors, GraphQL::Tracing::CallLegacyTracers
+
+      # add a legacy tracer
+      base_class.tracer(Class.new)
+      assert_includes base_class.trace_class_for(:default).ancestors, GraphQL::Tracing::CallLegacyTracers
+      # The child class will also run inherited legacy tracers:
+      assert_includes child_class.trace_class_for(:default).ancestors, GraphQL::Tracing::CallLegacyTracers
+    end
+  end
+
 
   describe "custom default trace mode" do
     class CustomDefaultSchema < TraceModesTest::ParentSchema
