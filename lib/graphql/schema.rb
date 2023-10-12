@@ -170,9 +170,9 @@ module GraphQL
       end
 
       # @return [Class] Return the trace class to use for this mode, looking one up on the superclass if this Schema doesn't have one defined.
-      def trace_class_for(mode, build: false)
+      def trace_class_for(mode)
         own_trace_modes[mode] ||
-          (superclass.respond_to?(:trace_class_for) ? superclass.trace_class_for(mode) : nil)
+          (superclass.respond_to?(:trace_class_for) ? superclass.trace_class_for(mode) : (own_trace_modes[mode] = build_trace_mode(mode)))
       end
 
       # Configure `trace_class` to be used whenever `context: { trace_mode: mode_name }` is requested.
@@ -921,7 +921,6 @@ module GraphQL
 
       def inherited(child_class)
         if self == GraphQL::Schema
-          child_class.own_trace_modes[:default] = child_class.build_trace_mode(:default)
           child_class.directives(default_directives.values)
         end
         # Make sure the child class has these built out, so that
