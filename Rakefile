@@ -162,6 +162,11 @@ namespace :bench do
     GraphQLBenchmark.profile_large_introspection
   end
 
+  task :profile_small_query_on_large_schema do
+    prepare_benchmark
+    GraphQLBenchmark.profile_small_query_on_large_schema
+  end
+
   desc "Run analysis on a big query"
   task :profile_large_analysis do
     prepare_benchmark

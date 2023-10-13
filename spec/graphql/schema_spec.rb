@@ -456,4 +456,8 @@ describe GraphQL::Schema do
       refute_includes full_res.to_s, "oldSource"
     end
   end
+
+  it "starts with no references_to" do
+    assert_equal({}, GraphQL::Schema.references_to)
+  end
 end

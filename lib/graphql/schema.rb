@@ -545,9 +545,7 @@ module GraphQL
           if from
             @own_references_to[to_type] << from
           else
-            own_refs = @own_references_to[to_type]
-            inherited_refs = find_inherited_value(:references_to, EMPTY_HASH)[to_type] || EMPTY_ARRAY
-            own_refs + inherited_refs
+            get_references_to(to_type)
           end
         else
           # `@own_references_to` can be quite large for big schemas,
@@ -922,6 +920,7 @@ module GraphQL
       def inherited(child_class)
         if self == GraphQL::Schema
           child_class.directives(default_directives.values)
+          child_class.extend(SubclassGetReferencesTo)
         end
         # Make sure the child class has these built out, so that
         # subclasses can be modified by later calls to `trace_with`
@@ -1396,6 +1395,27 @@ module GraphQL
 
       def own_multiplex_analyzers
         @own_multiplex_analyzers ||= []
+      end
+
+      # This is overridden in subclasses to check the inheritance chain
+      def get_references_to(type_name)
+        @own_references_to[type_name]
+      end
+    end
+
+    module SubclassGetReferencesTo
+      def get_references_to(type_name)
+        own_refs = @own_references_to[type_name]
+        inherited_refs = superclass.references_to(type_name)
+        if inherited_refs.any?
+          if own_refs.any?
+            own_refs + inherited_refs
+          else
+            inherited_refs
+          end
+        else
+          own_refs
+        end
       end
     end
 

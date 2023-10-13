@@ -356,13 +356,10 @@ module GraphQL
       end
 
       def referenced?(type_defn)
-        @references_to ||= @schema.references_to
         graphql_name = type_defn.unwrap.graphql_name
-        members = @references_to[graphql_name] || NO_REFERENCES
+        members = @schema.references_to(graphql_name)
         members.any? { |m| visible?(m) }
       end
-
-      NO_REFERENCES = [].freeze
 
       def orphan_type?(type_defn)
         @schema.orphan_types.include?(type_defn)

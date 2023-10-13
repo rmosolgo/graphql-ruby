@@ -161,6 +161,30 @@ module GraphQLBenchmark
 
   SILLY_LARGE_SCHEMA = build_large_schema
 
+  def self.profile_small_query_on_large_schema
+    schema = Class.new(SILLY_LARGE_SCHEMA)
+    Benchmark.ips do |x|
+      x.report("Run small query") {
+        schema.execute("{ __typename }")
+      }
+    end
+
+    result = StackProf.run(mode: :wall, interval: 1) do
+      schema.execute("{ __typename }")
+    end
+    StackProf::Report.new(result).print_text
+
+    StackProf.run(mode: :wall, out: "tmp/small_query.dump", interval: 1) do
+      schema.execute("{ __typename }")
+    end
+
+    report = MemoryProfiler.report do
+      schema.execute("{ __typename }")
+    end
+    puts "\n\n"
+    report.pretty_print
+  end
+
   def self.profile_large_introspection
     schema = SILLY_LARGE_SCHEMA
     Benchmark.ips do |x|
