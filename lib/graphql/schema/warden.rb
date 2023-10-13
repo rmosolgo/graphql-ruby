@@ -106,7 +106,7 @@ module GraphQL
         @types = @visible_types = @reachable_types = @visible_parent_fields =
           @visible_possible_types = @visible_fields = @visible_arguments = @visible_enum_arrays =
           @visible_enum_values = @visible_interfaces = @type_visibility = @type_memberships =
-          @visible_and_reachable_type = @unions = @unfiltered_interfaces = @references_to =
+          @visible_and_reachable_type = @unions = @unfiltered_interfaces =
           @reachable_type_set =
             nil
       end

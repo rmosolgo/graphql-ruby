@@ -536,16 +536,17 @@ module GraphQL
       attr_writer :dataloader_class
 
       def references_to(to_type = nil, from: nil)
-        @own_references_to ||= Hash.new { |h, k| h[k] = [] }
+        @own_references_to ||= {}
         if to_type
           if !to_type.is_a?(String)
             to_type = to_type.graphql_name
           end
 
           if from
-            @own_references_to[to_type] << from
+            refs = @own_references_to[to_type] ||= []
+            refs << from
           else
-            get_references_to(to_type)
+            get_references_to(to_type) || EMPTY_ARRAY
           end
         else
           # `@own_references_to` can be quite large for big schemas,
@@ -1407,8 +1408,8 @@ module GraphQL
       def get_references_to(type_name)
         own_refs = @own_references_to[type_name]
         inherited_refs = superclass.references_to(type_name)
-        if inherited_refs.any?
-          if own_refs.any?
+        if inherited_refs&.any?
+          if own_refs&.any?
             own_refs + inherited_refs
           else
             inherited_refs

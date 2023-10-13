@@ -164,7 +164,6 @@ describe GraphQL::Schema do
     METHODS_TO_CACHE = {
       types: 1,
       union_memberships: 1,
-      references_to: 1,
       possible_types: 5, # The number of types with fields accessed in the query
     }
 
