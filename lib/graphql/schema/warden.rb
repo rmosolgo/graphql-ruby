@@ -106,7 +106,7 @@ module GraphQL
         @types = @visible_types = @reachable_types = @visible_parent_fields =
           @visible_possible_types = @visible_fields = @visible_arguments = @visible_enum_arrays =
           @visible_enum_values = @visible_interfaces = @type_visibility = @type_memberships =
-          @visible_and_reachable_type = @unions = @unfiltered_interfaces = @references_to =
+          @visible_and_reachable_type = @unions = @unfiltered_interfaces =
           @reachable_type_set =
             nil
       end
@@ -356,13 +356,10 @@ module GraphQL
       end
 
       def referenced?(type_defn)
-        @references_to ||= @schema.references_to
         graphql_name = type_defn.unwrap.graphql_name
-        members = @references_to[graphql_name] || NO_REFERENCES
+        members = @schema.references_to(graphql_name)
         members.any? { |m| visible?(m) }
       end
-
-      NO_REFERENCES = [].freeze
 
       def orphan_type?(type_defn)
         @schema.orphan_types.include?(type_defn)

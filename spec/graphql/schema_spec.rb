@@ -164,7 +164,6 @@ describe GraphQL::Schema do
     METHODS_TO_CACHE = {
       types: 1,
       union_memberships: 1,
-      references_to: 1,
       possible_types: 5, # The number of types with fields accessed in the query
     }
 
@@ -455,5 +454,9 @@ describe GraphQL::Schema do
       assert full_res["data"]["__schema"]["types"].find { |t| t["kind"] == "INPUT_OBJECT" }.key?("isOneOf")
       refute_includes full_res.to_s, "oldSource"
     end
+  end
+
+  it "starts with no references_to" do
+    assert_equal({}, GraphQL::Schema.references_to)
   end
 end
