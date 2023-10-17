@@ -12,10 +12,14 @@ module GraphQL
     attr_reader :id
     # @return [Object] The value found with this ID
     attr_reader :object
-    def initialize(argument:, id:, object:)
+    # @return [GraphQL::Query::Context]
+    attr_reader :context
+
+    def initialize(argument:, id:, object:, context:)
       @id = id
       @argument = argument
       @object = object
+      @context = context
       super("No object found for `#{argument.graphql_name}: #{id.inspect}`")
     end
   end
