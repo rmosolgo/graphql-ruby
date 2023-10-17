@@ -291,6 +291,8 @@ object classes can override the <code class="language-plaintext highlighter-roug
 
 <p>The type definition DSL uses this mechanism, too, so you can override those methods here also.</p>
 
+<p>Note: Under the hood, <code class="language-plaintext highlighter-rouge">definition_methods</code> causes a module to be <code class="language-plaintext highlighter-rouge">extend</code>ed by the Inteface. Any calls to <code class="language-plaintext highlighter-rouge">extend</code> or <code class="language-plaintext highlighter-rouge">implement</code> may override methods from <code class="language-plaintext highlighter-rouge">definition_methods</code>.</p>
+
 <h3 id="resolve-type">Resolve Type</h3>
 
 <p>When a field’s return type is an interface, GraphQL has to figure out what <em>specific</em> object type to use for the return value. In the example above, each <code class="language-plaintext highlighter-rouge">customer</code> must be categorized as an <code class="language-plaintext highlighter-rouge">Individual</code> or <code class="language-plaintext highlighter-rouge">Company</code>. You can do this by:</p>
