@@ -273,9 +273,11 @@
 <p>You can customize this behavior by implementing <code class="language-plaintext highlighter-rouge">def load_application_object_failed</code> in your mutation class, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">load_application_object_failed</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
-  <span class="kp">nil</span> <span class="c1"># instead of returning an error, fail silently.</span>
+  <span class="k">raise</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">,</span> <span class="s2">"Couldn't find an object for ID: `</span><span class="si">#{</span><span class="n">error</span><span class="p">.</span><span class="nf">id</span><span class="si">}</span><span class="s2">`"</span>
 <span class="k">end</span>
 </code></pre></div></div>
+
+<p>Or, if <code class="language-plaintext highlighter-rouge">load_application_object_fails</code> returns a new object, that object will be used as the <code class="language-plaintext highlighter-rouge">loads:</code> result.</p>
 
 <h3 id="handling-unauthorized-loaded-objects">Handling unauthorized loaded objects</h3>
 
