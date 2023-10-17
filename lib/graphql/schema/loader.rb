@@ -186,7 +186,6 @@ module GraphQL
               null: true,
               camelize: false,
               connection_extension: nil,
-              connection: type_name.end_with?("Connection"),
             ) do
               if field_hash["args"].any?
                 loader.build_arguments(self, field_hash["args"], type_resolver)
