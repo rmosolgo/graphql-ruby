@@ -205,12 +205,12 @@ module GraphQL
         end
       end
 
-      def get_argument(name, context = GraphQL::Query::NullContext)
+      def get_argument(name, context = GraphQL::Query::NullContext.instance)
         self.class.get_argument(name, context)
       end
 
       class << self
-        def field_arguments(context = GraphQL::Query::NullContext)
+        def field_arguments(context = GraphQL::Query::NullContext.instance)
           arguments(context)
         end
 
@@ -218,7 +218,7 @@ module GraphQL
           any_arguments?
         end
 
-        def get_field_argument(name, context = GraphQL::Query::NullContext)
+        def get_field_argument(name, context = GraphQL::Query::NullContext.instance)
           get_argument(name, context)
         end
 

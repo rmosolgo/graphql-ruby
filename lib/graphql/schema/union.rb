@@ -10,7 +10,7 @@ module GraphQL
           super
         end
 
-        def possible_types(*types, context: GraphQL::Query::NullContext, **options)
+        def possible_types(*types, context: GraphQL::Query::NullContext.instance, **options)
           if types.any?
             types.each do |t|
               assert_valid_union_member(t)

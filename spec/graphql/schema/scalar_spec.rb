@@ -147,7 +147,7 @@ describe GraphQL::Schema::Scalar do
 
 
   describe "validate_input with good input" do
-    let(:result) { GraphQL::Types::Int.validate_input(150, GraphQL::Query::NullContext) }
+    let(:result) { GraphQL::Types::Int.validate_input(150, GraphQL::Query::NullContext.instance) }
 
     it "returns a valid result" do
       assert(result.valid?)
@@ -155,7 +155,7 @@ describe GraphQL::Schema::Scalar do
   end
 
   describe "validate_input with bad input" do
-    let(:result) { GraphQL::Types::Int.validate_input("bad num", GraphQL::Query::NullContext) }
+    let(:result) { GraphQL::Types::Int.validate_input("bad num", GraphQL::Query::NullContext.instance) }
 
     it "returns an invalid result for bad input" do
       assert(!result.valid?)
@@ -206,7 +206,7 @@ describe GraphQL::Schema::Scalar do
     end
 
     describe "custom scalar errors" do
-      let(:result) { custom_scalar.validate_input("xyz", GraphQL::Query::NullContext) }
+      let(:result) { custom_scalar.validate_input("xyz", GraphQL::Query::NullContext.instance) }
 
       it "returns an invalid result" do
         assert !result.valid?

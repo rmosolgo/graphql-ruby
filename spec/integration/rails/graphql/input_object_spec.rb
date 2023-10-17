@@ -7,7 +7,7 @@ describe GraphQL::Schema::InputObject do
       nil,
       ruby_kwargs: { source: 'COW',  fatContent: 0.8 },
       defaults_used: Set.new,
-      context: GraphQL::Query::NullContext)
+      context: GraphQL::Query::NullContext.instance)
   end
 
   describe '#to_json' do

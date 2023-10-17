@@ -807,7 +807,7 @@ describe GraphQL::Schema::InputObject do
     let(:input_object) { Dummy::DairyProductInput }
 
     def validate_isolated_input(t, input)
-      t.validate_input(input, GraphQL::Query::NullContext)
+      t.validate_input(input, GraphQL::Query::NullContext.instance)
     end
 
     describe "input validation" do

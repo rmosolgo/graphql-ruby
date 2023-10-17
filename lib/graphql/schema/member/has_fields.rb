@@ -97,7 +97,7 @@ module GraphQL
         end
 
         module InterfaceMethods
-          def get_field(field_name, context = GraphQL::Query::NullContext)
+          def get_field(field_name, context = GraphQL::Query::NullContext.instance)
             warden = Warden.from_context(context)
             for ancestor in ancestors
               if ancestor.respond_to?(:own_fields) &&
@@ -110,7 +110,7 @@ module GraphQL
           end
 
           # @return [Hash<String => GraphQL::Schema::Field>] Fields on this object, keyed by name, including inherited fields
-          def fields(context = GraphQL::Query::NullContext)
+          def fields(context = GraphQL::Query::NullContext.instance)
             warden = Warden.from_context(context)
             # Local overrides take precedence over inherited fields
             visible_fields = {}
@@ -130,7 +130,7 @@ module GraphQL
         end
 
         module ObjectMethods
-          def get_field(field_name, context = GraphQL::Query::NullContext)
+          def get_field(field_name, context = GraphQL::Query::NullContext.instance)
             # Objects need to check that the interface implementation is visible, too
             warden = Warden.from_context(context)
             ancs = ancestors
@@ -148,7 +148,7 @@ module GraphQL
           end
 
           # @return [Hash<String => GraphQL::Schema::Field>] Fields on this object, keyed by name, including inherited fields
-          def fields(context = GraphQL::Query::NullContext)
+          def fields(context = GraphQL::Query::NullContext.instance)
             # Objects need to check that the interface implementation is visible, too
             warden = Warden.from_context(context)
             # Local overrides take precedence over inherited fields

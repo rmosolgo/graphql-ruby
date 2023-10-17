@@ -119,7 +119,7 @@ module GraphQL
         # - lazy resolution
         # Probably, those won't be needed here, since these are configuration arguments,
         # not runtime arguments.
-        @arguments = self.class.coerce_arguments(nil, arguments, Query::NullContext)
+        @arguments = self.class.coerce_arguments(nil, arguments, Query::NullContext.instance)
       end
 
       def graphql_name

@@ -109,7 +109,7 @@ module GraphQL
         end
 
         # @return [Hash<String => GraphQL::Schema::Argument] Arguments defined on this thing, keyed by name. Includes inherited definitions
-        def arguments(context = GraphQL::Query::NullContext)
+        def arguments(context = GraphQL::Query::NullContext.instance)
           if own_arguments.any?
             own_arguments_that_apply = {}
             own_arguments.each do |name, args_entry|
@@ -133,7 +133,7 @@ module GraphQL
           end
 
           module InheritedArguments
-            def arguments(context = GraphQL::Query::NullContext)
+            def arguments(context = GraphQL::Query::NullContext.instance)
               own_arguments = super
               inherited_arguments = superclass.arguments(context)
 
@@ -166,7 +166,7 @@ module GraphQL
             end
 
 
-            def get_argument(argument_name, context = GraphQL::Query::NullContext)
+            def get_argument(argument_name, context = GraphQL::Query::NullContext.instance)
               warden = Warden.from_context(context)
               for ancestor in ancestors
                 if ancestor.respond_to?(:own_arguments) &&
@@ -181,7 +181,7 @@ module GraphQL
         end
 
         module FieldConfigured
-          def arguments(context = GraphQL::Query::NullContext)
+          def arguments(context = GraphQL::Query::NullContext.instance)
             own_arguments = super
             if @resolver_class
               inherited_arguments = @resolver_class.field_arguments(context)
@@ -236,7 +236,7 @@ module GraphQL
         end
 
         # @return [GraphQL::Schema::Argument, nil] Argument defined on this thing, fetched by name.
-        def get_argument(argument_name, context = GraphQL::Query::NullContext)
+        def get_argument(argument_name, context = GraphQL::Query::NullContext.instance)
           warden = Warden.from_context(context)
           if (arg_config = own_arguments[argument_name]) && (visible_arg = Warden.visible_entry?(:visible_argument?, arg_config, context, warden))
             visible_arg
