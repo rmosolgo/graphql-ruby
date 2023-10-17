@@ -37,7 +37,7 @@ module GraphQL
       end
 
       # @return [String] an identifier for this unit of subscription
-      def self.serialize(_name, arguments, field, scope:, context: GraphQL::Query::NullContext)
+      def self.serialize(_name, arguments, field, scope:, context: GraphQL::Query::NullContext.instance)
         subscription = field.resolver || GraphQL::Schema::Subscription
         normalized_args = stringify_args(field, arguments.to_h, context)
         subscription.topic_for(arguments: normalized_args, field: field, scope: scope)

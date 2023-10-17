@@ -17,15 +17,15 @@ module GraphQL
         end
 
         def valid_isolated_input?(v)
-          valid_input?(v, GraphQL::Query::NullContext)
+          valid_input?(v, GraphQL::Query::NullContext.instance)
         end
 
         def coerce_isolated_input(v)
-          coerce_input(v, GraphQL::Query::NullContext)
+          coerce_input(v, GraphQL::Query::NullContext.instance)
         end
 
         def coerce_isolated_result(v)
-          coerce_result(v, GraphQL::Query::NullContext)
+          coerce_result(v, GraphQL::Query::NullContext.instance)
         end
       end
     end

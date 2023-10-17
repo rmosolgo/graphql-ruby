@@ -325,7 +325,7 @@ module GraphQL
       # Build a map of `{ name => type }` and return it
       # @return [Hash<String => Class>] A dictionary of type classes by their GraphQL name
       # @see get_type Which is more efficient for finding _one type_ by name, because it doesn't merge hashes.
-      def types(context = GraphQL::Query::NullContext)
+      def types(context = GraphQL::Query::NullContext.instance)
         all_types = non_introspection_types.merge(introspection_system.types)
         visible_types = {}
         all_types.each do |k, v|
@@ -352,7 +352,7 @@ module GraphQL
 
       # @param type_name [String]
       # @return [Module, nil] A type, or nil if there's no type called `type_name`
-      def get_type(type_name, context = GraphQL::Query::NullContext)
+      def get_type(type_name, context = GraphQL::Query::NullContext.instance)
         local_entry = own_types[type_name]
         type_defn = case local_entry
         when nil
@@ -483,7 +483,7 @@ module GraphQL
       # @param type [Module] The type definition whose possible types you want to see
       # @return [Hash<String, Module>] All possible types, if no `type` is given.
       # @return [Array<Module>] Possible types for `type`, if it's given.
-      def possible_types(type = nil, context = GraphQL::Query::NullContext)
+      def possible_types(type = nil, context = GraphQL::Query::NullContext.instance)
         if type
           # TODO duck-typing `.possible_types` would probably be nicer here
           if type.kind.union?
@@ -566,7 +566,7 @@ module GraphQL
         GraphQL::Schema::TypeExpression.build_type(type_owner, ast_node)
       end
 
-      def get_field(type_or_name, field_name, context = GraphQL::Query::NullContext)
+      def get_field(type_or_name, field_name, context = GraphQL::Query::NullContext.instance)
         parent_type = case type_or_name
         when LateBoundType
           get_type(type_or_name.name, context)
@@ -589,7 +589,7 @@ module GraphQL
         end
       end
 
-      def get_fields(type, context = GraphQL::Query::NullContext)
+      def get_fields(type, context = GraphQL::Query::NullContext.instance)
         type.fields(context)
       end
 

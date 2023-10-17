@@ -54,11 +54,11 @@ module GraphQL
           end
         end
 
-        def field_arguments(context = GraphQL::Query::NullContext)
+        def field_arguments(context = GraphQL::Query::NullContext.instance)
           dummy.arguments(context)
         end
 
-        def get_field_argument(name, context = GraphQL::Query::NullContext)
+        def get_field_argument(name, context = GraphQL::Query::NullContext.instance)
           dummy.get_argument(name, context)
         end
 

@@ -70,7 +70,7 @@ module GraphQL
           end
 
           module InheritedInterfaces
-            def interfaces(context = GraphQL::Query::NullContext)
+            def interfaces(context = GraphQL::Query::NullContext.instance)
               visible_interfaces = super
               inherited_interfaces = superclass.interfaces(context)
               if visible_interfaces.any?
@@ -99,7 +99,7 @@ module GraphQL
         end
 
         # param context [Query::Context] If omitted, skip filtering.
-        def interfaces(context = GraphQL::Query::NullContext)
+        def interfaces(context = GraphQL::Query::NullContext.instance)
           warden = Warden.from_context(context)
           visible_interfaces = nil
           own_interface_type_memberships.each do |type_membership|
