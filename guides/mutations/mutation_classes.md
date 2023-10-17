@@ -170,9 +170,11 @@ You can customize this behavior by implementing `def load_application_object_fai
 
 ```ruby
 def load_application_object_failed(error)
-  nil # instead of returning an error, fail silently.
+  raise GraphQL::ExecutionError, "Couldn't find an object for ID: `#{error.id}`"
 end
 ```
+
+Or, if `load_application_object_fails` returns a new object, that object will be used as the `loads:` result.
 
 ### Handling unauthorized loaded objects
 

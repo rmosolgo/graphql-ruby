@@ -3,6 +3,10 @@ require "spec_helper"
 
 describe GraphQL::Schema::Resolver do
   module ResolverTest
+    class SpecialError < StandardError
+      attr_accessor :id
+    end
+
     class LazyBlock
       def initialize(&block)
         @get_value = block
@@ -296,11 +300,21 @@ describe GraphQL::Schema::Resolver do
       end
 
       def resolve(int:)
-        int * 4
+        int ? int * 4 : nil
       end
 
       def load_application_object_failed(err)
-        raise GraphQL::ExecutionError.new("ResolverWithErrorHandler failed for id: #{err.id.inspect} (#{err.object.inspect}) (#{err.class.name})")
+        if (next_obj = err.context[:fallback_object])
+          next_obj
+        elsif err.context[:return_nil_on_load_failed]
+          nil
+        elsif err.context[:reraise_special_error]
+          spec_err = SpecialError.new
+          spec_err.id = err.id
+          raise(spec_err)
+        else
+          raise(GraphQL::ExecutionError.new("ResolverWithErrorHandler failed for id: #{err.id.inspect} (#{err.object.inspect}) (#{err.class.name})"))
+        end
       end
     end
 
@@ -494,6 +508,10 @@ describe GraphQL::Schema::Resolver do
           1
         end
       end
+
+      rescue_from SpecialError do |err|
+        raise GraphQL::ExecutionError, "A special error was raised from #{err.id.inspect}"
+      end
     end
   end
 
@@ -588,6 +606,43 @@ describe GraphQL::Schema::Resolver do
         expected_err = "ResolverWithErrorHandler failed for id: \"failed_to_find\" (nil) (GraphQL::LoadApplicationObjectFailedError)"
         assert_equal [expected_err], res["errors"].map { |e| e["message"] }
       end
+
+      it "uses rescue_from handlers" do
+        query_str = <<-GRAPHQL
+        {
+          resolverWithErrorHandler(int: "failed_to_find") { value }
+        }
+        GRAPHQL
+
+        res = exec_query(query_str, context: { reraise_special_error: true })
+        assert_nil res["data"].fetch("resolverWithErrorHandler")
+        expected_err = "A special error was raised from \"failed_to_find\""
+        assert_equal [expected_err], res["errors"].map { |e| e["message"] }
+      end
+
+      it "uses the new value from lookup" do
+        query_str = <<-GRAPHQL
+        {
+          resolverWithErrorHandler(int: "failed_to_find") { value }
+        }
+        GRAPHQL
+
+        res = exec_query(query_str, context: { fallback_object: 212 })
+        assert_equal 848, res["data"]["resolverWithErrorHandler"]["value"]
+        refute res.key?("errors")
+      end
+
+      it "halts silently when it returns nil" do
+        query_str = <<-GRAPHQL
+        {
+          resolverWithErrorHandler(int: "failed_to_find") { value }
+        }
+        GRAPHQL
+
+        res = exec_query(query_str, context: { return_nil_on_load_failed: true })
+        assert_nil res["data"].fetch("resolverWithErrorHandler")
+        refute res.key?("errors")
+      end
     end
 
     describe "when resolve_type returns a no-good type" do
@@ -602,6 +657,43 @@ describe GraphQL::Schema::Resolver do
         assert_nil res["data"].fetch("resolverWithErrorHandler")
         expected_err = "ResolverWithErrorHandler failed for id: \"resolve_type_as_wrong_type\" (:resolve_type_as_wrong_type) (GraphQL::LoadApplicationObjectFailedError)"
         assert_equal [expected_err], res["errors"].map { |e| e["message"] }
+      end
+
+      it "uses rescue_from handlers" do
+        query_str = <<-GRAPHQL
+        {
+          resolverWithErrorHandler(int: "resolve_type_as_wrong_type") { value }
+        }
+        GRAPHQL
+
+        res = exec_query(query_str, context: { reraise_special_error: true })
+        assert_nil res["data"].fetch("resolverWithErrorHandler")
+        expected_err = "A special error was raised from \"resolve_type_as_wrong_type\""
+        assert_equal [expected_err], res["errors"].map { |e| e["message"] }
+      end
+
+      it "uses a new value from resolve_type" do
+        query_str = <<-GRAPHQL
+        {
+          resolverWithErrorHandler(int: "resolve_type_as_wrong_type") { value }
+        }
+        GRAPHQL
+
+        res = exec_query(query_str, context: { fallback_object: 4 })
+        assert_equal 16, res["data"]["resolverWithErrorHandler"]["value"]
+        refute res.key?("errors")
+      end
+
+      it "halts silently when it returns nil" do
+        query_str = <<-GRAPHQL
+        {
+          resolverWithErrorHandler(int: "resolve_type_as_wrong_type") { value }
+        }
+        GRAPHQL
+
+        res = exec_query(query_str, context: { return_nil_on_load_failed: true })
+        assert_nil res["data"].fetch("resolverWithErrorHandler")
+        refute res.key?("errors")
       end
     end
   end
