@@ -124,6 +124,8 @@ describe GraphQL::Schema::Interface do
 
     module InterfaceC
       include GraphQL::Schema::Interface
+      definition_methods do
+      end
     end
 
     module InterfaceD
@@ -602,6 +604,61 @@ interface Timestamped implements Node {
           ]
         }
         assert_equal expected_result, result["data"]
+      end
+
+      describe "in definition_methods when implementing another interface" do
+        class InterfaceInheritanceSchema < GraphQL::Schema
+          module Node
+            include GraphQL::Schema::Interface
+            definition_methods do
+              def resolve_type(obj, ctx)
+                raise "This should never be called -- it's overriden"
+              end
+            end
+          end
+          module Pet
+            include GraphQL::Schema::Interface
+            implements Node
+
+            definition_methods do
+              def resolve_type(obj, ctx)
+                if obj[:name] == "Fifi"
+                  Dog
+                else
+                  Cat
+                end
+              end
+            end
+          end
+          class Cat < GraphQL::Schema::Object
+            implements Pet
+          end
+
+          class Dog < GraphQL::Schema::Object
+            implements Pet
+          end
+
+          class Query < GraphQL::Schema::Object
+            field :pet, Pet do
+              argument :name, String
+            end
+
+            def pet(name:)
+              { name: name }
+            end
+          end
+
+          query(Query)
+          orphan_types(Cat, Dog)
+        end
+
+        it "calls the local definition, not the inherited one" do
+          res = InterfaceInheritanceSchema.execute("{ pet(name: \"Fifi\") { __typename } }")
+          assert_equal "Dog", res["data"]["pet"]["__typename"]
+
+          res = InterfaceInheritanceSchema.execute("{ pet(name: \"Pepper\") { __typename } }")
+          assert_equal "Cat", res["data"]["pet"]["__typename"]
+        end
       end
     end
   end

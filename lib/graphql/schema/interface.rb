@@ -20,6 +20,15 @@ module GraphQL
         # - Added as class methods to this interface
         # - Added as class methods to all child interfaces
         def definition_methods(&block)
+          # Use an instance variable to tell whether it's been included previously or not;
+          # You can't use constant detection because constants are brought into scope
+          # by `include`, which has already happened at this point.
+          if !defined?(@_definition_methods)
+            defn_methods_module = Module.new
+            @_definition_methods = defn_methods_module
+            const_set(:DefinitionMethods, defn_methods_module)
+            extend(self::DefinitionMethods)
+          end
           self::DefinitionMethods.module_eval(&block)
         end
 
@@ -47,20 +56,11 @@ module GraphQL
 
             child_class.type_membership_class(self.type_membership_class)
             child_class.ancestors.reverse_each do |ancestor|
-              if ancestor.const_defined?(:DefinitionMethods)
+              if ancestor.const_defined?(:DefinitionMethods) && ancestor != child_class
                 child_class.extend(ancestor::DefinitionMethods)
               end
             end
 
-            # Use an instance variable to tell whether it's been included previously or not;
-            # You can't use constant detection because constants are brought into scope
-            # by `include`, which has already happened at this point.
-            if !child_class.instance_variable_defined?(:@_definition_methods)
-              defn_methods_module = Module.new
-              child_class.instance_variable_set(:@_definition_methods, defn_methods_module)
-              child_class.const_set(:DefinitionMethods, defn_methods_module)
-              child_class.extend(child_class::DefinitionMethods)
-            end
             child_class.introspection(introspection)
             child_class.description(description)
             # If interfaces are mixed into each other, only define this class once

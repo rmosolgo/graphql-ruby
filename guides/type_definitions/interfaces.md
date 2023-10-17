@@ -177,6 +177,8 @@ end
 
 The type definition DSL uses this mechanism, too, so you can override those methods here also.
 
+Note: Under the hood, `definition_methods` causes a module to be `extend`ed by the Inteface. Any calls to `extend` or `implement` may override methods from `definition_methods`.
+
 ### Resolve Type
 
 When a field's return type is an interface, GraphQL has to figure out what _specific_ object type to use for the return value. In the example above, each `customer` must be categorized as an `Individual` or `Company`. You can do this by:
