@@ -138,7 +138,7 @@ module GraphQL
             # As a last ditch, try to force loading the return type:
             type.unwrap.name
           end
-          @connection = return_type_name.end_with?("Connection")
+          @connection = return_type_name.end_with?("Connection") && return_type_name != "Connection"
         else
           @connection
         end

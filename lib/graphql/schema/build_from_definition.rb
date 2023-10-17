@@ -432,14 +432,12 @@ module GraphQL
           builder = self
 
           field_definitions.each do |field_definition|
-            type_name = resolve_type_name(field_definition.type)
             resolve_method_name = -"resolve_field_#{field_definition.name}"
             schema_field_defn = owner.field(
               field_definition.name,
               description: field_definition.description,
               type: type_resolver.call(field_definition.type),
               null: true,
-              connection: type_name.end_with?("Connection"),
               connection_extension: nil,
               deprecation_reason: build_deprecation_reason(field_definition.directives),
               ast_node: field_definition,
@@ -486,15 +484,6 @@ module GraphQL
             end
           }
           resolve_type_proc
-        end
-
-        def resolve_type_name(type)
-          case type
-          when GraphQL::Language::Nodes::TypeName
-            return type.name
-          else
-            resolve_type_name(type.of_type)
-          end
         end
       end
 

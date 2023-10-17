@@ -841,4 +841,21 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     res = HashDefautSchema.execute('query { example { implicitLookup explicitLookup } }').to_h
     assert_equal({ "implicitLookup" => [], "explicitLookup" => [] }, res["data"]["example"])
   end
+
+  module FieldConnectionTest
+    class SomeConnection < GraphQL::Schema::Object; end
+    class Connection < GraphQL::Schema::Object; end
+  end
+
+  it "Automatically detects connection, but can be overridden" do
+    field = GraphQL::Schema::Field.new(name: "blah", owner: nil, type: FieldConnectionTest::SomeConnection)
+    assert field.connection?
+    field = GraphQL::Schema::Field.new(name: "blah", owner: nil, type: FieldConnectionTest::SomeConnection, connection: false)
+    refute field.connection?
+
+    field = GraphQL::Schema::Field.new(name: "blah", owner: nil, type: FieldConnectionTest::Connection)
+    refute field.connection?
+    field = GraphQL::Schema::Field.new(name: "blah", owner: nil, type: FieldConnectionTest::Connection, connection: true)
+    assert field.connection?
+  end
 end
