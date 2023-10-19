@@ -28,7 +28,7 @@ describe "Logger" do
       std_out, std_err = capture_io do
         nil_logger.error("Blah")
         nil_logger.warn("Something")
-        nil_logger.log("Hi")
+        nil_logger.error("Hi")
       end
       assert_equal "", std_out
       assert_equal "", std_err
