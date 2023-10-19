@@ -222,8 +222,9 @@ module GraphQL
       private
 
       def detect_was_authorized_by_scope_items
-        if (current_runtime_state = Thread.current[:__graphql_runtime_info]) &&
-              (query_runtime_state = current_runtime_state[@context.query])
+        if @context &&
+            (current_runtime_state = Thread.current[:__graphql_runtime_info]) &&
+            (query_runtime_state = current_runtime_state[@context.query])
           query_runtime_state.was_authorized_by_scope_items
         else
           nil
