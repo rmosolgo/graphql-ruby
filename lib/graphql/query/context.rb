@@ -114,7 +114,7 @@ module GraphQL
         @provided_values[key] = value
       end
 
-      def_delegators :@query, :trace, :interpreter?
+      def_delegators :@query, :trace, :interpreter?, :logger
 
       RUNTIME_METADATA_KEYS = Set.new([:current_object, :current_arguments, :current_field, :current_path])
       # @!method []=(key, value)

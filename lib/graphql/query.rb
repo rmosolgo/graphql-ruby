@@ -162,6 +162,14 @@ module GraphQL
 
       @result_values = nil
       @executed = false
+
+      @logger = if context && context[:logger] == false
+        Logger.new(IO::NULL)
+      elsif context && (l = context[:logger])
+        l
+      else
+        schema.default_logger
+      end
     end
 
     # If a document was provided to `GraphQL::Schema#execute` instead of the raw query string, we will need to get it from the document
@@ -368,6 +376,8 @@ module GraphQL
         @schema.after_lazy(value, &block)
       end
     end
+
+    attr_reader :logger
 
     private
 
