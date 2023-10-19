@@ -22,10 +22,11 @@ module GraphQL
       attr_reader :context
 
       def context=(new_ctx)
-        current_runtime_state = Thread.current[:__graphql_runtime_info]
-        query_runtime_state = current_runtime_state[new_ctx.query]
-        @was_authorized_by_scope_items = query_runtime_state.was_authorized_by_scope_items
         @context = new_ctx
+        if @was_authorized_by_scope_items.nil?
+          @was_authorized_by_scope_items = detect_was_authorized_by_scope_items
+        end
+        @context
       end
 
       # @return [Object] the object this collection belongs to
@@ -90,13 +91,7 @@ module GraphQL
         else
           default_page_size
         end
-        @was_authorized_by_scope_items = if @context
-          current_runtime_state = Thread.current[:__graphql_runtime_info]
-          query_runtime_state = current_runtime_state[@context.query]
-          query_runtime_state.was_authorized_by_scope_items
-        else
-          nil
-        end
+        @was_authorized_by_scope_items = detect_was_authorized_by_scope_items
       end
 
       def was_authorized_by_scope_items?
@@ -225,6 +220,15 @@ module GraphQL
       end
 
       private
+
+      def detect_was_authorized_by_scope_items
+        if (current_runtime_state = Thread.current[:__graphql_runtime_info]) &&
+              (query_runtime_state = current_runtime_state[@context.query])
+          query_runtime_state.was_authorized_by_scope_items
+        else
+          nil
+        end
+      end
 
       # @param argument [nil, Integer] `first` or `last`, as provided by the client
       # @param max_page_size [nil, Integer]
