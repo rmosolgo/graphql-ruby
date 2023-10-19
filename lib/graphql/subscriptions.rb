@@ -62,7 +62,7 @@ module GraphQL
     # @return [void]
     def trigger(event_name, args, object, scope: nil, context: {})
       # Make something as context-like as possible, even though there isn't a current query:
-      dummy_query = GraphQL::Query.new(@schema, "", validate: false, context: context)
+      dummy_query = GraphQL::Query.new(@schema, "{ __typename }", validate: false, context: context)
       context = dummy_query.context
       event_name = event_name.to_s
 
