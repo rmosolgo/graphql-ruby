@@ -40,6 +40,7 @@ describe GraphQL::Schema::Directive::Flagged do
 
     query(Query)
     orphan_types(PolarBear, Penguin)
+    default_logger(nil)
 
     def self.resolve_type(abs_type, obj, ctx)
       case obj[:type]

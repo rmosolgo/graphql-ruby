@@ -114,7 +114,7 @@ module GraphQL
         @provided_values[key] = value
       end
 
-      def_delegators :@query, :trace, :interpreter?, :logger
+      def_delegators :@query, :trace, :interpreter?
 
       RUNTIME_METADATA_KEYS = Set.new([:current_object, :current_arguments, :current_field, :current_path])
       # @!method []=(key, value)
@@ -235,6 +235,10 @@ module GraphQL
       # @return [Boolean] true if this namespace was accessed before
       def namespace?(ns)
         @storage.key?(ns)
+      end
+
+      def logger
+        @query && @query.logger
       end
 
       def inspect

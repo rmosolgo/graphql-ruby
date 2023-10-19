@@ -294,8 +294,8 @@ module GraphQL
             if possible_types(type_defn).any?
               true
             else
-              if @context.respond_to?(:logger)
-                @context.logger.debug { "Interface `#{type_defn.graphql_name}` hidden because it has no visible implementors" }
+              if @context.respond_to?(:logger) && (logger = @context.logger)
+                logger.debug { "Interface `#{type_defn.graphql_name}` hidden because it has no visible implementors" }
               end
               false
             end
