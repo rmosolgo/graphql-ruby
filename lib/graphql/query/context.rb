@@ -237,6 +237,10 @@ module GraphQL
         @storage.key?(ns)
       end
 
+      def logger
+        @query && @query.logger
+      end
+
       def inspect
         "#<Query::Context ...>"
       end

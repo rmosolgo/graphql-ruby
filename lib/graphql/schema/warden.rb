@@ -291,7 +291,14 @@ module GraphQL
           if type_defn.kind.union?
             possible_types(type_defn).any? && (referenced?(type_defn) || orphan_type?(type_defn))
           elsif type_defn.kind.interface?
-            possible_types(type_defn).any?
+            if possible_types(type_defn).any?
+              true
+            else
+              if @context.respond_to?(:logger) && (logger = @context.logger)
+                logger.debug { "Interface `#{type_defn.graphql_name}` hidden because it has no visible implementors" }
+              end
+              false
+            end
           else
             if referenced?(type_defn)
               true

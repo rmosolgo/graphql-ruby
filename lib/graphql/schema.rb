@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require "logger"
 require "graphql/schema/addition"
 require "graphql/schema/always_visible"
 require "graphql/schema/base_64_encoder"
@@ -832,6 +833,26 @@ module GraphQL
           superclass.default_analysis_engine
         else
           @default_analysis_engine ||= GraphQL::Analysis::AST
+        end
+      end
+
+      def default_logger(new_default_logger = NOT_CONFIGURED)
+        if NOT_CONFIGURED.equal?(new_default_logger)
+          if defined?(@default_logger)
+            @default_logger
+          elsif superclass.respond_to?(:default_logger)
+            superclass.default_logger
+          elsif defined?(Rails)
+            Rails.logger
+          else
+            def_logger = Logger.new($stdout)
+            def_logger.info! # It doesn't output debug info by default
+            def_logger
+          end
+        elsif new_default_logger == nil
+          @default_logger = Logger.new(IO::NULL)
+        else
+          @default_logger = new_default_logger
         end
       end
 
