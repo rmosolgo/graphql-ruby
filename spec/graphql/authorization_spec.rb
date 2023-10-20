@@ -339,7 +339,6 @@ describe "GraphQL::Authorization" do
       query(Query)
       mutation(Mutation)
       directive(Nothing)
-      default_logger(nil)
 
       lazy_resolve(Box, :value)
 

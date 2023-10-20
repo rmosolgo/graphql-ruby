@@ -500,7 +500,6 @@ describe GraphQL::Schema::Warden do
       |
 
       schema = GraphQL::Schema.from_definition(sdl)
-      schema.default_logger(nil)
       schema.define_singleton_method(:visible?) do |member, ctx|
         super(member, ctx) && (ctx[:hiding] ? member.graphql_name != "Repository" : true)
       end
@@ -599,7 +598,6 @@ describe GraphQL::Schema::Warden do
       "
 
       schema = GraphQL::Schema.from_definition(sdl)
-      schema.default_logger(nil)
       schema.define_singleton_method(:visible?) do |member, context|
         res = super(member, context)
         if res && context[:except]

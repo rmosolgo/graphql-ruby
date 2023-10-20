@@ -845,7 +845,9 @@ module GraphQL
           elsif defined?(Rails)
             Rails.logger
           else
-            Logger.new($stdout)
+            def_logger = Logger.new($stdout)
+            def_logger.info! # It doesn't output debug info by default
+            def_logger
           end
         elsif new_default_logger == nil
           @default_logger = Logger.new(IO::NULL)

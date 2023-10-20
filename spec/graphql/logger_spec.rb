@@ -36,38 +36,51 @@ describe "Logger" do
   end
 
   describe "during execution" do
-
-    class LoggerSchema < GraphQL::Schema
-      LOG_STRING = StringIO.new
-      LOGGER = Logger.new(LOG_STRING)
-      LOGGER.level = :debug
-
-      module Node
-        include GraphQL::Schema::Interface
-        field :id, ID
-      end
-
-      class Query < GraphQL::Schema::Object
-        field :node, Node do
-          argument :id, ID
+    module LoggerTest
+      class DefaultLoggerSchema < GraphQL::Schema
+        module Node
+          include GraphQL::Schema::Interface
+          field :id, ID
         end
 
-        def node(id:)
+        class Query < GraphQL::Schema::Object
+          field :node, Node do
+            argument :id, ID
+          end
 
+          def node(id:)
+
+          end
         end
+        query(Query)
       end
-      query(Query)
-      default_logger(LOGGER)
+
+      class CustomLoggerSchema < DefaultLoggerSchema
+        LOG_STRING = StringIO.new
+        LOGGER = Logger.new(LOG_STRING)
+        LOGGER.level = :debug
+        default_logger(LOGGER)
+      end
     end
 
     before do
-      LoggerSchema::LOG_STRING.truncate(0)
+      LoggerTest::CustomLoggerSchema::LOG_STRING.truncate(0)
     end
 
     it "logs about hidden interfaces with no implementations" do
-      res = LoggerSchema.execute("{ node(id: \"5\") { id } }")
+      res = LoggerTest::CustomLoggerSchema.execute("{ node(id: \"5\") { id } }")
       assert_equal ["Field 'node' doesn't exist on type 'Query'"], res["errors"].map { |err| err["message"] }
-      assert_includes LoggerSchema::LOG_STRING.string, "Interface `Node` hidden because it has no visible implementors"
+      assert_includes LoggerTest::CustomLoggerSchema::LOG_STRING.string, "Interface `Node` hidden because it has no visible implementors"
+    end
+
+    it "doesn't print messages by default" do
+      res = nil
+      stdout, stderr = capture_io do
+        res = LoggerTest::DefaultLoggerSchema.execute("{ node(id: \"5\") { id } }")
+      end
+      assert_equal ["Field 'node' doesn't exist on type 'Query'"], res["errors"].map { |err| err["message"] }
+      assert_equal "", stdout
+      assert_equal "", stderr
     end
   end
 end
