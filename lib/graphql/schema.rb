@@ -502,7 +502,7 @@ module GraphQL
     # @param field_name [String]
     # @return [GraphQL::Field, nil] The field named `field_name` on `parent_type`
     # @see [GraphQL::Schema::Warden] Restricted access to members of a schema
-    def get_field(parent_type, field_name)
+    def get_field(parent_type, field_name, _context = GraphQL::Query::NullContext)
       with_definition_error_check do
         parent_type_name = case parent_type
         when GraphQL::BaseType, Class, Module
