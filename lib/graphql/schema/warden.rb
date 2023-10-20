@@ -138,7 +138,7 @@ module GraphQL
       def get_field(parent_type, field_name)
         @visible_parent_fields ||= read_through do |type|
           read_through do |f_name|
-            field_defn = @schema.get_field(type, f_name)
+            field_defn = @schema.get_field(type, f_name, @context)
             if field_defn && visible_field?(field_defn, nil, type)
               field_defn
             else
