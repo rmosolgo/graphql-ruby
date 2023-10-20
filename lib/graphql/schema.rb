@@ -680,12 +680,20 @@ module GraphQL
         else
           string_or_document
         end
-        query = GraphQL::Query.new(self, document: doc, context: context)
+        query = query_class.new(self, document: doc, context: context)
         validator_opts = { schema: self }
         rules && (validator_opts[:rules] = rules)
         validator = GraphQL::StaticValidation::Validator.new(**validator_opts)
         res = validator.validate(query, timeout: validate_timeout, max_errors: validate_max_errors)
         res[:errors]
+      end
+
+      def query_class(new_query_class = NOT_CONFIGURED)
+        if NOT_CONFIGURED.equal?(new_query_class)
+          @query_class || (superclass.respond_to?(:query_class) ? superclass.query_class : GraphQL::Query)
+        else
+          @query_class = new_query_class
+        end
       end
 
       attr_writer :validate_max_errors
