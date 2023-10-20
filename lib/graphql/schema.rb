@@ -931,11 +931,7 @@ module GraphQL
       end
 
       def resolve_type(type, obj, ctx)
-        if type.kind.object?
-          type
-        else
-          raise GraphQL::RequiredImplementationMissingError, "#{self.name}.resolve_type(type, obj, ctx) must be implemented to use Union types or Interface types (tried to resolve: #{type.name})"
-        end
+        raise GraphQL::RequiredImplementationMissingError, "#{self.name}.resolve_type(type, obj, ctx) must be implemented to use Union types, Interface types, or `loads:` (tried to resolve: #{type.name})"
       end
       # rubocop:enable Lint/DuplicateMethods
 
