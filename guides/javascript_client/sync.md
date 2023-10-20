@@ -104,12 +104,15 @@ function fetchQuery(operation, variables, cacheConfig, uploadables) {
 
 ## Use With Relay Persisted Output
 
-Relay 2.0+ includes a `--persist-output` option for `relay-compiler` which works perfectly with GraphQL-Ruby. (Relay's own docs, for reference: https://relay.dev/docs/en/persisted-queries.)
+To use Relay's persisted output, add a `"file": ...` to your project's [`persistConfig` object](https://relay.dev/docs/guides/persisted-queries/). For example:
 
-When generating queries for Relay, include `--persist-output`:
-
-```
-$ relay-compiler ... --persist-output path/to/persisted-queries.json
+```json
+  "relay": {
+    ...
+    "persistConfig": {
+      "file": "./persisted-queries.json"
+    }
+  },
 ```
 
 Then, push Relay's generated queries to your OperationStore server with `--relay-persisted-output`:
@@ -141,7 +144,7 @@ function fetchQuery(operation, variables,) {
 }
 ```
 
-(Inspired by https://relay.dev/docs/en/persisted-queries#network-layer-changes.)
+(Inspired by https://relay.dev/docs/guides/persisted-queries/#network-layer-changes.)
 
 Now, your Relay app will only send operation IDs over the wire to the server.
 
