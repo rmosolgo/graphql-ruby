@@ -97,8 +97,10 @@ That way, you can check for specific selections on the nodes in a connection.
 
 ## Lookaheads with aliases
 
-If your want to find selection by it's [alias](https://spec.graphql.org/June2018/#sec-Field-Alias), you can use method `#alias_selection` or check if it exists with `#selects_alias?`. In this case, lookahead will check if there is a field with the provided alias, and otherwise return `NULL_LOOKAHEAD`.
-For instance, imagine that you have a following query, than can find a bird species by its name:
+If you want to find selection by its [alias](https://spec.graphql.org/June2018/#sec-Field-Alias), you can use `#alias_selection(...)` or check if it exists with `#selects_alias?`. In this case, the lookahead will check if there is a field with the provided alias.
+
+
+For example, this query can find a bird species by its name:
 
 ```graphql
 query {
@@ -112,7 +114,7 @@ query {
 }
 ```
 
-In this case, you can get the lookahead for each selection in a following way:
+You can get the lookahead for each selection in a following way:
 
 ```ruby
 def find_bird_species(by_name:, lookahead:)

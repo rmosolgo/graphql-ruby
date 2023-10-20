@@ -106,10 +106,8 @@ module GraphQL
       # @param field_name [String, Symbol]
       # @return [GraphQL::Execution::Lookahead]
       def selection(field_name, selected_type: @selected_type, arguments: nil)
-        next_field_name = nil
         next_field_defn = case field_name
         when String
-          next_field_name = field_name
           @query.get_field(selected_type, field_name)
         when Symbol
           # Try to avoid the `.to_s` below, if possible
@@ -123,18 +121,17 @@ module GraphQL
               .tap(&:flatten!)
           end
 
-          # Symbol#name is only present on 3.0+
-          sym_s = field_name.respond_to?(:name) ? field_name.name : field_name.to_s
-          next_field_name = Schema::Member::BuildType.camelize(sym_s)
 
           if (match_by_orig_name = all_fields.find { |f| f.original_name == field_name })
             match_by_orig_name
           else
-            @query.get_field(selected_type, next_field_name)
+            # Symbol#name is only present on 3.0+
+            sym_s = field_name.respond_to?(:name) ? field_name.name : field_name.to_s
+            guessed_name = Schema::Member::BuildType.camelize(sym_s)
+            @query.get_field(selected_type, guessed_name)
           end
         end
-
-        lookahead_for_selection(next_field_name, next_field_defn, selected_type, arguments)
+        lookahead_for_selection(next_field_defn, selected_type, arguments)
       end
 
       # Like {#selection}, but for aliases.
@@ -147,8 +144,7 @@ module GraphQL
         alias_node = lookup_alias_node(ast_nodes, alias_name)
         return NULL_LOOKAHEAD unless alias_node
 
-        next_field_name = alias_node.name
-        next_field_defn = @query.get_field(selected_type, next_field_name)
+        next_field_defn = @query.get_field(selected_type, alias_node.name)
 
         alias_arguments = @query.arguments_for(alias_node, next_field_defn)
         if alias_arguments.is_a?(::GraphQL::Execution::Interpreter::Arguments)
@@ -157,7 +153,7 @@ module GraphQL
 
         return NULL_LOOKAHEAD if arguments && arguments != alias_arguments
 
-        alias_selections[alias_cache_key] = lookahead_for_selection(next_field_name, next_field_defn, selected_type, alias_arguments, alias_name)
+        alias_selections[alias_cache_key] = lookahead_for_selection(next_field_defn, selected_type, alias_arguments, alias_name)
       end
 
       # Like {#selection}, but for all nodes.
@@ -296,14 +292,13 @@ module GraphQL
         end
       end
 
-      NO_ALIAS = Object.new
       # If a selection on `node` matches `field_name` (which is backed by `field_defn`)
       # and matches the `arguments:` constraints, then add that node to `matches`
-      def find_selected_nodes(node, field_name, field_defn, arguments:, matches:, alias_name: NO_ALIAS)
+      def find_selected_nodes(node, field_name, field_defn, arguments:, matches:, alias_name: NOT_CONFIGURED)
         return if skipped_by_directive?(node)
         case node
         when GraphQL::Language::Nodes::Field
-          if node.name == field_name && (alias_name == NO_ALIAS || node.alias == alias_name)
+          if node.name == field_name && (NOT_CONFIGURED.equal?(alias_name) || node.alias == alias_name)
             if arguments.nil? || arguments.empty?
               # No constraint applied
               matches << node
@@ -335,10 +330,11 @@ module GraphQL
         end
       end
 
-      def lookahead_for_selection(field_name, field_defn, selected_type, arguments, alias_name = NO_ALIAS)
+      def lookahead_for_selection(field_defn, selected_type, arguments, alias_name = NOT_CONFIGURED)
         return NULL_LOOKAHEAD unless field_defn
 
         next_nodes = []
+        field_name = field_defn.name
         @ast_nodes.each do |ast_node|
           ast_node.selections.each do |selection|
             find_selected_nodes(selection, field_name, field_defn, arguments: arguments, matches: next_nodes, alias_name: alias_name)
