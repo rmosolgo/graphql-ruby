@@ -24,19 +24,22 @@ module AppOpticsAPM
   end
 
   module Config
-    @@config = {}
+    class << self
+      def [](key)
+        config[key.to_sym]
+      end
 
-    def self.[](key)
-      @@config[key.to_sym]
-    end
+      def []=(key, value)
+        config[key.to_sym] = value
+      end
 
-    def self.[]=(key, value)
-      key = key.to_sym
-      @@config[key] = value
-    end
+      def clear
+        config.clear
+      end
 
-    def self.clear
-      @@config = {}
+      def config
+        @config ||= {}
+      end
     end
   end
 

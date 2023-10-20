@@ -7,9 +7,15 @@ module GraphQL
 
       def self.coerce_result(value, ctx)
         str = value.to_s
-        str.encoding == Encoding::UTF_8 ? str : str.encode(Encoding::UTF_8)
+        if str.encoding == Encoding::UTF_8 || str.ascii_only?
+          str
+        elsif str.frozen?
+          str.encode(Encoding::UTF_8)
+        else
+          str.encode!(Encoding::UTF_8)
+        end
       rescue EncodingError
-        err = GraphQL::StringEncodingError.new(str)
+        err = GraphQL::StringEncodingError.new(str, context: ctx)
         ctx.schema.type_error(err, ctx)
       end
 

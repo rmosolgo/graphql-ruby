@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-# test_via: ../backtrace.rb
 module GraphQL
   class Backtrace
     # When {Backtrace} is enabled, raised errors are wrapped with {TracedError}.

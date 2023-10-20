@@ -38,12 +38,6 @@ describe GraphQL::Schema::NonNull do
     end
   end
 
-  describe "to_graphql" do
-    it "will return a non null type" do
-      assert_kind_of GraphQL::NonNullType, non_null_type.to_graphql
-    end
-  end
-
   describe "double-nulling" do
     it "is a parse error in a query" do
       res = Jazz::Schema.execute "
@@ -51,8 +45,13 @@ describe GraphQL::Schema::NonNull do
         find(id: $id) { __typename }
       }
       "
+      expected_err = if USING_C_PARSER
+        "syntax error, unexpected BANG (\"!\"), expecting RPAREN or VAR_SIGN at [2, 21]"
+      else
+        'Parse error on "!" (BANG) at [2, 21]'
+      end
 
-      assert_equal ['Parse error on "!" (BANG) at [2, 21]'], res["errors"].map { |e| e["message"] }
+      assert_equal [expected_err], res["errors"].map { |e| e["message"] }
     end
   end
 
@@ -63,8 +62,6 @@ describe GraphQL::Schema::NonNull do
       end
 
       query Query
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
     end
 
     it "doesn't break on description" do

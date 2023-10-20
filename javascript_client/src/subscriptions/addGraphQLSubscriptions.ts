@@ -1,7 +1,7 @@
 import ActionCableSubscriber from "./ActionCableSubscriber"
 import PusherSubscriber from "./PusherSubscriber"
-import { Pusher } from "pusher-js"
-import { Cable } from "actioncable"
+import Pusher from "pusher-js"
+import type { Consumer } from "@rails/actioncable"
 
 interface Subscriber {
   subscribe: Function
@@ -16,7 +16,7 @@ interface Subscriber {
  * to the provided networkInterface.
  * @example Adding ActionCable subscriptions to a HTTP network interface
  *   // Load ActionCable and create a consumer
- *   var ActionCable = require('actioncable')
+ *   var ActionCable = require('@rails/actioncable')
  *   var cable = ActionCable.createConsumer()
  *   window.cable = cable
  *
@@ -48,7 +48,7 @@ interface Subscriber {
  * @param {ActionCable.Consumer} options.cable - A cable for subscribing with
  * @param {Pusher} options.pusher - A pusher client for subscribing with
 */
-function addGraphQLSubscriptions(networkInterface: any, options: { pusher?: Pusher, cable?: Cable, subscriber?: Subscriber}) {
+function addGraphQLSubscriptions(networkInterface: any, options: { pusher?: Pusher, cable?: Consumer, subscriber?: Subscriber, decompress?: (compressed: string) => any, channelName?: string }) {
   if (!options) {
     options = {}
   }
@@ -58,9 +58,9 @@ function addGraphQLSubscriptions(networkInterface: any, options: { pusher?: Push
     // Right now this is just for testing
     subscriber = options.subscriber
   } else if (options.cable) {
-    subscriber = new ActionCableSubscriber(options.cable, networkInterface)
+    subscriber = new ActionCableSubscriber(options.cable, networkInterface, options.channelName)
   } else if (options.pusher) {
-    subscriber = new PusherSubscriber(options.pusher, networkInterface)
+    subscriber = new PusherSubscriber(options.pusher, networkInterface, options.decompress)
   } else {
     throw new Error("Must provide cable: or pusher: option")
   }

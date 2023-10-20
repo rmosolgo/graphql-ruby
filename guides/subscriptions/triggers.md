@@ -62,3 +62,13 @@ MySchema.subscriptions.trigger(:comment_added, {}, comment, scope: author_id)
 ```
 
 Since this trigger has a `scope:`, only subscribers with a matching scope value will be updated.
+
+## Validation
+
+By default, subscriptions are re-validated when a trigger causes them to send updates. To disable this, you can pass `validate_update: false` when hooking up subscriptions to your schema. For example:
+
+```ruby
+use SomeSubscriptions, validate_update: false
+```
+
+If you're sure you won't be releasing breaking changes to your schema, this setting can reduce overhead in evaluating updates.

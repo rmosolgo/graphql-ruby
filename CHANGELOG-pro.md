@@ -8,6 +8,432 @@
 
 ### Bug Fix
 
+# 1.24.9 (4 Oct 2023)
+
+### Bug Fix
+
+- OperationStore: Preserve variable default values of `false` when normalizing queries
+
+# 1.24.8 (29 Aug 2023)
+
+### Bug Fix
+
+- OperationStore: search for operation during `Query#initialize` to avoid races with other instrumentation. Add `use ... trace: true` to get the old behavior.
+
+# 1.24.7 (16 June 2023)
+
+### Bug Fix
+
+- Stable relation connections: quote table names and column names in `WHERE` clauses #4508
+
+# 1.24.6 (24 May 2023)
+
+### New Features
+
+- Defer: Add `incremental: true` for new proposed wire format, add example for working with GraphQL-Batch #4477
+
+# 1.24.5 (24 May 2023)
+
+### Bug Fix
+
+- Stable relation connection: Quote table names and column names in selects and orders #4485
+
+# 1.24.4 (18 April 2023)
+
+### Bug Fix
+
+- `@defer`: update `context[:current_path]` usage to fix `path:` on deferred errors
+
+# 1.24.3 (14 April 2023)
+
+### Bug Fix
+
+- `OperationStore`: fix when used with Changesets (or other ways of defining arguments with the same name) #4440
+
+# 1.24.2 (20 Mar 2023)
+
+### Bug Fix
+
+- Remove debug output, oops
+
+# 1.24.1 (20 Mar 2023)
+
+### Bug Fix
+
+- Fix `OperationStore` with new module-based execution traces (#4389)
+
+# 1.24.0 (10 Feb 2023)
+
+### New Features
+
+- Support the `redis-client` gem as `redis:`
+
+# 1.23.9 (2 Feb 2023)
+
+### Bug Fix
+
+- Dashboard: Support Ruby 3.2.0
+
+# 1.23.8 (27 Jan 2023)
+
+### New Features
+
+- OperationStore: Support `Changeset-Version` header for syncing with changesets #4304
+
+# 1.23.7 (25 Jan 2023)
+
+### Bug Fix
+
+- Stable Relation Connections: Fix handling of Postgres JSON accesses
+
+# 1.23.6
+
+### New Features
+
+- Subscriptions: accept `connection_pool:` instead of `redis:` for use with the `connection_pool` gem
+
+### Bug Fix
+
+- Stable connections: rescue `ActiveRecord::StatementInvalid` when loading nodes and return a client-facing error instead
+
+# 1.23.5 (29 December 2022)
+
+### New Features
+
+- Ably subscriptions: Also listen for `presence.leave` webhooks to clean up subscriptions more quickly
+
+# 1.23.4 (20 December 2022)
+
+### Bug Fix
+
+- Dashboard: nicely render subscriptions that are not found or cleaned up by `read_subscription_failed_error`
+
+# 1.23.3 (19 December 2022)
+
+### New Features
+
+- Add `GraphQL::Pro::Subscriptions#read_subscription_failed_error` for handling errors that are raised when reloading queries from storage
+
+# 1.23.2 (18 October 2022)
+
+### New Features
+
+- Add dashboard component for Enterprise mutation limiter
+
+# 1.23.1 (25 August 2022)
+
+### Bug Fix
+
+- Redis: update redis usage to be forward-compatible with redis 5.x #4167
+
+# 1.23.0 (2 August 2022)
+
+### New Features
+
+- Stable connections: support SQL queries that sort by `IS NOT NULL` #4153
+
+# 1.22.3 (26 July 2022)
+
+### Bug Fix
+
+- Stable connections: handle `edges {...}` when an invalid cursor is given #4148
+
+# 1.22.2 (20 April 2022)
+
+### Bug Fix
+
+- Use `deprecated_accepts_definitions` to stop warnings when loading this gem on 1.13.x
+
+# 1.22.1 (22 March 2022)
+
+### Bug Fix
+
+- Pusher subscriptions: don't try to send empty trigger batches to Pusher
+
+# 1.22.0 (19 March 2022)
+
+### New Features
+
+- Pusher subscriptions: it now sends updates in groups of 10 by default, pass `use ..., batch_size: 1` to revert to the previous behavior.
+- OperationStore: when using ActiveRecord for storage, it now batches updates to `last_used_at` every 5 seconds. Pass `use ..., update_last_used_at_every: 0` to update that column synchronously, instead, as before.
+
+# 1.21.6 (16 March 2022)
+
+### Bug Fix
+
+- OperationStore: Fix no method error in Redis pipeline usage
+
+# 1.21.5 (7 March 2022)
+
+### Bug Fix
+
+- Postgres stable connection: support more complex aliased selects #3976
+
+# 1.21.4 (15 February 2022)
+
+### Bug Fix
+
+- Encoders: don't extend `DeprecatedDefine` if it's not present (graphql-ruby < 1.12)
+
+# 1.21.3 (9 February 2022)
+
+### New Features
+
+- Future-proof for GraphQL-Ruby 2.0
+
+# 1.21.2 (27 January 2022)
+
+### New Features
+
+- Dashboard, Routes: support lazy-loading the schema with `Routes::Lazy` #3868
+- OperationStore: Update deprecated usage of `@redis.pipelined` to address warning
+
+# 1.21.1 (20 January 2022)
+
+### Bug Fix
+
+- Stream, Defer: Include `hasNext: true|false` in patches
+
+# 1.21.0 (20 January 2022)
+
+### New Features
+
+- Stream: Add `@stream` directive for evaluating list items one-at-a-time
+
+# 1.20.4 (4 December 2021)
+
+### Bug Fix
+
+- Stable connections: Fix using startCursor / endCursor without nodes #3752
+
+# 1.20.3 (27 November 2021)
+
+### Bug Fix
+
+- Stable Connections: Properly handle cursors containing invalid JSON #3735
+
+# 1.20.2 (15 November 2021)
+
+### New Features
+
+- Operation Store sync: ActiveRecord backend performance improvements: when syncing operations, only validate newly-added operations, reduce allocations when normalizing incoming query strings
+
+# 1.20.1 (8 November 2021)
+
+### Bug Fix
+
+- Operation Store sync: fix when operations are re-synced with new aliases
+
+# 1.20.0 (5 November 2021)
+
+### New Features
+
+- Operation Store: Use Rails `insert_all` for better performance when adding new operations
+
+# 1.19.2 (26 October 2021)
+
+### New Features
+
+- Pundit and CanCan integrations: Add `ResolverIntegration` modules for plain resolvers #3392
+
+### Bug Fix
+
+- OperationStore Redis backend: pipeline updates to last_used_at values #3672
+
+# 1.19.1 (15 October 2021)
+
+### Bug Fix
+
+- OperationStore: fix a stack overflow error on GraphQL 1.9 #3653
+
+# 1.19.0 (13 October 2021)
+
+### New Features
+
+- Dashboard: add a component for GraphQL-Enterprise rate limiters
+# 1.18.3 (1 Sept 2021)
+
+### Breaking Changes
+
+- Stable cursors: raise an error on unrecognized orderings instead of ignoring them #3605
+
+### Bug Fix
+
+- Stable cursors: Handle `Arel::Attributes::Attribute` and `Arel::SqlLiteral` #3605
+
+# 1.18.2 (16 August 2021)
+
+### Bug Fix
+
+- Stable connections: nicely handle incoming cursors with too many sort values #3581
+
+# 1.18.1 (20 July 2021)
+
+### Bug Fix
+
+- Stable connections: improve handling of `SELECT` with `CASE` #3558
+- Defer: fix to support runtime wrapper objects in graphql-ruby 1.12.13
+
+# 1.18.0 (31 May 2021)
+
+### New Features
+
+- Ably subscriptions: send `quickAck: true` for a faster response from Ably
+
+### Bug Fix
+
+- Defer: support dataloader inside deferred blocks
+
+# 1.17.15 (29 Apr 2021)
+
+### New Features
+
+- Defer: support `label:` argument which is returned in the patch for that deferral #3454
+
+# 1.17.14 (14 Apr 2021)
+
+- Dashboard: fix stack error when OperationStore isn't configured on a class-based schema
+
+# 1.17.13 (14 Apr 2021)
+
+- Stable Connections: When using aliases and GROUP BY, replace the alias when building a HAVING condition.
+- Pundit integration: Add a `use_owner_role(true)` configuration option
+
+# 1.17.12 (3 Apr 2021)
+
+### Bug Fix
+
+- Stable Connections: Re-select aliased fields that are referenced by ORDER BY. #3421
+
+# 1.17.11 (12 Mar 2021)
+
+### Bug Fix
+
+- Pundit integration: properly halt when `unauthorized_by_pundit` returns errors-as-data after a mutation argument fails authorization #3384
+
+# 1.17.10 (11 Mar 2021)
+
+### Bug Fix
+
+- Pundit, CanCan integrations: properly call configured auth hooks for arguments that are lists and input objects
+
+# 1.17.9 (3 Mar 2021)
+
+### Bug Fix
+
+- Fix OperationStore assignment on GraphQL-Ruby 1.9
+
+# 1.17.8 (23 Feb 2021)
+
+### New Features
+
+- Subscriptions: change the default `cleanup_delay_s:` to 5 seconds (use `cleanup_delay_s: 0` to get the old behavior)
+
+### Bug Fix
+
+- Subscriptions: Handle unsubscribe race condition #3357
+
+# 1.17.7 (19 Feb 2021)
+
+### New Features
+
+- CanCan integration: support `can_can_subject:` config for overriding the use of `object` as the CanCan subject #3350
+
+### Bug Fixes
+
+- Subscriptions: Support `Redis::Namespace` without deprecation warnings for `script load` #3347
+
+# 1.17.6 (18 Feb 2021)
+
+### New Features
+
+- Stable connections: implement `range_add_edge` to leverage GraphQL-Ruby 1.12.5's improved RangeAdd #2184
+
+### Bug Fix
+
+- Defer: Update to work with Dataloader
+
+# 1.17.5 (13 Feb 2021)
+
+### Bug Fix
+
+- Subscriptions: Use `MULTI` instead of Lua for some operations
+- Subscriptions: Use `EVAL_SHA` for duplicate scripts to reduce network overhead #3285
+- Subscriptions: Don't use `redis.call`, which is unsupported in the `redis-namespace` gem #3322
+
+# 1.17.4 (4 Feb 2021)
+
+## Bug Fix
+
+- Stable Relation Connection: Don't emit `OR ... IS NULL` for columns that are known to be `null: false` (this improves index utilization)
+
+## 1.17.3 (2 Feb 2021)
+
+### New Features
+
+- Pusher subscriptions: `context[:compress_pusher_payload] = true` will cause the payload to be gzipped before being sent to Pusher
+
+## 1.17.2 (30 Jan 2021)
+
+### Bug Fix
+
+- Subscriptions: don't generate keys inside Lua scripts (for redis-namespace compatibility, and probably better support for Redis cluster) #3307
+
+## 1.17.1 (25 Jan 2021)
+
+### New Features
+
+- OperationStore: add `OperationStore::AddOperationBatch.call` for adding data directly
+- Subscriptions: use Lua scripts for more efficient Redis access
+
+## 1.17.0 (20 Jan 2021)
+
+### New Features
+
+- Updates for 1.12.0 compatibility
+
+### Bug Fix
+
+- OperationStore: improve performance by batching reads and writes during updates
+
+## 1.16.2 (21 Dec 2020)
+
+### New Features
+
+- Subscriptions: Add `stale_ttl_s:` and `cleanup_delay_s:` to customize persistence in Redis #3252
+
+## 1.16.1 (3 Dec 2020)
+
+### Bug Fix
+
+- Fix duplicate calls to `Argument#authorized?` in CanCan and Pundit integrations #3242
+
+## 1.16.0 (10 Nov 2020)
+
+### New Features
+
+- Ably Subscriptions: `cipher_base:` sets up end-to-end encryption
+
+## 1.15.7 (29 Sept 2020)
+
+### Bug Fix
+
+- Encoder: fix Ruby 2.7 warning #3161
+- Stable connections: Handle `ARRAY[...]` selections and cursors on Postgres #3166
+- Pundit: properly lookup policies for list inputs #3146
+
+## 1.15.6 (17 Sept 2020)
+
+### Bug Fix
+
+- Stable Connections: Use method access to get `.cursor_#{idx}` values instead of `.attributes[:cursor_#{idx}]`, fixes #3149
+
+## 1.15.5
+
+### New Features
+
+- Stable Connections: use `.to_sql` to handle orderings that use complex Arel expressions (#3109)
+
 ## 1.15.4 (28 July 2020)
 
 ### New Features

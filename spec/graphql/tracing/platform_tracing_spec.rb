@@ -30,7 +30,11 @@ describe GraphQL::Tracing::PlatformTracing do
 
     def platform_trace(platform_key, key, data)
       TRACE << platform_key
-      yield
+      res = yield
+      if res.is_a?(GraphQL::ExecutionError)
+        TRACE << "returned error"
+      end
+      res
     end
   end
 
@@ -72,11 +76,10 @@ describe GraphQL::Tracing::PlatformTracing do
       expected_trace = [
         # This is from the extra validation
         "v",
-        # Interestingly, lex and parse are _before_ execute multiplex in this case
-        "l",
-        "p",
         "em",
         "am",
+        "l",
+        "p",
         "v",
         "aq",
         "eq",
@@ -93,6 +96,12 @@ describe GraphQL::Tracing::PlatformTracing do
       # Then execute
       query.result
       assert_equal expected_trace, CustomPlatformTracer::TRACE
+    end
+
+    it "gets execution errors raised from field resolution" do
+      scalar_schema = Class.new(Dummy::Schema) { use(CustomPlatformTracer, trace_scalars: true) }
+      scalar_schema.execute("{ executionError }")
+      assert_includes CustomPlatformTracer::TRACE, "returned error"
     end
 
     it "traces resolve_type calls" do
@@ -113,6 +122,53 @@ describe GraphQL::Tracing::PlatformTracing do
           "Milk.authorized",
           "DynamicFields.authorized",
         ]
+
+      assert_equal expected_trace, CustomPlatformTracer::TRACE
+    end
+
+    it "traces resolve_type and differentiates field calls on different types" do
+      scalar_schema = Class.new(Dummy::Schema) { use(CustomPlatformTracer, trace_scalars: true) }
+
+      scalar_schema.execute(" { allEdible { __typename fatContent } }")
+      expected_trace = [
+        "em",
+        "am",
+        "l",
+        "p",
+        "v",
+        "aq",
+        "eq",
+        "Query.authorized",
+        "Q.a",
+        "Edible.resolve_type",
+        "Edible.resolve_type",
+        "Edible.resolve_type",
+        "Edible.resolve_type",
+        "eql",
+        "Edible.resolve_type",
+        "Cheese.authorized",
+        "Cheese.authorized",
+        "DynamicFields.authorized",
+        "D._",
+        "C.f",
+        "Edible.resolve_type",
+        "Cheese.authorized",
+        "Cheese.authorized",
+        "DynamicFields.authorized",
+        "D._",
+        "C.f",
+        "Edible.resolve_type",
+        "Cheese.authorized",
+        "Cheese.authorized",
+        "DynamicFields.authorized",
+        "D._",
+        "C.f",
+        "Edible.resolve_type",
+        "Milk.authorized",
+        "DynamicFields.authorized",
+        "D._",
+        "E.f",
+      ]
 
       assert_equal expected_trace, CustomPlatformTracer::TRACE
     end

@@ -1,4 +1,5 @@
 import sync from "../sync"
+import Logger from "../sync/logger"
 var fs = require("fs")
 var nock = require("nock")
 
@@ -19,10 +20,28 @@ describe("sync operations", () => {
   beforeEach(() => {
     global.console.error = jest.fn()
     global.console.log = jest.fn()
+    if (fs.existsSync("./src/OperationStoreClient.js")) {
+      fs.unlinkSync("./src/OperationStoreClient.js")
+    }
   })
 
   afterEach(() => {
     jest.clearAllMocks();
+  })
+
+  describe("generating artifacts without syncing", () => {
+    it("works without a URL", () => {
+      var options = {
+        client: "test-1",
+        path: "./src/__tests__/documents",
+      }
+
+      return sync(options).then(function() {
+        var generatedCode = fs.readFileSync("./src/OperationStoreClient.js", "utf8")
+        expect(generatedCode).toMatch('"GetStuff": "b8086942c2fbb6ac69b97cbade848033"')
+        expect(generatedCode).toMatchSnapshot()
+      })
+    })
   })
 
   describe("custom HTTP options", () => {
@@ -32,13 +51,21 @@ describe("sync operations", () => {
         client: "test-1",
         path: "./src/__tests__/documents",
         url: "bogus",
+        headers: {
+          "X-Something-Special": "🎂",
+        },
+        changesetVersion: "2023-05-05",
         quiet: true,
-        send: (_sendPayload: object, options: { url: string }) => {
+        send: (_sendPayload: object, options: { url: string, headers: {[key: string]: string}, changesetVersion: string }) => {
           url = options.url
+          Object.keys(options.headers).forEach((h) => {
+            url += "?" + h + "=" + options.headers[h]
+          })
+          url += "&changesetVersion=" + options.changesetVersion
         },
       }
       return sync(options).then(function() {
-        expect(url).toEqual("bogus")
+        expect(url).toEqual("bogus?X-Something-Special=🎂&changesetVersion=2023-05-05")
       })
     })
   })
@@ -51,10 +78,8 @@ describe("sync operations", () => {
         path: "./src/__tests__/documents",
         url: "bogus",
         verbose: true,
-        send: (_sendPayload: string, opts: { verbose: boolean }) => {
-          if (opts.verbose) {
-            console.log("Verbose!")
-          }
+        send: (_sendPayload: string, opts: { logger: Logger }) => {
+          opts.logger.log("Verbose!")
         },
       }
       return sync(options).then(function() {
@@ -151,6 +176,23 @@ describe("sync operations", () => {
         return expect(payload.operations).toMatchSnapshot()
       })
     })
+
+    it("Uses Apollo Codegen JSON files", () => {
+      var payload: MockPayload
+      var options = {
+        client: "test-1",
+        quiet: true,
+        apolloCodegenJsonOutput: "./src/__tests__/apolloExample/gen/output.json",
+        url: "bogus",
+        send: (sendPayload: MockPayload, _opts: object) => {
+          payload = sendPayload
+        },
+      }
+      return sync(options).then(function () {
+        expect(payload.operations[0].alias).toEqual("22cc98c61c1402c92b230b7c515e07eb793a5152c388b015e86df4652ec58156")
+        return expect(payload.operations).toMatchSnapshot()
+      })
+    })
   })
 
   describe("Input files", () => {
@@ -215,7 +257,7 @@ describe("sync operations", () => {
       }
       return sync(options).then(function() {
         var generatedCode = fs.readFileSync("./src/OperationStoreClient.js", "utf8")
-        expect(generatedCode).toMatch('"GetStuff": "5f0da489cf508a7c65ff5fa144e50545"')
+        expect(generatedCode).toMatch('"GetStuff": "4568c28d403794e011363caf815ec827"')
         expect(generatedCode).toMatch('module.exports = OperationStoreClient')
         expect(generatedCode).toMatch('var _client = "test-1"')
         fs.unlinkSync("./src/OperationStoreClient.js")
@@ -233,7 +275,7 @@ describe("sync operations", () => {
       }
       return sync(options).then(function() {
         var generatedCode = fs.readFileSync("./__crazy_outfile.js", "utf8")
-        expect(generatedCode).toMatch('"GetStuff": "5f0da489cf508a7c65ff5fa144e50545"')
+        expect(generatedCode).toMatch('"GetStuff": "4568c28d403794e011363caf815ec827"')
         expect(generatedCode).toMatch('module.exports = OperationStoreClient')
         expect(generatedCode).toMatch('var _client = "test-2"')
         fs.unlinkSync("./__crazy_outfile.js")
@@ -312,8 +354,8 @@ describe("sync operations", () => {
       var spyConsoleError = (console.error as unknown) as MockedObject
 
       buildMockRespondingWith(422, {
-        errors: { "5f0da489cf508a7c65ff5fa144e50545": ["something"] },
-        failed: ["5f0da489cf508a7c65ff5fa144e50545"],
+        errors: { "4568c28d403794e011363caf815ec827": ["something"] },
+        failed: ["4568c28d403794e011363caf815ec827"],
         added: ["defg"],
         not_modified: [],
       })
@@ -327,7 +369,7 @@ describe("sync operations", () => {
 
       var syncPromise = sync(options)
 
-      return syncPromise.catch((errmsg) => {
+      return syncPromise.catch((errmsg: string) => {
         expect(errmsg).toEqual("Sync failed: GetStuff: something")
         expect(spyConsoleLog.mock.calls).toMatchSnapshot()
         expect(spyConsoleError.mock.calls).toMatchSnapshot()

@@ -6,13 +6,16 @@ Bundler.require
 
 # Print full backtrace for failiures:
 ENV["BACKTRACE"] = "1"
-# Set this env var to use legacy runtime for fixture schemas.
-TESTING_INTERPRETER = !ENV["TESTING_LEGACY"]
-
-require "codeclimate-test-reporter"
-CodeClimate::TestReporter.start
 
 require "graphql"
+if ENV["GRAPHQL_CPARSER"]
+  USING_C_PARSER = true
+  puts "Opting in to GraphQL::CParser"
+  require "graphql-c_parser"
+else
+  USING_C_PARSER = false
+end
+
 require "rake"
 require "graphql/rake_task"
 require "benchmark"
@@ -21,24 +24,56 @@ require "minitest/autorun"
 require "minitest/focus"
 require "minitest/reporters"
 
-Minitest::Reporters.use! Minitest::Reporters::DefaultReporter.new(color: true)
+running_in_rubymine = ENV["RM_INFO"]
+unless running_in_rubymine
+  Minitest::Reporters.use! Minitest::Reporters::DefaultReporter.new(color: true)
+end
 
 Minitest::Spec.make_my_diffs_pretty!
 
+module CheckWardenShape
+  DEFAULT_SHAPE = GraphQL::Schema::Warden.new(context: {}, schema: GraphQL::Schema).instance_variables
+
+  class CheckShape
+    def initialize(warden)
+      @warden = warden
+    end
+
+    def call(_obj_id)
+      ivars = @warden.instance_variables
+      if ivars != DEFAULT_SHAPE
+        raise <<-ERR
+Object Shape Failed (#{@warden.class}):
+  - Expected: #{DEFAULT_SHAPE.inspect}
+  - Actual: #{ivars.inspect}
+ERR
+      # else # To make sure it's running properly:
+      #   puts "OK Warden #{@warden.object_id}"
+      end
+    end
+  end
+
+  def prepare_ast
+    super
+    setup_finalizer
+  end
+
+  private
+
+  def setup_finalizer
+    if !@finalizer_defined
+      @finalizer_defined = true
+      if warden.is_a?(GraphQL::Schema::Warden)
+        ObjectSpace.define_finalizer(self, CheckShape.new(warden))
+      end
+    end
+  end
+end
+
+GraphQL::Query.prepend(CheckWardenShape)
 # Filter out Minitest backtrace while allowing backtrace from other libraries
 # to be shown.
 Minitest.backtrace_filter = Minitest::BacktraceFilter.new
-
-# This is for convenient access to metadata in test definitions
-assign_metadata_key = ->(target, key, value) { target.metadata[key] = value }
-assign_metadata_flag = ->(target, flag) { target.metadata[flag] = true }
-GraphQL::Schema.accepts_definitions(set_metadata: assign_metadata_key)
-GraphQL::BaseType.accepts_definitions(metadata: assign_metadata_key)
-GraphQL::BaseType.accepts_definitions(metadata2: assign_metadata_key)
-GraphQL::Field.accepts_definitions(metadata: assign_metadata_key)
-GraphQL::Argument.accepts_definitions(metadata: assign_metadata_key)
-GraphQL::Argument.accepts_definitions(metadata_flag: assign_metadata_flag)
-GraphQL::EnumType::EnumValue.accepts_definitions(metadata: assign_metadata_key)
 
 # Can be used as a GraphQL::Schema::Warden for some purposes, but allows nothing
 module NothingWarden
@@ -66,17 +101,21 @@ Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each do |f|
   require f
 end
 
+if testing_rails?
+  require "integration/rails/spec_helper"
+end
+
 # Load dependencies
 ['Mongoid', 'Rails'].each do |integration|
-  begin
+  integration_loaded = begin
     Object.const_get(integration)
-    Dir["#{File.dirname(__FILE__)}/integration/#{integration.downcase}/**/*.rb"].each do |f|
-      if f.end_with?("spec_helper.rb") || ENV["TEST"].nil?
-        require f
-      end
-    end
   rescue NameError
-    # ignore
+    nil
+  end
+  if ENV["TEST"].nil? && integration_loaded
+    Dir["spec/integration/#{integration.downcase}/**/*.rb"].each do |f|
+      require f.sub("spec/", "")
+    end
   end
 end
 
@@ -121,4 +160,9 @@ module TestTracing
       result
     end
   end
+end
+
+
+if !USING_C_PARSER && defined?(GraphQL::CParser::Parser)
+  raise "Load error: didn't opt in to C parser but GraphQL::CParser::Parser was defined"
 end

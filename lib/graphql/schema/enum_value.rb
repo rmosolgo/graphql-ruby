@@ -13,12 +13,6 @@ module GraphQL
     #       # arguments to `value(...)` in Enum classes are passed here
     #       super
     #     end
-    #
-    #     def to_graphql
-    #       enum_value = super
-    #       # customize the derived GraphQL::EnumValue here
-    #       enum_value
-    #     end
     #   end
     #
     #   class BaseEnum < GraphQL::Schema::Enum
@@ -26,27 +20,31 @@ module GraphQL
     #     enum_value_class CustomEnumValue
     #   end
     class EnumValue < GraphQL::Schema::Member
-      include GraphQL::Schema::Member::CachedGraphQLDefinition
-      include GraphQL::Schema::Member::AcceptsDefinition
       include GraphQL::Schema::Member::HasPath
       include GraphQL::Schema::Member::HasAstNode
+      include GraphQL::Schema::Member::HasDirectives
+      include GraphQL::Schema::Member::HasDeprecationReason
 
       attr_reader :graphql_name
 
       # @return [Class] The enum type that owns this value
       attr_reader :owner
 
-      # @return [String] Explains why this value was deprecated (if present, this will be marked deprecated in introspection)
-      attr_accessor :deprecation_reason
-
-      def initialize(graphql_name, desc = nil, owner:, ast_node: nil, description: nil, value: nil, deprecation_reason: nil, &block)
+      def initialize(graphql_name, desc = nil, owner:, ast_node: nil, directives: nil, description: nil, value: NOT_CONFIGURED, deprecation_reason: nil, &block)
         @graphql_name = graphql_name.to_s
         GraphQL::NameValidator.validate!(@graphql_name)
         @description = desc || description
-        @value = value.nil? ? @graphql_name : value
-        @deprecation_reason = deprecation_reason
+        @value = value == NOT_CONFIGURED ? @graphql_name : value
+        if deprecation_reason
+          self.deprecation_reason = deprecation_reason
+        end
         @owner = owner
         @ast_node = ast_node
+        if directives
+          directives.each do |dir_class, dir_options|
+            directive(dir_class, **dir_options)
+          end
+        end
 
         if block_given?
           instance_eval(&block)
@@ -67,20 +65,11 @@ module GraphQL
         @value
       end
 
-      # @return [GraphQL::EnumType::EnumValue] A runtime-ready object derived from this object
-      def to_graphql
-        enum_value = GraphQL::EnumType::EnumValue.new
-        enum_value.name = @graphql_name
-        enum_value.description = @description
-        enum_value.value = @value
-        enum_value.deprecation_reason = @deprecation_reason
-        enum_value.metadata[:type_class] = self
-        enum_value.ast_node = ast_node
-        enum_value
+      def inspect
+        "#<#{self.class} #{path} @value=#{@value.inspect}#{description ? " @description=#{description.inspect}" : ""}>"
       end
 
       def visible?(_ctx); true; end
-      def accessible?(_ctx); true; end
       def authorized?(_ctx); true; end
     end
   end

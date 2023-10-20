@@ -2,10 +2,11 @@
 require "spec_helper"
 
 describe GraphQL::Introspection::SchemaType do
-  let(:schema) { Class.new(Dummy::Schema) }
+  let(:schema) { Class.new(Dummy::Schema) { description("Cool schema") }}
   let(:query_string) {%|
     query getSchema {
       __schema {
+        description
         types { name }
         queryType { fields { name }}
         mutationType { fields { name }}
@@ -17,6 +18,7 @@ describe GraphQL::Introspection::SchemaType do
   it "exposes the schema" do
     expected = { "data" => {
       "__schema" => {
+        "description" => "Cool schema",
         "types" => schema.types.values.sort_by(&:graphql_name).map { |t| t.graphql_name.nil? ? (p t; raise("no name for #{t}")) : {"name" => t.graphql_name} },
         "queryType"=>{
           "fields"=>[
@@ -35,6 +37,7 @@ describe GraphQL::Introspection::SchemaType do
             {"name"=>"executionErrorWithOptions"},
             {"name"=>"favoriteEdible"},
             {"name"=>"fromSource"},
+            {"name"=>"hugeInteger"},
             {"name"=>"maybeNull"},
             {"name"=>"milk"},
             {"name"=>"multipleErrorsOnNonNullableField"},
@@ -108,7 +111,7 @@ describe GraphQL::Introspection::SchemaType do
         field :visible, visible_type, null: false
         field :with_invisible_args, String, null: false do
           argument :invisible, invisible_input_type, required: false
-          argument :visible, visible_input_type, required: true
+          argument :visible, visible_input_type
         end
       end
 
@@ -144,6 +147,54 @@ describe GraphQL::Introspection::SchemaType do
       ]
       types = result['data']['__schema']['types'].map { |type| type.fetch('name') }
       assert_equal(expected_types, types)
+    end
+  end
+
+  describe "when the schema has hidden directives" do
+    let(:schema) do
+      invisible_directive = Class.new(GraphQL::Schema::Directive) do
+        graphql_name 'invisibleDirective'
+        locations(GraphQL::Schema::Directive::QUERY)
+        argument(:val, Integer, "Initial integer value.", required: false)
+
+        def self.visible?(context)
+          false
+        end
+      end
+
+      visible_directive = Class.new(GraphQL::Schema::Directive) do
+        graphql_name 'visibleDirective'
+        locations(GraphQL::Schema::Directive::QUERY)
+        argument(:val, Integer, "Initial integer value.", required: false)
+
+        def self.visible?(context)
+          true
+        end
+      end
+
+      query_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name 'Query'
+        field :foo, String, null: false
+      end
+
+      Class.new(GraphQL::Schema) do
+        query query_type
+        directives invisible_directive, visible_directive
+      end
+    end
+
+    let(:query_string) {%|
+      query getSchema {
+        __schema {
+          directives { name }
+        }
+      }
+    |}
+
+    it "only returns visible directives" do
+      expected_dirs = ['deprecated', 'include', 'skip', 'oneOf', 'specifiedBy', 'visibleDirective']
+      directives = result['data']['__schema']['directives'].map { |dir| dir.fetch('name') }
+      assert_equal(expected_dirs.sort, directives.sort)
     end
   end
 end

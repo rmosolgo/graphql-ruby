@@ -2,6 +2,7 @@
 require "spec_helper"
 
 class InMemoryBackend
+  MAX_COMPLEXITY = 5
   class Subscriptions < GraphQL::Subscriptions
     attr_reader :deliveries, :pushes, :extra, :queries, :events
 
@@ -23,14 +24,6 @@ class InMemoryBackend
       end
     end
 
-    def each_subscription_id(event)
-      @events[event.topic].each do |fp, sub_ids|
-        sub_ids.each do |sub_id|
-          yield(sub_id)
-        end
-      end
-    end
-
     def read_subscription(subscription_id)
       query = @queries[subscription_id]
       if query
@@ -38,7 +31,12 @@ class InMemoryBackend
           query_string: query.query_string,
           operation_name: query.operation_name,
           variables: query.provided_variables,
-          context: { me: query.context[:me] },
+          context: {
+            me: query.context[:me],
+            validate_update: query.context[:validate_update],
+            other_int: query.context[:other_int],
+            hidden_event: query.context[:hidden_event],
+          },
           transport: :socket,
         }
       else
@@ -66,8 +64,10 @@ class InMemoryBackend
       sub_ids_by_fp = @events[topic]
       sub_ids_by_fp.each do |fingerprint, sub_ids|
         result = execute_update(sub_ids.first, event, object)
-        sub_ids.each do |sub_id|
-          deliver(sub_id, result)
+        if !result.nil?
+          sub_ids.each do |sub_id|
+            deliver(sub_id, result)
+          end
         end
       end
     end
@@ -94,6 +94,7 @@ class InMemoryBackend
       @pushes.clear
     end
   end
+
   # Just a random stateful object for tracking what happens:
   class SubscriptionPayload
     attr_reader :str
@@ -112,7 +113,21 @@ end
 class ClassBasedInMemoryBackend < InMemoryBackend
   class Payload < GraphQL::Schema::Object
     field :str, String, null: false
-    field :int, Integer, null: false
+    field :int, Integer, null: false do
+      def visible?(context)
+        !context[:other_int]
+      end
+    end
+
+    field :int, Integer, null: false, resolver_method: :other_int do
+      def visible?(context)
+        !!context[:other_int]
+      end
+    end
+
+    def other_int
+      1000 + object.int
+    end
   end
 
   class PayloadType < GraphQL::Schema::Enum
@@ -124,58 +139,76 @@ class ClassBasedInMemoryBackend < InMemoryBackend
   end
 
   class StreamInput < GraphQL::Schema::InputObject
-    argument :user_id, ID, required: true, camelize: false
+    argument :user_id, ID, camelize: false
     argument :payload_type, PayloadType, required: false, default_value: "ONE", prepare: ->(e, ctx) { e ? e.downcase : e }
   end
 
   class EventSubscription < GraphQL::Schema::Subscription
-    argument :user_id, ID, required: true
+    argument :user_id, ID, as: :user
     argument :payload_type, PayloadType, required: false, default_value: "ONE", prepare: ->(e, ctx) { e ? e.downcase : e }
-    field :payload, Payload, null: true
+    field :payload, Payload
+  end
+
+  class FilteredStream < GraphQL::Schema::Subscription
+    subscription_scope :segment
+    argument :channel, Integer, required: false
+
+    field :message, String, null: false
+
+    def update(channel: nil)
+      if channel && object.channel != channel
+        NO_UPDATE
+      else
+        super
+      end
+    end
+
+    def self.topic_for(arguments:, field:, scope:)
+      "#{field.graphql_name}:#{scope}"
+    end
   end
 
   class Subscription < GraphQL::Schema::Object
-    if !TESTING_INTERPRETER
-      # Stub methods are required
-      [:payload, :event, :my_event].each do |m|
-        define_method(m) { |*a| nil }
-      end
-    end
     field :payload, Payload, null: false do
-      argument :id, ID, required: true
+      argument :id, ID
     end
 
-    field :event, Payload, null: true do
+    field :event, Payload do
       argument :stream, StreamInput, required: false
     end
 
     field :event_subscription, subscription: EventSubscription
 
-    field :my_event, Payload, null: true, subscription_scope: :me do
+    field :my_event, Payload, subscription_scope: :me do
       argument :payload_type, PayloadType, required: false
     end
 
     field :failed_event, Payload, null: false  do
-      argument :id, ID, required: true
+      argument :id, ID
     end
 
     def failed_event(id:)
       raise GraphQL::ExecutionError.new("unauthorized")
     end
+
+    field :filtered_stream, subscription: FilteredStream
+
+    field :hidden_event, Payload do
+      def visible?(context)
+        !!context[:hidden_event]
+      end
+    end
   end
 
   class Query < GraphQL::Schema::Object
-    field :dummy, Integer, null: true
+    field :dummy, Integer
   end
 
   class Schema < GraphQL::Schema
     query(Query)
     subscription(Subscription)
     use InMemoryBackend::Subscriptions, extra: 123
-    if TESTING_INTERPRETER
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
-    end
+    max_complexity(InMemoryBackend::MAX_COMPLEXITY)
   end
 end
 
@@ -233,7 +266,8 @@ class FromDefinitionInMemoryBackend < InMemoryBackend
       "failedEvent" => ->(o,a,c) { raise GraphQL::ExecutionError.new("unauthorized") },
     },
   }
-  Schema = GraphQL::Schema.from_definition(SchemaDefinition, default_resolve: Resolvers, using: {InMemoryBackend::Subscriptions => { extra: 123 }}, interpreter: TESTING_INTERPRETER)
+  Schema = GraphQL::Schema.from_definition(SchemaDefinition, default_resolve: Resolvers, using: {InMemoryBackend::Subscriptions => { extra: 123 }})
+  Schema.max_complexity(MAX_COMPLEXITY)
   # TODO don't hack this (no way to add metadata from IDL parser right now)
   Schema.get_field("Subscription", "myEvent").subscription_scope = :me
 end
@@ -283,7 +317,7 @@ describe GraphQL::Subscriptions do
           res_1 = schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "100" }, root_value: root_object)
           res_2 = schema.execute(query_str, context: { socket: "2" }, variables: { "id" => "200" }, root_value: root_object)
 
-          empty_response = TESTING_INTERPRETER ? {} : nil
+          empty_response = {}
 
           # Initial response is nil, no broadcasts yet
           assert_equal(empty_response, res_1["data"])
@@ -306,6 +340,60 @@ describe GraphQL::Subscriptions do
         end
       end
 
+      if in_memory_backend_class != FromDefinitionInMemoryBackend # No way to specify this when using IDL
+        it "supports filtering in the subscription class" do
+          query_str = "subscription($channel: Int) { filteredStream(channel: $channel) { message } }"
+
+          # Unfiltered:
+          schema.execute(query_str, context: { socket: "1", segment: "A" }, variables: {})
+          # Filtered:
+          schema.execute(query_str, context: { socket: "2", segment: "A" }, variables: { channel: 1 })
+          schema.execute(query_str, context: { socket: "3", segment: "A" }, variables: { channel: 2 })
+
+          # Another Subscription scope:
+          schema.execute(query_str, context: { socket: "4", segment: "B" }, variables: {})
+          schema.execute(query_str, context: { socket: "5", segment: "B" }, variables: { channel: 1 })
+
+          schema.subscriptions.trigger(:filtered_stream, {}, OpenStruct.new(channel: 1, message: "Message 1"), scope: "A")
+          schema.subscriptions.trigger(:filtered_stream, {}, OpenStruct.new(channel: 2, message: "Message 2"), scope: "A")
+          schema.subscriptions.trigger(:filtered_stream, {}, OpenStruct.new(channel: 3, message: "Message 3"), scope: "A")
+
+          # Unfiltered, received all updates:
+          assert_equal 3, deliveries["1"].size
+          # Only received updates that matched `channel`:
+          assert_equal 1, deliveries["2"].size
+          assert_equal 1, deliveries["3"].size
+          # Different segment, no updates:
+          assert_equal 0, deliveries["4"].size
+          assert_equal 0, deliveries["5"].size
+
+          schema.subscriptions.trigger(:filtered_stream, {}, OpenStruct.new(channel: 1, message: "Message 4"), scope: "B")
+          schema.subscriptions.trigger(:filtered_stream, {}, OpenStruct.new(channel: 2, message: "Message 5"), scope: "B")
+
+          # These should be unchanged because the later triggers had a different scope value:
+          assert_equal 3, deliveries["1"].size
+          assert_equal 1, deliveries["2"].size
+          assert_equal 1, deliveries["3"].size
+          # These received updates from the second set of triggers:
+          assert_equal 2, deliveries["4"].size
+          assert_equal 1, deliveries["5"].size
+        end
+
+        it "runs visibility checks when calling .trigger" do
+          query_str = "subscription { hiddenEvent { int } }"
+          res_1 = schema.execute(query_str, context: { socket: "1", hidden_event: true }, root_value: root_object)
+          assert_equal({}, res_1["data"])
+
+          schema.subscriptions.trigger(:hidden_event, {}, root_object.payload, context: { hidden_event: true })
+          assert_equal({"hiddenEvent" => { "int" => 1 }}, deliveries["1"][0]["data"])
+
+          err = assert_raises GraphQL::Subscriptions::InvalidTriggerError do
+            schema.subscriptions.trigger(:hidden_event, {}, root_object.payload)
+          end
+          assert_equal "No subscription matching trigger: hidden_event (looked for Subscription.hiddenEvent)", err.message
+        end
+      end
+
       it "sends updated data for multifield subscriptions" do
         query_str = <<-GRAPHQL
         subscription ($id: ID!){
@@ -316,7 +404,7 @@ describe GraphQL::Subscriptions do
 
         # Initial subscriptions
         res = schema.execute(query_str, context: { socket: "1" }, variables: { "id" => "100" }, root_value: root_object)
-        empty_response = TESTING_INTERPRETER ? {} : nil
+        empty_response = {}
 
         # Initial response is nil, no broadcasts yet
         assert_equal(empty_response, res["data"])
@@ -330,16 +418,12 @@ describe GraphQL::Subscriptions do
         assert_equal({"str" => "Update", "int" => 1}, deliveries["1"][0]["data"]["payload"])
         assert_equal(nil, deliveries["1"][0]["data"]["event"])
 
-        if TESTING_INTERPRETER
-          # double-subscriptions is broken on the old runtime
+        # Trigger another field subscription
+        schema.subscriptions.trigger(:event, {}, OpenStruct.new(int: 1))
 
-          # Trigger another field subscription
-          schema.subscriptions.trigger(:event, {}, OpenStruct.new(int: 1))
-
-          # Now we should get result for another field
-          assert_equal(nil, deliveries["1"][1]["data"]["payload"])
-          assert_equal({"int" => 1}, deliveries["1"][1]["data"]["event"])
-        end
+        # Now we should get result for another field
+        assert_equal(nil, deliveries["1"][1]["data"]["payload"])
+        assert_equal({"int" => 1}, deliveries["1"][1]["data"]["event"])
       end
 
       describe "passing a document into #execute" do
@@ -355,7 +439,7 @@ describe GraphQL::Subscriptions do
           # Initial subscriptions
           response = schema.execute(nil, document: document, context: { socket: "1" }, variables: { "id" => "100" }, root_value: root_object)
 
-          empty_response = TESTING_INTERPRETER ? {} : nil
+          empty_response = {}
 
           # Initial response is empty, no broadcasts yet
           assert_equal(empty_response, response["data"])
@@ -581,20 +665,11 @@ describe GraphQL::Subscriptions do
 
             # There's no way to add `prepare:` when using SDL, so only the Ruby-defined schema has it
             expected_sub_count = if schema == ClassBasedInMemoryBackend::Schema
-              if TESTING_INTERPRETER
-                {
-                  ":eventSubscription:payloadType:one:userId:3" => 1,
-                  ":eventSubscription:payloadType:one:userId:4" => 2,
-                  ":eventSubscription:payloadType:two:userId:3" => 1,
-                }
-              else
-                # Unfortunately, on the non-interpreter runtime, `prepare:` was _not_ applied here,
-                {
-                  ":eventSubscription:payloadType:ONE:userId:3" => 1,
-                  ":eventSubscription:payloadType:ONE:userId:4" => 2,
-                  ":eventSubscription:payloadType:TWO:userId:3" => 1,
-                }
-              end
+              {
+                ":eventSubscription:payloadType:one:userId:3" => 1,
+                ":eventSubscription:payloadType:one:userId:4" => 2,
+                ":eventSubscription:payloadType:two:userId:3" => 1,
+              }
             else
               {
                 ":eventSubscription:payloadType:ONE:userId:3" => 1,
@@ -603,6 +678,9 @@ describe GraphQL::Subscriptions do
               }
             end
             assert_equal expected_sub_count, subscriptions_by_topic
+
+            schema.subscriptions.trigger(:event_subscription, { user_id: 3 }, {})
+            assert_equal 1, deliveries["1"].size
           end
 
           it "doesn't apply for plain fields" do
@@ -732,6 +810,29 @@ describe GraphQL::Subscriptions do
           assert_includes err.message, "arguments of StreamInput"
         end
       end
+
+      describe "max_complexity" do
+        it "rejects subscriptions with errors" do
+          query_str = <<-GRAPHQL
+            subscription($type: PayloadType) {
+              myEvent(payloadType: $type) {
+                s1: str
+                s2: str
+                s3: str
+                s4: str
+                s5: str
+                s6: str
+              }
+            }
+          GRAPHQL
+
+          res = schema.execute(query_str, context: { socket: "1"})
+          errs = ["Query has complexity of 7, which exceeds max complexity of 5"]
+          assert_equal errs, res["errors"].map { |e| e["message"] }
+          assert_equal 0, implementation.events.size
+          assert_equal 0, implementation.queries.size
+        end
+      end
     end
   end
 
@@ -777,8 +878,6 @@ describe GraphQL::Subscriptions do
 
       query(Query)
       subscription(Subscription)
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
       use InMemoryBackend::Subscriptions, extra: nil,
         broadcast: true, default_broadcastable: true
     end
@@ -813,6 +912,76 @@ describe GraphQL::Subscriptions do
       # Socket 3 received 2, 3
       expected_values = [[1,1], [1,2], [2,3]]
       assert_equal expected_values, delivered_values
+    end
+  end
+
+  class SkipUpdateValidationSchema < GraphQL::Schema
+    COUNTERS = Hash.new(0)
+    class ValidationDetectionTracer
+      def self.trace(event, data)
+        if event == "validate"
+          COUNTERS["validate_#{data[:validate]}"] += 1
+          data[:query].context[:was_validated] = data[:validate]
+        end
+        yield
+      end
+    end
+
+    class Subscription < GraphQL::Schema::Object
+      class Counter < GraphQL::Schema::Subscription
+        argument :id, ID
+        field :value, Integer, null: false
+
+        def update(id:)
+          {
+            value: COUNTERS["counter_#{id}"] += 1
+          }
+        end
+      end
+
+      field :counter, subscription: Counter
+    end
+    subscription(Subscription)
+    tracer(ValidationDetectionTracer)
+    use InMemoryBackend::Subscriptions, extra: nil, validate_update: false
+  end
+
+  class SometimesSkipUpdateValidationSchema < GraphQL::Schema
+    COUNTERS = SkipUpdateValidationSchema::COUNTERS
+    class SometimesSkipSubscriptions < InMemoryBackend::Subscriptions
+      def validate_update?(context:, **_rest)
+        !!context[:validate_update]
+      end
+    end
+
+    subscription(SkipUpdateValidationSchema::Subscription)
+    tracer(SkipUpdateValidationSchema::ValidationDetectionTracer)
+    use(SometimesSkipSubscriptions, extra: nil)
+  end
+
+  describe "Skipping validation on updates" do
+    before do
+      schema::COUNTERS.clear
+    end
+
+    let(:schema) { SkipUpdateValidationSchema }
+    it "Skips validation when configured" do
+      res = schema.execute("subscription { counter(id: \"1\") { value } }", context: { socket: "1" })
+      assert res.context[:was_validated]
+      assert_equal({"validate_true" => 1}, schema::COUNTERS)
+      schema.subscriptions.trigger(:counter, {id: "1"}, {})
+      assert_equal({"validate_true" => 1, "validate_false" => 1, "counter_1" => 1}, schema::COUNTERS)
+    end
+
+    describe "when the method is overriden" do
+      let(:schema) { SometimesSkipUpdateValidationSchema }
+      it "calls `validate_update?`" do
+        schema.execute("subscription { counter(id: \"3\") { value } }", context: { socket: "2" })
+        schema.execute("subscription { counter(id: \"3\") { value } }", context: { socket: "3", validate_update: true })
+        assert_equal({"validate_true" => 2}, schema::COUNTERS)
+        schema.subscriptions.trigger(:counter, {id: "3"}, {})
+        assert_equal({"validate_true" => 3, "validate_false" => 1, "counter_3" => 2}, schema::COUNTERS)
+      end
     end
   end
 end

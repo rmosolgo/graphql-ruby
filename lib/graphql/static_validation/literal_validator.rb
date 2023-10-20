@@ -18,6 +18,19 @@ module GraphQL
 
       private
 
+      def replace_nulls_in(ast_value)
+        case ast_value
+        when Array
+          ast_value.map { |v| replace_nulls_in(v) }
+        when GraphQL::Language::Nodes::InputObject
+          ast_value.to_h
+        when GraphQL::Language::Nodes::NullValue
+          nil
+        else
+          ast_value
+        end
+      end
+
       def recursively_validate(ast_value, type)
         if type.nil?
           # this means we're an undefined argument, see #present_input_field_values_are_valid
@@ -42,7 +55,8 @@ module GraphQL
           @valid_response
         elsif type.kind.scalar? && constant_scalar?(ast_value)
           maybe_raise_if_invalid(ast_value) do
-            type.validate_input(ast_value, @context)
+            ruby_value = replace_nulls_in(ast_value)
+            type.validate_input(ruby_value, @context)
           end
         elsif type.kind.enum?
           maybe_raise_if_invalid(ast_value) do
@@ -95,9 +109,9 @@ module GraphQL
       def required_input_fields_are_present(type, ast_node)
         # TODO - would be nice to use these to create an error message so the caller knows
         # that required fields are missing
-        required_field_names = type.arguments.each_value
+        required_field_names = @warden.arguments(type)
           .select { |argument| argument.type.kind.non_null? && @warden.get_argument(type, argument.name) }
-          .map(&:name)
+          .map!(&:name)
 
         present_field_names = ast_node.arguments.map(&:name)
         missing_required_field_names = required_field_names - present_field_names
@@ -107,6 +121,10 @@ module GraphQL
           results = missing_required_field_names.map do |name|
             arg_type = @warden.get_argument(type, name).type
             recursively_validate(GraphQL::Language::Nodes::NullValue.new(name: name), arg_type)
+          end
+
+          if type.one_of? && ast_node.arguments.size != 1
+            results << Query::InputValidationResult.from_problem("`#{type.graphql_name}` is a OneOf type, so only one argument may be given (instead of #{ast_node.arguments.size})")
           end
           merge_results(results)
         end

@@ -18,7 +18,7 @@ To use persisted queries with your client application, you must:
 
 This documentation also touches on {% internal_link "graphql-ruby-client sync", "/javascript_client/sync" %}, a JavaScript client library for using `OperationStore`.
 
-### Add a Client
+## Add a Client
 
 Clients are registered via {% internal_link "the dashboard","/operation_store/getting_started#add-routes" %}:
 
@@ -28,7 +28,7 @@ A default `secret` is provided for you, but you can also enter your own. The `se
 
 (Are you interested in a Ruby API for this? Please {% open_an_issue "OperationStore Ruby API" %} or email `support@graphql.pro`.)
 
-### Syncing
+## Syncing
 
 Once a client is registered, it can push queries to the server via {% internal_link "the Sync API","/operation_store/getting_started#add-routes" %}.
 
@@ -47,7 +47,7 @@ For example:
 
 For help syncing in another language, you can take inspiration from the [JavaScript implementation](https://github.com/rmosolgo/graphql-ruby/tree/master/javascript_client), {% open_an_issue "Implementing operation sync in another language" %}, or email `support@graphql.pro`.
 
-### Client Usage
+## Client Usage
 
 See the {% internal_link "Sync Guide", "/javascript_client/sync" %} for using OperationStore with Relay Modern, Apollo 1.x, Apollo Link, or plain JavaScript.
 
@@ -64,6 +64,6 @@ To run stored operations from another client, send a param called `operationId` 
 
 The server will use those values to fetch an operation from the database.
 
-#### Next Steps
+### Next Steps
 
 Learn more about `OperationStore`'s {% internal_link "authentication", "/operation_store/access_control" %} or read some tips for {% internal_link "server management","/operation_store/server_management" %}.

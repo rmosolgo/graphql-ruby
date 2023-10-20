@@ -2,20 +2,27 @@
 require "spec_helper"
 
 describe GraphQL::Schema::Timeout do
+  module OtherTrace
+    def execute_field(query:, **opts)
+      query.context[:other_trace_worked] = true
+      super
+    end
+  end
+
   let(:max_seconds) { 1 }
   let(:timeout_class) { GraphQL::Schema::Timeout }
   let(:timeout_schema) {
     nested_sleep_type = Class.new(GraphQL::Schema::Object) do
       graphql_name "NestedSleep"
 
-      field :seconds, Float, null: true
+      field :seconds, Float
 
       def seconds
         object
       end
 
-      field :nested_sleep, GraphQL::Schema::LateBoundType.new(graphql_name), null: true do
-        argument :seconds, Float, required: true
+      field :nested_sleep, GraphQL::Schema::LateBoundType.new(graphql_name) do
+        argument :seconds, Float
       end
 
       def nested_sleep(seconds:)
@@ -27,8 +34,8 @@ describe GraphQL::Schema::Timeout do
     query_type = Class.new(GraphQL::Schema::Object) do
       graphql_name "Query"
 
-      field :sleep_for, Float, null: true do
-        argument :seconds, Float, required: true
+      field :sleep_for, Float do
+        argument :seconds, Float
       end
 
       def sleep_for(seconds:)
@@ -36,8 +43,8 @@ describe GraphQL::Schema::Timeout do
         seconds
       end
 
-      field :nested_sleep, nested_sleep_type, null: true do
-        argument :seconds, Float, required: true
+      field :nested_sleep, nested_sleep_type do
+        argument :seconds, Float
       end
 
       def nested_sleep(seconds:)
@@ -48,16 +55,13 @@ describe GraphQL::Schema::Timeout do
 
     schema = Class.new(GraphQL::Schema) do
       query query_type
-      if TESTING_INTERPRETER
-        use GraphQL::Execution::Interpreter
-        use GraphQL::Analysis::AST
-      end
+      trace_with OtherTrace
     end
     schema.use timeout_class, max_seconds: max_seconds
     schema
   }
-
-  let(:result) { timeout_schema.execute(query_string) }
+  let(:query_context) { {} }
+  let(:result) { timeout_schema.execute(query_string, context: query_context) }
 
   describe "timeout part-way through" do
     let(:query_string) {%|
@@ -92,6 +96,7 @@ describe GraphQL::Schema::Timeout do
       ]
       assert_equal expected_data, result["data"]
       assert_equal expected_errors, result["errors"]
+      assert_equal true, result.context[:other_trace_worked], "It works with other traces"
     end
   end
 
@@ -202,6 +207,51 @@ describe GraphQL::Schema::Timeout do
     it "calls the block" do
       err = assert_raises(RuntimeError) { result }
       assert_equal "Query timed out after 2s: Timeout on Query.sleepFor", err.message
+    end
+  end
+
+  describe "query-specific timeout duration" do
+    let(:timeout_class) {
+      Class.new(GraphQL::Schema::Timeout) do
+        def max_seconds(query)
+          query.context[:max_seconds]
+        end
+
+        def handle_timeout(err, query)
+          max_s = query.context[:max_seconds]
+          raise(GraphQL::ExecutionError, "Query timed out after #{max_s}s: #{err.message}")
+        end
+      end
+    }
+
+    let(:query_context) {
+      { max_seconds: 1.9 }
+    }
+
+    let(:query_string) {%|
+      {
+        a: sleepFor(seconds: 0.5)
+        b: sleepFor(seconds: 0.5)
+        c: sleepFor(seconds: 0.5)
+        d: sleepFor(seconds: 0.5)
+        e: sleepFor(seconds: 0.5)
+      }
+    |}
+
+    it "uses the configured #max_seconds(query) method" do
+      expected_data = {"a"=>0.5, "b"=>0.5, "c"=>0.5, "d"=>0.5, "e"=>nil}
+      assert_equal(expected_data, result["data"])
+      errors = result["errors"]
+      expected_message = "Query timed out after 1.9s: Timeout on Query.sleepFor"
+      assert_equal [expected_message], errors.map { |e| e["message"] }
+    end
+
+    describe "when max_seconds returns false" do
+      let(:query_context) { {max_seconds: false} }
+      it "doesn't apply any timeout" do
+        expected_data = {"a"=>0.5, "b"=>0.5, "c"=>0.5, "d"=>0.5, "e"=>0.5}
+        assert_equal(expected_data, result["data"])
+      end
     end
   end
 end

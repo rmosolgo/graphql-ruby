@@ -10,6 +10,10 @@ module GraphQL
     class PlatformTracing
       class << self
         attr_accessor :platform_keys
+
+        def inherited(child_class)
+          child_class.platform_keys = self.platform_keys
+        end
       end
 
       def initialize(options = {})
@@ -26,25 +30,19 @@ module GraphQL
             yield
           end
         when "execute_field", "execute_field_lazy"
-          if data[:context]
-            field = data[:context].field
-            platform_key = field.metadata[:platform_key]
-            trace_field = true # implemented with instrumenter
+          field = data[:field]
+          return_type = field.type.unwrap
+          trace_field = if return_type.kind.scalar? || return_type.kind.enum?
+            (field.trace.nil? && @trace_scalars) || field.trace
           else
-            field = data[:field]
-            return_type = field.type.unwrap
-            trace_field = if return_type.kind.scalar? || return_type.kind.enum?
-              (field.trace.nil? && @trace_scalars) || field.trace
-            else
-              true
-            end
+            true
+          end
 
-            platform_key = if trace_field
-              context = data.fetch(:query).context
-              cached_platform_key(context, field) { platform_field_key(data[:owner], field) }
-            else
-              nil
-            end
+          platform_key = if trace_field
+            context = data.fetch(:query).context
+            cached_platform_key(context, field, :field) { platform_field_key(field.owner, field) }
+          else
+            nil
           end
 
           if platform_key && trace_field
@@ -57,14 +55,14 @@ module GraphQL
         when "authorized", "authorized_lazy"
           type = data.fetch(:type)
           context = data.fetch(:context)
-          platform_key = cached_platform_key(context, type) { platform_authorized_key(type) }
+          platform_key = cached_platform_key(context, type, :authorized) { platform_authorized_key(type) }
           platform_trace(platform_key, key, data) do
             yield
           end
         when "resolve_type", "resolve_type_lazy"
           type = data.fetch(:type)
           context = data.fetch(:context)
-          platform_key = cached_platform_key(context, type) { platform_resolve_type_key(type) }
+          platform_key = cached_platform_key(context, type, :resolve_type) { platform_resolve_type_key(type) }
           platform_trace(platform_key, key, data) do
             yield
           end
@@ -74,45 +72,41 @@ module GraphQL
         end
       end
 
-      def instrument(type, field)
-        return_type = field.type.unwrap
-        case return_type
-        when GraphQL::ScalarType, GraphQL::EnumType
-          if field.trace || (field.trace.nil? && @trace_scalars)
-            trace_field(type, field)
-          else
-            field
-          end
-        else
-          trace_field(type, field)
-        end
-      end
-
-      def trace_field(type, field)
-        new_f = field.redefine
-        new_f.metadata[:platform_key] = platform_field_key(type, field)
-        new_f
-      end
-
       def self.use(schema_defn, options = {})
-        tracer = self.new(options)
-        schema_defn.instrument(:field, tracer)
-        schema_defn.tracer(tracer)
+        if options[:legacy_tracing]
+          tracer = self.new(**options)
+          schema_defn.tracer(tracer)
+        else
+          tracing_name = self.name.split("::").last
+          trace_name = tracing_name.sub("Tracing", "Trace")
+          if GraphQL::Tracing.const_defined?(trace_name, false)
+            trace_module = GraphQL::Tracing.const_get(trace_name)
+            schema_defn.trace_with(trace_module, **options)
+          else
+            tracer = self.new(**options)
+            schema_defn.tracer(tracer)
+          end
+        end
       end
 
       private
 
-      # Get the transaction name based on the operation type and name
+      # Get the transaction name based on the operation type and name if possible, or fall back to a user provided
+      # one. Useful for anonymous queries.
       def transaction_name(query)
         selected_op = query.selected_operation
-        if selected_op
+        txn_name = if selected_op
           op_type = selected_op.operation_type
-          op_name = selected_op.name || "anonymous"
+          op_name = selected_op.name || fallback_transaction_name(query.context) || "anonymous"
+          "#{op_type}.#{op_name}"
         else
-          op_type = "query"
-          op_name = "anonymous"
+          "query.anonymous"
         end
-        "GraphQL/#{op_type}.#{op_name}"
+        "GraphQL/#{txn_name}"
+      end
+
+      def fallback_transaction_name(context)
+        context[:tracing_fallback_transaction_name]
       end
 
       attr_reader :options
@@ -127,8 +121,11 @@ module GraphQL
       #
       # If the key isn't present, the given block is called and the result is cached for `key`.
       #
+      # @param ctx [GraphQL::Query::Context]
+      # @param key [Class, GraphQL::Field] A part of the schema
+      # @param trace_phase [Symbol] The stage of execution being traced (used by OpenTelementry tracing)
       # @return [String]
-      def cached_platform_key(ctx, key)
+      def cached_platform_key(ctx, key, trace_phase)
         cache = ctx.namespace(self.class)[:platform_key_cache] ||= {}
         cache.fetch(key) { cache[key] = yield }
       end

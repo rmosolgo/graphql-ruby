@@ -6,7 +6,7 @@ module StarWars
   class Ship < GraphQL::Schema::Object
     implements GraphQL::Types::Relay::Node
     global_id_field :id
-    field :name, String, null: true
+    field :name, String
     # Test cyclical connection types:
     field :ships, Ship.connection_type, null: false
   end
@@ -25,9 +25,8 @@ module StarWars
         end
       }
     end
-    field :planet, String, null: true
+    field :planet, String
   end
-
 
   class BaseEdge < GraphQL::Types::Relay::BaseEdge
     node_type(BaseType)
@@ -45,18 +44,14 @@ module StarWars
     edge_type(BaseEdge, nodes_field: false)
     nodes_field
 
-    field :total_count, Integer, null: true
+    field :total_count, Integer
 
     def total_count
-      if TESTING_INTERPRETER
-        object.items.count
-      else
-        object.nodes.count
-      end
+      object.items.count
     end
   end
 
-  class CustomBaseEdge < GraphQL::Relay::Edge
+  class NewCustomBaseEdge < GraphQL::Pagination::Connection::Edge
     def upcased_name
       node.name.upcase
     end
@@ -68,9 +63,9 @@ module StarWars
 
   class CustomBaseEdgeType < GraphQL::Types::Relay::BaseEdge
     node_type(BaseType)
-    field :upcased_name, String, null: true
-    field :upcased_parent_name, String, null: true
-    field :edge_class_name, String, null: true
+    field :upcased_name, String
+    field :upcased_parent_name, String
+    field :edge_class_name, String
 
     def edge_class_name
       object.class.name
@@ -78,13 +73,13 @@ module StarWars
   end
 
   class CustomEdgeBaseConnectionType < GraphQL::Types::Relay::BaseConnection
-    edge_type(CustomBaseEdgeType, edge_class: CustomBaseEdge, nodes_field: true)
-    field :total_count_times_100, Integer, null: true
+    edge_type(CustomBaseEdgeType, edge_class: NewCustomBaseEdge, nodes_field: true)
+    field :total_count_times_100, Integer
     def total_count_times_100
-      object.nodes.count * 100
+      object.items.count * 100
     end
 
-    field :field_name, String, null: true
+    field :field_name, String
     def field_name
       object.field.name
     end
@@ -128,8 +123,12 @@ module StarWars
       GraphQL::Relay::GlobalIdResolve.new(type: Faction).call(object, {}, context)
     end
 
-    field :name, String, null: true
+    field :name, String
     field :ships, ShipConnectionWithParentType, connection: true, max_page_size: 1000, null: true do
+      argument :name_includes, String, required: false
+    end
+
+    field :ships_with_default_page_size, ShipConnectionWithParentType, method: :ships, connection: true, default_page_size: 500, null: true do
       argument :name_includes, String, required: false
     end
 
@@ -161,7 +160,7 @@ module StarWars
 
     field :shipsWithMaxPageSize, "Ships with max page size", max_page_size: 2, resolver: ShipsWithMaxPageSize
 
-    field :bases, BasesConnectionWithTotalCountType, null: true, connection: true do
+    field :bases, BasesConnectionWithTotalCountType, connection: true do
       argument :name_includes, String, required: false
       argument :complex_order, Boolean, required: false
     end
@@ -174,11 +173,14 @@ module StarWars
       if complex_order
         all_bases = all_bases.order("bases.name DESC")
       end
-      all_bases
+
+      # Emulates ActiveRecord::Base.connected_to(role: :reading) do
+      # https://github.com/rails/rails/blob/d18fc329993df5a583ef721330cffb248ef9a213/activerecord/lib/active_record/connection_handling.rb#L355
+      all_bases.load
     end
 
-    field :bases_clone, BaseConnection, null: true
-    field :bases_by_name, BaseConnection, null: true do
+    field :bases_clone, BaseConnection
+    field :bases_by_name, BaseConnection do
       argument :order, String, default_value: "name", required: false
     end
     def bases_by_name(order: nil)
@@ -197,14 +199,14 @@ module StarWars
       all_bases.to_a
     end
 
-    field :basesWithMaxLimitRelation, BaseConnection, null: true, max_page_size: 2, resolver_method: :all_bases
-    field :basesWithMaxLimitArray, BaseConnection, null: true, max_page_size: 2, resolver_method: :all_bases_array
-    field :basesWithDefaultMaxLimitRelation, BaseConnection, null: true, resolver_method: :all_bases
-    field :basesWithDefaultMaxLimitArray, BaseConnection, null: true, resolver_method: :all_bases_array
-    field :basesWithLargeMaxLimitRelation, BaseConnection, null: true, max_page_size: 1000, resolver_method: :all_bases
-    field :basesWithoutNodes, BaseConnectionWithoutNodes, null: true, resolver_method: :all_bases_array
+    field :basesWithMaxLimitRelation, BaseConnection, max_page_size: 2, resolver_method: :all_bases
+    field :basesWithMaxLimitArray, BaseConnection, max_page_size: 2, resolver_method: :all_bases_array
+    field :basesWithDefaultMaxLimitRelation, BaseConnection, resolver_method: :all_bases
+    field :basesWithDefaultMaxLimitArray, BaseConnection, resolver_method: :all_bases_array
+    field :basesWithLargeMaxLimitRelation, BaseConnection, max_page_size: 1000, resolver_method: :all_bases
+    field :basesWithoutNodes, BaseConnectionWithoutNodes, resolver_method: :all_bases_array
 
-    field :bases_as_sequel_dataset, BasesConnectionWithTotalCountType, null: true, connection: true, max_page_size: 1000 do
+    field :bases_as_sequel_dataset, BasesConnectionWithTotalCountType, connection: true, max_page_size: 1000 do
       argument :name_includes, String, required: false
     end
 
@@ -216,7 +218,7 @@ module StarWars
       all_bases
     end
 
-    field :basesWithCustomEdge, CustomEdgeBaseConnectionType, null: true, connection: true, resolver_method: :lazy_bases
+    field :basesWithCustomEdge, CustomEdgeBaseConnectionType, connection: true, resolver_method: :lazy_bases
 
     def lazy_bases
       LazyNodesWrapper.new(object.bases)
@@ -228,11 +230,11 @@ module StarWars
 
     # Nested under `input` in the query:
     argument :ship_name, String, required: false
-    argument :faction_id, ID, required: true
+    argument :faction_id, ID
 
     # Result may have access to these fields:
-    field :ship_edge, Ship.edge_type, null: true
-    field :faction, Faction, null: true
+    field :ship_edge, Ship.edge_type
+    field :faction, Faction
     field :aliased_faction, Faction, hash_key: :aliased_faction, null: true
 
     def resolve(ship_name: nil, faction_id:)
@@ -245,13 +247,16 @@ module StarWars
       else
         ship = DATA.create_ship(ship_name, faction_id)
         faction = DATA["Faction"][faction_id]
-        connection_class = GraphQL::Relay::BaseConnection.connection_for_nodes(faction.ships)
-        ships_connection = connection_class.new(faction.ships, {ship_name: ship_name, faction: faction})
-        ship_edge = GraphQL::Relay::Edge.new(ship, ships_connection)
+        range_add = GraphQL::Relay::RangeAdd.new(
+          collection: faction.ships,
+          item: ship,
+          parent: faction,
+          context: context,
+        )
         result = {
-          ship_edge: ship_edge, # support new-style, too
-          faction: faction,
-          aliased_faction: faction,
+          ship_edge: range_add.edge,
+          faction: range_add.parent,
+          aliased_faction: range_add.parent,
         }
         if ship_name == "Slave II"
           LazyWrapper.new(result)
@@ -308,9 +313,10 @@ module StarWars
   end
 
   LazyNodesWrapper = Struct.new(:relation)
-  class LazyNodesRelationConnection < GraphQL::Relay::RelationConnection
-    def initialize(wrapper, *args, **kwargs)
-      super(wrapper.relation, *args, **kwargs)
+
+  class NewLazyNodesRelationConnection < GraphQL::Pagination::ActiveRecordRelationConnection
+    def initialize(wrapper, **kwargs)
+      super(wrapper.relation, **kwargs)
     end
 
     def edge_nodes
@@ -318,28 +324,26 @@ module StarWars
     end
   end
 
-  GraphQL::Relay::BaseConnection.register_connection_implementation(LazyNodesWrapper, LazyNodesRelationConnection)
-
   class QueryType < GraphQL::Schema::Object
     graphql_name "Query"
 
-    field :rebels, Faction, null: true
+    field :rebels, Faction
     def rebels
       StarWars::DATA["Faction"]["1"]
     end
 
-    field :empire, Faction, null: true
+    field :empire, Faction
     def empire
       StarWars::DATA["Faction"]["2"]
     end
 
-    field :largest_base, BaseType, null: true
+    field :largest_base, BaseType
 
     def largest_base
       Base.find(3)
     end
 
-    field :newest_bases_grouped_by_faction, BaseConnection, null: true
+    field :newest_bases_grouped_by_faction, BaseConnection
 
     def newest_bases_grouped_by_faction
       Base
@@ -354,47 +358,27 @@ module StarWars
       [OpenStruct.new(id: nil)]
     end
 
-    if TESTING_INTERPRETER
-      add_field(GraphQL::Types::Relay::NodeField)
-    else
-      field :node, field: GraphQL::Relay::Node.field
+    include GraphQL::Types::Relay::HasNodeField
+
+    field :node_with_custom_resolver, GraphQL::Types::Relay::Node do
+      argument :id, ID
+    end
+    def node_with_custom_resolver(id:)
+      StarWars::DATA["Faction"]["1"]
     end
 
-    if TESTING_INTERPRETER
-      field :node_with_custom_resolver, GraphQL::Types::Relay::Node, null: true do
-        argument :id, ID, required: true
-      end
-      def node_with_custom_resolver(id:)
-        StarWars::DATA["Faction"]["1"]
-      end
-    else
-      custom_node_field = GraphQL::Relay::Node.field do
-        resolve ->(_, _, _) { StarWars::DATA["Faction"]["1"] }
-      end
-      field :nodeWithCustomResolver, field: custom_node_field
+
+    include GraphQL::Types::Relay::HasNodesField
+
+    field :nodes_with_custom_resolver, [GraphQL::Types::Relay::Node, null: true] do
+      argument :ids, [ID]
+    end
+    def nodes_with_custom_resolver(ids:)
+      [StarWars::DATA["Faction"]["1"], StarWars::DATA["Faction"]["2"]]
     end
 
-    if TESTING_INTERPRETER
-      add_field(GraphQL::Types::Relay::NodesField)
-    else
-      field :nodes, field: GraphQL::Relay::Node.plural_field
-    end
-
-    if TESTING_INTERPRETER
-      field :nodes_with_custom_resolver, [GraphQL::Types::Relay::Node, null: true], null: true do
-        argument :ids, [ID], required: true
-      end
-      def nodes_with_custom_resolver(ids:)
-        [StarWars::DATA["Faction"]["1"], StarWars::DATA["Faction"]["2"]]
-      end
-    else
-      field :nodesWithCustomResolver, field: GraphQL::Relay::Node.plural_field(
-        resolve: ->(_, _, _) { [StarWars::DATA["Faction"]["1"], StarWars::DATA["Faction"]["2"]] }
-      )
-    end
-
-    field :batched_base, BaseType, null: true do
-      argument :id, ID, required: true
+    field :batched_base, BaseType do
+      argument :id, ID
     end
 
     def batched_base(id:)
@@ -407,37 +391,12 @@ module StarWars
     field :introduceShip, mutation: IntroduceShipMutation
   end
 
-  class ClassNameRecorder
-    def initialize(context_key)
-      @context_key = context_key
-    end
-
-    def instrument(type, field)
-      inner_resolve = field.resolve_proc
-      key = @context_key
-      field.redefine {
-        resolve ->(o, a, c) {
-          res = inner_resolve.call(o, a, c)
-          if c[key]
-            c[key] << res.class.name
-          end
-          res
-        }
-      }
-    end
-  end
-
   class Schema < GraphQL::Schema
     query(QueryType)
     mutation(MutationType)
     default_max_page_size 3
 
-    if TESTING_INTERPRETER
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
-      use GraphQL::Pagination::Connections
-      connections.add(LazyNodesWrapper, LazyNodesRelationConnection)
-    end
+    connections.add(LazyNodesWrapper, NewLazyNodesRelationConnection)
 
     def self.resolve_type(type, object, ctx)
       if object == :test_error
@@ -464,8 +423,12 @@ module StarWars
 
     lazy_resolve(LazyWrapper, :value)
     lazy_resolve(LazyLoader, :value)
+  end
 
-    instrument(:field, ClassNameRecorder.new(:before_built_ins))
-    instrument(:field, ClassNameRecorder.new(:after_built_ins), after_built_ins: true)
+  # Create a secondary schema with a default_page_size set. This prevents us
+  # from breaking the existing default_max_page_size tests, while still
+  # allowing us to test the logic involved with default_page_size.
+  class SchemaWithDefaultPageSize < Schema
+    default_page_size 2
   end
 end

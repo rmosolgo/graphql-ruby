@@ -29,6 +29,13 @@ module GraphQL
           true
         end
 
+        # Analyzer hook to decide at analysis time whether analysis
+        # requires a visitor pass; can be disabled for precomputed results.
+        # @return [Boolean] If analysis requires visitation or not
+        def visit?
+          true
+        end
+
         # The result for this analyzer. Returning {GraphQL::AnalysisError} results
         # in a query error.
         # @return [Any] The analyzer result

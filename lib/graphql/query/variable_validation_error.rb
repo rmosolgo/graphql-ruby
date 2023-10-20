@@ -4,11 +4,11 @@ module GraphQL
     class VariableValidationError < GraphQL::ExecutionError
       attr_accessor :value, :validation_result
 
-      def initialize(variable_ast, type, value, validation_result)
+      def initialize(variable_ast, type, value, validation_result, msg: nil)
         @value = value
         @validation_result = validation_result
 
-        msg = "Variable $#{variable_ast.name} of type #{type.to_type_signature} was provided invalid value"
+        msg ||= "Variable $#{variable_ast.name} of type #{type.to_type_signature} was provided invalid value"
 
         if problem_fields.any?
           msg += " for #{problem_fields.join(", ")}"
@@ -23,7 +23,7 @@ module GraphQL
         # a one level deep merge explicitly. However beyond that only show the
         # latest value and problems.
         super.merge({ "extensions" => { "value" => value, "problems" => validation_result.problems }}) do |key, oldValue, newValue|
-          if oldValue.respond_to? merge
+          if oldValue.respond_to?(:merge)
             oldValue.merge(newValue)
           else
             newValue

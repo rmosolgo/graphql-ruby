@@ -5,7 +5,7 @@ describe GraphQL::Schema::Directive::Transform do
   class TransformSchema < GraphQL::Schema
     class Query < GraphQL::Schema::Object
       field :echo, String, null: false do
-        argument :input, String, required: true
+        argument :input, String
       end
 
       def echo(input:)
@@ -16,9 +16,6 @@ describe GraphQL::Schema::Directive::Transform do
     directive(GraphQL::Schema::Directive::Transform)
 
     query(Query)
-    # only supported by the interpreter
-    use GraphQL::Execution::Interpreter
-    use GraphQL::Analysis::AST
   end
 
   it "transforms when applicable" do

@@ -3,12 +3,33 @@ module GraphQL
   module StaticValidation
     class FieldsWillMergeError < StaticValidation::Error
       attr_reader :field_name
-      attr_reader :conflicts
+      attr_reader :kind
 
-      def initialize(message, path: nil, nodes: [], field_name:, conflicts:)
-        super(message, path: path, nodes: nodes)
+      def initialize(kind:, field_name:)
+        super(nil)
+
         @field_name = field_name
-        @conflicts = conflicts
+        @kind = kind
+        @conflicts = []
+      end
+
+      def message
+        "Field '#{field_name}' has #{kind == :argument ? 'an' : 'a'} #{kind} conflict: #{conflicts}?"
+      end
+
+      def path
+        []
+      end
+
+      def conflicts
+        @conflicts.join(' or ')
+      end
+
+      def add_conflict(node, conflict_str)
+        return if nodes.include?(node)
+
+        @nodes << node
+        @conflicts << conflict_str
       end
 
       # A hash representation of this Message

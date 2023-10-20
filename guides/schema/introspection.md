@@ -90,9 +90,7 @@ For unions and interfaces, `__typename` returns the _object_ type for the curren
 
 ## Customizing Introspection
 
-This is an __experimental feature__, only supported in class-based schemas.
-
-With a class-based schema, you can use custom introspection types.
+You can use custom introspection types.
 
 ```ruby
 # create a module namespace for your custom types:
@@ -176,7 +174,7 @@ This class an object type definition, so you can override fields or add new ones
 
 The GraphQL spec describes a field which may be added to _any_ selection: `__typename`. It returns the name of the current GraphQL type.
 
-You can add fields like this (or override `__typename`) by creating a custom `DynamicFields` defintion:
+You can add fields like this (or override `__typename`) by creating a custom `DynamicFields` definition:
 
 ```ruby
 module Introspection

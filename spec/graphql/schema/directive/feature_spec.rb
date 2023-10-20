@@ -20,9 +20,6 @@ describe GraphQL::Schema::Directive::Feature do
 
     directive(Feature)
     query(Query)
-    # only supported by the interpreter
-    use GraphQL::Execution::Interpreter
-    use GraphQL::Analysis::AST
   end
 
 

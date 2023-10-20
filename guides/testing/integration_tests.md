@@ -31,7 +31,7 @@ After building your application, you give it an interface so that people (or oth
 
 The best way to test a GraphQL interface is with _integration tests_ which run the whole GraphQL system (using `MySchema.execute(...)`). By using an integration test, you can be sure that all of GraphQL-Ruby's internal systems are engaged (validation, analysis, authorization, data loading, response type-checking, etc.).
 
-An basic integration test might look like:
+A basic integration test might look like:
 
 ```ruby
 it "loads posts by ID" do
@@ -120,6 +120,6 @@ it "loads user token into the viewer" do
     headers: { "Authorization" => "Bearer #{user.auth_token}" }
 
   json_response = JSON.parse(@response.body)
-  assert_equal user.username, json_response["data"]["viewer"], "Authenticated requests load the viewer"
+  assert_equal user.username, json_response["data"]["viewer"]["username"], "Authenticated requests load the viewer"
 end
 ```

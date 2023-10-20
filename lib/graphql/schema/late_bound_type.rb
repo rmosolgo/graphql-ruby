@@ -9,6 +9,8 @@ module GraphQL
       alias :graphql_name :name
       def initialize(local_name)
         @name = local_name
+        @to_non_null_type = nil
+        @to_list_type = nil
       end
 
       def unwrap
@@ -16,15 +18,19 @@ module GraphQL
       end
 
       def to_non_null_type
-        GraphQL::NonNullType.new(of_type: self)
+        @to_non_null_type ||= GraphQL::Schema::NonNull.new(self)
       end
 
       def to_list_type
-        GraphQL::ListType.new(of_type: self)
+        @to_list_type ||= GraphQL::Schema::List.new(self)
       end
 
       def inspect
         "#<LateBoundType @name=#{name}>"
+      end
+
+      def non_null?
+        false
       end
 
       alias :to_s :inspect

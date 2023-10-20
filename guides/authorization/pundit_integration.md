@@ -38,16 +38,6 @@ context = {
 MySchema.execute(..., context: context)
 ```
 
-And read on about the different features of the integration:
-
-- [Authorizing Objects](#authorizing-objects)
-- [Scoping Lists and Connections](#scopes)
-- [Authorizing Fields](#authorizing-fields)
-- [Authorizing Arguments](#authorizing-arguments)
-- [Authorizing Mutations](#authorizing-mutations)
-- [Custom Policy Lookup](#custom-policy-lookup)
-- [Custom User Lookup](#custom-user-lookup)
-
 ## Authorizing Objects
 
 You can specify Pundit roles that must be satisfied in order for viewers to see objects of a certain type. To get started, include the `ObjectIntegration` in your base object class:
@@ -195,7 +185,7 @@ class Types::JobPosting < Types::BaseObject
 
   # But, only allow `JobPostingPolicy#staff?` users to see
   # who has applied
-  field :applicants, [Types::User], null: true,
+  field :applicants, [Types::User],
     pundit_role: :staff
 end
 ```
@@ -210,7 +200,7 @@ You can override the policy class for a field using `pundit_policy_class:`, for 
 class Types::JobPosting < Types::BaseObject
   # Only allow `ApplicantsPolicy#staff?` users to see
   # who has applied
-  field :applicants, [Types::User], null: true,
+  field :applicants, [Types::User],
     pundit_role: :staff,
     pundit_policy_class: ApplicantsPolicy
     # Or with a string:
@@ -255,7 +245,7 @@ Now, arguments accept a `pundit_role:` option, for example:
 
 ```ruby
 class Types::Company < Types::BaseObject
-  field :employees, Types::Employee.connection_type, null: true do
+  field :employees, Types::Employee.connection_type do
     # Only admins can filter employees by email:
     argument :email, String, required: false, pundit_role: :admin
   end
@@ -340,7 +330,7 @@ Beyond the normal [object reading permissions](#authorizing-objects), you can ad
 
 ```ruby
 class Mutations::FireEmployee < Mutations::BaseMutation
-  argument :employee_id, ID, required: true,
+  argument :employee_id, ID,
     loads: Types::Employee,
     pundit_role: :supervisor,
 end
@@ -372,7 +362,7 @@ Whatever that method returns will be treated as an early return value for the mu
 
 ```ruby
 class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation
-  field :errors, [String], null: true
+  field :errors, [String]
 
   def unauthorized_by_pundit(owner, value)
     # Return errors as data:
@@ -380,6 +370,21 @@ class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation
   end
 end
 ```
+
+## Authorizing Resolvers
+
+Resolvers are authorized just like [mutations](#authorizing-mutations), and require similar setup:
+
+```ruby
+# app/graphql/resolvers/base_resolver.rb
+class Resolvers::BaseResolver < GraphQL::Schema::Resolver
+  include GraphQL::Pro::PunditIntegration::ResolverIntegration
+  argument_class BaseArgument
+  # pundit_role nil # to disable authorization by default
+end
+```
+
+Beyond that, see [Authorizing Mutations](#authorizing-mutations) above for further details.
 
 ## Custom Policy Lookup
 
@@ -406,11 +411,11 @@ Here's an example of how the custom hooks can be installed:
 ```ruby
 module CustomPolicyLookup
   # Lookup policies in the `SystemAdmin::` namespace for system_admin users
+  # @return [Class]
   def pundit_policy_class_for(object, context)
     current_user = context[:current_user]
     if current_user.system_admin?
-      policy_class = SystemAdmin.const_get("#{object.class.name}Policy")
-      policy_class.new(current_user, object)
+      SystemAdmin.const_get("#{object.class.name}Policy")
     else
       super
     end

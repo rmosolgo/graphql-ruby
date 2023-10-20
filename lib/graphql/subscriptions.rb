@@ -4,10 +4,7 @@ require "graphql/subscriptions/broadcast_analyzer"
 require "graphql/subscriptions/event"
 require "graphql/subscriptions/instrumentation"
 require "graphql/subscriptions/serialize"
-if defined?(ActionCable)
-  require "graphql/subscriptions/action_cable_subscriptions"
-end
-require "graphql/subscriptions/subscription_root"
+require "graphql/subscriptions/action_cable_subscriptions"
 require "graphql/subscriptions/default_subscription_resolve_extension"
 
 module GraphQL
@@ -18,17 +15,23 @@ module GraphQL
     class InvalidTriggerError < GraphQL::Error
     end
 
+    # Raised when either:
+    # - An initial subscription didn't have a value for `context[subscription_scope]`
+    # - Or, an update didn't pass `.trigger(..., scope:)`
+    # When raised, the initial subscription or update fails completely.
+    class SubscriptionScopeMissingError < GraphQL::Error
+    end
+
     # @see {Subscriptions#initialize} for options, concrete implementations may add options.
     def self.use(defn, options = {})
       schema = defn.is_a?(Class) ? defn : defn.target
 
-      if schema.subscriptions
+      if schema.subscriptions(inherited: false)
         raise ArgumentError, "Can't reinstall subscriptions. #{schema} is using #{schema.subscriptions}, can't also add #{self}"
       end
 
       instrumentation = Subscriptions::Instrumentation.new(schema: schema)
       defn.instrument(:query, instrumentation)
-      defn.instrument(:field, instrumentation)
       options[:schema] = schema
       schema.subscriptions = self.new(**options)
       schema.add_subscription_extension_if_necessary
@@ -36,15 +39,14 @@ module GraphQL
     end
 
     # @param schema [Class] the GraphQL schema this manager belongs to
-    def initialize(schema:, broadcast: false, default_broadcastable: false, **rest)
+    # @param validate_update [Boolean] If false, then validation is skipped when executing updates
+    def initialize(schema:, validate_update: true, broadcast: false, default_broadcastable: false, **rest)
       if broadcast
-        if !schema.using_ast_analysis?
-          raise ArgumentError, "`broadcast: true` requires AST analysis, add `using GraphQL::Analysis::AST` to your schema or see https://graphql-ruby.org/queries/ast_analysis.html."
-        end
         schema.query_analyzer(Subscriptions::BroadcastAnalyzer)
       end
       @default_broadcastable = default_broadcastable
       @schema = schema
+      @validate_update = validate_update
     end
 
     # @return [Boolean] Used when fields don't have `broadcastable:` explicitly set
@@ -56,17 +58,21 @@ module GraphQL
     # @param args [Hash<String, Symbol => Object]
     # @param object [Object]
     # @param scope [Symbol, String]
+    # @param context [Hash]
     # @return [void]
-    def trigger(event_name, args, object, scope: nil)
+    def trigger(event_name, args, object, scope: nil, context: {})
+      # Make something as context-like as possible, even though there isn't a current query:
+      dummy_query = GraphQL::Query.new(@schema, "", validate: false, context: context)
+      context = dummy_query.context
       event_name = event_name.to_s
 
       # Try with the verbatim input first:
-      field = @schema.get_field(@schema.subscription, event_name)
+      field = @schema.get_field(@schema.subscription, event_name, context)
 
       if field.nil?
         # And if it wasn't found, normalize it:
         normalized_event_name = normalize_name(event_name)
-        field = @schema.get_field(@schema.subscription, normalized_event_name)
+        field = @schema.get_field(@schema.subscription, normalized_event_name, context)
         if field.nil?
           raise InvalidTriggerError, "No subscription matching trigger: #{event_name} (looked for #{@schema.subscription.graphql_name}.#{normalized_event_name})"
         end
@@ -76,13 +82,15 @@ module GraphQL
       end
 
       # Normalize symbol-keyed args to strings, try camelizing them
-      normalized_args = normalize_arguments(normalized_event_name, field, args)
+      # Should this accept a real context somehow?
+      normalized_args = normalize_arguments(normalized_event_name, field, args, GraphQL::Query::NullContext.instance)
 
       event = Subscriptions::Event.new(
         name: normalized_event_name,
         arguments: normalized_args,
         field: field,
         scope: scope,
+        context: context,
       )
       execute_all(event, object)
     end
@@ -109,34 +117,41 @@ module GraphQL
       variables = query_data.fetch(:variables)
       context = query_data.fetch(:context)
       operation_name = query_data.fetch(:operation_name)
-      result = nil
-      # this will be set to `false` unless `.execute` is terminated
-      # with a `throw :graphql_subscription_unsubscribed`
-      unsubscribed = true
-      catch(:graphql_subscription_unsubscribed) do
-        catch(:graphql_no_subscription_update) do
-          # Re-evaluate the saved query,
-          # but if it terminates early with a `throw`,
-          # it will stay `nil`
-          result = @schema.execute(
-            query: query_string,
-            context: context,
-            subscription_topic: event.topic,
-            operation_name: operation_name,
-            variables: variables,
-            root_value: object,
-          )
-        end
-        unsubscribed = false
+      execute_options = {
+        query: query_string,
+        context: context,
+        subscription_topic: event.topic,
+        operation_name: operation_name,
+        variables: variables,
+        root_value: object,
+      }
+
+       # merge event's and query's context together
+      context.merge!(event.context) unless event.context.nil? || context.nil?
+
+      execute_options[:validate] = validate_update?(**execute_options)
+      result = @schema.execute(**execute_options)
+      subscriptions_context = result.context.namespace(:subscriptions)
+      if subscriptions_context[:no_update]
+        result = nil
       end
 
-      if unsubscribed
+      if subscriptions_context[:unsubscribed] && !subscriptions_context[:final_update]
         # `unsubscribe` was called, clean up on our side
-        # TODO also send `{more: false}` to client?
+        # The transport should also send `{more: false}` to client
         delete_subscription(subscription_id)
+        result = nil
       end
 
       result
+    end
+
+    # Define this method to customize whether to validate
+    # this subscription when executing an update.
+    #
+    # @return [Boolean] defaults to `true`, or false if `validate: false` is provided.
+    def validate_update?(query:, context:, root_value:, subscription_topic:, operation_name:, variables:)
+      @validate_update
     end
 
     # Run the update query for this subscription and deliver it
@@ -147,7 +162,14 @@ module GraphQL
       res = execute_update(subscription_id, event, object)
       if !res.nil?
         deliver(subscription_id, res)
+
+        if res.context.namespace(:subscriptions)[:unsubscribed]
+          # `unsubscribe` was called, clean up on our side
+          # The transport should also send `{more: false}` to client
+          delete_subscription(subscription_id)
+        end
       end
+
     end
 
     # Event `event` occurred on `object`,
@@ -156,16 +178,6 @@ module GraphQL
     # @param object [Object]
     # @return [void]
     def execute_all(event, object)
-      each_subscription_id(event) do |subscription_id|
-        execute(subscription_id, event, object)
-      end
-    end
-
-    # Get each `subscription_id` subscribed to `event.topic` and yield them
-    # @param event [GraphQL::Subscriptions::Event]
-    # @yieldparam subscription_id [String]
-    # @return [void]
-    def each_subscription_id(event)
       raise GraphQL::RequiredImplementationMissingError
     end
 
@@ -238,9 +250,9 @@ module GraphQL
     # @param arg_owner [GraphQL::Field, GraphQL::BaseType]
     # @param args [Hash, Array, Any] some GraphQL input value to coerce as `arg_owner`
     # @return [Any] normalized arguments value
-    def normalize_arguments(event_name, arg_owner, args)
+    def normalize_arguments(event_name, arg_owner, args, context)
       case arg_owner
-      when GraphQL::Field, GraphQL::InputObjectType, GraphQL::Schema::Field, Class
+      when GraphQL::Schema::Field, Class
         if arg_owner.is_a?(Class) && !arg_owner.kind.input_object?
           # it's a type, but not an input object
           return args
@@ -249,19 +261,19 @@ module GraphQL
         missing_arg_names = []
         args.each do |k, v|
           arg_name = k.to_s
-          arg_defn = arg_owner.arguments[arg_name]
+          arg_defn = arg_owner.get_argument(arg_name, context)
           if arg_defn
             normalized_arg_name = arg_name
           else
             normalized_arg_name = normalize_name(arg_name)
-            arg_defn = arg_owner.arguments[normalized_arg_name]
+            arg_defn = arg_owner.get_argument(normalized_arg_name, context)
           end
 
           if arg_defn
             if arg_defn.loads
               normalized_arg_name = arg_defn.keyword.to_s
             end
-            normalized = normalize_arguments(event_name, arg_defn.type, v)
+            normalized = normalize_arguments(event_name, arg_defn.type, v, context)
             normalized_args[normalized_arg_name] = normalized
           else
             # Couldn't find a matching argument definition
@@ -271,19 +283,17 @@ module GraphQL
 
         # Backfill default values so that trigger arguments
         # match query arguments.
-        arg_owner.arguments.each do |name, arg_defn|
+        arg_owner.arguments(context).each do |_name, arg_defn|
           if arg_defn.default_value? && !normalized_args.key?(arg_defn.name)
             default_value = arg_defn.default_value
             # We don't have an underlying "object" here, so it can't call methods.
             # This is broken.
-            normalized_args[arg_defn.name] = arg_defn.prepare_value(nil, default_value, context: GraphQL::Query::NullContext)
+            normalized_args[arg_defn.name] = arg_defn.prepare_value(nil, default_value, context: context)
           end
         end
 
         if missing_arg_names.any?
-          arg_owner_name = if arg_owner.is_a?(GraphQL::Field)
-            "Subscription.#{arg_owner.name}"
-          elsif arg_owner.is_a?(GraphQL::Schema::Field)
+          arg_owner_name = if arg_owner.is_a?(GraphQL::Schema::Field)
             arg_owner.path
           elsif arg_owner.is_a?(Class)
             arg_owner.graphql_name
@@ -294,10 +304,10 @@ module GraphQL
         end
 
         normalized_args
-      when GraphQL::ListType, GraphQL::Schema::List
-        args.map { |a| normalize_arguments(event_name, arg_owner.of_type, a) }
-      when GraphQL::NonNullType, GraphQL::Schema::NonNull
-        normalize_arguments(event_name, arg_owner.of_type, args)
+      when GraphQL::Schema::List
+        args.map { |a| normalize_arguments(event_name, arg_owner.of_type, a, context) }
+      when GraphQL::Schema::NonNull
+        normalize_arguments(event_name, arg_owner.of_type, args, context)
       else
         args
       end

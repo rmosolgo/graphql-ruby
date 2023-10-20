@@ -11,11 +11,6 @@ module GraphQL
   module Analysis
     module AST
       module_function
-
-      def use(schema_class)
-        schema_class.analysis_engine = GraphQL::Analysis::AST
-      end
-
       # Analyze a multiplex, and all queries within.
       # Multiplex analyzers are ran for all queries, keeping state.
       # Query analyzers are ran per query, without carrying state between queries.
@@ -26,7 +21,7 @@ module GraphQL
       def analyze_multiplex(multiplex, analyzers)
         multiplex_analyzers = analyzers.map { |analyzer| analyzer.new(multiplex) }
 
-        multiplex.trace("analyze_multiplex", { multiplex: multiplex }) do
+        multiplex.current_trace.analyze_multiplex(multiplex: multiplex) do
           query_results = multiplex.queries.map do |query|
             if query.valid?
               analyze_query(
@@ -53,19 +48,27 @@ module GraphQL
       # @param analyzers [Array<GraphQL::Analysis::AST::Analyzer>]
       # @return [Array<Any>] Results from those analyzers
       def analyze_query(query, analyzers, multiplex_analyzers: [])
-        query.trace("analyze_query", { query: query }) do
+        query.current_trace.analyze_query(query: query) do
           query_analyzers = analyzers
             .map { |analyzer| analyzer.new(query) }
-            .select { |analyzer| analyzer.analyze? }
+            .tap { _1.select!(&:analyze?) }
 
           analyzers_to_run = query_analyzers + multiplex_analyzers
           if analyzers_to_run.any?
-            visitor = GraphQL::Analysis::AST::Visitor.new(
-              query: query,
-              analyzers: analyzers_to_run
-            )
 
-            visitor.visit
+            analyzers_to_run.select!(&:visit?)
+            if analyzers_to_run.any?
+              visitor = GraphQL::Analysis::AST::Visitor.new(
+                query: query,
+                analyzers: analyzers_to_run
+              )
+
+              visitor.visit
+
+              if visitor.rescued_errors.any?
+                return visitor.rescued_errors
+              end
+            end
 
             query_analyzers.map(&:result)
           else
@@ -75,7 +78,7 @@ module GraphQL
       end
 
       def analysis_errors(results)
-        results.flatten.select { |r| r.is_a?(GraphQL::AnalysisError) }
+        results.flatten.tap { _1.select! { |r| r.is_a?(GraphQL::AnalysisError) } }
       end
     end
   end

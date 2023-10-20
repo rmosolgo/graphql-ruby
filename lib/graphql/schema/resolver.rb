@@ -15,8 +15,6 @@ module GraphQL
     #
     # A resolver's configuration may be overridden with other keywords in the `field(...)` call.
     #
-    # See the {.field_options} to see how a Resolver becomes a set of field configuration options.
-    #
     # @see {GraphQL::Schema::Mutation} for a concrete subclass of `Resolver`.
     # @see {GraphQL::Function} `Resolver` is a replacement for `GraphQL::Function`
     class Resolver
@@ -24,10 +22,11 @@ module GraphQL
       # Really we only need description from here, but:
       extend Schema::Member::BaseDSLMethods
       extend GraphQL::Schema::Member::HasArguments
+      extend GraphQL::Schema::Member::HasValidators
       include Schema::Member::HasPath
       extend Schema::Member::HasPath
 
-      # @param object [Object] the initialize object, pass to {Query.initialize} as `root_value`
+      # @param object [Object] The application object that this field is being resolved on
       # @param context [GraphQL::Query::Context]
       # @param field [GraphQL::Schema::Field]
       def initialize(object:, context:, field:)
@@ -36,10 +35,9 @@ module GraphQL
         @field = field
         # Since this hash is constantly rebuilt, cache it for this call
         @arguments_by_keyword = {}
-        self.class.arguments.each do |name, arg|
+        self.class.arguments(context).each do |name, arg|
           @arguments_by_keyword[arg.keyword] = arg
         end
-        @arguments_loads_as_type = self.class.arguments_loads_as_type
         @prepared_arguments = nil
       end
 
@@ -48,6 +46,11 @@ module GraphQL
 
       # @return [GraphQL::Query::Context]
       attr_reader :context
+
+      # @return [GraphQL::Dataloader]
+      def dataloader
+        context.dataloader
+      end
 
       # @return [GraphQL::Schema::Field]
       attr_reader :field
@@ -62,40 +65,43 @@ module GraphQL
       # @api private
       def resolve_with_support(**args)
         # First call the ready? hook which may raise
-        ready_val = if args.any?
+        raw_ready_val = if args.any?
           ready?(**args)
         else
           ready?
         end
-        context.schema.after_lazy(ready_val) do |is_ready, ready_early_return|
-          if ready_early_return
+        context.query.after_lazy(raw_ready_val) do |ready_val|
+          if ready_val.is_a?(Array)
+            is_ready, ready_early_return = ready_val
             if is_ready != false
-              raise "Unexpected result from #ready? (expected `true`, `false` or `[false, {...}]`): [#{authorized_result.inspect}, #{ready_early_return.inspect}]"
+              raise "Unexpected result from #ready? (expected `true`, `false` or `[false, {...}]`): [#{is_ready.inspect}, #{ready_early_return.inspect}]"
             else
               ready_early_return
             end
-          elsif is_ready
+          elsif ready_val
             # Then call each prepare hook, which may return a different value
             # for that argument, or may return a lazy object
             load_arguments_val = load_arguments(args)
-            context.schema.after_lazy(load_arguments_val) do |loaded_args|
+            context.query.after_lazy(load_arguments_val) do |loaded_args|
               @prepared_arguments = loaded_args
+              Schema::Validator.validate!(self.class.validators, object, context, loaded_args, as: @field)
               # Then call `authorized?`, which may raise or may return a lazy object
-              authorized_val = if loaded_args.any?
+              raw_authorized_val = if loaded_args.any?
                 authorized?(**loaded_args)
               else
                 authorized?
               end
-              context.schema.after_lazy(authorized_val) do |(authorized_result, early_return)|
+              context.query.after_lazy(raw_authorized_val) do |authorized_val|
                 # If the `authorized?` returned two values, `false, early_return`,
                 # then use the early return value instead of continuing
-                if early_return
+                if authorized_val.is_a?(Array)
+                  authorized_result, early_return = authorized_val
                   if authorized_result == false
                     early_return
                   else
                     raise "Unexpected result from #authorized? (expected `true`, `false` or `[false, {...}]`): [#{authorized_result.inspect}, #{early_return.inspect}]"
                   end
-                elsif authorized_result
+                elsif authorized_val
                   # Finally, all the hooks have passed, so resolve it
                   if loaded_args.any?
                     public_send(self.class.resolve_method, **loaded_args)
@@ -103,7 +109,7 @@ module GraphQL
                     public_send(self.class.resolve_method)
                   end
                 else
-                  nil
+                  raise GraphQL::UnauthorizedFieldError.new(context: context, object: object, type: field.owner, field: field)
                 end
               end
             end
@@ -139,7 +145,25 @@ module GraphQL
       # @raise [GraphQL::UnauthorizedError] To signal an authorization failure
       # @return [Boolean, early_return_data] If `false`, execution will stop (and `early_return_data` will be returned instead, if present.)
       def authorized?(**inputs)
-        self.class.arguments.each_value do |argument|
+        arg_owner = @field # || self.class
+        args = arg_owner.arguments(context)
+        authorize_arguments(args, inputs)
+      end
+
+      # Called when an object loaded by `loads:` fails the `.authorized?` check for its resolved GraphQL object type.
+      #
+      # By default, the error is re-raised and passed along to {{Schema.unauthorized_object}}.
+      #
+      # Any value returned here will be used _instead of_ of the loaded object.
+      # @param err [GraphQL::UnauthorizedError]
+      def unauthorized_object(err)
+        raise err
+      end
+
+      private
+
+      def authorize_arguments(args, inputs)
+        args.each_value do |argument|
           arg_keyword = argument.keyword
           if inputs.key?(arg_keyword) && !(arg_value = inputs[arg_keyword]).nil? && (arg_value != argument.default_value)
             arg_auth, err = argument.authorized?(self, arg_value, context)
@@ -154,8 +178,6 @@ module GraphQL
         end
       end
 
-      private
-
       def load_arguments(args)
         prepared_args = {}
         prepare_lazies = []
@@ -163,18 +185,14 @@ module GraphQL
         args.each do |key, value|
           arg_defn = @arguments_by_keyword[key]
           if arg_defn
-            if value.nil?
-              prepared_args[key] = value
-            else
-              prepped_value = prepared_args[key] = load_argument(key, value)
-              if context.schema.lazy?(prepped_value)
-                prepare_lazies << context.schema.after_lazy(prepped_value) do |finished_prepped_value|
-                  prepared_args[key] = finished_prepped_value
-                end
+            prepped_value = prepared_args[key] = arg_defn.load_and_authorize_value(self, value, context)
+            if context.schema.lazy?(prepped_value)
+              prepare_lazies << context.query.after_lazy(prepped_value) do |finished_prepped_value|
+                prepared_args[key] = finished_prepped_value
               end
             end
           else
-            # These are `extras: [...]`
+            # these are `extras:`
             prepared_args[key] = value
           end
         end
@@ -187,11 +205,27 @@ module GraphQL
         end
       end
 
-      def load_argument(name, value)
-        public_send("load_#{name}", value)
+      def get_argument(name, context = GraphQL::Query::NullContext.instance)
+        self.class.get_argument(name, context)
       end
 
       class << self
+        def field_arguments(context = GraphQL::Query::NullContext.instance)
+          arguments(context)
+        end
+
+        def any_field_arguments?
+          any_arguments?
+        end
+
+        def get_field_argument(name, context = GraphQL::Query::NullContext.instance)
+          get_argument(name, context)
+        end
+
+        def all_field_argument_definitions
+          all_argument_definitions
+        end
+
         # Default `:resolve` set below.
         # @return [Symbol] The method to call on instances of this object to resolve the field
         def resolve_method(new_method = nil)
@@ -211,8 +245,10 @@ module GraphQL
           own_extras + (superclass.respond_to?(:extras) ? superclass.extras : [])
         end
 
-        # Specifies whether or not the field is nullable. Defaults to `true`
-        # TODO unify with {#type}
+        # If `true` (default), then the return type for this resolver will be nullable.
+        # If `false`, then the return type is non-null.
+        #
+        # @see #type which sets the return type of this field and accepts a `null:` option
         # @param allow_null [Boolean] Whether or not the response can be null
         def null(allow_null = nil)
           if !allow_null.nil?
@@ -220,6 +256,14 @@ module GraphQL
           end
 
           @null.nil? ? (superclass.respond_to?(:null) ? superclass.null : true) : @null
+        end
+
+        def resolver_method(new_method_name = nil)
+          if new_method_name
+            @resolver_method = new_method_name
+          else
+            @resolver_method || :resolve_with_support
+          end
         end
 
         # Call this method to get the return type of the field,
@@ -237,8 +281,8 @@ module GraphQL
             @type_expr = new_type
             @null = null
           else
-            if @type_expr
-              GraphQL::Schema::Member::BuildType.parse_type(@type_expr, null: @null)
+            if type_expr
+              GraphQL::Schema::Member::BuildType.parse_type(type_expr, null: self.null)
             elsif superclass.respond_to?(:type)
               superclass.type
             else
@@ -269,19 +313,46 @@ module GraphQL
           end
         end
 
-        def field_options
-          {
-            type: type_expr,
-            description: description,
-            extras: extras,
-            resolver_method: :resolve_with_support,
-            resolver_class: self,
-            arguments: arguments,
-            null: null,
-            complexity: complexity,
-            extensions: extensions,
-            broadcastable: broadcastable?,
-          }
+        # Get or set the `max_page_size:` which will be configured for fields using this resolver
+        # (`nil` means "unlimited max page size".)
+        # @param max_page_size [Integer, nil] Set a new value
+        # @return [Integer, nil] The `max_page_size` assigned to fields that use this resolver
+        def max_page_size(new_max_page_size = NOT_CONFIGURED)
+          if new_max_page_size != NOT_CONFIGURED
+            @max_page_size = new_max_page_size
+          elsif defined?(@max_page_size)
+            @max_page_size
+          elsif superclass.respond_to?(:max_page_size)
+            superclass.max_page_size
+          else
+            nil
+          end
+        end
+
+        # @return [Boolean] `true` if this resolver or a superclass has an assigned `max_page_size`
+        def has_max_page_size?
+          (!!defined?(@max_page_size)) || (superclass.respond_to?(:has_max_page_size?) && superclass.has_max_page_size?)
+        end
+
+        # Get or set the `default_page_size:` which will be configured for fields using this resolver
+        # (`nil` means "unlimited default page size".)
+        # @param default_page_size [Integer, nil] Set a new value
+        # @return [Integer, nil] The `default_page_size` assigned to fields that use this resolver
+        def default_page_size(new_default_page_size = NOT_CONFIGURED)
+          if new_default_page_size != NOT_CONFIGURED
+            @default_page_size = new_default_page_size
+          elsif defined?(@default_page_size)
+            @default_page_size
+          elsif superclass.respond_to?(:default_page_size)
+            superclass.default_page_size
+          else
+            nil
+          end
+        end
+
+        # @return [Boolean] `true` if this resolver or a superclass has an assigned `default_page_size`
+        def has_default_page_size?
+          (!!defined?(@default_page_size)) || (superclass.respond_to?(:has_default_page_size?) && superclass.has_default_page_size?)
         end
 
         # A non-normalized type configuration, without `null` applied
@@ -293,63 +364,43 @@ module GraphQL
         # also add some preparation hook methods which will be used for this argument
         # @see {GraphQL::Schema::Argument#initialize} for the signature
         def argument(*args, **kwargs, &block)
-          loads = kwargs[:loads]
           # Use `from_resolver: true` to short-circuit the InputObject's own `loads:` implementation
           # so that we can support `#load_{x}` methods below.
-          arg_defn = super(*args, from_resolver: true, **kwargs)
-          own_arguments_loads_as_type[arg_defn.keyword] = loads if loads
-
-          if loads && arg_defn.type.list?
-            class_eval <<-RUBY, __FILE__, __LINE__ + 1
-            def load_#{arg_defn.keyword}(values)
-              argument = @arguments_by_keyword[:#{arg_defn.keyword}]
-              lookup_as_type = @arguments_loads_as_type[:#{arg_defn.keyword}]
-              context.schema.after_lazy(values) do |values2|
-                GraphQL::Execution::Lazy.all(values2.map { |value| load_application_object(argument, lookup_as_type, value, context) })
-              end
-            end
-            RUBY
-          elsif loads
-            class_eval <<-RUBY, __FILE__, __LINE__ + 1
-            def load_#{arg_defn.keyword}(value)
-              argument = @arguments_by_keyword[:#{arg_defn.keyword}]
-              lookup_as_type = @arguments_loads_as_type[:#{arg_defn.keyword}]
-              load_application_object(argument, lookup_as_type, value, context)
-            end
-            RUBY
-          else
-            class_eval <<-RUBY, __FILE__, __LINE__ + 1
-            def load_#{arg_defn.keyword}(value)
-              value
-            end
-            RUBY
-          end
-
-          arg_defn
-        end
-
-        # @api private
-        def arguments_loads_as_type
-          inherited_lookups = superclass.respond_to?(:arguments_loads_as_type) ? superclass.arguments_loads_as_type : {}
-          inherited_lookups.merge(own_arguments_loads_as_type)
+          super(*args, from_resolver: true, **kwargs)
         end
 
         # Registers new extension
         # @param extension [Class] Extension class
         # @param options [Hash] Optional extension options
         def extension(extension, **options)
-          extensions << {extension => options}
+          @own_extensions ||= []
+          @own_extensions << {extension => options}
         end
 
         # @api private
         def extensions
-          @extensions ||= []
+          own_exts = @own_extensions
+          # Jump through some hoops to avoid creating arrays when we don't actually need them
+          if superclass.respond_to?(:extensions)
+            s_exts = superclass.extensions
+            if own_exts
+              if s_exts.any?
+                own_exts + s_exts
+              else
+                own_exts
+              end
+            else
+              s_exts
+            end
+          else
+            own_exts || EMPTY_ARRAY
+          end
         end
 
         private
 
-        def own_arguments_loads_as_type
-          @own_arguments_loads_as_type ||= {}
+        def own_extensions
+          @own_extensions
         end
       end
     end

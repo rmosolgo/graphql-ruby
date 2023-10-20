@@ -156,6 +156,31 @@ describe GraphQL::StaticValidation::Validator do
     end
   end
 
+  describe "validation timeout" do
+    module StubValidationTimeout
+      def on_operation_definition(node, parent)
+        raise Timeout::Error.new
+      end
+    end
+    let(:rules) {
+      [
+        StubValidationTimeout
+      ]
+    }
+    let(:validator) { GraphQL::StaticValidation::Validator.new(schema: Dummy::Schema, rules: rules) }
+    let(:query_string) { "{ t: __typename }"}
+    let(:errors) { validator.validate(query, validate: validate, timeout: 0.1)[:errors].map(&:to_h) }
+
+    it "aborts and return error" do
+      expected_errors = [{
+        "message" => "Timeout on validation of query",
+        "locations" => [],
+        "extensions"=>{"code"=>"validationTimeout"}
+      }]
+      assert_equal expected_errors, errors
+    end
+  end
+
   describe "Custom ruleset" do
     let(:query_string) { "
         fragment Thing on Cheese {
@@ -177,28 +202,6 @@ describe GraphQL::StaticValidation::Validator do
 
     it "runs the specified rules" do
       assert_equal 0, errors.size
-    end
-
-    describe "With a legacy-style rule" do
-      # GraphQL-Pro's operation store uses this
-      class ValidatorSpecLegacyRule
-        include GraphQL::StaticValidation::Error::ErrorHelper
-        def validate(ctx)
-          ctx.visitor[GraphQL::Language::Nodes::OperationDefinition] << ->(n, _p) {
-            ctx.errors << error("Busted!", n, context: ctx)
-          }
-        end
-      end
-
-      let(:rules) {
-        GraphQL::StaticValidation::ALL_RULES + [ValidatorSpecLegacyRule]
-      }
-
-      let(:query_string) { "{ __typename }"}
-
-      it "runs the rule" do
-        assert_equal ["Busted!"], errors.map { |e| e["message"] }
-      end
     end
   end
 end

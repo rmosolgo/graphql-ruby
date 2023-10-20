@@ -9,8 +9,15 @@ module GraphQL
       MIN = -(2**31)
       MAX = (2**31) - 1
 
-      def self.coerce_input(value, _ctx)
-        value.is_a?(Integer) ? value : nil
+      def self.coerce_input(value, ctx)
+        return if !value.is_a?(Integer)
+
+        if value >= MIN && value <= MAX
+          value
+        else
+          err = GraphQL::IntegerDecodingError.new(value)
+          ctx.schema.type_error(err, ctx)
+        end
       end
 
       def self.coerce_result(value, ctx)
@@ -18,7 +25,7 @@ module GraphQL
         if value >= MIN && value <= MAX
           value
         else
-          err = GraphQL::IntegerEncodingError.new(value)
+          err = GraphQL::IntegerEncodingError.new(value, context: ctx)
           ctx.schema.type_error(err, ctx)
         end
       end

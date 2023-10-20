@@ -1,0 +1,12 @@
+require:
+  - graphql/rubocop
+
+AllCops:
+  TargetRubyVersion: 2.4
+  DisabledByDefault: true
+
+GraphQL/DefaultNullTrue:
+  Enabled: true
+
+GraphQL/DefaultRequiredTrue:
+  Enabled: true

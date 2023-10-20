@@ -16,19 +16,23 @@ interface ApolloObserver {
 
 const anonymousClientId = "graphql-subscriber"
 
-class AblyError {
-  constructor(reason: Types.ErrorInfo) {
-    const error = Error(reason.message)
-    const attributes: (keyof Types.ErrorInfo)[] = ["code", "statusCode"]
-    attributes.forEach(attr => {
-      Object.defineProperty(error, attr, {
-        get() {
-          return reason[attr]
-        }
-      })
-    })
-    Error.captureStackTrace(error, AblyError)
-    return error
+// Current max. number of rewound messages in the initial response to
+// subscribe. See
+// https://github.com/ably/docs/blob/baa0a4666079abba3a3e19e82eb99ca8b8a735d0/content/realtime/channels/channel-parameters/rewind.textile#additional-information
+// Note that using a higher value emits a warning.
+const maxNumRewindMessages = 100
+
+class AblyError extends Error {
+  constructor(public reason: Types.ErrorInfo) {
+    super(reason.message)
+  }
+
+  get code() {
+    return this.reason.code
+  }
+
+  get statusCode() {
+    return this.reason.statusCode
   }
 }
 
@@ -51,7 +55,7 @@ function createAblyHandler(options: AblyHandlerOptions) {
         if (result.errors) {
           // What kind of error stuff belongs here?
           observer.onError(result.errors)
-        } else if (result.data) {
+        } else if (result.data && Object.keys(result.data).length > 0) {
           observer.onNext({ data: result.data })
         }
       }
@@ -78,7 +82,14 @@ function createAblyHandler(options: AblyHandlerOptions) {
           throw new Error("Missing X-Subscription-ID header")
         }
 
-        channel = ably.channels.get(channelName)
+        const channelKey = response.headers.get("X-Subscription-Key")
+
+        channel = ably.channels.get(channelName, {
+          params: { rewind: String(maxNumRewindMessages) },
+          cipher: channelKey ? { key: channelKey } : undefined,
+          modes: ["SUBSCRIBE", "PRESENCE"]
+        })
+
         channel.on("failed", function(stateChange: Types.ChannelStateChange) {
           observer.onError(
             stateChange.reason
@@ -104,9 +115,10 @@ function createAblyHandler(options: AblyHandlerOptions) {
             )
           }
         })
+
         // Register presence, so that we can detect empty channels and clean them up server-side
-        const enterCallback = (errorInfo: Types.ErrorInfo) => {
-          if (errorInfo) {
+        const enterCallback = (errorInfo: Types.ErrorInfo | undefined) => {
+          if (errorInfo && channel) {
             observer.onError(new AblyError(errorInfo))
           }
         }
@@ -119,6 +131,7 @@ function createAblyHandler(options: AblyHandlerOptions) {
         } else {
           channel.presence.enter("subscribed", enterCallback)
         }
+
         // When you get an update from ably, give it to Relay
         channel.subscribe("update", updateHandler)
 
@@ -136,12 +149,13 @@ function createAblyHandler(options: AblyHandlerOptions) {
         try {
           if (channel) {
             const disposedChannel = channel
+            channel = null
             disposedChannel.unsubscribe()
 
             // Ensure channel is no longer attaching, as otherwise detach does
             // nothing
             if (disposedChannel.state === "attaching") {
-              await new Promise((resolve, _reject) => {
+              await new Promise<void>((resolve, _reject) => {
                 const onStateChange = (
                   stateChange: Types.ChannelStateChange
                 ) => {
@@ -154,8 +168,8 @@ function createAblyHandler(options: AblyHandlerOptions) {
               })
             }
 
-            await new Promise((resolve, reject) => {
-              disposedChannel.detach((err: Types.ErrorInfo) => {
+            await new Promise<void>((resolve, reject) => {
+              disposedChannel.detach(err => {
                 if (err) {
                   reject(new AblyError(err))
                 } else {

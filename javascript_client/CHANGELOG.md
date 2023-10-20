@@ -1,5 +1,115 @@
 # graphql-ruby-client
 
+# 1.11.9 (1 Sept 2023)
+
+- `createRelaySubscriptionHandler`: fix error handling in handler functions #4603
+
+# 1.11.8 (9 May 2023)
+
+- ActionCable: accept a custom `channelName` for `createActionCableHandler` and `addGraphQLSubscriptions` #4463
+
+# 1.11.7 (24 February 2023)
+
+- ActionCableLink: fix race condition #4359
+
+# 1.11.6 (14 February 2023)
+
+- Sync: fix `--changeset-version` #4328
+- Improve verbose logging #4328
+
+# 1.11.5 (27 January 2023)
+
+- Sync: add a `--changeset-version` for use with Changesets #4304
+- Sync: fix handling of `--header` with a single header
+
+# 1.11.4 (4 January 2023)
+
+- PusherLink: pass initial response along to the client #4282
+
+# 1.11.3 (13 October 2022)
+
+- `createAblySubscriptions`: don't use `Error.captureStackTrace` which isn't supported in all JS runtimes #4223
+- `createAblySubscriptions`: properly handle empty initial response from the interpreter (`{}`) #4226
+
+# 1.11.2 (26 August 2022)
+
+- Sync: Add a `--header` option for custom headers #4171
+
+# 1.11.1 (19 July 2022)
+
+- Subscriptions: ActionCableLink: only forward the result if `data` or `errors` is present #4114
+
+# 1.11.0 (4 July 2022)
+
+- Subscriptions: Add `urql` support for Pusher #4129
+
+# 1.10.7 (29 Mar 2022)
+
+- Dependencies: loosen apollo client and graphql version requirements to accept newer versions #4008
+
+# 1.10.6 (10 Jan 2022)
+
+- Pusher Link: Don't pass along the `complete` handler because Apollo unsubscribes if you do #3830
+
+# 1.10.5 (17 Dec 2021)
+
+- Dependencies: replace `actioncable` with `@rails/actioncable` #3773
+
+# 1.10.4 (19 Nov 2021)
+
+- Sync: Also make sure documents are valid after removing `@client` fields #3715
+
+# 1.10.3 (18 Nov 2021)
+
+- Sync: Remove any fields with `@client` before sending operations to the server #3712
+
+# 1.10.2 (25 Oct 2021)
+
+- Pusher Link: Properly forward network errors to subscribers #3638
+
+# 1.10.1 (22 Sept 2021)
+
+- Sync: Add `--apollo-codegen-json-output=...` option #3616
+
+# 1.10.0 (25 Aug 2021)
+
+- Remove direct dependency on `request` #3594
+- Update `createRelaySubscriptionHandler` to support Relay 11. Use `createLegacyRelaySubscriptionHandler` to get the old behavior. #3594
+
+# 1.9.3 (31 Mar 2021)
+
+- Move `graphql` and `@apollo/client` to `peerDeps` for more flexible versions #3395
+
+# 1.9.2 (19 Feb 2021)
+
+- Remove dependency on React by changing imports to `@apollo/client/core` #3349
+
+# 1.9.1 (11 Feb 2021)
+
+- Support graphql 15.x in dependencies #3334
+
+## 1.9.0 (10 Feb 2021)
+
+- Move "compiled" `.js` files into the root directory of the published NPM package (instead of `dist/`). To upgrade, remove `dist/` from your import paths. (These files will be treated as public APIs in their own right, exposed independently to support smaller bundle sizes.) #2768
+- Upgrade dependency from `apollo-link` to `@apollo/client` #3270
+
+## 1.8.2 (2 Feb 2021)
+
+- Pusher: Accept a `decompress:` function for handling compressed payloads #3311
+
+## 1.8.1 (16 Nov 2020)
+
+- Sync: When `--url` is omitted, generate an outfile without syncing with a server
+
+## 1.8.0 (10 Nov 2020)
+
+- Ably: Support server-side `cipher_base:` config in the client
+
+## 1.7.12 (3 Nov 2020)
+
+- Ably: Add `rewind:` config so messages aren't lost between subscribe and registration of listener. #3210
+- Ably: Fix race condition where error was raised before the channel was available. #3210
+
 ## 1.7.11 (15 June 2020)
 
 - Ably: Improve channel state handling in case the initial subscription result contains errors #2993

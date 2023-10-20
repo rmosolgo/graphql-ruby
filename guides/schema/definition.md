@@ -8,6 +8,7 @@ desc: Defining your schema
 index: 1
 ---
 
+
 A GraphQL system is called a _schema_. The schema contains all the types and fields in the system. The schema executes queries and publishes an {% internal_link "introspection system","/schema/introspection" %}.
 
 Your GraphQL schema is a class that extends {{ "GraphQL::Schema" | api_doc }}, for example:
@@ -91,26 +92,10 @@ class MySchema < GraphQL::Schema
 end
 ```
 
-__`object_from_id`__ is used by Relay's `node(id: ID!): Node` field. It receives a unique ID and must return the object for that ID, or `nil` if the object isn't found (or if it should be hidden from the current user).
+__`object_from_id`__ is used by the `node(id: ID!): Node` field and `loads:` configuration. It receives a unique ID and must return the object for that ID, or `nil` if the object isn't found (or if it should be hidden from the current user).
+__`id_from_object`__ is used to implement `Node.id`. It should return a unique ID for the given object. This ID will later be sent to `object_from_id` to refetch the object.
 
-```ruby
-class MySchema < GraphQL::Schema
-  def self.object_from_id(unique_id, context)
-    # Find and return the object for `unique_id`
-    # or `nil`
-  end
-end
-```
-
-__`id_from_object`__ is used to implement Relay's `Node.id` field. It should return a unique ID for the given object. This ID will later be sent to `object_from_id` to refetch the object.
-
-```ruby
-class MySchema < GraphQL::Schema
-  def self.id_from_object(object, type, context)
-    # Return a unique ID for `object`, whose GraphQL type is `type`
-  end
-end
-```
+See the {% internal_link "Object Identification guide", "/schema/object_identification" %} for more information about these methods.
 
 ## Execution Configuration
 
@@ -118,7 +103,7 @@ __`instrument`__ attaches instrumenters to the schema, see {% internal_link "Ins
 
 ```ruby
 class MySchema < GraphQL::Schema
-  instrument :field, ResolveTimerInstrumentation
+  instrument :query, ResolveTimerInstrumentation
 end
 ```
 
@@ -130,7 +115,7 @@ class MySchema < GraphQL::Schema
 end
 ```
 
-__`query_analyzer`__ and __`multiplex_analyzer`__ accept processors for ahead-of-type query analysis, see {% internal_link "Analysis", "/queries/ast_analysis" %} for more.
+__`query_analyzer`__ and __`multiplex_analyzer`__ accept processors for ahead-of-time query analysis, see {% internal_link "Analysis", "/queries/ast_analysis" %} for more.
 
 ```ruby
 class MySchema < GraphQL::Schema
@@ -146,7 +131,7 @@ class MySchema < GraphQL::Schema
 end
 ```
 
-__`type_error`__ handles type errors at runtime, read more in the {% internal_link "Invariants guide", "/errors/type_errors" %}.
+__`type_error`__ handles type errors at runtime, read more in the {% internal_link "Type errors guide", "/errors/type_errors" %}.
 
 ```ruby
 class MySchema < GraphQL::Schema
@@ -191,7 +176,7 @@ Then, during execution, `context` will be an instance of `CustomContext`.
 
 ```ruby
 class MySchema < GraphQL::Schema
-  max_depth 10
+  max_depth 15
   max_complexity 300
   default_max_page_size 20
 end

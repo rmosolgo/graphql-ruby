@@ -42,6 +42,13 @@ describe GraphQL::Query do
   )}
   let(:result) { query.result }
 
+  it "applies the max validation errors config" do
+    limited_schema = Class.new(schema) { validate_max_errors(2) }
+    res = limited_schema.execute("{ a b c d }")
+    assert_equal 2, res["errors"].size
+    refute res.key?("data")
+  end
+
   describe "when passed both a query string and a document" do
     it "returns an error to the client when query kwarg is used" do
       assert_raises ArgumentError do
@@ -83,6 +90,22 @@ describe GraphQL::Query do
       )
       query.query_string = '{ __type(name: """Cheese""") { name } }'
       assert_equal "Cheese", query.result["data"] ["__type"]["name"]
+    end
+  end
+
+  describe "when passed a query_string with an invalid type" do
+    it "returns an error to the client" do
+      assert_raises(ArgumentError) {
+        GraphQL::Query.new(schema, {"default" => "{ fromSource(source: COW) { id } }"})
+      }
+    end
+  end
+
+  describe "when passed a query with an invalid type" do
+    it "returns an error to the client" do
+      assert_raises(ArgumentError) {
+        GraphQL::Query.new(schema, query: {"default" => "{ fromSource(source: COW) { id } }"})
+      }
     end
   end
 
@@ -267,6 +290,19 @@ describe GraphQL::Query do
           "message" => "There was an execution error",
           "locations" => [{"line"=>1, "column"=>3}],
           "path" => ["executionError"]
+        }
+        assert_equal [[expected_err]], Instrumenter::ERROR_LOG
+      end
+
+      it "can access static validation errors" do
+        Instrumenter::ERROR_LOG.clear
+        query = GraphQL::Query.new(schema, "{ noField }")
+        query.result
+        expected_err = {
+          "message" => "Field 'noField' doesn't exist on type 'Query'",
+          "locations" => [{"line"=>1, "column"=>3}],
+          "path" => ["query", "noField"],
+          "extensions" => {"code"=>"undefinedField", "typeName"=>"Query", "fieldName"=>"noField"},
         }
         assert_equal [[expected_err]], Instrumenter::ERROR_LOG
       end
@@ -618,17 +654,34 @@ describe GraphQL::Query do
     it "adds an entry to the errors key" do
       res = schema.execute(" { ")
       assert_equal 1, res["errors"].length
-      assert_equal "Unexpected end of document", res["errors"][0]["message"]
-      assert_equal [], res["errors"][0]["locations"]
+      if USING_C_PARSER
+        expected_err = "syntax error, unexpected end of file at [1, 2]"
+        expected_locations = [{"line" => 1, "column" => 2}]
+      else
+        expected_err = "Unexpected end of document"
+        expected_locations = []
+      end
+      assert_equal expected_err, res["errors"][0]["message"]
+      assert_equal expected_locations, res["errors"][0]["locations"]
 
       res = schema.execute(invalid_query_string)
       assert_equal 1, res["errors"].length
-      assert_equal %|Parse error on "1" (INT) at [4, 26]|, res["errors"][0]["message"]
+      expected_error = if USING_C_PARSER
+        "syntax error, unexpected INT (\"1\") at [4, 26]"
+      else
+        %|Parse error on "1" (INT) at [4, 26]|
+      end
+      assert_equal expected_error, res["errors"][0]["message"]
       assert_equal({"line" => 4, "column" => 26}, res["errors"][0]["locations"][0])
     end
 
     it "can be configured to raise" do
-      raise_schema = schema.redefine(parse_error: ->(err, ctx) { raise err })
+      raise_schema = Class.new(schema) do
+        def self.parse_error(err, ctx)
+          raise err
+        end
+      end
+
       assert_raises(GraphQL::ParseError) {
         raise_schema.execute(invalid_query_string)
       }
@@ -671,6 +724,92 @@ describe GraphQL::Query do
       query = GraphQL::Query.new(schema, invalid_query_string, validate: true)
       assert_equal false, query.valid?
       assert_equal 1, query.static_errors.length
+
+      # Can assign attribute after calling methods that use the AST
+      query = GraphQL::Query.new(schema, invalid_query_string)
+      assert query.fingerprint
+      query.validate = false
+      assert_equal true, query.valid?
+      assert_equal 0, query.static_errors.length
+    end
+
+    it "can't be reassigned after validating" do
+      query = GraphQL::Query.new(schema, "{ nonExistingField }")
+      assert query.fingerprint
+      query.validate = false
+      assert_equal true, query.valid?
+      assert_equal 0, query.static_errors.length
+      err = assert_raises ArgumentError do
+        query.validate = true
+      end
+
+      err2 = assert_raises ArgumentError do
+        query.validate = false
+      end
+      expected_message = "Can't reassign Query#validate= after validation has run, remove this assignment."
+      assert_equal expected_message, err.message
+      assert_equal expected_message, err2.message
+    end
+  end
+
+  describe "static_validator" do
+    module ZebraRule
+      def on_field(node, _parent)
+        if node.name != "zebra"
+          add_error(GraphQL::StaticValidation::Error.new("Invalid field name", nodes: node))
+        else
+          super
+        end
+      end
+    end
+
+    it "provides a custom validator for the query" do
+      validator = GraphQL::StaticValidation::Validator.new(schema: schema, rules: [ZebraRule])
+
+      query = GraphQL::Query.new(schema, "{ zebra }")
+      query.static_validator = validator
+      assert_equal true, query.valid?
+      assert_equal 0, query.static_errors.length
+
+      query = GraphQL::Query.new(schema, "{ zebra }", static_validator: validator)
+      assert_equal true, query.valid?
+      assert_equal 0, query.static_errors.length
+
+      query = GraphQL::Query.new(schema, "{ arbez }", static_validator: validator)
+      assert_equal false, query.valid?
+      assert_equal 1, query.static_errors.length
+    end
+
+    it "must be a GraphQL::StaticValidation::Validator" do
+      invalid_validator = {}
+
+      err1 = assert_raises ArgumentError do
+        GraphQL::Query.new(schema, "{ zebra }", static_validator: invalid_validator)
+      end
+
+      err2 = assert_raises ArgumentError do
+        GraphQL::Query.new(schema, "{ zebra }")
+        query.static_validator = invalid_validator
+      end
+
+      expected_message = "Expected a `GraphQL::StaticValidation::Validator` instance."
+      assert_equal expected_message, err1.message
+      assert_equal expected_message, err2.message
+    end
+
+    it "can't be reassigned after validating" do
+      query = GraphQL::Query.new(schema, "{ zebra }")
+
+      query.static_validator = GraphQL::StaticValidation::Validator.new(schema: schema, rules: [ZebraRule])
+      assert_equal true, query.valid?
+      assert_equal 0, query.static_errors.length
+
+      err = assert_raises ArgumentError do
+        query.static_validator = GraphQL::StaticValidation::Validator.new(schema: schema, rules: [ZebraRule])
+      end
+
+      expected_message = "Can't reassign Query#static_validator= after validation has run, remove this assignment."
+      assert_equal expected_message, err.message
     end
   end
 
@@ -756,92 +895,16 @@ describe GraphQL::Query do
     end
   end
 
-  if !TESTING_INTERPRETER
-    describe '#internal_representation' do
-      let(:schema) {
-        Class.new(Dummy::Schema) do
-          query_execution_strategy(GraphQL::Execution::Execute)
-          self.interpreter = false
-          self.analysis_engine = GraphQL::Analysis
-        end
-      }
-      it "includes all definition roots" do
-        assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.operation_definitions["getFlavor"]
-        assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.fragment_definitions["cheeseFields"]
-        assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.fragment_definitions["edibleFields"]
-        assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.fragment_definitions["milkFields"]
-        assert_kind_of GraphQL::InternalRepresentation::Node, query.internal_representation.fragment_definitions["dairyFields"]
-      end
-
-      describe '#irep_selection' do
-        it "returns the irep for the selected operation" do
-          assert_kind_of GraphQL::InternalRepresentation::Node, query.irep_selection
-          assert_equal 'getFlavor', query.irep_selection.name
-        end
-
-        it "returns nil when there is no selected operation" do
-          query = GraphQL::Query.new(schema, '# Only a comment')
-          assert_nil query.irep_selection
-        end
-      end
-    end
-  end
-
-  describe "query_execution_strategy" do
-    let(:custom_execution_schema) {
-      Class.new(schema) do
-        self.interpreter = false
-        query_execution_strategy DummyStrategy
-        mutation_execution_strategy GraphQL::Execution::Execute
-        instrument(:multiplex, DummyMultiplexInstrumenter)
-      end
-    }
-
-    class DummyStrategy
-      def execute(ast_operation, root_type, query_object)
-        { "dummy" => true }
-      end
-    end
-
-    class DummyMultiplexInstrumenter
-      def self.before_multiplex(m)
-        m.queries.first.context[:before_multiplex] = true
-      end
-
-      def self.after_multiplex(m)
-      end
-    end
-
-    it "is used for running a query, if it's present and not the default" do
-      result = custom_execution_schema.execute(" { __typename }")
-      assert_equal({"data"=>{"dummy"=>true}}, result)
-
-      result = custom_execution_schema.execute(" mutation { __typename } ")
-      assert_equal({"data"=>{"__typename" => "Mutation"}}, result)
-    end
-
-    it "treats the query as a one-item multiplex" do
-      ctx = {}
-      custom_execution_schema.execute(" { __typename }", context: ctx)
-      assert_equal true, ctx[:before_multiplex]
-    end
-
-    it "can't run a multiplex" do
-      err = assert_raises ArgumentError do
-        custom_execution_schema.multiplex([
-          {query: " { __typename }"},
-          {query: " { __typename }"},
-        ])
-      end
-      msg = "Multiplexing doesn't support custom execution strategies, run one query at a time instead"
-      assert_equal msg, err.message
-    end
-  end
-
   it "Accepts a passed-in warden" do
-    warden = GraphQL::Schema::Warden.new(->(t, ctx) { false }, schema: Jazz::Schema, context: nil)
+    schema_class = Class.new(Jazz::Schema) do
+      def self.visible?(member, ctx)
+        false
+      end
+    end
+
+    warden = GraphQL::Schema::Warden.new(schema: schema_class, context: nil)
     res = Jazz::Schema.execute("{ __typename } ", warden: warden)
-    assert_equal ["Field '__typename' doesn't exist on type 'Query'"], res["errors"].map { |e| e["message"] }
+    assert_equal ["Schema is not configured for queries"], res["errors"].map { |e| e["message"] }
   end
 
   describe "arguments_for" do
@@ -914,6 +977,7 @@ describe GraphQL::Query do
       source_arg_value = detailed_args.argument_values[:source]
       assert_equal false, source_arg_value.default_used?
       assert_equal "SHEEP", detailed_args[:source]
+      assert_equal "SHEEP", detailed_args.fetch(:source)
       assert_equal "SHEEP", source_arg_value.value
       assert_equal "source", source_arg_value.definition.graphql_name
 
@@ -969,6 +1033,93 @@ describe GraphQL::Query do
       assert_equal true, order_by_argument_value.default_used?
       assert_equal({direction: "ASC"}, order_by_argument_value.value.to_h)
       assert_equal "order_by", order_by_argument_value.definition.graphql_name
+    end
+  end
+
+  describe "when provided input object field names are not unique" do
+    let(:variables) { {} }
+    let(:result) { Dummy::Schema.execute(query_string, variables: variables) }
+
+    describe "the query is invalid" do
+      let(:query_string) {%|
+        query getCheeses{
+          searchDairy(product: [{ source: COW, source: COW }]) {
+            __typename
+          }
+        }
+      |}
+
+      it "returns errors" do
+        refute_nil(result["errors"])
+      end
+    end
+  end
+
+  describe "using GraphQL.default_parser" do
+    module DummyParser
+      DOC = GraphQL::Language::Parser.parse("{ __typename }")
+      def self.parse(query_str, trace: nil, filename: nil)
+        DOC
+      end
+    end
+
+    before do
+      @previous_parser = GraphQL.default_parser
+      GraphQL.default_parser = DummyParser
+    end
+
+    after do
+      GraphQL.default_parser = @previous_parser
+    end
+
+    it "uses it for queries" do
+      res = Dummy::Schema.execute("blah blah blah")
+      assert_equal "Query", res["data"]["__typename"]
+    end
+  end
+
+  describe "context[:trace]" do
+    class QueryTraceSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        field :int, Integer
+        def int; 1; end
+      end
+
+      class Trace < GraphQL::Tracing::Trace
+        def execute_multiplex(multiplex:)
+          @execute_multiplex_count ||= 0
+          @execute_multiplex_count += 1
+          super
+        end
+
+        def execute_query(query:)
+          @execute_query_count ||= 0
+          @execute_query_count += 1
+          super
+        end
+
+        def execute_field(**rest)
+          @execute_field_count ||= 0
+          @execute_field_count += 1
+          super
+        end
+
+        attr_reader :execute_multiplex_count, :execute_query_count, :execute_field_count
+      end
+
+      query(Query)
+    end
+
+    it "uses it instead of making a new trace" do
+      query_str = "{ int __typename }"
+      trace_instance = QueryTraceSchema::Trace.new
+      res = QueryTraceSchema.execute(query_str, context: { trace: trace_instance })
+
+      assert_equal 1, res["data"]["int"]
+
+      assert_equal 1, trace_instance.execute_multiplex_count
+      assert_equal 1, trace_instance.execute_query_count
+      assert_equal 2, trace_instance.execute_field_count
     end
   end
 end

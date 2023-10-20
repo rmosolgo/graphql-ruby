@@ -48,7 +48,7 @@ The same object can be defined using Ruby:
 
 ```ruby
 class Types::User < GraphQL::Schema::Object
-  field :email, String, null: true
+  field :email, String
   field :handle, String, null: false
   field :friends, [User], null: false
 end
@@ -98,7 +98,7 @@ If an object implements any interfaces, they can be added with `implements`, for
 
 ```ruby
 # This object implements some interfaces:
-implements GraphQL::Relay::Node.interface
+implements GraphQL::Types::Relay::Node
 implements Types::UserAssignableType
 ```
 

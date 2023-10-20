@@ -30,10 +30,12 @@ module GraphQL
         }.tap { |h| h["path"] = path unless path.nil? }
       end
 
+      attr_reader :nodes
+
       private
 
       def locations
-        @nodes.map do |node|
+        nodes.map do |node|
           h = {"line" => node.line, "column" => node.col}
           h["filename"] = node.filename if node.filename
           h

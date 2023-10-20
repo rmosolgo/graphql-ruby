@@ -25,13 +25,13 @@ describe GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped do
   it "finds default values that don't match their types" do
     expected = [
       {
-        "message"=>"Default value for $badInt doesn't match type Int",
+        "message"=>"Could not coerce value \"abc\" to Int",
         "locations"=>[{"line"=>5, "column"=>7}],
         "path"=>["query getCheese"],
         "extensions"=>{"code"=>"defaultValueInvalidType", "variableName"=>"badInt", "typeName"=>"Int"}
       },
       {
-        "message"=>"Default value for $badInput doesn't match type DairyProductInput",
+        "message"=>"Could not coerce value true to Float",
         "locations"=>[{"line"=>7, "column"=>7}],
         "path"=>["query getCheese"],
         "extensions"=>{"code"=>"defaultValueInvalidType", "variableName"=>"badInput", "typeName"=>"DairyProductInput"}
@@ -140,37 +140,37 @@ describe GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped do
   end
 
   describe "custom error messages" do
-    let(:schema) {
-      TimeType = GraphQL::ScalarType.define do
-        name "Time"
+    class CustomErrorMessagesSchema2 < GraphQL::Schema
+      class TimeType < GraphQL::Schema::Scalar
         description "Time since epoch in seconds"
 
-        coerce_input ->(value, ctx) do
-          begin
-            Time.at(Float(value))
-          rescue ArgumentError
-            raise GraphQL::CoercionError, 'cannot coerce to Float'
-          end
+        def self.coerce_input(value, ctx)
+          Time.at(Float(value))
+        rescue ArgumentError
+          raise GraphQL::CoercionError, 'cannot coerce to Float'
         end
 
-        coerce_result ->(value, ctx) { value.to_f }
+        def self.coerce_result(value, ctx)
+          value.to_f
+        end
       end
 
-      QueryType = GraphQL::ObjectType.define do
-        name "Query"
+      class Query < GraphQL::Schema::Object
         description "The query root of this schema"
 
-        field :time do
-          type TimeType
-          argument :value, !TimeType
-          resolve ->(obj, args, ctx) { args[:value] }
+        field :time, TimeType do
+          argument :value, TimeType, required: false
+        end
+
+        def time(value: nil, range: nil)
+          value
         end
       end
 
-      GraphQL::Schema.define do
-        query QueryType
-      end
-    }
+      query(Query)
+    end
+
+    let(:schema) { CustomErrorMessagesSchema2 }
 
     let(:query_string) {%|
       query(

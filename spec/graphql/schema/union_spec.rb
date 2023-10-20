@@ -22,43 +22,6 @@ describe GraphQL::Schema::Union do
     end
   end
 
-  describe ".to_graphql" do
-    it "creates a UnionType" do
-      union = Class.new(GraphQL::Schema::Union) do
-        possible_types Jazz::Musician, Jazz::Ensemble
-
-        def self.name
-          "MyUnion"
-        end
-      end
-      union_type = union.to_graphql
-      assert_equal "MyUnion", union_type.name
-      assert_equal [Jazz::Musician.to_graphql, Jazz::Ensemble.to_graphql], union_type.possible_types
-      assert_nil union_type.resolve_type_proc
-    end
-
-    it "can specify a resolve_type method" do
-      union = Class.new(GraphQL::Schema::Union) do
-        def self.resolve_type(_object, _context)
-          "MyType"
-        end
-
-        def self.name
-          "MyUnion"
-        end
-      end
-      union_type = union.to_graphql
-      assert_equal "MyType", union_type.resolve_type_proc.call(nil, nil)
-    end
-
-    it "passes on the possible type filter" do
-      union_type = union.to_graphql
-      expected_type = GraphQL::BaseType.resolve_related_type(Jazz::Musician)
-
-      assert_equal [expected_type], union_type.possible_types(hide_ensemble: true)
-    end
-  end
-
   describe "in queries" do
     it "works" do
       query_str = <<-GRAPHQL
@@ -104,7 +67,7 @@ describe GraphQL::Schema::Union do
       assert_equal "Fragment on Ensemble can't be spread inside PerformingAct", res.to_h["errors"].first["message"]
     end
 
-    it "can cast the object after resolving the type" do
+    describe "type resolution" do
       Box = Struct.new(:value)
 
       class Schema < GraphQL::Schema
@@ -112,41 +75,185 @@ describe GraphQL::Schema::Union do
           field :a, String, null: false, method: :itself
         end
 
-        class MyUnion < GraphQL::Schema::Union
-          possible_types A
+        class B < GraphQL::Schema::Object
+          field :b, String, method: :itself
+        end
+
+        class C < GraphQL::Schema::Object
+          field :c, Boolean, method: :itself
+        end
+
+        class UnboxedUnion < GraphQL::Schema::Union
+          possible_types A, C
 
           def self.resolve_type(object, ctx)
-            [A, object.value]
+            case object
+            when FalseClass
+              C
+            else
+              A
+            end
+          end
+        end
+
+        class BoxedUnion < GraphQL::Schema::Union
+          possible_types A, B, C
+
+          def self.resolve_type(object, ctx)
+            case object.value
+            when "return-nil"
+              [B, nil]
+            when FalseClass
+              [C, object.value]
+            else
+              [A, object.value]
+            end
           end
         end
 
         class Query < GraphQL::Schema::Object
-          field :my_union, MyUnion, null: false
+          field :boxed_union, BoxedUnion
 
-          def my_union
+          def boxed_union
             Box.new(context[:value])
+          end
+
+          field :unboxed_union, UnboxedUnion
+
+          def unboxed_union
+            context[:value]
           end
         end
 
-        use GraphQL::Execution::Interpreter
-        use GraphQL::Analysis::AST
         query(Query)
       end
 
-      query_str = <<-GRAPHQL
-      {
-        myUnion {
-          ... on A { a }
-        }
-      }
-      GRAPHQL
+      describe "two-value resolution" do
+        it "can cast the object after resolving the type" do
 
-      res = Schema.execute(query_str, context: { value: "unwrapped" })
+          query_str = <<-GRAPHQL
+          {
+            boxedUnion {
+              ... on A { a }
+            }
+          }
+          GRAPHQL
 
-      assert_equal({
-        'data' => { 'myUnion' => { 'a' => 'unwrapped' } }
-      }, res.to_h)
+          res = Schema.execute(query_str, context: { value: "unwrapped" })
+
+          assert_equal({
+            'data' => { 'boxedUnion' => { 'a' => 'unwrapped' } }
+          }, res.to_h)
+        end
+
+        it "uses `false` when returned from resolve_type" do
+          query_str = <<-GRAPHQL
+          {
+            boxedUnion {
+              ... on C { c }
+            }
+          }
+          GRAPHQL
+
+          res = Schema.execute(query_str, context: { value: false })
+
+          assert_equal({
+            'data' => { 'boxedUnion' => { 'c' => false } }
+          }, res.to_h)
+        end
+
+        it "uses `nil` when returned from resolve_type" do
+          query_str = <<-GRAPHQL
+          {
+            boxedUnion {
+              ... on B { b }
+            }
+          }
+          GRAPHQL
+
+          res = Schema.execute(query_str, context: { value: "return-nil" })
+
+          assert_equal({
+            'data' => { 'boxedUnion' => { 'b' => nil } }
+          }, res.to_h)
+        end
+      end
+
+      describe "single-value resolution" do
+        it "can cast the object after resolving the type" do
+
+          query_str = <<-GRAPHQL
+          {
+            unboxedUnion {
+              ... on A { a }
+            }
+          }
+          GRAPHQL
+
+          res = Schema.execute(query_str, context: { value: "string" })
+
+          assert_equal({
+            'data' => { 'unboxedUnion' => { 'a' => 'string' } }
+          }, res.to_h)
+        end
+
+        it "works with literal false values" do
+          query_str = <<-GRAPHQL
+          {
+            unboxedUnion {
+              ... on C { c }
+            }
+          }
+          GRAPHQL
+
+          res = Schema.execute(query_str, context: { value: false })
+
+          assert_equal({
+            'data' => { 'unboxedUnion' => { 'c' => false } }
+          }, res.to_h)
+        end
+      end
     end
+  end
+
+  it "doesn't allow adding non-object types" do
+    object_type = Class.new(GraphQL::Schema::Object) do
+      graphql_name "SomeObject"
+    end
+
+    err = assert_raises ArgumentError do
+      Class.new(GraphQL::Schema::Union) do
+        graphql_name "SomeUnion"
+        possible_types object_type, GraphQL::Types::Int
+      end
+    end
+    expected_message = "Union possible_types can only be object types (not SCALAR, "
+    assert_includes err.message, expected_message
+
+    input_type = Class.new(GraphQL::Schema::InputObject) do
+      graphql_name "SomeInput"
+      argument :arg, GraphQL::Types::Int
+    end
+
+    err = assert_raises ArgumentError do
+      Class.new(GraphQL::Schema::Union) do
+        graphql_name "SomeUnion"
+        possible_types object_type, input_type
+      end
+    end
+
+    expected_message = "Union possible_types can only be object types (not INPUT_OBJECT, "
+    assert_includes err.message, expected_message
+
+    err = assert_raises ArgumentError do
+      Class.new(GraphQL::Schema::Union) do
+        graphql_name "SomeUnion"
+        possible_types object_type, 1234
+      end
+    end
+
+    expected_message = "Union possible_types can only be class-based GraphQL types (not 1234 (Integer))."
+    assert_includes err.message, expected_message
   end
 
   it "doesn't allow adding interface" do
@@ -183,5 +290,118 @@ describe GraphQL::Schema::Union do
     end
 
     assert_match expected_message, err2.message
+  end
+
+  describe "migrate legacy tests" do
+    describe "#resolve_type" do
+      let(:result) { Dummy::Schema.execute(query_string) }
+      let(:query_string) {%|
+        {
+          allAnimal {
+            type: __typename
+            ... on Cow {
+              cowName: name
+            }
+            ... on Goat {
+              goatName: name
+            }
+          }
+
+          allAnimalAsCow {
+            type: __typename
+            ... on Cow {
+              name
+            }
+          }
+        }
+      |}
+
+      it 'returns correct types for general schema and specific union' do
+        expected_result = {
+          # When using Query#resolve_type
+          "allAnimal" => [
+            { "type" => "Cow", "cowName" => "Billy" },
+            { "type" => "Goat", "goatName" => "Gilly" }
+          ],
+
+          # When using UnionType#resolve_type
+          "allAnimalAsCow" => [
+            { "type" => "Cow", "name" => "Billy" },
+            { "type" => "Cow", "name" => "Gilly" }
+          ]
+        }
+        assert_equal expected_result, result["data"]
+      end
+    end
+
+    describe "typecasting from union to union" do
+      let(:result) { Dummy::Schema.execute(query_string) }
+      let(:query_string) {%|
+        {
+          allDairy {
+            dairyName: __typename
+            ... on Beverage {
+              bevName: __typename
+              ... on Milk {
+                flavors
+              }
+            }
+          }
+        }
+      |}
+
+      it "casts if the object belongs to both unions" do
+        expected_result = [
+          {"dairyName"=>"Cheese"},
+          {"dairyName"=>"Cheese"},
+          {"dairyName"=>"Cheese"},
+          {"dairyName"=>"Milk", "bevName"=>"Milk", "flavors"=>["Natural", "Chocolate", "Strawberry"]},
+        ]
+        assert_equal expected_result, result["data"]["allDairy"]
+      end
+    end
+
+    describe "list of union type" do
+      describe "fragment spreads" do
+        let(:result) { Dummy::Schema.execute(query_string) }
+        let(:query_string) {%|
+          {
+            allDairy {
+              __typename
+              ... milkFields
+              ... cheeseFields
+            }
+          }
+          fragment milkFields on Milk {
+            id
+            source
+            origin
+            flavors
+          }
+
+          fragment cheeseFields on Cheese {
+            id
+            source
+            origin
+            flavor
+          }
+        |}
+
+        it "resolves the right fragment on the right item" do
+          all_dairy = result["data"]["allDairy"]
+          cheeses = all_dairy.first(3)
+          cheeses.each do |cheese|
+            assert_equal "Cheese", cheese["__typename"]
+            assert_equal ["__typename", "id", "source", "origin", "flavor"], cheese.keys
+          end
+
+          milks = all_dairy.last(1)
+          milks.each do |milk|
+            assert_equal "Milk", milk["__typename"]
+            assert_equal ["__typename", "id", "source", "origin", "flavors"], milk.keys
+          end
+        end
+      end
+    end
   end
 end

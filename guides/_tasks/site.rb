@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 require "yard"
+require "webrick"
 
 namespace :apidocs do
   desc "Fetch a gem version from RubyGems, build the docs"
   task :gen_version, [:version] do |t, args|
     # GITHUB_REF comes from GitHub Actions
     version = args[:version] || ENV["GITHUB_REF"] || raise("A version is required")
+    puts "Building docs for #{version}"
     # GitHub Actions gives the full tag name
     if version.start_with?("refs/tags/")
       version = version[10..-1]
@@ -20,13 +22,14 @@ namespace :apidocs do
       system("rm graphql-#{version}.gem")
 
       Dir.chdir("graphql-#{version}") do
-        system("yardoc")
         # Copy it into gh-pages for publishing
         # and locally for previewing
         push_dest = File.expand_path("../gh-pages/api-doc/#{version}")
         local_dest = File.expand_path("../guides/_site/api-doc/#{version}")
-        mkdir_p push_dest
-        mkdir_p local_dest
+        puts "Creating directories: #{push_dest.inspect}, #{local_dest.inspect}"
+        FileUtils.mkdir_p(push_dest)
+        FileUtils.mkdir_p(local_dest)
+        system("yardoc")
         puts "Copying from #{Dir.pwd}/doc to #{push_dest}"
         copy_entry "doc", push_dest
         puts "Copying from #{Dir.pwd}/doc to #{local_dest}"
@@ -39,7 +42,7 @@ end
 
 namespace :site do
   desc "View the documentation site locally"
-  task serve: [:build_doc] do
+  task serve: [] do # if you need api docs, add `:build_doc` to the list of dependencies
     require "jekyll"
     options = {
       "source"      => File.expand_path("guides"),

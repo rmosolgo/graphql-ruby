@@ -10,26 +10,26 @@ describe GraphQL::Types::ISO8601DateTime do
       field :hour, Integer, null: false
       field :minute, Integer, method: :min, null: false
       field :second, Integer, method: :sec, null: false
-      field :zone, String, null: true
+      field :zone, String
       field :utc_offset, Integer, null: false
       field :iso8601, GraphQL::Types::ISO8601DateTime, null: false, method: :itself
     end
 
     class Query < GraphQL::Schema::Object
-      field :parse_date, DateTimeObject, null: true do
-        argument :date, GraphQL::Types::ISO8601DateTime, required: true
+      field :parse_date, DateTimeObject do
+        argument :date, GraphQL::Types::ISO8601DateTime
       end
 
-      field :parse_date_time, DateTimeObject, null: true do
-        argument :date, GraphQL::Types::ISO8601DateTime, required: true
+      field :parse_date_time, DateTimeObject do
+        argument :date, GraphQL::Types::ISO8601DateTime
       end
 
-      field :parse_date_string, DateTimeObject, null: true do
-        argument :date, GraphQL::Types::ISO8601DateTime, required: true
+      field :parse_date_string, DateTimeObject do
+        argument :date, GraphQL::Types::ISO8601DateTime
       end
 
-      field :parse_date_time_string, DateTimeObject, null: true do
-        argument :date, GraphQL::Types::ISO8601DateTime, required: true
+      field :parse_date_time_string, DateTimeObject do
+        argument :date, GraphQL::Types::ISO8601DateTime
       end
 
       field :invalid_date, DateTimeObject, null: false
@@ -59,13 +59,8 @@ describe GraphQL::Types::ISO8601DateTime do
       end
     end
 
-
     class Schema < GraphQL::Schema
       query(Query)
-      if TESTING_INTERPRETER
-        use GraphQL::Execution::Interpreter
-        use GraphQL::Analysis::AST
-      end
     end
   end
 
@@ -137,6 +132,30 @@ describe GraphQL::Types::ISO8601DateTime do
         "utcOffset" => system_default_offset,
       }
       assert_equal(expected_res, res)
+    end
+
+    it "parses dates without times or dashes" do
+      res = parse_date("20180827")
+      # It uses the system default timezone when none is given
+      system_default_tz = Date.iso8601("2018-08-27").to_time.zone
+      system_default_offset = Date.iso8601("2018-08-27").to_time.utc_offset
+      expected_res = {
+        "year" => 2018,
+        "month" => 8,
+        "day" => 27,
+        "hour" => 0,
+        "minute" => 0,
+        "second" => 0,
+        "zone" => system_default_tz,
+        "utcOffset" => system_default_offset,
+      }
+      assert_equal(expected_res, res)
+    end
+
+    it "rejects partial times" do
+      expected_errors = ["Variable $date of type ISO8601DateTime! was provided invalid value"]
+      assert_equal expected_errors, parse_date("2018-06-07T12:12").map { |e| e["message"] }
+      assert_equal expected_errors, parse_date("2018-06-07T12").map { |e| e["message"] }
     end
 
     it "adds an error for invalid dates" do

@@ -15,6 +15,7 @@ JavaScript support for GraphQL projects using [graphql-pro](https://graphql.pro)
 - [Relay 2+ support](#use-with-relay-persisted-output)
 - [Apollo Client support](#use-with-apollo-client)
 - [Apollo Link support](#use-with-apollo-link)
+- [Apollo Codegen Support](#use-with-apollo-codegen)
 - [Apollo Android support](#use-with-apollo-android)
 - [Plain JS support](#use-with-plain-javascript)
 - [Authorization](#authorization)
@@ -43,13 +44,16 @@ option | description
 `--url` | {% internal_link "Sync API", "/operation_store/getting_started.html#add-routes" %} url
 `--path` | Local directory to search for `.graphql` / `.graphql.js` files
 `--relay-persisted-output` | Path to a `.json` file from `relay-compiler ... --persist-output`
+`--apollo-codegen-json-output` | Path to a `.json` file from `apollo client:codegen ... --target json`
 `--apollo-android-operation-output` | Path to an `OperationOutput.json` file from Apollo Android
 `--client` | Client ID ({% internal_link "created on server", "/operation_store/client_workflow" %})
 `--secret` | Client Secret ({% internal_link "created on server", "/operation_store/client_workflow" %})
 `--outfile` | Destination for generated code
 `--outfile-type` | What kind of code to generate (`js` or `json`)
+`--header={key}:{value}` | Add a header to the outgoing HTTP request (may be repeated)
 `--add-typename` | Add `__typename` to all selection sets (for use with Apollo Client)
 `--verbose` | Output some debug information
+`--changeset-version` | Set a {% internal_link "Changeset Version", "/changesets/installation#controller-setup" %} when syncing these queries. (`context[:changeset_version]` will also be required at runtime, when running these stored operations.)
 
 You can see these and a few others with `graphql-ruby-client sync --help`.
 
@@ -204,6 +208,25 @@ context = {
 ```
 
 Now, `context[:operation_id]` will be used to fetch a query from the database.
+
+## Use with Apollo Codegen
+
+Use `apollo client:codegen ... --target json` to build a JSON artifact containing your app's queries. Then, pass the path to that artifact to `graphql-ruby-client sync --apollo-codegen-json-output path/to/output.json ...`. `sync` will use Apollo-generated `operationId`s to populate the `OperationStore`.
+
+Then, to use Apollo-style persisted query IDs, hook up the __Persisted Queries Link__ as described in [Apollo's documentation](https://www.apollographql.com/docs/react/api/link/persisted-queries/)
+
+Finally, __update the controller__ to pass the Apollo-style persisted query ID as the operation ID:
+
+```ruby
+# app/controllers/graphql_controller.rb
+context = {
+  # ...
+  # Support already-synced Apollo Persisted Queries:
+  operation_id: params[:extensions][:operationId]
+}
+```
+
+Now, Apollo-style persisted query IDs will be used to fetch operations from the server's `OperationStore`.
 
 ## Use with Apollo Android
 

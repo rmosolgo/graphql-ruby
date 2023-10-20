@@ -10,12 +10,16 @@ class GraphQLGeneratorsInstallGeneratorTest < Rails::Generators::TestCase
     prepare_destination
 
     FileUtils.cd(File.join(destination_root, '..')) do
-      `rails new dummy --skip-active-record --skip-test-unit --skip-spring --skip-bundle`
+      `rails new dummy --skip-active-record --skip-test-unit --skip-spring --skip-bundle --skip-webpack-install`
     end
   end
 
+  def refute_file(path)
+    assert !File.exist?(path), "No file at #{path.inspect}"
+  end
+
   test "it generates a folder structure" do
-    run_generator
+    run_generator([ "--relay", "false"])
 
     assert_file "app/graphql/types/.keep"
     assert_file "app/graphql/mutations/.keep"
@@ -41,21 +45,40 @@ class GraphQLGeneratorsInstallGeneratorTest < Rails::Generators::TestCase
     end
 
     expected_schema = <<-RUBY
+# frozen_string_literal: true
+
 class DummySchema < GraphQL::Schema
   mutation(Types::MutationType)
   query(Types::QueryType)
 
-  # Opt in to the new runtime (default in future graphql-ruby versions)
-  use GraphQL::Execution::Interpreter
-  use GraphQL::Analysis::AST
+  # For batch-loading (see https://graphql-ruby.org/dataloader/overview.html)
+  use GraphQL::Dataloader
 
-  # Add built-in connections for pagination
-  use GraphQL::Pagination::Connections
+  # GraphQL-Ruby calls this when something goes wrong while running a query:
+  def self.type_error(err, context)
+    # if err.is_a?(GraphQL::InvalidNullError)
+    #   # report to your bug tracker here
+    #   return nil
+    # end
+    super
+  end
+
+  # Union and Interface Resolution
+  def self.resolve_type(abstract_type, obj, ctx)
+    # TODO: Implement this method
+    # to return the correct GraphQL object type for `obj`
+    raise(GraphQL::RequiredImplementationMissingError)
+  end
+
+  # Stop validating when it encounters this many errors:
+  validate_max_errors(100)
 end
 RUBY
     assert_file "app/graphql/dummy_schema.rb", expected_schema
 
     expected_base_mutation = <<-RUBY
+# frozen_string_literal: true
+
 module Mutations
   class BaseMutation < GraphQL::Schema::RelayClassicMutation
     argument_class Types::BaseArgument
@@ -68,6 +91,8 @@ RUBY
     assert_file "app/graphql/mutations/base_mutation.rb", expected_base_mutation
 
     expected_query_type = <<-RUBY
+# frozen_string_literal: true
+
 module Types
   class QueryType < Types::BaseObject
     # Add root-level fields here.
@@ -86,6 +111,8 @@ RUBY
     assert_file "app/graphql/types/query_type.rb", expected_query_type
     assert_file "app/controllers/graphql_controller.rb", EXPECTED_GRAPHQLS_CONTROLLER
     expected_base_field = <<-RUBY
+# frozen_string_literal: true
+
 module Types
   class BaseField < GraphQL::Schema::Field
     argument_class Types::BaseArgument
@@ -95,6 +122,8 @@ RUBY
     assert_file "app/graphql/types/base_field.rb", expected_base_field
 
     expected_base_argument = <<-RUBY
+# frozen_string_literal: true
+
 module Types
   class BaseArgument < GraphQL::Schema::Argument
   end
@@ -103,6 +132,8 @@ RUBY
     assert_file "app/graphql/types/base_argument.rb", expected_base_argument
 
     expected_base_object = <<-RUBY
+# frozen_string_literal: true
+
 module Types
   class BaseObject < GraphQL::Schema::Object
     field_class Types::BaseField
@@ -112,6 +143,8 @@ RUBY
     assert_file "app/graphql/types/base_object.rb", expected_base_object
 
     expected_base_interface = <<-RUBY
+# frozen_string_literal: true
+
 module Types
   module BaseInterface
     include GraphQL::Schema::Interface
@@ -121,25 +154,79 @@ module Types
 end
 RUBY
     assert_file "app/graphql/types/base_interface.rb", expected_base_interface
+
+    # Run it again and make sure the gemfile only contains graphiql-rails once
+    FileUtils.cd(File.join(destination_root)) do
+      run_generator(["--relay", "false", "--force"])
+    end
+    assert_file "Gemfile" do |contents|
+      assert_equal 1, contents.scan(/graphiql-rails/).length
+    end
+
+    # It doesn't seem like this works on Rails 4, oh well
+    if Rails::VERSION::STRING > "5"
+      FileUtils.cd(File.join(destination_root)) do
+        run_generator(["--relay", "false", "--force"], behavior: :revoke)
+      end
+
+      refute_file "app/graphql/types/base_object.rb"
+      refute_file "app/graphql/types/base_interface.rb"
+      refute_file "app/graphql/types/base_argument.rb"
+      refute_file "app/graphql/types/base_field.rb"
+      refute_file "app/graphql/types/query_type.rb"
+      refute_file "app/graphql/dummy_schema.rb"
+
+      assert_file "config/routes.rb" do |contents|
+        refute_includes contents, expected_query_route
+        # This doesn't work for some reason....
+        # refute_includes contents, expected_graphiql_route
+      end
+
+      assert_file "Gemfile" do |contents|
+        refute_match %r{gem ('|")graphiql-rails('|"), :?group(:| =>) :development}, contents
+      end
+    end
   end
 
   test "it allows for a user-specified install directory" do
-    run_generator(["--directory", "app/mydirectory"])
+    run_generator(["--directory", "app/mydirectory", "--relay", "false"])
 
     assert_file "app/mydirectory/types/.keep"
     assert_file "app/mydirectory/mutations/.keep"
   end
 
-  test "it generates graphql-batch and relay boilerplate" do
-    run_generator(["--batch", "--relay"])
-    assert_file "app/graphql/loaders/.keep"
-    assert_file "Gemfile" do |contents|
-      assert_match %r{gem ('|")graphql-batch('|")}, contents
-    end
+  if Rails::VERSION::STRING > "3.9"
+    # This test doesn't work on Rails 3 because it tries to boot the app
+    # between the batch and relay generators, but `bundle install`
+    # hasn't run yet, so graphql-batch isn't present
+    test "it generates graphql-batch and relay boilerplate" do
+      run_generator(["--batch"])
+      assert_file "app/graphql/loaders/.keep"
+      assert_file "Gemfile" do |contents|
+        assert_match %r{gem ('|")graphql-batch('|")}, contents
+      end
 
-    expected_query_type = <<-RUBY
+      expected_query_type = <<-RUBY
+# frozen_string_literal: true
+
 module Types
   class QueryType < Types::BaseObject
+    field :node, Types::NodeType, null: true, description: "Fetches an object given its ID." do
+      argument :id, ID, required: true, description: "ID of the object."
+    end
+
+    def node(id:)
+      context.schema.object_from_id(id, context)
+    end
+
+    field :nodes, [Types::NodeType, null: true], null: true, description: "Fetches a list of objects given a list of IDs." do
+      argument :ids, [ID], required: true, description: "IDs of the objects."
+    end
+
+    def nodes(ids:)
+      ids.map { |id| context.schema.object_from_id(id, context) }
+    end
+
     # Add root-level fields here.
     # They will be entry points for queries on your schema.
 
@@ -149,14 +236,13 @@ module Types
     def test_field
       \"Hello World!\"
     end
-
-    field :node, field: GraphQL::Relay::Node.field
   end
 end
 RUBY
 
-    assert_file "app/graphql/types/query_type.rb", expected_query_type
-    assert_file "app/graphql/dummy_schema.rb", EXPECTED_RELAY_BATCH_SCHEMA
+      assert_file "app/graphql/types/query_type.rb", expected_query_type
+      assert_file "app/graphql/dummy_schema.rb", EXPECTED_RELAY_BATCH_SCHEMA
+    end
   end
 
   test "it doesn't install graphiql when API Only" do
@@ -208,6 +294,8 @@ RUBY
   end
 
   EXPECTED_GRAPHQLS_CONTROLLER = <<-'RUBY'
+# frozen_string_literal: true
+
 class GraphqlController < ApplicationController
   # If accessing from outside this domain, nullify the session
   # This allows for outside API access while preventing CSRF attacks,
@@ -224,9 +312,9 @@ class GraphqlController < ApplicationController
     }
     result = DummySchema.execute(query, variables: variables, context: context, operation_name: operation_name)
     render json: result
-  rescue => e
+  rescue StandardError => e
     raise e unless Rails.env.development?
-    handle_error_in_development e
+    handle_error_in_development(e)
   end
 
   private
@@ -260,47 +348,47 @@ class GraphqlController < ApplicationController
 end
 RUBY
 
-  EXPECTED_RELAY_BATCH_SCHEMA = <<-RUBY
+  EXPECTED_RELAY_BATCH_SCHEMA = '# frozen_string_literal: true
+
 class DummySchema < GraphQL::Schema
   mutation(Types::MutationType)
   query(Types::QueryType)
 
-  # Opt in to the new runtime (default in future graphql-ruby versions)
-  use GraphQL::Execution::Interpreter
-  use GraphQL::Analysis::AST
+  # GraphQL::Batch setup:
+  use GraphQL::Batch
 
-  # Add built-in connections for pagination
-  use GraphQL::Pagination::Connections
-
-  # Relay Object Identification:
-
-  # Return a string UUID for `object`
-  def self.id_from_object(object, type_definition, query_ctx)
-    # Here's a simple implementation which:
-    # - joins the type name & object.id
-    # - encodes it with base64:
-    # GraphQL::Schema::UniqueWithinType.encode(type_definition.name, object.id)
+  # GraphQL-Ruby calls this when something goes wrong while running a query:
+  def self.type_error(err, context)
+    # if err.is_a?(GraphQL::InvalidNullError)
+    #   # report to your bug tracker here
+    #   return nil
+    # end
+    super
   end
 
-  # Given a string UUID, find the object
-  def self.object_from_id(id, query_ctx)
-    # For example, to decode the UUIDs generated above:
-    # type_name, item_id = GraphQL::Schema::UniqueWithinType.decode(id)
-    #
-    # Then, based on `type_name` and `id`
-    # find an object in your application
-    # ...
-  end
-
-  # Object Resolution
-  def self.resolve_type(type, obj, ctx)
-    # TODO: Implement this function
-    # to return the correct type for `obj`
+  # Union and Interface Resolution
+  def self.resolve_type(abstract_type, obj, ctx)
+    # TODO: Implement this method
+    # to return the correct GraphQL object type for `obj`
     raise(GraphQL::RequiredImplementationMissingError)
   end
 
-  # GraphQL::Batch setup:
-  use GraphQL::Batch
+  # Stop validating when it encounters this many errors:
+  validate_max_errors(100)
+
+  # Relay-style Object Identification:
+
+  # Return a string UUID for `object`
+  def self.id_from_object(object, type_definition, query_ctx)
+    # For example, use Rails\' GlobalID library (https://github.com/rails/globalid):
+    object.to_gid_param
+  end
+
+  # Given a string UUID, find the object
+  def self.object_from_id(global_id, query_ctx)
+    # For example, use Rails\' GlobalID library (https://github.com/rails/globalid):
+    GlobalID.find(global_id)
+  end
 end
-RUBY
+'
 end

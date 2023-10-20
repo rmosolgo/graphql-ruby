@@ -78,7 +78,7 @@ describe GraphQL::Schema do
     let(:query_type) {
       Class.new(GraphQL::Schema::Object) do
         graphql_name "Query"
-        field :int, Integer, null: true do
+        field :int, Integer do
           argument :value, Integer, required: false
         end
 
@@ -96,11 +96,6 @@ describe GraphQL::Schema do
         instrument(:query, SecondInstrumenter.new)
         instrument(:query, ExecutionErrorInstrumenter.new)
         instrument(:query, QueryStringInstrumenter.new)
-
-        if TESTING_INTERPRETER
-          use GraphQL::Analysis::AST
-          use GraphQL::Execution::Interpreter
-        end
       end
     }
 
@@ -146,7 +141,7 @@ describe GraphQL::Schema do
 
     describe "within a multiplex" do
       let(:multiplex_schema) {
-        schema.redefine {
+        Class.new(schema) {
           instrument(:multiplex, FirstInstrumenter.new)
           instrument(:multiplex, SecondInstrumenter.new)
         }

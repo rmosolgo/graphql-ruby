@@ -177,6 +177,8 @@ end
 
 The type definition DSL uses this mechanism, too, so you can override those methods here also.
 
+Note: Under the hood, `definition_methods` causes a module to be `extend`ed by the Inteface. Any calls to `extend` or `implement` may override methods from `definition_methods`.
+
 ### Resolve Type
 
 When a field's return type is an interface, GraphQL has to figure out what _specific_ object type to use for the return value. In the example above, each `customer` must be categorized as an `Individual` or `Company`. You can do this by:
@@ -237,7 +239,7 @@ If you add an object type which implements an interface, but that object type do
 module Types::RetailItem
   include Types::BaseInterface
   # ...
-  orphan_types Types::Comment
+  orphan_types Types::Car
 end
 ```
 
@@ -245,7 +247,7 @@ Alternatively you can add the object types to the schema's `orphan_types`:
 
 ```ruby
 class MySchema < GraphQL::Schema
-  orphan_types Types::Comment
+  orphan_types Types::Car
 end
 ```
 

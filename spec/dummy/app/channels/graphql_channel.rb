@@ -12,21 +12,33 @@ class GraphqlChannel < ActionCable::Channel::Base
   end
 
   class CounterIncremented < GraphQL::Schema::Subscription
-    @@call_count = 0
-    subscription_scope :subscriber_id
+    def self.reset_call_count
+      @@call_count = 0
+    end
+
+    reset_call_count
 
     field :new_value, Integer, null: false
 
     def update
-      {
+      if object
+        if object.value == "server-unsubscribe"
+          unsubscribe
+        elsif object.value == "server-unsubscribe-with-message"
+          unsubscribe({ new_value: 9999 })
+        end
+      end
+      result = {
         new_value: @@call_count += 1
       }
+      puts "  -> CounterIncremented#update: #{result}"
+      result
     end
   end
 
   class SubscriptionType < GraphQL::Schema::Object
     field :payload, PayloadType, null: false do
-      argument :id, ID, required: true
+      argument :id, ID
     end
 
     field :counter_incremented, subscription: CounterIncremented
@@ -55,8 +67,6 @@ class GraphqlChannel < ActionCable::Channel::Base
   class GraphQLSchema < GraphQL::Schema
     query(QueryType)
     subscription(SubscriptionType)
-    use GraphQL::Execution::Interpreter
-    use GraphQL::Analysis::AST
     use GraphQL::Subscriptions::ActionCableSubscriptions,
       serializer: CustomSerializer,
       broadcast: true,
@@ -76,12 +86,13 @@ class GraphqlChannel < ActionCable::Channel::Base
       channel: self,
     }
 
-    result = GraphQLSchema.execute({
+    puts "[GraphQLSchema.execute] #{query} || #{variables}"
+    result = GraphQLSchema.execute(
       query: query,
       context: context,
       variables: variables,
       operation_name: operation_name
-    })
+    )
 
     payload = {
       result: result.to_h,
@@ -93,7 +104,7 @@ class GraphqlChannel < ActionCable::Channel::Base
     if result.context[:subscription_id]
       @subscription_ids << result.context[:subscription_id]
     end
-
+    puts "  -> [transmit(#{result.context[:subscription_id]})] #{payload.inspect}"
     transmit(payload)
   end
 
@@ -101,11 +112,14 @@ class GraphqlChannel < ActionCable::Channel::Base
     field = data["field"]
     args = data["arguments"]
     value = data["value"]
-    GraphQLSchema.subscriptions.trigger(field, args, value && ExamplePayload.new(value))
+    value = value && ExamplePayload.new(value)
+    puts "[make_trigger] #{[field, args, value]}"
+    GraphQLSchema.subscriptions.trigger(field, args, value)
   end
 
   def unsubscribed
     @subscription_ids.each { |sid|
+      puts "[delete_subscription] #{sid}"
       GraphQLSchema.subscriptions.delete_subscription(sid)
     }
   end

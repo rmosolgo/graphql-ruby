@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::Directive do
+describe "GraphQL::Directive" do
   let(:variables) { {"t" => true, "f" => false} }
   let(:result) { Dummy::Schema.execute(query_string, variables: variables) }
   describe "on fields" do
@@ -273,23 +273,6 @@ describe GraphQL::Directive do
         let(:include?) { false }
         it "is not included" do assert !field_included? end
       end
-    end
-  end
-
-  describe "defining a directive" do
-    let(:directive) {
-      GraphQL::Directive.define do
-        arguments [GraphQL::Argument.define(name: 'skip')]
-      end
-    }
-
-    it "can accept an array of arguments" do
-      assert_equal 1, directive.arguments.length
-      assert_equal 'skip', directive.arguments.first.name
-    end
-
-    it "is not default" do
-      assert_equal false, directive.default_directive?
     end
   end
 end

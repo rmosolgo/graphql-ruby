@@ -28,7 +28,7 @@ describe GraphQL::Schema::Loader do
 
     big_int_type = Class.new(GraphQL::Schema::Scalar) do
       graphql_name "BigInt"
-
+      specified_by_url "https://bigint.com"
       def self.coerce_input(value, _ctx)
         value =~ /\d+/ ? Integer(value) : nil
       end
@@ -47,6 +47,7 @@ describe GraphQL::Schema::Loader do
       argument :bool, Boolean, required: false
       argument :enum, choice_type, required: false
       argument :sub, [sub_input_type], required: false
+      argument :deprecated_arg, String, required: false, deprecation_reason: "Don't use Varied.deprecatedArg"
     end
 
     variant_input_type_with_nulls = Class.new(GraphQL::Schema::InputObject) do
@@ -67,7 +68,7 @@ describe GraphQL::Schema::Loader do
 
       field :body, String, null: false
 
-      field :field_with_arg, Int, null: true do
+      field :field_with_arg, Int do
         argument :bigint, big_int_type, default_value: 2**54, required: false
       end
     end
@@ -96,10 +97,10 @@ describe GraphQL::Schema::Loader do
 
       field :id, ID, null: false
       field :title, String, null: false
-      field :summary, String, null: true, deprecation_reason: "Don't use Post.summary"
+      field :summary, String, deprecation_reason: "Don't use Post.summary"
       field :body, String, null: false
-      field :comments, [comment_type], null: true
-      field :attachment, media_type, null: true
+      field :comments, [comment_type]
+      field :attachment, media_type
     end
 
     content_type = Class.new(GraphQL::Schema::Union) do
@@ -112,16 +113,17 @@ describe GraphQL::Schema::Loader do
       graphql_name "Query"
       description "The query root of this schema"
 
-      field :post, post_type, null: true do
-        argument :id, ID, required: true
+      field :post, post_type do
+        argument :id, ID
         argument :varied, variant_input_type, required: false, default_value: { id: "123", int: 234, float: 2.3, enum: :foo, sub: [{ string: "str" }] }
         argument :variedWithNull, variant_input_type_with_nulls, required: false, default_value: { id: nil, int: nil, float: nil, enum: nil, sub: nil, bigint: nil, bool: nil }
         argument :variedArray, [variant_input_type], required: false, default_value: [{ id: "123", int: 234, float: 2.3, enum: :foo, sub: [{ string: "str" }] }]
         argument :enum, choice_type, required: false, default_value: :foo
         argument :array, [String], required: false, default_value: ["foo", "bar"]
+        argument :deprecated_arg, String, required: false, deprecation_reason: "Don't use Varied.deprecatedArg"
       end
 
-      field :content, content_type, null: true
+      field :content, content_type
     end
 
     ping_mutation = Class.new(GraphQL::Schema::RelayClassicMutation) do
@@ -133,16 +135,22 @@ describe GraphQL::Schema::Loader do
       field :ping, mutation: ping_mutation
     end
 
+    repeatable_transform = Class.new(GraphQL::Schema::Directive::Transform) do
+      graphql_name "repeatableTransform"
+      repeatable(true)
+    end
+
     Class.new(GraphQL::Schema) do
       query query_root
       mutation mutation_root
       orphan_types audio_type, video_type
-      directives GraphQL::Schema::Directive::Transform
+      description "A schema for loader_spec.rb"
+      directives repeatable_transform
     end
   }
 
   let(:schema_json) {
-    schema.execute(GraphQL::Introspection::INTROSPECTION_QUERY)
+    schema.execute(GraphQL::Introspection.query(include_deprecated_args: true, include_schema_description: true, include_specified_by_url: true, include_is_repeatable: true))
   }
 
   describe "load" do
@@ -164,6 +172,7 @@ describe GraphQL::Schema::Loader do
       elsif actual_type.is_a?(GraphQL::Schema::Argument)
         assert_equal expected_type.graphql_name, actual_type.graphql_name
         assert_equal expected_type.description, actual_type.description
+        assert_equal expected_type.deprecation_reason, actual_type.deprecation_reason
         assert_deep_equal expected_type.type, actual_type.type
       elsif actual_type.is_a?(GraphQL::Schema::NonNull) || actual_type.is_a?(GraphQL::Schema::List)
         assert_equal expected_type.class, actual_type.class
@@ -175,6 +184,7 @@ describe GraphQL::Schema::Loader do
         assert_deep_equal expected_type.directives.values.sort_by(&:graphql_name), actual_type.directives.values.sort_by(&:graphql_name)
         assert_equal expected_type.types.keys.sort, actual_type.types.keys.sort
         assert_deep_equal expected_type.types.values.sort_by(&:graphql_name), actual_type.types.values.sort_by(&:graphql_name)
+        assert_equal expected_type.description, actual_type.description
       elsif actual_type < GraphQL::Schema::Object
         assert_equal expected_type.graphql_name, actual_type.graphql_name
         assert_equal expected_type.description, actual_type.description
@@ -194,6 +204,7 @@ describe GraphQL::Schema::Loader do
         assert_deep_equal expected_type.possible_types.sort_by(&:graphql_name), actual_type.possible_types.sort_by(&:graphql_name)
       elsif actual_type < GraphQL::Schema::Scalar
         assert_equal expected_type.graphql_name, actual_type.graphql_name
+        assert_equal expected_type.specified_by_url, actual_type.specified_by_url
       elsif actual_type < GraphQL::Schema::Enum
         assert_equal expected_type.graphql_name, actual_type.graphql_name
         assert_equal expected_type.description, actual_type.description
@@ -205,6 +216,7 @@ describe GraphQL::Schema::Loader do
       elsif actual_type < GraphQL::Schema::Directive
         assert_equal expected_type.graphql_name, actual_type.graphql_name
         assert_equal expected_type.description, actual_type.description
+        assert_equal expected_type.repeatable?, actual_type.repeatable?
         assert_equal expected_type.locations.sort, actual_type.locations.sort
         assert_equal expected_type.arguments.keys.sort, actual_type.arguments.keys.sort
         assert_deep_equal expected_type.arguments.values.sort_by(&:graphql_name), actual_type.arguments.values.sort_by(&:graphql_name)
@@ -298,7 +310,7 @@ describe GraphQL::Schema::Loader do
     end
 
     it "works with underscored names" do
-      schema_sdl = <<-GRAPHQL.chomp
+      schema_sdl = <<-GRAPHQL
 type A_Type {
   f(argument_1: Int, argument_two: Int): Int
 }
@@ -374,7 +386,7 @@ type Query {
               ]
             }
           }
-        }).graphql_definition
+        })
       end
     end
 

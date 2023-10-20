@@ -11,10 +11,11 @@ module GraphQL
         def self.extended(cls)
           cls.extend(ArgumentClassAccessor)
           cls.include(ArgumentObjectLoader)
+          cls.extend(ClassConfigured)
         end
 
         # @see {GraphQL::Schema::Argument#initialize} for parameters
-        # @return [GraphQL::Schema::Argument] An instance of {arguments_class}, created from `*args`
+        # @return [GraphQL::Schema::Argument] An instance of {argument_class}, created from `*args`
         def argument(*args, **kwargs, &block)
           kwargs[:owner] = self
           loads = kwargs[:loads]
@@ -37,39 +38,211 @@ module GraphQL
           end
           arg_defn = self.argument_class.new(*args, **kwargs, &block)
           add_argument(arg_defn)
+
+          if self.is_a?(Class) && !method_defined?(:"load_#{arg_defn.keyword}")
+            method_owner = if self < GraphQL::Schema::InputObject || self < GraphQL::Schema::Directive
+              "self."
+            elsif self < GraphQL::Schema::Resolver
+              ""
+            else
+              raise "Unexpected argument owner: #{self}"
+            end
+            if loads && arg_defn.type.list?
+              class_eval <<-RUBY, __FILE__, __LINE__ + 1
+              def #{method_owner}load_#{arg_defn.keyword}(values, context = nil)
+                argument = get_argument("#{arg_defn.graphql_name}")
+                (context || self.context).query.after_lazy(values) do |values2|
+                  GraphQL::Execution::Lazy.all(values2.map { |value| load_application_object(argument, value, context || self.context) })
+                end
+              end
+              RUBY
+            elsif loads
+              class_eval <<-RUBY, __FILE__, __LINE__ + 1
+              def #{method_owner}load_#{arg_defn.keyword}(value, context = nil)
+                argument = get_argument("#{arg_defn.graphql_name}")
+                load_application_object(argument, value, context || self.context)
+              end
+              RUBY
+            else
+              class_eval <<-RUBY, __FILE__, __LINE__ + 1
+              def #{method_owner}load_#{arg_defn.keyword}(value, _context = nil)
+                value
+              end
+              RUBY
+            end
+          end
+          arg_defn
         end
 
         # Register this argument with the class.
         # @param arg_defn [GraphQL::Schema::Argument]
         # @return [GraphQL::Schema::Argument]
         def add_argument(arg_defn)
-          own_arguments[arg_defn.name] = arg_defn
+          @own_arguments ||= {}
+          prev_defn = @own_arguments[arg_defn.name]
+          case prev_defn
+          when nil
+            @own_arguments[arg_defn.name] = arg_defn
+          when Array
+            prev_defn << arg_defn
+          when GraphQL::Schema::Argument
+            @own_arguments[arg_defn.name] = [prev_defn, arg_defn]
+          else
+            raise "Invariant: unexpected `@own_arguments[#{arg_defn.name.inspect}]`: #{prev_defn.inspect}"
+          end
           arg_defn
         end
 
-        # @return [Hash<String => GraphQL::Schema::Argument] Arguments defined on this thing, keyed by name. Includes inherited definitions
-        def arguments
-          inherited_arguments = ((self.is_a?(Class) && superclass.respond_to?(:arguments)) ? superclass.arguments : nil)
-          # Local definitions override inherited ones
-          if inherited_arguments
-            inherited_arguments.merge(own_arguments)
+        def remove_argument(arg_defn)
+          prev_defn = @own_arguments[arg_defn.name]
+          case prev_defn
+          when nil
+            # done
+          when Array
+            prev_defn.delete(arg_defn)
+          when GraphQL::Schema::Argument
+            @own_arguments.delete(arg_defn.name)
           else
-            own_arguments
+            raise "Invariant: unexpected `@own_arguments[#{arg_defn.name.inspect}]`: #{prev_defn.inspect}"
+          end
+          nil
+        end
+
+        # @return [Hash<String => GraphQL::Schema::Argument] Arguments defined on this thing, keyed by name. Includes inherited definitions
+        def arguments(context = GraphQL::Query::NullContext.instance)
+          if own_arguments.any?
+            own_arguments_that_apply = {}
+            own_arguments.each do |name, args_entry|
+              if (visible_defn = Warden.visible_entry?(:visible_argument?, args_entry, context))
+                own_arguments_that_apply[visible_defn.graphql_name] = visible_defn
+              end
+            end
+          end
+          # might be nil if there are actually no arguments
+          own_arguments_that_apply || own_arguments
+        end
+
+        def any_arguments?
+          own_arguments.any?
+        end
+
+        module ClassConfigured
+          def inherited(child_class)
+            super
+            child_class.extend(InheritedArguments)
+          end
+
+          module InheritedArguments
+            def arguments(context = GraphQL::Query::NullContext.instance)
+              own_arguments = super
+              inherited_arguments = superclass.arguments(context)
+
+              if own_arguments.any?
+                if inherited_arguments.any?
+                  # Local definitions override inherited ones
+                  inherited_arguments.merge(own_arguments)
+                else
+                  own_arguments
+                end
+              else
+                inherited_arguments
+              end
+            end
+
+            def any_arguments?
+              super || superclass.any_arguments?
+            end
+
+            def all_argument_definitions
+              all_defns = {}
+              ancestors.reverse_each do |ancestor|
+                if ancestor.respond_to?(:own_arguments)
+                  all_defns.merge!(ancestor.own_arguments)
+                end
+              end
+              all_defns = all_defns.values
+              all_defns.flatten!
+              all_defns
+            end
+
+
+            def get_argument(argument_name, context = GraphQL::Query::NullContext.instance)
+              warden = Warden.from_context(context)
+              for ancestor in ancestors
+                if ancestor.respond_to?(:own_arguments) &&
+                  (a = ancestor.own_arguments[argument_name]) &&
+                  (a = Warden.visible_entry?(:visible_argument?, a, context, warden))
+                  return a
+                end
+              end
+              nil
+            end
           end
         end
 
-        # @return [GraphQL::Schema::Argument, nil] Argument defined on this thing, fetched by name.
-        def get_argument(argument_name)
-          a = own_arguments[argument_name]
-
-          if a || !self.is_a?(Class)
-            a
-          else
-            for ancestor in ancestors
-              if ancestor.respond_to?(:own_arguments) && a = ancestor.own_arguments[argument_name]
-                return a
+        module FieldConfigured
+          def arguments(context = GraphQL::Query::NullContext.instance)
+            own_arguments = super
+            if @resolver_class
+              inherited_arguments = @resolver_class.field_arguments(context)
+              if own_arguments.any?
+                if inherited_arguments.any?
+                  inherited_arguments.merge(own_arguments)
+                else
+                  own_arguments
+                end
+              else
+                inherited_arguments
               end
+            else
+              own_arguments
             end
+          end
+
+          def any_arguments?
+            super || (@resolver_class && @resolver_class.any_field_arguments?)
+          end
+
+          def all_argument_definitions
+            if @resolver_class
+              all_defns = {}
+              @resolver_class.all_field_argument_definitions.each do |arg_defn|
+                key = arg_defn.graphql_name
+                case (current_value = all_defns[key])
+                when nil
+                  all_defns[key] = arg_defn
+                when Array
+                  current_value << arg_defn
+                when GraphQL::Schema::Argument
+                  all_defns[key] = [current_value, arg_defn]
+                else
+                  raise "Invariant: Unexpected argument definition, #{current_value.class}: #{current_value.inspect}"
+                end
+              end
+              all_defns.merge!(own_arguments)
+              all_defns = all_defns.values
+              all_defns.flatten!
+              all_defns
+            else
+              super
+            end
+          end
+        end
+
+        def all_argument_definitions
+          all_defns = own_arguments.values
+          all_defns.flatten!
+          all_defns
+        end
+
+        # @return [GraphQL::Schema::Argument, nil] Argument defined on this thing, fetched by name.
+        def get_argument(argument_name, context = GraphQL::Query::NullContext.instance)
+          warden = Warden.from_context(context)
+          if (arg_config = own_arguments[argument_name]) && (visible_arg = Warden.visible_entry?(:visible_argument?, arg_config, context, warden))
+            visible_arg
+          elsif defined?(@resolver_class) && @resolver_class
+            @resolver_class.get_field_argument(argument_name, context)
+          else
             nil
           end
         end
@@ -80,81 +253,90 @@ module GraphQL
         end
 
         # @api private
+        # If given a block, it will eventually yield the loaded args to the block.
+        #
+        # If no block is given, it will immediately dataload (but might return a Lazy).
+        #
         # @param values [Hash<String, Object>]
         # @param context [GraphQL::Query::Context]
-        # @return [Hash<Symbol, Object>, Execution::Lazy<Hash>]
-        def coerce_arguments(parent_object, values, context)
-          argument_values = {}
-          kwarg_arguments = {}
+        # @yield [Interpreter::Arguments, Execution::Lazy<Interpeter::Arguments>]
+        # @return [Interpreter::Arguments, Execution::Lazy<Interpeter::Arguments>]
+        def coerce_arguments(parent_object, values, context, &block)
           # Cache this hash to avoid re-merging it
-          arg_defns = self.arguments
+          arg_defns = context.warden.arguments(self)
+          total_args_count = arg_defns.size
 
-          maybe_lazies = []
-          arg_lazies = arg_defns.map do |arg_name, arg_defn|
-            arg_key = arg_defn.keyword
-            has_value = false
-            default_used = false
-            if values.key?(arg_name)
-              has_value = true
-              value = values[arg_name]
-            elsif values.key?(arg_key)
-              has_value = true
-              value = values[arg_key]
-            elsif arg_defn.default_value?
-              has_value = true
-              value = arg_defn.default_value
-              default_used = true
-            end
-
-            if has_value
-              loads = arg_defn.loads
-              loaded_value = nil
-              if loads && !arg_defn.from_resolver?
-                loaded_value = if arg_defn.type.list?
-                  loaded_values = value.map { |val| load_application_object(arg_defn, loads, val, context) }
-                  context.schema.after_any_lazies(loaded_values) { |result| result }
-                else
-                  load_application_object(arg_defn, loads, value, context)
-                end
+          finished_args = nil
+          prepare_finished_args = -> {
+            if total_args_count == 0
+              finished_args = GraphQL::Execution::Interpreter::Arguments::EMPTY
+              if block_given?
+                block.call(finished_args)
               end
+            else
+              argument_values = {}
+              resolved_args_count = 0
+              raised_error = false
+              arg_defns.each do |arg_defn|
+                context.dataloader.append_job do
+                  begin
+                    arg_defn.coerce_into_values(parent_object, values, context, argument_values)
+                  rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
+                    raised_error = true
+                    finished_args = err
+                    if block_given?
+                      block.call(finished_args)
+                    end
+                  end
 
-              coerced_value = if loaded_value
-                loaded_value
-              else
-                context.schema.error_handler.with_error_handling(context) do
-                  arg_defn.type.coerce_input(value, context)
+                  resolved_args_count += 1
+                  if resolved_args_count == total_args_count && !raised_error
+                    finished_args = context.schema.after_any_lazies(argument_values.values) {
+                      GraphQL::Execution::Interpreter::Arguments.new(
+                        argument_values: argument_values,
+                      )
+                    }
+                    if block_given?
+                      block.call(finished_args)
+                    end
+                  end
                 end
-              end
-
-              context.schema.after_lazy(coerced_value) do |coerced_value|
-                prepared_value = context.schema.error_handler.with_error_handling(context) do
-                  arg_defn.prepare_value(parent_object, coerced_value, context: context)
-                end
-
-                kwarg_arguments[arg_key] = prepared_value
-                # TODO code smell to access such a deeply-nested constant in a distant module
-                argument_values[arg_key] = GraphQL::Execution::Interpreter::ArgumentValue.new(
-                  value: prepared_value,
-                  definition: arg_defn,
-                  default_used: default_used,
-                )
               end
             end
+          }
+
+          if block_given?
+            prepare_finished_args.call
+            nil
+          else
+            # This API returns eagerly, gotta run it now
+            context.dataloader.run_isolated(&prepare_finished_args)
+            finished_args
           end
+        end
 
-          maybe_lazies.concat(arg_lazies)
-          context.schema.after_any_lazies(maybe_lazies) do
-            GraphQL::Execution::Interpreter::Arguments.new(
-              keyword_arguments: kwarg_arguments,
-              argument_values: argument_values,
-            )
+        # Usually, this is validated statically by RequiredArgumentsArePresent,
+        # but not for directives.
+        # TODO apply static validations on schema definitions?
+        def validate_directive_argument(arg_defn, value)
+          # this is only implemented on directives.
+          nil
+        end
+
+        module HasDirectiveArguments
+          def validate_directive_argument(arg_defn, value)
+            if value.nil? && arg_defn.type.non_null?
+              raise ArgumentError, "#{arg_defn.path} is required, but no value was given"
+            end
           end
         end
 
         def arguments_statically_coercible?
-          return @arguments_statically_coercible if defined?(@arguments_statically_coercible)
-
-          @arguments_statically_coercible = arguments.each_value.all?(&:statically_coercible?)
+          if defined?(@arguments_statically_coercible) && !@arguments_statically_coercible.nil?
+            @arguments_statically_coercible
+          else
+            @arguments_statically_coercible = all_argument_definitions.all?(&:statically_coercible?)
+          end
         end
 
         module ArgumentClassAccessor
@@ -181,43 +363,70 @@ module GraphQL
             context.schema.object_from_id(id, context)
           end
 
-          def load_application_object(argument, lookup_as_type, id, context)
+          def load_application_object(argument, id, context)
             # See if any object can be found for this ID
             if id.nil?
               return nil
             end
-            loaded_application_object = object_from_id(lookup_as_type, id, context)
-            context.schema.after_lazy(loaded_application_object) do |application_object|
+            object_from_id(argument.loads, id, context)
+          end
+
+          def load_and_authorize_application_object(argument, id, context)
+            loaded_application_object = load_application_object(argument, id, context)
+            authorize_application_object(argument, id, context, loaded_application_object)
+          end
+
+          def authorize_application_object(argument, id, context, loaded_application_object)
+            context.query.after_lazy(loaded_application_object) do |application_object|
               if application_object.nil?
-                err = GraphQL::LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
-                load_application_object_failed(err)
+                err = GraphQL::LoadApplicationObjectFailedError.new(context: context, argument: argument, id: id, object: application_object)
+                application_object = load_application_object_failed(err)
               end
               # Double-check that the located object is actually of this type
               # (Don't want to allow arbitrary access to objects this way)
-              resolved_application_object_type = context.schema.resolve_type(lookup_as_type, application_object, context)
-              context.schema.after_lazy(resolved_application_object_type) do |application_object_type|
-                possible_object_types = context.warden.possible_types(lookup_as_type)
-                if !possible_object_types.include?(application_object_type)
-                  err = GraphQL::LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
-                  load_application_object_failed(err)
-                else
-                  # This object was loaded successfully
-                  # and resolved to the right type,
-                  # now apply the `.authorized?` class method if there is one
-                  if (class_based_type = application_object_type.type_class)
-                    context.schema.after_lazy(class_based_type.authorized?(application_object, context)) do |authed|
+              if application_object.nil?
+                nil
+              else
+                maybe_lazy_resolve_type = context.schema.resolve_type(argument.loads, application_object, context)
+                context.query.after_lazy(maybe_lazy_resolve_type) do |resolve_type_result|
+                  if resolve_type_result.is_a?(Array) && resolve_type_result.size == 2
+                    application_object_type, application_object = resolve_type_result
+                  else
+                    application_object_type = resolve_type_result
+                    # application_object is already assigned
+                  end
+
+                  if !(
+                      context.warden.possible_types(argument.loads).include?(application_object_type) ||
+                      context.warden.loadable?(argument.loads, context)
+                    )
+                    err = GraphQL::LoadApplicationObjectFailedError.new(context: context, argument: argument, id: id, object: application_object)
+                    application_object = load_application_object_failed(err)
+                  end
+
+                  if application_object.nil?
+                    nil
+                  else
+                    # This object was loaded successfully
+                    # and resolved to the right type,
+                    # now apply the `.authorized?` class method if there is one
+                    context.query.after_lazy(application_object_type.authorized?(application_object, context)) do |authed|
                       if authed
                         application_object
                       else
-                        raise GraphQL::UnauthorizedError.new(
+                        err = GraphQL::UnauthorizedError.new(
                           object: application_object,
-                          type: class_based_type,
+                          type: application_object_type,
                           context: context,
                         )
+                        if self.respond_to?(:unauthorized_object)
+                          err.set_backtrace(caller)
+                          unauthorized_object(err)
+                        else
+                          raise err
+                        end
                       end
                     end
-                  else
-                    application_object
                   end
                 end
               end
@@ -229,8 +438,9 @@ module GraphQL
           end
         end
 
+        NO_ARGUMENTS =  GraphQL::EmptyObjects::EMPTY_HASH
         def own_arguments
-          @own_arguments ||= {}
+          @own_arguments || NO_ARGUMENTS
         end
       end
     end

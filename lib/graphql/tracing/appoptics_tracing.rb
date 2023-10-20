@@ -57,7 +57,7 @@ module GraphQL
       def platform_field_key(type, field)
         "graphql.#{type.graphql_name}.#{field.graphql_name}"
       end
-      
+
       def platform_authorized_key(type)
         "graphql.authorized.#{type.graphql_name}"
       end
@@ -112,10 +112,12 @@ module GraphQL
             graphql_query_string(data[key])
           when :multiplex
             graphql_multiplex(data[key])
+          when :path
+            [key, data[key].join(".")]
           else
             [key, data[key]]
           end
-        end.flatten(2).each_slice(2).to_h.merge(Spec: 'graphql')
+        end.tap { _1.flatten!(2) }.each_slice(2).to_h.merge(Spec: 'graphql')
       end
       # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
@@ -146,7 +148,7 @@ module GraphQL
       end
 
       def graphql_multiplex(data)
-        names = data.queries.map(&:operations).map(&:keys).flatten.compact
+        names = data.queries.map(&:operations).map!(&:keys).tap(&:flatten!).tap(&:compact!)
         multiplex_transaction_name(names) if names.size > 1
 
         [:Operations, names.join(', ')]

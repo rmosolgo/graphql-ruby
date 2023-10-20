@@ -34,6 +34,7 @@ module GraphQL
         Class.new(GraphQL::Schema) do
           orphan_types(types.values)
           directives(directives)
+          description(schema["description"])
 
           def self.resolve_type(*)
             raise(GraphQL::RequiredImplementationMissingError, "This schema was loaded from string, so it can't resolve types for objects")
@@ -141,6 +142,7 @@ module GraphQL
               Class.new(GraphQL::Schema::Scalar) do
                 graphql_name(type["name"])
                 description(type["description"])
+                specified_by_url(type["specifiedByURL"])
               end
             end
           when "UNION"
@@ -160,6 +162,7 @@ module GraphQL
             graphql_name(directive["name"])
             description(directive["description"])
             locations(*directive["locations"].map(&:to_sym))
+            repeatable(directive["isRepeatable"])
             loader.build_arguments(self, directive["args"], type_resolver)
           end
         end
@@ -169,6 +172,11 @@ module GraphQL
         def build_fields(type_defn, fields, type_resolver)
           loader = self
           fields.each do |field_hash|
+            unwrapped_field_hash = field_hash
+            while (of_type = unwrapped_field_hash["ofType"])
+              unwrapped_field_hash = of_type
+            end
+
             type_defn.field(
               field_hash["name"],
               type: type_resolver.call(field_hash["type"]),
@@ -176,6 +184,7 @@ module GraphQL
               deprecation_reason: field_hash["deprecationReason"],
               null: true,
               camelize: false,
+              connection_extension: nil,
             ) do
               if field_hash["args"].any?
                 loader.build_arguments(self, field_hash["args"], type_resolver)
@@ -189,8 +198,8 @@ module GraphQL
             kwargs = {
               type: type_resolver.call(arg["type"]),
               description: arg["description"],
+              deprecation_reason: arg["deprecationReason"],
               required: false,
-              method_access: false,
               camelize: false,
             }
 

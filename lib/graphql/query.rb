@@ -1,13 +1,8 @@
 # frozen_string_literal: true
-require "graphql/query/arguments"
-require "graphql/query/arguments_cache"
 require "graphql/query/context"
-require "graphql/query/executor"
 require "graphql/query/fingerprint"
-require "graphql/query/literal_input"
 require "graphql/query/null_context"
 require "graphql/query/result"
-require "graphql/query/serial_execution"
 require "graphql/query/variables"
 require "graphql/query/input_validation_result"
 require "graphql/query/variable_validation_error"
@@ -39,7 +34,30 @@ module GraphQL
     attr_accessor :operation_name
 
     # @return [Boolean] if false, static validation is skipped (execution behavior for invalid queries is undefined)
-    attr_accessor :validate
+    attr_reader :validate
+
+    # @param new_validate [Boolean] if false, static validation is skipped. This can't be reasssigned after validation.
+    def validate=(new_validate)
+      if defined?(@validation_pipeline) && @validation_pipeline && @validation_pipeline.has_validated?
+        raise ArgumentError, "Can't reassign Query#validate= after validation has run, remove this assignment."
+      else
+        @validate = new_validate
+      end
+    end
+
+    # @return [GraphQL::StaticValidation::Validator] if present, the query will validate with these rules.
+    attr_reader :static_validator
+
+    # @param new_validate [GraphQL::StaticValidation::Validator] if present, the query will validate with these rules. This can't be reasssigned after validation.
+    def static_validator=(new_validator)
+      if defined?(@validation_pipeline) && @validation_pipeline && @validation_pipeline.has_validated?
+        raise ArgumentError, "Can't reassign Query#static_validator= after validation has run, remove this assignment."
+      elsif !new_validator.is_a?(GraphQL::StaticValidation::Validator)
+        raise ArgumentError, "Expected a `GraphQL::StaticValidation::Validator` instance."
+      else
+        @static_validator = new_validator
+      end
+    end
 
     attr_writer :query_string
 
@@ -77,18 +95,10 @@ module GraphQL
     # @param root_value [Object] the object used to resolve fields on the root type
     # @param max_depth [Numeric] the maximum number of nested selections allowed for this query (falls back to schema-level value)
     # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
-    # @param except [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns truthy
-    # @param only [<#call(schema_member, context)>] If provided, objects will be hidden from the schema when `.call(schema_member, context)` returns false
-    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, except: nil, only: nil, warden: nil)
+    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, static_validator: nil, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, warden: nil)
       # Even if `variables: nil` is passed, use an empty hash for simpler logic
       variables ||= {}
-
-      # Use the `.graphql_definition` here which will return legacy types instead of classes
-      if schema.is_a?(Class) && !schema.interpreter?
-        schema = schema.graphql_definition
-      end
       @schema = schema
-      @filter = schema.default_filter.merge(except: except, only: only)
       @context = schema.context_class.new(query: self, object: root_value, values: context)
       @warden = warden
       @subscription_topic = subscription_topic
@@ -96,10 +106,22 @@ module GraphQL
       @fragments = nil
       @operations = nil
       @validate = validate
-      @tracers = schema.tracers + (context ? context.fetch(:tracers, []) : [])
+      self.static_validator = static_validator if static_validator
+      context_tracers = (context ? context.fetch(:tracers, []) : [])
+      @tracers = schema.tracers + context_tracers
+
       # Support `ctx[:backtrace] = true` for wrapping backtraces
       if context && context[:backtrace] && !@tracers.include?(GraphQL::Backtrace::Tracer)
-        @tracers << GraphQL::Backtrace::Tracer
+        if schema.trace_class <= GraphQL::Tracing::CallLegacyTracers
+          context_tracers += [GraphQL::Backtrace::Tracer]
+          @tracers << GraphQL::Backtrace::Tracer
+        elsif !(current_trace.class <= GraphQL::Backtrace::Trace)
+          raise "Invariant: `backtrace: true` should have provided a trace class with Backtrace mixed in, but it didnt. (Found: #{current_trace.class.ancestors}). This is a bug in GraphQL-Ruby, please report it on GitHub."
+        end
+      end
+
+      if context_tracers.any? && !(schema.trace_class <= GraphQL::Tracing::CallLegacyTracers)
+        raise ArgumentError, "context[:tracers] are not supported without `trace_with(GraphQL::Tracing::CallLegacyTracers)` in the schema configuration, please add it."
       end
 
       @analysis_errors = []
@@ -114,6 +136,10 @@ module GraphQL
 
       if @query_string && @document
         raise ArgumentError, "Query should only be provided a query string or a document, not both."
+      end
+
+      if @query_string && !@query_string.is_a?(String)
+        raise ArgumentError, "Query string argument should be a String, got #{@query_string.class.name} instead."
       end
 
       # A two-layer cache of type resolution:
@@ -136,11 +162,6 @@ module GraphQL
 
       @result_values = nil
       @executed = false
-
-      # TODO add a general way to define schema-level filters
-      if @schema.respond_to?(:visible?)
-        merge_filters(only: @schema.method(:visible?))
-      end
     end
 
     # If a document was provided to `GraphQL::Schema#execute` instead of the raw query string, we will need to get it from the document
@@ -148,7 +169,16 @@ module GraphQL
       @query_string ||= (document ? document.to_query_string : nil)
     end
 
-    def_delegators :@schema, :interpreter?
+    def interpreter?
+      true
+    end
+
+    attr_accessor :multiplex
+
+    # @return [GraphQL::Tracing::Trace]
+    def current_trace
+      @current_trace ||= context[:trace] || (multiplex ? multiplex.current_trace : schema.new_trace(multiplex: multiplex, query: self))
+    end
 
     def subscription_update?
       @subscription_topic && subscription?
@@ -160,7 +190,6 @@ module GraphQL
       @lookahead ||= begin
         ast_node = selected_operation
         root_type = warden.root_type_for_operation(ast_node.operation_type || "query")
-        root_type = root_type.type_class || raise("Invariant: `lookahead` only works with class-based types")
         GraphQL::Execution::Lookahead.new(query: self, root_type: root_type, ast_nodes: [ast_node])
       end
     end
@@ -190,9 +219,7 @@ module GraphQL
     # @return [Hash] A GraphQL response, with `"data"` and/or `"errors"` keys
     def result
       if !@executed
-        with_prepared_ast {
-          Execution::Multiplex.run_queries(@schema, [self], context: @context)
-        }
+        Execution::Interpreter.run_all(@schema, [self], context: @context)
       end
       @result ||= Query::Result.new(query: self, values: @result_values)
     end
@@ -230,38 +257,26 @@ module GraphQL
       end
     end
 
-    def irep_selection
-      @selection ||= begin
-        if selected_operation && internal_representation
-          internal_representation.operation_definitions[selected_operation.name]
-        else
-          nil
-        end
-      end
-    end
-
     # Node-level cache for calculating arguments. Used during execution and query analysis.
     # @param ast_node [GraphQL::Language::Nodes::AbstractNode]
     # @param definition [GraphQL::Schema::Field]
     # @param parent_object [GraphQL::Schema::Object]
     # @return Hash{Symbol => Object}
     def arguments_for(ast_node, definition, parent_object: nil)
-      if interpreter?
-        @arguments_cache ||= Execution::Interpreter::ArgumentsCache.new(self)
-        @arguments_cache.fetch(ast_node, definition, parent_object)
-      else
-        @arguments_cache ||= ArgumentsCache.build(self)
-        @arguments_cache[ast_node][definition]
-      end
+      arguments_cache.fetch(ast_node, definition, parent_object)
+    end
+
+    def arguments_cache
+      @arguments_cache ||= Execution::Interpreter::ArgumentsCache.new(self)
     end
 
     # A version of the given query string, with:
     # - Variables inlined to the query
     # - Strings replaced with `<REDACTED>`
     # @return [String, nil] Returns nil if the query is invalid.
-    def sanitized_query_string
+    def sanitized_query_string(inline_variables: true)
       with_prepared_ast {
-        GraphQL::Language::SanitizedPrinter.new(self).sanitized_query_string
+        schema.sanitized_printer.new(self, inline_variables: inline_variables).sanitized_query_string
       }
     end
 
@@ -295,7 +310,7 @@ module GraphQL
       with_prepared_ast { @validation_pipeline }
     end
 
-    def_delegators :validation_pipeline, :validation_errors, :internal_representation,
+    def_delegators :validation_pipeline, :validation_errors,
                    :analyzers, :ast_analyzers, :max_depth, :max_complexity
 
     attr_accessor :analysis_errors
@@ -313,8 +328,8 @@ module GraphQL
     # @param value [Object] Any runtime value
     # @return [GraphQL::ObjectType, nil] The runtime type of `value` from {Schema#resolve_type}
     # @see {#possible_types} to apply filtering from `only` / `except`
-    def resolve_type(abstract_type, value = :__undefined__)
-      if value.is_a?(Symbol) && value == :__undefined__
+    def resolve_type(abstract_type, value = NOT_CONFIGURED)
+      if value.is_a?(Symbol) && value == NOT_CONFIGURED
         # Old method signature
         value = abstract_type
         abstract_type = nil
@@ -333,24 +348,24 @@ module GraphQL
       with_prepared_ast { @query }
     end
 
-    # @return [void]
-    def merge_filters(only: nil, except: nil)
-      if @prepared_ast
-        raise "Can't add filters after preparing the query"
-      else
-        @filter = @filter.merge(only: only, except: except)
-      end
-      nil
-    end
-
     def subscription?
       with_prepared_ast { @subscription }
     end
 
     # @api private
-    def with_error_handling
-      schema.error_handler.with_error_handling(context) do
-        yield
+    def handle_or_reraise(err)
+      schema.handle_or_reraise(context, err)
+    end
+
+    def after_lazy(value, &block)
+      if !defined?(@runtime_instance)
+        @runtime_instance = context.namespace(:interpreter_runtime)[:runtime]
+      end
+
+      if @runtime_instance
+        @runtime_instance.minimal_after_lazy(value, &block)
+      else
+        @schema.after_lazy(value, &block)
       end
     end
 
@@ -368,11 +383,11 @@ module GraphQL
 
     def prepare_ast
       @prepared_ast = true
-      @warden ||= GraphQL::Schema::Warden.new(@filter, schema: @schema, context: @context)
+      @warden ||= @schema.warden_class.new(schema: @schema, context: @context)
       parse_error = nil
       @document ||= begin
         if query_string
-          GraphQL.parse(query_string, tracer: self)
+          GraphQL.parse(query_string, trace: self.current_trace)
         end
       rescue GraphQL::ParseError => err
         parse_error = err
@@ -421,7 +436,6 @@ module GraphQL
 
       @validation_pipeline = GraphQL::Query::ValidationPipeline.new(
         query: self,
-        validate: @validate,
         parse_error: parse_error,
         operation_name_error: operation_name_error,
         max_depth: @max_depth,

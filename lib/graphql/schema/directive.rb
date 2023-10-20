@@ -8,19 +8,33 @@ module GraphQL
     # - {.resolve}: Wraps field resolution (so it should call `yield` to continue)
     class Directive < GraphQL::Schema::Member
       extend GraphQL::Schema::Member::HasArguments
+      extend GraphQL::Schema::Member::HasArguments::HasDirectiveArguments
+
       class << self
+        # Directives aren't types, they don't have kinds.
+        undef_method :kind
+
+        def path
+          "@#{super}"
+        end
+
         # Return a name based on the class name,
         # but downcase the first letter.
         def default_graphql_name
           @default_graphql_name ||= begin
-            camelized_name = super
+            camelized_name = super.dup
             camelized_name[0] = camelized_name[0].downcase
-            camelized_name
+            -camelized_name
           end
         end
 
         def locations(*new_locations)
           if new_locations.any?
+            new_locations.each do |new_loc|
+              if !LOCATIONS.include?(new_loc.to_sym)
+                raise ArgumentError, "#{self} (#{self.graphql_name}) has an invalid directive location: `locations #{new_loc}` "
+              end
+            end
             @locations = new_locations
           else
             @locations ||= (superclass.respond_to?(:locations) ? superclass.locations : [])
@@ -41,24 +55,6 @@ module GraphQL
           default_directive
         end
 
-        def to_graphql
-          defn = GraphQL::Directive.new
-          defn.name = self.graphql_name
-          defn.description = self.description
-          defn.locations = self.locations
-          defn.default_directive = self.default_directive
-          defn.ast_node = ast_node
-          defn.metadata[:type_class] = self
-          arguments.each do |name, arg_defn|
-            arg_graphql = arg_defn.to_graphql
-            defn.arguments[arg_graphql.name] = arg_graphql
-          end
-          # Make a reference to a classic-style Arguments class
-          defn.arguments_class = GraphQL::Query::Arguments.construct_arguments_class(defn)
-
-          defn
-        end
-
         # If false, this part of the query won't be evaluated
         def include?(_object, arguments, context)
           static_include?(arguments, context)
@@ -74,6 +70,11 @@ module GraphQL
           yield
         end
 
+        # Continuing is passed as a block, yield to continue.
+        def resolve_each(object, arguments, context)
+          yield
+        end
+
         def on_field?
           locations.include?(FIELD)
         end
@@ -85,6 +86,44 @@ module GraphQL
         def on_operation?
           locations.include?(QUERY) && locations.include?(MUTATION) && locations.include?(SUBSCRIPTION)
         end
+
+        def repeatable?
+          !!@repeatable
+        end
+
+        def repeatable(new_value)
+          @repeatable = new_value
+        end
+
+        private
+
+        def inherited(subclass)
+          super
+          subclass.class_eval do
+            @default_graphql_name ||= nil
+          end
+        end
+      end
+
+      # @return [GraphQL::Schema::Field, GraphQL::Schema::Argument, Class, Module]
+      attr_reader :owner
+
+      # @return [GraphQL::Interpreter::Arguments]
+      attr_reader :arguments
+
+      def initialize(owner, **arguments)
+        @owner = owner
+        assert_valid_owner
+        # It's be nice if we had the real context here, but we don't. What we _would_ get is:
+        # - error handling
+        # - lazy resolution
+        # Probably, those won't be needed here, since these are configuration arguments,
+        # not runtime arguments.
+        @arguments = self.class.coerce_arguments(nil, arguments, Query::NullContext.instance)
+      end
+
+      def graphql_name
+        self.class.graphql_name
       end
 
       LOCATIONS = [
@@ -106,6 +145,7 @@ module GraphQL
         ENUM_VALUE =             :ENUM_VALUE,
         INPUT_OBJECT =           :INPUT_OBJECT,
         INPUT_FIELD_DEFINITION = :INPUT_FIELD_DEFINITION,
+        VARIABLE_DEFINITION =    :VARIABLE_DEFINITION,
       ]
 
       DEFAULT_DEPRECATION_REASON = 'No longer supported'
@@ -128,7 +168,55 @@ module GraphQL
         ENUM_VALUE:               'Location adjacent to an enum value definition.',
         INPUT_OBJECT:             'Location adjacent to an input object type definition.',
         INPUT_FIELD_DEFINITION:   'Location adjacent to an input object field definition.',
+        VARIABLE_DEFINITION:      'Location adjacent to a variable definition.',
       }
+
+      private
+
+      def assert_valid_owner
+        case @owner
+        when Class
+          if @owner < GraphQL::Schema::Object
+            assert_has_location(OBJECT)
+          elsif @owner < GraphQL::Schema::Union
+            assert_has_location(UNION)
+          elsif @owner < GraphQL::Schema::Enum
+            assert_has_location(ENUM)
+          elsif @owner < GraphQL::Schema::InputObject
+            assert_has_location(INPUT_OBJECT)
+          elsif @owner < GraphQL::Schema::Scalar
+            assert_has_location(SCALAR)
+          elsif @owner < GraphQL::Schema
+            assert_has_location(SCHEMA)
+          else
+            raise "Unexpected directive owner class: #{@owner}"
+          end
+        when Module
+          assert_has_location(INTERFACE)
+        when GraphQL::Schema::Argument
+          if @owner.owner.is_a?(GraphQL::Schema::Field)
+            assert_has_location(ARGUMENT_DEFINITION)
+          else
+            assert_has_location(INPUT_FIELD_DEFINITION)
+          end
+        when GraphQL::Schema::Field
+          assert_has_location(FIELD_DEFINITION)
+        when GraphQL::Schema::EnumValue
+          assert_has_location(ENUM_VALUE)
+        else
+          raise "Unexpected directive owner: #{@owner.inspect}"
+        end
+      end
+
+      def assert_has_location(location)
+        if !self.class.locations.include?(location)
+          raise ArgumentError, <<-MD
+Directive `@#{self.class.graphql_name}` can't be attached to #{@owner.graphql_name} because #{location} isn't included in its locations (#{self.class.locations.join(", ")}).
+
+Use `locations(#{location})` to update this directive's definition, or remove it from #{@owner.graphql_name}.
+MD
+        end
+      end
     end
   end
 end

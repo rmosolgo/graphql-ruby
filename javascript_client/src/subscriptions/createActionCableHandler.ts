@@ -1,4 +1,4 @@
-import { Cable } from "actioncable"
+import type { Consumer } from "@rails/actioncable"
 
 /**
  * Create a Relay Modern-compatible subscription handler.
@@ -8,8 +8,9 @@ import { Cable } from "actioncable"
  * @return {Function}
 */
 interface ActionCableHandlerOptions {
-  cable: Cable
+  cable: Consumer
   operations?: { getOperationId: Function}
+  channelName?: string
 }
 
 function createActionCableHandler(options: ActionCableHandlerOptions) {
@@ -20,8 +21,8 @@ function createActionCableHandler(options: ActionCableHandlerOptions) {
     var operations = options.operations
 
     // Register the subscription by subscribing to the channel
-    const subscription = cable.subscriptions.create({
-      channel: "GraphqlChannel",
+    const channel = cable.subscriptions.create({
+      channel: options.channelName || "GraphqlChannel",
       channelId: channelId,
     }, {
       connected: function() {
@@ -41,8 +42,8 @@ function createActionCableHandler(options: ActionCableHandlerOptions) {
             query: operation.text
           }
         }
-
-        this.perform("execute", channelParams)
+        channel.perform('send', channelParams)
+        channel.perform("execute", channelParams)
       },
       // This result is sent back from ActionCable.
       received: function(payload: { result: { errors: any[], data: object }, more: boolean}) {
@@ -64,7 +65,7 @@ function createActionCableHandler(options: ActionCableHandlerOptions) {
     // Return an object for Relay to unsubscribe with
     return {
       dispose: function() {
-        subscription.unsubscribe()
+        channel.unsubscribe()
       }
     }
   }

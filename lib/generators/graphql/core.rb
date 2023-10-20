@@ -19,15 +19,10 @@ module Graphql
         sentinel = /< GraphQL::Schema\s*\n/m
 
         in_root do
-          inject_into_file schema_file_path, "  #{type}(Types::#{name})\n", after: sentinel, verbose: false, force: false
+          if File.exist?(schema_file_path)
+            inject_into_file schema_file_path, "  #{type}(Types::#{name})\n", after: sentinel, verbose: false, force: false
+          end
         end
-      end
-
-      def create_mutation_root_type
-        create_dir("#{options[:directory]}/mutations")
-        template("base_mutation.erb", "#{options[:directory]}/mutations/base_mutation.rb", { skip: true })
-        template("mutation_type.erb", "#{options[:directory]}/types/mutation_type.rb", { skip: true })
-        insert_root_type('mutation', 'MutationType')
       end
 
       def schema_file_path

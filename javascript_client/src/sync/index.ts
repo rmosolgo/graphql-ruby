@@ -1,14 +1,17 @@
 import sendPayload from "./sendPayload"
+
 import { generateClientCode, gatherOperations, ClientOperation } from "./generateClient"
 import Logger from "./logger"
 import fs from "fs"
+import { removeClientFieldsFromString } from "./removeClientFields"
 
 interface SyncOptions {
   path?: string,
   relayPersistedOutput?: string,
   apolloAndroidOperationOutput?: string,
+  apolloCodegenJsonOutput?: string,
   secret?: string
-  url: string,
+  url?: string,
   mode?: string,
   outfile?: string,
   outfileType?: string,
@@ -18,6 +21,8 @@ interface SyncOptions {
   verbose?: boolean,
   quiet?: boolean,
   addTypename?: boolean,
+  changesetVersion?: string,
+  headers?: {[key: string]: string},
 }
 /**
  * Find `.graphql` files in `path`,
@@ -26,8 +31,9 @@ interface SyncOptions {
  * @param {Object} options
  * @param {String} options.path - A glob to recursively search for `.graphql` files (Default is `./`)
  * @param {String} options.relayPersistedOutput - A path to a `.json` file from `relay-compiler`'s  `--persist-output` option
+ * @param {String} options.apolloCodegenJsonOutput - A path to a `.json` file from `apollo client:codegen ... --type json`
  * @param {String} options.secret - HMAC-SHA256 key which must match the server secret (default is no encryption)
- * @param {String} options.url - Target URL for sending prepared queries
+ * @param {String} options.url - Target URL for sending prepared queries. If omitted, then an outfile is generated without sending operations to the server.
  * @param {String} options.mode - If `"file"`, treat each file separately. If `"project"`, concatenate all files and extract each operation. If `"relay"`, treat it as relay-compiler output
  * @param {Boolean} options.addTypename - Indicates if the "__typename" field are automatically added to your queries
  * @param {String} options.outfile - Where the generated code should be written
@@ -36,6 +42,8 @@ interface SyncOptions {
  * @param {Function} options.send - A function for sending the payload to the server, with the signature `options.send(payload)`. (Default is an HTTP `POST` request)
  * @param {Function} options.hash - A custom hash function for query strings with the signature `options.hash(string) => digest` (Default is `md5(string) => digest`)
  * @param {Boolean} options.verbose - If true, log debug output
+ * @param {Object<String, String>} options.headers - If present, extra headers to add to the HTTP request
+ * @param {String} options.changesetVersion - If present, sent to populate `context[:changeset_version]` on the server
  * @return {Promise} Rejects with an Error or String if something goes wrong. Resolves with the operation payload if successful.
 */
 function sync(options: SyncOptions) {
@@ -43,7 +51,7 @@ function sync(options: SyncOptions) {
   var verbose = !!options.verbose
   var url = options.url
   if (!url) {
-    throw new Error("URL must be provided for sync")
+    logger.log("No URL; Generating artifacts without syncing them")
   }
   var clientName = options.client
   if (!clientName) {
@@ -81,12 +89,24 @@ function sync(options: SyncOptions) {
     // Structure is { operationId => { "name" => "...", "source" => "query { ... } " } }
     for (var operationId in apolloAndroidOutput) {
       operationData = apolloAndroidOutput[operationId]
+      let bodyWithoutClientFields = removeClientFieldsFromString(operationData.source)
       payload.operations.push({
-        body: operationData.source,
+        body: bodyWithoutClientFields,
         alias: operationId,
       })
     }
-
+  } else if (options.apolloCodegenJsonOutput)  {
+    var payload: { operations: ClientOperation[] } = { operations: [] }
+    const jsonText = fs.readFileSync(options.apolloCodegenJsonOutput).toString()
+    const jsonData = JSON.parse(jsonText)
+    jsonData.operations.map(function(operation: {operationId: string, operationName: string, sourceWithFragments: string}) {
+      const bodyWithoutClientFields = removeClientFieldsFromString(operation.sourceWithFragments)
+      payload.operations.push({
+        alias: operation.operationId,
+        name: operation.operationName,
+        body: bodyWithoutClientFields,
+      })
+    })
   } else {
     var payload = gatherOperations({
       path: graphqlGlob,
@@ -102,7 +122,7 @@ function sync(options: SyncOptions) {
   var outfile: string | null
   if (options.outfile) {
     outfile = options.outfile
-  } else if (options.relayPersistedOutput || options.apolloAndroidOperationOutput) {
+  } else if (options.relayPersistedOutput || options.apolloAndroidOperationOutput || options.apolloCodegenJsonOutput) {
     // These artifacts have embedded IDs in its generated files,
     // no need to generate an outfile.
     outfile = null
@@ -112,9 +132,13 @@ function sync(options: SyncOptions) {
     outfile = "OperationStoreClient.js"
   }
 
-  return new Promise(function(resolve, reject) {
+  var syncPromise = new Promise(function(resolve, reject) {
     if (payload.operations.length === 0) {
       logger.log("No operations found in " + options.path + ", not syncing anything")
+      resolve(null)
+      return
+    } else if(!url) {
+      // This is a local-only run to generate an artifact
       resolve(payload)
       return
     } else {
@@ -123,7 +147,9 @@ function sync(options: SyncOptions) {
         url: url,
         client: clientName,
         secret: encryptionKey,
-        verbose: verbose,
+        headers: options.headers,
+        changesetVersion: options.changesetVersion,
+        logger: logger,
       }
       var sendPromise = Promise.resolve(sendFunc(payload, sendOpts))
       return sendPromise.then(function(response) {
@@ -174,27 +200,12 @@ function sync(options: SyncOptions) {
               return
             }
           } catch (err) {
-            logger.log("Failed to print sync result:", err)
+            logger.log("Failed to print sync result:", err as string)
             reject(err)
             return
           }
         }
-
-        // Don't generate a new file when we're using relay-comipler's --persist-output
-        if (outfile) {
-          var generatedCode = generateClientCode(clientName, payload.operations, clientType)
-          var finishedPayload = {
-            operations: payload.operations,
-            generatedCode,
-          }
-          logger.log("Generating client module in " + logger.colorize("bright", outfile) + "...")
-          fs.writeFileSync(outfile, generatedCode, "utf8")
-          logger.log(logger.green("✓ Done!"))
-          resolve(finishedPayload)
-        } else {
-          logger.log(logger.green("✓ Done!"))
-          resolve(payload)
-        }
+        resolve(payload)
         return
       }).catch(function(err) {
         logger.error(logger.red("Sync failed:"))
@@ -202,6 +213,27 @@ function sync(options: SyncOptions) {
         reject(err)
         return
       })
+    }
+  })
+
+  return syncPromise.then(function(_payload) {
+    // The payload is yielded when sync was successful, but typescript had
+    // trouble using it from ^^ here. So instead, just use its presence as a signal to continue.
+
+    // Don't generate a new file when we're using relay-comipler's --persist-output
+    if (_payload && outfile) {
+      var generatedCode = generateClientCode(clientName, payload.operations, clientType)
+      var finishedPayload = {
+        operations: payload.operations,
+        generatedCode,
+      }
+      logger.log("Generating client module in " + logger.colorize("bright", outfile) + "...")
+      fs.writeFileSync(outfile, generatedCode, "utf8")
+      logger.log(logger.green("✓ Done!"))
+      return finishedPayload
+    } else {
+      logger.log(logger.green("✓ Done!"))
+      return payload
     }
   })
 }

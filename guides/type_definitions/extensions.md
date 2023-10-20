@@ -68,7 +68,7 @@ Fields are generated in a different way. Instead of using classes, they are gene
 field :name, String, null: false
 # ...
 # Leads to:
-field_config = GraphQL::Schema::Field.new(:name, String, null: false)
+field_config = GraphQL::Schema::Field.new(name: :name, type: String, null: false)
 ```
 
 So, you can customize this process by:
@@ -80,7 +80,7 @@ So, you can customize this process by:
 For example, you can create a custom class which accepts a new parameter to `initialize`:
 
 ```ruby
-class Types::AuthorizedField < GraphQL::Schema::Field
+class Types::BaseField < GraphQL::Schema::Field
   # Override #initialize to take a new argument:
   def initialize(*args, required_permission: nil, **kwargs, &block)
     @required_permission = required_permission
@@ -97,16 +97,20 @@ Then, pass the field class as `field_class(...)` wherever it should be used:
 ```ruby
 class Types::BaseObject < GraphQL::Schema::Object
   # Use this class for defining fields
-  field_class AuthorizedField
+  field_class BaseField
 end
 
-# And/Or
+# And....
 class Types::BaseInterface < GraphQL::Schema::Interface
-  field_class AuthorizedField
+  field_class BaseField
+end
+
+class Mutations::BaseMutation < GraphQL::Schema::RelayClassicMutation
+  field_class BaseField
 end
 ```
 
-Now, `AuthorizedField.new(*args, &block)` will be used to create `GraphQL::Schema::Field`s on those types. At runtime `field.required_permission` will return the configured value.
+Now, `BaseField.new(*args, &block)` will be used to create `GraphQL::Schema::Field`s on those types. At runtime `field.required_permission` will return the configured value.
 
 ### Customizing Connections
 
@@ -119,6 +123,14 @@ For example, you can create a custom connection:
 
 ```ruby
 class Types::MyCustomConnection < GraphQL::Types::Relay::BaseConnection
+  # BaseConnection has these nullable configurations
+  # and the nodes field by default, but you can change
+  # these options if you want
+  edges_nullable(true)
+  edge_nullable(true)
+  node_nullable(true)
+  has_nodes_field(true)
+
   field :total_count, Integer, null: false
 
   def total_count
@@ -152,7 +164,7 @@ Edges may be customized in a similar way to Connections.
 Arguments may be customized in a similar way to Fields.
 
 - Create a new class extending `GraphQL::Schema::Argument`
-- Assign it to your field class with `argument_class(MyArgClass)`
+- Use `argument_class(MyArgClass)` to assign it to your base field class, base resolver class, and base mutation class
 
 Then, in your custom argument class, you can use `#initialize(name, type, desc = nil, **kwargs)` to take input from the DSL.
 
@@ -163,4 +175,4 @@ Enum values may be customized in a similar way to Fields.
 - Create a new class extending `GraphQL::Schema::EnumValue`
 - Assign it to your base `Enum` class with `enum_value_class(MyEnumValueClass)`
 
-Then, in your custom argument class, you can use `#initialize(name, desc = nil, **kwargs)` to take input from the DSL.
+Then, in your custom enum class, you can use `#initialize(name, desc = nil, **kwargs)` to take input from the DSL.

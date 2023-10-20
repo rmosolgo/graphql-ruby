@@ -19,7 +19,6 @@ describe GraphQL::Schema::Object do
       assert_equal [
           "GloballyIdentifiable",
           "HasMusicians",
-          "InvisibleNameEntity",
           "NamedEntity"
         ], object_class.interfaces({}).map(&:graphql_name).sort
       # Compatibility methods are delegated to the underlying BaseType
@@ -34,20 +33,22 @@ describe GraphQL::Schema::Object do
 
     it "inherits fields and interfaces" do
       new_object_class = Class.new(object_class) do
-        field :newField, String, null: true
+        field :newField, String
         field :name, String, description: "The new description", null: true
       end
 
       # one more than the parent class
       assert_equal 10, new_object_class.fields.size
       # inherited interfaces are present
-      assert_equal [
-          "GloballyIdentifiable",
-          "HasMusicians",
-          "InvisibleNameEntity",
-          "NamedEntity",
-          "PrivateNameEntity",
-        ], new_object_class.interfaces.map(&:graphql_name).sort
+      expected_interface_names = [
+        "GloballyIdentifiable",
+        "HasMusicians",
+        "InvisibleNameEntity",
+        "NamedEntity",
+        "PrivateNameEntity",
+      ]
+      assert_equal expected_interface_names, object_class.interfaces.map(&:graphql_name).sort
+      assert_equal expected_interface_names, new_object_class.interfaces.map(&:graphql_name).sort
       # The new field is present
       assert new_object_class.fields.key?("newField")
       # The overridden field is present:
@@ -127,87 +128,26 @@ describe GraphQL::Schema::Object do
       new_method_defs = Hash[methods.zip(methods.map{|method| object_type.method(method.to_sym)})]
       assert_equal method_defs, new_method_defs
     end
-
-    it "can implement legacy interfaces" do
-      object_type = Class.new(GraphQL::Schema::Object) do
-        implements GraphQL::Relay::Node.interface # class-based would be `GraphQL::Types::Relay::Node`
-      end
-      assert_equal ["Node"], object_type.interfaces.map(&:graphql_name)
-      assert_equal ["id"], object_type.fields.keys
-    end
   end
 
-  if !TESTING_INTERPRETER
-  describe "using GraphQL::Function" do # rubocop:disable Layout/IndentationWidth
-    new_test_func_payload = Class.new(GraphQL::Schema::Object) do
-      graphql_name "TestFuncPayload"
-      field :name, String, null: false
+  it "doesnt convolute field names that differ with underscore" do
+    interface = Module.new do
+      include GraphQL::Schema::Interface
+      graphql_name 'TestInterface'
+      description 'Requires an id'
+
+      field :id, GraphQL::Types::ID, null: false
     end
 
-    it "returns data on a field" do
-      new_func_class = Class.new(GraphQL::Function) do
-        argument :name, GraphQL::STRING_TYPE
-        type new_test_func_payload
+    object = Class.new(GraphQL::Schema::Object) do
+      graphql_name 'TestObject'
+      implements interface
+      global_id_field :id
 
-        def call(o, a, c)
-          { name: a[:name] }
-        end
-      end
-
-      new_object_class = Class.new(GraphQL::Schema::Object) do
-        graphql_name "GraphQL"
-        field :test, function: new_func_class.new
-      end
-
-      schema = Class.new(GraphQL::Schema) do
-        query(new_object_class)
-      end
-
-      query_str = <<-GRAPHQL
-      {
-        test(name: "graphql") {
-          name
-        }
-      }
-      GRAPHQL
-      res = schema.execute(query_str)
-      assert_equal "graphql", res["data"]["test"]["name"]
+      field :_id, String, description: 'database id', null: true
     end
 
-    it "returns data on a connection" do
-      new_func_class = Class.new(GraphQL::Function) do
-        argument :name, GraphQL::STRING_TYPE
-        type new_test_func_payload.connection_type
-
-        def call(o, a, c)
-          [{ name: a[:name] }]
-        end
-      end
-
-      new_object_class = Class.new(GraphQL::Schema::Object) do
-        graphql_name "GraphQL"
-        field :test_conn, function: new_func_class.new
-      end
-
-      schema = Class.new(GraphQL::Schema) do
-        query(new_object_class)
-      end
-
-      query_str = <<-GRAPHQL
-      {
-        testConn(name: "graphql") {
-          edges {
-            node {
-              name
-            }
-          }
-        }
-      }
-      GRAPHQL
-      res = schema.execute(query_str)
-      assert_equal "graphql", res["data"]["testConn"]["edges"][0]["node"]["name"]
-    end
-  end
+    assert_equal 2, object.fields.size
   end
 
   describe "wrapping a Hash" do
@@ -254,42 +194,6 @@ describe GraphQL::Schema::Object do
       assert_equal expected_items, res["data"]["namedEntities"]
     end
   end
-
-  describe ".to_graphql" do
-    let(:obj_type) { Jazz::Ensemble.to_graphql }
-    it "returns a matching GraphQL::ObjectType" do
-      assert_equal "Ensemble", obj_type.name
-      assert_equal "A group of musicians playing together", obj_type.description
-      assert_equal 9, obj_type.all_fields.size
-
-      name_field = obj_type.all_fields[3]
-      assert_equal "name", name_field.name
-      assert_equal GraphQL::STRING_TYPE.to_non_null_type, name_field.type
-      assert_equal nil, name_field.description
-    end
-
-    it "has a custom implementation" do
-      assert_equal obj_type.metadata[:config], :configged
-    end
-
-    it "uses the custom field class" do
-      query_str = <<-GRAPHQL
-      {
-        ensembles { upcaseName }
-      }
-      GRAPHQL
-
-      res = Jazz::Schema.execute(query_str)
-      assert_equal ["BELA FLECK AND THE FLECKTONES", "ROBERT GLASPER EXPERIMENT"], res["data"]["ensembles"].map { |e| e["upcaseName"] }
-    end
-
-    it "passes on type memberships from superclasses" do
-      obj_type = Jazz::StylishMusician.to_graphql
-      parent_obj_type = Jazz::Musician.to_graphql
-      assert_equal parent_obj_type.interfaces, obj_type.interfaces
-    end
-  end
-
 
   describe "in queries" do
     after {
@@ -347,8 +251,7 @@ describe GraphQL::Schema::Object do
     it "skips fields properly" do
       query_str = "{ find(id: \"MagicalSkipId\") { __typename } }"
       res = Jazz::Schema.execute(query_str)
-      # TBH I think `{}` is probably righter than `nil`, I guess we'll see.
-      skip_value = TESTING_INTERPRETER ? {} : nil
+      skip_value = {}
       assert_equal({"data" => skip_value }, res.to_h)
     end
   end
@@ -359,7 +262,7 @@ describe GraphQL::Schema::Object do
       assert_output "", expected_warning do
         Class.new(GraphQL::Schema::Object) do
           graphql_name "X"
-          field :method, String, null: true
+          field :method, String
         end
       end
     end
@@ -369,7 +272,7 @@ describe GraphQL::Schema::Object do
       assert_output "", expected_warning do
         Class.new(GraphQL::Schema::Object) do
           graphql_name "X"
-          field :object, String, null: true, resolver_method: :object
+          field :object, String, resolver_method: :object
         end
       end
     end
@@ -378,7 +281,7 @@ describe GraphQL::Schema::Object do
       assert_output "", "" do
         Class.new(GraphQL::Schema::Object) do
           graphql_name "X"
-          field :method, String, null: true, resolver_method: :resolve_method
+          field :method, String, resolver_method: :resolve_method
         end
       end
     end
@@ -387,7 +290,7 @@ describe GraphQL::Schema::Object do
       assert_output "", "" do
         Class.new(GraphQL::Schema::Object) do
           graphql_name "X"
-          field :module, String, null: true, method: :mod
+          field :module, String, method: :mod
         end
       end
     end
@@ -396,7 +299,7 @@ describe GraphQL::Schema::Object do
       assert_output "", "" do
         Class.new(GraphQL::Schema::Object) do
           graphql_name "X"
-          field :method, String, null: true, method_conflict_warning: false
+          field :method, String, method_conflict_warning: false
         end
       end
     end
@@ -416,7 +319,7 @@ describe GraphQL::Schema::Object do
       assert_output "", "" do
         Class.new(GraphQL::Schema::Object) do
           graphql_name "X"
-          field :thing, String, null: true, resolver_method: :object
+          field :thing, String, resolver_method: :object
         end
       end
     end
@@ -447,9 +350,6 @@ describe GraphQL::Schema::Object do
       def self.type_error(err, ctx)
         raise err
       end
-
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
     end
 
     it "raises them when invalid nil is returned" do
@@ -462,6 +362,118 @@ describe GraphQL::Schema::Object do
       assert_raises(ObjectInvalidNullSchema::Query::InvalidNullError) do
         ObjectInvalidNullSchema.execute("{ float }")
       end
+    end
+  end
+
+  it "has a consistent object shape" do
+    type_defn_shapes = Set.new
+    example_shapes_by_name = {}
+    ObjectSpace.each_object(Class) do |cls|
+      if cls < GraphQL::Schema::Object
+        shape = cls.instance_variables
+        # these are from a custom test
+        shape.delete(:@configs)
+        shape.delete(:@future_schema)
+        shape.delete(:@metadata)
+        if type_defn_shapes.add?(shape)
+          example_shapes_by_name[cls.graphql_name] = shape
+        end
+      end
+    end
+
+    # Uncomment this to debug shapes:
+    # File.open("shapes.txt", "w+") do |f|
+    #   f.puts(type_defn_shapes.to_a.map { |ary| ary.inspect }.join("\n"))
+    #   example_shapes_by_name.each do |name, sh|
+    #     f.puts("#{name} ==> #{sh.inspect}")
+    #   end
+    # end
+
+    default_shape = Class.new(GraphQL::Schema::Object).instance_variables
+    default_type_with_connection_type = Class.new(GraphQL::Schema::Object) { graphql_name("Thing") }
+    default_type_with_connection_type.connection_type # initialize the relay metadata
+    default_shape_with_connection_type = default_type_with_connection_type.instance_variables
+    default_edge_shape = Class.new(GraphQL::Types::Relay::BaseEdge).instance_variables
+    default_connection_shape = Class.new(GraphQL::Types::Relay::BaseConnection).instance_variables
+    default_mutation_payload_shape = Class.new(GraphQL::Schema::RelayClassicMutation) { graphql_name("DoSomething") }.payload_type.instance_variables
+    expected_default_shapes = Set.new([
+      default_shape,
+      default_shape_with_connection_type,
+      default_edge_shape,
+      default_connection_shape,
+      default_mutation_payload_shape
+    ])
+
+    assert_equal expected_default_shapes, type_defn_shapes
+  end
+
+  describe "overriding wrap" do
+    class WrapOverrideSchema < GraphQL::Schema
+      module LogTrace
+        def trace(key, data)
+          if ((q = data[:query]) && (c = q.context))
+            c[:log] << key
+          end
+          yield
+        end
+        ["parse", "lex", "validate",
+        "analyze_query", "analyze_multiplex",
+        "execute_query", "execute_multiplex",
+        "execute_field", "execute_field_lazy",
+        "authorized", "authorized_lazy",
+        "resolve_type", "resolve_type_lazy",
+        "execute_query_lazy"].each do |method_name|
+          define_method(method_name) do |**data, &block|
+            trace(method_name, data, &block)
+          end
+        end
+      end
+
+      class SimpleMethodCallField < GraphQL::Schema::Field
+        def resolve(obj, args, ctx)
+          obj.public_send("resolve_#{@original_name}")
+        end
+      end
+
+      module CustomIntrospection
+        class DynamicFields < GraphQL::Introspection::DynamicFields
+          field_class(SimpleMethodCallField)
+          field :__typename, String
+
+          def self.wrap(obj, ctx)
+            OpenStruct.new(resolve___typename: "Wrapped")
+          end
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field_class(SimpleMethodCallField)
+        def self.wrap(obj, ctx)
+          OpenStruct.new(resolve_int: 5)
+        end
+        field :int, Integer, null: false
+      end
+
+      query(Query)
+      introspection(CustomIntrospection)
+      trace_with(LogTrace)
+    end
+
+    it "avoids calls to Object.authorized? and uses the returned object" do
+      log = []
+      res = WrapOverrideSchema.execute("{ __typename int }", context: { log: log })
+      assert_equal "Wrapped", res["data"]["__typename"]
+      assert_equal 5, res["data"]["int"]
+      expected_log = [
+        "validate",
+        "analyze_query",
+        "execute_query",
+        "execute_field",
+        "execute_field",
+        "execute_query_lazy"
+      ]
+
+      assert_equal expected_log, log
     end
   end
 end

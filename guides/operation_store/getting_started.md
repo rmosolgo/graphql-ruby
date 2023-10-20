@@ -18,7 +18,7 @@ To use `GraphQL::Pro::OperationStore` with your app, follow these steps:
 - [Update your controller](#update-the-controller) to support persisted queries
 - {% internal_link "Add a client","/operation_store/client_workflow" %} to start syncing queries
 
-#### Dependencies
+## Dependencies
 
 `OperationStore` requires two gems in your application environment:
 
@@ -27,27 +27,33 @@ To use `GraphQL::Pro::OperationStore` with your app, follow these steps:
 
 These are bundled with Rails by default.
 
-#### Prepare the Database
+## Prepare the Database
 
 If you're going to store data with ActiveRecord, {% internal_link "migrate the database", "/operation_store/active_record_backend" %} to prepare tables for it.
 
-#### Add `OperationStore`
+## Add `OperationStore`
 
 To hook up the storage to your schema, add the plugin:
 
 ```ruby
 class MySchema < GraphQL::Schema
+  # Add it _after_ other tracing-related features, for example:
+  # use GraphQL::Tracing::DataDogTracing
   # ...
   use GraphQL::Pro::OperationStore
 end
 ```
+
+Make sure to add this feature _after_ other {% internal_link "Tracing", "/queries/tracing" %}-based features so that those other features will have access to the loaded query string. Otherwise, you may get `"No query string was present"` errors.
 
 By default, it uses `ActiveRecord`. It also accepts:
 
 - `redis:`, for using a {% internal_link "Redis backend", "/operation_store/redis_backend" %}; OR
 - `backend_class:`, for implementing custom persistence.
 
-#### Add Routes
+Also, you can disable updates to "last used at" with `default_touch_last_used_at: false`. (This can also be configured per-query with `context[:operation_store_touch_last_used_at] = true|false`.)
+
+## Add Routes
 
 To use `OperationStore`, add two routes to your app:
 
@@ -75,7 +81,16 @@ end
 
 `operation_store_sync` and `dashboard` are both Rack apps, so you can mount them in Rails, Sinatra, or any other Rack app.
 
-#### Update the Controller
+__Alternatively__, you can configure the routes to load your schema lazily, during the first request:
+
+```ruby
+# Provide the fully-qualified class name of your schema:
+lazy_routes = GraphQL::Pro::Routes::Lazy.new("MySchema")
+mount lazy_routes.dashboard, at: "/graphql/dashboard"
+mount lazy_routes.operation_store_sync, at: "/graphql/sync"
+```
+
+## Update the Controller
 
 Add `operation_id:` to your GraphQL context:
 
@@ -98,6 +113,6 @@ MySchema.execute(
 
 See {% internal_link "Server Management","/operation_store/server_management" %} for details about rejecting GraphQL from `params[:query]`.
 
-#### Next Steps
+## Next Steps
 
 Sync your operations with the {% internal_link "Client Workflow","/operation_store/client_workflow" %}.

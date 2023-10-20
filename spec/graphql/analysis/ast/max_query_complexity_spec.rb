@@ -87,9 +87,6 @@ describe GraphQL::Analysis::AST::MaxQueryComplexity do
 
         max_depth 3
         max_complexity 1
-
-        use GraphQL::Execution::Interpreter
-        use GraphQL::Analysis::AST
       end
     end
 

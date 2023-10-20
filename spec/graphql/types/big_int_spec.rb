@@ -14,7 +14,7 @@ describe GraphQL::Types::BigInt do
     assert_equal big_integer_2, GraphQL::Types::BigInt.coerce_input(expected_str_2, nil)
 
     assert_equal "31", GraphQL::Types::BigInt.coerce_result(31, nil)
-    assert_equal -17, GraphQL::Types::BigInt.coerce_input("-17", nil)
+    assert_equal(-17, GraphQL::Types::BigInt.coerce_input("-17", nil))
   end
 
   it "returns `nil` for invalid inputs" do
@@ -24,5 +24,10 @@ describe GraphQL::Types::BigInt do
 
   it 'returns `nil` for nil' do
     assert_equal nil, GraphQL::Types::BigInt.coerce_input(nil, nil)
+  end
+
+  it 'parses integers with base 10' do
+    number_string = "01000"
+    assert_equal 1000, GraphQL::Types::BigInt.coerce_input(number_string, nil)
   end
 end

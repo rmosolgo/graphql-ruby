@@ -35,18 +35,16 @@ module GraphQL
             else
               maybe_type = constantize(type_expr)
               case maybe_type
-              when GraphQL::BaseType
-                maybe_type
               when Module
                 # This is a way to check that it's the right kind of module:
-                if maybe_type.respond_to?(:graphql_definition)
+                if maybe_type.respond_to?(:kind)
                   maybe_type
                 else
                   raise ArgumentError, "Unexpected class/module found for GraphQL type: #{type_expr} (must be type definition class/module)"
                 end
               end
             end
-          when GraphQL::BaseType, GraphQL::Schema::LateBoundType
+          when GraphQL::Schema::LateBoundType
             type_expr
           when Array
             case type_expr.length
@@ -56,11 +54,11 @@ module GraphQL
               parse_type(type_expr.first, null: false)
             when 2
               inner_type, nullable_option = type_expr
-              if nullable_option.keys != [:null] || nullable_option.values != [true]
+              if nullable_option.keys != [:null] || (nullable_option[:null] != true && nullable_option[:null] != false)
                 raise ArgumentError, LIST_TYPE_ERROR
               end
               list_type = true
-              parse_type(inner_type, null: true)
+              parse_type(inner_type, null: nullable_option[:null])
             else
               raise ArgumentError, LIST_TYPE_ERROR
             end
@@ -68,10 +66,10 @@ module GraphQL
             type_expr
           when Module
             # This is a way to check that it's the right kind of module:
-            if type_expr.respond_to?(:graphql_definition)
+            if type_expr.respond_to?(:kind)
               type_expr
             else
-              # Eg `String` => GraphQL::STRING_TYPE
+              # Eg `String` => GraphQL::Types::String
               parse_type(type_expr.name, null: true)
             end
           when Proc
@@ -100,7 +98,7 @@ module GraphQL
 
         def to_type_name(something)
           case something
-          when GraphQL::BaseType, GraphQL::Schema::LateBoundType
+          when GraphQL::Schema::LateBoundType
             something.unwrap.name
           when Array
             to_type_name(something.first)
@@ -111,7 +109,14 @@ module GraphQL
               to_type_name(something.name)
             end
           when String
-            something.gsub(/\]\[\!/, "").split("::").last
+            if something.include?("]") ||
+                something.include?("[") ||
+                something.include?("!") ||
+                something.include?("::")
+              something.gsub(/\]\[\!/, "").split("::").last
+            else
+              something
+            end
           when GraphQL::Schema::NonNull, GraphQL::Schema::List
             to_type_name(something.unwrap)
           else
@@ -120,10 +125,12 @@ module GraphQL
         end
 
         def camelize(string)
+          return string if string == '_'
           return string unless string.include?("_")
-          camelized = string.split('_').map(&:capitalize).join
+          camelized = string.split('_').each(&:capitalize!).join
           camelized[0] = camelized[0].downcase
-          if (match_data = string.match(/\A(_+)/))
+          if string.start_with?("_")
+            match_data = string.match(/\A(_+)/)
             camelized = "#{match_data[0]}#{camelized}"
           end
           camelized
@@ -162,10 +169,16 @@ module GraphQL
         end
 
         def underscore(string)
-          string
-            .gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2') # URLDecoder -> URL_Decoder
-            .gsub(/([a-z\d])([A-Z])/,'\1_\2')     # someThing -> some_Thing
-            .downcase
+          if string.match?(/\A[a-z_]+\Z/)
+            return string
+          end
+          string2 = string.dup
+
+          string2.gsub!(/([A-Z]+)([A-Z][a-z])/,'\1_\2') # URLDecoder -> URL_Decoder
+          string2.gsub!(/([a-z\d])([A-Z])/,'\1_\2')     # someThing -> some_Thing
+          string2.downcase!
+
+          string2
         end
       end
     end

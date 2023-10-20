@@ -2,6 +2,30 @@
 require "spec_helper"
 
 describe GraphQL::Language::Nodes::AbstractNode do
+  describe ".visit_method" do
+    # `.visit_method` is really helpful for generating methods in
+    # custom visitor classes -- make sure this API keeps working.
+    it "names a method on the visitor class" do
+      node_classes = GraphQL::Language::Nodes.constants
+        .map { |c| GraphQL::Language::Nodes.const_get(c) }
+        .select { |obj| obj.is_a?(Class) && obj < GraphQL::Language::Nodes::AbstractNode }
+
+
+      node_classes -= [GraphQL::Language::Nodes::WrapperType, GraphQL::Language::Nodes::NameOnlyNode]
+      expected_classes = 35
+      assert_equal 35, node_classes.size
+      tested_classes = 0
+      node_classes.each do |node_class|
+        expected_method_name = "on_#{GraphQL::Schema::Member::BuildType.underscore(node_class.name.split("::").last)}"
+        assert_equal node_class.visit_method.to_s, expected_method_name, "#{node_class} has #{expected_method_name} for visit_method"
+        assert GraphQL::Language::Visitor.method_defined?(expected_method_name), "Visitor has ##{expected_method_name}"
+        assert GraphQL::Language::StaticVisitor.method_defined?(expected_method_name), "Visitor has ##{expected_method_name}"
+        tested_classes += 1
+      end
+      assert_equal expected_classes, tested_classes, "All classes were tested"
+    end
+  end
+
   describe "#filename" do
     it "is set after .parse_file" do
       filename = "spec/support/parser/filename_example.graphql"
@@ -30,7 +54,7 @@ describe GraphQL::Language::Nodes::AbstractNode do
     let(:custom_printer_class) {
       Class.new(GraphQL::Language::Printer) {
         def print_field_definition(print_field_definition)
-          "<Field Hidden>"
+          print_string("<Field Hidden>")
         end
       }
     }

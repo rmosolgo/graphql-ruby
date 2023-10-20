@@ -77,6 +77,50 @@ class MySchema < GraphQL::Schema
 end
 ```
 
+#### Connection fields
+
+By default, GraphQL-Ruby calculates a complexity value for connection fields by:
+
+- adding `1` for `pageInfo` and each of its subselections
+- adding `1` for `count`, `totalCount`, or `total`
+- adding `1` for the connection field itself
+- multiplying the complexity of other fields by the largest possible page size, which is the greater of `first:` or `last:`, or if neither of those are given it will go through each of `default_page_size`, the schema's `default_page_size`, `max_page_size`, and then the schema's `default_max_page_size`.
+
+    (If no default page size or max page size can be determined, then the analysis crashes with an internal error -- set `default_page_size` or `default_max_page_size` in your schema to prevent this.)
+
+For example, this query has complexity `26`:
+
+```graphql
+query {
+  author {              # +1
+    name                # +1
+    books(first: 10) {  # +1
+      nodes {           # +10 (+1, multiplied by `first:` above)
+        title           # +10 (ditto)
+      }
+      pageInfo {        # +1
+        endCursor       # +1
+      }
+      totalCount        # +1
+    }
+  }
+}
+```
+
+To customize this behavior, implement `def calculate_complexity(query:, nodes:, child_complexity:)` in your base field class, handling the case where `self.connection?` is `true`:
+
+```ruby
+class Types::BaseField < GraphQL::Schema::Field
+  def calculate_complexity(query:, nodes:, child_complexity:)
+    if connection?
+      # Custom connection calculation goes here
+    else
+      super
+    end
+  end
+end
+```
+
 ## Prevent deeply-nested queries
 
 You can also reject queries based on the depth of their nesting. You can define `max_depth` at schema-level or query-level:
@@ -85,12 +129,14 @@ You can also reject queries based on the depth of their nesting. You can define 
 # Schema-level:
 class MySchema < GraphQL::Schema
   # ...
-  max_depth 10
+  max_depth 15
 end
 
 # Query-level, which overrides the schema-level setting:
-MySchema.execute(query_string, max_depth: 10)
+MySchema.execute(query_string, max_depth: 20)
 ```
+
+By default, **introspection fields are counted**. The default introspection query requires at least `max_depth 13`. You can also configure your schema not to count introspection fields with `max_depth ..., count_introspection_fields: false`.
 
 You can use `nil` to disable the validation:
 

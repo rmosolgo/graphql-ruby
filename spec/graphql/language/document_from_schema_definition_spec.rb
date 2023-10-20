@@ -59,9 +59,11 @@ describe GraphQL::Language::DocumentFromSchemaDefinition do
 
     let(:expected_document) { GraphQL.parse(expected_idl) }
 
-    describe "when schemas have enums" do
-      let(:schema_idl) { <<-GRAPHQL.chomp
+    describe "when schemas have enums and directives" do
+      let(:schema_idl) { <<-GRAPHQL
 directive @locale(lang: LangEnum!) on FIELD
+
+directive @secret(top: Boolean = false) on FIELD_DEFINITION
 
 enum LangEnum {
   en
@@ -69,14 +71,26 @@ enum LangEnum {
 }
 
 type Query {
-  i: Int
+  i: Int @secret
+  ssn: String @secret(top: true)
 }
       GRAPHQL
       }
 
       class DirectiveSchema < GraphQL::Schema
+        class Secret < GraphQL::Schema::Directive
+          argument :top, Boolean, required: false, default_value: false
+          locations FIELD_DEFINITION
+        end
+
         class Query < GraphQL::Schema::Object
-          field :i, Int, null: true
+          field :i, Int do
+            directive Secret
+          end
+
+          field :ssn, String do
+            directive Secret, top: true
+          end
         end
 
         class Locale < GraphQL::Schema::Directive
@@ -86,7 +100,7 @@ type Query {
           end
           locations GraphQL::Schema::Directive::FIELD
 
-          argument :lang, LangEnum, required: true
+          argument :lang, LangEnum
         end
 
         query(Query)
@@ -95,6 +109,47 @@ type Query {
 
       it "dumps them into the string" do
         assert_equal schema_idl, DirectiveSchema.to_definition
+      end
+    end
+
+    describe "when it has an enum_value with an adjacent custom directive" do
+      let(:schema_idl) { <<-GRAPHQL
+directive @customEnumValueDirective(fakeArgument: String!) on ENUM_VALUE
+
+enum FakeEnum {
+  VALUE1
+  VALUE2 @customEnumValueDirective(fakeArgument: "Value1 is better...")
+}
+
+type Query {
+  fakeQueryField: FakeEnum!
+}
+      GRAPHQL
+      }
+
+      class EnumValueDirectiveSchema < GraphQL::Schema
+        class CustomEnumValueDirective < GraphQL::Schema::Directive
+          locations GraphQL::Schema::Directive::ENUM_VALUE
+
+          argument :fake_argument, String
+        end
+
+        class FakeEnum < GraphQL::Schema::Enum
+          value "VALUE1"
+          value "VALUE2" do
+            directive CustomEnumValueDirective, fake_argument: "Value1 is better..."
+          end
+        end
+
+        class Query < GraphQL::Schema::Object
+          field :fake_query_field, FakeEnum, null: false
+        end
+
+        query(Query)
+      end
+
+      it "dumps the custom directive definition to the IDL" do
+        assert_equal schema_idl, EnumValueDirectiveSchema.to_definition
       end
     end
 
@@ -267,7 +322,7 @@ type Query {
       end
     end
 
-    describe "with an except filter" do
+    describe "with a visiblity check" do
       let(:expected_idl) { <<-GRAPHQL
         type QueryType {
           foo: Foo
@@ -309,11 +364,22 @@ type Query {
       GRAPHQL
       }
 
+      let(:schema) {
+        Class.new(GraphQL::Schema.from_definition(schema_idl)) do
+          def self.visible?(m, ctx)
+            m.graphql_name != "Type"
+          end
+        end
+      }
+
       let(:document) {
-        subject.new(
-          schema,
-          except: ->(m, _ctx) { m.is_a?(GraphQL::BaseType) && m.name == "Type" }
-        ).document
+        doc_schema = Class.new(schema) do
+          def self.visible?(m, _ctx)
+            m.respond_to?(:graphql_name) && m.graphql_name != "Type"
+          end
+        end
+
+        subject.new(doc_schema).document
       }
 
       it "returns the IDL minus the filtered members" do
@@ -360,11 +426,22 @@ type Query {
       GRAPHQL
       }
 
+      let(:schema) {
+        Class.new(GraphQL::Schema.from_definition(schema_idl)) do
+          def self.visible?(m, ctx)
+            !(m.respond_to?(:kind) && m.kind.scalar? && m.name == "CustomScalar")
+          end
+        end
+      }
+
       let(:document) {
-        subject.new(
-          schema,
-          only: ->(m, _ctx) { !(m.is_a?(GraphQL::ScalarType) && m.name == "CustomScalar") }
-        ).document
+        doc_schema = Class.new(schema) do
+          def self.visible?(m, _ctx)
+            !(m.respond_to?(:kind) && m.kind.scalar? && m.name == "CustomScalar")
+          end
+        end
+
+        subject.new(doc_schema).document
       }
 
       it "returns the IDL minus the filtered members" do
@@ -811,6 +888,21 @@ type Query {
       children_equal && scalars_equal
     else
       expected == node
+    end
+  end
+
+  describe "custom SDL directives" do
+    class CustomSDLDirectiveSchema < GraphQL::Schema
+      class CustomThing < GraphQL::Schema::Directive
+        locations(FIELD_DEFINITION)
+        argument :stuff, String
+      end
+
+      directive CustomThing
+    end
+
+    it "prints them out" do
+      assert_equal "directive @customThing(stuff: String!) on FIELD_DEFINITION\n", CustomSDLDirectiveSchema.to_definition
     end
   end
 end

@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-# test_via: ../subscriptions.rb
 require "set"
 module GraphQL
   class Subscriptions
@@ -10,7 +9,7 @@ module GraphQL
       SYMBOL_KEY = "__sym__"
       SYMBOL_KEYS_KEY = "__sym_keys__"
       TIMESTAMP_KEY = "__timestamp__"
-      TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%N%Z" # eg '2020-01-01 23:59:59.123456789+05:00'
+      TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S.%N%z" # eg '2020-01-01 23:59:59.123456789+05:00'
       OPEN_STRUCT_KEY = "__ostruct__"
 
       module_function
@@ -56,7 +55,14 @@ module GraphQL
         # @return [Object] An object that load Global::Identification recursive
         def load_value(value)
           if value.is_a?(Array)
-            value.map{|item| load_value(item)}
+            is_gids = (v1 = value[0]).is_a?(Hash) && v1.size == 1 && v1[GLOBALID_KEY]
+            if is_gids
+              # Assume it's an array of global IDs
+              ids = value.map { |v| v[GLOBALID_KEY] }
+              GlobalID::Locator.locate_many(ids)
+            else
+              value.map { |item| load_value(item) }
+            end
           elsif value.is_a?(Hash)
             if value.size == 1
               case value.keys.first # there's only 1 key
@@ -65,12 +71,23 @@ module GraphQL
               when SYMBOL_KEY
                 value[SYMBOL_KEY].to_sym
               when TIMESTAMP_KEY
-                timestamp_class_name, timestamp_s = value[TIMESTAMP_KEY]
+                timestamp_class_name, *timestamp_args = value[TIMESTAMP_KEY]
                 timestamp_class = Object.const_get(timestamp_class_name)
-                timestamp_class.strptime(timestamp_s, TIMESTAMP_FORMAT)
+                if defined?(ActiveSupport::TimeWithZone) && timestamp_class <= ActiveSupport::TimeWithZone
+                  zone_name, timestamp_s = timestamp_args
+                  zone = ActiveSupport::TimeZone[zone_name]
+                  raise "Zone #{zone_name} not found, unable to deserialize" unless zone
+                  zone.strptime(timestamp_s, TIMESTAMP_FORMAT)
+                else
+                  timestamp_s = timestamp_args.first
+                  timestamp_class.strptime(timestamp_s, TIMESTAMP_FORMAT)
+                end
               when OPEN_STRUCT_KEY
                 ostruct_values = load_value(value[OPEN_STRUCT_KEY])
                 OpenStruct.new(ostruct_values)
+              else
+                key = value.keys.first
+                { key => load_value(value[key]) }
               end
             else
               loaded_h = {}
@@ -114,6 +131,18 @@ module GraphQL
             { SYMBOL_KEY => obj.to_s }
           elsif obj.respond_to?(:to_gid_param)
             {GLOBALID_KEY => obj.to_gid_param}
+          elsif defined?(ActiveSupport::TimeWithZone) && obj.is_a?(ActiveSupport::TimeWithZone) && obj.class.name != Time.name
+            # This handles a case where Rails prior to 7 would
+            # make the class ActiveSupport::TimeWithZone return "Time" for
+            # its name. In Rails 7, it will now return "ActiveSupport::TimeWithZone",
+            # which happens to be incompatible with expectations we have
+            # with what a Time class supports ( notably, strptime in `load_value` ).
+            #
+            # This now passes along the name of the zone, such that a future deserialization
+            # of this string will use the correct time zone from the ActiveSupport TimeZone
+            # list to produce the time.
+            #
+            { TIMESTAMP_KEY => [obj.class.name, obj.time_zone.name, obj.strftime(TIMESTAMP_FORMAT)] }
           elsif obj.is_a?(Date) || obj.is_a?(Time)
             # DateTime extends Date; for TimeWithZone, call `.utc` first.
             { TIMESTAMP_KEY => [obj.class.name, obj.strftime(TIMESTAMP_FORMAT)] }

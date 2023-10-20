@@ -15,7 +15,8 @@ module GraphQL
             nodes: node,
             name: error_arg_name,
             type: kind_of_node,
-            argument: node.name
+            argument_name: node.name,
+            parent: parent_defn
           ))
         else
           # Some other weird error
@@ -58,7 +59,7 @@ module GraphQL
             end
           end
         when GraphQL::Language::Nodes::Directive
-          context.schema.directives[parent.name]
+          context.schema_directives[parent.name]
         when GraphQL::Language::Nodes::Field
           context.field_definition
         else

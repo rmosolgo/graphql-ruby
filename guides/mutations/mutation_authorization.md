@@ -63,7 +63,7 @@ In short, here's an example:
 ```ruby
 class Mutations::PromoteEmployee < Mutations::BaseMutation
   # `employeeId` is an ID, Types::Employee is an _Object_ type
-  argument :employee_id, ID, required: true, loads: Types::Employee
+  argument :employee_id, ID, loads: Types::Employee
 
   # Behind the scenes, `:employee_id` is used to fetch an object from the database,
   # then the object is authorized with `Employee.authorized?`, then
@@ -84,11 +84,21 @@ It works like this: if you pass a `loads:` option, it will:
 
 In this case, if the argument value is provided by `object_from_id` doesn't return a value, the mutation will fail with an error.
 
+Alternatively if your `ID` doesn't specify both class _and_ id, resolvers have a `load_#{argument}` method that can be overridden.
+
+```ruby
+argument :employee_id, ID, loads: Types::Employee
+
+def load_employee(id)
+  ::Employee.find(id)
+end
+```
+
 If you don't want this behavior, don't use it. Instead, create arguments with type `ID` and use them your own way, for example:
 
 ```ruby
 # No special loading behavior:
-argument :employee_id, ID, required: true
+argument :employee_id, ID
 ```
 
 ## Can _this user_ perform _this action_?

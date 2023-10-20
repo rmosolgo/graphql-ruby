@@ -24,7 +24,7 @@ module GraphQL
           GraphQL::Schema::Directive::FIELD,
         )
 
-        argument :by, String, required: true,
+        argument :by, String,
           description: "The name of the transform to run if applicable"
 
         TRANSFORMS = [
@@ -39,7 +39,19 @@ module GraphQL
           transform_name = arguments[:by]
           if TRANSFORMS.include?(transform_name) && return_value.respond_to?(transform_name)
             return_value = return_value.public_send(transform_name)
-            context.namespace(:interpreter)[:runtime].write_in_response(path, return_value)
+            response = context.namespace(:interpreter_runtime)[:runtime].final_result
+            *keys, last = path
+            keys.each do |key|
+              if response && (response = response[key])
+                next
+              else
+                break
+              end
+            end
+            if response
+              response[last] = return_value
+            end
+            nil
           end
         end
       end

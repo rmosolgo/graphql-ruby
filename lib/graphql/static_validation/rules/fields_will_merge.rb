@@ -9,7 +9,8 @@ module GraphQL
       # without ambiguity.
       #
       # Original Algorithm: https://github.com/graphql/graphql-js/blob/master/src/validation/rules/OverlappingFieldsCanBeMerged.js
-      NO_ARGS = {}.freeze
+      NO_ARGS = GraphQL::EmptyObjects::EMPTY_HASH
+
       Field = Struct.new(:node, :definition, :owner_type, :parents)
       FragmentSpread = Struct.new(:name, :parents)
 
@@ -17,24 +18,47 @@ module GraphQL
         super
         @visited_fragments = {}
         @compared_fragments = {}
+        @conflict_count = 0
       end
 
       def on_operation_definition(node, _parent)
-        conflicts_within_selection_set(node, type_definition)
+        setting_errors { conflicts_within_selection_set(node, type_definition) }
         super
       end
 
       def on_field(node, _parent)
-        conflicts_within_selection_set(node, type_definition)
+        setting_errors { conflicts_within_selection_set(node, type_definition) }
         super
       end
 
       private
 
+      def field_conflicts
+        @field_conflicts ||= Hash.new do |errors, field|
+          errors[field] = GraphQL::StaticValidation::FieldsWillMergeError.new(kind: :field, field_name: field)
+        end
+      end
+
+      def arg_conflicts
+        @arg_conflicts ||= Hash.new do |errors, field|
+          errors[field] = GraphQL::StaticValidation::FieldsWillMergeError.new(kind: :argument, field_name: field)
+        end
+      end
+
+      def setting_errors
+        @field_conflicts = nil
+        @arg_conflicts = nil
+
+        yield
+        # don't initialize these if they weren't initialized in the block:
+        @field_conflicts && @field_conflicts.each_value { |error| add_error(error) }
+        @arg_conflicts && @arg_conflicts.each_value { |error| add_error(error) }
+      end
+
       def conflicts_within_selection_set(node, parent_type)
         return if parent_type.nil?
 
-        fields, fragment_spreads = fields_and_fragments_from_selection(node, owner_type: parent_type, parents: [])
+        fields, fragment_spreads = fields_and_fragments_from_selection(node, owner_type: parent_type, parents: nil)
 
         # (A) Find find all conflicts "within" the fields of this selection set.
         find_conflicts_within(fields)
@@ -174,15 +198,21 @@ module GraphQL
         response_keys.each do |key, fields|
           next if fields.size < 2
           # find conflicts within nodes
-          for i in 0..fields.size - 1
-            for j in i + 1..fields.size - 1
+          i = 0
+          while i < fields.size
+            j = i + 1
+            while j < fields.size
               find_conflict(key, fields[i], fields[j])
+              j += 1
             end
+            i += 1
           end
         end
       end
 
       def find_conflict(response_key, field1, field2, mutually_exclusive: false)
+        return if @conflict_count >= context.max_errors
+
         node1 = field1.node
         node2 = field2.node
 
@@ -191,27 +221,21 @@ module GraphQL
 
         if !are_mutually_exclusive
           if node1.name != node2.name
-            errored_nodes = [node1.name, node2.name].sort.join(" or ")
-            msg = "Field '#{response_key}' has a field conflict: #{errored_nodes}?"
-            context.errors << GraphQL::StaticValidation::FieldsWillMergeError.new(
-              msg,
-              nodes: [node1, node2],
-              path: [],
-              field_name: response_key,
-              conflicts: errored_nodes
-            )
+            conflict = field_conflicts[response_key]
+
+            conflict.add_conflict(node1, node1.name)
+            conflict.add_conflict(node2, node2.name)
+
+            @conflict_count += 1
           end
 
-          args = possible_arguments(node1, node2)
-          if args.size > 1
-            msg = "Field '#{response_key}' has an argument conflict: #{args.map { |arg| GraphQL::Language.serialize(arg) }.join(" or ")}?"
-            context.errors << GraphQL::StaticValidation::FieldsWillMergeError.new(
-              msg,
-              nodes: [node1, node2],
-              path: [],
-              field_name: response_key,
-              conflicts: args.map { |arg| GraphQL::Language.serialize(arg) }.join(" or ")
-            )
+          if !same_arguments?(node1, node2)
+            conflict = arg_conflicts[response_key]
+
+            conflict.add_conflict(node1, GraphQL::Language.serialize(serialize_field_args(node1)))
+            conflict.add_conflict(node2, GraphQL::Language.serialize(serialize_field_args(node2)))
+
+            @conflict_count += 1
           end
         end
 
@@ -223,7 +247,9 @@ module GraphQL
       end
 
       def find_conflicts_between_sub_selection_sets(field1, field2, mutually_exclusive:)
-        return if field1.definition.nil? || field2.definition.nil?
+        return if field1.definition.nil? ||
+          field2.definition.nil? ||
+          (field1.node.selections.empty? && field2.node.selections.empty?)
 
         return_type1 = field1.definition.type.unwrap
         return_type2 = field2.definition.type.unwrap
@@ -297,12 +323,13 @@ module GraphQL
         end
       end
 
-      NO_SELECTIONS = [{}.freeze, [].freeze].freeze
+      NO_SELECTIONS = [GraphQL::EmptyObjects::EMPTY_HASH, GraphQL::EmptyObjects::EMPTY_ARRAY].freeze
 
       def fields_and_fragments_from_selection(node, owner_type:, parents:)
         if node.selections.empty?
           NO_SELECTIONS
         else
+          parents ||= []
           fields, fragment_spreads = find_fields_and_fragments(node.selections, owner_type: owner_type, parents: parents, fields: [], fragment_spreads: [])
           response_keys = fields.group_by { |f| f.node.alias || f.node.name }
           [response_keys, fragment_spreads]
@@ -313,7 +340,7 @@ module GraphQL
         selections.each do |node|
           case node
           when GraphQL::Language::Nodes::Field
-            definition = context.schema.get_field(owner_type, node.name)
+            definition = context.warden.get_field(owner_type, node.name)
             fields << Field.new(node, definition, owner_type, parents)
           when GraphQL::Language::Nodes::InlineFragment
             fragment_type = node.type ? context.warden.get_type(node.type.name) : owner_type
@@ -326,20 +353,19 @@ module GraphQL
         [fields, fragment_spreads]
       end
 
-      def possible_arguments(field1, field2)
+      def same_arguments?(field1, field2)
         # Check for incompatible / non-identical arguments on this node:
-        [field1, field2].map do |n|
-          if n.arguments.any?
-            serialized_args = {}
-            n.arguments.each do |a|
-              arg_value = a.value
-              serialized_args[a.name] = serialize_arg(arg_value)
-            end
-            serialized_args
-          else
-            NO_ARGS
-          end
-        end.uniq
+        arguments1 = field1.arguments
+        arguments2 = field2.arguments
+
+        return false if arguments1.length != arguments2.length
+
+        arguments1.all? do |argument1|
+          argument2 = arguments2.find { |argument| argument.name == argument1.name }
+          return false if argument2.nil?
+
+          serialize_arg(argument1.value) == serialize_arg(argument2.value)
+        end
       end
 
       def serialize_arg(arg_value)
@@ -351,6 +377,14 @@ module GraphQL
         else
           GraphQL::Language.serialize(arg_value)
         end
+      end
+
+      def serialize_field_args(field)
+        serialized_args = {}
+        field.arguments.each do |argument|
+          serialized_args[argument.name] = serialize_arg(argument.value)
+        end
+        serialized_args
       end
 
       def compared_fragments_key(frag1, frag2, exclusive)
@@ -365,17 +399,26 @@ module GraphQL
       # In this context, `parents` represends the "self scope" of the field,
       # what types may be found at this point in the query.
       def mutually_exclusive?(parents1, parents2)
-        parents1.each do |type1|
-          parents2.each do |type2|
-            # If the types we're comparing are both different object types,
-            # they have to be mutually exclusive.
-            if type1 != type2 && type1.kind.object? && type2.kind.object?
-              return true
+        if parents1.empty? || parents2.empty?
+          false
+        elsif parents1.length == parents2.length
+          parents1.length.times.any? do |i|
+            type1 = parents1[i - 1]
+            type2 = parents2[i - 1]
+            if type1 == type2
+              # If the types we're comparing are the same type,
+              # then they aren't mutually exclusive
+              false
+            else
+              # Check if these two scopes have _any_ types in common.
+              possible_right_types = context.query.possible_types(type1)
+              possible_left_types = context.query.possible_types(type2)
+              (possible_right_types & possible_left_types).empty?
             end
           end
+        else
+          true
         end
-
-        false
       end
     end
   end

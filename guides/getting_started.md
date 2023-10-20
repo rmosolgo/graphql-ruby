@@ -28,9 +28,11 @@ On Rails, you can get started with a few [GraphQL generators](https://rmosolgo.g
 
 ```sh
 # Add graphql-ruby boilerplate and mount graphiql in development
-rails g graphql:install
+$ rails g graphql:install
+# You may need to run bundle install again, as by default graphiql-rails is added on installation.
+$ bundle install
 # Make your first object type
-rails g graphql:object Post title:String rating:Int comments:[Comment]
+$ rails g graphql:object Post title:String rating:Int comments:[Comment]
 ```
 
 Or, you can build a GraphQL server by hand:
@@ -53,7 +55,7 @@ module Types
     # fields should be queried in camel-case (this will be `truncatedPreview`)
     field :truncated_preview, String, null: false
     # Fields can return lists of other objects:
-    field :comments, [Types::CommentType], null: true,
+    field :comments, [Types::CommentType],
       # And fields can have their own descriptions:
       description: "This post's comments, or null if this post has comments disabled."
   end
@@ -77,9 +79,8 @@ class QueryType < GraphQL::Schema::Object
   description "The query root of this schema"
 
   # First describe the field signature:
-  field :post, PostType, null: true do
-    description "Find a post by ID"
-    argument :id, ID, required: true
+  field :post, PostType, "Find a post by ID" do
+    argument :id, ID
   end
 
   # Then provide an implementation:
@@ -131,7 +132,7 @@ See {% internal_link "Executing Queries","/queries/executing_queries" %} for mor
 If you're building a backend for [Relay](https://facebook.github.io/relay/), you'll need:
 
 - A JSON dump of the schema, which you can get by sending [`GraphQL::Introspection::INTROSPECTION_QUERY`](https://github.com/rmosolgo/graphql-ruby/blob/master/lib/graphql/introspection/introspection_query.rb)
-- Relay-specific helpers for GraphQL, see the `GraphQL::Relay` guides.
+- Relay-specific helpers for GraphQL, see the {% internal_link "Connection guide", "/pagination/connection_concepts" %}, {% internal_link "Mutation guide", "mutations/mutation_classes" %}, and {% internal_link "Object Identification guide", "/schema/object_identification" %}.
 
 ## Use with Apollo Client
 

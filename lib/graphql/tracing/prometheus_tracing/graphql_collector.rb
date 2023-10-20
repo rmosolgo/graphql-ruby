@@ -5,7 +5,7 @@ module GraphQL
     class PrometheusTracing < PlatformTracing
       class GraphQLCollector < ::PrometheusExporter::Server::TypeCollector
         def initialize
-          @graphql_gauge = PrometheusExporter::Metric::Summary.new(
+          @graphql_gauge = PrometheusExporter::Metric::Base.default_aggregation.new(
             'graphql_duration_seconds',
             'Time spent in GraphQL operations, in seconds'
           )
@@ -16,7 +16,10 @@ module GraphQL
         end
 
         def collect(object)
-          labels = { key: object['key'], platform_key: object['platform_key'] }
+          default_labels = { key: object['key'], platform_key: object['platform_key'] }
+          custom = object['custom_labels']
+          labels = custom.nil? ? default_labels : default_labels.merge(custom)
+
           @graphql_gauge.observe object['duration'], labels
         end
 

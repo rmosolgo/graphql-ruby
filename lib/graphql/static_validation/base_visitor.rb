@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   module StaticValidation
-    class BaseVisitor < GraphQL::Language::Visitor
+    class BaseVisitor < GraphQL::Language::StaticVisitor
       def initialize(document, context)
         @path = []
         @object_types = []
@@ -12,11 +12,6 @@ module GraphQL
         @context = context
         @schema = context.schema
         super(document)
-      end
-
-      # This will be overwritten by {InternalRepresentation::Rewrite} if it's included
-      def rewrite_document
-        nil
       end
 
       attr_reader :context
@@ -32,22 +27,13 @@ module GraphQL
       # Build a class to visit the AST and perform validation,
       # or use a pre-built class if rules is `ALL_RULES` or empty.
       # @param rules [Array<Module, Class>]
-      # @param rewrite [Boolean] if `false`, don't include rewrite
       # @return [Class] A class for validating `rules` during visitation
-      def self.including_rules(rules, rewrite: true)
+      def self.including_rules(rules)
         if rules.empty?
-          if rewrite
-            NoValidateVisitor
-          else
-            # It's not doing _anything?!?_
-            BaseVisitor
-          end
+          # It's not doing _anything?!?_
+          BaseVisitor
         elsif rules == ALL_RULES
-          if rewrite
-            DefaultVisitor
-          else
-            InterpreterVisitor
-          end
+          InterpreterVisitor
         else
           visitor_class = Class.new(self) do
             include(GraphQL::StaticValidation::DefinitionDependencies)
@@ -60,9 +46,6 @@ module GraphQL
             end
           end
 
-          if rewrite
-            visitor_class.include(GraphQL::InternalRepresentation::Rewrite)
-          end
           visitor_class.include(ContextMethods)
           visitor_class
         end
@@ -94,7 +77,7 @@ module GraphQL
 
         def on_field(node, parent)
           parent_type = @object_types.last
-          field_definition = @schema.get_field(parent_type, node.name)
+          field_definition = @schema.get_field(parent_type, node.name, @context.query.context)
           @field_definitions.push(field_definition)
           if !field_definition.nil?
             next_object_type = field_definition.type.unwrap
@@ -110,7 +93,7 @@ module GraphQL
         end
 
         def on_directive(node, parent)
-          directive_defn = @schema.directives[node.name]
+          directive_defn = @context.schema_directives[node.name]
           @directive_definitions.push(directive_defn)
           super
           @directive_definitions.pop
@@ -120,14 +103,14 @@ module GraphQL
           argument_defn = if (arg = @argument_definitions.last)
             arg_type = arg.type.unwrap
             if arg_type.kind.input_object?
-              arg_type.arguments[node.name]
+              @context.warden.get_argument(arg_type, node.name)
             else
               nil
             end
           elsif (directive_defn = @directive_definitions.last)
-            directive_defn.arguments[node.name]
+            @context.warden.get_argument(directive_defn, node.name)
           elsif (field_defn = @field_definitions.last)
-            field_defn.arguments[node.name]
+            @context.warden.get_argument(field_defn, node.name)
           else
             nil
           end
@@ -187,7 +170,7 @@ module GraphQL
 
         def on_fragment_with_type(node)
           object_type = if node.type
-            @schema.get_type(node.type.name)
+            @context.warden.get_type(node.type.name)
           else
             @object_types.last
           end
@@ -205,6 +188,9 @@ module GraphQL
       private
 
       def add_error(error, path: nil)
+        if @context.too_many_errors?
+          throw :too_many_validation_errors
+        end
         error.path ||= (path || @path.dup)
         context.errors << error
       end

@@ -5,7 +5,7 @@ search: true
 section: Fields
 title: Resolvers
 desc: Reusable, extendable resolution logic for complex fields
-index: 9
+index: 2
 redirect_from:
   - /fields/functions
 ---
@@ -42,16 +42,16 @@ end
 
 ```ruby
 # Generate a field which returns a filtered, sorted list of items
-def self.items_field(name, override_options)
+def self.items_field(name, override_options, &block)
   # Prepare options
   default_field_options = { type: [Types::Item], null: false }
   field_options = default_field_options.merge(override_options)
   # Create the field
-  field(name, field_options) do
+  field(name, **field_options) do
     argument :order_by, Types::ItemOrder, required: false
     argument :category, Types::ItemCategory, required: false
     # Allow an override block to add more arguments
-    yield self if block_given?
+    instance_eval(&block) if block_given?
   end
 end
 
@@ -183,7 +183,7 @@ module Resolvers
 end
 ```
 
-The above can produce the following error: `Failed to build return type for Task.tasks from nil: Unexpected type input:  (NilClass)`. 
+The above can produce the following error: `Failed to build return type for Task.tasks from nil: Unexpected type input:  (NilClass)`.
 
 A simple solution is to express the type as a string in the resolver:
 

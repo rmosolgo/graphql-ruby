@@ -9,7 +9,7 @@ describe("root module", () => {
   it("exports things at root level", () => {
     // Make sure that the compiled JavaScript
     // has all the expected exports.
-    var testScript = "var client = require('./dist/index'); console.log(JSON.stringify({ keys: Object.keys(client).sort() }))"
+    var testScript = "var client = require('./index'); console.log(JSON.stringify({ keys: Object.keys(client).sort() }))"
     var output = childProcess.execSync("node -e \"" + testScript + "\"")
     var outputData = JSON.parse(output.toString())
     var expectedKeys = [

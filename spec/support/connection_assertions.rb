@@ -6,6 +6,7 @@
 # The test must implement `schema` to serve the queries below with the expected results.
 module ConnectionAssertions
   MAX_PAGE_SIZE = 6
+  DEFAULT_PAGE_SIZE = 4
   NAMES = [
     "Avocado",
     "Beet",
@@ -35,14 +36,11 @@ module ConnectionAssertions
   end
 
   def self.build_schema(get_items:, connection_class:, total_count_connection_class:)
-    base_schema = Class.new(GraphQL::Schema) do
-      use GraphQL::Pagination::Connections
-    end
+    base_schema = Class.new(GraphQL::Schema)
 
     Class.new(base_schema) do
-      use GraphQL::Execution::Interpreter
-
       default_max_page_size ConnectionAssertions::MAX_PAGE_SIZE
+      default_page_size ConnectionAssertions::DEFAULT_PAGE_SIZE
       cursor_encoder(NonceEnabledEncoder)
 
       # Make a way to get local variables (passed in as args)
@@ -100,14 +98,18 @@ module ConnectionAssertions
         graphql_name "Query"
         field :items, item.connection_type, null: false do
           argument :max_page_size_override, Integer, required: false
+          argument :default_page_size_override, Integer, required: false
         end
 
-        def items(max_page_size_override: :no_value)
-          if max_page_size_override != :no_value
-            context.schema.connection_class.new(get_items, max_page_size: max_page_size_override)
-          else
+        def items(max_page_size_override: :no_value, default_page_size_override: :no_value)
+          if max_page_size_override == :no_value && default_page_size_override == :no_value
             # don't manually apply the wrapper when it's not required -- check automatic wrapping.
             get_items
+          else
+            args = {}
+            args[:max_page_size] = max_page_size_override if max_page_size_override != :no_value
+            args[:default_page_size] = default_page_size_override if default_page_size_override != :no_value
+            context.schema.connection_class.new(get_items, **args)
           end
         end
 
@@ -131,6 +133,26 @@ module ConnectionAssertions
           get_items
         end
 
+        field :preloaded_items, item.connection_type
+
+        def preloaded_items
+          relation = get_items
+          relation.load # force the unbounded relation to load from the database
+          relation
+        end
+
+        field :unbounded_items, item.connection_type, max_page_size: nil, default_page_size: nil
+
+        def unbounded_items
+          get_items
+        end
+
+        field :offset_items, item.connection_type
+
+        def offset_items
+          get_items.offset(2)
+        end
+
         private
 
         def get_items
@@ -139,9 +161,6 @@ module ConnectionAssertions
       end
 
       query(query)
-
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
     end
   end
 
@@ -234,6 +253,11 @@ module ConnectionAssertions
           bogus_huge_cursor = NonceEnabledEncoder.encode("100")
           res = exec_query(query_str, first: 3, after: bogus_huge_cursor)
           assert_names([], res)
+
+          # It returns nothing before the first cursor
+          first_cursor = NonceEnabledEncoder.encode("1")
+          res = exec_query(query_str, first: 3, before: first_cursor)
+          assert_names([], res)
         end
 
         it "handles negative firsts and lasts by treating them as zero" do
@@ -259,12 +283,6 @@ module ConnectionAssertions
         end
 
         it "applies max_page_size to first and last" do
-          res = exec_query(query_str, {})
-          # Even though neither first nor last was provided, max_page_size was applied.
-          assert_names(["Avocado", "Beet", "Cucumber", "Dill", "Eggplant", "Fennel"], res)
-          assert_equal true, get_page_info(res, "hasNextPage")
-          assert_equal false, get_page_info(res, "hasPreviousPage")
-
           # max_page_size overrides first
           res = exec_query(query_str, first: 10)
           assert_names(["Avocado", "Beet", "Cucumber", "Dill", "Eggplant", "Fennel"], res)
@@ -276,6 +294,41 @@ module ConnectionAssertions
           assert_names(["Eggplant", "Fennel", "Ginger", "Horseradish", "I Can't Believe It's Not Butter", "Jicama"], res)
           assert_equal false, get_page_info(res, "hasNextPage")
           assert_equal true, get_page_info(res, "hasPreviousPage")
+        end
+
+        it "applies default_page_size to first when first and last are unspecified" do
+          res = exec_query(query_str, {})
+          # Neither first nor last was provided, so default_page_size was applied.
+          assert_names(["Avocado", "Beet", "Cucumber", "Dill"], res)
+          assert_equal true, get_page_info(res, "hasNextPage")
+          assert_equal false, get_page_info(res, "hasPreviousPage")
+        end
+
+        it "returns unbounded lists" do
+          query_str = <<-GRAPHQL
+            query($first: Int, $after: String, $last: Int, $before: String) {
+              unboundedItems(first: $first, after: $after, last: $last, before: $before) {
+                nodes {
+                  name
+                }
+                edges {
+                  node {
+                    name
+                  }
+                  cursor
+                }
+                pageInfo {
+                  hasNextPage
+                  hasPreviousPage
+                  startCursor
+                  endCursor
+                }
+              }
+            }
+          GRAPHQL
+
+          res = exec_query(query_str, {})
+          assert_equal 10, res["data"]["unboundedItems"]["nodes"].size
         end
       end
 

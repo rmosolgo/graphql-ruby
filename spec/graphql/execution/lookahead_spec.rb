@@ -48,17 +48,28 @@ describe GraphQL::Execution::Lookahead do
       end
     end
 
+    class PlantSpecies < GraphQL::Schema::Object
+      implements Node
+      field :name, String, null: false
+      field :id, ID, null: false, method: :name
+      field :is_edible, Boolean, null: false
+    end
+
+    class Species < GraphQL::Schema::Union
+      possible_types BirdSpecies, PlantSpecies
+    end
+
     class Query < GraphQL::Schema::Object
-      field :find_bird_species, BirdSpecies, null: true do
-        argument :by_name, String, required: true
+      field :find_bird_species, BirdSpecies do
+        argument :by_name, String
       end
 
       def find_bird_species(by_name:)
         DATA.find_by_name(by_name)
       end
 
-      field :node, Node, null: true do
-        argument :id, ID, required: true
+      field :node, Node do
+        argument :id, ID
       end
 
       def node(id:)
@@ -67,6 +78,14 @@ describe GraphQL::Execution::Lookahead do
         else
           DATA.map { |d| d.genus }.select { |g| g.name == id }
         end
+      end
+
+      field :species, Species do
+        argument :id, ID
+      end
+
+      def species(id:)
+        DATA.find_by_name(id)
       end
     end
 
@@ -82,10 +101,10 @@ describe GraphQL::Execution::Lookahead do
     class Schema < GraphQL::Schema
       query(Query)
       instrument :query, LookaheadInstrumenter
-      if TESTING_INTERPRETER
-        use GraphQL::Execution::Interpreter
-        use GraphQL::Analysis::AST
-      end
+    end
+
+    class AlwaysVisibleSchema < Schema
+      use GraphQL::Schema::AlwaysVisible
     end
   end
 
@@ -103,8 +122,9 @@ describe GraphQL::Execution::Lookahead do
       }
       GRAPHQL
     }
+    let(:schema) { LookaheadTest::Schema }
     let(:query) {
-      GraphQL::Query.new(LookaheadTest::Schema, document: document, variables: { name: "Cardinal" })
+      GraphQL::Query.new(schema, document: document, variables: { name: "Cardinal" })
     }
 
     it "has a good test setup" do
@@ -122,6 +142,56 @@ describe GraphQL::Execution::Lookahead do
 
     it "detects by name, not by alias" do
       assert_equal true, query.lookahead.selects?("__typename")
+    end
+
+    describe "with a NullWarden" do
+      let(:schema) { LookaheadTest::AlwaysVisibleSchema }
+
+      it "works" do
+        lookahead = query.lookahead.selection("findBirdSpecies")
+        assert_equal true, lookahead.selects?("similarSpecies")
+        assert_equal true, lookahead.selects?(:similar_species)
+        assert_equal false, lookahead.selects?("isWaterfowl")
+        assert_equal false, lookahead.selects?(:is_waterfowl)
+      end
+    end
+
+    describe "on unions" do
+      let(:document) {
+        GraphQL.parse <<-GRAPHQL
+        {
+          species(id: "Cardinal") {
+            ... on BirdSpecies {
+              name
+              isWaterfowl
+            }
+            ... on PlantSpecies {
+              name
+              isEdible
+            }
+          }
+        }
+        GRAPHQL
+      }
+
+      it "works" do
+        lookahead = query.lookahead.selection(:species)
+        assert lookahead.selects?(:name)
+        assert_equal [:name, :is_waterfowl, :name, :is_edible], lookahead.selections.map(&:name)
+      end
+
+      it "works with different selected types" do
+        lookahead = query.lookahead.selection(:species)
+        # Both have `name`
+        assert lookahead.selects?(:name, selected_type: LookaheadTest::BirdSpecies)
+        assert lookahead.selects?(:name, selected_type: LookaheadTest::PlantSpecies)
+        # Only birds have `isWaterfowl`
+        assert lookahead.selects?(:is_waterfowl, selected_type: LookaheadTest::BirdSpecies)
+        refute lookahead.selects?(:is_waterfowl, selected_type: LookaheadTest::PlantSpecies)
+        # Only plants have `isEdible`
+        refute lookahead.selects?(:is_edible, selected_type: LookaheadTest::BirdSpecies)
+        assert lookahead.selects?(:is_edible, selected_type: LookaheadTest::PlantSpecies)
+      end
     end
 
     describe "fields on interfaces" do

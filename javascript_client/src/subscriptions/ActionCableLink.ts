@@ -1,17 +1,19 @@
-import { ApolloLink, Observable, FetchResult, Operation, NextLink } from "apollo-link"
-import { Cable } from "actioncable"
+import { ApolloLink, Observable, FetchResult, Operation, NextLink } from "@apollo/client/core"
+import type { Consumer } from "@rails/actioncable"
 import { print } from "graphql"
 
-type RequestResult = Observable<FetchResult<{ [key: string]: any; }, Record<string, any>, Record<string, any>>>
-
+type RequestResult = FetchResult<{ [key: string]: any; }, Record<string, any>, Record<string, any>>
+type ConnectionParams = object | ((operation: Operation) => object)
 
 class ActionCableLink extends ApolloLink {
-  cable: Cable
+  cable: Consumer
   channelName: string
   actionName: string
-  connectionParams: object
+  connectionParams: ConnectionParams
 
-  constructor(options: { cable: Cable, channelName?: string, actionName?: string, connectionParams?: object }) {
+  constructor(options: {
+    cable: Consumer, channelName?: string, actionName?: string, connectionParams?: ConnectionParams
+  }) {
     super()
     this.cable = options.cable
     this.channelName = options.channelName || "GraphqlChannel"
@@ -21,14 +23,16 @@ class ActionCableLink extends ApolloLink {
 
   // Interestingly, this link does _not_ call through to `next` because
   // instead, it sends the request to ActionCable.
-  request(operation: Operation, _next: NextLink): RequestResult {
+  request(operation: Operation, _next: NextLink): Observable<RequestResult> {
     return new Observable((observer) => {
       var channelId = Math.round(Date.now() + Math.random() * 100000).toString(16)
       var actionName = this.actionName
-      var subscription = this.cable.subscriptions.create(Object.assign({},{
+      var connectionParams = (typeof this.connectionParams === "function") ?
+        this.connectionParams(operation) : this.connectionParams
+      var channel = this.cable.subscriptions.create(Object.assign({},{
         channel: this.channelName,
         channelId: channelId
-      }, this.connectionParams), {
+      }, connectionParams), {
         connected: function() {
           this.perform(
             actionName,
@@ -42,7 +46,7 @@ class ActionCableLink extends ApolloLink {
           )
         },
         received: function(payload) {
-          if (payload.result.data || payload.result.errors) {
+          if (payload?.result?.data || payload?.result?.errors) {
             observer.next(payload.result)
           }
 
@@ -51,9 +55,8 @@ class ActionCableLink extends ApolloLink {
           }
         }
       })
-
       // Make the ActionCable subscription behave like an Apollo subscription
-      return Object.assign(subscription, {closed: false})
+      return Object.assign(channel, {closed: false})
     })
   }
 }

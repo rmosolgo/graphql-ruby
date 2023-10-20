@@ -2,13 +2,13 @@
 
 exports[`generates a valid json object string that maps names to operations 1`] = `
 "{
-  \\"a\\": \\"b\\",
-  \\"c-d\\": \\"e-f\\"
+  "a": "b",
+  "c-d": "e-f"
 }"
 `;
 
 exports[`generates a valid json object string that maps names to operations 2`] = `
-Object {
+{
   "a": "b",
   "c-d": "e-f",
 }

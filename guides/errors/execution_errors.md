@@ -62,7 +62,7 @@ When this error is raised, its `message` will be added to the `"errors"` key and
 
 ## Customizing Error JSON
 
-The default error JSON includes `"message"`, `"locations"` and `"path"`. The [forthcoming version](https://graphql.github.io/graphql-spec/draft/#example-fce18) of the GraphQL spec recommends putting custom data in the `"extensions"` key of the error JSON.
+The default error JSON includes `"message"`, `"locations"` and `"path"`. The [forthcoming version](https://spec.graphql.org/draft/#example-fce18) of the GraphQL spec recommends putting custom data in the `"extensions"` key of the error JSON.
 
 You can customize this in two ways:
 

@@ -3,6 +3,10 @@ require "spec_helper"
 
 describe GraphQL::Schema::Resolver do
   module ResolverTest
+    class SpecialError < StandardError
+      attr_accessor :id
+    end
+
     class LazyBlock
       def initialize(&block)
         @get_value = block
@@ -35,7 +39,7 @@ describe GraphQL::Schema::Resolver do
     end
 
     class Resolver2 < Resolver1
-      argument :extra_value, Integer, required: true
+      argument :extra_value, Integer
 
       def resolve(extra_value:, **_rest)
         value = super(**_rest)
@@ -101,7 +105,7 @@ describe GraphQL::Schema::Resolver do
     end
 
     class PrepResolver1 < BaseResolver
-      argument :int, Integer, required: true
+      argument :int, Integer
       undef_method :load_int
       def load_int(i)
         i * 10
@@ -167,9 +171,9 @@ describe GraphQL::Schema::Resolver do
     end
 
     class PrepResolver7 < GraphQL::Schema::Mutation
-      argument :int, Integer, required: true
-      field :errors, [String], null: true
-      field :int, Integer, null: true
+      argument :int, Integer
+      field :errors, [String]
+      field :int, Integer
 
       def ready?(int:)
         if int == 13
@@ -177,6 +181,31 @@ describe GraphQL::Schema::Resolver do
         else
           true
         end
+      end
+
+      def resolve(int:)
+        { int: int }
+      end
+    end
+
+    class ResolverWithFalseyValueReady < BaseResolver
+      type Boolean, null: true
+
+      def ready?
+        return false, false
+      end
+
+      def resolve
+        true
+      end
+    end
+
+    class ResolverWithInvalidReady < GraphQL::Schema::Mutation
+      argument :int, Integer
+      field :int, Integer
+
+      def ready?(**args)
+        return [1,2,3]
       end
 
       def resolve(int:)
@@ -214,7 +243,7 @@ describe GraphQL::Schema::Resolver do
     end
 
     class PrepResolver9 < BaseResolver
-      argument :int_id, ID, required: true, loads: HasValue
+      argument :int_id, ID, loads: HasValue
       # Make sure the lazy object is resolved properly:
       type HasValue, null: true
       def object_from_id(type, id, ctx)
@@ -228,10 +257,18 @@ describe GraphQL::Schema::Resolver do
       def resolve(int:)
         int * 3
       end
+
+      def unauthorized_object(err)
+        if context[:use_replacement]
+          context[:use_replacement]
+        else
+          raise GraphQL::ExecutionError, "Unauthorized #{err.type.graphql_name} loaded for #{err.context[:current_path].join(".")}"
+        end
+      end
     end
 
     class PrepResolver9Array < BaseResolver
-      argument :int_ids, [ID], required: true, loads: HasValue, as: :ints
+      argument :int_ids, [ID], loads: HasValue, as: :ints
       # Make sure the lazy object is resolved properly:
       type [HasValue], null: false
       def object_from_id(type, id, ctx)
@@ -248,7 +285,7 @@ describe GraphQL::Schema::Resolver do
     end
 
     class ResolverWithErrorHandler < BaseResolver
-      argument :int, ID, required: true, loads: HasValue
+      argument :int, ID, loads: HasValue
       type HasValue, null: true
       def object_from_id(type, id, ctx)
         LazyBlock.new {
@@ -263,17 +300,27 @@ describe GraphQL::Schema::Resolver do
       end
 
       def resolve(int:)
-        int * 4
+        int ? int * 4 : nil
       end
 
       def load_application_object_failed(err)
-        raise GraphQL::ExecutionError.new("ResolverWithErrorHandler failed for id: #{err.id.inspect} (#{err.object.inspect}) (#{err.class.name})")
+        if (next_obj = err.context[:fallback_object])
+          next_obj
+        elsif err.context[:return_nil_on_load_failed]
+          nil
+        elsif err.context[:reraise_special_error]
+          spec_err = SpecialError.new
+          spec_err.id = err.id
+          raise(spec_err)
+        else
+          raise(GraphQL::ExecutionError.new("ResolverWithErrorHandler failed for id: #{err.id.inspect} (#{err.object.inspect}) (#{err.class.name})"))
+        end
       end
     end
 
     class PrepResolver10 < BaseResolver
-      argument :int1, Integer, required: true
-      argument :int2, Integer, required: true, as: :integer_2
+      argument :int1, Integer
+      argument :int2, Integer, as: :integer_2
       type Integer, null: true
       def authorized?(int1:, integer_2:)
         if int1 + integer_2 > context[:max_int]
@@ -296,11 +343,23 @@ describe GraphQL::Schema::Resolver do
       end
     end
 
+    class ResolverWithFalseyValueAuthorized < BaseResolver
+      type Boolean, null: true
+
+      def authorized?
+        return false, false
+      end
+
+      def resolve
+        true
+      end
+    end
+
     class PrepResolver12 < GraphQL::Schema::Mutation
-      argument :int1, Integer, required: true
-      argument :int2, Integer, required: true
-      field :error_messages, [String], null: true
-      field :value, Integer, null: true
+      argument :int1, Integer
+      argument :int2, Integer
+      field :error_messages, [String]
+      field :value, Integer
       def authorized?(int1:, int2:)
         if int1 + int2 > context[:max_int]
           return false, { error_messages: ["Inputs must be less than #{context[:max_int]} (but you provided #{int1 + int2})"] }
@@ -334,8 +393,8 @@ describe GraphQL::Schema::Resolver do
     end
 
     class ResolverWithAuthArgs < GraphQL::Schema::RelayClassicMutation
-      argument :number_s, String, required: true, prepare: ->(v, ctx) { v.to_i }
-      argument :loads_id, ID, required: true, loads: IntegerWrapper
+      argument :number_s, String, prepare: ->(v, ctx) { v.to_i }
+      argument :loads_id, ID, loads: IntegerWrapper
 
       field :result, Integer, null: false
 
@@ -366,7 +425,7 @@ describe GraphQL::Schema::Resolver do
     end
 
     class MutationWithRequiredLoadsArgument < GraphQL::Schema::Mutation
-      argument :label_id, ID, required: true, loads: HasValue
+      argument :label_id, ID, loads: HasValue
 
       field :inputs, String, null: false
 
@@ -380,6 +439,7 @@ describe GraphQL::Schema::Resolver do
     class Mutation < GraphQL::Schema::Object
       field :mutation_with_nullable_loads_argument, mutation: MutationWithNullableLoadsArgument
       field :mutation_with_required_loads_argument, mutation: MutationWithRequiredLoadsArgument
+      field :resolver_with_invalid_ready, resolver: ResolverWithInvalidReady
     end
 
     class Query < GraphQL::Schema::Object
@@ -429,6 +489,8 @@ describe GraphQL::Schema::Resolver do
       field :prep_resolver_12, resolver: PrepResolver12
       field :prep_resolver_13, resolver: PrepResolver13
       field :prep_resolver_14, resolver: PrepResolver14
+      field :resolver_with_falsey_value_ready, resolver: ResolverWithFalseyValueReady
+      field :resolver_with_falsey_value_authorized, resolver: ResolverWithFalseyValueAuthorized
       field :resolver_with_auth_args, resolver: ResolverWithAuthArgs
       field :resolver_with_error_handler, resolver: ResolverWithErrorHandler
     end
@@ -438,10 +500,6 @@ describe GraphQL::Schema::Resolver do
       mutation(Mutation)
       lazy_resolve LazyBlock, :value
       orphan_types IntegerWrapper
-      if TESTING_INTERPRETER
-        use GraphQL::Execution::Interpreter
-        use GraphQL::Analysis::AST
-      end
 
       def self.object_from_id(id, ctx)
         if id == "invalid"
@@ -449,6 +507,10 @@ describe GraphQL::Schema::Resolver do
         else
           1
         end
+      end
+
+      rescue_from SpecialError do |err|
+        raise GraphQL::ExecutionError, "A special error was raised from #{err.id.inspect}"
       end
     end
   end
@@ -544,6 +606,43 @@ describe GraphQL::Schema::Resolver do
         expected_err = "ResolverWithErrorHandler failed for id: \"failed_to_find\" (nil) (GraphQL::LoadApplicationObjectFailedError)"
         assert_equal [expected_err], res["errors"].map { |e| e["message"] }
       end
+
+      it "uses rescue_from handlers" do
+        query_str = <<-GRAPHQL
+        {
+          resolverWithErrorHandler(int: "failed_to_find") { value }
+        }
+        GRAPHQL
+
+        res = exec_query(query_str, context: { reraise_special_error: true })
+        assert_nil res["data"].fetch("resolverWithErrorHandler")
+        expected_err = "A special error was raised from \"failed_to_find\""
+        assert_equal [expected_err], res["errors"].map { |e| e["message"] }
+      end
+
+      it "uses the new value from lookup" do
+        query_str = <<-GRAPHQL
+        {
+          resolverWithErrorHandler(int: "failed_to_find") { value }
+        }
+        GRAPHQL
+
+        res = exec_query(query_str, context: { fallback_object: 212 })
+        assert_equal 848, res["data"]["resolverWithErrorHandler"]["value"]
+        refute res.key?("errors")
+      end
+
+      it "halts silently when it returns nil" do
+        query_str = <<-GRAPHQL
+        {
+          resolverWithErrorHandler(int: "failed_to_find") { value }
+        }
+        GRAPHQL
+
+        res = exec_query(query_str, context: { return_nil_on_load_failed: true })
+        assert_nil res["data"].fetch("resolverWithErrorHandler")
+        refute res.key?("errors")
+      end
     end
 
     describe "when resolve_type returns a no-good type" do
@@ -558,6 +657,43 @@ describe GraphQL::Schema::Resolver do
         assert_nil res["data"].fetch("resolverWithErrorHandler")
         expected_err = "ResolverWithErrorHandler failed for id: \"resolve_type_as_wrong_type\" (:resolve_type_as_wrong_type) (GraphQL::LoadApplicationObjectFailedError)"
         assert_equal [expected_err], res["errors"].map { |e| e["message"] }
+      end
+
+      it "uses rescue_from handlers" do
+        query_str = <<-GRAPHQL
+        {
+          resolverWithErrorHandler(int: "resolve_type_as_wrong_type") { value }
+        }
+        GRAPHQL
+
+        res = exec_query(query_str, context: { reraise_special_error: true })
+        assert_nil res["data"].fetch("resolverWithErrorHandler")
+        expected_err = "A special error was raised from \"resolve_type_as_wrong_type\""
+        assert_equal [expected_err], res["errors"].map { |e| e["message"] }
+      end
+
+      it "uses a new value from resolve_type" do
+        query_str = <<-GRAPHQL
+        {
+          resolverWithErrorHandler(int: "resolve_type_as_wrong_type") { value }
+        }
+        GRAPHQL
+
+        res = exec_query(query_str, context: { fallback_object: 4 })
+        assert_equal 16, res["data"]["resolverWithErrorHandler"]["value"]
+        refute res.key?("errors")
+      end
+
+      it "halts silently when it returns nil" do
+        query_str = <<-GRAPHQL
+        {
+          resolverWithErrorHandler(int: "resolve_type_as_wrong_type") { value }
+        }
+        GRAPHQL
+
+        res = exec_query(query_str, context: { return_nil_on_load_failed: true })
+        assert_nil res["data"].fetch("resolverWithErrorHandler")
+        refute res.key?("errors")
       end
     end
   end
@@ -636,6 +772,19 @@ describe GraphQL::Schema::Resolver do
         res = exec_query("{ int: prepResolver7(int: 213) { errors int } }")
         assert_equal 213, res["data"]["int"]["int"]
       end
+
+      it "can return false and falsey data" do
+        res = exec_query("{ result: resolverWithFalseyValueReady }")
+        assert_equal false, res["data"]["result"] # must be `false`, not just falsey
+        assert_nil res["errors"]
+      end
+
+      it 'raises the correct error on invalid return type' do
+        err = assert_raises(RuntimeError) do
+          exec_query("mutation { resolverWithInvalidReady(int: 2) { int } }")
+        end
+        assert_match("Unexpected result from #ready?", err.message)
+      end
     end
 
     describe "loading arguments" do
@@ -694,6 +843,12 @@ describe GraphQL::Schema::Resolver do
           assert_equal 7, res["data"]["prepResolver12"]["value"]
         end
 
+        it "can return falsey data early" do
+          res = exec_query("{ result: resolverWithFalseyValueAuthorized }")
+          assert_equal false, res["data"]["result"] # must be actual `false`, not just a falsey `nil`
+          assert_nil res["errors"]
+        end
+
         it "can return data early in a promise" do
           # This is too big because it's modified in the overridden authorized? hook:
           res = exec_query("{ prepResolver13(int1: 4, int2: 4) { errorMessages } }", context: { max_int: 9 })
@@ -726,6 +881,8 @@ describe GraphQL::Schema::Resolver do
           context = { max_value: 8 }
           res = exec_query(query_str, context: context)
           assert_nil res["data"]["prepResolver9"]
+          assert_equal ["Unauthorized IntegerWrapper loaded for prepResolver9"], res["errors"].map { |e| e["message"] }
+
           # This is OK
           context = { max_value: 900 }
           res = exec_query(query_str, context: context)
@@ -733,7 +890,26 @@ describe GraphQL::Schema::Resolver do
           # This is the transformation applied by the resolver,
           # just make sure it matches the response
           assert_equal 51, (9 + "HasValue".size) * 3
+
+          # It uses the returned value from unauthorized object
+          context = { max_value: 8, use_replacement: 2 }
+          res = exec_query(query_str, context: context)
+          assert_equal 6, res["data"]["prepResolver9"]["value"]
+          refute res.key?("errors")
         end
+      end
+    end
+
+    describe "load_* argument methods" do
+      it "doesn't override inherited methods" do
+        r1 = Class.new(GraphQL::Schema::Resolver) do
+          def load_input(input); end
+        end
+        r2 = Class.new(r1) do
+          argument :input, Integer, required: false
+        end
+
+        assert_equal r1.instance_method(:load_input).source_location, r2.instance_method(:load_input).source_location
       end
     end
 
@@ -802,6 +978,145 @@ describe GraphQL::Schema::Resolver do
         res = exec_query " { resolverWithExtension } "
         assert_equal "Hi, Robert!", res["data"]["resolverWithExtension"]
       end
+
+      it "inherits extensions" do
+        r1 = Class.new(GraphQL::Schema::Resolver) do
+          extension(ResolverTest::GreetingExtension)
+        end
+
+        e2 = Class.new(GraphQL::Schema::FieldExtension)
+        r2 = Class.new(r1) do
+          extension(e2)
+        end
+
+        assert_equal 1, r1.extensions.size
+        assert_equal 2, r2.extensions.size
+      end
+    end
+
+    describe "max_page_size" do
+      class NoMaxPageSizeResolver < GraphQL::Schema::Resolver
+      end
+
+      class MaxPageSizeBaseResolver < GraphQL::Schema::Resolver
+        max_page_size 10
+      end
+
+      class MaxPageSizeSubclass < MaxPageSizeBaseResolver
+      end
+
+      class MaxPageSizeOverrideSubclass < MaxPageSizeBaseResolver
+        max_page_size nil
+      end
+
+      class ObjectWithMaxPageSizeResolver < GraphQL::Schema::Object
+        field :items, [String], null: false, resolver: MaxPageSizeBaseResolver
+      end
+
+      it "defaults to absent" do
+        assert_nil NoMaxPageSizeResolver.max_page_size
+        refute NoMaxPageSizeResolver.has_max_page_size?
+      end
+
+      it "implements has_max_page_size?" do
+        assert MaxPageSizeBaseResolver.has_max_page_size?
+        assert MaxPageSizeSubclass.has_max_page_size?
+        assert MaxPageSizeOverrideSubclass.has_max_page_size?
+      end
+
+      it "is inherited" do
+        assert_equal 10, MaxPageSizeBaseResolver.max_page_size
+        assert_equal 10, MaxPageSizeSubclass.max_page_size
+      end
+
+      it "is overridden by nil" do
+        assert_nil MaxPageSizeOverrideSubclass.max_page_size
+      end
+
+      it "is passed along to the field" do
+        assert_equal 10, ObjectWithMaxPageSizeResolver.fields["items"].max_page_size
+      end
+    end
+
+    describe "default_page_size" do
+      class NoDefaultPageSizeResolver < GraphQL::Schema::Resolver
+      end
+
+      class DefaultPageSizeBaseResolver < GraphQL::Schema::Resolver
+        default_page_size 10
+      end
+
+      class DefaultPageSizeSubclass < DefaultPageSizeBaseResolver
+      end
+
+      class DefaultPageSizeOverrideSubclass < DefaultPageSizeBaseResolver
+        default_page_size nil
+      end
+
+      class ObjectWithDefaultPageSizeResolver < GraphQL::Schema::Object
+        field :items, [String], null: false, resolver: DefaultPageSizeBaseResolver
+      end
+
+      it "defaults to absent" do
+        assert_nil NoDefaultPageSizeResolver.default_page_size
+        refute NoDefaultPageSizeResolver.has_default_page_size?
+      end
+
+      it "implements has_default_page_size?" do
+        assert DefaultPageSizeBaseResolver.has_default_page_size?
+        assert DefaultPageSizeSubclass.has_default_page_size?
+        assert DefaultPageSizeOverrideSubclass.has_default_page_size?
+      end
+
+      it "is inherited" do
+        assert_equal 10, DefaultPageSizeBaseResolver.default_page_size
+        assert_equal 10, DefaultPageSizeSubclass.default_page_size
+      end
+
+      it "is overridden by nil" do
+        assert_nil DefaultPageSizeOverrideSubclass.default_page_size
+      end
+
+      it "is passed along to the field" do
+        assert_equal 10, ObjectWithDefaultPageSizeResolver.fields["items"].default_page_size
+      end
+    end
+  end
+
+  describe "When the type is forgotten" do
+    class ResolverWithoutTypeSchema < GraphQL::Schema
+      class WithoutType < GraphQL::Schema::Resolver
+        def resolve
+          "OK"
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+      end
+    end
+
+    it "raises a nice error" do
+      err = assert_raises GraphQL::Schema::Field::MissingReturnTypeError do
+        ResolverWithoutTypeSchema::Query.field(:without_type, resolver: ResolverWithoutTypeSchema::WithoutType)
+      end
+      expected_message = "Can't determine the return type for Query.withoutType (it has `resolver: ResolverWithoutTypeSchema::WithoutType`, perhaps that class is missing a `type ...` declaration, or perhaps its type causes a cyclical loading issue)"
+      assert_equal expected_message, err.message
+    end
+  end
+
+  describe "when the field has configurations that override the resolvers" do
+    it "uses the field's type and description, not the resolver's" do
+      resolver = Class.new(GraphQL::Schema::Resolver) do
+        description "Does things!"
+        type(String, null: true)
+      end
+
+      field = GraphQL::Schema::Field.new(name: "blah", resolver_class: resolver, description: nil, type: Integer, null: false)
+      assert_equal "Int!", field.type.to_type_signature
+      assert_equal "String", resolver.type.to_type_signature
+
+      assert_nil field.description
+      assert_equal "Does things!", resolver.description
     end
   end
 end

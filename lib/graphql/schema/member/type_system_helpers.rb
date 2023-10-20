@@ -4,14 +4,21 @@ module GraphQL
   class Schema
     class Member
       module TypeSystemHelpers
+        def initialize(*args, &block)
+          super
+          @to_non_null_type ||= nil
+          @to_list_type ||= nil
+        end
+        ruby2_keywords :initialize if respond_to?(:ruby2_keywords, true)
+
         # @return [Schema::NonNull] Make a non-null-type representation of this type
         def to_non_null_type
-          GraphQL::Schema::NonNull.new(self)
+          @to_non_null_type ||= GraphQL::Schema::NonNull.new(self)
         end
 
         # @return [Schema::List] Make a list-type representation of this type
         def to_list_type
-          GraphQL::Schema::List.new(self)
+          @to_list_type ||= GraphQL::Schema::List.new(self)
         end
 
         # @return [Boolean] true if this is a non-nullable type. A nullable list of non-nullables is considered nullable.
@@ -30,7 +37,17 @@ module GraphQL
 
         # @return [GraphQL::TypeKinds::TypeKind]
         def kind
-          raise GraphQL::RequiredImplementationMissingError
+          raise GraphQL::RequiredImplementationMissingError, "No `.kind` defined for #{self}"
+        end
+
+        private
+
+        def inherited(subclass)
+          subclass.class_eval do
+            @to_non_null_type ||= nil
+            @to_list_type ||= nil
+          end
+          super
         end
       end
     end

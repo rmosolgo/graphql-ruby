@@ -38,16 +38,10 @@ describe GraphQL::Schema::List do
     end
   end
 
-  describe "to_graphql" do
-    it "will return a list type" do
-      assert_kind_of GraphQL::ListType, list_type.to_graphql
-    end
-  end
-
   describe "handling null" do
     class ListNullHandlingSchema < GraphQL::Schema
       class Query < GraphQL::Schema::Object
-        field :strings, [String, null: true], null: true do
+        field :strings, [String, null: true] do
           argument :strings, [String, null: true], required: false
         end
 
@@ -55,9 +49,6 @@ describe GraphQL::Schema::List do
           strings
         end
       end
-
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
       query(Query)
     end
 
@@ -68,6 +59,24 @@ describe GraphQL::Schema::List do
     end
   end
 
+  it "Accepts \"\" as a default value from introspection" do
+    schema = GraphQL::Schema.from_definition <<-GRAPHQL
+    type Query {
+      f(arg: [String] = ""): String
+    }
+    GRAPHQL
+    assert_equal "", schema.query.fields["f"].arguments["arg"].default_value
+
+    introspection_json = schema.as_json
+    assert_equal '[""]', introspection_json["data"]["__schema"]["types"].find { |t| t["name"] == "Query" }["fields"].first["args"].first["defaultValue"]
+
+    schema_2 = GraphQL::Schema.from_introspection(introspection_json)
+
+    # since this one is from introspection, it gets a wrapped list as default value:
+    assert_equal [""], schema_2.query.fields["f"].arguments["arg"].default_value
+    assert_equal '[""]', schema_2.as_json["data"]["__schema"]["types"].find { |t| t["name"] == "Query" }["fields"].first["args"].first["defaultValue"]
+  end
+
   describe "validation" do
     class ListValidationSchema < GraphQL::Schema
       class Item < GraphQL::Schema::Enum
@@ -76,7 +85,7 @@ describe GraphQL::Schema::List do
       end
 
       class ItemInput < GraphQL::Schema::InputObject
-        argument :item, Item, required: true
+        argument :item, Item
       end
 
       class NilItemsInput < GraphQL::Schema::InputObject
@@ -85,7 +94,7 @@ describe GraphQL::Schema::List do
 
       class Query < GraphQL::Schema::Object
         field :echo, [Item], null: false do
-          argument :items, [Item], required: true
+          argument :items, [Item]
         end
 
         def echo(items:)
@@ -93,14 +102,14 @@ describe GraphQL::Schema::List do
         end
 
         field :echoes, [Item], null: false do
-          argument :items, [ItemInput], required: true
+          argument :items, [ItemInput]
         end
 
         def echoes(items:)
           items.map { |i| i[:item] }
         end
 
-        field :nil_echoes, [Item, null: true], null: true do
+        field :nil_echoes, [Item, null: true] do
           argument :items, [NilItemsInput], required: false
         end
 
@@ -110,9 +119,6 @@ describe GraphQL::Schema::List do
       end
 
       query(Query)
-
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
     end
 
     it "checks non-null lists of enums" do
@@ -141,6 +147,44 @@ describe GraphQL::Schema::List do
     it "doesn't coerce nil into a list" do
       nil_result = ListValidationSchema.execute("query($items: [NilItemsInput!]) { nilEchoes(items: $items) }", variables: { items: { items: nil } })
       assert_equal({"data" => { "nilEchoes" => nil}}, nil_result, "It works for nil")\
+    end
+  end
+
+  describe "when max validation errros exists" do
+    class MaxValidationSchema < GraphQL::Schema
+      class Item < GraphQL::Schema::Enum
+        value "A"
+        value "B"
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :items, [Item], null: false do
+          argument :ids, [Int]
+        end
+
+        def items(ids:)
+          items
+        end
+      end
+
+      query(Query)
+      validate_max_errors(2)
+    end
+
+    it "checks only for 2 errors and appends too many errros in the message" do
+      res = MaxValidationSchema.execute("query($ids: [Int!]!) { items(ids: $ids) }", variables: { ids: ["1", "2", "3", "4"] })
+
+      expected_error = "Variable $ids of type [Int!]! was provided invalid value for 0 "\
+        "(Could not coerce value \"1\" to Int), 1 (Could not coerce value \"2\" to Int),  "\
+        "(Too many errors processing list variable, max validation error limit reached. Execution aborted)"
+      assert_equal [expected_error], res["errors"].map { |e| e["message"] }
+    end
+
+    it "raises only 1 errror with max_validation + 1 problems" do
+      res = MaxValidationSchema.execute("query($ids: [Int!]!) { items(ids: $ids) }", variables: { ids: ["1", "2", "3", "4"] })
+
+      assert_equal 1, res["errors"].count
+      assert_equal 3, res["errors"][0]["extensions"]["problems"].count
     end
   end
 end

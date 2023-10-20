@@ -66,8 +66,6 @@ To __map the wrapper to a class of objects__, add it to your schema:
 
 ```ruby
 class MySchema < GraphQL::Schema
-  # Add the connection plugin
-  use GraphQL::Pagination::Connections
   # Hook up a custom wrapper
   connections.add(SearchEngine::Result, Connections::SearchResultsConnection)
 end
@@ -79,7 +77,7 @@ Alternatively, you can apply a connection wrapper on a case-by-case basis by app
 
 ```ruby
 field :search, Types::SearchResult.connection_type, null: false do
-  argument :query, String, required: true
+  argument :query, String
 end
 
 def search(query:)

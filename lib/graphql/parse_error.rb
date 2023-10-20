@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-# test_via: language/parser.rb
 module GraphQL
   class ParseError < GraphQL::Error
     attr_reader :line, :col, :query

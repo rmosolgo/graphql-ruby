@@ -8,10 +8,10 @@ $brand-color-light:  #ed8090;
 $brand-color-extralight:  #f9e8ee;
 $experimental-background: #fff7cf;
 $experimental-color: #655400;
-$class-based-background: #c1f6ff;
-$class-based-color: #003a58;
 $pro-color: #406db5;
 $pro-background: #f1f4f9;
+$enterprise-color: #238c44;
+$enterprise-background: #ebf7ee;
 $faint-color: #f0f0f0;
 $code-border: #d6d6d6;
 $code-background: #fafafa;
@@ -127,6 +127,11 @@ ul {
   list-style-position: outside;
 }
 
+ol {
+  list-style: decimal;
+  margin-left: 5px;
+}
+
 code {
   font-family: $code-font;
   color: $code-color;
@@ -195,9 +200,6 @@ a:hover, a:hover code {
   }
 }
 
-.breadcrumb {
-  color: $muted-color;
-}
 
 .guides {
   .guide-desc {
@@ -235,14 +237,14 @@ a:hover, a:hover code {
   @include doc-header($experimental-color, $experimental-background);
 }
 
-
-.class-based-header {
-  @include doc-header($class-based-color, $class-based-background);
-}
-
 .pro-header {
   @include doc-header($pro-color, $pro-background);
 }
+
+.enterprise-header {
+  @include doc-header($enterprise-color, $enterprise-background);
+}
+
 .guide-footer {
   background: $brand-color-extralight;
   margin: 25px 0px 0px 0px;
@@ -328,10 +330,6 @@ table {
   }
 }
 
-li p, li div {
-  display: inline-block;
-}
-
 .search-input {
   font-size: 1em;
   padding: 5px;
@@ -395,6 +393,88 @@ li p, li div {
     }
   }
 }
+
+ul.breadcrumb {
+  color: $muted-color;
+
+  li {
+    display: inline;
+    list-style: none;
+    margin: 0;
+  }
+  li:before {
+    content: "»";
+    margin: 0px 4px 0px 2px;
+  }
+  li:first-child:before {
+    content: "";
+    margin: 0;
+  }
+
+  .jump-to-select {
+    box-sizing: border-box;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    appearance: none;
+    padding: 5px 20px 5px 5px;
+    border: 1px solid $code-border;
+    border-radius: 5px;
+    background-color: transparent;
+    color: $brand-color;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.3;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='292.4' height='292.4'%3E%3Cpath fill='%23a5152a' d='M287 69.4a17.6 17.6 0 0 0-13-5.4H18.4c-5 0-9.3 1.8-12.9 5.4A17.6 17.6 0 0 0 0 82.2c0 5 1.8 9.3 5.4 12.9l128 127.9c3.6 3.6 7.8 5.4 12.8 5.4s9.2-1.8 12.8-5.4L287 95c3.5-3.5 5.4-7.8 5.4-12.8 0-5-1.9-9.2-5.5-12.8z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 9px;
+
+    cursor: default;
+
+    &:hover {
+      border-color: #777;
+    }
+
+    &:focus {
+      border-color: #999;
+      box-shadow: 0 0 1px 2px #6db4ff;
+      outline: none;
+    }
+
+
+    option {
+      color: black;
+    }
+  }
+}
+
+.table-of-contents {
+  float: right;
+  border: 1px solid $subtle-color;
+  border-radius: 3px;
+  padding: 15px;
+  margin: 0 10px 10px 10px;
+  width: 300px;
+  background: $code-background;
+  .contents-header {
+    margin: 0 0 5px 20px;
+  }
+  .contents-list {
+    margin: 0;
+    list-style: decimal;
+    padding-left: 5px;
+    .contents-entry {
+      &::marker {
+        color: $muted-color;
+      }
+
+      .contents-entry {
+        list-style: none;
+      }
+    }
+  }
+}
+
 /* pygments CSS, github theme */
 .highlight .hll { background-color: #ffffcc }
 .highlight .c { color: #999988; font-style: italic } /* Comment */

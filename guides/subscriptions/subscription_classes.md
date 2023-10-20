@@ -71,7 +71,7 @@ Subscription fields take {% internal_link "arguments", "/fields/arguments" %} ju
 ```ruby
 class Subscriptions::MessageWasPosted < Subscriptions::BaseSubscription
   # `room_id` loads a `room`
-  argument :room_id, ID, required: true, loads: Types::RoomType
+  argument :room_id, ID, loads: Types::RoomType
 
   # It's passed to other methods as `room`
   def subscribe(room:)
@@ -102,8 +102,8 @@ Like mutations, you can use a generated return type for subscriptions. When you 
 
 ```ruby
 class Subscriptions::MessageWasPosted < Subscriptions::BaseSubscription
-  field :room, Types::RoomType, null: true
-  field :message, Types::MessageType, null: true
+  field :room, Types::RoomType, null: false
+  field :message, Types::MessageType, null: false
 end
 ```
 
@@ -135,7 +135,7 @@ subscription($roomId: ID!) {
 }
 ```
 
-If you configure fields with `null: true`, then you can return different data in the initial subscription and the subsequent updates. (See lifecycle methods below.)
+If you remove `null: false`, then you can return different data in the initial subscription and the subsequent updates. (See lifecycle methods below.)
 
 Instead of a generated type, you can provide an already-configured type with `payload_type`:
 
@@ -236,14 +236,12 @@ You can define this method to add initial responses or perform other logic befor
 
 ### Adding an Initial Response
 
-(__Note__: only supported when using the new {% internal_link "Interpreter runtime", "/queries/interpreter#installation" %})
-
 By default, GraphQL-Ruby returns _nothing_ (`:no_response`) on an initial subscription. But, you may choose to override this and return a value in `def subscribe`. For example:
 
 ```ruby
 class Subscriptions::MessageWasPosted < Subscriptions::BaseSubscription
   # ...
-  field :room, Types::RoomType, null: true
+  field :room, Types::RoomType
 
   def subscribe(room:)
     # authorize, etc ...
@@ -272,26 +270,22 @@ subscription($roomId: ID!) {
 
 ## Subsequent Updates with #update
 
-(__Note__: only supported when using the new {% internal_link "Interpreter runtime", "/queries/interpreter#installation" %})
-
 After a client has registered a subscription, the application may trigger subscription updates with `MySchema.subscriptions.trigger(...)` (see the {% internal_link "Triggers guide", "/subscriptions/triggers" %} for more). Then, `def update` will be called for each client's subscription. In this method you can:
 
 - Unsubscribe the client with `unsubscribe`
 - Return a value with `super` (which returns `object`) or by returning a different value.
-- Return `:no_update` to skip this update
+- Return `NO_UPDATE` to skip this update
 
 ### Skipping subscription updates
 
-(__Note__: only supported when using the new {% internal_link "Interpreter runtime", "/queries/interpreter#installation" %})
-
-Perhaps you don't want to send updates to a certain subscriber. For example, if someone leaves a comment, you might want to push the new comment to _other_ subscribers, but not the commenter, who already has that comment data. You can accomplish this by returning `:no_update`.
+Perhaps you don't want to send updates to a certain subscriber. For example, if someone leaves a comment, you might want to push the new comment to _other_ subscribers, but not the commenter, who already has that comment data. You can accomplish this by returning `NO_UPDATE`.
 
 ```ruby
 class Subscriptions::CommentWasAdded < Subscriptions::BaseSubscription
   def update(post_id:)
     comment = object # #<Comment ...>
     if comment.author == context[:viewer]
-      :no_update
+      NO_UPDATE
     else
       # Continue updating this client, since it's not the commenter
       super
@@ -301,8 +295,6 @@ end
 ```
 
 ### Returning a different object for subscription updates
-
-(__Note__: only supported when using the new {% internal_link "Interpreter runtime", "/queries/interpreter#installation" %})
 
 By default, whatever object you pass to `.trigger(event_name, args, object)` will be used for responding to subscription fields. But, you can return a different object from `#update` to override this:
 
@@ -342,6 +334,38 @@ end
 - The subscription is unregistered from the backend (this is backend-specific)
 - The client is told to unsubscribe (this is transport-specific)
 
-`#unsubscribe` does _not_ halt the current update.
+Arguments with `loads:` configurations will call `unsubscribe` if they are `required: true` (which is the default) and their ID doesn't return a value. (It's assumed that the subscribed object was deleted.)
 
-Arguments with `loads:` configurations will call `unsubscribe` if they are `required: true` and their ID doesn't return a value. (It's assumed that the subscribed object was deleted.)
+You can provide a final update value with `unsubscribe` by passing a value to the method:
+
+```ruby
+def update(room:)
+  if room.archived?
+    # Don't let anyone subscribe to messages on an archived room
+    unsubscribe({message: "This room has been archived"})
+  else
+    super
+  end
+end
+```
+
+## Extras
+
+Subscription methods can access query-related metadata by configuring `extras [...]` in the class definition. For example, to use a `lookahead` and the `ast_node`:
+
+```ruby
+class Subscriptions::JobFinished < GraphQL::Schema::Subscription
+  # ...
+  extras [:lookahead, :ast_node]
+
+  def subscribe(lookahead:, ast_node:)
+    # ...
+  end
+
+  def update(lookahead:, ast_node:)
+    # ...
+  end
+end
+```
+
+See the {% internal_link "Extra Field Metadata", "/fields/introduction#extra-field-metadata" %} for more information about available metadata.

@@ -19,14 +19,11 @@ module GraphQL
         # @return [String]
         def graphql_name(new_name = nil)
           if new_name
+            GraphQL::NameValidator.validate!(new_name)
             @graphql_name = new_name
           else
-            overridden_graphql_name || default_graphql_name
+            @graphql_name ||= default_graphql_name
           end
-        end
-
-        def overridden_graphql_name
-          defined?(@graphql_name) ? @graphql_name : nil
         end
 
         # Just a convenience method to point out that people should use graphql_name instead
@@ -49,7 +46,7 @@ module GraphQL
           elsif defined?(@description)
             @description
           else
-            nil
+            @description = nil
           end
         end
 
@@ -59,8 +56,12 @@ module GraphQL
           def inherited(child_class)
             child_class.introspection(introspection)
             child_class.description(description)
-            if overridden_graphql_name
-              child_class.graphql_name(overridden_graphql_name)
+            child_class.default_graphql_name = nil
+
+            if defined?(@graphql_name) && @graphql_name && (self.name.nil? || graphql_name != default_graphql_name)
+              child_class.graphql_name(graphql_name)
+            else
+              child_class.graphql_name = nil
             end
             super
           end
@@ -78,7 +79,7 @@ module GraphQL
         end
 
         def introspection?
-          introspection
+          !!@introspection
         end
 
         # The mutation this type was derived from, if it was derived from a mutation
@@ -93,11 +94,6 @@ module GraphQL
           end
         end
 
-        # @return [GraphQL::BaseType] Convert this type to a legacy-style object.
-        def to_graphql
-          raise GraphQL::RequiredImplementationMissingError
-        end
-
         alias :unwrap :itself
 
         # Creates the default name for a schema member.
@@ -106,34 +102,26 @@ module GraphQL
         def default_graphql_name
           @default_graphql_name ||= begin
             raise GraphQL::RequiredImplementationMissingError, 'Anonymous class should declare a `graphql_name`' if name.nil?
-
-            name.split("::").last.sub(/Type\Z/, "")
+            g_name = -name.split("::").last
+            g_name.end_with?("Type") ? g_name.sub(/Type\Z/, "") : g_name
           end
         end
 
         def visible?(context)
-          if @mutation
-            @mutation.visible?(context)
-          else
-            true
-          end
-        end
-
-        def accessible?(context)
-          if @mutation
-            @mutation.accessible?(context)
-          else
-            true
-          end
+          true
         end
 
         def authorized?(object, context)
-          if @mutation
-            @mutation.authorized?(object, context)
-          else
-            true
-          end
+          true
         end
+
+        def default_relay
+          false
+        end
+
+        protected
+
+        attr_writer :default_graphql_name, :graphql_name
       end
     end
   end

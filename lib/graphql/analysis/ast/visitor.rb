@@ -5,12 +5,12 @@ module GraphQL
       # Depth first traversal through a query AST, calling AST analyzers
       # along the way.
       #
-      # The visitor is a special case of GraphQL::Language::Visitor, visiting
+      # The visitor is a special case of GraphQL::Language::StaticVisitor, visiting
       # only the selected operation, providing helpers for common use cases such
       # as skipped fields and visiting fragment spreads.
       #
       # @see {GraphQL::Analysis::AST::Analyzer} AST Analyzers for queries
-      class Visitor < GraphQL::Language::Visitor
+      class Visitor < GraphQL::Language::StaticVisitor
         def initialize(query:, analyzers:)
           @analyzers = analyzers
           @path = []
@@ -19,6 +19,7 @@ module GraphQL
           @field_definitions = []
           @argument_definitions = []
           @directive_definitions = []
+          @rescued_errors = []
           @query = query
           @schema = query.schema
           @response_path = []
@@ -32,6 +33,9 @@ module GraphQL
         # @return [Array<GraphQL::ObjectType>] Types whose scope we've entered
         attr_reader :object_types
 
+        # @return [Array<GraphQL::AnalysisError]
+        attr_reader :rescued_errors
+
         def visit
           return unless @document
           super
@@ -39,7 +43,7 @@ module GraphQL
 
         # Visit Helpers
 
-        # @return [GraphQL::Query::Arguments] Arguments for this node, merging default values, literal values and query variables
+        # @return [GraphQL::Execution::Interpreter::Arguments] Arguments for this node, merging default values, literal values and query variables
         # @see {GraphQL::Query#arguments_for}
         def arguments_for(ast_node, field_definition)
           @query.arguments_for(ast_node, field_definition)
@@ -61,14 +65,41 @@ module GraphQL
         end
 
         # Visitor Hooks
+        [
+          :operation_definition, :fragment_definition,
+          :inline_fragment, :field, :directive, :argument, :fragment_spread
+        ].each do |node_type|
+          module_eval <<-RUBY, __FILE__, __LINE__
+          def call_on_enter_#{node_type}(node, parent)
+            @analyzers.each do |a|
+              begin
+                a.on_enter_#{node_type}(node, parent, self)
+              rescue AnalysisError => err
+                @rescued_errors << err
+              end
+            end
+          end
+
+          def call_on_leave_#{node_type}(node, parent)
+            @analyzers.each do |a|
+              begin
+                a.on_leave_#{node_type}(node, parent, self)
+              rescue AnalysisError => err
+                @rescued_errors << err
+              end
+            end
+          end
+
+          RUBY
+        end
 
         def on_operation_definition(node, parent)
           object_type = @schema.root_type_for_operation(node.operation_type)
           @object_types.push(object_type)
           @path.push("#{node.operation_type}#{node.name ? " #{node.name}" : ""}")
-          call_analyzers(:on_enter_operation_definition, node, parent)
+          call_on_enter_operation_definition(node, parent)
           super
-          call_analyzers(:on_leave_operation_definition, node, parent)
+          call_on_leave_operation_definition(node, parent)
           @object_types.pop
           @path.pop
         end
@@ -77,26 +108,27 @@ module GraphQL
           on_fragment_with_type(node) do
             @path.push("fragment #{node.name}")
             @in_fragment_def = false
-            call_analyzers(:on_enter_fragment_definition, node, parent)
+            call_on_enter_fragment_definition(node, parent)
             super
             @in_fragment_def = false
-            call_analyzers(:on_leave_fragment_definition, node, parent)
+            call_on_leave_fragment_definition(node, parent)
           end
         end
 
         def on_inline_fragment(node, parent)
           on_fragment_with_type(node) do
             @path.push("...#{node.type ? " on #{node.type.name}" : ""}")
-            call_analyzers(:on_enter_inline_fragment, node, parent)
+            call_on_enter_inline_fragment(node, parent)
             super
-            call_analyzers(:on_leave_inline_fragment, node, parent)
+            call_on_leave_inline_fragment(node, parent)
           end
         end
 
         def on_field(node, parent)
           @response_path.push(node.alias || node.name)
           parent_type = @object_types.last
-          field_definition = @schema.get_field(parent_type, node.name)
+          # This could be nil if the previous field wasn't found:
+          field_definition = parent_type && @schema.get_field(parent_type, node.name, @query.context)
           @field_definitions.push(field_definition)
           if !field_definition.nil?
             next_object_type = field_definition.type.unwrap
@@ -109,12 +141,10 @@ module GraphQL
           @skipping = @skip_stack.last || skip?(node)
           @skip_stack << @skipping
 
-          call_analyzers(:on_enter_field, node, parent)
+          call_on_enter_field(node, parent)
           super
-
           @skipping = @skip_stack.pop
-
-          call_analyzers(:on_leave_field, node, parent)
+          call_on_leave_field(node, parent)
           @response_path.pop
           @field_definitions.pop
           @object_types.pop
@@ -124,9 +154,9 @@ module GraphQL
         def on_directive(node, parent)
           directive_defn = @schema.directives[node.name]
           @directive_definitions.push(directive_defn)
-          call_analyzers(:on_enter_directive, node, parent)
+          call_on_enter_directive(node, parent)
           super
-          call_analyzers(:on_leave_directive, node, parent)
+          call_on_leave_directive(node, parent)
           @directive_definitions.pop
         end
 
@@ -134,41 +164,35 @@ module GraphQL
           argument_defn = if (arg = @argument_definitions.last)
             arg_type = arg.type.unwrap
             if arg_type.kind.input_object?
-              arg_type.arguments[node.name]
+              arg_type.get_argument(node.name, @query.context)
             else
               nil
             end
           elsif (directive_defn = @directive_definitions.last)
-            directive_defn.arguments[node.name]
+            directive_defn.get_argument(node.name, @query.context)
           elsif (field_defn = @field_definitions.last)
-            field_defn.arguments[node.name]
+            field_defn.get_argument(node.name, @query.context)
           else
             nil
           end
 
           @argument_definitions.push(argument_defn)
           @path.push(node.name)
-          call_analyzers(:on_enter_argument, node, parent)
+          call_on_enter_argument(node, parent)
           super
-          call_analyzers(:on_leave_argument, node, parent)
+          call_on_leave_argument(node, parent)
           @argument_definitions.pop
           @path.pop
         end
 
         def on_fragment_spread(node, parent)
           @path.push("... #{node.name}")
-          call_analyzers(:on_enter_fragment_spread, node, parent)
+          call_on_enter_fragment_spread(node, parent)
           enter_fragment_spread_inline(node)
           super
           leave_fragment_spread_inline(node)
-          call_analyzers(:on_leave_fragment_spread, node, parent)
+          call_on_leave_fragment_spread(node, parent)
           @path.pop
-        end
-
-        def on_abstract_node(node, parent)
-          call_analyzers(:on_enter_abstract_node, node, parent)
-          super
-          call_analyzers(:on_leave_abstract_node, node, parent)
         end
 
         # @return [GraphQL::BaseType] The current object type
@@ -221,9 +245,7 @@ module GraphQL
 
           object_types << object_type
 
-          fragment_def.selections.each do |selection|
-            visit_node(selection, fragment_def)
-          end
+          on_fragment_definition_children(fragment_def)
         end
 
         # Visit a fragment spread inline instead of visiting the definition
@@ -235,12 +257,6 @@ module GraphQL
         def skip?(ast_node)
           dir = ast_node.directives
           dir.any? && !GraphQL::Execution::DirectiveChecks.include?(dir, query)
-        end
-
-        def call_analyzers(method, node, parent)
-          @analyzers.each do |analyzer|
-            analyzer.public_send(method, node, parent, self)
-          end
         end
 
         def on_fragment_with_type(node)

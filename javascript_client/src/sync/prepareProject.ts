@@ -1,6 +1,7 @@
 import { addTypenameIfAbsent } from "./addTypenameToSelectionSet";
 import fs from "fs"
 import {parse, visit, print, OperationDefinitionNode, FragmentDefinitionNode, FragmentSpreadNode, DocumentNode} from "graphql"
+import { removeClientFields } from "./removeClientFields";
 
 /**
  * Take a whole bunch of GraphQL in one big string
@@ -68,7 +69,7 @@ function prepareProject(filenames: string[], addTypename: boolean) {
 
   // Find the dependencies, build the accumulator
   ast = visit(ast, visitor)
-
+  ast = removeClientFields(ast)
   // For each operation, build a separate document of that operation and its deps
   // then print the new document to a string
   var operations = allOperationNames.map(function(operationName) {

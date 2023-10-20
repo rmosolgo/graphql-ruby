@@ -144,7 +144,36 @@ describe GraphQL::Analysis::AST::MaxQueryDepth do
     }
 
     it "returns an error" do
-      assert_equal ["This query is too large to execute."], query.static_errors.map(&:message)
+      assert_equal ["This query is too large to execute."], query.result["errors"].map { |err| err["message"] }
+
+      # Make sure `Schema.execute` works too
+      execute_result = schema.execute(query_string)
+      assert_equal ["This query is too large to execute."], execute_result["errors"].map { |err| err["message"] }
     end
+  end
+
+  it "counts introspection fields by default, but can be set to skip" do
+    schema.max_depth = 3
+    query_str = <<-GRAPHQL
+    {
+      __type(name: \"Abc\") {
+        fields {
+          type {
+            ofType {
+              name
+            }
+          }
+        }
+      }
+    }
+    GRAPHQL
+
+    result = schema.execute(query_str)
+    assert_equal ["Query has depth of 5, which exceeds max depth of 3"], result["errors"].map { |e| e["message"] }
+
+    schema.max_depth(3, count_introspection_fields: false)
+
+    result = schema.execute(query_str)
+    assert_equal({ "__type" => nil }, result["data"])
   end
 end

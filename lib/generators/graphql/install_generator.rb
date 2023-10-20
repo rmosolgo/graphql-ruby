@@ -1,6 +1,8 @@
 # frozen_string_literal: true
+require 'rails/generators'
 require 'rails/generators/base'
 require_relative 'core'
+require_relative 'relay'
 
 module Graphql
   module Generators
@@ -43,16 +45,14 @@ module Graphql
     # post "/graphql", to: "graphql#execute"
     # ```
     #
-    # Accept a `--relay` option which adds
-    # The root `node(id: ID!)` field.
-    #
     # Accept a `--batch` option which adds `GraphQL::Batch` setup.
     #
-    # Use `--no-graphiql` to skip `graphiql-rails` installation.
+    # Use `--skip-graphiql` to skip `graphiql-rails` installation.
     #
     # TODO: also add base classes
     class InstallGenerator < Rails::Generators::Base
       include Core
+      include Relay
 
       desc "Install GraphQL folder structure and boilerplate code"
       source_root File.expand_path('../templates', __FILE__)
@@ -79,8 +79,8 @@ module Graphql
 
       class_option :relay,
         type: :boolean,
-        default: false,
-        desc: "Include GraphQL::Relay installation"
+        default: true,
+        desc: "Include installation of Relay conventions (nodes, connections, edges)"
 
       class_option :batch,
         type: :boolean,
@@ -109,7 +109,7 @@ module Graphql
         template("query_type.erb", "#{options[:directory]}/types/query_type.rb")
         insert_root_type('query', 'QueryType')
 
-        create_mutation_root_type unless options.skip_mutation_root_type?
+        invoke "graphql:install:mutation_root" unless options.skip_mutation_root_type?
 
         template("graphql_controller.erb", "app/controllers/graphql_controller.rb")
         route('post "/graphql", to: "graphql#execute"')
@@ -123,7 +123,14 @@ module Graphql
           say("Skipped graphiql, as this rails project is API only")
           say("  You may wish to use GraphiQL.app for development: https://github.com/skevy/graphiql-app")
         elsif !options[:skip_graphiql]
-          gem("graphiql-rails", group: :development)
+          # `gem(...)` uses `gsub_file(...)` under the hood, which is a no-op for `rails destroy...` (when `behavior == :revoke`).
+          # So handle that case by calling `gsub_file` with `force: true`.
+          if behavior == :invoke && !File.read(Rails.root.join("Gemfile")).include?("graphiql-rails")
+            gem("graphiql-rails", group: :development)
+          elsif behavior == :revoke
+            gemfile_pattern = /\n\s*gem ('|")graphiql-rails('|"), :?group(:| =>) :development/
+            gsub_file Rails.root.join("Gemfile"), gemfile_pattern, "", { force: true }
+          end
 
           # This is a little cheat just to get cleaner shell output:
           log :route, 'graphiql-rails'
@@ -164,7 +171,10 @@ if Rails.env.development?
 RUBY
             end
           end
+        end
 
+        if options[:relay]
+          install_relay
         end
 
         if gemfile_modified?

@@ -8,6 +8,8 @@ describe GraphQL::Schema::Member::Scoped do
 
     class Item < BaseObject
       def self.scope_items(items, context)
+        context[:scope_calls] ||= 0
+        context[:scope_calls] += 1
         if context[:french]
           items.select { |i| i.name == "Trombone" }
         elsif context[:english]
@@ -25,7 +27,26 @@ describe GraphQL::Schema::Member::Scoped do
         end
       end
 
+      def self.authorized?(obj, ctx)
+        if ctx[:allow_unscoped]
+          true
+        else
+          raise "This should never be called (#{ctx[:current_path]}, #{ctx[:current_field].path})"
+        end
+      end
+
+      reauthorize_scoped_objects(false)
+
       field :name, String, null: false
+    end
+
+    class ReauthorizeItem < Item
+      reauthorize_scoped_objects(true)
+
+      def self.authorized?(_obj, context)
+        context[:was_authorized] = true
+        true
+      end
     end
 
     class FrenchItem < Item
@@ -64,24 +85,16 @@ describe GraphQL::Schema::Member::Scoped do
         scope: false,
         resolver_method: :items
 
-      field :nil_items, [Item], null: true
+      field :nil_items, [Item]
       def nil_items
         nil
       end
 
       field :french_items, [FrenchItem], null: false,
         resolver_method: :items
-      if TESTING_INTERPRETER
-        field :items_connection, Item.connection_type, null: false,
+
+      field :items_connection, Item.connection_type, null: false,
           resolver_method: :items
-      else
-        field :items_connection, Item.connection_type, null: false, resolve: ->(obj, args, ctx) {
-          [
-            OpenStruct.new(name: "Trombone"),
-            OpenStruct.new(name: "Paperclip"),
-          ]
-        }
-      end
 
       def items
         [
@@ -90,28 +103,21 @@ describe GraphQL::Schema::Member::Scoped do
         ]
       end
 
-      if TESTING_INTERPRETER
-        field :things, [Thing], null: false
-        def things
-          items + [OpenStruct.new(name: "Turbine")]
-        end
-      else
-        # Make sure it works with resolve procs, too
-        field :things, [Thing], null: false, resolve: ->(obj, args, ctx) {
-          [
-            OpenStruct.new(name: "Trombone"),
-            OpenStruct.new(name: "Paperclip"),
-            OpenStruct.new(name: "Turbine"),
-          ]
-        }
+      field :reauthorize_items, [ReauthorizeItem], resolver_method: :items
+
+      field :things, [Thing], null: false
+      def things
+        items + [OpenStruct.new(name: "Turbine")]
+      end
+
+      field :lazy_items, [Item], null: false
+      field :lazy_items_connection, Item.connection_type, null: false, resolver_method: :lazy_items
+      def lazy_items
+        ->() { items }
       end
     end
 
     query(Query)
-    if TESTING_INTERPRETER
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
-    end
     lazy_resolve(Proc, :call)
   end
 
@@ -135,7 +141,7 @@ describe GraphQL::Schema::Member::Scoped do
     end
 
     it "is bypassed when scope: false" do
-      assert_equal ["Trombone", "Paperclip"], get_item_names_with_context({}, field_name: "unscopedItems")
+      assert_equal ["Trombone", "Paperclip"], get_item_names_with_context({ allow_unscoped: true }, field_name: "unscopedItems")
     end
 
     it "returns null when the value is nil" do
@@ -155,7 +161,7 @@ describe GraphQL::Schema::Member::Scoped do
       assert_equal ["Trombone"], get_item_names_with_context({}, field_name: "frenchItems")
     end
 
-    it "is called for connection fields" do
+    it "is called once for connection fields" do
       query_str = "
       {
         itemsConnection {
@@ -170,6 +176,7 @@ describe GraphQL::Schema::Member::Scoped do
       res = ScopeSchema.execute(query_str, context: {english: true})
       names = res["data"]["itemsConnection"]["edges"].map { |e| e["node"]["name"] }
       assert_equal ["Paperclip"], names
+      assert_equal 1, res.context[:scope_calls]
 
       query_str = "
       {
@@ -183,6 +190,7 @@ describe GraphQL::Schema::Member::Scoped do
       res = ScopeSchema.execute(query_str, context: {english: true})
       names = res["data"]["itemsConnection"]["nodes"].map { |e| e["name"] }
       assert_equal ["Paperclip"], names
+      assert_equal 1, res.context[:scope_calls]
     end
 
     it "works for lazy connection values" do
@@ -202,6 +210,36 @@ describe GraphQL::Schema::Member::Scoped do
       names = res["data"]["itemsConnection"]["edges"].map { |e| e["node"]["name"] }
       assert_equal ["Trombone", "Paperclip"], names
       assert_equal true, ctx[:proc_called]
+    end
+
+    it "works for lazy returned list values" do
+      query_str = "
+      {
+        lazyItemsConnection {
+          edges {
+            node {
+              name
+            }
+          }
+        }
+        lazyItems {
+          name
+        }
+      }
+      "
+      res = ScopeSchema.execute(query_str, context: { french: true })
+      names = res["data"]["lazyItemsConnection"]["edges"].map { |e| e["node"]["name"] }
+      assert_equal ["Trombone"], names
+      names2 = res["data"]["lazyItems"].map { |e| e["name"] }
+      assert_equal ["Trombone"], names2
+    end
+
+    it "doesn't shortcut authorization when `reauthorize_scoped_objects(true)`" do
+      query_str = "{ reauthorizeItems { name } }"
+      res = ScopeSchema.execute(query_str, context: { french: true })
+      assert_equal 1, res["data"]["reauthorizeItems"].length
+      assert_equal 1, res.context[:scope_calls]
+      assert res.context[:was_authorized]
     end
 
     it "is called for abstract types" do

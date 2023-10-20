@@ -1,6 +1,6 @@
 import printer from "graphql/language/printer"
 import registry from "./registry"
-import { Cable } from "actioncable"
+import type { Consumer } from "@rails/actioncable"
 
 interface ApolloNetworkInterface {
   applyMiddlewares: Function
@@ -9,12 +9,14 @@ interface ApolloNetworkInterface {
 }
 
 class ActionCableSubscriber {
-  _cable: Cable
+  _cable: Consumer
   _networkInterface: ApolloNetworkInterface
+  _channelName: string
 
-  constructor(cable: Cable, networkInterface: ApolloNetworkInterface) {
+  constructor(cable: Consumer, networkInterface: ApolloNetworkInterface, channelName?: string) {
     this._cable = cable
     this._networkInterface = networkInterface
+    this._channelName = channelName || "GraphqlChannel"
   }
 
   /**
@@ -30,14 +32,12 @@ class ActionCableSubscriber {
     var networkInterface = this._networkInterface
     // unique-ish
     var channelId = Math.round(Date.now() + Math.random() * 100000).toString(16)
-
     var channel = this._cable.subscriptions.create({
-      channel: "GraphqlChannel",
+      channel: this._channelName,
       channelId: channelId,
     }, {
       // After connecting, send the data over ActionCable
       connected: function() {
-        var _this = this
         // applyMiddlewares code is inspired by networkInterface internals
         var opts = Object.assign({}, networkInterface._opts)
         networkInterface
@@ -53,20 +53,19 @@ class ActionCableSubscriber {
               operationId: operationId,
               operationName: operationName,
             })
-            // This goes to the #execute method of the channel
-            _this.perform("execute", channelParams)
+            channel.perform("execute", channelParams)
           })
       },
       // Payload from ActionCable should have at least two keys:
       // - more: true if this channel should stay open
       // - result: the GraphQL response for this result
       received: function(payload) {
-        if (!payload.more) {
-          registry.unsubscribe(id)
-        }
         var result = payload.result
         if (result) {
           handler(result.errors, result.data)
+        }
+        if (!payload.more) {
+          registry.unsubscribe(id)
         }
       },
     })

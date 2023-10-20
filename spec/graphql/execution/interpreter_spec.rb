@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require "spec_helper"
+require_relative "../subscriptions_spec"
 
 describe GraphQL::Execution::Interpreter do
   module InterpreterTest
@@ -60,9 +61,15 @@ describe GraphQL::Execution::Interpreter do
         Query::EXPANSIONS.find { |e| e.sym == @object.expansion_sym }
       end
 
-      field :null_union_field_test, Integer, null: true
+      field :null_union_field_test, Integer
       def null_union_field_test
         nil
+      end
+
+      field :parent_class_name, String, null: false, extras: [:parent]
+
+      def parent_class_name(parent:)
+        parent.class.name
       end
     end
 
@@ -86,10 +93,10 @@ describe GraphQL::Execution::Interpreter do
       implements GraphQL::Types::Relay::Node
 
       field :field_counter, FieldCounter, null: false
-      def field_counter; :field_counter; end
+      def field_counter; self.class.generate_tag(context); end
 
       field :calls, Integer, null: false do
-        argument :expected, Integer, required: true
+        argument :expected, Integer
       end
 
       def calls(expected:)
@@ -101,16 +108,45 @@ describe GraphQL::Execution::Interpreter do
         end
       end
 
-      field :runtime_info, String, null: false
-      def runtime_info
-        "#{context.namespace(:interpreter)[:current_path]} -> #{context.namespace(:interpreter)[:current_field].path}"
+      field :runtime_info, String, null: false do
+        argument :a, Integer, required: false
+        argument :b, Integer, required: false
       end
 
-      field :lazy_runtime_info, String, null: false
-      def lazy_runtime_info
-        Box.new {
-          "#{context.namespace(:interpreter)[:current_path]} -> #{context.namespace(:interpreter)[:current_field].path}"
-        }
+      def runtime_info(a: nil, b: nil)
+        inspect_context
+      end
+
+      field :lazy_runtime_info, String, null: false do
+        argument :a, Integer, required: false
+        argument :b, Integer, required: false
+      end
+
+      def lazy_runtime_info(a: nil, b: nil)
+        Box.new { inspect_context }
+      end
+
+      def self.generate_tag(context)
+        context[:field_counters_count] ||= 0
+        current_count = context[:field_counters_count] += 1
+        "field_counter_#{current_count}"
+      end
+
+      private
+
+      def inspect_context
+        "<#{interpreter_context_for(:current_object).object.inspect}> #{interpreter_context_for(:current_path)} -> #{interpreter_context_for(:current_field).path}(#{interpreter_context_for(:current_arguments).size})"
+      end
+
+      def interpreter_context_for(key)
+        # Make sure it's set in query context and interpreter namespace.
+        base_ctx_value = context[key]
+        interpreter_ctx_value = context.namespace(:interpreter)[key]
+        if base_ctx_value != interpreter_ctx_value
+          raise "Context mismatch for #{key} -> #{base_ctx_value} / intepreter: #{interpreter_ctx_value}"
+        else
+          base_ctx_value
+        end
       end
     end
 
@@ -120,16 +156,16 @@ describe GraphQL::Execution::Interpreter do
         Box.new(value: true)
       end
 
-      field :card, Card, null: true do
-        argument :name, String, required: true
+      field :card, Card do
+        argument :name, String
       end
 
       def card(name:)
         Box.new(value: CARDS.find { |c| c.name == name })
       end
 
-      field :expansion, Expansion, null: true do
-        argument :sym, String, required: true
+      field :expansion, Expansion do
+        argument :sym, String
       end
 
       def expansion(sym:)
@@ -142,9 +178,18 @@ describe GraphQL::Execution::Interpreter do
         raw_value(sym: "RAW", name: "Raw expansion", always_cached_value: 42)
       end
 
+      field :expansion_mixed, [Expansion], null: false
+
+      def expansion_mixed
+        expansions + [expansion_raw]
+      end
+
       field :expansions, [Expansion], null: false
       def expansions
         EXPANSIONS
+      end
+
+      class ExpansionData < OpenStruct
       end
 
       CARDS = [
@@ -152,15 +197,15 @@ describe GraphQL::Execution::Interpreter do
       ]
 
       EXPANSIONS = [
-        OpenStruct.new(name: "Ravnica, City of Guilds", sym: "RAV"),
+        ExpansionData.new(name: "Ravnica, City of Guilds", sym: "RAV"),
         # This data has an error, for testing null propagation
-        OpenStruct.new(name: nil, sym: "XYZ"),
+        ExpansionData.new(name: nil, sym: "XYZ"),
         # This is not allowed by .authorized?,
-        OpenStruct.new(name: nil, sym: "NOPE"),
+        ExpansionData.new(name: nil, sym: "NOPE"),
       ]
 
       field :find, [Entity], null: false do
-        argument :id, [ID], required: true
+        argument :id, [ID]
       end
 
       def find(id:)
@@ -171,7 +216,7 @@ describe GraphQL::Execution::Interpreter do
       end
 
       field :find_many, [Entity, null: true], null: false do
-        argument :ids, [ID], required: true
+        argument :ids, [ID]
       end
 
       def find_many(ids:)
@@ -179,10 +224,27 @@ describe GraphQL::Execution::Interpreter do
       end
 
       field :field_counter, FieldCounter, null: false
-      def field_counter; :field_counter; end
+      def field_counter; FieldCounter.generate_tag(context) ; end
 
-      field :node, field: GraphQL::Relay::Node.field
-      field :nodes, field: GraphQL::Relay::Node.plural_field
+      include GraphQL::Types::Relay::HasNodeField
+      include GraphQL::Types::Relay::HasNodesField
+
+      class NestedQueryResult < GraphQL::Schema::Object
+        field :result, String
+        field :current_path, [String]
+      end
+
+      field :nested_query, NestedQueryResult do
+        argument :query, String
+      end
+
+      def nested_query(query:)
+        result = context.schema.multiplex([{query: query}], context: { allow_pending_thread_state: true }).first
+        {
+          result: JSON.dump(result),
+          current_path: context[:current_path],
+        }
+      end
     end
 
     class Counter < GraphQL::Schema::Object
@@ -201,7 +263,6 @@ describe GraphQL::Execution::Interpreter do
       end
     end
 
-
     class Mutation < GraphQL::Schema::Object
       field :increment_counter, Counter, null: false
 
@@ -213,19 +274,52 @@ describe GraphQL::Execution::Interpreter do
     end
 
     class Schema < GraphQL::Schema
-      use GraphQL::Execution::Interpreter
-      use GraphQL::Analysis::AST
       query(Query)
       mutation(Mutation)
       lazy_resolve(Box, :value)
+
+      use GraphQL::Schema::AlwaysVisible
 
       def self.object_from_id(id, ctx)
         OpenStruct.new(id: id)
       end
 
+      def self.id_from_object(obj, type, ctx)
+        obj.id
+      end
+
       def self.resolve_type(type, obj, ctx)
         FieldCounter
       end
+
+      class EnsureArgsAreObject
+        def self.trace(event, data)
+          case event
+          when "execute_field", "execute_field_lazy"
+            args = data[:query].context[:current_arguments]
+            if !args.is_a?(GraphQL::Execution::Interpreter::Arguments)
+              raise "Expected arguments object, got #{args.class}: #{args.inspect}"
+            end
+          end
+          yield
+        end
+      end
+      tracer EnsureArgsAreObject
+
+      class EnsureThreadCleanedUp
+        def self.before_multiplex(_multiplex); end
+        def self.after_multiplex(multiplex)
+          runtime_info = Thread.current[:__graphql_runtime_info]
+          if !runtime_info.nil? && runtime_info != {}
+            if !multiplex.context[:allow_pending_thread_state]
+              # `nestedQuery` can allow this
+              raise "Query did not clean up runtime state, found: #{runtime_info.inspect}"
+            end
+          end
+        end
+      end
+
+      instrument :multiplex, EnsureThreadCleanedUp
     end
   end
 
@@ -275,6 +369,15 @@ describe GraphQL::Execution::Interpreter do
       {"__typename" => "Expansion", "sym" => "RAV"},
     ]
     assert_equal expected_abstract_list, result["data"]["find"]
+    assert_nil Thread.current[:__graphql_runtime_info]
+  end
+
+  it "runs a nested query and maintains proper state" do
+    query_str = "query($queryStr: String!) { nestedQuery(query: $queryStr) { result currentPath } }"
+    result = InterpreterTest::Schema.execute(query_str, variables: { queryStr: "{ __typename }" })
+    assert_equal '{"data":{"__typename":"Query"}}', result["data"]["nestedQuery"]["result"]
+    assert_equal ["nestedQuery"], result["data"]["nestedQuery"]["currentPath"]
+    assert_nil Thread.current[:__graphql_runtime_info]
   end
 
   it "runs mutation roots atomically and sequentially" do
@@ -325,6 +428,7 @@ describe GraphQL::Execution::Interpreter do
       "exp5" => {"name" => "Ravnica, City of Guilds"},
     }
     assert_equal expected_data, result["data"]
+    assert_nil Thread.current[:__graphql_runtime_info]
   end
 
   describe "temporary interpreter flag" do
@@ -340,31 +444,19 @@ describe GraphQL::Execution::Interpreter do
       res = InterpreterTest::Schema.execute <<-GRAPHQL
       {
         fieldCounter {
-          runtimeInfo
+          runtimeInfo(a: 1, b: 2)
           fieldCounter {
             runtimeInfo
-            lazyRuntimeInfo
+            lazyRuntimeInfo(a: 1)
           }
         }
       }
       GRAPHQL
 
-      assert_equal '["fieldCounter", "runtimeInfo"] -> FieldCounter.runtimeInfo', res["data"]["fieldCounter"]["runtimeInfo"]
-      assert_equal '["fieldCounter", "fieldCounter", "runtimeInfo"] -> FieldCounter.runtimeInfo', res["data"]["fieldCounter"]["fieldCounter"]["runtimeInfo"]
-      assert_equal '["fieldCounter", "fieldCounter", "lazyRuntimeInfo"] -> FieldCounter.lazyRuntimeInfo', res["data"]["fieldCounter"]["fieldCounter"]["lazyRuntimeInfo"]
-    end
-  end
-
-  describe "CI setup" do
-    it "sets interpreter based on a constant" do
-      # Force the plugins to be applied
-      Jazz::Schema.graphql_definition
-      Dummy::Schema.graphql_definition
-      if TESTING_INTERPRETER
-        assert_equal GraphQL::Execution::Interpreter, Jazz::Schema.query_execution_strategy
-      else
-        refute_equal GraphQL::Execution::Interpreter, Jazz::Schema.query_execution_strategy
-      end
+      assert_equal '<"field_counter_1"> ["fieldCounter", "runtimeInfo"] -> FieldCounter.runtimeInfo(2)', res["data"]["fieldCounter"]["runtimeInfo"]
+      # These are both `field_counter_2`, but one is lazy
+      assert_equal '<"field_counter_2"> ["fieldCounter", "fieldCounter", "runtimeInfo"] -> FieldCounter.runtimeInfo(0)', res["data"]["fieldCounter"]["fieldCounter"]["runtimeInfo"]
+      assert_equal '<"field_counter_2"> ["fieldCounter", "fieldCounter", "lazyRuntimeInfo"] -> FieldCounter.lazyRuntimeInfo(1)', res["data"]["fieldCounter"]["fieldCounter"]["lazyRuntimeInfo"]
     end
   end
 
@@ -385,6 +477,7 @@ describe GraphQL::Execution::Interpreter do
       # propagated to here
       assert_nil res["data"].fetch("expansion")
       assert_equal ["Cannot return null for non-nullable field Expansion.name"], res["errors"].map { |e| e["message"] }
+      assert_nil Thread.current[:__graphql_runtime_info]
     end
 
     it "propagates nulls in lists" do
@@ -432,6 +525,9 @@ describe GraphQL::Execution::Interpreter do
       assert_equal nil, res["data"]["findMany"][1]
       assert_equal nil, res["data"]["findMany"][2]
       assert_equal false, res.key?("errors")
+
+      assert_equal Hash, res["data"].class
+      assert_equal Array, res["data"]["findMany"].class
     end
 
     it "works with union lists that have members of different kinds, with different nullabilities" do
@@ -507,5 +603,290 @@ describe GraphQL::Execution::Interpreter do
       res = InterpreterTest::Schema.execute(query_str)
       assert_equal({ sym: "RAW", name: "Raw expansion", always_cached_value: 42 }, res["data"]["expansionRaw"])
     end
+  end
+
+  describe "returning raw values and resolved fields" do
+    it "returns raw value" do
+      query_str = <<-GRAPHQL
+      {
+        expansionRaw {
+          name
+          sym
+          alwaysCachedValue
+        }
+      }
+      GRAPHQL
+
+      res = InterpreterTest::Schema.execute(query_str)
+      assert_equal({ sym: "RAW", name: "Raw expansion", always_cached_value: 42 }, res["data"]["expansionRaw"])
+    end
+  end
+
+  describe "Lazy skips" do
+    class LazySkipSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        def self.authorized?(obj, ctx)
+          -> { true }
+        end
+        field :skip, String
+
+        def skip
+          context.skip
+        end
+
+        field :lazy_skip, String
+        def lazy_skip
+          -> { context.skip }
+        end
+
+        field :mixed_skips, [String]
+        def mixed_skips
+          [
+            "a",
+            context.skip,
+            "c",
+            -> { context.skip },
+            "e",
+          ]
+        end
+      end
+
+      class NothingSubscription < GraphQL::Schema::Subscription
+        field :nothing, String
+        def authorized?(*)
+          -> { true }
+        end
+
+        def update
+          { nothing: object }
+        end
+      end
+
+      class Subscription < GraphQL::Schema::Object
+        field :nothing, subscription: NothingSubscription
+      end
+
+      query Query
+      subscription Subscription
+      use InMemoryBackend::Subscriptions, extra: nil
+      lazy_resolve Proc, :call
+    end
+
+    it "skips properly" do
+      res = LazySkipSchema.execute("{ skip }")
+      assert_equal({}, res["data"])
+      refute res.key?("errors")
+
+      res = LazySkipSchema.execute("{ mixedSkips }")
+      assert_equal({ "mixedSkips" => ["a", "c", "e"] }, res["data"])
+      refute res.key?("errors")
+
+      res = LazySkipSchema.execute("{ lazySkip }")
+      assert_equal({}, res["data"])
+      refute res.key?("errors")
+
+      res = LazySkipSchema.execute("subscription { nothing { nothing } }")
+      assert_equal({}, res["data"])
+      refute res.key?("errors")
+      # Make sure an update works properly
+      LazySkipSchema.subscriptions.trigger(:nothing, {}, :nothing_at_all)
+      _key, updates = LazySkipSchema.subscriptions.deliveries.first
+      assert_equal "nothing_at_all", updates[0]["data"]["nothing"]["nothing"]
+    end
+  end
+
+  describe "GraphQL::ExecutionErrors from connection fields" do
+    module ConnectionErrorTest
+      class BaseField < GraphQL::Schema::Field
+        def authorized?(obj, args, ctx)
+          ctx[:authorized_calls] ||= 0
+          ctx[:authorized_calls] += 1
+          raise GraphQL::ExecutionError, "#{name} is not authorized"
+        end
+      end
+
+      class BaseConnection < GraphQL::Types::Relay::BaseConnection
+        node_nullable(false)
+        edge_nullable(false)
+        edges_nullable(false)
+      end
+
+      class BaseEdge < GraphQL::Types::Relay::BaseEdge
+        node_nullable(false)
+      end
+
+      class Thing < GraphQL::Schema::Object
+        field_class BaseField
+        connection_type_class BaseConnection
+        edge_type_class BaseEdge
+        field :title, String, null: false
+        field :body, String, null: false
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :things, Thing.connection_type, null: false
+
+        def things
+          [{title: "a"}, {title: "b"}, {title: "c"}]
+        end
+
+        field :thing, Thing, null: false
+
+        def thing
+          {
+            title: "a",
+            body: "b",
+          }
+        end
+      end
+
+      class Schema < GraphQL::Schema
+        query Query
+      end
+    end
+
+    it "returns only 1 error and stops resolving fields after that" do
+      res = ConnectionErrorTest::Schema.execute("{ things { nodes { title } } }")
+      assert_equal 1, res["errors"].size
+      assert_equal 1, res.context[:authorized_calls]
+
+      res = ConnectionErrorTest::Schema.execute("{ things { edges { node { title } } } }")
+      assert_equal 1, res["errors"].size
+      assert_equal 1, res.context[:authorized_calls]
+
+      res = ConnectionErrorTest::Schema.execute("{ thing { title body } }")
+      assert_equal 1, res["errors"].size
+      assert_equal 1, res.context[:authorized_calls]
+    end
+  end
+
+  describe "GraphQL::ExecutionErrors from non-null list fields" do
+    module ListErrorTest
+      class BaseField < GraphQL::Schema::Field
+        def authorized?(*)
+          raise GraphQL::ExecutionError, "#{name} is not authorized"
+        end
+      end
+
+      class Thing < GraphQL::Schema::Object
+        field_class BaseField
+        field :title, String, null: false
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :things, [Thing], null: false
+
+        def things
+          [{title: "a"}, {title: "b"}, {title: "c"}]
+        end
+      end
+
+      class Schema < GraphQL::Schema
+        query Query
+      end
+    end
+
+    it "returns only 1 error" do
+      res = ListErrorTest::Schema.execute("{ things { title } }")
+      assert_equal 1, res["errors"].size
+    end
+  end
+
+  describe "Invalid null from raised execution error doesn't halt parent fields" do
+    class RaisedErrorSchema < GraphQL::Schema
+      module Iface
+        include GraphQL::Schema::Interface
+
+        field :bar, String, null: false
+      end
+
+      class Txn < GraphQL::Schema::Object
+        field :fails, String, null: false
+
+        def fails
+          raise GraphQL::ExecutionError, "boom"
+        end
+      end
+
+      class Concrete < GraphQL::Schema::Object
+        implements Iface
+
+        field :txn, Txn
+
+        def txn
+          {}
+        end
+
+        field :msg, String
+
+        def msg
+          "THIS SHOULD SHOW UP"
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :iface, Iface
+
+        def iface
+          {}
+        end
+      end
+
+      query(Query)
+      orphan_types([Concrete])
+
+      def self.resolve_type(type, obj, ctx)
+        Concrete
+      end
+    end
+
+    it "resolves fields on the parent object" do
+      querystring = """
+      {
+        iface {
+          ... on Concrete {
+            txn {
+              fails
+            }
+            msg
+          }
+        }
+      }
+      """
+
+      result = RaisedErrorSchema.execute(querystring)
+      expected_result = {
+        "data" => {
+          "iface" => { "txn" => nil, "msg" => "THIS SHOULD SHOW UP" },
+        },
+        "errors" => [
+          {
+            "message"=>"boom",
+            "locations"=>[{"line"=>6, "column"=>15}],
+            "path"=>["iface", "txn", "fails"]
+          },
+        ],
+      }
+      assert_equal expected_result, result.to_h
+    end
+  end
+
+  it "supports extras: [:parent]" do
+    query_str = <<-GRAPHQL
+    {
+      card(name: "Dark Confidant") {
+        parentClassName
+      }
+      expansion(sym: "RAV") {
+        cards {
+          parentClassName
+        }
+      }
+    }
+    GRAPHQL
+    res = InterpreterTest::Schema.execute(query_str, context: { calls: 0 })
+
+    assert_equal "NilClass", res["data"]["card"].fetch("parentClassName")
+    assert_equal "InterpreterTest::Query::ExpansionData", res["data"]["expansion"]["cards"].first["parentClassName"]
   end
 end

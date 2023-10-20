@@ -40,9 +40,15 @@
             })
             console.log("Connected", query, variables)
           },
-          received: function(data) {
-            console.log("received", query, variables, data)
-            receivedCallback(data)
+          received: function(payload) {
+            console.log("received", query, variables, payload)
+            if (payload.result) {
+              receivedCallback(payload)
+            }
+            if (!payload.more) {
+              this.unsubscribe()
+              App.logToBody("Remaining ActionCable subscriptions: " + App.cable.subscriptions.subscriptions.length)
+            }
           }
         }
       ),
@@ -53,5 +59,13 @@
         this.subscription.unsubscribe()
       },
     }
+  }
+
+  // Add `text` to the HTML body, for debugging
+  App.logToBody = function(text) {
+    var bodyLog = document.getElementById("body-log")
+    var logEntry = document.createElement("p")
+    logEntry.innerText = text
+    bodyLog.appendChild(logEntry)
   }
 }).call(this);

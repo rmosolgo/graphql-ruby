@@ -1,13 +1,12 @@
 import ActionCableLink from "../ActionCableLink"
 import { parse } from "graphql"
-import { Cable } from "actioncable"
-import { Operation } from "apollo-link"
+import type { Consumer } from "@rails/actioncable"
+import { Operation } from "@apollo/client/core"
 
 describe("ActionCableLink", () => {
   var log: any[]
   var cable: any
   var options: any
-  var link: any
   var query: any
   var operation: Operation
 
@@ -15,7 +14,10 @@ describe("ActionCableLink", () => {
     log = []
     cable = {
       subscriptions: {
-        create: function(_channelName: string, options: {connected: Function, received: Function}) {
+        create: function(channelName: string | object, options: {connected: Function, received: Function}) {
+          var channel = channelName
+          var params = typeof channel === "object" ? channel : { channel }
+          var alreadyConnected = false
           var subscription = Object.assign(
             Object.create({
               perform: function(actionName: string, options: object) {
@@ -25,20 +27,27 @@ describe("ActionCableLink", () => {
                 log.push(["unsubscribe"])
               }
             }),
+            { params },
             options
           )
 
           subscription.connected = subscription.connected.bind(subscription)
+          var received = subscription.received
+          subscription.received = function(data: any) {
+            if (!alreadyConnected) {
+              alreadyConnected = true
+              subscription.connected()
+            }
+            received(data)
+          }
           subscription.__proto__.unsubscribe = subscription.__proto__.unsubscribe.bind(subscription)
-          subscription.connected()
           return subscription
         }
       }
     }
     options = {
-      cable: (cable as unknown) as Cable
+      cable: (cable as unknown) as Consumer
     }
-    link = new ActionCableLink(options)
 
     query = parse("subscription { foo { bar } }")
 
@@ -51,7 +60,7 @@ describe("ActionCableLink", () => {
   })
 
   it("delegates to the cable", () => {
-    var observable = link.request(operation, null as any)
+    var observable = new ActionCableLink(options).request(operation, null as any)
 
     // unpack the underlying subscription
     var subscription: any = (observable.subscribe(function(result: any) {
@@ -84,7 +93,7 @@ describe("ActionCableLink", () => {
         "perform", {
           actionName: "execute",
           options: {
-            query: "subscription {\n  foo {\n    bar\n  }\n}\n",
+            query: "subscription {\n  foo {\n    bar\n  }\n}",
             variables: { a: 1 },
             operationId: "operationId",
             operationName: "operationName"
@@ -98,7 +107,7 @@ describe("ActionCableLink", () => {
   })
 
   it("delegates a manual unsubscribe to the cable", () => {
-    var observable = link.request(operation, null as any)
+    var observable = new ActionCableLink(options).request(operation, null as any)
 
     // unpack the underlying subscription
     var subscription: any = (observable.subscribe(function(result: any) {
@@ -126,7 +135,7 @@ describe("ActionCableLink", () => {
         "perform", {
           actionName: "execute",
           options: {
-            query: "subscription {\n  foo {\n    bar\n  }\n}\n",
+            query: "subscription {\n  foo {\n    bar\n  }\n}",
             variables: { a: 1 },
             operationId: "operationId",
             operationName: "operationName"
@@ -136,5 +145,30 @@ describe("ActionCableLink", () => {
       ["received", { data: "data 1" }],
       ["unsubscribe"]
     ])
+  })
+
+  it("forward object connectionParams to subscription creation", () => {
+    var observable = new ActionCableLink(Object.assign(options, { connectionParams: { test: 1 } })).
+      request(operation, null as any)
+
+    // unpack the underlying subscription
+    var subscription: any = (observable.subscribe(() => null) as any)._cleanup
+
+    subscription.unsubscribe()
+
+    expect(subscription.params["test"]).toEqual(1)
+  })
+
+  it("calls connectionParams during subscription creation to fetch additional params", () => {
+    var observable = new ActionCableLink(
+      Object.assign(options, { connectionParams: () => ({ test: 1 })} )
+    ).request(operation, null as any)
+
+    // unpack the underlying subscription
+    var subscription: any = (observable.subscribe(() => null) as any)._cleanup
+
+    subscription.unsubscribe()
+
+    expect(subscription.params["test"]).toEqual(1)
   })
 })

@@ -55,7 +55,7 @@ module GraphQL
           @arguments
         else
           @arguments = if @field
-            @query.schema.after_lazy(@query.arguments_for(@ast_nodes.first, @field)) do |args|
+            @query.after_lazy(@query.arguments_for(@ast_nodes.first, @field)) do |args|
               args.is_a?(Execution::Interpreter::Arguments) ? args.keyword_arguments : args
             end
           else
@@ -76,8 +76,8 @@ module GraphQL
       # @param field_name [String, Symbol]
       # @param arguments [Hash] Arguments which must match in the selection
       # @return [Boolean]
-      def selects?(field_name, arguments: nil)
-        selection(field_name, arguments: arguments).selected?
+      def selects?(field_name, selected_type: @selected_type, arguments: nil)
+        selection(field_name, selected_type: selected_type, arguments: arguments).selected?
       end
 
       # True if this node has a selection with alias matching `alias_name`.
@@ -103,10 +103,37 @@ module GraphQL
 
       # Like {#selects?}, but can be used for chaining.
       # It returns a null object (check with {#selected?})
+      # @param field_name [String, Symbol]
       # @return [GraphQL::Execution::Lookahead]
       def selection(field_name, selected_type: @selected_type, arguments: nil)
-        next_field_name = normalize_name(field_name)
-        next_field_defn = get_class_based_field(selected_type, next_field_name)
+        next_field_name = nil
+        next_field_defn = case field_name
+        when String
+          next_field_name = field_name
+          @query.get_field(selected_type, field_name)
+        when Symbol
+          # Try to avoid the `.to_s` below, if possible
+          all_fields = if selected_type.kind.fields?
+            @query.warden.fields(selected_type)
+          else
+            # Handle unions by checking possible
+            @query.warden
+              .possible_types(selected_type)
+              .map { |t| @query.warden.fields(t) }
+              .tap(&:flatten!)
+          end
+
+          # Symbol#name is only present on 3.0+
+          sym_s = field_name.respond_to?(:name) ? field_name.name : field_name.to_s
+          next_field_name = Schema::Member::BuildType.camelize(sym_s)
+
+          if (match_by_orig_name = all_fields.find { |f| f.original_name == field_name })
+            match_by_orig_name
+          else
+            @query.get_field(selected_type, next_field_name)
+          end
+        end
+
         lookahead_for_selection(next_field_name, next_field_defn, selected_type, arguments)
       end
 
@@ -121,7 +148,7 @@ module GraphQL
         return NULL_LOOKAHEAD unless alias_node
 
         next_field_name = alias_node.name
-        next_field_defn = get_class_based_field(selected_type, next_field_name)
+        next_field_defn = @query.get_field(selected_type, next_field_name)
 
         alias_arguments = @query.arguments_for(alias_node, next_field_defn)
         if alias_arguments.is_a?(::GraphQL::Execution::Interpreter::Arguments)
@@ -160,7 +187,7 @@ module GraphQL
 
         subselections_by_type.each do |type, ast_nodes_by_response_key|
           ast_nodes_by_response_key.each do |response_key, ast_nodes|
-            field_defn = get_class_based_field(type, ast_nodes.first.name)
+            field_defn = @query.get_field(type, ast_nodes.first.name)
             lookahead = Lookahead.new(query: @query, ast_nodes: ast_nodes, field: field_defn, owner_type: type)
             subselections.push(lookahead)
           end
@@ -219,34 +246,10 @@ module GraphQL
 
       private
 
-      # If it's a symbol, stringify and camelize it
-      def normalize_name(name)
-        if name.is_a?(Symbol)
-          Schema::Member::BuildType.camelize(name.to_s)
-        else
-          name
-        end
-      end
-
-      def normalize_keyword(keyword)
-        if keyword.is_a?(String)
-          Schema::Member::BuildType.underscore(keyword).to_sym
-        else
-          keyword
-        end
-      end
-
-      # Wrap get_field and ensure that it returns a GraphQL::Schema::Field.
-      # Remove this when legacy execution is removed.
-      def get_class_based_field(type, name)
-        f = @query.get_field(type, name)
-        f && f.type_class
-      end
-
       def skipped_by_directive?(ast_selection)
         ast_selection.directives.each do |directive|
           dir_defn = @query.schema.directives.fetch(directive.name)
-          directive_class = dir_defn.type_class
+          directive_class = dir_defn
           if directive_class
             dir_args = @query.arguments_for(directive, dir_defn)
             return true unless directive_class.static_include?(dir_args, @query.context)
@@ -267,7 +270,7 @@ module GraphQL
             elsif arguments.nil? || arguments.empty?
               selections_on_type[response_key] = [ast_selection]
             else
-              field_defn = get_class_based_field(selected_type, ast_selection.name)
+              field_defn = @query.get_field(selected_type, ast_selection.name)
               if arguments_match?(arguments, field_defn, ast_selection)
                 selections_on_type[response_key] = [ast_selection]
               end
@@ -277,14 +280,14 @@ module GraphQL
             subselections_on_type = selections_on_type
             if (t = ast_selection.type)
               # Assuming this is valid, that `t` will be found.
-              on_type = @query.schema.get_type(t.name).type_class
+              on_type = @query.get_type(t.name)
               subselections_on_type = subselections_by_type[on_type] ||= {}
             end
             find_selections(subselections_by_type, subselections_on_type, on_type, ast_selection.selections, arguments)
           when GraphQL::Language::Nodes::FragmentSpread
             frag_defn = lookup_fragment(ast_selection)
             # Again, assuming a valid AST
-            on_type = @query.schema.get_type(frag_defn.type.name).type_class
+            on_type = @query.get_type(frag_defn.type.name)
             subselections_on_type = subselections_by_type[on_type] ||= {}
             find_selections(subselections_by_type, subselections_on_type, on_type, frag_defn.selections, arguments)
           else
@@ -309,7 +312,7 @@ module GraphQL
             end
           end
         when GraphQL::Language::Nodes::InlineFragment
-          node.selections.each { |s|find_selected_nodes(s, field_name, field_defn, arguments: arguments, matches: matches, alias_name: alias_name) }
+          node.selections.each { |s| find_selected_nodes(s, field_name, field_defn, arguments: arguments, matches: matches, alias_name: alias_name) }
         when GraphQL::Language::Nodes::FragmentSpread
           frag_defn = lookup_fragment(node)
           frag_defn.selections.each { |s| find_selected_nodes(s, field_name, field_defn, arguments: arguments, matches: matches, alias_name: alias_name) }
@@ -321,9 +324,14 @@ module GraphQL
       def arguments_match?(arguments, field_defn, field_node)
         query_kwargs = @query.arguments_for(field_node, field_defn)
         arguments.all? do |arg_name, arg_value|
-          arg_name = normalize_keyword(arg_name)
+          arg_name_sym = if arg_name.is_a?(String)
+            Schema::Member::BuildType.underscore(arg_name).to_sym
+          else
+            arg_name
+          end
+
           # Make sure the constraint is present with a matching value
-          query_kwargs.key?(arg_name) && query_kwargs[arg_name] == arg_value
+          query_kwargs.key?(arg_name_sym) && query_kwargs[arg_name_sym] == arg_value
         end
       end
 

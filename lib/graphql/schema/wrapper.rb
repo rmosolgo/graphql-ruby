@@ -3,7 +3,6 @@
 module GraphQL
   class Schema
     class Wrapper
-      include GraphQL::Schema::Member::CachedGraphQLDefinition
       include GraphQL::Schema::Member::TypeSystemHelpers
 
       # @return [Class, Module] The inner type of this wrapping type, the type of which one or more objects may be present.
@@ -11,10 +10,6 @@ module GraphQL
 
       def initialize(of_type)
         @of_type = of_type
-      end
-
-      def to_graphql
-        raise GraphQL::RequiredImplementationMissingError
       end
 
       def unwrap

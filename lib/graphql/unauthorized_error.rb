@@ -12,7 +12,7 @@ module GraphQL
     attr_reader :type
 
     # @return [GraphQL::Query::Context] the context for the current query
-    attr_reader :context
+    attr_accessor :context
 
     def initialize(message = nil, object: nil, type: nil, context: nil)
       if message.nil? && object.nil? && type.nil?
@@ -22,7 +22,7 @@ module GraphQL
       @object = object
       @type = type
       @context = context
-      message ||= "An instance of #{object.class} failed #{type.name}'s authorization check"
+      message ||= "An instance of #{object.class} failed #{type.graphql_name}'s authorization check"
       super(message)
     end
   end

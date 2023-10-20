@@ -11,7 +11,10 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
         cat: Cat
         pet: Pet
         toy: Toy
+        animal: Animal
       }
+
+      union Animal = Dog \| Cat
 
       type Mutation {
         registerPet(params: PetParams): Pet
@@ -50,7 +53,15 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
         toys: [Toy!]!
       }
 
-      type Dog implements Pet & Mammal {
+      interface Canine {
+        barkVolume: Int!
+      }
+
+      interface Feline {
+        meowVolume: Int!
+      }
+
+      type Dog implements Pet & Mammal & Canine {
         name(surname: Boolean = false): String!
         nickname: String
         doesKnowCommand(dogCommand: PetCommand): Boolean!
@@ -58,7 +69,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
         toys: [Toy!]!
       }
 
-      type Cat implements Pet & Mammal {
+      type Cat implements Pet & Mammal & Feline {
         name(surname: Boolean = false): String!
         nickname: String
         doesKnowCommand(catCommand: PetCommand): Boolean!
@@ -196,6 +207,48 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     end
   end
 
+  describe "multiple conflicting args value and var" do
+    let(:query_string) {%|
+      query ($dogCommand: PetCommand) {
+        dog {
+          doesKnowCommand(dogCommand: SIT)
+          doesKnowCommand(dogCommand: HEEL)
+          doesKnowCommand(dogCommand: $dogCommand)
+        }
+      }
+    |}
+
+    it "fails rule" do
+      message = %Q(Field 'doesKnowCommand' has an argument conflict: {dogCommand:"SIT"} or {dogCommand:"HEEL"} or {dogCommand:"$dogCommand"}?)
+
+      assert_equal [message], error_messages
+    end
+  end
+
+  describe "very large multiple conflicting args value and var" do
+    let(:query_string) {%|
+      query ($a: PetCommand, $b: PetCommand, $c: PetCommand, $d: PetCommand, $e: PetCommand, $f: PetCommand) {
+        dog {
+          doesKnowCommand(dogCommand: SIT)
+          doesKnowCommand(dogCommand: HEEL)
+          doesKnowCommand(dogCommand: JUMP)
+          doesKnowCommand(dogCommand: DOWN)
+          doesKnowCommand(dogCommand: $a)
+          doesKnowCommand(dogCommand: $b)
+          doesKnowCommand(dogCommand: $c)
+          doesKnowCommand(dogCommand: $d)
+          doesKnowCommand(dogCommand: $e)
+          doesKnowCommand(dogCommand: $f)
+        }
+      }
+    |}
+
+    it "fails rule" do
+      assert_equal 1, error_messages.size # instead of n**2 = 100
+      assert_match %r/SIT.*HEEL.*JUMP.*DOWN.*\$a.*\$b.*\$c.*\$d.*\$e.*\$f/, error_messages.first
+    end
+  end
+
   describe "conflicting args value and var" do
     let(:query_string) {%|
       query ($varOne: PetCommand, $varTwo: PetCommand) {
@@ -256,6 +309,22 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     end
   end
 
+  describe "multiple aliases with different field targets" do
+    let(:query_string) {%|
+      {
+        dog {
+          fido: name
+          fido: nickname
+          fido: barkVolume
+        }
+      }
+    |}
+
+    it "fails rule" do
+      assert_equal ["Field 'fido' has a field conflict: name or nickname or barkVolume?"], error_messages
+    end
+  end
+
   describe "alias masking direct field access" do
     let(:query_string) {%|
       {
@@ -267,7 +336,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     |}
 
     it "fails rule" do
-      assert_equal ["Field 'name' has a field conflict: name or nickname?"], error_messages
+      assert_equal ["Field 'name' has a field conflict: nickname or name?"], error_messages
     end
   end
 
@@ -357,6 +426,33 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
         "Field 'name' has a field conflict: name or nickname?"
       ], error_messages
     end
+
+    describe "with error limiting" do
+      describe("disabled") do
+        let(:args) {
+          { max_errors: nil }
+        }
+
+        it "does not limit the number of errors" do
+          assert_equal(error_messages, [
+            "Field 'x' has a field conflict: name or nickname?",
+            "Field 'name' has a field conflict: name or nickname?"
+          ])
+        end
+      end
+
+      describe("enabled") do
+        let(:args) {
+          { max_errors: 1 }
+        }
+
+        it "does limit the number of errors" do
+          assert_equal(error_messages, [
+            "Field 'x' has a field conflict: name or nickname?",
+          ])
+        end
+      end
+    end
   end
 
 
@@ -410,6 +506,33 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
         "Field 'y' has a field conflict: barkVolume or doesKnowCommand?",
       ], error_messages
     end
+
+    describe "with error limiting" do
+      describe("disabled") do
+        let(:args) {
+          { max_errors: nil }
+        }
+
+        it "does not limit the number of errors" do
+          assert_equal(error_messages, [
+            "Field 'x' has a field conflict: name or nickname?",
+            "Field 'y' has a field conflict: barkVolume or doesKnowCommand?",
+          ])
+        end
+      end
+
+      describe("enabled") do
+        let(:args) {
+          { max_errors: 1 }
+        }
+
+        it "does limit the number of errors" do
+          assert_equal(error_messages, [
+            "Field 'x' has a field conflict: name or nickname?",
+          ])
+        end
+      end
+    end
   end
 
   describe "very deep conflict" do
@@ -456,6 +579,38 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
     end
   end
 
+  describe "nested spreads on the same type with a conflict" do
+    let(:query_string) {%|
+      {
+        dog {
+          name
+          ...D
+        }
+      }
+
+      fragment D on Dog {
+        ...D2
+      }
+
+      fragment D2 on Dog {
+        name: __typename
+      }
+    |}
+
+    it "finds a conflict" do
+      assert_equal [
+        {"message"=>"Field 'name' has a field conflict: name or __typename?",
+          "locations"=>[{"line"=>4, "column"=>11}, {"line"=>14, "column"=>9}],
+          "path"=>[],
+          "extensions"=>
+          {"code"=>"fieldConflict",
+           "fieldName"=>"name",
+           "conflicts"=>"name or __typename"}
+        }
+      ], errors
+    end
+  end
+
   describe "same aliases not allowed on different interfaces" do
     let(:query_string) {%|
       {
@@ -474,6 +629,25 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       assert_equal [
         "Field 'name' has a field conflict: name or nickname?",
       ], error_messages
+    end
+  end
+
+  describe "same aliases on divergent abstract types" do
+    let(:query_string) {%|
+      {
+        animal {
+          ... on Feline {
+            volume: meowVolume
+          }
+          ... on Canine {
+            volume: barkVolume
+          }
+        }
+      }
+    |}
+
+    it "passes rule" do
+      assert_equal [], errors
     end
   end
 
@@ -798,6 +972,30 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       it "fails rule" do
         assert_includes error_messages, "Field 'scalar' has a field conflict: deepBox or unrelatedField?"
       end
+    end
+  end
+
+  describe "conflicts exceeding the max_errors count" do
+    signature = (1..20).map { |n| "$arg#{n}: PetCommand" }.join(', ')
+    fields = (1..20).map { |n| "doesKnowCommand(dogCommand: $arg#{n})" }.join(" ")
+
+    let(:args) do
+      { max_errors: 10 }
+    end
+
+    let(:query_string) {%|
+      query (#{signature}) {
+        dog { #{fields} }
+      }
+    |}
+
+    it "fails rule" do
+      assert_equal 1, error_messages.size
+      (1..11).each do |n|
+        assert_match %r/\$arg#{n}/, error_messages.first
+      end
+
+      refute_match %r/\$arg12/, error_messages.first
     end
   end
 end
