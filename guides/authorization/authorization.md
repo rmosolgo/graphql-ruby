@@ -16,6 +16,7 @@ Schema members have `authorized?` methods which will be called during execution:
 - Type classes have `.authorized?(object, context)` class methods
 - Fields have `#authorized?(object, args, context)` instance methods
 - Arguments have `#authorized?(object, arg_value, context)` instance methods
+- Mutations have `#authorized?(object, context)` class method and a `#authorized?(hash)` instance method
 
 These methods are called with:
 
@@ -84,6 +85,22 @@ end
 ```
 
 For this to work, the base argument class must be {% internal_link "configured with other GraphQL types", "/type_definitions/extensions.html#customizing-arguments" %}.
+
+## Mutation Authorization
+
+Mutation `#authorized?(context)` hooks are called before resolving the the mutation. For example:
+
+```ruby
+class UpdateUserMutation < BaseMutation
+  def resolve(update_user_input:, user:)
+    # ...
+  end
+
+  def self.authorized?(obj, ctx)
+    super && ctx[:viewer].present?
+  end
+end
+```
 
 ## Handling Unauthorized Objects
 
