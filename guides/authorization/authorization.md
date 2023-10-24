@@ -88,19 +88,7 @@ For this to work, the base argument class must be {% internal_link "configured w
 
 ## Mutation Authorization
 
-Mutation `#authorized?(context)` hooks are called before resolving the the mutation. For example:
-
-```ruby
-class UpdateUserMutation < BaseMutation
-  def resolve(update_user_input:, user:)
-    # ...
-  end
-
-  def self.authorized?(obj, ctx)
-    super && ctx[:viewer].present?
-  end
-end
-```
+See mutations/mutation_authorization.html#can-this-user-perform-this-action {% internal_link "Mutation Authorization", "/mutation/mutation_authorization.html#can-this-user-perform-this-action" %}) in the Mutation Guides.
 
 ## Handling Unauthorized Objects
 
