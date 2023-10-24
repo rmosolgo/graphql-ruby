@@ -27,7 +27,8 @@
 - Interfaces: fix `definition_methods` when interfaces implement other interfaces #4670
 - Migrate `NullContext` to use the built-in Singleton module #4669
 - Speed up type lookup #4664
-- Fix `ScopeExtension#after_resolve` outside of execution
+- Fix `ScopeExtension#after_resolve` outside of execution #4685
+- Speed up `one_of?` checks #4680
 
 # 2.1.3 (12 Oct 2023)
 
