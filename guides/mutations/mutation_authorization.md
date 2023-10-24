@@ -16,6 +16,22 @@ Before running a mutation, you probably want to do a few things:
 
 This guide describes how to accomplish that workflow with GraphQL-Ruby.
 
+## Checking conditions before instantiating the mutation
+
+```ruby
+class UpdateUserMutation < BaseMutation
+  # ...
+
+  def resolve(update_user_input:, user:)
+    # ...
+  end
+
+  def self.authorized?(obj, ctx)
+    super && ctx[:viewer].present?
+  end
+end
+```
+
 ## Checking the user permissions
 
 Before loading any data from the database, you might want to see if the user has a certain permission level. For example, maybe only `.admin?` users can run `Mutation.promoteEmployee`.
