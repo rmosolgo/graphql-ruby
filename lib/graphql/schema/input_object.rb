@@ -79,7 +79,7 @@ module GraphQL
       end
 
       def self.one_of?
-        directives.any? { |d| d.is_a?(GraphQL::Schema::Directive::OneOf) }
+        false # Re-defined when `OneOf` is added
       end
 
       def unwrap_value(value)
