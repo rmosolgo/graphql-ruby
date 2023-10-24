@@ -889,4 +889,59 @@ describe GraphQL::Execution::Interpreter do
     assert_equal "NilClass", res["data"]["card"].fetch("parentClassName")
     assert_equal "InterpreterTest::Query::ExpansionData", res["data"]["expansion"]["cards"].first["parentClassName"]
   end
+
+  describe "fragment used twice in different ways" do
+    class FragmentBugSchema < GraphQL::Schema
+      class ProductVariant < GraphQL::Schema::Object
+        field :product, "FragmentBugSchema::Product"
+      end
+
+      class Product < GraphQL::Schema::Object
+        field :id, ID
+        field :variants, [ProductVariant]
+
+        def variants
+          [{ product: { id: "1" } }]
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :variant, ProductVariant
+
+        def variant
+          { product: { id: "1" } }
+        end
+      end
+
+      query(Query)
+    end
+
+    it "executes successfully" do
+      query_str = <<-GRAPHQL
+      {
+        variant {
+          ...variantFields
+          ... on ProductVariant {
+            product {
+              variants {
+                ...variantFields
+              }
+            }
+          }
+        }
+      }
+
+      fragment variantFields on ProductVariant {
+        product {
+          id
+        }
+      }
+      GRAPHQL
+
+      res = FragmentBugSchema.execute(query_str).to_h
+
+      expected_result = { "variant" => { "product" => { "id" => "1", "variants" => [ { "product" => { "id" => "1" } } ] } } }
+      assert_equal(expected_result, res["data"])
+    end
+  end
 end

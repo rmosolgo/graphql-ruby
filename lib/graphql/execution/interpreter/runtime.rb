@@ -52,13 +52,6 @@ module GraphQL
           # { Class => Boolean }
           @lazy_cache = {}
           @lazy_cache.compare_by_identity
-
-          @gathered_selections_cache = Hash.new { |h, k|
-            cache = {}
-            cache.compare_by_identity
-            h[k] = cache
-          }
-          @gathered_selections_cache.compare_by_identity
         end
 
         def final_result
@@ -98,7 +91,7 @@ module GraphQL
             @response = nil
           else
             call_method_on_directives(:resolve, runtime_object, root_operation.directives) do # execute query level directives
-              gathered_selections = gather_selections(runtime_object, root_type, nil, root_operation.selections)
+              gathered_selections = gather_selections(runtime_object, root_type, root_operation.selections)
               # This is kind of a hack -- `gathered_selections` is an Array if any of the selections
               # require isolation during execution (because of runtime directives). In that case,
               # make a new, isolated result hash for writing the result into. (That isolated response
@@ -143,18 +136,11 @@ module GraphQL
           nil
         end
 
-        def gather_selections(owner_object, owner_type, ast_node_for_caching, selections, selections_to_run = nil, selections_by_name = nil)
-          if ast_node_for_caching && (cached_selections = @gathered_selections_cache[ast_node_for_caching][owner_type])
-            return cached_selections
-          end
-          selections_by_name ||= {} # allocate this default here so we check the cache first
-
-          should_cache = true
+        def gather_selections(owner_object, owner_type, selections, selections_to_run = nil, selections_by_name = {})
 
           selections.each do |node|
             # Skip gathering this if the directive says so
             if !directives_include?(node, owner_object, owner_type)
-              should_cache = false
               next
             end
 
@@ -179,7 +165,6 @@ module GraphQL
               if @runtime_directive_names.any? && node.directives.any? { |d| @runtime_directive_names.include?(d.name) }
                 next_selections = {}
                 next_selections[:graphql_directives] = node.directives
-                should_cache = false
                 if selections_to_run
                   selections_to_run << next_selections
                 else
@@ -197,28 +182,24 @@ module GraphQL
                   type_defn = schema.get_type(node.type.name, context)
 
                   if query.warden.possible_types(type_defn).include?(owner_type)
-                    gather_selections(owner_object, owner_type, nil, node.selections, selections_to_run, next_selections)
+                    gather_selections(owner_object, owner_type, node.selections, selections_to_run, next_selections)
                   end
                 else
                   # it's an untyped fragment, definitely continue
-                  gather_selections(owner_object, owner_type, nil, node.selections, selections_to_run, next_selections)
+                  gather_selections(owner_object, owner_type, node.selections, selections_to_run, next_selections)
                 end
               when GraphQL::Language::Nodes::FragmentSpread
                 fragment_def = query.fragments[node.name]
                 type_defn = query.get_type(fragment_def.type.name)
                 if query.warden.possible_types(type_defn).include?(owner_type)
-                  gather_selections(owner_object, owner_type, nil, fragment_def.selections, selections_to_run, next_selections)
+                  gather_selections(owner_object, owner_type, fragment_def.selections, selections_to_run, next_selections)
                 end
               else
                 raise "Invariant: unexpected selection class: #{node.class}"
               end
             end
           end
-          result = selections_to_run || selections_by_name
-          if should_cache
-            @gathered_selections_cache[ast_node_for_caching][owner_type] = result
-          end
-          result
+          selections_to_run || selections_by_name
         end
 
         NO_ARGS = GraphQL::EmptyObjects::EMPTY_HASH
@@ -619,7 +600,7 @@ module GraphQL
                 response_hash = GraphQLResultHash.new(result_name, selection_result, is_non_null)
                 set_result(selection_result, result_name, response_hash, true, is_non_null)
 
-                gathered_selections = gather_selections(continue_value, current_type, ast_node, next_selections)
+                gathered_selections = gather_selections(continue_value, current_type, next_selections)
                 # There are two possibilities for `gathered_selections`:
                 # 1. All selections of this object should be evaluated together (there are no runtime directives modifying execution).
                 #    This case is handled below, and the result can be written right into the main `response_hash` above.
