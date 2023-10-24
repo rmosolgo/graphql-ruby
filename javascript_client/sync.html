@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/2.1.3/">API</a>
+          <a href="/api-doc/2.1.4/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -263,12 +263,15 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 
 <h2 id="use-with-relay-persisted-output">Use With Relay Persisted Output</h2>
 
-<p>Relay 2.0+ includes a <code class="language-plaintext highlighter-rouge">--persist-output</code> option for <code class="language-plaintext highlighter-rouge">relay-compiler</code> which works perfectly with GraphQL-Ruby. (Relay’s own docs, for reference: https://relay.dev/docs/en/persisted-queries.)</p>
+<p>To use Relay’s persisted output, add a <code class="language-plaintext highlighter-rouge">"file": ...</code> to your project’s <a href="https://relay.dev/docs/guides/persisted-queries/"><code class="language-plaintext highlighter-rouge">persistConfig</code> object</a>. For example:</p>
 
-<p>When generating queries for Relay, include <code class="language-plaintext highlighter-rouge">--persist-output</code>:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ relay-compiler ... --persist-output path/to/persisted-queries.json
-</code></pre></div></div>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="w">  </span><span class="nl">"relay"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="err">...</span><span class="w">
+    </span><span class="nl">"persistConfig"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"file"</span><span class="p">:</span><span class="w"> </span><span class="s2">"./persisted-queries.json"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="err">,</span><span class="w">
+</span></code></pre></div></div>
 
 <p>Then, push Relay’s generated queries to your OperationStore server with <code class="language-plaintext highlighter-rouge">--relay-persisted-output</code>:</p>
 
@@ -297,7 +300,7 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 <span class="p">}</span>
 </code></pre></div></div>
 
-<p>(Inspired by https://relay.dev/docs/en/persisted-queries#network-layer-changes.)</p>
+<p>(Inspired by https://relay.dev/docs/guides/persisted-queries/#network-layer-changes.)</p>
 
 <p>Now, your Relay app will only send operation IDs over the wire to the server.</p>
 
