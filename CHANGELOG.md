@@ -10,6 +10,25 @@
 
 ### Bug fixes
 
+# 2.1.4 (24 Oct 2023)
+
+### New features
+
+- Add `Query#logger` #4674
+- Lookahead: Add `with_alias:` option #2912
+- Improve support for `load_application_object_failed` #4667
+
+### Bug fixes
+
+- Execution: Fix runtime loop in some cases with fragments #4684
+- Fix `Connection#initialize` outside of execution #4675
+- Fix ParseError in `Subscriptions#trigger` #4673
+- Mongo: don't load all records in hasNextPage #4671
+- Interfaces: fix `definition_methods` when interfaces implement other interfaces #4670
+- Migrate `NullContext` to use the built-in Singleton module #4669
+- Speed up type lookup #4664
+- Fix `ScopeExtension#after_resolve` outside of execution
+
 # 2.1.3 (12 Oct 2023)
 
 ### Bug fixes
