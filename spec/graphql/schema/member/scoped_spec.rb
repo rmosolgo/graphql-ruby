@@ -286,4 +286,12 @@ describe GraphQL::Schema::Member::Scoped do
       assert_equal false, ScopeSchema::Item.fields["name"].scoped?
     end
   end
+
+  describe "ScopeExtension#after_resolve" do
+    it "works outside of GraphQL execution" do
+      ctx = GraphQL::Query.new(ScopeSchema, "{ __typename }").context
+      field = ScopeSchema::Query.fields["items"]
+      assert field.resolve(OpenStruct.new(object: { items: [] }), {}, ctx)
+    end
+  end
 end
