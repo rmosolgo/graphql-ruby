@@ -842,8 +842,8 @@ module GraphQL
             @default_logger
           elsif superclass.respond_to?(:default_logger)
             superclass.default_logger
-          elsif defined?(Rails)
-            Rails.logger
+          elsif defined?(Rails) && Rails.respond_to?(:logger) && (rails_logger = Rails.logger)
+            rails_logger
           else
             def_logger = Logger.new($stdout)
             def_logger.info! # It doesn't output debug info by default

@@ -5,11 +5,39 @@ describe "Logger" do
   describe "Schema.default_logger" do
     if defined?(Rails)
       it "When Rails is present, returns the Rails logger" do
+        prev_logger = Rails.logger # might be `nil`
+        Rails.logger = Object.new
         assert_equal Rails.logger, GraphQL::Schema.default_logger
+      ensure
+        Rails.logger = prev_logger
       end
+
+      it "When Rails is present but the logger is nil, it returns a new logger" do
+        prev_logger = Rails.logger
+        Rails.logger = nil
+        refute_equal Rails.logger, GraphQL::Schema.default_logger
+        assert_instance_of Logger, GraphQL::Schema.default_logger
+      ensure
+        Rails.logger = prev_logger
+      end
+
     else
       it "Without Rails, returns a new logger" do
         assert_instance_of Logger, GraphQL::Schema.default_logger
+      end
+
+      it "Works when Rails doesn't have a logger" do
+        rails_mod = Module.new
+        Object.const_set(:Rails, rails_mod)
+        assert_equal rails_mod, Rails
+        assert_instance_of Logger, GraphQL::Schema.default_logger
+
+        rails_mod.define_singleton_method(:logger) { false }
+        assert Rails.respond_to?(:logger)
+        assert_equal false, Rails.logger
+        assert_instance_of Logger, GraphQL::Schema.default_logger
+      ensure
+        Object.send :remove_const, :Rails
       end
     end
 
