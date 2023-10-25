@@ -11,6 +11,20 @@ describe "Logger" do
       it "Without Rails, returns a new logger" do
         assert_instance_of Logger, GraphQL::Schema.default_logger
       end
+
+      it "Works when Rails doesn't have a logger" do
+        rails_mod = Module.new
+        Object.const_set(:Rails, rails_mod)
+        assert_equal rails_mod, Rails
+        assert_instance_of Logger, GraphQL::Schema.default_logger
+
+        rails_mod.define_singleton_method(:logger) { false }
+        assert Rails.respond_to?(:logger)
+        assert_equal false, Rails.logger
+        assert_instance_of Logger, GraphQL::Schema.default_logger
+      ensure
+        Object.send :remove_const, :Rails
+      end
     end
 
     it "can be overridden" do
