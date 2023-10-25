@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 2.1.5 (25 Oct 2023)
+
+### Bug fixes
+
+- Logger: Fix `Schema.default_logger` when Rails is present but doesn't have a logger #4686
+
 # 2.1.4 (24 Oct 2023)
 
 ### New features
