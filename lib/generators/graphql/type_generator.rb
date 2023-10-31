@@ -46,8 +46,6 @@ module Graphql
         elsif type_expression.start_with?("[") && type_expression.end_with?("]")
           name, is_null = normalize_type_expression(type_expression[1..-2], mode: mode, null: null)
           ["[#{name}]", is_null]
-        elsif type_expression.end_with?("Type")
-          normalize_type_expression(type_expression[0..-5], mode: mode, null: null)
         elsif type_expression.start_with?("Types::")
           normalize_type_expression(type_expression[7..-1], mode: mode, null: null)
         elsif type_expression.start_with?("types.")
