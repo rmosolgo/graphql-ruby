@@ -138,6 +138,31 @@ describe "Trace modes for schemas" do
     end
   end
 
+  describe "inheriting from a custom default trace class" do
+    class CustomBaseTraceParentSchema < GraphQL::Schema
+      class CustomTrace < GraphQL::Tracing::Trace
+      end
+
+      trace_class CustomTrace
+    end
+
+    class CustomBaseTraceSubclassSchema < CustomBaseTraceParentSchema
+      trace_with Module.new, mode: :special_with_base_class
+    end
+
+    it "uses the default trace class for default mode" do
+      assert_equal CustomBaseTraceParentSchema::CustomTrace, CustomBaseTraceParentSchema.trace_class_for(:default)
+      assert_equal CustomBaseTraceParentSchema::CustomTrace, CustomBaseTraceSubclassSchema.trace_class_for(:default).superclass
+
+      assert_instance_of CustomBaseTraceParentSchema::CustomTrace, CustomBaseTraceParentSchema.new_trace
+      assert_kind_of CustomBaseTraceParentSchema::CustomTrace, CustomBaseTraceSubclassSchema.new_trace
+    end
+
+    it "uses the default trace class for special modes" do
+      assert_includes CustomBaseTraceSubclassSchema.trace_class_for(:special_with_base_class).ancestors, CustomBaseTraceParentSchema::CustomTrace
+      assert_kind_of CustomBaseTraceParentSchema::CustomTrace, CustomBaseTraceSubclassSchema.new_trace(mode: :special_with_base_class)
+    end
+  end
 
   describe "custom default trace mode" do
     class CustomDefaultSchema < TraceModesTest::ParentSchema
