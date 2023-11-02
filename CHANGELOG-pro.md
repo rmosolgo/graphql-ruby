@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.24.10 (2 Nov 2023)
+
+### Bug Fix
+
+- Improve compatibility with GraphQL-Ruby 1.12.x
+
 # 1.24.9 (4 Oct 2023)
 
 ### Bug Fix
