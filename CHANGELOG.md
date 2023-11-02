@@ -18,7 +18,7 @@
 
 ### New features
 
-- New `ISO8691Duration`` scalar #4688
+- New `ISO8601Duration` scalar #4688
 
 ### Bug fixes
 
