@@ -10,6 +10,20 @@
 
 ### Bug fixes
 
+# 2.1.6 (2 Nov 2023)
+
+### Breaking Changes
+
+- The parser cache is now opt-in. Add `config.graphql.parser_cache = true` to your Rails environment setup to enable it. #4648
+
+### New features
+
+- New `ISO8691Duration`` scalar #4688
+
+### Bug fixes
+
+- Trace: fix custom trace mode inheritance #4693
+
 # 2.1.5 (25 Oct 2023)
 
 ### Bug fixes
