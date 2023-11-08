@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.24.11 (8 Nov 2023)
+
+### Bug Fix
+
+- OperationStore: fix compatibility with 1.12.x #4696
+
 # 1.24.10 (2 Nov 2023)
 
 ### Bug Fix
