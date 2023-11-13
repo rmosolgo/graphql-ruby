@@ -8,6 +8,22 @@
 
 ### Bug Fix
 
+# 1.24.13 (13 Nov 2023)
+
+### New Features
+
+- OperationStore: accept `context:` for `AddOperationBatch.call` #4697
+
+# 1.24.12 (13 Nov 2023)
+
+### New Features
+
+- OperationStore: accept `context:` to `Validate.validate` #4697
+
+### Bug Fix
+
+- OperationStore: don't rescue application-raised `KeyError`s #4699
+
 # 1.24.11 (8 Nov 2023)
 
 ### Bug Fix
