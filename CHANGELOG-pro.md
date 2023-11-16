@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.24.13 (16 Nov 2023)
+
+### Bug Fix
+
+- OperationStore: also pass `context:` for ActiveRecord backend batches
+
 # 1.24.13 (13 Nov 2023)
 
 ### New Features
