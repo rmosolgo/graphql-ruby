@@ -8,7 +8,11 @@
 
 ### Bug Fix
 
-# 1.24.13 (16 Nov 2023)
+# 1.24.15 (17 Nov 2023)
+
+- OperationStore: don't sort directives when normalizing, properly retain directives on Operation and Fragment definitions #4703
+
+# 1.24.14 (16 Nov 2023)
 
 ### Bug Fix
 
