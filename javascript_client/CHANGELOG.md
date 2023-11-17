@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.11.10 (17 Nov 2023)
+
+- `createRelaySubscriptionHandler`: Support Relay persisted queries with ActionCable #4705
+
 # 1.11.9 (1 Sept 2023)
 
 - `createRelaySubscriptionHandler`: fix error handling in handler functions #4603
