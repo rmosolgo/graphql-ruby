@@ -133,6 +133,22 @@ var subscriptionHandler = createRelaySubscriptionHandler({
 var network = Network.create(fetchQuery, subscriptionHandler)
 ```
 
+## With Relay Persisted Queries
+
+If you're using Relay's built-in [persisted query support](https://relay.dev/docs/guides/persisted-queries/), you can pass `clientName:` to the handler in order to build IDs that work with the {% internal_link "OperationStore", "/operation_store/overview.html" %}. For example:
+
+```js
+var subscriptionHandler = createRelaySubscriptionHandler({
+  cable: createConsumer(...),
+  clientName: "web-frontend", // This should match the one you use for `sync`
+})
+
+// Create a Relay Modern network with the handler
+var network = Network.create(fetchQuery, subscriptionHandler)
+```
+
+Then, the ActionCable handler will use Relay's provided operation IDs to interact with the OperationStore.
+
 ## fetchOperation function
 
 The `fetchOperation` function can be extracted from your `fetchQuery` function. Its signature is:
