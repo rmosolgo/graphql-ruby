@@ -11,10 +11,11 @@ interface ActionCableHandlerOptions {
   cable: Consumer
   operations?: { getOperationId: Function}
   channelName?: string
+  clientName?: string
 }
 
 function createActionCableHandler(options: ActionCableHandlerOptions) {
-  return function (operation: { text: string, name: string}, variables: object, _cacheConfig: object, observer: {onError: Function, onNext: Function, onCompleted: Function}) {
+  return function (operation: { text: string, name: string, id?: string }, variables: object, _cacheConfig: object, observer: {onError: Function, onNext: Function, onCompleted: Function}) {
     // unique-ish
     var channelId = Math.round(Date.now() + Math.random() * 100000).toString(16)
     var cable = options.cable
@@ -39,7 +40,8 @@ function createActionCableHandler(options: ActionCableHandlerOptions) {
           channelParams = {
             variables: variables,
             operationName: operation.name,
-            query: operation.text
+            query: operation.text,
+            operationId: (operation.id && options.clientName ? (options.clientName + "/" + operation.id) : null),
           }
         }
         channel.perform('send', channelParams)
