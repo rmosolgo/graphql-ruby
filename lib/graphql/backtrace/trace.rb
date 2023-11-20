@@ -49,8 +49,6 @@ module GraphQL
         # This is an unhandled error from execution,
         # Re-raise it with a GraphQL trace.
         potential_context = @__backtrace_last_context
-        pp "Multiplex error #{err.message}"
-        puts err.backtrace
         if potential_context.is_a?(GraphQL::Query::Context) ||
             potential_context.is_a?(Backtrace::Frame)
           raise TracedError.new(err, potential_context)
@@ -86,7 +84,6 @@ module GraphQL
           arguments: arguments,
           parent_frame: parent_frame,
         )
-
         push_storage[push_key] = push_data
         @__backtrace_last_context = push_data
       end
