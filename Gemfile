@@ -18,6 +18,9 @@ if RUBY_VERSION >= "3.0"
   gem "evt"
 end
 
+gem "io-event"
+gem "async"
+
 # Required for running `jekyll algolia ...` (via `rake site:update_search_index`)
 group :jekyll_plugins do
   gem 'jekyll-algolia', '~> 1.0'

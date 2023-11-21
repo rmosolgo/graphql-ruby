@@ -7,7 +7,10 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
       class SleepSource < GraphQL::Dataloader::Source
         def fetch(keys)
           max_sleep = keys.max
-          `sleep #{max_sleep}`
+          t1 = Time.now
+          puts "----- SleepSource => #{max_sleep} "
+          sleep(max_sleep)
+          puts "----- SleepSource done #{max_sleep} after #{Time.now - t1}"
           keys.map { |_k| max_sleep }
         end
       end
@@ -94,12 +97,13 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
     module AsyncDataloaderAssertions
       def self.included(child_class)
         child_class.class_eval do
+
           it "runs IO in parallel by default" do
             dataloader = GraphQL::Dataloader::AsyncDataloader.new
             results = {}
-            dataloader.append_job { `sleep 0.1`; results[:a] = 1 }
-            dataloader.append_job { `sleep 0.2`; results[:b] = 2 }
-            dataloader.append_job { `sleep 0.3`; results[:c] = 3 }
+            dataloader.append_job { p "start 1 @ #{Fiber.current.object_id}"; sleep(0.1); results[:a] = 1 }
+            dataloader.append_job { p "start 2 @ #{Fiber.current.object_id}"; sleep(0.2); results[:b] = 2 }
+            dataloader.append_job { p "start 3 @ #{Fiber.current.object_id}"; sleep(0.3); results[:c] = 3 }
 
             assert_equal({}, results, "Nothing ran yet")
             started_at = Time.now
@@ -110,6 +114,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
             assert_in_delta 0.3, ended_at - started_at, 0.05, "IO ran in parallel"
           end
 
+          focus
           it "works with sources" do
             dataloader = GraphQL::Dataloader::AsyncDataloader.new
             r1 = dataloader.with(AsyncSchema::SleepSource).request(0.1)
@@ -234,22 +239,28 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
       end
     end
 
-    describe "With the toy scheduler from Ruby's tests" do
-      let(:scheduler_class) { ::DummyScheduler }
-      include AsyncDataloaderAssertions
-    end
+    # describe "With the toy scheduler from Ruby's tests" do
+    #   let(:scheduler_class) { ::DummyScheduler }
+    #   include AsyncDataloaderAssertions
+    # end
 
-    if RUBY_ENGINE == "ruby" && !ENV["GITHUB_ACTIONS"]
-      describe "With libev_scheduler" do
-        require "libev_scheduler"
-        let(:scheduler_class) { Libev::Scheduler }
-        include AsyncDataloaderAssertions
-      end
-    end
+    # if RUBY_ENGINE == "ruby" && !ENV["GITHUB_ACTIONS"]
+    #   describe "With libev_scheduler" do
+    #     require "libev_scheduler"
+    #     let(:scheduler_class) { Libev::Scheduler }
+    #     include AsyncDataloaderAssertions
+    #   end
+    # end
 
-    describe "with evt" do
-      require "evt"
-      let(:scheduler_class) { Evt::Scheduler }
+    # describe "with evt" do
+    #   require "evt"
+    #   let(:scheduler_class) { Evt::Scheduler }
+    #   include AsyncDataloaderAssertions
+    # end
+
+    describe "with async" do
+      require "async"
+      let(:scheduler_class) { Async::Scheduler }
       include AsyncDataloaderAssertions
     end
   end

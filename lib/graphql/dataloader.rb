@@ -122,6 +122,7 @@ module GraphQL
         Fiber.yield
       else
         parent_fiber = Thread.current[:parent_fiber]
+        puts "To parent #{parent_fiber.object_id} from #{Fiber.current.object_id}"
         parent_fiber.transfer
       end
       nil
@@ -178,39 +179,53 @@ module GraphQL
       source_fibers = []
       next_source_fibers = []
       first_pass = true
-      manager = spawn_fiber do
-        while first_pass || job_fibers.any?
-          first_pass = false
+      puts "Root fiber: #{Fiber.current.object_id}"
+      while first_pass || job_fibers.any?
+        first_pass = false
 
-          while (f = job_fibers.shift || spawn_job_fiber)
+        job_fibers.select! do |f|
+          if f.alive?
+            f.transfer
+            true
+          else
+            false
+          end
+        end
+
+
+        while (f = spawn_job_fiber)
+          if f.alive?
+            job_fibers << f
+          end
+        end
+
+        p "tried jobs, #{@pending_jobs.size}, #{job_fibers.size}"
+
+        any_pending_sources = true
+        while any_pending_sources
+          source_fibers.select! do |f|
             if f.alive?
-              finished = run_fiber(f)
-              if !finished
-                next_job_fibers << f
-              end
+              f.transfer
+              true
+            else
+              false
             end
           end
 
-          if job_fibers.empty?
-            any_pending_sources = true
-            while any_pending_sources
-              while (f = source_fibers.shift || spawn_source_fiber)
-                if f.alive?
-                  finished = run_fiber(f)
-                  if !finished
-                    next_source_fibers << f
-                  end
-                end
-              end
-              join_queues(source_fibers, next_source_fibers)
-              any_pending_sources = @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
+          while (f = spawn_source_fiber)
+            if f.alive?
+              next_source_fibers << f
             end
           end
-          join_queues(job_fibers, next_job_fibers)
+
+          puts "Join source queues"
+          join_queues(source_fibers, next_source_fibers)
+          any_pending_sources = @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
+          puts "Any_pending_sources? #{any_pending_sources}"
         end
       end
-
-      run_fiber(manager)
+      puts "Final run"
+      Fiber.scheduler.run
 
     rescue UncaughtThrowError => e
       throw e.tag, e.value
@@ -227,18 +242,22 @@ module GraphQL
     def spawn_fiber
       fiber_vars = get_fiber_variables
       parent_fiber = use_fiber_resume? ? nil : Fiber.current
-      Fiber.new(blocking: !@nonblocking) {
+      f = Fiber.schedule {
+        puts "Spinning up #{Fiber.current.object_id}"
         set_fiber_variables(fiber_vars)
         Thread.current[:parent_fiber] = parent_fiber
         yield
         # With `.transfer`, you have to explicitly pass back to the parent --
         # if the fiber is allowed to terminate normally, control is passed to the main fiber instead.
-        if parent_fiber
-          parent_fiber.transfer(true)
-        else
-          true
-        end
+        p "Done yielding #{Fiber.current.object_id}"
+        # if parent_fiber
+        #   parent_fiber.transfer(true)
+        # else
+        #   true
+        # end
+        true
       }
+      f
     end
 
 
@@ -262,7 +281,6 @@ module GraphQL
     private
 
     def join_queues(prev_queue, new_queue)
-      @nonblocking && Fiber.scheduler.run
       prev_queue.concat(new_queue)
       new_queue.clear
     end
@@ -277,11 +295,10 @@ module GraphQL
     end
 
     def spawn_job_fiber
-      if @pending_jobs.any?
+      puts "Spawn job fiber? #{@pending_jobs.size}"
+      if job = @pending_jobs.shift
         spawn_fiber do
-          while job = @pending_jobs.shift
-            job.call
-          end
+          job.call
         end
       end
     end
