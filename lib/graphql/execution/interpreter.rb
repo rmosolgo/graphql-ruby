@@ -25,7 +25,7 @@ module GraphQL
           queries = query_options.map do |opts|
             case opts
             when Hash
-              GraphQL::Query.new(schema, nil, **opts)
+              schema.query_class.new(schema, nil, **opts)
             when GraphQL::Query
               opts
             else
@@ -97,12 +97,6 @@ module GraphQL
                     final_values.compact!
                     multiplex.current_trace.execute_query_lazy(multiplex: multiplex, query: query) do
                       Interpreter::Resolve.resolve_each_depth(lazies_at_depth, multiplex.dataloader)
-                    end
-                    queries.each do |query|
-                      runtime = query.context.namespace(:interpreter_runtime)[:runtime]
-                      if runtime
-                        runtime.delete_all_interpreter_context
-                      end
                     end
                   }
                   multiplex.dataloader.run

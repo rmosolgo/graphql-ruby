@@ -2,6 +2,12 @@
 module GraphQL
   class Backtrace
     module Trace
+      def initialize(*args, **kwargs, &block)
+        @__backtrace_contexts = {}
+        @__backtrace_last_context = nil
+        super
+      end
+
       def validate(query:, validate:)
         if query.multiplex
           push_query_backtrace_context(query)
@@ -42,36 +48,27 @@ module GraphQL
       rescue StandardError => err
         # This is an unhandled error from execution,
         # Re-raise it with a GraphQL trace.
-        multiplex_context = multiplex.context
-        potential_context = multiplex_context[:last_graphql_backtrace_context]
-
+        potential_context = @__backtrace_last_context
         if potential_context.is_a?(GraphQL::Query::Context) ||
             potential_context.is_a?(Backtrace::Frame)
           raise TracedError.new(err, potential_context)
         else
           raise
         end
-      ensure
-        multiplex_context = multiplex.context
-        multiplex_context.delete(:graphql_backtrace_contexts)
-        multiplex_context.delete(:last_graphql_backtrace_context)
       end
 
       private
 
       def push_query_backtrace_context(query)
         push_data = query
-        multiplex = query.multiplex
         push_key = []
-        push_storage = multiplex.context[:graphql_backtrace_contexts] ||= {}
-        push_storage[push_key] = push_data
-        multiplex.context[:last_graphql_backtrace_context] = push_data
+        @__backtrace_contexts[push_key] = push_data
+        @__backtrace_last_context = push_data
       end
 
       def push_field_backtrace_context(field, query, ast_node, arguments, object)
-        multiplex = query.multiplex
         push_key = query.context[:current_path]
-        push_storage = multiplex.context[:graphql_backtrace_contexts]
+        push_storage = @__backtrace_contexts
         parent_frame = push_storage[push_key[0..-2]]
 
         if parent_frame.is_a?(GraphQL::Query)
@@ -87,10 +84,10 @@ module GraphQL
           arguments: arguments,
           parent_frame: parent_frame,
         )
-
         push_storage[push_key] = push_data
-        multiplex.context[:last_graphql_backtrace_context] = push_data
+        @__backtrace_last_context = push_data
       end
+
     end
   end
 end

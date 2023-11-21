@@ -157,9 +157,29 @@ module MaskHelpers
     argument :name, String, required: false
   end
 
+  module PublicInterfaceType
+    include BaseInterface
+    field :other, String
+  end
+
+  class PublicType < BaseObject
+    implements PublicInterfaceType
+    field :test, String
+  end
+
+  class CheremeWithInterface < BaseObject
+    # Commenting this would make the test pass
+    implements PublicInterfaceType
+
+    field :name, String, null: false
+  end
+
   class Chereme < BaseObject
     description "A basic unit of signed communication"
+    implements LanguageMemberType
     field :name, String, null: false
+
+    field :chereme_with_interface, CheremeWithInterface
   end
 
   class Character < BaseObject
@@ -185,6 +205,10 @@ module MaskHelpers
       metadata :hidden_field, true
     end
 
+    field :chereme_with_interface, CheremeWithInterface, null: false do
+      metadata :hidden_field, true
+    end
+
     field :phonemes, [PhonemeType], null: false do
       argument :manners, [MannerType], required: false, description: "Filter phonemes by manner of articulation"
     end
@@ -200,6 +224,9 @@ module MaskHelpers
     end
 
     field :manners, [MannerType], null: false
+
+    # Commenting this would make the test pass
+    field :test, PublicType, null: false
   end
 
   class MutationType < BaseObject
@@ -348,15 +375,26 @@ describe GraphQL::Schema::Warden do
     }
 
     it "hides types if no other fields are using it" do
-       query_string = %|
+      query_string = %|
+        {
+          Chereme: __type(name: "Chereme") { fields { name } }
+        }
+      |
+
+      res = MaskHelpers.query_with_mask(query_string, mask)
+      assert_nil res["data"]["Chereme"]
+    end
+
+    it "hides types if no other fields are using it (with interface)" do
+      query_string = %|
          {
-           Chereme: __type(name: "Chereme") { fields { name } }
+           CheremeWithInterface: __type(name: "CheremeWithInterface") { fields { name } }
          }
        |
 
-       res = MaskHelpers.query_with_mask(query_string, mask)
-       assert_nil res["data"]["Chereme"]
-     end
+      res = MaskHelpers.query_with_mask(query_string, mask)
+      assert_nil res["data"]["CheremeWithInterface"]
+    end
 
     it "causes validation errors" do
       query_string = %|{ phoneme(symbol: "ϕ") { name } }|

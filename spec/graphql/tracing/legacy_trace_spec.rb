@@ -48,6 +48,7 @@ describe GraphQL::Tracing::LegacyTrace do
     custom_trace_module = Module.new do
       def execute_query(query:)
         query.context[:trace_module_ran] = true
+        super
       end
     end
 
@@ -69,13 +70,12 @@ describe GraphQL::Tracing::LegacyTrace do
       tracer(custom_tracer)
     end
 
-
     res1 = parent_schema.execute("{ int }")
     assert_equal true, res1.context[:trace_module_ran]
     assert_nil res1.context[:tracer_ran]
 
     res2 = child_schema.execute("{ int }")
-    assert_equal true, res2.context[:trace_module_ran]
-    assert_equal true, res2.context[:tracer_ran]
+    assert_equal true, res2.context[:trace_module_ran], "New Trace Ran"
+    assert_equal true, res2.context[:tracer_ran], "Legacy Trace Ran"
   end
 end

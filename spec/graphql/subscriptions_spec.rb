@@ -984,4 +984,21 @@ describe GraphQL::Subscriptions do
       end
     end
   end
+
+  describe ".trigger" do
+    let(:schema) {
+      Class.new(ClassBasedInMemoryBackend::Schema) do
+        def self.parse_error(err, context)
+          raise err
+        end
+
+        use InMemoryBackend::Subscriptions, extra: 123
+      end
+    }
+
+    it "Doesn't create a ParseError under the hood when triggering" do
+      res = schema.subscriptions.trigger("payload", { "id" => "8"}, OpenStruct.new(str: nil, int: nil))
+      assert res
+    end
+  end
 end

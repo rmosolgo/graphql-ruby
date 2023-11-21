@@ -10,6 +10,89 @@
 
 ### Bug fixes
 
+# 2.1.6 (2 Nov 2023)
+
+### Breaking Changes
+
+- The parser cache is now opt-in. Add `config.graphql.parser_cache = true` to your Rails environment setup to enable it. #4648
+
+### New features
+
+- New `ISO8601Duration` scalar #4688
+
+### Bug fixes
+
+- Trace: fix custom trace mode inheritance #4693
+
+# 2.1.5 (25 Oct 2023)
+
+### Bug fixes
+
+- Logger: Fix `Schema.default_logger` when Rails is present but doesn't have a logger #4686
+
+# 2.1.4 (24 Oct 2023)
+
+### New features
+
+- Add `Query#logger` #4674
+- Lookahead: Add `with_alias:` option #2912
+- Improve support for `load_application_object_failed` #4667
+
+### Bug fixes
+
+- Execution: Fix runtime loop in some cases with fragments #4684
+- Fix `Connection#initialize` outside of execution #4675
+- Fix ParseError in `Subscriptions#trigger` #4673
+- Mongo: don't load all records in hasNextPage #4671
+- Interfaces: fix `definition_methods` when interfaces implement other interfaces #4670
+- Migrate `NullContext` to use the built-in Singleton module #4669
+- Speed up type lookup #4664
+- Fix `ScopeExtension#after_resolve` outside of execution #4685
+- Speed up `one_of?` checks #4680
+
+# 2.1.3 (12 Oct 2023)
+
+### Bug fixes
+
+- Tracing: fix legacy tracers added to `GraphQL::Schema` #4663
+- Add `racc` as a dependency because it's not included by default in Ruby 3.3 #4661
+
+# 2.1.2 (11 Oct 2023)
+
+### New features
+
+- Depth: accept `count_introspection_fields: false` #4658
+- Dataloader: add `get_fiber_variables` and `set_fiber_variables` #4593
+- Trace: Add `Schema.default_trace_mode` #4642
+
+### Bug fixes
+
+- Fix merging results after calling directives #4639 #4660
+- Visibility: don't reveal implementors of hidden abstract types #4589
+- Bump required Ruby version to 2.7 since numbered block arguments are used  #4659
+- `hash_key:`: use the configured hash key when the underlying Hash has a default value Proc #4656
+
+# 2.1.1 (2 Oct 2023)
+
+### New features
+
+- Mutations: `HasSingleInput` provides Relay Classic-like `input: ...` argument behavior #4581
+- Add `@specifiedBy` default directive #4633
+- Analysis: support `visit?` hook to skip visit but still return a value
+- Add `context.scoped` for a long-lived reference to the current scoped context #4605
+
+### Bug fixes
+
+- Sanitized printer: Correctly print enum variable defaults #4652
+- Schema printer: use `extend schema` when the schema has directives #4647
+- Performance: pass runtime state through interpreter code #4621
+- Performance: add `StaticVisitor` for faster AST visits #4645
+- Performance: faster field lookup #4626
+- Improve generator templates #4627
+- Dataloader: clear cache between root mutation fields #4617
+- Performance: Improve argument checks #4622
+- Remove unused legacy connection code #4606
+
 # 2.1.0 (30 Aug 2023)
 
 ### Breaking changes

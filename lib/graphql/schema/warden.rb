@@ -60,6 +60,7 @@ module GraphQL
           def visible_type_membership?(tm, ctx); tm.visible?(ctx); end
           def interface_type_memberships(obj_t, ctx); obj_t.interface_type_memberships; end
           def arguments(owner, ctx); owner.arguments(ctx); end
+          def loadable?(type, ctx); type.visible?(ctx); end
         end
       end
 
@@ -84,6 +85,7 @@ module GraphQL
         def fields(type_defn); type_defn.all_field_definitions; end # rubocop:disable Development/ContextIsPassedCop
         def get_field(parent_type, field_name); @schema.get_field(parent_type, field_name); end
         def reachable_type?(type_name); true; end
+        def loadable?(type, _ctx); true; end
         def reachable_types; @schema.types.values; end # rubocop:disable Development/ContextIsPassedCop
         def possible_types(type_defn); @schema.possible_types(type_defn); end
         def interfaces(obj_type); obj_type.interfaces; end
@@ -104,7 +106,7 @@ module GraphQL
         @types = @visible_types = @reachable_types = @visible_parent_fields =
           @visible_possible_types = @visible_fields = @visible_arguments = @visible_enum_arrays =
           @visible_enum_values = @visible_interfaces = @type_visibility = @type_memberships =
-          @visible_and_reachable_type = @unions = @unfiltered_interfaces = @references_to =
+          @visible_and_reachable_type = @unions = @unfiltered_interfaces =
           @reachable_type_set =
             nil
       end
@@ -120,6 +122,11 @@ module GraphQL
           end
           vis_types
         end
+      end
+
+      # @return [Boolean] True if this type is used for `loads:` but not in the schema otherwise and not _explicitly_ hidden.
+      def loadable?(type, _ctx)
+        !reachable_type_set.include?(type) && visible_type?(type)
       end
 
       # @return [GraphQL::BaseType, nil] The type named `type_name`, if it exists (else `nil`)
@@ -188,7 +195,16 @@ module GraphQL
       # @param argument_owner [GraphQL::Field, GraphQL::InputObjectType]
       # @return [Array<GraphQL::Argument>] Visible arguments on `argument_owner`
       def arguments(argument_owner, ctx = nil)
-        @visible_arguments ||= read_through { |o| o.arguments(@context).each_value.select { |a| visible_argument?(a, @context) } }
+        @visible_arguments ||= read_through { |o|
+          args = o.arguments(@context)
+          if args.any?
+            args = args.values
+            args.select! { |a| visible_argument?(a, @context) }
+            args
+          else
+            EmptyObjects::EMPTY_ARRAY
+          end
+        }
         @visible_arguments[argument_owner]
       end
 
@@ -211,7 +227,13 @@ module GraphQL
 
       # @return [Array<GraphQL::InterfaceType>] Visible interfaces implemented by `obj_type`
       def interfaces(obj_type)
-        @visible_interfaces ||= read_through { |t| t.interfaces(@context).select { |i| visible_type?(i) } }
+        @visible_interfaces ||= read_through { |t|
+          ints = t.interfaces(@context)
+          if ints.any?
+            ints.select! { |i| visible_type?(i) }
+          end
+          ints
+        }
         @visible_interfaces[obj_type]
       end
 
@@ -267,11 +289,26 @@ module GraphQL
           next true if root_type?(type_defn) || type_defn.introspection?
 
           if type_defn.kind.union?
-            visible_possible_types?(type_defn) && (referenced?(type_defn) || orphan_type?(type_defn))
+            possible_types(type_defn).any? && (referenced?(type_defn) || orphan_type?(type_defn))
           elsif type_defn.kind.interface?
-            visible_possible_types?(type_defn)
+            if possible_types(type_defn).any?
+              true
+            else
+              if @context.respond_to?(:logger) && (logger = @context.logger)
+                logger.debug { "Interface `#{type_defn.graphql_name}` hidden because it has no visible implementors" }
+              end
+              false
+            end
           else
-            referenced?(type_defn) || visible_abstract_type?(type_defn)
+            if referenced?(type_defn)
+              true
+            elsif type_defn.kind.object?
+              # Show this object if it belongs to ...
+              interfaces(type_defn).any? { |t| referenced?(t) } ||  # an interface which is referenced in the schema
+                union_memberships(type_defn).any? { |t| referenced?(t) || orphan_type?(t) } # or a union which is referenced or added via orphan_types
+            else
+              false
+            end
           end
         end
 
@@ -326,27 +363,13 @@ module GraphQL
       end
 
       def referenced?(type_defn)
-        @references_to ||= @schema.references_to
         graphql_name = type_defn.unwrap.graphql_name
-        members = @references_to[graphql_name] || NO_REFERENCES
+        members = @schema.references_to(graphql_name)
         members.any? { |m| visible?(m) }
       end
 
-      NO_REFERENCES = [].freeze
-
       def orphan_type?(type_defn)
         @schema.orphan_types.include?(type_defn)
-      end
-
-      def visible_abstract_type?(type_defn)
-        type_defn.kind.object? && (
-            interfaces(type_defn).any? ||
-            union_memberships(type_defn).any?
-          )
-      end
-
-      def visible_possible_types?(type_defn)
-        possible_types(type_defn).any? { |t| visible_and_reachable_type?(t) }
       end
 
       def visible?(member)
@@ -354,7 +377,9 @@ module GraphQL
       end
 
       def read_through
-        Hash.new { |h, k| h[k] = yield(k) }
+        h = Hash.new { |h, k| h[k] = yield(k) }
+        h.compare_by_identity
+        h
       end
 
       def reachable_type_set
@@ -385,54 +410,62 @@ module GraphQL
           end
         end
 
+        included_interface_possible_types_set = Set.new
+
         until unvisited_types.empty?
           type = unvisited_types.pop
-          if @reachable_type_set.add?(type)
-            type_by_name = rt_hash[type.graphql_name] ||= type
-            if type_by_name != type
-              raise DuplicateNamesError.new(
-                duplicated_name: type.graphql_name, duplicated_definition_1: type.inspect, duplicated_definition_2: type_by_name.inspect
-              )
+          visit_type(type, unvisited_types, @reachable_type_set, rt_hash, included_interface_possible_types_set, include_interface_possible_types: false)
+        end
+
+        @reachable_type_set
+      end
+
+      def visit_type(type, unvisited_types, visited_type_set, type_by_name_hash, included_interface_possible_types_set, include_interface_possible_types:)
+        if visited_type_set.add?(type) || (include_interface_possible_types && type.kind.interface? && included_interface_possible_types_set.add?(type))
+          type_by_name = type_by_name_hash[type.graphql_name] ||= type
+          if type_by_name != type
+            name_1, name_2 = [type.inspect, type_by_name.inspect].sort
+            raise DuplicateNamesError.new(
+              duplicated_name: type.graphql_name, duplicated_definition_1: name_1, duplicated_definition_2: name_2
+            )
+          end
+          if type.kind.input_object?
+            # recurse into visible arguments
+            arguments(type).each do |argument|
+              argument_type = argument.type.unwrap
+              unvisited_types << argument_type
             end
-            if type.kind.input_object?
+          elsif type.kind.union?
+            # recurse into visible possible types
+            possible_types(type).each do |possible_type|
+              unvisited_types << possible_type
+            end
+          elsif type.kind.fields?
+            if type.kind.object?
+              # recurse into visible implemented interfaces
+              interfaces(type).each do |interface|
+                unvisited_types << interface
+              end
+            elsif include_interface_possible_types
+              possible_types(type).each do |pt|
+                unvisited_types << pt
+              end
+            end
+            # Don't visit interface possible types -- it's not enough to justify visibility
+
+            # recurse into visible fields
+            fields(type).each do |field|
+              field_type = field.type.unwrap
+              # In this case, if it's an interface, we want to include
+              visit_type(field_type, unvisited_types, visited_type_set, type_by_name_hash, included_interface_possible_types_set, include_interface_possible_types: true)
               # recurse into visible arguments
-              arguments(type).each do |argument|
+              arguments(field).each do |argument|
                 argument_type = argument.type.unwrap
                 unvisited_types << argument_type
-              end
-            elsif type.kind.union?
-              # recurse into visible possible types
-              possible_types(type).each do |possible_type|
-                unvisited_types << possible_type
-              end
-            elsif type.kind.fields?
-              if type.kind.interface?
-                # recurse into visible possible types
-                possible_types(type).each do |possible_type|
-                  unvisited_types << possible_type
-                end
-              elsif type.kind.object?
-                # recurse into visible implemented interfaces
-                interfaces(type).each do |interface|
-                  unvisited_types << interface
-                end
-              end
-
-              # recurse into visible fields
-              fields(type).each do |field|
-                field_type = field.type.unwrap
-                unvisited_types << field_type
-                # recurse into visible arguments
-                arguments(field).each do |argument|
-                  argument_type = argument.type.unwrap
-                  unvisited_types << argument_type
-                end
               end
             end
           end
         end
-
-        @reachable_type_set
       end
     end
   end

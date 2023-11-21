@@ -60,7 +60,7 @@ end
 
 desc "Use Racc to regenerate parser.rb from configuration files"
 task :build_parser do
-  assert_dependency_version("Racc", "1.6.2", %|ruby -e "require 'racc'; puts Racc::VERSION"|)
+  assert_dependency_version("Racc", "1.7.1", %|ruby -e "require 'racc'; puts Racc::VERSION"|)
 
   `rm -f lib/graphql/language/parser.rb `
   `racc lib/graphql/language/parser.y -o lib/graphql/language/parser.rb`
@@ -120,6 +120,18 @@ namespace :bench do
     GraphQLBenchmark.profile_small_result
   end
 
+  desc "Run introspection on a small schema"
+  task :profile_small_introspection do
+    prepare_benchmark
+    GraphQLBenchmark.profile_small_introspection
+  end
+
+  desc "Dump schema to SDL"
+  task :profile_to_definition do
+    prepare_benchmark
+    GraphQLBenchmark.profile_to_definition
+  end
+
   desc "Compare GraphQL-Batch and GraphQL-Dataloader"
   task :profile_batch_loaders do
     prepare_benchmark
@@ -148,6 +160,11 @@ namespace :bench do
   task :profile_large_introspection do
     prepare_benchmark
     GraphQLBenchmark.profile_large_introspection
+  end
+
+  task :profile_small_query_on_large_schema do
+    prepare_benchmark
+    GraphQLBenchmark.profile_small_query_on_large_schema
   end
 
   desc "Run analysis on a big query"

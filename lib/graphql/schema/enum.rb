@@ -68,7 +68,7 @@ module GraphQL
         end
 
         # @return [Array<GraphQL::Schema::EnumValue>] Possible values of this enum
-        def enum_values(context = GraphQL::Query::NullContext)
+        def enum_values(context = GraphQL::Query::NullContext.instance)
           inherited_values = superclass.respond_to?(:enum_values) ? superclass.enum_values(context) : nil
           visible_values = []
           warden = Warden.from_context(context)
@@ -110,7 +110,7 @@ module GraphQL
         end
 
         # @return [Hash<String => GraphQL::Schema::EnumValue>] Possible values of this enum, keyed by name.
-        def values(context = GraphQL::Query::NullContext)
+        def values(context = GraphQL::Query::NullContext.instance)
           enum_values(context).each_with_object({}) { |val, obj| obj[val.graphql_name] = val }
         end
 

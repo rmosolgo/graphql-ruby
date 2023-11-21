@@ -60,7 +60,7 @@ describe GraphQL::Schema do
   describe "#resolve_type" do
     describe "when the return value is nil" do
       it "returns nil" do
-        result = relay_schema.resolve_type(123, nil, GraphQL::Query::NullContext)
+        result = relay_schema.resolve_type(123, nil, GraphQL::Query::NullContext.instance)
         assert_equal([nil, nil], result)
       end
     end
@@ -68,7 +68,7 @@ describe GraphQL::Schema do
     describe "when the return value is not a BaseType" do
       it "raises an error " do
         err = assert_raises(RuntimeError) {
-          relay_schema.resolve_type(nil, :test_error, GraphQL::Query::NullContext)
+          relay_schema.resolve_type(nil, :test_error, GraphQL::Query::NullContext.instance)
         }
         assert_includes err.message, "not_a_type (Symbol)"
       end
@@ -149,12 +149,13 @@ describe GraphQL::Schema do
       it "contains built-in directives" do
         schema = GraphQL::Schema
 
-        assert_equal ['deprecated', 'include', 'oneOf', 'skip'], schema.directives.keys.sort
+        assert_equal ['deprecated', 'include', 'oneOf', 'skip', 'specifiedBy'], schema.directives.keys.sort
 
         assert_equal GraphQL::Schema::Directive::Deprecated, schema.directives['deprecated']
         assert_equal GraphQL::Schema::Directive::Include, schema.directives['include']
         assert_equal GraphQL::Schema::Directive::Skip, schema.directives['skip']
         assert_equal GraphQL::Schema::Directive::OneOf, schema.directives['oneOf']
+        assert_equal GraphQL::Schema::Directive::SpecifiedBy, schema.directives['specifiedBy']
       end
     end
   end

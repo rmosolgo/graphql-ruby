@@ -901,19 +901,21 @@ void yyerror(VALUE parser, VALUE filename, const char *msg) {
   rb_exc_raise(exception);
 }
 
-#define INITIALIZE_NODE_CLASS_VARIABLE(node_class_name) GraphQL_Language_Nodes_##node_class_name = rb_const_get_at(mGraphQLLanguageNodes, rb_intern(#node_class_name));
+#define INITIALIZE_NODE_CLASS_VARIABLE(node_class_name) \
+    rb_global_variable(&GraphQL_Language_Nodes_##node_class_name); \
+    GraphQL_Language_Nodes_##node_class_name = rb_const_get_at(mGraphQLLanguageNodes, rb_intern(#node_class_name));
 
 void initialize_node_class_variables() {
   VALUE mGraphQL = rb_const_get_at(rb_cObject, rb_intern("GraphQL"));
   VALUE mGraphQLLanguage = rb_const_get_at(mGraphQL, rb_intern("Language"));
   VALUE mGraphQLLanguageNodes = rb_const_get_at(mGraphQLLanguage, rb_intern("Nodes"));
 
-  GraphQL_Language_Nodes_NONE = rb_ary_new();
   rb_global_variable(&GraphQL_Language_Nodes_NONE);
+  GraphQL_Language_Nodes_NONE = rb_ary_new();
   rb_ary_freeze(GraphQL_Language_Nodes_NONE);
 
-  r_string_query = rb_str_new_cstr("query");
   rb_global_variable(&r_string_query);
+  r_string_query = rb_str_new_cstr("query");
   rb_str_freeze(r_string_query);
 
   INITIALIZE_NODE_CLASS_VARIABLE(Argument)

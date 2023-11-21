@@ -79,11 +79,14 @@ describe GraphQL::Schema do
       assert_equal base_schema.disable_introspection_entry_points?, schema.disable_introspection_entry_points?
       assert_equal [GraphQL::Backtrace, GraphQL::Subscriptions::ActionCableSubscriptions], schema.plugins.map(&:first)
       assert_instance_of GraphQL::Subscriptions::ActionCableSubscriptions, schema.subscriptions
+      assert_equal GraphQL::Query, schema.query_class
     end
 
     it "can override configuration from its superclass" do
+      custom_query_class = Class.new(GraphQL::Query)
       schema = Class.new(base_schema) do
         use CustomSubscriptions, action_cable: nil, action_cable_coder: JSON
+        query_class(custom_query_class)
       end
 
       query = Class.new(GraphQL::Schema::Object) do
@@ -154,7 +157,7 @@ describe GraphQL::Schema do
       assert_includes base_schema.new_trace.class.ancestors, GraphQL::Tracing::CallLegacyTracers
       assert_equal [GraphQL::Tracing::DataDogTracing, GraphQL::Tracing::NewRelicTracing], schema.tracers
       assert_includes schema.new_trace.class.ancestors, GraphQL::Tracing::CallLegacyTracers
-
+      assert_equal custom_query_class, schema.query_class
 
       assert_instance_of CustomSubscriptions, schema.subscriptions
     end
@@ -164,7 +167,6 @@ describe GraphQL::Schema do
     METHODS_TO_CACHE = {
       types: 1,
       union_memberships: 1,
-      references_to: 1,
       possible_types: 5, # The number of types with fields accessed in the query
     }
 
@@ -455,5 +457,9 @@ describe GraphQL::Schema do
       assert full_res["data"]["__schema"]["types"].find { |t| t["kind"] == "INPUT_OBJECT" }.key?("isOneOf")
       refute_includes full_res.to_s, "oldSource"
     end
+  end
+
+  it "starts with no references_to" do
+    assert_equal({}, GraphQL::Schema.references_to)
   end
 end

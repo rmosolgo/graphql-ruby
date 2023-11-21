@@ -819,4 +819,43 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     default_field_shape = GraphQL::Introspection::TypeType.get_field("name").instance_variables
     assert_equal [default_field_shape], shapes.to_a
   end
+
+  it "works with implicit hash key and default value" do
+    class HashDefautSchema < GraphQL::Schema
+      class Example < GraphQL::Schema::Object
+        field :implicit_lookup, [String, null: true]
+        field :explicit_lookup, [String, null: true], hash_key: :nonexistent
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :example, Example, null: false
+
+        def example
+          Hash.new { [] }
+        end
+      end
+
+      query(Query)
+    end
+
+    res = HashDefautSchema.execute('query { example { implicitLookup explicitLookup } }').to_h
+    assert_equal({ "implicitLookup" => [], "explicitLookup" => [] }, res["data"]["example"])
+  end
+
+  module FieldConnectionTest
+    class SomeConnection < GraphQL::Schema::Object; end
+    class Connection < GraphQL::Schema::Object; end
+  end
+
+  it "Automatically detects connection, but can be overridden" do
+    field = GraphQL::Schema::Field.new(name: "blah", owner: nil, type: FieldConnectionTest::SomeConnection)
+    assert field.connection?
+    field = GraphQL::Schema::Field.new(name: "blah", owner: nil, type: FieldConnectionTest::SomeConnection, connection: false)
+    refute field.connection?
+
+    field = GraphQL::Schema::Field.new(name: "blah", owner: nil, type: FieldConnectionTest::Connection)
+    refute field.connection?
+    field = GraphQL::Schema::Field.new(name: "blah", owner: nil, type: FieldConnectionTest::Connection, connection: true)
+    assert field.connection?
+  end
 end

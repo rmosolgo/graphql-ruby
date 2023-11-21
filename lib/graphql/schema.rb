@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require "logger"
 require "graphql/schema/addition"
 require "graphql/schema/always_visible"
 require "graphql/schema/base_64_encoder"
@@ -37,10 +38,12 @@ require "graphql/schema/directive/skip"
 require "graphql/schema/directive/feature"
 require "graphql/schema/directive/flagged"
 require "graphql/schema/directive/transform"
+require "graphql/schema/directive/specified_by"
 require "graphql/schema/type_membership"
 
 require "graphql/schema/resolver"
 require "graphql/schema/mutation"
+require "graphql/schema/has_single_input_argument"
 require "graphql/schema/relay_classic_mutation"
 require "graphql/schema/subscription"
 
@@ -144,6 +147,19 @@ module GraphQL
         @subscriptions = new_implementation
       end
 
+      # @param new_mode [Symbol] If configured, this will be used when `context: { trace_mode: ... }` isn't set.
+      def default_trace_mode(new_mode = nil)
+        if new_mode
+          @default_trace_mode = new_mode
+        elsif defined?(@default_trace_mode)
+          @default_trace_mode
+        elsif superclass.respond_to?(:default_trace_mode)
+          superclass.default_trace_mode
+        else
+          :default
+        end
+      end
+
       def trace_class(new_class = nil)
         if new_class
           trace_mode(:default, new_class)
@@ -155,40 +171,64 @@ module GraphQL
       end
 
       # @return [Class] Return the trace class to use for this mode, looking one up on the superclass if this Schema doesn't have one defined.
-      def trace_class_for(mode)
-        @trace_modes ||= {}
-        @trace_modes[mode] ||= begin
-          case mode
-          when :default
-            superclass_base_class = if superclass.respond_to?(:trace_class_for)
-              superclass.trace_class_for(mode)
-            else
-              GraphQL::Tracing::Trace
-            end
-            Class.new(superclass_base_class)
-          when :default_backtrace
-            schema_base_class = trace_class_for(:default)
-            Class.new(schema_base_class) do
-              include(GraphQL::Backtrace::Trace)
-            end
-          else
-            mods = trace_modules_for(mode)
-            Class.new(trace_class_for(:default)) do
-              mods.any? && include(*mods)
-            end
-          end
-        end
+      def trace_class_for(mode, build: true)
+        own_trace_modes[mode] ||
+          (superclass.respond_to?(:trace_class_for) ? superclass.trace_class_for(mode, build: build) : (build ? (own_trace_modes[mode] = build_trace_mode(mode)) : nil))
       end
 
       # Configure `trace_class` to be used whenever `context: { trace_mode: mode_name }` is requested.
-      # `:default` is used when no `trace_mode: ...` is requested.
+      # {default_trace_mode} is used when no `trace_mode: ...` is requested.
+      #
+      # When a `trace_class` is added this way, it will _not_ receive other modules added with `trace_with(...)`
+      # unless `trace_mode` is explicitly given. (This class will not recieve any default trace modules.)
+      #
+      # Subclasses of the schema will use `trace_class` as a base class for this mode and those
+      # subclass also will _not_ receive default tracing modules.
+      #
       # @param mode_name [Symbol]
       # @param trace_class [Class] subclass of GraphQL::Tracing::Trace
       # @return void
       def trace_mode(mode_name, trace_class)
-        @trace_modes ||= {}
-        @trace_modes[mode_name] = trace_class
+        own_trace_modes[mode_name] = trace_class
         nil
+      end
+
+      def own_trace_modes
+        @own_trace_modes ||= {}
+      end
+
+      module DefaultTraceClass
+      end
+
+      private_constant :DefaultTraceClass
+
+      def build_trace_mode(mode)
+        case mode
+        when :default
+          # Use the superclass's default mode if it has one, or else start an inheritance chain at the built-in base class.
+          base_class = (superclass.respond_to?(:trace_class_for) && superclass.trace_class_for(mode)) || GraphQL::Tracing::Trace
+          Class.new(base_class) do
+            include DefaultTraceClass
+          end
+        when :default_backtrace
+          schema_base_class = trace_class_for(:default)
+          Class.new(schema_base_class) do
+            include(GraphQL::Backtrace::Trace)
+          end
+        else
+          # First, see if the superclass has a custom-defined class for this.
+          # Then, if it doesn't, use this class's default trace
+          base_class = (superclass.respond_to?(:trace_class_for) && superclass.trace_class_for(mode, build: false)) || trace_class_for(:default)
+          # Prepare the default trace class if it hasn't been initialized yet
+          base_class ||= (own_trace_modes[:default] = build_trace_mode(:default))
+          mods = trace_modules_for(mode)
+          if base_class < DefaultTraceClass
+            mods = trace_modules_for(:default) + mods
+          end
+          Class.new(base_class) do
+            mods.any? && include(*mods)
+          end
+        end
       end
 
       def own_trace_modules
@@ -286,7 +326,7 @@ module GraphQL
       # Build a map of `{ name => type }` and return it
       # @return [Hash<String => Class>] A dictionary of type classes by their GraphQL name
       # @see get_type Which is more efficient for finding _one type_ by name, because it doesn't merge hashes.
-      def types(context = GraphQL::Query::NullContext)
+      def types(context = GraphQL::Query::NullContext.instance)
         all_types = non_introspection_types.merge(introspection_system.types)
         visible_types = {}
         all_types.each do |k, v|
@@ -313,7 +353,7 @@ module GraphQL
 
       # @param type_name [String]
       # @return [Module, nil] A type, or nil if there's no type called `type_name`
-      def get_type(type_name, context = GraphQL::Query::NullContext)
+      def get_type(type_name, context = GraphQL::Query::NullContext.instance)
         local_entry = own_types[type_name]
         type_defn = case local_entry
         when nil
@@ -444,7 +484,7 @@ module GraphQL
       # @param type [Module] The type definition whose possible types you want to see
       # @return [Hash<String, Module>] All possible types, if no `type` is given.
       # @return [Array<Module>] Possible types for `type`, if it's given.
-      def possible_types(type = nil, context = GraphQL::Query::NullContext)
+      def possible_types(type = nil, context = GraphQL::Query::NullContext.instance)
         if type
           # TODO duck-typing `.possible_types` would probably be nicer here
           if type.kind.union?
@@ -497,18 +537,17 @@ module GraphQL
       attr_writer :dataloader_class
 
       def references_to(to_type = nil, from: nil)
-        @own_references_to ||= Hash.new { |h, k| h[k] = [] }
+        @own_references_to ||= {}
         if to_type
           if !to_type.is_a?(String)
             to_type = to_type.graphql_name
           end
 
           if from
-            @own_references_to[to_type] << from
+            refs = @own_references_to[to_type] ||= []
+            refs << from
           else
-            own_refs = @own_references_to[to_type]
-            inherited_refs = find_inherited_value(:references_to, EMPTY_HASH)[to_type] || EMPTY_ARRAY
-            own_refs + inherited_refs
+            get_references_to(to_type) || EMPTY_ARRAY
           end
         else
           # `@own_references_to` can be quite large for big schemas,
@@ -528,7 +567,7 @@ module GraphQL
         GraphQL::Schema::TypeExpression.build_type(type_owner, ast_node)
       end
 
-      def get_field(type_or_name, field_name, context = GraphQL::Query::NullContext)
+      def get_field(type_or_name, field_name, context = GraphQL::Query::NullContext.instance)
         parent_type = case type_or_name
         when LateBoundType
           get_type(type_or_name.name, context)
@@ -551,7 +590,7 @@ module GraphQL
         end
       end
 
-      def get_fields(type, context = GraphQL::Query::NullContext)
+      def get_fields(type, context = GraphQL::Query::NullContext.instance)
         type.fields(context)
       end
 
@@ -641,12 +680,20 @@ module GraphQL
         else
           string_or_document
         end
-        query = GraphQL::Query.new(self, document: doc, context: context)
+        query = query_class.new(self, document: doc, context: context)
         validator_opts = { schema: self }
         rules && (validator_opts[:rules] = rules)
         validator = GraphQL::StaticValidation::Validator.new(**validator_opts)
         res = validator.validate(query, timeout: validate_timeout, max_errors: validate_max_errors)
         res[:errors]
+      end
+
+      def query_class(new_query_class = NOT_CONFIGURED)
+        if NOT_CONFIGURED.equal?(new_query_class)
+          @query_class || (superclass.respond_to?(:query_class) ? superclass.query_class : GraphQL::Query)
+        else
+          @query_class = new_query_class
+        end
       end
 
       attr_writer :validate_max_errors
@@ -701,13 +748,22 @@ module GraphQL
 
       attr_writer :max_depth
 
-      def max_depth(new_max_depth = nil)
+      def max_depth(new_max_depth = nil, count_introspection_fields: true)
         if new_max_depth
           @max_depth = new_max_depth
+          @count_introspection_fields = count_introspection_fields
         elsif defined?(@max_depth)
           @max_depth
         else
           find_inherited_value(:max_depth)
+        end
+      end
+
+      def count_introspection_fields
+        if defined?(@count_introspection_fields)
+          @count_introspection_fields
+        else
+          find_inherited_value(:count_introspection_fields, true)
         end
       end
 
@@ -760,7 +816,16 @@ module GraphQL
           own_orphan_types.concat(new_orphan_types.flatten)
         end
 
-        find_inherited_value(:orphan_types, EMPTY_ARRAY) + own_orphan_types
+        inherited_ot = find_inherited_value(:orphan_types, nil)
+        if inherited_ot
+          if own_orphan_types.any?
+            inherited_ot + own_orphan_types
+          else
+            inherited_ot
+          end
+        else
+          own_orphan_types
+        end
       end
 
       def default_execution_strategy
@@ -776,6 +841,26 @@ module GraphQL
           superclass.default_analysis_engine
         else
           @default_analysis_engine ||= GraphQL::Analysis::AST
+        end
+      end
+
+      def default_logger(new_default_logger = NOT_CONFIGURED)
+        if NOT_CONFIGURED.equal?(new_default_logger)
+          if defined?(@default_logger)
+            @default_logger
+          elsif superclass.respond_to?(:default_logger)
+            superclass.default_logger
+          elsif defined?(Rails) && Rails.respond_to?(:logger) && (rails_logger = Rails.logger)
+            rails_logger
+          else
+            def_logger = Logger.new($stdout)
+            def_logger.info! # It doesn't output debug info by default
+            def_logger
+          end
+        elsif new_default_logger == nil
+          @default_logger = Logger.new(IO::NULL)
+        else
+          @default_logger = new_default_logger
         end
       end
 
@@ -865,6 +950,12 @@ module GraphQL
       def inherited(child_class)
         if self == GraphQL::Schema
           child_class.directives(default_directives.values)
+          child_class.extend(SubclassGetReferencesTo)
+        end
+        # Make sure the child class has these built out, so that
+        # subclasses can be modified by later calls to `trace_with`
+        own_trace_modes.each do |name, _class|
+          child_class.own_trace_modes[name] = child_class.build_trace_mode(name)
         end
         child_class.singleton_class.prepend(ResolveTypeWithType)
         super
@@ -962,7 +1053,12 @@ module GraphQL
           new_directives.flatten.each { |d| directive(d) }
         end
 
-        find_inherited_value(:directives, default_directives).merge(own_directives)
+        inherited_dirs = find_inherited_value(:directives, default_directives)
+        if own_directives.any?
+          inherited_dirs.merge(own_directives)
+        else
+          inherited_dirs
+        end
       end
 
       # Attach a single directive to this schema
@@ -978,11 +1074,13 @@ module GraphQL
           "skip" => GraphQL::Schema::Directive::Skip,
           "deprecated" => GraphQL::Schema::Directive::Deprecated,
           "oneOf" => GraphQL::Schema::Directive::OneOf,
+          "specifiedBy" => GraphQL::Schema::Directive::SpecifiedBy,
         }.freeze
       end
 
       def tracer(new_tracer)
-        if !(trace_class_for(:default) < GraphQL::Tracing::CallLegacyTracers)
+        default_trace = trace_class_for(:default)
+        if default_trace.nil? || !(default_trace < GraphQL::Tracing::CallLegacyTracers)
           trace_with(GraphQL::Tracing::CallLegacyTracers)
         end
 
@@ -1004,10 +1102,20 @@ module GraphQL
         if mode.is_a?(Array)
           mode.each { |m| trace_with(trace_mod, mode: m, **options) }
         else
-          tc = trace_class_for(mode)
+          tc = own_trace_modes[mode] ||= build_trace_mode(mode)
           tc.include(trace_mod)
-          if mode != :default
-            own_trace_modules[mode] << trace_mod
+          own_trace_modules[mode] << trace_mod
+
+          if mode == :default
+            # This module is being added as a default tracer. If any other mode classes
+            # have already been created, but get their default behavior from a superclass,
+            # Then mix this into this schema's subclass.
+            # (But don't mix it into mode classes that aren't default-based.)
+            own_trace_modes.each do |other_mode_name, other_mode_class|
+              if other_mode_class < DefaultTraceClass && !(other_mode_class < trace_mod)
+                other_mode_class.include(trace_mod)
+              end
+            end
           end
           t_opts = trace_options_for(mode)
           t_opts.merge!(options)
@@ -1030,6 +1138,8 @@ module GraphQL
 
       # Create a trace instance which will include the trace modules specified for the optional mode.
       #
+      # If no `mode:` is given, then {default_trace_mode} will be used.
+      #
       # @param mode [Symbol] Trace modules for this trade mode will be included
       # @param options [Hash] Keywords that will be passed to the tracing class during `#initialize`
       # @return [Tracing::Trace]
@@ -1040,14 +1150,19 @@ module GraphQL
         trace_mode = if mode
           mode
         elsif target && target.context[:backtrace]
-          :default_backtrace
+          if default_trace_mode != :default
+            raise ArgumentError, "Can't use `context[:backtrace]` with a custom default trace mode (`#{dm.inspect}`)"
+          else
+            own_trace_modes[:default_backtrace] ||= build_trace_mode(:default_backtrace)
+            :default_backtrace
+          end
         else
-          :default
+          default_trace_mode
         end
 
         base_trace_options = trace_options_for(trace_mode)
         trace_options = base_trace_options.merge(options)
-        trace_class_for_mode = trace_class_for(trace_mode)
+        trace_class_for_mode = trace_class_for(trace_mode) || raise(ArgumentError, "#{self} has no trace class for mode: #{trace_mode.inspect}")
         trace_class_for_mode.new(**trace_options)
       end
 
@@ -1310,6 +1425,27 @@ module GraphQL
 
       def own_multiplex_analyzers
         @own_multiplex_analyzers ||= []
+      end
+
+      # This is overridden in subclasses to check the inheritance chain
+      def get_references_to(type_name)
+        @own_references_to[type_name]
+      end
+    end
+
+    module SubclassGetReferencesTo
+      def get_references_to(type_name)
+        own_refs = @own_references_to[type_name]
+        inherited_refs = superclass.references_to(type_name)
+        if inherited_refs&.any?
+          if own_refs&.any?
+            own_refs + inherited_refs
+          else
+            inherited_refs
+          end
+        else
+          own_refs
+        end
       end
     end
 

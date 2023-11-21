@@ -115,8 +115,6 @@ module GraphQL
         if schema.trace_class <= GraphQL::Tracing::CallLegacyTracers
           context_tracers += [GraphQL::Backtrace::Tracer]
           @tracers << GraphQL::Backtrace::Tracer
-        elsif !(current_trace.class <= GraphQL::Backtrace::Trace)
-          raise "Invariant: `backtrace: true` should have provided a trace class with Backtrace mixed in, but it didnt. (Found: #{current_trace.class.ancestors}). This is a bug in GraphQL-Ruby, please report it on GitHub."
         end
       end
 
@@ -162,6 +160,14 @@ module GraphQL
 
       @result_values = nil
       @executed = false
+
+      @logger = if context && context[:logger] == false
+        Logger.new(IO::NULL)
+      elsif context && (l = context[:logger])
+        l
+      else
+        schema.default_logger
+      end
     end
 
     # If a document was provided to `GraphQL::Schema#execute` instead of the raw query string, we will need to get it from the document
@@ -368,6 +374,8 @@ module GraphQL
         @schema.after_lazy(value, &block)
       end
     end
+
+    attr_reader :logger
 
     private
 

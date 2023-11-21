@@ -3,6 +3,8 @@ module GraphQL
   class Query
     # This object can be `ctx` in places where there is no query
     class NullContext
+      include Singleton
+
       class NullQuery
         def after_lazy(value)
           yield(value)
@@ -26,16 +28,6 @@ module GraphQL
 
       def interpreter?
         true
-      end
-
-      class << self
-        extend Forwardable
-
-        def instance
-          @instance ||= self.new
-        end
-
-        def_delegators :instance, :query, :warden, :schema, :interpreter?, :dataloader, :[], :fetch, :dig, :key?
       end
     end
   end

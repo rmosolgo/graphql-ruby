@@ -280,7 +280,7 @@ describe GraphQL::Schema::Enum do
 
     describe "validate_input with bad input" do
       it "returns an invalid result" do
-        result = enum.validate_input("bad enum", GraphQL::Query::NullContext)
+        result = enum.validate_input("bad enum", GraphQL::Query::NullContext.instance)
         assert(!result.valid?)
         assert_equal(
           result.problems.first['explanation'],

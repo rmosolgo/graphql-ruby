@@ -109,7 +109,7 @@ module GraphQL
         end
 
         # @return [Hash<String => GraphQL::Schema::Argument] Arguments defined on this thing, keyed by name. Includes inherited definitions
-        def arguments(context = GraphQL::Query::NullContext)
+        def arguments(context = GraphQL::Query::NullContext.instance)
           if own_arguments.any?
             own_arguments_that_apply = {}
             own_arguments.each do |name, args_entry|
@@ -133,7 +133,7 @@ module GraphQL
           end
 
           module InheritedArguments
-            def arguments(context = GraphQL::Query::NullContext)
+            def arguments(context = GraphQL::Query::NullContext.instance)
               own_arguments = super
               inherited_arguments = superclass.arguments(context)
 
@@ -166,7 +166,7 @@ module GraphQL
             end
 
 
-            def get_argument(argument_name, context = GraphQL::Query::NullContext)
+            def get_argument(argument_name, context = GraphQL::Query::NullContext.instance)
               warden = Warden.from_context(context)
               for ancestor in ancestors
                 if ancestor.respond_to?(:own_arguments) &&
@@ -181,7 +181,7 @@ module GraphQL
         end
 
         module FieldConfigured
-          def arguments(context = GraphQL::Query::NullContext)
+          def arguments(context = GraphQL::Query::NullContext.instance)
             own_arguments = super
             if @resolver_class
               inherited_arguments = @resolver_class.field_arguments(context)
@@ -236,7 +236,7 @@ module GraphQL
         end
 
         # @return [GraphQL::Schema::Argument, nil] Argument defined on this thing, fetched by name.
-        def get_argument(argument_name, context = GraphQL::Query::NullContext)
+        def get_argument(argument_name, context = GraphQL::Query::NullContext.instance)
           warden = Warden.from_context(context)
           if (arg_config = own_arguments[argument_name]) && (visible_arg = Warden.visible_entry?(:visible_argument?, arg_config, context, warden))
             visible_arg
@@ -379,41 +379,52 @@ module GraphQL
           def authorize_application_object(argument, id, context, loaded_application_object)
             context.query.after_lazy(loaded_application_object) do |application_object|
               if application_object.nil?
-                err = GraphQL::LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
-                load_application_object_failed(err)
+                err = GraphQL::LoadApplicationObjectFailedError.new(context: context, argument: argument, id: id, object: application_object)
+                application_object = load_application_object_failed(err)
               end
               # Double-check that the located object is actually of this type
               # (Don't want to allow arbitrary access to objects this way)
-              maybe_lazy_resolve_type = context.schema.resolve_type(argument.loads, application_object, context)
-              context.query.after_lazy(maybe_lazy_resolve_type) do |resolve_type_result|
-                if resolve_type_result.is_a?(Array) && resolve_type_result.size == 2
-                  application_object_type, application_object = resolve_type_result
-                else
-                  application_object_type = resolve_type_result
-                  # application_object is already assigned
-                end
-                possible_object_types = context.warden.possible_types(argument.loads)
-                if !possible_object_types.include?(application_object_type)
-                  err = GraphQL::LoadApplicationObjectFailedError.new(argument: argument, id: id, object: application_object)
-                  load_application_object_failed(err)
-                else
-                  # This object was loaded successfully
-                  # and resolved to the right type,
-                  # now apply the `.authorized?` class method if there is one
-                  context.query.after_lazy(application_object_type.authorized?(application_object, context)) do |authed|
-                    if authed
-                      application_object
-                    else
-                      err = GraphQL::UnauthorizedError.new(
-                        object: application_object,
-                        type: application_object_type,
-                        context: context,
-                      )
-                      if self.respond_to?(:unauthorized_object)
-                        err.set_backtrace(caller)
-                        unauthorized_object(err)
+              if application_object.nil?
+                nil
+              else
+                maybe_lazy_resolve_type = context.schema.resolve_type(argument.loads, application_object, context)
+                context.query.after_lazy(maybe_lazy_resolve_type) do |resolve_type_result|
+                  if resolve_type_result.is_a?(Array) && resolve_type_result.size == 2
+                    application_object_type, application_object = resolve_type_result
+                  else
+                    application_object_type = resolve_type_result
+                    # application_object is already assigned
+                  end
+
+                  if !(
+                      context.warden.possible_types(argument.loads).include?(application_object_type) ||
+                      context.warden.loadable?(argument.loads, context)
+                    )
+                    err = GraphQL::LoadApplicationObjectFailedError.new(context: context, argument: argument, id: id, object: application_object)
+                    application_object = load_application_object_failed(err)
+                  end
+
+                  if application_object.nil?
+                    nil
+                  else
+                    # This object was loaded successfully
+                    # and resolved to the right type,
+                    # now apply the `.authorized?` class method if there is one
+                    context.query.after_lazy(application_object_type.authorized?(application_object, context)) do |authed|
+                      if authed
+                        application_object
                       else
-                        raise err
+                        err = GraphQL::UnauthorizedError.new(
+                          object: application_object,
+                          type: application_object_type,
+                          context: context,
+                        )
+                        if self.respond_to?(:unauthorized_object)
+                          err.set_backtrace(caller)
+                          unauthorized_object(err)
+                        else
+                          raise err
+                        end
                       end
                     end
                   end

@@ -62,7 +62,7 @@ module GraphQL
     # @return [void]
     def trigger(event_name, args, object, scope: nil, context: {})
       # Make something as context-like as possible, even though there isn't a current query:
-      dummy_query = GraphQL::Query.new(@schema, "", validate: false, context: context)
+      dummy_query = @schema.query_class.new(@schema, "{ __typename }", validate: false, context: context)
       context = dummy_query.context
       event_name = event_name.to_s
 
@@ -83,7 +83,7 @@ module GraphQL
 
       # Normalize symbol-keyed args to strings, try camelizing them
       # Should this accept a real context somehow?
-      normalized_args = normalize_arguments(normalized_event_name, field, args, GraphQL::Query::NullContext)
+      normalized_args = normalize_arguments(normalized_event_name, field, args, GraphQL::Query::NullContext.instance)
 
       event = Subscriptions::Event.new(
         name: normalized_event_name,
@@ -234,7 +234,7 @@ module GraphQL
 
     # @return [Boolean] if true, then a query like this one would be broadcasted
     def broadcastable?(query_str, **query_options)
-      query = GraphQL::Query.new(@schema, query_str, **query_options)
+      query = @schema.query_class.new(@schema, query_str, **query_options)
       if !query.valid?
         raise "Invalid query: #{query.validation_errors.map(&:to_h).inspect}"
       end

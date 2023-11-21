@@ -8,6 +8,50 @@
 
 ### Bug Fix
 
+# 1.24.15 (17 Nov 2023)
+
+- OperationStore: don't sort directives when normalizing, properly retain directives on Operation and Fragment definitions #4703
+
+# 1.24.14 (16 Nov 2023)
+
+### Bug Fix
+
+- OperationStore: also pass `context:` for ActiveRecord backend batches
+
+# 1.24.13 (13 Nov 2023)
+
+### New Features
+
+- OperationStore: accept `context:` for `AddOperationBatch.call` #4697
+
+# 1.24.12 (13 Nov 2023)
+
+### New Features
+
+- OperationStore: accept `context:` to `Validate.validate` #4697
+
+### Bug Fix
+
+- OperationStore: don't rescue application-raised `KeyError`s #4699
+
+# 1.24.11 (8 Nov 2023)
+
+### Bug Fix
+
+- OperationStore: fix compatibility with 1.12.x #4696
+
+# 1.24.10 (2 Nov 2023)
+
+### Bug Fix
+
+- Improve compatibility with GraphQL-Ruby 1.12.x
+
+# 1.24.9 (4 Oct 2023)
+
+### Bug Fix
+
+- OperationStore: Preserve variable default values of `false` when normalizing queries
+
 # 1.24.8 (29 Aug 2023)
 
 ### Bug Fix

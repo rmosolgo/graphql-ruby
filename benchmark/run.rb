@@ -161,6 +161,30 @@ module GraphQLBenchmark
 
   SILLY_LARGE_SCHEMA = build_large_schema
 
+  def self.profile_small_query_on_large_schema
+    schema = Class.new(SILLY_LARGE_SCHEMA)
+    Benchmark.ips do |x|
+      x.report("Run small query") {
+        schema.execute("{ __typename }")
+      }
+    end
+
+    result = StackProf.run(mode: :wall, interval: 1) do
+      schema.execute("{ __typename }")
+    end
+    StackProf::Report.new(result).print_text
+
+    StackProf.run(mode: :wall, out: "tmp/small_query.dump", interval: 1) do
+      schema.execute("{ __typename }")
+    end
+
+    report = MemoryProfiler.report do
+      schema.execute("{ __typename }")
+    end
+    puts "\n\n"
+    report.pretty_print
+  end
+
   def self.profile_large_introspection
     schema = SILLY_LARGE_SCHEMA
     Benchmark.ips do |x|
@@ -302,6 +326,30 @@ module GraphQLBenchmark
     report.pretty_print
   end
 
+  def self.profile_small_introspection
+    schema = ProfileLargeResult::Schema
+    document = GraphQL.parse(GraphQL::Introspection::INTROSPECTION_QUERY)
+
+    Benchmark.ips do |x|
+      x.config(time: 5)
+      x.report("Introspection") {
+        schema.execute(document: document)
+      }
+    end
+
+    result = StackProf.run(mode: :wall, interval: 1) do
+      schema.execute(document: document)
+    end
+
+    StackProf::Report.new(result).print_text
+
+    report = MemoryProfiler.report do
+      schema.execute(document: document)
+    end
+
+    report.pretty_print
+  end
+
   module ProfileLargeResult
     def self.eager_or_proc(value)
       ENV["EAGER"] ? value : -> { value }
@@ -416,6 +464,27 @@ module GraphQLBenchmark
         }
       }
     GRAPHQL
+  end
+
+  def self.profile_to_definition
+    require_relative "./batch_loading"
+    schema = ProfileLargeResult::Schema
+    schema.to_definition
+
+    Benchmark.ips do |x|
+      x.report("to_definition") { schema.to_definition }
+    end
+
+    result = StackProf.run(mode: :wall, interval: 1) do
+      schema.to_definition
+    end
+    StackProf::Report.new(result).print_text
+
+    report = MemoryProfiler.report do
+      schema.to_definition
+    end
+
+    report.pretty_print
   end
 
   def self.profile_batch_loaders

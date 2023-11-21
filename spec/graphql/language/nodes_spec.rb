@@ -19,6 +19,7 @@ describe GraphQL::Language::Nodes::AbstractNode do
         expected_method_name = "on_#{GraphQL::Schema::Member::BuildType.underscore(node_class.name.split("::").last)}"
         assert_equal node_class.visit_method.to_s, expected_method_name, "#{node_class} has #{expected_method_name} for visit_method"
         assert GraphQL::Language::Visitor.method_defined?(expected_method_name), "Visitor has ##{expected_method_name}"
+        assert GraphQL::Language::StaticVisitor.method_defined?(expected_method_name), "Visitor has ##{expected_method_name}"
         tested_classes += 1
       end
       assert_equal expected_classes, tested_classes, "All classes were tested"

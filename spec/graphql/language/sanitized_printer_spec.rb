@@ -344,5 +344,37 @@ describe GraphQL::Language::SanitizedPrinter do
     query = GraphQL::Query.new(SanitizeTest::CustomSanitizedPrinterSchema, query_str)
     assert_equal expected_query_string, query.sanitized_query_string
   end
-end
 
+  it "properly prints enum variable default values" do
+    class EnumSchema < GraphQL::Schema
+      class Grouping < GraphQL::Schema::Enum
+        value "DAY"
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :things, [String] do
+          argument :group, Grouping
+        end
+
+        def things(group:)
+          [group]
+        end
+      end
+
+      query(Query)
+    end
+    query_string = <<~EOS
+      query(
+        $group: Grouping = DAY
+      ) {
+        things(group: $group)
+      }
+    EOS
+
+    query = ::GraphQL::Query.new(EnumSchema, query_string)
+
+    assert_equal ["DAY"], query.result["data"]["things"]
+    expected_query_string = "query {\n  things(group: DAY)\n}"
+    assert_equal expected_query_string, query.sanitized_query_string
+  end
+end

@@ -203,7 +203,12 @@ module GraphQL
             [value].map { |v| value_to_ast(v, type.of_type) }
           end
         when "ENUM"
-          GraphQL::Language::Nodes::Enum.new(name: value)
+          if value.is_a?(GraphQL::Language::Nodes::Enum)
+            # if it was a default value, it's already wrapped
+            value
+          else
+            GraphQL::Language::Nodes::Enum.new(name: value)
+          end
         else
           value
         end

@@ -159,6 +159,16 @@ directive @skip(
 ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
 """
+Exposes a URL that specifies the behavior of this scalar.
+"""
+directive @specifiedBy(
+  """
+  The URL that specifies the behavior of this scalar.
+  """
+  url: String!
+) on SCALAR
+
+"""
 A Directive provides a way to describe alternate runtime execution and type validation behavior in a GraphQL document.
 
 In some cases, you need to provide options to alter GraphQL's execution behavior

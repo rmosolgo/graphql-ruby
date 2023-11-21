@@ -70,11 +70,20 @@ module GraphQL
           end
 
           module InheritedInterfaces
-            def interfaces(context = GraphQL::Query::NullContext)
+            def interfaces(context = GraphQL::Query::NullContext.instance)
               visible_interfaces = super
-              visible_interfaces.concat(superclass.interfaces(context))
-              visible_interfaces.uniq!
-              visible_interfaces
+              inherited_interfaces = superclass.interfaces(context)
+              if visible_interfaces.any?
+                if inherited_interfaces.any?
+                  visible_interfaces.concat(inherited_interfaces)
+                  visible_interfaces.uniq!
+                end
+                visible_interfaces
+              elsif inherited_interfaces.any?
+                inherited_interfaces
+              else
+                EmptyObjects::EMPTY_ARRAY
+              end
             end
 
             def interface_type_memberships
@@ -90,25 +99,30 @@ module GraphQL
         end
 
         # param context [Query::Context] If omitted, skip filtering.
-        def interfaces(context = GraphQL::Query::NullContext)
+        def interfaces(context = GraphQL::Query::NullContext.instance)
           warden = Warden.from_context(context)
-          visible_interfaces = []
+          visible_interfaces = nil
           own_interface_type_memberships.each do |type_membership|
             case type_membership
             when Schema::TypeMembership
               if warden.visible_type_membership?(type_membership, context)
+                visible_interfaces ||= []
                 visible_interfaces << type_membership.abstract_type
               end
             when String, Schema::LateBoundType
               # During initialization, `type_memberships` can hold late-bound types
+              visible_interfaces ||= []
               visible_interfaces << type_membership
             else
               raise "Invariant: Unexpected type_membership #{type_membership.class}: #{type_membership.inspect}"
             end
           end
-          visible_interfaces.uniq!
-
-          visible_interfaces
+          if visible_interfaces
+            visible_interfaces.uniq!
+            visible_interfaces
+          else
+            EmptyObjects::EMPTY_ARRAY
+          end
         end
 
         private

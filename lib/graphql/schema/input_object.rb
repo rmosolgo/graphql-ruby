@@ -79,7 +79,7 @@ module GraphQL
       end
 
       def self.one_of?
-        directives.any? { |d| d.is_a?(GraphQL::Schema::Directive::OneOf) }
+        false # Re-defined when `OneOf` is added
       end
 
       def unwrap_value(value)
@@ -145,7 +145,7 @@ module GraphQL
         end
 
         # @api private
-        INVALID_OBJECT_MESSAGE = "Expected %{object} to be a key-value object responding to `to_h` or `to_unsafe_h`."
+        INVALID_OBJECT_MESSAGE = "Expected %{object} to be a key-value object."
 
         def validate_non_null_input(input, ctx, max_errors: nil)
           warden = ctx.warden

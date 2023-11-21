@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.authors     = ["Robert Mosolgo"]
   s.email       = ["rdmosolgo@gmail.com"]
   s.license     = "MIT"
-  s.required_ruby_version = ">= 2.4.0"
+  s.required_ruby_version = ">= 2.7.0"
   s.metadata    = {
     "homepage_uri" => "https://graphql-ruby.org",
     "changelog_uri" => "https://github.com/rmosolgo/graphql-ruby/blob/master/CHANGELOG.md",
@@ -24,6 +24,8 @@ Gem::Specification.new do |s|
 
   s.files = Dir["{lib}/**/*", "MIT-LICENSE", "readme.md", ".yardopts"]
 
+  s.add_dependency "racc", "~> 1.4"
+
   s.add_development_dependency "benchmark-ips"
   s.add_development_dependency "concurrent-ruby", "~>1.0"
   s.add_development_dependency "memory_profiler"
@@ -32,7 +34,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency "minitest", "~> 5.9.0"
   s.add_development_dependency "minitest-focus", "~> 1.1"
   s.add_development_dependency "minitest-reporters", "~>1.0"
-  s.add_development_dependency "racc", "~> 1.4"
   s.add_development_dependency "rake"
   s.add_development_dependency 'rake-compiler'
   s.add_development_dependency "rubocop", "1.12" # for Ruby 2.4 enforcement

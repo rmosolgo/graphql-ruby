@@ -269,6 +269,10 @@ describe "Dynamic types, fields, arguments, and enum values" do
     end
 
     class Query < BaseObject
+      field :node, Node do
+        argument :id, ID
+      end
+
       field :f1, String, future_schema: true
       field :f1, Int, future_schema: false
 
@@ -439,7 +443,7 @@ ERR
       MultifieldSchema::Query.get_field("f1")
     end
     assert_equal "Query.f1", err.duplicated_name
-    
+
     expected_message = "Found two visible definitions for `Query.f1`: #<MultifieldSchema::BaseField Query.f1: String>, #<MultifieldSchema::BaseField Query.f1: Int>"
     assert_equal expected_message, err.message
 
@@ -461,6 +465,7 @@ type Query {
   f1: Int
   favoriteLanguage(lang: Language): Language!
   legacyThing(id: ID!): LegacyThing!
+  node(id: ID!): Node
   thing(id: Int!): Thing
   yell(scream: Scream!): String!
 }
@@ -473,6 +478,7 @@ type Query {
   f1: String
   favoriteLanguage(lang: Language): Language!
   legacyThing(id: ID!): LegacyThing!
+  node(id: ID!): Node
   thing(id: ID!): Thing
   yell(scream: Scream!): String!
 }
