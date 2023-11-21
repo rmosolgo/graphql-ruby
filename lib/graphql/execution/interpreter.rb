@@ -25,7 +25,7 @@ module GraphQL
           queries = query_options.map do |opts|
             case opts
             when Hash
-              GraphQL::Query.new(schema, nil, **opts)
+              schema.query_class.new(schema, nil, **opts)
             when GraphQL::Query
               opts
             else
