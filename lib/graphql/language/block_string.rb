@@ -47,10 +47,10 @@ module GraphQL
         end
 
         # Remove leading & trailing blank lines
-        while lines.size > 0 && lines[0].empty?
+        while lines.size > 0 && contains_only_whitespace?(lines.first)
           lines.shift
         end
-        while lines.size > 0 && lines[-1].empty?
+        while lines.size > 0 && contains_only_whitespace?(lines.last)
           lines.pop
         end
 
@@ -105,6 +105,10 @@ module GraphQL
         end
 
         nil
+      end
+
+      def self.contains_only_whitespace?(line)
+        line.match?(/^\s*$/)
       end
     end
   end
