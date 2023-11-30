@@ -81,7 +81,7 @@ describe GraphQL::Schema::Mutation do
     it "runs mutations" do
       query_str = <<-GRAPHQL
       mutation {
-        addInstrument(name: "Trombone", family: BRASS) {
+        addInstrument(name: "trombone", family: BRASS) {
           instrument {
             name
             family

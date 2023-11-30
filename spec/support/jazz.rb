@@ -3,7 +3,7 @@
 # Here's the "application"
 module Jazz
   module Models
-    Instrument = Struct.new(:name, :family, :alternative_name)
+    Instrument = Struct.new(:name, :family)
     Ensemble = Struct.new(:name)
     Musician = Struct.new(:name, :favorite_key)
     Key = Struct.new(:root, :sharp, :flat) do
@@ -545,16 +545,16 @@ module Jazz
 
   class AddInstrument < GraphQL::Schema::Mutation
     class << self
-      def prepare_family(value, context)
-        value.upcase
+      def prepare_name(value, context)
+        value.capitalize
       end
     end
 
     null true
     description "Register a new musical instrument in the database"
 
-    argument :name, String
-    argument :family, Family, prepare: :prepare_family
+    argument :name, String, prepare: :prepare_name
+    argument :family, Family
 
     field :instrument, InstrumentType, null: false
     # This is meaningless, but it's to test the conflict with `Hash#entries`
