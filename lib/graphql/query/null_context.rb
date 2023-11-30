@@ -1,8 +1,9 @@
 # frozen_string_literal: true
+require "graphql/query/context"
 module GraphQL
   class Query
     # This object can be `ctx` in places where there is no query
-    class NullContext
+    class NullContext < Context
       include Singleton
 
       class NullQuery
