@@ -1001,4 +1001,71 @@ describe GraphQL::Subscriptions do
       assert res
     end
   end
+
+  describe "Triggering with custom enum values" do
+    module SubscriptionEnum
+      class InMemorySubscriptions < GraphQL::Subscriptions
+        attr_reader :write_subscription_events, :execute_all_events
+
+        def initialize(...)
+          super
+          reset
+        end
+
+        def write_subscription(_query, events)
+          @write_subscription_events.concat(events)
+        end
+
+        def execute_all(event, _object)
+          @execute_all_events.push(event)
+        end
+
+        def reset
+          @write_subscription_events = []
+          @execute_all_events = []
+        end
+      end
+
+      class MyEnumType < GraphQL::Schema::Enum
+        value "ONE", value: "one"
+        value "TWO", value: "two"
+      end
+
+      class MySubscription < GraphQL::Schema::Subscription
+        argument :my_enum, MyEnumType, required: true
+        field :my_enum, MyEnumType
+      end
+
+      class SubscriptionType < GraphQL::Schema::Object
+        field :my_subscription, resolver: MySubscription
+      end
+
+      class Schema < GraphQL::Schema
+        subscription SubscriptionType
+        use InMemorySubscriptions
+      end
+    end
+
+    let(:schema) { SubscriptionEnum::Schema }
+    let(:implementation) { schema.subscriptions }
+    let(:write_subscription_events) { implementation.write_subscription_events }
+    let(:execute_all_events) { implementation.execute_all_events }
+
+    it "builds matching event names" do
+      query_str = <<-GRAPHQL
+        subscription ($myEnum: MyEnum!) {
+          mySubscription (myEnum: $myEnum) {
+            myEnum
+          }
+        }
+      GRAPHQL
+
+      schema.execute(query_str, variables: { "myEnum" => "ONE" })
+
+      schema.subscriptions.trigger(:mySubscription, { "myEnum" => "ONE" }, nil)
+
+      assert_equal(":mySubscription:myEnum:one", write_subscription_events[0].topic)
+      assert_equal(":mySubscription:myEnum:one", execute_all_events[0].topic)
+    end
+  end
 end
