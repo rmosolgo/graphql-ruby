@@ -126,7 +126,13 @@ module GraphQL
           when GraphQL::Schema::InputObject
             stringify_args(arg_owner, args.to_h, context)
           else
-            args
+            if arg_owner.is_a?(Class) && arg_owner < GraphQL::Schema::Enum
+              # `prepare:` may have made the value something other than
+              # a defined value of this enum -- use _that_ in this case.
+              arg_owner.coerce_isolated_input(args) || args
+            else
+              args
+            end
           end
         end
 
