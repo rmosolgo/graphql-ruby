@@ -213,13 +213,13 @@ module GraphQL
         when :IDENTIFIER
           expect_token_value(:IDENTIFIER)
         when :TYPE
-          accept_token
+          advance_token
           "type"
         when :QUERY
-          accept_token
+          advance_token
           "query"
         when :INPUT
-          accept_token
+          advance_token
           "input"
         else
           expect_token(:IDENTIFIER)

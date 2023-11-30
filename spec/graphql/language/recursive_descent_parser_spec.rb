@@ -21,4 +21,12 @@ describe GraphQL::Language::RecursiveDescentParser do
       subject.parse(query_str).to_query_string
     )
   end
+
+  it "parses the introspection query" do
+    query_str = GraphQL::Introspection::INTROSPECTION_QUERY
+    assert_equal(
+      GraphQL.parse(query_str).to_query_string,
+      subject.parse(query_str).to_query_string
+    )
+  end
 end
