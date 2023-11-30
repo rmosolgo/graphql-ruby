@@ -311,11 +311,11 @@ module GraphQL
       end
 
       def at?(expected_token_name)
-        token_name == expected_token_name
+        @token_name == expected_token_name
       end
 
       def expect_token(expected_token_name)
-        unless at?(expected_token_name)
+        unless @token_name == expected_token_name
           raise "TODO nice error for Expected token #{expected_token_name}, actual: #{token_name.inspect} #{@lexer.token_value} line: #{@lexer.line} / pos: #{@lexer.pos}"
         end
         advance_token
