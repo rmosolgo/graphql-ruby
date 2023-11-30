@@ -37,6 +37,8 @@ module GraphQL
             @col = options.delete(:col)
           end
 
+          options.delete(:pos) # TODO store this and use it to determine line and col as-needed
+
           @filename = options.delete(:filename)
 
           initialize_node(**options)
