@@ -77,6 +77,8 @@ describe GraphQL::Schema::Member::Scoped do
           Item
         end
       end
+
+      reauthorize_scoped_objects(false)
     end
 
     class Query < BaseObject
@@ -292,6 +294,91 @@ describe GraphQL::Schema::Member::Scoped do
       ctx = GraphQL::Query.new(ScopeSchema, "{ __typename }").context
       field = ScopeSchema::Query.fields["items"]
       assert field.resolve(OpenStruct.new(object: { items: [] }), {}, ctx)
+    end
+  end
+
+
+  describe "skipping authorization on scoped lists" do
+    class SkipAuthSchema < GraphQL::Schema
+      class Book < GraphQL::Schema::Object
+        def self.authorized?(obj, ctx)
+          ctx[:auth_log] << [:authorized?, obj[:title]]
+          true
+        end
+
+        def self.scope_items(list, ctx)
+          ctx[:auth_log] << [:scope_items, list.map { |b| b[:title]}]
+          list.dup # Skipping authorized objects requires a new object to be returned
+        end
+
+        field :title, String
+      end
+
+      class SkipAuthorizationBook < Book
+        reauthorize_scoped_objects(false)
+      end
+
+      class ReauthorizedBook < Book
+        reauthorize_scoped_objects(true)
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :book, Book
+
+        def book
+          { title: "Nonsense Omnibus"}
+        end
+
+        field :books, [Book]
+
+        def books
+          [{ title: "Jayber Crow" }, { title: "Hannah Coulter" }]
+        end
+
+        field :skip_authorization_books, [SkipAuthorizationBook], resolver_method: :books
+
+        field :reauthorized_books, [ReauthorizedBook], resolver_method: :books
+
+        field :skip_authorization_books_connection, SkipAuthorizationBook.connection_type, resolver_method: :books
+      end
+
+      query(Query)
+    end
+
+    it "runs both authorizations by default" do
+      log = []
+      SkipAuthSchema.execute("{ book { title } books { title } }", context: { auth_log: log })
+      expected_log = [
+        [:authorized?, "Nonsense Omnibus"],
+        [:scope_items, ["Jayber Crow", "Hannah Coulter"]],
+        [:authorized?, "Jayber Crow"],
+        [:authorized?, "Hannah Coulter"],
+      ]
+      assert_equal expected_log, log
+    end
+
+    it "skips self.authorized? when configured" do
+      log = []
+      SkipAuthSchema.execute("{ skipAuthorizationBooks { title } }", context: { auth_log: log })
+      assert_equal [[:scope_items, ["Jayber Crow", "Hannah Coulter"]]], log
+    end
+
+    it "can be re-enabled in subclasses" do
+      log = []
+      SkipAuthSchema.execute("{ reauthorizedBooks { title } }", context: { auth_log: log })
+      expected_log = [
+        [:scope_items, ["Jayber Crow", "Hannah Coulter"]],
+        [:authorized?, "Jayber Crow"],
+        [:authorized?, "Hannah Coulter"],
+      ]
+
+      assert_equal expected_log, log
+    end
+
+    it "skips auth in connections" do
+      log = []
+      SkipAuthSchema.execute("{ skipAuthorizationBooksConnection(first: 10) { nodes { title } } }", context: { auth_log: log })
+      assert_equal [[:scope_items, ["Jayber Crow", "Hannah Coulter"]]], log
     end
   end
 end

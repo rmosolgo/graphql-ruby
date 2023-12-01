@@ -21,7 +21,7 @@ module GraphQL
             if @reauthorize_scoped_objects != nil
               @reauthorize_scoped_objects
             else
-              find_inherited_value(:reauthorize_scoped_objects, nil)
+              find_inherited_value(:reauthorize_scoped_objects, true)
             end
           else
             @reauthorize_scoped_objects = new_value
