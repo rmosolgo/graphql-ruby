@@ -157,9 +157,9 @@ module GraphQL
       def selection_set
         expect_token(:LCURLY)
         selections = []
-        while !at?(:RCURLY)
+        while @token_name != :RCURLY
           selections << if at?(:ELLIPSIS)
-            expect_token(:ELLIPSIS)
+            advance_token
             case token_name
             when :ON, :DIR_SIGN, :LCURLY
               loc = pos
@@ -189,19 +189,19 @@ module GraphQL
             loc = pos
             name = self.name
 
-            aliaz = nil
+            field_alias = nil
 
             if at?(:COLON)
-              expect_token(:COLON)
-              aliaz = name
+              advance_token
+              field_alias = name
               name = self.name
             end
 
-            arguments = parse_arguments
-            directives = parse_directives
-            selection_set = if at?(:LCURLY); self.selection_set; end
+            arguments = at?(:LPAREN) ? parse_arguments : nil
+            directives = at?(:DIR_SIGN) ? parse_directives : nil
+            selection_set = at?(:LCURLY) ? self.selection_set : nil
 
-            Nodes::Field.new(pos: loc, alias: aliaz, name: name, arguments: arguments, directives: directives, selections: selection_set)
+            Nodes::Field.new(pos: loc, alias: field_alias, name: name, arguments: arguments, directives: directives, selections: selection_set)
           end
         end
         expect_token(:RCURLY)
