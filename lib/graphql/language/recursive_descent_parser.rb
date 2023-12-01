@@ -49,16 +49,15 @@ module GraphQL
           loc = pos
           expect_token :FRAGMENT
           expect_token(:IDENTIFIER) if at?(:ON)
-          f_name = self.name
+          f_name = parse_name
           expect_token :ON
-          t_loc = pos
-          t_name = name
+          f_type = parse_type_name
           directives = parse_directives
 
           Nodes::FragmentDefinition.new(
             pos: loc,
             name: f_name,
-            type: TypeName.new(pos: t_loc, name: t_name),
+            type: f_type,
             directives: directives,
             selections: selection_set
           )
@@ -71,7 +70,7 @@ module GraphQL
             self.operation_type
           end
 
-          op_name = at?(:IDENTIFIER) ? name : ""
+          op_name = at?(:IDENTIFIER) ? parse_name : ""
 
           variable_definitions = if at?(:LPAREN)
             expect_token(:LPAREN)
@@ -104,29 +103,268 @@ module GraphQL
             directives: directives,
             selections: selection_set,
           )
-        # when :EXTEND
-        #   type_system_extension
-        # else
-        #   desc = if at?(:STRING); string_value; end
+        when :EXTEND
+          expect_token(:EXTEND)
+          case token_name
+          when :SCALAR
+            loc = pos
+            expect_token :SCALAR
+            name = parse_name
+            directives = parse_directives
+            ScalarTypeExtension.new(pos: loc, name: name, directives: directives)
+          when :TYPE
+            loc = pos
+            expect_token :TYPE
+            name = parse_name
+            implements_interfaces = parse_implements
+            directives = parse_directives
+            field_defns = at?(:LCURLY) ? parse_field_definitions : EMPTY_ARRAY
 
-        #   type_system_definition desc
+            ObjectTypeExtension.new(pos: loc, name: name, interfaces: implements_interfaces, directives: directives, fields: field_defns)
+          when :INTERFACE
+            loc = pos
+            expect_token :INTERFACE
+            name = parse_name
+            directives = parse_directives
+            interfaces = parse_implements
+            fields_definition = at?(:LCURLY) ? parse_field_definitions : EMPTY_ARRAY
+            InterfaceTypeExtension.new(pos: loc, name: name, directives: directives, fields: fields_definition, interfaces: interfaces)
+          when :UNION
+            loc = pos
+            expect_token :UNION
+            name = parse_name
+            directives = parse_directives
+            union_member_types = parse_union_members
+            UnionTypeExtension.new(pos: loc, name: name, directives: directives, types: union_member_types)
+          when :ENUM
+            loc = pos
+            expect_token :ENUM
+            name = parse_name
+            directives = parse_directives
+            enum_values_definition = parse_enum_value_definitions
+            Nodes::EnumTypeExtension.new(pos: loc, name: name, directives: directives, values: enum_values_definition)
+          when :INPUT
+            loc = pos
+            expect_token :INPUT
+            name = parse_name
+            directives = parse_directives
+            input_fields_definition = parse_input_object_field_definitions
+            InputObjectTypeExtension.new(pos: loc, name: name, directives: directives, fields: input_fields_definition)
+          else
+            expect_token :SOME_TYPE_EXTENSION
+          end
         else
-          expect_token(:ROOT_DEFINITON)
+          desc = at?(:STRING) ? string_value : nil
+
+          case token_name
+          when :SCHEMA
+            loc = pos
+            expect_token :SCHEMA
+            directives = parse_directives
+            query = mutation = subscription = nil
+            expect_token :LCURLY
+            while !at?(:RCURLY)
+              if at?(:QUERY)
+                advance_token
+                expect_token(:COLON)
+                query = parse_name
+              elsif at?(:MUTATION)
+                advance_token
+                expect_token(:COLON)
+                mutation = parse_name
+              elsif at?(:SUBSCRIPTION)
+                advance_token
+                expect_token(:COLON)
+                subscription = parse_name
+              else
+                expect_token(:SOME_ROOT_TYPE_NAME)
+              end
+            end
+            expect_token :RCURLY
+            SchemaDefinition.new(pos: loc, query: query, mutation: mutation, subscription: subscription, directives: directives)
+          when :DIRECTIVE
+            loc = pos
+            expect_token :DIRECTIVE
+            expect_token :DIR_SIGN
+            name = parse_name
+            arguments_definition = parse_argument_definitions
+            expect_token :ON
+            directive_locations = [DirectiveLocation.new(pos: pos, name: parse_name)]
+            while at?(:PIPE)
+              advance_token
+              directive_locations << DirectiveLocation.new(pos: pos, name: parse_name)
+            end
+            repeatable = false # TODO parse this
+            DirectiveDefinition.new(pos: loc, description: desc, name: name, arguments: arguments_definition, locations: directive_locations, repeatable: repeatable)
+          when :TYPE
+            loc = pos
+            expect_token :TYPE
+            name = parse_name
+            implements_interfaces = parse_implements
+            directives = parse_directives
+            field_defns = parse_field_definitions
+
+            ObjectTypeDefinition.new(pos: loc, description: desc, name: name, interfaces: implements_interfaces, directives: directives, fields: field_defns)
+          when :INTERFACE
+            loc = pos
+            expect_token :INTERFACE
+            name = parse_name
+            directives = parse_directives
+            interfaces = parse_implements
+            fields_definition = parse_field_definitions
+            InterfaceTypeDefinition.new(pos: loc, description: desc, name: name, directives: directives, fields: fields_definition, interfaces: interfaces)
+          when :UNION
+            loc = pos
+            expect_token :UNION
+            name = parse_name
+            directives = parse_directives
+            union_member_types = parse_union_members
+            UnionTypeDefinition.new(pos: loc, description: desc, name: name, directives: directives, types: union_member_types)
+          when :SCALAR
+            loc = pos
+            expect_token :SCALAR
+            name = parse_name
+            directives = parse_directives
+            ScalarTypeDefinition.new(pos: loc, description: desc, name: name, directives: directives)
+          when :ENUM
+            loc = pos
+            expect_token :ENUM
+            name = parse_name
+            directives = parse_directives
+            enum_values_definition = parse_enum_value_definitions
+            Nodes::EnumTypeDefinition.new(pos: loc, description: desc, name: name, directives: directives, values: enum_values_definition)
+          when :INPUT
+            loc = pos
+            expect_token :INPUT
+            name = parse_name
+            directives = parse_directives
+            input_fields_definition = parse_input_object_field_definitions
+            InputObjectTypeDefinition.new(pos: loc, description: desc, name: name, directives: directives, fields: input_fields_definition)
+          else
+            expect_token(:SOME_ROOT_DEFINITION)
+          end
         end
+      end
 
+      def parse_input_object_field_definitions
+        if at?(:LCURLY)
+          expect_token :LCURLY
+          list = []
+          while !at?(:RCURLY)
+            list << parse_input_value_definition
+          end
+          expect_token :RCURLY
+          list
+        else
+          EMPTY_ARRAY
+        end
+      end
 
+      def parse_enum_value_definitions
+        if at?(:LCURLY)
+          expect_token :LCURLY
+          list = []
+          while !at?(:RCURLY)
+            v_loc = pos
+            description = if at?(:STRING); string_value; end
+            enum_value = expect_token_value(:IDENTIFIER)
+            v_directives = parse_directives
+            list << EnumValueDefinition.new(pos: v_loc, description: description, name: enum_value, directives: v_directives)
+          end
+          expect_token :RCURLY
+          list
+        else
+          EMPTY_ARRAY
+        end
+      end
+
+      def parse_union_members
+        if at?(:EQUALS)
+          expect_token :EQUALS
+          list = [parse_type_name]
+          while at?(:PIPE)
+            advance_token
+            list << parse_type_name
+          end
+          list
+        else
+          EMPTY_ARRAY
+        end
+      end
+
+      def parse_implements
+        if at?(:IMPLEMENTS)
+          expect_token :IMPLEMENTS
+          list = [parse_type_name]
+          while true
+            advance_token if at?(:AMP)
+            break unless at?(:IDENTIFIER)
+            list << parse_type_name
+          end
+          list
+        else
+          EMPTY_ARRAY
+        end
+      end
+
+      def parse_field_definitions
+        expect_token :LCURLY
+        list = []
+        while !at?(:RCURLY)
+          loc = pos
+          description = if at?(:STRING); string_value; end
+          name = parse_name
+          arguments_definition = parse_argument_definitions
+          expect_token :COLON
+          type = self.type
+          directives = parse_directives
+
+          list << FieldDefinition.new(pos: loc, description: description, name: name, arguments: arguments_definition, type: type, directives: directives)
+        end
+        expect_token :RCURLY
+        list
+      end
+
+      def parse_argument_definitions
+        if at?(:LPAREN)
+          expect_token :LPAREN
+          list = []
+          while !at?(:RPAREN)
+            list << parse_input_value_definition
+          end
+          expect_token :RPAREN
+          list
+        else
+          EMPTY_ARRAY
+        end
+      end
+
+      def parse_input_value_definition
+        loc = pos
+        description = if at?(:STRING); string_value; end
+        name = parse_name
+        expect_token :COLON
+        type = self.type
+        default_value = if at?(:EQUALS)
+          expect_token(:EQUALS)
+          value
+        else
+          nil
+        end
+        directives = parse_directives
+        InputValueDefinition.new(pos: loc, description: description, name: name, type: type, default_value: default_value, directives: directives)
       end
 
       def type
         type = case token_name
         when :IDENTIFIER
-          TypeName.new(pos: pos, name: name)
+          parse_type_name
         when :LBRACKET
           list_type
         end
 
         if at?(:BANG)
-          Nodes::NonNullType.new(pos: pos, of_type: type)
+          type = Nodes::NonNullType.new(pos: pos, of_type: type)
           expect_token(:BANG)
         end
         type
@@ -165,7 +403,7 @@ module GraphQL
               loc = pos
               if_type = if at?(:ON)
                 advance_token
-                TypeName.new(pos: pos, name: name)
+                parse_type_name
               else
                 nil
               end
@@ -175,7 +413,7 @@ module GraphQL
               Nodes::InlineFragment.new(pos: loc, type: if_type, directives: directives, selections: selection_set)
             when :IDENTIFIER
               loc = pos
-              name = self.name
+              name = parse_name
               directives = parse_directives
 
               # Can this ever happen?
@@ -187,14 +425,14 @@ module GraphQL
             end
           else
             loc = pos
-            name = self.name
+            name = parse_name
 
             field_alias = nil
 
             if at?(:COLON)
               advance_token
-              field_alias = name
-              name = self.name
+              field_alias = parse_name
+              name = parse_name
             end
 
             arguments = at?(:LPAREN) ? parse_arguments : nil
@@ -208,7 +446,7 @@ module GraphQL
         selections
       end
 
-      def name
+      def parse_name
         case token_name
         when :IDENTIFIER
           expect_token_value(:IDENTIFIER)
@@ -226,13 +464,17 @@ module GraphQL
         end
       end
 
+      def parse_type_name
+        TypeName.new(pos: pos, name: parse_name)
+      end
+
       def parse_directives
         if at?(:DIR_SIGN)
           dirs = []
           while at?(:DIR_SIGN)
             loc = pos
             expect_token(:DIR_SIGN)
-            name = self.name
+            name = parse_name
             arguments = parse_arguments
 
             dirs << Nodes::Directive.new(pos: loc, name: name, arguments: arguments)
@@ -249,7 +491,7 @@ module GraphQL
           args = []
           while !at?(:RPAREN)
             loc = pos
-            name = self.name
+            name = parse_name
             expect_token(:COLON)
             args << Nodes::Argument.new(pos: loc, name: name, value: value)
           end
@@ -260,6 +502,12 @@ module GraphQL
         end
       end
 
+      def string_value
+        token_value = @lexer.string_value
+        expect_token :STRING
+        token_value
+      end
+
       def value
         case token_name
         when :INT
@@ -267,9 +515,7 @@ module GraphQL
         when :FLOAT
           expect_token_value(:FLOAT).to_f
         when :STRING
-          token_value = @lexer.string_value
-          expect_token :STRING
-          token_value
+          string_value
         when :TRUE
           advance_token
           true
@@ -295,7 +541,7 @@ module GraphQL
           args = []
           while !at?(:RCURLY)
             loc = pos
-            n = name
+            n = parse_name
             expect_token(:COLON)
             args << Argument.new(pos: loc, name: n, value: value)
           end
@@ -383,7 +629,7 @@ module GraphQL
             @scanner.pos += 3
             :ELLIPSIS
           when ByteFor::STRING
-            if @scanner.skip(QUOTED_STRING_REGEXP) || @scanner.skip(BLOCK_STRING_REGEXP)
+            if @scanner.skip(BLOCK_STRING_REGEXP) || @scanner.skip(QUOTED_STRING_REGEXP)
               :STRING
             else
               raise "TODO Raise a nice error for a badly-formatted string"
