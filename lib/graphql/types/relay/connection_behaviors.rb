@@ -87,6 +87,19 @@ module GraphQL
             node_type.scope_items(items, context)
           end
 
+          # The connection will skip auth on its nodes if the node_type is configured for that
+          def reauthorize_scoped_objects(new_value = nil)
+            if new_value.nil?
+              if @reauthorize_scoped_objects != nil
+                @reauthorize_scoped_objects
+              else
+                node_type.reauthorize_scoped_objects
+              end
+            else
+              @reauthorize_scoped_objects = new_value
+            end
+          end
+
           # Add the shortcut `nodes` field to this connection and its subclasses
           def nodes_field(node_nullable: self.node_nullable, field_options: nil)
             define_nodes_field(node_nullable, field_options: field_options)
