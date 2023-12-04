@@ -221,10 +221,10 @@ module GraphQL
             #
             # This will have to be called later, when the runtime object _is_ available.
             value
-          elsif owner.respond_to?(@prepare)
-            owner.public_send(@prepare, value, context || obj.context)
           elsif obj.respond_to?(@prepare)
             obj.public_send(@prepare, value)
+          elsif owner.respond_to?(@prepare)
+            owner.public_send(@prepare, value, context || obj.context)
           else
             raise "Invalid prepare for #{@owner.name}.name: #{@prepare.inspect}. "\
               "Could not find prepare method #{@prepare} on #{obj.class} or #{owner}."
