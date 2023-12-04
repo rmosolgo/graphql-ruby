@@ -10,6 +10,21 @@
 
 ### Bug fixes
 
+# 2.1.7
+
+### New features
+
+- Make `NullContext` inherit from `Context`, to make typechecking easier #4709
+- Accept a custom `Schema.query_class` to use for executing queries #4679
+
+### Bug fixes
+
+- Default `reauthorize_scoped_objects` to false #4720
+- Fix `subscriptions.trigger` with custom enum values #4713
+- Fix `backtrace: true` with GraphQL-Pro `@defer` #4708
+- Omit `to_h` from Input Object validation error message #4701
+- When trimming whitespace from block strings, remove first and last lines that contain only whitespace #4704
+
 # 2.1.6 (2 Nov 2023)
 
 ### Breaking Changes
