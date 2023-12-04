@@ -9,7 +9,7 @@ index: 4
 pro: true
 ---
 
-You can use `@defer` with the [GraphiQL](https://github.com/graphql/graphiql/blob/main/packages/graphiql/README.md), an in-browser IDE.
+You can use `@defer` and `@stream` with [GraphiQL](https://github.com/graphql/graphiql/blob/main/packages/graphiql/README.md), an in-browser IDE.
 
 <img src="/defer/defer-graphiql-gif.gif"  alt="Using @defer with GraphiQL" style="max-width: 100%" />
 
