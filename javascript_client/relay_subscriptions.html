@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/2.1.6/">API</a>
+          <a href="/api-doc/2.1.7/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -114,6 +114,7 @@
 </a></li></ol></li><li class='contents-entry'><a href='#ably'>Ably
 </a><ol class='contents-list'><li class='contents-entry'><a href='#ably-client'>Ably client
 </a></li></ol></li><li class='contents-entry'><a href='#actioncable'>ActionCable
+</a></li><li class='contents-entry'><a href='#with-relay-persisted-queries'>With Relay Persisted Queries
 </a></li><li class='contents-entry'><a href='#fetchoperation-function'>fetchOperation function
 </a></li></ol>
 </div>
@@ -244,6 +245,21 @@
 <span class="c1">// Create a Relay Modern network with the handler</span>
 <span class="kd">var</span> <span class="nx">network</span> <span class="o">=</span> <span class="nx">Network</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="nx">fetchQuery</span><span class="p">,</span> <span class="nx">subscriptionHandler</span><span class="p">)</span>
 </code></pre></div></div>
+
+<h2 id="with-relay-persisted-queries">With Relay Persisted Queries</h2>
+
+<p>If you’re using Relay’s built-in <a href="https://relay.dev/docs/guides/persisted-queries/">persisted query support</a>, you can pass <code class="language-plaintext highlighter-rouge">clientName:</code> to the handler in order to build IDs that work with the <a href="/operation_store/overview.html">OperationStore</a>. For example:</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">subscriptionHandler</span> <span class="o">=</span> <span class="nf">createRelaySubscriptionHandler</span><span class="p">({</span>
+  <span class="na">cable</span><span class="p">:</span> <span class="nf">createConsumer</span><span class="p">(...),</span>
+  <span class="na">clientName</span><span class="p">:</span> <span class="dl">"</span><span class="s2">web-frontend</span><span class="dl">"</span><span class="p">,</span> <span class="c1">// This should match the one you use for `sync`</span>
+<span class="p">})</span>
+
+<span class="c1">// Create a Relay Modern network with the handler</span>
+<span class="kd">var</span> <span class="nx">network</span> <span class="o">=</span> <span class="nx">Network</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="nx">fetchQuery</span><span class="p">,</span> <span class="nx">subscriptionHandler</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Then, the ActionCable handler will use Relay’s provided operation IDs to interact with the OperationStore.</p>
 
 <h2 id="fetchoperation-function">fetchOperation function</h2>
 
