@@ -21,15 +21,18 @@ describe("createActionCableFetcherTest", () => {
     }
 
     const fetchLog: any[] = []
-    const dummyFetch = function(url: string, _fetchArgs: any) {
-      fetchLog.push(url)
+    const dummyFetch = function(url: string, fetchArgs: any) {
+      fetchLog.push([url, fetchArgs.custom])
       return Promise.resolve({ json: () => { {} } })
     }
 
     var options = {
       consumer: (dummyActionCableConsumer as unknown) as Consumer,
       url: "/graphql",
-      fetch: dummyFetch as typeof fetch
+      fetch: dummyFetch as typeof fetch,
+      fetchOptions: {
+        custom: true,
+      }
     }
 
     var fetcher = createActionCableFetcher(options)
@@ -55,7 +58,7 @@ describe("createActionCableFetcherTest", () => {
     return promise.then(() => {
       let res2 = fetcher({ operationName: null, query: "{ __typename } ", variables: {}}, {})
       const promise2 = res2.next().then(() => {
-        expect(fetchLog).toEqual(["/graphql"])
+        expect(fetchLog).toEqual([["/graphql", true]])
       })
       return promise2
     })

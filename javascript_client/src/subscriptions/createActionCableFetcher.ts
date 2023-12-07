@@ -5,7 +5,8 @@ import type { Consumer, Subscription } from "@rails/actioncable"
 type ActionCableFetcherOptions = {
   consumer: Consumer,
   url: String,
-  fetch?: typeof fetch
+  fetch?: typeof fetch,
+  fetchOptions?: any,
 }
 
 type SubscriptionIteratorPayload = {
@@ -83,7 +84,8 @@ export default function createActionCableFetcher(options: ActionCableFetcherOpti
         }),
         headers: {
           'content-type': 'application/json',
-        }
+        },
+        ... options.fetchOptions
       }).then((r) => r.json())
       return
     }
