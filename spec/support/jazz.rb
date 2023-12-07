@@ -544,10 +544,16 @@ module Jazz
   end
 
   class AddInstrument < GraphQL::Schema::Mutation
+    class << self
+      def prepare_name(value, context)
+        value.capitalize
+      end
+    end
+
     null true
     description "Register a new musical instrument in the database"
 
-    argument :name, String
+    argument :name, String, prepare: :prepare_name
     argument :family, Family
 
     field :instrument, InstrumentType, null: false
