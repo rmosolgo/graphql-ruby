@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.12.0 (7 Dec 2023)
+
+- Add GraphiQL support for subscriptions #4724
+
 # 1.11.10 (17 Nov 2023)
 
 - `createRelaySubscriptionHandler`: Support Relay persisted queries with ActionCable #4705
