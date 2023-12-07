@@ -8,7 +8,16 @@
 
 ### Bug Fix
 
+# 1.25.0 (7 Dec 2023)
+
+### Bug Fix
+
+- OperationStore: `.dup` the given `context` to avoid leaking state between queries when indexing
+- Subscriptions: use the schema or query logger to output debug messages
+
 # 1.24.15 (17 Nov 2023)
+
+### Bug Fix
 
 - OperationStore: don't sort directives when normalizing, properly retain directives on Operation and Fragment definitions #4703
 
