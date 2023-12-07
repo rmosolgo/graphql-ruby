@@ -313,4 +313,8 @@ To receive webhooks in development, you can [use ngrok](https://www.ably.io/tuto
 
 ## Client configuration
 
-Install the [Ably JS client](https://github.com/ably/ably-js) then see docs for {% internal_link "Apollo Client", "/javascript_client/apollo_subscriptions" %}.
+Install the [Ably JS client](https://github.com/ably/ably-js) then see docs for:
+
+- {% internal_link "Apollo Client", "/javascript_client/apollo_subscriptions" %}
+- {% internal_link "Relay Modern", "/javascript_client/relay_subscriptions" %}.
+- {% internal_link "GraphiQL", "/javascript_client/graphiql_subscriptions" %}

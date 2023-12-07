@@ -296,4 +296,9 @@ To receive Pusher's webhooks in development, Pusher [suggests using ngrok](https
 
 ## Client configuration
 
-Install the [Pusher JS client](https://github.com/pusher/pusher-js) then see docs for {% internal_link "Apollo Client", "/javascript_client/apollo_subscriptions" %} or {% internal_link "Relay Modern", "/javascript_client/relay_subscriptions" %}.
+Install the [Pusher JS client](https://github.com/pusher/pusher-js) then see docs for:
+
+- {% internal_link "Apollo Client", "/javascript_client/apollo_subscriptions" %}
+- {% internal_link "Relay Modern", "/javascript_client/relay_subscriptions" %}
+- {% internal_link "GraphiQL", "/javascript_client/graphiql_subscriptions" %}
+- {% internal_link "urql", "/javascript_client/urql_subscriptions" %}
