@@ -12,4 +12,8 @@ index: 4
 
 To get started, see examples in the API docs: {{ "GraphQL::Subscriptions::ActionCableSubscriptions" | api_doc }}.
 
-See client usage for {% internal_link "Apollo Client", "/javascript_client/apollo_subscriptions" %} or {% internal_link "Relay Modern", "/javascript_client/relay_subscriptions" %}.
+See client usage for:
+
+- {% internal_link "Apollo Client", "/javascript_client/apollo_subscriptions" %}
+- {% internal_link "Relay Modern", "/javascript_client/relay_subscriptions" %}.
+- {% internal_link "GraphiQL", "/javascript_client/graphiql_subscriptions" %}
