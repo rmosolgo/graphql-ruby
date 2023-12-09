@@ -22,7 +22,21 @@ module GraphQL
           end
         end
 
-        attr_reader :line, :col, :filename
+        attr_reader :filename
+
+        def line
+          @line ||= (@source_string && @pos) ? @source_string[0..@pos].count("\n") + 1 : nil
+        end
+
+        def col
+          @col ||= if @source_string && @pos
+            if @pos == 0
+              1
+            else
+              @source_string[0, @pos].split("\n").last.length + 1
+            end
+          end
+        end
 
         # Initialize a node by extracting its position,
         # then calling the class's `initialize_node` method.
@@ -37,9 +51,10 @@ module GraphQL
             @col = options.delete(:col)
           end
 
-          options.delete(:pos) # TODO store this and use it to determine line and col as-needed
+          @pos = options.delete(:pos)
 
           @filename = options.delete(:filename)
+          @source_string = options.delete(:source_string)
 
           initialize_node(**options)
         end

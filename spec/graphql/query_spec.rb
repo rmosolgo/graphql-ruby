@@ -657,6 +657,9 @@ describe GraphQL::Query do
       if USING_C_PARSER
         expected_err = "syntax error, unexpected end of file at [1, 2]"
         expected_locations = [{"line" => 1, "column" => 2}]
+      elsif GraphQL.default_parser == GraphQL::Language::RecursiveDescentParser
+        expected_err = "Expected IDENTIFIER, actual: NOTHING (\" \") at [1, 3]"
+        expected_locations = [{"line" => 1, "column" => 3}]
       else
         expected_err = "Unexpected end of document"
         expected_locations = []
@@ -668,6 +671,8 @@ describe GraphQL::Query do
       assert_equal 1, res["errors"].length
       expected_error = if USING_C_PARSER
         "syntax error, unexpected INT (\"1\") at [4, 26]"
+      elsif GraphQL.default_parser == GraphQL::Language::RecursiveDescentParser
+        %|Expected IDENTIFIER, actual: INT ("1") at [4, 26]|
       else
         %|Parse error on "1" (INT) at [4, 26]|
       end

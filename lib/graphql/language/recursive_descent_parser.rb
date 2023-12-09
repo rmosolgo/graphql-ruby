@@ -49,7 +49,7 @@ module GraphQL
         while !@lexer.eos?
           defns << definition
         end
-        Document.new(pos: 0, definitions: defns)
+        Document.new(pos: 0, definitions: defns, filename: @filename, source_string: @graphql_str)
       end
 
       def definition
@@ -69,7 +69,9 @@ module GraphQL
             name: f_name,
             type: f_type,
             directives: directives,
-            selections: selection_set
+            selections: selection_set,
+            filename: @filename,
+            source_string: @graphql_str
           )
         when :QUERY, :MUTATION, :SUBSCRIPTION, :LCURLY
           loc = pos
@@ -80,7 +82,7 @@ module GraphQL
             self.operation_type
           end
 
-          op_name = at?(:IDENTIFIER) ? parse_name : ""
+          op_name = at?(:IDENTIFIER) ? parse_name : nil
 
           variable_definitions = if at?(:LPAREN)
             expect_token(:LPAREN)
@@ -88,7 +90,7 @@ module GraphQL
             while !at?(:RPAREN)
               loc = pos
               expect_token(:VAR_SIGN)
-              var_name = expect_token_value(:IDENTIFIER)
+              var_name = parse_name
               expect_token(:COLON)
               var_type = self.type
               default_value = if at?(:EQUALS)
@@ -96,7 +98,7 @@ module GraphQL
                 value
               end
 
-              defs << Nodes::VariableDefinition.new(pos: loc, name: var_name, type: var_type, default_value: default_value)
+              defs << Nodes::VariableDefinition.new(pos: loc, name: var_name, type: var_type, default_value: default_value, filename: @filename, source_string: @graphql_str)
             end
             expect_token(:RPAREN)
             defs
@@ -113,6 +115,8 @@ module GraphQL
             variables: variable_definitions,
             directives: directives,
             selections: selection_set,
+            filename: @filename,
+            source_string: @graphql_str
           )
         when :EXTEND
           expect_token(:EXTEND)
@@ -122,7 +126,7 @@ module GraphQL
             expect_token :SCALAR
             name = parse_name
             directives = parse_directives
-            ScalarTypeExtension.new(pos: loc, name: name, directives: directives)
+            ScalarTypeExtension.new(pos: loc, name: name, directives: directives, filename: @filename, source_string: @graphql_str)
           when :TYPE
             loc = pos
             expect_token :TYPE
@@ -131,7 +135,7 @@ module GraphQL
             directives = parse_directives
             field_defns = at?(:LCURLY) ? parse_field_definitions : EMPTY_ARRAY
 
-            ObjectTypeExtension.new(pos: loc, name: name, interfaces: implements_interfaces, directives: directives, fields: field_defns)
+            ObjectTypeExtension.new(pos: loc, name: name, interfaces: implements_interfaces, directives: directives, fields: field_defns, filename: @filename, source_string: @graphql_str)
           when :INTERFACE
             loc = pos
             expect_token :INTERFACE
@@ -139,30 +143,65 @@ module GraphQL
             directives = parse_directives
             interfaces = parse_implements
             fields_definition = at?(:LCURLY) ? parse_field_definitions : EMPTY_ARRAY
-            InterfaceTypeExtension.new(pos: loc, name: name, directives: directives, fields: fields_definition, interfaces: interfaces)
+            InterfaceTypeExtension.new(pos: loc, name: name, directives: directives, fields: fields_definition, interfaces: interfaces, filename: @filename, source_string: @graphql_str)
           when :UNION
             loc = pos
             expect_token :UNION
             name = parse_name
             directives = parse_directives
             union_member_types = parse_union_members
-            UnionTypeExtension.new(pos: loc, name: name, directives: directives, types: union_member_types)
+            UnionTypeExtension.new(pos: loc, name: name, directives: directives, types: union_member_types, filename: @filename, source_string: @graphql_str)
           when :ENUM
             loc = pos
             expect_token :ENUM
             name = parse_name
             directives = parse_directives
             enum_values_definition = parse_enum_value_definitions
-            Nodes::EnumTypeExtension.new(pos: loc, name: name, directives: directives, values: enum_values_definition)
+            Nodes::EnumTypeExtension.new(pos: loc, name: name, directives: directives, values: enum_values_definition, filename: @filename, source_string: @graphql_str)
           when :INPUT
             loc = pos
             expect_token :INPUT
             name = parse_name
             directives = parse_directives
             input_fields_definition = parse_input_object_field_definitions
-            InputObjectTypeExtension.new(pos: loc, name: name, directives: directives, fields: input_fields_definition)
+            InputObjectTypeExtension.new(pos: loc, name: name, directives: directives, fields: input_fields_definition, filename: @filename, source_string: @graphql_str)
+          when :SCHEMA
+            loc = pos
+            expect_token :SCHEMA
+            directives = parse_directives
+            query = mutation = subscription = nil
+            if at?(:LCURLY)
+              advance_token
+              while !at?(:RCURLY)
+                if at?(:QUERY)
+                  advance_token
+                  expect_token(:COLON)
+                  query = parse_name
+                elsif at?(:MUTATION)
+                  advance_token
+                  expect_token(:COLON)
+                  mutation = parse_name
+                elsif at?(:SUBSCRIPTION)
+                  advance_token
+                  expect_token(:COLON)
+                  subscription = parse_name
+                else
+                  expect_one_of([:QUERY, :MUTATION, :SUBSCRIPTION])
+                end
+              end
+              expect_token :RCURLY
+            end
+            SchemaExtension.new(
+              subscription: subscription,
+              mutation: mutation,
+              query: query,
+              directives: directives,
+              pos: loc,
+              filename: @filename,
+              source_string: @source_string,
+            )
           else
-            expect_one_of([:SCALAR, :TYPE, :ENUM, :INPUT, :UNION, :INTERFACE])
+            expect_one_of([:SCHEMA, :SCALAR, :TYPE, :ENUM, :INPUT, :UNION, :INTERFACE])
           end
         else
           desc = at?(:STRING) ? string_value : nil
@@ -192,7 +231,7 @@ module GraphQL
               end
             end
             expect_token :RCURLY
-            SchemaDefinition.new(pos: loc, query: query, mutation: mutation, subscription: subscription, directives: directives)
+            SchemaDefinition.new(pos: loc, query: query, mutation: mutation, subscription: subscription, directives: directives, filename: @filename, source_string: @graphql_str)
           when :DIRECTIVE
             loc = pos
             expect_token :DIRECTIVE
@@ -203,15 +242,15 @@ module GraphQL
               advance_token
               true
             else
-              fasle
+              false
             end
             expect_token :ON
-            directive_locations = [DirectiveLocation.new(pos: pos, name: parse_name)]
+            directive_locations = [DirectiveLocation.new(pos: pos, name: parse_name, filename: @filename, source_string: @graphql_str)]
             while at?(:PIPE)
               advance_token
-              directive_locations << DirectiveLocation.new(pos: pos, name: parse_name)
+              directive_locations << DirectiveLocation.new(pos: pos, name: parse_name, filename: @filename, source_string: @graphql_str)
             end
-            DirectiveDefinition.new(pos: loc, description: desc, name: name, arguments: arguments_definition, locations: directive_locations, repeatable: repeatable)
+            DirectiveDefinition.new(pos: loc, description: desc, name: name, arguments: arguments_definition, locations: directive_locations, repeatable: repeatable, filename: @filename, source_string: @graphql_str)
           when :TYPE
             loc = pos
             expect_token :TYPE
@@ -220,7 +259,7 @@ module GraphQL
             directives = parse_directives
             field_defns = parse_field_definitions
 
-            ObjectTypeDefinition.new(pos: loc, description: desc, name: name, interfaces: implements_interfaces, directives: directives, fields: field_defns)
+            ObjectTypeDefinition.new(pos: loc, description: desc, name: name, interfaces: implements_interfaces, directives: directives, fields: field_defns, filename: @filename, source_string: @graphql_str)
           when :INTERFACE
             loc = pos
             expect_token :INTERFACE
@@ -228,34 +267,34 @@ module GraphQL
             directives = parse_directives
             interfaces = parse_implements
             fields_definition = parse_field_definitions
-            InterfaceTypeDefinition.new(pos: loc, description: desc, name: name, directives: directives, fields: fields_definition, interfaces: interfaces)
+            InterfaceTypeDefinition.new(pos: loc, description: desc, name: name, directives: directives, fields: fields_definition, interfaces: interfaces, filename: @filename, source_string: @graphql_str)
           when :UNION
             loc = pos
             expect_token :UNION
             name = parse_name
             directives = parse_directives
             union_member_types = parse_union_members
-            UnionTypeDefinition.new(pos: loc, description: desc, name: name, directives: directives, types: union_member_types)
+            UnionTypeDefinition.new(pos: loc, description: desc, name: name, directives: directives, types: union_member_types, filename: @filename, source_string: @graphql_str)
           when :SCALAR
             loc = pos
             expect_token :SCALAR
             name = parse_name
             directives = parse_directives
-            ScalarTypeDefinition.new(pos: loc, description: desc, name: name, directives: directives)
+            ScalarTypeDefinition.new(pos: loc, description: desc, name: name, directives: directives, filename: @filename, source_string: @graphql_str)
           when :ENUM
             loc = pos
             expect_token :ENUM
             name = parse_name
             directives = parse_directives
             enum_values_definition = parse_enum_value_definitions
-            Nodes::EnumTypeDefinition.new(pos: loc, description: desc, name: name, directives: directives, values: enum_values_definition)
+            Nodes::EnumTypeDefinition.new(pos: loc, description: desc, name: name, directives: directives, values: enum_values_definition, filename: @filename, source_string: @graphql_str)
           when :INPUT
             loc = pos
             expect_token :INPUT
             name = parse_name
             directives = parse_directives
             input_fields_definition = parse_input_object_field_definitions
-            InputObjectTypeDefinition.new(pos: loc, description: desc, name: name, directives: directives, fields: input_fields_definition)
+            InputObjectTypeDefinition.new(pos: loc, description: desc, name: name, directives: directives, fields: input_fields_definition, filename: @filename, source_string: @graphql_str)
           else
             expect_one_of([:SCALAR, :TYPE, :ENUM, :INPUT, :UNION, :INTERFACE])
           end
@@ -285,7 +324,7 @@ module GraphQL
             description = if at?(:STRING); string_value; end
             enum_value = expect_token_value(:IDENTIFIER)
             v_directives = parse_directives
-            list << EnumValueDefinition.new(pos: v_loc, description: description, name: enum_value, directives: v_directives)
+            list << EnumValueDefinition.new(pos: v_loc, description: description, name: enum_value, directives: v_directives, filename: @filename, source_string: @graphql_str)
           end
           expect_token :RCURLY
           list
@@ -335,7 +374,7 @@ module GraphQL
           type = self.type
           directives = parse_directives
 
-          list << FieldDefinition.new(pos: loc, description: description, name: name, arguments: arguments_definition, type: type, directives: directives)
+          list << FieldDefinition.new(pos: loc, description: description, name: name, arguments: arguments_definition, type: type, directives: directives, filename: @filename, source_string: @graphql_str)
         end
         expect_token :RCURLY
         list
@@ -368,7 +407,7 @@ module GraphQL
           nil
         end
         directives = parse_directives
-        InputValueDefinition.new(pos: loc, description: description, name: name, type: type, default_value: default_value, directives: directives)
+        InputValueDefinition.new(pos: loc, description: description, name: name, type: type, default_value: default_value, directives: directives, filename: @filename, source_string: @graphql_str)
       end
 
       def type
@@ -413,10 +452,10 @@ module GraphQL
         selections = []
         while @token_name != :RCURLY
           selections << if at?(:ELLIPSIS)
+            loc = pos
             advance_token
             case token_name
             when :ON, :DIR_SIGN, :LCURLY
-              loc = pos
               if_type = if at?(:ON)
                 advance_token
                 parse_type_name
@@ -426,16 +465,15 @@ module GraphQL
 
               directives = parse_directives
 
-              Nodes::InlineFragment.new(pos: loc, type: if_type, directives: directives, selections: selection_set)
+              Nodes::InlineFragment.new(pos: loc, type: if_type, directives: directives, selections: selection_set, filename: @filename, source_string: @graphql_str)
             else
-              loc = pos
               name = parse_name_without_on
               directives = parse_directives
 
               # Can this ever happen?
               # expect_token(:IDENTIFIER) if at?(:ON)
 
-              FragmentSpread.new(pos: loc, name: name, directives: directives)
+              FragmentSpread.new(pos: loc, name: name, directives: directives, filename: @filename, source_string: @graphql_str)
             end
           else
             loc = pos
@@ -453,7 +491,7 @@ module GraphQL
             directives = at?(:DIR_SIGN) ? parse_directives : nil
             selection_set = at?(:LCURLY) ? self.selection_set : nil
 
-            Nodes::Field.new(pos: loc, alias: field_alias, name: name, arguments: arguments, directives: directives, selections: selection_set)
+            Nodes::Field.new(pos: loc, alias: field_alias, name: name, arguments: arguments, directives: directives, selections: selection_set, filename: @filename, source_string: @graphql_str)
           end
         end
         expect_token(:RCURLY)
@@ -516,7 +554,7 @@ module GraphQL
           advance_token
           "null"
         else
-          expect_token(:IDENTIFIER)
+          expect_token(:NAME)
         end
       end
 
@@ -538,7 +576,7 @@ module GraphQL
       end
 
       def parse_type_name
-        TypeName.new(pos: pos, name: parse_name)
+        TypeName.new(pos: pos, name: parse_name, filename: @filename, source_string: @graphql_str)
       end
 
       def parse_directives
@@ -550,7 +588,7 @@ module GraphQL
             name = parse_name
             arguments = parse_arguments
 
-            dirs << Nodes::Directive.new(pos: loc, name: name, arguments: arguments)
+            dirs << Nodes::Directive.new(pos: loc, name: name, arguments: arguments, filename: @filename, source_string: @graphql_str)
           end
           dirs
         else
@@ -566,7 +604,10 @@ module GraphQL
             loc = pos
             name = parse_name
             expect_token(:COLON)
-            args << Nodes::Argument.new(pos: loc, name: name, value: value)
+            args << Nodes::Argument.new(pos: loc, name: name, value: value, filename: @filename, source_string: @graphql_str)
+          end
+          if args.empty?
+            expect_token(:ARGUMENT_NAME) # At least one argument is required
           end
           expect_token(:RPAREN)
           args
@@ -597,9 +638,9 @@ module GraphQL
           false
         when :NULL
           advance_token
-          NullValue.new(pos: pos, name: "null")
+          NullValue.new(pos: pos, name: "null", filename: @filename, source_string: @graphql_str)
         when :IDENTIFIER
-          Nodes::Enum.new(pos: pos, name: expect_token_value(:IDENTIFIER))
+          Nodes::Enum.new(pos: pos, name: expect_token_value(:IDENTIFIER), filename: @filename, source_string: @graphql_str)
         when :LBRACKET
           advance_token
           list = []
@@ -616,14 +657,14 @@ module GraphQL
             loc = pos
             n = parse_name
             expect_token(:COLON)
-            args << Argument.new(pos: loc, name: n, value: value)
+            args << Argument.new(pos: loc, name: n, value: value, filename: @filename, source_string: @graphql_str)
           end
           expect_token(:RCURLY)
-          InputObject.new(pos: start, arguments: args)
+          InputObject.new(pos: start, arguments: args, filename: @filename, source_string: @graphql_str)
         when :VAR_SIGN
           loc = pos
           advance_token
-          VariableIdentifier.new(pos: loc, name: expect_token_value(:IDENTIFIER))
+          VariableIdentifier.new(pos: loc, name: parse_name, filename: @filename, source_string: @graphql_str)
         else
           expect_token(:VALUE)
         end
@@ -635,13 +676,13 @@ module GraphQL
 
       def expect_token(expected_token_name)
         unless @token_name == expected_token_name
-          raise_parse_error("Expected #{expected_token_name}, actual: #{token_name} (#{@lexer.token_value.inspect})")
+          raise_parse_error("Expected #{expected_token_name}, actual: #{token_name || "NOTHING"} (#{@lexer.token_value.inspect})")
         end
         advance_token
       end
 
       def expect_one_of(token_names)
-        raise_parse_error("Expected one of #{token_names.join(", ")}, actual: #{token_name} (#{@lexer.token_value.inspect})")
+        raise_parse_error("Expected one of #{token_names.join(", ")}, actual: #{token_name || "NOTHING"} (#{@lexer.token_value.inspect})")
       end
 
       def raise_parse_error(message)
@@ -773,7 +814,7 @@ module GraphQL
           )*
         }x
         IDENTIFIER_REGEXP = /[_A-Za-z][_0-9A-Za-z]*/
-        INT_REGEXP =        /[-]?(?:[0]|[1-9][0-9]*)/
+        INT_REGEXP =        /-?(?:[0]|[1-9][0-9]*)/
         FLOAT_DECIMAL_REGEXP = /[.][0-9]+/
         FLOAT_EXP_REGEXP =     /[eE][+-]?[0-9]+/
         NUMERIC_REGEXP =  /#{INT_REGEXP}(#{FLOAT_DECIMAL_REGEXP}#{FLOAT_EXP_REGEXP}|#{FLOAT_DECIMAL_REGEXP}|#{FLOAT_EXP_REGEXP})?/
@@ -902,6 +943,7 @@ module GraphQL
         end
 
         (0..9).each { |i| FIRST_BYTES[i.to_s.ord] = ByteFor::NUMBER }
+        FIRST_BYTES["-".ord] = ByteFor::NUMBER
         # Some of these may be overwritten below, if keywords start with the same character
         ("A".."Z").each { |char| FIRST_BYTES[char.ord] = ByteFor::IDENTIFIER }
         ("a".."z").each { |char| FIRST_BYTES[char.ord] = ByteFor::IDENTIFIER }
