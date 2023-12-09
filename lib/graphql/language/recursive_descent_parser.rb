@@ -9,17 +9,26 @@ module GraphQL
       include GraphQL::Language::Nodes
       include EmptyObjects
 
-      def self.parse(graphql_str)
-        self.new(graphql_str).parse
+      def self.parse(graphql_str, filename: nil, trace: Tracing::NullTrace)
+        self.new(graphql_str, filename: filename, trace: trace).parse
       end
 
-      def initialize(graphql_str)
+      def initialize(graphql_str, filename: nil, trace: Tracing::NullTrace)
+        if graphql_str.nil?
+          raise GraphQL::ParseError.new("No query string was present", nil, nil, nil)
+        end
         @lexer = Lexer.new(graphql_str)
         @graphql_str = graphql_str
+        @filename = filename
+        @trace = trace
       end
 
       def parse
-        @document ||= document
+        @document ||= begin
+          @trace.parse(query_string: @graphql_str) do
+            document
+          end
+        end
       end
 
       private
@@ -48,8 +57,9 @@ module GraphQL
         when :FRAGMENT
           loc = pos
           expect_token :FRAGMENT
-          expect_token(:IDENTIFIER) if at?(:ON)
-          f_name = parse_name
+          f_name = if !at?(:ON)
+            parse_name
+          end
           expect_token :ON
           f_type = parse_type_name
           directives = parse_directives
@@ -82,7 +92,8 @@ module GraphQL
               expect_token(:COLON)
               var_type = self.type
               default_value = if at?(:EQUALS)
-                self.default_value
+                advance_token
+                value
               end
 
               defs << Nodes::VariableDefinition.new(pos: loc, name: var_name, type: var_type, default_value: default_value)
@@ -151,7 +162,7 @@ module GraphQL
             input_fields_definition = parse_input_object_field_definitions
             InputObjectTypeExtension.new(pos: loc, name: name, directives: directives, fields: input_fields_definition)
           else
-            expect_token :SOME_TYPE_EXTENSION
+            expect_one_of([:SCALAR, :TYPE, :ENUM, :INPUT, :UNION, :INTERFACE])
           end
         else
           desc = at?(:STRING) ? string_value : nil
@@ -177,7 +188,7 @@ module GraphQL
                 expect_token(:COLON)
                 subscription = parse_name
               else
-                expect_token(:SOME_ROOT_TYPE_NAME)
+                expect_one_of([:QUERY, :MUTATION, :SUBSCRIPTION])
               end
             end
             expect_token :RCURLY
@@ -188,13 +199,18 @@ module GraphQL
             expect_token :DIR_SIGN
             name = parse_name
             arguments_definition = parse_argument_definitions
+            repeatable = if at?(:REPEATABLE)
+              advance_token
+              true
+            else
+              fasle
+            end
             expect_token :ON
             directive_locations = [DirectiveLocation.new(pos: pos, name: parse_name)]
             while at?(:PIPE)
               advance_token
               directive_locations << DirectiveLocation.new(pos: pos, name: parse_name)
             end
-            repeatable = false # TODO parse this
             DirectiveDefinition.new(pos: loc, description: desc, name: name, arguments: arguments_definition, locations: directive_locations, repeatable: repeatable)
           when :TYPE
             loc = pos
@@ -241,7 +257,7 @@ module GraphQL
             input_fields_definition = parse_input_object_field_definitions
             InputObjectTypeDefinition.new(pos: loc, description: desc, name: name, directives: directives, fields: input_fields_definition)
           else
-            expect_token(:SOME_ROOT_DEFINITION)
+            expect_one_of([:SCALAR, :TYPE, :ENUM, :INPUT, :UNION, :INTERFACE])
           end
         end
       end
@@ -294,8 +310,8 @@ module GraphQL
 
       def parse_implements
         if at?(:IMPLEMENTS)
-          expect_token :IMPLEMENTS
-          list = [parse_type_name]
+          advance_token
+          list = []
           while true
             advance_token if at?(:AMP)
             break unless at?(:IDENTIFIER)
@@ -327,7 +343,7 @@ module GraphQL
 
       def parse_argument_definitions
         if at?(:LPAREN)
-          expect_token :LPAREN
+          advance_token
           list = []
           while !at?(:RPAREN)
             list << parse_input_value_definition
@@ -346,7 +362,7 @@ module GraphQL
         expect_token :COLON
         type = self.type
         default_value = if at?(:EQUALS)
-          expect_token(:EQUALS)
+          advance_token
           value
         else
           nil
@@ -411,17 +427,15 @@ module GraphQL
               directives = parse_directives
 
               Nodes::InlineFragment.new(pos: loc, type: if_type, directives: directives, selections: selection_set)
-            when :IDENTIFIER
+            else
               loc = pos
-              name = parse_name
+              name = parse_name_without_on
               directives = parse_directives
 
               # Can this ever happen?
               # expect_token(:IDENTIFIER) if at?(:ON)
 
               FragmentSpread.new(pos: loc, name: name, directives: directives)
-            else
-              expect_token(:FRAGMENT_SPREAD)
             end
           else
             loc = pos
@@ -431,7 +445,7 @@ module GraphQL
 
             if at?(:COLON)
               advance_token
-              field_alias = parse_name
+              field_alias = name
               name = parse_name
             end
 
@@ -450,17 +464,76 @@ module GraphQL
         case token_name
         when :IDENTIFIER
           expect_token_value(:IDENTIFIER)
+        when :SCHEMA
+          advance_token
+          "schema"
+        when :SCALAR
+          advance_token
+          "scalar"
+        when :IMPLEMENTS
+          advance_token
+          "implements"
+        when :INTERFACE
+          advance_token
+          "interface"
+        when :UNION
+          advance_token
+          "union"
+        when :ENUM
+          advance_token
+          "enum"
+        when :INPUT
+          advance_token
+          "input"
+        when :DIRECTIVE
+          advance_token
+          "directive"
         when :TYPE
           advance_token
           "type"
         when :QUERY
           advance_token
           "query"
-        when :INPUT
+        when :MUTATION
           advance_token
-          "input"
+          "mutation"
+        when :SUBSCRIPTION
+          advance_token
+          "subscription"
+        when :TRUE
+          advance_token
+          "true"
+        when :FALSE
+          advance_token
+          "false"
+        when :FRAGMENT
+          advance_token
+          "fragment"
+        when :REPEATABLE
+          advance_token
+          "repeatable"
+        when :NULL
+          advance_token
+          "null"
         else
           expect_token(:IDENTIFIER)
+        end
+      end
+
+      def parse_name_without_on
+        if at?(:ON)
+          expect_token(:IDENTIFIER)
+        else
+          parse_name
+        end
+      end
+
+      # Any identifier, but not true, false, or null
+      def parse_enum_name
+        if at?(:TRUE) || at?(:FALSE) || at?(:NULL)
+          expect_token(:IDENTIFIER)
+        else
+          parse_name
         end
       end
 
@@ -473,7 +546,7 @@ module GraphQL
           dirs = []
           while at?(:DIR_SIGN)
             loc = pos
-            expect_token(:DIR_SIGN)
+            advance_token
             name = parse_name
             arguments = parse_arguments
 
@@ -562,9 +635,25 @@ module GraphQL
 
       def expect_token(expected_token_name)
         unless @token_name == expected_token_name
-          raise "TODO nice error for Expected token #{expected_token_name}, actual: #{token_name.inspect} #{@lexer.token_value} line: #{@lexer.line} / pos: #{@lexer.pos}"
+          raise_parse_error("Expected #{expected_token_name}, actual: #{token_name} (#{@lexer.token_value.inspect})")
         end
         advance_token
+      end
+
+      def expect_one_of(token_names)
+        raise_parse_error("Expected one of #{token_names.join(", ")}, actual: #{token_name} (#{@lexer.token_value.inspect})")
+      end
+
+      def raise_parse_error(message)
+        message += " at [#{@lexer.line_number}, #{@lexer.column_number}]"
+        raise GraphQL::ParseError.new(
+          message,
+          @lexer.line_number,
+          @lexer.column_number,
+          @graphql_str,
+          filename: @filename,
+        )
+
       end
 
       # Only use when we care about the expected token's value
@@ -624,7 +713,7 @@ module GraphQL
             @scanner[1] ? :FLOAT : :INT
           when ByteFor::ELLIPSIS
             if @string.getbyte(@pos + 1) != 46 || @string.getbyte(@pos + 2) != 46
-              raise "TODO raise a nice error for a malformed ellipsis"
+              raise_parse_error("Expected `...`, actual: #{@string[@pos..@pos + 2].inspect}")
             end
             @scanner.pos += 3
             :ELLIPSIS
@@ -632,7 +721,7 @@ module GraphQL
             if @scanner.skip(BLOCK_STRING_REGEXP) || @scanner.skip(QUOTED_STRING_REGEXP)
               :STRING
             else
-              raise "TODO Raise a nice error for a badly-formatted string"
+              raise_parse_error("Expected string or block string, but it was malformed")
             end
           else
             @scanner.pos += 1
@@ -643,7 +732,7 @@ module GraphQL
         def token_value
           @string.byteslice(@scanner.pos - @scanner.matched_size, @scanner.matched_size)
         rescue StandardError => err
-          "(token_value failed: #{err.class}: #{err.message})"
+          raise GraphQL::Error, "(token_value failed: #{err.class}: #{err.message})"
         end
 
         def string_value
@@ -656,23 +745,33 @@ module GraphQL
           end
 
           if !str.valid_encoding? || !str.match?(Language::Lexer::VALID_STRING)
-            raise "TODO Bad Unicode escape"
+            raise_parse_error("Bad unicode escape in #{str.inspect}")
           else
             GraphQL::Language::Lexer.replace_escaped_characters_in_place(str)
 
             if !str.valid_encoding?
-              raise "TODO Bad Unicode escape"
+              raise_parse_error("Bad unicode escape in #{str.inspect}")
             else
               str
             end
           end
         end
 
-        def line
+        def line_number
           @scanner.string[0, @scanner.pos].count("\n") + 1
         end
 
-        IGNORE_REGEXP = /[, \c\r\n\t]+/
+        def column_number
+          @scanner.string[0, @scanner.pos].split("\n").last.length - token_value.length + 1
+        end
+
+        # IGNORE_REGEXP = /[, \c\r\n\t]+/
+        IGNORE_REGEXP =       %r{
+          (?:
+            [, \c\r\n\t]+ |
+            \#.*$
+          )*
+        }x
         IDENTIFIER_REGEXP = /[_A-Za-z][_0-9A-Za-z]*/
         INT_REGEXP =        /[-]?(?:[0]|[1-9][0-9]*)/
         FLOAT_DECIMAL_REGEXP = /[.][0-9]+/
