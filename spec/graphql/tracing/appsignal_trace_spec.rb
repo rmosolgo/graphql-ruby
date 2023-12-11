@@ -68,7 +68,7 @@ describe GraphQL::Tracing::AppsignalTrace do
     expected_trace = [
       "execute.graphql",
       "analyze.graphql",
-      (using_recursive_descent_parser? ? nil : "lex.graphql"),
+      (USING_C_PARSER ? "lex.graphql" : nil),
       "parse.graphql",
       "validate.graphql",
       "analyze.graphql",
@@ -109,7 +109,7 @@ describe GraphQL::Tracing::AppsignalTrace do
       _res = AppsignalAndDatadogTestSchema.execute("{ int thing { str } named { ... on Thing { str } } }")
       expected_appsignal_trace = [
         "execute.graphql",
-        (using_recursive_descent_parser? ? nil : "lex.graphql"),
+        (USING_C_PARSER ? "lex.graphql" : nil),
         "parse.graphql",
         "analyze.graphql",
         "validate.graphql",
@@ -126,7 +126,7 @@ describe GraphQL::Tracing::AppsignalTrace do
 
       expected_datadog_trace = [
         "graphql.execute_multiplex",
-        (using_recursive_descent_parser? ? nil : "graphql.lex"),
+        (USING_C_PARSER ? "graphql.lex" : nil),
         "graphql.parse",
         "graphql.analyze_multiplex",
         "graphql.validate",
@@ -150,7 +150,7 @@ describe GraphQL::Tracing::AppsignalTrace do
     it "works when the modules are included in reverse order" do
       _res = AppsignalAndDatadogReverseOrderTestSchema.execute("{ int thing { str } named { ... on Thing { str } } }")
       expected_appsignal_trace = [
-        (using_recursive_descent_parser? ? nil : "lex.graphql"),
+        (USING_C_PARSER ? "lex.graphql" : nil),
         "parse.graphql",
         "execute.graphql",
         "analyze.graphql",
@@ -168,7 +168,7 @@ describe GraphQL::Tracing::AppsignalTrace do
 
       expected_datadog_trace = [
         "graphql.execute_multiplex",
-        (using_recursive_descent_parser? ? nil : "graphql.lex"),
+        (USING_C_PARSER ? "graphql.lex" : nil),
         "graphql.parse",
         "graphql.analyze_multiplex",
         "graphql.validate",

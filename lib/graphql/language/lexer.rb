@@ -1,39 +1,228 @@
 # frozen_string_literal: true
-
-require "strscan"
-
 module GraphQL
   module Language
-    class Lexer
-      IDENTIFIER =    /[_A-Za-z][_0-9A-Za-z]*/
-      NEWLINE =       /[\c\r\n]/
-      BLANK   =       /[, \t]+/
-      COMMENT =       /#[^\n\r]*/
-      INT =           /[-]?(?:[0]|[1-9][0-9]*)/
-      FLOAT_DECIMAL = /[.][0-9]+/
-      FLOAT_EXP =     /[eE][+-]?[0-9]+/
-      FLOAT =         /#{INT}(#{FLOAT_DECIMAL}#{FLOAT_EXP}|#{FLOAT_DECIMAL}|#{FLOAT_EXP})/
 
-      module Literals
-        ON =            /on\b/
-        FRAGMENT =      /fragment\b/
-        TRUE =          /true\b/
-        FALSE =         /false\b/
-        NULL =          /null\b/
-        QUERY =         /query\b/
-        MUTATION =      /mutation\b/
-        SUBSCRIPTION =  /subscription\b/
-        SCHEMA =        /schema\b/
-        SCALAR =        /scalar\b/
-        TYPE =          /type\b/
-        EXTEND =        /extend\b/
-        IMPLEMENTS =    /implements\b/
-        INTERFACE =     /interface\b/
-        UNION =         /union\b/
-        ENUM =          /enum\b/
-        INPUT =         /input\b/
-        DIRECTIVE =     /directive\b/
-        REPEATABLE =    /repeatable\b/
+    class Lexer
+      def initialize(graphql_str, filename: nil)
+        if !(graphql_str.encoding == Encoding::UTF_8 || graphql_str.ascii_only?)
+          graphql_str = graphql_str.dup.force_encoding(Encoding::UTF_8)
+        end
+        @string = graphql_str
+        @filename = filename
+        @scanner = StringScanner.new(graphql_str)
+        @pos = nil
+      end
+
+      def eos?
+        @scanner.eos?
+      end
+
+      attr_reader :pos
+
+      def advance
+        @scanner.skip(IGNORE_REGEXP)
+        return false if @scanner.eos?
+        @pos = @scanner.pos
+        next_byte = @string.getbyte(@pos)
+        next_byte_is_for = FIRST_BYTES[next_byte]
+        case next_byte_is_for
+        when ByteFor::PUNCTUATION
+          @scanner.pos += 1
+          PUNCTUATION_NAME_FOR_BYTE[next_byte]
+        when ByteFor::NAME
+          if len = @scanner.skip(KEYWORD_REGEXP)
+            case len
+            when 2
+              :ON
+            when 12
+              :SUBSCRIPTION
+            else
+              pos = @pos
+
+              # Use bytes 2 and 3 as a unique identifier for this keyword
+              bytes = (@string.getbyte(pos + 2) << 8) | @string.getbyte(pos + 1)
+              KEYWORD_BY_TWO_BYTES[_hash(bytes)]
+            end
+          else
+            @scanner.skip(IDENTIFIER_REGEXP)
+            :IDENTIFIER
+          end
+        when ByteFor::IDENTIFIER
+          @scanner.skip(IDENTIFIER_REGEXP)
+          :IDENTIFIER
+        when ByteFor::NUMBER
+          @scanner.skip(NUMERIC_REGEXP)
+          # Check for a matched decimal:
+          @scanner[1] ? :FLOAT : :INT
+        when ByteFor::ELLIPSIS
+          if @string.getbyte(@pos + 1) != 46 || @string.getbyte(@pos + 2) != 46
+            raise_parse_error("Expected `...`, actual: #{@string[@pos..@pos + 2].inspect}")
+          end
+          @scanner.pos += 3
+          :ELLIPSIS
+        when ByteFor::STRING
+          if @scanner.skip(BLOCK_STRING_REGEXP) || @scanner.skip(QUOTED_STRING_REGEXP)
+            :STRING
+          else
+            raise_parse_error("Expected string or block string, but it was malformed")
+          end
+        else
+          @scanner.pos += 1
+          :UNKNOWN_CHAR
+        end
+      rescue ArgumentError => err
+        if err.message == "invalid byte sequence in UTF-8"
+          raise_parse_error("Parse error on bad Unicode escape sequence", nil, nil)
+        end
+      end
+
+      def token_value
+        @string.byteslice(@scanner.pos - @scanner.matched_size, @scanner.matched_size)
+      rescue StandardError => err
+        raise GraphQL::Error, "(token_value failed: #{err.class}: #{err.message})"
+      end
+
+      def debug_token_value(token_name)
+        if token_name && Lexer::Punctuation.const_defined?(token_name)
+          Lexer::Punctuation.const_get(token_name)
+        elsif token_name == :ELLIPSIS
+          "..."
+        elsif token_name == :STRING
+          string_value
+        else
+          token_value
+        end
+      end
+
+      ESCAPES = /\\["\\\/bfnrt]/
+      ESCAPES_REPLACE = {
+        '\\"' => '"',
+        "\\\\" => "\\",
+        "\\/" => '/',
+        "\\b" => "\b",
+        "\\f" => "\f",
+        "\\n" => "\n",
+        "\\r" => "\r",
+        "\\t" => "\t",
+      }
+      UTF_8 = /\\u(?:([\dAa-f]{4})|\{([\da-f]{4,})\})(?:\\u([\dAa-f]{4}))?/i
+      VALID_STRING = /\A(?:[^\\]|#{ESCAPES}|#{UTF_8})*\z/o
+
+      def string_value
+        str = token_value
+        is_block = str.start_with?('"""')
+        if is_block
+          str.gsub!(/\A"""|"""\z/, '')
+        else
+          str.gsub!(/\A"|"\z/, '')
+        end
+
+        if is_block
+          str = Language::BlockString.trim_whitespace(str)
+        end
+
+        if !str.valid_encoding? || !str.match?(VALID_STRING)
+          raise_parse_error("Bad unicode escape in #{str.inspect}")
+        else
+          Lexer.replace_escaped_characters_in_place(str)
+
+          if !str.valid_encoding?
+            raise_parse_error("Bad unicode escape in #{str.inspect}")
+          else
+            str
+          end
+        end
+      end
+
+      def line_number
+        @scanner.string[0..@pos].count("\n") + 1
+      end
+
+      def column_number
+        @scanner.string[0..@pos].split("\n").last.length
+      end
+
+      def raise_parse_error(message, line = line_number, col = column_number)
+        raise GraphQL::ParseError.new(message, line, col, @string, filename: @filename)
+      end
+
+      IGNORE_REGEXP = %r{
+        (?:
+          [, \c\r\n\t]+ |
+          \#.*$
+        )*
+      }x
+      IDENTIFIER_REGEXP = /[_A-Za-z][_0-9A-Za-z]*/
+      INT_REGEXP =        /-?(?:[0]|[1-9][0-9]*)/
+      FLOAT_DECIMAL_REGEXP = /[.][0-9]+/
+      FLOAT_EXP_REGEXP =     /[eE][+-]?[0-9]+/
+      NUMERIC_REGEXP =  /#{INT_REGEXP}(#{FLOAT_DECIMAL_REGEXP}#{FLOAT_EXP_REGEXP}|#{FLOAT_DECIMAL_REGEXP}|#{FLOAT_EXP_REGEXP})?/
+
+      KEYWORDS = [
+        "on",
+        "fragment",
+        "true",
+        "false",
+        "null",
+        "query",
+        "mutation",
+        "subscription",
+        "schema",
+        "scalar",
+        "type",
+        "extend",
+        "implements",
+        "interface",
+        "union",
+        "enum",
+        "input",
+        "directive",
+        "repeatable"
+      ].freeze
+
+      KEYWORD_REGEXP = /#{Regexp.union(KEYWORDS.sort)}\b/
+      KEYWORD_BY_TWO_BYTES = [
+        :INTERFACE,
+        :MUTATION,
+        :EXTEND,
+        :FALSE,
+        :ENUM,
+        :TRUE,
+        :NULL,
+        nil,
+        nil,
+        nil,
+        nil,
+        nil,
+        nil,
+        nil,
+        :QUERY,
+        nil,
+        nil,
+        :REPEATABLE,
+        :IMPLEMENTS,
+        :INPUT,
+        :TYPE,
+        :SCHEMA,
+        nil,
+        nil,
+        nil,
+        :DIRECTIVE,
+        :UNION,
+        nil,
+        nil,
+        :SCALAR,
+        nil,
+        :FRAGMENT
+      ]
+
+      # This produces a unique integer for bytes 2 and 3 of each keyword string
+      # See https://tenderlovemaking.com/2023/09/02/fast-tokenizers-with-stringscanner.html
+      def _hash key
+        (key * 18592990) >> 27 & 0x1f
+      end
+
+      module Punctuation
         LCURLY =        '{'
         RCURLY =        '}'
         LPAREN =        '('
@@ -43,36 +232,31 @@ module GraphQL
         COLON =         ':'
         VAR_SIGN =      '$'
         DIR_SIGN =      '@'
-        ELLIPSIS =      '...'
         EQUALS =        '='
         BANG =          '!'
         PIPE =          '|'
         AMP =           '&'
       end
 
-      include Literals
+      # A sparse array mapping the bytes for each punctuation
+      # to a symbol name for that punctuation
+      PUNCTUATION_NAME_FOR_BYTE = Punctuation.constants.each_with_object([]) { |name, arr|
+        punct = Punctuation.const_get(name)
+        arr[punct.ord] = name
+      }
 
       QUOTE =         '"'
       UNICODE_DIGIT = /[0-9A-Za-z]/
       FOUR_DIGIT_UNICODE = /#{UNICODE_DIGIT}{4}/
-      N_DIGIT_UNICODE = %r{#{LCURLY}#{UNICODE_DIGIT}{4,}#{RCURLY}}x
+      N_DIGIT_UNICODE = %r{#{Punctuation::LCURLY}#{UNICODE_DIGIT}{4,}#{Punctuation::RCURLY}}x
       UNICODE_ESCAPE = %r{\\u(?:#{FOUR_DIGIT_UNICODE}|#{N_DIGIT_UNICODE})}
-        # # https://graphql.github.io/graphql-spec/June2018/#sec-String-Value
+      # # https://graphql.github.io/graphql-spec/June2018/#sec-String-Value
       STRING_ESCAPE = %r{[\\][\\/bfnrt]}
       BLOCK_QUOTE =   '"""'
       ESCAPED_QUOTE = /\\"/;
       STRING_CHAR = /#{ESCAPED_QUOTE}|[^"\\]|#{UNICODE_ESCAPE}|#{STRING_ESCAPE}/
-
-      LIT_NAME_LUT = Literals.constants.each_with_object({}) { |n, o|
-        key = Literals.const_get(n)
-        key = key.is_a?(Regexp) ? key.source.gsub(/(\\b|\\)/, '') : key
-        o[key] = n
-      }
-
-      LIT = Regexp.union(Literals.constants.map { |n| Literals.const_get(n) })
-
-      QUOTED_STRING = %r{#{QUOTE} (?:#{STRING_CHAR})* #{QUOTE}}x
-      BLOCK_STRING = %r{
+      QUOTED_STRING_REGEXP = %r{#{QUOTE} (?:#{STRING_CHAR})* #{QUOTE}}x
+      BLOCK_STRING_REGEXP = %r{
         #{BLOCK_QUOTE}
         (?: [^"\\]               |  # Any characters that aren't a quote or slash
            (?<!") ["]{1,2} (?!") |  # Any quotes that don't have quotes next to them
@@ -84,85 +268,33 @@ module GraphQL
         #{BLOCK_QUOTE}
       }xm
 
-      # # catch-all for anything else. must be at the bottom for precedence.
-      UNKNOWN_CHAR =         /./
+      # Use this array to check, for a given byte that will start a token,
+      # what kind of token might it start?
+      FIRST_BYTES = Array.new(255)
 
-      def initialize(value)
-        @line = 1
-        @col = 1
-        @previous_token = nil
-
-        @scan = scanner value
+      module ByteFor
+        NUMBER = 0 # int or float
+        NAME = 1 # identifier or keyword
+        STRING = 2
+        ELLIPSIS = 3
+        IDENTIFIER = 4 # identifier, *not* a keyword
+        PUNCTUATION = 5
       end
 
-      class BadEncoding < Lexer # :nodoc:
-        def scanner(value)
-          [emit(:BAD_UNICODE_ESCAPE, 0, 0, value)]
-        end
-
-        def next_token
-          @scan.pop
-        end
+      (0..9).each { |i| FIRST_BYTES[i.to_s.ord] = ByteFor::NUMBER }
+      FIRST_BYTES["-".ord] = ByteFor::NUMBER
+      # Some of these may be overwritten below, if keywords start with the same character
+      ("A".."Z").each { |char| FIRST_BYTES[char.ord] = ByteFor::IDENTIFIER }
+      ("a".."z").each { |char| FIRST_BYTES[char.ord] = ByteFor::IDENTIFIER }
+      FIRST_BYTES['_'.ord] = ByteFor::IDENTIFIER
+      FIRST_BYTES['.'.ord] = ByteFor::ELLIPSIS
+      FIRST_BYTES['"'.ord] = ByteFor::STRING
+      KEYWORDS.each { |kw| FIRST_BYTES[kw.getbyte(0)] = ByteFor::NAME }
+      Punctuation.constants.each do |punct_name|
+        punct = Punctuation.const_get(punct_name)
+        FIRST_BYTES[punct.ord] = ByteFor::PUNCTUATION
       end
 
-      def self.tokenize(string)
-        value = string.dup.force_encoding(Encoding::UTF_8)
-
-        scanner = if value.valid_encoding?
-          new value
-        else
-          BadEncoding.new value
-        end
-
-        toks = []
-
-        while tok = scanner.next_token
-          toks << tok
-        end
-
-        toks
-      end
-
-      def next_token
-        return if @scan.eos?
-
-        pos = @scan.pos
-
-        case
-        when str = @scan.scan(FLOAT)         then emit(:FLOAT, pos, @scan.pos, str)
-        when str = @scan.scan(INT)           then emit(:INT, pos, @scan.pos, str)
-        when str = @scan.scan(LIT)           then emit(LIT_NAME_LUT[str], pos, @scan.pos, -str)
-        when str = @scan.scan(IDENTIFIER)    then emit(:IDENTIFIER, pos, @scan.pos, str)
-        when str = @scan.scan(BLOCK_STRING)  then emit_block(pos, @scan.pos, str.gsub(/\A#{BLOCK_QUOTE}|#{BLOCK_QUOTE}\z/, ''))
-        when str = @scan.scan(QUOTED_STRING) then emit_string(pos, @scan.pos, str.gsub(/^"|"$/, ''))
-        when str = @scan.scan(COMMENT)       then record_comment(pos, @scan.pos, str)
-        when str = @scan.scan(NEWLINE)
-          @line += 1
-          @col = 1
-          next_token
-        when @scan.scan(BLANK)
-          @col += @scan.pos - pos
-          next_token
-        when str = @scan.scan(UNKNOWN_CHAR) then emit(:UNKNOWN_CHAR, pos, @scan.pos, str)
-        else
-          # This should never happen since `UNKNOWN_CHAR` ensures we make progress
-          raise "Unknown string?"
-        end
-      end
-
-      def emit(token_name, ts, te, token_value)
-        token = [
-          token_name,
-          @line,
-          @col,
-          token_value,
-          @previous_token,
-        ]
-        @previous_token = token
-        # Bump the column counter for the next token
-        @col += te - ts
-        token
-      end
 
       # Replace any escaped unicode or whitespace with the _actual_ characters
       # To avoid allocating more strings, this modifies the string passed into it
@@ -189,64 +321,6 @@ module GraphQL
         end
         nil
       end
-
-      def record_comment(ts, te, str)
-        token = [
-          :COMMENT,
-          @line,
-          @col,
-          str,
-          @previous_token,
-        ]
-
-        @previous_token = token
-
-        @col += te - ts
-        next_token
-      end
-
-      ESCAPES = /\\["\\\/bfnrt]/
-      ESCAPES_REPLACE = {
-        '\\"' => '"',
-        "\\\\" => "\\",
-        "\\/" => '/',
-        "\\b" => "\b",
-        "\\f" => "\f",
-        "\\n" => "\n",
-        "\\r" => "\r",
-        "\\t" => "\t",
-      }
-      UTF_8 = /\\u(?:([\dAa-f]{4})|\{([\da-f]{4,})\})(?:\\u([\dAa-f]{4}))?/i
-      VALID_STRING = /\A(?:[^\\]|#{ESCAPES}|#{UTF_8})*\z/o
-
-      def emit_block(ts, te, value)
-        line_incr = value.count("\n")
-        value = GraphQL::Language::BlockString.trim_whitespace(value)
-        tok = emit_string(ts, te, value)
-        @line += line_incr
-        tok
-      end
-
-      def emit_string(ts, te, value)
-        if !value.valid_encoding? || !value.match?(VALID_STRING)
-          emit(:BAD_UNICODE_ESCAPE, ts, te, value)
-        else
-          self.class.replace_escaped_characters_in_place(value)
-
-          if !value.valid_encoding?
-            emit(:BAD_UNICODE_ESCAPE, ts, te, value)
-          else
-            emit(:STRING, ts, te, value)
-          end
-        end
-      end
-
-      private
-
-      def scanner(value)
-        StringScanner.new value
-      end
-
     end
   end
 end

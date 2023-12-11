@@ -299,10 +299,10 @@ describe GraphQL::Analysis::AST do
         end
 
         # The query_trace is on the list _first_ because it finished first
-        if using_recursive_descent_parser?
-          _parse, _validate, query_trace, multiplex_trace, *_rest = traces
-        else
+        if USING_C_PARSER
           _lex, _parse, _validate, query_trace, multiplex_trace, *_rest = traces
+        else
+          _parse, _validate, query_trace, multiplex_trace, *_rest = traces
         end
 
         assert_equal "analyze_multiplex", multiplex_trace[:key]

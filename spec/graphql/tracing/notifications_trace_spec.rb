@@ -26,7 +26,7 @@ describe GraphQL::Tracing::NotificationsTrace do
       expected_event_keys = [
         'execute_multiplex.graphql',
         'analyze_multiplex.graphql',
-        (using_recursive_descent_parser? ? nil : 'lex.graphql'),
+        (USING_C_PARSER ? 'lex.graphql' : nil),
         'parse.graphql',
         'validate.graphql',
         'analyze_query.graphql',

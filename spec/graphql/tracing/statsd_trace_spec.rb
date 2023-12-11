@@ -50,7 +50,7 @@ describe GraphQL::Tracing::StatsdTracing do
     expected_timings = [
       "graphql.execute_multiplex",
       "graphql.analyze_multiplex",
-      (using_recursive_descent_parser? ? nil : "graphql.lex"),
+      (USING_C_PARSER ? "graphql.lex" : nil),
       "graphql.parse",
       "graphql.validate",
       "graphql.analyze_query",

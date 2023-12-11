@@ -38,6 +38,10 @@ module GraphQL
           end
         end
 
+        def definition_line
+          @definition_line ||= (@source_string && @definition_pos) ? @source_string[0..@definition_pos].count("\n") + 1 : nil
+        end
+
         # Value equality
         # @return [Boolean] True if `self` is equivalent to `other`
         def ==(other)
@@ -289,9 +293,8 @@ module GraphQL
                 @children_methods.keys.map { |m| "@#{m} = #{m}.freeze" }
 
               if name.end_with?("Definition") && name != "FragmentDefinition"
-                arguments << "definition_line: nil"
-                assignments << "@definition_line = definition_line"
-                attr_reader :definition_line
+                arguments << "definition_pos: nil"
+                assignments << "@definition_pos = definition_pos"
               end
 
               keywords = scalar_method_names.map { |m| "#{m}: #{m}"} +

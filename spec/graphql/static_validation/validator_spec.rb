@@ -16,10 +16,10 @@ describe GraphQL::StaticValidation::Validator do
         validator.validate(query)
       end
 
-      if using_recursive_descent_parser?
-        assert_equal 2, traces.length
-      else
+      if USING_C_PARSER
         assert_equal 3, traces.length
+      else
+        assert_equal 2, traces.length
       end
       validate_trace = traces.last
       assert_equal "validate", validate_trace[:key]

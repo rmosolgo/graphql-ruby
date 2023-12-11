@@ -166,7 +166,3 @@ end
 if !USING_C_PARSER && defined?(GraphQL::CParser::Parser)
   raise "Load error: didn't opt in to C parser but GraphQL::CParser::Parser was defined"
 end
-
-def using_recursive_descent_parser?
-  GraphQL.default_parser == GraphQL::Language::RecursiveDescentParser
-end

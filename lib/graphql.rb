@@ -33,7 +33,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
 
   class << self
     def default_parser
-      @default_parser ||= GraphQL::Language::RecursiveDescentParser
+      @default_parser ||= GraphQL::Language::Parser
     end
 
     attr_writer :default_parser

@@ -47,10 +47,8 @@ describe GraphQL::Schema::NonNull do
       "
       expected_err = if USING_C_PARSER
         "syntax error, unexpected BANG (\"!\"), expecting RPAREN or VAR_SIGN at [2, 21]"
-      elsif using_recursive_descent_parser?
-        "Expected VAR_SIGN, actual: BANG (\"!\") at [2, 22]"
       else
-        'Parse error on "!" (BANG) at [2, 21]'
+        "Expected VAR_SIGN, actual: BANG (\"!\") at [2, 21]"
       end
 
       assert_equal [expected_err], res["errors"].map { |e| e["message"] }

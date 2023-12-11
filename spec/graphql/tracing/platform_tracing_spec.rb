@@ -56,7 +56,7 @@ describe GraphQL::Tracing::PlatformTracing do
       expected_trace = [
           "em",
           "am",
-          (using_recursive_descent_parser? ? nil : "l"),
+          (USING_C_PARSER ? "l" : nil),
           "p",
           "v",
           "aq",
@@ -78,7 +78,7 @@ describe GraphQL::Tracing::PlatformTracing do
         "v",
         "em",
         "am",
-        (using_recursive_descent_parser? ? nil : "l"),
+        (USING_C_PARSER ? "l" : nil),
         "p",
         "v",
         "aq",
@@ -109,7 +109,7 @@ describe GraphQL::Tracing::PlatformTracing do
       expected_trace = [
           "em",
           "am",
-          (using_recursive_descent_parser? ? nil : "l"),
+          (USING_C_PARSER ? "l" : nil),
           "p",
           "v",
           "aq",
@@ -133,7 +133,7 @@ describe GraphQL::Tracing::PlatformTracing do
       expected_trace = [
         "em",
         "am",
-        (using_recursive_descent_parser? ? nil : "l"),
+        (USING_C_PARSER ? "l" : nil),
         "p",
         "v",
         "aq",
@@ -190,7 +190,7 @@ describe GraphQL::Tracing::PlatformTracing do
       expected_trace = [
           "em",
           "am",
-          (using_recursive_descent_parser? ? nil : "l"),
+          (USING_C_PARSER ? "l" : nil),
           "p",
           "v",
           "aq",
@@ -221,7 +221,7 @@ describe GraphQL::Tracing::PlatformTracing do
       expected_trace = [
           "em",
           "am",
-          (using_recursive_descent_parser? ? nil : "l"),
+          (USING_C_PARSER ? "l" : nil),
           "p",
           "v",
           "aq",

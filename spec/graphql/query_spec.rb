@@ -656,14 +656,10 @@ describe GraphQL::Query do
       assert_equal 1, res["errors"].length
       if USING_C_PARSER
         expected_err = "syntax error, unexpected end of file at [1, 2]"
-        expected_locations = [{"line" => 1, "column" => 2}]
-      elsif using_recursive_descent_parser?
-        expected_err = "Expected NAME, actual: (none) (\" \") at [1, 3]"
-        expected_locations = [{"line" => 1, "column" => 3}]
       else
-        expected_err = "Unexpected end of document"
-        expected_locations = []
+        expected_err = "Expected NAME, actual: (none) (\" \") at [1, 2]"
       end
+      expected_locations = [{"line" => 1, "column" => 2}]
       assert_equal expected_err, res["errors"][0]["message"]
       assert_equal expected_locations, res["errors"][0]["locations"]
 
@@ -671,10 +667,8 @@ describe GraphQL::Query do
       assert_equal 1, res["errors"].length
       expected_error = if USING_C_PARSER
         "syntax error, unexpected INT (\"1\") at [4, 26]"
-      elsif using_recursive_descent_parser?
-        %|Expected NAME, actual: INT ("1") at [4, 26]|
       else
-        %|Parse error on "1" (INT) at [4, 26]|
+        %|Expected NAME, actual: INT ("1") at [4, 26]|
       end
       assert_equal expected_error, res["errors"][0]["message"]
       assert_equal({"line" => 4, "column" => 26}, res["errors"][0]["locations"][0])
