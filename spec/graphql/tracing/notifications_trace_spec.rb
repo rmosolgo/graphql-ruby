@@ -26,7 +26,7 @@ describe GraphQL::Tracing::NotificationsTrace do
       expected_event_keys = [
         'execute_multiplex.graphql',
         'analyze_multiplex.graphql',
-        'lex.graphql',
+        (USING_C_PARSER ? 'lex.graphql' : nil),
         'parse.graphql',
         'validate.graphql',
         'analyze_query.graphql',
@@ -34,7 +34,7 @@ describe GraphQL::Tracing::NotificationsTrace do
         'authorized.graphql',
         'execute_field.graphql',
         'execute_query_lazy.graphql'
-      ]
+      ].compact
 
       assert_equal expected_event_keys, dispatched_events.keys
 

@@ -15,6 +15,7 @@ module GraphQL
         @query = query
       end
 
+      # The Ruby parser doesn't call this method (`graphql/c_parser` does.)
       def lex(query_string:)
         yield
       end

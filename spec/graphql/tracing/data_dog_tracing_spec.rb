@@ -75,7 +75,7 @@ describe GraphQL::Tracing::DataDogTracing do
   it "sets custom tags tags" do
     DataDogTest::CustomTracerTestSchema.execute("{ thing { str } }")
     expected_custom_tags = [
-      ["custom:lex", "query_string"],
+      (USING_C_PARSER ? ["custom:lex", "query_string"] : nil),
       ["custom:parse", "query_string"],
       ["custom:execute_multiplex", "multiplex"],
       ["custom:analyze_multiplex", "multiplex"],
@@ -86,7 +86,7 @@ describe GraphQL::Tracing::DataDogTracing do
       ["custom:execute_field", "field,query,ast_node,arguments,object,owner,path"],
       ["custom:authorized", "context,type,object,path"],
       ["custom:execute_query_lazy", "multiplex,query"],
-    ]
+    ].compact
 
     actual_custom_tags = Datadog::SPAN_TAGS.reject { |t| t[0] == "operation" || t[0] == "component" || t[0].is_a?(Symbol) }
     assert_equal expected_custom_tags, actual_custom_tags
