@@ -658,7 +658,7 @@ describe GraphQL::Query do
         expected_err = "syntax error, unexpected end of file at [1, 2]"
         expected_locations = [{"line" => 1, "column" => 2}]
       elsif using_recursive_descent_parser?
-        expected_err = "Expected NAME, actual: NOTHING (\" \") at [1, 3]"
+        expected_err = "Expected NAME, actual: (none) (\" \") at [1, 3]"
         expected_locations = [{"line" => 1, "column" => 3}]
       else
         expected_err = "Unexpected end of document"

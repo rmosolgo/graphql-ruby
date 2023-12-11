@@ -8,7 +8,11 @@ describe GraphQL::Language::Parser do
     err = assert_raises GraphQL::ParseError do
       subject.parse("{ foo(query: \"\xBF\") }")
     end
-    expected_message = 'Parse error on bad Unicode escape sequence: "{ foo(query: \"\xBF\") }" (error) at [1, 1]'
+    expected_message = if using_recursive_descent_parser?
+      'Parse error on bad Unicode escape sequence'
+    else
+      'Parse error on bad Unicode escape sequence: "{ foo(query: \"\xBF\") }" (error) at [1, 1]'
+    end
     assert_equal expected_message, err.message
   end
 
@@ -30,6 +34,8 @@ describe GraphQL::Language::Parser do
     }
     expected_msg = if USING_C_PARSER
       "syntax error, unexpected invalid token (\"\\xF0\"), expecting LCURLY at [1, 7]"
+    elsif using_recursive_descent_parser?
+      "Expected LCURLY, actual: UNKNOWN_CHAR (\"\\xF0\") at [1, 7]"
     else
       "Parse error on \"😘\" (error) at [1, 7]"
     end

@@ -31,7 +31,7 @@ module GraphQL
         if graphql_str.nil?
           raise GraphQL::ParseError.new("No query string was present", nil, nil, nil)
         end
-        @lexer = Lexer.new(graphql_str)
+        @lexer = Lexer.new(graphql_str, filename: filename)
         @graphql_str = graphql_str
         @filename = filename
         @trace = trace
@@ -61,7 +61,11 @@ module GraphQL
       end
 
       def document
-        advance_token
+        any_tokens = advance_token
+        if !any_tokens
+          # Only ignored characters is not a valid document
+          raise GraphQL::ParseError.new("Unexpected end of document", nil, nil, @graphql_str)
+        end
         defns = []
         while !@lexer.eos?
           defns << definition
@@ -710,18 +714,19 @@ module GraphQL
       # token_value works for when the scanner matched something
       # which is usually fine and it's good for it to be fast at that.
       def debug_token_value
-        if Lexer::Punctuation.const_defined?(token_name)
+        if token_name && Lexer::Punctuation.const_defined?(token_name)
           Lexer::Punctuation.const_get(token_name)
         elsif token_name == :ELLIPSIS
           "..."
         else
-          token_value
+          @lexer.token_value
         end
       end
 
       class Lexer
-        def initialize(graphql_str)
+        def initialize(graphql_str, filename: nil)
           @string = graphql_str
+          @filename = filename
           @scanner = StringScanner.new(graphql_str)
           @pos = nil
         end
@@ -777,11 +782,27 @@ module GraphQL
             if @scanner.skip(BLOCK_STRING_REGEXP) || @scanner.skip(QUOTED_STRING_REGEXP)
               :STRING
             else
-              raise_parse_error("Expected string or block string, but it was malformed")
+              raise GraphQL::ParseError.new(
+                "Expected string or block string, but it was malformed",
+                line_number,
+                column_number,
+                @string,
+                filename: @filename
+              )
             end
           else
             @scanner.pos += 1
             :UNKNOWN_CHAR
+          end
+        rescue ArgumentError => err
+          if err.message == "invalid byte sequence in UTF-8"
+            raise GraphQL::ParseError.new(
+              "Parse error on bad Unicode escape sequence",
+              nil,
+              nil,
+              @string,
+              filename: @filename
+            )
           end
         end
 

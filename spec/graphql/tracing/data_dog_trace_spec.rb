@@ -80,8 +80,8 @@ describe GraphQL::Tracing::DataDogTrace do
   it "sets custom tags tags" do
     DataDogTraceTest::CustomTracerTestSchema.execute("{ thing { str } }")
     expected_custom_tags = [
-      ["custom:lex", "query_string"],
-      (using_recursive_descent_parser? ? nil : ["custom:parse", "query_string"]),
+      (using_recursive_descent_parser? ? nil : ["custom:lex", "query_string"]),
+      ["custom:parse", "query_string"],
       ["custom:execute_multiplex", "multiplex"],
       ["custom:analyze_multiplex", "multiplex"],
       ["custom:validate", "query,validate"],
