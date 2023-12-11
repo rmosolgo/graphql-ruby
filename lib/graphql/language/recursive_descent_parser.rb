@@ -9,8 +9,22 @@ module GraphQL
       include GraphQL::Language::Nodes
       include EmptyObjects
 
-      def self.parse(graphql_str, filename: nil, trace: Tracing::NullTrace)
-        self.new(graphql_str, filename: filename, trace: trace).parse
+      class << self
+        attr_accessor :cache
+
+        def parse(graphql_str, filename: nil, trace: Tracing::NullTrace)
+          self.new(graphql_str, filename: filename, trace: trace).parse
+        end
+
+        def parse_file(filename, trace: Tracing::NullTrace)
+          if cache
+            cache.fetch(filename) do
+              parse(File.read(filename), filename: filename, trace: trace)
+            end
+          else
+            parse(File.read(filename), filename: filename, trace: trace)
+          end
+        end
       end
 
       def initialize(graphql_str, filename: nil, trace: Tracing::NullTrace)
@@ -28,8 +42,11 @@ module GraphQL
           @trace.parse(query_string: @graphql_str) do
             document
           end
+        rescue SystemStackError
+          raise GraphQL::ParseError.new("This query is too large to execute.", nil, nil, @query_str, filename: @filename)
         end
       end
+
 
       private
 
@@ -74,12 +91,12 @@ module GraphQL
             source_string: @graphql_str
           )
         when :QUERY, :MUTATION, :SUBSCRIPTION, :LCURLY
-          loc = pos
+          op_loc = pos
           op_type = case token_name
           when :LCURLY
             "query"
           else
-            self.operation_type
+            parse_operation_type
           end
 
           op_name = at?(:IDENTIFIER) ? parse_name : nil
@@ -109,7 +126,7 @@ module GraphQL
           directives = parse_directives
 
           OperationDefinition.new(
-            pos: loc,
+            pos: op_loc,
             operation_type: op_type,
             name: op_name,
             variables: variable_definitions,
@@ -119,17 +136,16 @@ module GraphQL
             source_string: @graphql_str
           )
         when :EXTEND
-          expect_token(:EXTEND)
+          loc = pos
+          advance_token
           case token_name
           when :SCALAR
-            loc = pos
-            expect_token :SCALAR
+            advance_token
             name = parse_name
             directives = parse_directives
             ScalarTypeExtension.new(pos: loc, name: name, directives: directives, filename: @filename, source_string: @graphql_str)
           when :TYPE
-            loc = pos
-            expect_token :TYPE
+            advance_token
             name = parse_name
             implements_interfaces = parse_implements
             directives = parse_directives
@@ -137,37 +153,32 @@ module GraphQL
 
             ObjectTypeExtension.new(pos: loc, name: name, interfaces: implements_interfaces, directives: directives, fields: field_defns, filename: @filename, source_string: @graphql_str)
           when :INTERFACE
-            loc = pos
-            expect_token :INTERFACE
+            advance_token
             name = parse_name
             directives = parse_directives
             interfaces = parse_implements
             fields_definition = at?(:LCURLY) ? parse_field_definitions : EMPTY_ARRAY
             InterfaceTypeExtension.new(pos: loc, name: name, directives: directives, fields: fields_definition, interfaces: interfaces, filename: @filename, source_string: @graphql_str)
           when :UNION
-            loc = pos
-            expect_token :UNION
+            advance_token
             name = parse_name
             directives = parse_directives
             union_member_types = parse_union_members
             UnionTypeExtension.new(pos: loc, name: name, directives: directives, types: union_member_types, filename: @filename, source_string: @graphql_str)
           when :ENUM
-            loc = pos
-            expect_token :ENUM
+            advance_token
             name = parse_name
             directives = parse_directives
             enum_values_definition = parse_enum_value_definitions
             Nodes::EnumTypeExtension.new(pos: loc, name: name, directives: directives, values: enum_values_definition, filename: @filename, source_string: @graphql_str)
           when :INPUT
-            loc = pos
-            expect_token :INPUT
+            advance_token
             name = parse_name
             directives = parse_directives
             input_fields_definition = parse_input_object_field_definitions
             InputObjectTypeExtension.new(pos: loc, name: name, directives: directives, fields: input_fields_definition, filename: @filename, source_string: @graphql_str)
           when :SCHEMA
-            loc = pos
-            expect_token :SCHEMA
+            advance_token
             directives = parse_directives
             query = mutation = subscription = nil
             if at?(:LCURLY)
@@ -198,18 +209,17 @@ module GraphQL
               directives: directives,
               pos: loc,
               filename: @filename,
-              source_string: @source_string,
+              source_string: @graphql_str,
             )
           else
             expect_one_of([:SCHEMA, :SCALAR, :TYPE, :ENUM, :INPUT, :UNION, :INTERFACE])
           end
         else
           desc = at?(:STRING) ? string_value : nil
-
+          loc = pos
           case token_name
           when :SCHEMA
-            loc = pos
-            expect_token :SCHEMA
+            advance_token
             directives = parse_directives
             query = mutation = subscription = nil
             expect_token :LCURLY
@@ -233,8 +243,7 @@ module GraphQL
             expect_token :RCURLY
             SchemaDefinition.new(pos: loc, query: query, mutation: mutation, subscription: subscription, directives: directives, filename: @filename, source_string: @graphql_str)
           when :DIRECTIVE
-            loc = pos
-            expect_token :DIRECTIVE
+            advance_token
             expect_token :DIR_SIGN
             name = parse_name
             arguments_definition = parse_argument_definitions
@@ -252,45 +261,39 @@ module GraphQL
             end
             DirectiveDefinition.new(pos: loc, description: desc, name: name, arguments: arguments_definition, locations: directive_locations, repeatable: repeatable, filename: @filename, source_string: @graphql_str)
           when :TYPE
-            loc = pos
-            expect_token :TYPE
+            advance_token
             name = parse_name
             implements_interfaces = parse_implements
             directives = parse_directives
-            field_defns = parse_field_definitions
+            field_defns = at?(:LCURLY) ? parse_field_definitions : EMPTY_ARRAY
 
             ObjectTypeDefinition.new(pos: loc, description: desc, name: name, interfaces: implements_interfaces, directives: directives, fields: field_defns, filename: @filename, source_string: @graphql_str)
           when :INTERFACE
-            loc = pos
-            expect_token :INTERFACE
+            advance_token
             name = parse_name
             directives = parse_directives
             interfaces = parse_implements
             fields_definition = parse_field_definitions
             InterfaceTypeDefinition.new(pos: loc, description: desc, name: name, directives: directives, fields: fields_definition, interfaces: interfaces, filename: @filename, source_string: @graphql_str)
           when :UNION
-            loc = pos
-            expect_token :UNION
+            advance_token
             name = parse_name
             directives = parse_directives
             union_member_types = parse_union_members
             UnionTypeDefinition.new(pos: loc, description: desc, name: name, directives: directives, types: union_member_types, filename: @filename, source_string: @graphql_str)
           when :SCALAR
-            loc = pos
-            expect_token :SCALAR
+            advance_token
             name = parse_name
             directives = parse_directives
             ScalarTypeDefinition.new(pos: loc, description: desc, name: name, directives: directives, filename: @filename, source_string: @graphql_str)
           when :ENUM
-            loc = pos
-            expect_token :ENUM
+            advance_token
             name = parse_name
             directives = parse_directives
             enum_values_definition = parse_enum_value_definitions
             Nodes::EnumTypeDefinition.new(pos: loc, description: desc, name: name, directives: directives, values: enum_values_definition, filename: @filename, source_string: @graphql_str)
           when :INPUT
-            loc = pos
-            expect_token :INPUT
+            advance_token
             name = parse_name
             directives = parse_directives
             input_fields_definition = parse_input_object_field_definitions
@@ -433,7 +436,7 @@ module GraphQL
         type
       end
 
-      def operation_type
+      def parse_operation_type
         val = if at?(:QUERY)
           "query"
         elsif at?(:MUTATION)
@@ -441,7 +444,7 @@ module GraphQL
         elsif at?(:SUBSCRIPTION)
           "subscription"
         else
-          expect_token(:QUERY)
+          expect_one_of([:QUERY, :MUTATION, :SUBSCRIPTION])
         end
         advance_token
         val
@@ -676,13 +679,13 @@ module GraphQL
 
       def expect_token(expected_token_name)
         unless @token_name == expected_token_name
-          raise_parse_error("Expected #{expected_token_name}, actual: #{token_name || "NOTHING"} (#{@lexer.token_value.inspect})")
+          raise_parse_error("Expected #{expected_token_name}, actual: #{token_name || "(none)"} (#{debug_token_value.inspect})")
         end
         advance_token
       end
 
       def expect_one_of(token_names)
-        raise_parse_error("Expected one of #{token_names.join(", ")}, actual: #{token_name || "NOTHING"} (#{@lexer.token_value.inspect})")
+        raise_parse_error("Expected one of #{token_names.join(", ")}, actual: #{token_name || "NOTHING"} (#{debug_token_value.inspect})")
       end
 
       def raise_parse_error(message)
@@ -702,6 +705,18 @@ module GraphQL
         token_value = @lexer.token_value
         expect_token(tok)
         token_value
+      end
+
+      # token_value works for when the scanner matched something
+      # which is usually fine and it's good for it to be fast at that.
+      def debug_token_value
+        if Lexer::Punctuation.const_defined?(token_name)
+          Lexer::Punctuation.const_get(token_name)
+        elsif token_name == :ELLIPSIS
+          "..."
+        else
+          token_value
+        end
       end
 
       class Lexer

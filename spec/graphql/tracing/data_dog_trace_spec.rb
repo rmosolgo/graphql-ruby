@@ -81,7 +81,7 @@ describe GraphQL::Tracing::DataDogTrace do
     DataDogTraceTest::CustomTracerTestSchema.execute("{ thing { str } }")
     expected_custom_tags = [
       ["custom:lex", "query_string"],
-      ["custom:parse", "query_string"],
+      (using_recursive_descent_parser? ? nil : ["custom:parse", "query_string"]),
       ["custom:execute_multiplex", "multiplex"],
       ["custom:analyze_multiplex", "multiplex"],
       ["custom:validate", "query,validate"],
@@ -91,7 +91,7 @@ describe GraphQL::Tracing::DataDogTrace do
       ["custom:execute_field", "arguments,ast_node,field,object,query"],
       ["custom:authorized", "object,query,type"],
       ["custom:execute_query_lazy", "multiplex,query"],
-    ]
+    ].compact
 
     actual_custom_tags = Datadog::SPAN_TAGS.reject { |t| t[0] == "operation" || t[0] == "component" || t[0].is_a?(Symbol) }
     assert_equal expected_custom_tags, actual_custom_tags

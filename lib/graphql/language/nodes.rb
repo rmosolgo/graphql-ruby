@@ -33,7 +33,7 @@ module GraphQL
             if @pos == 0
               1
             else
-              @source_string[0, @pos].split("\n").last.length + 1
+              @source_string[0..@pos].split("\n").last.length
             end
           end
         end

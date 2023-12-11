@@ -355,7 +355,7 @@ GRAPHQL
     query = GraphQL::Query.new(schema, "{ t: __typename }")
     subject.parse("{ t: __typename }", trace: query.current_trace)
     traces = TestTracing.traces
-    expected_traces = if GraphQL.default_parser == GraphQL::Language::RecursiveDescentParser
+    expected_traces = if using_recursive_descent_parser?
       1
     else
       2
@@ -363,7 +363,7 @@ GRAPHQL
     assert_equal expected_traces, traces.length
     lex_trace, parse_trace = traces
 
-    if GraphQL.default_parser == GraphQL::Language::Parser
+    if !using_recursive_descent_parser?
       assert_equal "{ t: __typename }", lex_trace[:query_string]
       assert_equal "lex", lex_trace[:key]
       assert_instance_of Array, lex_trace[:result]
