@@ -6,6 +6,10 @@ if defined?(GraphQL::CParser::Lexer)
   describe GraphQL::CParser::Lexer do
     subject { GraphQL::CParser::Lexer }
 
+    def assert_bad_unicode(string, _message = nil)
+      assert_equal :BAD_UNICODE_ESCAPE, subject.tokenize(string).first.name
+    end
+
     it "makes tokens like the other lexer" do
       str = "{ f1(type: \"str\") ...F2 }\nfragment F2 on SomeType { f2 }"
       # Don't include prev_token here
