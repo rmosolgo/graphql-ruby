@@ -111,10 +111,16 @@ def on_error(parser_token_id, lexer_token, vstack)
 end
 
 def make_node(node_name, assigns)
+  position_source = assigns.delete(:position_source)
   assigns.each do |key, value|
-    if key != :position_source && value.is_a?(Array) && value[0].is_a?(Symbol)
+    if value.is_a?(Array) && value[0].is_a?(Symbol)
       assigns[key] = value[3]
     end
+  end
+
+  if position_source
+    assigns[:line] = position_source[1]
+    assigns[:col] = position_source[2]
   end
 
   assigns[:filename] = @filename

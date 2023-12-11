@@ -84,13 +84,13 @@ module GraphQL
           expect_token :ON
           f_type = parse_type_name
           directives = parse_directives
-
+          selections = selection_set
           Nodes::FragmentDefinition.new(
             pos: loc,
             name: f_name,
             type: f_type,
             directives: directives,
-            selections: selection_set,
+            selections: selections,
             filename: @filename,
             source_string: @graphql_str
           )

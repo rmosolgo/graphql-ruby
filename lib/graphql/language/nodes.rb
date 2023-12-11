@@ -261,7 +261,6 @@ module GraphQL
           DEFAULT_INITIALIZE_OPTIONS = [
             "line: nil",
             "col: nil",
-            "position_source: nil",
             "pos: nil",
             "filename: nil",
             "source_string: nil",
@@ -300,14 +299,8 @@ module GraphQL
 
               module_eval <<-RUBY, __FILE__, __LINE__
                 def initialize(#{arguments.join(", ")})
-                  if position_source
-                    @line = position_source[1]
-                    @col = position_source[2]
-                  else
-                    @line = line
-                    @col = col
-                  end
-
+                  @line = line
+                  @col = col
                   @pos = pos
                   @filename = filename
                   @source_string = source_string
@@ -388,20 +381,15 @@ module GraphQL
         # @!attribute selections
         #   @return [Array<Nodes::Field>] Selections on this object (or empty array if this is a scalar field)
 
-        def initialize(name: nil, arguments: NONE, directives: NONE, selections: NONE, field_alias: nil, position_source: nil, line: nil, col: nil, pos: nil, filename: nil, source_string: nil)
+        def initialize(name: nil, arguments: NONE, directives: NONE, selections: NONE, field_alias: nil, line: nil, col: nil, pos: nil, filename: nil, source_string: nil)
           @name = name
           @arguments = arguments || NONE
           @directives = directives || NONE
           @selections = selections || NONE
           # oops, alias is a keyword:
           @alias = field_alias
-          if position_source
-            @line = position_source[1]
-            @col = position_source[2]
-          else
-            @line = line
-            @col = col
-          end
+          @line = line
+          @col = col
           @pos = pos
           @filename = filename
           @source_string = source_string
@@ -422,7 +410,7 @@ module GraphQL
 
         # @!attribute type
         #   @return [String] the type condition for this fragment (name of type which it may apply to)
-        def initialize(name: nil, type: nil, directives: NONE, selections: NONE, filename: nil, pos: nil, source_string: nil, line: nil, col: nil, position_source: nil)
+        def initialize(name: nil, type: nil, directives: NONE, selections: NONE, filename: nil, pos: nil, source_string: nil, line: nil, col: nil)
           @name = name
           @type = type
           @directives = directives
@@ -430,13 +418,8 @@ module GraphQL
           @filename  = filename
           @pos = pos
           @source_string = source_string
-          if position_source
-            @line = position_source[1]
-            @col = position_source[2]
-          else
-            @line = line
-            @col = col
-          end
+          @line = line
+          @col = col
         end
 
         def self.from_a(filename, line, col, name, type, directives, selections)
