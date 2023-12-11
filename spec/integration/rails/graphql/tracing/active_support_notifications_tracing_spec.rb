@@ -37,7 +37,7 @@ describe GraphQL::Tracing::ActiveSupportNotificationsTracing do
     end
 
     expected_traces = [
-      "lex.graphql",
+      (using_recursive_descent_parser? ? nil : "lex.graphql"),
       "parse.graphql",
       "validate.graphql",
       "analyze_query.graphql",
