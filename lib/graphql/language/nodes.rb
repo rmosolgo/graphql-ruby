@@ -405,6 +405,13 @@ module GraphQL
 
       # A reusable fragment, defined at document-level.
       class FragmentDefinition < AbstractNode
+        scalar_methods :name, :type
+        children_methods({
+          selections: GraphQL::Language::Nodes::Field,
+          directives: GraphQL::Language::Nodes::Directive,
+        })
+
+        self.children_method_name = :definitions
         # @!attribute name
         #   @return [String] the identifier for this fragment, which may be applied with `...#{name}`
 
@@ -425,14 +432,6 @@ module GraphQL
         def self.from_a(filename, line, col, name, type, directives, selections)
           self.new(filename: filename, line: line, col: col, name: name, type: type, directives: directives, selections: selections)
         end
-
-        scalar_methods :name, :type
-        children_methods({
-          selections: GraphQL::Language::Nodes::Field,
-          directives: GraphQL::Language::Nodes::Directive,
-        })
-
-        self.children_method_name = :definitions
       end
 
       # Application of a named fragment in a selection
