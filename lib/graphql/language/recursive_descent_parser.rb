@@ -498,7 +498,7 @@ module GraphQL
             directives = at?(:DIR_SIGN) ? parse_directives : nil
             selection_set = at?(:LCURLY) ? self.selection_set : nil
 
-            Nodes::Field.new(pos: loc, alias: field_alias, name: name, arguments: arguments, directives: directives, selections: selection_set, filename: @filename, source_string: @graphql_str)
+            Nodes::Field.new(pos: loc, field_alias: field_alias, name: name, arguments: arguments, directives: directives, selections: selection_set, filename: @filename, source_string: @graphql_str)
           end
         end
         expect_token(:RCURLY)

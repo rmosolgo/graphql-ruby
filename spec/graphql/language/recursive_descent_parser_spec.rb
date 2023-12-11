@@ -29,9 +29,6 @@ describe GraphQL::Language::RecursiveDescentParser do
       subject.parse(query_str).to_query_string
     )
   end
-  it "parses comments" do
-    skip "TODO"
-  end
 
   it "parses schemas" do
     schema_str = <<~GRAPHQL

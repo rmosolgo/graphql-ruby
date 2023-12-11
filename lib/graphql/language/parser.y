@@ -119,7 +119,7 @@ rule
     | name COLON name arguments_opt directives_list_opt selection_set_opt {
             result = make_node(
               :Field, {
-                alias:        val[0],
+                field_alias:        val[0],
                 name:         val[2],
                 arguments:    val[3],
                 directives:   val[4],
@@ -556,5 +556,5 @@ def make_node(node_name, assigns)
 
   assigns[:filename] = @filename
 
-  GraphQL::Language::Nodes.const_get(node_name).new(assigns)
+  GraphQL::Language::Nodes.const_get(node_name).new(**assigns)
 end
