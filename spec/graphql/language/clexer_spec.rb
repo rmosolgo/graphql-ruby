@@ -7,7 +7,7 @@ if defined?(GraphQL::CParser::Lexer)
     subject { GraphQL::CParser::Lexer }
 
     def assert_bad_unicode(string, _message = nil)
-      assert_equal :BAD_UNICODE_ESCAPE, subject.tokenize(string).first.name
+      assert_equal :BAD_UNICODE_ESCAPE, subject.tokenize(string).first[0]
     end
 
     it "makes tokens like the other lexer" do

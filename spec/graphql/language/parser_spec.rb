@@ -8,7 +8,11 @@ describe GraphQL::Language::Parser do
     err = assert_raises GraphQL::ParseError do
       subject.parse("{ foo(query: \"\xBF\") }")
     end
-    expected_message = 'Parse error on bad Unicode escape sequence'
+    expected_message = if USING_C_PARSER
+      'Parse error on bad Unicode escape sequence: "{ foo(query: "\xBF") }"'
+    else
+      'Parse error on bad Unicode escape sequence'
+    end
     assert_equal expected_message, err.message
   end
 
