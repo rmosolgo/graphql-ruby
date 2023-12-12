@@ -190,23 +190,20 @@ module GraphQL
               end
             end
           end
+          join_queues(job_fibers, next_job_fibers)
 
-          if job_fibers.empty?
-            any_pending_sources = true
-            while any_pending_sources
-              while (f = source_fibers.shift || spawn_source_fiber)
-                if f.alive?
-                  finished = run_fiber(f)
-                  if !finished
-                    next_source_fibers << f
-                  end
+          while source_fibers.any? || @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
+            while (f = source_fibers.shift || spawn_source_fiber)
+              if f.alive?
+                finished = run_fiber(f)
+                if !finished
+                  next_source_fibers << f
                 end
               end
-              join_queues(source_fibers, next_source_fibers)
-              any_pending_sources = @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
             end
+            join_queues(source_fibers, next_source_fibers)
           end
-          join_queues(job_fibers, next_job_fibers)
+
         end
       end
 
@@ -239,24 +236,6 @@ module GraphQL
           true
         end
       }
-    end
-
-
-    def get_fiber_state
-      fiber_locals = {}
-
-      Thread.current.keys.each do |fiber_var_key|
-        # This variable should be fresh in each new fiber
-        if fiber_var_key != :__graphql_runtime_info
-          fiber_locals[fiber_var_key] = Thread.current[fiber_var_key]
-        end
-      end
-
-      fiber_locals
-    end
-
-    def set_fiber_state(state)
-      state.each { |k, v| Thread.current[k] = v }
     end
 
     private
