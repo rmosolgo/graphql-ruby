@@ -1,6 +1,4 @@
 # frozen_string_literal: true
-require "async"
-
 module GraphQL
   class Dataloader
     class AsyncDataloader < Dataloader
@@ -25,7 +23,7 @@ module GraphQL
                   next_job_fibers << f
                 end
               end
-            end
+            end.wait
             job_fibers.concat(next_job_fibers)
             next_job_fibers.clear
 
@@ -49,10 +47,8 @@ module GraphQL
 
       def spawn_task
         fiber_vars = get_fiber_variables
-        parent_fiber = use_fiber_resume? ? nil : Fiber.current
         Async {
           set_fiber_variables(fiber_vars)
-          Thread.current[:parent_fiber] = parent_fiber
           yield
         }
       end

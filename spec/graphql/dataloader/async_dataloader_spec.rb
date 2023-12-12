@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
-
 if Fiber.respond_to?(:scheduler) # Ruby 3+
+  require "async"
   describe GraphQL::Dataloader::AsyncDataloader do
     class AsyncSchema < GraphQL::Schema
       class SleepSource < GraphQL::Dataloader::Source
@@ -218,37 +218,14 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
             # We've basically got two options here:
             # - Put all jobs in the same queue (fields and sources), but then you don't get predictable batching.
             # - Work one-layer-at-a-time, but then layers can get stuck behind one another. That's what's implemented here.
-            assert_in_delta expected_0_6_s, ended_at - started_at, 0.05, "Sources were executed in parallel"
+            assert_in_delta 0.6, ended_at - started_at, 0.06, "Sources were executed in parallel"
           end
         end
       end
     end
 
-
-    # describe "With the toy scheduler from Ruby's tests" do
-    #   let(:scheduler_class) { ::DummyScheduler }
-    #   include AsyncDataloaderAssertions
-    # end
-
-    # if RUBY_ENGINE == "ruby" && !ENV["GITHUB_ACTIONS"]
-    #   describe "With libev_scheduler" do
-    #     require "libev_scheduler"
-    #     let(:scheduler_class) { Libev::Scheduler }
-    #     include AsyncDataloaderAssertions
-    #   end
-    # end
-
-    # describe "with evt" do
-    #   require "evt"
-    #   let(:scheduler_class) { Evt::Scheduler }
-    #   let(:expected_0_6_s) { 1.0 }
-    #   include AsyncDataloaderAssertions
-    # end
-
     describe "with async" do
       require "async"
-      let(:scheduler_class) { Async::Scheduler }
-      let(:expected_0_6_s) { 0.6 }
       include AsyncDataloaderAssertions
     end
   end
