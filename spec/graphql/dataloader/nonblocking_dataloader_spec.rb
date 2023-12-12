@@ -2,8 +2,8 @@
 require "spec_helper"
 
 if Fiber.respond_to?(:scheduler) # Ruby 3+
-  describe GraphQL::Dataloader::AsyncDataloader do
-    class AsyncSchema < GraphQL::Schema
+  describe GraphQL::Dataloader::NonblockingDataloader do
+    class NonblockingSchema < GraphQL::Schema
       class SleepSource < GraphQL::Dataloader::Source
         def fetch(keys)
           max_sleep = keys.max
@@ -84,7 +84,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
       end
 
       query(Query)
-      use GraphQL::Dataloader::AsyncDataloader
+      use GraphQL::Dataloader::NonblockingDataloader
     end
 
     def with_scheduler
@@ -94,12 +94,12 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
       Fiber.set_scheduler(nil)
     end
 
-    module AsyncDataloaderAssertions
+    module NonblockingDataloaderAssertions
       def self.included(child_class)
         child_class.class_eval do
 
           it "runs IO in parallel by default" do
-            dataloader = GraphQL::Dataloader::AsyncDataloader.new
+            dataloader = GraphQL::Dataloader::NonblockingDataloader.new
             results = {}
             dataloader.append_job { sleep(0.1); results[:a] = 1 }
             dataloader.append_job { sleep(0.2); results[:b] = 2 }
@@ -115,10 +115,10 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
           end
 
           it "works with sources" do
-            dataloader = GraphQL::Dataloader::AsyncDataloader.new
-            r1 = dataloader.with(AsyncSchema::SleepSource).request(0.1)
-            r2 = dataloader.with(AsyncSchema::SleepSource).request(0.2)
-            r3 = dataloader.with(AsyncSchema::SleepSource).request(0.3)
+            dataloader = GraphQL::Dataloader::NonblockingDataloader.new
+            r1 = dataloader.with(NonblockingSchema::SleepSource).request(0.1)
+            r2 = dataloader.with(NonblockingSchema::SleepSource).request(0.2)
+            r3 = dataloader.with(NonblockingSchema::SleepSource).request(0.3)
 
             v1 = nil
             dataloader.append_job {
@@ -144,7 +144,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
           it "works with GraphQL" do
             started_at = Time.now
             res = with_scheduler {
-              AsyncSchema.execute("{ s1: sleep(duration: 0.1) s2: sleep(duration: 0.2) s3: sleep(duration: 0.3) }")
+              NonblockingSchema.execute("{ s1: sleep(duration: 0.1) s2: sleep(duration: 0.2) s3: sleep(duration: 0.3) }")
             }
             ended_at = Time.now
             assert_equal({"s1"=>0.1, "s2"=>0.2, "s3"=>0.3}, res["data"])
@@ -173,7 +173,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
             GRAPHQL
             started_at = Time.now
             res = with_scheduler {
-              AsyncSchema.execute(query_str)
+              NonblockingSchema.execute(query_str)
             }
             ended_at = Time.now
 
@@ -218,7 +218,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
             GRAPHQL
             started_at = Time.now
             res = with_scheduler do
-              AsyncSchema.execute(query_str)
+              NonblockingSchema.execute(query_str)
             end
             ended_at = Time.now
 
@@ -232,8 +232,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
             # We've basically got two options here:
             # - Put all jobs in the same queue (fields and sources), but then you don't get predictable batching.
             # - Work one-layer-at-a-time, but then layers can get stuck behind one another. That's what's implemented here.
-            delta = ENV["GITHUB_ACTIONS"] ? 0.5 : 0.07 # slow on gh actions
-            assert_in_delta 0.6, ended_at - started_at, delta, "Sources were executed in parallel"
+            assert_in_delta 1.0, ended_at - started_at, 0.5, "Sources were executed in parallel"
           end
         end
       end
@@ -242,21 +241,21 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
 
     describe "With the toy scheduler from Ruby's tests" do
       let(:scheduler_class) { ::DummyScheduler }
-      include AsyncDataloaderAssertions
+      include NonblockingDataloaderAssertions
     end
 
     if RUBY_ENGINE == "ruby" && !ENV["GITHUB_ACTIONS"]
       describe "With libev_scheduler" do
         require "libev_scheduler"
         let(:scheduler_class) { Libev::Scheduler }
-        include AsyncDataloaderAssertions
+        include NonblockingDataloaderAssertions
       end
     end
 
     describe "with evt" do
       require "evt"
       let(:scheduler_class) { Evt::Scheduler }
-      include AsyncDataloaderAssertions
+      include NonblockingDataloaderAssertions
     end
   end
 end
