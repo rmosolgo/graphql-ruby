@@ -190,23 +190,20 @@ module GraphQL
               end
             end
           end
+          join_queues(job_fibers, next_job_fibers)
 
-          if job_fibers.empty?
-            any_pending_sources = true
-            while any_pending_sources
-              while (f = source_fibers.shift || spawn_source_fiber)
-                if f.alive?
-                  finished = run_fiber(f)
-                  if !finished
-                    next_source_fibers << f
-                  end
+          while source_fibers.any? || @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
+            while (f = source_fibers.shift || spawn_source_fiber)
+              if f.alive?
+                finished = run_fiber(f)
+                if !finished
+                  next_source_fibers << f
                 end
               end
-              join_queues(source_fibers, next_source_fibers)
-              any_pending_sources = @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
             end
+            join_queues(source_fibers, next_source_fibers)
           end
-          join_queues(job_fibers, next_job_fibers)
+
         end
       end
 
