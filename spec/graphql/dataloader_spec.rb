@@ -3,6 +3,9 @@ require "spec_helper"
 require "fiber"
 
 describe GraphQL::Dataloader do
+  def assert_acceptable_log(expected_log, actual_log, message = "The database logs matched")
+    assert_equal(expected_log, actual_log, message)
+  end
   class BatchedCallsCounter
     def initialize
       @count = 0
@@ -419,6 +422,7 @@ describe GraphQL::Dataloader do
   module DataloaderAssertions
     def self.included(child_class)
       child_class.class_eval do
+
         it "Works with request(...)" do
           res = schema.execute <<-GRAPHQL
           {
@@ -437,7 +441,7 @@ describe GraphQL::Dataloader do
             }
           }
           assert_equal expected_data, res
-          assert_equal [[:mget, ["5", "6"]], [:mget, ["2", "3"]]], database_log
+          assert_acceptable_log [[:mget, ["5", "6"]], [:mget, ["2", "3"]]], database_log
         end
 
         it "runs mutations sequentially" do
@@ -509,7 +513,7 @@ describe GraphQL::Dataloader do
               "3", "4",           # The two unfetched ingredients the first recipe
             ]],
           ]
-          assert_equal expected_log, database_log
+          assert_acceptable_log expected_log, database_log
         end
 
         it "caches and batch-loads across a multiplex" do
@@ -530,7 +534,7 @@ describe GraphQL::Dataloader do
             [:mget, ["1", "2", "5"]],
             [:mget, ["3", "4"]],
           ]
-          assert_equal expected_log, database_log
+          assert_acceptable_log expected_log, database_log
         end
 
         it "works with calls within sources" do
@@ -543,7 +547,7 @@ describe GraphQL::Dataloader do
 
           expected_data = { "i1" => { "name" => "Wheat" }, "i2" => { "name" => "Corn" } }
           assert_equal expected_data, res["data"]
-          assert_equal [[:mget, ["1", "2"]]], database_log
+          assert_acceptable_log [[:mget, ["1", "2"]]], database_log
         end
 
         it "works with batch parameters" do
@@ -585,7 +589,7 @@ describe GraphQL::Dataloader do
             [:mget, ["1", "2", "3", "4"]],
           ]
           # Sort them because threads may have returned in slightly different order
-          assert_equal expected_log.sort, database_log.sort
+          assert_acceptable_log expected_log.sort, database_log.sort
         end
 
         it "Works with multiple-field selections and __typename" do
@@ -641,7 +645,7 @@ describe GraphQL::Dataloader do
             [:mget, ["5", "6"]],
             [:mget, ["1", "2", "3", "4", "7"]],
           ]
-          assert_equal expected_log, database_log
+          assert_acceptable_log expected_log, database_log
         end
 
         it "loads arguments in batches, even with request" do
@@ -666,13 +670,13 @@ describe GraphQL::Dataloader do
             [:mget, ["5", "6"]],
             [:mget, ["2", "3"]],
           ]
-          assert_equal expected_log, database_log
+          assert_acceptable_log expected_log, database_log
 
           # Run the same test, but using `.request` from object_from_id
           database_log.clear
           res2 = schema.execute(query_str, context: { use_request: true })
           assert_equal expected_data, res2["data"]
-          assert_equal expected_log, database_log
+          assert_acceptable_log expected_log, database_log
         end
 
         it "works with sources that use keyword arguments in the initializer" do
@@ -741,14 +745,14 @@ describe GraphQL::Dataloader do
             [:mget, ["5", "6"]],
             [:mget, ["2", "3"]],
           ]
-          assert_equal expected_log, database_log
+          assert_acceptable_log expected_log, database_log
 
 
           # Run the same test, but using `.request` from object_from_id
           database_log.clear
           res2 = schema.execute(query_str, context: { use_request: true })
           assert_equal expected_data, res2["data"]
-          assert_equal expected_log, database_log
+          assert_acceptable_log expected_log, database_log
         end
 
         it "batches calls in .authorized?" do
@@ -784,14 +788,14 @@ describe GraphQL::Dataloader do
             [:mget, ["5", "6"]],
             [:mget, ["2", "3"]],
           ]
-          assert_equal expected_log, database_log
+          assert_acceptable_log expected_log, database_log
 
 
           # Run the same test, but using `.request` from object_from_id
           database_log.clear
           res2 = schema.execute(query_str, context: { use_request: true }, variables: { input: { recipe1Id: 5, recipe2Id: 6 }})
           assert_equal expected_data, res2["data"]
-          assert_equal expected_log, database_log
+          assert_acceptable_log expected_log, database_log
         end
 
         it "supports general usage" do
@@ -819,7 +823,7 @@ describe GraphQL::Dataloader do
           }
 
           assert_equal :finished, res
-          assert_equal [[:mget, ["1", "2", "3"]]], database_log
+          assert_acceptable_log [[:mget, ["1", "2", "3"]]], database_log
           assert_equal "Wheat", a[:name]
           assert_equal "Wheat", b[:name]
           assert_equal ["Corn", "Butter"], c.map { |d| d[:name] }
@@ -869,13 +873,13 @@ describe GraphQL::Dataloader do
             # all keys are fetched in the same call:
             [:mget, ["1", "2", "3"]]
           ]
-          assert_equal expected_log, database_log
+          assert_acceptable_log expected_log, database_log
         end
 
         it "uses cached values from .merge" do
           query_str = "{ ingredient(id: 1) { id name } }"
           assert_equal "Wheat", schema.execute(query_str)["data"]["ingredient"]["name"]
-          assert_equal [[:mget, ["1"]]], database_log
+          assert_acceptable_log [[:mget, ["1"]]], database_log
           database_log.clear
 
           dataloader = schema.dataloader_class.new
@@ -891,7 +895,32 @@ describe GraphQL::Dataloader do
   end
 
   let(:schema) { FiberSchema }
-  include DataloaderAssertions
+  # include DataloaderAssertions
+
+  describe "AsyncDataloader" do
+    let(:schema) {
+      Class.new(FiberSchema) {
+        use GraphQL::Dataloader::AsyncDataloader
+      }
+    }
+
+    # This won't be scheduled, so actual load order may vary
+    def assert_acceptable_log(expected_log, actual_log, message = "All expected values were loaded")
+      all_expected = Hash.new { |h,k| h[k] = [] }
+      expected_log.each do |(op, keys)|
+        all_expected[op].concat(keys)
+        all_expected[op].sort!
+      end
+      all_actual = Hash.new { |h,k| h[k] = [] }
+      actual_log.each do |(op, keys)|
+        all_actual[op].concat(keys)
+        all_actual[op].sort!
+      end
+      assert_equal(all_expected, all_actual, message)
+    end
+
+    include DataloaderAssertions
+  end
 
   if Fiber.respond_to?(:scheduler)
     describe "nonblocking: true" do

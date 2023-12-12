@@ -27,11 +27,11 @@ module GraphQL
       attr_accessor :default_nonblocking
     end
 
-    AsyncDataloader = Class.new(self) { self.default_nonblocking = true }
+    NonblockingDataloader = Class.new(self) { self.default_nonblocking = true }
 
     def self.use(schema, nonblocking: nil)
       schema.dataloader_class = if nonblocking
-        AsyncDataloader
+        NonblockingDataloader
       else
         self
       end
@@ -238,24 +238,6 @@ module GraphQL
       }
     end
 
-
-    def get_fiber_state
-      fiber_locals = {}
-
-      Thread.current.keys.each do |fiber_var_key|
-        # This variable should be fresh in each new fiber
-        if fiber_var_key != :__graphql_runtime_info
-          fiber_locals[fiber_var_key] = Thread.current[fiber_var_key]
-        end
-      end
-
-      fiber_locals
-    end
-
-    def set_fiber_state(state)
-      state.each { |k, v| Thread.current[k] = v }
-    end
-
     private
 
     def join_queues(prev_queue, new_queue)
@@ -302,3 +284,5 @@ module GraphQL
     end
   end
 end
+
+require "graphql/dataloader/async_dataloader"

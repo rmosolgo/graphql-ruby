@@ -29,6 +29,8 @@ unless running_in_rubymine
   Minitest::Reporters.use! Minitest::Reporters::DefaultReporter.new(color: true)
 end
 
+Minitest::Reporters.use! Minitest::Reporters::SpecReporter.new(color: true)
+
 Minitest::Spec.make_my_diffs_pretty!
 
 module CheckWardenShape

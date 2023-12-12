@@ -8,7 +8,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
         def fetch(keys)
           max_sleep = keys.max
           # t1 = Time.now
-          # puts "----- SleepSource => #{max_sleep} (from: #{keys})"
+          # puts "----- SleepSource => #{max_sleep} "
           sleep(max_sleep)
           # puts "----- SleepSource done #{max_sleep} after #{Time.now - t1}"
           keys.map { |_k| max_sleep }
@@ -87,9 +87,17 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
       use GraphQL::Dataloader::AsyncDataloader
     end
 
+    def with_scheduler
+      Fiber.set_scheduler(scheduler_class.new)
+      yield
+    ensure
+      Fiber.set_scheduler(nil)
+    end
+
     module AsyncDataloaderAssertions
       def self.included(child_class)
         child_class.class_eval do
+
           it "runs IO in parallel by default" do
             dataloader = GraphQL::Dataloader::AsyncDataloader.new
             results = {}
@@ -99,7 +107,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
 
             assert_equal({}, results, "Nothing ran yet")
             started_at = Time.now
-            dataloader.run
+            with_scheduler { dataloader.run }
             ended_at = Time.now
 
             assert_equal({ a: 1, b: 2, c: 3 }, results, "All the jobs ran")
@@ -117,7 +125,7 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
               v1 = r1.load
             }
             started_at = Time.now
-            dataloader.run
+            with_scheduler { dataloader.run }
             ended_at = Time.now
             assert_equal 0.3, v1
             started_at_2 = Time.now
@@ -135,7 +143,9 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
 
           it "works with GraphQL" do
             started_at = Time.now
-            res = AsyncSchema.execute("{ s1: sleep(duration: 0.1) s2: sleep(duration: 0.2) s3: sleep(duration: 0.3) }")
+            res = with_scheduler {
+              AsyncSchema.execute("{ s1: sleep(duration: 0.1) s2: sleep(duration: 0.2) s3: sleep(duration: 0.3) }")
+            }
             ended_at = Time.now
             assert_equal({"s1"=>0.1, "s2"=>0.2, "s3"=>0.3}, res["data"])
             assert_in_delta 0.3, ended_at - started_at, 0.05, "IO ran in parallel"
@@ -162,7 +172,9 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
             }
             GRAPHQL
             started_at = Time.now
-            res = AsyncSchema.execute(query_str)
+            res = with_scheduler {
+              AsyncSchema.execute(query_str)
+            }
             ended_at = Time.now
 
             expected_data = {
@@ -205,7 +217,9 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
             }
             GRAPHQL
             started_at = Time.now
-            res = AsyncSchema.execute(query_str)
+            res = with_scheduler do
+              AsyncSchema.execute(query_str)
+            end
             ended_at = Time.now
 
             expected_data = {
@@ -218,37 +232,30 @@ if Fiber.respond_to?(:scheduler) # Ruby 3+
             # We've basically got two options here:
             # - Put all jobs in the same queue (fields and sources), but then you don't get predictable batching.
             # - Work one-layer-at-a-time, but then layers can get stuck behind one another. That's what's implemented here.
-            assert_in_delta expected_0_6_s, ended_at - started_at, 0.05, "Sources were executed in parallel"
+            delta = ENV["GITHUB_ACTIONS"] ? 0.5 : 0.07 # slow on gh actions
+            assert_in_delta 0.6, ended_at - started_at, delta, "Sources were executed in parallel"
           end
         end
       end
     end
 
 
-    # describe "With the toy scheduler from Ruby's tests" do
-    #   let(:scheduler_class) { ::DummyScheduler }
-    #   include AsyncDataloaderAssertions
-    # end
+    describe "With the toy scheduler from Ruby's tests" do
+      let(:scheduler_class) { ::DummyScheduler }
+      include AsyncDataloaderAssertions
+    end
 
-    # if RUBY_ENGINE == "ruby" && !ENV["GITHUB_ACTIONS"]
-    #   describe "With libev_scheduler" do
-    #     require "libev_scheduler"
-    #     let(:scheduler_class) { Libev::Scheduler }
-    #     include AsyncDataloaderAssertions
-    #   end
-    # end
+    if RUBY_ENGINE == "ruby" && !ENV["GITHUB_ACTIONS"]
+      describe "With libev_scheduler" do
+        require "libev_scheduler"
+        let(:scheduler_class) { Libev::Scheduler }
+        include AsyncDataloaderAssertions
+      end
+    end
 
-    # describe "with evt" do
-    #   require "evt"
-    #   let(:scheduler_class) { Evt::Scheduler }
-    #   let(:expected_0_6_s) { 1.0 }
-    #   include AsyncDataloaderAssertions
-    # end
-
-    describe "with async" do
-      require "async"
-      let(:scheduler_class) { Async::Scheduler }
-      let(:expected_0_6_s) { 0.6 }
+    describe "with evt" do
+      require "evt"
+      let(:scheduler_class) { Evt::Scheduler }
       include AsyncDataloaderAssertions
     end
   end

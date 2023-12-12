@@ -93,12 +93,7 @@ module GraphQL
       # @return [void]
       def sync(pending_result_keys)
         @dataloader.yield
-        iterations = 0
         while pending_result_keys.any? { |key| !@results.key?(key) }
-          iterations += 1
-          if iterations > 1000
-            raise "#{self.class}#sync tried 1000 times to load pending keys (#{pending_result_keys}), but they still weren't loaded. There is likely a circular dependency."
-          end
           @dataloader.yield
         end
         nil
