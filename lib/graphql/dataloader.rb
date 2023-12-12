@@ -238,24 +238,6 @@ module GraphQL
       }
     end
 
-
-    def get_fiber_state
-      fiber_locals = {}
-
-      Thread.current.keys.each do |fiber_var_key|
-        # This variable should be fresh in each new fiber
-        if fiber_var_key != :__graphql_runtime_info
-          fiber_locals[fiber_var_key] = Thread.current[fiber_var_key]
-        end
-      end
-
-      fiber_locals
-    end
-
-    def set_fiber_state(state)
-      state.each { |k, v| Thread.current[k] = v }
-    end
-
     private
 
     def join_queues(prev_queue, new_queue)
