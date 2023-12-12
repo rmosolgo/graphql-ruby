@@ -3,61 +3,54 @@ module GraphQL
   class Dataloader
     class AsyncDataloader < Dataloader
       def yield
-        Fiber.scheduler.yield
+        ::Async::Task.current.yield
         nil
       end
 
       def run
-        job_fibers = []
-        next_job_fibers = []
-        source_fibers = []
-        next_source_fibers = []
+        job_tasks = []
+        next_job_tasks = []
+        source_tasks = []
+        next_source_tasks = []
         first_pass = true
         Sync do
-          while first_pass || job_fibers.any?
+          while first_pass || job_tasks.any?
             first_pass = false
 
             Async do
-              while (f = job_fibers.shift || spawn_job_fiber)
-                if f.alive?
-                  next_job_fibers << f
+              while (task = job_tasks.shift || spawn_job_task)
+                if task.alive?
+                  next_job_tasks << task
                 end
               end
             end.wait
-            job_fibers.concat(next_job_fibers)
-            next_job_fibers.clear
+            job_tasks.concat(next_job_tasks)
+            next_job_tasks.clear
 
-            while source_fibers.any? || @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
+            while source_tasks.any? || @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
               Async do
-                while (f = source_fibers.shift || spawn_source_fiber)
-                  if f.alive?
-                    next_source_fibers << f
+                while (task = source_tasks.shift || spawn_source_task)
+                  if task.alive?
+                    next_source_tasks << task
                   end
                 end
               end
-              source_fibers.concat(next_source_fibers)
-              next_source_fibers.clear
+              source_tasks.concat(next_source_tasks)
+              next_source_tasks.clear
             end
           end
         end
-
       rescue UncaughtThrowError => e
         throw e.tag, e.value
       end
 
-      def spawn_task
-        fiber_vars = get_fiber_variables
-        Async {
-          set_fiber_variables(fiber_vars)
-          yield
-        }
-      end
-
       private
 
-      def spawn_job_fiber
+      def spawn_job_task
         if @pending_jobs.any?
-          spawn_task do
+          fiber_vars = get_fiber_variables
+          Async do
+            set_fiber_variables(fiber_vars)
             while job = @pending_jobs.shift
               job.call
             end
@@ -65,7 +58,7 @@ module GraphQL
         end
       end
 
-      def spawn_source_fiber
+      def spawn_source_task
         pending_sources = nil
         @source_cache.each_value do |source_by_batch_params|
           source_by_batch_params.each_value do |source|
@@ -77,7 +70,9 @@ module GraphQL
         end
 
         if pending_sources
-          spawn_task do
+          fiber_vars = get_fiber_variables
+          Async do
+            set_fiber_variables(fiber_vars)
             pending_sources.each(&:run_pending_keys)
           end
         end
