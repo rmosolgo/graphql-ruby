@@ -509,6 +509,10 @@ describe GraphQL::Schema::Resolver do
         end
       end
 
+      def self.resolve_type(type, obj, ctx)
+        type # This will work for loaded objects well enough
+      end
+
       rescue_from SpecialError do |err|
         raise GraphQL::ExecutionError, "A special error was raised from #{err.id.inspect}"
       end

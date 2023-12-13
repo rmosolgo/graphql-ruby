@@ -92,6 +92,8 @@ class MySchema < GraphQL::Schema
 end
 ```
 
+`resolve_type` is also used by `loads:` to confirm that loaded objects match the configured type.
+
 __`object_from_id`__ is used by the `node(id: ID!): Node` field and `loads:` configuration. It receives a unique ID and must return the object for that ID, or `nil` if the object isn't found (or if it should be hidden from the current user).
 __`id_from_object`__ is used to implement `Node.id`. It should return a unique ID for the given object. This ID will later be sent to `object_from_id` to refetch the object.
 

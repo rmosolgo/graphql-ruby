@@ -982,6 +982,10 @@ describe GraphQL::Dataloader do
         def self.object_from_id(id, ctx)
           ctx.dataloader.with(Example::FooSource).request(id)
         end
+
+        def self.resolve_type(type, obj, ctx)
+          type
+        end
       end
     end
 
