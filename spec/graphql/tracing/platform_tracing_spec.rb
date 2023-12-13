@@ -56,7 +56,7 @@ describe GraphQL::Tracing::PlatformTracing do
       expected_trace = [
           "em",
           "am",
-          "l",
+          (USING_C_PARSER ? "l" : nil),
           "p",
           "v",
           "aq",
@@ -66,7 +66,7 @@ describe GraphQL::Tracing::PlatformTracing do
           "Cheese.authorized",
           "eql",
           "Cheese.authorized", # This is the lazy part, calling the proc
-        ]
+        ].compact
 
       assert_equal expected_trace, CustomPlatformTracer::TRACE
     end
@@ -78,7 +78,7 @@ describe GraphQL::Tracing::PlatformTracing do
         "v",
         "em",
         "am",
-        "l",
+        (USING_C_PARSER ? "l" : nil),
         "p",
         "v",
         "aq",
@@ -88,7 +88,7 @@ describe GraphQL::Tracing::PlatformTracing do
         "Cheese.authorized",
         "eql",
         "Cheese.authorized", # This is the lazy part, calling the proc
-      ]
+      ].compact
 
       query = GraphQL::Query.new(schema, query_str)
       # First, validate
@@ -109,7 +109,7 @@ describe GraphQL::Tracing::PlatformTracing do
       expected_trace = [
           "em",
           "am",
-          "l",
+          (USING_C_PARSER ? "l" : nil),
           "p",
           "v",
           "aq",
@@ -121,7 +121,7 @@ describe GraphQL::Tracing::PlatformTracing do
           "Edible.resolve_type",
           "Milk.authorized",
           "DynamicFields.authorized",
-        ]
+        ].compact
 
       assert_equal expected_trace, CustomPlatformTracer::TRACE
     end
@@ -133,7 +133,7 @@ describe GraphQL::Tracing::PlatformTracing do
       expected_trace = [
         "em",
         "am",
-        "l",
+        (USING_C_PARSER ? "l" : nil),
         "p",
         "v",
         "aq",
@@ -168,7 +168,7 @@ describe GraphQL::Tracing::PlatformTracing do
         "DynamicFields.authorized",
         "D._",
         "E.f",
-      ]
+      ].compact
 
       assert_equal expected_trace, CustomPlatformTracer::TRACE
     end
@@ -190,7 +190,7 @@ describe GraphQL::Tracing::PlatformTracing do
       expected_trace = [
           "em",
           "am",
-          "l",
+          (USING_C_PARSER ? "l" : nil),
           "p",
           "v",
           "aq",
@@ -200,7 +200,7 @@ describe GraphQL::Tracing::PlatformTracing do
           "TracingScalar.authorized",
           "T.t",
           "eql",
-        ]
+        ].compact
       assert_equal expected_trace, CustomPlatformTracer::TRACE
     end
   end
@@ -221,7 +221,7 @@ describe GraphQL::Tracing::PlatformTracing do
       expected_trace = [
           "em",
           "am",
-          "l",
+          (USING_C_PARSER ? "l" : nil),
           "p",
           "v",
           "aq",
@@ -232,7 +232,7 @@ describe GraphQL::Tracing::PlatformTracing do
           "T.t",
           "T.t",
           "eql",
-        ]
+        ].compact
       assert_equal expected_trace, CustomPlatformTracer::TRACE
     end
   end

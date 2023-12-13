@@ -50,7 +50,7 @@ describe GraphQL::Tracing::StatsdTracing do
     expected_timings = [
       "graphql.execute_multiplex",
       "graphql.analyze_multiplex",
-      "graphql.lex",
+      (USING_C_PARSER ? "graphql.lex" : nil),
       "graphql.parse",
       "graphql.validate",
       "graphql.analyze_query",
@@ -59,7 +59,7 @@ describe GraphQL::Tracing::StatsdTracing do
       "graphql.Query.thing",
       "graphql.authorized.Thing",
       "graphql.execute_query_lazy"
-    ]
+    ].compact
     assert_equal expected_timings, MockStatsd.timings
   end
 end

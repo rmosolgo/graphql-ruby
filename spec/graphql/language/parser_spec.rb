@@ -8,7 +8,11 @@ describe GraphQL::Language::Parser do
     err = assert_raises GraphQL::ParseError do
       subject.parse("{ foo(query: \"\xBF\") }")
     end
-    expected_message = 'Parse error on bad Unicode escape sequence: "{ foo(query: \"\xBF\") }" (error) at [1, 1]'
+    expected_message = if USING_C_PARSER
+      'Parse error on bad Unicode escape sequence: "{ foo(query: \"\xBF\") }" (error) at [1, 1]'
+    else
+      'Parse error on bad Unicode escape sequence'
+    end
     assert_equal expected_message, err.message
   end
 
@@ -31,7 +35,7 @@ describe GraphQL::Language::Parser do
     expected_msg = if USING_C_PARSER
       "syntax error, unexpected invalid token (\"\\xF0\"), expecting LCURLY at [1, 7]"
     else
-      "Parse error on \"😘\" (error) at [1, 7]"
+      "Expected LCURLY, actual: UNKNOWN_CHAR (\"\\xF0\") at [1, 7]"
     end
 
     assert_equal expected_msg, err.message
@@ -355,12 +359,21 @@ GRAPHQL
     query = GraphQL::Query.new(schema, "{ t: __typename }")
     subject.parse("{ t: __typename }", trace: query.current_trace)
     traces = TestTracing.traces
-    assert_equal 2, traces.length
+    expected_traces = if USING_C_PARSER
+      2
+    else
+      1
+    end
+    assert_equal expected_traces, traces.length
     lex_trace, parse_trace = traces
 
-    assert_equal "{ t: __typename }", lex_trace[:query_string]
-    assert_equal "lex", lex_trace[:key]
-    assert_instance_of Array, lex_trace[:result]
+    if USING_C_PARSER
+      assert_equal "{ t: __typename }", lex_trace[:query_string]
+      assert_equal "lex", lex_trace[:key]
+      assert_instance_of Array, lex_trace[:result]
+    else
+      parse_trace = lex_trace
+    end
 
     assert_equal "{ t: __typename }", parse_trace[:query_string]
     assert_equal "parse", parse_trace[:key]

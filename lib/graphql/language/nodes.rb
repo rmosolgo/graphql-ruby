@@ -16,30 +16,30 @@ module GraphQL
           # @return [Integer] The first line of the definition (not the description)
           attr_reader :definition_line
 
-          def initialize(options = {})
-            @definition_line = options.delete(:definition_line)
-            super(options)
+          def initialize(definition_line: nil, **_rest)
+            @definition_line = definition_line
+            super(**_rest)
           end
         end
 
-        attr_reader :line, :col, :filename
+        attr_reader :filename
 
-        # Initialize a node by extracting its position,
-        # then calling the class's `initialize_node` method.
-        # @param options [Hash] Initial attributes for this node
-        def initialize(options = {})
-          if options.key?(:position_source)
-            position_source = options.delete(:position_source)
-            @line = position_source[1]
-            @col = position_source[2]
-          else
-            @line = options.delete(:line)
-            @col = options.delete(:col)
+        def line
+          @line ||= (@source_string && @pos) ? @source_string[0..@pos].count("\n") + 1 : nil
+        end
+
+        def col
+          @col ||= if @source_string && @pos
+            if @pos == 0
+              1
+            else
+              @source_string[0..@pos].split("\n").last.length
+            end
           end
+        end
 
-          @filename = options.delete(:filename)
-
-          initialize_node(**options)
+        def definition_line
+          @definition_line ||= (@source_string && @definition_pos) ? @source_string[0..@definition_pos].count("\n") + 1 : nil
         end
 
         # Value equality
@@ -196,8 +196,8 @@ module GraphQL
                   module_eval <<-RUBY, __FILE__, __LINE__
                     # Singular method: create a node with these options
                     # and return a new `self` which includes that node in this list.
-                    def merge_#{method_name.to_s.sub(/s$/, "")}(node_opts)
-                      merge(#{method_name}: #{method_name} + [#{node_type.name}.new(node_opts)])
+                    def merge_#{method_name.to_s.sub(/s$/, "")}(**node_opts)
+                      merge(#{method_name}: #{method_name} + [#{node_type.name}.new(**node_opts)])
                     end
                   RUBY
                 end
@@ -226,13 +226,14 @@ module GraphQL
             end
 
             if defined?(@scalar_methods)
-              if !method_defined?(:initialize_node)
-                generate_initialize_node
+              if !@initialize_was_generated
+                @initialize_was_generated = true
+                generate_initialize
               else
                 # This method was defined manually
               end
             else
-              raise "Can't generate_initialize_node because scalar_methods wasn't called; call it before children_methods"
+              raise "Can't generate_initialize because scalar_methods wasn't called; call it before children_methods"
             end
           end
 
@@ -261,7 +262,15 @@ module GraphQL
             end
           end
 
-          def generate_initialize_node
+          DEFAULT_INITIALIZE_OPTIONS = [
+            "line: nil",
+            "col: nil",
+            "pos: nil",
+            "filename: nil",
+            "source_string: nil",
+          ]
+
+          def generate_initialize
             scalar_method_names = @scalar_methods
             # TODO: These probably should be scalar methods, but `types` returns an array
             [:types, :description].each do |extra_method|
@@ -277,16 +286,27 @@ module GraphQL
               return
             else
               arguments = scalar_method_names.map { |m| "#{m}: nil"} +
-                @children_methods.keys.map { |m| "#{m}: NO_CHILDREN" }
+                @children_methods.keys.map { |m| "#{m}: NO_CHILDREN" } +
+                DEFAULT_INITIALIZE_OPTIONS
 
               assignments = scalar_method_names.map { |m| "@#{m} = #{m}"} +
                 @children_methods.keys.map { |m| "@#{m} = #{m}.freeze" }
+
+              if name.end_with?("Definition") && name != "FragmentDefinition"
+                arguments << "definition_pos: nil"
+                assignments << "@definition_pos = definition_pos"
+              end
 
               keywords = scalar_method_names.map { |m| "#{m}: #{m}"} +
                 @children_methods.keys.map { |m| "#{m}: #{m}" }
 
               module_eval <<-RUBY, __FILE__, __LINE__
-                def initialize_node #{arguments.join(", ")}
+                def initialize(#{arguments.join(", ")})
+                  @line = line
+                  @col = col
+                  @pos = pos
+                  @filename = filename
+                  @source_string = source_string
                   #{assignments.join("\n")}
                 end
 
@@ -336,7 +356,6 @@ module GraphQL
       end
 
       class DirectiveDefinition < AbstractNode
-        include DefinitionNode
         attr_reader :description
         scalar_methods :name, :repeatable
         children_methods(
@@ -365,17 +384,22 @@ module GraphQL
         # @!attribute selections
         #   @return [Array<Nodes::Field>] Selections on this object (or empty array if this is a scalar field)
 
-        def initialize_node(attributes)
-          @name = attributes[:name]
-          @arguments = attributes[:arguments] || NONE
-          @directives = attributes[:directives] || NONE
-          @selections = attributes[:selections] || NONE
+        def initialize(name: nil, arguments: NONE, directives: NONE, selections: NONE, field_alias: nil, line: nil, col: nil, pos: nil, filename: nil, source_string: nil)
+          @name = name
+          @arguments = arguments || NONE
+          @directives = directives || NONE
+          @selections = selections || NONE
           # oops, alias is a keyword:
-          @alias = attributes[:alias]
+          @alias = field_alias
+          @line = line
+          @col = col
+          @pos = pos
+          @filename = filename
+          @source_string = source_string
         end
 
-        def self.from_a(filename, line, col, graphql_alias, name, arguments, directives, selections) # rubocop:disable Metrics/ParameterLists
-          self.new(filename: filename, line: line, col: col, alias: graphql_alias, name: name, arguments: arguments, directives: directives, selections: selections)
+        def self.from_a(filename, line, col, field_alias, name, arguments, directives, selections) # rubocop:disable Metrics/ParameterLists
+          self.new(filename: filename, line: line, col: col, field_alias: field_alias, name: name, arguments: arguments, directives: directives, selections: selections)
         end
 
         # Override this because default is `:fields`
@@ -384,22 +408,6 @@ module GraphQL
 
       # A reusable fragment, defined at document-level.
       class FragmentDefinition < AbstractNode
-        # @!attribute name
-        #   @return [String] the identifier for this fragment, which may be applied with `...#{name}`
-
-        # @!attribute type
-        #   @return [String] the type condition for this fragment (name of type which it may apply to)
-        def initialize_node(name: nil, type: nil, directives: [], selections: [])
-          @name = name
-          @type = type
-          @directives = directives
-          @selections = selections
-        end
-
-        def self.from_a(filename, line, col, name, type, directives, selections)
-          self.new(filename: filename, line: line, col: col, name: name, type: type, directives: directives, selections: selections)
-        end
-
         scalar_methods :name, :type
         children_methods({
           selections: GraphQL::Language::Nodes::Field,
@@ -407,6 +415,26 @@ module GraphQL
         })
 
         self.children_method_name = :definitions
+        # @!attribute name
+        #   @return [String] the identifier for this fragment, which may be applied with `...#{name}`
+
+        # @!attribute type
+        #   @return [String] the type condition for this fragment (name of type which it may apply to)
+        def initialize(name: nil, type: nil, directives: NONE, selections: NONE, filename: nil, pos: nil, source_string: nil, line: nil, col: nil)
+          @name = name
+          @type = type
+          @directives = directives
+          @selections = selections
+          @filename  = filename
+          @pos = pos
+          @source_string = source_string
+          @line = line
+          @col = col
+        end
+
+        def self.from_a(filename, line, col, name, type, directives, selections)
+          self.new(filename: filename, line: line, col: col, name: name, type: type, directives: directives, selections: selections)
+        end
       end
 
       # Application of a named fragment in a selection
@@ -562,7 +590,6 @@ module GraphQL
       end
 
       class SchemaDefinition < AbstractNode
-        include DefinitionNode
         scalar_methods :query, :mutation, :subscription
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
@@ -579,7 +606,6 @@ module GraphQL
       end
 
       class ScalarTypeDefinition < AbstractNode
-        include DefinitionNode
         attr_reader :description
         scalar_methods :name
         children_methods({
@@ -597,7 +623,6 @@ module GraphQL
       end
 
       class InputValueDefinition < AbstractNode
-        include DefinitionNode
         attr_reader :description
         scalar_methods :name, :type, :default_value
         children_methods({
@@ -607,7 +632,6 @@ module GraphQL
       end
 
       class FieldDefinition < AbstractNode
-        include DefinitionNode
         attr_reader :description
         scalar_methods :name, :type
         children_methods({
@@ -628,7 +652,6 @@ module GraphQL
       end
 
       class ObjectTypeDefinition < AbstractNode
-        include DefinitionNode
         attr_reader :description
         scalar_methods :name, :interfaces
         children_methods({
@@ -648,7 +671,6 @@ module GraphQL
       end
 
       class InterfaceTypeDefinition < AbstractNode
-        include DefinitionNode
         attr_reader :description
         scalar_methods :name
         children_methods({
@@ -670,7 +692,6 @@ module GraphQL
       end
 
       class UnionTypeDefinition < AbstractNode
-        include DefinitionNode
         attr_reader :description, :types
         scalar_methods :name
         children_methods({
@@ -689,7 +710,6 @@ module GraphQL
       end
 
       class EnumValueDefinition < AbstractNode
-        include DefinitionNode
         attr_reader :description
         scalar_methods :name
         children_methods({
@@ -699,7 +719,6 @@ module GraphQL
       end
 
       class EnumTypeDefinition < AbstractNode
-        include DefinitionNode
         attr_reader :description
         scalar_methods :name
         children_methods({
@@ -719,7 +738,6 @@ module GraphQL
       end
 
       class InputObjectTypeDefinition < AbstractNode
-        include DefinitionNode
         attr_reader :description
         scalar_methods :name
         children_methods({

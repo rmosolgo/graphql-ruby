@@ -337,14 +337,16 @@ module GraphQL
         print_string("union ")
         print_string(union_type.name)
         print_directives(union_type.directives)
-        print_string(" = ")
-        i = 0
-        union_type.types.each do |t|
-          if i > 0
-            print_string(" | ")
+        if union_type.types.any?
+          print_string(" = ")
+          i = 0
+          union_type.types.each do |t|
+            if i > 0
+              print_string(" | ")
+            end
+            print_string(t.name)
+            i += 1
           end
-          print_string(t.name)
-          i += 1
         end
       end
 
@@ -353,12 +355,14 @@ module GraphQL
         print_string("enum ")
         print_string(enum_type.name)
         print_directives(enum_type.directives)
-        print_string(" {\n")
-        enum_type.values.each.with_index do |value, i|
-          print_description(value, indent: "  ", first_in_block: i == 0)
-          print_enum_value_definition(value)
+        if enum_type.values.any?
+          print_string(" {\n")
+          enum_type.values.each.with_index do |value, i|
+            print_description(value, indent: "  ", first_in_block: i == 0)
+            print_enum_value_definition(value)
+          end
+          print_string("}")
         end
-        print_string("}")
       end
 
       def print_enum_value_definition(enum_value)
