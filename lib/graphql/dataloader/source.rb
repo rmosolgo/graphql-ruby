@@ -99,6 +99,7 @@ module GraphQL
           if iterations > 1000
             raise "#{self.class}#sync tried 1000 times to load pending keys (#{pending_result_keys}), but they still weren't loaded. There is likely a circular dependency."
           end
+          @dataloader.yield
         end
         nil
       end
