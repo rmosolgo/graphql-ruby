@@ -3,7 +3,7 @@ module GraphQL
   class Dataloader
     class AsyncDataloader < Dataloader
       def yield
-        ::Async::Task.current.yield
+        @wait_for_sources.wait
         nil
       end
 
@@ -13,10 +13,10 @@ module GraphQL
         source_tasks = []
         next_source_tasks = []
         first_pass = true
-        Sync do
+        @wait_for_sources = Async::Condition.new
+        Sync do |tt|
           while first_pass || job_tasks.any?
             first_pass = false
-
             Async do
               while (task = job_tasks.shift || spawn_job_task)
                 if task.alive?
@@ -24,6 +24,7 @@ module GraphQL
                 end
               end
             end.wait
+
             job_tasks.concat(next_job_tasks)
             next_job_tasks.clear
 
@@ -34,10 +35,11 @@ module GraphQL
                     next_source_tasks << task
                   end
                 end
-              end
+              end.wait
               source_tasks.concat(next_source_tasks)
               next_source_tasks.clear
             end
+            @wait_for_sources.signal
           end
         end
       rescue UncaughtThrowError => e
