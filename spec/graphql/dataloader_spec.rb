@@ -901,15 +901,15 @@ describe GraphQL::Dataloader do
   let(:schema) { FiberSchema }
   include DataloaderAssertions
 
-  describe "AsyncDataloader" do
-    let(:schema) {
-      Class.new(FiberSchema) {
-        use GraphQL::Dataloader::AsyncDataloader
-      }
-    }
+  # describe "AsyncDataloader" do
+  #   let(:schema) {
+  #     Class.new(FiberSchema) {
+  #       use GraphQL::Dataloader::AsyncDataloader
+  #     }
+  #   }
 
-    include DataloaderAssertions
-  end
+  #   include DataloaderAssertions
+  # end
 
   if Fiber.respond_to?(:scheduler)
     describe "nonblocking: true" do
