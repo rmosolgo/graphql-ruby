@@ -18,9 +18,9 @@ if RUBY_VERSION >= "3.0"
   gem "evt"
 end
 
-if RUBY_VERSION >= "3.1.1"
-  gem "async", "~>2.0"
-end
+# if RUBY_VERSION >= "3.1.1"
+#   gem "async", "~>2.0"
+# end
 
 # Required for running `jekyll algolia ...` (via `rake site:update_search_index`)
 group :jekyll_plugins do
