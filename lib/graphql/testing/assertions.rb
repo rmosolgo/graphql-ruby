@@ -32,7 +32,7 @@ module GraphQL
       def assert_resolves_field_to(schema, expected_value, type, field, object, arguments: {}, context: {}, message: nil)
         dummy_query = GraphQL::Query.new(schema, context: context)
         type_name = type.is_a?(String) ? type : type.graphql_name
-        visible_object_type = dummy_query.get_type(type_name)
+        visible_object_type = dummy_query.get_type(type_name) # rubocop:disable Development/ContextIsPassedCop
         if visible_object_type
           field_name = field.is_a?(String) ? field : field.graphql_name
           visible_field = dummy_query.get_field(visible_object_type, field_name)
