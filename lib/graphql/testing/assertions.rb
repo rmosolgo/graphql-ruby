@@ -9,7 +9,7 @@ module GraphQL
         end
       end
 
-      def assert_resolves_type_to(schema, expected_type, value, context = {}, message = nil)
+      def assert_resolves_type_to(schema, expected_type, value, context: {}, message: nil)
         message ||= "#{schema} resolves #{value.inspect} to #{expected_type.inspect}"
         resolved_type = schema.resolve_type(nil, value, context)
         resolved_type, _value = schema.sync_lazy(resolved_type)
@@ -40,7 +40,10 @@ module GraphQL
             assert visible_field, "`#{type_name}.#{field_name}` should be `visible?` for this resolution, but it was not"
           else
             graphql_object = visible_object_type.wrap(object, dummy_query.context)
-            result = visible_field.resolve(graphql_object, arguments, dummy_query.context)
+            result = nil
+            dummy_query.context.dataloader.run_isolated {
+              result = visible_field.resolve(graphql_object, arguments, dummy_query.context)
+            }
             result = schema.sync_lazy(result)
             # TODO dataloader
             assert_equal expected_value, result, "#{visible_field.path} resolved to #{expected_value.inspect} for #{object.inspect}"

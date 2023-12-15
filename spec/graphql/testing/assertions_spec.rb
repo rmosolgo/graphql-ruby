@@ -3,6 +3,12 @@ require "spec_helper"
 
 describe GraphQL::Testing::Assertions do
   class AssertionsSchema < GraphQL::Schema
+    class BillSource < GraphQL::Dataloader::Source
+      def fetch(students)
+        students.map { |s| { amount: 1_000_001 } }
+      end
+    end
+
     class TuitionBill < GraphQL::Schema::Object
       def self.visible?(ctx)
         ctx[:current_user]&.admin?
@@ -14,6 +20,10 @@ describe GraphQL::Testing::Assertions do
     class Student < GraphQL::Schema::Object
       field :name, String
       field :latest_bill, TuitionBill
+
+      def latest_bill
+        dataloader.with(BillSource).load(object)
+      end
     end
 
     class Query < GraphQL::Schema::Object
@@ -38,12 +48,14 @@ describe GraphQL::Testing::Assertions do
 
   include GraphQL::Testing::Assertions
 
+  let(:admin_context) { { current_user: OpenStruct.new(admin?: true) } }
+
   describe "top-level assertions" do
     describe "assert_resolves_type_to" do
       it "tests resolving types" do
         assert_resolves_type_to AssertionsSchema, AssertionsSchema::Student, OpenStruct.new(type: :student)
         assert_resolves_type_to AssertionsSchema, nil, OpenStruct.new(type: :tuition_bill)
-        assert_resolves_type_to AssertionsSchema, AssertionsSchema::TuitionBill, OpenStruct.new(type: :tuition_bill), { current_user: OpenStruct.new(admin?: true) }
+        assert_resolves_type_to AssertionsSchema, AssertionsSchema::TuitionBill, OpenStruct.new(type: :tuition_bill), context: admin_context
       end
 
       it "raises when the types don't match" do
@@ -83,6 +95,7 @@ describe GraphQL::Testing::Assertions do
       it "resolves fields" do
         assert_resolves_field_to AssertionsSchema, "Blah", AssertionsSchema::Student, "name", { "name" => "Blah"}
         assert_resolves_field_to AssertionsSchema, "Blah", "Student", "name", { "name" => "Blah"}
+        assert_resolves_field_to(AssertionsSchema, { amount: 1_000_001 }, "Student", "latestBill", :student, context: admin_context)
       end
 
       it "raises an error when the return value doesn't match" do
@@ -101,8 +114,7 @@ describe GraphQL::Testing::Assertions do
       end
 
       it "raises an error when the type is hidden" do
-        assert_resolves_field_to AssertionsSchema, 1_000_000, "TuitionBill", "amountInCents", { amount: 1_000_000 },
-          context: { current_user: OpenStruct.new(admin?: true) }
+        assert_resolves_field_to AssertionsSchema, 1_000_000, "TuitionBill", "amountInCents", { amount: 1_000_000 }, context: admin_context
 
         err = assert_raises(Minitest::Assertion) do
           assert_resolves_field_to AssertionsSchema, "Blah", "TuitionBill", "amountInCents", { amount: 1_000_000 }
@@ -122,7 +134,7 @@ describe GraphQL::Testing::Assertions do
 
     it "tests resolving fields" do
       assert_resolves_field_to 5, "TuitionBill", "amountInCents", { amount: 5 },
-        context: { current_user: OpenStruct.new(admin?: true) }
+        context: admin_context
     end
   end
 end
