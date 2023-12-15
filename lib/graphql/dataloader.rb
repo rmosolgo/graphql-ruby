@@ -27,11 +27,12 @@ module GraphQL
       attr_accessor :default_nonblocking
     end
 
-    AsyncDataloader = Class.new(self) { self.default_nonblocking = true }
+    NonblockingDataloader = Class.new(self) { self.default_nonblocking = true }
 
     def self.use(schema, nonblocking: nil)
       schema.dataloader_class = if nonblocking
-        AsyncDataloader
+        warn("`nonblocking: true` is deprecated from `GraphQL::Dataloader`, please use `GraphQL::Dataloader::AsyncDataloader` instead. Docs: https://graphql-ruby.org/dataloader/async_dataloader.")
+        NonblockingDataloader
       else
         self
       end
@@ -284,3 +285,5 @@ module GraphQL
     end
   end
 end
+
+require "graphql/dataloader/async_dataloader"

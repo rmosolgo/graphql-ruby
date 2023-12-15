@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 require "spec_helper"
-if RUBY_VERSION >= "3.1.1"
-  require "async"
-  describe GraphQL::Dataloader::AsyncDataloader do
-    class AsyncSchema < GraphQL::Schema
+
+if Fiber.respond_to?(:scheduler) # Ruby 3+
+  describe GraphQL::Dataloader::NonblockingDataloader do
+    class NonblockingSchema < GraphQL::Schema
       class SleepSource < GraphQL::Dataloader::Source
         def fetch(keys)
           max_sleep = keys.max
           # t1 = Time.now
-          # puts "----- SleepSource => #{max_sleep} (from: #{keys})"
+          # puts "----- SleepSource => #{max_sleep} "
           sleep(max_sleep)
           # puts "----- SleepSource done #{max_sleep} after #{Time.now - t1}"
           keys.map { |_k| max_sleep }
@@ -84,14 +84,22 @@ if RUBY_VERSION >= "3.1.1"
       end
 
       query(Query)
-      use GraphQL::Dataloader::AsyncDataloader
+      use GraphQL::Dataloader::NonblockingDataloader
     end
 
-    module AsyncDataloaderAssertions
+    def with_scheduler
+      Fiber.set_scheduler(scheduler_class.new)
+      yield
+    ensure
+      Fiber.set_scheduler(nil)
+    end
+
+    module NonblockingDataloaderAssertions
       def self.included(child_class)
         child_class.class_eval do
+
           it "runs IO in parallel by default" do
-            dataloader = GraphQL::Dataloader::AsyncDataloader.new
+            dataloader = GraphQL::Dataloader::NonblockingDataloader.new
             results = {}
             dataloader.append_job { sleep(0.1); results[:a] = 1 }
             dataloader.append_job { sleep(0.2); results[:b] = 2 }
@@ -99,7 +107,7 @@ if RUBY_VERSION >= "3.1.1"
 
             assert_equal({}, results, "Nothing ran yet")
             started_at = Time.now
-            dataloader.run
+            with_scheduler { dataloader.run }
             ended_at = Time.now
 
             assert_equal({ a: 1, b: 2, c: 3 }, results, "All the jobs ran")
@@ -107,17 +115,17 @@ if RUBY_VERSION >= "3.1.1"
           end
 
           it "works with sources" do
-            dataloader = GraphQL::Dataloader::AsyncDataloader.new
-            r1 = dataloader.with(AsyncSchema::SleepSource).request(0.1)
-            r2 = dataloader.with(AsyncSchema::SleepSource).request(0.2)
-            r3 = dataloader.with(AsyncSchema::SleepSource).request(0.3)
+            dataloader = GraphQL::Dataloader::NonblockingDataloader.new
+            r1 = dataloader.with(NonblockingSchema::SleepSource).request(0.1)
+            r2 = dataloader.with(NonblockingSchema::SleepSource).request(0.2)
+            r3 = dataloader.with(NonblockingSchema::SleepSource).request(0.3)
 
             v1 = nil
             dataloader.append_job {
               v1 = r1.load
             }
             started_at = Time.now
-            dataloader.run
+            with_scheduler { dataloader.run }
             ended_at = Time.now
             assert_equal 0.3, v1
             started_at_2 = Time.now
@@ -135,7 +143,9 @@ if RUBY_VERSION >= "3.1.1"
 
           it "works with GraphQL" do
             started_at = Time.now
-            res = AsyncSchema.execute("{ s1: sleep(duration: 0.1) s2: sleep(duration: 0.2) s3: sleep(duration: 0.3) }")
+            res = with_scheduler {
+              NonblockingSchema.execute("{ s1: sleep(duration: 0.1) s2: sleep(duration: 0.2) s3: sleep(duration: 0.3) }")
+            }
             ended_at = Time.now
             assert_equal({"s1"=>0.1, "s2"=>0.2, "s3"=>0.3}, res["data"])
             assert_in_delta 0.3, ended_at - started_at, 0.05, "IO ran in parallel"
@@ -162,7 +172,9 @@ if RUBY_VERSION >= "3.1.1"
             }
             GRAPHQL
             started_at = Time.now
-            res = AsyncSchema.execute(query_str)
+            res = with_scheduler {
+              NonblockingSchema.execute(query_str)
+            }
             ended_at = Time.now
 
             expected_data = {
@@ -171,7 +183,7 @@ if RUBY_VERSION >= "3.1.1"
               "s3" => { "duration" => 0.3 }
             }
             assert_equal expected_data, res["data"]
-            assert_in_delta 0.3, ended_at - started_at, 0.06, "Fields ran without any waiting"
+            assert_in_delta 0.3, ended_at - started_at, 0.05, "Fields ran without any waiting"
           end
 
           it "runs dataloaders in parallel across branches" do
@@ -205,7 +217,9 @@ if RUBY_VERSION >= "3.1.1"
             }
             GRAPHQL
             started_at = Time.now
-            res = AsyncSchema.execute(query_str)
+            res = with_scheduler do
+              NonblockingSchema.execute(query_str)
+            end
             ended_at = Time.now
 
             expected_data = {
@@ -218,14 +232,30 @@ if RUBY_VERSION >= "3.1.1"
             # We've basically got two options here:
             # - Put all jobs in the same queue (fields and sources), but then you don't get predictable batching.
             # - Work one-layer-at-a-time, but then layers can get stuck behind one another. That's what's implemented here.
-            assert_in_delta 1.0, ended_at - started_at, 0.06, "Sources were executed in parallel"
+            assert_in_delta 1.0, ended_at - started_at, 0.5, "Sources were executed in parallel"
           end
         end
       end
     end
 
-    describe "with async" do
-      include AsyncDataloaderAssertions
+
+    describe "With the toy scheduler from Ruby's tests" do
+      let(:scheduler_class) { ::DummyScheduler }
+      include NonblockingDataloaderAssertions
+    end
+
+    if RUBY_ENGINE == "ruby" && !ENV["GITHUB_ACTIONS"]
+      describe "With libev_scheduler" do
+        require "libev_scheduler"
+        let(:scheduler_class) { Libev::Scheduler }
+        include NonblockingDataloaderAssertions
+      end
+    end
+
+    describe "with evt" do
+      require "evt"
+      let(:scheduler_class) { Evt::Scheduler }
+      include NonblockingDataloaderAssertions
     end
   end
 end

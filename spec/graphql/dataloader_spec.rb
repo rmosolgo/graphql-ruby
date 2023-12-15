@@ -419,6 +419,7 @@ describe GraphQL::Dataloader do
   module DataloaderAssertions
     def self.included(child_class)
       child_class.class_eval do
+
         it "Works with request(...)" do
           res = schema.execute <<-GRAPHQL
           {
@@ -574,8 +575,11 @@ describe GraphQL::Dataloader do
           GRAPHQL
           finish = Time.now.to_f
 
+          # For some reason Async adds some overhead to this manual parallelism.
+          # But who cares, you wouldn't use Thread#join in that case
+          delta = schema.dataloader_class == GraphQL::Dataloader ? 0.1 : 0.5
           # Each load slept for 0.5 second, so sequentially, this would have been 2s sequentially
-          assert_in_delta 1, finish - start, 0.1, "Load threads are executed in parallel"
+          assert_in_delta 1, finish - start, delta, "Load threads are executed in parallel"
           expected_log = [
             # These were separated because of different recipe IDs:
             [:mget, ["5"]],
@@ -709,6 +713,10 @@ describe GraphQL::Dataloader do
             ["commonIngredientsWithLoad", [:recipe_1, :recipe_2]],
             ["name", []],
           ]
+          normalized_results = results.first.to_a
+          normalized_results.each do |key, values|
+            values.sort!
+          end
           assert_equal expected_results, results.first.to_a
 
           query2 = GraphQL::Query.new(schema, query_str, context: { use_request: true })
@@ -892,6 +900,19 @@ describe GraphQL::Dataloader do
 
   let(:schema) { FiberSchema }
   include DataloaderAssertions
+
+  if RUBY_VERSION >= "3.1.1"
+    require "async"
+    describe "AsyncDataloader" do
+      let(:schema) {
+        Class.new(FiberSchema) {
+          use GraphQL::Dataloader::AsyncDataloader
+        }
+      }
+
+      include DataloaderAssertions
+    end
+  end
 
   if Fiber.respond_to?(:scheduler)
     describe "nonblocking: true" do

@@ -43,7 +43,7 @@ jobs:
       matrix:
         include:
           - gemfile: Gemfile
-            ruby: 3.1
+            ruby: 3.2
           - gemfile: gemfiles/rails_5.2.gemfile
             ruby: 2.7
           # Rails 6.1 is tested with Postgresql below
