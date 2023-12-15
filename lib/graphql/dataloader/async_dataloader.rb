@@ -3,7 +3,7 @@ module GraphQL
   class Dataloader
     class AsyncDataloader < Dataloader
       def yield
-        @wait_for_sources.wait
+        Thread.current[:graphql_dataloader_next_tick].wait
         nil
       end
 
@@ -13,33 +13,35 @@ module GraphQL
         source_tasks = []
         next_source_tasks = []
         first_pass = true
-        @wait_for_sources = Async::Condition.new
-        Sync do |tt|
+        jobs_condition = Async::Condition.new
+        sources_condition = Async::Condition.new
+        Sync do |root_task|
           while first_pass || job_tasks.any?
             first_pass = false
-            Async do
-              while (task = job_tasks.shift || spawn_job_task)
+
+            root_task.async do |jobs_task|
+              while (task = job_tasks.shift || spawn_job_task(jobs_task, jobs_condition))
                 if task.alive?
                   next_job_tasks << task
                 end
               end
             end.wait
-
             job_tasks.concat(next_job_tasks)
             next_job_tasks.clear
 
             while source_tasks.any? || @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
-              Async do
-                while (task = source_tasks.shift || spawn_source_task)
+              root_task.async do |sources_loop_task|
+                while (task = source_tasks.shift || spawn_source_task(sources_loop_task, sources_condition))
                   if task.alive?
                     next_source_tasks << task
                   end
                 end
               end.wait
+              sources_condition.signal
               source_tasks.concat(next_source_tasks)
               next_source_tasks.clear
             end
-            @wait_for_sources.signal
+            jobs_condition.signal
           end
         end
       rescue UncaughtThrowError => e
@@ -48,11 +50,12 @@ module GraphQL
 
       private
 
-      def spawn_job_task
+      def spawn_job_task(parent_task, condition)
         if @pending_jobs.any?
           fiber_vars = get_fiber_variables
-          Async do
+          parent_task.async do |t|
             set_fiber_variables(fiber_vars)
+            Thread.current[:graphql_dataloader_next_tick] = condition
             while job = @pending_jobs.shift
               job.call
             end
@@ -60,7 +63,7 @@ module GraphQL
         end
       end
 
-      def spawn_source_task
+      def spawn_source_task(parent_task, condition)
         pending_sources = nil
         @source_cache.each_value do |source_by_batch_params|
           source_by_batch_params.each_value do |source|
@@ -73,8 +76,9 @@ module GraphQL
 
         if pending_sources
           fiber_vars = get_fiber_variables
-          Async do
+          parent_task.async do
             set_fiber_variables(fiber_vars)
+            Thread.current[:graphql_dataloader_next_tick] = condition
             pending_sources.each(&:run_pending_keys)
           end
         end
