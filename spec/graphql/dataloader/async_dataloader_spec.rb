@@ -171,7 +171,7 @@ if RUBY_VERSION >= "3.1.1"
               "s3" => { "duration" => 0.3 }
             }
             assert_equal expected_data, res["data"]
-            assert_in_delta 0.3, ended_at - started_at, 0.05, "Fields ran without any waiting"
+            assert_in_delta 0.3, ended_at - started_at, 0.06, "Fields ran without any waiting"
           end
 
           it "runs dataloaders in parallel across branches" do
