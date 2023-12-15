@@ -31,6 +31,7 @@ module GraphQL
 
     def self.use(schema, nonblocking: nil)
       schema.dataloader_class = if nonblocking
+        warn("`nonblocking: true` is deprecated from `GraphQL::Dataloader`, please use `GraphQL::Dataloader::AsyncDataloader` instead. Docs: https://graphql-ruby.org/dataloader/async_dataloader.")
         NonblockingDataloader
       else
         self

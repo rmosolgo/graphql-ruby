@@ -901,14 +901,17 @@ describe GraphQL::Dataloader do
   let(:schema) { FiberSchema }
   include DataloaderAssertions
 
-  describe "AsyncDataloader" do
-    let(:schema) {
-      Class.new(FiberSchema) {
-        use GraphQL::Dataloader::AsyncDataloader
+  if RUBY_VERSION >= "3.1.1"
+    require "async"
+    describe "AsyncDataloader" do
+      let(:schema) {
+        Class.new(FiberSchema) {
+          use GraphQL::Dataloader::AsyncDataloader
+        }
       }
-    }
 
-    include DataloaderAssertions
+      include DataloaderAssertions
+    end
   end
 
   if Fiber.respond_to?(:scheduler)
