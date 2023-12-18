@@ -10,6 +10,18 @@
 
 ### Bug fixes
 
+# 2.2.0 (18 Dec 2023)
+
+### Breaking changes
+
+- `loads:` now requires a schema's `self.resolve_type` method to be implemented so that loaded objects can be verified to be of the expected type #4678
+
+### New features
+
+- `GraphQL::Dataloader::AsyncDataloader`: a Dataloader class that uses the `async` gem to run I/O from fields and Dataloader sources in parallel #4727
+- Parser: use a heavily-optimized lexer and a hand-written parser for better performance #4718
+- `run_graphql_field`: a helper method for running fields in tests #4732
+
 # 2.1.8 (18 Dec 2023)
 
 ### New features
