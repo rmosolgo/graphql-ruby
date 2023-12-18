@@ -88,6 +88,7 @@ module GraphQL
         raise "Implement `#{self.class}#fetch(#{keys.inspect}) to return a record for each of the keys"
       end
 
+      MAX_ITERATIONS = 1000
       # Wait for a batch, if there's anything to batch.
       # Then run the batch and update the cache.
       # @return [void]
@@ -96,8 +97,8 @@ module GraphQL
         iterations = 0
         while pending_result_keys.any? { |key| !@results.key?(key) }
           iterations += 1
-          if iterations > 1000
-            raise "#{self.class}#sync tried 1000 times to load pending keys (#{pending_result_keys}), but they still weren't loaded. There is likely a circular dependency."
+          if iterations > MAX_ITERATIONS
+            raise "#{self.class}#sync tried #{MAX_ITERATIONS} times to load pending keys (#{pending_result_keys}), but they still weren't loaded. There is likely a circular dependency."
           end
           @dataloader.yield
         end

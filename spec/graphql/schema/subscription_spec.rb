@@ -176,6 +176,10 @@ describe GraphQL::Schema::Subscription do
       USERS[id]
     end
 
+    def self.resolve_type(type, obj, ctx)
+      User
+    end
+
     def self.unauthorized_field(err)
       path = err.context[:last_path]
       raise GraphQL::ExecutionError, "Can't subscribe to private user (#{path})"

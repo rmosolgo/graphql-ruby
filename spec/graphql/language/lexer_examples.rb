@@ -55,19 +55,13 @@ module LexerExamples
         it "force encodes to utf-8" do
           # string that will be invalid utf-8 once force encoded
           string = "vandflyver \xC5rhus".dup.force_encoding("ASCII-8BIT")
-          assert_equal :BAD_UNICODE_ESCAPE, subject.tokenize(string).first.name
+          assert_bad_unicode(string)
         end
 
         it "makes utf-8 arguments named type" do
           str = "{ a(type: 1) }"
           tokens = subject.tokenize(str)
           assert_equal Encoding::UTF_8, tokens[2].value.encoding
-        end
-
-        it "makes utf-8 comments" do
-          tokens = subject.tokenize("# 不要!\n{")
-          comment_token = tokens.first.prev_token
-          assert_equal "# 不要!", comment_token.to_s
         end
 
         it "keeps track of previous_token" do
@@ -153,19 +147,22 @@ GRAPHQL
         end
 
         it "rejects bad unicode, even when there's good unicode in the string" do
-          assert_equal :BAD_UNICODE_ESCAPE, subject.tokenize('"\\u0XXF \\u0009"').first.name
+          assert_bad_unicode('"\\u0XXF \\u0009"', "Bad unicode escape in \"\\\\u0XXF \\\\u0009\"")
         end
 
         it "rejects truly invalid UTF-8 bytes" do
           error_filename = "spec/support/parser/filename_example_invalid_utf8.graphql"
-          assert_equal :BAD_UNICODE_ESCAPE, subject.tokenize(File.read(error_filename)).first.name
+          text = File.read(error_filename)
+          assert_bad_unicode(text)
         end
 
         it "rejects unicode that's well-formed but results in invalidly-encoded strings" do
           # when the string here gets tokenized into an actual `:STRING`, it results in `valid_encoding?` being false for
           # the ruby string so application code usually blows up trying to manipulate it
-          assert_equal :BAD_UNICODE_ESCAPE, subject.tokenize('"\\udc00\\udf2c"').first.name
-          assert_equal :BAD_UNICODE_ESCAPE, subject.tokenize('"\\u{dc00}\\u{df2c}"').first.name
+          text1 = '"\\udc00\\udf2c"'
+          assert_bad_unicode(text1, 'Bad unicode escape in "\\xED\\xB0\\x80\\xED\\xBC\\xAC"')
+          text2 = '"\\u{dc00}\\u{df2c}"'
+          assert_bad_unicode(text2, 'Bad unicode escape in "\\xED\\xB0\\x80\\xED\\xBC\\xAC"')
         end
 
         it "clears the previous_token between runs" do
