@@ -22,6 +22,17 @@ __Also__, add [the `async` gem](https://github.com/socketry/async) to your proje
 bundle add async
 ```
 
-That's it! Now, {{ "GraphQL::Dataloader::AsyncDataloader" | api_doc }} will create `Async::Task` instances instead of plain `Fiber`s and the `async` gem will manage parallelism.
+Now, {{ "GraphQL::Dataloader::AsyncDataloader" | api_doc }} will create `Async::Task` instances instead of plain `Fiber`s and the `async` gem will manage parallelism.
 
 For a demonstration of this behavior, see: [https://github.com/rmosolgo/rails-graphql-async-demo](https://github.com/rmosolgo/rails-graphql-async-demo)
+
+## Rails
+
+For Rails, you'll also want to configure Rails to use Fibers for isolation:
+
+```ruby
+class Application < Rails::Application
+  # ...
+  config.active_support.isolation_level = :fiber
+end
+```
