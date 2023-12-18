@@ -78,14 +78,24 @@ Before building a schema, you have to define an [entry point to your system, the
 class QueryType < GraphQL::Schema::Object
   description "The query root of this schema"
 
-  # First describe the field signature:
-  field :post, PostType, "Find a post by ID" do
-    argument :id, ID
-  end
+  field :post, resolver: Resolvers::Post
+end
+```
 
-  # Then provide an implementation:
-  def post(id:)
-    Post.find(id)
+Define how this field is resolved by creating a resolver class:
+
+```ruby
+# app/graphql/types/resolvers/post.rb
+module Types
+  module Resolvers
+    class Post < BaseResolver
+      type PostType
+      argument :id, ID
+
+      def resolve(id:)
+        Post.find(id)
+      end
+    end
   end
 end
 ```

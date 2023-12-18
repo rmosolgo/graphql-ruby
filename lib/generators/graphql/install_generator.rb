@@ -105,6 +105,9 @@ module Graphql
           template("#{base_type}.erb", "#{options[:directory]}/types/#{base_type}.rb")
         end
 
+        # All resolvers are defined as living in their own module, including this class.
+        template("base_resolver.erb", "#{options[:directory]}/resolvers/base.rb")
+
         # Note: You can't have a schema without the query type, otherwise introspection breaks
         template("query_type.erb", "#{options[:directory]}/types/query_type.rb")
         insert_root_type('query', 'QueryType')
