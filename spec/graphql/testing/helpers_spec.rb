@@ -17,6 +17,16 @@ describe GraphQL::Testing::Helpers do
       field :amount_in_cents, Int, hash_key: :amount
     end
 
+    class Transcript < GraphQL::Schema::Object
+      def self.authorized?(object, context)
+        (current_user = context[:current_user]) &&
+            (admin_for = current_user[:admin_for]) &&
+            (admin_for.include?(object && object["name"]))
+      end
+
+      field :gpa, Float
+    end
+
     class Student < GraphQL::Schema::Object
       field :name, String do
         argument :full_name, Boolean, required: false
@@ -41,6 +51,8 @@ describe GraphQL::Testing::Helpers do
       def is_admin_for
         (list = context[:admin_for]) && list.include?(object["name"])
       end
+
+      field :transcript, Transcript, resolver_method: :object
     end
 
     class Query < GraphQL::Schema::Object
@@ -60,6 +72,10 @@ describe GraphQL::Testing::Helpers do
       else
         raise "Unexpected object: #{object.inspect}"
       end
+    end
+
+    def self.unauthorized_object(err)
+      raise err
     end
   end
 
@@ -92,9 +108,20 @@ describe GraphQL::Testing::Helpers do
         assert_equal expected_message, err.message
       end
 
+      it "raises an error when the type isn't authorized" do
+        err = assert_raises GraphQL::UnauthorizedError do
+          run_graphql_field(AssertionsSchema, "Student.transcript.gpa", { gpa: 3.1 })
+        end
+        assert_equal "An instance of Hash failed Transcript's authorization check", err.message
+
+        assert_equal 3.1, run_graphql_field(AssertionsSchema, "Student.transcript.gpa", { gpa: 3.1, "name" => "Jim" }, context: { current_user: OpenStruct.new(admin_for: ["Jim"])})
+      end
+
       it "works with field extensions"
       it "prepares arguments"
       it "handles unauthorized field errors"
+      it "raises when the type doesn't exist"
+      it "raises when the field doesn't exist"
     end
   end
 
