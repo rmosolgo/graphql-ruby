@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
-      <title>GraphQL - Non-Blocking Data Loading for GraphQL</title>
+      <title>GraphQL - Parallel Data Loading for GraphQL</title>
     
     <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet" />
     <link rel="stylesheet" href="/css/main.css">
@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/2.1.7/">API</a>
+          <a href="/api-doc/2.2.0/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -99,7 +99,7 @@
       
         <option  data-target="/dataloader/testing.html">Testing</option>
       
-        <option  selected data-target="/dataloader/nonblocking.html">Non-Blocking Data Loading for GraphQL</option>
+        <option  selected data-target="/dataloader/async_dataloader.html">Parallel Data Loading for GraphQL</option>
       
     </select>
   </li>
@@ -107,44 +107,31 @@
 
 
 
-<h1 class="guide-header">Non-Blocking Data Loading for GraphQL</h1>
+<h1 class="guide-header">Parallel Data Loading for GraphQL</h1>
 <div class="guide-table-of-contents"></div>
 <div class="guide-container">
-  <p>You can pass <code class="language-plaintext highlighter-rouge">nonblocking: true</code> to enable a non-blocking dataloader implementation based on Ruby 3’s <a href="https://ruby-doc.org/core-3.0.2/Fiber.html#class-Fiber-label-Non-blocking+Fibers"><code class="language-plaintext highlighter-rouge">Fiber.scheduler</code></a> API:</p>
+  <p><code class="language-plaintext highlighter-rouge">AsyncDataloader</code> will run GraphQL fields and Dataloader sources in parallel, so that external service calls (like database queries or network calls) don’t have to wait in a queue.</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Dataloader</span><span class="p">,</span> <span class="ss">nonblocking: </span><span class="kp">true</span> <span class="c1"># enable parallel data loading</span>
-<span class="k">end</span>
+<p>To use <code class="language-plaintext highlighter-rouge">AsyncDataloader</code>, hook it up in your schema <em>instead of</em> <code class="language-plaintext highlighter-rouge">GraphQL::Dataloader</code>:</p>
+
+<div class="language-diff highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="gd">- use GraphQL::Dataloader
+</span><span class="gi">+ use GraphQL::Dataloader::AsyncDataloader
+</span></code></pre></div></div>
+
+<p><strong>Also</strong>, add <a href="https://github.com/socketry/async">the <code class="language-plaintext highlighter-rouge">async</code> gem</a> to your project, for example:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle add async
 </code></pre></div></div>
 
-<p>Alternatively, you can add a non-blocking <code class="language-plaintext highlighter-rouge">GraphQL::Dataloader</code> instance to <code class="language-plaintext highlighter-rouge">context[:dataloader]</code>:</p>
+<p>That’s it! Now, <a href="/api-doc/2.2.0/GraphQL/Dataloader/AsyncDataloader" target="_blank" title="API docs for GraphQL::Dataloader::AsyncDataloader"><code>GraphQL::Dataloader::AsyncDataloader</code></a> will create <code class="language-plaintext highlighter-rouge">Async::Task</code> instances instead of plain <code class="language-plaintext highlighter-rouge">Fiber</code>s and the <code class="language-plaintext highlighter-rouge">async</code> gem will manage parallelism.</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
-  <span class="c1"># ...</span>
-  <span class="ss">dataloader: </span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Dataloader</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">nonblocking: </span><span class="kp">true</span><span class="p">),</span>
-<span class="p">}</span>
-<span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">context: </span><span class="n">context</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
-</code></pre></div></div>
-
-<p>Additionally, you must <strong>set up a Fiber scheduler</strong> with <code class="language-plaintext highlighter-rouge">Fiber.set_scheduler</code> before running your query:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">Fiber</span><span class="p">.</span><span class="nf">set_scheduler</span><span class="p">(</span><span class="no">MySchedulerImplementation</span><span class="p">.</span><span class="nf">new</span><span class="p">)</span>
-<span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-</code></pre></div></div>
-
-<p>The scheduler must implement <a href="https://ruby-doc.org/core-3.0.2/Fiber/SchedulerInterface.html"><code class="language-plaintext highlighter-rouge">Fiber::SchedulerImplementation</code></a>. Existing implementations can be found at <a href="https://github.com/bruno-/fiber_scheduler_list">Fiber Scheduler List</a>.</p>
-
-<ul>
-  <li><a href="https://github.com/dsh0416/evt"><code class="language-plaintext highlighter-rouge">dsh0416/evt</code></a> supports several backends in <code class="language-plaintext highlighter-rouge">Evt::Scheduler</code>.</li>
-  <li><a href="https://github.com/digital-fabric/libev_scheduler"><code class="language-plaintext highlighter-rouge">digital-fabric/libev_scheduler</code></a> contains <code class="language-plaintext highlighter-rouge">Libev::Scheduler</code>, built on <a href="http://pod.tst.eu/http://cvs.schmorp.de/libev/ev.pod"><code class="language-plaintext highlighter-rouge">libev</code></a>, an event loop written in C. ⚠️ This <em>works</em>, but it was failing oddly on GitHub actions, so CI is turned off for it.</li>
-  <li>⚠️ <a href="https://github.com/socketry/async"><code class="language-plaintext highlighter-rouge">socketry/async</code></a> contains <code class="language-plaintext highlighter-rouge">Async::Scheduler</code>, but I haven’t figured out how to make it work with <code class="language-plaintext highlighter-rouge">GraphQL::Dataloader</code> yet. Please update this doc if you know how to!</li>
-</ul>
+<p>For a demonstration of this behavior, see: <a href="https://github.com/rmosolgo/rails-graphql-async-demo">https://github.com/rmosolgo/rails-graphql-async-demo</a></p>
 
 </div>
 <p class="guide-footer">
   Suggestion, improvement, or correction?
-  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/dataloader/nonblocking.md">Edit this file</a> or
-  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Non-Blocking Data Loading for GraphQL">report an issue</a>.
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/dataloader/async_dataloader.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Parallel Data Loading for GraphQL">report an issue</a>.
 </p>
 <script>
   // Find headers with IDs and wrap their text in `<a href=></a>`

@@ -19,7 +19,7 @@
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
-          <a href="/api-doc/2.1.7/">API</a>
+          <a href="/api-doc/2.2.0/">API</a>
           <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
           <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
           <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -186,14 +186,23 @@
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">QueryType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="n">description</span> <span class="s2">"The query root of this schema"</span>
 
-  <span class="c1"># First describe the field signature:</span>
-  <span class="n">field</span> <span class="ss">:post</span><span class="p">,</span> <span class="no">PostType</span><span class="p">,</span> <span class="s2">"Find a post by ID"</span> <span class="k">do</span>
-    <span class="n">argument</span> <span class="ss">:id</span><span class="p">,</span> <span class="no">ID</span>
-  <span class="k">end</span>
+  <span class="n">field</span> <span class="ss">:post</span><span class="p">,</span> <span class="ss">resolver: </span><span class="no">Resolvers</span><span class="o">::</span><span class="no">Post</span>
+<span class="k">end</span>
+</code></pre></div></div>
 
-  <span class="c1"># Then provide an implementation:</span>
-  <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="nb">id</span><span class="p">:)</span>
-    <span class="no">Post</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+<p>Define how this field is resolved by creating a resolver class:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/graphql/types/resolvers/post.rb</span>
+<span class="k">module</span> <span class="nn">Types</span>
+  <span class="k">module</span> <span class="nn">Resolvers</span>
+    <span class="k">class</span> <span class="nc">Post</span> <span class="o">&lt;</span> <span class="no">BaseResolver</span>
+      <span class="n">type</span> <span class="no">PostType</span>
+      <span class="n">argument</span> <span class="ss">:id</span><span class="p">,</span> <span class="no">ID</span>
+
+      <span class="k">def</span> <span class="nf">resolve</span><span class="p">(</span><span class="nb">id</span><span class="p">:)</span>
+        <span class="no">Post</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
   <span class="k">end</span>
 <span class="k">end</span>
 </code></pre></div></div>

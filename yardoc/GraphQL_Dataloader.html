@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/2.1.7/GraphQL/Dataloader" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.2.0/GraphQL/Dataloader" />
   </head>
   <body>
     <p>Class: GraphQL::Dataloader &lt; Object
@@ -18,13 +18,14 @@ def team
 dataloader.with(Sources::Record, Team).load(object.team_id)
 end
 Direct Known Subclasses:
-NullDataloader
+AsyncDataloader, NullDataloader
 Class methods:
 use, with_dataloading
 Instance methods:
-append_job, clear_cache, create_source_fiber, get_fiber_variables,
-initialize, join_queues, nonblocking?, resume, run, run_isolated,
-set_fiber_variables, spawn_fiber, with, yield</p>
+append_job, clear_cache, get_fiber_variables, initialize,
+join_queues, nonblocking?, run, run_fiber, run_isolated,
+set_fiber_variables, spawn_fiber, spawn_job_fiber,
+spawn_source_fiber, use_fiber_resume?, with, yield</p>
 
 
   </body>
