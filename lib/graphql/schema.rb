@@ -384,6 +384,11 @@ module GraphQL
           (superclass.respond_to?(:get_type) ? superclass.get_type(type_name, context) : nil)
       end
 
+      # @return [Boolean] Does this schema have _any_ definition for a type named `type_name`, regardless of visibility?
+      def has_defined_type?(type_name)
+        own_types.key?(type_name) || introspection_system.types.key?(type_name) || (superclass.respond_to?(:has_defined_type?) ? superclass.has_defined_type?(type_name) : false)
+      end
+
       # @api private
       attr_writer :connections
 

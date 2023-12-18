@@ -28,6 +28,19 @@ module GraphQL
         end
       end
 
+      class TypeNotDefinedError < Error
+        def initialize(type_name:)
+          message = "No type named `#{type_name}` is defined; choose another type name or define this type."
+          super(message)
+        end
+      end
+
+      class FieldNotDefinedError < Error
+        def initialize(type_name:, field_name:)
+          message = "`#{type_name}` has no field named `#{field_name}`; pick another name or define this field."
+          super(message)
+        end
+      end
 
       def run_graphql_field(schema, field_path, object, arguments: {}, context: {})
         type_name, *field_names = field_path.split(".")
@@ -44,19 +57,24 @@ module GraphQL
             end
             visible_field = dummy_query.get_field(object_type, field_name)
             if visible_field
-              field_args = visible_field.coerce_arguments(graphql_result, arguments, query_context)
               dummy_query.context.dataloader.run_isolated {
+                field_args = visible_field.coerce_arguments(graphql_result, arguments, query_context)
+                field_args = schema.sync_lazy(field_args)
                 graphql_result = visible_field.resolve(graphql_result, field_args.keyword_arguments, query_context)
                 graphql_result = schema.sync_lazy(graphql_result)
               }
               object_type = visible_field.type.unwrap
-            else
+            elsif object_type.all_field_definitions.any? { |f| f.graphql_name == field_name }
               raise FieldNotVisibleError.new(field_name: field_name, type_name: type_name)
+            else
+              raise FieldNotDefinedError.new(type_name: type_name, field_name: field_name)
             end
           end
           graphql_result
-        else
+        elsif schema.has_defined_type?(type_name)
           raise TypeNotVisibleError.new(type_name: type_name)
+        else
+          raise TypeNotDefinedError.new(type_name: type_name)
         end
       end
 
