@@ -10,7 +10,15 @@
 
 ### Bug fixes
 
-# 2.1.7
+# 2.1.8 (18 Dec 2023)
+
+### New features
+
+- Rails generators: generate a base resolver class by default #4513
+- Dataloader: add some support for transfer-based Fiber schedulers, simplify algorithm #4625 #4729
+- `prepare`: check for the named method on the argument owner, too #4717
+
+# 2.1.7 (4 Dec 2023)
 
 ### New features
 
