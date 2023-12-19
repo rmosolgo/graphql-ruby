@@ -108,7 +108,12 @@
 
 
 <h1 class="guide-header">Parallel Data Loading for GraphQL</h1>
-<div class="guide-table-of-contents"></div>
+<div class="guide-table-of-contents"><div class="table-of-contents">
+  <h3 class="contents-header">Contents</h3>
+  <ol class='contents-list'><li class='contents-entry'><a href='#rails'>Rails
+</a></li></ol>
+</div>
+</div>
 <div class="guide-container">
   <p><code class="language-plaintext highlighter-rouge">AsyncDataloader</code> will run GraphQL fields and Dataloader sources in parallel, so that external service calls (like database queries or network calls) don’t have to wait in a queue.</p>
 
@@ -123,9 +128,19 @@
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle add async
 </code></pre></div></div>
 
-<p>That’s it! Now, <a href="/api-doc/2.2.0/GraphQL/Dataloader/AsyncDataloader" target="_blank" title="API docs for GraphQL::Dataloader::AsyncDataloader"><code>GraphQL::Dataloader::AsyncDataloader</code></a> will create <code class="language-plaintext highlighter-rouge">Async::Task</code> instances instead of plain <code class="language-plaintext highlighter-rouge">Fiber</code>s and the <code class="language-plaintext highlighter-rouge">async</code> gem will manage parallelism.</p>
+<p>Now, <a href="/api-doc/2.2.0/GraphQL/Dataloader/AsyncDataloader" target="_blank" title="API docs for GraphQL::Dataloader::AsyncDataloader"><code>GraphQL::Dataloader::AsyncDataloader</code></a> will create <code class="language-plaintext highlighter-rouge">Async::Task</code> instances instead of plain <code class="language-plaintext highlighter-rouge">Fiber</code>s and the <code class="language-plaintext highlighter-rouge">async</code> gem will manage parallelism.</p>
 
 <p>For a demonstration of this behavior, see: <a href="https://github.com/rmosolgo/rails-graphql-async-demo">https://github.com/rmosolgo/rails-graphql-async-demo</a></p>
+
+<h2 id="rails">Rails</h2>
+
+<p>For Rails, you’ll also want to configure Rails to use Fibers for isolation:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Application</span> <span class="o">&lt;</span> <span class="no">Rails</span><span class="o">::</span><span class="no">Application</span>
+  <span class="c1"># ...</span>
+  <span class="n">config</span><span class="p">.</span><span class="nf">active_support</span><span class="p">.</span><span class="nf">isolation_level</span> <span class="o">=</span> <span class="ss">:fiber</span>
+<span class="k">end</span>
+</code></pre></div></div>
 
 </div>
 <p class="guide-footer">
