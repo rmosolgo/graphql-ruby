@@ -91,6 +91,7 @@
 
 - Tracing: fix legacy tracers added to `GraphQL::Schema` #4663
 - Add `racc` as a dependency because it's not included by default in Ruby 3.3 #4661
+- Connections: don't add automatic connection behaviors for types named "Connection" #4668
 
 # 2.1.2 (11 Oct 2023)
 
