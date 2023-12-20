@@ -2,6 +2,22 @@
 module GraphQL
   class Dataloader
     class AsyncDataloader < Dataloader
+      class << self
+        attr_accessor :max_fibers
+      end
+
+      def self.use(schema, max_fibers: nil)
+        schema.dataloader_class = if max_fibers
+          require "async/semaphore"
+          dataloader_cls = Class.new(self)
+          dataloader_cls.max_fibers = max_fibers
+          schema.const_set(:AsyncDataloader, dataloader_cls)
+          dataloader_cls
+        else
+          self
+        end
+      end
+
       def yield
         Thread.current[:graphql_dataloader_next_tick].wait
         nil
@@ -15,12 +31,14 @@ module GraphQL
         first_pass = true
         jobs_condition = Async::Condition.new
         sources_condition = Async::Condition.new
+        max_fibers = self.class.max_fibers
         Sync do |root_task|
           while first_pass || job_tasks.any?
             first_pass = false
 
             root_task.async do |jobs_task|
-              while (task = job_tasks.shift || spawn_job_task(jobs_task, jobs_condition))
+              parent_task = max_fibers ? Async::Semaphore.new(max_fibers, parent: jobs_task) : jobs_task
+              while (task = job_tasks.shift || spawn_job_task(parent_task, jobs_condition))
                 if task.alive?
                   next_job_tasks << task
                 elsif task.failed?
@@ -36,7 +54,8 @@ module GraphQL
 
             while source_tasks.any? || @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
               root_task.async do |sources_loop_task|
-                while (task = source_tasks.shift || spawn_source_task(sources_loop_task, sources_condition))
+                parent_task = max_fibers ? Async::Semaphore.new(max_fibers, parent: sources_loop_task) : sources_loop_task
+                while (task = source_tasks.shift || spawn_source_task(parent_task, sources_condition))
                   if task.alive?
                     next_source_tasks << task
                   end

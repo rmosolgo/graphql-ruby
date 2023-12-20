@@ -913,12 +913,23 @@ describe GraphQL::Dataloader do
           assert_equal "Kamut", res["data"]["ingredient"]["name"]
         end
 
+        focus
         it "raises errors from fields" do
-          err = assert_raises GraphQL::Error do
-            schema.execute("{ testError }")
+          err = nil
+          stdout, stderr = capture_io do
+            err = assert_raises GraphQL::Error do
+              schema.execute("{ testError }")
+            end
           end
 
           assert_equal "Field error", err.message
+          assert_equal "", stdout
+          expected_stderr = if schema.dataloader_class.default_nonblocking
+            "`nonblocking: true` is deprecated from `GraphQL::Dataloader`, please use `GraphQL::Dataloader::AsyncDataloader` instead. Docs: https://graphql-ruby.org/dataloader/async_dataloader.\n"
+          else
+            ""
+          end
+          assert_equal expected_stderr, stderr
         end
 
         it "raises errors from sources" do

@@ -91,7 +91,7 @@ if RUBY_VERSION >= "3.1.1"
       def self.included(child_class)
         child_class.class_eval do
           it "runs IO in parallel by default" do
-            dataloader = GraphQL::Dataloader::AsyncDataloader.new
+            dataloader = async_schema.dataloader_class.new
             results = {}
             dataloader.append_job { sleep(0.1); results[:a] = 1 }
             dataloader.append_job { sleep(0.2); results[:b] = 2 }
@@ -107,7 +107,7 @@ if RUBY_VERSION >= "3.1.1"
           end
 
           it "works with sources" do
-            dataloader = GraphQL::Dataloader::AsyncDataloader.new
+            dataloader = async_schema.dataloader_class.new
             r1 = dataloader.with(AsyncSchema::SleepSource).request(0.1)
             r2 = dataloader.with(AsyncSchema::SleepSource).request(0.2)
             r3 = dataloader.with(AsyncSchema::SleepSource).request(0.3)
@@ -135,7 +135,7 @@ if RUBY_VERSION >= "3.1.1"
 
           it "works with GraphQL" do
             started_at = Time.now
-            res = AsyncSchema.execute("{ s1: sleep(duration: 0.1) s2: sleep(duration: 0.2) s3: sleep(duration: 0.3) }")
+            res = async_schema.execute("{ s1: sleep(duration: 0.1) s2: sleep(duration: 0.2) s3: sleep(duration: 0.3) }")
             ended_at = Time.now
             assert_equal({"s1"=>0.1, "s2"=>0.2, "s3"=>0.3}, res["data"])
             assert_in_delta 0.3, ended_at - started_at, 0.05, "IO ran in parallel"
@@ -162,7 +162,7 @@ if RUBY_VERSION >= "3.1.1"
             }
             GRAPHQL
             started_at = Time.now
-            res = AsyncSchema.execute(query_str)
+            res = async_schema.execute(query_str)
             ended_at = Time.now
 
             expected_data = {
@@ -205,7 +205,7 @@ if RUBY_VERSION >= "3.1.1"
             }
             GRAPHQL
             started_at = Time.now
-            res = AsyncSchema.execute(query_str)
+            res = async_schema.execute(query_str)
             ended_at = Time.now
 
             expected_data = {
@@ -225,6 +225,17 @@ if RUBY_VERSION >= "3.1.1"
     end
 
     describe "with async" do
+      let(:async_schema) { AsyncSchema }
+      include AsyncDataloaderAssertions
+
+    end
+
+    describe "with max_fibers: ..." do
+      let(:async_schema) {
+        Class.new(AsyncSchema) do
+          use GraphQL::Dataloader::AsyncDataloader, max_fibers: 100
+        end
+      }
       include AsyncDataloaderAssertions
     end
   end
