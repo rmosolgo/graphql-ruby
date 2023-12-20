@@ -36,3 +36,13 @@ class Application < Rails::Application
   config.active_support.isolation_level = :fiber
 end
 ```
+
+## Fiber Limit
+
+By default, `AsyncDataloader` spins up 10 Fibers to work through GraphQL execution. Beyond this, it will add Fibers for resolving any `Dataloader::Source`s. You can customize the execution queue size with `working_queue_size: ...`, for example:
+
+```ruby
+use GraphQL::Dataloader::AsyncDataloader, working_queue_size: 100
+```
+
+You can pass `working_queue_size: nil` to remove any limit on active Fibers.
