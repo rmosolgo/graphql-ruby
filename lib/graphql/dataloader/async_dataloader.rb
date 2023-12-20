@@ -23,6 +23,11 @@ module GraphQL
               while (task = job_tasks.shift || spawn_job_task(jobs_task, jobs_condition))
                 if task.alive?
                   next_job_tasks << task
+                elsif task.failed?
+                  # re-raise a raised error -
+                  # this also covers errors from sources since
+                  # these jobs wait for sources as needed.
+                  task.wait
                 end
               end
             end.wait

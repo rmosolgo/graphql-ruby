@@ -127,6 +127,12 @@ describe GraphQL::Dataloader do
       end
     end
 
+    class ErrorSource < GraphQL::Dataloader::Source
+      def fetch(ids)
+        raise GraphQL::Error, "Source error on: #{ids.inspect}"
+      end
+    end
+
     module Ingredient
       include GraphQL::Schema::Interface
       field :name, String, null: false
@@ -300,6 +306,18 @@ describe GraphQL::Dataloader do
       def recursive_ingredient_name(id:)
         res = context.schema.execute("{ ingredient(id: #{id}) { name } }")
         res["data"]["ingredient"]["name"]
+      end
+
+      field :test_error, String do
+        argument :source, Boolean, required: false, default_value: false
+      end
+
+      def test_error(source:)
+        if source
+          dataloader.with(ErrorSource).load(1)
+        else
+          raise GraphQL::Error, "Field error"
+        end
       end
     end
 
@@ -893,6 +911,22 @@ describe GraphQL::Dataloader do
           res = schema.execute(query_str, context: { dataloader: dataloader })
           assert_equal [], database_log
           assert_equal "Kamut", res["data"]["ingredient"]["name"]
+        end
+
+        it "raises errors from fields" do
+          err = assert_raises GraphQL::Error do
+            schema.execute("{ testError }")
+          end
+
+          assert_equal "Field error", err.message
+        end
+
+        it "raises errors from sources" do
+          err = assert_raises GraphQL::Error do
+            schema.execute("{ testError(source: true) }")
+          end
+
+          assert_equal "Source error on: [1]", err.message
         end
       end
     end
