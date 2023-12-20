@@ -10,6 +10,13 @@
 
 ### Bug fixes
 
+# 2.2.1 (20 Dec 2023)
+
+### Bug fixes
+
+- `AsyncDataloader`: re-raise errors from fields and sources #4736
+- Parser: fix parsing directives on interfaces in SDL #4738
+
 # 2.2.0 (18 Dec 2023)
 
 ### Breaking changes
