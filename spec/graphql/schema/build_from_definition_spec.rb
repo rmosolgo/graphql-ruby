@@ -77,10 +77,11 @@ directive @hashed repeatable on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
 
 directive @language(is: String!) on ENUM_VALUE
 
-type Hello implements Secret @greeting {
+type Hello implements Secret & Secret2 @greeting {
   goodbye(saying: Parting @greeting): Parting
   humbug: Int @greeting(pleasant: false)
   password: Phrase @hashed
+  password2: String
   str(in: Input): String
 }
 
@@ -95,8 +96,13 @@ enum Parting @greeting {
 
 union Phrase @greeting = Hello | Word
 
-interface Secret @greeting @greeting2 {
+interface Secret implements Secret2 @greeting @greeting2 {
   password: String
+  password2: String
+}
+
+interface Secret2 {
+  password2: String
 }
 
 type Word {
