@@ -178,36 +178,35 @@ module GraphQL
       source_fibers = []
       next_source_fibers = []
       first_pass = true
-      manager = spawn_fiber do
-        while first_pass || job_fibers.any?
-          first_pass = false
 
-          while (f = job_fibers.shift || spawn_job_fiber)
+      while first_pass || job_fibers.any?
+        first_pass = false
+
+        while (f = job_fibers.shift || spawn_job_fiber)
+          if f.alive?
+            run_fiber(f)
+            next_job_fibers << f
+          end
+        end
+        join_queues(job_fibers, next_job_fibers)
+
+        while source_fibers.any? || @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
+          while (f = source_fibers.shift || spawn_source_fiber)
             if f.alive?
-              finished = run_fiber(f)
-              if !finished
-                next_job_fibers << f
-              end
+              run_fiber(f)
+              next_source_fibers << f
             end
           end
-          join_queues(job_fibers, next_job_fibers)
-
-          while source_fibers.any? || @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
-            while (f = source_fibers.shift || spawn_source_fiber)
-              if f.alive?
-                finished = run_fiber(f)
-                if !finished
-                  next_source_fibers << f
-                end
-              end
-            end
-            join_queues(source_fibers, next_source_fibers)
-          end
-
+          join_queues(source_fibers, next_source_fibers)
         end
       end
 
-      run_fiber(manager)
+      if job_fibers.any?
+        raise "Invariant: job fibers should have exited but #{job_fibers.size} remained"
+      end
+      if source_fibers.any?
+        raise "Invariant: source fibers should have exited but #{source_fibers.size} remained"
+      end
 
     rescue UncaughtThrowError => e
       throw e.tag, e.value
