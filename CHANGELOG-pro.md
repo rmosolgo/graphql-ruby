@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.25.1 (21 Dec 2023)
+
+### Bug Fix
+
+- Ably subscriptions: update webhook handler for `presence.message` events
+
 # 1.25.0 (7 Dec 2023)
 
 ### Bug Fix
