@@ -22,6 +22,7 @@
 ### Breaking changes
 
 - `loads:` now requires a schema's `self.resolve_type` method to be implemented so that loaded objects can be verified to be of the expected type #4678
+- Tracing: the new Ruby-based parser doesn't emit a "lex" event. (`graphql/c_parser` still does.)
 
 ### New features
 
