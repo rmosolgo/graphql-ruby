@@ -16,10 +16,11 @@ module GraphQL
           max_possible_complexity
         end
 
-        class ScopedTypeComplexity
-          # A single proc for {#scoped_children} hashes. Use this to avoid repeated allocations,
-          # since the lexical binding isn't important.
-          HASH_CHILDREN = ->(h, k) { h[k] = {} }
+        # ScopedTypeComplexity models a tree of GraphQL types mapped to inner selections, ie:
+        # Hash<GraphQL::BaseType, Hash<String, ScopedTypeComplexity>>
+        class ScopedTypeComplexity < Hash
+          # A proc for defaulting empty namespace requests as a new scope hash.
+          DEFAULT_PROC = ->(h, k) { h[k] = {} }
 
           attr_reader :field_definition, :response_path, :query
 
@@ -27,31 +28,18 @@ module GraphQL
           # @param field_definition [GraphQL::Field, GraphQL::Schema::Field] Used for getting the `.complexity` configuration
           # @param query [GraphQL::Query] Used for `query.possible_types`
           # @param response_path [Array<String>] The path to the response key for the field
+          # @return [Hash<GraphQL::BaseType, Hash<String, ScopedTypeComplexity>>]
           def initialize(parent_type, field_definition, query, response_path)
+            super(&DEFAULT_PROC)
             @parent_type = parent_type
             @field_definition = field_definition
             @query = query
             @response_path = response_path
-            @scoped_children = nil
             @nodes = []
           end
 
           # @return [Array<GraphQL::Language::Nodes::Field>]
           attr_reader :nodes
-
-          # Returns true if this field has no selections, ie, it's a scalar.
-          # We need a quick way to check whether we should continue traversing.
-          def terminal?
-            @scoped_children.nil?
-          end
-
-          # This value is only calculated when asked for to avoid needless hash allocations.
-          # Also, if it's never asked for, we determine that this scope complexity
-          # is a scalar field ({#terminal?}).
-          # @return [Hash<Hash<Class => ScopedTypeComplexity>]
-          def scoped_children
-            @scoped_children ||= Hash.new(&HASH_CHILDREN)
-          end
 
           def own_complexity(child_complexity)
             @field_definition.calculate_complexity(query: @query, nodes: @nodes, child_complexity: child_complexity)
@@ -65,19 +53,14 @@ module GraphQL
           return if visitor.skipping?
           parent_type = visitor.parent_type_definition
           field_key = node.alias || node.name
-          # Find the complexity calculation for this field --
-          # if we're re-entering a selection, we'll already have one.
-          # Otherwise, make a new one and store it.
-          #
-          # `node` and `visitor.field_definition` may appear from a cache,
-          # but I think that's ok. If the arguments _didn't_ match,
-          # then the query would have been rejected as invalid.
-          complexities_on_type = @complexities_on_type_by_query[visitor.query] ||= [ScopedTypeComplexity.new(nil, nil, query, visitor.response_path)]
 
-          complexity = complexities_on_type.last.scoped_children[parent_type][field_key] ||= ScopedTypeComplexity.new(parent_type, visitor.field_definition, visitor.query, visitor.response_path)
-          complexity.nodes.push(node)
-          # Push it on the stack.
-          complexities_on_type.push(complexity)
+          # Find or create a complexity scope stack for this query.
+          scopes_stack = @complexities_on_type_by_query[visitor.query] ||= [ScopedTypeComplexity.new(nil, nil, query, visitor.response_path)]
+
+          # Find or create the complexity costing node for this field.
+          scope = scopes_stack.last[parent_type][field_key] ||= ScopedTypeComplexity.new(parent_type, visitor.field_definition, visitor.query, visitor.response_path)
+          scope.nodes.push(node)
+          scopes_stack.push(scope)
         end
 
         def on_leave_field(node, parent, visitor)
@@ -85,89 +68,61 @@ module GraphQL
           # we'll visit them when we hit the spreads instead
           return if visitor.visiting_fragment_definition?
           return if visitor.skipping?
-          complexities_on_type = @complexities_on_type_by_query[visitor.query]
-          complexities_on_type.pop
+          scopes_stack = @complexities_on_type_by_query[visitor.query]
+          scopes_stack.pop
         end
 
         private
 
         # @return [Integer]
         def max_possible_complexity
-          @complexities_on_type_by_query.reduce(0) do |total, (query, complexities_on_type)|
-            root_complexity = complexities_on_type.last
-            # Use this entry point to calculate the total complexity
-            total_complexity_for_query = merged_max_complexity_for_scopes(query, [root_complexity.scoped_children])
-            total + total_complexity_for_query
+          @complexities_on_type_by_query.reduce(0) do |total, (query, scopes_stack)|
+            total + merged_max_complexity_for_scopes(query, [scopes_stack.first])
           end
         end
 
         # @param query [GraphQL::Query] Used for `query.possible_types`
-        # @param scoped_children_hashes [Array<Hash>] Array of scoped children hashes
+        # @param scopes [Array<ScopedTypeComplexity>] Array of scoped type complexities
         # @return [Integer]
-        def merged_max_complexity_for_scopes(query, scoped_children_hashes)
-          # Figure out what scopes are possible here.
+        def merged_max_complexity_for_scopes(query, scopes)
+          # Aggregate a set of all possible scope types encountered (scope keys).
           # Use a hash, but ignore the values; it's just a fast way to work with the keys.
-          all_scopes = {}
-          scoped_children_hashes.each do |h|
-            all_scopes.merge!(h)
+          possible_scope_types = scopes.each_with_object({}) do |scope, memo|
+            memo.merge!(scope)
           end
 
-          # If an abstract scope is present, but _all_ of its concrete types
-          # are also in the list, remove it from the list of scopes to check,
-          # because every possible type is covered by a concrete type.
-          # (That is, there are no remainder types to check.)
-          prev_keys = all_scopes.keys
-          prev_keys.each do |scope|
-            next unless scope.kind.abstract?
+          # Expand abstract scope types into their concrete implementations;
+          # overlapping abstracts coalesce through their intersecting types.
+          possible_scope_types.keys.each do |possible_scope_type|
+            next unless possible_scope_type.kind.abstract?
 
-            missing_concrete_types = query.possible_types(scope).select { |t| !all_scopes.key?(t) }
-            # This concrete type is possible _only_ as a member of the abstract type.
-            # So, attribute to it the complexity which belongs to the abstract type.
-            missing_concrete_types.each do |concrete_scope|
-              all_scopes[concrete_scope] = all_scopes[scope]
+            query.possible_types(possible_scope_type).each do |impl_type|
+              possible_scope_types[impl_type] ||= true
             end
-            all_scopes.delete(scope)
+            possible_scope_types.delete(possible_scope_type)
           end
 
-          # This will hold `{ type => int }` pairs, one for each possible branch
-          complexity_by_scope = {}
-
-          # For each scope,
-          # find the lexical selections that might apply to it,
-          # and gather them together into an array.
-          # Then, treat the set of selection hashes
-          # as a set and calculate the complexity for them as a unit
-          all_scopes.each do |scope, _|
-            # These will be the selections on `scope`
-            children_for_scope = []
-            scoped_children_hashes.each do |sc_h|
-              sc_h.each do |inner_scope, children_hash|
-                if applies_to?(query, scope, inner_scope)
-                  children_for_scope << children_hash
-                end
+          # Aggregate the lexical selections that may apply to each possible type,
+          # and then return the maximum cost among possible typed selections.
+          possible_scope_types.each_key.reduce(0) do |max, possible_scope_type|
+            # Collect inner selections from all scopes that intersect with this possible type.
+            all_inner_selections = scopes.each_with_object([]) do |scope, memo|
+              scope.each do |scope_type, inner_selections|
+                memo << inner_selections if types_intersect?(query, scope_type, possible_scope_type)
               end
             end
 
-            # Calculate the complexity for `scope`, merging all
-            # possible lexical branches.
-            complexity_value = merged_max_complexity(query, children_for_scope)
-            complexity_by_scope[scope] = complexity_value
+            # Find the maximum complexity for the scope type among possible lexical branches.
+            complexity = merged_max_complexity(query, all_inner_selections)
+            complexity > max ? complexity : max
           end
-
-          # Return the max complexity among all scopes
-          complexity_by_scope.each_value.max
         end
 
-        def applies_to?(query, left_scope, right_scope)
-          if left_scope == right_scope
-            # This can happen when several branches are being analyzed together
-            true
-          else
-            # Check if these two scopes have _any_ types in common.
-            possible_right_types = query.possible_types(right_scope)
-            possible_left_types = query.possible_types(left_scope)
-            !(possible_right_types & possible_left_types).empty?
-          end
+        def types_intersect?(query, a, b)
+          return true if a == b
+
+          a_types = query.possible_types(a)
+          query.possible_types(b).any? { |t| a_types.include?(t) }
         end
 
         # A hook which is called whenever a field's max complexity is calculated.
@@ -179,50 +134,47 @@ module GraphQL
         def field_complexity(scoped_type_complexity, max_complexity:, child_complexity: nil)
         end
 
-        # @param children_for_scope [Array<Hash>] An array of `scoped_children[scope]` hashes
-        # (`{field_key => complexity}`)
-        # @return [Integer] Complexity value for all these selections in the current scope
-        def merged_max_complexity(query, children_for_scope)
-          all_keys = []
-          children_for_scope.each do |c|
-            all_keys.concat(c.keys)
+        # @param inner_selections [Array<Hash<String, ScopedTypeComplexity>>] Field selections for a scope
+        # @return [Integer] Total complexity value for all these selections in the parent scope
+        def merged_max_complexity(query, inner_selections)
+          # Aggregate a set of all unique field selection keys across all scopes.
+          # Use a hash, but ignore the values; it's just a fast way to work with the keys.
+          unique_field_keys = inner_selections.each_with_object({}) do |inner_selection, memo|
+            memo.merge!(inner_selection)
           end
-          all_keys.uniq!
-          complexity_for_keys = {}
 
-          all_keys.each do |child_key|
-            scoped_children_for_key = nil
-            complexity_for_key = nil
-            children_for_scope.each do |children_hash|
-              next unless children_hash.key?(child_key)
+          # Add up the total cost for each unique field name's coalesced selections
+          unique_field_keys.each_key.reduce(0) do |total, field_key|
+            composite_scopes = nil
+            field_cost = 0
 
-              complexity_for_key = children_hash[child_key]
-              if complexity_for_key.terminal?
-                # Assume that all terminals would return the same complexity
-                # Since it's a terminal, its child complexity is zero.
-                complexity = complexity_for_key.own_complexity(0)
-                complexity_for_keys[child_key] = complexity
+            # Collect composite selection scopes for further aggregation,
+            # leaf selections report their costs directly.
+            inner_selections.each do |inner_selection|
+              child_scope = inner_selection[field_key]
+              next unless child_scope
 
-                field_complexity(complexity_for_key, max_complexity: complexity, child_complexity: nil)
+              # Empty child scopes are leaf nodes with zero child complexity.
+              if child_scope.empty?
+                field_cost = child_scope.own_complexity(0)
+                field_complexity(child_scope, max_complexity: field_cost, child_complexity: nil)
               else
-                scoped_children_for_key ||= []
-                scoped_children_for_key << complexity_for_key.scoped_children
+                composite_scopes ||= []
+                composite_scopes << child_scope
               end
             end
 
-            next unless scoped_children_for_key
+            if composite_scopes
+              child_complexity = merged_max_complexity_for_scopes(query, composite_scopes)
 
-            child_complexity = merged_max_complexity_for_scopes(query, scoped_children_for_key)
-            # This is the _last_ one we visited; assume it's representative.
-            max_complexity = complexity_for_key.own_complexity(child_complexity)
+              # This is the last composite scope visited; assume it's representative (for backwards compatibility).
+              # Note: it would be more correct to score each composite scope and use the maximum possibility.
+              field_cost = composite_scopes.last.own_complexity(child_complexity)
+              field_complexity(composite_scopes.last, max_complexity: field_cost, child_complexity: child_complexity)
+            end
 
-            field_complexity(complexity_for_key, max_complexity: max_complexity, child_complexity: child_complexity)
-
-            complexity_for_keys[child_key] = max_complexity
+            total + field_cost
           end
-
-          # Calculate the child complexity by summing the complexity of all selections
-          complexity_for_keys.each_value.inject(0, &:+)
         end
       end
     end
