@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 2.1.9 (21 Dec 2023)
+
+### Bug fixes
+
+- Dataloader: fix some fiber scheduling bugs #4744
+
 # 2.1.8 (18 Dec 2023)
 
 ### New features
