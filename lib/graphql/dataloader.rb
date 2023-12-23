@@ -168,7 +168,11 @@ module GraphQL
     ensure
       @pending_jobs = prev_queue
       prev_pending_keys.each do |source_instance, pending|
-        source_instance.pending.merge!(pending)
+        pending.each do |key, value|
+          if !source_instance.results.key?(key)
+            source_instance.pending[key] = value
+          end
+        end
       end
     end
 
