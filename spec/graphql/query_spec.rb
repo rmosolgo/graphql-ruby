@@ -651,6 +651,7 @@ describe GraphQL::Query do
         }
       GRAPHQL
     }
+
     it "adds an entry to the errors key" do
       res = schema.execute(" { ")
       assert_equal 1, res["errors"].length
@@ -660,6 +661,17 @@ describe GraphQL::Query do
         expected_err = "Expected NAME, actual: (none) (\" \") at [1, 2]"
       end
       expected_locations = [{"line" => 1, "column" => 2}]
+      assert_equal expected_err, res["errors"][0]["message"]
+      assert_equal expected_locations, res["errors"][0]["locations"]
+
+      res = schema.execute("{")
+      assert_equal 1, res["errors"].length
+      if USING_C_PARSER
+        expected_err = "syntax error, unexpected end of file at [1, 1]"
+      else
+        expected_err = "Expected NAME, actual: (none) (\"\") at [1, 1]"
+      end
+      expected_locations = [{"line" => 1, "column" => 1}]
       assert_equal expected_err, res["errors"][0]["message"]
       assert_equal expected_locations, res["errors"][0]["locations"]
 
