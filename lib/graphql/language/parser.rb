@@ -62,11 +62,13 @@ module GraphQL
 
       def document
         any_tokens = advance_token
-        if !any_tokens
+        defns = []
+        if any_tokens
+          defns << definition
+        else
           # Only ignored characters is not a valid document
           raise GraphQL::ParseError.new("Unexpected end of document", nil, nil, @graphql_str)
         end
-        defns = []
         while !@lexer.eos?
           defns << definition
         end
