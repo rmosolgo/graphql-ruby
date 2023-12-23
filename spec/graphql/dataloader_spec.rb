@@ -301,6 +301,33 @@ describe GraphQL::Dataloader do
         res = context.schema.execute("{ ingredient(id: #{id}) { name } }")
         res["data"]["ingredient"]["name"]
       end
+
+      field :test_error, String do
+        argument :source, Boolean, required: false, default_value: false
+      end
+
+      def test_error(source:)
+        if source
+          dataloader.with(ErrorSource).load(1)
+        else
+          raise GraphQL::Error, "Field error"
+        end
+      end
+
+      class LookaheadInput < GraphQL::Schema::InputObject
+        argument :id, ID
+        argument :batch_key, String
+      end
+
+      field :lookahead_ingredient, Ingredient, extras: [:lookahead] do
+        argument :input, LookaheadInput
+      end
+
+
+      def lookahead_ingredient(input:, lookahead:)
+        lookahead.arguments # forces a datalaoder.run_isolated call
+        dataloader.with(CustomBatchKeySource, input[:batch_key]).load(input[:id])
+      end
     end
 
     query(Query)
@@ -885,6 +912,32 @@ describe GraphQL::Dataloader do
           res = schema.execute(query_str, context: { dataloader: dataloader })
           assert_equal [], database_log
           assert_equal "Kamut", res["data"]["ingredient"]["name"]
+        end
+
+        it "raises errors from fields" do
+          err = assert_raises GraphQL::Error do
+            schema.execute("{ testError }")
+          end
+
+          assert_equal "Field error", err.message
+        end
+
+        it "raises errors from sources" do
+          err = assert_raises GraphQL::Error do
+            schema.execute("{ testError(source: true) }")
+          end
+
+          assert_equal "Source error on: [1]", err.message
+        end
+
+        it "works with very very large queries" do
+          query_str = "{".dup
+          1100.times do |i|
+            query_str << "\n  field#{i}: lookaheadIngredient(input: { id: 1, batchKey: \"key-#{i}\"}) { name }"
+          end
+          query_str << "\n}"
+          res = schema.execute(query_str)
+          assert_equal 1100, res["data"].keys.size
         end
       end
     end
