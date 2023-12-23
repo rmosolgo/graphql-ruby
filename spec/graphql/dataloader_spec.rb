@@ -319,6 +319,21 @@ describe GraphQL::Dataloader do
           raise GraphQL::Error, "Field error"
         end
       end
+
+      class LookaheadInput < GraphQL::Schema::InputObject
+        argument :id, ID
+        argument :batch_key, String
+      end
+
+      field :lookahead_ingredient, Ingredient, extras: [:lookahead] do
+        argument :input, LookaheadInput
+      end
+
+
+      def lookahead_ingredient(input:, lookahead:)
+        lookahead.arguments # forces a datalaoder.run_isolated call
+        dataloader.with(CustomBatchKeySource, input[:batch_key]).load(input[:id])
+      end
     end
 
     query(Query)
@@ -927,6 +942,16 @@ describe GraphQL::Dataloader do
           end
 
           assert_equal "Source error on: [1]", err.message
+        end
+
+        it "works with very very large queries" do
+          query_str = "{".dup
+          1100.times do |i|
+            query_str << "\n  field#{i}: lookaheadIngredient(input: { id: 1, batchKey: \"key-#{i}\"}) { name }"
+          end
+          query_str << "\n}"
+          res = schema.execute(query_str)
+          assert_equal 1100, res["data"].keys.size
         end
       end
     end
