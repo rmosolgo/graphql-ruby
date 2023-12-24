@@ -78,23 +78,21 @@ Before building a schema, you have to define an [entry point to your system, the
 class QueryType < GraphQL::Schema::Object
   description "The query root of this schema"
 
-  field :post, resolver: Resolvers::Post
+  field :post, resolver: Resolvers::PostResolver
 end
 ```
 
 Define how this field is resolved by creating a resolver class:
 
 ```ruby
-# app/graphql/types/resolvers/post.rb
-module Types
-  module Resolvers
-    class Post < BaseResolver
-      type PostType
-      argument :id, ID
+# app/graphql/resolvers/post_resolver.rb
+module Resolvers
+  class PostResolver < BaseResolver
+    type Types::PostType, null: false
+    argument :id, ID
 
-      def resolve(id:)
-        Post.find(id)
-      end
+    def resolve(id:)
+      ::Post.find(id)
     end
   end
 end
@@ -104,7 +102,7 @@ Then, build a schema with `QueryType` as the query entry point:
 
 ```ruby
 class Schema < GraphQL::Schema
-  query QueryType
+  query Types::QueryType
 end
 ```
 
