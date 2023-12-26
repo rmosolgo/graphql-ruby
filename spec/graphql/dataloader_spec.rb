@@ -1005,7 +1005,11 @@ describe GraphQL::Dataloader do
           end
           all_fibers.delete(Fiber.current)
           if schema.dataloader_class == GraphQL::Dataloader::AsyncDataloader
-            skip "TODO: AsyncDataloader leaves orphan suspended fibers :'("
+            skip <<~ERR
+              TODO: AsyncDataloader leaves orphan suspended fibers :'(
+
+                - #{all_fibers.select(&:alive?).join("\n  -")}
+            ERR
           else
             assert_equal [false], all_fibers.map(&:alive?).uniq
           end
