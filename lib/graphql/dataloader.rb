@@ -211,9 +211,10 @@ module GraphQL
         end
       end
 
-      manager_finished = run_fiber(manager)
-      if !manager_finished
-        raise "Invariant: Manager Fiber didn't finish successfully"
+      while !(manager_finished = run_fiber(manager))
+        if !manager.alive?
+          raise "Invariant: Manager Fiber didn't finish successfully"
+        end
       end
 
       if job_fibers.any?

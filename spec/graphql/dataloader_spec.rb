@@ -1004,24 +1004,19 @@ describe GraphQL::Dataloader do
         end
 
         it "works with very very large queries" do
-          schema.dataloader_class.prepend(Module.new do
-            def spawn_fiber
-              f = super
-              ALL_FIBERS << f
-              f
-            end
-          end)
           query_str = "{".dup
           1100.times do |i|
             query_str << "\n  field#{i}: lookaheadIngredient(input: { id: 1, batchKey: \"key-#{i}\"}) { name }"
           end
           query_str << "\n}"
-          ALL_FIBERS.clear
+          GC.start
           res = schema.execute(query_str)
           assert_equal 1100, res["data"].keys.size
-          if ALL_FIBERS.any?
-            assert_equal [false], ALL_FIBERS.map(&:alive?).uniq
+          all_fibers = []
+          ObjectSpace.each_object(Fiber) do |f|
+            all_fibers << f
           end
+          assert_equal [Fiber.current], all_fibers
         end
 
         it "doesn't perform duplicate source fetches" do
