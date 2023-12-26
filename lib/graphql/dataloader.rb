@@ -118,12 +118,7 @@ module GraphQL
     #
     # @return [void]
     def yield
-      if use_fiber_resume?
-        Fiber.yield
-      else
-        parent_fiber = Thread.current[:parent_fiber]
-        parent_fiber.transfer
-      end
+      Fiber.yield
       nil
     end
 
@@ -210,10 +205,10 @@ module GraphQL
         end
       end
 
-      while !(manager_finished = run_fiber(manager))
-        if !manager.alive?
-          raise "Invariant: Manager Fiber didn't finish successfully"
-        end
+      run_fiber(manager)
+
+      if manager.alive?
+        raise "Invariant: Manager fiber didn't terminate properly."
       end
 
       if job_fibers.any?
@@ -227,27 +222,17 @@ module GraphQL
     end
 
     def run_fiber(f)
-      if use_fiber_resume?
-        f.resume
-      else
-        f.transfer
-      end
+      f.resume
     end
 
     def spawn_fiber
       fiber_vars = get_fiber_variables
-      parent_fiber = use_fiber_resume? ? nil : Fiber.current
       Fiber.new(blocking: !@nonblocking) {
         set_fiber_variables(fiber_vars)
-        Thread.current[:parent_fiber] = parent_fiber
         yield
         # With `.transfer`, you have to explicitly pass back to the parent --
         # if the fiber is allowed to terminate normally, control is passed to the main fiber instead.
-        if parent_fiber
-          parent_fiber.transfer(true)
-        else
-          true
-        end
+        true
       }
     end
 
@@ -257,15 +242,6 @@ module GraphQL
       @nonblocking && Fiber.scheduler.run
       prev_queue.concat(new_queue)
       new_queue.clear
-    end
-
-    def use_fiber_resume?
-      Fiber.respond_to?(:scheduler) &&
-        (
-          (defined?(::DummyScheduler) && Fiber.scheduler.is_a?(::DummyScheduler)) ||
-          (defined?(::Evt) && ::Evt::Scheduler.singleton_class::BACKENDS.any? { |be| Fiber.scheduler.is_a?(be) }) ||
-          (defined?(::Libev) && Fiber.scheduler.is_a?(::Libev::Scheduler))
-        )
     end
 
     def spawn_job_fiber

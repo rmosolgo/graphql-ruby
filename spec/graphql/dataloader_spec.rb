@@ -1003,7 +1003,8 @@ describe GraphQL::Dataloader do
           ObjectSpace.each_object(Fiber) do |f|
             all_fibers << f
           end
-          assert_equal [Fiber.current], all_fibers
+          all_fibers.delete(Fiber.current)
+          assert_equal [false], all_fibers.map(&:alive?).uniq
         end
 
         it "doesn't perform duplicate source fetches" do
