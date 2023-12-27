@@ -169,7 +169,7 @@ module GraphQL
         nil
       end
 
-      attr_reader :pending
+      attr_reader :pending, :results
 
       private
 

@@ -319,6 +319,21 @@ describe GraphQL::Dataloader do
           raise GraphQL::Error, "Field error"
         end
       end
+
+      class LookaheadInput < GraphQL::Schema::InputObject
+        argument :id, ID
+        argument :batch_key, String
+      end
+
+      field :lookahead_ingredient, Ingredient, extras: [:lookahead] do
+        argument :input, LookaheadInput
+      end
+
+
+      def lookahead_ingredient(input:, lookahead:)
+        lookahead.arguments # forces a datalaoder.run_isolated call
+        dataloader.with(CustomBatchKeySource, input[:batch_key]).load(input[:id])
+      end
     end
 
     query(Query)
@@ -434,9 +449,68 @@ describe GraphQL::Dataloader do
     database_log.clear
   end
 
+  ALL_FIBERS = []
+
+
+  class PartsSchema < GraphQL::Schema
+    class FieldSource < GraphQL::Dataloader::Source
+      DATA = [
+        {"id" => 1, "name" => "a"},
+        {"id" => 2, "name" => "b"},
+        {"id" => 3, "name" => "c"},
+        {"id" => 4, "name" => "d"},
+      ]
+      def fetch(fields)
+        @previously_fetched ||= Set.new
+        fields.each do |f|
+          if !@previously_fetched.add?(f)
+            raise "Duplicate fetch for #{f.inspect}"
+          end
+        end
+        Array.new(fields.size, DATA)
+      end
+    end
+
+    class StringFilter < GraphQL::Schema::InputObject
+      argument :equal_to_any_of, [String]
+    end
+
+    class ComponentFilter < GraphQL::Schema::InputObject
+      argument :name, StringFilter
+    end
+
+    class FetchObjects < GraphQL::Schema::Resolver
+      argument :filter, ComponentFilter, required: false
+      def resolve(**_kwargs)
+        context.dataloader.with(FieldSource).load("#{field.path}/#{object&.fetch("id")}")
+      end
+    end
+
+    class Component < GraphQL::Schema::Object
+      field :name, String
+    end
+
+    class Part < GraphQL::Schema::Object
+      field :components, [Component], resolver: FetchObjects
+    end
+
+    class Manufacturer < GraphQL::Schema::Object
+      field :parts, [Part], resolver: FetchObjects
+    end
+
+    class Query < GraphQL::Schema::Object
+      field :manufacturers, [Manufacturer], resolver: FetchObjects
+    end
+
+    query(Query)
+    use GraphQL::Dataloader
+  end
+
   module DataloaderAssertions
     def self.included(child_class)
       child_class.class_eval do
+        let(:schema) { make_schema_from(FiberSchema) }
+        let(:parts_schema) { make_schema_from(PartsSchema) }
 
         it "Works with request(...)" do
           res = schema.execute <<-GRAPHQL
@@ -928,21 +1002,65 @@ describe GraphQL::Dataloader do
 
           assert_equal "Source error on: [1]", err.message
         end
+
+        it "works with very very large queries" do
+          query_str = "{".dup
+          1100.times do |i|
+            query_str << "\n  field#{i}: lookaheadIngredient(input: { id: 1, batchKey: \"key-#{i}\"}) { name }"
+          end
+          query_str << "\n}"
+          GC.start
+          res = schema.execute(query_str)
+          assert_equal 1100, res["data"].keys.size
+          all_fibers = []
+          ObjectSpace.each_object(Fiber) do |f|
+            all_fibers << f
+          end
+          all_fibers.delete(Fiber.current)
+          if schema.dataloader_class == GraphQL::Dataloader::AsyncDataloader
+            skip <<~ERR
+              TODO: AsyncDataloader leaves orphan suspended fibers :'(
+
+                - #{all_fibers.select(&:alive?).join("\n  -")}
+            ERR
+          else
+            assert_equal [false], all_fibers.map(&:alive?).uniq
+          end
+        end
+
+        it "doesn't perform duplicate source fetches" do
+          query = <<~QUERY
+            query {
+              manufacturers {
+                parts {
+                  components(filter: {name: {equalToAnyOf: ["c1", "c2", "c3"]}}) {
+                    name
+                  }
+                }
+              }
+            }
+          QUERY
+          response = parts_schema.execute(query).to_h
+          assert_equal [4, 4, 4, 4], response["data"]["manufacturers"].map { |parts_obj| parts_obj["parts"].size }
+        end
       end
     end
   end
 
-  let(:schema) { FiberSchema }
+  def make_schema_from(schema)
+    schema
+  end
+
   include DataloaderAssertions
 
   if RUBY_VERSION >= "3.1.1"
     require "async"
     describe "AsyncDataloader" do
-      let(:schema) {
-        Class.new(FiberSchema) {
+      def make_schema_from(schema)
+        Class.new(schema) {
           use GraphQL::Dataloader::AsyncDataloader
         }
-      }
+      end
 
       include DataloaderAssertions
     end
@@ -950,9 +1068,11 @@ describe GraphQL::Dataloader do
 
   if Fiber.respond_to?(:scheduler)
     describe "nonblocking: true" do
-      let(:schema) { Class.new(FiberSchema) do
-        use GraphQL::Dataloader, nonblocking: true
-      end }
+      def make_schema_from(schema)
+        Class.new(schema) do
+          use GraphQL::Dataloader, nonblocking: true
+        end
+      end
 
       before do
         Fiber.set_scheduler(::DummyScheduler.new)
@@ -968,9 +1088,11 @@ describe GraphQL::Dataloader do
     if RUBY_ENGINE == "ruby" && !ENV["GITHUB_ACTIONS"]
       describe "nonblocking: true with libev" do
         require "libev_scheduler"
-        let(:schema) { Class.new(FiberSchema) do
-          use GraphQL::Dataloader, nonblocking: true
-        end }
+        def make_schema_from(schema)
+          Class.new(schema) do
+            use GraphQL::Dataloader, nonblocking: true
+          end
+        end
 
         before do
           Fiber.set_scheduler(Libev::Scheduler.new)
