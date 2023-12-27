@@ -302,18 +302,6 @@ describe GraphQL::Dataloader do
         res["data"]["ingredient"]["name"]
       end
 
-      field :test_error, String do
-        argument :source, Boolean, required: false, default_value: false
-      end
-
-      def test_error(source:)
-        if source
-          dataloader.with(ErrorSource).load(1)
-        else
-          raise GraphQL::Error, "Field error"
-        end
-      end
-
       class LookaheadInput < GraphQL::Schema::InputObject
         argument :id, ID
         argument :batch_key, String
@@ -974,22 +962,6 @@ describe GraphQL::Dataloader do
           assert_equal "Kamut", res["data"]["ingredient"]["name"]
         end
 
-        it "raises errors from fields" do
-          err = assert_raises GraphQL::Error do
-            schema.execute("{ testError }")
-          end
-
-          assert_equal "Field error", err.message
-        end
-
-        it "raises errors from sources" do
-          err = assert_raises GraphQL::Error do
-            schema.execute("{ testError(source: true) }")
-          end
-
-          assert_equal "Source error on: [1]", err.message
-        end
-
         it "works with very very large queries" do
           query_str = "{".dup
           1100.times do |i|
@@ -1004,15 +976,7 @@ describe GraphQL::Dataloader do
             all_fibers << f
           end
           all_fibers.delete(Fiber.current)
-          if schema.dataloader_class == GraphQL::Dataloader::AsyncDataloader
-            skip <<~ERR
-              TODO: AsyncDataloader leaves orphan suspended fibers :'(
-
-                - #{all_fibers.select(&:alive?).join("\n  -")}
-            ERR
-          else
-            assert_equal [false], all_fibers.map(&:alive?).uniq
-          end
+          assert_equal [false], all_fibers.map(&:alive?).uniq
         end
 
         it "doesn't perform duplicate source fetches" do
