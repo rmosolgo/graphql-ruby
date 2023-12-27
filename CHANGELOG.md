@@ -10,6 +10,10 @@
 
 ### Bug fixes
 
+# 2.1.10 (27 Dec 2023)
+
+- Dataloader: remove Fiber#transfer support because of unpredictable Ruby control flow #4753
+
 # 2.1.9 (21 Dec 2023)
 
 ### Bug fixes
