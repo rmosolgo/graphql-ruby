@@ -10,6 +10,14 @@
 
 ### Bug fixes
 
+# 2.2.2 (27 Dec 2023)
+
+### Bug fixes
+
+- Dataloader: remove `Fiber#transfer` support because Ruby's control flow is unpredictable (#4748, #4752, #4743)
+- Parser: fix handling of single-token document
+- QueryComplexity: improve performance
+
 # 2.2.1 (20 Dec 2023)
 
 ### Bug fixes
