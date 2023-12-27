@@ -2,6 +2,10 @@
 require "spec_helper"
 require "fiber"
 
+if defined?(Console) && defined?(Async)
+  Console.logger.disable(Async::Task)
+end
+
 describe GraphQL::Dataloader do
   class BatchedCallsCounter
     def initialize
@@ -1005,27 +1009,30 @@ describe GraphQL::Dataloader do
 
         it "works with very very large queries" do
           query_str = "{".dup
-          1100.times do |i|
+          fields = 1100
+          fields.times do |i|
             query_str << "\n  field#{i}: lookaheadIngredient(input: { id: 1, batchKey: \"key-#{i}\"}) { name }"
           end
           query_str << "\n}"
           GC.start
+          GC.disable
           res = schema.execute(query_str)
-          assert_equal 1100, res["data"].keys.size
+          assert_equal fields, res["data"].keys.size
           all_fibers = []
           ObjectSpace.each_object(Fiber) do |f|
             all_fibers << f
           end
           all_fibers.delete(Fiber.current)
-          if schema.dataloader_class == GraphQL::Dataloader::AsyncDataloader
-            skip <<~ERR
-              TODO: AsyncDataloader leaves orphan suspended fibers :'(
+          if all_fibers.any?(&:alive?)
+              puts <<~ERR
+            Alive fibers:
 
-                - #{all_fibers.select(&:alive?).join("\n  -")}
+              - #{all_fibers.select(&:alive?).join("\n  - ")}
             ERR
-          else
-            assert_equal [false], all_fibers.map(&:alive?).uniq
           end
+          assert_equal [false], all_fibers.map(&:alive?).uniq
+        ensure
+          GC.enable
         end
 
         it "doesn't perform duplicate source fetches" do
