@@ -19,29 +19,27 @@ module GraphQL
           while first_pass || job_tasks.any?
             first_pass = false
 
-            root_task.async do |jobs_task|
-              while (task = job_tasks.shift || spawn_job_task(jobs_task, jobs_condition))
-                if task.alive?
-                  next_job_tasks << task
-                elsif task.failed?
-                  # re-raise a raised error -
-                  # this also covers errors from sources since
-                  # these jobs wait for sources as needed.
-                  task.wait
-                end
+            while (task = job_tasks.shift || spawn_job_task(root_task, jobs_condition))
+              if task.alive?
+                next_job_tasks << task
+              elsif task.failed?
+                # re-raise a raised error -
+                # this also covers errors from sources since
+                # these jobs wait for sources as needed.
+                task.wait
               end
-            end.wait
+            end
+            root_task.yield # give job tasks a chance to run
             job_tasks.concat(next_job_tasks)
             next_job_tasks.clear
 
             while source_tasks.any? || @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
-              root_task.async do |sources_loop_task|
-                while (task = source_tasks.shift || spawn_source_task(sources_loop_task, sources_condition))
-                  if task.alive?
-                    next_source_tasks << task
-                  end
+              while (task = source_tasks.shift || spawn_source_task(root_task, sources_condition))
+                if task.alive?
+                  next_source_tasks << task
                 end
-              end.wait
+              end
+              root_task.yield # give source tasks a chance to run
               sources_condition.signal
               source_tasks.concat(next_source_tasks)
               next_source_tasks.clear
@@ -58,7 +56,7 @@ module GraphQL
       def spawn_job_task(parent_task, condition)
         if @pending_jobs.any?
           fiber_vars = get_fiber_variables
-          parent_task.async do |t|
+          parent_task.async do
             set_fiber_variables(fiber_vars)
             Thread.current[:graphql_dataloader_next_tick] = condition
             while job = @pending_jobs.shift
