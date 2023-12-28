@@ -10,6 +10,13 @@
 
 ### Bug fixes
 
+# 2.2.3 (28 Dec 2023)
+
+### Bug fixes
+
+- AsyncDataloader: avoid leftover `suspended` Fibers #4754
+- Generators: fix path and constant name of BaseResolver #4755
+
 # 2.2.2 (27 Dec 2023)
 
 ### Bug fixes
@@ -37,6 +44,16 @@
 - `GraphQL::Dataloader::AsyncDataloader`: a Dataloader class that uses the `async` gem to run I/O from fields and Dataloader sources in parallel #4727
 - Parser: use a heavily-optimized lexer and a hand-written parser for better performance #4718
 - `run_graphql_field`: a helper method for running fields in tests #4732
+
+# 2.1.10 (27 Dec 2023)
+
+- Dataloader: remove Fiber#transfer support because of unpredictable Ruby control flow #4753
+
+# 2.1.9 (21 Dec 2023)
+
+### Bug fixes
+
+- Dataloader: fix some fiber scheduling bugs #4744
 
 # 2.1.8 (18 Dec 2023)
 
