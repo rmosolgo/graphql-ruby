@@ -21,6 +21,7 @@ module GraphQL
 
             while (task = job_tasks.shift || spawn_job_task(root_task, jobs_condition))
               if task.alive?
+                root_task.yield # give the job task a chance to run
                 next_job_tasks << task
               elsif task.failed?
                 # re-raise a raised error -
@@ -29,17 +30,16 @@ module GraphQL
                 task.wait
               end
             end
-            root_task.yield # give job tasks a chance to run
             job_tasks.concat(next_job_tasks)
             next_job_tasks.clear
 
             while source_tasks.any? || @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
               while (task = source_tasks.shift || spawn_source_task(root_task, sources_condition))
                 if task.alive?
+                  root_task.yield # give the source task a chance to run
                   next_source_tasks << task
                 end
               end
-              root_task.yield # give source tasks a chance to run
               sources_condition.signal
               source_tasks.concat(next_source_tasks)
               next_source_tasks.clear

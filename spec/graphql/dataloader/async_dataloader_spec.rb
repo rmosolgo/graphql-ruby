@@ -29,6 +29,25 @@ if RUBY_VERSION >= "3.1.1"
         end
       end
 
+      class KeyWaitForSource < GraphQL::Dataloader::Source
+        class << self
+          attr_accessor :fetches
+          def reset
+            @fetches = []
+          end
+        end
+
+        def initialize(wait)
+          @wait = wait
+        end
+
+        def fetch(keys)
+          self.class.fetches << keys
+          sleep(@wait)
+          keys
+        end
+      end
+
       class Sleeper < GraphQL::Schema::Object
         field :sleeper, Sleeper, null: false, resolver_method: :sleep do
           argument :duration, Float
@@ -81,6 +100,24 @@ if RUBY_VERSION >= "3.1.1"
         def wait_for(tag:, wait:)
           dataloader.with(WaitForSource, tag).load(wait)
         end
+
+        class ListWaiter < GraphQL::Schema::Object
+          field :waiter, Waiter
+
+          def waiter
+            dataloader.with(KeyWaitForSource, object[:wait]).load(object[:tag])
+          end
+        end
+
+        field :list_waiters, [ListWaiter] do
+          argument :wait, Float
+          argument :tags, [String]
+        end
+
+        def list_waiters(wait:, tags:)
+          Kernel.sleep(0.1)
+          tags.map { |t| { tag: t, wait: wait }}
+        end
       end
 
       query(Query)
@@ -90,6 +127,10 @@ if RUBY_VERSION >= "3.1.1"
     module AsyncDataloaderAssertions
       def self.included(child_class)
         child_class.class_eval do
+          before do
+            AsyncSchema::KeyWaitForSource.reset
+          end
+
           it "runs IO in parallel by default" do
             dataloader = GraphQL::Dataloader::AsyncDataloader.new
             results = {}
@@ -219,6 +260,26 @@ if RUBY_VERSION >= "3.1.1"
             # - Put all jobs in the same queue (fields and sources), but then you don't get predictable batching.
             # - Work one-layer-at-a-time, but then layers can get stuck behind one another. That's what's implemented here.
             assert_in_delta 1.0, ended_at - started_at, 0.06, "Sources were executed in parallel"
+          end
+
+          it "groups across list items" do
+            query_str = <<-GRAPHQL
+              {
+                listWaiters(wait: 0.2, tags: ["a", "b", "c"]) {
+                  waiter {
+                    tag
+                  }
+                }
+              }
+            GRAPHQL
+
+            t1 = Time.now
+            result = AsyncSchema.execute(query_str)
+            t2 = Time.now
+            assert_equal ["a", "b", "c"], result["data"]["listWaiters"].map { |lw| lw["waiter"]["tag"]}
+            # The field itself waits 0.1
+            assert_in_delta 0.3, t2 - t1, 0.06, "Wait was parallel"
+            assert_equal [["a", "b", "c"]], AsyncSchema::KeyWaitForSource.fetches, "All keys were fetched at once"
           end
         end
       end
