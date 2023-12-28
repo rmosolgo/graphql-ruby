@@ -40,6 +40,11 @@ class GraphQLGeneratorsInstallGeneratorTest < Rails::Generators::TestCase
       assert_includes contents, expected_graphiql_route
     end
 
+    assert_file "app/graphql/resolvers/base_resolver.rb" do |contents|
+      assert_includes contents, "module Resolvers"
+      assert_includes contents, "class BaseResolver < GraphQL::Schema::Resolver"
+    end
+
     assert_file "Gemfile" do |contents|
       assert_match %r{gem ('|")graphiql-rails('|"), :?group(:| =>) :development}, contents
     end
