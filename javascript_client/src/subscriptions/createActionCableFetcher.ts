@@ -17,6 +17,7 @@ type SubscriptionIteratorPayload = {
 export default function createActionCableFetcher(options: ActionCableFetcherOptions) {
   let currentChannel: Subscription | null = null
   const consumer = options.consumer
+  const url = options.url
 
   const subscriptionFetcher = async function*(graphqlParams: any, fetcherOpts: any) {
     let isSubscription = false;
@@ -75,7 +76,7 @@ export default function createActionCableFetcher(options: ActionCableFetcherOpti
     } else {
       const fetchFn = options.fetch || window.fetch
       // Not a subscription fetcher, post to the given URL
-      yield fetchFn("/graphql", {
+      yield fetchFn(url, {
         method: "POST",
         body: JSON.stringify({
           query: graphqlParams.query,
