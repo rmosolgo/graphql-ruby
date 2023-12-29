@@ -4,7 +4,7 @@ import type { Consumer, Subscription } from "@rails/actioncable"
 
 type ActionCableFetcherOptions = {
   consumer: Consumer,
-  url: String,
+  url: string,
   fetch?: typeof fetch,
   fetchOptions?: any,
 }
