@@ -5,7 +5,7 @@ import type { Consumer, Subscription } from "@rails/actioncable"
 type ActionCableFetcherOptions = {
   consumer: Consumer,
   url: string,
-  channelName = "GraphqlChannel"
+  channelName?: string,
   fetch?: typeof fetch,
   fetchOptions?: any,
 }
@@ -18,8 +18,8 @@ type SubscriptionIteratorPayload = {
 export default function createActionCableFetcher(options: ActionCableFetcherOptions) {
   let currentChannel: Subscription | null = null
   const consumer = options.consumer
-  const url = options.url
-  const channelName = options.channelName
+  const url = options.url || "/graphql"
+  const channelName = options.channelName || "GraphqlChannel"
 
   const subscriptionFetcher = async function*(graphqlParams: any, fetcherOpts: any) {
     let isSubscription = false;
