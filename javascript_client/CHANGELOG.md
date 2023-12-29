@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.12.1 (29 Dec 2023)
+
+- GraphiQL: support custom `channelName` and `url` in ActionCable fetcher #4756
+
 # 1.12.0 (7 Dec 2023)
 
 - Add GraphiQL support for subscriptions #4724
