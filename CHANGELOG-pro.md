@@ -6,6 +6,12 @@
 
 ### New Features
 
+# 1.25.2 (29 Dec 2023)
+
+### New Features
+
+- Subscriptions: send `more: false` when the server calls `unsubscribe`
+
 ### Bug Fix
 
 # 1.25.1 (21 Dec 2023)
