@@ -4,7 +4,8 @@ import type { Consumer, Subscription } from "@rails/actioncable"
 
 type ActionCableFetcherOptions = {
   consumer: Consumer,
-  url: String,
+  url: string,
+  channelName?: string,
   fetch?: typeof fetch,
   fetchOptions?: any,
 }
@@ -17,6 +18,8 @@ type SubscriptionIteratorPayload = {
 export default function createActionCableFetcher(options: ActionCableFetcherOptions) {
   let currentChannel: Subscription | null = null
   const consumer = options.consumer
+  const url = options.url || "/graphql"
+  const channelName = options.channelName || "GraphqlChannel"
 
   const subscriptionFetcher = async function*(graphqlParams: any, fetcherOpts: any) {
     let isSubscription = false;
@@ -32,7 +35,7 @@ export default function createActionCableFetcher(options: ActionCableFetcherOpti
 
     if (isSubscription) {
       currentChannel?.unsubscribe()
-      currentChannel = consumer.subscriptions.create("GraphqlChannel",
+      currentChannel = consumer.subscriptions.create(channelName,
         {
           connected: function() {
             currentChannel?.perform("execute", {
@@ -75,7 +78,7 @@ export default function createActionCableFetcher(options: ActionCableFetcherOpti
     } else {
       const fetchFn = options.fetch || window.fetch
       // Not a subscription fetcher, post to the given URL
-      yield fetchFn("/graphql", {
+      yield fetchFn(url, {
         method: "POST",
         body: JSON.stringify({
           query: graphqlParams.query,

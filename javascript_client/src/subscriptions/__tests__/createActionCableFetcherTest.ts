@@ -28,7 +28,7 @@ describe("createActionCableFetcherTest", () => {
 
     var options = {
       consumer: (dummyActionCableConsumer as unknown) as Consumer,
-      url: "/graphql",
+      url: "/some_graphql_endpoint",
       fetch: dummyFetch as typeof fetch,
       fetchOptions: {
         custom: true,
@@ -58,7 +58,7 @@ describe("createActionCableFetcherTest", () => {
     return promise.then(() => {
       let res2 = fetcher({ operationName: null, query: "{ __typename } ", variables: {}}, {})
       const promise2 = res2.next().then(() => {
-        expect(fetchLog).toEqual([["/graphql", true]])
+        expect(fetchLog).toEqual([["/some_graphql_endpoint", true]])
       })
       return promise2
     })
