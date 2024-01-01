@@ -17,7 +17,6 @@ module GraphQL
         source_tasks = []
         next_source_tasks = []
         first_pass = true
-        jobs_condition = Async::Condition.new
         sources_condition = Async::Condition.new
         manager = spawn_fiber do
           while first_pass || job_fibers.any?
@@ -47,7 +46,6 @@ module GraphQL
                 next_source_tasks.clear
               end
             end
-            jobs_condition.signal
           end
         end
 
