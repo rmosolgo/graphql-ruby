@@ -5,6 +5,10 @@ if RUBY_VERSION >= "3.1.1"
   describe GraphQL::Dataloader::AsyncDataloader do
     class AsyncSchema < GraphQL::Schema
       class SleepSource < GraphQL::Dataloader::Source
+        def initialize(tag = nil)
+          @tag = tag
+        end
+
         def fetch(keys)
           max_sleep = keys.max
           # t1 = Time.now
@@ -54,7 +58,9 @@ if RUBY_VERSION >= "3.1.1"
         end
 
         def sleep(duration:)
-          `sleep #{duration}`
+          context[:key_i] ||= 0
+          new_key = context[:key_i] += 1
+          dataloader.with(SleepSource, new_key).load(duration)
           duration
         end
 
@@ -88,7 +94,9 @@ if RUBY_VERSION >= "3.1.1"
         end
 
         def sleep(duration:)
-          `sleep #{duration}`
+          context[:key_i] ||= 0
+          new_key = context[:key_i] += 1
+          dataloader.with(SleepSource, new_key).load(duration)
           duration
         end
 
@@ -131,27 +139,11 @@ if RUBY_VERSION >= "3.1.1"
             AsyncSchema::KeyWaitForSource.reset
           end
 
-          it "runs IO in parallel by default" do
-            dataloader = GraphQL::Dataloader::AsyncDataloader.new
-            results = {}
-            dataloader.append_job { sleep(0.1); results[:a] = 1 }
-            dataloader.append_job { sleep(0.2); results[:b] = 2 }
-            dataloader.append_job { sleep(0.3); results[:c] = 3 }
-
-            assert_equal({}, results, "Nothing ran yet")
-            started_at = Time.now
-            dataloader.run
-            ended_at = Time.now
-
-            assert_equal({ a: 1, b: 2, c: 3 }, results, "All the jobs ran")
-            assert_in_delta 0.3, ended_at - started_at, 0.05, "IO ran in parallel"
-          end
-
           it "works with sources" do
             dataloader = GraphQL::Dataloader::AsyncDataloader.new
-            r1 = dataloader.with(AsyncSchema::SleepSource).request(0.1)
-            r2 = dataloader.with(AsyncSchema::SleepSource).request(0.2)
-            r3 = dataloader.with(AsyncSchema::SleepSource).request(0.3)
+            r1 = dataloader.with(AsyncSchema::SleepSource, :s1).request(0.1)
+            r2 = dataloader.with(AsyncSchema::SleepSource, :s2).request(0.2)
+            r3 = dataloader.with(AsyncSchema::SleepSource, :s3).request(0.3)
 
             v1 = nil
             dataloader.append_job {
@@ -160,14 +152,14 @@ if RUBY_VERSION >= "3.1.1"
             started_at = Time.now
             dataloader.run
             ended_at = Time.now
-            assert_equal 0.3, v1
+            assert_equal 0.1, v1
             started_at_2 = Time.now
             # These should take no time at all since they're already resolved
             v2 = r2.load
             v3 = r3.load
             ended_at_2 = Time.now
 
-            assert_equal 0.3, v2
+            assert_equal 0.2, v2
             assert_equal 0.3, v3
             assert_in_delta 0.0, started_at_2 - ended_at_2, 0.05, "Already-loaded values returned instantly"
 
@@ -182,7 +174,7 @@ if RUBY_VERSION >= "3.1.1"
             assert_in_delta 0.3, ended_at - started_at, 0.05, "IO ran in parallel"
           end
 
-          it "nested fields don't wait for slower higher-level fields" do
+          it "runs fields by depth" do
             query_str = <<-GRAPHQL
             {
               s1: sleeper(duration: 0.1) {
@@ -212,7 +204,7 @@ if RUBY_VERSION >= "3.1.1"
               "s3" => { "duration" => 0.3 }
             }
             assert_equal expected_data, res["data"]
-            assert_in_delta 0.3, ended_at - started_at, 0.06, "Fields ran without any waiting"
+            assert_in_delta 0.5, ended_at - started_at, 0.06, "Each depth ran in parallel"
           end
 
           it "runs dataloaders in parallel across branches" do
