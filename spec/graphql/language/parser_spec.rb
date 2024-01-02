@@ -28,6 +28,14 @@ describe GraphQL::Language::Parser do
     assert GraphQL.parse("{ field(null: false) ... null } fragment null on Query { null }")
   end
 
+  it "allows fields and arguments named on and directive" do
+    assert GraphQL.parse("{ on(on: false) directive(directive: false)}")
+  end
+
+  it "allows fields and arguments extend" do
+    assert GraphQL.parse("{ extend(extend: false) }")
+  end
+
   it "raises an error when unicode is used as names" do
     err = assert_raises(GraphQL::ParseError) {
       GraphQL.parse('query 😘 { a b }')
