@@ -572,6 +572,9 @@ module GraphQL
         when :DIRECTIVE
           advance_token
           "directive"
+        when :EXTEND
+          advance_token
+          "extend"
         else
           expect_token(:NAME)
         end
