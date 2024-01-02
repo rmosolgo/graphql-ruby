@@ -566,6 +566,12 @@ module GraphQL
         when :NULL
           advance_token
           "null"
+        when :ON
+          advance_token
+          "on"
+        when :DIRECTIVE
+          advance_token
+          "directive"
         else
           expect_token(:NAME)
         end
