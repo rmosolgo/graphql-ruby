@@ -295,8 +295,6 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
 
   enum_name: /* any identifier, but not "true", "false" or "null" */
       IDENTIFIER
-    | FRAGMENT
-    | REPEATABLE
     | ON
     | operation_type
     | schema_keyword
@@ -396,11 +394,12 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
     | ENUM
     | INPUT
     | DIRECTIVE
+    | EXTEND
+    | FRAGMENT
+    | REPEATABLE
 
   name_without_on:
       IDENTIFIER
-    | FRAGMENT
-    | REPEATABLE
     | TRUE_LITERAL
     | FALSE_LITERAL
     | NULL_LITERAL
