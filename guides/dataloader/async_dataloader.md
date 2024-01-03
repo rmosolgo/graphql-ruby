@@ -7,7 +7,7 @@ desc: Using AsyncDataloader to fetch external data in parallel
 index: 5
 ---
 
-`AsyncDataloader` will run GraphQL fields and Dataloader sources in parallel, so that external service calls (like database queries or network calls) don't have to wait in a queue.
+`AsyncDataloader` will run {{ "GraphQL::Dataloader::Source#fetch" | api_doc }} calls in parallel, so that external service calls (like database queries or network calls) don't have to wait in a queue.
 
 To use `AsyncDataloader`, hook it up in your schema _instead of_ `GraphQL::Dataloader`:
 

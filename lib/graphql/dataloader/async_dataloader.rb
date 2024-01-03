@@ -3,68 +3,62 @@ module GraphQL
   class Dataloader
     class AsyncDataloader < Dataloader
       def yield
-        Thread.current[:graphql_dataloader_next_tick].wait
+        if (condition = Thread.current[:graphql_dataloader_next_tick])
+          condition.wait
+        else
+          Fiber.yield
+        end
         nil
       end
 
       def run
-        job_tasks = []
-        next_job_tasks = []
+        job_fibers = []
+        next_job_fibers = []
         source_tasks = []
         next_source_tasks = []
         first_pass = true
-        jobs_condition = Async::Condition.new
         sources_condition = Async::Condition.new
-        Sync do |root_task|
-          while first_pass || job_tasks.any?
+        manager = spawn_fiber do
+          while first_pass || job_fibers.any?
             first_pass = false
 
-            while (task = job_tasks.shift || spawn_job_task(root_task, jobs_condition))
-              if task.alive?
-                next_job_tasks << task
-              elsif task.failed?
-                # re-raise a raised error -
-                # this also covers errors from sources since
-                # these jobs wait for sources as needed.
-                task.wait
-              end
-            end
-            root_task.yield # give job tasks a chance to run
-            job_tasks.concat(next_job_tasks)
-            next_job_tasks.clear
-
-            while source_tasks.any? || @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
-              while (task = source_tasks.shift || spawn_source_task(root_task, sources_condition))
-                if task.alive?
-                  next_source_tasks << task
+            while (f = (job_fibers.shift || spawn_job_fiber))
+              if f.alive?
+                finished = run_fiber(f)
+                if !finished
+                  next_job_fibers << f
                 end
               end
-              root_task.yield # give source tasks a chance to run
-              sources_condition.signal
-              source_tasks.concat(next_source_tasks)
-              next_source_tasks.clear
             end
-            jobs_condition.signal
+            job_fibers.concat(next_job_fibers)
+            next_job_fibers.clear
+
+            Sync do |root_task|
+              while source_tasks.any? || @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
+                while (task = source_tasks.shift || spawn_source_task(root_task, sources_condition))
+                  if task.alive?
+                    root_task.yield # give the source task a chance to run
+                    next_source_tasks << task
+                  end
+                end
+                sources_condition.signal
+                source_tasks.concat(next_source_tasks)
+                next_source_tasks.clear
+              end
+            end
           end
         end
+
+        manager.resume
+        if manager.alive?
+          raise "Invariant: Manager didn't terminate successfully: #{manager}"
+        end
+
       rescue UncaughtThrowError => e
         throw e.tag, e.value
       end
 
       private
-
-      def spawn_job_task(parent_task, condition)
-        if @pending_jobs.any?
-          fiber_vars = get_fiber_variables
-          parent_task.async do
-            set_fiber_variables(fiber_vars)
-            Thread.current[:graphql_dataloader_next_tick] = condition
-            while job = @pending_jobs.shift
-              job.call
-            end
-          end
-        end
-      end
 
       def spawn_source_task(parent_task, condition)
         pending_sources = nil
