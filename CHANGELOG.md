@@ -10,6 +10,14 @@
 
 ### Bug fixes
 
+# 2.2.4 (3 Jan 2024)
+
+### Bug fixes
+
+- AsyncDataloader: don't resolve fields with event loop #4757
+- Parser: properly parse some fields and args named after keywords #4759
+- Performance: use `all?` to check classes directly #4760
+
 # 2.2.3 (28 Dec 2023)
 
 ### Bug fixes
