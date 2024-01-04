@@ -18,6 +18,7 @@ Want to add something? Please open a pull request [on GitHub](https://github.com
 - [`graphql-devise`](https://github.com/graphql-devise/graphql_devise), a gql interface to handle authentication with Devise
 - [`graphql-docs`](https://github.com/gjtorikian/graphql-docs), a tool to automatically generate static HTML documentation from your GraphQL implementation
 - [`graphql-metrics`](https://github.com/Shopify/graphql-metrics), a plugin to extract fine-grain metrics of GraphQL queries received by your server
+- [`graphql-stitching`](https://github.com/gmac/graphql-stitching-ruby), tools to combine multiple local and remote schemas into a single graph that queries as one
 - [`graphql-groups`](https://github.com/hschne/graphql-groups), a DSL to define group- and aggregation queries with graphql-ruby
 - Rails Helpers:
   - [`graphql-activerecord`](https://github.com/goco-inc/graphql-activerecord)
@@ -33,7 +34,7 @@ Want to add something? Please open a pull request [on GitHub](https://github.com
 - [`graphql-ruby-fragment_cache`](https://github.com/DmitryTsepelev/graphql-ruby-fragment_cache), a tool for caching response fragments.
 - [`graphql-ruby-persisted_queries`](https://github.com/DmitryTsepelev/graphql-ruby-persisted_queries), the implementation of [Apollo persisted queries](https://github.com/apollographql/apollo-link-persisted-queries).
 - [`rubocop-graphql`](https://github.com/DmitryTsepelev/rubocop-graphql), [rubocop](https://github.com/rubocop-hq/rubocop) extension for enforcing best practices.
-- [`apollo-federation-ruby`](https://github.com/Gusto/apollo-federation-ruby), a Ruby implementation of Apollo Federation.
+- [`apollo-federation-ruby`](https://github.com/Gusto/apollo-federation-ruby), a Ruby implementation of the Apollo Federation [subgraph spec](https://www.apollographql.com/docs/federation/subgraph-spec/).
 
 ## Blog Posts
 
