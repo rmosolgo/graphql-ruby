@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
     "changelog_uri" => "https://github.com/rmosolgo/graphql-ruby/blob/master/graphql-c_parser/CHANGELOG.md",
     "source_code_uri" => "https://github.com/rmosolgo/graphql-ruby",
     "bug_tracker_uri" => "https://github.com/rmosolgo/graphql-ruby/issues",
-    "mailing_list_uri"  => "https://tinyletter.com/graphql-ruby",
+    "mailing_list_uri"  => "https://buttondown.email/graphql-ruby",
   }
 
   s.files = Dir["{lib,ext}/**/*.{rb,h,c}"]
