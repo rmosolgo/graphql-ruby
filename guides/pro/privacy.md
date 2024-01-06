@@ -38,7 +38,7 @@ Bugsnag | Application Monitoring
 New Relic APM | Application Monitoring
 Papertrail | Application Monitoring
 Stripe | Payment Processing
-MailChimp | Newsletter Management
+Buttondown | Newsletter Management
 Google Apps | Company Infrastructure
 
 ## Data Security
