@@ -134,7 +134,7 @@
 
 <h2 id="rails">Rails</h2>
 
-<p>For Rails, you’ll also want to configure Rails to use Fibers for isolation:</p>
+<p>For Rails, you’ll need <strong>Rails 7.1</strong>, which properly supports fiber-based concurrency, and you’ll also want to configure Rails to use Fibers for isolation:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Application</span> <span class="o">&lt;</span> <span class="no">Rails</span><span class="o">::</span><span class="no">Application</span>
   <span class="c1"># ...</span>
