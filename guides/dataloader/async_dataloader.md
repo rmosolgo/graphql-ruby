@@ -28,7 +28,7 @@ For a demonstration of this behavior, see: [https://github.com/rmosolgo/rails-gr
 
 ## Rails
 
-For Rails, you'll also want to configure Rails to use Fibers for isolation:
+For Rails, you'll need **Rails 7.1**, which properly supports fiber-based concurrency, and you'll also want to configure Rails to use Fibers for isolation:
 
 ```ruby
 class Application < Rails::Application
