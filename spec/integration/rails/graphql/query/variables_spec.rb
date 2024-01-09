@@ -100,9 +100,7 @@ describe GraphQL::Query::Variables do
         }
       |}
       let(:result) {
-        GraphQL::Deprecation.stub(:warn, nil) do
-          schema.execute(query_string, variables: provided_variables, root_value: ObjectWithThingsCount)
-        end
+        schema.execute(query_string, variables: provided_variables, root_value: ObjectWithThingsCount)
       }
 
       describe "when they are present, but null" do
