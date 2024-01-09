@@ -3,7 +3,9 @@ if testing_rails?
   # Remove the old sqlite database
   `rm -f ./_test_.db`
 
-  ActiveRecord.async_query_executor ||= :global_thread_pool
+  if ActiveRecord.respond_to?(:async_query_executor=) # Rails 7.1+
+    ActiveRecord.async_query_executor ||= :global_thread_pool
+  end
 
   # platform helper
   def jruby?
