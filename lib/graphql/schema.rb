@@ -1044,6 +1044,7 @@ module GraphQL
       end
 
       def instrument(instrument_step, instrumenter, options = {})
+        trace_with(Tracing::LegacyHooksTrace)
         own_instrumenters[instrument_step] << instrumenter
       end
 
