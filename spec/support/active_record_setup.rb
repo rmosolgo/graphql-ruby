@@ -3,6 +3,8 @@ if testing_rails?
   # Remove the old sqlite database
   `rm -f ./_test_.db`
 
+  ActiveRecord.async_query_executor ||= :global_thread_pool
+
   # platform helper
   def jruby?
     RUBY_ENGINE == 'jruby'
@@ -46,5 +48,8 @@ if testing_rails?
     create_table :foods, force: true do |t|
       t.column :name, :string
     end
+  end
+
+  class Food < ActiveRecord::Base
   end
 end
