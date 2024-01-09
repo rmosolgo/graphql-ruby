@@ -190,6 +190,16 @@ end
 bundle exec prometheus_exporter -a lib/graphql_collector.rb
 ```
 
+## Sentry
+
+To add [Sentry](https://sentry.io) instrumentation:
+
+```ruby
+class MySchema < GraphQL::Schema
+  use(GraphQL::Tracing::SentryTracing)
+end
+```
+
 ## Statsd
 
 You can add Statsd instrumentation by initializing a statsd client and passing it to {{ "GraphQL::Tracing::StatsdTracing" | api_doc }}:
