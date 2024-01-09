@@ -41,4 +41,4 @@ end
 
 ## Other Options
 
-You can also manually implement parallelism with Dataloader. See the {% internal_link "Dataloader Parallelism", "/dataloader/parallelism" } guide for details.
+You can also manually implement parallelism with Dataloader. See the {% internal_link "Dataloader Parallelism", "/dataloader/parallelism" %} guide for details.
