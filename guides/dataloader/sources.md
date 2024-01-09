@@ -132,9 +132,7 @@ def fetch(keys)
 end
 ```
 
-For a more robust asynchronous task primitive, check out [`Concurrent::Future`](http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Future.html).
-
-Ruby 3.0 added built-in support for yielding Fibers that make I/O calls -- hopefully a future GraphQL-Ruby version will work with that!
+See the {% internal_link "parallelism guide", "/dataloader/parallelism" %} for details about this approach.
 
 ## Filling the Dataloader Cache
 
