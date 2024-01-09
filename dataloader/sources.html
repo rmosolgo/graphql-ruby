@@ -99,7 +99,9 @@
       
         <option  data-target="/dataloader/testing.html">Testing</option>
       
-        <option  data-target="/dataloader/async_dataloader.html">Parallel Data Loading for GraphQL</option>
+        <option  data-target="/dataloader/async_dataloader.html">Async Source Execution</option>
+      
+        <option  data-target="/dataloader/parallelism.html">Manual Parallelism</option>
       
     </select>
   </li>
@@ -244,9 +246,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>For a more robust asynchronous task primitive, check out <a href="http://ruby-concurrency.github.io/concurrent-ruby/master/Concurrent/Future.html"><code class="language-plaintext highlighter-rouge">Concurrent::Future</code></a>.</p>
-
-<p>Ruby 3.0 added built-in support for yielding Fibers that make I/O calls – hopefully a future GraphQL-Ruby version will work with that!</p>
+<p>See the <a href="/dataloader/parallelism">parallelism guide</a> for details about this approach.</p>
 
 <h2 id="filling-the-dataloader-cache">Filling the Dataloader Cache</h2>
 

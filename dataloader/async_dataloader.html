@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
-      <title>GraphQL - Parallel Data Loading for GraphQL</title>
+      <title>GraphQL - Async Source Execution</title>
     
     <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet" />
     <link rel="stylesheet" href="/css/main.css">
@@ -99,7 +99,9 @@
       
         <option  data-target="/dataloader/testing.html">Testing</option>
       
-        <option  selected data-target="/dataloader/async_dataloader.html">Parallel Data Loading for GraphQL</option>
+        <option  selected data-target="/dataloader/async_dataloader.html">Async Source Execution</option>
+      
+        <option  data-target="/dataloader/parallelism.html">Manual Parallelism</option>
       
     </select>
   </li>
@@ -107,10 +109,11 @@
 
 
 
-<h1 class="guide-header">Parallel Data Loading for GraphQL</h1>
+<h1 class="guide-header">Async Source Execution</h1>
 <div class="guide-table-of-contents"><div class="table-of-contents">
   <h3 class="contents-header">Contents</h3>
   <ol class='contents-list'><li class='contents-entry'><a href='#rails'>Rails
+</a></li><li class='contents-entry'><a href='#other-options'>Other Options
 </a></li></ol>
 </div>
 </div>
@@ -132,6 +135,8 @@
 
 <p>For a demonstration of this behavior, see: <a href="https://github.com/rmosolgo/rails-graphql-async-demo">https://github.com/rmosolgo/rails-graphql-async-demo</a></p>
 
+<p><em>You can also implement <a href="/dataloader/parallelism">manual parallelism</a> using <code class="language-plaintext highlighter-rouge">dataloader.yield</code>.</em></p>
+
 <h2 id="rails">Rails</h2>
 
 <p>For Rails, you’ll need <strong>Rails 7.1</strong>, which properly supports fiber-based concurrency, and you’ll also want to configure Rails to use Fibers for isolation:</p>
@@ -142,11 +147,15 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
+<h2 id="other-options">Other Options</h2>
+
+<p>You can also manually implement parallelism with Dataloader. See the <a href="/dataloader/parallelism">Dataloader Parallelism</a> guide for details.</p>
+
 </div>
 <p class="guide-footer">
   Suggestion, improvement, or correction?
   <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/dataloader/async_dataloader.md">Edit this file</a> or
-  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Parallel Data Loading for GraphQL">report an issue</a>.
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Async Source Execution">report an issue</a>.
 </p>
 <script>
   // Find headers with IDs and wrap their text in `<a href=></a>`

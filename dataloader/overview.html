@@ -99,7 +99,9 @@
       
         <option  data-target="/dataloader/testing.html">Testing</option>
       
-        <option  data-target="/dataloader/async_dataloader.html">Parallel Data Loading for GraphQL</option>
+        <option  data-target="/dataloader/async_dataloader.html">Async Source Execution</option>
+      
+        <option  data-target="/dataloader/parallelism.html">Manual Parallelism</option>
       
     </select>
   </li>
@@ -115,6 +117,7 @@
 </a></li><li class='contents-entry'><a href='#getting-started'>Getting Started
 </a><ol class='contents-list'><li class='contents-entry'><a href='#loads-and-object_from_id'><code>loads:</code> and <code>object_from_id</code>
 </a></li></ol></li><li class='contents-entry'><a href='#data-sources'>Data Sources
+</a></li><li class='contents-entry'><a href='#parallelism'>Parallelism
 </a></li></ol>
 </div>
 </div>
@@ -241,6 +244,15 @@
 <h2 id="data-sources">Data Sources</h2>
 
 <p>To implement batch-loading data sources, see the <a href="/dataloader/sources">Sources guide</a>.</p>
+
+<h2 id="parallelism">Parallelism</h2>
+
+<p>You can run I/O operations in parallel with GraphQL::Dataloader. There are two approaches:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">AsyncDataloader</code> uses the <code class="language-plaintext highlighter-rouge">async</code> gem to automatically background I/O from <code class="language-plaintext highlighter-rouge">Dataloader::Source#fetch</code> calls. <a href="/dataloader/async_dataloader">Read More</a></li>
+  <li>You can manually call <code class="language-plaintext highlighter-rouge">dataloader.yield</code> after starting work in the background. <a href="/dataloader/parallelism">Read More</a></li>
+</ul>
 
 </div>
 <p class="guide-footer">
