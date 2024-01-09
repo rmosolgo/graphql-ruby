@@ -333,7 +333,7 @@ module GraphQL
             v_loc = pos
             description = if at?(:STRING); string_value; end
             defn_loc = pos
-            enum_value = expect_token_value(:IDENTIFIER)
+            enum_value = parse_enum_name
             v_directives = parse_directives
             list << EnumValueDefinition.new(pos: v_loc, definition_pos: defn_loc, description: description, name: enum_value, directives: v_directives, filename: @filename, source_string: @graphql_str)
           end
