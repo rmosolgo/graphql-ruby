@@ -29,8 +29,8 @@ describe GraphQL::Tracing::SentryTracing do
     Sentry.clear_all
   end
 
-  describe 'When Sentry is not configured' do
-    it 'does not initialize any spans' do
+  describe "When Sentry is not configured" do
+    it "does not initialize any spans" do
       Sentry.stub(:initialized?, false) do
         SentryTracingTestSchema.execute("{ int thing { str } }")
         assert_equal [], Sentry::SPAN_DATA
@@ -51,7 +51,7 @@ describe GraphQL::Tracing::SentryTracing do
       "graphql.analyze",
       "graphql.execute",
       "graphql.authorized.Query",
-      "graphql.Query.thing",
+      "graphql.field.Query.thing",
       "graphql.authorized.Thing",
       "graphql.execute"
     ].compact
@@ -60,10 +60,9 @@ describe GraphQL::Tracing::SentryTracing do
   end
 
   it "sets span descriptions for an anonymous query" do
-    debugger
     SentryTracingTestSchema.execute("{ int }")
 
-    assert_equal ['query'], Sentry::SPAN_DESCRIPTIONS
+    assert_equal ["query", "query"], Sentry::SPAN_DESCRIPTIONS
   end
 
   it "sets span data for an anonymous query" do
@@ -79,7 +78,7 @@ describe GraphQL::Tracing::SentryTracing do
   it "sets span descriptions for a named query" do
     SentryTracingTestSchema.execute("query Ab { int }")
 
-    assert_equal ['query Ab'], Sentry::SPAN_DESCRIPTIONS
+    assert_equal ["query Ab", "query Ab"], Sentry::SPAN_DESCRIPTIONS
   end
 
   it "sets span data for a named query" do

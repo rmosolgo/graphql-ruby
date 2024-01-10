@@ -13,9 +13,7 @@ module GraphQL
         "analyze_multiplex" => "graphql.analyze_multiplex",
         "execute_multiplex" => "graphql.execute_multiplex",
         "execute_query" => "graphql.execute",
-        "execute_query_lazy" => "graphql.execute",
-        "execute_field" => "graphql.execute",
-        "execute_field_lazy" => "graphql.execute"
+        "execute_query_lazy" => "graphql.execute"
       }.each do |trace_method, platform_key|
         module_eval <<-RUBY, __FILE__, __LINE__
         def #{trace_method}(**data, &block)
@@ -49,7 +47,7 @@ module GraphQL
       end
 
       def platform_field_key(field)
-        "graphql.#{field.path}"
+        "graphql.field.#{field.path}"
       end
 
       def platform_authorized_key(type)
@@ -71,7 +69,7 @@ module GraphQL
 
           if trace_method == "execute_multiplex" && data.key?(:multiplex)
             operation_names = data[:multiplex].queries.map{|q| operation_name(q) }
-            span.set_description(operation_names.join(", ")) if operation_names.count > 1
+            span.set_description(operation_names.join(", "))
           elsif trace_method == "execute_query" && data.key?(:query)
             span.set_description(operation_name(data[:query]))
             span.set_data('graphql.document', data[:query].query_string)
