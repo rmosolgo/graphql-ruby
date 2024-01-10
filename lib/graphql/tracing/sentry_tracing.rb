@@ -20,14 +20,18 @@ module GraphQL
       def platform_trace(platform_key, trace_method, data, &block)
         return yield unless Sentry.initialized?
 
-        Sentry.with_child_span(op: op, start_timestamp: Sentry.utc_now.to_f) do |span|
+        Sentry.with_child_span(op: platform_key, start_timestamp: Sentry.utc_now.to_f) do |span|
           result = block.call
           span.finish
 
           if trace_method == "execute_query" && data
-            span.set_data(:query_string, data[:query].query_string)
-            span.set_data(:operation_name, data[:query].selected_operation_name)
-            span.set_data(:operation_type, data[:query].selected_operation.operation_type)
+            description = [data[:query].selected_operation.operation_type, data[:query].selected_operation_name].compact.join(' ')
+            description = 'GraphQL Query' if description.empty?
+
+            span.set_description(description)
+            span.set_data('graphql.document', data[:query].query_string)
+            span.set_data('graphql.operation.name', data[:query].selected_operation_name)
+            span.set_data('graphql.operation.type', data[:query].selected_operation.operation_type)
           end
 
           result
