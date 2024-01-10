@@ -8,6 +8,7 @@ end
 module Sentry
   SPAN_OPS = []
   SPAN_DATA = []
+  SPAN_DESCRIPTIONS = []
 
   def self.initialized?
     true
@@ -23,13 +24,18 @@ module Sentry
   end
 
   def self.clear_all
-    SPAN_OPS.clear
     SPAN_DATA.clear
+    SPAN_DESCRIPTIONS.clear
+    SPAN_OPS.clear
   end
 
   class DummySpan
     def set_data(key, value)
       Sentry::SPAN_DATA << [key, value]
+    end
+
+    def set_description(description)
+      Sentry::SPAN_DESCRIPTIONS << description
     end
 
     def finish

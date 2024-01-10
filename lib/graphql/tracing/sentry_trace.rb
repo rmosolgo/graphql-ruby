@@ -10,8 +10,8 @@ module GraphQL
         "parse" => "graphql.parse",
         "validate" => "graphql.validate",
         "analyze_query" => "graphql.analyze",
-        "analyze_multiplex" => "graphql.analyze",
-        "execute_multiplex" => "graphql.execute",
+        "analyze_multiplex" => "graphql.analyze_multiplex",
+        "execute_multiplex" => "graphql.execute_multiplex",
         "execute_query" => "graphql.execute",
         "execute_query_lazy" => "graphql.execute",
       }.each do |trace_method, platform_key|
@@ -68,12 +68,12 @@ module GraphQL
           span.finish
 
           if trace_method == "execute_multiplex" && data.key?(:multiplex)
-            operation_names = data[:multiplex].queries.map{|q| operation_name(q) }.join(', ')
-            span.set_description(operation_names)
+            operation_names = data[:multiplex].queries.map{|q| operation_name(q) }
+            span.set_description(operation_names.join(", ")) if operation_names.count > 1
           elsif trace_method == "execute_query" && data.key?(:query)
             span.set_description(operation_name(data[:query]))
             span.set_data('graphql.document', data[:query].query_string)
-            span.set_data('graphql.operation.name', data[:query].selected_operation_name)
+            span.set_data('graphql.operation.name', data[:query].selected_operation_name) if data[:query].selected_operation_name
             span.set_data('graphql.operation.type', data[:query].selected_operation.operation_type)
           end
 
@@ -84,7 +84,7 @@ module GraphQL
       def operation_name(query)
         selected_op = query.selected_operation
         if selected_op
-          [selected_op.operation_type, selected_op.name].join(' ')
+          [selected_op.operation_type, selected_op.name].compact.join(' ')
         else
           'GraphQL Operation'
         end
