@@ -200,6 +200,11 @@ class MySchema < GraphQL::Schema
 end
 ```
 
+<div class="monitoring-img-group">
+  {{ "/queries/sentry_example.png" | link_to_img:"sentry monitoring" }}
+</div>
+
+
 ## Statsd
 
 You can add Statsd instrumentation by initializing a statsd client and passing it to {{ "GraphQL::Tracing::StatsdTracing" | api_doc }}:
