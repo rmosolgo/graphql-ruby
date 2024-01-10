@@ -14,7 +14,7 @@ module GraphQL
     #   #   ONIONS
     #   #   PEPPERS
     #   # }
-    #   class PizzaTopping < GraphQL::Enum
+    #   class PizzaTopping < GraphQL::Schema::Enum
     #     value :MUSHROOMS
     #     value :ONIONS
     #     value :PEPPERS
