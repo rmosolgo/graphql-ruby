@@ -5,16 +5,16 @@ module GraphQL
     class SentryTracing < PlatformTracing
 
       self.platform_keys = {
-        'lex' => "graphql.lex",
-        'parse' => "graphql.parse",
-        'validate' => "graphql.validate",
-        'analyze_query' => "graphql.analyze",
-        'analyze_multiplex' => "graphql.analyze_multiplex",
-        'execute_multiplex' => "graphql.execute_multiplex",
-        'execute_query' => "graphql.execute",
-        'execute_query_lazy' => "graphql.execute",
-        'execute_field' => "graphql.execute",
-        'execute_field_lazy' => "graphql.execute"
+        "lex" => "graphql.lex",
+        "parse" => "graphql.parse",
+        "validate" => "graphql.validate",
+        "analyze_query" => "graphql.analyze",
+        "analyze_multiplex" => "graphql.analyze_multiplex",
+        "execute_multiplex" => "graphql.execute_multiplex",
+        "execute_query" => "graphql.execute",
+        "execute_query_lazy" => "graphql.execute",
+        "execute_field" => "graphql.execute",
+        "execute_field_lazy" => "graphql.execute"
       }
 
       def platform_trace(platform_key, trace_method, data, &block)
@@ -25,13 +25,13 @@ module GraphQL
           span.finish
 
           if trace_method == "execute_multiplex" && data.key?(:multiplex)
-            operations = data[:multiplex].queries.map{|q| operation_name(q) }.join(', ')
+            operations = data[:multiplex].queries.map{|q| operation_name(q) }.join(", ")
             span.set_description(operations)
           elsif trace_method == "execute_query" && data.key?(:query)
             span.set_description(operation_name(data[:query]))
-            span.set_data('graphql.document', data[:query].query_string)
-            span.set_data('graphql.operation.name', data[:query].selected_operation_name)
-            span.set_data('graphql.operation.type', data[:query].selected_operation.operation_type)
+            span.set_data("graphql.document", data[:query].query_string)
+            span.set_data("graphql.operation.name", data[:query].selected_operation_name)
+            span.set_data("graphql.operation.type", data[:query].selected_operation.operation_type)
           end
 
           result
@@ -55,9 +55,9 @@ module GraphQL
       def operation_name(query)
         selected_op = query.selected_operation
         if selected_op
-          [selected_op.operation_type, selected_op.name].join(' ')
+          [selected_op.operation_type, selected_op.name].join(" ")
         else
-          'GraphQL Operation'
+          "GraphQL Operation"
         end
       end
     end

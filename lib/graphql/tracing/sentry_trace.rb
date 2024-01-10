@@ -14,6 +14,8 @@ module GraphQL
         "execute_multiplex" => "graphql.execute_multiplex",
         "execute_query" => "graphql.execute",
         "execute_query_lazy" => "graphql.execute",
+        "execute_field" => "graphql.execute",
+        "execute_field_lazy" => "graphql.execute"
       }.each do |trace_method, platform_key|
         module_eval <<-RUBY, __FILE__, __LINE__
         def #{trace_method}(**data, &block)
