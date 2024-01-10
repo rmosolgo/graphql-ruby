@@ -60,24 +60,33 @@ module GraphQL
 
       private
 
-      def instrument_execution(op, trace_method, data=nil, &block)
+      def instrument_execution(platform_key, trace_method, data=nil, &block)
         return yield unless Sentry.initialized?
 
-        Sentry.with_child_span(op: op, start_timestamp: Sentry.utc_now.to_f) do |span|
+        Sentry.with_child_span(op: platform_key, start_timestamp: Sentry.utc_now.to_f) do |span|
           result = block.call
           span.finish
 
-          if trace_method == "execute_query" && data
-            description = [data[:query].selected_operation.operation_type, data[:query].selected_operation_name].compact.join(' ')
-            description = 'GraphQL Query' if description.empty?
-
-            span.set_description(description)
+          if trace_method == "execute_multiplex" && data.key?(:multiplex)
+            operation_names = data[:multiplex].queries.map{|q| operation_name(q) }.join(', ')
+            span.set_description(operation_names)
+          elsif trace_method == "execute_query" && data.key?(:query)
+            span.set_description(operation_name(data[:query]))
             span.set_data('graphql.document', data[:query].query_string)
             span.set_data('graphql.operation.name', data[:query].selected_operation_name)
             span.set_data('graphql.operation.type', data[:query].selected_operation.operation_type)
           end
 
           result
+        end
+      end
+
+      def operation_name(query)
+        selected_op = query.selected_operation
+        if selected_op
+          [selected_op.operation_type, selected_op.name].join(' ')
+        else
+          'GraphQL Operation'
         end
       end
     end
