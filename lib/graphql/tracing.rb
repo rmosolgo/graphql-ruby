@@ -9,7 +9,6 @@ require "graphql/tracing/appoptics_tracing"
 require "graphql/tracing/appsignal_tracing"
 require "graphql/tracing/data_dog_tracing"
 require "graphql/tracing/new_relic_tracing"
-require "graphql/tracing/sentry_tracing"
 require "graphql/tracing/scout_tracing"
 require "graphql/tracing/statsd_tracing"
 require "graphql/tracing/prometheus_tracing"
@@ -27,7 +26,7 @@ require "graphql/tracing/scout_trace"
 require "graphql/tracing/statsd_trace"
 require "graphql/tracing/prometheus_trace"
 if defined?(PrometheusExporter::Server)
-  require "graphql/tracing/prometheus_tracing/graphql_collector"
+  require "graphql/tracing/prometheus_trace/graphql_collector"
 end
 
 module GraphQL

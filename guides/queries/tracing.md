@@ -39,7 +39,7 @@ By default, GraphQL-Ruby makes a new trace instance when it runs a query. You ca
 You can attach a trace module to run only in some circumstances by using `mode:`. For example, to add detailed tracing for only some requests:
 
 ```ruby
-trace_with DetailedTracing, mode: :detailed_metrics
+trace_with DetailedTrace, mode: :detailed_metrics
 ```
 
 Then, to opt into that trace, use `context: { trace_mode: :detailed_metrics, ... }` when executing queries.
@@ -75,7 +75,7 @@ tracing as follows:
 require 'appoptics_apm'
 
 class MySchema < GraphQL::Schema
-  use(GraphQL::Tracing::AppOpticsTracing)
+  trace_with GraphQL::Tracing::AppOpticsTrace
 end
 ```
 <div class="monitoring-img-group">
@@ -88,7 +88,7 @@ To add [AppSignal](https://appsignal.com/) instrumentation:
 
 ```ruby
 class MySchema < GraphQL::Schema
-  use(GraphQL::Tracing::AppsignalTracing)
+  trace_with GraphQL::Tracing::AppsignalTrace
 end
 ```
 
@@ -102,9 +102,9 @@ To add [New Relic](https://newrelic.com/) instrumentation:
 
 ```ruby
 class MySchema < GraphQL::Schema
-  use(GraphQL::Tracing::NewRelicTracing)
+  trace_with GraphQL::Tracing::NewRelicTrace
   # Optional, use the operation name to set the new relic transaction name:
-  # use(GraphQL::Tracing::NewRelicTracing, set_transaction_name: true)
+  # trace_with GraphQL::Tracing::NewRelicTrace, set_transaction_name: true
 end
 ```
 
@@ -119,7 +119,7 @@ To add [Scout APM](https://scoutapp.com/) instrumentation:
 
 ```ruby
 class MySchema < GraphQL::Schema
-  use(GraphQL::Tracing::ScoutTracing)
+  trace_with GraphQL::Tracing::ScoutTrace
 end
 ```
 
@@ -148,7 +148,7 @@ To add [Datadog](https://www.datadoghq.com) instrumentation:
 
 ```ruby
 class MySchema < GraphQL::Schema
-  use(GraphQL::Tracing::DataDogTracing, options)
+  trace_with GraphQL::Tracing::DataDogTrace, options
 end
 ```
 
@@ -169,7 +169,7 @@ To add [Prometheus](https://prometheus.io) instrumentation:
 require 'prometheus_exporter/client'
 
 class MySchema < GraphQL::Schema
-  use(GraphQL::Tracing::PrometheusTracing)
+  trace_with GraphQL::Tracing::PrometheusTrace
 end
 ```
 
@@ -181,7 +181,7 @@ The PrometheusExporter server must be run with a custom type collector that exte
 if defined?(PrometheusExporter::Server)
   require 'graphql/tracing'
 
-  class GraphQLCollector < GraphQL::Tracing::PrometheusTracing::GraphQLCollector
+  class GraphQLCollector < GraphQL::Tracing::PrometheusTrace::GraphQLCollector
   end
 end
 ```
@@ -196,7 +196,7 @@ To add [Sentry](https://sentry.io) instrumentation:
 
 ```ruby
 class MySchema < GraphQL::Schema
-  use(GraphQL::Tracing::SentryTracing)
+  trace_with GraphQL::Tracing::SentryTrace
 end
 ```
 
@@ -207,14 +207,14 @@ end
 
 ## Statsd
 
-You can add Statsd instrumentation by initializing a statsd client and passing it to {{ "GraphQL::Tracing::StatsdTracing" | api_doc }}:
+You can add Statsd instrumentation by initializing a statsd client and passing it to {{ "GraphQL::Tracing::StatsdTrace" | api_doc }}:
 
 ```ruby
 $statsd = Statsd.new 'localhost', 9125
 # ...
 
 class MySchema < GraphQL::Schema
-  use GraphQL::Tracing::StatsdTracing, statsd: $statsd
+  use GraphQL::Tracing::StatsdTrace, statsd: $statsd
 end
 ```
 
