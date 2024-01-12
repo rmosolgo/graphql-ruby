@@ -193,3 +193,14 @@ class MySchema < GraphQL::Schema
   use(GraphQL::Tracing::NewRelicTracing)
 end
 ```
+
+## Extra Types
+
+Documentation-only types can be attached to the schema using {{ "Schema.extra_types" | api_doc }}. Types passed to this method will _always_ be available in introspection queries and SDL print-outs.
+
+```ruby
+class MySchema < GraphQL::Schema
+  # These aren't for queries, but will appear in documentation:
+  extra_types SystemErrorType, RateLimitExceptionType
+end
+```
