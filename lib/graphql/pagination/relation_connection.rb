@@ -31,7 +31,7 @@ module GraphQL
         if @has_next_page.nil?
           @has_next_page = if before_offset && before_offset > 0
             true
-          elsif first
+          elsif first && first_value
             if @nodes && @nodes.count < first
               false
             else
