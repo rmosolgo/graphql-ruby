@@ -2,7 +2,7 @@
 
 module GraphQL
   module Tracing
-    class PrometheusTracing < PlatformTracing
+    module PrometheusTrace
       class GraphQLCollector < ::PrometheusExporter::Server::TypeCollector
         def initialize
           @graphql_gauge = PrometheusExporter::Metric::Base.default_aggregation.new(
@@ -28,5 +28,7 @@ module GraphQL
         end
       end
     end
+    # Backwards-compat:
+    PrometheusTracing::GraphQLCollector = PrometheusTrace::GraphQLCollector
   end
 end
