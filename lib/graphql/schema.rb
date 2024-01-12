@@ -814,6 +814,26 @@ module GraphQL
         end
       end
 
+      # @param new_extra_types [Module] Type definitions to include in printing and introspection, even though they aren't referenced in the schema
+      # @return [Array<Module>] Type definitions added to this schema
+      def extra_types(*new_extra_types)
+        if new_extra_types.any?
+          new_extra_types = new_extra_types.flatten
+          @own_extra_types ||= []
+          @own_extra_types.concat(new_extra_types)
+        end
+        inherited_et = find_inherited_value(:extra_types, nil)
+        if inherited_et
+          if @own_extra_types
+            inherited_et + @own_extra_types
+          else
+            inherited_et
+          end
+        else
+          @own_extra_types || EMPTY_ARRAY
+        end
+      end
+
       def orphan_types(*new_orphan_types)
         if new_orphan_types.any?
           new_orphan_types = new_orphan_types.flatten

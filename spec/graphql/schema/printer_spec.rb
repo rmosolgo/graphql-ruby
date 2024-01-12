@@ -67,6 +67,12 @@ REASON
       possible_types Image, Audio
     end
 
+    class MediaRating < GraphQL::Schema::Enum
+      value :AWESOME
+      value :MEH
+      value :BOO_HISS
+    end
+
     class NoFields < GraphQL::Schema::Object
     end
 
@@ -109,6 +115,7 @@ REASON
     mutation(Mutation)
     subscription(Subscription)
     orphan_types [Media]
+    extra_types [MediaRating]
   end
 
   let(:schema) { PrinterTestSchema }
@@ -540,6 +547,12 @@ Media objects
 """
 union Media = Audio | Image
 
+enum MediaRating {
+  AWESOME
+  BOO_HISS
+  MEH
+}
+
 type Mutation {
   """
   Create a blog post
@@ -642,6 +655,12 @@ SCHEMA
 
   it "applies an `only` filter" do
     expected = <<SCHEMA
+enum MediaRating {
+  AWESOME
+  BOO_HISS
+  MEH
+}
+
 """
 A blog post
 """
@@ -732,6 +751,12 @@ type CreatePostPayload {
 Media objects
 """
 union Media = Audio
+
+enum MediaRating {
+  AWESOME
+  BOO_HISS
+  MEH
+}
 
 type Mutation {
   """

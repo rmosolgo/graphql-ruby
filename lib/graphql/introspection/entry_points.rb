@@ -9,13 +9,19 @@ module GraphQL
 
       def __schema
         # Apply wrapping manually since this field isn't wrapped by instrumentation
-        schema = @context.query.schema
+        schema = context.schema
         schema_type = schema.introspection_system.types["__Schema"]
-        schema_type.wrap(schema, @context)
+        schema_type.wrap(schema, context)
       end
 
       def __type(name:)
-        context.warden.reachable_type?(name) ? context.warden.get_type(name) : nil
+        if context.warden.reachable_type?(name)
+          context.warden.get_type(name)
+        elsif (type = context.schema.extra_types.find { |t| t.graphql_name == name })
+          type
+        else
+          nil
+        end
       end
     end
   end
