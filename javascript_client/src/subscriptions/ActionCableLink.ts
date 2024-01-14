@@ -55,8 +55,11 @@ class ActionCableLink extends ApolloLink {
           }
         }
       })
-      // Make the ActionCable subscription behave like an Apollo subscription
-      return Object.assign(channel, {closed: false})
+
+      // The Observable should return a cleanup function
+      return () => {
+        channel.unsubscribe()
+      }
     })
   }
 }
