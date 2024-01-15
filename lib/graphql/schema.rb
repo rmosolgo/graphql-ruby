@@ -1044,6 +1044,11 @@ module GraphQL
       end
 
       def instrument(instrument_step, instrumenter, options = {})
+        warn <<~WARN
+        Schema.instrument is deprecated, use `trace_with` instead: https://graphql-ruby.org/queries/tracing.html"
+          (From `#{self}.instrument(#{instrument_step}, #{instrumenter})` at #{caller(1, 1).first})
+
+        WARN
         trace_with(Tracing::LegacyHooksTrace)
         own_instrumenters[instrument_step] << instrumenter
       end

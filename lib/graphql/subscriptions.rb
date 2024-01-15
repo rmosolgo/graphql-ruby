@@ -2,7 +2,6 @@
 require "securerandom"
 require "graphql/subscriptions/broadcast_analyzer"
 require "graphql/subscriptions/event"
-require "graphql/subscriptions/instrumentation"
 require "graphql/subscriptions/serialize"
 require "graphql/subscriptions/action_cable_subscriptions"
 require "graphql/subscriptions/default_subscription_resolve_extension"
@@ -30,8 +29,6 @@ module GraphQL
         raise ArgumentError, "Can't reinstall subscriptions. #{schema} is using #{schema.subscriptions}, can't also add #{self}"
       end
 
-      instrumentation = Subscriptions::Instrumentation.new(schema: schema)
-      defn.instrument(:query, instrumentation)
       options[:schema] = schema
       schema.subscriptions = self.new(**options)
       schema.add_subscription_extension_if_necessary

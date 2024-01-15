@@ -51,6 +51,9 @@ module GraphQL
               # Do as much eager evaluation of the query as possible
               results = []
               queries.each_with_index do |query, idx|
+                if query.subscription? && !query.subscription_update?
+                  query.context.namespace(:subscriptions)[:events] = []
+                end
                 multiplex.dataloader.append_job {
                   operation = query.selected_operation
                   result = if operation.nil? || !query.valid? || query.context.errors.any?
@@ -96,6 +99,9 @@ module GraphQL
               # Then, find all errors and assign the result to the query object
               results.each_with_index do |data_result, idx|
                 query = queries[idx]
+                if (events = query.context.namespace(:subscriptions)[:events]) && events.any?
+                  schema.subscriptions.write_subscription(query, events)
+                end
                 # Assign the result so that it can be accessed in instrumentation
                 query.result_values = if data_result.equal?(NO_OPERATION)
                   if !query.valid? || query.context.errors.any?
