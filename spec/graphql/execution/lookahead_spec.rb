@@ -89,18 +89,16 @@ describe GraphQL::Execution::Lookahead do
       end
     end
 
-    class LookaheadInstrumenter
-      def self.before_query(query)
+    module LookaheadInstrumenter
+      def execute_query(query:)
         query.context[:root_lookahead_selections] = query.lookahead.selections
-      end
-
-      def self.after_query(q)
+        super
       end
     end
 
     class Schema < GraphQL::Schema
       query(Query)
-      instrument :query, LookaheadInstrumenter
+      trace_with LookaheadInstrumenter
     end
 
     class AlwaysVisibleSchema < Schema
