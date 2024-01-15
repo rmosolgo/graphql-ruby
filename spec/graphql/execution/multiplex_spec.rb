@@ -171,16 +171,16 @@ describe GraphQL::Execution::Multiplex do
     end
   end
 
-  describe "after_query when errors are raised" do
-    class InspectQueryInstrumentation
-      class << self
-        attr_reader :last_json
-        def before_query(query)
-        end
+  describe "execute_query when errors are raised" do
+    module InspectQueryInstrumentation
+      def execute_multiplex(multiplex:)
+        super
+      ensure
+        InspectQueryInstrumentation.last_json = multiplex.queries.first.result.to_json
+      end
 
-        def after_query(query)
-          @last_json = query.result.to_json
-        end
+      class << self
+        attr_accessor :last_json
       end
     end
 
@@ -212,7 +212,7 @@ describe GraphQL::Execution::Multiplex do
       end
 
       query(Query)
-      instrument(:query, InspectQueryInstrumentation)
+      trace_with(InspectQueryInstrumentation)
     end
 
     unhandled_err_json = '{}'
