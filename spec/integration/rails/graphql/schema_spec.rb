@@ -232,7 +232,6 @@ type Query {
     }
 
     let(:schema) {
-      spec = self
       Class.new(GraphQL::Schema) do
         query_type = Class.new(GraphQL::Schema::Object) do
           graphql_name "Query"
