@@ -81,8 +81,10 @@ module GraphQL
           trace_name = tracing_name.sub("Tracing", "Trace")
           if GraphQL::Tracing.const_defined?(trace_name, false)
             trace_module = GraphQL::Tracing.const_get(trace_name)
+            warn("`use(#{self.name})` is deprecated, use the equivalent `trace_with(#{trace_module.name})` instead. More info: https://graphql-ruby.org/queries/tracing.html")
             schema_defn.trace_with(trace_module, **options)
           else
+            warn("`use(#{self.name})` and `Tracing::PlatformTracing` are deprecated. Use a `trace_with(...)` module instead. More info: https://graphql-ruby.org/queries/tracing.html. Please open an issue on the GraphQL-Ruby repo if you want to discuss further!")
             tracer = self.new(**options)
             schema_defn.tracer(tracer)
           end
