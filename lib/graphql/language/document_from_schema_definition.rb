@@ -266,8 +266,7 @@ module GraphQL
         end
         definitions = build_directive_nodes(dirs_to_build)
 
-        type_nodes = build_type_definition_nodes(warden.reachable_types)
-
+        type_nodes = build_type_definition_nodes(warden.reachable_types + schema.extra_types)
         if @include_one_of
           # This may have been set to true when iterating over all types
           definitions.concat(build_directive_nodes([GraphQL::Schema::Directive::OneOf]))
