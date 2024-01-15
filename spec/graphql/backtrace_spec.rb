@@ -24,11 +24,9 @@ describe GraphQL::Backtrace do
     def inspect; nil; end
   end
 
-  class ErrorInstrumentation
-    def self.before_query(_query)
-    end
-
-    def self.after_query(query)
+  module ErrorTrace
+    def execute_multiplex(multiplex:)
+      super
       raise "Instrumentation Boom"
     end
   end
@@ -146,7 +144,7 @@ describe GraphQL::Backtrace do
       assert_includes err.message, "\n" + rendered_table
       # The message includes the original error message
       assert_includes err.message, "This is broken: Boom"
-      assert_includes err.message, "spec/graphql/backtrace_spec.rb:47", "It includes the original backtrace"
+      assert_includes err.message, "spec/graphql/backtrace_spec.rb:45", "It includes the original backtrace"
       assert_includes err.message, "more lines"
     end
 
@@ -211,7 +209,7 @@ describe GraphQL::Backtrace do
 
     it "raises original exception instead of a TracedError when error does not occur during resolving" do
       instrumentation_schema = Class.new(schema) do
-        instrument(:query, ErrorInstrumentation)
+        trace_with(ErrorTrace)
       end
 
       assert_raises(RuntimeError) {
