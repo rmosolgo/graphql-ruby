@@ -8,6 +8,12 @@
 
 ### Bug Fix
 
+# 1.3.2 (15 Jan 2023)
+
+### Bug Fix
+
+- Migrate to new `trace_with` instrumentation API, requires GraphQL-Ruby 2.0.18+
+
 # 1.3.1 (12 June 2023)
 
 ### Bug Fix
