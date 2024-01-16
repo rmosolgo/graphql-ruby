@@ -41,7 +41,6 @@ module Datadog
       SPAN_RESOURCE_NAMES << resource_name
     end
 
-    def span_type=(*args)end
     def set_tag(key, value)
       SPAN_TAGS << [key, value]
     end

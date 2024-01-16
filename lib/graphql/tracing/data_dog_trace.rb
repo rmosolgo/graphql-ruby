@@ -34,8 +34,7 @@ module GraphQL
       }.each do |trace_method, trace_key|
         module_eval <<-RUBY, __FILE__, __LINE__
           def #{trace_method}(**data)
-            @tracer.trace("#{trace_key}", service: @service_name) do |span|
-              span.span_type = 'custom'
+            @tracer.trace("#{trace_key}", service: @service_name, type: 'custom') do |span|
               if defined?(Datadog::Tracing::Metadata::Ext) # Introduced in ddtrace 1.0
                 span.set_tag(Datadog::Tracing::Metadata::Ext::TAG_COMPONENT, 'graphql')
                 span.set_tag(Datadog::Tracing::Metadata::Ext::TAG_OPERATION, '#{trace_method}')
@@ -89,8 +88,7 @@ module GraphQL
           nil
         end
         if platform_key && trace_field
-          @tracer.trace(platform_key, service: @service_name) do |span|
-            span.span_type = 'custom'
+          @tracer.trace(platform_key, service: @service_name, type: 'custom') do |span|
             if defined?(Datadog::Tracing::Metadata::Ext) # Introduced in ddtrace 1.0
               span.set_tag(Datadog::Tracing::Metadata::Ext::TAG_COMPONENT, 'graphql')
               span.set_tag(Datadog::Tracing::Metadata::Ext::TAG_OPERATION, span_key)
@@ -125,8 +123,7 @@ module GraphQL
 
       def authorized_span(span_key, object, type, query)
         platform_key = @platform_key_cache[DataDogTrace].platform_authorized_key_cache[type]
-        @tracer.trace(platform_key, service: @service_name) do |span|
-          span.span_type = 'custom'
+        @tracer.trace(platform_key, service: @service_name, type: 'custom') do |span|
           if defined?(Datadog::Tracing::Metadata::Ext) # Introduced in ddtrace 1.0
             span.set_tag(Datadog::Tracing::Metadata::Ext::TAG_COMPONENT, 'graphql')
             span.set_tag(Datadog::Tracing::Metadata::Ext::TAG_OPERATION, span_key)
@@ -158,8 +155,7 @@ module GraphQL
 
       def resolve_type_span(span_key, object, type, query)
         platform_key = @platform_key_cache[DataDogTrace].platform_resolve_type_key_cache[type]
-        @tracer.trace(platform_key, service: @service_name) do |span|
-          span.span_type = 'custom'
+        @tracer.trace(platform_key, service: @service_name, type: 'custom') do |span|
           if defined?(Datadog::Tracing::Metadata::Ext) # Introduced in ddtrace 1.0
             span.set_tag(Datadog::Tracing::Metadata::Ext::TAG_COMPONENT, 'graphql')
             span.set_tag(Datadog::Tracing::Metadata::Ext::TAG_OPERATION, span_key)
