@@ -15,9 +15,7 @@ module GraphQL
       }
 
       def platform_trace(platform_key, key, data)
-        tracer.trace(platform_key, service: service_name) do |span|
-          span.span_type = 'custom'
-
+        tracer.trace(platform_key, service: service_name, type: 'custom') do |span|
           if key == 'execute_multiplex'
             operations = data[:multiplex].queries.map(&:selected_operation_name).join(', ')
             span.resource = operations unless operations.empty?
