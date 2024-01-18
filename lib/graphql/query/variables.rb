@@ -26,7 +26,7 @@ module GraphQL
           # - Then, fall back to the default value from the query string
           # If it's still nil, raise an error if it's required.
           variable_type = schema.type_from_ast(ast_variable.type, context: ctx)
-          if variable_type.nil? || !variable_type.kind.input?
+          if variable_type.nil? || !variable_type.unwrap.kind.input?
             # Pass -- it will get handled by a validator
           else
             variable_name = ast_variable.name
