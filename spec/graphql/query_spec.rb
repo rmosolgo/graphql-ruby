@@ -591,6 +591,22 @@ describe GraphQL::Query do
         end
       end
     end
+
+    describe "when given as an object type and accessed in ruby" do
+      it "returns an error to the client and is an empty hash" do
+        result = schema.execute(<<~GRAPHQL)
+        query($ch: Cheese) {
+          __typename
+        }
+        GRAPHQL
+        expected_messages = [
+          "Cheese isn't a valid input type (on $ch)",
+          "Variable $ch is declared by anonymous query but not used",
+        ]
+        assert_equal expected_messages, result["errors"].map { |err| err["message"] }
+        assert_equal({}, result.query.variables.to_h)
+      end
+    end
   end
 
   describe "max_depth" do
