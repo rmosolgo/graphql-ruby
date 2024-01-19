@@ -14,12 +14,33 @@
   </head>
   <body>
     <script>
-      const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
-      if (prefersDarkScheme.matches) {
-        document.body.classList.add('dark-theme');
-      } else {
-        document.body.classList.remove('dark-theme');
+      function detectDarkTheme(toggle) {
+        var prefersDarkSchemeSetting = localStorage.getItem("prefersDarkScheme")
+        if (prefersDarkSchemeSetting == null) {
+          prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+        } else {
+          prefersDarkScheme = prefersDarkSchemeSetting == "true"
+        }
+
+        if (toggle) {
+          if (prefersDarkScheme) {
+            prefersDarkScheme = false
+            localStorage.setItem("prefersDarkScheme", "false")
+          } else {
+            prefersDarkScheme = true
+            localStorage.setItem("prefersDarkScheme", "true")
+          }
+        }
+        console.log(toggle, prefersDarkSchemeSetting, prefersDarkScheme)
+
+        if (prefersDarkScheme) {
+          document.body.classList.add('dark-theme');
+        } else {
+          document.body.classList.remove('dark-theme');
+        }
       }
+
+      detectDarkTheme(false)
     </script>
     <div class="header">
       <div class="header-container">
@@ -39,6 +60,7 @@
             type="text"
             placeholder="Search the docs..."
           />
+          <a href="#" onclick="event.preventDefault(); detectDarkTheme(true)">☀</a>
         </div>
       </div>
       <div class="search-results-container">

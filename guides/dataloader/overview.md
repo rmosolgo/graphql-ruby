@@ -7,7 +7,7 @@ desc: Getting started with the Fiber-based Dataloader
 index: 0
 ---
 
- {{ "GraphQL::Dataloader" | api_doc }} provides efficient, batched access to external services, backed by Ruby's `Fiber` concurrency primitive. It has a per-query result cache and {% internal_link AsyncDataloader, "/dataloader/async_dataloader" %} supports truly parallel execution out-of-the-box.
+ {{ "GraphQL::Dataloader" | api_doc }} provides efficient, batched access to external services, backed by Ruby's `Fiber` concurrency primitive. It has a per-query result cache and {% internal_link "AsyncDataloader", "/dataloader/async_dataloader" %} supports truly parallel execution out-of-the-box.
 
 `GraphQL::Dataloader` is inspired by [`@bessey`'s proof-of-concept](https://github.com/bessey/graphql-fiber-test/tree/no-gem-changes) and [shopify/graphql-batch](https://github.com/shopify/graphql-batch).
 
