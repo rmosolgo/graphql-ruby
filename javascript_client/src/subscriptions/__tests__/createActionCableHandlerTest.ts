@@ -51,14 +51,16 @@ describe("createActionCableHandler", () => {
       {text: "", name: "", id: "abcdef"},
       {},
       {},
-      { onError: () => {}, onNext: () => {}, onCompleted: () => {} }
+      { onError: () => {}, onNext: (result: any) => { log.push(["onNext", result])}, onCompleted: () => { log.push(["onCompleted", null])} }
     )
 
     handlers.connected() // trigger the GraphQL send
+    handlers.received({ result: { data: { a: "1" } }, more: false })
 
     expect(log).toEqual([
-      ["send", { operationId: "client-1/abcdef", operationName: "", query: "", variables: {} }],
       ["execute", { operationId: "client-1/abcdef", operationName: "", query: "", variables: {} }],
+      ["onNext", { data: { a: "1" } }],
+      ["onCompleted", null],
     ])
   })
 })

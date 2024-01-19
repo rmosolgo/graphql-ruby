@@ -44,7 +44,6 @@ function createActionCableHandler(options: ActionCableHandlerOptions) {
             operationId: (operation.id && options.clientName ? (options.clientName + "/" + operation.id) : null),
           }
         }
-        channel.perform('send', channelParams)
         channel.perform("execute", channelParams)
       },
       // This result is sent back from ActionCable.
