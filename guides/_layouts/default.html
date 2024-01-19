@@ -13,6 +13,14 @@
     <link rel="icon" href="{{ site.baseurl }}/graphql-ruby-icon.png">
   </head>
   <body>
+    <script>
+      const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+      if (prefersDarkScheme.matches) {
+        document.body.classList.add('dark-theme');
+      } else {
+        document.body.classList.remove('dark-theme');
+      }
+    </script>
     <div class="header">
       <div class="header-container">
         <div class="nav">
