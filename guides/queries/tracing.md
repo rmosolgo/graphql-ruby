@@ -6,6 +6,8 @@ search: true
 section: Queries
 desc: Observation hooks for execution
 index: 11
+redirect_from:
+  - /queries/instrumentation
 ---
 
 {{ "GraphQL::Tracing::Trace" | api_doc }} provides hooks to observe and modify events during runtime. Tracing hooks are methods, defined in modules and mixed in with {{ "Schema.trace_with" | api_doc }}.

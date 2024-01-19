@@ -246,13 +246,12 @@ describe GraphQL::Schema do
       end
     end
 
-    class NoOpInstrumentation
-      def before_query(query)
-        query.context[:no_op_instrumentation_ran_before_query] = true
-      end
-
-      def after_query(query)
-        query.context[:no_op_instrumentation_ran_after_query] = true
+    module NoOpTrace
+      def execute_query(query:)
+        query.context[:no_op_trace_ran_before_query] = true
+        super
+      ensure
+        query.context[:no_op_trace_ran_after_query] = true
       end
     end
 
@@ -273,7 +272,7 @@ describe GraphQL::Schema do
 
     module PluginWithInstrumentationTracingAndAnalyzer
       def self.use(schema_defn)
-        schema_defn.instrument :query, NoOpInstrumentation.new
+        schema_defn.trace_with(NoOpTrace)
         schema_defn.tracer NoOpTracer.new
         schema_defn.query_analyzer NoOpAnalyzer
       end
@@ -299,8 +298,8 @@ describe GraphQL::Schema do
         res = query.result
         assert res.key?("data")
 
-        assert_equal true, query.context[:no_op_instrumentation_ran_before_query]
-        assert_equal true, query.context[:no_op_instrumentation_ran_after_query]
+        assert_equal true, query.context[:no_op_trace_ran_before_query]
+        assert_equal true, query.context[:no_op_trace_ran_after_query]
         assert_equal true, query.context[:no_op_tracer_ran]
         assert_equal true, query.context[:no_op_analyzer_ran_initialize]
         assert_equal true, query.context[:no_op_analyzer_ran_on_leave_field]
@@ -326,8 +325,8 @@ describe GraphQL::Schema do
         res = query.result
         assert res.key?("data")
 
-        assert_equal true, query.context[:no_op_instrumentation_ran_before_query]
-        assert_equal true, query.context[:no_op_instrumentation_ran_after_query]
+        assert_equal true, query.context[:no_op_trace_ran_before_query]
+        assert_equal true, query.context[:no_op_trace_ran_after_query]
         assert_equal true, query.context[:no_op_tracer_ran]
         assert_equal true, query.context[:no_op_analyzer_ran_initialize]
         assert_equal true, query.context[:no_op_analyzer_ran_on_leave_field]

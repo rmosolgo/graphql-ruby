@@ -254,36 +254,41 @@ describe GraphQL::Query do
       end
     end
 
-    describe "after_query hooks" do
-      module Instrumenter
+    describe "queries in execute_mutation hooks" do
+      module ErrorLogTrace
         ERROR_LOG = []
-        def self.before_query(q); end;
-        def self.after_query(q); ERROR_LOG << q.result["errors"]; end;
+        def execute_multiplex(multiplex:)
+          super
+        ensure
+          multiplex.queries.each do |q|
+            ERROR_LOG << q.result["errors"]
+          end
+        end
       end
 
       let(:schema) {
         Class.new(Dummy::Schema) {
-          instrument(:query, Instrumenter)
+          trace_with(ErrorLogTrace)
         }
       }
 
+      before do
+        ErrorLogTrace::ERROR_LOG.clear
+      end
       it "can access #result" do
-        Instrumenter::ERROR_LOG.clear
         result
-        assert_equal [nil], Instrumenter::ERROR_LOG
+        assert_equal [nil], ErrorLogTrace::ERROR_LOG
       end
 
       it "can access result from an unhandled error" do
-        Instrumenter::ERROR_LOG.clear
         query = GraphQL::Query.new(schema, "{ error }")
         assert_raises RuntimeError do
           query.result
         end
-        assert_equal [nil], Instrumenter::ERROR_LOG
+        assert_equal [nil], ErrorLogTrace::ERROR_LOG
       end
 
       it "can access result from an handled error" do
-        Instrumenter::ERROR_LOG.clear
         query = GraphQL::Query.new(schema, "{ executionError }")
         query.result
         expected_err = {
@@ -291,11 +296,10 @@ describe GraphQL::Query do
           "locations" => [{"line"=>1, "column"=>3}],
           "path" => ["executionError"]
         }
-        assert_equal [[expected_err]], Instrumenter::ERROR_LOG
+        assert_equal [[expected_err]], ErrorLogTrace::ERROR_LOG
       end
 
       it "can access static validation errors" do
-        Instrumenter::ERROR_LOG.clear
         query = GraphQL::Query.new(schema, "{ noField }")
         query.result
         expected_err = {
@@ -304,33 +308,35 @@ describe GraphQL::Query do
           "path" => ["query", "noField"],
           "extensions" => {"code"=>"undefinedField", "typeName"=>"Query", "fieldName"=>"noField"},
         }
-        assert_equal [[expected_err]], Instrumenter::ERROR_LOG
+        assert_equal [[expected_err]], ErrorLogTrace::ERROR_LOG
       end
     end
 
     describe "when an error propagated through execution" do
-      module ExtensionsInstrumenter
+      module ExtensionsTrace
         LOG = []
-        def self.before_query(q); end;
-
-        def self.after_query(q)
-          q.result["extensions"] = { "a" => 1 }
-          LOG << :ok
+        def execute_multiplex(multiplex:)
+          super
+        ensure
+          multiplex.queries.each do |q|
+            q.result["extensions"] = { "a" => 1 }
+            LOG << :ok
+          end
         end
       end
 
       let(:schema) {
         Class.new(Dummy::Schema) {
-          instrument(:query, ExtensionsInstrumenter)
+          trace_with(ExtensionsTrace)
         }
       }
 
       it "can add to extensions" do
-        ExtensionsInstrumenter::LOG.clear
+        ExtensionsTrace::LOG.clear
         assert_raises(RuntimeError) do
           schema.execute "{ error }"
         end
-        assert_equal [:ok], ExtensionsInstrumenter::LOG
+        assert_equal [:ok], ExtensionsTrace::LOG
       end
     end
   end

@@ -306,9 +306,9 @@ describe GraphQL::Execution::Interpreter do
       end
       tracer EnsureArgsAreObject
 
-      class EnsureThreadCleanedUp
-        def self.before_multiplex(_multiplex); end
-        def self.after_multiplex(multiplex)
+      module EnsureThreadCleanedUp
+        def execute_multiplex(multiplex:)
+          res = super
           runtime_info = Thread.current[:__graphql_runtime_info]
           if !runtime_info.nil? && runtime_info != {}
             if !multiplex.context[:allow_pending_thread_state]
@@ -316,10 +316,10 @@ describe GraphQL::Execution::Interpreter do
               raise "Query did not clean up runtime state, found: #{runtime_info.inspect}"
             end
           end
+          res
         end
       end
-
-      instrument :multiplex, EnsureThreadCleanedUp
+      trace_with(EnsureThreadCleanedUp)
     end
   end
 

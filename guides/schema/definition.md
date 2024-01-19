@@ -101,19 +101,11 @@ See the {% internal_link "Object Identification guide", "/schema/object_identifi
 
 ## Execution Configuration
 
-__`instrument`__ attaches instrumenters to the schema, see {% internal_link "Instrumentation", "/queries/instrumentation" %} for more information.
+__`trace_with`__ attaches tracer modules, see {% internal_link "Tracing", "/queries/tracing" %} for more.
 
 ```ruby
 class MySchema < GraphQL::Schema
-  instrument :query, ResolveTimerInstrumentation
-end
-```
-
-__`tracer`__ is another way to hook into execution, see {% internal_link "Tracing", "/queries/tracing" %} for more.
-
-```ruby
-class MySchema < GraphQL::Schema
-  tracer MetricTracer
+  trace_with MetricTracer
 end
 ```
 

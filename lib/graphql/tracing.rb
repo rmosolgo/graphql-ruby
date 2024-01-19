@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require "graphql/tracing/trace"
 require "graphql/tracing/legacy_trace"
+require "graphql/tracing/legacy_hooks_trace"
 
 # Legacy tracing:
 require "graphql/tracing/active_support_notifications_tracing"
