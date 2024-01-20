@@ -43,7 +43,26 @@ You could also make specific assertions on the queries that are run (see the [`s
 
 ## Testing Dataloader Sources
 
-You can also test `Dataloader` behavior outside of GraphQL using {{ "GraphQL::Dataloader.with_dataloading" | api_doc }}. For example:
+You can also test `Dataloader` behavior outside of GraphQL using {{ "GraphQL::Dataloader.with_dataloading" | api_doc }}. For example, let's assuming have a `Sources::ActiveRecord` defined like so: 
+
+```ruby
+
+module Sources
+  class ActiveRecord < GraphQL::Dataloader::Source
+    def initialize(model_class)
+      @model_class = model_class
+    end
+
+    def fetch(ids)
+      records = @model_class.where(id: ids)
+      # return a list with `nil` for any ID that wasn't found, so the shape matches
+      ids.map { |id| records.find { |r| r.id == id.to_i } }
+    end
+  end
+end
+```
+
+You can test it like so: 
 
 ```ruby
 def test_it_fetches_objects_by_id
@@ -60,10 +79,10 @@ def test_it_fetches_objects_by_id
       req4 = dataloader.with(Sources::ActiveRecord).request(-1)
 
       # Validate source's matching up of records
-      expect(req1.load).to eq(user_1)
-      expect(req2.load).to eq(user_2)
-      expect(req3.load).to eq(user_3)
-      expect(req4.load).to be_nil
+      expect(req1).to eq(user_1)
+      expect(req2).to eq(user_2)
+      expect(req3).to eq(user_3)
+      expect(req4).to be_nil
     end
   end
 
