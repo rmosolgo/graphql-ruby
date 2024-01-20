@@ -43,7 +43,7 @@ You could also make specific assertions on the queries that are run (see the [`s
 
 ## Testing Dataloader Sources
 
-You can also test `Dataloader` behavior outside of GraphQL using {{ "GraphQL::Dataloader.with_dataloading" | api_doc }}. For example, let's assuming have a `Sources::ActiveRecord` defined like so: 
+You can also test `Dataloader` behavior outside of GraphQL using {{ "GraphQL::Dataloader.with_dataloading" | api_doc }}. For example, let's if you have a `Sources::ActiveRecord` source defined like so: 
 
 ```ruby
 
