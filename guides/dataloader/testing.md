@@ -61,8 +61,8 @@ def test_it_fetches_objects_by_id
 
       # Validate source's matching up of records
       expect(req1.load).to eq(user_1)
-      expect(req2.load).to eq(user_3)
-      expect(req3.load).to eq(user_2)
+      expect(req2.load).to eq(user_2)
+      expect(req3.load).to eq(user_3)
       expect(req4.load).to be_nil
     end
   end
