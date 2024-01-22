@@ -46,11 +46,17 @@ $dark-theme-container-color: #424242;
 body {
   font-family: $font;
   background: $background-color;
+  .dark-theme-button::after {
+    content: "☀"
+  }
 }
 
 body.dark-theme {
   background: $dark-theme-code-background;
   color: $dark-theme-font-color;
+  .dark-theme-button::after {
+    content: "☽"
+  }
 }
 
 strong, b {
