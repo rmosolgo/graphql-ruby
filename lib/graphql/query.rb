@@ -317,7 +317,7 @@ module GraphQL
     end
 
     def_delegators :validation_pipeline, :validation_errors,
-                   :analyzers, :ast_analyzers, :max_depth, :max_complexity
+                   :analyzers, :ast_analyzers, :max_depth, :max_complexity, :validate_timeout_remaining
 
     attr_accessor :analysis_errors
     def valid?
