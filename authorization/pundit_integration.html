@@ -296,10 +296,6 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Pundit scopes <a href="https://github.com/rmosolgo/graphql-ruby/issues/2008">don’t play well</a> with <code class="language-plaintext highlighter-rouge">Array</code>s, so the integration <em>skips</em> scopes on Arrays. You can also opt out on a field-by-field basis as described below.</p>
-
-<p>You can also customize how the scopes are looked up and applied, see below.</p>
-
 <h4 id="bypassing-scopes">Bypassing scopes</h4>
 
 <p>To allow an unscoped relation to be returned from a field, disable scoping with <code class="language-plaintext highlighter-rouge">scope: false</code>, for example:</p>
