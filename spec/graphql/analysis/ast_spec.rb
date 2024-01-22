@@ -457,4 +457,41 @@ describe GraphQL::Analysis::AST do
       assert_equal [[["article", NilClass], ["title", NilClass]]], result
     end
   end
+
+
+  describe ".validate_timeout" do
+    class AnalysisTimeoutSchema < GraphQL::Schema
+      class SlowAnalyzer < GraphQL::Analysis::AST::Analyzer
+        def on_enter_field(node, parent, visitor)
+          sleep 0.1
+          super
+        end
+
+        def result
+          nil
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :f1, Int
+
+        def f1
+          context[:int] ||= 0
+          context[:int] += 1
+        end
+      end
+
+      query(Query)
+      query_analyzer(SlowAnalyzer)
+      validate_timeout 0.5
+    end
+
+    it "covers analysis too" do
+      res = AnalysisTimeoutSchema.execute("{ f1: f1 f2: f1 }")
+      assert_equal({ "f1" => 1, "f2" => 2}, res["data"])
+
+      res2 = AnalysisTimeoutSchema.execute("{ f1: f1, f2: f1, f3: f1, f4: f1, f5: f1, f6: f1}")
+      assert_equal ["Timeout on validation of query"], res2["errors"].map { |e| e["message"]}
+    end
+  end
 end
