@@ -31,12 +31,17 @@
             localStorage.setItem("prefersDarkScheme", "true")
           }
         }
-        console.log(toggle, prefersDarkSchemeSetting, prefersDarkScheme)
 
         if (prefersDarkScheme) {
           document.body.classList.add('dark-theme');
+          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
+            el.src = "{{ site.baseurl }}/graphql-ruby-dark.png"
+          })
         } else {
           document.body.classList.remove('dark-theme');
+          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
+            el.src = "{{ site.baseurl }}/graphql-ruby.png"
+          })
         }
       }
 
@@ -46,7 +51,7 @@
       <div class="header-container">
         <div class="nav">
           <a href="{{ site.baseurl }}/" class="img-link">
-            <img src="{{ site.baseurl }}/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+            <img class="graphql-ruby-img" src="{{ site.baseurl }}/graphql-ruby.png" alt="GraphQL Ruby Logo" />
           </a>
           <a href="{{ site.baseurl }}/getting_started">Get Started</a>
           <a href="{{ site.baseurl }}/guides">Guides</a>
@@ -73,5 +78,8 @@
     </div>
     <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
     <script src="{{ site.baseurl }}/js/search.js"></script>
+    <script>
+      detectDarkTheme(false) // do it again to update the images
+    </script>
   </body>
 </html>
