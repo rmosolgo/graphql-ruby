@@ -130,10 +130,6 @@ module BaseInterface
 end
 ```
 
-Pundit scopes [don't play well](https://github.com/rmosolgo/graphql-ruby/issues/2008) with `Array`s, so the integration _skips_ scopes on Arrays. You can also opt out on a field-by-field basis as described below.
-
-You can also customize how the scopes are looked up and applied, see below.
-
 #### Bypassing scopes
 
 To allow an unscoped relation to be returned from a field, disable scoping with `scope: false`, for example:
