@@ -4,6 +4,7 @@ import { generateClientCode, gatherOperations, ClientOperation } from "./generat
 import Logger from "./logger"
 import fs from "fs"
 import { removeClientFieldsFromString } from "./removeClientFields"
+import preparePersistedQueryList from "./preparePersistedQueryList"
 
 interface SyncOptions {
   path?: string,
@@ -109,6 +110,10 @@ function sync(options: SyncOptions) {
         body: bodyWithoutClientFields,
       })
     })
+  } else if (options.apolloPersistedQueryManifest) {
+    var payload: { operations: ClientOperation[] } = {
+      operations: preparePersistedQueryList(options.apolloPersistedQueryManifest)
+    }
   } else {
     var payload = gatherOperations({
       path: graphqlGlob,
