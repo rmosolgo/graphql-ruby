@@ -11,11 +11,45 @@
     <link rel="icon" href="/graphql-ruby-icon.png">
   </head>
   <body>
+    <script>
+      function detectDarkTheme(toggle) {
+        var prefersDarkSchemeSetting = localStorage.getItem("prefersDarkScheme")
+        if (prefersDarkSchemeSetting == null) {
+          prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+        } else {
+          prefersDarkScheme = prefersDarkSchemeSetting == "true"
+        }
+
+        if (toggle) {
+          if (prefersDarkScheme) {
+            prefersDarkScheme = false
+            localStorage.setItem("prefersDarkScheme", "false")
+          } else {
+            prefersDarkScheme = true
+            localStorage.setItem("prefersDarkScheme", "true")
+          }
+        }
+
+        if (prefersDarkScheme) {
+          document.body.classList.add('dark-theme');
+          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
+            el.src = "/graphql-ruby-dark.png"
+          })
+        } else {
+          document.body.classList.remove('dark-theme');
+          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
+            el.src = "/graphql-ruby.png"
+          })
+        }
+      }
+
+      detectDarkTheme(false)
+    </script>
     <div class="header">
       <div class="header-container">
         <div class="nav">
           <a href="/" class="img-link">
-            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
           </a>
           <a href="/getting_started">Get Started</a>
           <a href="/guides">Guides</a>
@@ -29,6 +63,7 @@
             type="text"
             placeholder="Search the docs..."
           />
+          <a href="#" onclick="event.preventDefault(); detectDarkTheme(true)">☀</a>
         </div>
       </div>
       <div class="search-results-container">
@@ -120,6 +155,7 @@
 </a></li><li class='contents-entry'><a href='#context-class'>Context Class
 </a></li><li class='contents-entry'><a href='#default-limits'>Default Limits
 </a></li><li class='contents-entry'><a href='#plugins'>Plugins
+</a></li><li class='contents-entry'><a href='#extra-types'>Extra Types
 </a></li></ol>
 </div>
 </div>
@@ -213,17 +249,10 @@
 
 <h2 id="execution-configuration">Execution Configuration</h2>
 
-<p><strong><code class="language-plaintext highlighter-rouge">instrument</code></strong> attaches instrumenters to the schema, see <a href="/queries/instrumentation">Instrumentation</a> for more information.</p>
+<p><strong><code class="language-plaintext highlighter-rouge">trace_with</code></strong> attaches tracer modules, see <a href="/queries/tracing">Tracing</a> for more.</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="n">instrument</span> <span class="ss">:query</span><span class="p">,</span> <span class="no">ResolveTimerInstrumentation</span>
-<span class="k">end</span>
-</code></pre></div></div>
-
-<p><strong><code class="language-plaintext highlighter-rouge">tracer</code></strong> is another way to hook into execution, see <a href="/queries/tracing">Tracing</a> for more.</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="n">tracer</span> <span class="no">MetricTracer</span>
+  <span class="n">trace_with</span> <span class="no">MetricTracer</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
@@ -297,6 +326,16 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
+<h2 id="extra-types">Extra Types</h2>
+
+<p>Documentation-only types can be attached to the schema using <a href="/api-doc/2.2.5/GraphQL/Schema#extra_types-class_method" target="_blank" title="API docs for GraphQL::Schema.extra_types"><code>Schema.extra_types</code></a>. Types passed to this method will <em>always</em> be available in introspection queries and SDL print-outs.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="c1"># These aren't for queries, but will appear in documentation:</span>
+  <span class="n">extra_types</span> <span class="no">SystemErrorType</span><span class="p">,</span> <span class="no">RateLimitExceptionType</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
 </div>
 <p class="guide-footer">
   Suggestion, improvement, or correction?
@@ -328,5 +367,8 @@
     </div>
     <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
     <script src="/js/search.js"></script>
+    <script>
+      detectDarkTheme(false) // do it again to update the images
+    </script>
   </body>
 </html>
