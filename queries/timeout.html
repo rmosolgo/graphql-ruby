@@ -63,7 +63,7 @@
             type="text"
             placeholder="Search the docs..."
           />
-          <a href="#" onclick="event.preventDefault(); detectDarkTheme(true)">☀</a>
+          <a href="#" onclick="event.preventDefault(); detectDarkTheme(true)" class="dark-theme-button"></a>
         </div>
       </div>
       <div class="search-results-container">
@@ -157,7 +157,7 @@
   <h3 class="contents-header">Contents</h3>
   <ol class='contents-list'><li class='contents-entry'><a href='#custom-error-handling'>Custom Error Handling
 </a></li><li class='contents-entry'><a href='#customizing-the-timeout-window'>Customizing the Timeout Window
-</a></li><li class='contents-entry'><a href='#validation'>Validation
+</a></li><li class='contents-entry'><a href='#validation-and-analysis'>Validation and Analysis
 </a></li></ol>
 </div>
 </div>
@@ -214,15 +214,16 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<h2 id="validation">Validation</h2>
+<h2 id="validation-and-analysis">Validation and Analysis</h2>
 
 <p>Queries can originate from a user, and may be crafted in a manner to take a long time to validate against the schema.</p>
 
-<p>It is possible to limit how many seconds the static validation rules are allowed to run before returning a validation timeout error. The default is no timeout.</p>
+<p>It is possible to limit how many seconds the static validation rules and analysers are allowed to run before returning a validation timeout error. The default is no timeout.</p>
 
 <p>For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="c1"># Applies to static validation and query analysis</span>
   <span class="n">validate_timeout</span> <span class="mi">10</span>
 <span class="k">end</span>
 </code></pre></div></div>

@@ -9,9 +9,10 @@ If a field’s resolve function returns a ExecutionError, the error
 will be inserted into the response’s <code class="language-plaintext highlighter-rouge">"errors"</code> key and the field
 will resolve to <code class="language-plaintext highlighter-rouge">nil</code>. 
 Direct Known Subclasses:
-AnalysisError, InvalidNameError, LoadApplicationObjectFailedError,
-Query::OperationNameMissingError, Query::VariableValidationError,
-Schema::Timeout::TimeoutError, Schema::Validator::ValidationFailedError
+AnalysisError, CoercionError, InvalidNameError,
+LoadApplicationObjectFailedError, Query::OperationNameMissingError,
+Query::VariableValidationError, Schema::Timeout::TimeoutError,
+Schema::Validator::ValidationFailedError
 Instance methods:
 initialize, to_h</p>
 
