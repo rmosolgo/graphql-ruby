@@ -3,6 +3,7 @@
 module GraphQL
   module Tracing
     module DataDogTrace
+      # @param tracer [#trace] Deprecated
       # @param analytics_enabled [Boolean] Deprecated
       # @param analytics_sample_rate [Float] Deprecated
       def initialize(tracer: nil, analytics_enabled: false, analytics_sample_rate: 1.0, service: nil, **rest)

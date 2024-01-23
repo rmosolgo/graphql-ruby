@@ -148,15 +148,9 @@ To add [Datadog](https://www.datadoghq.com) instrumentation:
 
 ```ruby
 class MySchema < GraphQL::Schema
-  use(GraphQL::Tracing::DataDogTracing, options)
+  use(GraphQL::Tracing::DataDogTracing)
 end
 ```
-
-You may provide `options` as a `Hash` with the following values:
-
-| Key | Description | Default |
-| --- | ----------- | ------- |
-| `tracer` | Tracer used to perform instrumentation. Usually you don't need to set this. | `Datadog::Tracing` |
 
 For more details about Datadog's tracing API, check out the [Ruby documentation](https://github.com/DataDog/dd-trace-rb/blob/master/docs/GettingStarted.md) or the [APM documentation](https://docs.datadoghq.com/tracing/) for more product information.
 
