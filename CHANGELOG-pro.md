@@ -6,6 +6,10 @@
 
 ### New Features
 
+# 1.26.1 (23 Jan 2023)
+
+- Pundit integration: improve error message when a `Scope` class is missing
+
 # 1.26.0 (19 Jan 2023)
 
 ### Breaking Changes
@@ -13,6 +17,11 @@
 - Pundit integration: when the integration encounters an Array, it tries to find a configured policy class. If it can't, it raises an error.
 
   Previously, the integration silently permitted all items in the array; this default has been changed. See #4726 for more discussion of this change.
+
+  If you encounter this error:
+
+  - add `scope: false` to any fields that return arrays to get the previous behavior (no authorization applied to the array; each item authorized on its own)
+  - Or, apply [scoping](https://graphql-ruby.org/authorization/scoping.html) by manually configuring a `pundit_policy_class` in the field's return type, then adding a `class Scope ...` inside that policy class. See the Pundit docs for the scope class API: https://github.com/varvet/pundit#scopes.
 
 # 1.25.2 (29 Dec 2023)
 
