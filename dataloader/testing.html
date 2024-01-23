@@ -217,10 +217,10 @@
       <span class="n">req4</span> <span class="o">=</span> <span class="n">dataloader</span><span class="p">.</span><span class="nf">with</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">ActiveRecord</span><span class="p">).</span><span class="nf">request</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
       <span class="c1"># Validate source's matching up of records</span>
-      <span class="n">expect</span><span class="p">(</span><span class="n">req1</span><span class="p">).</span><span class="nf">to</span> <span class="n">eq</span><span class="p">(</span><span class="n">user_1</span><span class="p">)</span>
-      <span class="n">expect</span><span class="p">(</span><span class="n">req2</span><span class="p">).</span><span class="nf">to</span> <span class="n">eq</span><span class="p">(</span><span class="n">user_2</span><span class="p">)</span>
-      <span class="n">expect</span><span class="p">(</span><span class="n">req3</span><span class="p">).</span><span class="nf">to</span> <span class="n">eq</span><span class="p">(</span><span class="n">user_3</span><span class="p">)</span>
-      <span class="n">expect</span><span class="p">(</span><span class="n">req4</span><span class="p">).</span><span class="nf">to</span> <span class="n">be_nil</span>
+      <span class="n">expect</span><span class="p">(</span><span class="n">req1</span><span class="p">.</span><span class="nf">load</span><span class="p">).</span><span class="nf">to</span> <span class="n">eq</span><span class="p">(</span><span class="n">user_1</span><span class="p">)</span>
+      <span class="n">expect</span><span class="p">(</span><span class="n">req2</span><span class="p">.</span><span class="nf">load</span><span class="p">).</span><span class="nf">to</span> <span class="n">eq</span><span class="p">(</span><span class="n">user_2</span><span class="p">)</span>
+      <span class="n">expect</span><span class="p">(</span><span class="n">req3</span><span class="p">.</span><span class="nf">load</span><span class="p">).</span><span class="nf">to</span> <span class="n">eq</span><span class="p">(</span><span class="n">user_3</span><span class="p">)</span>
+      <span class="n">expect</span><span class="p">(</span><span class="n">req4</span><span class="p">.</span><span class="nf">load</span><span class="p">).</span><span class="nf">to</span> <span class="n">be_nil</span>
     <span class="k">end</span>
   <span class="k">end</span>
 
