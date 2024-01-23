@@ -56,6 +56,7 @@ module GraphQL
       def tracer
         default_tracer = defined?(Datadog::Tracing) ? Datadog::Tracing : Datadog.tracer
 
+        # [Deprecated] options[:tracer] will be removed in the future
         options.fetch(:tracer, default_tracer)
       end
 
