@@ -15,11 +15,9 @@ module GraphQL
       }
 
       def platform_trace(platform_key, key, data)
-        tracer.trace(platform_key, service: service_name, type: 'custom') do |span|
-          if defined?(Datadog::Tracing::Metadata::Ext) # Introduced in ddtrace 1.0
-            span.set_tag(Datadog::Tracing::Metadata::Ext::TAG_COMPONENT, 'graphql')
-            span.set_tag(Datadog::Tracing::Metadata::Ext::TAG_OPERATION, key)
-          end
+        tracer.trace(platform_key, service: options[:service], type: 'custom') do |span|
+          span.set_tag('component', 'graphql')
+          span.set_tag('operation', key)
 
           if key == 'execute_multiplex'
             operations = data[:multiplex].queries.map(&:selected_operation_name).join(', ')
@@ -32,10 +30,8 @@ module GraphQL
             end
             span.resource = resource if resource
 
-            # For top span of query, set the analytics sample rate tag, if available.
-            if analytics_enabled?
-              Datadog::Contrib::Analytics.set_sample_rate(span, analytics_sample_rate)
-            end
+            # [Deprecated] will be removed in the future
+            span.set_metric('_dd1.sr.eausr', analytics_sample_rate) if analytics_enabled?
           end
 
           if key == 'execute_query'
@@ -48,10 +44,6 @@ module GraphQL
 
           yield
         end
-      end
-
-      def service_name
-        options.fetch(:service, 'ruby-graphql')
       end
 
       # Implement this method in a subclass to apply custom tags to datadog spans
@@ -67,14 +59,9 @@ module GraphQL
         options.fetch(:tracer, default_tracer)
       end
 
-      def analytics_available?
-        defined?(Datadog::Contrib::Analytics) \
-          && Datadog::Contrib::Analytics.respond_to?(:enabled?) \
-          && Datadog::Contrib::Analytics.respond_to?(:set_sample_rate)
-      end
-
       def analytics_enabled?
-        analytics_available? && Datadog::Contrib::Analytics.enabled?(options.fetch(:analytics_enabled, false))
+        # [Deprecated] options[:analytics_enabled] will be removed in the future
+        options.fetch(:analytics_enabled, false)
       end
 
       def analytics_sample_rate
