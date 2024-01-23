@@ -28,6 +28,7 @@ module GraphQL
       # @return [Array<Hash>]
       def validate(query, validate: true, timeout: nil, max_errors: nil)
         query.current_trace.validate(validate: validate, query: query) do
+          begin_t = Time.now
           errors = if validate == false
             []
           else
@@ -52,11 +53,13 @@ module GraphQL
           end
 
           {
+            remaining_timeout: timeout ? (timeout - (Time.now - begin_t)) : nil,
             errors: errors,
           }
         end
       rescue GraphQL::ExecutionError => e
         {
+          remaining_timeout: nil,
           errors: [e],
         }
       end

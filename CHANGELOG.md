@@ -10,6 +10,13 @@
 
 ### Bug fixes
 
+# 2.2.5 (10 Jan 2024)
+
+### Bug fixes
+
+- Parser: fix enum values named `type` #4772
+- GraphQL::Deprecation: remove this unused helper module #4769
+
 # 2.2.4 (3 Jan 2024)
 
 ### Bug fixes

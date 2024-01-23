@@ -208,42 +208,30 @@ type Query {
   end
 
   describe "#instrument" do
-    class VariableCountInstrumenter
-      attr_reader :counts
-      def initialize
-        @counts = []
-      end
-
-      def before_query(query)
-        @counts << query.variables.length
-      end
-
-      def after_query(query)
-        @counts << :end
+    module VariableCountTrace
+      def execute_query(query:)
+        query.context[:counter] << query.variables.length
+        super
+      ensure
+        query.context[:counter] << :end
       end
     end
 
     # Use this to assert instrumenters are called as a stack
-    class StackCheckInstrumenter
-      def initialize(counter)
-        @counter = counter
-      end
-
-      def before_query(query)
-        @counter.counts << :in
-      end
-
-      def after_query(query)
-        @counter.counts << :out
+    module StackCheckTrace
+      def execute_query(query:)
+        query.context[:counter] << :in
+        super
+      ensure
+        query.context[:counter] << :out
       end
     end
 
-    let(:variable_counter) {
-      VariableCountInstrumenter.new
+    let(:variable_counts) {
+      []
     }
 
     let(:schema) {
-      spec = self
       Class.new(GraphQL::Schema) do
         query_type = Class.new(GraphQL::Schema::Object) do
           graphql_name "Query"
@@ -257,23 +245,23 @@ type Query {
         end
 
         query(query_type)
-        instrument(:query, StackCheckInstrumenter.new(spec.variable_counter))
-        instrument(:query, spec.variable_counter)
+        trace_with VariableCountTrace
+        trace_with StackCheckTrace
       end
     }
 
     it "can wrap query execution" do
-      schema.execute("query getInt($val: Int = 5){ int(value: $val) } ")
-      schema.execute("query getInt($val: Int = 5, $val2: Int = 3){ int(value: $val) int2: int(value: $val2) } ")
-      assert_equal [:in, 1, :end, :out, :in, 2, :end, :out], variable_counter.counts
+      schema.execute("query getInt($val: Int = 5){ int(value: $val) } ", context: { counter: variable_counts })
+      schema.execute("query getInt($val: Int = 5, $val2: Int = 3){ int(value: $val) int2: int(value: $val2) } ", context: { counter: variable_counts })
+      assert_equal [:in, 1, :end, :out, :in, 2, :end, :out], variable_counts
     end
 
     it "runs even when a runtime error occurs" do
-      schema.execute("query getInt($val: Int = 5){ int(value: $val) } ")
+      schema.execute("query getInt($val: Int = 5){ int(value: $val) } ", context: { counter: variable_counts })
       assert_raises(RuntimeError) {
-        schema.execute("query getInt($val: Int = 13){ int(value: $val) } ")
+        schema.execute("query getInt($val: Int = 13){ int(value: $val) } ", context: { counter: variable_counts })
       }
-      assert_equal [:in, 1, :end, :out, :in, 1, :end, :out], variable_counter.counts
+      assert_equal [:in, 1, :end, :out, :in, 1, :end, :out], variable_counts
     end
   end
 

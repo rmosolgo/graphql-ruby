@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require "graphql/tracing/trace"
 require "graphql/tracing/legacy_trace"
+require "graphql/tracing/legacy_hooks_trace"
 
 # Legacy tracing:
 require "graphql/tracing/active_support_notifications_tracing"
@@ -21,11 +22,12 @@ require "graphql/tracing/appsignal_trace"
 require "graphql/tracing/data_dog_trace"
 require "graphql/tracing/new_relic_trace"
 require "graphql/tracing/notifications_trace"
+require "graphql/tracing/sentry_trace"
 require "graphql/tracing/scout_trace"
 require "graphql/tracing/statsd_trace"
 require "graphql/tracing/prometheus_trace"
 if defined?(PrometheusExporter::Server)
-  require "graphql/tracing/prometheus_tracing/graphql_collector"
+  require "graphql/tracing/prometheus_trace/graphql_collector"
 end
 
 module GraphQL

@@ -6,6 +6,7 @@ require "graphql/analysis/ast/query_complexity"
 require "graphql/analysis/ast/max_query_complexity"
 require "graphql/analysis/ast/query_depth"
 require "graphql/analysis/ast/max_query_depth"
+require "timeout"
 
 module GraphQL
   module Analysis
@@ -63,7 +64,10 @@ module GraphQL
                 analyzers: analyzers_to_run
               )
 
-              visitor.visit
+              # `nil` or `0` causes no timeout
+              Timeout::timeout(query.validate_timeout_remaining) do
+                visitor.visit
+              end
 
               if visitor.rescued_errors.any?
                 return visitor.rescued_errors
@@ -75,6 +79,8 @@ module GraphQL
             []
           end
         end
+      rescue Timeout::Error
+        [GraphQL::AnalysisError.new("Timeout on validation of query")]
       end
 
       def analysis_errors(results)

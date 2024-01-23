@@ -3,9 +3,6 @@ require "spec_helper"
 
 if testing_rails?
   describe GraphQL::Pagination::ActiveRecordRelationConnection do
-    class Food < ActiveRecord::Base
-    end
-
     if Food.count == 0 # Backwards-compat version of `.none?`
       ConnectionAssertions::NAMES.each { |n| Food.create!(name: n) }
     end

@@ -33,6 +33,14 @@ def change
   add_index :graphql_clients, :name, unique: true
   add_index :graphql_clients, :secret, unique: true
 
+  create_table :graphql_operations, primary_key: :id do |t|
+    t.column :digest, :string, null: false
+    t.column :body, :text, null: false
+    t.column :name, :string, null: false
+    t.timestamps
+  end
+  add_index :graphql_operations, :digest, unique: true
+
   create_table :graphql_client_operations, primary_key: :id do |t|
     t.references :graphql_client, null: false
     t.references :graphql_operation, null: false
@@ -43,14 +51,6 @@ def change
   end
   add_index :graphql_client_operations, [:graphql_client_id, :alias], unique: true, name: "graphql_client_operations_pairs"
   add_index :graphql_client_operations, :is_archived
-
-  create_table :graphql_operations, primary_key: :id do |t|
-    t.column :digest, :string, null: false
-    t.column :body, :text, null: false
-    t.column :name, :string, null: false
-    t.timestamps
-  end
-  add_index :graphql_operations, :digest, unique: true
 
   create_table :graphql_index_entries, primary_key: :id do |t|
     t.column :name, :string, null: false

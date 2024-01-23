@@ -14,7 +14,7 @@ module GraphQL
     #
     # @api private
     class ValidationPipeline
-      attr_reader :max_depth, :max_complexity
+      attr_reader :max_depth, :max_complexity, :validate_timeout_remaining
 
       def initialize(query:, parse_error:, operation_name_error:, max_depth:, max_complexity:)
         @validation_errors = []
@@ -71,7 +71,7 @@ module GraphQL
           validator = @query.static_validator || @schema.static_validator
           validation_result = validator.validate(@query, validate: @query.validate, timeout: @schema.validate_timeout, max_errors: @schema.validate_max_errors)
           @validation_errors.concat(validation_result[:errors])
-
+          @validate_timeout_remaining = validation_result[:remaining_timeout]
           if @validation_errors.empty?
             @validation_errors.concat(@query.variables.errors)
           end

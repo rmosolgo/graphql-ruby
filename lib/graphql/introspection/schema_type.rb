@@ -20,7 +20,9 @@ module GraphQL
       end
 
       def types
-        @context.warden.reachable_types.sort_by(&:graphql_name)
+        types = context.warden.reachable_types + context.schema.extra_types
+        types.sort_by!(&:graphql_name)
+        types
       end
 
       def query_type

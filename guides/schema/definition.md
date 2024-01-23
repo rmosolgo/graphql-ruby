@@ -101,19 +101,11 @@ See the {% internal_link "Object Identification guide", "/schema/object_identifi
 
 ## Execution Configuration
 
-__`instrument`__ attaches instrumenters to the schema, see {% internal_link "Instrumentation", "/queries/instrumentation" %} for more information.
+__`trace_with`__ attaches tracer modules, see {% internal_link "Tracing", "/queries/tracing" %} for more.
 
 ```ruby
 class MySchema < GraphQL::Schema
-  instrument :query, ResolveTimerInstrumentation
-end
-```
-
-__`tracer`__ is another way to hook into execution, see {% internal_link "Tracing", "/queries/tracing" %} for more.
-
-```ruby
-class MySchema < GraphQL::Schema
-  tracer MetricTracer
+  trace_with MetricTracer
 end
 ```
 
@@ -191,5 +183,16 @@ A plugin is an object that responds to `#use`. Plugins are used to attach new be
 ```ruby
 class MySchema < GraphQL::Schema
   use(GraphQL::Tracing::NewRelicTracing)
+end
+```
+
+## Extra Types
+
+Documentation-only types can be attached to the schema using {{ "Schema.extra_types" | api_doc }}. Types passed to this method will _always_ be available in introspection queries and SDL print-outs.
+
+```ruby
+class MySchema < GraphQL::Schema
+  # These aren't for queries, but will appear in documentation:
+  extra_types SystemErrorType, RateLimitExceptionType
 end
 ```

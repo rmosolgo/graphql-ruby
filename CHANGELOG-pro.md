@@ -6,13 +6,19 @@
 
 ### New Features
 
+# 1.26.0 (19 Jan 2023)
+
+### Breaking Changes
+
+- Pundit integration: when the integration encounters an Array, it tries to find a configured policy class. If it can't, it raises an error.
+
+  Previously, the integration silently permitted all items in the array; this default has been changed. See #4726 for more discussion of this change.
+
 # 1.25.2 (29 Dec 2023)
 
 ### New Features
 
 - Subscriptions: send `more: false` when the server calls `unsubscribe`
-
-### Bug Fix
 
 # 1.25.1 (21 Dec 2023)
 

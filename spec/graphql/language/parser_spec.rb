@@ -132,6 +132,7 @@ describe GraphQL::Language::Parser do
         enum Thing {
           "VALUE description"
           VALUE
+          type
         }
       GRAPHQL
 
@@ -142,6 +143,10 @@ describe GraphQL::Language::Parser do
       value_defn = thing_defn.values[0]
       assert_equal "VALUE", value_defn.name
       assert_equal "VALUE description", value_defn.description
+
+      value_defn = thing_defn.values[1]
+      assert_equal "type", value_defn.name
+      assert_nil value_defn.description
     end
 
     it "is parsed for directive definitions" do

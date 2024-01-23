@@ -12,7 +12,7 @@ Some clients may send _several_ queries to the server at once (for example, [Apo
 
 Multiplex runs have their own context, analyzers and instrumentation.
 
-__NOTE:__ As an implementation detail, _all_ queries are run inside multiplexes. That is, a stand-alone query is executed as a "multiplex of one", so instrumentation and multiplex analyzers and instrumentation _will_ apply to standalone queries run with `MySchema.execute(...)`.
+__NOTE:__ As an implementation detail, _all_ queries run inside multiplexes. That is, a stand-alone query is executed as a "multiplex of one", so instrumentation and multiplex analyzers and tracers _will_ apply to standalone queries run with `MySchema.execute(...)`.
 
 ## Concurrent Execution
 
@@ -84,7 +84,7 @@ end
 
 ## Validation and Error Handling
 
-Each query is validated and {% internal_link "analyzed","/queries/ast_analysis" %} independently. The `results` array may include a mix of successful results and failed results
+Each query is validated and {% internal_link "analyzed","/queries/ast_analysis" %} independently. The `results` array may include a mix of successful results and failed results.
 
 ## Multiplex-Level Context
 
@@ -111,22 +111,20 @@ The API is the same as {% internal_link "query analyzers","/queries/ast_analysis
 
 Multiplex analyzers may return {{ "AnalysisError" | api_doc }} to halt execution of the whole multiplex.
 
-## Multiplex Instrumentation
+## Multiplex Tracing
 
-You can add hooks for each multiplex run with multiplex instrumentation.
+You can add hooks for each multiplex run with {% internal_link "trace modules", "/queries/tracing" %}.
 
-An instrumenter must implement `.before_multiplex(multiplex)` and `.after_multiplex(multiplex)`. Then, it can be mounted with `instrument(:multiplex, MyMultiplexAnalyzer)`. See {{ "Execution::Multiplex" | api_doc }} for available methods.
+The trace module may implement `def execute_multiplex(multiplex:)` which `yield`s to allow the multiplex to execute. See {{ "Execution::Multiplex" | api_doc }} for available methods.
 
 For example:
 
 ```ruby
 # Count how many queries are in the multiplex run:
 module MultiplexCounter
-  def self.before_multiplex(multiplex)
+  def execute_multiplex(multiplex:)
     Rails.logger.info("Multiplex size: #{multiplex.queries.length}")
-  end
-
-  def self.after_multiplex(multiplex)
+    yield
   end
 end
 
@@ -134,8 +132,8 @@ end
 
 class MySchema < GraphQL::Schema
   # ...
-  instrument(:multiplex, MultiplexCounter)
+  trace_with(MultiplexCounter )
 end
 ```
 
-Now, `MultiplexCounter.before_multiplex` will be called before each multiplex and `.after_multiplex` will run after each multiplex.
+Now, `MultiplexCounter#execute_multiplex` will be called for each execution, logging the size of each multiplex.

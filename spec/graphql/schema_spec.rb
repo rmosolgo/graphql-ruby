@@ -23,6 +23,9 @@ describe GraphQL::Schema do
       field :some_field, String
     end
 
+    class ExtraType < GraphQL::Schema::Object
+    end
+
     class CustomSubscriptions < GraphQL::Subscriptions::ActionCableSubscriptions
     end
 
@@ -46,6 +49,7 @@ describe GraphQL::Schema do
         context_class Class.new
         directives [DummyFeature1]
         tracer GraphQL::Tracing::DataDogTracing
+        extra_types ExtraType
         query_analyzer Object.new
         multiplex_analyzer Object.new
         rescue_from(StandardError) { }
@@ -78,15 +82,19 @@ describe GraphQL::Schema do
       assert_equal base_schema.multiplex_analyzers, schema.multiplex_analyzers
       assert_equal base_schema.disable_introspection_entry_points?, schema.disable_introspection_entry_points?
       assert_equal [GraphQL::Backtrace, GraphQL::Subscriptions::ActionCableSubscriptions], schema.plugins.map(&:first)
+      assert_equal [ExtraType], base_schema.extra_types
+      assert_equal [ExtraType], schema.extra_types
       assert_instance_of GraphQL::Subscriptions::ActionCableSubscriptions, schema.subscriptions
       assert_equal GraphQL::Query, schema.query_class
     end
 
     it "can override configuration from its superclass" do
       custom_query_class = Class.new(GraphQL::Query)
+      extra_type_2 = Class.new(GraphQL::Schema::Enum)
       schema = Class.new(base_schema) do
         use CustomSubscriptions, action_cable: nil, action_cable_coder: JSON
         query_class(custom_query_class)
+        extra_types [extra_type_2]
       end
 
       query = Class.new(GraphQL::Schema::Object) do
@@ -158,7 +166,7 @@ describe GraphQL::Schema do
       assert_equal [GraphQL::Tracing::DataDogTracing, GraphQL::Tracing::NewRelicTracing], schema.tracers
       assert_includes schema.new_trace.class.ancestors, GraphQL::Tracing::CallLegacyTracers
       assert_equal custom_query_class, schema.query_class
-
+      assert_equal [ExtraType, extra_type_2], schema.extra_types
       assert_instance_of CustomSubscriptions, schema.subscriptions
     end
   end
@@ -238,13 +246,12 @@ describe GraphQL::Schema do
       end
     end
 
-    class NoOpInstrumentation
-      def before_query(query)
-        query.context[:no_op_instrumentation_ran_before_query] = true
-      end
-
-      def after_query(query)
-        query.context[:no_op_instrumentation_ran_after_query] = true
+    module NoOpTrace
+      def execute_query(query:)
+        query.context[:no_op_trace_ran_before_query] = true
+        super
+      ensure
+        query.context[:no_op_trace_ran_after_query] = true
       end
     end
 
@@ -265,7 +272,7 @@ describe GraphQL::Schema do
 
     module PluginWithInstrumentationTracingAndAnalyzer
       def self.use(schema_defn)
-        schema_defn.instrument :query, NoOpInstrumentation.new
+        schema_defn.trace_with(NoOpTrace)
         schema_defn.tracer NoOpTracer.new
         schema_defn.query_analyzer NoOpAnalyzer
       end
@@ -291,8 +298,8 @@ describe GraphQL::Schema do
         res = query.result
         assert res.key?("data")
 
-        assert_equal true, query.context[:no_op_instrumentation_ran_before_query]
-        assert_equal true, query.context[:no_op_instrumentation_ran_after_query]
+        assert_equal true, query.context[:no_op_trace_ran_before_query]
+        assert_equal true, query.context[:no_op_trace_ran_after_query]
         assert_equal true, query.context[:no_op_tracer_ran]
         assert_equal true, query.context[:no_op_analyzer_ran_initialize]
         assert_equal true, query.context[:no_op_analyzer_ran_on_leave_field]
@@ -318,8 +325,8 @@ describe GraphQL::Schema do
         res = query.result
         assert res.key?("data")
 
-        assert_equal true, query.context[:no_op_instrumentation_ran_before_query]
-        assert_equal true, query.context[:no_op_instrumentation_ran_after_query]
+        assert_equal true, query.context[:no_op_trace_ran_before_query]
+        assert_equal true, query.context[:no_op_trace_ran_after_query]
         assert_equal true, query.context[:no_op_tracer_ran]
         assert_equal true, query.context[:no_op_analyzer_ran_initialize]
         assert_equal true, query.context[:no_op_analyzer_ran_on_leave_field]

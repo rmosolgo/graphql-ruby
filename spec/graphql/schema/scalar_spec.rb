@@ -214,4 +214,33 @@ describe GraphQL::Schema::Scalar do
       end
     end
   end
+
+  it "handles coercing null" do
+    class CoerceNullSchema < GraphQL::Schema
+      class CustomScalar < GraphQL::Schema::Scalar
+        class << self
+          def coerce_input(input_value, _context)
+            raise GraphQL::CoercionError, "Invalid value: #{input_value.inspect}"
+          end
+        end
+      end
+
+      class QueryType < GraphQL::Schema::Object
+        field :hello, String do
+          argument :input, CustomScalar, required: false
+        end
+
+        def hello(input: nil)
+          "hello world"
+        end
+      end
+
+      query(QueryType)
+    end
+    result = CoerceNullSchema.execute('{ hello(input: 5) }')
+    assert_equal(["Invalid value: 5"], result["errors"].map { |err| err["message"] })
+
+    null_input_result = CoerceNullSchema.execute('{ hello(input: null) }')
+    assert_equal(["Invalid value: nil"], null_input_result["errors"].map { |err| err["message"] })
+  end
 end
