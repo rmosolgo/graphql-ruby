@@ -24,6 +24,8 @@ optional arguments:
                                               (Outfile generation is skipped by default.)
   --apollo-android-operation-output=<path>  Path to a .json file from Apollo-Android's "generateOperationOutput" feature.
                                               (Outfile generation is skipped by default.)
+  --apollo-persisted-query-manifest=<path>  Path to a .json file from Apollo's "generate-persisted-query-manifest" tool.
+                                              (Outfile generation is skipped by default.)
   --mode=<mode>                             Treat files like a certain kind of project:
                                               relay: treat files like relay-compiler output
                                               project: treat files like a cohesive project (fragments are shared, names must be unique)
@@ -63,6 +65,7 @@ optional arguments:
       relayPersistedOutput: argv["relay-persisted-output"],
       apolloCodegenJsonOutput: argv["apollo-codegen-json-output"],
       apolloAndroidOperationOutput: argv["apollo-android-operation-output"],
+      apolloPersistedQueryManifest: argv["apollo-persisted-query-manifest"],
       url: argv.url,
       client: argv.client,
       outfile: argv.outfile,

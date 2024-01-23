@@ -46,6 +46,7 @@ describe("sync operations", () => {
     it("works with persisted query manifest", () => {
       var options = {
         client: "test-1",
+        outfile: "./src/OperationStoreClient.js",
         apolloPersistedQueryManifest: "./src/sync/__tests__/generate-persisted-query-manifest.json",
       }
 

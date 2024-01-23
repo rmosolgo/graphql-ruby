@@ -129,7 +129,7 @@ function sync(options: SyncOptions) {
   var outfile: string | null
   if (options.outfile) {
     outfile = options.outfile
-  } else if (options.relayPersistedOutput || options.apolloAndroidOperationOutput || options.apolloCodegenJsonOutput) {
+  } else if (options.relayPersistedOutput || options.apolloAndroidOperationOutput || options.apolloCodegenJsonOutput || options.apolloPersistedQueryManifest) {
     // These artifacts have embedded IDs in its generated files,
     // no need to generate an outfile.
     outfile = null
