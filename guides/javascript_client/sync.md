@@ -17,6 +17,7 @@ JavaScript support for GraphQL projects using [graphql-pro](https://graphql.pro)
 - [Apollo Link support](#use-with-apollo-link)
 - [Apollo Codegen Support](#use-with-apollo-codegen)
 - [Apollo Android support](#use-with-apollo-android)
+- [Apollo Persisted Queries Support](#use-with-apollo-persisted-queries)
 - [Plain JS support](#use-with-plain-javascript)
 - [Authorization](#authorization)
 
@@ -262,6 +263,29 @@ end
 ```
 
 You may also have to __update your app__ to send an identifier, so that the server can determine the "client name" used with the operation store. (Apollo Android sends a query hash, but the operation store expects IDs in the form `#{client_name}/#{query_hash}`.)
+
+## Use with Apollo Persisted Queries
+
+Apollo client has a [Persisted Queries Link](https://www.apollographql.com/docs/react/api/link/persisted-queries/). You can use that link with GraphQL-Pro's {% internal_link "OperationStore", "/operation_store/overview" %}. First, create a manifest with [`generate-persisted-query-manifest`](https://www.apollographql.com/docs/react/api/link/persisted-queries/#1-generate-operation-manifests), then, pass the path to that file to `sync`:
+
+```sh
+$ graphql-ruby-client sync --apollo-persisted-query-manifest=path/to/manifest.json ...
+```
+
+Then, configure Apollo Client to [use your persisted query manifest](https://www.apollographql.com/docs/react/api/link/persisted-queries/#persisted-queries-implementation).
+
+Finally, update your controller to receive the operation ID and pass it as `context[:operation_id]`:
+
+```ruby
+client_name = "..." # TODO: send the client name as a query param or header
+persisted_query_hash = params[:extensions][:persistedQuery][:sha256Hash]
+context = {
+  # ...
+  operation_id: "#{client_name}/#{persisted_query_hash}"
+}
+```
+
+The `operation_id` will also need your client name. Using Apollo Client, you could send this as a [custom header](https://www.apollographql.com/docs/react/networking/basic-http-networking/#customizing-request-headers) or another way that works for your application (eg, session or user agent).
 
 ## Use with plain JavaScript
 

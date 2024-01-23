@@ -42,6 +42,20 @@ describe("sync operations", () => {
         expect(generatedCode).toMatchSnapshot()
       })
     })
+
+    it("works with persisted query manifest", () => {
+      var options = {
+        client: "test-1",
+        outfile: "./src/OperationStoreClient.js",
+        apolloPersistedQueryManifest: "./src/sync/__tests__/generate-persisted-query-manifest.json",
+      }
+
+      return sync(options).then(function() {
+        var generatedCode = fs.readFileSync("./src/OperationStoreClient.js", "utf8")
+        expect(generatedCode).toMatch('"TestQuery2": "xyz-123"')
+        expect(generatedCode).toMatchSnapshot()
+      })
+    })
   })
 
   describe("custom HTTP options", () => {
