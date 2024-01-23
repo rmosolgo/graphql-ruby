@@ -1,5 +1,10 @@
 # graphql-ruby-client
 
+# 1.13.0 (23 Jan 2024)
+
+- Sync: add support for `generate-persisted-query-manifest` files #4798
+- createActionCableHandler: remove needless `perform("send", ...)` call #4793
+
 # 1.12.1 (29 Dec 2023)
 
 - GraphiQL: support custom `channelName` and `url` in ActionCable fetcher #4756
