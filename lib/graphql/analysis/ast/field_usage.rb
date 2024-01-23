@@ -43,6 +43,9 @@ module GraphQL
 
             if argument.definition.type.kind.input_object?
               extract_deprecated_arguments(argument.value.arguments.argument_values) # rubocop:disable Development/ContextIsPassedCop -- runtime args instance
+            elsif argument.definition.type.kind.enum?
+              enum_value = argument.definition.type.values[argument.value]
+              @used_deprecated_arguments << argument.definition.path if enum_value.deprecation_reason
             elsif argument.definition.type.list?
               argument
                 .value

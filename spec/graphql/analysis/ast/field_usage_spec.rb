@@ -138,6 +138,20 @@ describe GraphQL::Analysis::AST::FieldUsage do
     end
   end
 
+  describe "query with deprecated enum argument" do
+    let(:query_string) {%|
+      query {
+        fromSource(source: YAK) {
+          id
+        }
+      }
+    |}
+
+    it "keeps track of deprecated arguments" do
+      assert_equal ['Query.fromSource.source'], result[:used_deprecated_arguments]
+    end
+  end
+
   describe "query with an array argument sent as null" do
     let(:query_string) {%|
       query {
