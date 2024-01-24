@@ -23,6 +23,50 @@
   - add `scope: false` to any fields that return arrays to get the previous behavior (no authorization applied to the array; each item authorized on its own)
   - Or, apply [scoping](https://graphql-ruby.org/authorization/scoping.html) by manually configuring a `pundit_policy_class` in the field's return type, then adding a `class Scope ...` inside that policy class. See the Pundit docs for the scope class API: https://github.com/varvet/pundit#scopes.
 
+  If you want to continue passing _all_ arrays through without scoping (for example, if you know they've already been authorized another way, or if you're OK with them being authorized one-at-a-time later), you can implement this in your base `Scope` class, for example:
+
+  ```ruby
+  class BasePolicy
+    class Scope
+      def initialize(user, items)
+        @user = user
+        @items = items
+      end
+
+      def resolve
+        if items.is_a?(Array)
+          items
+        else
+          raise "Implement #{self.class}#resolve to filter these items: #{items.inspect}"
+        end
+      end
+    end
+
+    # Pass this scope class along to subclasses:
+    def self.inherited(child_class)
+      child_class.const_set(:Scope, Class.new(BasePolicy::Scope))
+      super
+    end
+  end
+  ```
+
+  Alternatively, you could implement `def self.scope_items(items, context)` to skip arrays, for example:
+
+  ```ruby
+  module SkipScopingOnArrays
+    def scope_items(items, context)
+      if items.is_a?(Array)
+        items # return these as-is
+      else
+        super
+      end
+    end
+  end
+
+  # Then, in type definitions which should skip scoping on arrays:
+  extend SkipScopingOnArrays
+  ```
+
 # 1.25.2 (29 Dec 2023)
 
 ### New Features
