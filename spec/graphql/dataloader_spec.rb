@@ -401,11 +401,7 @@ describe GraphQL::Dataloader do
     mutation(Mutation)
 
     def self.object_from_id(id, ctx)
-      if ctx[:use_request]
-        ctx.dataloader.with(DataObject).request(id)
-      else
-        ctx.dataloader.with(DataObject).load(id)
-      end
+      ctx.dataloader.with(DataObject).load(id)
     end
 
     def self.resolve_type(type, obj, ctx)
@@ -767,12 +763,6 @@ describe GraphQL::Dataloader do
             [:mget, ["2", "3"]],
           ]
           assert_equal expected_log, database_log
-
-          # Run the same test, but using `.request` from object_from_id
-          database_log.clear
-          res2 = schema.execute(query_str, context: { use_request: true })
-          assert_equal expected_data, res2["data"]
-          assert_equal expected_log, database_log
         end
 
         it "works with sources that use keyword arguments in the initializer" do
@@ -814,14 +804,6 @@ describe GraphQL::Dataloader do
             values.sort!
           end
           assert_equal expected_results, results.first.to_a
-
-          query2 = GraphQL::Query.new(schema, query_str, context: { use_request: true })
-          result2 = nil
-          query2.context.dataloader.run_isolated do
-            result2 = GraphQL::Analysis::AST.analyze_query(query2, [UsageAnalyzer])
-          end
-
-          assert_equal expected_results, result2.first.to_a
         end
 
         it "Works with input objects, load and request" do
@@ -845,13 +827,6 @@ describe GraphQL::Dataloader do
             [:mget, ["5", "6"]],
             [:mget, ["2", "3"]],
           ]
-          assert_equal expected_log, database_log
-
-
-          # Run the same test, but using `.request` from object_from_id
-          database_log.clear
-          res2 = schema.execute(query_str, context: { use_request: true })
-          assert_equal expected_data, res2["data"]
           assert_equal expected_log, database_log
         end
 
@@ -888,13 +863,6 @@ describe GraphQL::Dataloader do
             [:mget, ["5", "6"]],
             [:mget, ["2", "3"]],
           ]
-          assert_equal expected_log, database_log
-
-
-          # Run the same test, but using `.request` from object_from_id
-          database_log.clear
-          res2 = schema.execute(query_str, context: { use_request: true }, variables: { input: { recipe1Id: 5, recipe2Id: 6 }})
-          assert_equal expected_data, res2["data"]
           assert_equal expected_log, database_log
         end
 
@@ -1129,15 +1097,10 @@ describe GraphQL::Dataloader do
       class QueryType < GraphQL::Schema::Object
         field :foo, Example::FooType do
           argument :foo_id, GraphQL::Types::ID, required: false, loads: Example::FooType
-          argument :use_load, GraphQL::Types::Boolean, required: false, default_value: false
         end
 
-        def foo(use_load: false, foo: nil)
-          if use_load
-            dataloader.with(Example::FooSource).load("load")
-          else
-            dataloader.with(Example::FooSource).request("request")
-          end
+        def foo(foo: nil)
+          dataloader.with(Example::FooSource).load("load")
         end
       end
 
@@ -1146,7 +1109,7 @@ describe GraphQL::Dataloader do
         use GraphQL::Dataloader
 
         def self.object_from_id(id, ctx)
-          ctx.dataloader.with(Example::FooSource).request(id)
+          ctx.dataloader.with(Example::FooSource).load(id)
         end
 
         def self.resolve_type(type, obj, ctx)
@@ -1158,11 +1121,7 @@ describe GraphQL::Dataloader do
     it "loads properly" do
       result = Example::Schema.execute(<<-GRAPHQL)
       {
-        foo(useLoad: false, fooId: "Other") {
-          __typename
-          id
-        }
-        fooWithLoad: foo(useLoad: true, fooId: "Other") {
+        fooWithLoad: foo(fooId: "Other") {
           __typename
           id
         }
@@ -1171,7 +1130,6 @@ describe GraphQL::Dataloader do
       # This should not have a Lazy in it
       expected_result = {
         "data" => {
-          "foo" => { "id" => "request", "__typename" => "Foo" },
           "fooWithLoad" => { "id" => "load", "__typename" => "Foo" },
         }
       }
