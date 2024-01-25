@@ -92,6 +92,11 @@ strong, b {
     align-items: center;
     $fade-time: 0.2s;
 
+    .nav-links {
+      margin-left: auto;
+      display: flex;
+    }
+
     .img-link {
       transition: background $fade-time;
 
@@ -133,12 +138,15 @@ strong, b {
 }
 
 .header-container {
-  max-width: 1240px;
-  margin: 0px auto;
+  margin: 0px 20px 0px 20px;
 }
 
 .container {
   max-width: 1200px;
+  &.fullwidth {
+    max-width: 100%;
+    margin: 0px 20px 0px 20px;
+  }
   margin: 0px auto;
   padding: 10px 20px;
   background: $container-color;
@@ -448,8 +456,6 @@ table {
   margin: 10px;
   border: 1px solid $subtle-color;
   border-radius: 3px;
-  // make it float right in a flex container
-  margin-left: auto;
 }
 
 .search-results-container {
