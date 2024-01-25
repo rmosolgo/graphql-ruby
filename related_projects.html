@@ -11,61 +11,24 @@
     <link rel="icon" href="/graphql-ruby-icon.png">
   </head>
   <body>
-    <script>
-      function detectDarkTheme(toggle) {
-        var prefersDarkSchemeSetting = localStorage.getItem("prefersDarkScheme")
-        if (prefersDarkSchemeSetting == null) {
-          prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches
-        } else {
-          prefersDarkScheme = prefersDarkSchemeSetting == "true"
-        }
-
-        if (toggle) {
-          if (prefersDarkScheme) {
-            prefersDarkScheme = false
-            localStorage.setItem("prefersDarkScheme", "false")
-          } else {
-            prefersDarkScheme = true
-            localStorage.setItem("prefersDarkScheme", "true")
-          }
-        }
-
-        if (prefersDarkScheme) {
-          document.body.classList.add('dark-theme');
-          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
-            el.src = "/graphql-ruby-dark.png"
-          })
-        } else {
-          document.body.classList.remove('dark-theme');
-          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
-            el.src = "/graphql-ruby.png"
-          })
-        }
-      }
-
-      detectDarkTheme(false)
-    </script>
     <div class="header">
       <div class="header-container">
         <div class="nav">
           <a href="/" class="img-link">
-            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
           </a>
-          <div class="nav-links">
-            <a href="/getting_started">Get Started</a>
-            <a href="/guides">Guides</a>
-            <a href="/api-doc/2.2.5/">API</a>
-            <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
-            <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
-            <a href="https://graphql.pro">Upgrade to Pro</a>
-            <input
-              class="search-input"
-              onkeyup="GraphQLRubySearch.run(this)"
-              type="text"
-              placeholder="Search the docs..."
-            />
-            <a href="#" onclick="event.preventDefault(); detectDarkTheme(true)" class="dark-theme-button"></a>
-          </div>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/2.1.11/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
         </div>
       </div>
       <div class="search-results-container">
@@ -73,7 +36,7 @@
         </div>
       </div>
     </div>
-    <div class="container  fullwidth ">
+    <div class="container">
       <ul class="breadcrumb">
   <li><a href="/guides">Guides</a></li>
   <li>
@@ -164,7 +127,6 @@
   <li><a href="https://github.com/graphql-devise/graphql_devise"><code class="language-plaintext highlighter-rouge">graphql-devise</code></a>, a gql interface to handle authentication with Devise</li>
   <li><a href="https://github.com/gjtorikian/graphql-docs"><code class="language-plaintext highlighter-rouge">graphql-docs</code></a>, a tool to automatically generate static HTML documentation from your GraphQL implementation</li>
   <li><a href="https://github.com/Shopify/graphql-metrics"><code class="language-plaintext highlighter-rouge">graphql-metrics</code></a>, a plugin to extract fine-grain metrics of GraphQL queries received by your server</li>
-  <li><a href="https://github.com/gmac/graphql-stitching-ruby"><code class="language-plaintext highlighter-rouge">graphql-stitching</code></a>, tools to combine multiple local and remote schemas into a single graph that queries as one</li>
   <li><a href="https://github.com/hschne/graphql-groups"><code class="language-plaintext highlighter-rouge">graphql-groups</code></a>, a DSL to define group- and aggregation queries with graphql-ruby</li>
   <li>Rails Helpers:
     <ul>
@@ -183,7 +145,7 @@
   <li><a href="https://github.com/DmitryTsepelev/graphql-ruby-fragment_cache"><code class="language-plaintext highlighter-rouge">graphql-ruby-fragment_cache</code></a>, a tool for caching response fragments.</li>
   <li><a href="https://github.com/DmitryTsepelev/graphql-ruby-persisted_queries"><code class="language-plaintext highlighter-rouge">graphql-ruby-persisted_queries</code></a>, the implementation of <a href="https://github.com/apollographql/apollo-link-persisted-queries">Apollo persisted queries</a>.</li>
   <li><a href="https://github.com/DmitryTsepelev/rubocop-graphql"><code class="language-plaintext highlighter-rouge">rubocop-graphql</code></a>, <a href="https://github.com/rubocop-hq/rubocop">rubocop</a> extension for enforcing best practices.</li>
-  <li><a href="https://github.com/Gusto/apollo-federation-ruby"><code class="language-plaintext highlighter-rouge">apollo-federation-ruby</code></a>, a Ruby implementation of the Apollo Federation <a href="https://www.apollographql.com/docs/federation/subgraph-spec/">subgraph spec</a>.</li>
+  <li><a href="https://github.com/Gusto/apollo-federation-ruby"><code class="language-plaintext highlighter-rouge">apollo-federation-ruby</code></a>, a Ruby implementation of Apollo Federation.</li>
 </ul>
 
 <h2 id="blog-posts">Blog Posts</h2>
@@ -254,8 +216,5 @@
     </div>
     <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
     <script src="/js/search.js"></script>
-    <script>
-      detectDarkTheme(false) // do it again to update the images
-    </script>
   </body>
 </html>
