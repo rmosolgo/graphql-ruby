@@ -138,6 +138,36 @@ describe GraphQL::Analysis::AST::FieldUsage do
     end
   end
 
+  describe "query with deprecated enum argument" do
+    let(:query_string) {%|
+      query {
+        fromSource(source: YAK) {
+          id
+        }
+      }
+    |}
+
+    it "keeps track of deprecated arguments" do
+      assert_equal ['DairyAnimal.YAK'], result[:used_deprecated_enum_values]
+    end
+
+    describe "tracks non-null/list enums" do
+      let(:query_string) {%|
+        query {
+          cheese(id: 1) {
+            similarCheese(source: [YAK]) {
+              id
+            }
+          }
+        }
+      |}
+
+      it "keeps track of deprecated arguments" do
+        assert_equal ['DairyAnimal.YAK'], result[:used_deprecated_enum_values]
+      end
+    end
+  end
+
   describe "query with an array argument sent as null" do
     let(:query_string) {%|
       query {
@@ -211,6 +241,20 @@ describe GraphQL::Analysis::AST::FieldUsage do
     end
   end
 
+
+  describe "mutation with deprecated argument" do
+    let(:query_string) {%|
+      mutation {
+        pushValue(deprecatedTestInput: { oldSource: "deprecated" })
+      }
+    |}
+
+    it "keeps track of nested deprecated arguments" do
+      assert_equal ['DairyProductInput.oldSource'], result[:used_deprecated_arguments]
+    end
+  end
+
+
   describe "when an argument prepare raises a GraphQL::ExecutionError" do
     class ArgumentErrorFieldUsageSchema < GraphQL::Schema
       class FieldUsage < GraphQL::Analysis::AST::FieldUsage
@@ -234,7 +278,7 @@ describe GraphQL::Analysis::AST::FieldUsage do
     it "skips analysis of those arguments" do
       res = ArgumentErrorFieldUsageSchema.execute("{ f(i: 1) }")
       assert_equal ["boom!"], res["errors"].map { |e| e["message"] }
-      assert_equal({used_fields: ["Query.f"], used_deprecated_arguments: [], used_deprecated_fields: []}, res.context[:field_usage])
+      assert_equal({used_fields: ["Query.f"], used_deprecated_arguments: [], used_deprecated_fields: [], used_deprecated_enum_values: []}, res.context[:field_usage])
     end
   end
 end

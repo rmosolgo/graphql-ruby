@@ -489,6 +489,7 @@ module Dummy
     description "The root for mutations in this schema"
     field :push_value, [Integer], null: false, description: "Push a value onto a global array :D" do
       argument :value, Integer, as: :val
+      argument :deprecated_test_input, DairyProductInput, required: false
     end
     def push_value(val:)
       GLOBAL_VALUES << val
