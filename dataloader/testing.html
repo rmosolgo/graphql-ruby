@@ -11,24 +11,61 @@
     <link rel="icon" href="/graphql-ruby-icon.png">
   </head>
   <body>
+    <script>
+      function detectDarkTheme(toggle) {
+        var prefersDarkSchemeSetting = localStorage.getItem("prefersDarkScheme")
+        if (prefersDarkSchemeSetting == null) {
+          prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+        } else {
+          prefersDarkScheme = prefersDarkSchemeSetting == "true"
+        }
+
+        if (toggle) {
+          if (prefersDarkScheme) {
+            prefersDarkScheme = false
+            localStorage.setItem("prefersDarkScheme", "false")
+          } else {
+            prefersDarkScheme = true
+            localStorage.setItem("prefersDarkScheme", "true")
+          }
+        }
+
+        if (prefersDarkScheme) {
+          document.body.classList.add('dark-theme');
+          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
+            el.src = "/graphql-ruby-dark.png"
+          })
+        } else {
+          document.body.classList.remove('dark-theme');
+          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
+            el.src = "/graphql-ruby.png"
+          })
+        }
+      }
+
+      detectDarkTheme(false)
+    </script>
     <div class="header">
       <div class="header-container">
         <div class="nav">
           <a href="/" class="img-link">
-            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
           </a>
-          <a href="/getting_started">Get Started</a>
-          <a href="/guides">Guides</a>
-          <a href="/api-doc/2.1.11/">API</a>
-          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
-          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
-          <a href="https://graphql.pro">Upgrade to Pro</a>
-          <input
-            class="search-input"
-            onkeyup="GraphQLRubySearch.run(this)"
-            type="text"
-            placeholder="Search the docs..."
-          />
+          <div class="nav-links">
+            <a href="/getting_started">Get Started</a>
+            <a href="/guides">Guides</a>
+            <a href="/api-doc/2.2.6/">API</a>
+            <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
+            <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+            <a href="https://graphql.pro">Upgrade to Pro</a>
+            <input
+              class="search-input"
+              onkeyup="GraphQLRubySearch.run(this)"
+              type="text"
+              placeholder="Search the docs..."
+            />
+            <a href="#" onclick="event.preventDefault(); detectDarkTheme(true)" class="dark-theme-button"></a>
+          </div>
         </div>
       </div>
       <div class="search-results-container">
@@ -36,7 +73,7 @@
         </div>
       </div>
     </div>
-    <div class="container">
+    <div class="container  fullwidth ">
       <ul class="breadcrumb">
   <li><a href="/guides">Guides</a></li>
   <li>
@@ -99,7 +136,9 @@
       
         <option  selected data-target="/dataloader/testing.html">Testing</option>
       
-        <option  data-target="/dataloader/nonblocking.html">Non-Blocking Data Loading for GraphQL</option>
+        <option  data-target="/dataloader/async_dataloader.html">Async Source Execution</option>
+      
+        <option  data-target="/dataloader/parallelism.html">Manual Parallelism</option>
       
     </select>
   </li>
@@ -116,7 +155,7 @@
 </div>
 </div>
 <div class="guide-container">
-  <p>There are a few techniques for testing your <a href="/api-doc/2.1.11/GraphQL/Dataloader" target="_blank" title="API docs for GraphQL::Dataloader"><code>GraphQL::Dataloader</code></a> setup.</p>
+  <p>There are a few techniques for testing your <a href="/api-doc/2.2.6/GraphQL/Dataloader" target="_blank" title="API docs for GraphQL::Dataloader"><code>GraphQL::Dataloader</code></a> setup.</p>
 
 <h2 id="integration-tests">Integration Tests</h2>
 
@@ -150,7 +189,21 @@
 
 <h2 id="testing-dataloader-sources">Testing Dataloader Sources</h2>
 
-<p>You can also test <code class="language-plaintext highlighter-rouge">Dataloader</code> behavior outside of GraphQL using <a href="/api-doc/2.1.11/GraphQL/Dataloader#with_dataloading-class_method" target="_blank" title="API docs for GraphQL::Dataloader.with_dataloading"><code>GraphQL::Dataloader.with_dataloading</code></a>. For example:</p>
+<p>You can also test <code class="language-plaintext highlighter-rouge">Dataloader</code> behavior outside of GraphQL using <a href="/api-doc/2.2.6/GraphQL/Dataloader#with_dataloading-class_method" target="_blank" title="API docs for GraphQL::Dataloader.with_dataloading"><code>GraphQL::Dataloader.with_dataloading</code></a>. For example, let’s if you have a <code class="language-plaintext highlighter-rouge">Sources::ActiveRecord</code> source defined like so:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">module</span> <span class="nn">Sources</span>
+  <span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Dataloader</span><span class="o">::</span><span class="no">Source</span>
+    <span class="k">def</span> <span class="nf">fetch</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span>
+      <span class="n">records</span> <span class="o">=</span> <span class="no">User</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">id: </span><span class="n">ids</span><span class="p">)</span>
+      <span class="c1"># return a list with `nil` for any ID that wasn't found, so the shape matches</span>
+      <span class="n">ids</span><span class="p">.</span><span class="nf">map</span> <span class="p">{</span> <span class="o">|</span><span class="nb">id</span><span class="o">|</span> <span class="n">records</span><span class="p">.</span><span class="nf">find</span> <span class="p">{</span> <span class="o">|</span><span class="n">r</span><span class="o">|</span> <span class="n">r</span><span class="p">.</span><span class="nf">id</span> <span class="o">==</span> <span class="nb">id</span><span class="p">.</span><span class="nf">to_i</span> <span class="p">}</span> <span class="p">}</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>You can test it like so:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">test_it_fetches_objects_by_id</span>
   <span class="n">user_1</span><span class="p">,</span> <span class="n">user_2</span><span class="p">,</span> <span class="n">user_3</span> <span class="o">=</span> <span class="mi">3</span><span class="p">.</span><span class="nf">times</span><span class="p">.</span><span class="nf">map</span> <span class="p">{</span> <span class="no">User</span><span class="p">.</span><span class="nf">create!</span> <span class="p">}</span>
@@ -161,14 +214,14 @@
   <span class="no">ActiveSupport</span><span class="o">::</span><span class="no">Notifications</span><span class="p">.</span><span class="nf">subscribed</span><span class="p">(</span><span class="n">callback</span><span class="p">,</span> <span class="s2">"sql.active_record"</span><span class="p">)</span> <span class="k">do</span>
     <span class="no">GraphQL</span><span class="o">::</span><span class="no">Dataloader</span><span class="p">.</span><span class="nf">with_dataloading</span> <span class="k">do</span> <span class="o">|</span><span class="n">dataloader</span><span class="o">|</span>
       <span class="n">req1</span> <span class="o">=</span> <span class="n">dataloader</span><span class="p">.</span><span class="nf">with</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">ActiveRecord</span><span class="p">).</span><span class="nf">request</span><span class="p">(</span><span class="n">user_1</span><span class="p">.</span><span class="nf">id</span><span class="p">)</span>
-      <span class="n">req2</span> <span class="o">=</span> <span class="n">dataloader</span><span class="p">.</span><span class="nf">with</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">ActiveRecord</span><span class="p">).</span><span class="nf">request</span><span class="p">(</span><span class="n">user_3</span><span class="p">.</span><span class="nf">id</span><span class="p">)</span>
-      <span class="n">req3</span> <span class="o">=</span> <span class="n">dataloader</span><span class="p">.</span><span class="nf">with</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">ActiveRecord</span><span class="p">).</span><span class="nf">request</span><span class="p">(</span><span class="n">user_2</span><span class="p">.</span><span class="nf">id</span><span class="p">)</span>
+      <span class="n">req2</span> <span class="o">=</span> <span class="n">dataloader</span><span class="p">.</span><span class="nf">with</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">ActiveRecord</span><span class="p">).</span><span class="nf">request</span><span class="p">(</span><span class="n">user_2</span><span class="p">.</span><span class="nf">id</span><span class="p">)</span>
+      <span class="n">req3</span> <span class="o">=</span> <span class="n">dataloader</span><span class="p">.</span><span class="nf">with</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">ActiveRecord</span><span class="p">).</span><span class="nf">request</span><span class="p">(</span><span class="n">user_3</span><span class="p">.</span><span class="nf">id</span><span class="p">)</span>
       <span class="n">req4</span> <span class="o">=</span> <span class="n">dataloader</span><span class="p">.</span><span class="nf">with</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">ActiveRecord</span><span class="p">).</span><span class="nf">request</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
       <span class="c1"># Validate source's matching up of records</span>
       <span class="n">expect</span><span class="p">(</span><span class="n">req1</span><span class="p">.</span><span class="nf">load</span><span class="p">).</span><span class="nf">to</span> <span class="n">eq</span><span class="p">(</span><span class="n">user_1</span><span class="p">)</span>
-      <span class="n">expect</span><span class="p">(</span><span class="n">req2</span><span class="p">.</span><span class="nf">load</span><span class="p">).</span><span class="nf">to</span> <span class="n">eq</span><span class="p">(</span><span class="n">user_3</span><span class="p">)</span>
-      <span class="n">expect</span><span class="p">(</span><span class="n">req3</span><span class="p">.</span><span class="nf">load</span><span class="p">).</span><span class="nf">to</span> <span class="n">eq</span><span class="p">(</span><span class="n">user_2</span><span class="p">)</span>
+      <span class="n">expect</span><span class="p">(</span><span class="n">req2</span><span class="p">.</span><span class="nf">load</span><span class="p">).</span><span class="nf">to</span> <span class="n">eq</span><span class="p">(</span><span class="n">user_2</span><span class="p">)</span>
+      <span class="n">expect</span><span class="p">(</span><span class="n">req3</span><span class="p">.</span><span class="nf">load</span><span class="p">).</span><span class="nf">to</span> <span class="n">eq</span><span class="p">(</span><span class="n">user_3</span><span class="p">)</span>
       <span class="n">expect</span><span class="p">(</span><span class="n">req4</span><span class="p">.</span><span class="nf">load</span><span class="p">).</span><span class="nf">to</span> <span class="n">be_nil</span>
     <span class="k">end</span>
   <span class="k">end</span>
@@ -208,5 +261,8 @@
     </div>
     <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
     <script src="/js/search.js"></script>
+    <script>
+      detectDarkTheme(false) // do it again to update the images
+    </script>
   </body>
 </html>

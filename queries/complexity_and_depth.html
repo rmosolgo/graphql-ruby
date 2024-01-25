@@ -11,24 +11,61 @@
     <link rel="icon" href="/graphql-ruby-icon.png">
   </head>
   <body>
+    <script>
+      function detectDarkTheme(toggle) {
+        var prefersDarkSchemeSetting = localStorage.getItem("prefersDarkScheme")
+        if (prefersDarkSchemeSetting == null) {
+          prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+        } else {
+          prefersDarkScheme = prefersDarkSchemeSetting == "true"
+        }
+
+        if (toggle) {
+          if (prefersDarkScheme) {
+            prefersDarkScheme = false
+            localStorage.setItem("prefersDarkScheme", "false")
+          } else {
+            prefersDarkScheme = true
+            localStorage.setItem("prefersDarkScheme", "true")
+          }
+        }
+
+        if (prefersDarkScheme) {
+          document.body.classList.add('dark-theme');
+          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
+            el.src = "/graphql-ruby-dark.png"
+          })
+        } else {
+          document.body.classList.remove('dark-theme');
+          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
+            el.src = "/graphql-ruby.png"
+          })
+        }
+      }
+
+      detectDarkTheme(false)
+    </script>
     <div class="header">
       <div class="header-container">
         <div class="nav">
           <a href="/" class="img-link">
-            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
           </a>
-          <a href="/getting_started">Get Started</a>
-          <a href="/guides">Guides</a>
-          <a href="/api-doc/2.1.11/">API</a>
-          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
-          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
-          <a href="https://graphql.pro">Upgrade to Pro</a>
-          <input
-            class="search-input"
-            onkeyup="GraphQLRubySearch.run(this)"
-            type="text"
-            placeholder="Search the docs..."
-          />
+          <div class="nav-links">
+            <a href="/getting_started">Get Started</a>
+            <a href="/guides">Guides</a>
+            <a href="/api-doc/2.2.6/">API</a>
+            <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
+            <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+            <a href="https://graphql.pro">Upgrade to Pro</a>
+            <input
+              class="search-input"
+              onkeyup="GraphQLRubySearch.run(this)"
+              type="text"
+              placeholder="Search the docs..."
+            />
+            <a href="#" onclick="event.preventDefault(); detectDarkTheme(true)" class="dark-theme-button"></a>
+          </div>
         </div>
       </div>
       <div class="search-results-container">
@@ -36,7 +73,7 @@
         </div>
       </div>
     </div>
-    <div class="container">
+    <div class="container  fullwidth ">
       <ul class="breadcrumb">
   <li><a href="/guides">Guides</a></li>
   <li>
@@ -111,8 +148,6 @@
       
         <option  data-target="/queries/response_extensions.html">Response Extensions</option>
       
-        <option  data-target="/queries/instrumentation.html">Instrumentation</option>
-      
     </select>
   </li>
 </ul>
@@ -122,14 +157,52 @@
 <h1 class="guide-header">Complexity & Depth</h1>
 <div class="guide-table-of-contents"><div class="table-of-contents">
   <h3 class="contents-header">Contents</h3>
-  <ol class='contents-list'><li class='contents-entry'><a href='#prevent-complex-queries'>Prevent complex queries
+  <ol class='contents-list'><li class='contents-entry'><a href='#prevent-deeply-nested-queries'>Prevent deeply-nested queries
+</a></li><li class='contents-entry'><a href='#prevent-complex-queries'>Prevent complex queries
 </a><ol class='contents-list'><li class='contents-entry'><a href='#connection-fields'>Connection fields
-</a></li></ol></li><li class='contents-entry'><a href='#prevent-deeply-nested-queries'>Prevent deeply-nested queries
+</a></li></ol></li><li class='contents-entry'><a href='#how-complexity-scoring-works'>How complexity scoring works
 </a></li></ol>
 </div>
 </div>
 <div class="guide-container">
   <p>GraphQL-Ruby ships with some validations based on <a href="/queries/ast_analysis">query analysis</a>. You can customize them as-needed, too.</p>
+
+<h2 id="prevent-deeply-nested-queries">Prevent deeply-nested queries</h2>
+
+<p>You can also reject queries based on the depth of their nesting. You can define <code class="language-plaintext highlighter-rouge">max_depth</code> at schema-level or query-level:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Schema-level:</span>
+<span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="c1"># ...</span>
+  <span class="n">max_depth</span> <span class="mi">15</span>
+<span class="k">end</span>
+
+<span class="c1"># Query-level, which overrides the schema-level setting:</span>
+<span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">max_depth: </span><span class="mi">20</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>By default, <strong>introspection fields are counted</strong>. The default introspection query requires at least <code class="language-plaintext highlighter-rouge">max_depth 13</code>. You can also configure your schema not to count introspection fields with <code class="language-plaintext highlighter-rouge">max_depth ..., count_introspection_fields: false</code>.</p>
+
+<p>You can use <code class="language-plaintext highlighter-rouge">nil</code> to disable the validation:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># This query won't be validated:</span>
+<span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">max_depth: </span><span class="kp">nil</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>To get a feeling for depth of queries in your system, you can extend <a href="/api-doc/2.2.6/GraphQL/Analysis/AST/QueryDepth" target="_blank" title="API docs for GraphQL::Analysis::AST::QueryDepth"><code>GraphQL::Analysis::AST::QueryDepth</code></a>. Hook it up to log out values from each query:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">LogQueryDepth</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span><span class="o">::</span><span class="no">QueryDepth</span>
+  <span class="k">def</span> <span class="nf">result</span>
+    <span class="n">query_depth</span> <span class="o">=</span> <span class="k">super</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="s2">"[GraphQL Query Depth] </span><span class="si">#{</span><span class="n">query_depth</span><span class="si">}</span><span class="s2"> || staff?  </span><span class="si">#{</span><span class="n">query</span><span class="p">.</span><span class="nf">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">].</span><span class="nf">staff?</span><span class="si">}</span><span class="s2">"</span>
+    <span class="no">Rails</span><span class="p">.</span><span class="nf">logger</span><span class="p">.</span><span class="nf">info</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="n">query_analyzer</span><span class="p">(</span><span class="no">LogQueryDepth</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
 
 <h2 id="prevent-complex-queries">Prevent complex queries</h2>
 
@@ -177,7 +250,7 @@
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">max_complexity: </span><span class="kp">nil</span><span class="p">)</span>
 </code></pre></div></div>
 
-<p>To get a feeling for complexity of queries in your system, you can extend <a href="/api-doc/2.1.11/GraphQL/Analysis/AST/QueryComplexity" target="_blank" title="API docs for GraphQL::Analysis::AST::QueryComplexity"><code>GraphQL::Analysis::AST::QueryComplexity</code></a>. Hook it up to log out values from each query:</p>
+<p>To get a feeling for complexity of queries in your system, you can extend <a href="/api-doc/2.2.6/GraphQL/Analysis/AST/QueryComplexity" target="_blank" title="API docs for GraphQL::Analysis::AST::QueryComplexity"><code>GraphQL::Analysis::AST::QueryComplexity</code></a>. Hook it up to log out values from each query:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">LogQueryComplexityAnalyzer</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span><span class="o">::</span><span class="no">QueryComplexity</span>
   <span class="c1"># Override this method to _do something_ with the calculated complexity value</span>
@@ -239,42 +312,162 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<h2 id="prevent-deeply-nested-queries">Prevent deeply-nested queries</h2>
+<h2 id="how-complexity-scoring-works">How complexity scoring works</h2>
 
-<p>You can also reject queries based on the depth of their nesting. You can define <code class="language-plaintext highlighter-rouge">max_depth</code> at schema-level or query-level:</p>
+<p>GraphQL Ruby’s complexity scoring algorithm is biased towards selection fairness. While highly accurate, its results are not always intuitive. Here’s an example query performed on the <a href="https://shopify.dev/docs/api/admin-graphql">Shopify Admin API</a>:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Schema-level:</span>
-<span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="c1"># ...</span>
-  <span class="n">max_depth</span> <span class="mi">15</span>
-<span class="k">end</span>
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">query</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">node</span><span class="p">(</span><span class="n">id</span><span class="p">:</span><span class="w"> </span><span class="s2">"123"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c"># interface Node</span><span class="w">
+    </span><span class="n">id</span><span class="w">
+    </span><span class="p">...</span><span class="n">on</span><span class="w"> </span><span class="n">HasMetafields</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c"># interface HasMetafields</span><span class="w">
+      </span><span class="n">metafield</span><span class="p">(</span><span class="n">key</span><span class="p">:</span><span class="w"> </span><span class="s2">"a"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="n">value</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+      </span><span class="n">metafields</span><span class="p">(</span><span class="n">first</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="n">nodes</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="n">value</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+    </span><span class="p">...</span><span class="n">on</span><span class="w"> </span><span class="n">Product</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c"># implements HasMetafields</span><span class="w">
+      </span><span class="n">title</span><span class="w">
+      </span><span class="n">metafield</span><span class="p">(</span><span class="n">key</span><span class="p">:</span><span class="w"> </span><span class="s2">"a"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="n">definition</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="n">description</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+    </span><span class="p">...</span><span class="n">on</span><span class="w"> </span><span class="n">PriceList</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="n">name</span><span class="w">
+      </span><span class="n">catalog</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="n">id</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
 
-<span class="c1"># Query-level, which overrides the schema-level setting:</span>
-<span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">max_depth: </span><span class="mi">20</span><span class="p">)</span>
+<p>First, GraphQL Ruby allows field definitions to specify a <code class="language-plaintext highlighter-rouge">complexity</code> attribute that provides a complexity score (or a proc that computes a score) for each field. Let’s say that this schema defines a system where:</p>
+
+<ul>
+  <li>Leaf fields cost <code class="language-plaintext highlighter-rouge">0</code></li>
+  <li>Composite fields cost <code class="language-plaintext highlighter-rouge">1</code></li>
+  <li>Connection fields cost <code class="language-plaintext highlighter-rouge">children * input size</code></li>
+</ul>
+
+<p>Given these parameters, we get an itemized scoring distribution of:</p>
+
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">query</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">node</span><span class="p">(</span><span class="n">id</span><span class="p">:</span><span class="w"> </span><span class="s2">"123"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c"># 1, composite</span><span class="w">
+    </span><span class="n">id</span><span class="w"> </span><span class="c"># 0, leaf</span><span class="w">
+    </span><span class="p">...</span><span class="n">on</span><span class="w"> </span><span class="n">HasMetafields</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="n">metafield</span><span class="p">(</span><span class="n">key</span><span class="p">:</span><span class="w"> </span><span class="s2">"a"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c"># 1, composite</span><span class="w">
+        </span><span class="n">value</span><span class="w"> </span><span class="c"># 0, leaf</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+      </span><span class="n">metafields</span><span class="p">(</span><span class="n">first</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c"># 1 * 10, connection</span><span class="w">
+        </span><span class="n">nodes</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c"># 1, composite</span><span class="w">
+          </span><span class="n">value</span><span class="w"> </span><span class="c"># 0, leaf</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+    </span><span class="p">...</span><span class="n">on</span><span class="w"> </span><span class="n">Product</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="n">title</span><span class="w"> </span><span class="c"># 0, leaf</span><span class="w">
+      </span><span class="n">metafield</span><span class="p">(</span><span class="n">key</span><span class="p">:</span><span class="w"> </span><span class="s2">"a"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c"># 1, composite</span><span class="w">
+        </span><span class="n">definition</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c"># 1, composite</span><span class="w">
+          </span><span class="n">description</span><span class="w"> </span><span class="c"># 0, leaf</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+    </span><span class="p">...</span><span class="n">on</span><span class="w"> </span><span class="n">PriceList</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="n">name</span><span class="w"> </span><span class="c"># 0, leaf</span><span class="w">
+      </span><span class="n">catalog</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c"># 1, composite</span><span class="w">
+        </span><span class="n">id</span><span class="w"> </span><span class="c"># 0, leaf</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>However, we cannot naively tally these itemized scores without over-costing the query. Consider:</p>
+
+<ul>
+  <li>The <code class="language-plaintext highlighter-rouge">node</code> scope makes many <em>possible</em> selections on an abstract type, so we need the maximum among concrete possibilities for a fair representation.</li>
+  <li>A <code class="language-plaintext highlighter-rouge">node.metafield</code> selection path is duplicated across the <code class="language-plaintext highlighter-rouge">HasMetafields</code> and <code class="language-plaintext highlighter-rouge">Product</code> selection scopes. This path will only resolve once, so should also only cost once.</li>
+</ul>
+
+<p>To reconcile these possibilities, the <a href="https://github.com/rmosolgo/graphql-ruby/blob/master/lib/graphql/analysis/ast/query_complexity.rb">complexity algorithm</a> breaks the selection down into a tree of types mapped to possible selections, across which lexical selections can be coalesced and deduplicated (pseudocode):</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span>
+  <span class="no">Schema</span><span class="o">::</span><span class="no">Query</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="s2">"node"</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="no">Schema</span><span class="o">::</span><span class="no">Node</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="s2">"id"</span> <span class="o">=&gt;</span> <span class="kp">nil</span><span class="p">,</span>
+      <span class="p">},</span>
+      <span class="no">Schema</span><span class="o">::</span><span class="no">HasMetafields</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="s2">"metafield"</span> <span class="o">=&gt;</span> <span class="p">{</span>
+          <span class="no">Schema</span><span class="o">::</span><span class="no">Metafield</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="s2">"value"</span> <span class="o">=&gt;</span> <span class="kp">nil</span><span class="p">,</span>
+          <span class="p">},</span>
+        <span class="p">},</span>
+        <span class="s2">"metafields"</span> <span class="o">=&gt;</span> <span class="p">{</span>
+          <span class="no">Schema</span><span class="o">::</span><span class="no">Metafield</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="s2">"nodes"</span> <span class="o">=&gt;</span> <span class="p">{</span> <span class="o">...</span> <span class="p">},</span>
+          <span class="p">},</span>
+        <span class="p">},</span>
+      <span class="p">},</span>
+      <span class="no">Schema</span><span class="o">::</span><span class="no">Product</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="s2">"title"</span> <span class="o">=&gt;</span> <span class="kp">nil</span><span class="p">,</span>
+        <span class="s2">"metafield"</span> <span class="o">=&gt;</span> <span class="p">{</span>
+          <span class="no">Schema</span><span class="o">::</span><span class="no">Metafield</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="s2">"definition"</span> <span class="o">=&gt;</span> <span class="p">{</span> <span class="o">...</span> <span class="p">},</span>
+          <span class="p">},</span>
+        <span class="p">},</span>
+      <span class="p">},</span>
+      <span class="no">Schema</span><span class="o">::</span><span class="no">PriceList</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="s2">"name"</span> <span class="o">=&gt;</span> <span class="kp">nil</span><span class="p">,</span>
+        <span class="s2">"catalog"</span> <span class="o">=&gt;</span> <span class="p">{</span>
+          <span class="no">Schema</span><span class="o">::</span><span class="no">Catalog</span> <span class="o">=&gt;</span> <span class="p">{</span>
+            <span class="s2">"id"</span> <span class="o">=&gt;</span> <span class="kp">nil</span><span class="p">,</span>
+          <span class="p">},</span>
+        <span class="p">},</span>
+      <span class="p">},</span>
+    <span class="p">},</span>
+  <span class="p">},</span>
+<span class="p">}</span>
 </code></pre></div></div>
 
-<p>By default, <strong>introspection fields are counted</strong>. The default introspection query requires at least <code class="language-plaintext highlighter-rouge">max_depth 13</code>. You can also configure your schema not to count introspection fields with <code class="language-plaintext highlighter-rouge">max_depth ..., count_introspection_fields: false</code>.</p>
+<p>This aggregation provides a new perspective on the scoring where <em>possible typed selections</em> have costs rather than individual fields. In this normalized view, <code class="language-plaintext highlighter-rouge">Product</code> acquires the <code class="language-plaintext highlighter-rouge">HasMetafields</code> interface costs, and ignores a duplicated path. Ultimately the maximum of possible typed costs is used, making this query cost <code class="language-plaintext highlighter-rouge">12</code>:</p>
 
-<p>You can use <code class="language-plaintext highlighter-rouge">nil</code> to disable the validation:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># This query won't be validated:</span>
-<span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">max_depth: </span><span class="kp">nil</span><span class="p">)</span>
-</code></pre></div></div>
-
-<p>To get a feeling for depth of queries in your system, you can extend <a href="/api-doc/2.1.11/GraphQL/Analysis/AST/QueryDepth" target="_blank" title="API docs for GraphQL::Analysis::AST::QueryDepth"><code>GraphQL::Analysis::AST::QueryDepth</code></a>. Hook it up to log out values from each query:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">LogQueryDepth</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span><span class="o">::</span><span class="no">QueryDepth</span>
-  <span class="k">def</span> <span class="nf">result</span>
-    <span class="n">query_depth</span> <span class="o">=</span> <span class="k">super</span>
-    <span class="n">message</span> <span class="o">=</span> <span class="s2">"[GraphQL Query Depth] </span><span class="si">#{</span><span class="n">query_depth</span><span class="si">}</span><span class="s2"> || staff?  </span><span class="si">#{</span><span class="n">query</span><span class="p">.</span><span class="nf">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">].</span><span class="nf">staff?</span><span class="si">}</span><span class="s2">"</span>
-    <span class="no">Rails</span><span class="p">.</span><span class="nf">logger</span><span class="p">.</span><span class="nf">info</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-
-<span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="n">query_analyzer</span><span class="p">(</span><span class="no">LogQueryDepth</span><span class="p">)</span>
-<span class="k">end</span>
-</code></pre></div></div>
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">query</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">node</span><span class="p">(</span><span class="n">id</span><span class="p">:</span><span class="w"> </span><span class="s2">"123"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c"># max(11, 12, 1) = 12</span><span class="w">
+    </span><span class="n">id</span><span class="w">
+    </span><span class="p">...</span><span class="n">on</span><span class="w"> </span><span class="n">HasMetafields</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c"># 1 + 10 = 11</span><span class="w">
+      </span><span class="n">metafield</span><span class="p">(</span><span class="n">key</span><span class="p">:</span><span class="w"> </span><span class="s2">"a"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c"># 1</span><span class="w">
+        </span><span class="n">value</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+      </span><span class="n">metafields</span><span class="p">(</span><span class="n">first</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c"># 10</span><span class="w">
+        </span><span class="n">nodes</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="n">value</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+    </span><span class="p">...</span><span class="n">on</span><span class="w"> </span><span class="n">Product</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c"># 1 + 11 from HasMetafields = 12</span><span class="w">
+      </span><span class="n">title</span><span class="w">
+      </span><span class="n">metafield</span><span class="p">(</span><span class="n">key</span><span class="p">:</span><span class="w"> </span><span class="s2">"a"</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c"># duplicated in HasMetafields</span><span class="w">
+        </span><span class="n">definition</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c"># 1</span><span class="w">
+          </span><span class="n">description</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+    </span><span class="p">...</span><span class="n">on</span><span class="w"> </span><span class="n">PriceList</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c"># 1 = 1</span><span class="w">
+      </span><span class="n">name</span><span class="w">
+      </span><span class="n">catalog</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c"># 1</span><span class="w">
+        </span><span class="n">id</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
 
 </div>
 <p class="guide-footer">
@@ -307,5 +500,8 @@
     </div>
     <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
     <script src="/js/search.js"></script>
+    <script>
+      detectDarkTheme(false) // do it again to update the images
+    </script>
   </body>
 </html>

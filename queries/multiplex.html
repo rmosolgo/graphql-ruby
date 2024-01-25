@@ -11,24 +11,61 @@
     <link rel="icon" href="/graphql-ruby-icon.png">
   </head>
   <body>
+    <script>
+      function detectDarkTheme(toggle) {
+        var prefersDarkSchemeSetting = localStorage.getItem("prefersDarkScheme")
+        if (prefersDarkSchemeSetting == null) {
+          prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+        } else {
+          prefersDarkScheme = prefersDarkSchemeSetting == "true"
+        }
+
+        if (toggle) {
+          if (prefersDarkScheme) {
+            prefersDarkScheme = false
+            localStorage.setItem("prefersDarkScheme", "false")
+          } else {
+            prefersDarkScheme = true
+            localStorage.setItem("prefersDarkScheme", "true")
+          }
+        }
+
+        if (prefersDarkScheme) {
+          document.body.classList.add('dark-theme');
+          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
+            el.src = "/graphql-ruby-dark.png"
+          })
+        } else {
+          document.body.classList.remove('dark-theme');
+          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
+            el.src = "/graphql-ruby.png"
+          })
+        }
+      }
+
+      detectDarkTheme(false)
+    </script>
     <div class="header">
       <div class="header-container">
         <div class="nav">
           <a href="/" class="img-link">
-            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
           </a>
-          <a href="/getting_started">Get Started</a>
-          <a href="/guides">Guides</a>
-          <a href="/api-doc/2.1.11/">API</a>
-          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
-          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
-          <a href="https://graphql.pro">Upgrade to Pro</a>
-          <input
-            class="search-input"
-            onkeyup="GraphQLRubySearch.run(this)"
-            type="text"
-            placeholder="Search the docs..."
-          />
+          <div class="nav-links">
+            <a href="/getting_started">Get Started</a>
+            <a href="/guides">Guides</a>
+            <a href="/api-doc/2.2.6/">API</a>
+            <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
+            <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+            <a href="https://graphql.pro">Upgrade to Pro</a>
+            <input
+              class="search-input"
+              onkeyup="GraphQLRubySearch.run(this)"
+              type="text"
+              placeholder="Search the docs..."
+            />
+            <a href="#" onclick="event.preventDefault(); detectDarkTheme(true)" class="dark-theme-button"></a>
+          </div>
         </div>
       </div>
       <div class="search-results-container">
@@ -36,7 +73,7 @@
         </div>
       </div>
     </div>
-    <div class="container">
+    <div class="container  fullwidth ">
       <ul class="breadcrumb">
   <li><a href="/guides">Guides</a></li>
   <li>
@@ -111,8 +148,6 @@
       
         <option  data-target="/queries/response_extensions.html">Response Extensions</option>
       
-        <option  data-target="/queries/instrumentation.html">Instrumentation</option>
-      
     </select>
   </li>
 </ul>
@@ -127,16 +162,16 @@
 </a></li><li class='contents-entry'><a href='#validation-and-error-handling'>Validation and Error Handling
 </a></li><li class='contents-entry'><a href='#multiplex-level-context'>Multiplex-Level Context
 </a></li><li class='contents-entry'><a href='#multiplex-level-analysis'>Multiplex-Level Analysis
-</a></li><li class='contents-entry'><a href='#multiplex-instrumentation'>Multiplex Instrumentation
+</a></li><li class='contents-entry'><a href='#multiplex-tracing'>Multiplex Tracing
 </a></li></ol>
 </div>
 </div>
 <div class="guide-container">
-  <p>Some clients may send <em>several</em> queries to the server at once (for example, <a href="https://www.apollographql.com/docs/react/api/link/apollo-link-batch-http/">Apollo Client’s query batching</a>). You can execute them concurrently with <a href="/api-doc/2.1.11/GraphQL/Schema#multiplex-instance_method" target="_blank" title="API docs for GraphQL::Schema#multiplex"><code>Schema#multiplex</code></a>.</p>
+  <p>Some clients may send <em>several</em> queries to the server at once (for example, <a href="https://www.apollographql.com/docs/react/api/link/apollo-link-batch-http/">Apollo Client’s query batching</a>). You can execute them concurrently with <a href="/api-doc/2.2.6/GraphQL/Schema#multiplex-instance_method" target="_blank" title="API docs for GraphQL::Schema#multiplex"><code>Schema#multiplex</code></a>.</p>
 
 <p>Multiplex runs have their own context, analyzers and instrumentation.</p>
 
-<p><strong>NOTE:</strong> As an implementation detail, <em>all</em> queries are run inside multiplexes. That is, a stand-alone query is executed as a “multiplex of one”, so instrumentation and multiplex analyzers and instrumentation <em>will</em> apply to standalone queries run with <code class="language-plaintext highlighter-rouge">MySchema.execute(...)</code>.</p>
+<p><strong>NOTE:</strong> As an implementation detail, <em>all</em> queries run inside multiplexes. That is, a stand-alone query is executed as a “multiplex of one”, so instrumentation and multiplex analyzers and tracers <em>will</em> apply to standalone queries run with <code class="language-plaintext highlighter-rouge">MySchema.execute(...)</code>.</p>
 
 <h2 id="concurrent-execution">Concurrent Execution</h2>
 
@@ -205,11 +240,11 @@
 
 <h2 id="validation-and-error-handling">Validation and Error Handling</h2>
 
-<p>Each query is validated and <a href="/queries/ast_analysis">analyzed</a> independently. The <code class="language-plaintext highlighter-rouge">results</code> array may include a mix of successful results and failed results</p>
+<p>Each query is validated and <a href="/queries/ast_analysis">analyzed</a> independently. The <code class="language-plaintext highlighter-rouge">results</code> array may include a mix of successful results and failed results.</p>
 
 <h2 id="multiplex-level-context">Multiplex-Level Context</h2>
 
-<p>You can add values to <a href="/api-doc/2.1.11/GraphQL/Execution/Multiplex#context-instance_method" target="_blank" title="API docs for GraphQL::Execution::Multiplex#context"><code>Execution::Multiplex#context</code></a> by providing a <code class="language-plaintext highlighter-rouge">context:</code> hash:</p>
+<p>You can add values to <a href="/api-doc/2.2.6/GraphQL/Execution/Multiplex#context-instance_method" target="_blank" title="API docs for GraphQL::Execution::Multiplex#context"><code>Execution::Multiplex#context</code></a> by providing a <code class="language-plaintext highlighter-rouge">context:</code> hash:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">MySchema</span><span class="p">.</span><span class="nf">multiplex</span><span class="p">(</span><span class="n">queries</span><span class="p">,</span> <span class="ss">context: </span><span class="p">{</span> <span class="ss">current_user: </span><span class="n">current_user</span> <span class="p">})</span>
 </code></pre></div></div>
@@ -228,23 +263,21 @@
 
 <p>The API is the same as <a href="/queries/ast_analysis#analyzing-multiplexes">query analyzers</a>.</p>
 
-<p>Multiplex analyzers may return <a href="/api-doc/2.1.11/GraphQL/AnalysisError" target="_blank" title="API docs for GraphQL::AnalysisError"><code>AnalysisError</code></a> to halt execution of the whole multiplex.</p>
+<p>Multiplex analyzers may return <a href="/api-doc/2.2.6/GraphQL/AnalysisError" target="_blank" title="API docs for GraphQL::AnalysisError"><code>AnalysisError</code></a> to halt execution of the whole multiplex.</p>
 
-<h2 id="multiplex-instrumentation">Multiplex Instrumentation</h2>
+<h2 id="multiplex-tracing">Multiplex Tracing</h2>
 
-<p>You can add hooks for each multiplex run with multiplex instrumentation.</p>
+<p>You can add hooks for each multiplex run with <a href="/queries/tracing">trace modules</a>.</p>
 
-<p>An instrumenter must implement <code class="language-plaintext highlighter-rouge">.before_multiplex(multiplex)</code> and <code class="language-plaintext highlighter-rouge">.after_multiplex(multiplex)</code>. Then, it can be mounted with <code class="language-plaintext highlighter-rouge">instrument(:multiplex, MyMultiplexAnalyzer)</code>. See <a href="/api-doc/2.1.11/GraphQL/Execution/Multiplex" target="_blank" title="API docs for GraphQL::Execution::Multiplex"><code>Execution::Multiplex</code></a> for available methods.</p>
+<p>The trace module may implement <code class="language-plaintext highlighter-rouge">def execute_multiplex(multiplex:)</code> which <code class="language-plaintext highlighter-rouge">yield</code>s to allow the multiplex to execute. See <a href="/api-doc/2.2.6/GraphQL/Execution/Multiplex" target="_blank" title="API docs for GraphQL::Execution::Multiplex"><code>Execution::Multiplex</code></a> for available methods.</p>
 
 <p>For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Count how many queries are in the multiplex run:</span>
 <span class="k">module</span> <span class="nn">MultiplexCounter</span>
-  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">before_multiplex</span><span class="p">(</span><span class="n">multiplex</span><span class="p">)</span>
+  <span class="k">def</span> <span class="nf">execute_multiplex</span><span class="p">(</span><span class="n">multiplex</span><span class="p">:)</span>
     <span class="no">Rails</span><span class="p">.</span><span class="nf">logger</span><span class="p">.</span><span class="nf">info</span><span class="p">(</span><span class="s2">"Multiplex size: </span><span class="si">#{</span><span class="n">multiplex</span><span class="p">.</span><span class="nf">queries</span><span class="p">.</span><span class="nf">length</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-  <span class="k">end</span>
-
-  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">after_multiplex</span><span class="p">(</span><span class="n">multiplex</span><span class="p">)</span>
+    <span class="k">yield</span>
   <span class="k">end</span>
 <span class="k">end</span>
 
@@ -252,11 +285,11 @@
 
 <span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="c1"># ...</span>
-  <span class="n">instrument</span><span class="p">(</span><span class="ss">:multiplex</span><span class="p">,</span> <span class="no">MultiplexCounter</span><span class="p">)</span>
+  <span class="n">trace_with</span><span class="p">(</span><span class="no">MultiplexCounter</span> <span class="p">)</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>Now, <code class="language-plaintext highlighter-rouge">MultiplexCounter.before_multiplex</code> will be called before each multiplex and <code class="language-plaintext highlighter-rouge">.after_multiplex</code> will run after each multiplex.</p>
+<p>Now, <code class="language-plaintext highlighter-rouge">MultiplexCounter#execute_multiplex</code> will be called for each execution, logging the size of each multiplex.</p>
 
 </div>
 <p class="guide-footer">
@@ -289,5 +322,8 @@
     </div>
     <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
     <script src="/js/search.js"></script>
+    <script>
+      detectDarkTheme(false) // do it again to update the images
+    </script>
   </body>
 </html>

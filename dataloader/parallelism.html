@@ -1,0 +1,285 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Manual Parallelism</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <script>
+      function detectDarkTheme(toggle) {
+        var prefersDarkSchemeSetting = localStorage.getItem("prefersDarkScheme")
+        if (prefersDarkSchemeSetting == null) {
+          prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+        } else {
+          prefersDarkScheme = prefersDarkSchemeSetting == "true"
+        }
+
+        if (toggle) {
+          if (prefersDarkScheme) {
+            prefersDarkScheme = false
+            localStorage.setItem("prefersDarkScheme", "false")
+          } else {
+            prefersDarkScheme = true
+            localStorage.setItem("prefersDarkScheme", "true")
+          }
+        }
+
+        if (prefersDarkScheme) {
+          document.body.classList.add('dark-theme');
+          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
+            el.src = "/graphql-ruby-dark.png"
+          })
+        } else {
+          document.body.classList.remove('dark-theme');
+          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
+            el.src = "/graphql-ruby.png"
+          })
+        }
+      }
+
+      detectDarkTheme(false)
+    </script>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <div class="nav-links">
+            <a href="/getting_started">Get Started</a>
+            <a href="/guides">Guides</a>
+            <a href="/api-doc/2.2.6/">API</a>
+            <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
+            <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+            <a href="https://graphql.pro">Upgrade to Pro</a>
+            <input
+              class="search-input"
+              onkeyup="GraphQLRubySearch.run(this)"
+              type="text"
+              placeholder="Search the docs..."
+            />
+            <a href="#" onclick="event.preventDefault(); detectDarkTheme(true)" class="dark-theme-button"></a>
+          </div>
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container  fullwidth ">
+      <ul class="breadcrumb">
+  <li><a href="/guides">Guides</a></li>
+  <li>
+    <select class="jump-to-select" onchange="navigateToSelected(this)">
+      
+        <option  data-target="/schema/definition.html">Schema</option>
+      
+        <option  data-target="/queries/executing_queries.html">Queries</option>
+      
+        <option  data-target="/type_definitions/objects.html">Type Definitions</option>
+      
+        <option  data-target="/authorization/overview.html">Authorization</option>
+      
+        <option  data-target="/fields/introduction.html">Fields</option>
+      
+        <option  data-target="/mutations/mutation_root.html">Mutations</option>
+      
+        <option  data-target="/errors/overview.html">Errors</option>
+      
+        <option  data-target="/pagination/overview.html">Pagination</option>
+      
+        <option  data-target="/relay/range_add.html">Relay</option>
+      
+        <option  selected data-target="/dataloader/overview.html">Dataloader</option>
+      
+        <option  data-target="/subscriptions/overview.html">Subscriptions</option>
+      
+        <option  data-target="/pro/home.html">GraphQL Pro</option>
+      
+        <option  data-target="/operation_store/overview.html">GraphQL Pro - OperationStore</option>
+      
+        <option  data-target="/defer/overview.html">GraphQL Pro - Defer</option>
+      
+        <option  data-target="/limiters/overview.html">GraphQL Enterprise - Rate Limiters</option>
+      
+        <option  data-target="/object_cache/overview.html">GraphQL Enterprise - Object Cache</option>
+      
+        <option  data-target="/changesets/overview.html">GraphQL Enterprise - Changesets</option>
+      
+        <option  data-target="/javascript_client/overview.html">JavaScript Client</option>
+      
+        <option  data-target="/language_tools/visitor.html">Language Tools</option>
+      
+        <option  data-target="/testing/overview.html">Testing</option>
+      
+        <option  data-target="/development.html">Other</option>
+      
+    </select>
+  </li>
+  <li>
+    <select class="jump-to-select" onchange="navigateToSelected(this)">
+      
+        <option  data-target="/dataloader/overview.html">Overview</option>
+      
+        <option  data-target="/dataloader/sources.html">Sources</option>
+      
+        <option  data-target="/dataloader/dataloader.html">Dataloader</option>
+      
+        <option  data-target="/dataloader/adopting.html">Dataloader vs. GraphQL-Batch</option>
+      
+        <option  data-target="/dataloader/testing.html">Testing</option>
+      
+        <option  data-target="/dataloader/async_dataloader.html">Async Source Execution</option>
+      
+        <option  selected data-target="/dataloader/parallelism.html">Manual Parallelism</option>
+      
+    </select>
+  </li>
+</ul>
+
+
+
+<h1 class="guide-header">Manual Parallelism</h1>
+<div class="guide-table-of-contents"><div class="table-of-contents">
+  <h3 class="contents-header">Contents</h3>
+  <ol class='contents-list'><li class='contents-entry'><a href='#example-rails-load_async'>Example: Rails load_async
+</a></li><li class='contents-entry'><a href='#example-rails-async-calculations'>Example: Rails async calculations
+</a></li><li class='contents-entry'><a href='#example-concurrent-future'>Example: Concurrent::Future
+</a></li></ol>
+</div>
+</div>
+<div class="guide-container">
+  <p>You can coordinate with <a href="/api-doc/2.2.6/GraphQL/Dataloader" target="_blank" title="API docs for GraphQL::Dataloader"><code>GraphQL::Dataloader</code></a> to run tasks in the background. To do this, call <code class="language-plaintext highlighter-rouge">dataloader.yield</code> inside <code class="language-plaintext highlighter-rouge">Source#fetch</code> after kicking off your task. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">fetch</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span>
+  <span class="c1"># somehow queue up a background query,</span>
+  <span class="c1"># see examples below</span>
+  <span class="n">future_result</span> <span class="o">=</span> <span class="n">async_query_for</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span>
+  <span class="c1"># return control to the dataloader</span>
+  <span class="n">dataloader</span><span class="p">.</span><span class="nf">yield</span>
+  <span class="c1"># dataloader will come back here</span>
+  <span class="c1"># after calling other sources,</span>
+  <span class="c1"># now wait for the value</span>
+  <span class="n">future_result</span><span class="p">.</span><span class="nf">value</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p><em>Alternatively, you can use <a href="/dataloader/async_dataloader">AsyncDataloader</a> to automatically background I/O inside <code class="language-plaintext highlighter-rouge">Source#fetch</code> calls.</em></p>
+
+<h2 id="example-rails-load_async">Example: Rails load_async</h2>
+
+<p>You can use Rails’s <code class="language-plaintext highlighter-rouge">load_async</code> method to load <code class="language-plaintext highlighter-rouge">ActiveRecord::Relation</code>s in the background. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Sources::AsyncRelationSource</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Dataloader</span><span class="o">::</span><span class="no">Source</span>
+  <span class="k">def</span> <span class="nf">fetch</span><span class="p">(</span><span class="n">relations</span><span class="p">)</span>
+    <span class="n">relations</span><span class="p">.</span><span class="nf">each</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:load_async</span><span class="p">)</span> <span class="c1"># start loading them in the background</span>
+    <span class="n">dataloader</span><span class="p">.</span><span class="nf">yield</span> <span class="c1"># hand back to GraphQL::Dataloader</span>
+    <span class="n">relations</span><span class="p">.</span><span class="nf">each</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:load</span><span class="p">)</span> <span class="c1"># now, wait for the result, returning the now-loaded relation</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>You could call that source from a GraphQL field method:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:direct_reports</span><span class="p">,</span> <span class="p">[</span><span class="no">Person</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">direct_reports</span>
+  <span class="c1"># prepare an ActiveRecord::Relation:</span>
+  <span class="n">direct_reports</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">manager: </span><span class="n">object</span><span class="p">)</span>
+  <span class="c1"># pass it off to the source:</span>
+  <span class="n">dataloader</span>
+    <span class="p">.</span><span class="nf">with</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">AsyncRelationSource</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">load</span><span class="p">(</span><span class="n">direct_reports</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h2 id="example-rails-async-calculations">Example: Rails async calculations</h2>
+
+<p>In a Dataloader source, you can run Rails async calculations in the background while other work continues. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Sources::DirectReportsCount</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Dataloader</span><span class="o">::</span><span class="no">Source</span>
+  <span class="k">def</span> <span class="nf">fetch</span><span class="p">(</span><span class="n">users</span><span class="p">)</span>
+    <span class="c1"># Start the queries in the background:</span>
+    <span class="n">promises</span> <span class="o">=</span> <span class="n">users</span><span class="p">.</span><span class="nf">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">u</span><span class="o">|</span> <span class="n">u</span><span class="p">.</span><span class="nf">direct_reports</span><span class="p">.</span><span class="nf">async_count</span> <span class="p">}</span>
+    <span class="c1"># Return to GraphQL::Dataloader:</span>
+    <span class="n">dataloader</span><span class="p">.</span><span class="nf">yield</span>
+    <span class="c1"># Now return the results, waiting if necessary:</span>
+    <span class="n">promises</span><span class="p">.</span><span class="nf">map</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:value</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Which could be used in a GraphQL field:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:direct_reports_count</span><span class="p">,</span> <span class="no">Int</span>
+
+<span class="k">def</span> <span class="nf">direct_reports_count</span>
+  <span class="n">dataloader</span><span class="p">.</span><span class="nf">with</span><span class="p">(</span><span class="no">Sources</span><span class="o">::</span><span class="no">DirectReportsCount</span><span class="p">).</span><span class="nf">load</span><span class="p">(</span><span class="n">object</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<h2 id="example-concurrentfuture">Example: Concurrent::Future</h2>
+
+<p>You could use <code class="language-plaintext highlighter-rouge">concurrent-ruby</code> to put work in a background thread. For example, using <code class="language-plaintext highlighter-rouge">Concurrent::Future</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Sources::ExternalDataSource</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Dataloader</span><span class="o">::</span><span class="no">Source</span>
+  <span class="k">def</span> <span class="nf">fetch</span><span class="p">(</span><span class="n">urls</span><span class="p">)</span>
+    <span class="c1"># Start some I/O-intensive work:</span>
+    <span class="n">futures</span> <span class="o">=</span> <span class="n">urls</span><span class="p">.</span><span class="nf">map</span> <span class="k">do</span> <span class="o">|</span><span class="n">url</span><span class="o">|</span>
+      <span class="no">Concurrent</span><span class="o">::</span><span class="no">Future</span><span class="p">.</span><span class="nf">execute</span> <span class="p">{</span>
+        <span class="c1"># Somehow fetch and parse data:</span>
+        <span class="n">get_remote_json</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+      <span class="p">}</span>
+    <span class="k">end</span>
+    <span class="c1"># Yield back to GraphQL::Dataloader:</span>
+    <span class="n">dataloader</span><span class="p">.</span><span class="nf">yield</span>
+    <span class="c1"># Dataloader has done what it can,</span>
+    <span class="c1"># so now return the value, waiting if necessary:</span>
+    <span class="n">futures</span><span class="p">.</span><span class="nf">map</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:value</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/dataloader/parallelism.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Manual Parallelism">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+  function navigateToSelected(selectElement) {
+    var nextPage = selectElement.selectedOptions[0].dataset["target"]
+    document.location = nextPage
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+    <script>
+      detectDarkTheme(false) // do it again to update the images
+    </script>
+  </body>
+</html>
