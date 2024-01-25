@@ -10,6 +10,27 @@
 
 ### Bug fixes
 
+# 2.2.6 (25 Jan 2024)
+
+### Deprecations
+
+- `instrument(:query | :multiplex, ...)` was deprecated, use a `trace_with` module instead. #4771
+- Legacy `PlatformTracing` classes are deprecated, use a `PlatformTrace` module instead #4779
+
+### New features
+
+- `FieldUsage` analyzer: returns a `used_deprecated_enum_values: ...` array in its result Hash #4805
+- `validate_timeout` applies to query analysis as well as static validation #4800
+- `SentryTrace` is added for instrumenting with Sentry #4775
+
+### Bug fixes
+
+- `FieldUsage` analyzer: properly find deprecated arguments in non-null input objects #4805
+- DataDog: replace usage of `span_type` setter with `span` setter #4776
+- Fix coercion error handing with given `null` values #4799
+- Raise a better error when variables are defined with non-input types #4791
+- Fix `hasNextPage` when `max_page_size` is set #4780
+
 # 2.2.5 (10 Jan 2024)
 
 ### Bug fixes
