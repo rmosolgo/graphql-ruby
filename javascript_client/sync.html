@@ -51,19 +51,21 @@
           <a href="/" class="img-link">
             <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
           </a>
-          <a href="/getting_started">Get Started</a>
-          <a href="/guides">Guides</a>
-          <a href="/api-doc/2.2.5/">API</a>
-          <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
-          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
-          <a href="https://graphql.pro">Upgrade to Pro</a>
-          <input
-            class="search-input"
-            onkeyup="GraphQLRubySearch.run(this)"
-            type="text"
-            placeholder="Search the docs..."
-          />
-          <a href="#" onclick="event.preventDefault(); detectDarkTheme(true)" class="dark-theme-button"></a>
+          <div class="nav-links">
+            <a href="/getting_started">Get Started</a>
+            <a href="/guides">Guides</a>
+            <a href="/api-doc/2.2.5/">API</a>
+            <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
+            <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+            <a href="https://graphql.pro">Upgrade to Pro</a>
+            <input
+              class="search-input"
+              onkeyup="GraphQLRubySearch.run(this)"
+              type="text"
+              placeholder="Search the docs..."
+            />
+            <a href="#" onclick="event.preventDefault(); detectDarkTheme(true)" class="dark-theme-button"></a>
+          </div>
         </div>
       </div>
       <div class="search-results-container">
@@ -71,7 +73,7 @@
         </div>
       </div>
     </div>
-    <div class="container">
+    <div class="container  fullwidth ">
       <ul class="breadcrumb">
   <li><a href="/guides">Guides</a></li>
   <li>
@@ -152,6 +154,7 @@
 </a></li><li class='contents-entry'><a href='#use-with-apollo-link'>Use with Apollo Link
 </a></li><li class='contents-entry'><a href='#use-with-apollo-codegen'>Use with Apollo Codegen
 </a></li><li class='contents-entry'><a href='#use-with-apollo-android'>Use with Apollo Android
+</a></li><li class='contents-entry'><a href='#use-with-apollo-persisted-queries'>Use with Apollo Persisted Queries
 </a></li><li class='contents-entry'><a href='#use-with-plain-javascript'>Use with plain JavaScript
 </a></li><li class='contents-entry'><a href='#authorization'>Authorization
 </a></li></ol>
@@ -168,6 +171,7 @@
   <li><a href="#use-with-apollo-link">Apollo Link support</a></li>
   <li><a href="#use-with-apollo-codegen">Apollo Codegen Support</a></li>
   <li><a href="#use-with-apollo-android">Apollo Android support</a></li>
+  <li><a href="#use-with-apollo-persisted-queries">Apollo Persisted Queries Support</a></li>
   <li><a href="#use-with-plain-javascript">Plain JS support</a></li>
   <li><a href="#authorization">Authorization</a></li>
 </ul>
@@ -447,6 +451,27 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
 </code></pre></div></div>
 
 <p>You may also have to <strong>update your app</strong> to send an identifier, so that the server can determine the “client name” used with the operation store. (Apollo Android sends a query hash, but the operation store expects IDs in the form <code class="language-plaintext highlighter-rouge">#{client_name}/#{query_hash}</code>.)</p>
+
+<h2 id="use-with-apollo-persisted-queries">Use with Apollo Persisted Queries</h2>
+
+<p>Apollo client has a <a href="https://www.apollographql.com/docs/react/api/link/persisted-queries/">Persisted Queries Link</a>. You can use that link with GraphQL-Pro’s <a href="/operation_store/overview">OperationStore</a>. First, create a manifest with <a href="https://www.apollographql.com/docs/react/api/link/persisted-queries/#1-generate-operation-manifests"><code class="language-plaintext highlighter-rouge">generate-persisted-query-manifest</code></a>, then, pass the path to that file to <code class="language-plaintext highlighter-rouge">sync</code>:</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>graphql-ruby-client <span class="nb">sync</span> <span class="nt">--apollo-persisted-query-manifest</span><span class="o">=</span>path/to/manifest.json ...
+</code></pre></div></div>
+
+<p>Then, configure Apollo Client to <a href="https://www.apollographql.com/docs/react/api/link/persisted-queries/#persisted-queries-implementation">use your persisted query manifest</a>.</p>
+
+<p>Finally, update your controller to receive the operation ID and pass it as <code class="language-plaintext highlighter-rouge">context[:operation_id]</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">client_name</span> <span class="o">=</span> <span class="s2">"..."</span> <span class="c1"># TODO: send the client name as a query param or header</span>
+<span class="n">persisted_query_hash</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="ss">:extensions</span><span class="p">][</span><span class="ss">:persistedQuery</span><span class="p">][</span><span class="ss">:sha256Hash</span><span class="p">]</span>
+<span class="n">context</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="c1"># ...</span>
+  <span class="ss">operation_id: </span><span class="s2">"</span><span class="si">#{</span><span class="n">client_name</span><span class="si">}</span><span class="s2">/</span><span class="si">#{</span><span class="n">persisted_query_hash</span><span class="si">}</span><span class="s2">"</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">operation_id</code> will also need your client name. Using Apollo Client, you could send this as a <a href="https://www.apollographql.com/docs/react/networking/basic-http-networking/#customizing-request-headers">custom header</a> or another way that works for your application (eg, session or user agent).</p>
 
 <h2 id="use-with-plain-javascript">Use with plain JavaScript</h2>
 
