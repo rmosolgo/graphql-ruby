@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 1.13.21 (25 January 2024)
+
+- DataDog: use `span` setter instead of `span_type` #4788
+
+# 1.13.20 (20 October 2023)
+
 # 1.13.19 (2 February 2023)
 
 ### Bug fixes
