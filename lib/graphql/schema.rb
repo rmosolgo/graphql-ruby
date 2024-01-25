@@ -1404,7 +1404,7 @@ module GraphQL
           else
             @lazy_methods = GraphQL::Execution::Lazy::LazyMethodMap.new
             @lazy_methods.set(GraphQL::Execution::Lazy, :value)
-            @lazy_methods.set(GraphQL::Dataloader::Request, :load)
+            @lazy_methods.set(GraphQL::Dataloader::Request, :load_with_deprecation_warning)
           end
         end
         @lazy_methods
