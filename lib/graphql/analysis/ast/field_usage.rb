@@ -8,6 +8,7 @@ module GraphQL
           @used_fields = Set.new
           @used_deprecated_fields = Set.new
           @used_deprecated_arguments = Set.new
+          @used_deprecated_enum_values = Set.new
         end
 
         def on_leave_field(node, parent, visitor)
@@ -15,7 +16,7 @@ module GraphQL
           field = "#{visitor.parent_type_definition.graphql_name}.#{field_defn.graphql_name}"
           @used_fields << field
           @used_deprecated_fields << field if field_defn.deprecation_reason
-          arguments = visitor.query.arguments_for(node, visitor.field_definition)
+          arguments = visitor.query.arguments_for(node, field_defn)
           # If there was an error when preparing this argument object,
           # then this might be an error or something:
           if arguments.respond_to?(:argument_values)
@@ -28,6 +29,7 @@ module GraphQL
             used_fields: @used_fields.to_a,
             used_deprecated_fields: @used_deprecated_fields.to_a,
             used_deprecated_arguments: @used_deprecated_arguments.to_a,
+            used_deprecated_enum_values: @used_deprecated_enum_values.to_a,
           }
         end
 
@@ -41,17 +43,37 @@ module GraphQL
 
             next if argument.value.nil?
 
-            if argument.definition.type.kind.input_object?
-              extract_deprecated_arguments(argument.value.arguments.argument_values) # rubocop:disable Development/ContextIsPassedCop -- runtime args instance
-            elsif argument.definition.type.kind.enum?
-              enum_value = argument.definition.type.values[argument.value]
-              @used_deprecated_arguments << argument.definition.path if enum_value.deprecation_reason
-            elsif argument.definition.type.list?
-              argument
-                .value
-                .select { |value| value.respond_to?(:arguments) }
-                .each { |value| extract_deprecated_arguments(value.arguments.argument_values) } # rubocop:disable Development/ContextIsPassedCop -- runtime args instance
+            argument_type = argument.definition.type
+            if argument_type.non_null?
+              argument_type = argument_type.of_type
             end
+
+            if argument_type.kind.input_object?
+              extract_deprecated_arguments(argument.value.arguments.argument_values) # rubocop:disable Development/ContextIsPassedCop -- runtime args instance
+            elsif argument_type.kind.enum?
+              extract_deprecated_enum_value(argument_type, argument.value)
+            elsif argument_type.list?
+              inner_type = argument_type.unwrap
+              case inner_type.kind
+              when TypeKinds::INPUT_OBJECT
+                argument.value.each do |value|
+                  extract_deprecated_arguments(value.arguments.argument_values) # rubocop:disable Development/ContextIsPassedCop -- runtime args instance
+                end
+              when TypeKinds::ENUM
+                argument.value.each do |value|
+                  extract_deprecated_enum_value(inner_type, value)
+                end
+              else
+                # Not a kind of input that we track
+              end
+            end
+          end
+        end
+
+        def extract_deprecated_enum_value(enum_type, value)
+          enum_value = @query.warden.enum_values(enum_type).find { |ev| ev.value == value }
+          if enum_value&.deprecation_reason
+            @used_deprecated_enum_values << enum_value.path
           end
         end
       end

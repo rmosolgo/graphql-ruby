@@ -10,12 +10,6 @@
 
 ### Bug fixes
 
-# Unreleased
-
-### New features
-
-- `GraphQL::Analysis::AST::FieldUsage`: detects use of deprecated enum value in an argument
-
 # 2.2.5 (10 Jan 2024)
 
 ### Bug fixes
