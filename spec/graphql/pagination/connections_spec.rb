@@ -117,7 +117,7 @@ describe GraphQL::Pagination::Connections do
       ConnectionErrorTestSchema.execute("{ things2 { name } }")
     end
 
-    assert_includes err.message, "undefined method `no_such_method' for <BadThing!>"
+    assert_includes err.message, "undefined method `no_such_method' for an instance of ConnectionErrorTestSchema::BadThing"
   end
 
   it "uses a field's `max_page_size: nil` configuration" do
