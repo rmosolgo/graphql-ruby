@@ -110,7 +110,7 @@ module GraphQL
         # TODO - would be nice to use these to create an error message so the caller knows
         # that required fields are missing
         required_field_names = @warden.arguments(type)
-          .select { |argument| argument.type.kind.non_null? && @warden.get_argument(type, argument.name) }
+          .select { |argument| argument.type.kind.non_null? && !argument.default_value? }
           .map!(&:name)
 
         present_field_names = ast_node.arguments.map(&:name)
@@ -122,7 +122,6 @@ module GraphQL
             arg_type = @warden.get_argument(type, name).type
             recursively_validate(GraphQL::Language::Nodes::NullValue.new(name: name), arg_type)
           end
-
           if type.one_of? && ast_node.arguments.size != 1
             results << Query::InputValidationResult.from_problem("`#{type.graphql_name}` is a OneOf type, so only one argument may be given (instead of #{ast_node.arguments.size})")
           end

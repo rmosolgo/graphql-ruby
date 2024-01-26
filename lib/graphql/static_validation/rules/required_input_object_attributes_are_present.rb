@@ -35,7 +35,7 @@ module GraphQL
         return unless parent_type && parent_type.kind.input_object?
 
         required_fields = context.warden.arguments(parent_type)
-          .select{|arg| arg.type.kind.non_null?}
+          .select{ |arg| arg.type.kind.non_null? && !arg.default_value? }
           .map!(&:graphql_name)
 
         present_fields = ast_node.arguments.map(&:name)
