@@ -743,6 +743,7 @@ module GraphQL
 
       def error_bubbling(new_error_bubbling = nil)
         if !new_error_bubbling.nil?
+          warn("error_bubbling(#{new_error_bubbling.inspect}) is deprecated; the default value of `false` will be the only option in GraphQL-Ruby 3.0")
           @error_bubbling = new_error_bubbling
         else
           @error_bubbling.nil? ? find_inherited_value(:error_bubbling) : @error_bubbling
