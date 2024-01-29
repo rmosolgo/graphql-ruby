@@ -10,6 +10,19 @@
 
 ### Bug fixes
 
+# 2.2.7 (29 Jan 2024)
+
+### Deprecations
+
+- Deprecate returning `.resolve` dataloader requests (use `.load` instead) #4807
+- Deprecate `error_bubbling(true)`, no replacement. Please open an issue if you need this option. #4813
+
+### Bug fixes
+
+- Remove unused `racc` dependency #4814
+- Fix `backtrace: true` when used with `@defer` and batch-loaded lists #4815
+- Accept input objects when required arguments aren't provided but have default values #4811
+
 # 2.2.6 (25 Jan 2024)
 
 ### Deprecations
