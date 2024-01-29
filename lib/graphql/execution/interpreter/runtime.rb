@@ -352,6 +352,15 @@ module GraphQL
           end
 
           field_result = call_method_on_directives(:resolve, object, directives) do
+            if directives.any?
+              # This might be executed in a different context; reset this info
+              runtime_state = get_current_runtime_state
+              runtime_state.current_field = field_defn
+              runtime_state.current_object = object
+              runtime_state.current_arguments = resolved_arguments
+              runtime_state.current_result_name = result_name
+              runtime_state.current_result = selection_result
+            end
             # Actually call the field resolver and capture the result
             app_result = begin
               @current_trace.execute_field(field: field_defn, ast_node: ast_node, query: query, object: object, arguments: kwarg_arguments) do

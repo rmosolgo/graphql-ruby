@@ -162,6 +162,11 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
       def dataloaded_thing(ast_node:)
         dataloader.with(ThingSource).load(ast_node.alias || ast_node.name)
       end
+
+      field :lazy_things, [Thing], extras: [:ast_node]
+      def lazy_things(ast_node:)
+        -> { [thing(ast_node: ast_node), thing(ast_node: ast_node)]}
+      end
     end
 
     Thing.implements(HasThings)
@@ -269,6 +274,18 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
        }
       assert_equal expected_counts, res.context[:count_fields]
       assert_equal 5, res.context[:name_resolved_count]
+    end
+
+    it "works with backtrace: true and lazy lists" do
+      query_str = "
+      {
+        lazyThings @countFields {
+          name
+        }
+      }
+      "
+      res = RuntimeDirectiveTest::Schema.execute(query_str, context: { backtrace: true })
+      assert_equal 2, res["data"]["lazyThings"].size
     end
   end
 
