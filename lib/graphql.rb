@@ -60,6 +60,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   end
 
   def self.parse_with_racc(string, filename: nil, trace: GraphQL::Tracing::NullTrace)
+    warn "`GraphQL.parse_with_racc` is deprecated; GraphQL-Ruby no longer uses racc for parsing. Call `GraphQL.parse` or `GraphQL::Language::Parser.parse` instead."
     GraphQL::Language::Parser.parse(string, filename: filename, trace: trace)
   end
 

@@ -31,7 +31,7 @@ describe GraphQL::StaticValidation::Validator do
 
   describe "error format" do
     let(:query_string) { "{ cheese(id: $undefinedVar) { source } }" }
-    let(:document) { GraphQL.parse_with_racc(query_string, filename: "not_a_real.graphql") }
+    let(:document) { GraphQL.parse(query_string, filename: "not_a_real.graphql") }
     let(:query) { GraphQL::Query.new(Dummy::Schema, nil, document: document) }
 
     it "includes message, locations, and fields keys" do
