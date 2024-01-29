@@ -373,7 +373,7 @@ describe GraphQL::StaticValidation::VariableUsagesAreAllowed do
       assert_equal "Here Comes the Sun", result["data"]["topSong"]["name"]
 
       result = schema.execute("{ topSong(input: { thisYear: null }) { name } }")
-      assert_equal ["Argument 'thisYear' on InputObject 'TopSongInput' has an invalid value (null). Expected type 'Boolean!'."], result["errors"].map { |err| err["messages"] }
+      assert_equal ["Argument 'thisYear' on InputObject 'TopSongInput' has an invalid value (null). Expected type 'Boolean!'."], result["errors"].map { |err| err["message"] }
     end
   end
 end
