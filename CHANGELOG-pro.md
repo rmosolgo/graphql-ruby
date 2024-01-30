@@ -6,6 +6,10 @@
 
 ### New Features
 
+# 1.26.2 (30 Jan 2023)
+
+- `@defer` / `@stream`: Write delimiters at the end of each patch so that clients respond to payloads more quickly. (Previously, delimiters were added at the start of each patch, so clients had to wait for the _next_ patch before they knew the current one was complete.)
+
 # 1.26.1 (23 Jan 2023)
 
 - Pundit integration: improve error message when a `Scope` class is missing
