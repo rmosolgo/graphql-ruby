@@ -8,11 +8,15 @@
 
 ### Bug Fix
 
-# 1.3.2 (15 Jan 2023)
+# 1.3.3 (30 Jan 2024
+
+- ObjectCache: fix compatibility with `run_graphql_field` test helper #4816
+
+# 1.3.2 (15 Jan 2024)
 
 ### Bug Fix
 
-- Migrate to new `trace_with` instrumentation API, requires GraphQL-Ruby 2.0.18+
+- Limiters: Migrate to new `trace_with` instrumentation API, requires GraphQL-Ruby 2.0.18+
 
 # 1.3.1 (12 June 2023)
 
