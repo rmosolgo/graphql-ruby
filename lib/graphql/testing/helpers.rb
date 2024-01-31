@@ -5,10 +5,7 @@ module GraphQL
       # @param schema_class [Class<GraphQL::Schema>]
       # @return [Module] A helpers module which always uses the given schema
       def self.for(schema_class)
-        Module.new do
-          include SchemaHelpers
-          @@schema_class_for_helpers = schema_class
-        end
+        SchemaHelpers.for(schema_class)
       end
 
       class Error < GraphQL::Error
@@ -118,6 +115,13 @@ module GraphQL
         def with_resolution_context(*args, **kwargs, &block)
           # schema will be added later
           super(nil, *args, **kwargs, &block)
+        end
+
+        def self.for(schema_class)
+          Module.new do
+            include SchemaHelpers
+            @@schema_class_for_helpers = schema_class
+          end
         end
       end
     end
