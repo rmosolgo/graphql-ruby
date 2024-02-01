@@ -379,9 +379,15 @@ a:hover, a:hover code {
     }
   }
 
-  .hero-part {
-    padding: 10px;
+  .hero-subtitle {
+    p {
+      margin: 5px auto;
+      text-align: center;
+    }
+    padding: 10px 0px;
+  }
 
+  .hero-part {
     &.shaded {
       background: $faint-color;
     }
@@ -391,24 +397,14 @@ a:hover, a:hover code {
       text-shadow: #cccccc 1px 1px 1px;
       font-size: 1.4em;
     }
-  }
-  .hero-feature {
+
     display: flex;
-    flex-basis: 50%;
-    flex-grow: 0;
-    flex-shrink: 0;
     justify-content: space-between;
-
-    .teaser p {
-      font-size: 1.2em;
-      line-height: 2em;
-    }
-
-    .teaser:first-child {
-      margin-right: 10px;
-    }
-    .teaser:last-child {
-      margin-left: 10px;
+    flex-wrap: wrap;
+    .hero-feature {
+      padding: 15px;
+      flex-basis: calc(50% - 60px);
+      flex-grow: 1;
     }
   }
 }

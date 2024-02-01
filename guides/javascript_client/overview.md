@@ -26,3 +26,5 @@ See detailed guides for more info about its features:
 - Subscription support:
   - {% internal_link "Apollo integration", "/javascript_client/apollo_subscriptions" %}
   - {% internal_link "Relay integration", "/javascript_client/relay_subscriptions" %}
+  - {% internal_link "urql integration", "/javascript_client/urql_subscriptions" %}
+  - {% internal_link "GraphiQL integration", "/javascript_client/graphiql_subscriptions" %}
