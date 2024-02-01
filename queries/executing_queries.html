@@ -296,6 +296,16 @@ mutation createPost($postParams: PostInput!, $createdById: ID!){
 
 <p>You could use “scoped context” to implement <code class="language-plaintext highlighter-rouge">isOriginalPoster</code>, based on the parent <code class="language-plaintext highlighter-rouge">comments</code> field.</p>
 
+<div class="callout callout-warning"><p class="heading">⚠ Heads up!</p>
+<p>Using scoped context may result in a violation of <a href="https://spec.graphql.org/draft/#sel-EABDLDFAACHAo3V">the GraphQL specification</a> and
+break normalized client stores, which assume that a given object always
+has the same values for its fields.</p>
+
+<p>See <a href="https://benjie.dev/graphql/ancestors#breaks-normalized-stores">“Referencing ancestors breaks normalized stores”</a>
+for details about this pitfall and alternative approaches which avoid it.</p>
+
+</div>
+
 <p>In <code class="language-plaintext highlighter-rouge">def comments</code>, add <code class="language-plaintext highlighter-rouge">:current_post</code> to scoped context using <code class="language-plaintext highlighter-rouge">context.scoped_set!</code>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::Post</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
