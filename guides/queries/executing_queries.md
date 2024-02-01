@@ -143,6 +143,17 @@ However, "scoped context" is can be used to assign values into `context` that ar
 
 You could use "scoped context" to implement `isOriginalPoster`, based on the parent `comments` field.
 
+{% callout warning %}
+
+Using scoped context may result in a violation of [the GraphQL specification](https://spec.graphql.org/draft/#sel-EABDLDFAACHAo3V) and
+break normalized client stores, which assume that a given object always
+has the same values for its fields.
+
+See ["Referencing ancestors breaks normalized stores"](https://benjie.dev/graphql/ancestors#breaks-normalized-stores)
+for details about this pitfall and alternative approaches which avoid it.
+
+{% endcallout %}
+
 In `def comments`, add `:current_post` to scoped context using `context.scoped_set!`:
 
 ```ruby

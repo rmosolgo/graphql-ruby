@@ -158,6 +158,23 @@ strong, b {
   }
 }
 
+.callout {
+  .heading {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  padding: 20px 20px 10px 20px;
+  margin: 20px;
+  border: 2px;
+  border-radius: 10px;
+
+  &.callout-warning {
+    background-color: rgba(255, 217, 0, 0.2);
+    border-color: rgba(255, 217, 0, 0.5);
+  }
+}
+
 pre {
   font-family: $code-font;
   padding: 0.5rem;

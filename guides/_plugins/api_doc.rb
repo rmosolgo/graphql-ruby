@@ -37,6 +37,29 @@ module GraphQLSite
     end
   end
 
+  class CalloutBlock < Liquid::Block
+    def initialize(tag_name, callout_class, tokens)
+      super
+      @callout_class = callout_class.strip
+    end
+
+    def render(context)
+      raw_text = super
+
+      site = context.registers[:site]
+      converter = site.find_converter_instance(::Jekyll::Converters::Markdown)
+      rendered_text = converter.convert(raw_text)
+
+      heading = case @callout_class
+      when "warning"
+        "⚠ Heads up!"
+      else
+        raise ArgumentError, "Unhandled callout class: #{@callout_class.inspect}"
+      end
+      %|<div class="callout callout-#{@callout_class}"><p class="heading">#{heading}</p>#{rendered_text}</div>|
+    end
+  end
+
   class OpenAnIssue < Liquid::Tag
     def initialize(tag_name, issue_info, tokens)
       title, body = issue_info.split(",")
@@ -184,6 +207,7 @@ Liquid::Template.register_tag("api_doc_root", GraphQLSite::APIDocRoot)
 Liquid::Template.register_tag("open_an_issue", GraphQLSite::OpenAnIssue)
 Liquid::Template.register_tag("internal_link", GraphQLSite::InternalLink)
 Liquid::Template.register_tag("table_of_contents", GraphQLSite::TableOfContents)
+Liquid::Template.register_tag('callout', GraphQLSite::CalloutBlock)
 Jekyll::Hooks.register :site, :pre_render do |site|
   section_pages = Hash.new { |h, k| h[k] = [] }
   section_names = []
