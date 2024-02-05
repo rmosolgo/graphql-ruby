@@ -480,6 +480,19 @@ describe GraphQL::Execution::Interpreter do
       assert_nil Thread.current[:__graphql_runtime_info]
     end
 
+    it "places errors ahead of data in the response" do
+      query_str = <<-GRAPHQL
+      {
+        expansion(sym: "XYZ") {
+          name
+        }
+      }
+      GRAPHQL
+
+      res = InterpreterTest::Schema.execute(query_str)
+      assert_equal ["errors", "data"], res.keys
+    end
+
     it "propagates nulls in lists" do
       query_str = <<-GRAPHQL
       {
