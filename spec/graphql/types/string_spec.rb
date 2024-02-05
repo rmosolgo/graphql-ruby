@@ -101,4 +101,33 @@ describe GraphQL::Types::String do
       assert_nil string_type.coerce_isolated_input(0.999)
     end
   end
+
+
+  describe "unicode escapes" do
+    class UnicodeEscapeSchema < GraphQL::Schema
+      class QueryType < GraphQL::Schema::Object
+        field :get_string, String do
+          argument :string, String
+        end
+
+        def get_string(string:)
+          string
+        end
+      end
+
+      query(QueryType)
+    end
+
+    it "parses escapes properly in single-quoted strings" do
+      query_str = File.read("./spec/fixtures/unicode_escapes/query1.graphql")
+      res = UnicodeEscapeSchema.execute(query_str)
+      assert_equal "d", res["data"]["example1"]
+      assert_equal "\\u0064", res["data"]["example2"]
+      assert_equal "\\u006", res["data"]["example4"]
+
+      error_query_str = query_str.gsub("  # ", "  ")
+      res2 = UnicodeEscapeSchema.execute(error_query_str)
+      assert_equal ["Expected string or block string, but it was malformed"], res2["errors"].map { |err| err["message"] }
+    end
+  end
 end
