@@ -127,7 +127,12 @@ describe GraphQL::Types::String do
 
       error_query_str = query_str.gsub("  # ", "  ")
       res2 = UnicodeEscapeSchema.execute(error_query_str)
-      assert_equal ["Expected string or block string, but it was malformed"], res2["errors"].map { |err| err["message"] }
+      expected_err = if USING_C_PARSER
+        "syntax error, unexpected invalid token (\"\\\"\") at [4, 31]"
+      else
+        "Expected string or block string, but it was malformed"
+      end
+      assert_equal [expected_err], res2["errors"].map { |err| err["message"] }
     end
 
     it "parses escapes properly in triple-quoted strings" do
