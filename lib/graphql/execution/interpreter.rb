@@ -111,14 +111,14 @@ module GraphQL
                     data_result
                   end
                 else
-                  result = {
-                    "data" => query.context.namespace(:interpreter_runtime)[:runtime].final_result
-                  }
+                  result = {}
 
                   if query.context.errors.any?
                     error_result = query.context.errors.map(&:to_h)
                     result["errors"] = error_result
                   end
+
+                  result["data"] = query.context.namespace(:interpreter_runtime)[:runtime].final_result
 
                   result
                 end
