@@ -298,13 +298,9 @@ module GraphQL
       # To avoid allocating more strings, this modifies the string passed into it
       def self.replace_escaped_characters_in_place(raw_string)
         raw_string.gsub!(ESCAPED) do |matched_str|
-          if (res = ESCAPES_REPLACE[matched_str])
-            res
-          else
-            codepoint_1 = ($1 || $2).to_i(16)
-            codepoint_2 = $3
-
-            if codepoint_2
+          if (point_str_1 = $1 || $2)
+            codepoint_1 = point_str_1.to_i(16)
+            if (codepoint_2 = $3)
               codepoint_2 = codepoint_2.to_i(16)
               if (codepoint_1 >= 0xD800 && codepoint_1 <= 0xDBFF) && # leading surrogate
                   (codepoint_2 >= 0xDC00 && codepoint_2 <= 0xDFFF) # trailing surrogate
@@ -318,6 +314,8 @@ module GraphQL
             else
               [codepoint_1].pack('U'.freeze)
             end
+          else
+            ESCAPES_REPLACE[matched_str]
           end
         end
         nil
