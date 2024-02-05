@@ -178,7 +178,7 @@ def load_application_object_failed(error)
 end
 ```
 
-Or, if `load_application_object_fails` returns a new object, that object will be used as the `loads:` result.
+Or, if `load_application_object_failed` returns a new object, that object will be used as the `loads:` result.
 
 ### Handling unauthorized loaded objects
 
