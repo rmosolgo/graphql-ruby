@@ -114,23 +114,20 @@ module GraphQL
         is_block = str.start_with?('"""')
         if is_block
           str.gsub!(/\A"""|"""\z/, '')
+          return Language::BlockString.trim_whitespace(str)
         else
           str.gsub!(/\A"|"\z/, '')
-        end
 
-        if is_block
-          str = Language::BlockString.trim_whitespace(str)
-        end
-
-        if !str.valid_encoding? || !str.match?(VALID_STRING)
-          raise_parse_error("Bad unicode escape in #{str.inspect}")
-        else
-          Lexer.replace_escaped_characters_in_place(str)
-
-          if !str.valid_encoding?
+          if !str.valid_encoding? || !str.match?(VALID_STRING)
             raise_parse_error("Bad unicode escape in #{str.inspect}")
           else
-            str
+            Lexer.replace_escaped_characters_in_place(str)
+
+            if !str.valid_encoding?
+              raise_parse_error("Bad unicode escape in #{str.inspect}")
+            else
+              str
+            end
           end
         end
       end

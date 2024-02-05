@@ -129,5 +129,15 @@ describe GraphQL::Types::String do
       res2 = UnicodeEscapeSchema.execute(error_query_str)
       assert_equal ["Expected string or block string, but it was malformed"], res2["errors"].map { |err| err["message"] }
     end
+
+    it "parses escapes properly in triple-quoted strings" do
+      query_str = File.read("./spec/fixtures/unicode_escapes/query2.graphql")
+      res = UnicodeEscapeSchema.execute(query_str)
+      # No replacing in block strings:
+      assert_equal "\\a", res["data"]["example1"]
+      assert_equal "\\u006", res["data"]["example2"]
+      assert_equal "\\n", res["data"]["example3"]
+      assert_equal "\\u0064", res["data"]["example4"]
+    end
   end
 end
