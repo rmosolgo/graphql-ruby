@@ -40,6 +40,17 @@ describe GraphQL::Tracing::SentryTrace do
     end
   end
 
+  describe "When Sentry.with_child_span returns nil" do
+    it "does not initialize any spans" do
+      Sentry.stub(:with_child_span, nil) do
+        SentryTraceTestSchema.execute("{ int thing { str } }")
+        assert_equal [], Sentry::SPAN_DATA
+        assert_equal [], Sentry::SPAN_DESCRIPTIONS
+        assert_equal [], Sentry::SPAN_OPS
+      end
+    end
+  end
+
   it "sets the expected spans" do
     SentryTraceTestSchema.execute("{ int thing { str } }")
     expected_span_ops = [
