@@ -64,9 +64,10 @@ module GraphQL
         return yield unless Sentry.initialized?
 
         Sentry.with_child_span(op: platform_key, start_timestamp: Sentry.utc_now.to_f) do |span|
-          result = block.call
-          span.finish
+          result = yield
+          return result unless span
 
+          span.finish
           if trace_method == "execute_multiplex" && data.key?(:multiplex)
             operation_names = data[:multiplex].queries.map{|q| operation_name(q) }
             span.set_description(operation_names.join(", "))
