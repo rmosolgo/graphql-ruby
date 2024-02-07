@@ -22,11 +22,23 @@ describe GraphQL::Tracing::SentryTrace do
 
     query(Query)
 
+    module OtherTrace
+      def execute_query(query:)
+        query.context[:other_trace_ran] = true
+        super
+      end
+    end
+    trace_with OtherTrace
     trace_with GraphQL::Tracing::SentryTrace
   end
 
   before do
     Sentry.clear_all
+  end
+
+  it "works with other trace modules" do
+    res = SentryTraceTestSchema.execute("{ int }")
+    assert res.context[:other_trace_ran]
   end
 
   describe "When Sentry is not configured" do
