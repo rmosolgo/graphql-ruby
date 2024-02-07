@@ -10,6 +10,19 @@
 
 ### Bug fixes
 
+# 2.2.8 (7 Feb 2024)
+
+### New features
+
+- Responses have `"errors"` before `"data"`, as recommended by the GraphQL spec #4823
+
+### Bug fixes
+
+- Sentry: fix integration with other trace modules #4830
+- Sentry: fix when child span is `nil` (test environments) #4828
+- Remove needless Base64 backport #4820
+- Fix module arrangement to support RDoc #4819
+
 # 2.2.7 (29 Jan 2024)
 
 ### Deprecations
