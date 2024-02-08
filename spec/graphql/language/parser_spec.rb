@@ -16,6 +16,17 @@ describe GraphQL::Language::Parser do
     assert_equal expected_message, err.message
   end
 
+  it "rejects newlines in single-quoted strings" do
+    assert_raises(GraphQL::ParseError) {
+      GraphQL.parse("{ doStuff(arg: \"
+abc\") }"
+      )
+    }
+    assert_raises(GraphQL::ParseError) {
+      GraphQL.parse("{ doStuff(arg: \"\rabc\") }")
+    }
+  end
+
   describe "when there are no selections" do
     it 'raises a ParseError' do
       assert_raises(GraphQL::ParseError) {

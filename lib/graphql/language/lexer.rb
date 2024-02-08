@@ -254,7 +254,7 @@ module GraphQL
       STRING_ESCAPE = %r{[\\][\\/bfnrt]}
       BLOCK_QUOTE =   '"""'
       ESCAPED_QUOTE = /\\"/;
-      STRING_CHAR = /#{ESCAPED_QUOTE}|[^"\\]|#{UNICODE_ESCAPE}|#{STRING_ESCAPE}/
+      STRING_CHAR = /#{ESCAPED_QUOTE}|[^"\\\n\r]|#{UNICODE_ESCAPE}|#{STRING_ESCAPE}/
       QUOTED_STRING_REGEXP = %r{#{QUOTE} (?:#{STRING_CHAR})* #{QUOTE}}x
       BLOCK_STRING_REGEXP = %r{
         #{BLOCK_QUOTE}
