@@ -10,6 +10,7 @@
   "bin": "./cli.js",
   "devDependencies": {
     "@apollo/client": ">=3.3.13",
+    "@rails/actioncable": "^7.0.0",
     "@types/glob": "^7.1.1",
     "@types/jest": "^25.1.2",
     "@types/minimist": "^1.2.0",
@@ -18,7 +19,7 @@
     "@types/pusher-js": "^4.2.2",
     "@types/rails__actioncable": "^6.1.6",
     "@types/react": "^17.0.0",
-    "@types/relay-runtime": "11.0.3",
+    "@types/relay-runtime": "^14.0.0",
     "@types/zen-observable": "^0.8.2",
     "ably": "1.2.6",
     "graphql": ">=15.0.0",
@@ -27,10 +28,9 @@
     "pako": "^2.0.3",
     "prettier": "^1.19.1",
     "pusher-js": "^7.0.3",
-    "@rails/actioncable": "^7.0.0",
     "relay-runtime": "11.0.2",
     "ts-jest": "^29.0.0",
-    "typescript": "5.1.6",
+    "typescript": "5.3.3",
     "urql": "^2.2.2"
   },
   "scripts": {
