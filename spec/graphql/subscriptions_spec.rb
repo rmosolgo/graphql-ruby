@@ -1000,6 +1000,28 @@ describe GraphQL::Subscriptions do
       res = schema.subscriptions.trigger("payload", { "id" => "8"}, OpenStruct.new(str: nil, int: nil))
       assert res
     end
+
+    it "raises an error when trigger_job isn't configured" do
+      assert_nil schema.subscriptions.trigger_job
+      err = assert_raises ArgumentError do
+        schema.subscriptions.trigger_later(:nothing, {}, :nothing)
+      end
+      assert_equal "No `trigger_job` configured. Make sure Rails is loaded or provide a `trigger_job:` option to `use InMemoryBackend::Subscriptions, ...`.", err.message
+    end
+
+    it "doesn't raise an error when trigger_job is present" do
+      log = []
+      trigger_job = Class.new do
+        define_singleton_method(:perform_later) do |*args, **kwargs|
+          log << [args, kwargs]
+        end
+      end
+      new_schema = Class.new(schema) do
+        use InMemoryBackend::Subscriptions, extra: 123, trigger_job: trigger_job
+      end
+      assert new_schema.subscriptions.trigger_later(:nothing, :nothing, :nothing)
+      assert_equal [[[:nothing, :nothing, :nothing], { scope: nil, context: {} }]], log
+    end
   end
 
   describe "Triggering with custom enum values" do

@@ -22,9 +22,7 @@ module GraphQL
     end
 
     # @see {Subscriptions#initialize} for options, concrete implementations may add options.
-    def self.use(defn, options = {})
-      schema = defn.is_a?(Class) ? defn : defn.target
-
+    def self.use(schema, **options)
       if schema.subscriptions(inherited: false)
         raise ArgumentError, "Can't reinstall subscriptions. #{schema} is using #{schema.subscriptions}, can't also add #{self}"
       end
@@ -37,18 +35,44 @@ module GraphQL
 
     # @param schema [Class] the GraphQL schema this manager belongs to
     # @param validate_update [Boolean] If false, then validation is skipped when executing updates
-    def initialize(schema:, validate_update: true, broadcast: false, default_broadcastable: false, **rest)
+    def initialize(schema:, validate_update: true, broadcast: false, default_broadcastable: false, trigger_job: NOT_CONFIGURED, **rest)
       if broadcast
         schema.query_analyzer(Subscriptions::BroadcastAnalyzer)
       end
       @default_broadcastable = default_broadcastable
       @schema = schema
       @validate_update = validate_update
+      @trigger_job = if trigger_job == NOT_CONFIGURED
+        if defined?(ActiveJob::Base)
+          require "graphql/subscriptions/trigger_job"
+          trigger_job_class = Class.new(GraphQL::Subscriptions::TriggerJob)
+          trigger_job_class.subscriptions = self
+          # ActiveJob will need a constant reference to this class:
+          schema.const_set(:SubscriptionsTriggerJob, trigger_job_class)
+          trigger_job_class
+        else
+          nil
+        end
+      else
+        trigger_job
+      end
     end
 
     # @return [Boolean] Used when fields don't have `broadcastable:` explicitly set
     attr_reader :default_broadcastable
 
+    # This class is used to trigger with `.trigger_later`.
+    # When Rails is loaded, a Job class is automatically created.
+    # Pass `use ..., trigger_job: ...` to provide a custom class.
+    # @return [Class<Active::JobBase>, nil]
+    attr_reader :trigger_job
+
+    # Use {trigger_job} (`.perform_later`) to perform this trigger.
+    # @see trigger for arguments
+    def trigger_later(event_name, args, object, scope: nil, context: {})
+      job_class = @trigger_job || raise(ArgumentError, "No `trigger_job` configured. Make sure Rails is loaded or provide a `trigger_job:` option to `use #{self.class}, ...`.")
+      job_class.perform_later(event_name, args, object, scope: scope, context: {})
+    end
     # Fetch subscriptions matching this field + arguments pair
     # And pass them off to the queue.
     # @param event_name [String]
