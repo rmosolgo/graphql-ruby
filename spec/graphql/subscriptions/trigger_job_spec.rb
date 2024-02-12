@@ -57,6 +57,12 @@ describe "GraphQL::Subscriptions::TriggerJob" do
     assert_equal TriggerJobSchema::SubscriptionsTriggerJob, TriggerJobSchema.subscriptions.trigger_job
     assert_equal GraphQL::Subscriptions::TriggerJob, TriggerJobSchema::SubscriptionsTriggerJob.superclass
     assert_equal ActiveJob::Base, TriggerJobSchema::SubscriptionsTriggerJob.superclass.superclass
+
+    custom_class = Class.new(TriggerJobSchema) do
+      use TriggerJobSchema::InMemorySubscriptions, trigger_job_queue_as: "graphql_subscriptions"
+    end
+
+    assert_equal "graphql_subscriptions", custom_class::SubscriptionsTriggerJob.queue_name
   end
 
   it "runs .trigger in the background" do

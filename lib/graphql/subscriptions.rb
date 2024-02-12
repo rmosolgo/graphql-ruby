@@ -35,7 +35,7 @@ module GraphQL
 
     # @param schema [Class] the GraphQL schema this manager belongs to
     # @param validate_update [Boolean] If false, then validation is skipped when executing updates
-    def initialize(schema:, validate_update: true, broadcast: false, default_broadcastable: false, trigger_job: NOT_CONFIGURED, **rest)
+    def initialize(schema:, validate_update: true, broadcast: false, default_broadcastable: false, trigger_job: NOT_CONFIGURED, trigger_job_queue_as: NOT_CONFIGURED, **rest)
       if broadcast
         schema.query_analyzer(Subscriptions::BroadcastAnalyzer)
       end
@@ -47,6 +47,9 @@ module GraphQL
           require "graphql/subscriptions/trigger_job"
           trigger_job_class = Class.new(GraphQL::Subscriptions::TriggerJob)
           trigger_job_class.subscriptions = self
+          if trigger_job_queue_as != NOT_CONFIGURED
+            trigger_job_class.queue_as(trigger_job_queue_as)
+          end
           # ActiveJob will need a constant reference to this class:
           schema.const_set(:SubscriptionsTriggerJob, trigger_job_class)
           trigger_job_class
