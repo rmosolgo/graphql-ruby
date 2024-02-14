@@ -148,6 +148,8 @@ module GraphQL
             { TIMESTAMP_KEY => [obj.class.name, obj.strftime(TIMESTAMP_FORMAT)] }
           elsif obj.is_a?(OpenStruct)
             { OPEN_STRUCT_KEY => dump_value(obj.to_h) }
+          elsif defined?(ActiveRecord::Relation) && obj.is_a?(ActiveRecord::Relation)
+            dump_value(obj.to_a)
           else
             obj
           end
