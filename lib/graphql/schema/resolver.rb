@@ -166,11 +166,15 @@ module GraphQL
         args.each_value do |argument|
           arg_keyword = argument.keyword
           if inputs.key?(arg_keyword) && !(arg_value = inputs[arg_keyword]).nil? && (arg_value != argument.default_value)
-            arg_auth, err = argument.authorized?(self, arg_value, context)
-            if !arg_auth
-              return arg_auth, err
-            else
-              true
+            auth_result = argument.authorized?(self, arg_value, context)
+            if auth_result.is_a?(Array)
+              # only return this second value if the application returned a second value
+              arg_auth, err = auth_result
+              if !arg_auth
+                return arg_auth, err
+              end
+            elsif auth_result == false
+              return auth_result
             end
           else
             true

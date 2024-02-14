@@ -1123,4 +1123,43 @@ describe GraphQL::Schema::Resolver do
       assert_equal "Does things!", resolver.description
     end
   end
+
+
+  describe "when authorized? returns false for an argument" do
+    class UnauthorizedArgResolverSchema < GraphQL::Schema
+      class Echo < GraphQL::Schema::Resolver
+        argument :input, String do
+          def authorized?(obj, input, ctx)
+            if input == "unauthorized"
+              false
+            else
+              true
+            end
+          end
+        end
+
+        type String, null: true
+
+        def resolve(input:)
+          input
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :echo, resolver: Echo
+      end
+
+      query(Query)
+
+      def self.unauthorized_field(*)
+        raise GraphQL::ExecutionError, "Unauthorized Field"
+      end
+    end
+
+    it "calls unauthorized_field" do
+      assert_equal "ok", UnauthorizedArgResolverSchema.execute("{ echo(input: \"ok\") }")["data"]["echo"]
+      unauthorized_res = UnauthorizedArgResolverSchema.execute("{ echo(input: \"unauthorized\") }")
+      assert_equal ["Unauthorized Field"], unauthorized_res["errors"].map { |err|  err["message"] }
+    end
+  end
 end
