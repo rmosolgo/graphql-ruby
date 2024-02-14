@@ -642,10 +642,109 @@ describe GraphQL::Analysis::AST::QueryComplexity do
       field_complexities = reduce_result.first
 
       assert_equal({
-        ['cheese', 'id'] => { max_complexity: 1, child_complexity: nil },
-        ['cheese', 'flavor'] => { max_complexity: 1, child_complexity: nil },
+        ['cheese', 'id'] => { max_complexity: 1, child_complexity: 0 },
+        ['cheese', 'flavor'] => { max_complexity: 1, child_complexity: 0 },
         ['cheese'] => { max_complexity: 3, child_complexity: 2 },
       }, field_complexities)
+    end
+  end
+
+  describe "maximum of possible scopes regardless of selection order" do
+    class MaxOfPossibleScopes < GraphQL::Schema
+      class Cheese < GraphQL::Schema::Object
+        field :kind, String
+      end
+
+      module Producer
+        include GraphQL::Schema::Interface
+        field :cheese, Cheese, complexity: 5
+        field :name, String, complexity: 5
+      end
+
+      class Farm < GraphQL::Schema::Object
+        implements Producer
+        field :cheese, Cheese, complexity: 10
+        field :name, String, complexity: 10
+      end
+
+      class Entity < GraphQL::Schema::Union
+        possible_types Farm
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :entity, Entity
+      end
+
+      def self.resolve_type
+        Farm
+      end
+
+      def self.cost(query_string)
+        GraphQL::Analysis::AST.analyze_query(
+          GraphQL::Query.new(self, query_string),
+          [GraphQL::Analysis::AST::QueryComplexity],
+        ).first
+      end
+
+      query(Query)
+      orphan_types(Producer)
+    end
+
+    it "uses maximum of merged composite fields, regardless of selection order" do
+      a = MaxOfPossibleScopes.cost(%|
+        {
+          entity {
+            ...on Producer { cheese { kind } }
+            ...on Farm { cheese { kind } }
+          }
+        }
+      |)
+
+      b = MaxOfPossibleScopes.cost(%|
+        {
+          entity {
+            ...on Farm { cheese { kind } }
+            ...on Producer { cheese { kind } }
+          }
+        }
+      |)
+
+      assert_equal 0, a - b
+    end
+
+    it "uses maximum of merged leaf fields, regardless of selection order" do
+      a = MaxOfPossibleScopes.cost(%|
+        {
+          entity {
+            ...on Producer { name }
+            ...on Farm { name }
+          }
+        }
+      |)
+
+      b = MaxOfPossibleScopes.cost(%|
+        {
+          entity {
+            ...on Farm { name }
+            ...on Producer { name }
+          }
+        }
+      |)
+
+      assert_equal 0, a - b
+    end
+
+    it "invalid mismatched scope types will still compute without error" do
+      cost = MaxOfPossibleScopes.cost(%|
+        {
+          entity {
+            ...on Farm { cheese { kind } }
+            ...on Producer { cheese: name }
+          }
+        }
+      |)
+
+      assert_equal 12, cost
     end
   end
 end
