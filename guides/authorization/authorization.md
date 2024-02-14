@@ -16,7 +16,7 @@ Schema members have `authorized?` methods which will be called during execution:
 - Type classes have `.authorized?(object, context)` class methods
 - Fields have `#authorized?(object, args, context)` instance methods
 - Arguments have `#authorized?(object, arg_value, context)` instance methods
-- Mutations have `#authorized?(object, context)` class method and a `#authorized?(hash)` instance method
+- Mutations and Resolvers have `.authorized?(object, context)` class methods and `#authorized?(args)` instance methods
 
 These methods are called with:
 
