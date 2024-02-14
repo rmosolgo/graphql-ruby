@@ -498,26 +498,12 @@ module GraphQL
 
             # Possible bug: selections on `edges` and `nodes` are _both_ multiplied here. Should they be?
             items_complexity = child_complexity - metadata_complexity - nodes_edges_complexity
-            # Add 1 for _this_ field
-            1 + (max_possible_page_size * items_complexity) + metadata_complexity + nodes_edges_complexity
+            subfields_complexity = (max_possible_page_size * items_complexity) + metadata_complexity + nodes_edges_complexity
+            # Apply this field's own complexity
+            apply_own_complexity_to(subfields_complexity, query, nodes)
           end
         else
-          defined_complexity = complexity
-          case defined_complexity
-          when Proc
-            arguments = query.arguments_for(nodes.first, self)
-            if arguments.is_a?(GraphQL::ExecutionError)
-              return child_complexity
-            elsif arguments.respond_to?(:keyword_arguments)
-              arguments = arguments.keyword_arguments
-            end
-
-            defined_complexity.call(query.context, arguments, child_complexity)
-          when Numeric
-            defined_complexity + child_complexity
-          else
-            raise("Invalid complexity: #{defined_complexity.inspect} on #{path} (#{inspect})")
-          end
+          apply_own_complexity_to(child_complexity, query, nodes)
         end
       end
 
@@ -880,6 +866,24 @@ ERR
           end
         else
           yield(obj, args)
+        end
+      end
+
+      def apply_own_complexity_to(child_complexity, query, nodes)
+        case (own_complexity = complexity)
+        when Numeric
+          own_complexity + child_complexity
+        when Proc
+          arguments = query.arguments_for(nodes.first, self)
+          if arguments.is_a?(GraphQL::ExecutionError)
+            return child_complexity
+          elsif arguments.respond_to?(:keyword_arguments)
+            arguments = arguments.keyword_arguments
+          end
+
+          own_complexity.call(query.context, arguments, child_complexity)
+        else
+          raise ArgumentError, "Invalid complexity for #{self.path}: #{own_complexity.inspect}"
         end
       end
     end
