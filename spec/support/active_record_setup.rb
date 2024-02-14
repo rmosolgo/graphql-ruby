@@ -53,5 +53,6 @@ if testing_rails?
   end
 
   class Food < ActiveRecord::Base
+    include GlobalID::Identification
   end
 end
