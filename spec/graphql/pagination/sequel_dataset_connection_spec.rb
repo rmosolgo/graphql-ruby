@@ -6,8 +6,10 @@ if testing_rails?
     class SequelFood < Sequel::Model(:foods)
     end
 
-    if SequelFood.empty? # Can overlap with ActiveRecordRelationConnection test
-      ConnectionAssertions::NAMES.each { |n| SequelFood.create(name: n) }
+    before do
+      if SequelFood.empty? # Can overlap with ActiveRecordRelationConnection test
+        ConnectionAssertions::NAMES.each { |n| SequelFood.create(name: n) }
+      end
     end
 
     class SequelDatasetConnectionWithTotalCount < GraphQL::Pagination::SequelDatasetConnection

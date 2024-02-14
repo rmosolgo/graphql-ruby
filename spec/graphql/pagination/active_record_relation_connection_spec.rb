@@ -3,10 +3,6 @@ require "spec_helper"
 
 if testing_rails?
   describe GraphQL::Pagination::ActiveRecordRelationConnection do
-    if Food.count == 0 # Backwards-compat version of `.none?`
-      ConnectionAssertions::NAMES.each { |n| Food.create!(name: n) }
-    end
-
     class RelationConnectionWithTotalCount < GraphQL::Pagination::ActiveRecordRelationConnection
       def total_count
         if items.respond_to?(:unscope)
@@ -35,6 +31,12 @@ if testing_rails?
     let(:limit) { nil }
 
     include ConnectionAssertions
+
+    before do
+      if Food.count == 0 # Backwards-compat version of `.none?`
+        ConnectionAssertions::NAMES.each { |n| Food.create!(name: n) }
+      end
+    end
 
     it "maintains an application-provided offset" do
       results = schema.execute("{
