@@ -49,6 +49,8 @@ Additionally, it accepts some keyword arguments:
 You can use {{ "Testing::Helpers#with_resolution_context" | api_doc }} to use the same type, runtime object, and GraphQL context for multiple field resolutions. For example:
 
 ```ruby
+# Assuming `include GraphQL::Testing::Helpers.for(MySchema)`
+# was used above ...
 with_resolution_context(type: "Post", object: example_post, context: { current_user: author }) do |rc|
   assert_equal "100 Great Ideas", rc.run_graphql_field("title")
   assert_equal true, rc.run_graphql_field("viewerIsAuthor")
