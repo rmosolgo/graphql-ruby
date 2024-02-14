@@ -541,6 +541,17 @@ describe GraphQL::Analysis::AST::QueryComplexity do
         def things(count:)
           count.times.map {|t| {name: t.to_s}}
         end
+
+        class ThingsCustom < GraphQL::Schema::Resolver
+          type Thing.connection_type, null: false
+          complexity 100
+
+          def resolve
+            5.times { |t| { name: "Thing #{t}" } }
+          end
+        end
+
+        field :things_custom, resolver: ThingsCustom
       end
 
       query(Query)
@@ -597,6 +608,15 @@ describe GraphQL::Analysis::AST::QueryComplexity do
         assert_equal ["count must be less than 50"], res["errors"].map { |e| e["message"] }
         complexity = reduce_result.first
         assert_equal 102, complexity, "It uses max page size"
+      end
+    end
+
+    describe "when connection fields have custom complexity" do
+      let(:query_string) { "{ thingsCustom(first: 2) { nodes { name } } }"}
+
+      it "uses the custom configured value" do
+        complexity = reduce_result.first
+        assert_equal 103, complexity
       end
     end
   end
