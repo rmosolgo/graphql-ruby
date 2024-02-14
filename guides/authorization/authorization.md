@@ -16,6 +16,7 @@ Schema members have `authorized?` methods which will be called during execution:
 - Type classes have `.authorized?(object, context)` class methods
 - Fields have `#authorized?(object, args, context)` instance methods
 - Arguments have `#authorized?(object, arg_value, context)` instance methods
+- Mutations and Resolvers have `.authorized?(object, context)` class methods and `#authorized?(args)` instance methods
 
 These methods are called with:
 
@@ -84,6 +85,10 @@ end
 ```
 
 For this to work, the base argument class must be {% internal_link "configured with other GraphQL types", "/type_definitions/extensions.html#customizing-arguments" %}.
+
+## Mutation Authorization
+
+See mutations/mutation_authorization.html#can-this-user-perform-this-action {% internal_link "Mutation Authorization", "/mutation/mutation_authorization.html#can-this-user-perform-this-action" %}) in the Mutation Guides.
 
 ## Handling Unauthorized Objects
 
