@@ -483,22 +483,19 @@ module GraphQL
             metadata_complexity = 0
             lookahead = GraphQL::Execution::Lookahead.new(query: query, field: self, ast_nodes: nodes, owner_type: owner)
 
-            if (page_info_lookahead = lookahead.selection(:page_info)).selected?
-              metadata_complexity += 1 # pageInfo
-              metadata_complexity += page_info_lookahead.selections.size # subfields
+            lookahead.selections.each do |next_lookahead|
+              # this includes `pageInfo`, `nodes` and `edges` and any custom fields
+              # TODO this doesn't support procs yet -- unlikely to need it.
+              metadata_complexity += next_lookahead.field.complexity
+              if next_lookahead.name != :nodes && next_lookahead.name != :edges
+                # subfields, eg, for pageInfo -- assumes no subselections
+                metadata_complexity += next_lookahead.selections.size
+              end
             end
-
-            if lookahead.selects?(:total) || lookahead.selects?(:total_count) || lookahead.selects?(:count)
-              metadata_complexity += 1
-            end
-
-            nodes_edges_complexity = 0
-            nodes_edges_complexity += 1 if lookahead.selects?(:edges)
-            nodes_edges_complexity += 1 if lookahead.selects?(:nodes)
 
             # Possible bug: selections on `edges` and `nodes` are _both_ multiplied here. Should they be?
-            items_complexity = child_complexity - metadata_complexity - nodes_edges_complexity
-            subfields_complexity = (max_possible_page_size * items_complexity) + metadata_complexity + nodes_edges_complexity
+            items_complexity = child_complexity - metadata_complexity
+            subfields_complexity = (max_possible_page_size * items_complexity) + metadata_complexity
             # Apply this field's own complexity
             apply_own_complexity_to(subfields_complexity, query, nodes)
           end

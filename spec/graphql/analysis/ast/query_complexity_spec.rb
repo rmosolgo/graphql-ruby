@@ -522,6 +522,11 @@ describe GraphQL::Analysis::AST::QueryComplexity do
         field :name, String
       end
 
+      class CustomThingConnection < GraphQL::Types::Relay::BaseConnection
+        edge_type Thing.edge_type
+        field :something_special, String, complexity: 3
+      end
+
       class Query < GraphQL::Schema::Object
         field :complexity, SingleComplexity do
           argument :int_value, Int, required: false
@@ -543,7 +548,7 @@ describe GraphQL::Analysis::AST::QueryComplexity do
         end
 
         class ThingsCustom < GraphQL::Schema::Resolver
-          type Thing.connection_type, null: false
+          type CustomThingConnection, null: false
           complexity 100
 
           def resolve
@@ -612,11 +617,11 @@ describe GraphQL::Analysis::AST::QueryComplexity do
     end
 
     describe "when connection fields have custom complexity" do
-      let(:query_string) { "{ thingsCustom(first: 2) { nodes { name } } }"}
+      let(:query_string) { "{ thingsCustom(first: 2) { somethingSpecial nodes { name } } }"}
 
       it "uses the custom configured value" do
         complexity = reduce_result.first
-        assert_equal 103, complexity
+        assert_equal 106, complexity
       end
     end
   end
