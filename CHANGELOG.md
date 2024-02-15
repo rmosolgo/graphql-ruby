@@ -10,6 +10,18 @@
 
 ### Bug fixes
 
+# 2.2.9 (15 Feb 2024)
+
+### New features
+
+- Complexity: Treat custom Connection fields as metadata (like `totalCount`), not as if they were evaluated for each item in the list #4842
+- Subscriptions: Serialize `ActiveRecord::Relation`s given to `.trigger` #4840
+
+### Bug fixes
+
+- Complexity: apply configured `complexity ...` to connection fields #4841
+- Authorization: properly handle Resolver arguments that return `false` for `#authorized?` #4839
+
 # 2.2.8 (7 Feb 2024)
 
 ### New features
