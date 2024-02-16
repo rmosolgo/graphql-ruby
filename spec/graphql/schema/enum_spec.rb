@@ -130,7 +130,7 @@ describe GraphQL::Schema::Enum do
     end
 
     it "coerces invalid names to nil" do
-      assert_equal(nil, enum.coerce_isolated_input("YAKKITY"))
+      assert_nil(enum.coerce_isolated_input("YAKKITY"))
     end
 
     it "coerces result values to value's value" do
