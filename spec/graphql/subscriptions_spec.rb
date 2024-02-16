@@ -416,13 +416,13 @@ describe GraphQL::Subscriptions do
 
         # Let's see what GraphQL sent over the wire:
         assert_equal({"str" => "Update", "int" => 1}, deliveries["1"][0]["data"]["payload"])
-        assert_equal(nil, deliveries["1"][0]["data"]["event"])
+        assert_nil(deliveries["1"][0]["data"]["event"])
 
         # Trigger another field subscription
         schema.subscriptions.trigger(:event, {}, OpenStruct.new(int: 1))
 
         # Now we should get result for another field
-        assert_equal(nil, deliveries["1"][1]["data"]["payload"])
+        assert_nil(deliveries["1"][1]["data"]["payload"])
         assert_equal({"int" => 1}, deliveries["1"][1]["data"]["event"])
       end
 

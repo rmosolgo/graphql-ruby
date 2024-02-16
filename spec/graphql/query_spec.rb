@@ -865,7 +865,7 @@ describe GraphQL::Query do
 
       schema.execute(query, variables: { 'id' => nil })
       assert(expected_args.first.key?(:id))
-      assert_equal(nil, expected_args.first[:id])
+      assert_nil(expected_args.first[:id])
     end
 
     it 'sets argument to [nil] when [null] is passed' do

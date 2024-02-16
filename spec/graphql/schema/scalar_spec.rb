@@ -194,7 +194,7 @@ describe GraphQL::Schema::Scalar do
     end
 
     it "coerces nil into nil" do
-      assert_equal(nil, custom_scalar.coerce_isolated_input(nil))
+      assert_nil(custom_scalar.coerce_isolated_input(nil))
     end
 
     it "coerces input into objects" do
