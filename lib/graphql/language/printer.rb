@@ -208,6 +208,10 @@ module GraphQL
           print_string(" = ")
           print_node(variable_definition.default_value)
         end
+        variable_definition.directives.each do |dir|
+          print_string(" ")
+          print_directive(dir)
+        end
       end
 
       def print_variable_identifier(variable_identifier)

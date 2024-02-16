@@ -512,7 +512,7 @@ module GraphQL
       # An operation-level query variable
       class VariableDefinition < AbstractNode
         scalar_methods :name, :type, :default_value
-        children_methods false
+        children_methods(directives: Directive)
         # @!attribute default_value
         #   @return [String, Integer, Float, Boolean, Array, NullValue] A Ruby value to use if no other value is provided
 

@@ -24,6 +24,11 @@ describe GraphQL::Language::Parser do
     end
   end
 
+  it "parses directives on variable definitions" do
+    ast = GraphQL.parse("query($var: Int = 1 @special) { do(something: $var) }")
+    assert_equal ["special"], ast.definitions.first.variables.first.directives.map(&:name)
+  end
+
   it "allows fragments, fields and arguments named null" do
     assert GraphQL.parse("{ field(null: false) ... null } fragment null on Query { null }")
   end
