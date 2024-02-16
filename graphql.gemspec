@@ -25,14 +25,15 @@ Gem::Specification.new do |s|
 
   s.files = Dir["{lib}/**/*", "MIT-LICENSE", "readme.md", ".yardopts"]
 
+  s.add_runtime_dependency "base64"
+
   s.add_development_dependency "benchmark-ips"
   s.add_development_dependency "concurrent-ruby", "~>1.0"
   s.add_development_dependency "memory_profiler"
-  # Remove this limit when minitest-reports is compatible
-  # https://github.com/kern/minitest-reporters/pull/220
-  s.add_development_dependency "minitest", "~> 5.9.0"
-  s.add_development_dependency "minitest-focus", "~> 1.1"
-  s.add_development_dependency "minitest-reporters", "~>1.0"
+
+  s.add_development_dependency "minitest"
+  s.add_development_dependency "minitest-focus"
+  s.add_development_dependency "minitest-reporters"
   s.add_development_dependency "rake"
   s.add_development_dependency 'rake-compiler'
   s.add_development_dependency "rubocop", "1.12" # for Ruby 2.4 enforcement

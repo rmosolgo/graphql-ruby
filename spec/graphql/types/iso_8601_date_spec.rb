@@ -189,14 +189,14 @@ describe GraphQL::Types::ISO8601Date do
         "parseDateOptional" => nil
       }
       assert_equal(expected_res, res["data"])
-      assert_equal(nil, res["errors"])
+      assert_nil(res["errors"])
 
       res = DateTest::Schema.execute(query_str, context: { raise_type_error: true })
       expected_res = {
         "parseDateOptional" => nil
       }
       assert_equal(expected_res, res["data"])
-      assert_equal(nil, res["errors"])
+      assert_nil(res["errors"])
     end
   end
 

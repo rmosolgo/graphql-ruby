@@ -136,7 +136,7 @@ describe GraphQL::Execution::Lazy do
         }
       }|
 
-      assert_equal(nil, res["data"])
+      assert_nil(res["data"])
       assert_equal 1, res["errors"].length
     end
 
