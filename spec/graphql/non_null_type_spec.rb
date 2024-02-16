@@ -25,7 +25,7 @@ describe "GraphQL::NonNullType" do
       }
       |
       result = Dummy::Schema.execute(query_string)
-      assert_equal(nil, result["data"])
+      assert_nil(result["data"])
       assert_equal([{"message"=>"Cannot return null for non-nullable field DeepNonNull.nonNullInt"}], result["errors"])
     end
 
@@ -41,7 +41,7 @@ describe "GraphQL::NonNullType" do
         assert_equal("Cannot return null for non-nullable field Cow.cantBeNullButIs", err.message)
         assert_equal("Cow", err.parent_type.graphql_name)
         assert_equal("cantBeNullButIs", err.field.name)
-        assert_equal(nil, err.value)
+        assert_nil(err.value)
       end
     end
   end
