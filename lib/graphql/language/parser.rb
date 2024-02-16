@@ -121,7 +121,17 @@ module GraphQL
                 value
               end
 
-              defs << Nodes::VariableDefinition.new(pos: loc, name: var_name, type: var_type, default_value: default_value, filename: @filename, source_string: @graphql_str)
+              directives = parse_directives
+
+              defs << Nodes::VariableDefinition.new(
+                pos: loc,
+                name: var_name,
+                type: var_type,
+                default_value: default_value,
+                directives: directives,
+                filename: @filename,
+                source_string: @graphql_str
+              )
             end
             expect_token(:RPAREN)
             defs

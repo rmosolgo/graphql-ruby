@@ -181,13 +181,14 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
     | variable_definitions_list variable_definition { rb_ary_push($$, $2); }
 
   variable_definition:
-      VAR_SIGN name COLON type default_value_opt {
-        $$ = MAKE_AST_NODE(VariableDefinition, 5,
+      VAR_SIGN name COLON type default_value_opt directives_list_opt {
+        $$ = MAKE_AST_NODE(VariableDefinition, 6,
           rb_ary_entry($1, 1),
           rb_ary_entry($1, 2),
           rb_ary_entry($2, 3),
           $4,
-          $5
+          $5,
+          $6
         );
       }
 
