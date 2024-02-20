@@ -1,5 +1,9 @@
 # GraphQL::CParser
 
+## 1.0.8
+
+- Support directives on variable definitions, requires `graphql` 2.2.10+ #4847
+
 ## 1.0.5
 
 - Properly parse integers with leading zeros as Integers, not Floats #4556

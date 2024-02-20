@@ -23,5 +23,5 @@ Gem::Specification.new do |s|
 
   s.files = Dir["{lib,ext}/**/*.{rb,h,c}"]
   s.extensions << "ext/graphql_c_parser_ext/extconf.rb"
-  s.add_dependency "graphql"
+  s.add_dependency "graphql", ">= 2.2.10"
 end
