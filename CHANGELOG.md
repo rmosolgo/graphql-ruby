@@ -10,6 +10,17 @@
 
 ### Bug fixes
 
+# 2.2.10 (20 Feb 2024)
+
+### New features
+
+- Parser: support directives on variable definitions #4847
+
+### Bug fixes
+
+- Fix compatibility with Ruby 3.4 #4846
+- Tracing: Fix applying default options to non-default modes #4849, #4850
+
 # 2.2.9 (15 Feb 2024)
 
 ### New features
