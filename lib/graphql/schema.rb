@@ -1182,13 +1182,15 @@ module GraphQL
             raise ArgumentError, "Can't use `context[:backtrace]` with a custom default trace mode (`#{dm.inspect}`)"
           else
             own_trace_modes[:default_backtrace] ||= build_trace_mode(:default_backtrace)
+            options_trace_mode = :default
             :default_backtrace
           end
         else
           default_trace_mode
         end
 
-        base_trace_options = trace_options_for(trace_mode)
+        options_trace_mode ||= trace_mode
+        base_trace_options = trace_options_for(options_trace_mode)
         trace_options = base_trace_options.merge(options)
         trace_class_for_mode = trace_class_for(trace_mode) || raise(ArgumentError, "#{self} has no trace class for mode: #{trace_mode.inspect}")
         trace_class_for_mode.new(**trace_options)
