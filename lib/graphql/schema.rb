@@ -225,6 +225,10 @@ module GraphQL
           if base_class < DefaultTraceClass
             mods = trace_modules_for(:default) + mods
           end
+          # Copy the existing default options into this mode's options
+          default_options = trace_options_for(:default)
+          add_trace_options_for(mode, default_options)
+
           Class.new(base_class) do
             mods.any? && include(*mods)
           end
@@ -1133,20 +1137,23 @@ module GraphQL
           tc = own_trace_modes[mode] ||= build_trace_mode(mode)
           tc.include(trace_mod)
           own_trace_modules[mode] << trace_mod
-
+          add_trace_options_for(mode, options)
           if mode == :default
             # This module is being added as a default tracer. If any other mode classes
             # have already been created, but get their default behavior from a superclass,
             # Then mix this into this schema's subclass.
             # (But don't mix it into mode classes that aren't default-based.)
             own_trace_modes.each do |other_mode_name, other_mode_class|
-              if other_mode_class < DefaultTraceClass && !(other_mode_class < trace_mod)
-                other_mode_class.include(trace_mod)
+              if other_mode_class < DefaultTraceClass
+                # Don't add it back to the inheritance tree if it's already there
+                if !(other_mode_class < trace_mod)
+                  other_mode_class.include(trace_mod)
+                end
+                # Add any options so they'll be available
+                add_trace_options_for(other_mode_name, options)
               end
             end
           end
-          t_opts = trace_options_for(mode)
-          t_opts.merge!(options)
         end
         nil
       end
@@ -1345,6 +1352,12 @@ module GraphQL
       end
 
       private
+
+      def add_trace_options_for(mode, new_options)
+        t_opts = trace_options_for(mode)
+        t_opts.merge!(new_options)
+        nil
+      end
 
       # @param t [Module, Array<Module>]
       # @return [void]

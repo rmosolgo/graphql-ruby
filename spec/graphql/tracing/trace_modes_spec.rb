@@ -196,4 +196,43 @@ describe "Trace modes for schemas" do
       refute res2.context[:global_trace]
     end
   end
+
+  describe "custom mode options and default options" do
+    class ModeOptionsSchema < GraphQL::Schema
+      module SomePlugin
+        def self.use(schema)
+          schema.trace_with(Trace, arg1: 1)
+        end
+
+        module Trace
+          def initialize(arg1:, **kwargs)
+            super(**kwargs)
+          end
+        end
+      end
+      module BaseTracer
+        def initialize(arg3:, **kwargs)
+          super(**kwargs)
+        end
+      end
+
+      module ExtraTracer
+        def initialize(arg2:, **kwargs)
+          super(**kwargs)
+        end
+      end
+
+      use SomePlugin
+      trace_with(ExtraTracer, mode: :extra, arg2: true)
+      trace_with(BaseTracer, arg3: true)
+    end
+
+    it "merges default options into custom mode options" do
+      assert_equal [:arg1, :arg3], ModeOptionsSchema.trace_options_for(:default).keys.sort
+      assert_equal [:arg1, :arg2, :arg3], ModeOptionsSchema.trace_options_for(:extra).keys.sort
+
+      assert ModeOptionsSchema.new_trace(mode: :default)
+      assert ModeOptionsSchema.new_trace(mode: :extra)
+    end
+  end
 end
