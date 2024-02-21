@@ -5,6 +5,24 @@ module GraphQL
     module SentryTrace
       include PlatformTrace
 
+      # @param set_transaction_name [Boolean] If true, the GraphQL operation name will be used as the transaction name.
+      #   This is not advised if you run more than one query per HTTP request, for example, with `graphql-client` or multiplexing.
+      #   It can also be specified per-query with `context[:set_sentry_transaction_name]`.
+      def initialize(set_transaction_name: false, **_rest)
+        @set_transaction_name = set_transaction_name
+        super
+      end
+      
+      def execute_query(**data)
+        set_this_txn_name = data[:query].context[:set_sentry_transaction_name]
+        if set_this_txn_name == true || (set_this_txn_name.nil? && @set_transaction_name)
+          Sentry.configure_scope do |scope|
+            scope.set_transaction_name(transaction_name(data[:query]))
+          end
+        end
+        instrument_execution("graphql.execute", "execute_query", data) { super }
+      end
+
       {
         "lex" => "graphql.lex",
         "parse" => "graphql.parse",
@@ -12,7 +30,6 @@ module GraphQL
         "analyze_query" => "graphql.analyze",
         "analyze_multiplex" => "graphql.analyze_multiplex",
         "execute_multiplex" => "graphql.execute_multiplex",
-        "execute_query" => "graphql.execute",
         "execute_query_lazy" => "graphql.execute"
       }.each do |trace_method, platform_key|
         module_eval <<-RUBY, __FILE__, __LINE__
