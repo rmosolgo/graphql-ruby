@@ -167,7 +167,7 @@ module GraphQL
           backtrace_class.include(GraphQL::Backtrace::Trace)
           trace_mode(:default_backtrace, backtrace_class)
         end
-        trace_class_for(:default)
+        trace_class_for(:default, build: true)
       end
 
       # @return [Class] Return the trace class to use for this mode, looking one up on the superclass if this Schema doesn't have one defined.
@@ -218,14 +218,14 @@ module GraphQL
             include DefaultTraceClass
           end
         when :default_backtrace
-          schema_base_class = trace_class_for(:default)
+          schema_base_class = trace_class_for(:default, build: true)
           Class.new(schema_base_class) do
             include(GraphQL::Backtrace::Trace)
           end
         else
           # First, see if the superclass has a custom-defined class for this.
           # Then, if it doesn't, use this class's default trace
-          base_class = (superclass.respond_to?(:trace_class_for) && superclass.trace_class_for(mode, build: false)) || trace_class_for(:default)
+          base_class = (superclass.respond_to?(:trace_class_for) && superclass.trace_class_for(mode)) || trace_class_for(:default, build: true)
           # Prepare the default trace class if it hasn't been initialized yet
           base_class ||= (own_trace_modes[:default] = build_trace_mode(:default))
           mods = trace_modules_for(mode)
@@ -1118,7 +1118,7 @@ module GraphQL
       end
 
       def tracer(new_tracer)
-        default_trace = trace_class_for(:default)
+        default_trace = trace_class_for(:default, build: true)
         if default_trace.nil? || !(default_trace < GraphQL::Tracing::CallLegacyTracers)
           trace_with(GraphQL::Tracing::CallLegacyTracers)
         end
