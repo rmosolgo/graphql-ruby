@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.13.1 (23 Feb 2024)
+
+- createAblyHandler: add typing for `onError` handler #4845
+
 # 1.13.0 (23 Jan 2024)
 
 - Sync: add support for `generate-persisted-query-manifest` files #4798
