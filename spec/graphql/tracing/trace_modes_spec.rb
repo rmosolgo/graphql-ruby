@@ -36,7 +36,7 @@ describe "Trace modes for schemas" do
 
       query(Query)
 
-      trace_with GlobalTrace
+      trace_with GlobalTrace, global_arg: 1
       trace_with SpecialTrace, mode: :special
       trace_with OptionsTrace, mode: :options, configured_option: :was_configured
     end
@@ -76,6 +76,19 @@ describe "Trace modes for schemas" do
     res = TraceModesTest::GrandchildSchema.execute("{ greeting }")
     assert res.context[:global_trace]
     assert res.context[:grandchild_default]
+  end
+
+  it "uses the default trace class and trace options for unknown modes" do
+    assert_nil TraceModesTest::ParentSchema.trace_class_for(:who_knows_what2)
+    constructed_trace_class = TraceModesTest::ParentSchema.trace_class_for(:who_knows_what2, build: true)
+    assert_equal TraceModesTest::ParentSchema.trace_class_for(:default), constructed_trace_class.superclass
+
+    assert_equal({global_arg: 1}, TraceModesTest::ParentSchema.trace_options_for(:who_know_what3))
+  end
+
+  it "uses the default trace mode when an unknown mode is given" do
+    res = TraceModesTest::ParentSchema.execute("{ greeting }", context: { trace_mode: :who_knows_what })
+    assert res.context[:global_trace]
   end
 
   it "inherits special modes" do
