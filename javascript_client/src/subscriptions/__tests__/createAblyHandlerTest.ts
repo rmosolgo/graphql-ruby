@@ -1,4 +1,4 @@
-import { createAblyHandler } from "../createAblyHandler"
+import { OnErrorData, createAblyHandler } from "../createAblyHandler"
 import { Realtime, Types } from "ably"
 
 const dummyOperation = { text: "", name: "" }
@@ -383,7 +383,7 @@ describe("createAblyHandler", () => {
       const operation = {}
       const variables = {}
       const cacheConfig = {}
-      const onError = (error: Error) => {
+      const onError = (error: OnErrorData) => {
         caughtError = error
       }
       const onNext = () => {}
@@ -441,7 +441,7 @@ describe("createAblyHandler", () => {
         const operation = {}
         const variables = {}
         const cacheConfig = {}
-        const onError = (error: Error) => {
+        const onError = (error: OnErrorData) => {
           caughtError = error
         }
         const messages: any[] = []
