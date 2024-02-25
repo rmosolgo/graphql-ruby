@@ -49,7 +49,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
 
       interface Pet {
         name(surname: Boolean = false): String!
-        nickname: String
+        nickname: String!
         toys: [Toy!]!
       }
 
@@ -63,7 +63,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
 
       type Dog implements Pet & Mammal & Canine {
         name(surname: Boolean = false): String!
-        nickname: String
+        nickname: String!
         doesKnowCommand(dogCommand: PetCommand): Boolean!
         barkVolume: Int!
         toys: [Toy!]!
@@ -71,7 +71,7 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
 
       type Cat implements Pet & Mammal & Feline {
         name(surname: Boolean = false): String!
-        nickname: String
+        nickname: String!
         doesKnowCommand(catCommand: PetCommand): Boolean!
         meowVolume: Int!
         toys: [Toy!]!
@@ -996,6 +996,49 @@ describe GraphQL::StaticValidation::FieldsWillMerge do
       end
 
       refute_match %r/\$arg12/, error_messages.first
+    end
+  end
+
+  describe "Conflicting leaf typed fields" do
+    it "adds an error" do
+      schema = GraphQL::Schema.from_definition(<<-GRAPHQL)
+      interface Thing {
+        name: String
+      }
+
+      type Dog implements Thing {
+        spots: Boolean
+      }
+
+      type Jaguar implements Thing {
+        spots: Int
+      }
+
+      type Query {
+        thing: Thing
+      }
+      GRAPHQL
+
+      query_str = <<-GRAPHQL
+      {
+        thing {
+          ... on Dog { spots }
+          ... on Jaguar { spots }
+        }
+      }
+      GRAPHQL
+
+      res = schema.validate(query_str)
+      expected_error = {
+        "message"=>"Field 'spots' has a return_type conflict: `Boolean` or `Int`?",
+        "locations"=>[{"line"=>3, "column"=>24}, {"line"=>4, "column"=>27}],
+        "path"=>[],
+        "extensions"=>
+          {"code"=>"fieldConflict",
+           "fieldName"=>"spots",
+           "conflicts"=>"`Boolean` or `Int`"}
+        }
+      assert_equal [expected_error], res.map(&:to_h)
     end
   end
 end
