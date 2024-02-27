@@ -9,6 +9,7 @@ module Sentry
   SPAN_OPS = []
   SPAN_DATA = []
   SPAN_DESCRIPTIONS = []
+  TRANSACTION_NAMES = []
 
   def self.initialized?
     true
@@ -23,10 +24,15 @@ module Sentry
     yield DummySpan.new
   end
 
+  def self.configure_scope(&block)
+    yield DummyScope.new
+  end
+
   def self.clear_all
     SPAN_DATA.clear
     SPAN_DESCRIPTIONS.clear
     SPAN_OPS.clear
+    TRANSACTION_NAMES.clear
   end
 
   class DummySpan
@@ -40,6 +46,12 @@ module Sentry
 
     def finish
       # no-op
+    end
+  end
+
+  class DummyScope
+    def set_transaction_name(name)
+      TRANSACTION_NAMES << name
     end
   end
 end
