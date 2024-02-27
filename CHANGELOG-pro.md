@@ -6,6 +6,10 @@
 
 ### New Features
 
+# 1.26.4 (27 Feb 2023)
+
+- RelationConnection: Don't quote table names that weren't quoted in original SQL, fixes #4508 (comment)
+
 # 1.26.3 (19 Feb 2023)
 
 - OperationStore: fix `sync` endpoint for Rack 3+ #4829
