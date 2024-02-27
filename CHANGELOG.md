@@ -10,6 +10,16 @@
 
 ### Bug fixes
 
+# 2.2.11 (27 Feb 2024)
+
+### New features
+
+- Sentry: support transaction names in tracing #4853
+
+### Bug fixes
+
+- Tracing: handle unknown trace modes at runtime #4856
+
 # 2.2.10 (20 Feb 2024)
 
 ### New features
