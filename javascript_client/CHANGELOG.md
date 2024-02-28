@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.13.2 (28 Feb 2024)
+
+- Update `glob` to v10+ to eliminate dependency on `inflight` #4859
+
 # 1.13.1 (23 Feb 2024)
 
 - createAblyHandler: add typing for `onError` handler #4845
