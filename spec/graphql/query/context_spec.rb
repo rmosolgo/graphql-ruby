@@ -64,7 +64,7 @@ describe GraphQL::Query::Context do
     let(:context) { GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil, object: nil) }
 
     it "returns returns nil and reports key? => false" do
-      assert_equal(nil, context[:some_key])
+      assert_nil(context[:some_key])
       assert_equal(false, context.key?(:some_key))
       assert_raises(KeyError) { context.fetch(:some_key) }
     end
@@ -74,7 +74,7 @@ describe GraphQL::Query::Context do
     let(:context) { GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil, object: nil) }
 
     it "allows you to assign new contexts" do
-      assert_equal(nil, context[:some_key])
+      assert_nil(context[:some_key])
       context[:some_key] = "wow!"
       assert_equal("wow!", context[:some_key])
     end
@@ -396,7 +396,7 @@ describe GraphQL::Query::Context do
       expected_key = :a
       expected_value = :test
 
-      assert_equal(nil, context[expected_key])
+      assert_nil(context[expected_key])
       assert_equal({}, context.to_h)
       refute(context.key?(expected_key))
       assert_raises(KeyError) { context.fetch(expected_key) }
