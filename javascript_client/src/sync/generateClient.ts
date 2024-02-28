@@ -66,7 +66,7 @@ function gatherOperations(options: GenerateClientCodeOptions) {
 
   var operations: ClientOperation[] = []
 
-  var filenames: string[] = globSync(graphqlGlob, {})
+  var filenames: string[] = globSync(graphqlGlob, {}).sort()
   if (verbose) {
     console.log("[Sync] glob: ", graphqlGlob)
     console.log("[Sync] " + filenames.length + " files:")
