@@ -171,11 +171,11 @@ describe GraphQL::Schema::Enum do
     it "coerces names to underlying values" do
       assert_equal("YAK", enum.coerce_isolated_input("YAK"))
       assert_equal(1, enum.coerce_isolated_input("COW"))
-      assert_equal(nil, enum.coerce_isolated_input("NONE"))
+      assert_nil(enum.coerce_isolated_input("NONE"))
     end
 
     it "coerces invalid names to nil" do
-      assert_equal(nil, enum.coerce_isolated_input("YAKKITY"))
+      assert_nil(enum.coerce_isolated_input("YAKKITY"))
     end
 
     it "coerces result values to value's value" do

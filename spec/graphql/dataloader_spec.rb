@@ -1160,7 +1160,7 @@ describe GraphQL::Dataloader do
       "Nope (FiberErrorSchema::Query.requestAll, nil, {})",
     ]
 
-    assert_equal(nil, res["data"])
+    assert_nil(res["data"])
     assert_equal(expected_errors, context[:errors].sort)
   end
 
