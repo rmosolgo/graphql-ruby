@@ -975,7 +975,7 @@ exports[`sync operations verbose Adds debug output 1`] = `
     "[Sync] 1 files:",
   ],
   [
-    "[Sync]   - ./src/__tests__/documents/doc1.graphql",
+    "[Sync]   - src/__tests__/documents/doc1.graphql",
   ],
   [
     "Syncing 1 operations to [1mbogus[0m...",

@@ -1,4 +1,4 @@
-import glob from "glob"
+import { globSync } from "glob"
 import prepareRelay from "./prepareRelay"
 import prepareIsolatedFiles from './prepareIsolatedFiles'
 import prepareProject from "./prepareProject"
@@ -66,7 +66,7 @@ function gatherOperations(options: GenerateClientCodeOptions) {
 
   var operations: ClientOperation[] = []
 
-  var filenames: string[] = glob.sync(graphqlGlob, {})
+  var filenames: string[] = globSync(graphqlGlob, {}).sort()
   if (verbose) {
     console.log("[Sync] glob: ", graphqlGlob)
     console.log("[Sync] " + filenames.length + " files:")
