@@ -10,7 +10,7 @@ import { removeClientFields } from "./removeClientFields"
  *
  */
 function prepareIsolatedFiles(filenames: string[], addTypename: boolean) {
-  return filenames.map(function(filename) {
+  return filenames.sort().map(function(filename) {
     var fileOperationBody = fs.readFileSync(filename, "utf8")
     var fileOperationName = ""
 

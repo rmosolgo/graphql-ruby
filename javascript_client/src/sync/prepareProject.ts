@@ -17,7 +17,9 @@ import { removeClientFields } from "./removeClientFields";
 function prepareProject(filenames: string[], addTypename: boolean) {
   if(!filenames.length) { return []; }
   var allGraphQL = ""
-  filenames.forEach(function(filename) {
+  filenames
+    .sort()
+    .forEach(function(filename) {
     allGraphQL += fs.readFileSync(filename)
   })
 
