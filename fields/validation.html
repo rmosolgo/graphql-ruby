@@ -11,61 +11,24 @@
     <link rel="icon" href="/graphql-ruby-icon.png">
   </head>
   <body>
-    <script>
-      function detectDarkTheme(toggle) {
-        var prefersDarkSchemeSetting = localStorage.getItem("prefersDarkScheme")
-        if (prefersDarkSchemeSetting == null) {
-          prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches
-        } else {
-          prefersDarkScheme = prefersDarkSchemeSetting == "true"
-        }
-
-        if (toggle) {
-          if (prefersDarkScheme) {
-            prefersDarkScheme = false
-            localStorage.setItem("prefersDarkScheme", "false")
-          } else {
-            prefersDarkScheme = true
-            localStorage.setItem("prefersDarkScheme", "true")
-          }
-        }
-
-        if (prefersDarkScheme) {
-          document.body.classList.add('dark-theme');
-          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
-            el.src = "/graphql-ruby-dark.png"
-          })
-        } else {
-          document.body.classList.remove('dark-theme');
-          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
-            el.src = "/graphql-ruby.png"
-          })
-        }
-      }
-
-      detectDarkTheme(false)
-    </script>
     <div class="header">
       <div class="header-container">
         <div class="nav">
           <a href="/" class="img-link">
-            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
           </a>
-          <div class="nav-links">
-            <a href="/getting_started">Get Started</a>
-            <a href="/guides">Guides</a>
-            <a href="/api-doc/2.2.11/">API</a>
-            <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
-            <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
-            <a href="https://graphql.pro">Upgrade to Pro</a>
-            <input
-              class="search-input"
-              onkeyup="GraphQLRubySearch.run(this)"
-              type="text"
-              placeholder="Search the docs..."
-            />
-            <a href="#" onclick="event.preventDefault(); detectDarkTheme(true)" class="dark-theme-button"></a>
-          </div>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/2.1.12/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
         </div>
       </div>
       <div class="search-results-container">
@@ -73,7 +36,7 @@
         </div>
       </div>
     </div>
-    <div class="container  fullwidth ">
+    <div class="container">
       <ul class="breadcrumb">
   <li><a href="/guides">Guides</a></li>
   <li>
@@ -178,14 +141,14 @@
 <p>See each validator’s API docs for details:</p>
 
 <ul>
-  <li><code class="language-plaintext highlighter-rouge">length: { maximum: ..., minimum: ..., is: ..., within: ... }</code> <a href="/api-doc/2.2.11/GraphQL/Schema/Validator/LengthValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::LengthValidator"><code>Schema::Validator::LengthValidator</code></a></li>
-  <li><code class="language-plaintext highlighter-rouge">format: { with: /.../, without: /.../ }</code> <a href="/api-doc/2.2.11/GraphQL/Schema/Validator/FormatValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::FormatValidator"><code>Schema::Validator::FormatValidator</code></a></li>
-  <li><code class="language-plaintext highlighter-rouge">numericality: { greater_than:, greater_than_or_equal_to:, less_than:, less_than_or_equal_to:, other_than:, odd:, even: }</code> <a href="/api-doc/2.2.11/GraphQL/Schema/Validator/NumericalityValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::NumericalityValidator"><code>Schema::Validator::NumericalityValidator</code></a></li>
-  <li><code class="language-plaintext highlighter-rouge">inclusion: { in: [...] }</code> <a href="/api-doc/2.2.11/GraphQL/Schema/Validator/InclusionValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::InclusionValidator"><code>Schema::Validator::InclusionValidator</code></a></li>
-  <li><code class="language-plaintext highlighter-rouge">exclusion: { in: [...] }</code> <a href="/api-doc/2.2.11/GraphQL/Schema/Validator/ExclusionValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::ExclusionValidator"><code>Schema::Validator::ExclusionValidator</code></a></li>
-  <li><code class="language-plaintext highlighter-rouge">required: { one_of: [...] }</code> <a href="/api-doc/2.2.11/GraphQL/Schema/Validator/RequiredValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::RequiredValidator"><code>Schema::Validator::RequiredValidator</code></a></li>
-  <li><code class="language-plaintext highlighter-rouge">allow_blank: true|false</code> <a href="/api-doc/2.2.11/GraphQL/Schema/Validator/AllowBlankValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::AllowBlankValidator"><code>Schema::Validator::AllowBlankValidator</code></a></li>
-  <li><code class="language-plaintext highlighter-rouge">allow_null: true|false</code> <a href="/api-doc/2.2.11/GraphQL/Schema/Validator/AllowNullValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::AllowNullValidator"><code>Schema::Validator::AllowNullValidator</code></a></li>
+  <li><code class="language-plaintext highlighter-rouge">length: { maximum: ..., minimum: ..., is: ..., within: ... }</code> <a href="/api-doc/2.1.12/GraphQL/Schema/Validator/LengthValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::LengthValidator"><code>Schema::Validator::LengthValidator</code></a></li>
+  <li><code class="language-plaintext highlighter-rouge">format: { with: /.../, without: /.../ }</code> <a href="/api-doc/2.1.12/GraphQL/Schema/Validator/FormatValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::FormatValidator"><code>Schema::Validator::FormatValidator</code></a></li>
+  <li><code class="language-plaintext highlighter-rouge">numericality: { greater_than:, greater_than_or_equal_to:, less_than:, less_than_or_equal_to:, other_than:, odd:, even: }</code> <a href="/api-doc/2.1.12/GraphQL/Schema/Validator/NumericalityValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::NumericalityValidator"><code>Schema::Validator::NumericalityValidator</code></a></li>
+  <li><code class="language-plaintext highlighter-rouge">inclusion: { in: [...] }</code> <a href="/api-doc/2.1.12/GraphQL/Schema/Validator/InclusionValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::InclusionValidator"><code>Schema::Validator::InclusionValidator</code></a></li>
+  <li><code class="language-plaintext highlighter-rouge">exclusion: { in: [...] }</code> <a href="/api-doc/2.1.12/GraphQL/Schema/Validator/ExclusionValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::ExclusionValidator"><code>Schema::Validator::ExclusionValidator</code></a></li>
+  <li><code class="language-plaintext highlighter-rouge">required: { one_of: [...] }</code> <a href="/api-doc/2.1.12/GraphQL/Schema/Validator/RequiredValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::RequiredValidator"><code>Schema::Validator::RequiredValidator</code></a></li>
+  <li><code class="language-plaintext highlighter-rouge">allow_blank: true|false</code> <a href="/api-doc/2.1.12/GraphQL/Schema/Validator/AllowBlankValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::AllowBlankValidator"><code>Schema::Validator::AllowBlankValidator</code></a></li>
+  <li><code class="language-plaintext highlighter-rouge">allow_null: true|false</code> <a href="/api-doc/2.1.12/GraphQL/Schema/Validator/AllowNullValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::AllowNullValidator"><code>Schema::Validator::AllowNullValidator</code></a></li>
 </ul>
 
 <p>Some of the validators accept customizable messages for certain validation failures; see the API docs for examples.</p>
@@ -253,8 +216,5 @@
     </div>
     <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
     <script src="/js/search.js"></script>
-    <script>
-      detectDarkTheme(false) // do it again to update the images
-    </script>
   </body>
 </html>

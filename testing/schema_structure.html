@@ -11,61 +11,24 @@
     <link rel="icon" href="/graphql-ruby-icon.png">
   </head>
   <body>
-    <script>
-      function detectDarkTheme(toggle) {
-        var prefersDarkSchemeSetting = localStorage.getItem("prefersDarkScheme")
-        if (prefersDarkSchemeSetting == null) {
-          prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches
-        } else {
-          prefersDarkScheme = prefersDarkSchemeSetting == "true"
-        }
-
-        if (toggle) {
-          if (prefersDarkScheme) {
-            prefersDarkScheme = false
-            localStorage.setItem("prefersDarkScheme", "false")
-          } else {
-            prefersDarkScheme = true
-            localStorage.setItem("prefersDarkScheme", "true")
-          }
-        }
-
-        if (prefersDarkScheme) {
-          document.body.classList.add('dark-theme');
-          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
-            el.src = "/graphql-ruby-dark.png"
-          })
-        } else {
-          document.body.classList.remove('dark-theme');
-          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
-            el.src = "/graphql-ruby.png"
-          })
-        }
-      }
-
-      detectDarkTheme(false)
-    </script>
     <div class="header">
       <div class="header-container">
         <div class="nav">
           <a href="/" class="img-link">
-            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
           </a>
-          <div class="nav-links">
-            <a href="/getting_started">Get Started</a>
-            <a href="/guides">Guides</a>
-            <a href="/api-doc/2.2.11/">API</a>
-            <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
-            <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
-            <a href="https://graphql.pro">Upgrade to Pro</a>
-            <input
-              class="search-input"
-              onkeyup="GraphQLRubySearch.run(this)"
-              type="text"
-              placeholder="Search the docs..."
-            />
-            <a href="#" onclick="event.preventDefault(); detectDarkTheme(true)" class="dark-theme-button"></a>
-          </div>
+          <a href="/getting_started">Get Started</a>
+          <a href="/guides">Guides</a>
+          <a href="/api-doc/2.1.12/">API</a>
+          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
+          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+          <a href="https://graphql.pro">Upgrade to Pro</a>
+          <input
+            class="search-input"
+            onkeyup="GraphQLRubySearch.run(this)"
+            type="text"
+            placeholder="Search the docs..."
+          />
         </div>
       </div>
       <div class="search-results-container">
@@ -73,7 +36,7 @@
         </div>
       </div>
     </div>
-    <div class="container  fullwidth ">
+    <div class="container">
       <ul class="breadcrumb">
   <li><a href="/guides">Guides</a></li>
   <li>
@@ -132,10 +95,6 @@
       
         <option  data-target="/testing/integration_tests.html">Integration Tests</option>
       
-        <option  data-target="/testing/helpers.html">Helpers</option>
-      
-        <option  data-target="/testing/profiling.html">Profiling</option>
-      
     </select>
   </li>
 </ul>
@@ -166,7 +125,7 @@
 
 <p>Make structure changes part of the normal code review process by adding a <code class="language-plaintext highlighter-rouge">schema.graphql</code> artifact to your project. This way, any changes to schema structure will show up clearly in a pull request as a diff to that file.</p>
 
-<p>You can read about this approach in <a href="https://rmosolgo.github.io/ruby/graphql/2017/03/16/tracking-schema-changes-with-graphql-ruby">“Tracking Schema Changes with GraphQL-Ruby”</a> or the built-in <a href="/api-doc/2.2.11/GraphQL/RakeTask" target="_blank" title="API docs for GraphQL::RakeTask"><code>GraphQL::RakeTask</code></a> for generating schema dumps.</p>
+<p>You can read about this approach in <a href="https://rmosolgo.github.io/ruby/graphql/2017/03/16/tracking-schema-changes-with-graphql-ruby">“Tracking Schema Changes with GraphQL-Ruby”</a> or the built-in <a href="/api-doc/2.1.12/GraphQL/RakeTask" target="_blank" title="API docs for GraphQL::RakeTask"><code>GraphQL::RakeTask</code></a> for generating schema dumps.</p>
 
 <h2 id="automatically-check-for-breaking-changes">Automatically check for breaking changes</h2>
 
@@ -245,8 +204,5 @@
     </div>
     <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
     <script src="/js/search.js"></script>
-    <script>
-      detectDarkTheme(false) // do it again to update the images
-    </script>
   </body>
 </html>
