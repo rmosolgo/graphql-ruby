@@ -10,6 +10,10 @@
 
 ### Bug fixes
 
+# 1.13.22 (28 Feb 2024)
+
+- Fix compatibility with Ruby 3.4-dev #4860
+
 # 1.13.21 (25 January 2024)
 
 - DataDog: use `span` setter instead of `span_type` #4788
