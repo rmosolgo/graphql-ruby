@@ -29,14 +29,14 @@ module GraphQL
 
       def has_next_page
         if @has_next_page.nil?
-          @has_next_page = if first && first_value
+          @has_next_page = if before_offset && before_offset > 0
+            true
+          elsif first
             if @nodes && @nodes.count < first
               false
             else
               relation_larger_than(sliced_nodes, @sliced_nodes_offset, first)
             end
-          elsif before_offset && before_offset > 0
-            true
           else
             false
           end
