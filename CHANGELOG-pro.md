@@ -6,24 +6,28 @@
 
 ### New Features
 
-# 1.26.4 (27 Feb 2023)
+# 1.26.5 (1 Mar 2024)
+
+- OperationStore::AddOperationBatch: remove rescue for StatementInvalid inside transaction
+
+# 1.26.4 (27 Feb 2024)
 
 - RelationConnection: Don't quote table names that weren't quoted in original SQL, fixes #4508 (comment)
 
-# 1.26.3 (19 Feb 2023)
+# 1.26.3 (19 Feb 2024)
 
 - OperationStore: fix `sync` endpoint for Rack 3+ #4829
 - Improve error message handling on Rails 7.1
 
-# 1.26.2 (30 Jan 2023)
+# 1.26.2 (30 Jan 2024)
 
 - `@defer` / `@stream`: Write delimiters at the end of each patch so that clients respond to payloads more quickly. (Previously, delimiters were added at the start of each patch, so clients had to wait for the _next_ patch before they knew the current one was complete.)
 
-# 1.26.1 (23 Jan 2023)
+# 1.26.1 (23 Jan 2024)
 
 - Pundit integration: improve error message when a `Scope` class is missing
 
-# 1.26.0 (19 Jan 2023)
+# 1.26.0 (19 Jan 2024)
 
 ### Breaking Changes
 
