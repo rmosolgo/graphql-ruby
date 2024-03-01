@@ -13,5 +13,6 @@ gem "activerecord-jdbcsqlite3-adapter", platform: :jruby
 gem "sequel"
 gem "evt"
 gem "async"
+gem "libev_scheduler"
 
 gemspec path: "../"
