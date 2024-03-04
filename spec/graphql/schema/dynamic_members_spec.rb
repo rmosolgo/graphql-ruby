@@ -360,7 +360,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
 
     query(Query)
     mutation(Mutation)
-    orphan_types(Place, LegacyPlace, Locale, Region, Country)
+    orphan_types(Place, LegacyPlace, Country)
   end
 
   def check_for_multiple_visible_calls(context)
@@ -878,7 +878,7 @@ GRAPHQL
       end
 
       query(Query)
-      orphan_types(ThingScalar, ThingEnum, ThingInput, ThingObject, ThingUnion, ThingInterface)
+      extra_types(ThingScalar, ThingEnum, ThingInput, ThingObject, ThingUnion, ThingInterface)
     end
   end
 

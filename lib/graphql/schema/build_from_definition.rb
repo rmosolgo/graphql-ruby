@@ -120,10 +120,13 @@ module GraphQL
 
           builder = self
 
+          found_types = types.values
+          object_types = found_types.select { |t| t.kind.object? }
           schema_class = Class.new(schema_superclass) do
             begin
               # Add these first so that there's some chance of resolving late-bound types
-              orphan_types types.values
+              add_type_and_traverse(found_types, root: false)
+              orphan_types(object_types)
               query query_root_type
               mutation mutation_root_type
               subscription subscription_root_type

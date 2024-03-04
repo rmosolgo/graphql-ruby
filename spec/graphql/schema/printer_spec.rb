@@ -114,8 +114,7 @@ REASON
     query(Query)
     mutation(Mutation)
     subscription(Subscription)
-    orphan_types [Media]
-    extra_types [MediaRating]
+    extra_types [Media, MediaRating]
   end
 
   let(:schema) { PrinterTestSchema }
