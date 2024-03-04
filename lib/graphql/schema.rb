@@ -63,10 +63,6 @@ module GraphQL
   # Schemas can restrict large incoming queries with `max_depth` and `max_complexity` configurations.
   # (These configurations can be overridden by specific calls to {Schema#execute})
   #
-  # Schemas can specify how queries should be executed against them.
-  # `query_execution_strategy`, `mutation_execution_strategy` and `subscription_execution_strategy`
-  # each apply to corresponding root types.
-  #
   # @example defining a schema
   #   class MySchema < GraphQL::Schema
   #     query QueryType
@@ -651,27 +647,39 @@ module GraphQL
         end
       end
 
-      def query_execution_strategy(new_query_execution_strategy = nil)
+      def query_execution_strategy(new_query_execution_strategy = nil, deprecation_warning: true)
+        if deprecation_warning
+          warn "GraphQL::Schema.query_execution_strategy is deprecated without replacement. Use `GraphQL::Query.new` directly to create and execute a custom query instead."
+          warn "  #{caller(1, 1).first}"
+        end
         if new_query_execution_strategy
           @query_execution_strategy = new_query_execution_strategy
         else
-          @query_execution_strategy || find_inherited_value(:query_execution_strategy, self.default_execution_strategy)
+          @query_execution_strategy || (superclass.respond_to?(:query_execution_strategy) ? superclass.query_execution_strategy(deprecation_warning: false) : self.default_execution_strategy)
         end
       end
 
-      def mutation_execution_strategy(new_mutation_execution_strategy = nil)
+      def mutation_execution_strategy(new_mutation_execution_strategy = nil, deprecation_warning: true)
+        if deprecation_warning
+          warn "GraphQL::Schema.mutation_execution_strategy is deprecated without replacement. Use `GraphQL::Query.new` directly to create and execute a custom query instead."
+            warn "  #{caller(1, 1).first}"
+        end
         if new_mutation_execution_strategy
           @mutation_execution_strategy = new_mutation_execution_strategy
         else
-          @mutation_execution_strategy || find_inherited_value(:mutation_execution_strategy, self.default_execution_strategy)
+          @mutation_execution_strategy || (superclass.respond_to?(:mutation_execution_strategy) ? superclass.mutation_execution_strategy(deprecation_warning: false) : self.default_execution_strategy)
         end
       end
 
-      def subscription_execution_strategy(new_subscription_execution_strategy = nil)
+      def subscription_execution_strategy(new_subscription_execution_strategy = nil, deprecation_warning: true)
+        if deprecation_warning
+          warn "GraphQL::Schema.subscription_execution_strategy is deprecated without replacement. Use `GraphQL::Query.new` directly to create and execute a custom query instead."
+          warn "  #{caller(1, 1).first}"
+        end
         if new_subscription_execution_strategy
           @subscription_execution_strategy = new_subscription_execution_strategy
         else
-          @subscription_execution_strategy || find_inherited_value(:subscription_execution_strategy, self.default_execution_strategy)
+          @subscription_execution_strategy || (superclass.respond_to?(:subscription_execution_strategy) ? superclass.subscription_execution_strategy(deprecation_warning: false) : self.default_execution_strategy)
         end
       end
 
