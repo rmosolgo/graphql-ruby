@@ -255,7 +255,7 @@ module ConnectionAssertions
           assert_names [], res
 
           res = exec_query(query_str, after: after_cursor, before: before_cursor, first: 3)
-          assert_equal false, get_page_info(res, "hasNextPage")
+          assert_equal true, get_page_info(res, "hasNextPage")
           assert_equal true, get_page_info(res, "hasPreviousPage")
           assert_names [], res
         end
@@ -317,7 +317,7 @@ module ConnectionAssertions
           res = exec_query(query_str, {})
           # Neither first nor last was provided, so default_page_size was applied.
           assert_names(["Avocado", "Beet", "Cucumber", "Dill"], res)
-          assert_equal false, get_page_info(res, "hasNextPage")
+          assert_equal true, get_page_info(res, "hasNextPage")
           assert_equal false, get_page_info(res, "hasPreviousPage")
         end
 

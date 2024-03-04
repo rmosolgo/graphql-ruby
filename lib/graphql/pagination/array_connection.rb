@@ -56,12 +56,12 @@ module GraphQL
             false
           end
 
-          @has_next_page = if first_value && first
-            # There are more items after these items
-            sliced_nodes.count > first
-          elsif before
+          @has_next_page = if before
             # The original array is longer than the `before` index
             index_from_cursor(before) < items.length + 1
+          elsif first
+            # There are more items after these items
+            sliced_nodes.count > first
           else
             false
           end
