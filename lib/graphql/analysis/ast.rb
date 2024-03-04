@@ -81,6 +81,9 @@ module GraphQL
         end
       rescue Timeout::Error
         [GraphQL::AnalysisError.new("Timeout on validation of query")]
+      rescue GraphQL::UnauthorizedError
+        # This error was raised during analysis and will be returned the client before execution
+        []
       end
 
       def analysis_errors(results)

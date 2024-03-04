@@ -145,4 +145,50 @@ describe GraphQL::Analysis::AST::MaxQueryComplexity do
       end
     end
   end
+
+  describe "when an argument is unauthorized by type" do
+    class AuthorizedTypeSchema < GraphQL::Schema
+      class Thing < GraphQL::Schema::Object
+        def self.authorized?(obj, ctx)
+          !!ctx[:authorized] && super
+        end
+        field :name, String
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :things, Thing.connection_type do
+          argument :thing_id, ID, loads: Thing
+        end
+
+        def things(thing:)
+          [thing]
+        end
+      end
+
+      query(Query)
+      def self.resolve_type(abs_type, object, ctx)
+        Thing
+      end
+
+      def self.object_from_id(id, ctx)
+        { name: "Loaded thing #{id}" }
+      end
+
+      def self.unauthorized_object(err)
+        raise GraphQL::ExecutionError, "Unauthorized Object: #{err.object[:name].inspect}"
+      end
+
+      default_max_page_size 30
+      max_complexity 10
+    end
+
+    it "when the arg is unauthorized, returns an authorization error, not a complexity error" do
+      query_str = "{ things(thingId: \"123\", first: 1) { nodes { name } } }"
+      res = AuthorizedTypeSchema.execute(query_str, context: { authorized: true })
+      assert_equal "Loaded thing 123", res["data"]["things"]["nodes"].first["name"]
+
+      res2 = AuthorizedTypeSchema.execute(query_str)
+      assert_equal ["Unauthorized Object: \"Loaded thing 123\""], res2["errors"].map { |e| e["message"] }
+    end
+  end
 end
