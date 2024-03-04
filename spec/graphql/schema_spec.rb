@@ -152,6 +152,26 @@ describe GraphQL::Schema do
     end
   end
 
+  class ExampleOptionEnum < GraphQL::Schema::Enum
+  end
+  it "rejects non-object types to orphan_types" do
+    object_type = Class.new(GraphQL::Schema::Object)
+    err = assert_raises ArgumentError do
+      Class.new(GraphQL::Schema) do
+        orphan_types(ExampleOptionEnum, object_type)
+      end
+    end
+
+    expected_msg = "Only object type classes should be added as `orphan_types(...)`.
+
+- Remove these no-op types from `orphan_types`: ExampleOptionEnum
+- See https://graphql-ruby.org/type_definitions/interfaces.html#orphan-types
+
+To add other types to your schema, you might want `extra_types`: https://graphql-ruby.org/schema/definition.html#extra-types
+"
+    assert_equal expected_msg, err.message
+  end
+
   describe "merged, inherited caches" do
     METHODS_TO_CACHE = {
       types: 1,

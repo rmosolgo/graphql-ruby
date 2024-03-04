@@ -857,6 +857,17 @@ module GraphQL
       def orphan_types(*new_orphan_types)
         if new_orphan_types.any?
           new_orphan_types = new_orphan_types.flatten
+          non_object_types = new_orphan_types.reject { |ot| ot.is_a?(Class) && ot < GraphQL::Schema::Object }
+          if non_object_types.any?
+            raise ArgumentError, <<~ERR
+              Only object type classes should be added as `orphan_types(...)`.
+
+              - Remove these no-op types from `orphan_types`: #{non_object_types.map(&:inspect).join(", ")}
+              - See https://graphql-ruby.org/type_definitions/interfaces.html#orphan-types
+
+              To add other types to your schema, you might want `extra_types`: https://graphql-ruby.org/schema/definition.html#extra-types
+            ERR
+          end
           add_type_and_traverse(new_orphan_types, root: false)
           own_orphan_types.concat(new_orphan_types.flatten)
         end

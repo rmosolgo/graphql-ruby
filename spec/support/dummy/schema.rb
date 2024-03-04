@@ -517,7 +517,7 @@ module Dummy
     mutation DairyAppMutation
     subscription Subscription
     max_depth 5
-    orphan_types Honey, Beverage
+    orphan_types Honey
     trace_with GraphQL::Tracing::CallLegacyTracers
 
     rescue_from(NoSuchDairyError) { |err| raise GraphQL::ExecutionError, err.message  }
