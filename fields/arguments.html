@@ -11,24 +11,61 @@
     <link rel="icon" href="/graphql-ruby-icon.png">
   </head>
   <body>
+    <script>
+      function detectDarkTheme(toggle) {
+        var prefersDarkSchemeSetting = localStorage.getItem("prefersDarkScheme")
+        if (prefersDarkSchemeSetting == null) {
+          prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+        } else {
+          prefersDarkScheme = prefersDarkSchemeSetting == "true"
+        }
+
+        if (toggle) {
+          if (prefersDarkScheme) {
+            prefersDarkScheme = false
+            localStorage.setItem("prefersDarkScheme", "false")
+          } else {
+            prefersDarkScheme = true
+            localStorage.setItem("prefersDarkScheme", "true")
+          }
+        }
+
+        if (prefersDarkScheme) {
+          document.body.classList.add('dark-theme');
+          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
+            el.src = "/graphql-ruby-dark.png"
+          })
+        } else {
+          document.body.classList.remove('dark-theme');
+          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
+            el.src = "/graphql-ruby.png"
+          })
+        }
+      }
+
+      detectDarkTheme(false)
+    </script>
     <div class="header">
       <div class="header-container">
         <div class="nav">
           <a href="/" class="img-link">
-            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
           </a>
-          <a href="/getting_started">Get Started</a>
-          <a href="/guides">Guides</a>
-          <a href="/api-doc/2.1.12/">API</a>
-          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
-          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
-          <a href="https://graphql.pro">Upgrade to Pro</a>
-          <input
-            class="search-input"
-            onkeyup="GraphQLRubySearch.run(this)"
-            type="text"
-            placeholder="Search the docs..."
-          />
+          <div class="nav-links">
+            <a href="/getting_started">Get Started</a>
+            <a href="/guides">Guides</a>
+            <a href="/api-doc/2.2.11/">API</a>
+            <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
+            <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+            <a href="https://graphql.pro">Upgrade to Pro</a>
+            <input
+              class="search-input"
+              onkeyup="GraphQLRubySearch.run(this)"
+              type="text"
+              placeholder="Search the docs..."
+            />
+            <a href="#" onclick="event.preventDefault(); detectDarkTheme(true)" class="dark-theme-button"></a>
+          </div>
         </div>
       </div>
       <div class="search-results-container">
@@ -36,7 +73,7 @@
         </div>
       </div>
     </div>
-    <div class="container">
+    <div class="container  fullwidth ">
       <ul class="breadcrumb">
   <li><a href="/guides">Guides</a></li>
   <li>
@@ -269,11 +306,11 @@ exposing another key to clients.</p>
 <p>Only certain types are valid for arguments:</p>
 
 <ul>
-  <li><a href="/api-doc/2.1.12/GraphQL/Schema/Scalar" target="_blank" title="API docs for GraphQL::Schema::Scalar"><code>GraphQL::Schema::Scalar</code></a>, including built-in scalars (string, int, float, boolean, ID)</li>
-  <li><a href="/api-doc/2.1.12/GraphQL/Schema/Enum" target="_blank" title="API docs for GraphQL::Schema::Enum"><code>GraphQL::Schema::Enum</code></a></li>
-  <li><a href="/api-doc/2.1.12/GraphQL/Schema/InputObject" target="_blank" title="API docs for GraphQL::Schema::InputObject"><code>GraphQL::Schema::InputObject</code></a>, which allows key-value pairs as input</li>
-  <li><a href="/api-doc/2.1.12/GraphQL/Schema/List" target="_blank" title="API docs for GraphQL::Schema::List"><code>GraphQL::Schema::List</code></a>s of a valid input type, configured using <code class="language-plaintext highlighter-rouge">[...]</code></li>
-  <li><a href="/api-doc/2.1.12/GraphQL/Schema/NonNull" target="_blank" title="API docs for GraphQL::Schema::NonNull"><code>GraphQL::Schema::NonNull</code></a>s of a valid input type (arguments are non-null by default; use <code class="language-plaintext highlighter-rouge">required: false</code> to make optional arguments)</li>
+  <li><a href="/api-doc/2.2.11/GraphQL/Schema/Scalar" target="_blank" title="API docs for GraphQL::Schema::Scalar"><code>GraphQL::Schema::Scalar</code></a>, including built-in scalars (string, int, float, boolean, ID)</li>
+  <li><a href="/api-doc/2.2.11/GraphQL/Schema/Enum" target="_blank" title="API docs for GraphQL::Schema::Enum"><code>GraphQL::Schema::Enum</code></a></li>
+  <li><a href="/api-doc/2.2.11/GraphQL/Schema/InputObject" target="_blank" title="API docs for GraphQL::Schema::InputObject"><code>GraphQL::Schema::InputObject</code></a>, which allows key-value pairs as input</li>
+  <li><a href="/api-doc/2.2.11/GraphQL/Schema/List" target="_blank" title="API docs for GraphQL::Schema::List"><code>GraphQL::Schema::List</code></a>s of a valid input type, configured using <code class="language-plaintext highlighter-rouge">[...]</code></li>
+  <li><a href="/api-doc/2.2.11/GraphQL/Schema/NonNull" target="_blank" title="API docs for GraphQL::Schema::NonNull"><code>GraphQL::Schema::NonNull</code></a>s of a valid input type (arguments are non-null by default; use <code class="language-plaintext highlighter-rouge">required: false</code> to make optional arguments)</li>
 </ul>
 
 </div>
@@ -307,5 +344,8 @@ exposing another key to clients.</p>
     </div>
     <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
     <script src="/js/search.js"></script>
+    <script>
+      detectDarkTheme(false) // do it again to update the images
+    </script>
   </body>
 </html>

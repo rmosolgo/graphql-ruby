@@ -11,24 +11,61 @@
     <link rel="icon" href="/graphql-ruby-icon.png">
   </head>
   <body>
+    <script>
+      function detectDarkTheme(toggle) {
+        var prefersDarkSchemeSetting = localStorage.getItem("prefersDarkScheme")
+        if (prefersDarkSchemeSetting == null) {
+          prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+        } else {
+          prefersDarkScheme = prefersDarkSchemeSetting == "true"
+        }
+
+        if (toggle) {
+          if (prefersDarkScheme) {
+            prefersDarkScheme = false
+            localStorage.setItem("prefersDarkScheme", "false")
+          } else {
+            prefersDarkScheme = true
+            localStorage.setItem("prefersDarkScheme", "true")
+          }
+        }
+
+        if (prefersDarkScheme) {
+          document.body.classList.add('dark-theme');
+          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
+            el.src = "/graphql-ruby-dark.png"
+          })
+        } else {
+          document.body.classList.remove('dark-theme');
+          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
+            el.src = "/graphql-ruby.png"
+          })
+        }
+      }
+
+      detectDarkTheme(false)
+    </script>
     <div class="header">
       <div class="header-container">
         <div class="nav">
           <a href="/" class="img-link">
-            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
           </a>
-          <a href="/getting_started">Get Started</a>
-          <a href="/guides">Guides</a>
-          <a href="/api-doc/2.1.12/">API</a>
-          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
-          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
-          <a href="https://graphql.pro">Upgrade to Pro</a>
-          <input
-            class="search-input"
-            onkeyup="GraphQLRubySearch.run(this)"
-            type="text"
-            placeholder="Search the docs..."
-          />
+          <div class="nav-links">
+            <a href="/getting_started">Get Started</a>
+            <a href="/guides">Guides</a>
+            <a href="/api-doc/2.2.11/">API</a>
+            <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
+            <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+            <a href="https://graphql.pro">Upgrade to Pro</a>
+            <input
+              class="search-input"
+              onkeyup="GraphQLRubySearch.run(this)"
+              type="text"
+              placeholder="Search the docs..."
+            />
+            <a href="#" onclick="event.preventDefault(); detectDarkTheme(true)" class="dark-theme-button"></a>
+          </div>
         </div>
       </div>
       <div class="search-results-container">
@@ -36,7 +73,7 @@
         </div>
       </div>
     </div>
-    <div class="container">
+    <div class="container  fullwidth ">
       <ul class="breadcrumb">
   <li><a href="/guides">Guides</a></li>
   <li>
@@ -111,8 +148,6 @@
       
         <option  data-target="/queries/response_extensions.html">Response Extensions</option>
       
-        <option  data-target="/queries/instrumentation.html">Instrumentation</option>
-      
     </select>
   </li>
 </ul>
@@ -125,12 +160,12 @@
   <p>When GraphQL receives a query string, it goes through these steps:</p>
 
 <ul>
-  <li>Tokenize: <a href="/api-doc/2.1.12/GraphQL/Language/Lexer" target="_blank" title="API docs for GraphQL::Language::Lexer"><code>GraphQL::Language::Lexer</code></a> splits the string into a stream of tokens</li>
-  <li>Parse: <a href="/api-doc/2.1.12/GraphQL/Language/Parser" target="_blank" title="API docs for GraphQL::Language::Parser"><code>GraphQL::Language::Parser</code></a> builds an abstract syntax tree (AST) out of the stream of tokens</li>
-  <li>Validate: <a href="/api-doc/2.1.12/GraphQL/StaticValidation/Validator" target="_blank" title="API docs for GraphQL::StaticValidation::Validator"><code>GraphQL::StaticValidation::Validator</code></a> validates the incoming AST as a valid query for the schema</li>
-  <li>Analyze: If there are any query analyzers, they are run with <a href="/api-doc/2.1.12/GraphQL/Analysis/AST#analyze_query-class_method" target="_blank" title="API docs for GraphQL::Analysis::AST.analyze_query"><code>GraphQL::Analysis::AST.analyze_query</code></a></li>
+  <li>Tokenize: <a href="/api-doc/2.2.11/GraphQL/Language/Lexer" target="_blank" title="API docs for GraphQL::Language::Lexer"><code>GraphQL::Language::Lexer</code></a> splits the string into a stream of tokens</li>
+  <li>Parse: <a href="/api-doc/2.2.11/GraphQL/Language/Parser" target="_blank" title="API docs for GraphQL::Language::Parser"><code>GraphQL::Language::Parser</code></a> builds an abstract syntax tree (AST) out of the stream of tokens</li>
+  <li>Validate: <a href="/api-doc/2.2.11/GraphQL/StaticValidation/Validator" target="_blank" title="API docs for GraphQL::StaticValidation::Validator"><code>GraphQL::StaticValidation::Validator</code></a> validates the incoming AST as a valid query for the schema</li>
+  <li>Analyze: If there are any query analyzers, they are run with <a href="/api-doc/2.2.11/GraphQL/Analysis/AST#analyze_query-class_method" target="_blank" title="API docs for GraphQL::Analysis::AST.analyze_query"><code>GraphQL::Analysis::AST.analyze_query</code></a></li>
   <li>Execute: The query is traversed, <code class="language-plaintext highlighter-rouge">resolve</code> functions are called and the response is built</li>
-  <li>Respond: The response is returned as a <a href="/api-doc/2.1.12/GraphQL/Query/Result" target="_blank" title="API docs for GraphQL::Query::Result"><code>GraphQL::Query::Result</code></a></li>
+  <li>Respond: The response is returned as a <a href="/api-doc/2.2.11/GraphQL/Query/Result" target="_blank" title="API docs for GraphQL::Query::Result"><code>GraphQL::Query::Result</code></a></li>
 </ul>
 
 </div>
@@ -164,5 +199,8 @@
     </div>
     <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
     <script src="/js/search.js"></script>
+    <script>
+      detectDarkTheme(false) // do it again to update the images
+    </script>
   </body>
 </html>

@@ -11,24 +11,61 @@
     <link rel="icon" href="/graphql-ruby-icon.png">
   </head>
   <body>
+    <script>
+      function detectDarkTheme(toggle) {
+        var prefersDarkSchemeSetting = localStorage.getItem("prefersDarkScheme")
+        if (prefersDarkSchemeSetting == null) {
+          prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+        } else {
+          prefersDarkScheme = prefersDarkSchemeSetting == "true"
+        }
+
+        if (toggle) {
+          if (prefersDarkScheme) {
+            prefersDarkScheme = false
+            localStorage.setItem("prefersDarkScheme", "false")
+          } else {
+            prefersDarkScheme = true
+            localStorage.setItem("prefersDarkScheme", "true")
+          }
+        }
+
+        if (prefersDarkScheme) {
+          document.body.classList.add('dark-theme');
+          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
+            el.src = "/graphql-ruby-dark.png"
+          })
+        } else {
+          document.body.classList.remove('dark-theme');
+          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
+            el.src = "/graphql-ruby.png"
+          })
+        }
+      }
+
+      detectDarkTheme(false)
+    </script>
     <div class="header">
       <div class="header-container">
         <div class="nav">
           <a href="/" class="img-link">
-            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
           </a>
-          <a href="/getting_started">Get Started</a>
-          <a href="/guides">Guides</a>
-          <a href="/api-doc/2.1.12/">API</a>
-          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
-          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
-          <a href="https://graphql.pro">Upgrade to Pro</a>
-          <input
-            class="search-input"
-            onkeyup="GraphQLRubySearch.run(this)"
-            type="text"
-            placeholder="Search the docs..."
-          />
+          <div class="nav-links">
+            <a href="/getting_started">Get Started</a>
+            <a href="/guides">Guides</a>
+            <a href="/api-doc/2.2.11/">API</a>
+            <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
+            <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+            <a href="https://graphql.pro">Upgrade to Pro</a>
+            <input
+              class="search-input"
+              onkeyup="GraphQLRubySearch.run(this)"
+              type="text"
+              placeholder="Search the docs..."
+            />
+            <a href="#" onclick="event.preventDefault(); detectDarkTheme(true)" class="dark-theme-button"></a>
+          </div>
         </div>
       </div>
       <div class="search-results-container">
@@ -36,53 +73,53 @@
         </div>
       </div>
     </div>
-    <div class="container">
+    <div class="container ">
       <div class="hero">
   <div class="hero-title">
-    <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo"/>
+    <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo"/>
     <h1>GraphQL Ruby</h1>
   </div>
+  <div class="hero-subtitle">
+    <p>The <code>graphql</code> gem implements the <a href="https://spec.graphql.org/draft/">GraphQL Server Specification</a> in Ruby.</p>
+    <p>Use it to add a GraphQL API to your Ruby or Rails app.</p>
+  </div>
   <div class="hero-part shaded">
-    <h2>Install the Gem</h2>
     <div class="hero-feature">
-      <div class="teaser">
+      <h2>Install the Gem</h2>
+      <p>
+        <a href="/getting_started">Get going fast</a> with the <code><a href="https://rubygems.org/gems/graphql">graphql</a></code> gem,
+        battle-tested and trusted by <a href="https://githubengineering.com/the-github-graphql-api/#open-source">GitHub</a>, <a href="https://www.graphql.com/articles/graphql-at-shopify">Shopify</a>, <a href="https://flexport.com">Flexport</a>, </a><a href="https://www.chime.com">Chime</a>, and <a href="https://www.kickstarter.com/">Kickstarter</a>.
+      </p>
 <figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="c"># Download the gem:</span>
 bundle add graphql
 <span class="c"># Setup with Rails:</span>
 rails generate graphql:install</code></pre></figure>
-      </div>
-      <div class="teaser">
-        <p>
-          <a href="/getting_started">Get going fast</a> with the <code><a href="https://rubygems.org/gems/graphql">graphql</a></code> gem,
-          battle-tested and trusted by <a href="https://githubengineering.com/the-github-graphql-api/#open-source">GitHub</a>, <a href="https://www.graphql.com/articles/graphql-at-shopify">Shopify</a>, <a href="https://flexport.com">Flexport</a>, </a><a href="https://www.chime.com">Chime</a>, and <a href="https://www.kickstarter.com/">Kickstarter</a>.
-        </p>
-      </div>
     </div>
-  </div>
-  <div class="hero-part">
-    <h2>Define Your Schema</h2>
     <div class="hero-feature">
-      <div class="teaser">
-        <p>
-          Describe your application with the
-          <a href="/schema/definition">GraphQL schema</a>
-          to create a self-documenting, strongly-typed API.
-        </p>
-      </div>
-      <div class="teaser">
+      <h2>Define Your Schema</h2>
+      <p>
+        Describe your application with a
+        <a href="/schema/definition">GraphQL schema</a>
+        to create a self-documenting, strongly-typed API.
+      </p>
 <figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="c1"># app/graphql/types/profile_type.rb</span>
 <span class="k">class</span> <span class="nc">Types::ProfileType</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
   <span class="n">field</span> <span class="ss">:id</span><span class="p">,</span> <span class="no">ID</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
   <span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
   <span class="n">field</span> <span class="ss">:avatar</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">PhotoType</span>
 <span class="k">end</span></code></pre></figure>
-      </div>
     </div>
   </div>
-  <div class="hero-part shaded">
-    <h2>Run Queries</h2>
+  <div class="hero-part">
     <div class="hero-feature">
-      <div class="teaser">
+      <h2>Serve Queries</h2>
+      <p>
+        Provide custom data to clients and extend your API with
+        <a href="/mutations/mutation_root">mutations</a>,
+        <a href="/subscriptions/overview">subscriptions</a>,
+        <a href="/defer/overview">streaming responses</a>,
+        and <a href="/queries/multiplex">multiplexing</a>.
+      </p>
 <figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="c1"># app/controllers/graphql_controller.rb</span>
 <span class="n">result</span> <span class="o">=</span> <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span>
   <span class="n">params</span><span class="p">[</span><span class="ss">:query</span><span class="p">],</span>
@@ -90,23 +127,58 @@ rails generate graphql:install</code></pre></figure>
   <span class="ss">context: </span><span class="p">{</span> <span class="ss">current_user: </span><span class="n">current_user</span> <span class="p">},</span>
 <span class="p">)</span>
 <span class="n">render</span> <span class="ss">json: </span><span class="n">result</span></code></pre></figure>
-      </div>
-      <div class="teaser">
-        <p>
-          <a href="/queries/executing_queries">Serve queries</a> to build a great UI or webservice.
-        </p>
-      </div>
+    </div>
+    <div class="hero-feature">
+      <h2>Harden Your API</h2>
+      <p>
+        Confidently deploy GraphQL with GraphQL-Ruby:
+        <ul>
+          <li><a href="/testing/overview">Testing helpers</a> to validate your system</li>
+          <li><a href="/authorization/overview">Authorization</a> integrates with your app's permission system</li>
+          <li><a href="/dataloader/overview">GraphQL::Dataloader</a> optimizes access to data sources</li>
+          <li><a href="/queries/complexity_and_depth">Complexity limits</a>, <a href="/queries/timeout">timeouts</a>, and <a href="/limiters/overview">rate limits</a> to protect your server resources</li>
+          <li><a href="/queries/tracing">Tracing</a> for integration with your APM or custom usage</li>
+          <li><a href="/changesets/overview">API versioning</a> to roll out changes while preserving client experience</li>
+          <li><a href="/operation_store/overview">Persisted queries</a> to guarantee approved API usage </li>
+          <li><a href="/object_cache/overview">Caching</a> to serve repeated data requests</li>
+        </ul>
+      </p>
     </div>
   </div>
-
+  <div class="hero-part shaded">
+    <div class="hero-feature">
+      <h2>Integrate with Client Libraries</h2>
+      <p>
+        <code><a href="/javascript_client/overview">graphql-ruby-client</a></code> provides integration with
+        <a href="/javascript_client/apollo_subscriptions">Apollo Client</a>,
+        <a href="/javascript_client/relay_subscriptions">Relay</a>,
+        <a href="/javascript_client/graphiql_subscriptions">GraphiQL</a>,
+        <a href="/javascript_client/urql_subscriptions">urql</a>, or custom JavaScript.
+      </p>
+    </div>
+    <div class="hero-feature">
+      <h2>Going Beyond</h2>
+      <p>
+        Customize your GraphQL API:
+        <ul>
+          <li><a href="/language_tools/visitor">Language tooling</a> for manipulating GraphQL documents</li>
+          <li><a href="/type_definitions/extensions">Type system extensions</a> for customizing your schema definition</li>
+          <li><a href="/queries/ast_analysis">Query analysis</a> for ahead-of-time query inspection</li>
+        </ul>
+      </p>
+    </div>
+  </div>
 </div>
 
-<h3 style="text-align: center;">
+<h3 style="text-align: center; margin: 50px auto;">
   Add <a href="https://graphql.org">GraphQL</a> to your Ruby app. <a href="/getting_started">Get Started!</a>
 </h3>
 
     </div>
     <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
     <script src="/js/search.js"></script>
+    <script>
+      detectDarkTheme(false) // do it again to update the images
+    </script>
   </body>
 </html>

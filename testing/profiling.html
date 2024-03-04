@@ -1,0 +1,279 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL - Profiling</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <script>
+      function detectDarkTheme(toggle) {
+        var prefersDarkSchemeSetting = localStorage.getItem("prefersDarkScheme")
+        if (prefersDarkSchemeSetting == null) {
+          prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+        } else {
+          prefersDarkScheme = prefersDarkSchemeSetting == "true"
+        }
+
+        if (toggle) {
+          if (prefersDarkScheme) {
+            prefersDarkScheme = false
+            localStorage.setItem("prefersDarkScheme", "false")
+          } else {
+            prefersDarkScheme = true
+            localStorage.setItem("prefersDarkScheme", "true")
+          }
+        }
+
+        if (prefersDarkScheme) {
+          document.body.classList.add('dark-theme');
+          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
+            el.src = "/graphql-ruby-dark.png"
+          })
+        } else {
+          document.body.classList.remove('dark-theme');
+          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
+            el.src = "/graphql-ruby.png"
+          })
+        }
+      }
+
+      detectDarkTheme(false)
+    </script>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <div class="nav-links">
+            <a href="/getting_started">Get Started</a>
+            <a href="/guides">Guides</a>
+            <a href="/api-doc/2.2.11/">API</a>
+            <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
+            <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+            <a href="https://graphql.pro">Upgrade to Pro</a>
+            <input
+              class="search-input"
+              onkeyup="GraphQLRubySearch.run(this)"
+              type="text"
+              placeholder="Search the docs..."
+            />
+            <a href="#" onclick="event.preventDefault(); detectDarkTheme(true)" class="dark-theme-button"></a>
+          </div>
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container  fullwidth ">
+      <ul class="breadcrumb">
+  <li><a href="/guides">Guides</a></li>
+  <li>
+    <select class="jump-to-select" onchange="navigateToSelected(this)">
+      
+        <option  data-target="/schema/definition.html">Schema</option>
+      
+        <option  data-target="/queries/executing_queries.html">Queries</option>
+      
+        <option  data-target="/type_definitions/objects.html">Type Definitions</option>
+      
+        <option  data-target="/authorization/overview.html">Authorization</option>
+      
+        <option  data-target="/fields/introduction.html">Fields</option>
+      
+        <option  data-target="/mutations/mutation_root.html">Mutations</option>
+      
+        <option  data-target="/errors/overview.html">Errors</option>
+      
+        <option  data-target="/pagination/overview.html">Pagination</option>
+      
+        <option  data-target="/relay/range_add.html">Relay</option>
+      
+        <option  data-target="/dataloader/overview.html">Dataloader</option>
+      
+        <option  data-target="/subscriptions/overview.html">Subscriptions</option>
+      
+        <option  data-target="/pro/home.html">GraphQL Pro</option>
+      
+        <option  data-target="/operation_store/overview.html">GraphQL Pro - OperationStore</option>
+      
+        <option  data-target="/defer/overview.html">GraphQL Pro - Defer</option>
+      
+        <option  data-target="/limiters/overview.html">GraphQL Enterprise - Rate Limiters</option>
+      
+        <option  data-target="/object_cache/overview.html">GraphQL Enterprise - Object Cache</option>
+      
+        <option  data-target="/changesets/overview.html">GraphQL Enterprise - Changesets</option>
+      
+        <option  data-target="/javascript_client/overview.html">JavaScript Client</option>
+      
+        <option  data-target="/language_tools/visitor.html">Language Tools</option>
+      
+        <option  selected data-target="/testing/overview.html">Testing</option>
+      
+        <option  data-target="/development.html">Other</option>
+      
+    </select>
+  </li>
+  <li>
+    <select class="jump-to-select" onchange="navigateToSelected(this)">
+      
+        <option  data-target="/testing/overview.html">Overview</option>
+      
+        <option  data-target="/testing/schema_structure.html">Schema Structure</option>
+      
+        <option  data-target="/testing/integration_tests.html">Integration Tests</option>
+      
+        <option  data-target="/testing/helpers.html">Helpers</option>
+      
+        <option  selected data-target="/testing/profiling.html">Profiling</option>
+      
+    </select>
+  </li>
+</ul>
+
+
+
+<h1 class="guide-header">Profiling</h1>
+<div class="guide-table-of-contents"><div class="table-of-contents">
+  <h3 class="contents-header">Contents</h3>
+  <ol class='contents-list'><li class='contents-entry'><a href='#stackprof'>StackProf
+</a></li><li class='contents-entry'><a href='#memoryprofiler'>MemoryProfiler
+</a></li></ol>
+</div>
+</div>
+<div class="guide-container">
+  <p>If you want to know more about how time is spent during GraphQL queries, including GraphQL-Ruby internals, you can use Ruby profiling tools to take a closer look.</p>
+
+<p>If you want to investigate GraphQL-Ruby performance together, prepare a runtime profile and memory profile as described below and <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Performance investigation" target="_blank">open an issue</a> on GitHub, including those files.</p>
+
+<h2 id="stackprof">StackProf</h2>
+
+<p><a href="https://github.com/tmm1/stackprof">StackProf</a> is a Ruby library for figuring out where an operation’s time is spent. To capture a profile, surround a block with <code class="language-plaintext highlighter-rouge">StackProf.run { ... }</code>.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">require</span> <span class="s2">"stackprof"</span>
+
+<span class="c1"># Prepare any GraphQL-related data or context:</span>
+<span class="n">query_string</span> <span class="o">=</span> <span class="s2">"{ someGraphQL ... }"</span>
+<span class="n">context</span> <span class="o">=</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+
+<span class="c1"># This will dump a profile in `tmp/graphql-prof.dump`</span>
+<span class="no">StackProf</span><span class="p">.</span><span class="nf">run</span><span class="p">(</span><span class="ss">mode: :wall</span><span class="p">,</span> <span class="ss">interval: </span><span class="mi">10</span><span class="p">,</span> <span class="ss">out: </span><span class="s2">"tmp/graphql-prof.dump"</span><span class="p">)</span> <span class="k">do</span>
+  <span class="c1"># Execute the query inside the block:</span>
+  <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">context: </span><span class="n">context</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">out:</code> option tells StackProf to create a “dump” at the given location. Then, anyone who has that file can investigate the profile using the <code class="language-plaintext highlighter-rouge">stackprof</code> command, for example:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ stackprof tmp/graphql-prof.dump
+==================================
+  Mode: wall(1)
+  Samples: 2492 (58.06% miss rate)
+  GC: 0 (0.00%)
+==================================
+     TOTAL    (pct)     SAMPLES    (pct)     FRAME
+       902  (36.2%)          94   (3.8%)     GraphQL::Execution::Interpreter::Runtime#evaluate_selection_with_resolved_keyword_args
+      1283  (51.5%)          87   (3.5%)     GraphQL::Execution::Interpreter::Runtime#continue_field
+       274  (11.0%)          78   (3.1%)     GraphQL::Schema::Field#resolve
+      1068  (42.9%)          73   (2.9%)     GraphQL::Execution::Interpreter::Runtime#evaluate_selection
+      # ...
+</code></pre></div></div>
+
+<p>Additionally, <code class="language-plaintext highlighter-rouge">stackprof</code> accepts a <code class="language-plaintext highlighter-rouge">--method</code> argument which provides details about the performance and usage of a specific method, for example:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ stackprof tmp/small.dump --method #gather_selections
+GraphQL::Execution::Interpreter::Runtime#gather_selections (/Users/rmosolgo/code/graphql-ruby/lib/graphql/execution/interpreter/runtime.rb:305)
+  samples:    17 self (0.7%)  /     17 total (0.7%)
+  callers:
+      16  (   94.1%)  GraphQL::Execution::Interpreter::Runtime#continue_field
+       6  (   35.3%)  Array#each
+       1  (    5.9%)  GraphQL::Execution::Interpreter::Runtime#run_eager
+  callees (0 total):
+       6  (    Inf%)  Array#each
+  code:
+    1    (0.0%) /     1   (0.0%)  |   305  |                 when :lookahead
+    6    (0.2%) /     6   (0.2%)  |   306  |                   if !field_ast_nodes
+    3    (0.1%) /     3   (0.1%)  |   307  |                     field_ast_nodes = [ast_node]
+                                  |   308  |                   end
+</code></pre></div></div>
+
+<p>Anyone with the <code class="language-plaintext highlighter-rouge">.dump</code> file can perform this analysis – it’s a really useful file! If you want to investigate GraphQL-Ruby performance together, please share a runtime profile.</p>
+
+<h2 id="memoryprofiler">MemoryProfiler</h2>
+
+<p><a href="https://github.com/SamSaffron/memory_profiler">MemoryProfiler</a> provides insight into where an operation interacts with system memory and the Ruby heap. This is helpful because memory usage problems cause code to run slowly; fixing them can make code run fast.</p>
+
+<p>To produce a report, wrap a block in <code class="language-plaintext highlighter-rouge">MemoryProfiler.report { ... }</code> and then call <code class="language-plaintext highlighter-rouge">.pretty_print</code> on the result. For example, to create a report on a GraphQL query:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">require</span> <span class="s1">'memory_profiler'</span>
+
+<span class="c1"># Prepare any GraphQL-related data or context:</span>
+<span class="n">query_string</span> <span class="o">=</span> <span class="s2">"{ someGraphQL ... }"</span>
+<span class="n">context</span> <span class="o">=</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+
+<span class="n">report</span> <span class="o">=</span> <span class="no">MemoryProfiler</span><span class="p">.</span><span class="nf">report</span> <span class="k">do</span>
+  <span class="c1"># Execute the query inside the block:</span>
+  <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="n">query_string</span><span class="p">,</span> <span class="ss">context: </span><span class="n">context</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="c1"># Write the result to a file</span>
+<span class="n">report</span><span class="p">.</span><span class="nf">pretty_print</span><span class="p">(</span><span class="ss">to_file: </span><span class="s2">"tmp/graphql-memory.txt"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The report will include many interesting sections including:</p>
+
+<ul>
+  <li>Total memory and objects allocated</li>
+  <li>Objects allocated by location and by class</li>
+  <li>String allocations, including the number of times a string with the same value was allocated</li>
+</ul>
+
+<p>All of these can indicate “hot spots” in the code and inform refactors to reduce memory use. In turn, this reduces time spent in Ruby GC.</p>
+
+<p>If you want to investigate GraphQL-Ruby performance together, please share a memory profile.</p>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/testing/profiling.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Profiling">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+  function navigateToSelected(selectElement) {
+    var nextPage = selectElement.selectedOptions[0].dataset["target"]
+    document.location = nextPage
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+    <script>
+      detectDarkTheme(false) // do it again to update the images
+    </script>
+  </body>
+</html>

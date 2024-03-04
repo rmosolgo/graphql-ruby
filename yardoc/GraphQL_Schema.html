@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/2.1.12/GraphQL/Schema" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.2.11/GraphQL/Schema" />
   </head>
   <body>
     <p>Class: GraphQL::Schema &lt; Object
@@ -36,10 +36,10 @@ Extended by:
 GraphQL::Schema::Member::HasAstNode,
 GraphQL::Schema::FindInheritedValue
 Class methods:
-add_subscription_extension_if_necessary, add_type_and_traverse,
-after_any_lazies, after_lazy, as_json, build_trace_mode,
-context_class, count_introspection_fields, cursor_encoder,
-default_analysis_engine, default_directives,
+add_subscription_extension_if_necessary, add_trace_options_for,
+add_type_and_traverse, after_any_lazies, after_lazy, as_json,
+build_trace_mode, context_class, count_introspection_fields,
+cursor_encoder, default_analysis_engine, default_directives,
 default_execution_strategy, default_logger, default_max_page_size,
 default_page_size, default_trace_mode,
 deprecated_graphql_definition, description, directive, directives,
@@ -49,12 +49,13 @@ disable_schema_introspection_entry_point,
 disable_schema_introspection_entry_point?,
 disable_type_introspection_entry_point,
 disable_type_introspection_entry_point?, error_handlers, execute,
-find, from_definition, from_introspection, get_field, get_fields,
-get_references_to, get_type, handle_or_reraise, id_from_object,
-inherited, instrument, instrumenters, interpreter?, introspection,
-introspection_system, lazy?, lazy_method_name, lazy_methods,
-lazy_resolve, multiplex, multiplex_analyzer, multiplex_analyzers,
-mutation, mutation_execution_strategy, new_connections?, new_trace,
+extra_types, find, from_definition, from_introspection, get_field,
+get_fields, get_references_to, get_type, handle_or_reraise,
+has_defined_type?, id_from_object, inherited, instrument,
+instrumenters, interpreter?, introspection, introspection_system,
+lazy?, lazy_method_name, lazy_methods, lazy_resolve, multiplex,
+multiplex_analyzer, multiplex_analyzers, mutation,
+mutation_execution_strategy, new_connections?, new_trace,
 non_introspection_types, object_from_id, orphan_types,
 own_directives, own_instrumenters, own_multiplex_analyzers,
 own_orphan_types, own_plugins, own_possible_types,

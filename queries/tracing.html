@@ -11,24 +11,61 @@
     <link rel="icon" href="/graphql-ruby-icon.png">
   </head>
   <body>
+    <script>
+      function detectDarkTheme(toggle) {
+        var prefersDarkSchemeSetting = localStorage.getItem("prefersDarkScheme")
+        if (prefersDarkSchemeSetting == null) {
+          prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+        } else {
+          prefersDarkScheme = prefersDarkSchemeSetting == "true"
+        }
+
+        if (toggle) {
+          if (prefersDarkScheme) {
+            prefersDarkScheme = false
+            localStorage.setItem("prefersDarkScheme", "false")
+          } else {
+            prefersDarkScheme = true
+            localStorage.setItem("prefersDarkScheme", "true")
+          }
+        }
+
+        if (prefersDarkScheme) {
+          document.body.classList.add('dark-theme');
+          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
+            el.src = "/graphql-ruby-dark.png"
+          })
+        } else {
+          document.body.classList.remove('dark-theme');
+          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
+            el.src = "/graphql-ruby.png"
+          })
+        }
+      }
+
+      detectDarkTheme(false)
+    </script>
     <div class="header">
       <div class="header-container">
         <div class="nav">
           <a href="/" class="img-link">
-            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
           </a>
-          <a href="/getting_started">Get Started</a>
-          <a href="/guides">Guides</a>
-          <a href="/api-doc/2.1.12/">API</a>
-          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
-          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
-          <a href="https://graphql.pro">Upgrade to Pro</a>
-          <input
-            class="search-input"
-            onkeyup="GraphQLRubySearch.run(this)"
-            type="text"
-            placeholder="Search the docs..."
-          />
+          <div class="nav-links">
+            <a href="/getting_started">Get Started</a>
+            <a href="/guides">Guides</a>
+            <a href="/api-doc/2.2.11/">API</a>
+            <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
+            <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+            <a href="https://graphql.pro">Upgrade to Pro</a>
+            <input
+              class="search-input"
+              onkeyup="GraphQLRubySearch.run(this)"
+              type="text"
+              placeholder="Search the docs..."
+            />
+            <a href="#" onclick="event.preventDefault(); detectDarkTheme(true)" class="dark-theme-button"></a>
+          </div>
         </div>
       </div>
       <div class="search-results-container">
@@ -36,7 +73,7 @@
         </div>
       </div>
     </div>
-    <div class="container">
+    <div class="container  fullwidth ">
       <ul class="breadcrumb">
   <li><a href="/guides">Guides</a></li>
   <li>
@@ -111,8 +148,6 @@
       
         <option  data-target="/queries/response_extensions.html">Response Extensions</option>
       
-        <option  data-target="/queries/instrumentation.html">Instrumentation</option>
-      
     </select>
   </li>
 </ul>
@@ -132,12 +167,13 @@
 </a></li><li class='contents-entry'><a href='#skylight'>Skylight
 </a></li><li class='contents-entry'><a href='#datadog'>Datadog
 </a></li><li class='contents-entry'><a href='#prometheus'>Prometheus
+</a></li><li class='contents-entry'><a href='#sentry'>Sentry
 </a></li><li class='contents-entry'><a href='#statsd'>Statsd
 </a></li></ol>
 </div>
 </div>
 <div class="guide-container">
-  <p><a href="/api-doc/2.1.12/GraphQL/Tracing/Trace" target="_blank" title="API docs for GraphQL::Tracing::Trace"><code>GraphQL::Tracing::Trace</code></a> provides hooks to observe and modify events during runtime. Tracing hooks are methods, defined in modules and mixed in with <a href="/api-doc/2.1.12/GraphQL/Schema#trace_with-class_method" target="_blank" title="API docs for GraphQL::Schema.trace_with"><code>Schema.trace_with</code></a>.</p>
+  <p><a href="/api-doc/2.2.11/GraphQL/Tracing/Trace" target="_blank" title="API docs for GraphQL::Tracing::Trace"><code>GraphQL::Tracing::Trace</code></a> provides hooks to observe and modify events during runtime. Tracing hooks are methods, defined in modules and mixed in with <a href="/api-doc/2.2.11/GraphQL/Schema#trace_with-class_method" target="_blank" title="API docs for GraphQL::Schema.trace_with"><code>Schema.trace_with</code></a>.</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">module</span> <span class="nn">CustomTrace</span>
   <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="n">query_string</span><span class="p">:)</span>
@@ -157,7 +193,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>For a full list of methods and their arguments, see <a href="/api-doc/2.1.12/GraphQL/Tracing/Trace" target="_blank" title="API docs for GraphQL::Tracing::Trace"><code>GraphQL::Tracing::Trace</code></a>.</p>
+<p>For a full list of methods and their arguments, see <a href="/api-doc/2.2.11/GraphQL/Tracing/Trace" target="_blank" title="API docs for GraphQL::Tracing::Trace"><code>GraphQL::Tracing::Trace</code></a>.</p>
 
 <p>By default, GraphQL-Ruby makes a new trace instance when it runs a query. You can pass an existing instance as <code class="language-plaintext highlighter-rouge">context: { trace: ... }</code>. Also, <code class="language-plaintext highlighter-rouge">GraphQL.parse( ..., trace: ...)</code> accepts a trace instance.</p>
 
@@ -165,7 +201,7 @@
 
 <p>You can attach a trace module to run only in some circumstances by using <code class="language-plaintext highlighter-rouge">mode:</code>. For example, to add detailed tracing for only some requests:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">trace_with</span> <span class="no">DetailedTracing</span><span class="p">,</span> <span class="ss">mode: :detailed_metrics</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">trace_with</span> <span class="no">DetailedTrace</span><span class="p">,</span> <span class="ss">mode: :detailed_metrics</span>
 </code></pre></div></div>
 
 <p>Then, to opt into that trace, use <code class="language-plaintext highlighter-rouge">context: { trace_mode: :detailed_metrics, ... }</code> when executing queries.</p>
@@ -199,7 +235,7 @@ tracing as follows:</p>
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">require</span> <span class="s1">'appoptics_apm'</span>
 
 <span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="n">use</span><span class="p">(</span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">AppOpticsTracing</span><span class="p">)</span>
+  <span class="n">trace_with</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">AppOpticsTrace</span>
 <span class="k">end</span>
 </code></pre></div></div>
 <div class="monitoring-img-group">
@@ -214,7 +250,7 @@ tracing as follows:</p>
 <p>To add <a href="https://appsignal.com/">AppSignal</a> instrumentation:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="n">use</span><span class="p">(</span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">AppsignalTracing</span><span class="p">)</span>
+  <span class="n">trace_with</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">AppsignalTrace</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
@@ -230,9 +266,9 @@ tracing as follows:</p>
 <p>To add <a href="https://newrelic.com/">New Relic</a> instrumentation:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="n">use</span><span class="p">(</span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">NewRelicTracing</span><span class="p">)</span>
+  <span class="n">trace_with</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">NewRelicTrace</span>
   <span class="c1"># Optional, use the operation name to set the new relic transaction name:</span>
-  <span class="c1"># use(GraphQL::Tracing::NewRelicTracing, set_transaction_name: true)</span>
+  <span class="c1"># trace_with GraphQL::Tracing::NewRelicTrace, set_transaction_name: true</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
@@ -248,7 +284,7 @@ tracing as follows:</p>
 <p>To add <a href="https://scoutapp.com/">Scout APM</a> instrumentation:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="n">use</span><span class="p">(</span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">ScoutTracing</span><span class="p">)</span>
+  <span class="n">trace_with</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">ScoutTrace</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
@@ -281,7 +317,7 @@ tracing as follows:</p>
 <p>To add <a href="https://www.datadoghq.com">Datadog</a> instrumentation:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="n">use</span><span class="p">(</span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">DataDogTracing</span><span class="p">)</span>
+  <span class="n">trace_with</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">DataDogTrace</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
@@ -294,7 +330,7 @@ tracing as follows:</p>
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">require</span> <span class="s1">'prometheus_exporter/client'</span>
 
 <span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="n">use</span><span class="p">(</span><span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">PrometheusTracing</span><span class="p">)</span>
+  <span class="n">trace_with</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">PrometheusTrace</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
@@ -305,7 +341,7 @@ tracing as follows:</p>
 <span class="k">if</span> <span class="k">defined?</span><span class="p">(</span><span class="no">PrometheusExporter</span><span class="o">::</span><span class="no">Server</span><span class="p">)</span>
   <span class="nb">require</span> <span class="s1">'graphql/tracing'</span>
 
-  <span class="k">class</span> <span class="nc">GraphQLCollector</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">PrometheusTracing</span><span class="o">::</span><span class="no">GraphQLCollector</span>
+  <span class="k">class</span> <span class="nc">GraphQLCollector</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">PrometheusTrace</span><span class="o">::</span><span class="no">GraphQLCollector</span>
   <span class="k">end</span>
 <span class="k">end</span>
 </code></pre></div></div>
@@ -313,15 +349,31 @@ tracing as follows:</p>
 <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle <span class="nb">exec </span>prometheus_exporter <span class="nt">-a</span> lib/graphql_collector.rb
 </code></pre></div></div>
 
+<h2 id="sentry">Sentry</h2>
+
+<p>To add <a href="https://sentry.io">Sentry</a> instrumentation:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="n">trace_with</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">SentryTrace</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<div class="monitoring-img-group">
+  <a href="/queries/sentry_example.png" target="_blank" class="img-link">
+  <img src="/queries/sentry_example.png" title="sentry monitoring" alt="sentry monitoring" />
+</a>
+
+</div>
+
 <h2 id="statsd">Statsd</h2>
 
-<p>You can add Statsd instrumentation by initializing a statsd client and passing it to <a href="/api-doc/2.1.12/GraphQL/Tracing/StatsdTracing" target="_blank" title="API docs for GraphQL::Tracing::StatsdTracing"><code>GraphQL::Tracing::StatsdTracing</code></a>:</p>
+<p>You can add Statsd instrumentation by initializing a statsd client and passing it to <a href="/api-doc/2.2.11/GraphQL/Tracing/StatsdTrace" target="_blank" title="API docs for GraphQL::Tracing::StatsdTrace"><code>GraphQL::Tracing::StatsdTrace</code></a>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="vg">$statsd</span> <span class="o">=</span> <span class="no">Statsd</span><span class="p">.</span><span class="nf">new</span> <span class="s1">'localhost'</span><span class="p">,</span> <span class="mi">9125</span>
 <span class="c1"># ...</span>
 
 <span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">StatsdTracing</span><span class="p">,</span> <span class="ss">statsd: </span><span class="vg">$statsd</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Tracing</span><span class="o">::</span><span class="no">StatsdTrace</span><span class="p">,</span> <span class="ss">statsd: </span><span class="vg">$statsd</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
@@ -358,5 +410,8 @@ tracing as follows:</p>
     </div>
     <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
     <script src="/js/search.js"></script>
+    <script>
+      detectDarkTheme(false) // do it again to update the images
+    </script>
   </body>
 </html>

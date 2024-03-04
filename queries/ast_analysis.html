@@ -11,24 +11,61 @@
     <link rel="icon" href="/graphql-ruby-icon.png">
   </head>
   <body>
+    <script>
+      function detectDarkTheme(toggle) {
+        var prefersDarkSchemeSetting = localStorage.getItem("prefersDarkScheme")
+        if (prefersDarkSchemeSetting == null) {
+          prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+        } else {
+          prefersDarkScheme = prefersDarkSchemeSetting == "true"
+        }
+
+        if (toggle) {
+          if (prefersDarkScheme) {
+            prefersDarkScheme = false
+            localStorage.setItem("prefersDarkScheme", "false")
+          } else {
+            prefersDarkScheme = true
+            localStorage.setItem("prefersDarkScheme", "true")
+          }
+        }
+
+        if (prefersDarkScheme) {
+          document.body.classList.add('dark-theme');
+          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
+            el.src = "/graphql-ruby-dark.png"
+          })
+        } else {
+          document.body.classList.remove('dark-theme');
+          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
+            el.src = "/graphql-ruby.png"
+          })
+        }
+      }
+
+      detectDarkTheme(false)
+    </script>
     <div class="header">
       <div class="header-container">
         <div class="nav">
           <a href="/" class="img-link">
-            <img src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
           </a>
-          <a href="/getting_started">Get Started</a>
-          <a href="/guides">Guides</a>
-          <a href="/api-doc/2.1.12/">API</a>
-          <a href="https://tinyletter.com/graphql-ruby">Newsletter</a>
-          <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
-          <a href="https://graphql.pro">Upgrade to Pro</a>
-          <input
-            class="search-input"
-            onkeyup="GraphQLRubySearch.run(this)"
-            type="text"
-            placeholder="Search the docs..."
-          />
+          <div class="nav-links">
+            <a href="/getting_started">Get Started</a>
+            <a href="/guides">Guides</a>
+            <a href="/api-doc/2.2.11/">API</a>
+            <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
+            <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+            <a href="https://graphql.pro">Upgrade to Pro</a>
+            <input
+              class="search-input"
+              onkeyup="GraphQLRubySearch.run(this)"
+              type="text"
+              placeholder="Search the docs..."
+            />
+            <a href="#" onclick="event.preventDefault(); detectDarkTheme(true)" class="dark-theme-button"></a>
+          </div>
         </div>
       </div>
       <div class="search-results-container">
@@ -36,7 +73,7 @@
         </div>
       </div>
     </div>
-    <div class="container">
+    <div class="container  fullwidth ">
       <ul class="breadcrumb">
   <li><a href="/guides">Guides</a></li>
   <li>
@@ -111,8 +148,6 @@
       
         <option  data-target="/queries/response_extensions.html">Response Extensions</option>
       
-        <option  data-target="/queries/instrumentation.html">Instrumentation</option>
-      
     </select>
   </li>
 </ul>
@@ -134,7 +169,7 @@
 <div class="guide-container">
   <p>You can do ahead-of-time analysis for your queries.</p>
 
-<p>The primitive for analysis is <a href="/api-doc/2.1.12/GraphQL/Analysis/AST/Analyzer" target="_blank" title="API docs for GraphQL::Analysis::AST::Analyzer"><code>GraphQL::Analysis::AST::Analyzer</code></a>. Analyzers must inherit from this base class and implement the desired methods for analysis.</p>
+<p>The primitive for analysis is <a href="/api-doc/2.2.11/GraphQL/Analysis/AST/Analyzer" target="_blank" title="API docs for GraphQL::Analysis::AST::Analyzer"><code>GraphQL::Analysis::AST::Analyzer</code></a>. Analyzers must inherit from this base class and implement the desired methods for analysis.</p>
 
 <h2 id="using-analyzers">Using Analyzers</h2>
 
@@ -154,7 +189,7 @@
 <ul>
   <li><code class="language-plaintext highlighter-rouge">node</code>: The current AST node (being entered or left)</li>
   <li><code class="language-plaintext highlighter-rouge">parent</code>: The AST node which preceeds this one in the tree</li>
-  <li><code class="language-plaintext highlighter-rouge">visitor</code>: A <a href="/api-doc/2.1.12/GraphQL/Analysis/AST/Visitor" target="_blank" title="API docs for GraphQL::Analysis::AST::Visitor"><code>GraphQL::Analysis::AST::Visitor</code></a> which is managing this analysis run</li>
+  <li><code class="language-plaintext highlighter-rouge">visitor</code>: A <a href="/api-doc/2.2.11/GraphQL/Analysis/AST/Visitor" target="_blank" title="API docs for GraphQL::Analysis::AST::Visitor"><code>GraphQL::Analysis::AST::Visitor</code></a> which is managing this analysis run</li>
 </ul>
 
 <p>For example:</p>
@@ -206,15 +241,15 @@ methods:</p>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>See <a href="/api-doc/2.1.12/GraphQL/Analysis/AST/Visitor" target="_blank" title="API docs for GraphQL::Analysis::AST::Visitor"><code>GraphQL::Analysis::AST::Visitor</code></a> for more information about the <code class="language-plaintext highlighter-rouge">visitor</code> object.</p>
+<p>See <a href="/api-doc/2.2.11/GraphQL/Analysis/AST/Visitor" target="_blank" title="API docs for GraphQL::Analysis::AST::Visitor"><code>GraphQL::Analysis::AST::Visitor</code></a> for more information about the <code class="language-plaintext highlighter-rouge">visitor</code> object.</p>
 
 <h3 id="field-arguments">Field Arguments</h3>
 
-<p>Usually, analyzers will use <code class="language-plaintext highlighter-rouge">on_enter_field</code> and <code class="language-plaintext highlighter-rouge">on_leave_field</code> to process queries. To get a field’s arguments during analysis, use <code class="language-plaintext highlighter-rouge">visitor.query.arguments_for(node, visitor.field_definition)</code> (<a href="/api-doc/2.1.12/GraphQL/Query#arguments_for-instance_method" target="_blank" title="API docs for GraphQL::Query#arguments_for"><code>GraphQL::Query#arguments_for</code></a>). That method returns coerced argument values and normalizes argument literals and variable values.</p>
+<p>Usually, analyzers will use <code class="language-plaintext highlighter-rouge">on_enter_field</code> and <code class="language-plaintext highlighter-rouge">on_leave_field</code> to process queries. To get a field’s arguments during analysis, use <code class="language-plaintext highlighter-rouge">visitor.query.arguments_for(node, visitor.field_definition)</code> (<a href="/api-doc/2.2.11/GraphQL/Query#arguments_for-instance_method" target="_blank" title="API docs for GraphQL::Query#arguments_for"><code>GraphQL::Query#arguments_for</code></a>). That method returns coerced argument values and normalizes argument literals and variable values.</p>
 
 <h3 id="errors">Errors</h3>
 
-<p>It is still possible to return errors from an analyzer. To reject a query and halt its execution, you may return <a href="/api-doc/2.1.12/GraphQL/AnalysisError" target="_blank" title="API docs for GraphQL::AnalysisError"><code>GraphQL::AnalysisError</code></a> in the <code class="language-plaintext highlighter-rouge">result</code> method:</p>
+<p>It is still possible to return errors from an analyzer. To reject a query and halt its execution, you may return <a href="/api-doc/2.2.11/GraphQL/AnalysisError" target="_blank" title="API docs for GraphQL::AnalysisError"><code>GraphQL::AnalysisError</code></a> in the <code class="language-plaintext highlighter-rouge">result</code> method:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">NoFieldsCalledHello</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span><span class="o">::</span><span class="no">Analyzer</span>
   <span class="k">def</span> <span class="nf">on_leave_field</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">_parent</span><span class="p">,</span> <span class="n">visitor</span><span class="p">)</span>
@@ -289,5 +324,8 @@ methods:</p>
     </div>
     <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
     <script src="/js/search.js"></script>
+    <script>
+      detectDarkTheme(false) // do it again to update the images
+    </script>
   </body>
 </html>
