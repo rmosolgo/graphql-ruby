@@ -42,9 +42,6 @@ describe GraphQL::Schema do
         orphan_types Jazz::Ensemble
         introspection Module.new
         cursor_encoder Object.new
-        query_execution_strategy Object.new
-        mutation_execution_strategy Object.new
-        subscription_execution_strategy Object.new
         context_class Class.new
         directives [DummyFeature1]
         tracer GraphQL::Tracing::DataDogTracing
@@ -64,9 +61,6 @@ describe GraphQL::Schema do
       assert_equal base_schema.subscription, schema.subscription
       assert_equal base_schema.introspection, schema.introspection
       assert_equal base_schema.cursor_encoder, schema.cursor_encoder
-      assert_equal base_schema.query_execution_strategy, schema.query_execution_strategy
-      assert_equal base_schema.mutation_execution_strategy, schema.mutation_execution_strategy
-      assert_equal base_schema.subscription_execution_strategy, schema.subscription_execution_strategy
       assert_equal base_schema.validate_timeout, schema.validate_timeout
       assert_equal base_schema.max_complexity, schema.max_complexity
       assert_equal base_schema.max_depth, schema.max_depth
@@ -114,15 +108,6 @@ describe GraphQL::Schema do
       schema.introspection(introspection)
       cursor_encoder = Object.new
       schema.cursor_encoder(cursor_encoder)
-      query_execution_strategy = Object.new
-      schema.query_execution_strategy(query_execution_strategy)
-      mutation_execution_strategy = Object.new
-      schema.mutation_execution_strategy(mutation_execution_strategy)
-      subscription_execution_strategy = Object.new
-      schema.subscription_execution_strategy(subscription_execution_strategy)
-      assert_equal query_execution_strategy, schema.query_execution_strategy
-      assert_equal mutation_execution_strategy, schema.mutation_execution_strategy
-      assert_equal subscription_execution_strategy, schema.subscription_execution_strategy
 
       context_class = Class.new
       schema.context_class(context_class)

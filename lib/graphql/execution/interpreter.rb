@@ -47,7 +47,7 @@ module GraphQL
             begin
               # Since this is basically the batching context,
               # share it for a whole multiplex
-              multiplex.context[:interpreter_instance] ||= multiplex.schema.query_execution_strategy.new
+              multiplex.context[:interpreter_instance] ||= multiplex.schema.query_execution_strategy(deprecation_warning: false).new
               # Do as much eager evaluation of the query as possible
               results = []
               queries.each_with_index do |query, idx|
