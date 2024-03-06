@@ -10,6 +10,21 @@
 
 ### Bug fixes
 
+# 2.2.12 (6 Mar 2024)
+
+### Deprecations
+
+- `Schema.{query|mutation|subscription}_execution_strategy` methods are deprecated without replacement #4867
+
+### Breaking Changes
+
+- Connections: Revert changes to `hasNextPage` returning `false` when no `first` is given (previously changed in 2.2.6) #4866
+
+### Bug fixes
+
+- Complexity: handle unauthorized argument errors better #4868
+- Pass `context` when fetching argument for `loads: ...` #4870
+
 # 2.2.11 (27 Feb 2024)
 
 ### New features
