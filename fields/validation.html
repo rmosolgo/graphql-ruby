@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.2.11/">API</a>
+            <a href="/api-doc/2.2.12/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -151,16 +151,16 @@
 </div>
 </div>
 <div class="guide-container">
-  <p>Fields (and their arguments, and input object arguments) can be validated at runtime using built-in or custom validators.</p>
+  <p>Arguments can be validated at runtime using built-in or custom validators.</p>
 
-<p>Validations are configured in <code class="language-plaintext highlighter-rouge">field(...)</code> or <code class="language-plaintext highlighter-rouge">argument(...)</code> calls:</p>
+<p>Validations are configured in <code class="language-plaintext highlighter-rouge">argument(...)</code> calls on fields or input objects:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">argument</span> <span class="ss">:home_phone</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span>
   <span class="ss">description: </span><span class="s2">"A US phone number"</span><span class="p">,</span>
   <span class="ss">validates: </span><span class="p">{</span> <span class="ss">format: </span><span class="p">{</span> <span class="ss">with: </span><span class="sr">/\d{3}-\d{3}-\d{4}/</span> <span class="p">}</span> <span class="p">}</span>
 </code></pre></div></div>
 
-<p>or:</p>
+<p>or, <code class="language-plaintext highlighter-rouge">validates required: { ... }</code> inside a <code class="language-plaintext highlighter-rouge">field ... do ... end</code> block:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">field</span> <span class="ss">:comments</span><span class="p">,</span> <span class="p">[</span><span class="no">Comment</span><span class="p">],</span>
   <span class="ss">description: </span><span class="s2">"Find comments by author ID or author name"</span> <span class="k">do</span>
@@ -178,14 +178,14 @@
 <p>See each validator’s API docs for details:</p>
 
 <ul>
-  <li><code class="language-plaintext highlighter-rouge">length: { maximum: ..., minimum: ..., is: ..., within: ... }</code> <a href="/api-doc/2.2.11/GraphQL/Schema/Validator/LengthValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::LengthValidator"><code>Schema::Validator::LengthValidator</code></a></li>
-  <li><code class="language-plaintext highlighter-rouge">format: { with: /.../, without: /.../ }</code> <a href="/api-doc/2.2.11/GraphQL/Schema/Validator/FormatValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::FormatValidator"><code>Schema::Validator::FormatValidator</code></a></li>
-  <li><code class="language-plaintext highlighter-rouge">numericality: { greater_than:, greater_than_or_equal_to:, less_than:, less_than_or_equal_to:, other_than:, odd:, even: }</code> <a href="/api-doc/2.2.11/GraphQL/Schema/Validator/NumericalityValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::NumericalityValidator"><code>Schema::Validator::NumericalityValidator</code></a></li>
-  <li><code class="language-plaintext highlighter-rouge">inclusion: { in: [...] }</code> <a href="/api-doc/2.2.11/GraphQL/Schema/Validator/InclusionValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::InclusionValidator"><code>Schema::Validator::InclusionValidator</code></a></li>
-  <li><code class="language-plaintext highlighter-rouge">exclusion: { in: [...] }</code> <a href="/api-doc/2.2.11/GraphQL/Schema/Validator/ExclusionValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::ExclusionValidator"><code>Schema::Validator::ExclusionValidator</code></a></li>
-  <li><code class="language-plaintext highlighter-rouge">required: { one_of: [...] }</code> <a href="/api-doc/2.2.11/GraphQL/Schema/Validator/RequiredValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::RequiredValidator"><code>Schema::Validator::RequiredValidator</code></a></li>
-  <li><code class="language-plaintext highlighter-rouge">allow_blank: true|false</code> <a href="/api-doc/2.2.11/GraphQL/Schema/Validator/AllowBlankValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::AllowBlankValidator"><code>Schema::Validator::AllowBlankValidator</code></a></li>
-  <li><code class="language-plaintext highlighter-rouge">allow_null: true|false</code> <a href="/api-doc/2.2.11/GraphQL/Schema/Validator/AllowNullValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::AllowNullValidator"><code>Schema::Validator::AllowNullValidator</code></a></li>
+  <li><code class="language-plaintext highlighter-rouge">length: { maximum: ..., minimum: ..., is: ..., within: ... }</code> <a href="/api-doc/2.2.12/GraphQL/Schema/Validator/LengthValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::LengthValidator"><code>Schema::Validator::LengthValidator</code></a></li>
+  <li><code class="language-plaintext highlighter-rouge">format: { with: /.../, without: /.../ }</code> <a href="/api-doc/2.2.12/GraphQL/Schema/Validator/FormatValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::FormatValidator"><code>Schema::Validator::FormatValidator</code></a></li>
+  <li><code class="language-plaintext highlighter-rouge">numericality: { greater_than:, greater_than_or_equal_to:, less_than:, less_than_or_equal_to:, other_than:, odd:, even: }</code> <a href="/api-doc/2.2.12/GraphQL/Schema/Validator/NumericalityValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::NumericalityValidator"><code>Schema::Validator::NumericalityValidator</code></a></li>
+  <li><code class="language-plaintext highlighter-rouge">inclusion: { in: [...] }</code> <a href="/api-doc/2.2.12/GraphQL/Schema/Validator/InclusionValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::InclusionValidator"><code>Schema::Validator::InclusionValidator</code></a></li>
+  <li><code class="language-plaintext highlighter-rouge">exclusion: { in: [...] }</code> <a href="/api-doc/2.2.12/GraphQL/Schema/Validator/ExclusionValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::ExclusionValidator"><code>Schema::Validator::ExclusionValidator</code></a></li>
+  <li><code class="language-plaintext highlighter-rouge">required: { one_of: [...] }</code> <a href="/api-doc/2.2.12/GraphQL/Schema/Validator/RequiredValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::RequiredValidator"><code>Schema::Validator::RequiredValidator</code></a></li>
+  <li><code class="language-plaintext highlighter-rouge">allow_blank: true|false</code> <a href="/api-doc/2.2.12/GraphQL/Schema/Validator/AllowBlankValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::AllowBlankValidator"><code>Schema::Validator::AllowBlankValidator</code></a></li>
+  <li><code class="language-plaintext highlighter-rouge">allow_null: true|false</code> <a href="/api-doc/2.2.12/GraphQL/Schema/Validator/AllowNullValidator" target="_blank" title="API docs for GraphQL::Schema::Validator::AllowNullValidator"><code>Schema::Validator::AllowNullValidator</code></a></li>
 </ul>
 
 <p>Some of the validators accept customizable messages for certain validation failures; see the API docs for examples.</p>

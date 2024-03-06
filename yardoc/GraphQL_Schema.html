@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/2.2.11/GraphQL/Schema" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.2.12/GraphQL/Schema" />
   </head>
   <body>
     <p>Class: GraphQL::Schema &lt; Object
@@ -19,10 +19,6 @@ be provided with the <code class="language-plaintext highlighter-rouge">types</c
 Schemas can restrict large incoming queries with <code class="language-plaintext highlighter-rouge">max_depth</code> and
 <code class="language-plaintext highlighter-rouge">max_complexity</code> configurations. (These configurations can be
 overridden by specific calls to Schema#execute) 
-Schemas can specify how queries should be executed against them.
-<code class="language-plaintext highlighter-rouge">query_execution_strategy</code>, <code class="language-plaintext highlighter-rouge">mutation_execution_strategy</code> and
-<code class="language-plaintext highlighter-rouge">subscription_execution_strategy</code> each apply to corresponding root
-types. 
 Examples:
     <h1 id="defining-a-schema">defining a schema</h1>
     <p>class MySchema &lt; GraphQL::Schema
