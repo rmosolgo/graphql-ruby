@@ -23,6 +23,7 @@ require "pry"
 require "minitest/autorun"
 require "minitest/focus"
 require "minitest/reporters"
+require "graphql/batch"
 
 running_in_rubymine = ENV["RM_INFO"]
 unless running_in_rubymine
