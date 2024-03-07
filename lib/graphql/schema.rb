@@ -158,6 +158,10 @@ module GraphQL
 
       def trace_class(new_class = nil)
         if new_class
+          # If any modules were already added for `:default`,
+          # re-apply them here
+          mods = trace_modules_for(:default)
+          mods.each { |mod| new_class.include(mod) }
           trace_mode(:default, new_class)
           backtrace_class = Class.new(new_class)
           backtrace_class.include(GraphQL::Backtrace::Trace)

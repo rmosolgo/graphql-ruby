@@ -148,6 +148,12 @@ describe "Trace modes for schemas" do
       GraphQL::Schema.send(:own_tracers).delete(tracer_class)
       GraphQL::Schema.own_trace_modes[:default] = GraphQL::Schema.build_trace_mode(:default)
       refute_includes GraphQL::Schema.new_trace.class.ancestors, GraphQL::Tracing::CallLegacyTracers
+    ensure
+      # Since this modifies the base class, make sure it's undone for future test cases
+      GraphQL::Schema.instance_variable_get(:@own_tracers).clear
+      GraphQL::Schema.own_trace_modes.clear
+      GraphQL::Schema.own_trace_modules.clear
+      GraphQL::Schema.instance_variable_get(:@trace_options_for_mode).clear
     end
   end
 
