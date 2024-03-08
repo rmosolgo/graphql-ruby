@@ -148,6 +148,12 @@ describe "Trace modes for schemas" do
       GraphQL::Schema.send(:own_tracers).delete(tracer_class)
       GraphQL::Schema.own_trace_modes[:default] = GraphQL::Schema.build_trace_mode(:default)
       refute_includes GraphQL::Schema.new_trace.class.ancestors, GraphQL::Tracing::CallLegacyTracers
+    ensure
+      # Since this modifies the base class, make sure it's undone for future test cases
+      GraphQL::Schema.instance_variable_get(:@own_tracers).clear
+      GraphQL::Schema.own_trace_modes.clear
+      GraphQL::Schema.own_trace_modules.clear
+      GraphQL::Schema.instance_variable_get(:@trace_options_for_mode).clear
     end
   end
 
@@ -246,6 +252,29 @@ describe "Trace modes for schemas" do
 
       assert ModeOptionsSchema.new_trace(mode: :default)
       assert ModeOptionsSchema.new_trace(mode: :extra)
+    end
+  end
+
+  module SomeTraceMod
+    def execute_query(query)
+      super
+    end
+  end
+
+  CustomTraceClass = Class.new(GraphQL::Tracing::Trace)
+
+  class BaseSchemaWithCustomTraceClass < GraphQL::Schema
+    use(GraphQL::Batch)
+    trace_class(CustomTraceClass)
+    trace_with(SomeTraceMod)
+  end
+
+  ChildSchema = Class.new(BaseSchemaWithCustomTraceClass)
+
+  describe "custom trace class supports trace module inheritance" do
+    it "inherits parent trace modules" do
+      assert_equal [GraphQL::Batch::SetupMultiplex::Trace, SomeTraceMod], ChildSchema.trace_modules_for(:default)
+      assert ChildSchema.new_trace.instance_variable_defined?(:@executor_class)
     end
   end
 end

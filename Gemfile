@@ -7,7 +7,6 @@ gem 'bootsnap' # required by the Rails apps generated in tests
 gem 'stackprof', platform: :ruby
 gem 'pry'
 gem 'pry-stack_explorer', platform: :ruby
-gem 'graphql-batch'
 gem 'pry-byebug'
 
 # For Ruby 3.2 compat:
