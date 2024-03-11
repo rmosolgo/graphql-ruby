@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 2.2.13 (11 Mar 2024)
+
+### Bug fixes
+
+- Tracing: when a new base `:default` trace class is added, merge already-configured trace modules into it #4875
+
 # 2.2.12 (6 Mar 2024)
 
 ### Deprecations
