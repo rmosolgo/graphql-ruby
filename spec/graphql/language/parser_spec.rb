@@ -54,6 +54,19 @@ describe GraphQL::Language::Parser do
     assert_equal expected_msg, err.message
   end
 
+  it "handles hyphens with errors" do
+    err = assert_raises(GraphQL::ParseError) {
+      GraphQL.parse("{ field(argument:a-b) }")
+    }
+    expected_msg = if USING_C_PARSER
+      "syntax error, unexpected invalid token (\"-\") at [1, 19]"
+    else
+      "Expected NAME, actual: INT (\"-\") at [1, 19]"
+    end
+
+    assert_equal expected_msg, err.message
+  end
+
   describe "anonymous fragment extension" do
     let(:document) { GraphQL.parse(query_string) }
     let(:query_string) {%|
