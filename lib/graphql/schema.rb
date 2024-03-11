@@ -1130,6 +1130,8 @@ module GraphQL
       end
 
       def tracer(new_tracer)
+        warn("`Schema.tracer(#{new_tracer.inspect})` is deprecated; use module-based `trace_with` instead. See: https://graphql-ruby.org/queries/tracing.html")
+        warn "  #{caller(1, 1).first}"
         default_trace = trace_class_for(:default, build: true)
         if default_trace.nil? || !(default_trace < GraphQL::Tracing::CallLegacyTracers)
           trace_with(GraphQL::Tracing::CallLegacyTracers)
