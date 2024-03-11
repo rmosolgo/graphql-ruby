@@ -35,7 +35,6 @@ const client = new Client({
 
 ```js
 import { createConsumer } from "@rails/actioncable";
-import createActionCableFetcher from "graphql-ruby-client/subscriptions/createActionCableFetcher";
 import createUrqlActionCableSubscription from "graphql-ruby-client/subscriptions/createUrqlActionCableSubscription";
 
 const actionCable = createConsumer('ws://127.0.0.1:3000/cable');

@@ -18,17 +18,17 @@ const createUrqlActionCableSubscription = {
                 this.perform("execute", { query: operation.query, variables: operation.variables });
             },
             disconnected() {
-                console.log("Subscription disconnected");
+                console.warn("Subscription disconnected");
             },
             received(data: any) {
                 if (data?.result?.errors) {
                   error(data.errors);
                 }
                 if (data?.result?.data) {
-                  next(data.result)
+                  next(data.result);
                 }
                 if (!data.more) {
-                  complete()
+                  complete();
                 }
             }
           })
