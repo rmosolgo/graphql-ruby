@@ -8,7 +8,11 @@
 
 ### Bug Fix
 
-# 1.3.3 (30 Jan 2024
+# 1.3.4 (18 Mar 2024)
+
+- ObjectCache: use new `trace_with` API for instrumentation
+
+# 1.3.3 (30 Jan 2024)
 
 - ObjectCache: fix compatibility with `run_graphql_field` test helper #4816
 
