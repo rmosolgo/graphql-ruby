@@ -379,8 +379,10 @@ GRAPHQL
     end
 
     def lex(query_string:)
-      TRACES << { key: "lex", query_string: query_string }
-      super
+      TRACES << (trace = { key: "lex", query_string: query_string })
+      result = super
+      trace[:result] = result
+      result
     end
 
     def self.clear
