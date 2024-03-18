@@ -109,29 +109,27 @@ module GraphQL
       }
       UTF_8 = /\\u(?:([\dAa-f]{4})|\{([\da-f]{4,})\})(?:\\u([\dAa-f]{4}))?/i
       VALID_STRING = /\A(?:[^\\]|#{ESCAPES}|#{UTF_8})*\z/o
+      ESCAPED = /(?:#{ESCAPES}|#{UTF_8})/o
 
       def string_value
         str = token_value
         is_block = str.start_with?('"""')
         if is_block
           str.gsub!(/\A"""|"""\z/, '')
+          return Language::BlockString.trim_whitespace(str)
         else
           str.gsub!(/\A"|"\z/, '')
-        end
 
-        if is_block
-          str = Language::BlockString.trim_whitespace(str)
-        end
-
-        if !str.valid_encoding? || !str.match?(VALID_STRING)
-          raise_parse_error("Bad unicode escape in #{str.inspect}")
-        else
-          Lexer.replace_escaped_characters_in_place(str)
-
-          if !str.valid_encoding?
+          if !str.valid_encoding? || !str.match?(VALID_STRING)
             raise_parse_error("Bad unicode escape in #{str.inspect}")
           else
-            str
+            Lexer.replace_escaped_characters_in_place(str)
+
+            if !str.valid_encoding?
+              raise_parse_error("Bad unicode escape in #{str.inspect}")
+            else
+              str
+            end
           end
         end
       end
@@ -301,24 +299,25 @@ module GraphQL
       # Replace any escaped unicode or whitespace with the _actual_ characters
       # To avoid allocating more strings, this modifies the string passed into it
       def self.replace_escaped_characters_in_place(raw_string)
-        raw_string.gsub!(ESCAPES, ESCAPES_REPLACE)
-        raw_string.gsub!(UTF_8) do |_matched_str|
-          codepoint_1 = ($1 || $2).to_i(16)
-          codepoint_2 = $3
-
-          if codepoint_2
-            codepoint_2 = codepoint_2.to_i(16)
-            if (codepoint_1 >= 0xD800 && codepoint_1 <= 0xDBFF) && # leading surrogate
-                (codepoint_2 >= 0xDC00 && codepoint_2 <= 0xDFFF) # trailing surrogate
-              # A surrogate pair
-              combined = ((codepoint_1 - 0xD800) * 0x400) + (codepoint_2 - 0xDC00) + 0x10000
-              [combined].pack('U'.freeze)
+        raw_string.gsub!(ESCAPED) do |matched_str|
+          if (point_str_1 = $1 || $2)
+            codepoint_1 = point_str_1.to_i(16)
+            if (codepoint_2 = $3)
+              codepoint_2 = codepoint_2.to_i(16)
+              if (codepoint_1 >= 0xD800 && codepoint_1 <= 0xDBFF) && # leading surrogate
+                  (codepoint_2 >= 0xDC00 && codepoint_2 <= 0xDFFF) # trailing surrogate
+                # A surrogate pair
+                combined = ((codepoint_1 - 0xD800) * 0x400) + (codepoint_2 - 0xDC00) + 0x10000
+                [combined].pack('U'.freeze)
+              else
+                # Two separate code points
+                [codepoint_1].pack('U'.freeze) + [codepoint_2].pack('U'.freeze)
+              end
             else
-              # Two separate code points
-              [codepoint_1].pack('U'.freeze) + [codepoint_2].pack('U'.freeze)
+              [codepoint_1].pack('U'.freeze)
             end
           else
-            [codepoint_1].pack('U'.freeze)
+            ESCAPES_REPLACE[matched_str]
           end
         end
         nil
