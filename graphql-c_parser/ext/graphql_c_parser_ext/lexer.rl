@@ -44,7 +44,7 @@
   PIPE =          '|';
   AMP =           '&';
 
-  QUOTED_STRING = ('"' ((('\\"' | ^'"') - "\\") | UNICODE_ESCAPE | '\\' [\\/bfnrt])* '"');
+  QUOTED_STRING = ('"' ((('\\"' | ^'"') - "\\" - "\n" - "\r") | UNICODE_ESCAPE | '\\' [\\/bfnrt])* '"');
   # catch-all for anything else. must be at the bottom for precedence.
   UNKNOWN_CHAR =         /./;
 

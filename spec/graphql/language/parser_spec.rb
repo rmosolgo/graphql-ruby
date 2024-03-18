@@ -16,6 +16,37 @@ describe GraphQL::Language::Parser do
     assert_equal expected_message, err.message
   end
 
+  it "rejects newlines in single-quoted strings unless escaped" do
+    nl_query_string_1 = "{ doStuff(arg: \"
+    abc\") }"
+    nl_query_string_2 = "{ doStuff(arg: \"\rabc\") }"
+
+    assert_raises(GraphQL::ParseError) {
+      GraphQL.parse(nl_query_string_2)
+    }
+    assert_raises(GraphQL::ParseError) {
+      GraphQL.parse(nl_query_string_2)
+    }
+
+    assert GraphQL.parse(GraphQL::Language.escape_single_quoted_newlines(nl_query_string_1))
+    assert GraphQL.parse(GraphQL::Language.escape_single_quoted_newlines(nl_query_string_2))
+  end
+
+  it "can replace single-quoted newlines" do
+    replacements = {
+      "{ a(\"\n abc\n\") }" => '{ a("\\n abc\\n") }',
+      "{ a(\"\r\n ab\rc\n\") }" => '{ a("\\r\\n ab\\rc\\n") }',
+      "{ a(\"\n abc\n\") b(\"\n \\\"abc\n\") }" => '{ a("\\n abc\\n") b("\\n \\"abc\\n") }',
+      # No modification to block strings:
+      "{ a(\"\"\"\n abc\n\"\"\") }" => "{ a(\"\"\"\n abc\n\"\"\") }",
+      "{ a(\"\"\"\r\n abc\r\n\"\"\") }" => "{ a(\"\"\"\r\n abc\r\n\"\"\") }",
+    }
+
+    replacements.each_with_index do |(before_str, after_str), idx|
+      assert_equal after_str, GraphQL::Language.escape_single_quoted_newlines(before_str), "It works for example pair ##{idx + 1} (#{after_str})"
+    end
+  end
+
   describe "when there are no selections" do
     it 'raises a ParseError' do
       assert_raises(GraphQL::ParseError) {
