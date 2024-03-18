@@ -40,7 +40,7 @@ describe GraphQL::Tracing::NotificationsTracing do
     end
 
     tracer = GraphQL::Tracing::NotificationsTracing.new(engine)
-    schema.tracer(tracer)
+    schema.tracer(tracer, silence_deprecation_warning: true)
     schema.execute "query X { int }"
 
     dispatched_events
