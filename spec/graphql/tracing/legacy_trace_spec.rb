@@ -22,7 +22,7 @@ describe GraphQL::Tracing::LegacyTrace do
 
     parent_schema = Class.new(GraphQL::Schema) do
       query(query_type)
-      tracer(custom_tracer)
+      tracer(custom_tracer, silence_deprecation_warning: true)
     end
 
     child_schema = Class.new(parent_schema)

@@ -137,7 +137,7 @@ describe "Trace modes for schemas" do
       tracer_class = Class.new
 
       # add a legacy tracer
-      GraphQL::Schema.tracer(tracer_class)
+      GraphQL::Schema.tracer(tracer_class, silence_deprecation_warning: true)
       # A newly created child class gets the right setup:
       new_child_class = Class.new(GraphQL::Schema)
       assert_includes new_child_class.trace_class_for(:default).ancestors, GraphQL::Tracing::CallLegacyTracers

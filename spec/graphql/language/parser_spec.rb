@@ -413,14 +413,39 @@ GRAPHQL
     end
   end
 
+  module ParserTrace
+    TRACES = []
+    def parse(query_string:)
+      TRACES << (trace = { key: "parse", query_string: query_string })
+      result = super
+      trace[:result] = result
+      result
+    end
+
+    def lex(query_string:)
+      TRACES << (trace = { key: "lex", query_string: query_string })
+      result = super
+      trace[:result] = result
+      result
+    end
+
+    def self.clear
+      TRACES.clear
+    end
+
+    def self.traces
+      TRACES
+    end
+  end
+
   it "serves traces" do
-    TestTracing.clear
+    ParserTrace.clear
     schema = Class.new(GraphQL::Schema) do
-      tracer(TestTracing)
+      trace_with(ParserTrace)
     end
     query = GraphQL::Query.new(schema, "{ t: __typename }")
     subject.parse("{ t: __typename }", trace: query.current_trace)
-    traces = TestTracing.traces
+    traces = ParserTrace.traces
     expected_traces = if USING_C_PARSER
       2
     else
