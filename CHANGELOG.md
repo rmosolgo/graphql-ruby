@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 2.2.14 (18 Mar 2024)
+
+### Bug fixes
+
+- Parser: properly handle stray hyphens in query strings #4879
+
 # 2.2.13 (11 Mar 2024)
 
 ### Bug fixes
