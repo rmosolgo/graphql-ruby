@@ -739,13 +739,7 @@ module GraphQL
       # token_value works for when the scanner matched something
       # which is usually fine and it's good for it to be fast at that.
       def debug_token_value
-        if token_name && Lexer::Punctuation.const_defined?(token_name)
-          Lexer::Punctuation.const_get(token_name)
-        elsif token_name == :ELLIPSIS
-          "..."
-        else
-          @lexer.token_value
-        end
+        @lexer.debug_token_value(token_name)
       end
     end
   end

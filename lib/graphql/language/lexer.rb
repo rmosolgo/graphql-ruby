@@ -89,6 +89,8 @@ module GraphQL
           "..."
         elsif token_name == :STRING
           string_value
+        elsif @scanner.matched_size.nil?
+          @scanner.peek(1)
         else
           token_value
         end
