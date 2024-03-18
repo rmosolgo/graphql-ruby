@@ -99,7 +99,7 @@ module GraphQL
       # Even if `variables: nil` is passed, use an empty hash for simpler logic
       variables ||= {}
       @schema = schema
-      @context = schema.context_class.new(query: self, object: root_value, values: context)
+      @context = schema.context_class.new(query: self, values: context)
       @warden = warden
       @subscription_topic = subscription_topic
       @root_value = root_value

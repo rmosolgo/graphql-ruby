@@ -61,7 +61,7 @@ describe GraphQL::Query::Context do
   end
 
   describe "empty values" do
-    let(:context) { GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil, object: nil) }
+    let(:context) { GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil) }
 
     it "returns returns nil and reports key? => false" do
       assert_nil(context[:some_key])
@@ -71,7 +71,7 @@ describe GraphQL::Query::Context do
   end
 
   describe "assigning values" do
-    let(:context) { GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil, object: nil) }
+    let(:context) { GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil) }
 
     it "allows you to assign new contexts" do
       assert_nil(context[:some_key])
@@ -80,7 +80,7 @@ describe GraphQL::Query::Context do
     end
 
     describe "namespaces" do
-      let(:context) { GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: {a: 1}, object: nil) }
+      let(:context) { GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: {a: 1}) }
 
       it "doesn't conflict with base values" do
         ns = context.namespace(:stuff)
@@ -92,7 +92,7 @@ describe GraphQL::Query::Context do
   end
 
   describe "read values" do
-    let(:context) { GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: {a: {b: 1}}, object: nil) }
+    let(:context) { GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: {a: {b: 1}}) }
 
     it "allows you to read values of contexts using []" do
       assert_equal({b: 1}, context[:a])
@@ -107,7 +107,7 @@ describe GraphQL::Query::Context do
   end
 
   describe "splatting" do
-    let(:context) { GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: {a: {b: 1}}, object: nil) }
+    let(:context) { GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: {a: {b: 1}}) }
 
     let(:splat) { ->(**context) { context } }
 
@@ -117,7 +117,7 @@ describe GraphQL::Query::Context do
   end
 
   it "can override values set by runtime" do
-    context = GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: {a: {b: 1}}, object: nil)
+    context = GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: {a: {b: 1}})
     Thread.current[:__graphql_runtime_info] = { context.query => OpenStruct.new({ current_object: :runtime_value }) }
     assert_equal :runtime_value, context[:current_object]
     context[:current_object] = :override_value
@@ -389,7 +389,7 @@ describe GraphQL::Query::Context do
     end
 
     it "always retrieves a scoped context value if set" do
-      context = GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil, object: nil)
+      context = GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil)
       dummy_runtime = OpenStruct.new(current_result: nil)
       Thread.current[:__graphql_runtime_info] = { context.query => dummy_runtime }
       dummy_runtime.current_result = OpenStruct.new(path: ["somewhere"])
@@ -443,7 +443,7 @@ describe GraphQL::Query::Context do
       expected_key = :a
       expected_value = :test
 
-      context = GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil, object: nil)
+      context = GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil)
       assert_nil(context[expected_key])
 
       context.scoped_set!(expected_key, expected_value)
@@ -451,7 +451,7 @@ describe GraphQL::Query::Context do
     end
 
     it "has a #current_path method" do
-      context = GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil, object: nil)
+      context = GraphQL::Query::Context.new(query: OpenStruct.new(schema: schema), values: nil)
       current_result = OpenStruct.new(path: ["somewhere", "child", "grandchild"])
       Thread.current[:__graphql_runtime_info] = { context.query => OpenStruct.new(current_result: current_result) }
       assert_equal ["somewhere", "child", "grandchild"], context.scoped_context.current_path

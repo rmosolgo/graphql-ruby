@@ -1009,7 +1009,7 @@ describe GraphQL::Schema::Warden do
     end
 
     it "uses PassThruWarden when a warden on the context nor query" do
-      context = GraphQL::Query::Context.new(query: OpenStruct.new(schema: GraphQL::Schema.new), values: {}, object: nil)
+      context = GraphQL::Query::Context.new(query: OpenStruct.new(schema: GraphQL::Schema.new), values: {})
       assert_equal GraphQL::Schema::Warden::PassThruWarden, GraphQL::Schema::Warden.from_context(context)
     end
   end
