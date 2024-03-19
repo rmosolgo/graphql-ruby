@@ -32,6 +32,7 @@ describe GraphQL::Introspection::SchemaType do
             {"name"=>"dairy"},
             {"name"=>"deepNonNull"},
             {"name"=>"error"},
+            {"name"=>"exampleBeverage"},
             {"name"=>"executionError"},
             {"name"=>"executionErrorWithExtensions"},
             {"name"=>"executionErrorWithOptions"},

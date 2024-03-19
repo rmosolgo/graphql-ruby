@@ -467,6 +467,8 @@ module Dummy
     def huge_integer
       GraphQL::Types::Int::MAX + 1
     end
+
+    field :example_beverage, Beverage # just to add this type to the schema
   end
 
   class AdminDairyAppQuery < BaseObject
@@ -517,7 +519,7 @@ module Dummy
     mutation DairyAppMutation
     subscription Subscription
     max_depth 5
-    orphan_types Honey, Beverage
+    orphan_types Honey
     trace_with GraphQL::Tracing::CallLegacyTracers
 
     rescue_from(NoSuchDairyError) { |err| raise GraphQL::ExecutionError, err.message  }

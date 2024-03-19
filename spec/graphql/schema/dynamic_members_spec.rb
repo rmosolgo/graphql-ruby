@@ -329,6 +329,10 @@ describe "Dynamic types, fields, arguments, and enum values" do
       def yell(scream:)
         scream
       end
+
+      # just to attach these to the schema:
+      field :example_locale, Locale
+      field :example_region, Region
     end
 
     class BaseMutation < GraphQL::Schema::RelayClassicMutation
@@ -364,7 +368,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
 
     query(Query)
     mutation(Mutation)
-    orphan_types(Place, LegacyPlace, Locale, Region, Country)
+    orphan_types(Place, LegacyPlace, Country)
 
     def self.object_from_id(id, ctx)
       { id: id, database_id: id, uuid: "thing-#{id}", legacy_price: "⚛︎#{id}00", price: { amount: id.to_i * 100, currency: "⚛︎" }}
@@ -487,6 +491,8 @@ GRAPHQL
 type Query {
   actor: Actor
   add(left: Float!, right: Float!): String!
+  exampleLocale: Locale
+  exampleRegion: Region
   f1: String
   favoriteLanguage(lang: Language): Language!
   legacyThing(id: ID!): LegacyThing!
@@ -890,7 +896,6 @@ GRAPHQL
       end
 
       query(Query)
-      orphan_types(ThingScalar, ThingEnum, ThingInput, ThingObject, ThingUnion, ThingInterface)
     end
   end
 
