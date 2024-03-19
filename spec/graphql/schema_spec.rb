@@ -164,7 +164,7 @@ describe GraphQL::Schema do
 
     expected_msg = "Only object type classes should be added as `orphan_types(...)`.
 
-- Remove these no-op types from `orphan_types`: ExampleOptionEnum
+- Remove these no-op types from `orphan_types`: ExampleOptionEnum (ENUM)
 - See https://graphql-ruby.org/type_definitions/interfaces.html#orphan-types
 
 To add other types to your schema, you might want `extra_types`: https://graphql-ruby.org/schema/definition.html#extra-types

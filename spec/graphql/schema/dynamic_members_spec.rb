@@ -325,6 +325,10 @@ describe "Dynamic types, fields, arguments, and enum values" do
       def yell(scream:)
         scream
       end
+
+      # just to attach these to the schema:
+      field :example_locale, Locale
+      field :example_region, Region
     end
 
     class BaseMutation < GraphQL::Schema::RelayClassicMutation
@@ -475,6 +479,8 @@ GRAPHQL
 type Query {
   actor: Actor
   add(left: Float!, right: Float!): String!
+  exampleLocale: Locale
+  exampleRegion: Region
   f1: String
   favoriteLanguage(lang: Language): Language!
   legacyThing(id: ID!): LegacyThing!
@@ -878,7 +884,6 @@ GRAPHQL
       end
 
       query(Query)
-      extra_types(ThingScalar, ThingEnum, ThingInput, ThingObject, ThingUnion, ThingInterface)
     end
   end
 

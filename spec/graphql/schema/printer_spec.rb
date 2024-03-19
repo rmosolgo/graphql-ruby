@@ -92,6 +92,8 @@ REASON
       field :no_fields_type, NoFields do
         argument :no_arguments_input, NoArguments
       end
+
+      field :example_media, Media
     end
 
     class CreatePost < GraphQL::Schema::RelayClassicMutation
@@ -114,7 +116,7 @@ REASON
     query(Query)
     mutation(Mutation)
     subscription(Subscription)
-    extra_types [Media, MediaRating]
+    extra_types [MediaRating]
   end
 
   let(:schema) { PrinterTestSchema }
@@ -587,6 +589,7 @@ type Post {
 The query root of this schema
 """
 type Query {
+  exampleMedia: Media
   noFieldsType(noArgumentsInput: NoArguments!): NoFields
   post(
     deprecatedArg: String @deprecated(reason: "Use something else")
@@ -791,6 +794,7 @@ type Post {
 The query root of this schema
 """
 type Query {
+  exampleMedia: Media
   noFieldsType(noArgumentsInput: NoArguments!): NoFields
   post(
     """

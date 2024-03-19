@@ -282,10 +282,12 @@ describe GraphQL::Schema::Union do
       possible_types object_type, GraphQL::Schema::LateBoundType.new("SomeInterface")
     end
 
+    object_type.field(:u, union_type)
+    object_type.field(:i, interface_type)
+
     err2 = assert_raises ArgumentError do
       Class.new(GraphQL::Schema) do
         query(object_type)
-        orphan_types(union_type, interface_type)
       end
     end
 
