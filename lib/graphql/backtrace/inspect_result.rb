@@ -16,12 +16,6 @@ module GraphQL
           "[" +
             obj.map { |v| inspect_truncated(v) }.join(", ") +
             "]"
-        when Query::Context::SharedMethods
-          if obj.invalid_null?
-            "nil"
-          else
-            inspect_truncated(obj.value)
-          end
         else
           inspect_truncated(obj)
         end
@@ -33,12 +27,6 @@ module GraphQL
           "{...}"
         when Array
           "[...]"
-        when Query::Context::SharedMethods
-          if obj.invalid_null?
-            "nil"
-          else
-            inspect_truncated(obj.value)
-          end
         when GraphQL::Execution::Lazy
           "(unresolved)"
         else

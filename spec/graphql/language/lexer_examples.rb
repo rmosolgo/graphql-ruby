@@ -88,7 +88,7 @@ module LexerExamples
           let(:query_string) { %|{ a(b: """\nc\n \\""" d\n""" """""e""""")}|}
 
           it "tokenizes them" do
-            assert_equal "c\n \"\"\" d", tokens[5].value
+            assert_equal "c\n \\\"\"\" d", tokens[5].value
             assert_equal "\"\"e\"\"", tokens[6].value
           end
 
@@ -119,7 +119,7 @@ text: """b\\\\""", otherText: "a"
 GRAPHQL
 
             tokens = subject.tokenize(query_str)
-            assert_equal ['text', ':', 'b\\', 'otherText', ':', 'a',], tokens.map(&:value)
+            assert_equal ['text', ':', 'b\\\\', 'otherText', ':', 'a',], tokens.map(&:value)
           end
         end
 
@@ -192,7 +192,7 @@ string with \\"""
           tokens = subject.tokenize doc
           token = tokens.first
           assert_equal :STRING, token.name
-          assert_equal 'string with """', token.value
+          assert_equal 'string with \"""', token.value
         end
 
         it "counts block string line properly" do

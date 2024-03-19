@@ -268,6 +268,11 @@ describe "Dynamic types, fields, arguments, and enum values" do
       end
     end
 
+    class ThingIdInput < BaseInputObject
+      argument :id, ID, future_schema: true, loads: Thing, as: :thing
+      argument :id, Int, future_schema: false, loads: Thing, as: :thing
+    end
+
     class Query < BaseObject
       field :node, Node do
         argument :id, ID
@@ -285,12 +290,11 @@ describe "Dynamic types, fields, arguments, and enum values" do
       end
 
       field :thing, Thing do
-        argument :id, ID, future_schema: true
-        argument :id, Int, future_schema: false
+        argument :input, ThingIdInput
       end
 
-      def thing(id:)
-        { id: id, database_id: id, uuid: "thing-#{id}", legacy_price: "⚛︎#{id}00", price: { amount: id.to_i * 100, currency: "⚛︎" }}
+      def thing(input:)
+        input[:thing]
       end
 
       field :legacy_thing, LegacyThing, null: false do
@@ -365,6 +369,14 @@ describe "Dynamic types, fields, arguments, and enum values" do
     query(Query)
     mutation(Mutation)
     orphan_types(Place, LegacyPlace, Country)
+
+    def self.object_from_id(id, ctx)
+      { id: id, database_id: id, uuid: "thing-#{id}", legacy_price: "⚛︎#{id}00", price: { amount: id.to_i * 100, currency: "⚛︎" }}
+    end
+
+    def self.resolve_type(type, obj, ctx)
+      Thing
+    end
   end
 
   def check_for_multiple_visible_calls(context)
@@ -470,7 +482,7 @@ type Query {
   favoriteLanguage(lang: Language): Language!
   legacyThing(id: ID!): LegacyThing!
   node(id: ID!): Node
-  thing(id: Int!): Thing
+  thing(input: ThingIdInput!): Thing
   yell(scream: Scream!): String!
 }
 GRAPHQL
@@ -485,7 +497,7 @@ type Query {
   favoriteLanguage(lang: Language): Language!
   legacyThing(id: ID!): LegacyThing!
   node(id: ID!): Node
-  thing(id: ID!): Thing
+  thing(input: ThingIdInput!): Thing
   yell(scream: Scream!): String!
 }
 GRAPHQL
@@ -507,7 +519,7 @@ interface Node {
 }
 GRAPHQL
 
-    query_str = "{ thing(id: 15) { databaseId id uuid } }"
+    query_str = "{ thing(input: { id: 15 }) { databaseId id uuid } }"
     assert_equal ["Field 'databaseId' doesn't exist on type 'Thing'", "Field 'uuid' doesn't exist on type 'Thing'"], exec_query(query_str)["errors"].map { |e| e["message"] }
     res = exec_future_query(query_str)
     assert_equal({ "thing" => { "databaseId" => 15, "id" => 15, "uuid" => "thing-15"} }, res["data"])
@@ -526,18 +538,18 @@ GRAPHQL
   end
 
   it "supports different versions of field arguments" do
-    res = exec_future_query("{ thing(id: \"15\") { id } }")
+    res = exec_future_query("{ thing(input: { id: \"15\" }) { id } }")
     assert_equal 15, res["data"]["thing"]["id"]
     # On legacy, `"15"` is parsed as an int, which makes it null:
-    res = exec_query("{ thing(id: \"15\") { id } }")
-    assert_equal ["Argument 'id' on Field 'thing' has an invalid value (\"15\"). Expected type 'Int!'."], res["errors"].map { |e| e["message"] }
+    res = exec_query("{ thing(input: { id: \"15\" }) { id } }")
+    assert_equal ["Argument 'id' on InputObject 'ThingIdInput' has an invalid value (\"15\"). Expected type 'Int!'."], res["errors"].map { |e| e["message"] }
 
-    introspection_query = "{ __type(name: \"Query\") { fields { name args { name type { name ofType { name } } } } } }"
+    introspection_query = "{ __type(name: \"ThingIdInput\") { inputFields { name type { name ofType { name } } } } }"
     introspection_res = exec_query(introspection_query)
-    assert_equal "Int", introspection_res["data"]["__type"]["fields"].find { |f| f["name"] == "thing" }["args"].first["type"]["ofType"]["name"]
+    assert_equal "Int", introspection_res["data"]["__type"]["inputFields"].find { |f| f["name"] == "id" }["type"]["ofType"]["name"]
 
     introspection_res = exec_future_query(introspection_query)
-    assert_equal "ID", introspection_res["data"]["__type"]["fields"].find { |f| f["name"] == "thing" }["args"].first["type"]["ofType"]["name"]
+    assert_equal "ID", introspection_res["data"]["__type"]["inputFields"].find { |f| f["name"] == "id" }["type"]["ofType"]["name"]
   end
 
   it "hides fields from hidden interfaces" do
@@ -660,22 +672,22 @@ GRAPHQL
     expected_message = "Found two visible definitions for `Money`: MultifieldSchema::Money, MultifieldSchema::MoneyScalar"
     assert_equal expected_message, err.message
 
-    assert_equal "⚛︎100",exec_query("{ thing(id: 1) { price } }")["data"]["thing"]["price"]
+    assert_equal "⚛︎100",exec_query("{ thing( input: { id: 1 }) { price } }")["data"]["thing"]["price"]
     res = exec_query("{ __type(name: \"Money\") { kind name } }")
     assert_equal "SCALAR", res["data"]["__type"]["kind"]
     assert_equal "Money", res["data"]["__type"]["name"]
-    assert_equal({ "amount" => 200, "currency" => "⚛︎" }, exec_future_query("{ thing(id: 2) { price { amount currency } } }")["data"]["thing"]["price"])
+    assert_equal({ "amount" => 200, "currency" => "⚛︎" }, exec_future_query("{ thing(input: { id: 2}) { price { amount currency } } }")["data"]["thing"]["price"])
     res = exec_future_query("{ __type(name: \"Money\") { name kind } }")
     assert_equal "OBJECT", res["data"]["__type"]["kind"]
     assert_equal "Money", res["data"]["__type"]["name"]
   end
 
   it "works with subclasses" do
-    res = exec_query("{ legacyThing(id: 1) { price } thing(id: 3) { price } }")
+    res = exec_query("{ legacyThing(id: 1) { price } thing(input: { id: 3 }) { price } }")
     assert_equal "⚛︎100", res["data"]["legacyThing"]["price"]
     assert_equal "⚛︎300", res["data"]["thing"]["price"]
 
-    future_res = exec_future_query("{ legacyThing(id: 1) { price } thing(id: 3) { price { amount } } }")
+    future_res = exec_future_query("{ legacyThing(id: 1) { price } thing(input: { id: 3 }) { price { amount } } }")
     assert_equal "⚛︎100", future_res["data"]["legacyThing"]["price"]
     assert_equal 300, future_res["data"]["thing"]["price"]["amount"]
   end

@@ -118,8 +118,12 @@ module GraphQL
         def on_inline_fragment(node, parent)
           on_fragment_with_type(node) do
             @path.push("...#{node.type ? " on #{node.type.name}" : ""}")
+            @skipping = @skip_stack.last || skip?(node)
+            @skip_stack << @skipping
+
             call_on_enter_inline_fragment(node, parent)
             super
+            @skipping = @skip_stack.pop
             call_on_leave_inline_fragment(node, parent)
           end
         end
@@ -187,9 +191,13 @@ module GraphQL
 
         def on_fragment_spread(node, parent)
           @path.push("... #{node.name}")
+          @skipping = @skip_stack.last || skip?(node)
+          @skip_stack << @skipping
+
           call_on_enter_fragment_spread(node, parent)
           enter_fragment_spread_inline(node)
           super
+          @skipping = @skip_stack.pop
           leave_fragment_spread_inline(node)
           call_on_leave_fragment_spread(node, parent)
           @path.pop

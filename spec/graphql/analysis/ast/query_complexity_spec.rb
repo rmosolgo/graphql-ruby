@@ -21,7 +21,7 @@ describe GraphQL::Analysis::AST::QueryComplexity do
 
   describe "simple queries" do
     let(:query_string) {%|
-      query cheeses($isSkipped: Boolean = false){
+      query cheeses {
         # complexity of 3
         cheese1: cheese(id: 1) {
           id
@@ -29,7 +29,7 @@ describe GraphQL::Analysis::AST::QueryComplexity do
         }
 
         # complexity of 4
-        cheese2: cheese(id: 2) @skip(if: $isSkipped) {
+        cheese2: cheese(id: 2) {
           similarCheese(source: SHEEP) {
             ... on Cheese {
               similarCheese(source: SHEEP) {
@@ -45,12 +45,40 @@ describe GraphQL::Analysis::AST::QueryComplexity do
       complexities = reduce_result.first
       assert_equal 7, complexities
     end
+  end
+
+  describe "with skip/include" do
+    let(:query_string) {%|
+      query cheeses($skip: Boolean = false, $include: Boolean = true) {
+        fields: cheese(id: 1) {
+          flavor
+          origin @skip(if: $skip)
+          source @include(if: $include)
+        }
+        inlineFragments: cheese(id: 1) {
+          ...on Cheese { flavor }
+          ...on Cheese @skip(if: $skip) { origin }
+          ...on Cheese @include(if: $include) { source }
+        }
+        fragmentSpreads: cheese(id: 1) {
+          ...Flavorful
+          ...Original @skip(if: $skip)
+          ...Sourced @include(if: $include)
+        }
+      }
+      fragment Flavorful on Cheese { flavor }
+      fragment Original on Cheese { origin }
+      fragment Sourced on Cheese { source }
+    |}
+
+    it "sums up all included complexities" do
+      assert_equal 12, reduce_result.first
+    end
 
     describe "when skipped by directives" do
-      let(:variables) { { "isSkipped" => true } }
-      it "doesn't include skipped fields" do
-        complexity = reduce_result.first
-        assert_equal 3, complexity
+      let(:variables) { { "skip" => true, "include" => false } }
+      it "doesn't include skipped fields and fragments" do
+        assert_equal 6, reduce_result.first
       end
     end
   end

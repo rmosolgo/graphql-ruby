@@ -44,7 +44,7 @@
   PIPE =          '|';
   AMP =           '&';
 
-  QUOTED_STRING = ('"' ((('\\"' | ^'"') - "\\") | UNICODE_ESCAPE | '\\' [\\/bfnrt])* '"');
+  QUOTED_STRING = ('"' ((('\\"' | ^'"') - "\\" - "\n" - "\r") | UNICODE_ESCAPE | '\\' [\\/bfnrt])* '"');
   # catch-all for anything else. must be at the bottom for precedence.
   UNKNOWN_CHAR =         /./;
 
@@ -298,24 +298,22 @@ void emit(TokenType tt, char *ts, char *te, Meta *meta) {
       if (tt == BLOCK_STRING) {
         VALUE mGraphQLLanguageBlockString = rb_const_get_at(mGraphQLLanguage, rb_intern("BlockString"));
         token_content = rb_funcall(mGraphQLLanguageBlockString, rb_intern("trim_whitespace"), 1, token_content);
-      }
-
-      // The parser doesn't distinguish between these,
-      // Maybe updated below if it's invalid UTF-8
-      tt = STRING;
-
-      if (
-        RB_TEST(rb_funcall(token_content, rb_intern("valid_encoding?"), 0)) &&
-          RB_TEST(rb_funcall(token_content, rb_intern("match?"), 1, valid_string_pattern))
-      ) {
-        rb_funcall(mGraphQLLanguageLexer, rb_intern("replace_escaped_characters_in_place"), 1, token_content);
-        if (!RB_TEST(rb_funcall(token_content, rb_intern("valid_encoding?"), 0))) {
+        tt = STRING;
+      } else {
+        tt = STRING;
+        if (
+          RB_TEST(rb_funcall(token_content, rb_intern("valid_encoding?"), 0)) &&
+            RB_TEST(rb_funcall(token_content, rb_intern("match?"), 1, valid_string_pattern))
+        ) {
+          rb_funcall(mGraphQLLanguageLexer, rb_intern("replace_escaped_characters_in_place"), 1, token_content);
+          if (!RB_TEST(rb_funcall(token_content, rb_intern("valid_encoding?"), 0))) {
+            token_sym = ID2SYM(rb_intern("BAD_UNICODE_ESCAPE"));
+            tt = BAD_UNICODE_ESCAPE;
+          }
+        } else {
           token_sym = ID2SYM(rb_intern("BAD_UNICODE_ESCAPE"));
           tt = BAD_UNICODE_ESCAPE;
         }
-      } else {
-        token_sym = ID2SYM(rb_intern("BAD_UNICODE_ESCAPE"));
-        tt = BAD_UNICODE_ESCAPE;
       }
     }
 

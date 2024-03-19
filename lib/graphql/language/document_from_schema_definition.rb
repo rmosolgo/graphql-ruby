@@ -24,7 +24,7 @@ module GraphQL
         @include_built_in_directives = include_built_in_directives
         @include_one_of = false
 
-        schema_context = schema.context_class.new(query: nil, object: nil, schema: schema, values: context)
+        schema_context = schema.context_class.new(query: nil, schema: schema, values: context)
 
 
         @warden = @schema.warden_class.new(

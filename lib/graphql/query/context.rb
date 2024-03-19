@@ -6,36 +6,6 @@ module GraphQL
     # Expose some query-specific info to field resolve functions.
     # It delegates `[]` to the hash that's passed to `GraphQL::Query#initialize`.
     class Context
-      module SharedMethods
-        # Return this value to tell the runtime
-        # to exclude this field from the response altogether
-        def skip
-          GraphQL::Execution::SKIP
-        end
-
-        # Add error at query-level.
-        # @param error [GraphQL::ExecutionError] an execution error
-        # @return [void]
-        def add_error(error)
-          if !error.is_a?(ExecutionError)
-            raise TypeError, "expected error to be a ExecutionError, but was #{error.class}"
-          end
-          errors << error
-          nil
-        end
-
-        # @example Print the GraphQL backtrace during field resolution
-        #   puts ctx.backtrace
-        #
-        # @return [GraphQL::Backtrace] The backtrace for this point in query execution
-        def backtrace
-          GraphQL::Backtrace.new(self)
-        end
-
-        def execution_errors
-          @execution_errors ||= ExecutionErrors.new(self)
-        end
-      end
 
       class ExecutionErrors
         def initialize(ctx)
@@ -59,7 +29,6 @@ module GraphQL
         alias :push :add
       end
 
-      include SharedMethods
       extend Forwardable
 
       # @return [Array<GraphQL::ExecutionError>] errors returned during execution
@@ -77,11 +46,10 @@ module GraphQL
       # Make a new context which delegates key lookup to `values`
       # @param query [GraphQL::Query] the query who owns this context
       # @param values [Hash] A hash of arbitrary values which will be accessible at query-time
-      def initialize(query:, schema: query.schema, values:, object:)
+      def initialize(query:, schema: query.schema, values:)
         @query = query
         @schema = schema
         @provided_values = values || {}
-        @object = object
         # Namespaced storage, where user-provided values are in `nil` namespace:
         @storage = Hash.new { |h, k| h[k] = {} }
         @storage[nil] = @provided_values
@@ -138,6 +106,35 @@ module GraphQL
           # not found
           nil
         end
+      end
+
+      # Return this value to tell the runtime
+      # to exclude this field from the response altogether
+      def skip
+        GraphQL::Execution::SKIP
+      end
+
+      # Add error at query-level.
+      # @param error [GraphQL::ExecutionError] an execution error
+      # @return [void]
+      def add_error(error)
+        if !error.is_a?(ExecutionError)
+          raise TypeError, "expected error to be a ExecutionError, but was #{error.class}"
+        end
+        errors << error
+        nil
+      end
+
+      # @example Print the GraphQL backtrace during field resolution
+      #   puts ctx.backtrace
+      #
+      # @return [GraphQL::Backtrace] The backtrace for this point in query execution
+      def backtrace
+        GraphQL::Backtrace.new(self)
+      end
+
+      def execution_errors
+        @execution_errors ||= ExecutionErrors.new(self)
       end
 
       def current_path

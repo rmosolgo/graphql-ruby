@@ -16,6 +16,37 @@ describe GraphQL::Language::Parser do
     assert_equal expected_message, err.message
   end
 
+  it "rejects newlines in single-quoted strings unless escaped" do
+    nl_query_string_1 = "{ doStuff(arg: \"
+    abc\") }"
+    nl_query_string_2 = "{ doStuff(arg: \"\rabc\") }"
+
+    assert_raises(GraphQL::ParseError) {
+      GraphQL.parse(nl_query_string_2)
+    }
+    assert_raises(GraphQL::ParseError) {
+      GraphQL.parse(nl_query_string_2)
+    }
+
+    assert GraphQL.parse(GraphQL::Language.escape_single_quoted_newlines(nl_query_string_1))
+    assert GraphQL.parse(GraphQL::Language.escape_single_quoted_newlines(nl_query_string_2))
+  end
+
+  it "can replace single-quoted newlines" do
+    replacements = {
+      "{ a(\"\n abc\n\") }" => '{ a("\\n abc\\n") }',
+      "{ a(\"\r\n ab\rc\n\") }" => '{ a("\\r\\n ab\\rc\\n") }',
+      "{ a(\"\n abc\n\") b(\"\n \\\"abc\n\") }" => '{ a("\\n abc\\n") b("\\n \\"abc\\n") }',
+      # No modification to block strings:
+      "{ a(\"\"\"\n abc\n\"\"\") }" => "{ a(\"\"\"\n abc\n\"\"\") }",
+      "{ a(\"\"\"\r\n abc\r\n\"\"\") }" => "{ a(\"\"\"\r\n abc\r\n\"\"\") }",
+    }
+
+    replacements.each_with_index do |(before_str, after_str), idx|
+      assert_equal after_str, GraphQL::Language.escape_single_quoted_newlines(before_str), "It works for example pair ##{idx + 1} (#{after_str})"
+    end
+  end
+
   describe "when there are no selections" do
     it 'raises a ParseError' do
       assert_raises(GraphQL::ParseError) {
@@ -49,6 +80,19 @@ describe GraphQL::Language::Parser do
       "syntax error, unexpected invalid token (\"\\xF0\"), expecting LCURLY at [1, 7]"
     else
       "Expected LCURLY, actual: UNKNOWN_CHAR (\"\\xF0\") at [1, 7]"
+    end
+
+    assert_equal expected_msg, err.message
+  end
+
+  it "handles hyphens with errors" do
+    err = assert_raises(GraphQL::ParseError) {
+      GraphQL.parse("{ field(argument:a-b) }")
+    }
+    expected_msg = if USING_C_PARSER
+      "syntax error, unexpected invalid token (\"-\") at [1, 19]"
+    else
+      "Expected NAME, actual: INT (\"-\") at [1, 19]"
     end
 
     assert_equal expected_msg, err.message
@@ -369,14 +413,39 @@ GRAPHQL
     end
   end
 
+  module ParserTrace
+    TRACES = []
+    def parse(query_string:)
+      TRACES << (trace = { key: "parse", query_string: query_string })
+      result = super
+      trace[:result] = result
+      result
+    end
+
+    def lex(query_string:)
+      TRACES << (trace = { key: "lex", query_string: query_string })
+      result = super
+      trace[:result] = result
+      result
+    end
+
+    def self.clear
+      TRACES.clear
+    end
+
+    def self.traces
+      TRACES
+    end
+  end
+
   it "serves traces" do
-    TestTracing.clear
+    ParserTrace.clear
     schema = Class.new(GraphQL::Schema) do
-      tracer(TestTracing)
+      trace_with(ParserTrace)
     end
     query = GraphQL::Query.new(schema, "{ t: __typename }")
     subject.parse("{ t: __typename }", trace: query.current_trace)
-    traces = TestTracing.traces
+    traces = ParserTrace.traces
     expected_traces = if USING_C_PARSER
       2
     else

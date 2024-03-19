@@ -105,6 +105,122 @@ describe GraphQL::Analysis::AST do
     end
   end
 
+  class AstSkipInclude < GraphQL::Analysis::AST::Analyzer
+    def initialize(query)
+      super
+      @included = []
+    end
+
+    def on_enter_field(node, parent, visitor)
+      @included << "enter #{node.name}" unless visitor.skipping?
+    end
+
+    def on_leave_field(node, parent, visitor)
+      @included << "leave #{node.name}" unless visitor.skipping?
+    end
+
+    def on_enter_inline_fragment(node, parent, visitor)
+      @included << "enter ...on #{node.type.name}" unless visitor.skipping?
+    end
+
+    def on_leave_inline_fragment(node, parent, visitor)
+      @included << "leave ...on #{node.type.name}" unless visitor.skipping?
+    end
+
+    def on_enter_fragment_spread(node, parent, visitor)
+      @included << "enter ...#{node.name}" unless visitor.skipping?
+    end
+
+    def on_leave_fragment_spread(node, parent, visitor)
+      @included << "leave ...#{node.name}" unless visitor.skipping?
+    end
+
+    def result
+      @included
+    end
+  end
+
+  describe "skip and include behaviors" do
+    let(:reduce_result) { GraphQL::Analysis::AST.analyze_query(query, [AstSkipInclude]) }
+    let(:query) { GraphQL::Query.new(Dummy::Schema, query_string) }
+    let(:query_string) {%|{}|}
+
+    describe "for fields" do
+      let(:query_string) {%|
+        {
+          cheese {
+            flavor
+            origin @skip(if: true)
+            source @include(if: false)
+          }
+          cheese @skip(if: true) { flavor }
+          cheese @include(if: false) { flavor }
+        }
+      |}
+
+      it "tracks inclusions" do
+        expected = [
+          "enter cheese",
+          "enter flavor",
+          "leave flavor",
+          "leave cheese",
+        ]
+        assert_equal expected, reduce_result.first
+      end
+    end
+
+    describe "for inline fragments" do
+      let(:query_string) {%|
+        {
+          cheese {
+            ...on Cheese @skip(if: true) { origin }
+            ...on Cheese { flavor }
+            ...on Cheese @include(if: false) { source }
+          }
+        }
+      |}
+
+      it "tracks inclusions" do
+        expected = [
+          "enter cheese",
+          "enter ...on Cheese",
+          "enter flavor",
+          "leave flavor",
+          "leave ...on Cheese",
+          "leave cheese",
+        ]
+        assert_equal expected, reduce_result.first
+      end
+    end
+
+    describe "for fragment spreads" do
+      let(:query_string) {%|
+        {
+          cheese {
+            ...Original @skip(if: true)
+            ...Flavorful
+            ...Sourced @include(if: false)
+          }
+        }
+        fragment Flavorful on Cheese { flavor }
+        fragment Original on Cheese { origin }
+        fragment Sourced on Cheese { source }
+      |}
+
+      it "tracks inclusions" do
+        expected = [
+          "enter cheese",
+          "enter ...Flavorful",
+          "enter flavor",
+          "leave flavor",
+          "leave ...Flavorful",
+          "leave cheese",
+        ]
+        assert_equal expected, reduce_result.first
+      end
+    end
+  end
+
   describe "using the AST analysis engine" do
     let(:schema) do
       query_type = Class.new(GraphQL::Schema::Object) do

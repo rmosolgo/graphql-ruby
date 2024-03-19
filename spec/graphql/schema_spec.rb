@@ -44,7 +44,6 @@ describe GraphQL::Schema do
         cursor_encoder Object.new
         context_class Class.new
         directives [DummyFeature1]
-        tracer GraphQL::Tracing::DataDogTracing
         extra_types ExtraType
         query_analyzer Object.new
         multiplex_analyzer Object.new
@@ -69,7 +68,6 @@ describe GraphQL::Schema do
       assert_equal base_schema.orphan_types, schema.orphan_types
       assert_equal base_schema.context_class, schema.context_class
       assert_equal base_schema.directives, schema.directives
-      assert_equal base_schema.tracers, schema.tracers
       assert_equal base_schema.query_analyzers, schema.query_analyzers
       assert_equal base_schema.multiplex_analyzers, schema.multiplex_analyzers
       assert_equal base_schema.disable_introspection_entry_points?, schema.disable_introspection_entry_points?
@@ -123,7 +121,6 @@ describe GraphQL::Schema do
       multiplex_analyzer = Object.new
       schema.multiplex_analyzer(multiplex_analyzer)
       schema.rescue_from(GraphQL::ExecutionError)
-      schema.tracer(GraphQL::Tracing::NewRelicTracing)
 
       assert_equal query, schema.query
       assert_equal mutation, schema.mutation
@@ -142,10 +139,6 @@ describe GraphQL::Schema do
       assert_equal base_schema.query_analyzers + [query_analyzer], schema.query_analyzers
       assert_equal base_schema.multiplex_analyzers + [multiplex_analyzer], schema.multiplex_analyzers
       assert_equal [GraphQL::Backtrace, GraphQL::Subscriptions::ActionCableSubscriptions, CustomSubscriptions], schema.plugins.map(&:first)
-      assert_equal [GraphQL::Tracing::DataDogTracing], base_schema.tracers
-      assert_includes base_schema.new_trace.class.ancestors, GraphQL::Tracing::CallLegacyTracers
-      assert_equal [GraphQL::Tracing::DataDogTracing, GraphQL::Tracing::NewRelicTracing], schema.tracers
-      assert_includes schema.new_trace.class.ancestors, GraphQL::Tracing::CallLegacyTracers
       assert_equal custom_query_class, schema.query_class
       assert_equal [ExtraType, extra_type_2], schema.extra_types
       assert_instance_of CustomSubscriptions, schema.subscriptions
@@ -237,16 +230,7 @@ To add other types to your schema, you might want `extra_types`: https://graphql
     end
   end
 
-  describe "`use` works with plugins that attach instrumentation, tracers, query analyzers" do
-    class NoOpTracer
-      def trace(_key, data)
-        if (query = data[:query])
-          query.context[:no_op_tracer_ran] = true
-        end
-        yield
-      end
-    end
-
+  describe "`use` works with plugins that attach instrumentation, trace modules, query analyzers" do
     module NoOpTrace
       def execute_query(query:)
         query.context[:no_op_trace_ran_before_query] = true
@@ -274,7 +258,6 @@ To add other types to your schema, you might want `extra_types`: https://graphql
     module PluginWithInstrumentationTracingAndAnalyzer
       def self.use(schema_defn)
         schema_defn.trace_with(NoOpTrace)
-        schema_defn.tracer NoOpTracer.new
         schema_defn.query_analyzer NoOpAnalyzer
       end
     end
@@ -301,7 +284,6 @@ To add other types to your schema, you might want `extra_types`: https://graphql
 
         assert_equal true, query.context[:no_op_trace_ran_before_query]
         assert_equal true, query.context[:no_op_trace_ran_after_query]
-        assert_equal true, query.context[:no_op_tracer_ran]
         assert_equal true, query.context[:no_op_analyzer_ran_initialize]
         assert_equal true, query.context[:no_op_analyzer_ran_on_leave_field]
         assert_equal true, query.context[:no_op_analyzer_ran_result]
@@ -328,7 +310,6 @@ To add other types to your schema, you might want `extra_types`: https://graphql
 
         assert_equal true, query.context[:no_op_trace_ran_before_query]
         assert_equal true, query.context[:no_op_trace_ran_after_query]
-        assert_equal true, query.context[:no_op_tracer_ran]
         assert_equal true, query.context[:no_op_analyzer_ran_initialize]
         assert_equal true, query.context[:no_op_analyzer_ran_on_leave_field]
         assert_equal true, query.context[:no_op_analyzer_ran_result]

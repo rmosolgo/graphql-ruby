@@ -158,6 +158,10 @@ module GraphQL
 
       def trace_class(new_class = nil)
         if new_class
+          # If any modules were already added for `:default`,
+          # re-apply them here
+          mods = trace_modules_for(:default)
+          mods.each { |mod| new_class.include(mod) }
           trace_mode(:default, new_class)
           backtrace_class = Class.new(new_class)
           backtrace_class.include(GraphQL::Backtrace::Trace)
@@ -1136,7 +1140,11 @@ module GraphQL
         }.freeze
       end
 
-      def tracer(new_tracer)
+      def tracer(new_tracer, silence_deprecation_warning: false)
+        if !silence_deprecation_warning
+          warn("`Schema.tracer(#{new_tracer.inspect})` is deprecated; use module-based `trace_with` instead. See: https://graphql-ruby.org/queries/tracing.html")
+          warn "  #{caller(1, 1).first}"
+        end
         default_trace = trace_class_for(:default, build: true)
         if default_trace.nil? || !(default_trace < GraphQL::Tracing::CallLegacyTracers)
           trace_with(GraphQL::Tracing::CallLegacyTracers)
