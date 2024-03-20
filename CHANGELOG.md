@@ -10,6 +10,23 @@
 
 ### Bug fixes
 
+# 2.3.0 (20 Mar 2024)
+
+### Breaking Changes
+
+- `orphan_types`: Only object types are accepted here; other types may be added to the schema through `extra_types` instead. #4869
+- Parser: line terminators are no longer allowed in single-quoted strings (as per the GraphQL spec). Escape newline characters instead; see `GraphQL::Language.escape_single_quoted_newline(query_str)` if you need to transform incoming query strings #4834
+
+### Deprecations
+
+- `.tracer(...)` is deprecated, use `.trace_with(...)` instead, using trace modules (https://graphql-ruby.org/queries/tracing.html) #4878
+
+### Bug fixes
+
+- Parser: handle some escaped character edge cases according to the GraphQL spec #4824
+- Analyzers: fix fragment skip/include tracking #4865
+- Remove unused Context modules #4876
+
 # 2.2.14 (18 Mar 2024)
 
 ### Bug fixes
