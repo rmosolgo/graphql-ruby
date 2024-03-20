@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.13.3 (20 Mar 2024)
+
+- Subscriptions: Support `urql` + ActionCable #4886
+
 # 1.13.2 (28 Feb 2024)
 
 - Update `glob` to v10+ to eliminate dependency on `inflight` #4859
