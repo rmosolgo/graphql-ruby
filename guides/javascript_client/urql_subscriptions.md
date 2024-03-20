@@ -8,7 +8,7 @@ desc: GraphQL subscriptions with GraphQL-Ruby and urql
 index: 4
 ---
 
-GraphQL-Ruby currently supports using `urql` with the {% internal_link "ActionCable", "/subscriptions/action_cable_implementation" %} and {% internal_link "Pusher implementation", "/subscriptions/pusher_implementation" %}. For example:
+GraphQL-Ruby currently supports using `urql` with the {% internal_link "ActionCable", "/subscriptions/action_cable_implementation" %} and {% internal_link "Pusher implementation", "/subscriptions/pusher_implementation" %}.
 
 ## Pusher
 
@@ -35,25 +35,20 @@ const client = new Client({
 
 ```js
 import { createConsumer } from "@rails/actioncable";
-import createUrqlActionCableSubscription from "graphql-ruby-client/subscriptions/createUrqlActionCableSubscription";
+import SubscriptionExchange from "graphql-ruby-client/subscriptions/SubscriptionExchange"
 
 const actionCable = createConsumer('ws://127.0.0.1:3000/cable');
-const forwardToActionCableExchange = createUrqlActionCableSubscription.create({ consumer: actionCable })
+const forwardToActionCable = SubscriptionExchange.create({ consumer: actionCable })
 
 const client = new Client({
-  url: 'http://127.0.0.1:3000/graphql',
+  url: '/graphql',
   exchanges: [
-    cacheExchange, fetchExchange, subscriptionExchange({
-      forwardSubscription: operation => forwardToActionCableExchange(operation)
-    })
-  ]
+    ...defaultExchanges,
+    subscriptionExchange({
+      forwardSubscription: forwardToActionCable
+    }),
+  ],
 });
-
-const App = () => (
-  <Provider value={client}>
-  // ... your app code here
-  </Provider>
-);
 ```
 
 Want to use `urql` with another subscription backend? Please {% open_an_issue "Using urql with ..." %}.
