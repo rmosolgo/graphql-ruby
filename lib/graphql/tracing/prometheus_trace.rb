@@ -24,7 +24,7 @@ module GraphQL
         'execute_query_lazy' => "graphql.execute",
       }.each do |trace_method, platform_key|
         module_eval <<-RUBY, __FILE__, __LINE__
-          def #{trace_method}(**data, &block)
+          def #{trace_method}(**data)
             instrument_execution("#{platform_key}", "#{trace_method}") { super }
           end
         RUBY
