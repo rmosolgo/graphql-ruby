@@ -62,21 +62,23 @@ Input objects are passed to field methods as an instance of their definition cla
 - calling `#[]` with the _camel-cased_ name of the argument (this is for compatibility with previous GraphQL-Ruby versions)
 
 ```ruby
-# This field takes an argument called `attributes`
-# which will be an instance of `PostAttributes`
-field :create_post, Types::Post, null: false do
-  argument :attributes, Types::PostAttributes
-end
+class Types::MutationType < GraphQL::Schema::Object
+  # This field takes an argument called `attributes`
+  # which will be an instance of `PostAttributes`
+  field :create_post, Types::Post, null: false do
+    argument :attributes, Types::PostAttributes
+  end
 
-def create_post(attributes:)
-  puts attributes.class.name
-  # => "Types::PostAttributes"
-  # Access a value by method (underscore-cased):
-  puts attributes.full_text
-  # => "This is my first post"
-  # Or by hash-style lookup (camel-cased, for compatibility):
-  puts attributes[:fullText]
-  # => "This is my first post"
+  def create_post(attributes:)
+    puts attributes.class.name
+    # => "Types::PostAttributes"
+    # Access a value by method (underscore-cased):
+    puts attributes.full_text
+    # => "This is my first post"
+    # Or by hash-style lookup (camel-cased, for compatibility):
+    puts attributes[:fullText]
+    # => "This is my first post"
+  end
 end
 ```
 
