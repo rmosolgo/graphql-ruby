@@ -93,3 +93,10 @@ use GraphQL::Pro::OperationStore, update_last_used_at_every: 1 # seconds
 ```
 
 To update that column inline each time an operation is accessed, pass `0`.
+
+**Note:** It is recommended to set this to `0` in test environments, to avoid delayed updates in another thread that can cause intermittent test hangs and failures. For example:
+
+```ruby
+# Update immediately in Test, wait 5 seconds in other environments:
+use GraphQL::Pro::OperationStore, update_last_used_at_every: Rails.env.test? ? 0 : 5
+```
