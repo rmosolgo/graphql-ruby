@@ -28,6 +28,10 @@ describe GraphQL::Testing::Helpers do
     end
 
     class Student < GraphQL::Schema::Object
+      def self.authorized?(object, context)
+        context.errors.empty?
+      end
+
       field :name, String do
         argument :full_name, Boolean, required: false
         argument :prefix, String, required: false, default_value: "Mc", prepare: ->(val, ctx) { -> { val.capitalize } }
