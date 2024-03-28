@@ -41,7 +41,7 @@ module GraphQL
 
       def run_graphql_field(schema, field_path, object, arguments: {}, context: {})
         type_name, *field_names = field_path.split(".")
-        dummy_query = GraphQL::Query.new(schema, context: context)
+        dummy_query = GraphQL::Query.new(schema, "{ __typename }", context: context)
         query_context = dummy_query.context
         object_type = dummy_query.get_type(type_name) # rubocop:disable Development/ContextIsPassedCop
         if object_type
