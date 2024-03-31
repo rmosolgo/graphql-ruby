@@ -281,7 +281,7 @@ mutation createPost($postParams: PostInput!, $createdById: ID!){
 
 <p><code class="language-plaintext highlighter-rouge">context</code> is shared by the whole query. Anything you add to <code class="language-plaintext highlighter-rouge">context</code> will be accessible by any other field in the query (although GraphQL-Ruby’s order of execution can vary).</p>
 
-<p>However, “scoped context” is can be used to assign values into <code class="language-plaintext highlighter-rouge">context</code> that are only available in the current field and the <em>children</em> of the current field. For example, in this query:</p>
+<p>However, “scoped context” can be used to assign values into <code class="language-plaintext highlighter-rouge">context</code> that are only available in the current field and the <em>children</em> of the current field. For example, in this query:</p>
 
 <div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
   </span><span class="n">posts</span><span class="w"> </span><span class="p">{</span><span class="w">

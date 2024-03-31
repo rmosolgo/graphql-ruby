@@ -245,6 +245,12 @@
 
 <p>To update that column inline each time an operation is accessed, pass <code class="language-plaintext highlighter-rouge">0</code>.</p>
 
+<p><strong>Note:</strong> It is recommended to set this to <code class="language-plaintext highlighter-rouge">0</code> in test environments, to avoid delayed updates in another thread that can cause intermittent test hangs and failures. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Update immediately in Test, wait 5 seconds in other environments:</span>
+<span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">OperationStore</span><span class="p">,</span> <span class="ss">update_last_used_at_every: </span><span class="no">Rails</span><span class="p">.</span><span class="nf">env</span><span class="p">.</span><span class="nf">test?</span> <span class="p">?</span> <span class="mi">0</span> <span class="p">:</span> <span class="mi">5</span>
+</code></pre></div></div>
+
 </div>
 <p class="guide-footer">
   Suggestion, improvement, or correction?

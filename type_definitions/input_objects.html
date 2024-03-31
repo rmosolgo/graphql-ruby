@@ -220,21 +220,23 @@
   <li>calling <code class="language-plaintext highlighter-rouge">#[]</code> with the <em>camel-cased</em> name of the argument (this is for compatibility with previous GraphQL-Ruby versions)</li>
 </ul>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># This field takes an argument called `attributes`</span>
-<span class="c1"># which will be an instance of `PostAttributes`</span>
-<span class="n">field</span> <span class="ss">:create_post</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
-  <span class="n">argument</span> <span class="ss">:attributes</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">PostAttributes</span>
-<span class="k">end</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::MutationType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
+  <span class="c1"># This field takes an argument called `attributes`</span>
+  <span class="c1"># which will be an instance of `PostAttributes`</span>
+  <span class="n">field</span> <span class="ss">:create_post</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">Post</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
+    <span class="n">argument</span> <span class="ss">:attributes</span><span class="p">,</span> <span class="no">Types</span><span class="o">::</span><span class="no">PostAttributes</span>
+  <span class="k">end</span>
 
-<span class="k">def</span> <span class="nf">create_post</span><span class="p">(</span><span class="n">attributes</span><span class="p">:)</span>
-  <span class="nb">puts</span> <span class="n">attributes</span><span class="p">.</span><span class="nf">class</span><span class="p">.</span><span class="nf">name</span>
-  <span class="c1"># =&gt; "Types::PostAttributes"</span>
-  <span class="c1"># Access a value by method (underscore-cased):</span>
-  <span class="nb">puts</span> <span class="n">attributes</span><span class="p">.</span><span class="nf">full_text</span>
-  <span class="c1"># =&gt; "This is my first post"</span>
-  <span class="c1"># Or by hash-style lookup (camel-cased, for compatibility):</span>
-  <span class="nb">puts</span> <span class="n">attributes</span><span class="p">[</span><span class="ss">:fullText</span><span class="p">]</span>
-  <span class="c1"># =&gt; "This is my first post"</span>
+  <span class="k">def</span> <span class="nf">create_post</span><span class="p">(</span><span class="n">attributes</span><span class="p">:)</span>
+    <span class="nb">puts</span> <span class="n">attributes</span><span class="p">.</span><span class="nf">class</span><span class="p">.</span><span class="nf">name</span>
+    <span class="c1"># =&gt; "Types::PostAttributes"</span>
+    <span class="c1"># Access a value by method (underscore-cased):</span>
+    <span class="nb">puts</span> <span class="n">attributes</span><span class="p">.</span><span class="nf">full_text</span>
+    <span class="c1"># =&gt; "This is my first post"</span>
+    <span class="c1"># Or by hash-style lookup (camel-cased, for compatibility):</span>
+    <span class="nb">puts</span> <span class="n">attributes</span><span class="p">[</span><span class="ss">:fullText</span><span class="p">]</span>
+    <span class="c1"># =&gt; "This is my first post"</span>
+  <span class="k">end</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
