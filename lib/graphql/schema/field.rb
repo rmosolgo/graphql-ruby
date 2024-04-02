@@ -228,6 +228,9 @@ module GraphQL
             raise ArgumentError, "missing second `type` argument or keyword `type:`"
           end
         end
+
+        name = -name if name.is_a?(String)
+
         @original_name = name
         name_s = -name.to_s
 

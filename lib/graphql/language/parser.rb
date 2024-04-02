@@ -608,7 +608,7 @@ module GraphQL
       end
 
       def parse_type_name
-        TypeName.new(pos: pos, name: parse_name, filename: @filename, source_string: @graphql_str)
+        TypeName.new(pos: pos, name: -parse_name, filename: @filename, source_string: @graphql_str)
       end
 
       def parse_directives
