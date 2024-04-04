@@ -293,8 +293,9 @@ void emit(TokenType tt, char *ts, char *te, Meta *meta) {
       token_content = rb_utf8_str_new(ts + quotes_length, (te - ts - (2 * quotes_length)));
       line_incr = FIX2INT(rb_funcall(token_content, rb_intern("count"), 1, rb_utf8_str_new_cstr("\n")));
       break;
+    // These are used only by the parser, this is never reached
     case STRING:
-      // This is used only by the parser, this is never reached
+    case BAD_UNICODE_ESCAPE:
       break;
   }
 
