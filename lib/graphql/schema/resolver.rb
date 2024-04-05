@@ -103,17 +103,22 @@ module GraphQL
                   end
                 elsif authorized_val
                   # Finally, all the hooks have passed, so resolve it
-                  if loaded_args.any?
-                    public_send(self.class.resolve_method, **loaded_args)
-                  else
-                    public_send(self.class.resolve_method)
-                  end
+                  call_resolve(loaded_args)
                 else
                   raise GraphQL::UnauthorizedFieldError.new(context: context, object: object, type: field.owner, field: field)
                 end
               end
             end
           end
+        end
+      end
+
+      # @api private {GraphQL::Schema::Mutation} uses this to clear the dataloader cache
+      def call_resolve(args_hash)
+        if args_hash.any?
+          public_send(self.class.resolve_method, **args_hash)
+        else
+          public_send(self.class.resolve_method)
         end
       end
 
