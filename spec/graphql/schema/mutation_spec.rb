@@ -258,4 +258,75 @@ describe GraphQL::Schema::Mutation do
     res = schema.execute("mutation { child(thingName: \"abc\", thingId: \"123\") { inputs } }")
     assert_equal "{:thing_id=>\"123\", :thing_name=>\"abc\"}", res["data"]["child"]["inputs"]
   end
+
+  describe "flushing dataloader cache" do
+    class MutationDataloaderCacheSchema < GraphQL::Schema
+      module Database
+        DATA = {}
+        def self.get(id)
+          value = DATA[id] ||= 0
+          OpenStruct.new(id: id, value: value)
+        end
+
+        def self.increment(id)
+          DATA[id] ||= 0
+          DATA[id] += 1
+        end
+
+        def self.clear
+          DATA.clear
+        end
+      end
+
+      class CounterSource < GraphQL::Dataloader::Source
+        def fetch(ids)
+          ids.map { |id| Database.get(id) }
+        end
+      end
+      class CounterType < GraphQL::Schema::Object
+        def self.authorized?(obj, ctx)
+          # Just force the load here, too:
+          ctx.dataloader.with(CounterSource).load(obj.id)
+          true
+        end
+        field :value, Integer
+      end
+      class Increment < GraphQL::Schema::Mutation
+        field :counter, CounterType
+        argument :counter_id, ID, loads: CounterType
+
+        def resolve(counter:)
+          Database.increment(counter.id)
+          {
+            counter: dataloader.with(CounterSource).load(counter.id)
+          }
+        end
+      end
+
+      class Mutation < GraphQL::Schema::Object
+        field :increment, mutation: Increment
+      end
+
+      mutation(Mutation)
+
+      def self.object_from_id(id, ctx)
+        ctx.dataloader.with(CounterSource).load(id)
+      end
+
+      def self.resolve_type(abs_type, obj, ctx)
+        CounterType
+      end
+
+      use GraphQL::Dataloader
+    end
+
+    it "clears the cache after authorized and loads" do
+      MutationDataloaderCacheSchema::Database.clear
+      res = MutationDataloaderCacheSchema.execute("mutation { increment(counterId: \"4\") { counter { value } } }")
+      assert_equal 1, res["data"]["increment"]["counter"]["value"]
+
+      res2 = MutationDataloaderCacheSchema.execute("mutation { increment(counterId: \"4\") { counter { value } } }")
+      assert_equal 2, res2["data"]["increment"]["counter"]["value"]
+    end
+  end
 end
