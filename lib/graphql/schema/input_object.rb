@@ -215,8 +215,7 @@ module GraphQL
             if resolved_arguments.is_a?(GraphQL::Error)
               raise resolved_arguments
             else
-              input_obj_instance = self.new(resolved_arguments, ruby_kwargs: resolved_arguments.keyword_arguments, context: ctx, defaults_used: nil)
-              input_obj_instance.prepare
+              self.new(resolved_arguments, ruby_kwargs: resolved_arguments.keyword_arguments, context: ctx, defaults_used: nil)
             end
           end
         end

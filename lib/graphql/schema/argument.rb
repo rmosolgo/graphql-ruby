@@ -290,6 +290,7 @@ module GraphQL
             # TODO code smell to access such a deeply-nested constant in a distant module
             argument_values[arg_key] = GraphQL::Execution::Interpreter::ArgumentValue.new(
               value: resolved_loaded_value,
+              original_value: resolved_coerced_value,
               definition: self,
               default_used: default_used,
             )

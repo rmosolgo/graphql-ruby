@@ -353,6 +353,17 @@ describe GraphQL::Schema::InputObject do
         end
       end
 
+      class OnlyOnePrepareInputObject < GraphQL::Schema::InputObject
+        argument :i, Int
+
+        attr_reader :prepared_count
+        def prepare
+          @prepared_count ||= 0
+          @prepared_count += 1
+          super
+        end
+      end
+
       class SmallIntegerArgument < GraphQL::Schema::Argument
         def authorized?(obj, val, ctx)
           if val > 100
@@ -388,6 +399,14 @@ describe GraphQL::Schema::InputObject do
         end
 
         field :hash_input, resolver: HashInputResolver
+
+        field :prepare_once, Int do
+          argument :input, OnlyOnePrepareInputObject
+        end
+
+        def prepare_once(input:)
+          input.prepared_count
+        end
       end
 
       class Schema < GraphQL::Schema
@@ -402,6 +421,11 @@ describe GraphQL::Schema::InputObject do
 
       res = InputObjectPrepareObjectTest::Schema.execute(query_str)
       assert_equal "5..10", res["data"]["inputs"]
+    end
+
+    it "only prepares once" do
+      res = InputObjectPrepareObjectTest::Schema.execute("{ prepareOnce( input: { i: 1 } ) }")
+      assert_equal 1, res["data"]["prepareOnce"]
     end
 
     it "calls prepare on the input object (variable)" do

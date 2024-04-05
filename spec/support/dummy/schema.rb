@@ -265,6 +265,18 @@ module Dummy
     argument :old_source, String, required: false, deprecation_reason: "No longer supported"
   end
 
+  class PreparedDateInput < BaseInputObject
+    description "Input with prepared value"
+    argument :date, String, description: "date as a string", required: false
+    argument :deprecated_date, String, description: "date as a string", required: false, deprecation_reason: "Use date"
+
+    def prepare
+      return nil unless date || deprecated_date
+
+      Date.parse(date || deprecated_date)
+    end
+  end
+
   class DeepNonNull < BaseObject
     field :non_null_int, Integer, null: false do
       argument :returning, Integer, required: false
@@ -492,6 +504,7 @@ module Dummy
     field :push_value, [Integer], null: false, description: "Push a value onto a global array :D" do
       argument :value, Integer, as: :val
       argument :deprecated_test_input, DairyProductInput, required: false
+      argument :prepared_test_input, PreparedDateInput, required: false
     end
     def push_value(val:)
       GLOBAL_VALUES << val
