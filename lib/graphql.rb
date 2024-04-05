@@ -4,6 +4,7 @@ require "json"
 require "set"
 require "singleton"
 require "forwardable"
+require "ostruct"
 
 module GraphQL
   # forwards-compat for argument handling
