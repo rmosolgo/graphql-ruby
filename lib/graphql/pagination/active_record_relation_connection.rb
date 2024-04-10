@@ -84,6 +84,7 @@ module GraphQL
              @has_next_page = true
              overshot_nodes[0...-1]
            else
+             # we didn't overshoot and there are no next pages
              @has_next_page = false
              overshot_nodes
            end
