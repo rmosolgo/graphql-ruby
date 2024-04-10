@@ -24,7 +24,7 @@ query GetPlayerInfo($handle: String!){
 
 The directives `@skip` and `@include` are built into any GraphQL server and client, but `@defer` requires special attention.
 
-Apollo-Client [currently supports the @defer directive]([https://www.apollographql.com/docs/react/features/defer-support.html](https://www.apollographql.com/docs/react/data/defer/).
+Apollo-Client [currently supports the @defer directive](https://www.apollographql.com/docs/react/data/defer/).
 
 `@defer` also accepts a `label:` option which will be included in outgoing patches when it's present in the query (eg, `@defer(label: "patch1")`).
 
