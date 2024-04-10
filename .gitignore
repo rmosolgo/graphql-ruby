@@ -7,6 +7,8 @@ Gemfile.lock
 gemfiles/*.lock
 # Test database
 *.db
+*.db-shm
+*.db-wal
 .bundle/
 vendor/
 .idea/
