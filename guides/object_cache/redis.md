@@ -44,3 +44,13 @@ maxmemory-policy allkeys-lfu
 ```
 
 Additionally, consider conditionally skipping the cache to prioritize your most critical GraphQL traffic.
+
+## Redis Cluster
+
+`ObjectCache` also supports Redis Cluster. To use, pass `redis_cluster:`:
+
+```ruby
+use GraphQL::Enterprise::ObjectCache, redis_cluster: Redis::Cluster.new(...)
+```
+
+Under the hood, it uses query fingerprints as [hash tags](https://redis.io/docs/latest/operate/oss_and_stack/reference/cluster-spec/#hash-tags) and each cached result has its own set of object metadata.
