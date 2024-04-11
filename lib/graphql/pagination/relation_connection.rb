@@ -32,7 +32,7 @@ module GraphQL
           @has_next_page = if before_offset && before_offset > 0
             true
           elsif first
-            if @nodes && @nodes.count < first
+            if @nodes && relation_count(@nodes) < first
               false
             else
               relation_larger_than(sliced_nodes, @sliced_nodes_offset, first)
