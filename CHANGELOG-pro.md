@@ -6,6 +6,10 @@
 
 ### New Features
 
+# 1.27.0 (11 April 2024)
+
+- RelationConnection: support Arel's `NullsFirst` and `NullsLast` nodes #4910
+
 # 1.26.5 (1 Mar 2024)
 
 - OperationStore::AddOperationBatch: remove rescue for StatementInvalid inside transaction
