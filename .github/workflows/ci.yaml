@@ -44,7 +44,6 @@ jobs:
         include:
           - gemfile: Gemfile
             ruby: 3.2
-          # Rails 6.1 is tested with Postgresql below
           - gemfile: gemfiles/rails_7.0.gemfile
             ruby: 3.1
           - gemfile: gemfiles/rails_master.gemfile
@@ -93,7 +92,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-    - run: echo BUNDLE_GEMFILE='gemfiles/rails_6.1_postgresql.gemfile' > $GITHUB_ENV
+    - run: echo BUNDLE_GEMFILE='gemfiles/rails_7.1_postgresql.gemfile' > $GITHUB_ENV
     - run: echo DATABASE='POSTGRESQL' > $GITHUB_ENV
     - run: echo PGPASSWORD='postgres' > $GITHUB_ENV
     - run: echo GRAPHQL_CPARSER=1 > $GITHUB_ENV
