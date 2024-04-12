@@ -11,5 +11,6 @@ gem "pg", platform: :ruby
 gem "sequel"
 gem "evt"
 gem "async"
+gem "libev_scheduler"
 
 gemspec path: "../"
