@@ -488,7 +488,7 @@ module GraphQLBenchmark
   end
 
   def self.profile_from_definition
-    require "graphql/c_parser"
+    # require "graphql/c_parser"
     schema_str = SILLY_LARGE_SCHEMA.to_definition
 
     Benchmark.ips do |x|

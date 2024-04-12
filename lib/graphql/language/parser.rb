@@ -35,6 +35,7 @@ module GraphQL
         @graphql_str = graphql_str
         @filename = filename
         @trace = trace
+        @dedup_identifiers = false
       end
 
       def parse
@@ -732,6 +733,9 @@ module GraphQL
       # Only use when we care about the expected token's value
       def expect_token_value(tok)
         token_value = @lexer.token_value
+        if @dedup_identifiers
+          token_value = -token_value
+        end
         expect_token(tok)
         token_value
       end
@@ -740,6 +744,12 @@ module GraphQL
       # which is usually fine and it's good for it to be fast at that.
       def debug_token_value
         @lexer.debug_token_value(token_name)
+      end
+      class SchemaParser < Parser
+        def initialize(*args, **kwargs)
+          super
+          @dedup_identifiers = true
+        end
       end
     end
   end
