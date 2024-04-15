@@ -17,7 +17,7 @@ describe GraphQL::Schema::InputObject do
   describe "type info" do
     it "has it" do
       assert_equal "EnsembleInput", input_object.graphql_name
-      assert_equal nil, input_object.description
+      assert_nil input_object.description
       assert_equal 1, input_object.arguments.size
     end
 

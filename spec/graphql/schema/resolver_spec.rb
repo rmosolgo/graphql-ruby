@@ -935,21 +935,21 @@ describe GraphQL::Schema::Resolver do
       it "preserves `nil` when nullable argument is provided `null`" do
         res = exec_query("mutation { mutationWithNullableLoadsArgument(labelId: null) { inputs } }")
 
-        assert_equal nil, res["errors"]
+        assert_nil res["errors"]
         assert_equal '{"label":null}', res["data"]["mutationWithNullableLoadsArgument"]["inputs"]
       end
 
       it "preserves `nil` when nullable list argument is provided `null`" do
         res = exec_query("mutation { mutationWithNullableLoadsArgument(labelIds: null) { inputs } }")
 
-        assert_equal nil, res["errors"]
+        assert_nil res["errors"]
         assert_equal '{"labels":null}', res["data"]["mutationWithNullableLoadsArgument"]["inputs"]
       end
 
       it "omits omitted nullable argument" do
         res = exec_query("mutation { mutationWithNullableLoadsArgument { inputs } }")
 
-        assert_equal nil, res["errors"]
+        assert_nil res["errors"]
         assert_equal "{}", res["data"]["mutationWithNullableLoadsArgument"]["inputs"]
       end
 
