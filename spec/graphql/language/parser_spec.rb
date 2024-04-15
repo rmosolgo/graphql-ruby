@@ -30,6 +30,38 @@ describe GraphQL::Language::Parser do
 
     assert GraphQL.parse(GraphQL::Language.escape_single_quoted_newlines(nl_query_string_1))
     assert GraphQL.parse(GraphQL::Language.escape_single_quoted_newlines(nl_query_string_2))
+
+    example_query_str = "mutation {
+createRecord(data: {
+  dynamicFields: { string_test: \"avenue 1st
+2nd line\"}
+})
+  { id, dynamicFields }
+}"
+    assert_raises GraphQL::ParseError do
+      GraphQL.parse(example_query_str)
+    end
+
+    escaped_query_str = GraphQL::Language.escape_single_quoted_newlines(example_query_str)
+
+    expected_escaped_query_str = "mutation {
+createRecord(data: {
+  dynamicFields: { string_test: \"avenue 1st\\n2nd line\"}
+})
+  { id, dynamicFields }
+}"
+    assert_equal expected_escaped_query_str, escaped_query_str
+    assert GraphQL.parse(escaped_query_str )
+  end
+
+  it "parses single-quoted strings with escaped newlines" do
+    example_query_str = 'mutation {
+createRecord(data: {
+  dynamicFields: { string_test: "avenue 1st\n2nd line"}
+})
+  { id, dynamicFields }
+}'
+    assert GraphQL.parse(example_query_str)
   end
 
   it "can replace single-quoted newlines" do
