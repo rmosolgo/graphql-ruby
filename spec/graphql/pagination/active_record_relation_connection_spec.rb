@@ -159,7 +159,10 @@ if testing_rails?
       assert_equal ["Item"] * 10, results["data"]["items"]["nodes"].map { |i| i["__typename"] }
       assert_equal 1, log.split("\n").size, "It runs only one query when less than total count is requested"
       assert_equal 0, log.scan("COUNT(").size, "It runs no count query"
+    end
 
+    it "runs one query for both `nodes` and `hasNextPage` if nodes happen to be selected first" do
+      results = nil
       log = with_active_record_log do
         results = schema.execute("{
           items(first: 3) {
@@ -175,6 +178,24 @@ if testing_rails?
       assert_equal ["Item", "Item", "Item"], results["data"]["items"]["nodes"].map { |i| i["__typename"] }
       assert_equal 1, log.split("\n").size, "It runs only one query"
       assert_equal 0, log.scan("COUNT(").size, "It runs no count query"
+    end
+
+    it "runs two queries for `nodes` and `hasNextPage` if hasNextPage is selected first"
+      log = with_active_record_log do
+        results = schema.execute("{
+          items(first: 3) {
+            pageInfo {
+              hasNextPage
+            }
+            nodes {
+              __typename
+            }
+          }
+        }")
+      end
+      assert_equal ["Item", "Item", "Item"], results["data"]["items"]["nodes"].map { |i| i["__typename"] }
+      assert_equal 2, log.split("\n").size, "It runs two queries"
+      assert_equal 1, log.scan("COUNT(").size, "It runs one count query"
     end
 
     describe "already-loaded ActiveRecord relations" do

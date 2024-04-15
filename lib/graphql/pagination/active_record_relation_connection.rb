@@ -72,27 +72,6 @@ module GraphQL
       def already_loaded?(relation)
         relation.is_a?(Array) || relation.loaded?
       end
-
-      # Override to fetch one extra record to infer has_next_page,
-      # avoiding a potential expensive select in the future.
-      def load_nodes
-        @nodes ||= begin
-         original_node_limit = relation_limit(limited_nodes)
-         if original_node_limit
-           overshot_nodes = set_limit(limited_nodes, original_node_limit + 1).to_a
-           if overshot_nodes.size > original_node_limit
-             @has_next_page = true
-             overshot_nodes[0...-1]
-           else
-             # we didn't overshoot and there are no next pages
-             @has_next_page = false
-             overshot_nodes
-           end
-         else
-           limited_nodes.to_a
-         end
-       end
-      end
     end
   end
 end
