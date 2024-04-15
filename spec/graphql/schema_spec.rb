@@ -47,6 +47,7 @@ describe GraphQL::Schema do
         extra_types ExtraType
         query_analyzer Object.new
         multiplex_analyzer Object.new
+        validate_timeout 100
         rescue_from(StandardError) { }
         use GraphQL::Backtrace
         use GraphQL::Subscriptions::ActionCableSubscriptions, action_cable: nil, action_cable_coder: JSON

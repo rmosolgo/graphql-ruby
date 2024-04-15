@@ -230,7 +230,11 @@ describe GraphQL::Query::Variables do
 
       def assert_has_key_with_value(hash, key, has_key, value)
         assert_equal(has_key, hash.key?(key))
-        assert_equal(value, hash[key])
+        if value.nil?
+          assert_nil hash[key]
+        else
+          assert_equal(value, hash[key])
+        end
       end
 
       it "preserves explicit null" do
