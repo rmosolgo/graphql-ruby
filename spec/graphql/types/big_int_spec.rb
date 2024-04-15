@@ -18,12 +18,12 @@ describe GraphQL::Types::BigInt do
   end
 
   it "returns `nil` for invalid inputs" do
-    assert_equal nil, GraphQL::Types::BigInt.coerce_input("xyz", nil)
-    assert_equal nil, GraphQL::Types::BigInt.coerce_input("2.2", nil)
+    assert_nil GraphQL::Types::BigInt.coerce_input("xyz", nil)
+    assert_nil GraphQL::Types::BigInt.coerce_input("2.2", nil)
   end
 
   it 'returns `nil` for nil' do
-    assert_equal nil, GraphQL::Types::BigInt.coerce_input(nil, nil)
+    assert_nil GraphQL::Types::BigInt.coerce_input(nil, nil)
   end
 
   it 'parses integers with base 10' do
