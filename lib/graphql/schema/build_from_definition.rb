@@ -7,10 +7,16 @@ module GraphQL
       class << self
         # @see {Schema.from_definition}
         def from_definition(schema_superclass, definition_string, parser: GraphQL.default_parser, **kwargs)
+          if defined?(parser::SchemaParser)
+            parser = parser::SchemaParser
+          end
           from_document(schema_superclass, parser.parse(definition_string), **kwargs)
         end
 
         def from_definition_path(schema_superclass, definition_path, parser: GraphQL.default_parser, **kwargs)
+          if defined?(parser::SchemaParser)
+            parser = parser::SchemaParser
+          end
           from_document(schema_superclass, parser.parse_file(definition_path), **kwargs)
         end
 

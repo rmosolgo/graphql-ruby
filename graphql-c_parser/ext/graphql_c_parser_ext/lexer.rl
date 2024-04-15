@@ -104,6 +104,7 @@
 %% write data;
 
 #include <ruby.h>
+#include <ruby/encoding.h>
 
 #define INIT_STATIC_TOKEN_VARIABLE(token_name) \
   static VALUE GraphQLTokenString##token_name;
@@ -194,6 +195,7 @@ typedef struct Meta {
   char *pe;
   VALUE tokens;
   VALUE previous_token;
+  int dedup_identifiers;
 } Meta;
 
 #define STATIC_VALUE_TOKEN(token_type, content_str) \
@@ -261,7 +263,14 @@ void emit(TokenType tt, char *ts, char *te, Meta *meta) {
       token_sym = ID2SYM(rb_intern("NULL"));
       token_content = GraphQL_null_str;
       break;
-    DYNAMIC_VALUE_TOKEN(IDENTIFIER)
+    case IDENTIFIER:
+      token_sym = ID2SYM(rb_intern("IDENTIFIER"));
+      if (meta->dedup_identifiers) {
+        token_content = rb_enc_interned_str(ts, te - ts, rb_utf8_encoding());
+      } else {
+        token_content = rb_utf8_str_new(ts, te - ts);
+      }
+      break;
     DYNAMIC_VALUE_TOKEN(INT)
     DYNAMIC_VALUE_TOKEN(FLOAT)
     DYNAMIC_VALUE_TOKEN(COMMENT)
@@ -284,8 +293,9 @@ void emit(TokenType tt, char *ts, char *te, Meta *meta) {
       token_content = rb_utf8_str_new(ts + quotes_length, (te - ts - (2 * quotes_length)));
       line_incr = FIX2INT(rb_funcall(token_content, rb_intern("count"), 1, rb_utf8_str_new_cstr("\n")));
       break;
+    // These are used only by the parser, this is never reached
     case STRING:
-      // This is used only by the parser, this is never reached
+    case BAD_UNICODE_ESCAPE:
       break;
   }
 
@@ -337,7 +347,7 @@ void emit(TokenType tt, char *ts, char *te, Meta *meta) {
   meta->line += line_incr;
 }
 
-VALUE tokenize(VALUE query_rbstr) {
+VALUE tokenize(VALUE query_rbstr, int fstring_identifiers) {
   int cs = 0;
   int act = 0;
   char *p = StringValueCStr(query_rbstr);
@@ -346,7 +356,7 @@ VALUE tokenize(VALUE query_rbstr) {
   char *ts = 0;
   char *te = 0;
   VALUE tokens = rb_ary_new();
-  struct Meta meta_s = {1, 1, p, pe, tokens, Qnil};
+  struct Meta meta_s = {1, 1, p, pe, tokens, Qnil, fstring_identifiers};
   Meta *meta = &meta_s;
 
   %% write init;

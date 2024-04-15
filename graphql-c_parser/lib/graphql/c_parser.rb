@@ -7,13 +7,16 @@ require "graphql/graphql_c_parser_ext"
 module GraphQL
   module CParser
     def self.parse(query_str, filename: nil, trace: GraphQL::Tracing::NullTrace)
-      parser = Parser.new(query_str, filename, trace)
-      parser.result
+      Parser.parse(query_str, filename: filename, trace: trace)
     end
 
     def self.parse_file(filename)
       contents = File.read(filename)
       parse(contents, filename: filename)
+    end
+
+    def self.tokenize_with_c(str)
+      tokenize_with_c_internal(str, false)
     end
 
     def self.prepare_parse_error(message, parser)
@@ -54,7 +57,7 @@ module GraphQL
     end
 
     module Lexer
-      def self.tokenize(graphql_string)
+      def self.tokenize(graphql_string, intern_identifiers: false)
         if !(graphql_string.encoding == Encoding::UTF_8 || graphql_string.ascii_only?)
           graphql_string = graphql_string.dup.force_encoding(Encoding::UTF_8)
         end
@@ -70,11 +73,20 @@ module GraphQL
             ]
           ]
         end
-        tokenize_with_c(graphql_string)
+        tokenize_with_c_internal(graphql_string, intern_identifiers)
       end
     end
 
     class Parser
+      def self.parse(query_str, filename: nil, trace: GraphQL::Tracing::NullTrace)
+        self.new(query_str, filename, trace).result
+      end
+
+      def self.parse_file(filename)
+        contents = File.read(filename)
+        parse(contents, filename: filename)
+      end
+
       def initialize(query_string, filename, trace)
         if query_string.nil?
           raise GraphQL::ParseError.new("No query string was present", nil, nil, query_string)
@@ -85,12 +97,13 @@ module GraphQL
         @next_token_index = 0
         @result = nil
         @trace = trace
+        @intern_identifiers = false
       end
 
       def result
         if @result.nil?
           @tokens = @trace.lex(query_string: @query_string) do
-            GraphQL::CParser::Lexer.tokenize(@query_string)
+            GraphQL::CParser::Lexer.tokenize(@query_string, intern_identifiers: @intern_identifiers)
           end
           @trace.parse(query_string: @query_string) do
             c_parse
@@ -101,6 +114,13 @@ module GraphQL
       end
 
       attr_reader :tokens, :next_token_index, :query_string, :filename
+    end
+
+    class SchemaParser < Parser
+      def initialize(*args)
+        super
+        @intern_identifiers = true
+      end
     end
   end
 
