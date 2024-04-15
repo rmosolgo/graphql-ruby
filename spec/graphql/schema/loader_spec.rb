@@ -154,74 +154,81 @@ describe GraphQL::Schema::Loader do
   }
 
   describe "load" do
+    def assert_equal_or_nil(expected_value, actual_value)
+      if expected_value.nil?
+        assert_nil actual_value
+      else
+        assert_equal expected_value, actual_value
+      end
+    end
     def assert_deep_equal(expected_type, actual_type)
       if actual_type.is_a?(Array)
         actual_type.each_with_index do |obj, index|
           assert_deep_equal expected_type[index], obj
         end
       elsif actual_type.is_a?(GraphQL::Schema::Field)
-        assert_equal expected_type.graphql_name, actual_type.graphql_name
-        assert_equal expected_type.description, actual_type.description
-        assert_equal expected_type.deprecation_reason, actual_type.deprecation_reason
-        assert_equal expected_type.arguments.keys.sort, actual_type.arguments.keys.sort
+        assert_equal_or_nil expected_type.graphql_name, actual_type.graphql_name
+        assert_equal_or_nil expected_type.description, actual_type.description
+        assert_equal_or_nil expected_type.deprecation_reason, actual_type.deprecation_reason
+        assert_equal_or_nil expected_type.arguments.keys.sort, actual_type.arguments.keys.sort
         assert_deep_equal expected_type.arguments.values.sort_by(&:graphql_name), actual_type.arguments.values.sort_by(&:graphql_name)
       elsif actual_type.is_a?(GraphQL::Schema::EnumValue)
-        assert_equal expected_type.graphql_name, actual_type.graphql_name
-        assert_equal expected_type.description, actual_type.description
-        assert_equal expected_type.deprecation_reason, actual_type.deprecation_reason
+        assert_equal_or_nil expected_type.graphql_name, actual_type.graphql_name
+        assert_equal_or_nil expected_type.description, actual_type.description
+        assert_equal_or_nil expected_type.deprecation_reason, actual_type.deprecation_reason
       elsif actual_type.is_a?(GraphQL::Schema::Argument)
-        assert_equal expected_type.graphql_name, actual_type.graphql_name
-        assert_equal expected_type.description, actual_type.description
-        assert_equal expected_type.deprecation_reason, actual_type.deprecation_reason
+        assert_equal_or_nil expected_type.graphql_name, actual_type.graphql_name
+        assert_equal_or_nil expected_type.description, actual_type.description
+        assert_equal_or_nil expected_type.deprecation_reason, actual_type.deprecation_reason
         assert_deep_equal expected_type.type, actual_type.type
       elsif actual_type.is_a?(GraphQL::Schema::NonNull) || actual_type.is_a?(GraphQL::Schema::List)
-        assert_equal expected_type.class, actual_type.class
+        assert_equal_or_nil expected_type.class, actual_type.class
         assert_deep_equal expected_type.of_type, actual_type.of_type
       elsif actual_type < GraphQL::Schema
-        assert_equal expected_type.query.graphql_name, actual_type.query.graphql_name
-        assert_equal expected_type.mutation.graphql_name, actual_type.mutation.graphql_name
-        assert_equal expected_type.directives.keys.sort, actual_type.directives.keys.sort
+        assert_equal_or_nil expected_type.query.graphql_name, actual_type.query.graphql_name
+        assert_equal_or_nil expected_type.mutation.graphql_name, actual_type.mutation.graphql_name
+        assert_equal_or_nil expected_type.directives.keys.sort, actual_type.directives.keys.sort
         assert_deep_equal expected_type.directives.values.sort_by(&:graphql_name), actual_type.directives.values.sort_by(&:graphql_name)
-        assert_equal expected_type.types.keys.sort, actual_type.types.keys.sort
+        assert_equal_or_nil expected_type.types.keys.sort, actual_type.types.keys.sort
         assert_deep_equal expected_type.types.values.sort_by(&:graphql_name), actual_type.types.values.sort_by(&:graphql_name)
-        assert_equal expected_type.description, actual_type.description
+        assert_equal_or_nil expected_type.description, actual_type.description
       elsif actual_type < GraphQL::Schema::Object
-        assert_equal expected_type.graphql_name, actual_type.graphql_name
-        assert_equal expected_type.description, actual_type.description
-        assert_equal expected_type.interfaces.map(&:graphql_name).sort, actual_type.interfaces.map(&:graphql_name).sort
+        assert_equal_or_nil expected_type.graphql_name, actual_type.graphql_name
+        assert_equal_or_nil expected_type.description, actual_type.description
+        assert_equal_or_nil expected_type.interfaces.map(&:graphql_name).sort, actual_type.interfaces.map(&:graphql_name).sort
         assert_deep_equal expected_type.interfaces.sort_by(&:graphql_name), actual_type.interfaces.sort_by(&:graphql_name)
-        assert_equal expected_type.fields.keys.sort, actual_type.fields.keys.sort
+        assert_equal_or_nil expected_type.fields.keys.sort, actual_type.fields.keys.sort
         assert_deep_equal expected_type.fields.values.sort_by(&:graphql_name), actual_type.fields.values.sort_by(&:graphql_name)
       elsif actual_type < GraphQL::Schema::Interface
-        assert_equal expected_type.graphql_name, actual_type.graphql_name
-        assert_equal expected_type.description, actual_type.description
-        assert_equal expected_type.fields.keys.sort, actual_type.fields.keys.sort
+        assert_equal_or_nil expected_type.graphql_name, actual_type.graphql_name
+        assert_equal_or_nil expected_type.description, actual_type.description
+        assert_equal_or_nil expected_type.fields.keys.sort, actual_type.fields.keys.sort
         assert_deep_equal expected_type.fields.values.sort_by(&:graphql_name), actual_type.fields.values.sort_by(&:graphql_name)
       elsif actual_type < GraphQL::Schema::Union
-        assert_equal expected_type.graphql_name, actual_type.graphql_name
-        assert_equal expected_type.description, actual_type.description
-        assert_equal expected_type.possible_types.map(&:graphql_name).sort, actual_type.possible_types.map(&:graphql_name).sort
+        assert_equal_or_nil expected_type.graphql_name, actual_type.graphql_name
+        assert_equal_or_nil expected_type.description, actual_type.description
+        assert_equal_or_nil expected_type.possible_types.map(&:graphql_name).sort, actual_type.possible_types.map(&:graphql_name).sort
         assert_deep_equal expected_type.possible_types.sort_by(&:graphql_name), actual_type.possible_types.sort_by(&:graphql_name)
       elsif actual_type < GraphQL::Schema::Scalar
-        assert_equal expected_type.graphql_name, actual_type.graphql_name
-        assert_equal expected_type.specified_by_url, actual_type.specified_by_url
+        assert_equal_or_nil expected_type.graphql_name, actual_type.graphql_name
+        assert_equal_or_nil expected_type.specified_by_url, actual_type.specified_by_url
       elsif actual_type < GraphQL::Schema::Enum
-        assert_equal expected_type.graphql_name, actual_type.graphql_name
-        assert_equal expected_type.description, actual_type.description
+        assert_equal_or_nil expected_type.graphql_name, actual_type.graphql_name
+        assert_equal_or_nil expected_type.description, actual_type.description
         assert_deep_equal expected_type.values.values.sort_by(&:graphql_name), actual_type.values.values.sort_by(&:graphql_name)
       elsif actual_type < GraphQL::Schema::InputObject
-        assert_equal expected_type.graphql_name, actual_type.graphql_name
-        assert_equal expected_type.arguments.keys.sort, actual_type.arguments.keys.sort
+        assert_equal_or_nil expected_type.graphql_name, actual_type.graphql_name
+        assert_equal_or_nil expected_type.arguments.keys.sort, actual_type.arguments.keys.sort
         assert_deep_equal expected_type.arguments.values.sort_by(&:graphql_name), actual_type.arguments.values.sort_by(&:graphql_name)
       elsif actual_type < GraphQL::Schema::Directive
-        assert_equal expected_type.graphql_name, actual_type.graphql_name
-        assert_equal expected_type.description, actual_type.description
-        assert_equal expected_type.repeatable?, actual_type.repeatable?
-        assert_equal expected_type.locations.sort, actual_type.locations.sort
-        assert_equal expected_type.arguments.keys.sort, actual_type.arguments.keys.sort
+        assert_equal_or_nil expected_type.graphql_name, actual_type.graphql_name
+        assert_equal_or_nil expected_type.description, actual_type.description
+        assert_equal_or_nil expected_type.repeatable?, actual_type.repeatable?
+        assert_equal_or_nil expected_type.locations.sort, actual_type.locations.sort
+        assert_equal_or_nil expected_type.arguments.keys.sort, actual_type.arguments.keys.sort
         assert_deep_equal expected_type.arguments.values.sort_by(&:graphql_name), actual_type.arguments.values.sort_by(&:graphql_name)
       else
-        assert_equal expected_type, actual_type
+        assert_equa_or_nil expected_type, actual_type
       end
     end
 
