@@ -180,7 +180,7 @@ if testing_rails?
       assert_equal 0, log.scan("COUNT(").size, "It runs no count query"
     end
 
-    it "runs two queries for `nodes` and `hasNextPage` if hasNextPage is selected first"
+    it "runs two queries for `nodes` and `hasNextPage` if hasNextPage is selected first" do
       log = with_active_record_log do
         results = schema.execute("{
           items(first: 3) {
