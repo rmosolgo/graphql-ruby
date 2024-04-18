@@ -134,8 +134,27 @@ createRecord(data: {
   end
 
   it "can replace namestart at the end of numbers" do
-    assert_equal "{ a(b: 123 cde: 456)}", GraphQL::Language.add_space_between_numbers_and_names("{ a(b: 123cde: 456)}")
-    assert_equal "{ a(b: 12.3e5 cde: 456)}", GraphQL::Language.add_space_between_numbers_and_names("{ a(b: 12.3e5cde: 456)}")
+    ok_str1 = "{ a(b: 123 cde: 456)}"
+    assert_equal ok_str1, GraphQL::Language.add_space_between_numbers_and_names("{ a(b: 123cde: 456)}")
+    ok_str2 = "{ a(b: 12.3e5 cde: 456)}"
+    assert_equal ok_str2, GraphQL::Language.add_space_between_numbers_and_names("{ a(b: 12.3e5cde: 456)}")
+    ok_str3 = "{ a(b: 123e56 cde: 456)}"
+    assert_equal ok_str3, GraphQL::Language.add_space_between_numbers_and_names("{ a(b: 123e56cde: 456)}")
+
+    # It returns unchanged strings:
+    ok_strs = [
+      ok_str1,
+      ok_str2,
+      ok_str3,
+      "{ a(b: 123e5) }",
+      "{ a(b: 123e5 ) }",
+      "{ a(b: 12.3e5) }",
+      "{ a(b: 12.3e5 ) }",
+    ]
+    ok_strs.each do |ok_str|
+      changed_str = GraphQL::Language.add_space_between_numbers_and_names(ok_str)
+      assert ok_str.equal?(changed_str), "#{ok_str.inspect} is unchanged (was: #{changed_str.inspect})"
+    end
   end
 
   it "handles hyphens with errors" do
