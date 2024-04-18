@@ -278,7 +278,7 @@ describe GraphQL::Language::Printer do
     schema = Class.new(GraphQL::Schema) do
       query(query_type)
     end
-    query_str = "query {\n  issue(number: 9999e999)\n}"
+    query_str = "query {\n  issue(number: 9999.9e999)\n}"
     printed_query_str = "query {\n  issue(number: Infinity)\n}"
 
     assert_equal printed_query_str, GraphQL.parse(query_str).to_query_string

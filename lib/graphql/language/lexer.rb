@@ -156,6 +156,7 @@ module GraphQL
       INT_REGEXP =        /-?(?:[0]|[1-9][0-9]*)/
       FLOAT_DECIMAL_REGEXP = /[.][0-9]+/
       FLOAT_EXP_REGEXP =     /[eE][+-]?[0-9]+/
+      # TODO: FLOAT_EXP_REGEXP should not be allowed to follow INT_REGEXP, integers are not allowed to have exponent parts.
       NUMERIC_REGEXP =  /#{INT_REGEXP}(#{FLOAT_DECIMAL_REGEXP}#{FLOAT_EXP_REGEXP}|#{FLOAT_DECIMAL_REGEXP}|#{FLOAT_EXP_REGEXP})?/
 
       KEYWORDS = [
