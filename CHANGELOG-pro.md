@@ -6,7 +6,11 @@
 
 ### New Features
 
-# 1.27.0 (11 April 2024)
+# 1.27.1 (18 Apr 2024)
+
+- OperationStore: Don't call `query.query_string` if there's already a parsed document #4922
+
+# 1.27.0 (11 Apr 2024)
 
 - RelationConnection: support Arel's `NullsFirst` and `NullsLast` nodes #4910
 
