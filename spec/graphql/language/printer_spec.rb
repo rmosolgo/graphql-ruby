@@ -262,4 +262,29 @@ describe GraphQL::Language::Printer do
       end
     end
   end
+
+  it "handles large ints" do
+    query_type = Class.new(GraphQL::Schema::Object) do
+      graphql_name "Query"
+      field :issue, Integer do
+        argument :number, Integer
+      end
+
+      def issue(number:)
+        number
+      end
+    end
+
+    schema = Class.new(GraphQL::Schema) do
+      query(query_type)
+    end
+    query_str = "query {\n  issue(number: 9999e999)\n}"
+    printed_query_str = "query {\n  issue(number: Infinity)\n}"
+
+    assert_equal printed_query_str, GraphQL.parse(query_str).to_query_string
+
+    result = schema.execute(query_str)
+    expected_err = "Argument 'number' on Field 'issue' has an invalid value. Expected type 'Int!'."
+    assert_equal [expected_err], result["errors"].map { |e| e["message"] }
+  end
 end

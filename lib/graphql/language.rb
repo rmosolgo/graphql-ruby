@@ -33,6 +33,12 @@ module GraphQL
       else
         JSON.generate(value, quirks_mode: true)
       end
+    rescue JSON::GeneratorError
+      if Float::INFINITY == value
+        "Infinity"
+      else
+        raise
+      end
     end
 
     # Returns a new string if any single-quoted newlines were escaped.
