@@ -16,7 +16,8 @@ module GraphQL
     end
 
     def self.tokenize_with_c(str)
-      tokenize_with_c_internal(str, false)
+      reject_numbers_followed_by_names = GraphQL.respond_to?(:reject_numbers_followed_by_names) && GraphQL.reject_numbers_followed_by_names
+      tokenize_with_c_internal(str, false, reject_numbers_followed_by_names)
     end
 
     def self.prepare_parse_error(message, parser)
@@ -79,7 +80,8 @@ module GraphQL
             ]
           ]
         end
-        tokenize_with_c_internal(graphql_string, intern_identifiers, GraphQL.reject_numbers_followed_by_names)
+        reject_numbers_followed_by_names = GraphQL.respond_to?(:reject_numbers_followed_by_names) && GraphQL.reject_numbers_followed_by_names
+        tokenize_with_c_internal(graphql_string, intern_identifiers, reject_numbers_followed_by_names)
       end
     end
 
