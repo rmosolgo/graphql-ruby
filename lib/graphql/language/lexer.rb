@@ -52,6 +52,17 @@ module GraphQL
           :IDENTIFIER
         when ByteFor::NUMBER
           @scanner.skip(NUMERIC_REGEXP)
+
+          if GraphQL.reject_numbers_followed_by_names
+            new_pos = @scanner.pos
+            peek_byte = @string.getbyte(new_pos)
+            next_first_byte = FIRST_BYTES[peek_byte]
+            if next_first_byte == ByteFor::NAME || next_first_byte == ByteFor::IDENTIFIER
+              number_part = token_value
+              name_part = @scanner.scan(IDENTIFIER_REGEXP)
+              raise_parse_error("Name after number is not allowed (in `#{number_part}#{name_part}`)")
+            end
+          end
           # Check for a matched decimal:
           @scanner[1] ? :FLOAT : :INT
         when ByteFor::ELLIPSIS
@@ -250,7 +261,6 @@ module GraphQL
       FOUR_DIGIT_UNICODE = /#{UNICODE_DIGIT}{4}/
       N_DIGIT_UNICODE = %r{#{Punctuation::LCURLY}#{UNICODE_DIGIT}{4,}#{Punctuation::RCURLY}}x
       UNICODE_ESCAPE = %r{\\u(?:#{FOUR_DIGIT_UNICODE}|#{N_DIGIT_UNICODE})}
-      # # https://graphql.github.io/graphql-spec/June2018/#sec-String-Value
       STRING_ESCAPE = %r{[\\][\\/bfnrt]}
       BLOCK_QUOTE =   '"""'
       ESCAPED_QUOTE = /\\"/;

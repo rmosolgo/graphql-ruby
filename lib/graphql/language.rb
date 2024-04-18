@@ -70,5 +70,9 @@ module GraphQL
       end
       new_query_str || query_str
     end
+
+    def self.add_space_between_numbers_and_names(query_str)
+      query_str.gsub(/(?<num>#{Lexer::NUMERIC_REGEXP})(?<name>#{Lexer::IDENTIFIER_REGEXP})/, "\\k<num> \\k<name>")
+    end
   end
 end

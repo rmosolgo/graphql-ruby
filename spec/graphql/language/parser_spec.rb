@@ -117,6 +117,27 @@ createRecord(data: {
     assert_equal expected_msg, err.message
   end
 
+  it "can reject name start at the end of numbers" do
+    assert GraphQL.parse("{ a(b: 123cde: 456)}"), "It accepts invalid constructions ... for now"
+    GraphQL.reject_numbers_followed_by_names = true
+    err = assert_raises GraphQL::ParseError do
+      GraphQL.parse("{ a(b: 123cde: 456)}")
+    end
+    assert_equal "Name after number is not allowed (in `123cde`)", err.message
+
+    err = assert_raises GraphQL::ParseError do
+      GraphQL.parse("{ a(b: 12.3e5cfg: 456)}")
+    end
+    assert_equal "Name after number is not allowed (in `12.3e5cfg`)", err.message
+  ensure
+    GraphQL.reject_numbers_followed_by_names = false
+  end
+
+  it "can replace namestart at the end of numbers" do
+    assert_equal "{ a(b: 123 cde: 456)}", GraphQL::Language.add_space_between_numbers_and_names("{ a(b: 123cde: 456)}")
+    assert_equal "{ a(b: 12.3e5 cde: 456)}", GraphQL::Language.add_space_between_numbers_and_names("{ a(b: 12.3e5cde: 456)}")
+  end
+
   it "handles hyphens with errors" do
     err = assert_raises(GraphQL::ParseError) {
       GraphQL.parse("{ field(argument:a-b) }")
