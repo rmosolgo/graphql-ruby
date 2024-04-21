@@ -46,6 +46,7 @@ require "graphql/schema/mutation"
 require "graphql/schema/has_single_input_argument"
 require "graphql/schema/relay_classic_mutation"
 require "graphql/schema/subscription"
+require "graphql/bulk/bulk"
 
 module GraphQL
   # A GraphQL schema which may be queried with {GraphQL::Query}.
@@ -96,6 +97,10 @@ module GraphQL
     class InvalidDocumentError < Error; end;
 
     class << self
+      def split(query)
+        GraphQL::Bulk::QuerySplitterService.split(self, query)
+      end
+
       # Create schema with the result of an introspection query.
       # @param introspection_result [Hash] A response from {GraphQL::Introspection::INTROSPECTION_QUERY}
       # @return [Class<GraphQL::Schema>] the schema described by `input`
