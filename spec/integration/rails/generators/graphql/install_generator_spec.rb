@@ -75,6 +75,9 @@ class DummySchema < GraphQL::Schema
     raise(GraphQL::RequiredImplementationMissingError)
   end
 
+  # Limit the size of incoming queries:
+  max_query_string_tokens(5000)
+
   # Stop validating when it encounters this many errors:
   validate_max_errors(100)
 end
@@ -377,6 +380,9 @@ class DummySchema < GraphQL::Schema
     # to return the correct GraphQL object type for `obj`
     raise(GraphQL::RequiredImplementationMissingError)
   end
+
+  # Limit the size of incoming queries:
+  max_query_string_tokens(5000)
 
   # Stop validating when it encounters this many errors:
   validate_max_errors(100)
