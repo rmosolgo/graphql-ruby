@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.3.0/">API</a>
+            <a href="/api-doc/2.3.1/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -183,7 +183,7 @@
 
 <h2 id="how">How</h2>
 
-<p>Before running a query, <code class="language-plaintext highlighter-rouge">ObjectCache</code> creates a fingerprint for the query using <a href="/api-doc/2.3.0/GraphQL/Query#fingerprint-instance_method" target="_blank" title="API docs for GraphQL::Query#fingerprint"><code>GraphQL::Query#fingerprint</code></a> and <a href="/object_cache/schema_setup#context-fingerprint"><code class="language-plaintext highlighter-rouge">Schema.context_fingerprint_for(ctx)</code></a>. Then, it checks the backend for a cached response which matches the fingerprint. If a match is found, the <code class="language-plaintext highlighter-rouge">ObjectCache</code> fetches the objects previously visited by this query and compares their current fingerprints to the ones in the cache. If the fingerprints all match, then the cached response returned.</p>
+<p>Before running a query, <code class="language-plaintext highlighter-rouge">ObjectCache</code> creates a fingerprint for the query using <a href="/api-doc/2.3.1/GraphQL/Query#fingerprint-instance_method" target="_blank" title="API docs for GraphQL::Query#fingerprint"><code>GraphQL::Query#fingerprint</code></a> and <a href="/object_cache/schema_setup#context-fingerprint"><code class="language-plaintext highlighter-rouge">Schema.context_fingerprint_for(ctx)</code></a>. Then, it checks the backend for a cached response which matches the fingerprint. If a match is found, the <code class="language-plaintext highlighter-rouge">ObjectCache</code> fetches the objects previously visited by this query and compares their current fingerprints to the ones in the cache. If the fingerprints all match, then the cached response returned.</p>
 
 <p>If there is no cached response or if the fingerprints don’t match, then the incoming query is re-evaluated. While it’s executed, <code class="language-plaintext highlighter-rouge">ObjectCache</code> gathers the IDs and fingerprints of each object it encounters. When the query is done, the result and the new object fingerprints are written to the cache.</p>
 
