@@ -11,7 +11,7 @@ redirect_from:
   - /queries/error_handling/
 ---
 
-There are a _lot_ of different kinds of errors in GraphQL! In this guide, we'll discuss some of the main categories and learn when they apply.
+There are a _lot_ of different kinds of errors in GraphQL. In this guide, we'll discuss some of the main categories and learn when they apply.
 
 ## Validation Errors
 
