@@ -10,6 +10,23 @@
 
 ### Bug fixes
 
+# 2.3.1 (22 Apr 2024)
+
+### New features
+
+- `Schema.max_query_string_tokens`: support a limit on the number of tokens the lexer should identify #4929
+- Parser: add an option to reject numbers followed immediately by argument names #4924
+- Parser and CParser: reduce allocated and retained strings when parsing schemas #4899
+- `run_graphql_field`: support `:lookahead` and `:ast_node` field extras #4930
+
+### Bug fixes
+
+- Rescue when trying to print integers that are too big for Ruby #4923
+- Mutation: clear the Dataloader cache before resolving #4903
+- Fix `FieldUsage` analyzer when InputObjects return a prepared value #4902
+- Add a minimal query string for `run_graphql_field` #4891
+- Fix PrometheusTrace with multiple tracers #4888
+
 # 2.3.0 (20 Mar 2024)
 
 ### Breaking Changes
