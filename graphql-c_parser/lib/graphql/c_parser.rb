@@ -16,12 +16,15 @@ module GraphQL
     end
 
     def self.tokenize_with_c(str)
-      tokenize_with_c_internal(str, false)
+      reject_numbers_followed_by_names = GraphQL.respond_to?(:reject_numbers_followed_by_names) && GraphQL.reject_numbers_followed_by_names
+      tokenize_with_c_internal(str, false, reject_numbers_followed_by_names)
     end
 
     def self.prepare_parse_error(message, parser)
+      query_str = parser.query_string
+      filename = parser.filename
       if message.start_with?("memory exhausted")
-        return GraphQL::ParseError.new("This query is too large to execute.", nil, nil, parser.query_string, filename: parser.filename)
+        return GraphQL::ParseError.new("This query is too large to execute.", nil, nil, query_str, filename: filename)
       end
       token = parser.tokens[parser.next_token_index - 1]
       if token
@@ -40,7 +43,11 @@ module GraphQL
         end
       end
 
-      GraphQL::ParseError.new(message, line, col, parser.query_string, filename: parser.filename)
+      GraphQL::ParseError.new(message, line, col, query_str, filename: filename)
+    end
+
+    def self.prepare_number_name_parse_error(line, col, query_str, number_part, name_part)
+      raise GraphQL::ParseError.new("Name after number is not allowed (in `#{number_part}#{name_part}`)", line, col, query_str)
     end
 
     def self.prepare_bad_unicode_error(parser)
@@ -73,7 +80,8 @@ module GraphQL
             ]
           ]
         end
-        tokenize_with_c_internal(graphql_string, intern_identifiers)
+        reject_numbers_followed_by_names = GraphQL.respond_to?(:reject_numbers_followed_by_names) && GraphQL.reject_numbers_followed_by_names
+        tokenize_with_c_internal(graphql_string, intern_identifiers, reject_numbers_followed_by_names)
       end
     end
 

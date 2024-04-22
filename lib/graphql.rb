@@ -74,6 +74,13 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     EMPTY_HASH = {}.freeze
     EMPTY_ARRAY = [].freeze
   end
+
+  class << self
+    # If true, the parser should raise when an integer or float is followed immediately by an identifier (instead of a space or punctuation)
+    attr_accessor :reject_numbers_followed_by_names
+  end
+
+  self.reject_numbers_followed_by_names = false
 end
 
 # Order matters for these:
