@@ -40,8 +40,8 @@ if defined?(GraphQL::CParser::Lexer)
 
     it "makes frozen strings when using SchemaParser" do
       str = "type Query { f1: Int }"
-      schema_ast = GraphQL::CParser::SchemaParser.new(str, nil, GraphQL::Tracing::NullTrace).result
-      default_ast = GraphQL::CParser::Parser.new(str, nil, GraphQL::Tracing::NullTrace).result
+      schema_ast = GraphQL::CParser::SchemaParser.new(str, nil, GraphQL::Tracing::NullTrace, nil).result
+      default_ast = GraphQL::CParser::Parser.new(str, nil, GraphQL::Tracing::NullTrace, nil).result
 
       # Equivalent ASTs:
       assert_equal schema_ast, default_ast

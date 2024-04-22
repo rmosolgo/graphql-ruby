@@ -42,8 +42,8 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   # Turn a query string or schema definition into an AST
   # @param graphql_string [String] a GraphQL query string or schema definition
   # @return [GraphQL::Language::Nodes::Document]
-  def self.parse(graphql_string, trace: GraphQL::Tracing::NullTrace, filename: nil)
-    default_parser.parse(graphql_string, trace: trace, filename: filename)
+  def self.parse(graphql_string, trace: GraphQL::Tracing::NullTrace, filename: nil, max_tokens: nil)
+    default_parser.parse(graphql_string, trace: trace, filename: filename, max_tokens: max_tokens)
   end
 
   # Read the contents of `filename` and parse them as GraphQL

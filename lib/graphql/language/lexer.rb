@@ -3,7 +3,7 @@ module GraphQL
   module Language
 
     class Lexer
-      def initialize(graphql_str, filename: nil)
+      def initialize(graphql_str, filename: nil, max_tokens: nil)
         if !(graphql_str.encoding == Encoding::UTF_8 || graphql_str.ascii_only?)
           graphql_str = graphql_str.dup.force_encoding(Encoding::UTF_8)
         end
@@ -11,6 +11,8 @@ module GraphQL
         @filename = filename
         @scanner = StringScanner.new(graphql_str)
         @pos = nil
+        @max_tokens = max_tokens || Float::INFINITY
+        @tokens_count = 0
       end
 
       def eos?
@@ -22,6 +24,10 @@ module GraphQL
       def advance
         @scanner.skip(IGNORE_REGEXP)
         return false if @scanner.eos?
+        @tokens_count += 1
+        if @tokens_count > @max_tokens
+          raise_parse_error("This query is too large to execute.")
+        end
         @pos = @scanner.pos
         next_byte = @string.getbyte(@pos)
         next_byte_is_for = FIRST_BYTES[next_byte]

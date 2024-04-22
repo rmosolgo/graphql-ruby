@@ -12,8 +12,8 @@ module GraphQL
       class << self
         attr_accessor :cache
 
-        def parse(graphql_str, filename: nil, trace: Tracing::NullTrace)
-          self.new(graphql_str, filename: filename, trace: trace).parse
+        def parse(graphql_str, filename: nil, trace: Tracing::NullTrace, max_tokens: nil)
+          self.new(graphql_str, filename: filename, trace: trace, max_tokens: max_tokens).parse
         end
 
         def parse_file(filename, trace: Tracing::NullTrace)
@@ -27,11 +27,11 @@ module GraphQL
         end
       end
 
-      def initialize(graphql_str, filename: nil, trace: Tracing::NullTrace)
+      def initialize(graphql_str, filename: nil, trace: Tracing::NullTrace, max_tokens: nil)
         if graphql_str.nil?
           raise GraphQL::ParseError.new("No query string was present", nil, nil, nil)
         end
-        @lexer = Lexer.new(graphql_str, filename: filename)
+        @lexer = Lexer.new(graphql_str, filename: filename, max_tokens: max_tokens)
         @graphql_str = graphql_str
         @filename = filename
         @trace = trace

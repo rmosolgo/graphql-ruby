@@ -643,6 +643,17 @@ module GraphQL
         end
       end
 
+      # A limit on the number of tokens to accept on incoming query strings.
+      # Use this to prevent parsing maliciously-large query strings.
+      # @return [nil, Integer]
+      def max_query_string_tokens(new_max_tokens = NOT_CONFIGURED)
+        if NOT_CONFIGURED.equal?(new_max_tokens)
+          defined?(@max_query_string_tokens) ? @max_query_string_tokens : find_inherited_value(:max_query_string_tokens)
+        else
+          @max_query_string_tokens = new_max_tokens
+        end
+      end
+
       def default_page_size(new_default_page_size = nil)
         if new_default_page_size
           @default_page_size = new_default_page_size
