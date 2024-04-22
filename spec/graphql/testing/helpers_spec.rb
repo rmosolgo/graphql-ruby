@@ -32,15 +32,15 @@ describe GraphQL::Testing::Helpers do
         context.errors.empty?
       end
 
-      field :name, String do
+      field :name, String, extras: [:ast_node] do
         argument :full_name, Boolean, required: false
         argument :prefix, String, required: false, default_value: "Mc", prepare: ->(val, ctx) { -> { val.capitalize } }
       end
 
-      def name(full_name: nil, prefix: nil)
+      def name(full_name: nil, prefix: nil, ast_node:)
         name = object[:name]
         if full_name
-          "#{name} #{prefix}#{name}"
+          "#{name} #{ast_node.alias ? "\"#{ast_node.alias}\" " : ""}#{prefix}#{name}"
         else
           name
         end
@@ -65,7 +65,7 @@ describe GraphQL::Testing::Helpers do
         end
       end
 
-      field :upcased_name, String, extensions: [Upcase], resolver_method: :name
+      field :upcased_name, String, extensions: [Upcase], hash_key: :name
 
       field :ssn, String do
         def authorized?(obj, args, ctx)
@@ -76,6 +76,12 @@ describe GraphQL::Testing::Helpers do
 
     class Query < GraphQL::Schema::Object
       field :students, [Student]
+
+      field :lookahead_selections, String, extras: [:lookahead]
+
+      def lookahead_selections(lookahead:)
+        lookahead.selections.to_s
+      end
     end
 
     query(Query)
@@ -131,6 +137,16 @@ describe GraphQL::Testing::Helpers do
 
       it "works with field extensions" do
         assert_equal "BILL", run_graphql_field(AssertionsSchema, "Student.upcasedName", { name: "Bill" })
+      end
+
+      it "works with extras: [:ast_node]" do
+        assert_equal "Billy \"theKid\" McBilly", run_graphql_field(AssertionsSchema, "Student.name", { name: "Billy" }, arguments: { full_name: true }, ast_node: GraphQL::Language::Nodes::Field.new(name: "name", field_alias: "theKid"))
+      end
+
+      it "works with extras: [:lookahead]" do
+        assert_equal "[]", run_graphql_field(AssertionsSchema, "Query.lookaheadSelections", :something)
+        dummy_lookahead = OpenStruct.new(selections: ["one", "two"])
+        assert_equal "[\"one\", \"two\"]", run_graphql_field(AssertionsSchema, "Query.lookaheadSelections", :something, lookahead: dummy_lookahead)
       end
 
       it "prepares arguments" do
