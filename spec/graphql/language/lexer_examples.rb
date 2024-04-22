@@ -249,17 +249,25 @@ string with \\"""
             graphql_name "Query"
             field :x, Integer
           end
-          schema = Class.new(GraphQL::Schema) do
+          parent_schema = Class.new(GraphQL::Schema) do
             query(query_type)
+          end
+
+          child_schema = Class.new(parent_schema) do
             max_query_string_tokens(5000)
           end
 
-          assert_equal 5000, schema.max_query_string_tokens
+          assert_nil parent_schema.max_query_string_tokens
+          assert_equal 5000, child_schema.max_query_string_tokens
 
-          query_str = "{ x } " * 5000
-          assert_equal 15000, subject.tokenize(query_str).size
-          result = schema.execute(query_str)
+          query_str = 3_000.times.map { |n| "query Q#{n} { __typename }" }.join("\n")
+          assert_equal 15_000, subject.tokenize(query_str).size
+          assert GraphQL.parse(query_str)
+          result = child_schema.execute(query_str)
           assert_equal ["This query is too large to execute."], result["errors"].map { |e| e["message"] }
+
+          result2 = parent_schema.execute(query_str)
+          assert_equal ["An operation name is required"], result2["errors"].map { |e| e["message"] }
         end
       end
     end

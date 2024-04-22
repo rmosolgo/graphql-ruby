@@ -202,6 +202,8 @@ typedef struct Meta {
   int dedup_identifiers;
   int reject_numbers_followed_by_names;
   int preceeded_by_number;
+  int max_tokens;
+  int tokens_count;
 } Meta;
 
 #define STATIC_VALUE_TOKEN(token_type, content_str) \
@@ -217,6 +219,20 @@ typedef struct Meta {
   break;
 
 void emit(TokenType tt, char *ts, char *te, Meta *meta) {
+  meta->tokens_count++;
+  // -1 indicates that there is no limit:
+  if (meta->max_tokens > 0 && meta->tokens_count > meta->max_tokens) {
+    VALUE mGraphQL = rb_const_get_at(rb_cObject, rb_intern("GraphQL"));
+    VALUE cParseError = rb_const_get_at(mGraphQL, rb_intern("ParseError"));
+    VALUE exception = rb_funcall(
+      cParseError, rb_intern("new"), 4,
+      rb_str_new_cstr("This query is too large to execute."),
+      LONG2NUM(meta->line),
+      LONG2NUM(meta->col),
+      rb_str_new_cstr(meta->query_cstr)
+    );
+    rb_exc_raise(exception);
+  }
   int quotes_length = 0; // set by string tokens below
   int line_incr = 0;
   VALUE token_sym = Qnil;
@@ -378,7 +394,7 @@ void emit(TokenType tt, char *ts, char *te, Meta *meta) {
   meta->line += line_incr;
 }
 
-VALUE tokenize(VALUE query_rbstr, int fstring_identifiers, int reject_numbers_followed_by_names) {
+VALUE tokenize(VALUE query_rbstr, int fstring_identifiers, int reject_numbers_followed_by_names, int max_tokens) {
   int cs = 0;
   int act = 0;
   char *p = StringValueCStr(query_rbstr);
@@ -387,7 +403,7 @@ VALUE tokenize(VALUE query_rbstr, int fstring_identifiers, int reject_numbers_fo
   char *ts = 0;
   char *te = 0;
   VALUE tokens = rb_ary_new();
-  struct Meta meta_s = {1, 1, p, pe, tokens, Qnil, fstring_identifiers, reject_numbers_followed_by_names, 0};
+  struct Meta meta_s = {1, 1, p, pe, tokens, Qnil, fstring_identifiers, reject_numbers_followed_by_names, 0, max_tokens, 0};
   Meta *meta = &meta_s;
 
   %% write init;

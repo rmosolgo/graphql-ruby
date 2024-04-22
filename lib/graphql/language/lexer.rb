@@ -3,7 +3,7 @@ module GraphQL
   module Language
 
     class Lexer
-      def initialize(graphql_str, filename: nil, max_tokens: Float::INFINITY)
+      def initialize(graphql_str, filename: nil, max_tokens: nil)
         if !(graphql_str.encoding == Encoding::UTF_8 || graphql_str.ascii_only?)
           graphql_str = graphql_str.dup.force_encoding(Encoding::UTF_8)
         end
@@ -11,7 +11,7 @@ module GraphQL
         @filename = filename
         @scanner = StringScanner.new(graphql_str)
         @pos = nil
-        @max_tokens = max_tokens
+        @max_tokens = max_tokens || Float::INFINITY
         @tokens_count = 0
       end
 

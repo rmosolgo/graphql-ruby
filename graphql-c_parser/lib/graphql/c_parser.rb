@@ -6,8 +6,8 @@ require "graphql/graphql_c_parser_ext"
 
 module GraphQL
   module CParser
-    def self.parse(query_str, filename: nil, trace: GraphQL::Tracing::NullTrace)
-      Parser.parse(query_str, filename: filename, trace: trace)
+    def self.parse(query_str, filename: nil, trace: GraphQL::Tracing::NullTrace, max_tokens: nil)
+      Parser.parse(query_str, filename: filename, trace: trace, max_tokens: max_tokens)
     end
 
     def self.parse_file(filename)
@@ -64,7 +64,7 @@ module GraphQL
     end
 
     module Lexer
-      def self.tokenize(graphql_string, intern_identifiers: false)
+      def self.tokenize(graphql_string, intern_identifiers: false, max_tokens: nil)
         if !(graphql_string.encoding == Encoding::UTF_8 || graphql_string.ascii_only?)
           graphql_string = graphql_string.dup.force_encoding(Encoding::UTF_8)
         end
@@ -81,13 +81,15 @@ module GraphQL
           ]
         end
         reject_numbers_followed_by_names = GraphQL.respond_to?(:reject_numbers_followed_by_names) && GraphQL.reject_numbers_followed_by_names
-        tokenize_with_c_internal(graphql_string, intern_identifiers, reject_numbers_followed_by_names)
+        # -1 indicates that there is no limit
+        lexer_max_tokens = max_tokens.nil? ? -1 : max_tokens
+        tokenize_with_c_internal(graphql_string, intern_identifiers, reject_numbers_followed_by_names, lexer_max_tokens)
       end
     end
 
     class Parser
-      def self.parse(query_str, filename: nil, trace: GraphQL::Tracing::NullTrace)
-        self.new(query_str, filename, trace).result
+      def self.parse(query_str, filename: nil, trace: GraphQL::Tracing::NullTrace, max_tokens: nil)
+        self.new(query_str, filename, trace, max_tokens).result
       end
 
       def self.parse_file(filename)
@@ -95,7 +97,7 @@ module GraphQL
         parse(contents, filename: filename)
       end
 
-      def initialize(query_string, filename, trace)
+      def initialize(query_string, filename, trace, max_tokens)
         if query_string.nil?
           raise GraphQL::ParseError.new("No query string was present", nil, nil, query_string)
         end
@@ -106,12 +108,13 @@ module GraphQL
         @result = nil
         @trace = trace
         @intern_identifiers = false
+        @max_tokens = max_tokens
       end
 
       def result
         if @result.nil?
           @tokens = @trace.lex(query_string: @query_string) do
-            GraphQL::CParser::Lexer.tokenize(@query_string, intern_identifiers: @intern_identifiers)
+            GraphQL::CParser::Lexer.tokenize(@query_string, intern_identifiers: @intern_identifiers, max_tokens: @max_tokens)
           end
           @trace.parse(query_string: @query_string) do
             c_parse
