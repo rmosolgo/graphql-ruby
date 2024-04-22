@@ -1091,7 +1091,7 @@ describe GraphQL::Query do
   describe "using GraphQL.default_parser" do
     module DummyParser
       DOC = GraphQL::Language::Parser.parse("{ __typename }")
-      def self.parse(query_str, trace: nil, filename: nil)
+      def self.parse(query_str, trace: nil, filename: nil, max_tokens: nil)
         DOC
       end
     end

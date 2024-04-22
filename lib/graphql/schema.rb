@@ -648,7 +648,7 @@ module GraphQL
       # @return [nil, Integer]
       def max_query_string_tokens(new_max_tokens = NOT_CONFIGURED)
         if NOT_CONFIGURED.equal?(new_max_tokens)
-          @max_query_string_tokens || find_inherited_value(:max_query_string_tokens)
+          defined?(@max_query_string_tokens) ? @max_query_string_tokens : find_inherited_value(:max_query_string_tokens)
         else
           @max_query_string_tokens = new_max_tokens
         end
