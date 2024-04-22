@@ -54,6 +54,8 @@ jobs:
             ruby: 3.3
           - gemfile: gemfiles/rails_master.gemfile
             ruby: 3.3
+            env:
+              GRAPHQL_REJECT_NUMBERS_FOLLOWED_BY_NAMES: 1
     runs-on: ubuntu-latest
     steps:
     - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > $GITHUB_ENV
