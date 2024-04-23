@@ -362,6 +362,7 @@ module GraphQL
           arguments: Nodes::Argument,
           locations: Nodes::DirectiveLocation,
         )
+        self.children_method_name = :definitions
       end
 
       # An enum value. The string is available as {#name}.
