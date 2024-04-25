@@ -389,6 +389,18 @@ describe GraphQL::Schema::InputObject do
         end
       end
 
+      class Thing < GraphQL::Schema::Object
+        field :name, String
+      end
+
+      class PrepareAndLoadInput < GraphQL::Schema::InputObject
+        argument :value, String
+        argument :thing_id, ID, loads: Thing
+        def prepare
+          { value: "Prepared: #{value}", thing: thing }
+        end
+      end
+
       class Query < GraphQL::Schema::Object
         field :inputs, String do
           argument :input, RangeInput
@@ -415,11 +427,33 @@ describe GraphQL::Schema::InputObject do
         def prepare_list(input:)
           input.map(&:prepared_count)
         end
+
+        field :prepare_and_load, String do
+          argument :input, PrepareAndLoadInput
+        end
+
+        def prepare_and_load(input:)
+          "#{input[:value]}/#{input[:thing][:name]}"
+        end
       end
 
       class Schema < GraphQL::Schema
         query(Query)
+
+        def self.resolve_type(_abs_t, _obj, _ctx)
+          Thing
+        end
+
+        def self.object_from_id(id, _ctx)
+          { name: "Thing #{id}"}
+        end
       end
+    end
+
+    it "calls prepare and loads" do
+      query_str = "{ prepareAndLoad(input: { value: \"Hello\", thingId: \"123\"}) }"
+      res = InputObjectPrepareObjectTest::Schema.execute(query_str)
+      assert_equal "Prepared: Hello/Thing 123", res["data"]["prepareAndLoad"]
     end
 
     it "calls prepare on the input object (literal)" do
