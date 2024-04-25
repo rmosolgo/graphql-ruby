@@ -208,6 +208,8 @@ module GraphQL
       def prepare_value(obj, value, context: nil)
         if value.is_a?(GraphQL::Schema::InputObject)
           value = value.prepare
+        elsif type.list? && value[0].is_a?(GraphQL::Schema::InputObject)
+          value = value.map(&:prepare)
         end
 
         Schema::Validator.validate!(validators, obj, context, value)
