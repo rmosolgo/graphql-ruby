@@ -206,10 +206,8 @@ module GraphQL
       # Used by the runtime.
       # @api private
       def prepare_value(obj, value, context: nil)
-        if value.is_a?(GraphQL::Schema::InputObject)
-          value = value.prepare
-        elsif type.list? && value[0].is_a?(GraphQL::Schema::InputObject)
-          value = value.map(&:prepare)
+        if type.unwrap.kind.input_object?
+          value = recursively_prepare_input_object(value, type)
         end
 
         Schema::Validator.validate!(validators, obj, context, value)
@@ -374,6 +372,21 @@ module GraphQL
       end
 
       private
+
+      def recursively_prepare_input_object(value, type)
+        if type.non_null?
+          type = type.of_type
+        end
+
+        if type.list?
+          inner_type = type.of_type
+          value.map { |v| recursively_prepare_input_object(v, inner_type) }
+        elsif value.is_a?(GraphQL::Schema::InputObject)
+          value.prepare
+        else
+          value
+        end
+      end
 
       def validate_input_type(input_type)
         if input_type.is_a?(String) || input_type.is_a?(GraphQL::Schema::LateBoundType)
