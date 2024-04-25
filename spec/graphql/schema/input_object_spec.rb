@@ -420,12 +420,28 @@ describe GraphQL::Schema::InputObject do
           input.prepared_count
         end
 
+        field :prepare_list, [Int] do
+          argument :input, [OnlyOnePrepareInputObject]
+        end
+
+        def prepare_list(input:)
+          input.map(&:prepared_count)
+        end
+
         field :prepare_and_load, String do
           argument :input, PrepareAndLoadInput
         end
 
         def prepare_and_load(input:)
           "#{input[:value]}/#{input[:thing][:name]}"
+        end
+
+        field :prepare_list_of_lists, [[Int]] do
+          argument :input, [[OnlyOnePrepareInputObject]]
+        end
+
+        def prepare_list_of_lists(input:)
+          input.map { |i| i.map(&:prepared_count) }
         end
       end
 
@@ -460,6 +476,14 @@ describe GraphQL::Schema::InputObject do
     it "only prepares once" do
       res = InputObjectPrepareObjectTest::Schema.execute("{ prepareOnce( input: { i: 1 } ) }")
       assert_equal 1, res["data"]["prepareOnce"]
+    end
+
+    it "calls prepare on lists of input objects" do
+      res = InputObjectPrepareObjectTest::Schema.execute("{ prepareList( input:[{ i: 1 }, { i: 1}]) }")
+      assert_equal [1, 1], res["data"]["prepareList"]
+
+      res = InputObjectPrepareObjectTest::Schema.execute("{ prepareListOfLists( input:[[{ i: 1 }, { i: 1}], [{i: 2}, {i: 2}]]) }")
+      assert_equal [[1, 1], [1, 1]], res["data"]["prepareListOfLists"]
     end
 
     it "calls prepare on the input object (variable)" do
