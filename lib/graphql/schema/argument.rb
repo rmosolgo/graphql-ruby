@@ -378,7 +378,7 @@ module GraphQL
           type = type.of_type
         end
 
-        if type.list?
+        if type.list? && !value.nil?
           inner_type = type.of_type
           value.map { |v| recursively_prepare_input_object(v, inner_type) }
         elsif value.is_a?(GraphQL::Schema::InputObject)
