@@ -233,7 +233,7 @@ module GraphQL
 
         # @return [void]
         def evaluate_selection(result_name, field_ast_nodes_or_ast_node, is_eager_field, selections_result, parent_object, runtime_state) # rubocop:disable Metrics/ParameterLists
-          return if dead_result?(selections_result)
+          return if selections_result.graphql_dead
           # As a performance optimization, the hash key will be a `Node` if
           # there's only one selection of the field. But if there are multiple
           # selections of the field, it will be an Array of nodes
@@ -392,13 +392,8 @@ module GraphQL
           end
         end
 
-
-        def dead_result?(selection_result)
-          selection_result.graphql_dead  # || ((parent = selection_result.graphql_parent) && parent.graphql_dead)
-        end
-
         def set_result(selection_result, result_name, value, is_child_result, is_non_null)
-          if !dead_result?(selection_result)
+          if !selection_result.graphql_dead
             if value.nil? && is_non_null
               # This is an invalid nil that should be propagated
               # One caller of this method passes a block,
@@ -472,7 +467,7 @@ module GraphQL
             # to avoid the overhead of checking three different classes
             # every time.
             if value.is_a?(GraphQL::ExecutionError)
-              if selection_result.nil? || !dead_result?(selection_result)
+              if selection_result.nil? || !selection_result.graphql_dead
                 value.path ||= current_path
                 value.ast_node ||= ast_node
                 context.errors << value
@@ -522,7 +517,7 @@ module GraphQL
             # It's an array full of execution errors; add them all.
             if value.any? && value.all?(GraphQL::ExecutionError)
               list_type_at_all = (field && (field.type.list?))
-              if selection_result.nil? || !dead_result?(selection_result)
+              if selection_result.nil? || !selection_result.graphql_dead
                 value.each_with_index do |error, index|
                   error.ast_node ||= ast_node
                   error.path ||= current_path + (list_type_at_all ? [index] : [])
