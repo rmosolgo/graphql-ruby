@@ -1362,4 +1362,49 @@ describe GraphQL::Schema::InputObject do
       assert_includes schema_sdl, "input OneOfInput @oneOf {\n"
     end
   end
+
+  describe "when values aren't given" do
+    class MissingValuesSchema < GraphQL::Schema
+      class ValuesInput < GraphQL::Schema::InputObject
+        argument :a, Int
+        argument :b, Int, required: false
+        argument :c, Int, required: false, default_value: nil
+      end
+
+      class ValuesMutation < GraphQL::Schema::Mutation
+        argument :values, ValuesInput
+        field :result, String
+        def resolve(values:)
+          {
+            result: "[a: #{values[:a].inspect}, #{values.key?(:a)}], [b: #{values[:b].inspect}, #{values.key?([:b])}], [c: #{values[:c].inspect}, #{values.key?(:c)}]"
+          }
+        end
+      end
+
+      class Mutation < GraphQL::Schema::Object
+        field :values, mutation: ValuesMutation
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :result, String do
+          argument :values, ValuesInput
+        end
+
+        def result(values:)
+          "[a: #{values[:a].inspect}, #{values.key?(:a)}], [b: #{values[:b].inspect}, #{values.key?([:b])}], [c: #{values[:c].inspect}, #{values.key?(:c)}]"
+        end
+      end
+
+      query(Query)
+      mutation(Mutation)
+    end
+
+    it "doesn't add keys for arguments that aren't present and uses default values for ones that are" do
+      result = MissingValuesSchema.execute("{ result(values: { a: 1 }) }")
+      assert_equal "[a: 1, true], [b: nil, false], [c: nil, true]", result["data"]["result"]
+
+      result = MissingValuesSchema.execute("mutation { values(values: { a: 1 }) { result } }")
+      assert_equal "[a: 1, true], [b: nil, false], [c: nil, true]", result["data"]["values"]["result"]
+    end
+  end
 end
