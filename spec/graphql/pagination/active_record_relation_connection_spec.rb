@@ -181,6 +181,7 @@ if testing_rails?
     end
 
     it "runs two queries for `nodes` and `hasNextPage` if hasNextPage is selected first" do
+      results = nil
       log = with_active_record_log do
         results = schema.execute("{
           items(first: 3) {
