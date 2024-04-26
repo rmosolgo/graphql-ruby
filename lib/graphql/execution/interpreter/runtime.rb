@@ -111,23 +111,14 @@ module GraphQL
                 end
 
                 @dataloader.append_job {
-                  st = get_current_runtime_state
-                  st.current_result_name = nil
-                  st.current_result = selection_response
-                  # This is a less-frequent case; use a fast check since it's often not there.
-                  if (directives = selections[:graphql_directives])
-                    selections.delete(:graphql_directives)
-                  end
-                  call_method_on_directives(:resolve, runtime_object, directives) do
-                    evaluate_selections(
-                      root_op_type == "mutation",
-                      selections,
-                      selection_response,
-                      final_response,
-                      nil,
-                      st,
-                    )
-                  end
+                  evaluate_selections(
+                    root_op_type == "mutation",
+                    selections,
+                    selection_response,
+                    final_response,
+                    nil,
+                    nil,
+                  )
                 }
               end
             end
@@ -205,34 +196,42 @@ module GraphQL
 
         # @return [void]
         def evaluate_selections(is_eager_selection, gathered_selections, selections_result, target_result, parent_object, runtime_state) # rubocop:disable Metrics/ParameterLists
-          finished_jobs = 0
-          enqueued_jobs = gathered_selections.size
-          gathered_selections.each do |result_name, field_ast_nodes_or_ast_node|
-            @dataloader.append_job {
-              runtime_state = get_current_runtime_state
-              evaluate_selection(
-                result_name, field_ast_nodes_or_ast_node, is_eager_selection, selections_result, parent_object, runtime_state
-              )
-              finished_jobs += 1
-              if target_result && finished_jobs == enqueued_jobs
-                selections_result.merge_into(target_result)
-              end
-            }
-            # Field resolution may pause the fiber,
-            # so it wouldn't get to the `Resolve` call that happens below.
-            # So instead trigger a run from this outer context.
-            if is_eager_selection
-              @dataloader.clear_cache
-              @dataloader.run
-              @dataloader.clear_cache
-            end
+          runtime_state ||= get_current_runtime_state
+          runtime_state.current_result_name = nil
+          runtime_state.current_result = selections_result
+          # This is a less-frequent case; use a fast check since it's often not there.
+          if (directives = gathered_selections[:graphql_directives])
+            gathered_selections.delete(:graphql_directives)
           end
 
-          selections_result
+          call_method_on_directives(:resolve, selections_result.graphql_application_value, directives) do
+            finished_jobs = 0
+            enqueued_jobs = gathered_selections.size
+            gathered_selections.each do |result_name, field_ast_nodes_or_ast_node|
+              @dataloader.append_job {
+                evaluate_selection(
+                  result_name, field_ast_nodes_or_ast_node, is_eager_selection, selections_result, parent_object
+                )
+                finished_jobs += 1
+                if target_result && finished_jobs == enqueued_jobs
+                  selections_result.merge_into(target_result)
+                end
+              }
+              # Field resolution may pause the fiber,
+              # so it wouldn't get to the `Resolve` call that happens below.
+              # So instead trigger a run from this outer context.
+              if is_eager_selection
+                @dataloader.clear_cache
+                @dataloader.run
+                @dataloader.clear_cache
+              end
+            end
+            selections_result
+          end
         end
 
         # @return [void]
-        def evaluate_selection(result_name, field_ast_nodes_or_ast_node, is_eager_field, selections_result, parent_object, runtime_state) # rubocop:disable Metrics/ParameterLists
+        def evaluate_selection(result_name, field_ast_nodes_or_ast_node, is_eager_field, selections_result, parent_object) # rubocop:disable Metrics/ParameterLists
           return if selections_result.graphql_dead
           # As a performance optimization, the hash key will be a `Node` if
           # there's only one selection of the field. But if there are multiple
@@ -249,6 +248,7 @@ module GraphQL
           field_defn = query.warden.get_field(owner_type, field_name) || binding.pry
 
           # Set this before calling `run_with_directives`, so that the directive can have the latest path
+          runtime_state = get_current_runtime_state
           runtime_state.current_field = field_defn
           runtime_state.current_result = selections_result
           runtime_state.current_result_name = result_name
@@ -619,25 +619,15 @@ module GraphQL
                     this_result = response_hash
                     final_result = nil
                   end
-                  # reset this mutable state
-                  # Unset `result_name` here because it's already included in the new response hash
-                  runtime_state.current_result_name = nil
-                  runtime_state.current_result = this_result
-                  # This is a less-frequent case; use a fast check since it's often not there.
-                  if (directives = selections[:graphql_directives])
-                    selections.delete(:graphql_directives)
-                  end
-                  call_method_on_directives(:resolve, continue_value, directives) do
-                    evaluate_selections(
-                      false,
-                      selections,
-                      this_result,
-                      final_result,
-                      owner_object.object,
-                      runtime_state,
-                    )
-                    this_result
-                  end
+
+                  evaluate_selections(
+                    false,
+                    selections,
+                    this_result,
+                    final_result,
+                    owner_object.object,
+                    runtime_state,
+                  )
                 end
               end
             end
