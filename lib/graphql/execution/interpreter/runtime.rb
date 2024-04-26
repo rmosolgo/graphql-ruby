@@ -280,7 +280,7 @@ module GraphQL
             return_type_non_null = return_type.non_null?
             if resolved_arguments.is_a?(GraphQL::ExecutionError) || resolved_arguments.is_a?(GraphQL::UnauthorizedError)
               owner_type = selection_result.graphql_result_type
-              continue_value(resolved_arguments, owner_type, field_defn, return_type_non_null, ast_node, result_name, selection_result)
+              continue_value(resolved_arguments, field_defn, return_type_non_null, ast_node, result_name, selection_result)
               next
             end
 
@@ -378,7 +378,7 @@ module GraphQL
             end
             after_lazy(app_result, field: field_defn, ast_node: ast_node, owner_object: object, arguments: resolved_arguments, result_name: result_name, result: selection_result, runtime_state: runtime_state) do |inner_result, runtime_state|
               owner_type = selection_result.graphql_result_type
-              continue_value = continue_value(inner_result, owner_type, field_defn, return_type_non_null, ast_node, result_name, selection_result)
+              continue_value = continue_value(inner_result, field_defn, return_type_non_null, ast_node, result_name, selection_result)
               if HALT != continue_value
                 was_scoped = runtime_state.was_authorized_by_scope_items
                 runtime_state.was_authorized_by_scope_items = nil
@@ -458,12 +458,13 @@ module GraphQL
         end
 
         HALT = Object.new
-        # TODO remove `parent_type` from here next
-        def continue_value(value, parent_type, field, is_non_null, ast_node, result_name, selection_result) # rubocop:disable Metrics/ParameterLists
+        def continue_value(value, field, is_non_null, ast_node, result_name, selection_result) # rubocop:disable Metrics/ParameterLists
           case value
           when nil
             if is_non_null
               set_result(selection_result, result_name, nil, false, is_non_null) do
+                # When this comes from a list item, use the parent object:
+                parent_type = selection_result.is_a?(GraphQLResultArray) ? selection_result.graphql_parent.graphql_result_type : selection_result.graphql_result_type
                 # This block is called if `result_name` is not dead. (Maybe a previous invalid nil caused it be marked dead.)
                 err = parent_type::InvalidNullError.new(parent_type, field, value)
                 schema.type_error(err, context)
@@ -495,7 +496,7 @@ module GraphQL
               rescue GraphQL::ExecutionError => err
                 err
               end
-              continue_value(next_value, parent_type, field, is_non_null, ast_node, result_name, selection_result)
+              continue_value(next_value, field, is_non_null, ast_node, result_name, selection_result)
             elsif value.is_a?(GraphQL::UnauthorizedError)
               # this hook might raise & crash, or it might return
               # a replacement value
@@ -504,7 +505,7 @@ module GraphQL
               rescue GraphQL::ExecutionError => err
                 err
               end
-              continue_value(next_value, parent_type, field, is_non_null, ast_node, result_name, selection_result)
+              continue_value(next_value, field, is_non_null, ast_node, result_name, selection_result)
             elsif GraphQL::Execution::SKIP == value
               # It's possible a lazy was already written here
               case selection_result
@@ -607,7 +608,7 @@ module GraphQL
               err
             end
             after_lazy(object_proxy, ast_node: ast_node, field: field, owner_object: owner_object, arguments: arguments, trace: false, result_name: result_name, result: selection_result, runtime_state: runtime_state) do |inner_object, runtime_state|
-              continue_value = continue_value(inner_object, owner_type, field, is_non_null, ast_node, result_name, selection_result)
+              continue_value = continue_value(inner_object, field, is_non_null, ast_node, result_name, selection_result)
               if HALT != continue_value
                 response_hash = GraphQLResultHash.new(result_name, current_type, continue_value, selection_result, is_non_null)
                 set_result(selection_result, result_name, response_hash, true, is_non_null)
@@ -696,7 +697,7 @@ module GraphQL
             end
             # Detect whether this error came while calling `.each` (before `idx` is set) or while running list *items* (after `idx` is set)
             error_is_non_null = idx.nil? ? is_non_null : inner_type.non_null?
-            continue_value(list_value, owner_type, field, error_is_non_null, ast_node, result_name, selection_result)
+            continue_value(list_value, field, error_is_non_null, ast_node, result_name, selection_result)
           else
             raise "Invariant: Unhandled type kind #{current_type.kind} (#{current_type})"
           end
@@ -708,7 +709,7 @@ module GraphQL
           call_method_on_directives(:resolve_each, owner_object, ast_node.directives) do
             # This will update `response_list` with the lazy
             after_lazy(inner_value, ast_node: ast_node, field: field, owner_object: owner_object, arguments: arguments, result_name: this_idx, result: response_list, runtime_state: runtime_state) do |inner_inner_value, runtime_state|
-              continue_value = continue_value(inner_inner_value, owner_type, field, inner_type_non_null, ast_node, this_idx, response_list)
+              continue_value = continue_value(inner_inner_value, field, inner_type_non_null, ast_node, this_idx, response_list)
               if HALT != continue_value
                 continue_field(continue_value, owner_type, field, inner_type, ast_node, next_selections, false, owner_object, arguments, this_idx, response_list, was_scoped, runtime_state)
               end
@@ -730,7 +731,6 @@ module GraphQL
             raw_dir_args = arguments(nil, dir_defn, dir_node)
             dir_args = continue_value(
               raw_dir_args, # value
-              dir_defn, # parent_type
               nil, # field
               false, # is_non_null
               dir_node, # ast_node
