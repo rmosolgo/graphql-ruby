@@ -210,7 +210,7 @@ module GraphQL
           gathered_selections.each do |result_name, field_ast_nodes_or_ast_node|
             @dataloader.append_job {
               runtime_state = get_current_runtime_state
-              field_result = evaluate_selection(
+              evaluate_selection(
                 result_name, field_ast_nodes_or_ast_node, is_eager_selection, selections_result, parent_object, runtime_state
               )
               finished_jobs += 1
@@ -384,15 +384,11 @@ module GraphQL
               end
             end
           end
-
           # If this field is a root mutation field, immediately resolve
           # all of its child fields before moving on to the next root mutation field.
           # (Subselections of this mutation will still be resolved level-by-level.)
           if is_eager_field
             Interpreter::Resolve.resolve_all([field_result], @dataloader)
-          else
-            # Return this from `after_lazy` because it might be another lazy that needs to be resolved
-            field_result
           end
         end
 
