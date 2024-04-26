@@ -10,6 +10,13 @@
 
 ### Bug fixes
 
+# 2.3.2 (26 Apr 2024)
+
+### Bug fixes
+
+- Properly `.prepare` lists of input objects #4933
+- Fix deleting directives using the AST visitor #4931
+
 # 2.3.1 (22 Apr 2024)
 
 ### New features
