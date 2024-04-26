@@ -82,11 +82,11 @@ module GraphQL
           root_operation = query.selected_operation
           root_op_type = root_operation.operation_type || "query"
           root_type = schema.root_type_for_operation(root_op_type)
-          @response = GraphQLResultHash.new(nil, root_type, @query.root_value, nil, false)
-          st = get_current_runtime_state
-          st.current_result = @response
           runtime_object = root_type.wrap(query.root_value, context)
           runtime_object = schema.sync_lazy(runtime_object)
+          @response = GraphQLResultHash.new(nil, root_type, runtime_object, nil, false)
+          st = get_current_runtime_state
+          st.current_result = @response
 
           if runtime_object.nil?
             # Root .authorized? returned false.
@@ -103,7 +103,7 @@ module GraphQL
               # directly evaluated and the results can be written right into the main response hash.
               tap_or_each(gathered_selections) do |selections, is_selection_array|
                 if is_selection_array
-                  selection_response = GraphQLResultHash.new(nil, root_type, @query.root_value, nil, false)
+                  selection_response = GraphQLResultHash.new(nil, root_type, runtime_object, nil, false)
                   final_response = @response
                 else
                   selection_response = @response
@@ -120,7 +120,6 @@ module GraphQL
                   end
                   call_method_on_directives(:resolve, runtime_object, directives) do
                     evaluate_selections(
-                      runtime_object,
                       root_op_type == "mutation",
                       selections,
                       selection_response,
@@ -205,14 +204,14 @@ module GraphQL
         NO_ARGS = GraphQL::EmptyObjects::EMPTY_HASH
 
         # @return [void]
-        def evaluate_selections(owner_object, is_eager_selection, gathered_selections, selections_result, target_result, parent_object, runtime_state) # rubocop:disable Metrics/ParameterLists
+        def evaluate_selections(is_eager_selection, gathered_selections, selections_result, target_result, parent_object, runtime_state) # rubocop:disable Metrics/ParameterLists
           finished_jobs = 0
           enqueued_jobs = gathered_selections.size
           gathered_selections.each do |result_name, field_ast_nodes_or_ast_node|
             @dataloader.append_job {
               runtime_state = get_current_runtime_state
-              evaluate_selection(
-                result_name, field_ast_nodes_or_ast_node, owner_object, is_eager_selection, selections_result, parent_object, runtime_state
+              field_result = evaluate_selection(
+                result_name, field_ast_nodes_or_ast_node, is_eager_selection, selections_result, parent_object, runtime_state
               )
               finished_jobs += 1
               if target_result && finished_jobs == enqueued_jobs
@@ -233,7 +232,7 @@ module GraphQL
         end
 
         # @return [void]
-        def evaluate_selection(result_name, field_ast_nodes_or_ast_node, owner_object, is_eager_field, selections_result, parent_object, runtime_state) # rubocop:disable Metrics/ParameterLists
+        def evaluate_selection(result_name, field_ast_nodes_or_ast_node, is_eager_field, selections_result, parent_object, runtime_state) # rubocop:disable Metrics/ParameterLists
           return if dead_result?(selections_result)
           # As a performance optimization, the hash key will be a `Node` if
           # there's only one selection of the field. But if there are multiple
@@ -254,6 +253,7 @@ module GraphQL
           runtime_state.current_result = selections_result
           runtime_state.current_result_name = result_name
 
+          owner_object = selections_result.graphql_application_value
           if field_defn.dynamic_introspection
             owner_object = field_defn.owner.wrap(owner_object, context)
           end
@@ -638,7 +638,6 @@ module GraphQL
                   end
                   call_method_on_directives(:resolve, continue_value, directives) do
                     evaluate_selections(
-                      continue_value,
                       false,
                       selections,
                       this_result,
