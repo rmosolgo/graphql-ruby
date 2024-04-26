@@ -245,7 +245,7 @@ module GraphQL
           end
           field_name = ast_node.name
           owner_type = selections_result.graphql_result_type
-          field_defn = query.warden.get_field(owner_type, field_name) || binding.pry
+          field_defn = query.warden.get_field(owner_type, field_name)
 
           # Set this before calling `run_with_directives`, so that the directive can have the latest path
           runtime_state = get_current_runtime_state
