@@ -11,7 +11,6 @@ module GraphQL
       class Runtime
         class CurrentState
           def initialize
-            @current_object = nil
             @current_field = nil
             @current_arguments = nil
             @current_result_name = nil
@@ -19,8 +18,12 @@ module GraphQL
             @was_authorized_by_scope_items = nil
           end
 
+          def current_object
+            @current_result.graphql_application_value
+          end
+
           attr_accessor :current_result, :current_result_name,
-            :current_arguments, :current_field, :current_object, :was_authorized_by_scope_items
+            :current_arguments, :current_field, :was_authorized_by_scope_items
         end
 
         # @return [GraphQL::Query]
@@ -79,9 +82,8 @@ module GraphQL
           root_operation = query.selected_operation
           root_op_type = root_operation.operation_type || "query"
           root_type = schema.root_type_for_operation(root_op_type)
-          @response = GraphQLResultHash.new(nil, root_type, nil, nil, false)
+          @response = GraphQLResultHash.new(nil, root_type, @query.root_value, nil, false)
           st = get_current_runtime_state
-          st.current_object = query.root_value
           st.current_result = @response
           runtime_object = root_type.wrap(query.root_value, context)
           runtime_object = schema.sync_lazy(runtime_object)
@@ -101,7 +103,7 @@ module GraphQL
               # directly evaluated and the results can be written right into the main response hash.
               tap_or_each(gathered_selections) do |selections, is_selection_array|
                 if is_selection_array
-                  selection_response = GraphQLResultHash.new(nil, root_type, nil, nil, false)
+                  selection_response = GraphQLResultHash.new(nil, root_type, @query.root_value, nil, false)
                   final_response = @response
                 else
                   selection_response = @response
@@ -110,7 +112,6 @@ module GraphQL
 
                 @dataloader.append_job {
                   st = get_current_runtime_state
-                  st.current_object = query.root_value
                   st.current_result_name = nil
                   st.current_result = selection_response
                   # This is a less-frequent case; use a fast check since it's often not there.
@@ -334,7 +335,6 @@ module GraphQL
 
         def evaluate_selection_with_resolved_keyword_args(kwarg_arguments, resolved_arguments, field_defn, ast_node, field_ast_nodes, object, is_eager_field, result_name, selection_result, parent_object, return_type, return_type_non_null, runtime_state)  # rubocop:disable Metrics/ParameterLists
           runtime_state.current_field = field_defn
-          runtime_state.current_object = object
           runtime_state.current_arguments = resolved_arguments
           runtime_state.current_result_name = result_name
           runtime_state.current_result = selection_result
@@ -356,7 +356,6 @@ module GraphQL
               # This might be executed in a different context; reset this info
               runtime_state = get_current_runtime_state
               runtime_state.current_field = field_defn
-              runtime_state.current_object = object
               runtime_state.current_arguments = resolved_arguments
               runtime_state.current_result_name = result_name
               runtime_state.current_result = selection_result
@@ -631,7 +630,6 @@ module GraphQL
                   end
                   # reset this mutable state
                   # Unset `result_name` here because it's already included in the new response hash
-                  runtime_state.current_object = continue_value
                   runtime_state.current_result_name = nil
                   runtime_state.current_result = this_result
                   # This is a less-frequent case; use a fast check since it's often not there.
@@ -795,7 +793,6 @@ module GraphQL
               # In that case, this will initialize a new state
               # to avoid conflicting with the parent fiber.
               runtime_state = get_current_runtime_state
-              runtime_state.current_object = owner_object
               runtime_state.current_field = field
               runtime_state.current_arguments = arguments
               runtime_state.current_result_name = result_name
