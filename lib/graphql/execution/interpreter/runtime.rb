@@ -279,7 +279,6 @@ module GraphQL
           after_lazy(arguments, field: field_defn, ast_node: ast_node, owner_object: object, arguments: arguments, result_name: result_name, result: selection_result, runtime_state: runtime_state) do |resolved_arguments, runtime_state|
             return_type_non_null = return_type.non_null?
             if resolved_arguments.is_a?(GraphQL::ExecutionError) || resolved_arguments.is_a?(GraphQL::UnauthorizedError)
-              owner_type = selection_result.graphql_result_type
               continue_value(resolved_arguments, field_defn, return_type_non_null, ast_node, result_name, selection_result)
               next
             end
