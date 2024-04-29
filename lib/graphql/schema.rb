@@ -749,13 +749,22 @@ module GraphQL
 
       attr_writer :max_complexity
 
-      def max_complexity(max_complexity = nil)
+      def max_complexity(max_complexity = nil, count_introspection_fields: true)
         if max_complexity
           @max_complexity = max_complexity
+          @max_complexity_count_introspection_fields = count_introspection_fields
         elsif defined?(@max_complexity)
           @max_complexity
         else
           find_inherited_value(:max_complexity)
+        end
+      end
+
+      def max_complexity_count_introspection_fields
+        if defined?(@max_complexity_count_introspection_fields)
+          @max_complexity_count_introspection_fields
+        else
+          find_inherited_value(:max_complexity_count_introspection_fields, true)
         end
       end
 
