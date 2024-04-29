@@ -117,6 +117,8 @@ class MySchema < GraphQL::Schema
 end
 ```
 
+By default, **introspection fields are counted**. You can also configure your schema not to count introspection fields with `max_complexity ..., count_introspection_fields: false`.
+
 #### Connection fields
 
 By default, GraphQL-Ruby calculates a complexity value for connection fields by:
