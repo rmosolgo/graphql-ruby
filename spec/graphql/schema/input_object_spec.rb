@@ -1376,7 +1376,7 @@ describe GraphQL::Schema::InputObject do
         field :result, String
         def resolve(values:)
           {
-            result: "[a: #{values[:a].inspect}, #{values.key?(:a)}], [b: #{values[:b].inspect}, #{values.key?([:b])}], [c: #{values[:c].inspect}, #{values.key?(:c)}]"
+            result: "[a: #{values[:a].inspect}, #{values.key?(:a)}], [b: #{values[:b].inspect}, #{values.key?(:b)}], [c: #{values[:c].inspect}, #{values.key?(:c)}]"
           }
         end
       end
@@ -1391,7 +1391,7 @@ describe GraphQL::Schema::InputObject do
         end
 
         def result(values:)
-          "[a: #{values[:a].inspect}, #{values.key?(:a)}], [b: #{values[:b].inspect}, #{values.key?([:b])}], [c: #{values[:c].inspect}, #{values.key?(:c)}]"
+          "[a: #{values[:a].inspect}, #{values.key?(:a)}], [b: #{values[:b].inspect}, #{values.key?(:b)}], [c: #{values[:c].inspect}, #{values.key?(:c)}]"
         end
       end
 
