@@ -658,25 +658,21 @@ module GraphQL
             inner_type_non_null = inner_type.non_null?
             response_list = GraphQLResultArray.new(result_name, selection_result, is_non_null)
             set_result(selection_result, result_name, response_list, true, is_non_null)
-            idx = nil
+            idx = 0
+            any_items_resolved = false
             list_value = begin
-              value.each do |inner_value|
-                idx ||= 0
-                this_idx = idx
-                idx += 1
-                if use_dataloader_job
-                  @dataloader.append_job do
-                    resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type, was_scoped, runtime_state)
-                  end
-                else
-                  resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type, was_scoped, runtime_state)
+              enumerator = value.to_enum
+              if use_dataloader_job
+                @dataloader.append_job do
+                  resolve_list_item(enumerator, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, idx, response_list, next_selections, owner_type, was_scoped, runtime_state)
                 end
+              else
+                resolve_list_item(enumerator, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, idx, response_list, next_selections, owner_type, was_scoped, runtime_state)
               end
 
               response_list
             rescue NoMethodError => err
-              # Ruby 2.2 doesn't have NoMethodError#receiver, can't check that one in this case. (It's been EOL since 2017.)
-              if err.name == :each && (err.respond_to?(:receiver) ? err.receiver == value : true)
+              if err.receiver == value && (err.name == :each || err.name == :to_enum)
                 # This happens when the GraphQL schema doesn't match the implementation. Help the dev debug.
                 raise ListResultFailedError.new(value: value, field: field, path: current_path)
               else
@@ -693,24 +689,29 @@ module GraphQL
               end
             end
             # Detect whether this error came while calling `.each` (before `idx` is set) or while running list *items* (after `idx` is set)
-            error_is_non_null = idx.nil? ? is_non_null : inner_type.non_null?
+            error_is_non_null = get_current_runtime_state.current_result_name.is_a?(String) ? is_non_null : inner_type.non_null?
             continue_value(list_value, owner_type, field, error_is_non_null, ast_node, result_name, selection_result)
           else
             raise "Invariant: Unhandled type kind #{current_type.kind} (#{current_type})"
           end
         end
 
-        def resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type, was_scoped, runtime_state) # rubocop:disable Metrics/ParameterLists
+        def resolve_list_item(enumerator, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type, was_scoped, runtime_state) # rubocop:disable Metrics/ParameterLists
+          runtime_state = get_current_runtime_state
           runtime_state.current_result_name = this_idx
           runtime_state.current_result = response_list
           call_method_on_directives(:resolve_each, owner_object, ast_node.directives) do
+            inner_value = enumerator.next
             # This will update `response_list` with the lazy
             after_lazy(inner_value, ast_node: ast_node, field: field, owner_object: owner_object, arguments: arguments, result_name: this_idx, result: response_list, runtime_state: runtime_state) do |inner_inner_value, runtime_state|
               continue_value = continue_value(inner_inner_value, owner_type, field, inner_type_non_null, ast_node, this_idx, response_list)
               if HALT != continue_value
                 continue_field(continue_value, owner_type, field, inner_type, ast_node, next_selections, false, owner_object, arguments, this_idx, response_list, was_scoped, runtime_state)
               end
+              resolve_list_item(enumerator, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx + 1, response_list, next_selections, owner_type, was_scoped, runtime_state)
             end
+          rescue StopIteration
+            nil
           end
         end
 

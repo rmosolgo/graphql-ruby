@@ -187,4 +187,57 @@ describe GraphQL::Schema::List do
       assert_equal 3, res["errors"][0]["extensions"]["problems"].count
     end
   end
+
+  describe "Lazy Enumerators" do
+    class LazyEnumeratorSchema < GraphQL::Schema
+      class LazyItems
+        def initialize(log)
+          @log = log
+        end
+
+        def each
+          @log << "yield 1"
+          yield(1)
+          @log << "yield 2"
+          yield(2)
+          @log << "yield 3"
+          yield(3)
+          self
+        end
+      end
+
+      class Item < GraphQL::Schema::Object
+        field :name, String
+
+        def name
+          context[:list_log] << "resolve #{object}.name"
+          "name-#{object}"
+        end
+      end
+      class Query < GraphQL::Schema::Object
+        field :items, [Item]
+
+        def items
+          LazyItems.new(context[:list_log])
+        end
+      end
+
+      query(Query)
+    end
+
+    it "resolves them lazily" do
+      query_str = "{ items { name } }"
+      log = []
+      LazyEnumeratorSchema.execute(query_str, context: { list_log: log })
+      expected_log = [
+        "yield 1",
+        "resolve 1.name",
+        "yield 2",
+        "resolve 2.name",
+        "yield 3",
+        "resolve 3.name"
+      ]
+      assert_equal expected_log, log
+    end
+  end
 end
