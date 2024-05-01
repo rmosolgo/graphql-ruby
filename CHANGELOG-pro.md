@@ -6,6 +6,10 @@
 
 ### New Features
 
+# 1.27.3 (1 May 2024)
+
+- OperationStore: Fix `.reindex` for many stored operations #4940
+
 # 1.27.2 (30 Apr 2024)
 
 - Dashboard: handle missing index references gracefully #4940
