@@ -157,7 +157,8 @@
 <div class="guide-table-of-contents"><div class="table-of-contents">
   <h3 class="contents-header">Contents</h3>
   <ol class='contents-list'><li class='contents-entry'><a href='#getting-started'>Getting Started
-</a></li><li class='contents-entry'><a href='#authorizing-objects'>Authorizing Objects
+</a><ol class='contents-list'><li class='contents-entry'><a href='#rails-generator'>Rails Generator
+</a></li></ol></li><li class='contents-entry'><a href='#authorizing-objects'>Authorizing Objects
 </a><ol class='contents-list'><li class='contents-entry'><a href='#bypassing-cancan'>Bypassing CanCan
 </a></li><li class='contents-entry'><a href='#handling-unauthorized-objects'>Handling Unauthorized Objects
 </a></li></ol></li><li class='contents-entry'><a href='#scopes'>Scopes
@@ -208,6 +209,15 @@
 <span class="p">}</span>
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="ss">context: </span><span class="n">context</span><span class="p">)</span>
 </code></pre></div></div>
+
+<h3 id="rails-generator">Rails Generator</h3>
+
+<p>If your schema files follow the same convention as <code class="language-plaintext highlighter-rouge">rails generate graphql:install</code>, then you can install the CanCan integration with a Rails generator:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>rails generate graphql:cancan:install
+</code></pre></div></div>
+
+<p>This will insert all the necessary <code class="language-plaintext highlighter-rouge">include ...</code>s described below. Alternatively, check the docs below to mix in <code class="language-plaintext highlighter-rouge">CanCanIntegration</code>’s modules.</p>
 
 <h2 id="authorizing-objects">Authorizing Objects</h2>
 
