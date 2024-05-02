@@ -6,6 +6,10 @@
 
 ### New Features
 
+# 1.27.4 (2 May 2024)
+
+- Pundit, CanCan, OperationStore: add Rails generators for getting started
+
 # 1.27.3 (1 May 2024)
 
 - OperationStore: Fix `.reindex` for many stored operations #4940
