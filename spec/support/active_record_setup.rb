@@ -36,7 +36,7 @@ if testing_rails?
   end
 
   ActiveRecord::Schema.define do
-    self.verbose = false
+    self.verbose = true
     create_table :bases, force: true do |t|
       t.column :name, :string
       t.column :planet, :string
@@ -47,6 +47,7 @@ if testing_rails?
       t.column :name, :string
     end
   end
+
 
   class Food < ActiveRecord::Base
     include GlobalID::Identification
