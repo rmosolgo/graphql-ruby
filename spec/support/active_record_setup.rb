@@ -24,17 +24,21 @@ if testing_rails?
       ActiveRecord::Base.connection.execute("create database graphql_ruby_test;")
     end
 
-    ActiveRecord::Base.establish_connection(ar_connection_options)
+    ActiveRecord::Base.configurations = {
+      starwars: ar_connection_options,
+      starwars_replica: ar_connection_options,
+    }
+
     SequelDB = Sequel.connect("postgres://postgres:#{ENV["PGPASSWORD"]}@localhost:5432/graphql_ruby_test")
   else
     ActiveRecord::Base.configurations = {
       starwars: { adapter: "sqlite3", database: "./_test_.db" },
       starwars_replica: { adapter: "sqlite3", database: "./_test_.db" },
     }
-    ActiveRecord::Base.establish_connection(:starwars)
     SequelDB = Sequel.sqlite("./_test_.db")
   end
 
+  ActiveRecord::Base.establish_connection(:starwars)
   ActiveRecord::Schema.define do
     self.verbose = true
     create_table :bases, force: true do |t|
