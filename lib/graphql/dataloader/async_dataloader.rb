@@ -77,6 +77,10 @@ module GraphQL
             set_fiber_variables(fiber_vars)
             Thread.current[:graphql_dataloader_next_tick] = condition
             pending_sources.each(&:run_pending_keys)
+            if defined?(ActiveRecord)
+              # Rails < 7.2 would hold a connection until the end of the request
+              ActiveRecord::Base.connection_pool.release_connection
+            end
           end
         end
       end

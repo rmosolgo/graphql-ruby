@@ -231,9 +231,11 @@ module GraphQL
       Fiber.new(blocking: !@nonblocking) {
         set_fiber_variables(fiber_vars)
         yield
-        # With `.transfer`, you have to explicitly pass back to the parent --
-        # if the fiber is allowed to terminate normally, control is passed to the main fiber instead.
-        true
+        if defined?(ActiveRecord)
+          # Rails < 7.1 holds on to connections after the fiber terminates
+          # (only cleaning them up at the end of the request)
+          ActiveRecord::Base.connection_pool.release_connection
+        end
       }
     end
 
