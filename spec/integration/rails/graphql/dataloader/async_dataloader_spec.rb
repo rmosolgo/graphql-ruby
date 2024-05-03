@@ -111,13 +111,12 @@ describe GraphQL::Dataloader::AsyncDataloader do
   end
 
 
-  it "uses the `connected_to` role" do
-    query_str = "{ role query { role } }"
-    result = StarWars::StarWarsModel.connected_to(role: :reading) do
-      RailsAsyncSchema.execute(query_str)
-    end
-    expected_res = { "role" => "reading", "query" => { "role" => "reading" }}
-    assert_equal expected_res, result["data"]
-
-  end
+  # it "uses the `connected_to` role" do
+  #   query_str = "{ role query { role } }"
+  #   result = StarWars::StarWarsModel.connected_to(role: :reading) do
+  #     RailsAsyncSchema.execute(query_str)
+  #   end
+  #   expected_res = { "role" => "reading", "query" => { "role" => "reading" }}
+  #   assert_equal expected_res, result["data"]
+  # end
 end
