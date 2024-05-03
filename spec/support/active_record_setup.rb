@@ -40,7 +40,7 @@ if testing_rails?
 
   ActiveRecord::Base.establish_connection(:starwars)
   ActiveRecord::Schema.define do
-    self.verbose = true
+    self.verbose = false
     create_table :bases, force: true do |t|
       t.column :name, :string
       t.column :planet, :string
@@ -51,7 +51,6 @@ if testing_rails?
       t.column :name, :string
     end
   end
-
 
   class Food < ActiveRecord::Base
     include GlobalID::Identification
