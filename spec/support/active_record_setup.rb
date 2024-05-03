@@ -7,6 +7,8 @@ if testing_rails?
     ActiveRecord.async_query_executor ||= :global_thread_pool
   end
 
+  ActiveRecord.legacy_connection_handling = false
+
   if ENV['DATABASE'] == 'POSTGRESQL'
     ar_connection_options = {
       host: "localhost",
