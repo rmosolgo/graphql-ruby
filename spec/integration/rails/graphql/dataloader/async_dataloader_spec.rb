@@ -5,7 +5,7 @@ describe GraphQL::Dataloader::AsyncDataloader do
   class RailsAsyncSchema < GraphQL::Schema
     class CustomAsyncDataloader < GraphQL::Dataloader::AsyncDataloader
       def cleanup_fiber
-        StarWars::StarWarsModel.connection_pool.release_connection
+        # StarWars::StarWarsModel.connection_pool.release_connection
       end
 
       def get_fiber_variables
