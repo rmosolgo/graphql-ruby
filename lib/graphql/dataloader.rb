@@ -88,6 +88,11 @@ module GraphQL
       nil
     end
 
+    # This method is called when Dataloader is finished using a fiber.
+    # Use it to perform any cleanup, such as releasing database connections (if required manually)
+    def cleanup_fiber
+    end
+
     # Get a Source instance from this dataloader, for calling `.load(...)` or `.request(...)` on.
     #
     # @param source_class [Class<GraphQL::Dataloader::Source]
@@ -231,11 +236,7 @@ module GraphQL
       Fiber.new(blocking: !@nonblocking) {
         set_fiber_variables(fiber_vars)
         yield
-        if defined?(ActiveRecord)
-          # Rails < 7.1 holds on to connections after the fiber terminates
-          # (only cleaning them up at the end of the request)
-          ActiveRecord::Base.connection_pool.release_connection
-        end
+        cleanup_fiber
       }
     end
 

@@ -3,6 +3,28 @@ require "spec_helper"
 
 describe GraphQL::Dataloader::AsyncDataloader do
   class RailsAsyncSchema < GraphQL::Schema
+    class CustomAsyncDataloader < GraphQL::Dataloader::AsyncDataloader
+      def cleanup_fiber
+        StarWars::StarWarsModel.connection_pool.release_connection
+      end
+
+      def get_fiber_variables
+        vars = super
+        vars[:connected_to] = {
+          role: StarWars::StarWarsModel.current_role,
+          shard: StarWars::StarWarsModel.current_shard,
+          prevent_writes: StarWars::StarWarsModel.current_preventing_writes
+        }
+        vars
+      end
+
+      def set_fiber_variables(vars)
+        connection_config = vars.delete(:connected_to)
+        StarWars::StarWarsModel.connecting_to(**connection_config)
+        super(vars)
+      end
+    end
+
     class BaseSource < GraphQL::Dataloader::Source
       def fetch(ids)
         bases = StarWars::Base.where(id: ids)
@@ -26,7 +48,7 @@ describe GraphQL::Dataloader::AsyncDataloader do
         base&.name
       end
 
-      field :self, Query
+      field :query, Query
 
       field :inline_base_name, String do
         argument :id, Int
@@ -36,13 +58,19 @@ describe GraphQL::Dataloader::AsyncDataloader do
         StarWars::Base.where(id: id).first&.name
       end
 
-      def self
-        dataloader.with(SelfSource).load(:self)
+      def query
+        dataloader.with(SelfSource).load(:query)
+      end
+
+      field :role, String
+
+      def role
+        StarWars::StarWarsModel.current_role.to_s
       end
     end
 
     query(Query)
-    use GraphQL::Dataloader::AsyncDataloader
+    use CustomAsyncDataloader
   end
 
   before {
@@ -59,9 +87,9 @@ describe GraphQL::Dataloader::AsyncDataloader do
     query_str = "{
       b1: baseName(id: 1) b2: baseName(id: 2)
       ib1: inlineBaseName(id: 1)
-      self {
+      query {
         b3: baseName(id: 3)
-        self {
+        query {
           b4: baseName(id: 4)
           ib2: inlineBaseName(id: 2)
         }
@@ -70,15 +98,26 @@ describe GraphQL::Dataloader::AsyncDataloader do
     res = RailsAsyncSchema.execute(query_str)
     assert_equal({
       "b1" => "Yavin", "b2" => "Echo Base", "ib1" => "Yavin",
-      "self" => {
+      "query" => {
         "b3" => "Secret Hideout",
-        "self" => { "b4" => "Death Star", "ib2" => "Echo Base" }
+        "query" => { "b4" => "Death Star", "ib2" => "Echo Base" }
       }
     }, res["data"])
 
     RailsAsyncSchema.execute(query_str)
     RailsAsyncSchema.execute(query_str)
 
-    assert_equal 1, ActiveRecord::Base.connection_pool.connections.size
+    assert_equal 0, ActiveRecord::Base.connection_pool.connections.size
+  end
+
+
+  it "uses the `connected_to` role" do
+    query_str = "{ role query { role } }"
+    result = StarWars::StarWarsModel.connected_to(role: :reading) do
+      RailsAsyncSchema.execute(query_str)
+    end
+    expected_res = { "role" => "reading", "query" => { "role" => "reading" }}
+    assert_equal expected_res, result["data"]
+
   end
 end
