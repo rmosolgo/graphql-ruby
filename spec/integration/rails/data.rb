@@ -18,6 +18,8 @@ module StarWars
     self.abstract_class = true
     connects_to database: { writing: :starwars, reading: :starwars_replica }
   end
+
+  StarWarsModel.establish_connection(:starwars)
   class Base < StarWarsModel
   end
 
