@@ -88,4 +88,68 @@ type Query {
       assert_equal 1, f2.selections.size
     end
   end
+
+  describe "merge_methods" do
+    it "generates merge methods" do
+      classes_to_test = {
+        GraphQL::Language::Nodes::Argument => [],
+        GraphQL::Language::Nodes::Directive => [:merge_argument],
+        GraphQL::Language::Nodes::DirectiveDefinition => [:merge_argument, :merge_location],
+        GraphQL::Language::Nodes::DirectiveLocation => [],
+        GraphQL::Language::Nodes::Document => [],
+        GraphQL::Language::Nodes::Enum => [],
+        GraphQL::Language::Nodes::EnumTypeDefinition => [:merge_directive, :merge_value],
+        GraphQL::Language::Nodes::EnumTypeExtension => [:merge_directive, :merge_value],
+        GraphQL::Language::Nodes::EnumValueDefinition => [:merge_directive],
+        GraphQL::Language::Nodes::Field => [:merge_argument, :merge_directive, :merge_selection],
+        GraphQL::Language::Nodes::FieldDefinition => [:merge_argument, :merge_directive],
+        GraphQL::Language::Nodes::FragmentDefinition => [:merge_directive, :merge_selection],
+        GraphQL::Language::Nodes::FragmentSpread => [:merge_directive],
+        GraphQL::Language::Nodes::InlineFragment => [:merge_directive, :merge_selection],
+        GraphQL::Language::Nodes::InputObject => [:merge_argument],
+        GraphQL::Language::Nodes::InputObjectTypeDefinition => [:merge_directive, :merge_field],
+        GraphQL::Language::Nodes::InputObjectTypeExtension => [:merge_directive, :merge_field],
+        GraphQL::Language::Nodes::InputValueDefinition => [:merge_directive],
+        GraphQL::Language::Nodes::InterfaceTypeDefinition => [:merge_directive, :merge_field, :merge_interface],
+        GraphQL::Language::Nodes::InterfaceTypeExtension => [:merge_directive, :merge_field, :merge_interface],
+        GraphQL::Language::Nodes::ListType => [],
+        GraphQL::Language::Nodes::NonNullType => [],
+        GraphQL::Language::Nodes::NullValue => [],
+        GraphQL::Language::Nodes::ObjectTypeDefinition => [:merge_directive, :merge_field],
+        GraphQL::Language::Nodes::ObjectTypeExtension => [:merge_directive, :merge_field],
+        GraphQL::Language::Nodes::OperationDefinition => [:merge_directive, :merge_selection, :merge_variable],
+        GraphQL::Language::Nodes::ScalarTypeDefinition => [:merge_directive],
+        GraphQL::Language::Nodes::ScalarTypeExtension => [:merge_directive],
+        GraphQL::Language::Nodes::SchemaDefinition => [:merge_directive],
+        GraphQL::Language::Nodes::SchemaExtension => [:merge_directive],
+        GraphQL::Language::Nodes::TypeName => [],
+        GraphQL::Language::Nodes::UnionTypeDefinition => [:merge_directive],
+        GraphQL::Language::Nodes::UnionTypeExtension => [:merge_directive],
+        GraphQL::Language::Nodes::VariableDefinition => [:merge_directive],
+        GraphQL::Language::Nodes::VariableIdentifier => []
+      }
+
+      classes_to_test.each do |cls, expected_methods|
+        assert cls.instance_methods.include?(:merge), "#{cls} has a merge method"
+        assert cls.instance_methods.include?(:merge!), "#{cls} has a merge! method"
+        assert_equal expected_methods, cls.instance_methods.select { |m| m.start_with?("merge_")}.sort, "#{cls} has the expected merge children methods"
+      end
+    end
+
+    it "makes copies with merged children" do
+      node_1 = GraphQL::Language::Nodes::Field.new(
+        name: "f1",
+        field_alias: "myField"
+      )
+
+      node_2 = node_1
+        .merge_argument(name: "arg1", value: 5)
+        .merge_directive(name: "topSecret")
+        .merge_argument(name: "arg2", value: GraphQL::Language::Nodes::Enum.new(name: "HELLO"))
+        .merge_selection(name: "f2", field_alias: "myOtherField")
+
+      assert_equal "myField: f1", node_1.to_query_string
+      assert_equal "myField: f1(arg1: 5, arg2: HELLO) @topSecret {\n  myOtherField: f2\n}", node_2.to_query_string
+    end
+  end
 end

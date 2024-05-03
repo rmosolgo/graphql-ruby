@@ -26,6 +26,7 @@ describe GraphQL::Analysis::AST::QueryComplexity do
         cheese1: cheese(id: 1) {
           id
           flavor
+          __typename
         }
 
         # complexity of 4
@@ -43,7 +44,7 @@ describe GraphQL::Analysis::AST::QueryComplexity do
 
     it "sums the complexity" do
       complexities = reduce_result.first
-      assert_equal 7, complexities
+      assert_equal 8, complexities
     end
   end
 
@@ -463,6 +464,24 @@ describe GraphQL::Analysis::AST::QueryComplexity do
 
       query(Query)
       orphan_types(DoubleComplexity)
+
+      module CustomIntrospection
+        class DynamicFields < GraphQL::Introspection::DynamicFields
+          field :__typename, String, complexity: 100
+        end
+
+        class EntryPoints < GraphQL::Introspection::EntryPoints
+          class CustomIntrospectionField < GraphQL::Schema::Field
+            def calculate_complexity(query:, nodes:, child_complexity:)
+              child_complexity + 0.6
+            end
+          end
+          field_class CustomIntrospectionField
+          field :__schema, GraphQL::Schema::LateBoundType.new("__Schema")
+        end
+      end
+
+      introspection(CustomIntrospection)
     end
 
     let(:query) { GraphQL::Query.new(complexity_schema, query_string, context: query_context) }
@@ -483,6 +502,16 @@ describe GraphQL::Analysis::AST::QueryComplexity do
       complexity = reduce_result.first
       # 10 from `complexity`, `0.3` from `value`
       assert_equal 10.3, complexity
+    end
+
+    describe "introspection" do
+      let(:query_string) { "{ __typename __schema { queryType } }"}
+
+      it "does custom complexity for introspection" do
+        complexity = reduce_result.first
+        # 100 + 1 + 0.6
+        assert_equal 101.6, complexity
+      end
     end
 
     describe "same field on multiple types" do
