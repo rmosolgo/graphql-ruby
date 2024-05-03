@@ -4,25 +4,25 @@ require "spec_helper"
 describe GraphQL::Dataloader::AsyncDataloader do
   class RailsAsyncSchema < GraphQL::Schema
     class CustomAsyncDataloader < GraphQL::Dataloader::AsyncDataloader
-      def cleanup_fiber
-        # StarWars::StarWarsModel.connection_pool.release_connection
-      end
+      # def cleanup_fiber
+      #   # StarWars::StarWarsModel.connection_pool.release_connection
+      # end
 
-      def get_fiber_variables
-        vars = super
-        vars[:connected_to] = {
-          role: StarWars::StarWarsModel.current_role,
-          shard: StarWars::StarWarsModel.current_shard,
-          prevent_writes: StarWars::StarWarsModel.current_preventing_writes
-        }
-        vars
-      end
+      # def get_fiber_variables
+      #   vars = super
+      #   vars[:connected_to] = {
+      #     role: StarWars::StarWarsModel.current_role,
+      #     shard: StarWars::StarWarsModel.current_shard,
+      #     prevent_writes: StarWars::StarWarsModel.current_preventing_writes
+      #   }
+      #   vars
+      # end
 
-      def set_fiber_variables(vars)
-        connection_config = vars.delete(:connected_to)
-        # StarWars::StarWarsModel.connecting_to(**connection_config)
-        super(vars)
-      end
+      # def set_fiber_variables(vars)
+      #   connection_config = vars.delete(:connected_to)
+      #   # StarWars::StarWarsModel.connecting_to(**connection_config)
+      #   super(vars)
+      # end
     end
 
     class BaseSource < GraphQL::Dataloader::Source
@@ -74,15 +74,15 @@ describe GraphQL::Dataloader::AsyncDataloader do
   end
 
   before {
-    @prev_isolation_level = ActiveSupport::IsolatedExecutionState.isolation_level
-    p [:@prev_isolation_level, @prev_isolation_level]
-    ActiveRecord::Base.connection_pool.disconnect!
-    ActiveSupport::IsolatedExecutionState.isolation_level = :fiber
+    # @prev_isolation_level = ActiveSupport::IsolatedExecutionState.isolation_level
+    # p [:@prev_isolation_level, @prev_isolation_level]
+    # ActiveRecord::Base.connection_pool.disconnect!
+    # ActiveSupport::IsolatedExecutionState.isolation_level = :fiber
   }
 
   after {
-    ActiveSupport::IsolatedExecutionState.isolation_level = @prev_isolation_level
-    ActiveRecord::Base.establish_connection(:starwars)
+    # ActiveSupport::IsolatedExecutionState.isolation_level = @prev_isolation_level
+    # ActiveRecord::Base.establish_connection(:starwars)
   }
 
   # it "cleans up database connections" do
