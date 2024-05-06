@@ -74,15 +74,13 @@ describe GraphQL::Dataloader::AsyncDataloader do
   end
 
   before {
-    # @prev_isolation_level = ActiveSupport::IsolatedExecutionState.isolation_level
-  #   p [:@prev_isolation_level, @prev_isolation_level]
-  #   ActiveRecord::Base.connection_pool.disconnect!
-  #   ActiveSupport::IsolatedExecutionState.isolation_level = :fiber
+    @prev_isolation_level = ActiveSupport::IsolatedExecutionState.isolation_level
+    ActiveSupport::IsolatedExecutionState.isolation_level = :fiber
+    ActiveRecord::Base.establish_connection(:starwars)
   }
 
   after {
-    # ActiveRecord::Base.connection_pool.disconnect
-    # ActiveSupport::IsolatedExecutionState.isolation_level = @prev_isolation_level
+    ActiveSupport::IsolatedExecutionState.isolation_level = @prev_isolation_level
     ActiveRecord::Base.establish_connection(:starwars)
   }
 
@@ -114,12 +112,11 @@ describe GraphQL::Dataloader::AsyncDataloader do
   # end
 
   it "uses the `connected_to` role" do
-    skip "Disabled because debugging"
     query_str = "{ role query { role } }"
     result = StarWars::StarWarsModel.connected_to(role: :reading) do
       RailsAsyncSchema.execute(query_str)
     end
     expected_res = { "role" => "reading", "query" => { "role" => "reading" }}
-    # assert_equal expected_res, result["data"]
+    assert_equal expected_res, result["data"]
   end
 end
