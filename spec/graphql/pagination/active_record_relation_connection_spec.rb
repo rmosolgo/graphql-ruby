@@ -33,6 +33,8 @@ if testing_rails?
     include ConnectionAssertions
 
     before do
+      pp ActiveRecord::Base.connection_pool.db_config
+      ActiveRecord::Base.establish_connection(:starwars)
       if Food.count == 0 # Backwards-compat version of `.none?`
         ConnectionAssertions::NAMES.each { |n| Food.create!(name: n) }
       end
