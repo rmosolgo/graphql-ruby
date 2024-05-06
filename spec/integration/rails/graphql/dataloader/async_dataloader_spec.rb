@@ -81,9 +81,9 @@ describe GraphQL::Dataloader::AsyncDataloader do
   }
 
   after {
-    ActiveRecord::Base.connection_pool.disconnect
+    # ActiveRecord::Base.connection_pool.disconnect
     # ActiveSupport::IsolatedExecutionState.isolation_level = @prev_isolation_level
-    # ActiveRecord::Base.establish_connection(:starwars)
+    ActiveRecord::Base.establish_connection(:starwars)
   }
 
   # it "cleans up database connections" do
