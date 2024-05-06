@@ -73,18 +73,18 @@ describe GraphQL::Dataloader::AsyncDataloader do
     use CustomAsyncDataloader
   end
 
-  # before {
-  #   @prev_isolation_level = ActiveSupport::IsolatedExecutionState.isolation_level
+  before {
+    @prev_isolation_level = ActiveSupport::IsolatedExecutionState.isolation_level
   #   p [:@prev_isolation_level, @prev_isolation_level]
   #   ActiveRecord::Base.connection_pool.disconnect!
   #   ActiveSupport::IsolatedExecutionState.isolation_level = :fiber
-  # }
+  }
 
-  # after {
-  #   ActiveRecord::Base.connection_pool.disconnect!
-  #   ActiveSupport::IsolatedExecutionState.isolation_level = @prev_isolation_level
-  #   ActiveRecord::Base.establish_connection(:starwars)
-  # }
+  after {
+    ActiveRecord::Base.connection_pool.disconnect!
+    ActiveSupport::IsolatedExecutionState.isolation_level = @prev_isolation_level
+    ActiveRecord::Base.establish_connection(:starwars)
+  }
 
   # it "cleans up database connections" do
   #   query_str = "{
