@@ -5,15 +5,22 @@ require "generators/graphql/object_generator"
 class GraphQLGeneratorsObjectGeneratorTest < BaseGeneratorTest
   tests Graphql::Generators::ObjectGenerator
 
-  ActiveRecord::Schema.define do
-    create_table :test_users, force: true do |t|
-      t.datetime :created_at
-      t.date :birthday
-      t.integer :points, null: false
-      t.decimal :rating, null: false
+  def self.create_test_users
+    ActiveRecord::Schema.define do
+      create_table :test_users, force: true do |t|
+        t.datetime :created_at
+        t.date :birthday
+        t.integer :points, null: false
+        t.decimal :rating, null: false
+      end
     end
   end
 
+  create_test_users
+
+  before do
+    self.class.create_test_users
+  end
   # rubocop:disable Style/ClassAndModuleChildren
   class ::TestUser < ActiveRecord::Base
   end
