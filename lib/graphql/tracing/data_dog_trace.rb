@@ -20,53 +20,112 @@ module GraphQL
         super
       end
 
-      {
-        'lex' => 'lex.graphql',
-        'parse' => 'parse.graphql',
-        'validate' => 'validate.graphql',
-        'analyze_query' => 'analyze.graphql',
-        'analyze_multiplex' => 'analyze.graphql',
-        'execute_multiplex' => 'execute.graphql',
-        'execute_query' => 'execute.graphql',
-        'execute_query_lazy' => 'execute.graphql',
-      }.each do |trace_method, trace_key|
-        module_eval <<-RUBY, __FILE__, __LINE__
-          def #{trace_method}(**data)
-            @tracer.trace("#{trace_key}", service: @service_name, type: 'custom') do |span|
-                span.set_tag('component', 'graphql')
-                span.set_tag('operation', '#{trace_method}')
-
-              #{
-                if trace_method == 'execute_multiplex'
-                  <<-RUBY
-                  operations = data[:multiplex].queries.map(&:selected_operation_name).join(', ')
-
-                  resource = if operations.empty?
-                    first_query = data[:multiplex].queries.first
-                    fallback_transaction_name(first_query && first_query.context)
-                  else
-                    operations
-                  end
-                  span.resource = resource if resource
-
-                  # [Deprecated] will be removed in the future
-                  span.set_metric('_dd1.sr.eausr', @analytics_sample_rate) if @analytics_enabled
-                  RUBY
-                elsif trace_method == 'execute_query'
-                  <<-RUBY
-                  span.set_tag(:selected_operation_name, data[:query].selected_operation_name)
-                  span.set_tag(:selected_operation_type, data[:query].selected_operation.operation_type)
-                  span.set_tag(:query_string, data[:query].query_string)
-                  RUBY
-                end
-              }
-              if @has_prepare_span
-                prepare_span("#{trace_method.sub("platform_", "")}", data, span)
-              end
-              super
-            end
+      def lex(query_string:)
+        @tracer.trace('graphql.lex', resource: query_string, service: @service_name, type: 'graphql') do |span|
+          if @has_prepare_span
+            prepare_span('lex', {query_string: query_string}, span)
           end
-        RUBY
+          super
+        end
+      end
+
+      def parse(query_string:)
+        @tracer.trace('graphql.parse', resource: query_string, service: @service_name, type: 'graphql') do |span|
+          span.set_tag('graphql.source', query_string)
+          if @has_prepare_span
+            prepare_span('parse', {query_string: query_string}, span)
+          end
+          super
+        end
+      end
+
+      def validate(query:, validate:)
+        @tracer.trace('graphql.validate', resource: query.selected_operation_name, service: @service_name, type: 'graphql') do |span|
+          span.set_tag('graphql.source', query.query_string)
+          if @has_prepare_span
+            prepare_span('validate', {query: query, validate: validate}, span)
+          end
+          super
+        end
+      end
+      
+      def analyze_multiplex(multiplex:)
+        operations = multiplex.queries.map(&:selected_operation_name).join(', ')
+        resource = if operations.empty?
+          first_query = multiplex.queries.first
+          fallback_transaction_name(first_query && first_query.context)
+        else
+          operations
+        end
+        @tracer.trace('graphql.analyze_multiplex', resource: resource, service: @service_name, type: 'graphql') do |span|
+          if @has_prepare_span
+            prepare_span('analyze_multiplex', {multiplex: multiplex}, span)
+          end
+          super
+        end
+      end
+
+      def analyze_query(query:)
+        @tracer.trace('graphql.analyze', resource: query.query_string, service: @service_name, type: 'graphql') do |span|
+          if @has_prepare_span
+            prepare_span('analyze_query', {query: query}, span)
+          end
+          super
+        end
+      end
+
+      def execute_multiplex(multiplex:)
+        operations = multiplex.queries.map(&:selected_operation_name).join(', ')
+        resource = if operations.empty?
+          first_query = multiplex.queries.first
+          fallback_transaction_name(first_query && first_query.context)
+        else
+          operations
+        end
+        @tracer.trace('graphql.execute_multiplex', resource: resource, service: @service_name, type: 'graphql') do |span|
+          span.set_tag('graphql.source', "Multiplex[#{multiplex.queries.map(&:query_string).join(', ')}]")
+          if @has_prepare_span
+            prepare_span("execute_multiplex", {multiplex: multiplex}, span)
+          end
+          super
+        end
+      end
+
+      def execute_query(query:)
+        @tracer.trace('graphql.execute', resource: query.selected_operation_name, service: @service_name, type: 'graphql') do |span|
+          span.set_tag('graphql.source', query.query_string)
+          span.set_tag('graphql.operation.type', query.selected_operation.operation_type)
+          span.set_tag('graphql.operation.name', query.selected_operation_name) if query.selected_operation_name
+          query.provided_variables.each do |key, value|
+            span.set_tag("graphql.variables.#{key}", value)
+          end
+          if @has_prepare_span
+            prepare_span('execute_query', {query: query}, span)
+          end
+          super
+        end
+      end
+
+      def execute_query_lazy(query:, multiplex:)
+        resource = if query
+          query.selected_operation_name
+        else
+          operations = multiplex && multiplex.queries.map(&:selected_operation_name).join(', ')
+          if operations.nil?
+            nil
+          elsif operations.empty?
+            first_query = multiplex.queries.first
+            fallback_transaction_name(first_query && first_query.context)
+          else
+            operations
+          end
+        end
+        @tracer.trace('graphql.execute_lazy', resource: resource, service: @service_name, type: 'graphql') do |span|
+          if @has_prepare_span
+            prepare_span('execute_lazy', {query: query, multiplex: multiplex}, span)
+          end
+          super
+        end
       end
 
       def execute_field_span(span_key, query, field, ast_node, arguments, object)
@@ -82,9 +141,10 @@ module GraphQL
           nil
         end
         if platform_key && trace_field
-          @tracer.trace(platform_key, service: @service_name, type: 'custom') do |span|
-            span.set_tag('component', 'graphql')
-            span.set_tag('operation', span_key)
+          @tracer.trace("graphql.#{span_key}", resource: platform_key, service: @service_name, type: 'graphql') do |span|
+            query.provided_variables.each do |key, value|
+              span.set_tag("graphql.variables.#{key}", value)
+            end
 
             if @has_prepare_span
               prepare_span_data = { query: query, field: field, ast_node: ast_node, arguments: arguments, object: object }
@@ -96,30 +156,22 @@ module GraphQL
           yield
         end
       end
+
       def execute_field(query:, field:, ast_node:, arguments:, object:)
-        execute_field_span("execute_field", query, field, ast_node, arguments, object) do
+        execute_field_span('resolve', query, field, ast_node, arguments, object) do
           super(query: query, field: field, ast_node: ast_node, arguments: arguments, object: object)
         end
       end
 
       def execute_field_lazy(query:, field:, ast_node:, arguments:, object:)
-        execute_field_span("execute_field_lazy", query, field, ast_node, arguments, object) do
+        execute_field_span('resolve_lazy', query, field, ast_node, arguments, object) do
           super(query: query, field: field, ast_node: ast_node, arguments: arguments, object: object)
-        end
-      end
-
-      def authorized(query:, type:, object:)
-        authorized_span("authorized", object, type, query) do
-          super(query: query, type: type, object: object)
         end
       end
 
       def authorized_span(span_key, object, type, query)
         platform_key = @platform_key_cache[DataDogTrace].platform_authorized_key_cache[type]
-        @tracer.trace(platform_key, service: @service_name, type: 'custom') do |span|
-          span.set_tag('component', 'graphql')
-          span.set_tag('operation', span_key)
-
+        @tracer.trace("graphql.#{span_key}", resource: platform_key, service: @service_name, type: 'graphql') do |span|
           if @has_prepare_span
             prepare_span(span_key, {object: object, type: type, query: query}, span)
           end
@@ -127,34 +179,37 @@ module GraphQL
         end
       end
 
-      def authorized_lazy(object:, type:, query:)
-        authorized_span("authorized_lazy", object, type, query) do
+      def authorized(query:, type:, object:)
+        authorized_span('authorized', object, type, query) do
           super(query: query, type: type, object: object)
         end
       end
 
-      def resolve_type(object:, type:, query:)
-        resolve_type_span("resolve_type", object, type, query) do
-          super(object: object, query: query, type: type)
-        end
-      end
-
-      def resolve_type_lazy(object:, type:, query:)
-        resolve_type_span("resolve_type_lazy", object, type, query) do
-          super(object: object, query: query, type: type)
+      def authorized_lazy(object:, type:, query:)
+        authorized_span('authorized_lazy', object, type, query) do
+          super(query: query, type: type, object: object)
         end
       end
 
       def resolve_type_span(span_key, object, type, query)
         platform_key = @platform_key_cache[DataDogTrace].platform_resolve_type_key_cache[type]
-        @tracer.trace(platform_key, service: @service_name, type: 'custom') do |span|
-          span.set_tag('component', 'graphql')
-          span.set_tag('operation', span_key)
-
+        @tracer.trace("graphql.#{span_key}", resource: platform_key, service: @service_name, type: 'graphql') do |span|
           if @has_prepare_span
             prepare_span(span_key, {object: object, type: type, query: query}, span)
           end
           yield
+        end
+      end
+
+      def resolve_type(object:, type:, query:)
+        resolve_type_span('resolve_type', object, type, query) do
+          super(object: object, query: query, type: type)
+        end
+      end
+
+      def resolve_type_lazy(object:, type:, query:)
+        resolve_type_span('resolve_type_lazy', object, type, query) do
+          super(object: object, query: query, type: type)
         end
       end
 

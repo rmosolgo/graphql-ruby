@@ -125,26 +125,24 @@ describe GraphQL::Tracing::AppsignalTrace do
       ].compact
 
       expected_datadog_trace = [
-        "graphql.execute_multiplex",
         (USING_C_PARSER ? "graphql.lex" : nil),
         "graphql.parse",
+        "graphql.execute_multiplex",
         "graphql.analyze_multiplex",
         "graphql.validate",
-        "graphql.analyze_query",
-        "graphql.execute_query",
+        "graphql.analyze",
+        "graphql.execute",
         "graphql.authorized",
-        "graphql.execute_field",
+        "graphql.resolve",
         "graphql.authorized",
-        "graphql.execute_field",
+        "graphql.resolve",
         "graphql.resolve_type",
         "graphql.authorized",
-        "graphql.execute_query_lazy",
+        "graphql.execute_lazy",
       ].compact
 
       assert_equal expected_appsignal_trace, Appsignal.instrumented
-      assert_equal expected_datadog_trace, Datadog::SPAN_TAGS
-        .select { |t| t[0].is_a?(String) }
-        .each_slice(2).map { |(p1, p2)| "#{p1[1]}.#{p2[1]}" }
+      assert_equal expected_datadog_trace, Datadog::SPAN_NAMES
     end
 
     it "works when the modules are included in reverse order" do
@@ -167,26 +165,24 @@ describe GraphQL::Tracing::AppsignalTrace do
       ].compact
 
       expected_datadog_trace = [
-        "graphql.execute_multiplex",
         (USING_C_PARSER ? "graphql.lex" : nil),
         "graphql.parse",
+        "graphql.execute_multiplex",
         "graphql.analyze_multiplex",
         "graphql.validate",
-        "graphql.analyze_query",
-        "graphql.execute_query",
+        "graphql.analyze",
+        "graphql.execute",
         "graphql.authorized",
-        "graphql.execute_field",
+        "graphql.resolve",
         "graphql.authorized",
-        "graphql.execute_field",
+        "graphql.resolve",
         "graphql.resolve_type",
         "graphql.authorized",
-        "graphql.execute_query_lazy",
+        "graphql.execute_lazy",
       ].compact
 
       assert_equal expected_appsignal_trace, Appsignal.instrumented
-      assert_equal expected_datadog_trace, Datadog::SPAN_TAGS
-        .select { |t| t[0].is_a?(String) }
-        .each_slice(2).map { |(p1, p2)| "#{p1[1]}.#{p2[1]}" }
+      assert_equal expected_datadog_trace, Datadog::SPAN_NAMES
     end
   end
 end

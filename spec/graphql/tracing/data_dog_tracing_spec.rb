@@ -36,7 +36,7 @@ describe GraphQL::Tracing::DataDogTracing do
     class CustomTracerTestSchema < GraphQL::Schema
       class CustomDataDogTracing < GraphQL::Tracing::DataDogTracing
         def prepare_span(trace_key, data, span)
-          span.set_tag("custom:#{trace_key}", data.keys.join(","))
+          span.set_tag("custom:#{trace_key}", data.keys.sort.join(","))
         end
       end
       query(Query)
@@ -66,10 +66,14 @@ describe GraphQL::Tracing::DataDogTracing do
     assert_equal [], Datadog::SPAN_RESOURCE_NAMES
   end
 
-  it "sets component and operation tags" do
+  it "sets source and operation.type tags" do
     DataDogTest::TestSchema.execute("{ int }")
-    assert_includes Datadog::SPAN_TAGS, ['component', 'graphql']
-    assert_includes Datadog::SPAN_TAGS, ['operation', 'execute_multiplex']
+    # parse, validate, execute_query
+    assert_includes Datadog::SPAN_TAGS, ['graphql.source', '{ int }']
+    # execute_multiplex
+    assert_includes Datadog::SPAN_TAGS, ['graphql.source', 'Multiplex[{ int }]']
+    # execute_query
+    assert_includes Datadog::SPAN_TAGS, ['graphql.operation.type', 'query']
   end
 
   it "sets custom tags tags" do
@@ -79,16 +83,16 @@ describe GraphQL::Tracing::DataDogTracing do
       ["custom:parse", "query_string"],
       ["custom:execute_multiplex", "multiplex"],
       ["custom:analyze_multiplex", "multiplex"],
-      ["custom:validate", "validate,query"],
-      ["custom:analyze_query", "query"],
-      ["custom:execute_query", "query"],
-      ["custom:authorized", "context,type,object,path"],
-      ["custom:execute_field", "field,query,ast_node,arguments,object,owner,path"],
-      ["custom:authorized", "context,type,object,path"],
-      ["custom:execute_query_lazy", "multiplex,query"],
+      ["custom:validate", "query,validate"],
+      ["custom:analyze", "query"],
+      ["custom:execute", "query"],
+      ["custom:authorized", "context,object,path,type"],
+      ["custom:resolve", "arguments,ast_node,field,object,owner,path,query"],
+      ["custom:authorized", "context,object,path,type"],
+      ["custom:execute_lazy", "multiplex,query"],
     ].compact
 
-    actual_custom_tags = Datadog::SPAN_TAGS.reject { |t| t[0] == "operation" || t[0] == "component" || t[0].is_a?(Symbol) }
+    actual_custom_tags = Datadog::SPAN_TAGS.reject { |t| /^graphql\./.match?(t[0])  || t[0].is_a?(Symbol) }
     assert_equal expected_custom_tags, actual_custom_tags
   end
 end

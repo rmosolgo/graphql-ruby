@@ -5,6 +5,7 @@ if defined?(Datadog)
 end
 
 module Datadog
+  SPAN_NAMES = []
   SPAN_RESOURCE_NAMES = []
   SPAN_TAGS = []
 
@@ -13,6 +14,7 @@ module Datadog
   end
 
   def self.clear_all
+    SPAN_NAMES.clear
     SPAN_RESOURCE_NAMES.clear
     SPAN_TAGS.clear
   end
@@ -24,10 +26,6 @@ module Datadog
   end
 
   class DummySpan
-    def resource=(resource_name)
-      SPAN_RESOURCE_NAMES << resource_name
-    end
-
     def set_tag(key, value)
       SPAN_TAGS << [key, value]
     end
@@ -35,6 +33,12 @@ module Datadog
 
   module Tracing
     def self.trace(platform_key, *args)
+      SPAN_NAMES << platform_key
+      case platform_key
+      when "graphql.execute_multiplex"
+        # On datadog's side, a nil or empty 'resource' field will take the value of 'name' field if no fallback is provided
+        SPAN_RESOURCE_NAMES << args.first[:resource] if args.first[:resource]
+      end
       yield DummySpan.new
     end
   end
