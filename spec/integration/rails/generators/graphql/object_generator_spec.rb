@@ -18,8 +18,9 @@ class GraphQLGeneratorsObjectGeneratorTest < BaseGeneratorTest
 
   create_test_users
 
-  before do
+  def setup
     self.class.create_test_users
+    super
   end
   # rubocop:disable Style/ClassAndModuleChildren
   class ::TestUser < ActiveRecord::Base

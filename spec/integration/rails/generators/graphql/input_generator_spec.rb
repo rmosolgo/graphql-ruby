@@ -24,8 +24,9 @@ class GraphQLGeneratorsInputGeneratorTest < BaseGeneratorTest
   end
   # rubocop:enable Style/ClassAndModuleChildren
 
-  before do
+  def setup
     self.class.create_input_test_users
+    super
   end
 
   test "it generates arguments with types" do
