@@ -108,9 +108,9 @@ module GraphQL
 
       def execute_query_lazy(query:, multiplex:)
         resource = if query
-          query.selected_operation_name
+          query.selected_operation_name || fallback_transaction_name(query.context)
         else
-          operations = multiplex && multiplex.queries.map(&:selected_operation_name).join(', ')
+          operations = multiplex && multiplex.queries.map(&:selected_operation_name).compact.join(', ')
           if operations.nil?
             nil
           elsif operations.empty?

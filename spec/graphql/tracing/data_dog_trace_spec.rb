@@ -56,7 +56,7 @@ describe GraphQL::Tracing::DataDogTrace do
   it "falls back to a :tracing_fallback_transaction_name when provided" do
     DataDogTraceTest::TestSchema.execute("{ int }", context: { tracing_fallback_transaction_name: "Abcd" })
     # Tested only on execute_multiplex
-    assert_equal ["Abcd"], Datadog::SPAN_RESOURCE_NAMES
+    assert_equal ['Abcd', 'Abcd', 'Abcd'], Datadog::SPAN_RESOURCE_NAMES
   end
 
   it "does not use the :tracing_fallback_transaction_name if an operation name is present" do
@@ -64,7 +64,7 @@ describe GraphQL::Tracing::DataDogTrace do
       "query Ab { int }",
       context: { tracing_fallback_transaction_name: "Cd" }
     )
-    assert_equal ["Ab"], Datadog::SPAN_RESOURCE_NAMES
+    assert_equal ['Ab', 'Ab', 'Ab'], Datadog::SPAN_RESOURCE_NAMES
   end
 
   it "does not set resource if no value can be derived" do
@@ -108,7 +108,7 @@ describe GraphQL::Tracing::DataDogTrace do
       { query: 'query Query2 { thing { str } }' },
     ]
     DataDogTraceTest::TestSchema.multiplex(queries)
-    assert_equal ["Query1, Query2"], Datadog::SPAN_RESOURCE_NAMES
+    assert_equal ['Query1, Query2', 'Query1, Query2', 'Query1, Query2'], Datadog::SPAN_RESOURCE_NAMES
   end
 
   it "sets resource name correctly with 1 named and 1 unnamed query in multiplex" do
@@ -117,7 +117,7 @@ describe GraphQL::Tracing::DataDogTrace do
       { query: 'query Query2 { thing { str } }' },
     ]
     DataDogTraceTest::TestSchema.multiplex(queries)
-    assert_equal ["Query2"], Datadog::SPAN_RESOURCE_NAMES
+    assert_equal ['Query2', 'Query2', 'Query2'], Datadog::SPAN_RESOURCE_NAMES
   end
 
   it "does not sets resource name with unnamed queries in multiplex" do

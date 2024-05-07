@@ -35,7 +35,8 @@ module Datadog
     def self.trace(platform_key, *args)
       SPAN_NAMES << platform_key
       case platform_key
-      when "graphql.execute_multiplex"
+      # Testing resource name on multiplex-like only
+      when "graphql.execute_multiplex", "graphql.analyze_multiplex", "graphql.execute_lazy"
         # On datadog's side, a nil or empty 'resource' field will take the value of 'name' field if no fallback is provided
         SPAN_RESOURCE_NAMES << args.first[:resource] if args.first[:resource]
       end
