@@ -101,6 +101,7 @@ describe GraphQL::Subscriptions::Serialize do
   if testing_rails?
     describe "ActiveRecord::Relations" do
       before do
+        ensure_foods_created
         Food.destroy_all
         Food.create!(name: "Peanut Butter")
         Food.create!(name: "Jelly")

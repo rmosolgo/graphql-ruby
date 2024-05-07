@@ -50,9 +50,14 @@ if testing_rails?
       t.column :planet, :string
       t.column :faction_id, :integer
     end
+  end
 
-    create_table :foods, force: true do |t|
-      t.column :name, :string
+  def ensure_foods_created
+    ActiveRecord::Base.establish_connection(:starwars)
+    ActiveRecord::Schema.define do
+      create_table :foods, force: true do |t|
+        t.column :name, :string
+      end
     end
   end
 

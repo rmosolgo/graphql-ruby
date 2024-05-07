@@ -62,6 +62,7 @@ describe GraphQL::Dataloader do
     end
 
     before do
+      ensure_foods_created
       Food.create!(name: "Zucchini")
       RailsPromiseSchema::LoadAsyncSource::LOG.clear
     end
