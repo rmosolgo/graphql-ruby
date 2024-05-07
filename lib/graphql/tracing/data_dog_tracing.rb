@@ -37,7 +37,7 @@ module GraphQL
           end
 
         when 'analyze_multiplex'
-          operations = data[:multiplex].queries.map(&:selected_operation_name).join(', ')
+          operations = data[:multiplex].queries.map(&:selected_operation_name).compact.join(', ')
           resource = if operations.empty?
             first_query = data[:multiplex].queries.first
             fallback_transaction_name(first_query && first_query.context)
@@ -64,7 +64,7 @@ module GraphQL
             operations
           end
           tracer.trace('graphql.execute_multiplex', resource: resource, service: options[:service], type: 'graphql') do |span|
-            span.set_tag('graphql.source', "Multiplex[#{data[:multiplex].queries.map(&:query_string).join(', ')}]")
+            span.set_tag('graphql.source', "Multiplex[#{data[:multiplex].queries.map(&:query_string).compact.join(', ')}]")
             prepare_span(key, data, span)
             yield
           end

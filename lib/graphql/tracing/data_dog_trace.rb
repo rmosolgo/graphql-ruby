@@ -50,7 +50,7 @@ module GraphQL
       end
       
       def analyze_multiplex(multiplex:)
-        operations = multiplex.queries.map(&:selected_operation_name).join(', ')
+        operations = multiplex.queries.map(&:selected_operation_name).compact.join(', ')
         resource = if operations.empty?
           first_query = multiplex.queries.first
           fallback_transaction_name(first_query && first_query.context)
@@ -75,7 +75,7 @@ module GraphQL
       end
 
       def execute_multiplex(multiplex:)
-        operations = multiplex.queries.map(&:selected_operation_name).join(', ')
+        operations = multiplex.queries.map(&:selected_operation_name).compact.join(', ')
         resource = if operations.empty?
           first_query = multiplex.queries.first
           fallback_transaction_name(first_query && first_query.context)

@@ -101,4 +101,31 @@ describe GraphQL::Tracing::DataDogTrace do
     actual_custom_tags = Datadog::SPAN_TAGS.reject { |t| /^graphql\./.match?(t[0])  || t[0].is_a?(Symbol) }
     assert_equal expected_custom_tags, actual_custom_tags
   end
+
+  it "sets resource name correctly with named queries in multiplex" do
+    queries = [
+      { query: 'query Query1 { int }' },
+      { query: 'query Query2 { thing { str } }' },
+    ]
+    DataDogTraceTest::TestSchema.multiplex(queries)
+    assert_equal ["Query1, Query2"], Datadog::SPAN_RESOURCE_NAMES
+  end
+
+  it "sets resource name correctly with 1 named and 1 unnamed query in multiplex" do
+    queries = [
+      { query: 'query { int }' },
+      { query: 'query Query2 { thing { str } }' },
+    ]
+    DataDogTraceTest::TestSchema.multiplex(queries)
+    assert_equal ["Query2"], Datadog::SPAN_RESOURCE_NAMES
+  end
+
+  it "does not sets resource name with unnamed queries in multiplex" do
+    queries = [
+      { query: 'query { int }' },
+      { query: 'query { thing { str } }' },
+    ]
+    DataDogTraceTest::TestSchema.multiplex(queries)
+    assert_equal [], Datadog::SPAN_RESOURCE_NAMES
+  end
 end
