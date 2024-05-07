@@ -61,6 +61,8 @@ if testing_rails?
     end
   end
 
+  ensure_foods_created
+
   class Food < ActiveRecord::Base
     include GlobalID::Identification
   end
