@@ -25,21 +25,15 @@ module GraphQL
         attr_reader :filename
 
         def line
-          @line ||= (@source_string && @pos) ? @source_string[0..@pos].count("\n") + 1 : nil
+          @line ||= @source.line_at(@pos)
         end
 
         def col
-          @col ||= if @source_string && @pos
-            if @pos == 0
-              1
-            else
-              @source_string[0..@pos].split("\n").last.length
-            end
-          end
+          @col ||= @source.column_at(@pos)
         end
 
         def definition_line
-          @definition_line ||= (@source_string && @definition_pos) ? @source_string[0..@definition_pos].count("\n") + 1 : nil
+          @definition_line ||= (@source && @definition_pos) ? @source.line_at(@definition_pos) : nil
         end
 
         # Value equality
@@ -267,7 +261,7 @@ module GraphQL
             "col: nil",
             "pos: nil",
             "filename: nil",
-            "source_string: nil",
+            "source: nil",
           ]
 
           def generate_initialize
@@ -306,7 +300,7 @@ module GraphQL
                   @col = col
                   @pos = pos
                   @filename = filename
-                  @source_string = source_string
+                  @source = source
                   #{assignments.join("\n")}
                 end
 
@@ -385,7 +379,7 @@ module GraphQL
         # @!attribute selections
         #   @return [Array<Nodes::Field>] Selections on this object (or empty array if this is a scalar field)
 
-        def initialize(name: nil, arguments: NONE, directives: NONE, selections: NONE, field_alias: nil, line: nil, col: nil, pos: nil, filename: nil, source_string: nil)
+        def initialize(name: nil, arguments: NONE, directives: NONE, selections: NONE, field_alias: nil, line: nil, col: nil, pos: nil, filename: nil, source: nil)
           @name = name
           @arguments = arguments || NONE
           @directives = directives || NONE
@@ -396,7 +390,7 @@ module GraphQL
           @col = col
           @pos = pos
           @filename = filename
-          @source_string = source_string
+          @source = source
         end
 
         def self.from_a(filename, line, col, field_alias, name, arguments, directives, selections) # rubocop:disable Metrics/ParameterLists
@@ -421,14 +415,14 @@ module GraphQL
 
         # @!attribute type
         #   @return [String] the type condition for this fragment (name of type which it may apply to)
-        def initialize(name: nil, type: nil, directives: NONE, selections: NONE, filename: nil, pos: nil, source_string: nil, line: nil, col: nil)
+        def initialize(name: nil, type: nil, directives: NONE, selections: NONE, filename: nil, pos: nil, source: nil, line: nil, col: nil)
           @name = name
           @type = type
           @directives = directives
           @selections = selections
           @filename  = filename
           @pos = pos
-          @source_string = source_string
+          @source = source
           @line = line
           @col = col
         end
