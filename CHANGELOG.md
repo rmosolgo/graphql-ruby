@@ -10,6 +10,10 @@
 
 ### Bug fixes
 
+# 2.0.30 (9 May 2024)
+
+- Runtime: fix variable name error #4948
+
 # 2.0.29
 
 - Fixes for Ruby 3.4 compatibility #4861
