@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Language::Lexer::BadEncoding
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::Language::Lexer::BadEncoding";
+  relpath = '../../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../../_index.html">Index (B)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../../Language.html" title="GraphQL::Language (module)">Language</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Lexer.html" title="GraphQL::Language::Lexer (class)">Lexer</a></span></span>
+     &raquo; 
+    <span class="title">BadEncoding</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Language::Lexer::BadEncoding
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName"><span class='object_link'><a href="../Lexer.html" title="GraphQL::Language::Lexer (class)">GraphQL::Language::Lexer</a></span></span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next"><span class='object_link'><a href="../Lexer.html" title="GraphQL::Language::Lexer (class)">GraphQL::Language::Lexer</a></span></li>
+          
+            <li class="next">GraphQL::Language::Lexer::BadEncoding</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/language/lexer.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>:nodoc:</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+
+
+  <h2>Constant Summary</h2>
+  
+  <h3 class="inherited">Constants inherited
+     from <span class='object_link'><a href="../Lexer.html" title="GraphQL::Language::Lexer (class)">GraphQL::Language::Lexer</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../Lexer.html#BLANK-constant" title="GraphQL::Language::Lexer::BLANK (constant)">BLANK</a></span>, <span class='object_link'><a href="../Lexer.html#BLOCK_QUOTE-constant" title="GraphQL::Language::Lexer::BLOCK_QUOTE (constant)">BLOCK_QUOTE</a></span>, <span class='object_link'><a href="../Lexer.html#BLOCK_STRING-constant" title="GraphQL::Language::Lexer::BLOCK_STRING (constant)">BLOCK_STRING</a></span>, <span class='object_link'><a href="../Lexer.html#COMMENT-constant" title="GraphQL::Language::Lexer::COMMENT (constant)">COMMENT</a></span>, <span class='object_link'><a href="../Lexer.html#ESCAPED_QUOTE-constant" title="GraphQL::Language::Lexer::ESCAPED_QUOTE (constant)">ESCAPED_QUOTE</a></span>, <span class='object_link'><a href="../Lexer.html#ESCAPES-constant" title="GraphQL::Language::Lexer::ESCAPES (constant)">ESCAPES</a></span>, <span class='object_link'><a href="../Lexer.html#ESCAPES_REPLACE-constant" title="GraphQL::Language::Lexer::ESCAPES_REPLACE (constant)">ESCAPES_REPLACE</a></span>, <span class='object_link'><a href="../Lexer.html#FLOAT-constant" title="GraphQL::Language::Lexer::FLOAT (constant)">FLOAT</a></span>, <span class='object_link'><a href="../Lexer.html#FLOAT_DECIMAL-constant" title="GraphQL::Language::Lexer::FLOAT_DECIMAL (constant)">FLOAT_DECIMAL</a></span>, <span class='object_link'><a href="../Lexer.html#FLOAT_EXP-constant" title="GraphQL::Language::Lexer::FLOAT_EXP (constant)">FLOAT_EXP</a></span>, <span class='object_link'><a href="../Lexer.html#FOUR_DIGIT_UNICODE-constant" title="GraphQL::Language::Lexer::FOUR_DIGIT_UNICODE (constant)">FOUR_DIGIT_UNICODE</a></span>, <span class='object_link'><a href="../Lexer.html#IDENTIFIER-constant" title="GraphQL::Language::Lexer::IDENTIFIER (constant)">IDENTIFIER</a></span>, <span class='object_link'><a href="../Lexer.html#INT-constant" title="GraphQL::Language::Lexer::INT (constant)">INT</a></span>, <span class='object_link'><a href="../Lexer.html#LIT-constant" title="GraphQL::Language::Lexer::LIT (constant)">LIT</a></span>, <span class='object_link'><a href="../Lexer.html#LIT_NAME_LUT-constant" title="GraphQL::Language::Lexer::LIT_NAME_LUT (constant)">LIT_NAME_LUT</a></span>, <span class='object_link'><a href="../Lexer.html#NEWLINE-constant" title="GraphQL::Language::Lexer::NEWLINE (constant)">NEWLINE</a></span>, <span class='object_link'><a href="../Lexer.html#N_DIGIT_UNICODE-constant" title="GraphQL::Language::Lexer::N_DIGIT_UNICODE (constant)">N_DIGIT_UNICODE</a></span>, <span class='object_link'><a href="../Lexer.html#QUOTE-constant" title="GraphQL::Language::Lexer::QUOTE (constant)">QUOTE</a></span>, <span class='object_link'><a href="../Lexer.html#QUOTED_STRING-constant" title="GraphQL::Language::Lexer::QUOTED_STRING (constant)">QUOTED_STRING</a></span>, <span class='object_link'><a href="../Lexer.html#STRING_CHAR-constant" title="GraphQL::Language::Lexer::STRING_CHAR (constant)">STRING_CHAR</a></span>, <span class='object_link'><a href="../Lexer.html#STRING_ESCAPE-constant" title="GraphQL::Language::Lexer::STRING_ESCAPE (constant)">STRING_ESCAPE</a></span>, <span class='object_link'><a href="../Lexer.html#UNICODE_DIGIT-constant" title="GraphQL::Language::Lexer::UNICODE_DIGIT (constant)">UNICODE_DIGIT</a></span>, <span class='object_link'><a href="../Lexer.html#UNICODE_ESCAPE-constant" title="GraphQL::Language::Lexer::UNICODE_ESCAPE (constant)">UNICODE_ESCAPE</a></span>, <span class='object_link'><a href="../Lexer.html#UNKNOWN_CHAR-constant" title="GraphQL::Language::Lexer::UNKNOWN_CHAR (constant)">UNKNOWN_CHAR</a></span>, <span class='object_link'><a href="../Lexer.html#UTF_8-constant" title="GraphQL::Language::Lexer::UTF_8 (constant)">UTF_8</a></span>, <span class='object_link'><a href="../Lexer.html#VALID_STRING-constant" title="GraphQL::Language::Lexer::VALID_STRING (constant)">VALID_STRING</a></span></p>
+
+  
+  
+  <h3 class="inherited">Constants included
+     from <span class='object_link'><a href="Literals.html" title="GraphQL::Language::Lexer::Literals (module)">Literals</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Literals.html#AMP-constant" title="GraphQL::Language::Lexer::Literals::AMP (constant)">Literals::AMP</a></span>, <span class='object_link'><a href="Literals.html#BANG-constant" title="GraphQL::Language::Lexer::Literals::BANG (constant)">Literals::BANG</a></span>, <span class='object_link'><a href="Literals.html#COLON-constant" title="GraphQL::Language::Lexer::Literals::COLON (constant)">Literals::COLON</a></span>, <span class='object_link'><a href="Literals.html#DIRECTIVE-constant" title="GraphQL::Language::Lexer::Literals::DIRECTIVE (constant)">Literals::DIRECTIVE</a></span>, <span class='object_link'><a href="Literals.html#DIR_SIGN-constant" title="GraphQL::Language::Lexer::Literals::DIR_SIGN (constant)">Literals::DIR_SIGN</a></span>, <span class='object_link'><a href="Literals.html#ELLIPSIS-constant" title="GraphQL::Language::Lexer::Literals::ELLIPSIS (constant)">Literals::ELLIPSIS</a></span>, <span class='object_link'><a href="Literals.html#ENUM-constant" title="GraphQL::Language::Lexer::Literals::ENUM (constant)">Literals::ENUM</a></span>, <span class='object_link'><a href="Literals.html#EQUALS-constant" title="GraphQL::Language::Lexer::Literals::EQUALS (constant)">Literals::EQUALS</a></span>, <span class='object_link'><a href="Literals.html#EXTEND-constant" title="GraphQL::Language::Lexer::Literals::EXTEND (constant)">Literals::EXTEND</a></span>, <span class='object_link'><a href="Literals.html#FALSE-constant" title="GraphQL::Language::Lexer::Literals::FALSE (constant)">Literals::FALSE</a></span>, <span class='object_link'><a href="Literals.html#FRAGMENT-constant" title="GraphQL::Language::Lexer::Literals::FRAGMENT (constant)">Literals::FRAGMENT</a></span>, <span class='object_link'><a href="Literals.html#IMPLEMENTS-constant" title="GraphQL::Language::Lexer::Literals::IMPLEMENTS (constant)">Literals::IMPLEMENTS</a></span>, <span class='object_link'><a href="Literals.html#INPUT-constant" title="GraphQL::Language::Lexer::Literals::INPUT (constant)">Literals::INPUT</a></span>, <span class='object_link'><a href="Literals.html#INTERFACE-constant" title="GraphQL::Language::Lexer::Literals::INTERFACE (constant)">Literals::INTERFACE</a></span>, <span class='object_link'><a href="Literals.html#LBRACKET-constant" title="GraphQL::Language::Lexer::Literals::LBRACKET (constant)">Literals::LBRACKET</a></span>, <span class='object_link'><a href="Literals.html#LCURLY-constant" title="GraphQL::Language::Lexer::Literals::LCURLY (constant)">Literals::LCURLY</a></span>, <span class='object_link'><a href="Literals.html#LPAREN-constant" title="GraphQL::Language::Lexer::Literals::LPAREN (constant)">Literals::LPAREN</a></span>, <span class='object_link'><a href="Literals.html#MUTATION-constant" title="GraphQL::Language::Lexer::Literals::MUTATION (constant)">Literals::MUTATION</a></span>, <span class='object_link'><a href="Literals.html#NULL-constant" title="GraphQL::Language::Lexer::Literals::NULL (constant)">Literals::NULL</a></span>, <span class='object_link'><a href="Literals.html#ON-constant" title="GraphQL::Language::Lexer::Literals::ON (constant)">Literals::ON</a></span>, <span class='object_link'><a href="Literals.html#PIPE-constant" title="GraphQL::Language::Lexer::Literals::PIPE (constant)">Literals::PIPE</a></span>, <span class='object_link'><a href="Literals.html#QUERY-constant" title="GraphQL::Language::Lexer::Literals::QUERY (constant)">Literals::QUERY</a></span>, <span class='object_link'><a href="Literals.html#RBRACKET-constant" title="GraphQL::Language::Lexer::Literals::RBRACKET (constant)">Literals::RBRACKET</a></span>, <span class='object_link'><a href="Literals.html#RCURLY-constant" title="GraphQL::Language::Lexer::Literals::RCURLY (constant)">Literals::RCURLY</a></span>, <span class='object_link'><a href="Literals.html#REPEATABLE-constant" title="GraphQL::Language::Lexer::Literals::REPEATABLE (constant)">Literals::REPEATABLE</a></span>, <span class='object_link'><a href="Literals.html#RPAREN-constant" title="GraphQL::Language::Lexer::Literals::RPAREN (constant)">Literals::RPAREN</a></span>, <span class='object_link'><a href="Literals.html#SCALAR-constant" title="GraphQL::Language::Lexer::Literals::SCALAR (constant)">Literals::SCALAR</a></span>, <span class='object_link'><a href="Literals.html#SCHEMA-constant" title="GraphQL::Language::Lexer::Literals::SCHEMA (constant)">Literals::SCHEMA</a></span>, <span class='object_link'><a href="Literals.html#SUBSCRIPTION-constant" title="GraphQL::Language::Lexer::Literals::SUBSCRIPTION (constant)">Literals::SUBSCRIPTION</a></span>, <span class='object_link'><a href="Literals.html#TRUE-constant" title="GraphQL::Language::Lexer::Literals::TRUE (constant)">Literals::TRUE</a></span>, <span class='object_link'><a href="Literals.html#TYPE-constant" title="GraphQL::Language::Lexer::Literals::TYPE (constant)">Literals::TYPE</a></span>, <span class='object_link'><a href="Literals.html#UNION-constant" title="GraphQL::Language::Lexer::Literals::UNION (constant)">Literals::UNION</a></span>, <span class='object_link'><a href="Literals.html#VAR_SIGN-constant" title="GraphQL::Language::Lexer::Literals::VAR_SIGN (constant)">Literals::VAR_SIGN</a></span></p>
+
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#next_token-instance_method" title="#next_token (instance method)">#<strong>next_token</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#scanner-instance_method" title="#scanner (instance method)">#<strong>scanner</strong>(value)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods inherited from <span class='object_link'><a href="../Lexer.html" title="GraphQL::Language::Lexer (class)">GraphQL::Language::Lexer</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../Lexer.html#emit-instance_method" title="GraphQL::Language::Lexer#emit (method)">#emit</a></span>, <span class='object_link'><a href="../Lexer.html#emit_block-instance_method" title="GraphQL::Language::Lexer#emit_block (method)">#emit_block</a></span>, <span class='object_link'><a href="../Lexer.html#emit_string-instance_method" title="GraphQL::Language::Lexer#emit_string (method)">#emit_string</a></span>, <span class='object_link'><a href="../Lexer.html#initialize-instance_method" title="GraphQL::Language::Lexer#initialize (method)">#initialize</a></span>, <span class='object_link'><a href="../Lexer.html#record_comment-instance_method" title="GraphQL::Language::Lexer#record_comment (method)">#record_comment</a></span>, <span class='object_link'><a href="../Lexer.html#replace_escaped_characters_in_place-class_method" title="GraphQL::Language::Lexer.replace_escaped_characters_in_place (method)">replace_escaped_characters_in_place</a></span>, <span class='object_link'><a href="../Lexer.html#tokenize-class_method" title="GraphQL::Language::Lexer.tokenize (method)">tokenize</a></span></p>
+
+  
+  
+  
+  
+  
+  <div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <p class="notice">This class inherits a constructor from <span class='object_link'><a href="../Lexer.html#initialize-instance_method" title="GraphQL::Language::Lexer#initialize (method)">GraphQL::Language::Lexer</a></span></p>
+  
+</div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="next_token-instance_method">
+  
+    #<strong>next_token</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+103
+104
+105</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/lexer.rb', line 103</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_next_token'>next_token</span>
+  <span class='ivar'>@scan</span><span class='period'>.</span><span class='id identifier rubyid_pop'>pop</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="scanner-instance_method">
+  
+    #<strong>scanner</strong>(value)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+99
+100
+101</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/lexer.rb', line 99</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_scanner'>scanner</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
+  <span class='lbracket'>[</span><span class='id identifier rubyid_emit'>emit</span><span class='lparen'>(</span><span class='symbol'>:BAD_UNICODE_ESCAPE</span><span class='comma'>,</span> <span class='int'>0</span><span class='comma'>,</span> <span class='int'>0</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span><span class='rbracket'>]</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Thu May  9 14:09:47 2024 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.28 (ruby-3.2.4).
+</div>
+
+    </div>
+  </body>
+</html>
