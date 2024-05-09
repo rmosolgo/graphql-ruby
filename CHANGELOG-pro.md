@@ -6,6 +6,10 @@
 
 ### New Features
 
+# 1.27.5 (9 May 2024)
+
+- OperationStore: remove needless call to `.metadata` #4947
+
 # 1.27.4 (2 May 2024)
 
 - Pundit, CanCan, OperationStore: add Rails generators for getting started
