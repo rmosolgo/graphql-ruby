@@ -12,9 +12,13 @@ describe GraphQL::Tracing::DataDogTrace do
     end
 
     class Thing < GraphQL::Schema::Object
-      field :str, String
+      field :str, String, null: false do
+        argument :var, String, required: false
+      end
 
-      def str; Box.new("blah"); end
+      def str(var: nil)
+        Box.new(var || "thing")
+      end
     end
 
     class Query < GraphQL::Schema::Object
@@ -55,7 +59,6 @@ describe GraphQL::Tracing::DataDogTrace do
 
   it "falls back to a :tracing_fallback_transaction_name when provided" do
     DataDogTraceTest::TestSchema.execute("{ int }", context: { tracing_fallback_transaction_name: "Abcd" })
-    # Tested only on execute_multiplex
     assert_equal ['Abcd', 'Abcd', 'Abcd'], Datadog::SPAN_RESOURCE_NAMES
   end
 
@@ -72,14 +75,17 @@ describe GraphQL::Tracing::DataDogTrace do
     assert_equal [], Datadog::SPAN_RESOURCE_NAMES
   end
 
-  it "sets source and operation.type tags" do
-    DataDogTraceTest::TestSchema.execute("{ int }")
+  it "sets source, operation.type and operation.name tags" do
+    DataDogTraceTest::TestSchema.multiplex([{query: 'query Ab($var: String) { thing { str(var: $var) } }', variables: { var: 'Cd' }}])
     # parse, validate, execute_query
-    assert_includes Datadog::SPAN_TAGS, ['graphql.source', '{ int }']
+    assert_equal Datadog::SPAN_TAGS.count(['graphql.source', 'query Ab($var: String) { thing { str(var: $var) } }']), 3
     # execute_multiplex
-    assert_includes Datadog::SPAN_TAGS, ['graphql.source', 'Multiplex[{ int }]']
+    assert_includes Datadog::SPAN_TAGS, ['graphql.source', 'Multiplex[query Ab($var: String) { thing { str(var: $var) } }]']
     # execute_query
     assert_includes Datadog::SPAN_TAGS, ['graphql.operation.type', 'query']
+    assert_includes Datadog::SPAN_TAGS, ['graphql.operation.name', 'Ab']
+    # execute_query, execute_field
+    assert_equal Datadog::SPAN_TAGS.count(['graphql.variables.var', 'Cd']), 2
   end
 
   it "sets custom tags tags" do

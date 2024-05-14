@@ -5,10 +5,12 @@ require "spec_helper"
 describe GraphQL::Tracing::DataDogTracing do
   module DataDogTest
     class Thing < GraphQL::Schema::Object
-      field :str, String
+      field :str, String, null: false do
+        argument :var, String, required: false
+      end
 
-      def str
-        "blah"
+      def str(var: nil)
+        var || "blah"
       end
     end
 
@@ -67,13 +69,16 @@ describe GraphQL::Tracing::DataDogTracing do
   end
 
   it "sets source and operation.type tags" do
-    DataDogTest::TestSchema.execute("{ int }")
+    DataDogTest::TestSchema.multiplex([{query: 'query Ab($var: String) { thing { str(var: $var) } }', variables: { var: 'Cd' }}])
     # parse, validate, execute_query
-    assert_includes Datadog::SPAN_TAGS, ['graphql.source', '{ int }']
+    assert_equal Datadog::SPAN_TAGS.count(['graphql.source', 'query Ab($var: String) { thing { str(var: $var) } }']), 3
     # execute_multiplex
-    assert_includes Datadog::SPAN_TAGS, ['graphql.source', 'Multiplex[{ int }]']
+    assert_includes Datadog::SPAN_TAGS, ['graphql.source', 'Multiplex[query Ab($var: String) { thing { str(var: $var) } }]']
     # execute_query
     assert_includes Datadog::SPAN_TAGS, ['graphql.operation.type', 'query']
+    assert_includes Datadog::SPAN_TAGS, ['graphql.operation.name', 'Ab']
+    # execute_query, execute_field
+    assert_equal Datadog::SPAN_TAGS.count(['graphql.variables.var', 'Cd']), 2
   end
 
   it "sets custom tags tags" do
