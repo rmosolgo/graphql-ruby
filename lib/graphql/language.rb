@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require "graphql/language/block_string"
+require "graphql/language/comment"
 require "graphql/language/printer"
 require "graphql/language/sanitized_printer"
 require "graphql/language/document_from_schema_definition"
