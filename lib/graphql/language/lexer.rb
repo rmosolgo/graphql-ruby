@@ -35,6 +35,9 @@ module GraphQL
         when ByteFor::PUNCTUATION
           @scanner.pos += 1
           PUNCTUATION_NAME_FOR_BYTE[next_byte]
+        when ByteFor::COMMENT
+          @scanner.skip(COMMENT_REGEXP)
+          :COMMENT
         when ByteFor::NAME
           if len = @scanner.skip(KEYWORD_REGEXP)
             case len
@@ -165,14 +168,14 @@ module GraphQL
 
       IGNORE_REGEXP = %r{
         (?:
-          [, \c\r\n\t]+ |
-          \#.*$
+          [, \c\r\n\t]+
         )*
       }x
       IDENTIFIER_REGEXP = /[_A-Za-z][_0-9A-Za-z]*/
       INT_REGEXP =        /-?(?:[0]|[1-9][0-9]*)/
       FLOAT_DECIMAL_REGEXP = /[.][0-9]+/
       FLOAT_EXP_REGEXP =     /[eE][+-]?[0-9]+/
+      COMMENT_REGEXP = /#.*/
       # TODO: FLOAT_EXP_REGEXP should not be allowed to follow INT_REGEXP, integers are not allowed to have exponent parts.
       NUMERIC_REGEXP =  /#{INT_REGEXP}(#{FLOAT_DECIMAL_REGEXP}#{FLOAT_EXP_REGEXP}|#{FLOAT_DECIMAL_REGEXP}|#{FLOAT_EXP_REGEXP})?/
 
@@ -296,6 +299,7 @@ module GraphQL
         ELLIPSIS = 3
         IDENTIFIER = 4 # identifier, *not* a keyword
         PUNCTUATION = 5
+        COMMENT = 6
       end
 
       (0..9).each { |i| FIRST_BYTES[i.to_s.ord] = ByteFor::NUMBER }
@@ -306,6 +310,7 @@ module GraphQL
       FIRST_BYTES['_'.ord] = ByteFor::IDENTIFIER
       FIRST_BYTES['.'.ord] = ByteFor::ELLIPSIS
       FIRST_BYTES['"'.ord] = ByteFor::STRING
+      FIRST_BYTES['#'.ord] = ByteFor::COMMENT
       KEYWORDS.each { |kw| FIRST_BYTES[kw.getbyte(0)] = ByteFor::NAME }
       Punctuation.constants.each do |punct_name|
         punct = Punctuation.const_get(punct_name)

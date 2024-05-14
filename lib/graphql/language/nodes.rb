@@ -278,7 +278,7 @@ module GraphQL
 
             scalar_method_names = @scalar_methods
             # TODO: These probably should be scalar methods, but `types` returns an array
-            [:types, :description].each do |extra_method|
+            [:types, :description, :comment].each do |extra_method|
               if method_defined?(extra_method)
                 scalar_method_names += [extra_method]
               end
@@ -661,7 +661,7 @@ module GraphQL
       end
 
       class FieldDefinition < AbstractNode
-        attr_reader :description
+        attr_reader :comment, :description
         scalar_methods :name, :type
         children_methods({
           arguments: GraphQL::Language::Nodes::InputValueDefinition,

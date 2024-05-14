@@ -44,6 +44,23 @@ module LexerExamples
         |}
         let(:tokens) { subject.tokenize(query_string) }
 
+        describe "comments" do
+          it "tokenizes comments" do
+            str = <<-GRAPHQL
+            # First comment
+            type Query {
+              # Another comment
+              a: B
+            }
+            GRAPHQL
+
+            tokens = subject.tokenize(str)
+
+            assert_equal "# First comment", tokens[0].value
+            assert_equal "# Another comment", tokens[4].value
+          end
+        end
+
         it "force encodes to utf-8" do
           # string that will be invalid utf-8 once force encoded
           string = "vandflyver \xC5rhus".dup.force_encoding("ASCII-8BIT")

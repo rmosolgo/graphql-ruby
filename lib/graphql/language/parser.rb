@@ -438,6 +438,7 @@ module GraphQL
         while !at?(:RCURLY)
           loc = pos
           description = if at?(:STRING); string_value; end
+          comment = if at?(:COMMENT); value; end
           defn_loc = pos
           name = parse_name
           arguments_definition = parse_argument_definitions
@@ -445,7 +446,7 @@ module GraphQL
           type = self.type
           directives = parse_directives
 
-          list << FieldDefinition.new(pos: loc, definition_pos: defn_loc, description: description, name: name, arguments: arguments_definition, type: type, directives: directives, filename: @filename, source: self)
+          list << FieldDefinition.new(pos: loc, definition_pos: defn_loc, description: description, comment: comment, name: name, arguments: arguments_definition, type: type, directives: directives, filename: @filename, source: self)
         end
         expect_token :RCURLY
         list
@@ -708,6 +709,10 @@ module GraphQL
         when :NULL
           advance_token
           NullValue.new(pos: pos, name: "null", filename: @filename, source: self)
+        when :COMMENT
+          val = @lexer.token_value.sub('# ', '')
+          advance_token
+          val
         when :IDENTIFIER
           Nodes::Enum.new(pos: pos, name: expect_token_value(:IDENTIFIER), filename: @filename, source: self)
         when :LBRACKET

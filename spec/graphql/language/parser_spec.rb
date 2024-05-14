@@ -206,6 +206,25 @@ createRecord(data: {
     end
   end
 
+  describe "string comment" do
+    it "is parsed for fields" do
+      document = subject.parse <<-GRAPHQL
+      type Thing {
+        # field comment
+        field("arg description" arg: Stuff @yikes): Stuff @wow
+      }
+      GRAPHQL
+
+      thing_defn = document.definitions[0]
+      assert_equal "Thing", thing_defn.name
+
+      field_defn = thing_defn.fields[0]
+      assert_equal "field", field_defn.name
+      assert_equal "field comment", field_defn.comment
+      assert_equal ["wow"], field_defn.directives.map(&:name)
+    end
+  end
+
   describe "string description" do
     it "is parsed for scalar definitions" do
       document = subject.parse <<-GRAPHQL
@@ -222,6 +241,7 @@ createRecord(data: {
       "Thing description"
       type Thing {
         "field description"
+        # field comment
         field("arg description" arg: Stuff @yikes): Stuff @wow
       }
       GRAPHQL
@@ -233,6 +253,7 @@ createRecord(data: {
       field_defn = thing_defn.fields[0]
       assert_equal "field", field_defn.name
       assert_equal "field description", field_defn.description
+      assert_equal "field comment", field_defn.comment
       assert_equal ["wow"], field_defn.directives.map(&:name)
 
       arg_defn = field_defn.arguments[0]
@@ -405,9 +426,9 @@ type Query {
 
   it "parses input types" do
     doc = subject.parse <<~GRAPHQL
-input ReplaceValuesInput {
-  values: [Int!]!
-}
+      input ReplaceValuesInput {
+        values: [Int!]!
+      }
 GRAPHQL
     input_t = doc.definitions.first
     assert_equal "ReplaceValuesInput", input_t.name

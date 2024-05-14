@@ -137,6 +137,11 @@ describe GraphQL::Language::Printer do
             seven(argument: String = null): Type
           }
 
+          type QueryType {
+            # Book comment.
+            bookByName(name: String!): Book
+          }
+
           """
           Scalar description
           """
