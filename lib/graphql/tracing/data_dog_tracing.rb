@@ -37,14 +37,7 @@ module GraphQL
           end
 
         when 'analyze_multiplex'
-          operations = data[:multiplex].queries.map(&:selected_operation_name).compact.join(', ')
-          resource = if operations.empty?
-            first_query = data[:multiplex].queries.first
-            fallback_transaction_name(first_query && first_query.context)
-          else
-            operations
-          end
-          tracer.trace('graphql.analyze_multiplex', resource: resource, service: options[:service], type: 'graphql') do |span|
+          tracer.trace('graphql.analyze_multiplex', resource: multiplex_resource(data[:multiplex]), service: options[:service], type: 'graphql') do |span|
             prepare_span(key, data, span)
             yield
           end
@@ -56,14 +49,8 @@ module GraphQL
           end
 
         when 'execute_multiplex'
-          operations = data[:multiplex].queries.map(&:selected_operation_name).join(', ')
-          resource = if operations.empty?
-            first_query = data[:multiplex].queries.first
-            fallback_transaction_name(first_query && first_query.context)
-          else
-            operations
-          end
-          tracer.trace('graphql.execute_multiplex', resource: resource, service: options[:service], type: 'graphql') do |span|
+
+          tracer.trace('graphql.execute_multiplex', resource: multiplex_resource(data[:multiplex]), service: options[:service], type: 'graphql') do |span|
             span.set_tag('graphql.source', "Multiplex[#{data[:multiplex].queries.map(&:query_string).compact.join(', ')}]")
             prepare_span(key, data, span)
             yield
@@ -85,15 +72,7 @@ module GraphQL
           resource = if data[:query]
             data[:query].selected_operation_name || fallback_transaction_name(data[:query].context)
           else
-            operations = data[:multiplex] && data[:multiplex].queries.map(&:selected_operation_name).compact.join(', ')
-            if operations.nil?
-              nil
-            elsif operations.empty?
-              first_query = data[:multiplex].queries.first
-              fallback_transaction_name(first_query && first_query.context)
-            else
-              operations
-            end
+            multiplex_resource(data[:multiplex])
           end
           tracer.trace('graphql.execute_lazy', resource: resource, service: options[:service], type: 'graphql') do |span|
             prepare_span('execute_lazy', data, span)
@@ -190,6 +169,19 @@ module GraphQL
 
       def platform_resolve_type_key(type)
         "#{type.graphql_name}.resolve_type"
+      end
+
+      private
+
+      def multiplex_resource(multiplex)
+        return nil unless multiplex
+        operations = multiplex.queries.map(&:selected_operation_name).compact.join(', ')
+        if operations.empty?
+          first_query = multiplex.queries.first
+          fallback_transaction_name(first_query && first_query.context)
+        else
+          operations
+        end
       end
     end
   end
