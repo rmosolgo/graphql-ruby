@@ -1,0 +1,16 @@
+,,,,,,,,,,,,,,,,,
+query ,,,,,,, ($houseId: String!, $streetNumber: Int!) ,,,,,,,,,,,, { # comment
+,,,,,,,,,,,,,,,,,, # commas should be fine
+  house(id: $houseId) {
+    id
+    name
+    lat
+    lng
+  }
+  street(number: $streetNumber) { # this is a comment
+    id
+  }
+  houseStreet(id: $houseId, number: $streetNumber) {
+    id
+  }
+}

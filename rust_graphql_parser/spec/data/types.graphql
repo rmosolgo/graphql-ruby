@@ -1,0 +1,10 @@
+query MyQuery(
+    $first: Type,
+    $second: [Type],
+    $third: Type!,
+    $fourth: [Type!],
+    $fifth: [Type]!,
+    $sixth: [Type!]!,
+) {
+    field
+}

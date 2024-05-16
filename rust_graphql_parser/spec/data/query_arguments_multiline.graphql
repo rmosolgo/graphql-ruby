@@ -1,0 +1,9 @@
+query {
+  node(
+    id: 1
+  )
+  node(
+    id: 1,
+    one: 3
+  )
+}

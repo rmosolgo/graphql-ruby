@@ -1,0 +1,13 @@
+query {
+    foo(
+        first: $var,
+        second: 1,
+        third: 3.14,
+        fourth: "abc",
+        fifth: true,
+        sixth: null,
+        seventh: NONE,
+        eight: ["foo", "bar", null, NULL],
+        ninth: [[1,2], [3,4]],
+    )
+}

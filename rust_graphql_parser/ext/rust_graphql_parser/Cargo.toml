@@ -1,0 +1,16 @@
+[package]
+name = "rust_graphql_parser"
+version = "0.1.0"
+edition = "2021"
+authors = ["Filip Pacanowski <fpacanowski@gmail.com>"]
+license = "MIT"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+rb-sys = { version = "0.9", features = ["ruby-static", "stable-api-compiled-fallback"] }
+graphql-parser = "0.4.0"
+magnus = { version = "0.6.2" }
+once_cell = "1.19.0"

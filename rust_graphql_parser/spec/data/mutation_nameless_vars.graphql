@@ -1,0 +1,4 @@
+mutation($first: Int, $second: Int) {
+  field1(first: $first)
+  field2(second: $second)
+}

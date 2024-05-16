@@ -1,0 +1,10 @@
+query {
+    field(
+        nested: {
+            first: 7,
+            secondNested: {
+                third: "abc",
+            }
+        }
+    )
+}

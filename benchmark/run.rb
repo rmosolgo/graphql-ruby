@@ -47,7 +47,11 @@ module GraphQLBenchmark
         x.report("scan - big query") { GraphQL.scan_with_ruby(BIG_QUERY_STRING) }
       when "parse"
         # Uncomment this to use the C parser:
-        # require "graphql/c_parser"
+        require "graphql/c_parser"
+        require 'rust_graphql_parser'
+        GraphQL.default_parser = GraphQL::Language::Parser
+        # GraphQL.default_parser = GraphQL::CParser
+        # GraphQL.default_parser = YetAnotherParser
         x.report("parse - introspection") { GraphQL.parse(QUERY_STRING) }
         x.report("parse - fragments") { GraphQL.parse(ABSTRACT_FRAGMENTS_2_QUERY_STRING) }
         x.report("parse - big query") { GraphQL.parse(BIG_QUERY_STRING) }

@@ -1,0 +1,14 @@
+query($houseId: String!, $streetNumber: Int!) {
+  house(id: $houseId) {
+    id
+    name
+    lat
+    lng
+  }
+  street(number: $streetNumber) {
+    id
+  }
+  houseStreet(id: $houseId, number: $streetNumber) {
+    id
+  }
+}

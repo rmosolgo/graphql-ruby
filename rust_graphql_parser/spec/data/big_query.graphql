@@ -1,0 +1,3643 @@
+query NegotiateFromSession(
+  $sessionToken: String!
+  $checkpointData: String
+  $queueToken: String
+) {
+  session(sessionInput: { sessionToken: $sessionToken }) {
+    context {
+      session {
+        ... on UnvalidatedParametersFact {
+          email
+          phone
+          shippingAddress {
+            address1
+            address2
+            city
+            company
+            countryCode
+            firstName
+            lastName
+            phone
+            zoneCode
+            postalCode: zip
+            __typename
+          }
+          billingAddress {
+            address1
+            address2
+            city
+            company
+            countryCode
+            firstName
+            lastName
+            phone
+            zoneCode
+            postalCode: zip
+            __typename
+          }
+          __typename
+        }
+        ... on PreviousNegotiationFact {
+          orderNumber
+          requiresShipping
+          __typename
+        }
+        __typename
+      }
+      policies {
+        payment {
+          ... on WalletsFact {
+            walletsAlreadyOffered
+            __typename
+          }
+          ... on PreviousPaymentsFact {
+            previouslyPaidTotal {
+              amount
+              currencyCode
+              __typename
+            }
+            updatedTotal {
+              amount
+              currencyCode
+              __typename
+            }
+            billingAddress {
+              ... on StreetAddress {
+                name
+                firstName
+                lastName
+                company
+                address1
+                address2
+                city
+                countryCode
+                zoneCode
+                postalCode
+                coordinates {
+                  latitude
+                  longitude
+                  __typename
+                }
+                phone
+                __typename
+              }
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        buyerIdentity {
+          ... on PreviousBuyerIdentityFact {
+            contactMethod {
+              email
+              phoneNumber
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        tax {
+          ... on PreviousTaxFact {
+            total {
+              amount
+              currencyCode
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        discount {
+          ... on PreviousDiscountFact {
+            orderLevelDiscounts {
+              label
+              amount {
+                amount
+                currencyCode
+                __typename
+              }
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        merchandise {
+          ... on PreviousMerchandiseFact {
+            lines {
+              title
+              variantTitle
+              quantity
+              sku
+              image {
+                id
+                altText
+                url
+                one: transformedSrc(maxWidth: 64, maxHeight: 64)
+                two: transformedSrc(maxWidth: 128, maxHeight: 128)
+                four: transformedSrc(maxWidth: 256, maxHeight: 256)
+                __typename
+              }
+              properties {
+                ...MerchandiseProperties
+                __typename
+              }
+              price {
+                amount
+                currencyCode
+                __typename
+              }
+              priceAfterDiscounts {
+                amount
+                currencyCode
+                __typename
+              }
+              appliedDiscounts {
+                label
+                amountDiscounted {
+                  amount
+                  currencyCode
+                  __typename
+                }
+                __typename
+              }
+              quantityChange {
+                delta
+                type
+                __typename
+              }
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        tip {
+          ... on PreviousTipFact {
+            total {
+              amount
+              currencyCode
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        delivery {
+          ... on PreviousDeliveryFact {
+            total {
+              amount
+              currencyCode
+              __typename
+            }
+            deliveryAddress {
+              ... on StreetAddress {
+                address1
+                address2
+                city
+                company
+                coordinates {
+                  latitude
+                  longitude
+                  __typename
+                }
+                countryCode
+                firstName
+                label
+                lastName
+                name
+                phone
+                postalCode
+                zoneCode
+                __typename
+              }
+              ... on Geolocation {
+                coordinates {
+                  latitude
+                  longitude
+                  __typename
+                }
+                country {
+                  code
+                  name
+                  __typename
+                }
+                zone {
+                  code
+                  name
+                  __typename
+                }
+                __typename
+              }
+              ... on PartialStreetAddress {
+                address1
+                address2
+                address3
+                city
+                company
+                countryCode
+                firstName
+                lastName
+                name
+                phone
+                postalCode
+                zoneCode
+                coordinates {
+                  latitude
+                  longitude
+                  __typename
+                }
+                __typename
+              }
+              __typename
+            }
+            pickupAddress {
+              address1
+              countryCode
+              coordinates {
+                latitude
+                longitude
+                __typename
+              }
+              address2
+              city
+              postalCode
+              zoneCode
+              phone
+              __typename
+            }
+            pickupAddressName
+            lines {
+              title
+              lineAmount {
+                amount
+                currencyCode
+                __typename
+              }
+              appliedDiscounts {
+                label
+                allocationValue {
+                  ... on PercentageValue {
+                    percentage
+                    __typename
+                  }
+                  ... on FixedAmountValue {
+                    fixedAmount {
+                      ... on MoneyValueConstraint {
+                        value {
+                          amount
+                          currencyCode
+                          __typename
+                        }
+                        __typename
+                      }
+                      __typename
+                    }
+                    appliesOnEachItem
+                    __typename
+                  }
+                  __typename
+                }
+                amountDiscounted {
+                  amount
+                  currencyCode
+                  __typename
+                }
+                __typename
+              }
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    sessionType
+    sourceId
+    sourceVersion
+    checkoutSessionIdentifier
+    storefrontAnalyticsStartedOrderEventId
+    negotiate(
+      input: { checkpointData: $checkpointData, queueToken: $queueToken }
+    ) {
+      result {
+        ... on NegotiationResultAvailable {
+          queueToken
+          buyerProposal {
+            ...BuyerProposalDetails
+            __typename
+          }
+          sellerProposal {
+            ...ProposalDetails
+            __typename
+          }
+          __typename
+        }
+        ... on CheckpointDenied {
+          redirectUrl
+          __typename
+        }
+        ... on Throttled {
+          pollAfter
+          queueToken
+          pollUrl
+          buyerProposal {
+            ...BuyerProposalDetails
+            __typename
+          }
+          __typename
+        }
+        ... on NegotiationResultFailed {
+          __typename
+        }
+        ... on SubmittedForCompletion {
+          __typename
+          receipt {
+            ...ReceiptDetails
+            __typename
+          }
+        }
+        __typename
+      }
+      errors {
+        code
+        localizedMessage
+        nonLocalizedMessage
+        localizedMessageHtml
+        ... on RemoveTermViolation {
+          target
+          __typename
+        }
+        ... on AcceptNewTermViolation {
+          target
+          __typename
+        }
+        ... on ConfirmChangeViolation {
+          from
+          to
+          __typename
+        }
+        ... on UnprocessableTermViolation {
+          target
+          __typename
+        }
+        ... on UnresolvableTermViolation {
+          target
+          __typename
+        }
+        ... on InputValidationError {
+          field
+          __typename
+        }
+        ... on GenericError {
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+}
+fragment MerchandiseProperties on MerchandiseProperty {
+  name
+  value {
+    ... on MerchandisePropertyValueString {
+      string: value
+      __typename
+    }
+    ... on MerchandisePropertyValueInt {
+      int: value
+      __typename
+    }
+    ... on MerchandisePropertyValueFloat {
+      float: value
+      __typename
+    }
+    ... on MerchandisePropertyValueBoolean {
+      boolean: value
+      __typename
+    }
+    ... on MerchandisePropertyValueJson {
+      json: value
+      __typename
+    }
+    __typename
+  }
+  visible
+  __typename
+}
+fragment BuyerProposalDetails on Proposal {
+  merchandiseDiscount {
+    ...ProposalDiscountFragment
+    __typename
+  }
+  deliveryDiscount {
+    ...ProposalDiscountFragment
+    __typename
+  }
+  delivery {
+    ...ProposalDeliveryFragment
+    __typename
+  }
+  merchandise {
+    ... on FilledMerchandiseTerms {
+      taxesIncluded
+      merchandiseLines {
+        stableId
+        merchandise {
+          ...SourceProvidedMerchandise
+          ...ProductVariantMerchandiseDetails
+          ...ContextualizedProductVariantMerchandiseDetails
+          ... on MissingProductVariantMerchandise {
+            id
+            digest
+            variantId
+            __typename
+          }
+          __typename
+        }
+        quantity {
+          ... on ProposalMerchandiseQuantityByItem {
+            items {
+              ... on IntValueConstraint {
+                value
+                __typename
+              }
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        totalAmount {
+          ... on MoneyValueConstraint {
+            value {
+              amount
+              currencyCode
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        recurringTotal {
+          title
+          interval
+          intervalCount
+          recurringPrice {
+            amount
+            currencyCode
+            __typename
+          }
+          fixedPrice {
+            amount
+            currencyCode
+            __typename
+          }
+          fixedPriceCount
+          __typename
+        }
+        lineAllocations {
+          ...LineAllocationDetails
+          __typename
+        }
+        lineComponents {
+          ...MerchandiseBundleLineComponent
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  runningTotal {
+    ... on MoneyValueConstraint {
+      value {
+        amount
+        currencyCode
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  total {
+    ... on MoneyValueConstraint {
+      value {
+        amount
+        currencyCode
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  checkoutTotalBeforeTaxesAndShipping {
+    ... on MoneyValueConstraint {
+      value {
+        amount
+        currencyCode
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  checkoutTotalTaxes {
+    ... on MoneyValueConstraint {
+      value {
+        amount
+        currencyCode
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  checkoutTotal {
+    ... on MoneyValueConstraint {
+      value {
+        amount
+        currencyCode
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  deferredTotal {
+    amount {
+      ... on MoneyValueConstraint {
+        value {
+          amount
+          currencyCode
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    subtotalAmount {
+      ... on MoneyValueConstraint {
+        value {
+          amount
+          currencyCode
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    taxes {
+      ... on MoneyValueConstraint {
+        value {
+          amount
+          currencyCode
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    dueAt
+    __typename
+  }
+  hasOnlyDeferredShipping
+  subtotalBeforeTaxesAndShipping {
+    ... on MoneyValueConstraint {
+      value {
+        amount
+        currencyCode
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  attribution {
+    attributions {
+      ... on AttributionItem {
+        ... on RetailAttributions {
+          deviceId
+          locationId
+          userId
+          __typename
+        }
+        ... on DraftOrderAttributions {
+          userIdentifier: userId
+          sourceName
+          locationIdentifier: locationId
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
+fragment ProposalDiscountFragment on DiscountTermsV2 {
+  __typename
+  ... on FilledDiscountTerms {
+    lines {
+      ...DiscountLineDetailsFragment
+      __typename
+    }
+    __typename
+  }
+  ... on PendingTerms {
+    pollDelay
+    taskId
+    __typename
+  }
+  ... on UnavailableTerms {
+    __typename
+  }
+}
+fragment DiscountLineDetailsFragment on DiscountLine {
+  allocations {
+    ... on DiscountAllocatedAllocationSet {
+      __typename
+      allocations {
+        amount {
+          ... on MoneyValueConstraint {
+            value {
+              amount
+              currencyCode
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        target {
+          index
+          targetType
+          stableId
+          __typename
+        }
+        __typename
+      }
+    }
+    __typename
+  }
+  discount {
+    ...DiscountDetailsFragment
+    __typename
+  }
+  lineAmount {
+    ... on MoneyValueConstraint {
+      value {
+        amount
+        currencyCode
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
+fragment DiscountDetailsFragment on Discount {
+  ... on CustomDiscount {
+    title
+    presentationLevel
+    signature
+    signatureUuid
+    type
+    value {
+      ... on PercentageValue {
+        percentage
+        __typename
+      }
+      ... on FixedAmountValue {
+        appliesOnEachItem
+        fixedAmount {
+          ... on MoneyValueConstraint {
+            value {
+              amount
+              currencyCode
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  ... on CodeDiscount {
+    title
+    code
+    presentationLevel
+    __typename
+  }
+  ... on DiscountCodeTrigger {
+    code
+    __typename
+  }
+  ... on AutomaticDiscount {
+    presentationLevel
+    title
+    __typename
+  }
+  __typename
+}
+fragment ProposalDeliveryFragment on DeliveryTerms {
+  __typename
+  ... on FilledDeliveryTerms {
+    intermediateRates
+    progressiveRatesEstimatedTimeUntilCompletion
+    shippingRatesStatusToken
+    deliveryLines {
+      destinationAddress {
+        ... on StreetAddress {
+          name
+          firstName
+          lastName
+          company
+          address1
+          address2
+          city
+          countryCode
+          zoneCode
+          postalCode
+          coordinates {
+            latitude
+            longitude
+            __typename
+          }
+          phone
+          __typename
+        }
+        ... on Geolocation {
+          country {
+            code
+            __typename
+          }
+          zone {
+            code
+            __typename
+          }
+          coordinates {
+            latitude
+            longitude
+            __typename
+          }
+          __typename
+        }
+        ... on PartialStreetAddress {
+          name
+          firstName
+          lastName
+          company
+          address1
+          address2
+          city
+          countryCode
+          zoneCode
+          postalCode
+          phone
+          coordinates {
+            latitude
+            longitude
+            __typename
+          }
+          __typename
+        }
+        __typename
+      }
+      targetMerchandise {
+        ... on FilledMerchandiseLineTargetCollection {
+          lines {
+            stableId
+            merchandise {
+              ...SourceProvidedMerchandise
+              ... on ProductVariantMerchandise {
+                id
+                digest
+                variantId
+                title
+                requiresShipping
+                properties {
+                  ...MerchandiseProperties
+                  __typename
+                }
+                __typename
+              }
+              ... on ContextualizedProductVariantMerchandise {
+                id
+                digest
+                variantId
+                title
+                requiresShipping
+                sellingPlan {
+                  id
+                  digest
+                  name
+                  prepaid
+                  deliveriesPerBillingCycle
+                  subscriptionDetails {
+                    billingInterval
+                    billingIntervalCount
+                    billingMaxCycles
+                    deliveryInterval
+                    deliveryIntervalCount
+                    __typename
+                  }
+                  __typename
+                }
+                properties {
+                  ...MerchandiseProperties
+                  __typename
+                }
+                __typename
+              }
+              ... on MissingProductVariantMerchandise {
+                id
+                digest
+                variantId
+                __typename
+              }
+              __typename
+            }
+            totalAmount {
+              ... on MoneyValueConstraint {
+                value {
+                  amount
+                  currencyCode
+                  __typename
+                }
+                __typename
+              }
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        __typename
+      }
+      groupType
+      selectedDeliveryStrategy {
+        ... on CompleteDeliveryStrategy {
+          handle
+          __typename
+        }
+        ... on DeliveryStrategyReference {
+          handle
+          __typename
+        }
+        __typename
+      }
+      availableDeliveryStrategies {
+        ... on CompleteDeliveryStrategy {
+          title
+          handle
+          custom
+          description
+          acceptsInstructions
+          phoneRequired
+          methodType
+          carrierName
+          brandedPromise {
+            logoUrl
+            name
+            __typename
+          }
+          deliveryStrategyBreakdown {
+            amount {
+              ... on MoneyValueConstraint {
+                value {
+                  amount
+                  currencyCode
+                  __typename
+                }
+                __typename
+              }
+              __typename
+            }
+            discountRecurringCycleLimit
+            excludeFromDeliveryOptionPrice
+            targetMerchandise {
+              ... on FilledMerchandiseLineTargetCollection {
+                lines {
+                  stableId
+                  merchandise {
+                    ...SourceProvidedMerchandise
+                    ... on ProductVariantMerchandise {
+                      id
+                      digest
+                      variantId
+                      title
+                      requiresShipping
+                      properties {
+                        ...MerchandiseProperties
+                        __typename
+                      }
+                      __typename
+                    }
+                    ... on ContextualizedProductVariantMerchandise {
+                      id
+                      digest
+                      variantId
+                      title
+                      requiresShipping
+                      sellingPlan {
+                        id
+                        digest
+                        name
+                        prepaid
+                        deliveriesPerBillingCycle
+                        subscriptionDetails {
+                          billingInterval
+                          billingIntervalCount
+                          billingMaxCycles
+                          deliveryInterval
+                          deliveryIntervalCount
+                          __typename
+                        }
+                        __typename
+                      }
+                      properties {
+                        ...MerchandiseProperties
+                        __typename
+                      }
+                      __typename
+                    }
+                    ... on MissingProductVariantMerchandise {
+                      id
+                      digest
+                      variantId
+                      __typename
+                    }
+                    __typename
+                  }
+                  totalAmount {
+                    ... on MoneyValueConstraint {
+                      value {
+                        amount
+                        currencyCode
+                        __typename
+                      }
+                      __typename
+                    }
+                    __typename
+                  }
+                  __typename
+                }
+                __typename
+              }
+              __typename
+            }
+            __typename
+          }
+          minDeliveryDateTime
+          maxDeliveryDateTime
+          deliveryPromisePresentmentTitle {
+            short
+            long
+            __typename
+          }
+          displayCheckoutRedesign
+          estimatedTimeInTransit {
+            ... on IntIntervalConstraint {
+              lowerBound
+              upperBound
+              __typename
+            }
+            ... on IntValueConstraint {
+              value
+              __typename
+            }
+            __typename
+          }
+          amount {
+            ... on MoneyValueConstraint {
+              value {
+                amount
+                currencyCode
+                __typename
+              }
+              __typename
+            }
+            __typename
+          }
+          amountAfterDiscounts {
+            ... on MoneyValueConstraint {
+              value {
+                amount
+                currencyCode
+                __typename
+              }
+              __typename
+            }
+            __typename
+          }
+          pickupLocation {
+            ... on PickupInStoreLocation {
+              address {
+                address1
+                address2
+                city
+                countryCode
+                phone
+                postalCode
+                zoneCode
+                __typename
+              }
+              instructions
+              name
+              __typename
+            }
+            ... on PickupPointLocation {
+              address {
+                address1
+                address2
+                address3
+                city
+                countryCode
+                zoneCode
+                postalCode
+                coordinates {
+                  latitude
+                  longitude
+                  __typename
+                }
+                __typename
+              }
+              businessHours {
+                day
+                openingTime
+                closingTime
+                __typename
+              }
+              carrierCode
+              carrierName
+              handle
+              kind
+              name
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  ... on PendingTerms {
+    pollDelay
+    taskId
+    __typename
+  }
+  ... on UnavailableTerms {
+    __typename
+  }
+}
+fragment SourceProvidedMerchandise on Merchandise {
+  ... on SourceProvidedMerchandise {
+    __typename
+    product {
+      id
+      title
+      productType
+      vendor
+      __typename
+    }
+    digest
+    variantId
+    optionalIdentifier
+    title
+    subtitle
+    taxable
+    giftCard
+    requiresShipping
+    price {
+      amount
+      currencyCode
+      __typename
+    }
+    deferredAmount {
+      amount
+      currencyCode
+      __typename
+    }
+    image {
+      altText
+      one: transformedSrc(maxWidth: 64, maxHeight: 64)
+      two: transformedSrc(maxWidth: 128, maxHeight: 128)
+      four: transformedSrc(maxWidth: 256, maxHeight: 256)
+      __typename
+    }
+    options {
+      name
+      value
+      __typename
+    }
+    properties {
+      ...MerchandiseProperties
+      __typename
+    }
+    taxCode
+    taxesIncluded
+    weight {
+      value
+      unit
+      __typename
+    }
+    sku
+  }
+  __typename
+}
+fragment ProductVariantMerchandiseDetails on ProductVariantMerchandise {
+  id
+  digest
+  variantId
+  title
+  subtitle
+  product {
+    id
+    vendor
+    productType
+    __typename
+  }
+  image {
+    altText
+    one: transformedSrc(maxWidth: 64, maxHeight: 64)
+    two: transformedSrc(maxWidth: 128, maxHeight: 128)
+    four: transformedSrc(maxWidth: 256, maxHeight: 256)
+    __typename
+  }
+  properties {
+    ...MerchandiseProperties
+    __typename
+  }
+  requiresShipping
+  options {
+    name
+    value
+    __typename
+  }
+  sellingPlan {
+    id
+    subscriptionDetails {
+      billingInterval
+      __typename
+    }
+    __typename
+  }
+  giftCard
+  __typename
+}
+fragment ContextualizedProductVariantMerchandiseDetails on ContextualizedProductVariantMerchandise {
+  id
+  digest
+  variantId
+  title
+  subtitle
+  sku
+  price {
+    amount
+    currencyCode
+    __typename
+  }
+  product {
+    id
+    vendor
+    productType
+    __typename
+  }
+  image {
+    altText
+    one: transformedSrc(maxWidth: 64, maxHeight: 64)
+    two: transformedSrc(maxWidth: 128, maxHeight: 128)
+    four: transformedSrc(maxWidth: 256, maxHeight: 256)
+    __typename
+  }
+  properties {
+    ...MerchandiseProperties
+    __typename
+  }
+  requiresShipping
+  options {
+    name
+    value
+    __typename
+  }
+  sellingPlan {
+    name
+    id
+    digest
+    deliveriesPerBillingCycle
+    prepaid
+    subscriptionDetails {
+      billingInterval
+      billingIntervalCount
+      billingMaxCycles
+      deliveryInterval
+      deliveryIntervalCount
+      __typename
+    }
+    __typename
+  }
+  giftCard
+  deferredAmount {
+    amount
+    currencyCode
+    __typename
+  }
+  __typename
+}
+fragment LineAllocationDetails on LineAllocation {
+  stableId
+  quantity
+  totalAmountBeforeReductions {
+    amount
+    currencyCode
+    __typename
+  }
+  totalAmountAfterDiscounts {
+    amount
+    currencyCode
+    __typename
+  }
+  totalAmountAfterLineDiscounts {
+    amount
+    currencyCode
+    __typename
+  }
+  checkoutPriceAfterDiscounts {
+    amount
+    currencyCode
+    __typename
+  }
+  checkoutPriceBeforeReductions {
+    amount
+    currencyCode
+    __typename
+  }
+  unitPrice {
+    price {
+      amount
+      currencyCode
+      __typename
+    }
+    measurement {
+      referenceUnit
+      referenceValue
+      __typename
+    }
+    __typename
+  }
+  allocations {
+    ... on LineComponentDiscountAllocation {
+      discountLine {
+        discount {
+          ...DiscountDetailsFragment
+          __typename
+        }
+        lineAmount {
+          ... on MoneyValueConstraint {
+            value {
+              amount
+              currencyCode
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        __typename
+      }
+      allocation {
+        amount {
+          ... on MoneyValueConstraint {
+            value {
+              amount
+              currencyCode
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        __typename
+      }
+      amount {
+        amount
+        currencyCode
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
+fragment MerchandiseBundleLineComponent on MerchandiseBundleLineComponent {
+  __typename
+  stableId
+  merchandise {
+    ...SourceProvidedMerchandise
+    ...ProductVariantMerchandiseDetails
+    ...ContextualizedProductVariantMerchandiseDetails
+    ... on MissingProductVariantMerchandise {
+      id
+      digest
+      variantId
+      __typename
+    }
+    __typename
+  }
+  quantity {
+    ... on ProposalMerchandiseQuantityByItem {
+      items {
+        ... on IntValueConstraint {
+          value
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  totalAmount {
+    ... on MoneyValueConstraint {
+      value {
+        amount
+        currencyCode
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  recurringTotal {
+    title
+    interval
+    intervalCount
+    recurringPrice {
+      amount
+      currencyCode
+      __typename
+    }
+    fixedPrice {
+      amount
+      currencyCode
+      __typename
+    }
+    fixedPriceCount
+    __typename
+  }
+  lineAllocations {
+    ...LineAllocationDetails
+    __typename
+  }
+}
+fragment ProposalDetails on Proposal {
+  merchandiseDiscount {
+    ...ProposalDiscountFragment
+    __typename
+  }
+  deliveryDiscount {
+    ...ProposalDiscountFragment
+    __typename
+  }
+  delivery {
+    ... on FilledDeliveryTerms {
+      intermediateRates
+      progressiveRatesEstimatedTimeUntilCompletion
+      shippingRatesStatusToken
+      deliveryLines {
+        destinationAddress {
+          ... on StreetAddress {
+            name
+            firstName
+            lastName
+            company
+            address1
+            address2
+            city
+            countryCode
+            zoneCode
+            postalCode
+            coordinates {
+              latitude
+              longitude
+              __typename
+            }
+            phone
+            __typename
+          }
+          ... on Geolocation {
+            country {
+              code
+              __typename
+            }
+            zone {
+              code
+              __typename
+            }
+            coordinates {
+              latitude
+              longitude
+              __typename
+            }
+            __typename
+          }
+          ... on PartialStreetAddress {
+            name
+            firstName
+            lastName
+            company
+            address1
+            address2
+            city
+            countryCode
+            zoneCode
+            postalCode
+            phone
+            coordinates {
+              latitude
+              longitude
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        targetMerchandise {
+          ... on FilledMerchandiseLineTargetCollection {
+            lines {
+              stableId
+              merchandise {
+                ...SourceProvidedMerchandise
+                ... on ProductVariantMerchandise {
+                  id
+                  digest
+                  variantId
+                  title
+                  requiresShipping
+                  properties {
+                    ...MerchandiseProperties
+                    __typename
+                  }
+                  __typename
+                }
+                ... on ContextualizedProductVariantMerchandise {
+                  id
+                  digest
+                  variantId
+                  title
+                  requiresShipping
+                  sellingPlan {
+                    id
+                    digest
+                    name
+                    prepaid
+                    deliveriesPerBillingCycle
+                    subscriptionDetails {
+                      billingInterval
+                      billingIntervalCount
+                      billingMaxCycles
+                      deliveryInterval
+                      deliveryIntervalCount
+                      __typename
+                    }
+                    __typename
+                  }
+                  properties {
+                    ...MerchandiseProperties
+                    __typename
+                  }
+                  __typename
+                }
+                ... on MissingProductVariantMerchandise {
+                  id
+                  digest
+                  variantId
+                  __typename
+                }
+                __typename
+              }
+              totalAmount {
+                ... on MoneyValueConstraint {
+                  value {
+                    amount
+                    currencyCode
+                    __typename
+                  }
+                  __typename
+                }
+                __typename
+              }
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        groupType
+        selectedDeliveryStrategy {
+          ... on CompleteDeliveryStrategy {
+            handle
+            __typename
+          }
+          __typename
+        }
+        availableDeliveryStrategies {
+          ... on CompleteDeliveryStrategy {
+            originLocation {
+              id
+              __typename
+            }
+            title
+            handle
+            custom
+            description
+            acceptsInstructions
+            phoneRequired
+            methodType
+            carrierName
+            brandedPromise {
+              logoUrl
+              name
+              __typename
+            }
+            deliveryStrategyBreakdown {
+              amount {
+                ... on MoneyValueConstraint {
+                  value {
+                    amount
+                    currencyCode
+                    __typename
+                  }
+                  __typename
+                }
+                __typename
+              }
+              discountRecurringCycleLimit
+              excludeFromDeliveryOptionPrice
+              targetMerchandise {
+                ... on FilledMerchandiseLineTargetCollection {
+                  lines {
+                    stableId
+                    merchandise {
+                      ...SourceProvidedMerchandise
+                      ... on ProductVariantMerchandise {
+                        id
+                        digest
+                        variantId
+                        title
+                        requiresShipping
+                        properties {
+                          ...MerchandiseProperties
+                          __typename
+                        }
+                        __typename
+                      }
+                      ... on ContextualizedProductVariantMerchandise {
+                        id
+                        digest
+                        variantId
+                        title
+                        subtitle
+                        requiresShipping
+                        sellingPlan {
+                          id
+                          digest
+                          name
+                          prepaid
+                          deliveriesPerBillingCycle
+                          subscriptionDetails {
+                            billingInterval
+                            billingIntervalCount
+                            billingMaxCycles
+                            deliveryInterval
+                            deliveryIntervalCount
+                            __typename
+                          }
+                          __typename
+                        }
+                        properties {
+                          ...MerchandiseProperties
+                          __typename
+                        }
+                        __typename
+                      }
+                      ... on MissingProductVariantMerchandise {
+                        id
+                        digest
+                        variantId
+                        __typename
+                      }
+                      __typename
+                    }
+                    totalAmount {
+                      ... on MoneyValueConstraint {
+                        value {
+                          amount
+                          currencyCode
+                          __typename
+                        }
+                        __typename
+                      }
+                      __typename
+                    }
+                    __typename
+                  }
+                  __typename
+                }
+                __typename
+              }
+              __typename
+            }
+            minDeliveryDateTime
+            maxDeliveryDateTime
+            deliveryPromisePresentmentTitle {
+              short
+              long
+              __typename
+            }
+            displayCheckoutRedesign
+            estimatedTimeInTransit {
+              ... on IntIntervalConstraint {
+                lowerBound
+                upperBound
+                __typename
+              }
+              ... on IntValueConstraint {
+                value
+                __typename
+              }
+              __typename
+            }
+            amount {
+              ... on MoneyValueConstraint {
+                value {
+                  amount
+                  currencyCode
+                  __typename
+                }
+                __typename
+              }
+              __typename
+            }
+            amountAfterDiscounts {
+              ... on MoneyValueConstraint {
+                value {
+                  amount
+                  currencyCode
+                  __typename
+                }
+                __typename
+              }
+              __typename
+            }
+            pickupLocation {
+              ... on PickupInStoreLocation {
+                address {
+                  address1
+                  address2
+                  city
+                  countryCode
+                  phone
+                  postalCode
+                  zoneCode
+                  __typename
+                }
+                instructions
+                name
+                distanceFromBuyer {
+                  unit
+                  value
+                  __typename
+                }
+                __typename
+              }
+              ... on PickupPointLocation {
+                address {
+                  address1
+                  address2
+                  address3
+                  city
+                  countryCode
+                  zoneCode
+                  postalCode
+                  coordinates {
+                    latitude
+                    longitude
+                    __typename
+                  }
+                  __typename
+                }
+                businessHours {
+                  day
+                  openingTime
+                  closingTime
+                  __typename
+                }
+                carrierCode
+                carrierName
+                handle
+                kind
+                name
+                __typename
+              }
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    ... on PendingTerms {
+      pollDelay
+      taskId
+      __typename
+    }
+    ... on UnavailableTerms {
+      __typename
+    }
+    __typename
+  }
+  payment {
+    ... on FilledPaymentTerms {
+      availablePayments {
+        paymentMethod {
+          ... on AnyDirectPaymentMethod {
+            __typename
+            availablePaymentProviders {
+              paymentMethodIdentifier
+              name
+              brands
+              orderingIndex
+              displayName
+              __typename
+            }
+          }
+          ... on AnyOffsitePaymentMethod {
+            __typename
+            availableOffsiteProviders {
+              __typename
+              paymentMethodIdentifier
+              name
+              paymentBrands
+              orderingIndex
+            }
+          }
+          ... on DirectPaymentMethod {
+            __typename
+            paymentMethodIdentifier
+          }
+          ... on GiftCardPaymentMethod {
+            __typename
+          }
+          ... on AnyRedeemablePaymentMethod {
+            __typename
+            availableRedemptionSources
+            orderingIndex
+          }
+          ... on WalletsPlatformConfiguration {
+            name
+            configurationParams
+            __typename
+          }
+          ... on AnyWalletPaymentMethod {
+            availableWalletPaymentConfigs {
+              ... on PaypalWalletConfig {
+                __typename
+                name
+                merchantId
+                venmoEnabled
+                payflow
+                paymentIntent
+                paymentMethodIdentifier
+                orderingIndex
+              }
+              ... on ShopPayWalletConfig {
+                __typename
+                name
+                storefrontUrl
+                paymentMethodIdentifier
+                orderingIndex
+              }
+              ... on ShopifyInstallmentsWalletConfig {
+                __typename
+                name
+                availableLoanTypes
+                maxPrice {
+                  amount
+                  currencyCode
+                  __typename
+                }
+                minPrice {
+                  amount
+                  currencyCode
+                  __typename
+                }
+                supportedCountries
+                supportedCurrencies
+                giftCardsNotAllowed
+                subscriptionItemsNotAllowed
+                ineligibleTestModeCheckout
+                ineligibleLineItem
+                paymentMethodIdentifier
+                orderingIndex
+              }
+              ... on FacebookPayWalletConfig {
+                __typename
+                name
+                partnerId
+                partnerMerchantId
+                supportedContainers
+                acquirerCountryCode
+                mode
+                paymentMethodIdentifier
+                orderingIndex
+              }
+              ... on ApplePayWalletConfig {
+                __typename
+                name
+                supportedNetworks
+                walletAuthenticationToken
+                walletOrderTypeIdentifier
+                walletServiceUrl
+                paymentMethodIdentifier
+                orderingIndex
+              }
+              ... on GooglePayWalletConfig {
+                __typename
+                name
+                allowedAuthMethods
+                allowedCardNetworks
+                gateway
+                gatewayMerchantId
+                merchantId
+                authJwt
+                environment
+                paymentMethodIdentifier
+                orderingIndex
+              }
+              ... on AmazonPayClassicWalletConfig {
+                __typename
+                name
+                orderingIndex
+              }
+              __typename
+            }
+            __typename
+          }
+          ... on LocalPaymentMethodConfig {
+            __typename
+            paymentMethodIdentifier
+            name
+            displayName
+            additionalParameters {
+              ... on IdealBankSelectionParameterConfig {
+                __typename
+                label
+                options {
+                  label
+                  value
+                  __typename
+                }
+              }
+              __typename
+            }
+            orderingIndex
+          }
+          ... on AnyPaymentOnDeliveryMethod {
+            __typename
+            additionalDetails
+            paymentInstructions
+            paymentMethodIdentifier
+            orderingIndex
+            displayName
+          }
+          ... on PaymentOnDeliveryMethod {
+            __typename
+            additionalDetails
+            paymentInstructions
+            paymentMethodIdentifier
+          }
+          ... on CustomPaymentMethod {
+            id
+            name
+            additionalDetails
+            paymentInstructions
+            __typename
+          }
+          ... on ManualPaymentMethodConfig {
+            id
+            name
+            additionalDetails
+            paymentInstructions
+            paymentMethodIdentifier
+            orderingIndex
+            __typename
+          }
+          ... on CustomPaymentMethodConfig {
+            id
+            name
+            additionalDetails
+            paymentInstructions
+            paymentMethodIdentifier
+            orderingIndex
+            __typename
+          }
+          ... on DeferredPaymentMethod {
+            orderingIndex
+            displayName
+            __typename
+          }
+          ... on NoopPaymentMethod {
+            __typename
+          }
+          ... on GiftCardPaymentMethod {
+            __typename
+          }
+          ... on CustomerCreditCardPaymentMethod {
+            __typename
+            expired
+            expiryMonth
+            expiryYear
+            name
+            orderingIndex
+            ...CustomerCreditCardPaymentMethodFragment
+          }
+          ... on PaypalBillingAgreementPaymentMethod {
+            __typename
+            orderingIndex
+            paypalAccountEmail
+            ...PaypalBillingAgreementPaymentMethodFragment
+          }
+          __typename
+        }
+        __typename
+      }
+      paymentLines {
+        ...PaymentLines
+        __typename
+      }
+      billingAddress {
+        ... on StreetAddress {
+          firstName
+          lastName
+          company
+          address1
+          address2
+          city
+          countryCode
+          zoneCode
+          postalCode
+          phone
+          __typename
+        }
+        ... on InvalidBillingAddress {
+          __typename
+        }
+        __typename
+      }
+      paymentFlexibilityPaymentTermsTemplate {
+        id
+        translatedName
+        dueDate
+        dueInDays
+        __typename
+      }
+      __typename
+    }
+    ... on PendingTerms {
+      pollDelay
+      __typename
+    }
+    ... on UnavailableTerms {
+      __typename
+    }
+    __typename
+  }
+  merchandise {
+    ... on FilledMerchandiseTerms {
+      taxesIncluded
+      merchandiseLines {
+        stableId
+        merchandise {
+          ...SourceProvidedMerchandise
+          ...ProductVariantMerchandiseDetails
+          ...ContextualizedProductVariantMerchandiseDetails
+          ... on MissingProductVariantMerchandise {
+            id
+            digest
+            variantId
+            __typename
+          }
+          __typename
+        }
+        quantity {
+          ... on ProposalMerchandiseQuantityByItem {
+            items {
+              ... on IntValueConstraint {
+                value
+                __typename
+              }
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        totalAmount {
+          ... on MoneyValueConstraint {
+            value {
+              amount
+              currencyCode
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        recurringTotal {
+          title
+          interval
+          intervalCount
+          recurringPrice {
+            amount
+            currencyCode
+            __typename
+          }
+          fixedPrice {
+            amount
+            currencyCode
+            __typename
+          }
+          fixedPriceCount
+          __typename
+        }
+        lineAllocations {
+          ...LineAllocationDetails
+          __typename
+        }
+        lineComponents {
+          ...MerchandiseBundleLineComponent
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  note {
+    customAttributes {
+      key
+      value
+      __typename
+    }
+    message
+    __typename
+  }
+  scriptFingerprint {
+    signature
+    signatureUuid
+    lineItemScriptChanges
+    paymentScriptChanges
+    shippingScriptChanges
+    __typename
+  }
+  transformerFingerprintV2
+  buyerIdentity {
+    ... on FilledBuyerIdentityTerms {
+      buyerIdentity {
+        ... on GuestProfile {
+          presentmentCurrency
+          countryCode
+          __typename
+        }
+        ... on CustomerProfile {
+          id
+          presentmentCurrency
+          fullName
+          firstName
+          lastName
+          countryCode
+          email
+          imageUrl
+          acceptsMarketing
+          phone
+          billingAddresses {
+            id
+            default
+            address {
+              firstName
+              lastName
+              address1
+              address2
+              phone
+              postalCode
+              city
+              company
+              zoneCode
+              countryCode
+              label
+              __typename
+            }
+            __typename
+          }
+          shippingAddresses {
+            id
+            default
+            address {
+              firstName
+              lastName
+              address1
+              address2
+              phone
+              postalCode
+              city
+              company
+              zoneCode
+              countryCode
+              label
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        ... on BusinessCustomerProfile {
+          checkoutExperienceConfiguration {
+            availablePaymentOptions
+            checkoutCompletionTarget
+            editableShippingAddress
+            __typename
+          }
+          id
+          presentmentCurrency
+          fullName
+          firstName
+          lastName
+          acceptsMarketing
+          companyName
+          countryCode
+          email
+          phone
+          selectedCompanyLocation {
+            id
+            name
+            __typename
+          }
+          locationCount
+          billingAddress {
+            firstName
+            lastName
+            address1
+            address2
+            phone
+            postalCode
+            city
+            company
+            zoneCode
+            countryCode
+            label
+            __typename
+          }
+          shippingAddress {
+            firstName
+            lastName
+            address1
+            address2
+            phone
+            postalCode
+            city
+            company
+            zoneCode
+            countryCode
+            label
+            __typename
+          }
+          __typename
+        }
+        __typename
+      }
+      contactInfoV2 {
+        ... on EmailFormContents {
+          email
+          __typename
+        }
+        ... on SMSFormContents {
+          phoneNumber
+          __typename
+        }
+        __typename
+      }
+      marketingConsent {
+        ... on SMSMarketingConsent {
+          value
+          __typename
+        }
+        ... on EmailMarketingConsent {
+          value
+          __typename
+        }
+        __typename
+      }
+      shopPayOptInPhone
+      __typename
+    }
+    __typename
+  }
+  recurringTotals {
+    title
+    interval
+    intervalCount
+    recurringPrice {
+      amount
+      currencyCode
+      __typename
+    }
+    fixedPrice {
+      amount
+      currencyCode
+      __typename
+    }
+    fixedPriceCount
+    __typename
+  }
+  subtotalBeforeTaxesAndShipping {
+    ... on MoneyValueConstraint {
+      value {
+        amount
+        currencyCode
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  runningTotal {
+    ... on MoneyValueConstraint {
+      value {
+        amount
+        currencyCode
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  total {
+    ... on MoneyValueConstraint {
+      value {
+        amount
+        currencyCode
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  checkoutTotalBeforeTaxesAndShipping {
+    ... on MoneyValueConstraint {
+      value {
+        amount
+        currencyCode
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  checkoutTotalTaxes {
+    ... on MoneyValueConstraint {
+      value {
+        amount
+        currencyCode
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  checkoutTotal {
+    ... on MoneyValueConstraint {
+      value {
+        amount
+        currencyCode
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  deferredTotal {
+    amount {
+      ... on MoneyValueConstraint {
+        value {
+          amount
+          currencyCode
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    subtotalAmount {
+      ... on MoneyValueConstraint {
+        value {
+          amount
+          currencyCode
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    taxes {
+      ... on MoneyValueConstraint {
+        value {
+          amount
+          currencyCode
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    dueAt
+    __typename
+  }
+  hasOnlyDeferredShipping
+  subtotalBeforeReductions {
+    ... on MoneyValueConstraint {
+      value {
+        amount
+        currencyCode
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  duty {
+    ... on FilledDutyTerms {
+      totalDutyAmount {
+        ... on MoneyValueConstraint {
+          value {
+            amount
+            currencyCode
+            __typename
+          }
+          __typename
+        }
+        __typename
+      }
+      totalTaxAndDutyAmount {
+        ... on MoneyValueConstraint {
+          value {
+            amount
+            currencyCode
+            __typename
+          }
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    ... on PendingTerms {
+      pollDelay
+      __typename
+    }
+    ... on UnavailableTerms {
+      __typename
+    }
+    __typename
+  }
+  tax {
+    ... on FilledTaxTerms {
+      totalTaxAmount {
+        ... on MoneyValueConstraint {
+          value {
+            amount
+            currencyCode
+            __typename
+          }
+          __typename
+        }
+        __typename
+      }
+      totalTaxAndDutyAmount {
+        ... on MoneyValueConstraint {
+          value {
+            amount
+            currencyCode
+            __typename
+          }
+          __typename
+        }
+        __typename
+      }
+      totalAmountIncludedInTarget {
+        ... on MoneyValueConstraint {
+          value {
+            amount
+            currencyCode
+            __typename
+          }
+          __typename
+        }
+        __typename
+      }
+      exemptions {
+        taxExemptionReason
+        targets {
+          ... on TargetAllLines {
+            __typename
+          }
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    ... on PendingTerms {
+      pollDelay
+      __typename
+    }
+    ... on UnavailableTerms {
+      __typename
+    }
+    __typename
+  }
+  tip {
+    tipSuggestions {
+      ... on TipSuggestion {
+        __typename
+        percentage
+        amount {
+          ... on MoneyValueConstraint {
+            value {
+              amount
+              currencyCode
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+      }
+      __typename
+    }
+    terms {
+      ... on FilledTipTerms {
+        tipLines {
+          amount {
+            ... on MoneyValueConstraint {
+              value {
+                amount
+                currencyCode
+                __typename
+              }
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  localizationExtension {
+    ... on LocalizationExtension {
+      fields {
+        ... on LocalizationExtensionField {
+          key
+          title
+          value
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  landedCostDetails {
+    incotermInformation {
+      incoterm
+      reason
+      __typename
+    }
+    __typename
+  }
+  nonNegotiableTerms {
+    signature
+    contents {
+      signature
+      targetTerms
+      targetLine {
+        allLines
+        index
+        __typename
+      }
+      attributes
+      __typename
+    }
+    __typename
+  }
+  optionalDuties {
+    buyerRefusesDuties
+    refuseDutiesPermitted
+    __typename
+  }
+  attribution {
+    attributions {
+      ... on AttributionItem {
+        ... on RetailAttributions {
+          deviceId
+          locationId
+          userId
+          __typename
+        }
+        ... on DraftOrderAttributions {
+          userIdentifier: userId
+          sourceName
+          locationIdentifier: locationId
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  managedByMarketsPro
+  captcha {
+    ... on Captcha {
+      provider
+      challenge
+      sitekey
+      token
+      __typename
+    }
+    ... on PendingTerms {
+      taskId
+      pollDelay
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
+fragment CustomerCreditCardPaymentMethodFragment on CustomerCreditCardPaymentMethod {
+  cvvSessionId
+  paymentMethodIdentifier
+  token
+  displayLastDigits
+  brand
+  billingAddress {
+    ... on StreetAddress {
+      address1
+      address2
+      city
+      company
+      countryCode
+      firstName
+      lastName
+      phone
+      postalCode
+      zoneCode
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
+fragment PaypalBillingAgreementPaymentMethodFragment on PaypalBillingAgreementPaymentMethod {
+  paymentMethodIdentifier
+  token
+  billingAddress {
+    ... on StreetAddress {
+      address1
+      address2
+      city
+      company
+      countryCode
+      firstName
+      lastName
+      phone
+      postalCode
+      zoneCode
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
+fragment PaymentLines on PaymentLine {
+  specialInstructions
+  amount {
+    ... on MoneyValueConstraint {
+      value {
+        amount
+        currencyCode
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  dueAt
+  paymentMethod {
+    ... on DirectPaymentMethod {
+      sessionId
+      paymentMethodIdentifier
+      creditCard {
+        ... on CreditCard {
+          brand
+          lastDigits
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    ... on GiftCardPaymentMethod {
+      code
+      balance {
+        amount
+        currencyCode
+        __typename
+      }
+      __typename
+    }
+    ... on RedeemablePaymentMethod {
+      redemptionSource
+      redemptionContent {
+        ... on ShopCashRedemptionContent {
+          billingAddress {
+            ... on StreetAddress {
+              firstName
+              lastName
+              company
+              address1
+              address2
+              city
+              countryCode
+              zoneCode
+              postalCode
+              phone
+              __typename
+            }
+            __typename
+          }
+          redemptionId
+          destinationAmount {
+            amount
+            currencyCode
+            __typename
+          }
+          sourceAmount {
+            amount
+            currencyCode
+            __typename
+          }
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    ... on WalletsPlatformPaymentMethod {
+      name
+      walletParams
+      __typename
+    }
+    ... on WalletPaymentMethod {
+      name
+      walletContent {
+        ... on ShopPayWalletContent {
+          billingAddress {
+            ... on StreetAddress {
+              firstName
+              lastName
+              company
+              address1
+              address2
+              city
+              countryCode
+              zoneCode
+              postalCode
+              phone
+              __typename
+            }
+            ... on InvalidBillingAddress {
+              __typename
+            }
+            __typename
+          }
+          sessionToken
+          paymentMethodIdentifier
+          __typename
+        }
+        ... on PaypalWalletContent {
+          paypalBillingAddress: billingAddress {
+            ... on StreetAddress {
+              firstName
+              lastName
+              company
+              address1
+              address2
+              city
+              countryCode
+              zoneCode
+              postalCode
+              phone
+              __typename
+            }
+            ... on InvalidBillingAddress {
+              __typename
+            }
+            __typename
+          }
+          email
+          payerId
+          token
+          paymentMethodIdentifier
+          acceptedSubscriptionTerms
+          expiresAt
+          __typename
+        }
+        ... on ApplePayWalletContent {
+          data
+          signature
+          version
+          lastDigits
+          paymentMethodIdentifier
+          __typename
+        }
+        ... on GooglePayWalletContent {
+          signature
+          signedMessage
+          protocolVersion
+          paymentMethodIdentifier
+          __typename
+        }
+        ... on FacebookPayWalletContent {
+          billingAddress {
+            ... on StreetAddress {
+              firstName
+              lastName
+              company
+              address1
+              address2
+              city
+              countryCode
+              zoneCode
+              postalCode
+              phone
+              __typename
+            }
+            ... on InvalidBillingAddress {
+              __typename
+            }
+            __typename
+          }
+          containerData
+          containerId
+          mode
+          paymentMethodIdentifier
+          __typename
+        }
+        ... on ShopifyInstallmentsWalletContent {
+          autoPayEnabled
+          billingAddress {
+            ... on StreetAddress {
+              firstName
+              lastName
+              company
+              address1
+              address2
+              city
+              countryCode
+              zoneCode
+              postalCode
+              phone
+              __typename
+            }
+            ... on InvalidBillingAddress {
+              __typename
+            }
+            __typename
+          }
+          disclosureDetails {
+            evidence
+            id
+            type
+            __typename
+          }
+          installmentsToken
+          sessionToken
+          paymentMethodIdentifier
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    ... on LocalPaymentMethod {
+      paymentMethodIdentifier
+      name
+      additionalParameters {
+        ... on IdealPaymentMethodParameters {
+          bank
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    ... on PaymentOnDeliveryMethod {
+      additionalDetails
+      paymentInstructions
+      paymentMethodIdentifier
+      __typename
+    }
+    ... on OffsitePaymentMethod {
+      paymentMethodIdentifier
+      name
+      __typename
+    }
+    ... on CustomPaymentMethod {
+      id
+      name
+      additionalDetails
+      paymentInstructions
+      paymentMethodIdentifier
+      __typename
+    }
+    ... on ManualPaymentMethod {
+      id
+      name
+      paymentMethodIdentifier
+      __typename
+    }
+    ... on DeferredPaymentMethod {
+      orderingIndex
+      displayName
+      __typename
+    }
+    ... on CustomerCreditCardPaymentMethod {
+      ...CustomerCreditCardPaymentMethodFragment
+      __typename
+    }
+    ... on PaypalBillingAgreementPaymentMethod {
+      ...PaypalBillingAgreementPaymentMethodFragment
+      __typename
+    }
+    ... on NoopPaymentMethod {
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
+fragment ReceiptDetails on Receipt {
+  ... on ProcessedReceipt {
+    id
+    token
+    classicThankYouPageUrl
+    orderIdentity {
+      buyerIdentifier
+      id
+      __typename
+    }
+    shopPayArtifact {
+      optIn {
+        vaultPhone
+        __typename
+      }
+      __typename
+    }
+    eligibleForMarketingOptIn
+    purchaseOrder {
+      ...ReceiptPurchaseOrder
+      __typename
+    }
+    orderCreationStatus {
+      __typename
+    }
+    paymentDetails {
+      creditCardBrand
+      creditCardLastFourDigits
+      __typename
+    }
+    shopAppLinksAndResources {
+      mobileUrl
+      qrCodeUrl
+      canTrackOrderUpdates
+      shopInstallmentsViewSchedules
+      shopInstallmentsMobileUrl
+      installmentsHighlightEligible
+      mobileUrlAttributionPayload
+      shopAppEligible
+      shopAppQrCodeKillswitch
+      shopPayOrder
+      buyerHasShopApp
+      buyerHasShopPay
+      orderUpdateOptions
+      __typename
+    }
+    postPurchasePageRequested
+    postPurchaseVaultedPaymentMethodStatus
+    __typename
+  }
+  ... on ProcessingReceipt {
+    id
+    pollDelay
+    __typename
+  }
+  ... on ActionRequiredReceipt {
+    id
+    action {
+      ... on CompletePaymentChallenge {
+        offsiteRedirect
+        url
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  ... on FailedReceipt {
+    id
+    processingError {
+      ... on InventoryClaimFailure {
+        __typename
+      }
+      ... on InventoryReservationFailure {
+        __typename
+      }
+      ... on OrderCreationFailure {
+        paymentsHaveBeenReverted
+        __typename
+      }
+      ... on OrderCreationSchedulingFailure {
+        __typename
+      }
+      ... on PaymentFailed {
+        code
+        messageUntranslated
+        __typename
+      }
+      ... on DiscountUsageLimitExceededFailure {
+        __typename
+      }
+      ... on CustomerPersistenceFailure {
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  __typename
+}
+fragment ReceiptPurchaseOrder on PurchaseOrder {
+  __typename
+  sessionToken
+  totalAmountToPay {
+    amount
+    currencyCode
+    __typename
+  }
+  delivery {
+    ... on PurchaseOrderDeliveryTerms {
+      deliveryLines {
+        __typename
+        deliveryStrategy {
+          handle
+          title
+          description
+          methodType
+          pickupLocation {
+            ... on PickupInStoreLocation {
+              name
+              address {
+                address1
+                address2
+                city
+                countryCode
+                zoneCode
+                postalCode
+                phone
+                coordinates {
+                  latitude
+                  longitude
+                  __typename
+                }
+                __typename
+              }
+              instructions
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        lineAmount {
+          amount
+          currencyCode
+          __typename
+        }
+        destinationAddress {
+          ... on StreetAddress {
+            name
+            firstName
+            lastName
+            company
+            address1
+            address2
+            city
+            countryCode
+            zoneCode
+            postalCode
+            coordinates {
+              latitude
+              longitude
+              __typename
+            }
+            phone
+            __typename
+          }
+          __typename
+        }
+        groupType
+      }
+      __typename
+    }
+    __typename
+  }
+  payment {
+    ... on PurchaseOrderPaymentTerms {
+      billingAddress {
+        __typename
+        ... on StreetAddress {
+          name
+          firstName
+          lastName
+          company
+          address1
+          address2
+          city
+          countryCode
+          zoneCode
+          postalCode
+          coordinates {
+            latitude
+            longitude
+            __typename
+          }
+          phone
+          __typename
+        }
+        ... on InvalidBillingAddress {
+          __typename
+        }
+      }
+      paymentLines {
+        amount {
+          amount
+          currencyCode
+          __typename
+        }
+        postPaymentMessage
+        dueAt
+        paymentMethod {
+          ... on DirectPaymentMethod {
+            sessionId
+            paymentMethodIdentifier
+            vaultingAgreement
+            creditCard {
+              brand
+              lastDigits
+              __typename
+            }
+            billingAddress {
+              ... on StreetAddress {
+                name
+                firstName
+                lastName
+                company
+                address1
+                address2
+                city
+                countryCode
+                zoneCode
+                postalCode
+                coordinates {
+                  latitude
+                  longitude
+                  __typename
+                }
+                phone
+                __typename
+              }
+              ... on InvalidBillingAddress {
+                __typename
+              }
+              __typename
+            }
+            __typename
+          }
+          ... on CustomerCreditCardPaymentMethod {
+            brand
+            displayLastDigits
+            token
+            billingAddress {
+              ... on StreetAddress {
+                address1
+                address2
+                city
+                company
+                countryCode
+                firstName
+                lastName
+                phone
+                postalCode
+                zoneCode
+                __typename
+              }
+              __typename
+            }
+            __typename
+          }
+          ... on PurchaseOrderGiftCardPaymentMethod {
+            code
+            __typename
+          }
+          ... on WalletPaymentMethod {
+            name
+            walletContent {
+              ... on ShopPayWalletContent {
+                billingAddress {
+                  ... on StreetAddress {
+                    firstName
+                    lastName
+                    company
+                    address1
+                    address2
+                    city
+                    countryCode
+                    zoneCode
+                    postalCode
+                    phone
+                    __typename
+                  }
+                  ... on InvalidBillingAddress {
+                    __typename
+                  }
+                  __typename
+                }
+                sessionToken
+                paymentMethodIdentifier
+                __typename
+              }
+              ... on PaypalWalletContent {
+                billingAddress {
+                  ... on StreetAddress {
+                    firstName
+                    lastName
+                    company
+                    address1
+                    address2
+                    city
+                    countryCode
+                    zoneCode
+                    postalCode
+                    phone
+                    __typename
+                  }
+                  ... on InvalidBillingAddress {
+                    __typename
+                  }
+                  __typename
+                }
+                email
+                payerId
+                token
+                expiresAt
+                __typename
+              }
+              ... on ApplePayWalletContent {
+                billingAddress {
+                  ... on StreetAddress {
+                    firstName
+                    lastName
+                    company
+                    address1
+                    address2
+                    city
+                    countryCode
+                    zoneCode
+                    postalCode
+                    phone
+                    __typename
+                  }
+                  ... on InvalidBillingAddress {
+                    __typename
+                  }
+                  __typename
+                }
+                data
+                signature
+                version
+                __typename
+              }
+              ... on GooglePayWalletContent {
+                billingAddress {
+                  ... on StreetAddress {
+                    firstName
+                    lastName
+                    company
+                    address1
+                    address2
+                    city
+                    countryCode
+                    zoneCode
+                    postalCode
+                    phone
+                    __typename
+                  }
+                  ... on InvalidBillingAddress {
+                    __typename
+                  }
+                  __typename
+                }
+                signature
+                signedMessage
+                protocolVersion
+                __typename
+              }
+              ... on FacebookPayWalletContent {
+                billingAddress {
+                  ... on StreetAddress {
+                    firstName
+                    lastName
+                    company
+                    address1
+                    address2
+                    city
+                    countryCode
+                    zoneCode
+                    postalCode
+                    phone
+                    __typename
+                  }
+                  ... on InvalidBillingAddress {
+                    __typename
+                  }
+                  __typename
+                }
+                containerData
+                containerId
+                mode
+                __typename
+              }
+              ... on ShopifyInstallmentsWalletContent {
+                autoPayEnabled
+                billingAddress {
+                  ... on StreetAddress {
+                    firstName
+                    lastName
+                    company
+                    address1
+                    address2
+                    city
+                    countryCode
+                    zoneCode
+                    postalCode
+                    phone
+                    __typename
+                  }
+                  ... on InvalidBillingAddress {
+                    __typename
+                  }
+                  __typename
+                }
+                disclosureDetails {
+                  evidence
+                  id
+                  type
+                  __typename
+                }
+                installmentsToken
+                sessionToken
+                __typename
+              }
+              __typename
+            }
+            __typename
+          }
+          ... on LocalPaymentMethod {
+            paymentMethodIdentifier
+            name
+            billingAddress {
+              ... on StreetAddress {
+                name
+                firstName
+                lastName
+                company
+                address1
+                address2
+                city
+                countryCode
+                zoneCode
+                postalCode
+                coordinates {
+                  latitude
+                  longitude
+                  __typename
+                }
+                phone
+                __typename
+              }
+              ... on InvalidBillingAddress {
+                __typename
+              }
+              __typename
+            }
+            __typename
+          }
+          ... on PaymentOnDeliveryMethod {
+            additionalDetails
+            paymentInstructions
+            paymentMethodIdentifier
+            billingAddress {
+              ... on StreetAddress {
+                name
+                firstName
+                lastName
+                company
+                address1
+                address2
+                city
+                countryCode
+                zoneCode
+                postalCode
+                coordinates {
+                  latitude
+                  longitude
+                  __typename
+                }
+                phone
+                __typename
+              }
+              ... on InvalidBillingAddress {
+                __typename
+              }
+              __typename
+            }
+            __typename
+          }
+          ... on OffsitePaymentMethod {
+            paymentMethodIdentifier
+            name
+            billingAddress {
+              ... on StreetAddress {
+                name
+                firstName
+                lastName
+                company
+                address1
+                address2
+                city
+                countryCode
+                zoneCode
+                postalCode
+                coordinates {
+                  latitude
+                  longitude
+                  __typename
+                }
+                phone
+                __typename
+              }
+              ... on InvalidBillingAddress {
+                __typename
+              }
+              __typename
+            }
+            __typename
+          }
+          ... on ManualPaymentMethod {
+            additionalDetails
+            name
+            paymentInstructions
+            id
+            paymentMethodIdentifier
+            billingAddress {
+              ... on StreetAddress {
+                name
+                firstName
+                lastName
+                company
+                address1
+                address2
+                city
+                countryCode
+                zoneCode
+                postalCode
+                coordinates {
+                  latitude
+                  longitude
+                  __typename
+                }
+                phone
+                __typename
+              }
+              ... on InvalidBillingAddress {
+                __typename
+              }
+              __typename
+            }
+            __typename
+          }
+          ... on CustomPaymentMethod {
+            additionalDetails
+            name
+            paymentInstructions
+            id
+            paymentMethodIdentifier
+            billingAddress {
+              ... on StreetAddress {
+                name
+                firstName
+                lastName
+                company
+                address1
+                address2
+                city
+                countryCode
+                zoneCode
+                postalCode
+                coordinates {
+                  latitude
+                  longitude
+                  __typename
+                }
+                phone
+                __typename
+              }
+              ... on InvalidBillingAddress {
+                __typename
+              }
+              __typename
+            }
+            __typename
+          }
+          ... on DeferredPaymentMethod {
+            orderingIndex
+            displayName
+            __typename
+          }
+          ... on PaypalBillingAgreementPaymentMethod {
+            token
+            billingAddress {
+              ... on StreetAddress {
+                address1
+                address2
+                city
+                company
+                countryCode
+                firstName
+                lastName
+                phone
+                postalCode
+                zoneCode
+                __typename
+              }
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  buyerIdentity {
+    ... on PurchaseOrderBuyerIdentityTerms {
+      contactMethod {
+        ... on PurchaseOrderEmailContactMethod {
+          email
+          __typename
+        }
+        ... on PurchaseOrderSMSContactMethod {
+          phoneNumber
+          __typename
+        }
+        __typename
+      }
+      marketingConsent {
+        ... on PurchaseOrderEmailContactMethod {
+          email
+          __typename
+        }
+        ... on PurchaseOrderSMSContactMethod {
+          phoneNumber
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  merchandise {
+    merchandiseLines {
+      merchandise {
+        ...ProductVariantSnapshotMerchandiseDetails
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+  tax {
+    totalTaxAmount {
+      amount
+      currencyCode
+      __typename
+    }
+    __typename
+  }
+  discounts {
+    lines {
+      deliveryAllocations {
+        amount {
+          amount
+          currencyCode
+          __typename
+        }
+        index
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+}
+fragment ProductVariantSnapshotMerchandiseDetails on ProductVariantSnapshot {
+  variantId
+  options {
+    name
+    value
+    __typename
+  }
+  productTitle
+  title
+  sellingPlan {
+    name
+    id
+    digest
+    deliveriesPerBillingCycle
+    prepaid
+    subscriptionDetails {
+      billingInterval
+      billingIntervalCount
+      billingMaxCycles
+      deliveryInterval
+      deliveryIntervalCount
+      __typename
+    }
+    __typename
+  }
+  __typename
+}

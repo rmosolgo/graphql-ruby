@@ -9,6 +9,8 @@ gem 'pry'
 gem 'pry-stack_explorer', platform: :ruby
 gem 'pry-byebug'
 
+gem 'rust_graphql_parser', path: 'rust_graphql_parser'
+
 if RUBY_VERSION >= "3.0"
   gem "libev_scheduler"
   gem "evt"
