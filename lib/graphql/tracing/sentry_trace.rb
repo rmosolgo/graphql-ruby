@@ -12,7 +12,7 @@ module GraphQL
         @set_transaction_name = set_transaction_name
         super
       end
-      
+
       def execute_query(**data)
         set_this_txn_name = data[:query].context[:set_sentry_transaction_name]
         if set_this_txn_name == true || (set_this_txn_name.nil? && @set_transaction_name)
@@ -20,7 +20,7 @@ module GraphQL
             scope.set_transaction_name(transaction_name(data[:query]))
           end
         end
-        instrument_execution("graphql.execute", "execute_query", data) { super }
+        instrument_sentry_execution("graphql.execute", "execute_query", data) { super }
       end
 
       {
@@ -34,33 +34,33 @@ module GraphQL
       }.each do |trace_method, platform_key|
         module_eval <<-RUBY, __FILE__, __LINE__
         def #{trace_method}(**data)
-          instrument_execution("#{platform_key}", "#{trace_method}", data) { super }
+          instrument_sentry_execution("#{platform_key}", "#{trace_method}", data) { super }
         end
         RUBY
       end
 
       def platform_execute_field(platform_key, &block)
-        instrument_execution(platform_key, "execute_field", &block)
+        instrument_sentry_execution(platform_key, "execute_field", &block)
       end
 
       def platform_execute_field_lazy(platform_key, &block)
-        instrument_execution(platform_key, "execute_field_lazy", &block)
+        instrument_sentry_execution(platform_key, "execute_field_lazy", &block)
       end
 
       def platform_authorized(platform_key, &block)
-        instrument_execution(platform_key, "authorized", &block)
+        instrument_sentry_execution(platform_key, "authorized", &block)
       end
 
       def platform_authorized_lazy(platform_key, &block)
-        instrument_execution(platform_key, "authorized_lazy", &block)
+        instrument_sentry_execution(platform_key, "authorized_lazy", &block)
       end
 
       def platform_resolve_type(platform_key, &block)
-        instrument_execution(platform_key, "resolve_type", &block)
+        instrument_sentry_execution(platform_key, "resolve_type", &block)
       end
 
       def platform_resolve_type_lazy(platform_key, &block)
-        instrument_execution(platform_key, "resolve_type_lazy", &block)
+        instrument_sentry_execution(platform_key, "resolve_type_lazy", &block)
       end
 
       def platform_field_key(field)
@@ -77,7 +77,7 @@ module GraphQL
 
       private
 
-      def instrument_execution(platform_key, trace_method, data=nil, &block)
+      def instrument_sentry_execution(platform_key, trace_method, data=nil, &block)
         return yield unless Sentry.initialized?
 
         Sentry.with_child_span(op: platform_key, start_timestamp: Sentry.utc_now.to_f) do |span|
