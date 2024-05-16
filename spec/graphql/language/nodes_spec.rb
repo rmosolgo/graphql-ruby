@@ -26,6 +26,41 @@ describe GraphQL::Language::Nodes::AbstractNode do
     end
   end
 
+  describe "Marshal" do
+    it "marshals and unmarshals parsed ASTs" do
+      str = "query($var: [Int!] = [100001]) {
+  f1(arg: {input: $var, nullInput: null}) @stuff {
+    ...F2
+  }
+}
+
+fragment F2 on SomeType {
+  ... {
+    someField(arg1: true, arg2: THING, arg3: 5.01234) {
+      a @someDirective @anotherDirective @yetAnother
+      b
+      c
+    }
+  }
+}"
+      doc = GraphQL.parse(str)
+      data = Marshal.dump(doc)
+      new_doc = Marshal.load(data)
+      assert_equal doc, new_doc
+      assert_equal str, doc.to_query_string
+      assert_equal str, new_doc.to_query_string
+
+      # also test schema definition nodes:
+      str2 = Dummy::Schema.to_definition.strip
+      doc2 = GraphQL.parse(str2)
+      data2 = Marshal.dump(doc2)
+      new_doc2 = Marshal.load(data2)
+      assert_equal doc, new_doc
+      assert_equal str2, doc2.to_query_string
+      assert_equal str2, new_doc2.to_query_string
+    end
+  end
+
   describe "#filename" do
     it "is set after .parse_file" do
       filename = "spec/support/parser/filename_example.graphql"

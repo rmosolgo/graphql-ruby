@@ -20,6 +20,15 @@ module GraphQL
             @definition_line = definition_line
             super(**_rest)
           end
+
+          def marshal_dump
+            super << @definition_line
+          end
+
+          def marshal_load(values)
+            @definition_line = values.pop
+            super
+          end
         end
 
         attr_reader :filename
@@ -273,18 +282,20 @@ module GraphQL
               end
             end
 
-            all_method_names = scalar_method_names + @children_methods.keys
+            children_method_names = @children_methods.keys
+
+            all_method_names = scalar_method_names + children_method_names
             if all_method_names.include?(:alias)
               # Rather than complicating this special case,
               # let it be overridden (in field)
               return
             else
               arguments = scalar_method_names.map { |m| "#{m}: nil"} +
-                @children_methods.keys.map { |m| "#{m}: NO_CHILDREN" } +
+                children_method_names.map { |m| "#{m}: NO_CHILDREN" } +
                 DEFAULT_INITIALIZE_OPTIONS
 
               assignments = scalar_method_names.map { |m| "@#{m} = #{m}"} +
-                @children_methods.keys.map { |m| "@#{m} = #{m}.freeze" }
+                children_method_names.map { |m| "@#{m} = #{m}.freeze" }
 
               if name.end_with?("Definition") && name != "FragmentDefinition"
                 arguments << "definition_pos: nil"
@@ -292,7 +303,7 @@ module GraphQL
               end
 
               keywords = scalar_method_names.map { |m| "#{m}: #{m}"} +
-                @children_methods.keys.map { |m| "#{m}: #{m}" }
+                children_method_names.map { |m| "#{m}: #{m}" }
 
               module_eval <<-RUBY, __FILE__, __LINE__
                 def initialize(#{arguments.join(", ")})
@@ -304,8 +315,20 @@ module GraphQL
                   #{assignments.join("\n")}
                 end
 
-                def self.from_a(filename, line, col, #{(scalar_method_names + @children_methods.keys).join(", ")})
+                def self.from_a(filename, line, col, #{all_method_names.join(", ")})
                   self.new(filename: filename, line: line, col: col, #{keywords.join(", ")})
+                end
+
+                def marshal_dump
+                  [
+                    line, col, # use methods here to force them to be calculated
+                    @filename,
+                    #{all_method_names.map { |n| "@#{n}," }.join}
+                  ]
+                end
+
+                def marshal_load(values)
+                  @line, @col, @filename #{all_method_names.map { |n| ", @#{n}"}.join} = values
                 end
               RUBY
             end
@@ -397,6 +420,14 @@ module GraphQL
           self.new(filename: filename, line: line, col: col, field_alias: field_alias, name: name, arguments: arguments, directives: directives, selections: selections)
         end
 
+        def marshal_dump
+          [line, col, @filename, @name, @arguments, @directives, @selections, @alias]
+        end
+
+        def marshal_load(values)
+          @line, @col, @filename, @name, @arguments, @directives, @selections, @alias = values
+        end
+
         # Override this because default is `:fields`
         self.children_method_name = :selections
       end
@@ -429,6 +460,14 @@ module GraphQL
 
         def self.from_a(filename, line, col, name, type, directives, selections)
           self.new(filename: filename, line: line, col: col, name: name, type: type, directives: directives, selections: selections)
+        end
+
+        def marshal_dump
+          [line, col, @filename, @name, @type, @directives, @selections]
+        end
+
+        def marshal_load(values)
+          @line, @col, @filename, @name, @type, @directives, @selections = values
         end
       end
 

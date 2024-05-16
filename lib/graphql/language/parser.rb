@@ -478,7 +478,7 @@ module GraphQL
         end
 
         if at?(:BANG)
-          type = Nodes::NonNullType.new(pos: pos, of_type: type)
+          type = Nodes::NonNullType.new(pos: pos, of_type: type, source: self)
           expect_token(:BANG)
         end
         type
@@ -487,7 +487,7 @@ module GraphQL
       def list_type
         loc = pos
         expect_token(:LBRACKET)
-        type = Nodes::ListType.new(pos: loc, of_type: self.type)
+        type = Nodes::ListType.new(pos: loc, of_type: self.type, source: self)
         expect_token(:RBRACKET)
         type
       end
