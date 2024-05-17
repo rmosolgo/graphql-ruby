@@ -52,11 +52,12 @@ If you know that any items returned from `.scope_items` should be visible to the
 class Types::Product < Types::BaseObject
   # Check that singly-loaded objects are visible to the current viewer
   def self.authorized?(object, context)
-    object.visible_to?(context[:viewer])
+    super && object.visible_to?(context[:viewer])
   end
 
   # Filter any list to only include objects that are visible to the current viewer
   def self.scope_items(items, context)
+    items = super(items, context)
     items.visible_for(context[:viewer])
   end
 
