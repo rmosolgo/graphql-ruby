@@ -266,7 +266,7 @@
 <p>You can add this check by implementing a <code class="language-plaintext highlighter-rouge">#authorized?</code> method, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">authorized?</span><span class="p">(</span><span class="n">employee</span><span class="p">:)</span>
-  <span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">].</span><span class="nf">manager_of?</span><span class="p">(</span><span class="n">employee</span><span class="p">)</span>
+  <span class="k">super</span> <span class="o">&amp;&amp;</span> <span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">].</span><span class="nf">manager_of?</span><span class="p">(</span><span class="n">employee</span><span class="p">)</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
@@ -277,7 +277,7 @@
 <p>To add errors as data (as described in <a href="/mutations/mutation_errors">Mutation errors</a>), return a value <em>along with</em> <code class="language-plaintext highlighter-rouge">false</code>, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">authorized?</span><span class="p">(</span><span class="n">employee</span><span class="p">:)</span>
-  <span class="k">if</span> <span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">].</span><span class="nf">manager_of?</span><span class="p">(</span><span class="n">employee</span><span class="p">)</span>
+  <span class="k">super</span> <span class="o">&amp;&amp;</span> <span class="k">if</span> <span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">].</span><span class="nf">manager_of?</span><span class="p">(</span><span class="n">employee</span><span class="p">)</span>
     <span class="kp">true</span>
   <span class="k">else</span>
     <span class="k">return</span> <span class="kp">false</span><span class="p">,</span> <span class="p">{</span> <span class="ss">errors: </span><span class="p">[</span><span class="s2">"Can't promote an employee you don't manage"</span><span class="p">]</span> <span class="p">}</span>
@@ -288,8 +288,11 @@
 <p>Alternatively, you can add top-level errors by raising <code class="language-plaintext highlighter-rouge">GraphQL::ExecutionError</code>, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">authorized?</span><span class="p">(</span><span class="n">employee</span><span class="p">:)</span>
-  <span class="k">return</span> <span class="kp">true</span> <span class="k">if</span> <span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">].</span><span class="nf">manager_of?</span><span class="p">(</span><span class="n">employee</span><span class="p">)</span>
-  <span class="k">raise</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">,</span> <span class="s2">"You can only promote your _own_ employees"</span>
+  <span class="k">super</span> <span class="o">&amp;&amp;</span> <span class="k">if</span> <span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">].</span><span class="nf">manager_of?</span><span class="p">(</span><span class="n">employee</span><span class="p">)</span>
+    <span class="kp">true</span>
+  <span class="k">else</span>
+    <span class="k">raise</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">,</span> <span class="s2">"You can only promote your _own_ employees"</span>
+  <span class="k">end</span>
 <span class="k">end</span>
 </code></pre></div></div>
 

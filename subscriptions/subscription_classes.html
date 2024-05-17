@@ -364,7 +364,7 @@
 <p>You can implement <code class="language-plaintext highlighter-rouge">#authorized?</code> to check that the user has permission to subscribe to these arguments (and receive updates for these arguments), for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">authorized?</span><span class="p">(</span><span class="n">room</span><span class="p">:)</span>
-  <span class="n">context</span><span class="p">[</span><span class="ss">:viewer</span><span class="p">].</span><span class="nf">can_read_messages?</span><span class="p">(</span><span class="n">room</span><span class="p">)</span>
+  <span class="k">super</span> <span class="o">&amp;&amp;</span> <span class="n">context</span><span class="p">[</span><span class="ss">:viewer</span><span class="p">].</span><span class="nf">can_read_messages?</span><span class="p">(</span><span class="n">room</span><span class="p">)</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
