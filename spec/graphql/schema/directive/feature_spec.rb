@@ -113,7 +113,7 @@ describe GraphQL::Schema::Directive::Feature do
     }
     "
 
-    res = FeatureSchema.execute(str, context: { x: true })
+    res = FeatureSchema.execute(str, context: { "x" => true })
     assert_equal 1, res["data"]["int"]
     assert_equal 2, res["data"]["i2"]
   end
