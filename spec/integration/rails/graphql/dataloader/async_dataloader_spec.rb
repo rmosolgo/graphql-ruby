@@ -77,32 +77,32 @@ describe GraphQL::Dataloader::AsyncDataloader do
     skip("Only test when isolation_level = :fiber") unless ENV["ISOLATION_LEVEL_FIBER"]
   }
 
-  # it "cleans up database connections" do
-  #   query_str = "{
-  #     b1: baseName(id: 1) b2: baseName(id: 2)
-  #     ib1: inlineBaseName(id: 1)
-  #     query {
-  #       b3: baseName(id: 3)
-  #       query {
-  #         b4: baseName(id: 4)
-  #         ib2: inlineBaseName(id: 2)
-  #       }
-  #     }
-  #   }"
-  #   res = RailsAsyncSchema.execute(query_str)
-  #   assert_equal({
-  #     "b1" => "Yavin", "b2" => "Echo Base", "ib1" => "Yavin",
-  #     "query" => {
-  #       "b3" => "Secret Hideout",
-  #       "query" => { "b4" => "Death Star", "ib2" => "Echo Base" }
-  #     }
-  #   }, res["data"])
+  it "cleans up database connections" do
+    query_str = "{
+      b1: baseName(id: 1) b2: baseName(id: 2)
+      ib1: inlineBaseName(id: 1)
+      query {
+        b3: baseName(id: 3)
+        query {
+          b4: baseName(id: 4)
+          ib2: inlineBaseName(id: 2)
+        }
+      }
+    }"
+    res = RailsAsyncSchema.execute(query_str)
+    assert_equal({
+      "b1" => "Yavin", "b2" => "Echo Base", "ib1" => "Yavin",
+      "query" => {
+        "b3" => "Secret Hideout",
+        "query" => { "b4" => "Death Star", "ib2" => "Echo Base" }
+      }
+    }, res["data"])
 
-  #   RailsAsyncSchema.execute(query_str)
-  #   RailsAsyncSchema.execute(query_str)
+    RailsAsyncSchema.execute(query_str)
+    RailsAsyncSchema.execute(query_str)
 
-  #   assert_equal 0, ActiveRecord::Base.connection_pool.connections.size
-  # end
+    assert_equal 0, ActiveRecord::Base.connection_pool.connections.size
+  end
 
   it "uses the `connected_to` role" do
     query_str = "{ role query { role } }"
