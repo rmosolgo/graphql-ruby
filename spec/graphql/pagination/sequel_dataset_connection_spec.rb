@@ -7,7 +7,6 @@ if testing_rails?
     end
 
     before do
-      ensure_foods_created
       if SequelFood.empty? # Can overlap with ActiveRecordRelationConnection test
         ConnectionAssertions::NAMES.each { |n| SequelFood.create(name: n) }
       end

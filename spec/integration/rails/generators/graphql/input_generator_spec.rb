@@ -5,29 +5,20 @@ require "generators/graphql/input_generator"
 class GraphQLGeneratorsInputGeneratorTest < BaseGeneratorTest
   tests Graphql::Generators::InputGenerator
 
-  def self.create_input_test_users
-    ActiveRecord::Schema.define do
-      create_table :input_test_users, force: true do |t|
-        t.datetime :created_at
-        t.date :birthday
-        t.integer :points
-        t.decimal :rating
-        t.references :friend, foreign_key: { to_table: :input_test_users}
-      end
+  ActiveRecord::Schema.define do
+    create_table :input_test_users, force: true do |t|
+      t.datetime :created_at
+      t.date :birthday
+      t.integer :points
+      t.decimal :rating
+      t.references :friend, foreign_key: { to_table: :input_test_users}
     end
   end
-
-  create_input_test_users
 
   # rubocop:disable Style/ClassAndModuleChildren
   class ::InputTestUser < ActiveRecord::Base
   end
   # rubocop:enable Style/ClassAndModuleChildren
-
-  def setup
-    self.class.create_input_test_users
-    super
-  end
 
   test "it generates arguments with types" do
     commands = [

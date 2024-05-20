@@ -7,10 +7,6 @@ if testing_rails?
     ActiveRecord.async_query_executor ||= :global_thread_pool
   end
 
-  if Rails::VERSION::STRING < "7.1"
-    ActiveRecord.legacy_connection_handling = false
-  end
-
   if ENV['DATABASE'] == 'POSTGRESQL'
     ar_connection_options = {
       host: "localhost",
@@ -50,18 +46,11 @@ if testing_rails?
       t.column :planet, :string
       t.column :faction_id, :integer
     end
-  end
 
-  def ensure_foods_created
-    ActiveRecord::Base.establish_connection(:starwars)
-    ActiveRecord::Schema.define do
-      create_table :foods, force: true do |t|
-        t.column :name, :string
-      end
+    create_table :foods, force: true do |t|
+      t.column :name, :string
     end
   end
-
-  ensure_foods_created
 
   class Food < ActiveRecord::Base
     include GlobalID::Identification
