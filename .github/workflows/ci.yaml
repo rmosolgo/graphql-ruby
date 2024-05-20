@@ -73,6 +73,8 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: '20'
+    - run: npm install
+      working-directory: ./javascript_client
     - run: npm test
       working-directory: ./javascript_client
   postgres_test:
