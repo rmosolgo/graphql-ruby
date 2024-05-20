@@ -294,7 +294,7 @@ module GraphQL
       end
 
       def print_arguments(arguments, indent: "")
-        if arguments.all? { |arg| !arg.description }
+        if arguments.all? { |arg| !arg.description && !arg.comment }
           print_string("(")
           arguments.each_with_index do |arg, i|
             print_input_value_definition(arg)
@@ -306,6 +306,7 @@ module GraphQL
 
         print_string("(\n")
         arguments.each_with_index do |arg, i|
+          print_comment(arg, indent: "  " + indent, first_in_block: i == 0)
           print_description(arg, indent: "  " + indent, first_in_block: i == 0)
           print_string("  ")
           print_string(indent)

@@ -274,6 +274,7 @@ module GraphQL
         else
           loc = pos
           desc = at?(:STRING) ? string_value : nil
+          comment = at?(:COMMENT) ? value : nil
           defn_loc = pos
           case token_name
           when :SCHEMA
@@ -325,7 +326,7 @@ module GraphQL
             directives = parse_directives
             field_defns = at?(:LCURLY) ? parse_field_definitions : EMPTY_ARRAY
 
-            ObjectTypeDefinition.new(pos: loc, definition_pos: defn_loc, description: desc, name: name, interfaces: implements_interfaces, directives: directives, fields: field_defns, filename: @filename, source: self)
+            ObjectTypeDefinition.new(pos: loc, definition_pos: defn_loc, description: desc, comment: comment, name: name, interfaces: implements_interfaces, directives: directives, fields: field_defns, filename: @filename, source: self)
           when :INTERFACE
             advance_token
             name = parse_name
@@ -468,6 +469,7 @@ module GraphQL
 
       def parse_input_value_definition
         loc = pos
+        comment = if at?(:COMMENT); value; end
         description = if at?(:STRING); string_value; end
         defn_loc = pos
         name = parse_name
@@ -480,7 +482,7 @@ module GraphQL
           nil
         end
         directives = parse_directives
-        InputValueDefinition.new(pos: loc, definition_pos: defn_loc, description: description, name: name, type: type, default_value: default_value, directives: directives, filename: @filename, source: self)
+        InputValueDefinition.new(pos: loc, definition_pos: defn_loc, description: description, comment: comment, name: name, type: type, default_value: default_value, directives: directives, filename: @filename, source: self)
       end
 
       def type
@@ -524,6 +526,8 @@ module GraphQL
         expect_token(:LCURLY)
         selections = []
         while @token_name != :RCURLY
+          comment = if at?(:COMMENT); value; end
+
           selections << if at?(:ELLIPSIS)
             loc = pos
             advance_token
@@ -546,7 +550,7 @@ module GraphQL
               # Can this ever happen?
               # expect_token(:IDENTIFIER) if at?(:ON)
 
-              FragmentSpread.new(pos: loc, name: name, directives: directives, filename: @filename, source: self)
+              FragmentSpread.new(pos: loc, name: name, directives: directives, comment: comment, filename: @filename, source: self)
             end
           else
             loc = pos
@@ -564,7 +568,7 @@ module GraphQL
             directives = at?(:DIR_SIGN) ? parse_directives : nil
             selection_set = at?(:LCURLY) ? self.selection_set : nil
 
-            Nodes::Field.new(pos: loc, field_alias: field_alias, name: name, arguments: arguments, directives: directives, selections: selection_set, filename: @filename, source: self)
+            Nodes::Field.new(pos: loc, field_alias: field_alias, name: name, arguments: arguments, directives: directives, comment: comment, selections: selection_set, filename: @filename, source: self)
           end
         end
         expect_token(:RCURLY)

@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require "spec_helper"
+require_relative "../../spec_helper"
 
 describe GraphQL::Language::Parser do
   subject { GraphQL }
@@ -207,21 +207,32 @@ createRecord(data: {
   end
 
   describe "string comment" do
-    it "is parsed for fields" do
+    it "is parsed for fields and arguments" do
       document = subject.parse <<-GRAPHQL
+      # type comment
       type Thing {
         # field comment
-        field("arg description" arg: Stuff @yikes): Stuff @wow
+        field(
+          # arg comment
+          "arg description" arg: Stuff @yikes
+        ): Stuff @wow
       }
       GRAPHQL
 
       thing_defn = document.definitions[0]
+      assert_equal "type comment", thing_defn.comment
       assert_equal "Thing", thing_defn.name
 
       field_defn = thing_defn.fields[0]
       assert_equal "field", field_defn.name
       assert_equal "field comment", field_defn.comment
       assert_equal ["wow"], field_defn.directives.map(&:name)
+
+      arg_defn = field_defn.arguments[0]
+      assert_equal "arg", arg_defn.name
+      assert_equal "arg comment", arg_defn.comment
+      assert_equal "arg description", arg_defn.description
+      assert_equal ["yikes"], arg_defn.directives.map(&:name)
     end
   end
 

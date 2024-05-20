@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require "spec_helper"
+require_relative "../../spec_helper"
 
 describe GraphQL::Schema::Argument do
   module SchemaArgumentTest
@@ -29,11 +29,12 @@ describe GraphQL::Schema::Argument do
 
     class Query < GraphQL::Schema::Object
       field :field, String do
-        argument :arg, String, description: "test", required: false
+        argument :arg, String, description: "test", comment: "test comment", required: false
         argument :deprecated_arg, String, deprecation_reason: "don't use me!", required: false
 
         argument :arg_with_block, String, required: false do
           description "test"
+          comment "test comment"
         end
         argument :required_with_default_arg, Int, default_value: 1
         argument :aliased_arg, String, required: false, as: :renamed
@@ -144,6 +145,23 @@ describe GraphQL::Schema::Argument do
     it "has an assignment method" do
       arg.description = "another new description"
       assert_equal "another new description", arg.description
+    end
+  end
+
+  describe "#comment" do
+    let(:arg) { SchemaArgumentTest::Query.fields["field"].arguments["arg"] }
+    it "sets comment" do
+      arg.comment "new comment"
+      assert_equal "new comment", arg.comment
+    end
+
+    it "returns comment" do
+      assert_equal "test comment", SchemaArgumentTest::Query.fields["field"].arguments["argWithBlock"].comment
+    end
+
+    it "has an assignment method" do
+      arg.comment = "another new comment"
+      assert_equal "another new comment", arg.comment
     end
   end
 

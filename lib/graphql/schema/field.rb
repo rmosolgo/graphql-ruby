@@ -23,8 +23,6 @@ module GraphQL
 
       attr_writer :description
 
-      attr_accessor :comment
-
       # @return [Symbol] Method or hash key on the underlying object to look up
       attr_reader :method_sym
 
