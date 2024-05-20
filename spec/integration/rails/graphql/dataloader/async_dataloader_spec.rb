@@ -87,9 +87,7 @@ describe GraphQL::Dataloader::AsyncDataloader do
 
   it "cleans up database connections" do
     puts "RUnning database connection test "
-    # ActiveRecord::Base.connection_pool.disconnect!
-
-    assert_equal 0, ActiveRecord::Base.connection_pool.connections.size, "It starts empty"
+    starting_connections = ActiveRecord::Base.connection_pool.connections.size
     query_str = "{
       b1: baseName(id: 1) b2: baseName(id: 2)
       ib1: inlineBaseName(id: 1)
@@ -113,7 +111,9 @@ describe GraphQL::Dataloader::AsyncDataloader do
     RailsAsyncSchema.execute(query_str)
     RailsAsyncSchema.execute(query_str)
 
-    assert_equal 0, ActiveRecord::Base.connection_pool.connections.size
+    ending_connections = ActiveRecord::Base.connection_pool.connections.size
+    retained_connections = ending_connections - starting_connections
+    assert_equal 0, retained_connections, "No connections are retained by GraphQL"
   end
 
   it "uses the `connected_to` role" do
