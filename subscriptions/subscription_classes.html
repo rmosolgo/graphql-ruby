@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.3.3/">API</a>
+            <a href="/api-doc/2.2.15/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -172,7 +172,7 @@
 </div>
 </div>
 <div class="guide-container">
-  <p>You can extend <a href="/api-doc/2.3.3/GraphQL/Schema/Subscription" target="_blank" title="API docs for GraphQL::Schema::Subscription"><code>GraphQL::Schema::Subscription</code></a> to create fields that can be subscribed to.</p>
+  <p>You can extend <a href="/api-doc/2.2.15/GraphQL/Schema/Subscription" target="_blank" title="API docs for GraphQL::Schema::Subscription"><code>GraphQL::Schema::Subscription</code></a> to create fields that can be subscribed to.</p>
 
 <p>These classes support several behaviors:</p>
 
@@ -199,7 +199,7 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>(This base class is a lot like the <a href="/mutations/mutation_classes">mutation base class</a>. They’re both subclasses of <a href="/api-doc/2.3.3/GraphQL/Schema/Resolver" target="_blank" title="API docs for GraphQL::Schema::Resolver"><code>GraphQL::Schema::Resolver</code></a>.)</p>
+<p>(This base class is a lot like the <a href="/mutations/mutation_classes">mutation base class</a>. They’re both subclasses of <a href="/api-doc/2.2.15/GraphQL/Schema/Resolver" target="_blank" title="API docs for GraphQL::Schema::Resolver"><code>GraphQL::Schema::Resolver</code></a>.)</p>
 
 <h2 id="extend-the-base-class-and-hook-it-up">Extend the base class and hook it up</h2>
 
@@ -364,7 +364,7 @@
 <p>You can implement <code class="language-plaintext highlighter-rouge">#authorized?</code> to check that the user has permission to subscribe to these arguments (and receive updates for these arguments), for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">authorized?</span><span class="p">(</span><span class="n">room</span><span class="p">:)</span>
-  <span class="k">super</span> <span class="o">&amp;&amp;</span> <span class="n">context</span><span class="p">[</span><span class="ss">:viewer</span><span class="p">].</span><span class="nf">can_read_messages?</span><span class="p">(</span><span class="n">room</span><span class="p">)</span>
+  <span class="n">context</span><span class="p">[</span><span class="ss">:viewer</span><span class="p">].</span><span class="nf">can_read_messages?</span><span class="p">(</span><span class="n">room</span><span class="p">)</span>
 <span class="k">end</span>
 </code></pre></div></div>
 

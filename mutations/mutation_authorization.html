@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.3.3/">API</a>
+            <a href="/api-doc/2.2.15/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -236,8 +236,8 @@
 
 <ul>
   <li>Automatically remove <code class="language-plaintext highlighter-rouge">_id</code> from the name and pass that name for the <code class="language-plaintext highlighter-rouge">as:</code> option</li>
-  <li>Add a prepare hook to fetch an object with the given <code class="language-plaintext highlighter-rouge">ID</code> (using <a href="/api-doc/2.3.3/GraphQL/Schema#object_from_id-class_method" target="_blank" title="API docs for GraphQL::Schema.object_from_id"><code>Schema.object_from_id</code></a>)</li>
-  <li>Check that the fetched object’s type matches the <code class="language-plaintext highlighter-rouge">loads:</code> type (using <a href="/api-doc/2.3.3/GraphQL/Schema#resolve_type-class_method" target="_blank" title="API docs for GraphQL::Schema.resolve_type"><code>Schema.resolve_type</code></a>)</li>
+  <li>Add a prepare hook to fetch an object with the given <code class="language-plaintext highlighter-rouge">ID</code> (using <a href="/api-doc/2.2.15/GraphQL/Schema#object_from_id-class_method" target="_blank" title="API docs for GraphQL::Schema.object_from_id"><code>Schema.object_from_id</code></a>)</li>
+  <li>Check that the fetched object’s type matches the <code class="language-plaintext highlighter-rouge">loads:</code> type (using <a href="/api-doc/2.2.15/GraphQL/Schema#resolve_type-class_method" target="_blank" title="API docs for GraphQL::Schema.resolve_type"><code>Schema.resolve_type</code></a>)</li>
   <li>Run the fetched object through its type’s <code class="language-plaintext highlighter-rouge">.authorized?</code> hook (see <a href="/authorization/authorization">Authorization</a>)</li>
   <li>Inject it into <code class="language-plaintext highlighter-rouge">#resolve</code> using the object-style name (<code class="language-plaintext highlighter-rouge">employee:</code>)</li>
 </ul>
@@ -266,7 +266,7 @@
 <p>You can add this check by implementing a <code class="language-plaintext highlighter-rouge">#authorized?</code> method, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">authorized?</span><span class="p">(</span><span class="n">employee</span><span class="p">:)</span>
-  <span class="k">super</span> <span class="o">&amp;&amp;</span> <span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">].</span><span class="nf">manager_of?</span><span class="p">(</span><span class="n">employee</span><span class="p">)</span>
+  <span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">].</span><span class="nf">manager_of?</span><span class="p">(</span><span class="n">employee</span><span class="p">)</span>
 <span class="k">end</span>
 </code></pre></div></div>
 
@@ -277,7 +277,7 @@
 <p>To add errors as data (as described in <a href="/mutations/mutation_errors">Mutation errors</a>), return a value <em>along with</em> <code class="language-plaintext highlighter-rouge">false</code>, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">authorized?</span><span class="p">(</span><span class="n">employee</span><span class="p">:)</span>
-  <span class="k">super</span> <span class="o">&amp;&amp;</span> <span class="k">if</span> <span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">].</span><span class="nf">manager_of?</span><span class="p">(</span><span class="n">employee</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">].</span><span class="nf">manager_of?</span><span class="p">(</span><span class="n">employee</span><span class="p">)</span>
     <span class="kp">true</span>
   <span class="k">else</span>
     <span class="k">return</span> <span class="kp">false</span><span class="p">,</span> <span class="p">{</span> <span class="ss">errors: </span><span class="p">[</span><span class="s2">"Can't promote an employee you don't manage"</span><span class="p">]</span> <span class="p">}</span>
@@ -288,11 +288,8 @@
 <p>Alternatively, you can add top-level errors by raising <code class="language-plaintext highlighter-rouge">GraphQL::ExecutionError</code>, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">authorized?</span><span class="p">(</span><span class="n">employee</span><span class="p">:)</span>
-  <span class="k">super</span> <span class="o">&amp;&amp;</span> <span class="k">if</span> <span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">].</span><span class="nf">manager_of?</span><span class="p">(</span><span class="n">employee</span><span class="p">)</span>
-    <span class="kp">true</span>
-  <span class="k">else</span>
-    <span class="k">raise</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">,</span> <span class="s2">"You can only promote your _own_ employees"</span>
-  <span class="k">end</span>
+  <span class="k">return</span> <span class="kp">true</span> <span class="k">if</span> <span class="n">context</span><span class="p">[</span><span class="ss">:current_user</span><span class="p">].</span><span class="nf">manager_of?</span><span class="p">(</span><span class="n">employee</span><span class="p">)</span>
+  <span class="k">raise</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">ExecutionError</span><span class="p">,</span> <span class="s2">"You can only promote your _own_ employees"</span>
 <span class="k">end</span>
 </code></pre></div></div>
 

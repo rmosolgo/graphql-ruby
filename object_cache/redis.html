@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.3.3/">API</a>
+            <a href="/api-doc/2.2.15/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -156,7 +156,6 @@
   <h3 class="contents-header">Contents</h3>
   <ol class='contents-list'><li class='contents-entry'><a href='#data-structure'>Data Structure
 </a></li><li class='contents-entry'><a href='#memory-management'>Memory Management
-</a></li><li class='contents-entry'><a href='#redis-cluster'>Redis Cluster
 </a></li></ol>
 </div>
 </div>
@@ -193,15 +192,6 @@ maxmemory-policy allkeys-lfu
 </code></pre></div></div>
 
 <p>Additionally, consider conditionally skipping the cache to prioritize your most critical GraphQL traffic.</p>
-
-<h2 id="redis-cluster">Redis Cluster</h2>
-
-<p><code class="language-plaintext highlighter-rouge">ObjectCache</code> also supports Redis Cluster. To use, pass <code class="language-plaintext highlighter-rouge">redis_cluster:</code>:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">ObjectCache</span><span class="p">,</span> <span class="ss">redis_cluster: </span><span class="no">Redis</span><span class="o">::</span><span class="no">Cluster</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-</code></pre></div></div>
-
-<p>Under the hood, it uses query fingerprints as <a href="https://redis.io/docs/latest/operate/oss_and_stack/reference/cluster-spec/#hash-tags">hash tags</a> and each cached result has its own set of object metadata.</p>
 
 </div>
 <p class="guide-footer">

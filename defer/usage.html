@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.3.3/">API</a>
+            <a href="/api-doc/2.2.15/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -172,7 +172,8 @@
 
 <p>The directives <code class="language-plaintext highlighter-rouge">@skip</code> and <code class="language-plaintext highlighter-rouge">@include</code> are built into any GraphQL server and client, but <code class="language-plaintext highlighter-rouge">@defer</code> requires special attention.</p>
 
-<p>Apollo-Client <a href="https://www.apollographql.com/docs/react/data/defer/">currently supports the @defer directive</a>.</p>
+<p>Apollo-Client has <a href="https://www.apollographql.com/docs/react/features/defer-support.html">experimental support</a>
+but it may <a href="https://github.com/apollographql/apollo-client/issues/4484">have some issues</a>, so you can try <a href="https://github.com/rmosolgo/apollo-client">this updated fork</a> while they’re worked out.</p>
 
 <p><code class="language-plaintext highlighter-rouge">@defer</code> also accepts a <code class="language-plaintext highlighter-rouge">label:</code> option which will be included in outgoing patches when it’s present in the query (eg, <code class="language-plaintext highlighter-rouge">@defer(label: "patch1")</code>).</p>
 
