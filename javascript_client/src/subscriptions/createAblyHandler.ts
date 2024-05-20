@@ -126,7 +126,7 @@ function createAblyHandler(options: AblyHandlerOptions) {
         })
 
         // Register presence, so that we can detect empty channels and clean them up server-side
-        const enterCallback = (errorInfo: Types.ErrorInfo | undefined) => {
+        const enterCallback = (errorInfo: Types.ErrorInfo | null | undefined) => {
           if (errorInfo && channel) {
             observer.onError(new AblyError(errorInfo))
           }
