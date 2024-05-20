@@ -86,7 +86,6 @@ describe GraphQL::Dataloader::AsyncDataloader do
   }
 
   it "cleans up database connections" do
-    puts "RUnning database connection test "
     starting_connections = ActiveRecord::Base.connection_pool.connections.size
     query_str = "{
       b1: baseName(id: 1) b2: baseName(id: 2)
