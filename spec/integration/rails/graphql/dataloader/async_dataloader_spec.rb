@@ -5,7 +5,6 @@ describe GraphQL::Dataloader::AsyncDataloader do
   class RailsAsyncSchema < GraphQL::Schema
     class CustomAsyncDataloader < GraphQL::Dataloader::AsyncDataloader
       def cleanup_fiber
-        StarWars::StarWarsModel.connection_pool.release_connection
       end
 
       def get_fiber_variables
@@ -75,34 +74,46 @@ describe GraphQL::Dataloader::AsyncDataloader do
 
   before {
     skip("Only test when isolation_level = :fiber") unless ENV["ISOLATION_LEVEL_FIBER"]
+    if Rails::VERSION::STRING.start_with?("7.0")
+      ActiveRecord.legacy_connection_handling = false
+    end
   }
 
-  # it "cleans up database connections" do
-  #   query_str = "{
-  #     b1: baseName(id: 1) b2: baseName(id: 2)
-  #     ib1: inlineBaseName(id: 1)
-  #     query {
-  #       b3: baseName(id: 3)
-  #       query {
-  #         b4: baseName(id: 4)
-  #         ib2: inlineBaseName(id: 2)
-  #       }
-  #     }
-  #   }"
-  #   res = RailsAsyncSchema.execute(query_str)
-  #   assert_equal({
-  #     "b1" => "Yavin", "b2" => "Echo Base", "ib1" => "Yavin",
-  #     "query" => {
-  #       "b3" => "Secret Hideout",
-  #       "query" => { "b4" => "Death Star", "ib2" => "Echo Base" }
-  #     }
-  #   }, res["data"])
+  after {
+    if Rails::VERSION::STRING.start_with?("7.0")
+      ActiveRecord.legacy_connection_handling = true
+    end
+  }
 
-  #   RailsAsyncSchema.execute(query_str)
-  #   RailsAsyncSchema.execute(query_str)
+  it "cleans up database connections" do
+    starting_connections = ActiveRecord::Base.connection_pool.connections.size
+    query_str = "{
+      b1: baseName(id: 1) b2: baseName(id: 2)
+      ib1: inlineBaseName(id: 1)
+      query {
+        b3: baseName(id: 3)
+        query {
+          b4: baseName(id: 4)
+          ib2: inlineBaseName(id: 2)
+        }
+      }
+    }"
+    res = RailsAsyncSchema.execute(query_str)
+    assert_equal({
+      "b1" => "Yavin", "b2" => "Echo Base", "ib1" => "Yavin",
+      "query" => {
+        "b3" => "Secret Hideout",
+        "query" => { "b4" => "Death Star", "ib2" => "Echo Base" }
+      }
+    }, res["data"])
 
-  #   assert_equal 0, ActiveRecord::Base.connection_pool.connections.size
-  # end
+    RailsAsyncSchema.execute(query_str)
+    RailsAsyncSchema.execute(query_str)
+
+    ending_connections = ActiveRecord::Base.connection_pool.connections.size
+    retained_connections = ending_connections - starting_connections
+    assert_equal 0, retained_connections, "No connections are retained by GraphQL"
+  end
 
   it "uses the `connected_to` role" do
     query_str = "{ role query { role } }"
