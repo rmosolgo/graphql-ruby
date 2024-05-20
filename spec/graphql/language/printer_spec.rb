@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require "spec_helper"
+require_relative "../../spec_helper"
 
 describe GraphQL::Language::Printer do
   let(:document) { GraphQL.parse(query_string) }
@@ -139,7 +139,10 @@ describe GraphQL::Language::Printer do
 
           type QueryType {
             # Book comment.
-            bookByName(name: String!): Book
+            bookByName(
+              # Book name comment.
+              name: String!
+            ): Book
           }
 
           """

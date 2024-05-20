@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require "spec_helper"
+require_relative "../spec_helper"
 
 class InMemoryBackend
   MAX_COMPLEXITY = 5
@@ -236,8 +236,7 @@ class FromDefinitionInMemoryBackend < InMemoryBackend
     payloadType: PayloadType = ONE
   }
 
-  # Arbitrary "kinds" of payloads which may be
-  # subscribed to separately
+  # Arbitrary "kinds" of payloads which may be subscribed to separately
   enum PayloadType {
     ONE
     TWO
