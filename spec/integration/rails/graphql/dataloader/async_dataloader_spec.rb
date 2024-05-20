@@ -86,7 +86,9 @@ describe GraphQL::Dataloader::AsyncDataloader do
   }
 
   it "cleans up database connections" do
-    ActiveRecord::Base.connection_pool.disconnect!
+    puts "RUnning database connection test "
+    # ActiveRecord::Base.connection_pool.disconnect!
+
     assert_equal 0, ActiveRecord::Base.connection_pool.connections.size, "It starts empty"
     query_str = "{
       b1: baseName(id: 1) b2: baseName(id: 2)
