@@ -40,6 +40,14 @@ describe GraphQL::Query::Fingerprint do
     assert_equal op_name_expected_fingerprint, build_query(str3, {}).operation_fingerprint
   end
 
+  it "returns a fingerprint when the query string is blank or nil" do
+    nil_query = build_query(nil, {})
+    blank_query = build_query("", {})
+
+    assert_equal "anonymous/47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU=", blank_query.operation_fingerprint
+    assert_equal "anonymous/47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU=", nil_query.operation_fingerprint
+  end
+
   it "makes combined fingerprints" do
     str1a = "{ __typename }"
     str1b = "{ __typename }"
