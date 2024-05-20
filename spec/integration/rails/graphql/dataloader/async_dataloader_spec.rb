@@ -74,16 +74,7 @@ describe GraphQL::Dataloader::AsyncDataloader do
   end
 
   before {
-    @prev_isolation_level = ActiveSupport::IsolatedExecutionState.isolation_level
-    ActiveSupport::IsolatedExecutionState.isolation_level = :fiber
-    ActiveRecord::Base.establish_connection(:starwars)
-  }
-
-  after {
-    ActiveSupport::IsolatedExecutionState.clear
-    ActiveSupport::IsolatedExecutionState.isolation_level = @prev_isolation_level
-    ActiveRecord::Base.establish_connection(:starwars)
-    pp ActiveRecord::Base.connection_pool.db_config
+    skip("Only test when isolation_level = :fiber") unless ENV["ISOLATION_LEVEL_FIBER"]
   }
 
   # it "cleans up database connections" do
