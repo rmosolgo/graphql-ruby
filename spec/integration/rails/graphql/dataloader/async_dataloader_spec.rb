@@ -5,7 +5,6 @@ describe GraphQL::Dataloader::AsyncDataloader do
   class RailsAsyncSchema < GraphQL::Schema
     class CustomAsyncDataloader < GraphQL::Dataloader::AsyncDataloader
       def cleanup_fiber
-        StarWars::StarWarsModel.connection_pool.release_connection
       end
 
       def get_fiber_variables
@@ -75,9 +74,20 @@ describe GraphQL::Dataloader::AsyncDataloader do
 
   before {
     skip("Only test when isolation_level = :fiber") unless ENV["ISOLATION_LEVEL_FIBER"]
+    if Rails::VERSION::STRING.start_with?("7.0")
+      ActiveRecord.legacy_connection_handling = false
+    end
+  }
+
+  after {
+    if Rails::VERSION::STRING.start_with?("7.0")
+      ActiveRecord.legacy_connection_handling = true
+    end
   }
 
   it "cleans up database connections" do
+    ActiveRecord::Base.connection_pool.disconnect!
+    assert_equal 0, ActiveRecord::Base.connection_pool.connections.size, "It starts empty"
     query_str = "{
       b1: baseName(id: 1) b2: baseName(id: 2)
       ib1: inlineBaseName(id: 1)

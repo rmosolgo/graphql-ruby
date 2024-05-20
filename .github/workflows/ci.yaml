@@ -50,6 +50,9 @@ jobs:
             ruby: 3.1
           - gemfile: gemfiles/rails_7.0.gemfile
             ruby: 3.2
+          - gemfile: gemfiles/rails_7.0.gemfile
+            ruby: 3.2
+            isolation_level_fiber: 1
           - gemfile: gemfiles/rails_7.1.gemfile
             ruby: 3.3
           - gemfile: gemfiles/rails_7.1.gemfile
