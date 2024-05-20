@@ -304,7 +304,7 @@ module GraphQL
 
     # @return [String] An opaque hash for identifying this query's given query string and selected operation
     def operation_fingerprint
-      @operation_fingerprint ||= "#{selected_operation_name || "anonymous"}/#{Fingerprint.generate(query_string)}"
+      @operation_fingerprint ||= "#{selected_operation_name || "anonymous"}/#{Fingerprint.generate(query_string || "")}"
     end
 
     # @return [String] An opaque hash for identifying this query's given a variable values (not including defaults)
