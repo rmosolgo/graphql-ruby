@@ -73,7 +73,7 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: '21'
-    - run: npm install
+    - run: npm ci
       working-directory: ./javascript_client
     - run: npm test
       working-directory: ./javascript_client
