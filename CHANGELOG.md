@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 2.2.15 (20 May 2024)
+
+### Bug fixes
+
+- Directives: correctly handle runtime directives in deeply nested fragments #4962
+
 # 2.2.14 (18 Mar 2024)
 
 ### Bug fixes
