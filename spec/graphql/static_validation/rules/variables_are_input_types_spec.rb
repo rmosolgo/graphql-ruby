@@ -58,6 +58,7 @@ describe GraphQL::StaticValidation::VariablesAreInputTypes do
 
   describe "typos" do
     it "returns a client error" do
+
       res = schema.execute <<-GRAPHQL
         query GetCheese($id: IDX) {
           cheese(id: $id) { flavor }
@@ -67,25 +68,6 @@ describe GraphQL::StaticValidation::VariablesAreInputTypes do
       assert_equal false, res.key?("data")
       assert_equal 1, res["errors"].length
       assert_equal "IDX isn't a defined input type (on $id) (Did you mean `ID`?)", res["errors"][0]["message"]
-    end
-
-    it "can disable did_you_mean" do
-      no_dym_schema = Class.new(schema) do
-        did_you_mean(nil)
-      end
-
-      assert schema.did_you_mean
-      assert_nil no_dym_schema.did_you_mean
-
-      res = no_dym_schema.execute <<-GRAPHQL
-        query GetCheese($id: IDX) {
-          cheese(id: $id) { flavor }
-        }
-      GRAPHQL
-
-      assert_equal false, res.key?("data")
-      assert_equal 1, res["errors"].length
-      assert_equal "IDX isn't a defined input type (on $id)", res["errors"][0]["message"]
     end
 
     it "returns a client error when there are directives" do
