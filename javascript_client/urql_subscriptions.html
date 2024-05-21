@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.2.15/">API</a>
+            <a href="/api-doc/2.3.4/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -145,9 +145,17 @@
 
 
 <h1 class="guide-header">urql Subscriptions</h1>
-<div class="guide-table-of-contents"></div>
+<div class="guide-table-of-contents"><div class="table-of-contents">
+  <h3 class="contents-header">Contents</h3>
+  <ol class='contents-list'><li class='contents-entry'><a href='#pusher'>Pusher
+</a></li><li class='contents-entry'><a href='#actioncable'>ActionCable
+</a></li></ol>
+</div>
+</div>
 <div class="guide-container">
-  <p>GraphQL-Ruby currently supports using <code class="language-plaintext highlighter-rouge">urql</code> with the <a href="/subscriptions/pusher_implementation">Pusher implementation</a>. For example:</p>
+  <p>GraphQL-Ruby currently supports using <code class="language-plaintext highlighter-rouge">urql</code> with the <a href="/subscriptions/action_cable_implementation">ActionCable</a> and <a href="/subscriptions/pusher_implementation">Pusher implementation</a>.</p>
+
+<h2 id="pusher">Pusher</h2>
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nx">SubscriptionExchange</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">graphql-ruby-client/subscriptions/SubscriptionExchange</span><span class="dl">"</span>
 <span class="k">import</span> <span class="nx">Pusher</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">pusher</span><span class="dl">"</span>
@@ -162,6 +170,25 @@
     <span class="p">...</span><span class="nx">defaultExchanges</span><span class="p">,</span>
     <span class="nf">subscriptionExchange</span><span class="p">({</span>
       <span class="na">forwardSubscription</span><span class="p">:</span> <span class="nx">forwardToPusher</span>
+    <span class="p">}),</span>
+  <span class="p">],</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<h2 id="actioncable">ActionCable</h2>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="p">{</span> <span class="nx">createConsumer</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">@rails/actioncable</span><span class="dl">"</span><span class="p">;</span>
+<span class="k">import</span> <span class="nx">SubscriptionExchange</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">graphql-ruby-client/subscriptions/SubscriptionExchange</span><span class="dl">"</span>
+
+<span class="kd">const</span> <span class="nx">actionCable</span> <span class="o">=</span> <span class="nf">createConsumer</span><span class="p">(</span><span class="dl">'</span><span class="s1">ws://127.0.0.1:3000/cable</span><span class="dl">'</span><span class="p">);</span>
+<span class="kd">const</span> <span class="nx">forwardToActionCable</span> <span class="o">=</span> <span class="nx">SubscriptionExchange</span><span class="p">.</span><span class="nf">create</span><span class="p">({</span> <span class="na">consumer</span><span class="p">:</span> <span class="nx">actionCable</span> <span class="p">})</span>
+
+<span class="kd">const</span> <span class="nx">client</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Client</span><span class="p">({</span>
+  <span class="na">url</span><span class="p">:</span> <span class="dl">'</span><span class="s1">/graphql</span><span class="dl">'</span><span class="p">,</span>
+  <span class="na">exchanges</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">...</span><span class="nx">defaultExchanges</span><span class="p">,</span>
+    <span class="nf">subscriptionExchange</span><span class="p">({</span>
+      <span class="na">forwardSubscription</span><span class="p">:</span> <span class="nx">forwardToActionCable</span>
     <span class="p">}),</span>
   <span class="p">],</span>
 <span class="p">});</span>

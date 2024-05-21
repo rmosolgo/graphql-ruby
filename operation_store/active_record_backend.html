@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.2.15/">API</a>
+            <a href="/api-doc/2.3.4/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -159,7 +159,9 @@
 <div class="guide-table-of-contents"><div class="table-of-contents">
   <h3 class="contents-header">Contents</h3>
   <ol class='contents-list'><li class='contents-entry'><a href='#database-setup'>Database Setup
-</a></li><li class='contents-entry'><a href='#database-update'>Database Update
+</a><ol class='contents-list'><li class='contents-entry'><a href='#rails-generator'>Rails Generator
+</a></li><li class='contents-entry'><a href='#manual-setup'>Manual Setup
+</a></li></ol></li><li class='contents-entry'><a href='#database-update'>Database Update
 </a></li><li class='contents-entry'><a href='#updating-last_used_at'>Updating <code>last_used_at</code>
 </a></li></ol>
 </div>
@@ -169,7 +171,23 @@
 
 <h2 id="database-setup">Database Setup</h2>
 
-<p>To use ActiveRecord, <code class="language-plaintext highlighter-rouge">GraphQL::Pro::OperationStore</code> requires some database tables. You can add these with a migration:</p>
+<p>To use ActiveRecord, <code class="language-plaintext highlighter-rouge">GraphQL::Pro::OperationStore</code> requires some database tables.</p>
+
+<h3 id="rails-generator">Rails Generator</h3>
+
+<p>With Rails, you can generate the required migration then run it:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>rails generate graphql:operation_store:create
+<span class="nv">$ </span>rails db:migrate
+</code></pre></div></div>
+
+<p>(You’ll have to run that migration on any staging or production servers, too.)</p>
+
+<p>Now, <code class="language-plaintext highlighter-rouge">OperationStore</code> has what it needs to save queries using ActiveRecord!</p>
+
+<h3 id="manual-setup">Manual Setup</h3>
+
+<p>You can also create the required migration by manually by generating an empty migration:</p>
 
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>rails generate migration SetupOperationStore
 </code></pre></div></div>
@@ -244,6 +262,12 @@
 </code></pre></div></div>
 
 <p>To update that column inline each time an operation is accessed, pass <code class="language-plaintext highlighter-rouge">0</code>.</p>
+
+<p><strong>Note:</strong> It is recommended to set this to <code class="language-plaintext highlighter-rouge">0</code> in test environments, to avoid delayed updates in another thread that can cause intermittent test hangs and failures. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Update immediately in Test, wait 5 seconds in other environments:</span>
+<span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">OperationStore</span><span class="p">,</span> <span class="ss">update_last_used_at_every: </span><span class="no">Rails</span><span class="p">.</span><span class="nf">env</span><span class="p">.</span><span class="nf">test?</span> <span class="p">?</span> <span class="mi">0</span> <span class="p">:</span> <span class="mi">5</span>
+</code></pre></div></div>
 
 </div>
 <p class="guide-footer">

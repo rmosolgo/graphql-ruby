@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.2.15/">API</a>
+            <a href="/api-doc/2.3.4/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -157,7 +157,8 @@
 <div class="guide-table-of-contents"><div class="table-of-contents">
   <h3 class="contents-header">Contents</h3>
   <ol class='contents-list'><li class='contents-entry'><a href='#getting-started'>Getting Started
-</a></li><li class='contents-entry'><a href='#authorizing-objects'>Authorizing Objects
+</a><ol class='contents-list'><li class='contents-entry'><a href='#rails-generator'>Rails Generator
+</a></li></ol></li><li class='contents-entry'><a href='#authorizing-objects'>Authorizing Objects
 </a><ol class='contents-list'><li class='contents-entry'><a href='#policies-and-methods'>Policies and Methods
 </a></li><li class='contents-entry'><a href='#custom-policy-class'>Custom Policy Class
 </a></li><li class='contents-entry'><a href='#bypassing-policies'>Bypassing Policies
@@ -211,6 +212,15 @@
 <span class="p">}</span>
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="ss">context: </span><span class="n">context</span><span class="p">)</span>
 </code></pre></div></div>
+
+<h3 id="rails-generator">Rails Generator</h3>
+
+<p>If your schema files follow the same convention as <code class="language-plaintext highlighter-rouge">rails generate graphql:install</code>, then you can install the Pundit integration with a Rails generator:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>rails generate graphql:pundit:install
+</code></pre></div></div>
+
+<p>This will insert all the necessary <code class="language-plaintext highlighter-rouge">include ...</code>s described below. Alternatively, check the docs below to mix in <code class="language-plaintext highlighter-rouge">PunditIntegration</code>’s modules.</p>
 
 <h2 id="authorizing-objects">Authorizing Objects</h2>
 
@@ -280,7 +290,7 @@
 
 <h4 id="handling-unauthorized-objects">Handling Unauthorized Objects</h4>
 
-<p>When any Policy method returns <code class="language-plaintext highlighter-rouge">false</code>, the unauthorized object is passed to <a href="/api-doc/2.2.15/GraphQL/Schema#unauthorized_object-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_object"><code>Schema.unauthorized_object</code></a>, as described in <a href="/authorization/authorization#handling-unauthorized-objects">Handling unauthorized objects</a>.</p>
+<p>When any Policy method returns <code class="language-plaintext highlighter-rouge">false</code>, the unauthorized object is passed to <a href="/api-doc/2.3.4/GraphQL/Schema#unauthorized_object-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_object"><code>Schema.unauthorized_object</code></a>, as described in <a href="/authorization/authorization#handling-unauthorized-objects">Handling unauthorized objects</a>.</p>
 
 <h2 id="scopes">Scopes</h2>
 

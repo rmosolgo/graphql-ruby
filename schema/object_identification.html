@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.2.15/">API</a>
+            <a href="/api-doc/2.3.4/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -186,7 +186,7 @@
 
 <p>One requirement for Relay’s object management is implementing the <code class="language-plaintext highlighter-rouge">"Node"</code> interface.</p>
 
-<p>To implement the node interface, add <a href="/api-doc/2.2.15/GraphQL/Types/Relay/Node" target="_blank" title="API docs for GraphQL::Types::Relay::Node"><code>GraphQL::Types::Relay::Node</code></a> to your definition:</p>
+<p>To implement the node interface, add <a href="/api-doc/2.3.4/GraphQL/Types/Relay/Node" target="_blank" title="API docs for GraphQL::Types::Relay::Node"><code>GraphQL::Types::Relay::Node</code></a> to your definition:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::PostType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="c1"># Implement the "Node" interface for Relay</span>
@@ -217,7 +217,7 @@
 
 <p>Nodes must have a field named <code class="language-plaintext highlighter-rouge">"id"</code> which returns a globally unique ID.</p>
 
-<p>To add a UUID field named <code class="language-plaintext highlighter-rouge">"id"</code>, implement the <a href="/api-doc/2.2.15/GraphQL/Types/Relay/Node" target="_blank" title="API docs for GraphQL::Types::Relay::Node"><code>GraphQL::Types::Relay::Node</code></a> interface::</p>
+<p>To add a UUID field named <code class="language-plaintext highlighter-rouge">"id"</code>, implement the <a href="/api-doc/2.3.4/GraphQL/Types/Relay/Node" target="_blank" title="API docs for GraphQL::Types::Relay::Node"><code>GraphQL::Types::Relay::Node</code></a> interface::</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Types::PostType</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Object</span>
   <span class="n">implements</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">Node</span>

@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.2.15/">API</a>
+            <a href="/api-doc/2.3.4/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -150,12 +150,13 @@
 <div class="guide-table-of-contents"><div class="table-of-contents">
   <h3 class="contents-header">Contents</h3>
   <ol class='contents-list'><li class='contents-entry'><a href='#rails'>Rails
-</a></li><li class='contents-entry'><a href='#other-options'>Other Options
+</a><ol class='contents-list'><li class='contents-entry'><a href='#activerecord-connections'>ActiveRecord Connections
+</a></li></ol></li><li class='contents-entry'><a href='#other-options'>Other Options
 </a></li></ol>
 </div>
 </div>
 <div class="guide-container">
-  <p><code class="language-plaintext highlighter-rouge">AsyncDataloader</code> will run <a href="/api-doc/2.2.15/GraphQL/Dataloader/Source#fetch-instance_method" target="_blank" title="API docs for GraphQL::Dataloader::Source#fetch"><code>GraphQL::Dataloader::Source#fetch</code></a> calls in parallel, so that external service calls (like database queries or network calls) don’t have to wait in a queue.</p>
+  <p><code class="language-plaintext highlighter-rouge">AsyncDataloader</code> will run <a href="/api-doc/2.3.4/GraphQL/Dataloader/Source#fetch-instance_method" target="_blank" title="API docs for GraphQL::Dataloader::Source#fetch"><code>GraphQL::Dataloader::Source#fetch</code></a> calls in parallel, so that external service calls (like database queries or network calls) don’t have to wait in a queue.</p>
 
 <p>To use <code class="language-plaintext highlighter-rouge">AsyncDataloader</code>, hook it up in your schema <em>instead of</em> <code class="language-plaintext highlighter-rouge">GraphQL::Dataloader</code>:</p>
 
@@ -168,7 +169,7 @@
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>bundle add async
 </code></pre></div></div>
 
-<p>Now, <a href="/api-doc/2.2.15/GraphQL/Dataloader/AsyncDataloader" target="_blank" title="API docs for GraphQL::Dataloader::AsyncDataloader"><code>GraphQL::Dataloader::AsyncDataloader</code></a> will create <code class="language-plaintext highlighter-rouge">Async::Task</code> instances instead of plain <code class="language-plaintext highlighter-rouge">Fiber</code>s and the <code class="language-plaintext highlighter-rouge">async</code> gem will manage parallelism.</p>
+<p>Now, <a href="/api-doc/2.3.4/GraphQL/Dataloader/AsyncDataloader" target="_blank" title="API docs for GraphQL::Dataloader::AsyncDataloader"><code>GraphQL::Dataloader::AsyncDataloader</code></a> will create <code class="language-plaintext highlighter-rouge">Async::Task</code> instances instead of plain <code class="language-plaintext highlighter-rouge">Fiber</code>s and the <code class="language-plaintext highlighter-rouge">async</code> gem will manage parallelism.</p>
 
 <p>For a demonstration of this behavior, see: <a href="https://github.com/rmosolgo/rails-graphql-async-demo">https://github.com/rmosolgo/rails-graphql-async-demo</a></p>
 
@@ -183,6 +184,43 @@
   <span class="n">config</span><span class="p">.</span><span class="nf">active_support</span><span class="p">.</span><span class="nf">isolation_level</span> <span class="o">=</span> <span class="ss">:fiber</span>
 <span class="k">end</span>
 </code></pre></div></div>
+<h3 id="activerecord-connections">ActiveRecord Connections</h3>
+
+<p>You can use Dataloader’s <a href="/dataloader/dataloader#fiber-lifecycle-hooks">Fiber lifecycle hooks</a> to improve ActiveRecord connection handling:</p>
+
+<ul>
+  <li>In Rails &lt; 7.2, connections are not reused when a Fiber exits; instead, they’re only reused when a request or background job finishes. You can add manual <code class="language-plaintext highlighter-rouge">release_connection</code> calls to improve this.</li>
+  <li>With <code class="language-plaintext highlighter-rouge">isolation_level = :fiber</code>, new Fibers don’t inherit <code class="language-plaintext highlighter-rouge">connected_to ...</code> settings from their parent fibers.</li>
+</ul>
+
+<p>Altogether, it can be improved like this:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">get_fiber_variables</span>
+  <span class="n">vars</span> <span class="o">=</span> <span class="k">super</span>
+  <span class="c1"># Collect the current connection config to pass on:</span>
+  <span class="n">vars</span><span class="p">[</span><span class="ss">:connected_to</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="ss">role: </span><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span><span class="p">.</span><span class="nf">current_role</span><span class="p">,</span>
+    <span class="ss">shard: </span><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span><span class="p">.</span><span class="nf">current_shard</span><span class="p">,</span>
+    <span class="ss">prevent_writes: </span><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span><span class="p">.</span><span class="nf">current_preventing_writes</span>
+  <span class="p">}</span>
+  <span class="n">vars</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">set_fiber_variables</span><span class="p">(</span><span class="n">vars</span><span class="p">)</span>
+  <span class="n">connection_config</span> <span class="o">=</span> <span class="n">vars</span><span class="p">.</span><span class="nf">delete</span><span class="p">(</span><span class="ss">:connected_to</span><span class="p">)</span>
+  <span class="c1"># Reset connection config from the parent fiber:</span>
+  <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span><span class="p">.</span><span class="nf">connecting_to</span><span class="p">(</span><span class="o">**</span><span class="n">connection_config</span><span class="p">)</span>
+  <span class="k">super</span><span class="p">(</span><span class="n">vars</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">cleanup_fiber</span>
+  <span class="k">super</span>
+  <span class="c1"># Release the current connection</span>
+  <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span><span class="p">.</span><span class="nf">connection_pool</span><span class="p">.</span><span class="nf">release_connection</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Modify the example according to your database configuration and abstract class hierarchy.</p>
 
 <h2 id="other-options">Other Options</h2>
 

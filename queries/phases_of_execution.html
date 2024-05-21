@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.2.15/">API</a>
+            <a href="/api-doc/2.3.4/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -160,12 +160,12 @@
   <p>When GraphQL receives a query string, it goes through these steps:</p>
 
 <ul>
-  <li>Tokenize: <a href="/api-doc/2.2.15/GraphQL/Language/Lexer" target="_blank" title="API docs for GraphQL::Language::Lexer"><code>GraphQL::Language::Lexer</code></a> splits the string into a stream of tokens</li>
-  <li>Parse: <a href="/api-doc/2.2.15/GraphQL/Language/Parser" target="_blank" title="API docs for GraphQL::Language::Parser"><code>GraphQL::Language::Parser</code></a> builds an abstract syntax tree (AST) out of the stream of tokens</li>
-  <li>Validate: <a href="/api-doc/2.2.15/GraphQL/StaticValidation/Validator" target="_blank" title="API docs for GraphQL::StaticValidation::Validator"><code>GraphQL::StaticValidation::Validator</code></a> validates the incoming AST as a valid query for the schema</li>
-  <li>Analyze: If there are any query analyzers, they are run with <a href="/api-doc/2.2.15/GraphQL/Analysis/AST#analyze_query-class_method" target="_blank" title="API docs for GraphQL::Analysis::AST.analyze_query"><code>GraphQL::Analysis::AST.analyze_query</code></a></li>
+  <li>Tokenize: <a href="/api-doc/2.3.4/GraphQL/Language/Lexer" target="_blank" title="API docs for GraphQL::Language::Lexer"><code>GraphQL::Language::Lexer</code></a> splits the string into a stream of tokens</li>
+  <li>Parse: <a href="/api-doc/2.3.4/GraphQL/Language/Parser" target="_blank" title="API docs for GraphQL::Language::Parser"><code>GraphQL::Language::Parser</code></a> builds an abstract syntax tree (AST) out of the stream of tokens</li>
+  <li>Validate: <a href="/api-doc/2.3.4/GraphQL/StaticValidation/Validator" target="_blank" title="API docs for GraphQL::StaticValidation::Validator"><code>GraphQL::StaticValidation::Validator</code></a> validates the incoming AST as a valid query for the schema</li>
+  <li>Analyze: If there are any query analyzers, they are run with <a href="/api-doc/2.3.4/GraphQL/Analysis/AST#analyze_query-class_method" target="_blank" title="API docs for GraphQL::Analysis::AST.analyze_query"><code>GraphQL::Analysis::AST.analyze_query</code></a></li>
   <li>Execute: The query is traversed, <code class="language-plaintext highlighter-rouge">resolve</code> functions are called and the response is built</li>
-  <li>Respond: The response is returned as a <a href="/api-doc/2.2.15/GraphQL/Query/Result" target="_blank" title="API docs for GraphQL::Query::Result"><code>GraphQL::Query::Result</code></a></li>
+  <li>Respond: The response is returned as a <a href="/api-doc/2.3.4/GraphQL/Query/Result" target="_blank" title="API docs for GraphQL::Query::Result"><code>GraphQL::Query::Result</code></a></li>
 </ul>
 
 </div>
