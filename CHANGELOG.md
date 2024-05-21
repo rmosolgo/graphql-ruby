@@ -10,6 +10,30 @@
 
 ### Bug fixes
 
+# 2.3.4 (21 May 2024)
+
+### New features
+
+- Async Dataloader: document integration with Rails database connections #4944 #4964
+
+### Bug fixes
+
+- `Query#fingerprint`: handle `nil` query strings like `""` #4963
+- `Language::Nodes`: support marshalling parsed ASTs #4959
+- Directives: fix directives in nested fragment spreads #4958
+- Tracing: fix conflicts between Sentry and Prometheus traces #4957
+
+# 2.3.3 (9 May 2024)
+
+### New features
+
+- Max Complexity: add `count_introspection:` option #4939
+
+### Bug fixes
+
+- Language: Fix regression in `Nodes#line` and `Nodes#col` #4949
+- Runtime: Simplify runtime state management #4935
+
 # 2.3.2 (26 Apr 2024)
 
 ### Bug fixes
