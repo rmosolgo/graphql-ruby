@@ -7,8 +7,17 @@ module GraphQL
         type = context.warden.get_type(type_name)
 
         if type.nil?
+          @all_possible_input_type_names ||= begin
+            names = []
+            context.warden.types.each { |(name, t)|
+              if t.kind.input?
+                names << name
+              end
+            }
+            names
+          end
           add_error(GraphQL::StaticValidation::VariablesAreInputTypesError.new(
-            "#{type_name} isn't a defined input type (on $#{node.name})",
+            "#{type_name} isn't a defined input type (on $#{node.name})#{context.did_you_mean_suggestion(type_name, @all_possible_input_type_names)}",
             nodes: node,
             name: node.name,
             type: type_name

@@ -48,6 +48,21 @@ module GraphQL
       def schema_directives
         @schema_directives ||= schema.directives
       end
+
+      def did_you_mean_suggestion(name, options)
+        if did_you_mean = schema.did_you_mean
+          suggestions = did_you_mean::SpellChecker.new(dictionary: options).correct(name)
+          case suggestions.size
+          when 0
+            ""
+          when 1
+            " (Did you mean `#{suggestions.first}`?)"
+          else
+            last_sugg = suggestions.pop
+            " (Did you mean #{suggestions.map {|s| "`#{s}`"}.join(", ")} or `#{last_sugg}`?)"
+          end
+        end
+      end
     end
   end
 end

@@ -1409,6 +1409,20 @@ module GraphQL
         end
       end
 
+      # Returns `DidYouMean` if it's defined.
+      # Override this to return `nil` if you don't want to use `DidYouMean`
+      def did_you_mean(new_dym = NOT_CONFIGURED)
+        if NOT_CONFIGURED.equal?(new_dym)
+          if defined?(@did_you_mean)
+            @did_you_mean
+          else
+            find_inherited_value(:did_you_mean, defined?(DidYouMean) ? DidYouMean : nil)
+          end
+        else
+          @did_you_mean = new_dym
+        end
+      end
+
       private
 
       def add_trace_options_for(mode, new_options)
