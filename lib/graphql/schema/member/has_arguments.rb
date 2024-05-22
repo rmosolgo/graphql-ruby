@@ -261,57 +261,40 @@ module GraphQL
         # @param context [GraphQL::Query::Context]
         # @yield [Interpreter::Arguments, Execution::Lazy<Interpeter::Arguments>]
         # @return [Interpreter::Arguments, Execution::Lazy<Interpeter::Arguments>]
-        def coerce_arguments(parent_object, values, context, &block)
+        def coerce_arguments(parent_object, values, context, queue = nil)
+          queue_was_given = !!queue
+          queue = queue ? queue.spawn_child : GraphQL::Execution::Interpreter::ArgumentsCache::RunQueue.new
           # Cache this hash to avoid re-merging it
           arg_defns = context.warden.arguments(self)
           total_args_count = arg_defns.size
 
-          finished_args = nil
-          prepare_finished_args = -> {
-            if total_args_count == 0
-              finished_args = GraphQL::Execution::Interpreter::Arguments::EMPTY
-              if block_given?
-                block.call(finished_args)
-              end
-            else
-              argument_values = {}
-              resolved_args_count = 0
-              raised_error = false
-              arg_defns.each do |arg_defn|
-                context.dataloader.append_job do
-                  begin
-                    arg_defn.coerce_into_values(parent_object, values, context, argument_values)
-                  rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
-                    raised_error = true
-                    finished_args = err
-                    if block_given?
-                      block.call(finished_args)
-                    end
-                  end
-
-                  resolved_args_count += 1
-                  if resolved_args_count == total_args_count && !raised_error
-                    finished_args = context.schema.after_any_lazies(argument_values.values) {
-                      GraphQL::Execution::Interpreter::Arguments.new(
-                        argument_values: argument_values,
-                      )
-                    }
-                    if block_given?
-                      block.call(finished_args)
-                    end
-                  end
-                end
-              end
-            end
-          }
-
-          if block_given?
-            prepare_finished_args.call
-            nil
+          if total_args_count == 0
+            queue.steps << -> {
+              queue.terminate_with(GraphQL::Execution::Interpreter::Arguments::EMPTY)
+            }
           else
-            # This API returns eagerly, gotta run it now
-            context.dataloader.run_isolated(&prepare_finished_args)
-            finished_args
+            argument_values = {}
+            arg_defns.each do |arg_defn|
+              queue.steps << -> {
+                begin
+                  arg_defn.coerce_into_values(parent_object, values, context, argument_values)
+                rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => err
+                  queue.terminate_with(err)
+                end
+              }
+            end
+            queue.callbacks << -> {
+              finished_args = context.schema.after_any_lazies(argument_values.values) {
+                GraphQL::Execution::Interpreter::Arguments.new(
+                  argument_values: argument_values,
+                )
+              }
+              queue.terminate_with(finished_args)
+            }
+          end
+
+          if !queue_was_given
+            queue.call
           end
         end
 

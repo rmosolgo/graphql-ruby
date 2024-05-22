@@ -35,7 +35,42 @@ module GraphQL
               @storage[argument_owner][parent_object][ast_node] = resolved_args
             end
           end
+        end
 
+        class RunQueue
+          def initialize(parent: nil)
+            @parent = parent
+            @steps = []
+            @callbacks = []
+          end
+
+          attr_reader :steps, :callbacks
+
+          def call
+            catch do |terminate_with_flag|
+              @terminate_with_flag = terminate_with_flag
+              raise if @already_ran
+              @already_ran = true
+              final_result = nil
+              while (step = steps.shift)
+                final_result = step.call
+              end
+              while (cb = callbacks.shift) do
+                final_result = cb.call
+              end
+              final_result
+            end
+          end
+
+          def terminate_with(arg)
+            throw @terminate_with_flag, arg
+          end
+
+          def spawn_child
+            child_queue = self.class.new(parent: self)
+            steps << child_queue
+            child_queue
+          end
         end
 
         # @yield [Interpreter::Arguments, Lazy<Interpreter::Arguments>] The finally-loaded arguments
@@ -46,10 +81,13 @@ module GraphQL
             yield(args)
           else
             args_hash = self.class.prepare_args_hash(@query, ast_node)
-            argument_owner.coerce_arguments(parent_object, args_hash, @query.context) do |resolved_args|
-              arg_storage[ast_node] = resolved_args
-              yield(resolved_args)
-            end
+            queue = RunQueue.new
+            queue.steps << -> {
+              argument_owner.coerce_arguments(parent_object, args_hash, @query.context, queue)
+            }
+            resolved_args = queue.call
+            arg_storage[ast_node] = resolved_args
+            block.call(resolved_args)
           end
           nil
         end
