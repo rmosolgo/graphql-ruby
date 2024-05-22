@@ -10,6 +10,54 @@
 
 ### Bug fixes
 
+# 2.3.4 (21 May 2024)
+
+### New features
+
+- Async Dataloader: document integration with Rails database connections #4944 #4964
+
+### Bug fixes
+
+- `Query#fingerprint`: handle `nil` query strings like `""` #4963
+- `Language::Nodes`: support marshalling parsed ASTs #4959
+- Directives: fix directives in nested fragment spreads #4958
+- Tracing: fix conflicts between Sentry and Prometheus traces #4957
+
+# 2.3.3 (9 May 2024)
+
+### New features
+
+- Max Complexity: add `count_introspection:` option #4939
+
+### Bug fixes
+
+- Language: Fix regression in `Nodes#line` and `Nodes#col` #4949
+- Runtime: Simplify runtime state management #4935
+
+# 2.3.2 (26 Apr 2024)
+
+### Bug fixes
+
+- Properly `.prepare` lists of input objects #4933
+- Fix deleting directives using the AST visitor #4931
+
+# 2.3.1 (22 Apr 2024)
+
+### New features
+
+- `Schema.max_query_string_tokens`: support a limit on the number of tokens the lexer should identify #4929
+- Parser: add an option to reject numbers followed immediately by argument names #4924
+- Parser and CParser: reduce allocated and retained strings when parsing schemas #4899
+- `run_graphql_field`: support `:lookahead` and `:ast_node` field extras #4930
+
+### Bug fixes
+
+- Rescue when trying to print integers that are too big for Ruby #4923
+- Mutation: clear the Dataloader cache before resolving #4903
+- Fix `FieldUsage` analyzer when InputObjects return a prepared value #4902
+- Add a minimal query string for `run_graphql_field` #4891
+- Fix PrometheusTrace with multiple tracers #4888
+
 # 2.3.0 (20 Mar 2024)
 
 ### Breaking Changes

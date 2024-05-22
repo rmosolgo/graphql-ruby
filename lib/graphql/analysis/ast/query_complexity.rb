@@ -8,6 +8,7 @@ module GraphQL
         # - `complexities_on_type` holds complexity scores for each type
         def initialize(query)
           super
+          @skip_introspection_fields = !query.schema.max_complexity_count_introspection_fields
           @complexities_on_type_by_query = {}
         end
 
@@ -51,6 +52,7 @@ module GraphQL
           # we'll visit them when we hit the spreads instead
           return if visitor.visiting_fragment_definition?
           return if visitor.skipping?
+          return if @skip_introspection_fields && visitor.field_definition.introspection?
           parent_type = visitor.parent_type_definition
           field_key = node.alias || node.name
 
@@ -68,6 +70,7 @@ module GraphQL
           # we'll visit them when we hit the spreads instead
           return if visitor.visiting_fragment_definition?
           return if visitor.skipping?
+          return if @skip_introspection_fields && visitor.field_definition.introspection?
           scopes_stack = @complexities_on_type_by_query[visitor.query]
           scopes_stack.pop
         end

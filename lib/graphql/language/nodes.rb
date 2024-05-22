@@ -20,26 +20,29 @@ module GraphQL
             @definition_line = definition_line
             super(**_rest)
           end
+
+          def marshal_dump
+            super << @definition_line
+          end
+
+          def marshal_load(values)
+            @definition_line = values.pop
+            super
+          end
         end
 
         attr_reader :filename
 
         def line
-          @line ||= (@source_string && @pos) ? @source_string[0..@pos].count("\n") + 1 : nil
+          @line ||= @source.line_at(@pos)
         end
 
         def col
-          @col ||= if @source_string && @pos
-            if @pos == 0
-              1
-            else
-              @source_string[0..@pos].split("\n").last.length
-            end
-          end
+          @col ||= @source.column_at(@pos)
         end
 
         def definition_line
-          @definition_line ||= (@source_string && @definition_pos) ? @source_string[0..@definition_pos].count("\n") + 1 : nil
+          @definition_line ||= (@source && @definition_pos) ? @source.line_at(@definition_pos) : nil
         end
 
         # Value equality
@@ -267,7 +270,7 @@ module GraphQL
             "col: nil",
             "pos: nil",
             "filename: nil",
-            "source_string: nil",
+            "source: nil",
           ]
 
           def generate_initialize
@@ -279,18 +282,20 @@ module GraphQL
               end
             end
 
-            all_method_names = scalar_method_names + @children_methods.keys
+            children_method_names = @children_methods.keys
+
+            all_method_names = scalar_method_names + children_method_names
             if all_method_names.include?(:alias)
               # Rather than complicating this special case,
               # let it be overridden (in field)
               return
             else
               arguments = scalar_method_names.map { |m| "#{m}: nil"} +
-                @children_methods.keys.map { |m| "#{m}: NO_CHILDREN" } +
+                children_method_names.map { |m| "#{m}: NO_CHILDREN" } +
                 DEFAULT_INITIALIZE_OPTIONS
 
               assignments = scalar_method_names.map { |m| "@#{m} = #{m}"} +
-                @children_methods.keys.map { |m| "@#{m} = #{m}.freeze" }
+                children_method_names.map { |m| "@#{m} = #{m}.freeze" }
 
               if name.end_with?("Definition") && name != "FragmentDefinition"
                 arguments << "definition_pos: nil"
@@ -298,7 +303,7 @@ module GraphQL
               end
 
               keywords = scalar_method_names.map { |m| "#{m}: #{m}"} +
-                @children_methods.keys.map { |m| "#{m}: #{m}" }
+                children_method_names.map { |m| "#{m}: #{m}" }
 
               module_eval <<-RUBY, __FILE__, __LINE__
                 def initialize(#{arguments.join(", ")})
@@ -306,12 +311,24 @@ module GraphQL
                   @col = col
                   @pos = pos
                   @filename = filename
-                  @source_string = source_string
+                  @source = source
                   #{assignments.join("\n")}
                 end
 
-                def self.from_a(filename, line, col, #{(scalar_method_names + @children_methods.keys).join(", ")})
+                def self.from_a(filename, line, col, #{all_method_names.join(", ")})
                   self.new(filename: filename, line: line, col: col, #{keywords.join(", ")})
+                end
+
+                def marshal_dump
+                  [
+                    line, col, # use methods here to force them to be calculated
+                    @filename,
+                    #{all_method_names.map { |n| "@#{n}," }.join}
+                  ]
+                end
+
+                def marshal_load(values)
+                  @line, @col, @filename #{all_method_names.map { |n| ", @#{n}"}.join} = values
                 end
               RUBY
             end
@@ -362,6 +379,7 @@ module GraphQL
           arguments: Nodes::Argument,
           locations: Nodes::DirectiveLocation,
         )
+        self.children_method_name = :definitions
       end
 
       # An enum value. The string is available as {#name}.
@@ -384,7 +402,7 @@ module GraphQL
         # @!attribute selections
         #   @return [Array<Nodes::Field>] Selections on this object (or empty array if this is a scalar field)
 
-        def initialize(name: nil, arguments: NONE, directives: NONE, selections: NONE, field_alias: nil, line: nil, col: nil, pos: nil, filename: nil, source_string: nil)
+        def initialize(name: nil, arguments: NONE, directives: NONE, selections: NONE, field_alias: nil, line: nil, col: nil, pos: nil, filename: nil, source: nil)
           @name = name
           @arguments = arguments || NONE
           @directives = directives || NONE
@@ -395,11 +413,19 @@ module GraphQL
           @col = col
           @pos = pos
           @filename = filename
-          @source_string = source_string
+          @source = source
         end
 
         def self.from_a(filename, line, col, field_alias, name, arguments, directives, selections) # rubocop:disable Metrics/ParameterLists
           self.new(filename: filename, line: line, col: col, field_alias: field_alias, name: name, arguments: arguments, directives: directives, selections: selections)
+        end
+
+        def marshal_dump
+          [line, col, @filename, @name, @arguments, @directives, @selections, @alias]
+        end
+
+        def marshal_load(values)
+          @line, @col, @filename, @name, @arguments, @directives, @selections, @alias = values
         end
 
         # Override this because default is `:fields`
@@ -420,20 +446,28 @@ module GraphQL
 
         # @!attribute type
         #   @return [String] the type condition for this fragment (name of type which it may apply to)
-        def initialize(name: nil, type: nil, directives: NONE, selections: NONE, filename: nil, pos: nil, source_string: nil, line: nil, col: nil)
+        def initialize(name: nil, type: nil, directives: NONE, selections: NONE, filename: nil, pos: nil, source: nil, line: nil, col: nil)
           @name = name
           @type = type
           @directives = directives
           @selections = selections
           @filename  = filename
           @pos = pos
-          @source_string = source_string
+          @source = source
           @line = line
           @col = col
         end
 
         def self.from_a(filename, line, col, name, type, directives, selections)
           self.new(filename: filename, line: line, col: col, name: name, type: type, directives: directives, selections: selections)
+        end
+
+        def marshal_dump
+          [line, col, @filename, @name, @type, @directives, @selections]
+        end
+
+        def marshal_load(values)
+          @line, @col, @filename, @name, @type, @directives, @selections = values
         end
       end
 

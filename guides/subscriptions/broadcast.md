@@ -82,3 +82,15 @@ GraphQL-Ruby determines which subscribers can receive a broadcast by inspecting:
 So, take care to {% internal_link "set subscription_scope", "subscriptions/subscription_classes#scope" %} whenever a subscription should be implicitly scoped!
 
 (See {{ "GraphQL::Subscriptions::Event#fingerprint" | api_doc }} for the implementation of broadcast fingerprints.)
+
+## Checking for Broadcastable
+
+For testing purposes, you can confirm that a GraphQL query string is broadcastable by using {{ "Subscriptions#broadcastable?" | api_doc }}:
+
+```ruby
+subscription_string = "subscription { ... }"
+MySchema.subscriptions.broadcastable?(subscription_string)
+# => true or false
+```
+
+Use this in your application's tests to make sure that broadcastable fields aren't accidentally made non-broadcastable.

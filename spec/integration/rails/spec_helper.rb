@@ -7,8 +7,12 @@ require "sequel"
 if ENV['DATABASE'] == 'POSTGRESQL'
   require 'pg'
 else
-  require "jdbc/sqlite3" if RUBY_ENGINE == 'jruby'
-  require "sqlite3" if RUBY_ENGINE == 'ruby'
+  require "sqlite3"
+end
+
+if ENV["ISOLATION_LEVEL_FIBER"]
+  ActiveSupport::IsolatedExecutionState.isolation_level = :fiber
+  puts "ActiveSupport::IsolatedExecutionState: #{ActiveSupport::IsolatedExecutionState.isolation_level}"
 end
 
 require_relative "generators/base_generator_test"

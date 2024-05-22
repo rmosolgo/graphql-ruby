@@ -30,6 +30,38 @@ describe GraphQL::Language::Parser do
 
     assert GraphQL.parse(GraphQL::Language.escape_single_quoted_newlines(nl_query_string_1))
     assert GraphQL.parse(GraphQL::Language.escape_single_quoted_newlines(nl_query_string_2))
+
+    example_query_str = "mutation {
+createRecord(data: {
+  dynamicFields: { string_test: \"avenue 1st
+2nd line\"}
+})
+  { id, dynamicFields }
+}"
+    assert_raises GraphQL::ParseError do
+      GraphQL.parse(example_query_str)
+    end
+
+    escaped_query_str = GraphQL::Language.escape_single_quoted_newlines(example_query_str)
+
+    expected_escaped_query_str = "mutation {
+createRecord(data: {
+  dynamicFields: { string_test: \"avenue 1st\\n2nd line\"}
+})
+  { id, dynamicFields }
+}"
+    assert_equal expected_escaped_query_str, escaped_query_str
+    assert GraphQL.parse(escaped_query_str )
+  end
+
+  it "parses single-quoted strings with escaped newlines" do
+    example_query_str = 'mutation {
+createRecord(data: {
+  dynamicFields: { string_test: "avenue 1st\n2nd line"}
+})
+  { id, dynamicFields }
+}'
+    assert GraphQL.parse(example_query_str)
   end
 
   it "can replace single-quoted newlines" do
@@ -83,6 +115,52 @@ describe GraphQL::Language::Parser do
     end
 
     assert_equal expected_msg, err.message
+  end
+
+  it "can reject name start at the end of numbers" do
+    prev_reject_numers_followed_by_names = GraphQL.reject_numbers_followed_by_names
+    GraphQL.reject_numbers_followed_by_names = false
+    assert GraphQL.parse("{ a(b: 123cde: 456)}"), "It accepts invalid constructions ... for now"
+    GraphQL.reject_numbers_followed_by_names = true
+    err = assert_raises GraphQL::ParseError do
+      GraphQL.parse("{ a(b: 123cde: 456)}")
+    end
+    assert_equal "Name after number is not allowed (in `123cde`)", err.message
+
+    err = assert_raises GraphQL::ParseError do
+      GraphQL.parse("{ a(b: 12.3e5cfg: 456)}")
+    end
+    assert_equal "Name after number is not allowed (in `12.3e5cfg`)", err.message
+
+    err2 = assert_raises GraphQL::ParseError do
+      GraphQL.parse("query($input: SomeInput = { i1: 12i2: 15}) { t }")
+    end
+    assert_equal "Name after number is not allowed (in `12i2`)", err2.message
+  ensure
+    GraphQL.reject_numbers_followed_by_names = prev_reject_numers_followed_by_names
+  end
+
+  it "can replace namestart at the end of numbers" do
+    expected_transforms = {
+      "{ a(b: 123cde: 456)}"    => "{ a(b: 123 cde: 456)}",
+      "{ a(b: 12.3e5cde: 456)}" => "{ a(b: 12.3e5 cde: 456)}",
+      "{ a(b: 123e56cde: 456)}" => "{ a(b: 123e56 cde: 456)}",
+      "{ a(b: 123e5) }" => nil,
+      "{ a(b: 123e5 ) }" => nil,
+      "{ a(b: 12.3e5) }" => nil,
+      "{ a(b: 12.3e5 ) }" => nil,
+      "query($obj: Input = { a: 1e5b: 2c: 3e-1}) { t }" => "query($obj: Input = { a: 1e5 b: 2 c: 3e-1}) { t }" ,
+    }
+
+    expected_transforms.each do |(start_str, finish_str)|
+      changed_str = GraphQL::Language.add_space_between_numbers_and_names(start_str)
+      if finish_str.nil?
+        assert start_str.equal?(changed_str), "#{start_str.inspect} is unchanged (was: #{changed_str.inspect})"
+      else
+        assert_equal finish_str, changed_str, "Expected #{start_str.inspect} to become #{finish_str.inspect}"
+        assert_equal finish_str, GraphQL::Language.add_space_between_numbers_and_names(finish_str), "Expected #{finish_str.inspect} not to change"
+      end
+    end
   end
 
   it "handles hyphens with errors" do

@@ -108,6 +108,25 @@ describe GraphQL::Analysis::AST::MaxQueryComplexity do
     end
   end
 
+  describe "count_introspection_fields: false" do
+    let(:schema) { Class.new(Dummy::Schema) { max_complexity(5) } }
+    let(:skip_introspection_schema) { Class.new(Dummy::Schema) do
+      max_complexity 5, count_introspection_fields: false
+    end
+    }
+
+    it "skips introspection fields when configured" do
+      query_string = "{ c1: cheese(id: 1) { id __typename } c2: cheese(id: 2) { id __typename } }"
+      res = schema.execute(query_string)
+      expected_msg = "Query has complexity of 6, which exceeds max complexity of 5"
+      assert_equal [expected_msg], res["errors"].map { |e| e["message"]}
+
+      res2 = skip_introspection_schema.execute(query_string)
+      assert_equal 2, res2["data"].size
+      refute res2.key?("errors")
+    end
+  end
+
   describe "across a multiplex" do
     before do
       schema.analysis_engine = GraphQL::Analysis::AST

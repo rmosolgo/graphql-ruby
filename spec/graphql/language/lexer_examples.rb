@@ -243,6 +243,32 @@ string with \\"""
           assert_equal 21, type_keyword_tok_3.line
           assert_equal 21, c_name_tok.line
         end
+
+        it "halts after max_tokens" do
+          query_type = Class.new(GraphQL::Schema::Object) do
+            graphql_name "Query"
+            field :x, Integer
+          end
+          parent_schema = Class.new(GraphQL::Schema) do
+            query(query_type)
+          end
+
+          child_schema = Class.new(parent_schema) do
+            max_query_string_tokens(5000)
+          end
+
+          assert_nil parent_schema.max_query_string_tokens
+          assert_equal 5000, child_schema.max_query_string_tokens
+
+          query_str = 3_000.times.map { |n| "query Q#{n} { __typename }" }.join("\n")
+          assert_equal 15_000, subject.tokenize(query_str).size
+          assert GraphQL.parse(query_str)
+          result = child_schema.execute(query_str)
+          assert_equal ["This query is too large to execute."], result["errors"].map { |e| e["message"] }
+
+          result2 = parent_schema.execute(query_str)
+          assert_equal ["An operation name is required"], result2["errors"].map { |e| e["message"] }
+        end
       end
     end
   end

@@ -984,21 +984,28 @@ describe GraphQL::Dataloader do
           query_str << "\n}"
           GC.start
           GC.disable
+          old_fibers = []
+          ObjectSpace.each_object(Fiber) do |f|
+            old_fibers << f
+          end
           res = schema.execute(query_str)
           assert_equal fields, res["data"].keys.size
           all_fibers = []
           ObjectSpace.each_object(Fiber) do |f|
             all_fibers << f
           end
-          all_fibers.delete(Fiber.current)
-          if all_fibers.any?(&:alive?)
-              puts <<~ERR
-            Alive fibers:
-
-              - #{all_fibers.select(&:alive?).join("\n  - ")}
-            ERR
+          new_fibers = all_fibers - old_fibers
+          if new_fibers.any?(&:alive?)
+            message = "Alive fibers:\n\n".dup
+            new_fibers.select(&:alive?).each do |f|
+              message << "  - #{f.inspect}\n"
+              f.backtrace.each do |line|
+                message << "      #{line}\n"
+              end
+            end
+            puts message
           end
-          assert_equal [false], all_fibers.map(&:alive?).uniq
+          assert_equal [false], new_fibers.map(&:alive?).uniq
         ensure
           GC.enable
         end

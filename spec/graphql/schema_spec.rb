@@ -47,6 +47,8 @@ describe GraphQL::Schema do
         extra_types ExtraType
         query_analyzer Object.new
         multiplex_analyzer Object.new
+        validate_timeout 100
+        max_query_string_tokens 500
         rescue_from(StandardError) { }
         use GraphQL::Backtrace
         use GraphQL::Subscriptions::ActionCableSubscriptions, action_cable: nil, action_cable_coder: JSON
@@ -68,6 +70,7 @@ describe GraphQL::Schema do
       assert_equal base_schema.orphan_types, schema.orphan_types
       assert_equal base_schema.context_class, schema.context_class
       assert_equal base_schema.directives, schema.directives
+      assert_equal base_schema.max_query_string_tokens, schema.max_query_string_tokens
       assert_equal base_schema.query_analyzers, schema.query_analyzers
       assert_equal base_schema.multiplex_analyzers, schema.multiplex_analyzers
       assert_equal base_schema.disable_introspection_entry_points?, schema.disable_introspection_entry_points?
@@ -85,6 +88,7 @@ describe GraphQL::Schema do
         use CustomSubscriptions, action_cable: nil, action_cable_coder: JSON
         query_class(custom_query_class)
         extra_types [extra_type_2]
+        max_query_string_tokens nil
       end
 
       query = Class.new(GraphQL::Schema::Object) do
@@ -127,6 +131,7 @@ describe GraphQL::Schema do
       assert_equal subscription, schema.subscription
       assert_equal introspection, schema.introspection
       assert_equal cursor_encoder, schema.cursor_encoder
+      assert_nil schema.max_query_string_tokens
 
       assert_equal context_class, schema.context_class
       assert_equal 10, schema.validate_timeout

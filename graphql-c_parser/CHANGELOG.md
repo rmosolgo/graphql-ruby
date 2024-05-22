@@ -1,5 +1,14 @@
 # GraphQL::CParser
 
+## 1.1.1
+
+- Add support for `Schema.max_query_string_tokens` #4929
+
+## 1.1.0
+
+- Drop support for Ruby 2.7 #4899
+- Reduce allocation of repeated strings for identifiers when parsing schemas #4899
+
 ## 1.0.8
 
 - Support directives on variable definitions, requires `graphql` 2.2.10+ #4847

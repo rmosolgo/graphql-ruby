@@ -535,8 +535,8 @@ describe GraphQL::Execution::Interpreter do
 
       assert_equal 3, res["data"]["findMany"].size
       assert_equal "RAV", res["data"]["findMany"][0]["sym"]
-      assert_equal nil, res["data"]["findMany"][1]
-      assert_equal nil, res["data"]["findMany"][2]
+      assert_nil res["data"]["findMany"][1]
+      assert_nil res["data"]["findMany"][2]
       assert_equal false, res.key?("errors")
 
       assert_equal Hash, res["data"].class

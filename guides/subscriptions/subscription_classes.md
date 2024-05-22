@@ -213,7 +213,7 @@ You can implement `#authorized?` to check that the user has permission to subscr
 
 ```ruby
 def authorized?(room:)
-  context[:viewer].can_read_messages?(room)
+  super && context[:viewer].can_read_messages?(room)
 end
 ```
 

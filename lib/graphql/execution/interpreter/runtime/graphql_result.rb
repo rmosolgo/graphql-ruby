@@ -5,8 +5,10 @@ module GraphQL
     class Interpreter
       class Runtime
         module GraphQLResult
-          def initialize(result_name, parent_result, is_non_null_in_parent)
+          def initialize(result_name, result_type, application_value, parent_result, is_non_null_in_parent)
             @graphql_parent = parent_result
+            @graphql_application_value = application_value
+            @graphql_result_type = result_type
             if parent_result && parent_result.graphql_dead
               @graphql_dead = true
             end
@@ -26,14 +28,14 @@ module GraphQL
           end
 
           attr_accessor :graphql_dead
-          attr_reader :graphql_parent, :graphql_result_name, :graphql_is_non_null_in_parent
+          attr_reader :graphql_parent, :graphql_result_name, :graphql_is_non_null_in_parent, :graphql_application_value, :graphql_result_type
 
           # @return [Hash] Plain-Ruby result data (`@graphql_metadata` contains Result wrapper objects)
           attr_accessor :graphql_result_data
         end
 
         class GraphQLResultHash
-          def initialize(_result_name, _parent_result, _is_non_null_in_parent)
+          def initialize(_result_name, _result_type, _application_value, _parent_result, _is_non_null_in_parent)
             super
             @graphql_result_data = {}
           end
@@ -121,7 +123,7 @@ module GraphQL
         class GraphQLResultArray
           include GraphQLResult
 
-          def initialize(_result_name, _parent_result, _is_non_null_in_parent)
+          def initialize(_result_name, _result_type, _application_value, _parent_result, _is_non_null_in_parent)
             super
             @graphql_result_data = []
           end

@@ -38,6 +38,23 @@ if defined?(GraphQL::CParser::Lexer)
       assert_equal(old_tokens, tokens)
     end
 
+    it "makes frozen strings when using SchemaParser" do
+      str = "type Query { f1: Int }"
+      schema_ast = GraphQL::CParser::SchemaParser.new(str, nil, GraphQL::Tracing::NullTrace, nil).result
+      default_ast = GraphQL::CParser::Parser.new(str, nil, GraphQL::Tracing::NullTrace, nil).result
+
+      # Equivalent ASTs:
+      assert_equal schema_ast, default_ast
+
+      # But this one is frozen:
+      assert_equal "Query", schema_ast.definitions.first.name
+      assert schema_ast.definitions.first.name.frozen?
+
+      # And this one isn't:
+      assert_equal "Query", default_ast.definitions.first.name
+      refute default_ast.definitions.first.name.frozen?
+    end
+
     include LexerExamples
   end
 end

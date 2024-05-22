@@ -8,6 +8,10 @@
 
 ### Bug Fix
 
+# 1.4.0 (11 Apr 2024)
+
+- ObjectCache: add support for `redis_cluster: ...` backend
+
 # 1.3.4 (18 Mar 2024)
 
 - ObjectCache: use new `trace_with` API for instrumentation

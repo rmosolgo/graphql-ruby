@@ -6,6 +6,30 @@
 
 ### New Features
 
+# 1.27.5 (9 May 2024)
+
+- OperationStore: remove needless call to `.metadata` #4947
+
+# 1.27.4 (2 May 2024)
+
+- Pundit, CanCan, OperationStore: add Rails generators for getting started
+
+# 1.27.3 (1 May 2024)
+
+- OperationStore: Fix `.reindex` for many stored operations #4940
+
+# 1.27.2 (30 Apr 2024)
+
+- Dashboard: handle missing index references gracefully #4940
+
+# 1.27.1 (18 Apr 2024)
+
+- OperationStore: Don't call `query.query_string` if there's already a parsed document #4922
+
+# 1.27.0 (11 Apr 2024)
+
+- RelationConnection: support Arel's `NullsFirst` and `NullsLast` nodes #4910
+
 # 1.26.5 (1 Mar 2024)
 
 - OperationStore::AddOperationBatch: remove rescue for StatementInvalid inside transaction

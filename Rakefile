@@ -124,6 +124,12 @@ namespace :bench do
     GraphQLBenchmark.profile_to_definition
   end
 
+  desc "Load schema from SDL"
+  task :profile_from_definition do
+    prepare_benchmark
+    GraphQLBenchmark.profile_from_definition
+  end
+
   desc "Compare GraphQL-Batch and GraphQL-Dataloader"
   task :profile_batch_loaders do
     prepare_benchmark

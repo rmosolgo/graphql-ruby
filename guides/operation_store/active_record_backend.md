@@ -13,7 +13,24 @@ GraphQL-Pro's `OperationStore` can use ActiveRecord to store persisted queries. 
 
 ## Database Setup
 
-To use ActiveRecord, `GraphQL::Pro::OperationStore` requires some database tables. You can add these with a migration:
+To use ActiveRecord, `GraphQL::Pro::OperationStore` requires some database tables.
+
+### Rails Generator
+
+With Rails, you can generate the required migration then run it:
+
+```bash
+$ rails generate graphql:operation_store:create
+$ rails db:migrate
+```
+
+(You'll have to run that migration on any staging or production servers, too.)
+
+Now, `OperationStore` has what it needs to save queries using ActiveRecord!
+
+### Manual Setup
+
+You can also create the required migration by manually by generating an empty migration:
 
 ```bash
 $ rails generate migration SetupOperationStore

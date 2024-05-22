@@ -304,7 +304,7 @@ module GraphQL
 
     # @return [String] An opaque hash for identifying this query's given query string and selected operation
     def operation_fingerprint
-      @operation_fingerprint ||= "#{selected_operation_name || "anonymous"}/#{Fingerprint.generate(query_string)}"
+      @operation_fingerprint ||= "#{selected_operation_name || "anonymous"}/#{Fingerprint.generate(query_string || "")}"
     end
 
     # @return [String] An opaque hash for identifying this query's given a variable values (not including defaults)
@@ -395,7 +395,7 @@ module GraphQL
       parse_error = nil
       @document ||= begin
         if query_string
-          GraphQL.parse(query_string, trace: self.current_trace)
+          GraphQL.parse(query_string, trace: self.current_trace, max_tokens: @schema.max_query_string_tokens)
         end
       rescue GraphQL::ParseError => err
         parse_error = err

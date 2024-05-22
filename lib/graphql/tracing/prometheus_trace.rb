@@ -25,33 +25,33 @@ module GraphQL
       }.each do |trace_method, platform_key|
         module_eval <<-RUBY, __FILE__, __LINE__
           def #{trace_method}(**data)
-            instrument_execution("#{platform_key}", "#{trace_method}") { super }
+            instrument_prometheus_execution("#{platform_key}", "#{trace_method}") { super }
           end
         RUBY
       end
 
       def platform_execute_field(platform_key, &block)
-        instrument_execution(platform_key, "execute_field", &block)
+        instrument_prometheus_execution(platform_key, "execute_field", &block)
       end
 
       def platform_execute_field_lazy(platform_key, &block)
-        instrument_execution(platform_key, "execute_field_lazy", &block)
+        instrument_prometheus_execution(platform_key, "execute_field_lazy", &block)
       end
 
       def platform_authorized(platform_key, &block)
-        instrument_execution(platform_key, "authorized", &block)
+        instrument_prometheus_execution(platform_key, "authorized", &block)
       end
 
       def platform_authorized_lazy(platform_key, &block)
-        instrument_execution(platform_key, "authorized_lazy", &block)
+        instrument_prometheus_execution(platform_key, "authorized_lazy", &block)
       end
 
       def platform_resolve_type(platform_key, &block)
-        instrument_execution(platform_key, "resolve_type", &block)
+        instrument_prometheus_execution(platform_key, "resolve_type", &block)
       end
 
       def platform_resolve_type_lazy(platform_key, &block)
-        instrument_execution(platform_key, "resolve_type_lazy", &block)
+        instrument_prometheus_execution(platform_key, "resolve_type_lazy", &block)
       end
 
       def platform_field_key(field)
@@ -68,7 +68,7 @@ module GraphQL
 
       private
 
-      def instrument_execution(platform_key, key, &block)
+      def instrument_prometheus_execution(platform_key, key, &block)
         if @keys_whitelist.include?(key)
           start = ::Process.clock_gettime ::Process::CLOCK_MONOTONIC
           result = block.call

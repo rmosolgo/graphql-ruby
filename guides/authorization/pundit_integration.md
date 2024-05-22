@@ -38,6 +38,16 @@ context = {
 MySchema.execute(..., context: context)
 ```
 
+### Rails Generator
+
+If your schema files follow the same convention as `rails generate graphql:install`, then you can install the Pundit integration with a Rails generator:
+
+```bash
+$ rails generate graphql:pundit:install
+```
+
+This will insert all the necessary `include ...`s described below. Alternatively, check the docs below to mix in `PunditIntegration`'s modules.
+
 ## Authorizing Objects
 
 You can specify Pundit roles that must be satisfied in order for viewers to see objects of a certain type. To get started, include the `ObjectIntegration` in your base object class:

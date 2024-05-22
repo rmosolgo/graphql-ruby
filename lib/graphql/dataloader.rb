@@ -88,6 +88,11 @@ module GraphQL
       nil
     end
 
+    # This method is called when Dataloader is finished using a fiber.
+    # Use it to perform any cleanup, such as releasing database connections (if required manually)
+    def cleanup_fiber
+    end
+
     # Get a Source instance from this dataloader, for calling `.load(...)` or `.request(...)` on.
     #
     # @param source_class [Class<GraphQL::Dataloader::Source]
@@ -231,9 +236,7 @@ module GraphQL
       Fiber.new(blocking: !@nonblocking) {
         set_fiber_variables(fiber_vars)
         yield
-        # With `.transfer`, you have to explicitly pass back to the parent --
-        # if the fiber is allowed to terminate normally, control is passed to the main fiber instead.
-        true
+        cleanup_fiber
       }
     end
 

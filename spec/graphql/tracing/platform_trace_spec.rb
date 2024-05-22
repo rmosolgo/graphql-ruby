@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
-
+require_relative "./appsignal_trace_spec"
+require_relative "./statsd_trace_spec"
 describe GraphQL::Tracing::PlatformTrace do
   module CustomPlatformTrace
     include GraphQL::Tracing::PlatformTrace
@@ -227,6 +228,33 @@ describe GraphQL::Tracing::PlatformTrace do
           "eql",
         ].compact
       assert_equal expected_trace, CustomPlatformTrace::TRACE
+    end
+  end
+
+  describe "using subclasses altogether" do
+    class KitchenSinkTraceSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        field :int, Int, fallback_value: 1
+      end
+
+      query(Query)
+
+      trace_with GraphQL::Tracing::DataDogTrace
+      trace_with GraphQL::Tracing::SentryTrace
+      trace_with GraphQL::Tracing::PrometheusTrace, client: Minitest::Mock.new
+      trace_with GraphQL::Tracing::ScoutTrace
+      trace_with GraphQL::Tracing::AppsignalTrace
+      trace_with GraphQL::Tracing::NewRelicTrace
+      trace_with GraphQL::Tracing::StatsdTrace, statsd: TraceMockStatsd
+    end
+
+    before do
+      TraceMockStatsd.clear
+    end
+
+    it "doesn't crash" do
+      res = KitchenSinkTraceSchema.execute("{ int }")
+      assert_equal 1, res["data"]["int"]
     end
   end
 end

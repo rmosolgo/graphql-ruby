@@ -16,6 +16,11 @@ else
   USING_C_PARSER = false
 end
 
+if ENV["GRAPHQL_REJECT_NUMBERS_FOLLOWED_BY_NAMES"]
+  puts "Opting into GraphQL.reject_numbers_followed_by_names"
+  GraphQL.reject_numbers_followed_by_names = true
+end
+
 require "rake"
 require "graphql/rake_task"
 require "benchmark"

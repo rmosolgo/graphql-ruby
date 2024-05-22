@@ -3,7 +3,7 @@ module GraphQL
   module Language
 
     class Lexer
-      def initialize(graphql_str, filename: nil)
+      def initialize(graphql_str, filename: nil, max_tokens: nil)
         if !(graphql_str.encoding == Encoding::UTF_8 || graphql_str.ascii_only?)
           graphql_str = graphql_str.dup.force_encoding(Encoding::UTF_8)
         end
@@ -11,6 +11,8 @@ module GraphQL
         @filename = filename
         @scanner = StringScanner.new(graphql_str)
         @pos = nil
+        @max_tokens = max_tokens || Float::INFINITY
+        @tokens_count = 0
       end
 
       def eos?
@@ -22,6 +24,10 @@ module GraphQL
       def advance
         @scanner.skip(IGNORE_REGEXP)
         return false if @scanner.eos?
+        @tokens_count += 1
+        if @tokens_count > @max_tokens
+          raise_parse_error("This query is too large to execute.")
+        end
         @pos = @scanner.pos
         next_byte = @string.getbyte(@pos)
         next_byte_is_for = FIRST_BYTES[next_byte]
@@ -52,6 +58,17 @@ module GraphQL
           :IDENTIFIER
         when ByteFor::NUMBER
           @scanner.skip(NUMERIC_REGEXP)
+
+          if GraphQL.reject_numbers_followed_by_names
+            new_pos = @scanner.pos
+            peek_byte = @string.getbyte(new_pos)
+            next_first_byte = FIRST_BYTES[peek_byte]
+            if next_first_byte == ByteFor::NAME || next_first_byte == ByteFor::IDENTIFIER
+              number_part = token_value
+              name_part = @scanner.scan(IDENTIFIER_REGEXP)
+              raise_parse_error("Name after number is not allowed (in `#{number_part}#{name_part}`)")
+            end
+          end
           # Check for a matched decimal:
           @scanner[1] ? :FLOAT : :INT
         when ByteFor::ELLIPSIS
@@ -156,6 +173,7 @@ module GraphQL
       INT_REGEXP =        /-?(?:[0]|[1-9][0-9]*)/
       FLOAT_DECIMAL_REGEXP = /[.][0-9]+/
       FLOAT_EXP_REGEXP =     /[eE][+-]?[0-9]+/
+      # TODO: FLOAT_EXP_REGEXP should not be allowed to follow INT_REGEXP, integers are not allowed to have exponent parts.
       NUMERIC_REGEXP =  /#{INT_REGEXP}(#{FLOAT_DECIMAL_REGEXP}#{FLOAT_EXP_REGEXP}|#{FLOAT_DECIMAL_REGEXP}|#{FLOAT_EXP_REGEXP})?/
 
       KEYWORDS = [
@@ -250,7 +268,6 @@ module GraphQL
       FOUR_DIGIT_UNICODE = /#{UNICODE_DIGIT}{4}/
       N_DIGIT_UNICODE = %r{#{Punctuation::LCURLY}#{UNICODE_DIGIT}{4,}#{Punctuation::RCURLY}}x
       UNICODE_ESCAPE = %r{\\u(?:#{FOUR_DIGIT_UNICODE}|#{N_DIGIT_UNICODE})}
-      # # https://graphql.github.io/graphql-spec/June2018/#sec-String-Value
       STRING_ESCAPE = %r{[\\][\\/bfnrt]}
       BLOCK_QUOTE =   '"""'
       ESCAPED_QUOTE = /\\"/;

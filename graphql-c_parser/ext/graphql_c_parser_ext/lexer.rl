@@ -93,9 +93,13 @@
     NEWLINE => {
       meta->line += 1;
       meta->col = 1;
+      meta->preceeded_by_number = 0;
     };
 
-    BLANK   => { meta->col += te - ts; };
+    BLANK   => {
+      meta->col += te - ts;
+      meta->preceeded_by_number = 0;
+    };
 
     UNKNOWN_CHAR => { emit(UNKNOWN_CHAR, ts, te, meta); };
   *|;
@@ -104,6 +108,7 @@
 %% write data;
 
 #include <ruby.h>
+#include <ruby/encoding.h>
 
 #define INIT_STATIC_TOKEN_VARIABLE(token_name) \
   static VALUE GraphQLTokenString##token_name;
@@ -194,6 +199,11 @@ typedef struct Meta {
   char *pe;
   VALUE tokens;
   VALUE previous_token;
+  int dedup_identifiers;
+  int reject_numbers_followed_by_names;
+  int preceeded_by_number;
+  int max_tokens;
+  int tokens_count;
 } Meta;
 
 #define STATIC_VALUE_TOKEN(token_type, content_str) \
@@ -209,11 +219,25 @@ typedef struct Meta {
   break;
 
 void emit(TokenType tt, char *ts, char *te, Meta *meta) {
+  meta->tokens_count++;
+  // -1 indicates that there is no limit:
+  if (meta->max_tokens > 0 && meta->tokens_count > meta->max_tokens) {
+    VALUE mGraphQL = rb_const_get_at(rb_cObject, rb_intern("GraphQL"));
+    VALUE cParseError = rb_const_get_at(mGraphQL, rb_intern("ParseError"));
+    VALUE exception = rb_funcall(
+      cParseError, rb_intern("new"), 4,
+      rb_str_new_cstr("This query is too large to execute."),
+      LONG2NUM(meta->line),
+      LONG2NUM(meta->col),
+      rb_str_new_cstr(meta->query_cstr)
+    );
+    rb_exc_raise(exception);
+  }
   int quotes_length = 0; // set by string tokens below
   int line_incr = 0;
   VALUE token_sym = Qnil;
   VALUE token_content = Qnil;
-
+  int this_token_is_number = 0;
   switch(tt) {
     STATIC_VALUE_TOKEN(ON, "on")
     STATIC_VALUE_TOKEN(FRAGMENT, "fragment")
@@ -261,9 +285,40 @@ void emit(TokenType tt, char *ts, char *te, Meta *meta) {
       token_sym = ID2SYM(rb_intern("NULL"));
       token_content = GraphQL_null_str;
       break;
-    DYNAMIC_VALUE_TOKEN(IDENTIFIER)
-    DYNAMIC_VALUE_TOKEN(INT)
-    DYNAMIC_VALUE_TOKEN(FLOAT)
+    case IDENTIFIER:
+      if (meta->reject_numbers_followed_by_names && meta->preceeded_by_number) {
+        VALUE mGraphQL = rb_const_get_at(rb_cObject, rb_intern("GraphQL"));
+        VALUE mCParser = rb_const_get_at(mGraphQL, rb_intern("CParser"));
+        VALUE exception = rb_funcall(
+            mCParser, rb_intern("prepare_number_name_parse_error"), 5,
+            LONG2NUM(meta->line),
+            LONG2NUM(meta->col),
+            rb_str_new_cstr(meta->query_cstr),
+            rb_ary_entry(meta->previous_token, 3),
+            rb_utf8_str_new(ts, te - ts)
+        );
+        rb_exc_raise(exception);
+      }
+      token_sym = ID2SYM(rb_intern("IDENTIFIER"));
+      if (meta->dedup_identifiers) {
+        token_content = rb_enc_interned_str(ts, te - ts, rb_utf8_encoding());
+      } else {
+        token_content = rb_utf8_str_new(ts, te - ts);
+      }
+      break;
+    // Can't use these while we're in backwards-compat mode:
+    // DYNAMIC_VALUE_TOKEN(INT)
+    // DYNAMIC_VALUE_TOKEN(FLOAT)
+    case INT:
+      token_sym = ID2SYM(rb_intern("INT"));
+      token_content = rb_utf8_str_new(ts, te - ts);
+      this_token_is_number = 1;
+      break;
+    case FLOAT:
+      token_sym = ID2SYM(rb_intern("FLOAT"));
+      token_content = rb_utf8_str_new(ts, te - ts);
+      this_token_is_number = 1;
+      break;
     DYNAMIC_VALUE_TOKEN(COMMENT)
     case UNKNOWN_CHAR:
       if (ts[0] == '\0') {
@@ -284,8 +339,9 @@ void emit(TokenType tt, char *ts, char *te, Meta *meta) {
       token_content = rb_utf8_str_new(ts + quotes_length, (te - ts - (2 * quotes_length)));
       line_incr = FIX2INT(rb_funcall(token_content, rb_intern("count"), 1, rb_utf8_str_new_cstr("\n")));
       break;
+    // These are used only by the parser, this is never reached
     case STRING:
-      // This is used only by the parser, this is never reached
+    case BAD_UNICODE_ESCAPE:
       break;
   }
 
@@ -330,6 +386,7 @@ void emit(TokenType tt, char *ts, char *te, Meta *meta) {
     if (tt != COMMENT) {
       rb_ary_push(meta->tokens, token);
     }
+    meta->preceeded_by_number = this_token_is_number;
     meta->previous_token = token;
   }
   // Bump the column counter for the next token
@@ -337,7 +394,7 @@ void emit(TokenType tt, char *ts, char *te, Meta *meta) {
   meta->line += line_incr;
 }
 
-VALUE tokenize(VALUE query_rbstr) {
+VALUE tokenize(VALUE query_rbstr, int fstring_identifiers, int reject_numbers_followed_by_names, int max_tokens) {
   int cs = 0;
   int act = 0;
   char *p = StringValueCStr(query_rbstr);
@@ -346,7 +403,7 @@ VALUE tokenize(VALUE query_rbstr) {
   char *ts = 0;
   char *te = 0;
   VALUE tokens = rb_ary_new();
-  struct Meta meta_s = {1, 1, p, pe, tokens, Qnil};
+  struct Meta meta_s = {1, 1, p, pe, tokens, Qnil, fstring_identifiers, reject_numbers_followed_by_names, 0, max_tokens, 0};
   Meta *meta = &meta_s;
 
   %% write init;

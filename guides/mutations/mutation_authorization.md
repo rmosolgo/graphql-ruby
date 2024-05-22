@@ -125,7 +125,7 @@ You can add this check by implementing a `#authorized?` method, for example:
 
 ```ruby
 def authorized?(employee:)
-  context[:current_user].manager_of?(employee)
+  super && context[:current_user].manager_of?(employee)
 end
 ```
 
@@ -137,7 +137,7 @@ To add errors as data (as described in {% internal_link "Mutation errors", "/mut
 
 ```ruby
 def authorized?(employee:)
-  if context[:current_user].manager_of?(employee)
+  super && if context[:current_user].manager_of?(employee)
     true
   else
     return false, { errors: ["Can't promote an employee you don't manage"] }
@@ -149,8 +149,11 @@ Alternatively, you can add top-level errors by raising `GraphQL::ExecutionError`
 
 ```ruby
 def authorized?(employee:)
-  return true if context[:current_user].manager_of?(employee)
-  raise GraphQL::ExecutionError, "You can only promote your _own_ employees"
+  super && if context[:current_user].manager_of?(employee)
+    true
+  else
+    raise GraphQL::ExecutionError, "You can only promote your _own_ employees"
+  end
 end
 ```
 

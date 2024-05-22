@@ -487,6 +487,26 @@ module GraphQLBenchmark
     report.pretty_print
   end
 
+  def self.profile_from_definition
+    # require "graphql/c_parser"
+    schema_str = SILLY_LARGE_SCHEMA.to_definition
+
+    Benchmark.ips do |x|
+      x.report("from_definition") { GraphQL::Schema.from_definition(schema_str) }
+    end
+
+    result = StackProf.run(mode: :wall, interval: 1) do
+      GraphQL::Schema.from_definition(schema_str)
+    end
+    StackProf::Report.new(result).print_text
+
+    report = MemoryProfiler.report do
+      GraphQL::Schema.from_definition(schema_str)
+    end
+
+    report.pretty_print
+  end
+
   def self.profile_batch_loaders
     require_relative "./batch_loading"
     include BatchLoading

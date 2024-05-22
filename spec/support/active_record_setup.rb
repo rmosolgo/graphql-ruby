@@ -7,15 +7,7 @@ if testing_rails?
     ActiveRecord.async_query_executor ||= :global_thread_pool
   end
 
-  # platform helper
-  def jruby?
-    RUBY_ENGINE == 'jruby'
-  end
-
-  if jruby?
-    ActiveRecord::Base.establish_connection(adapter: "jdbcsqlite3", database: "./_test_.db")
-    SequelDB = Sequel.connect('jdbc:sqlite:./_test_.db')
-  elsif ENV['DATABASE'] == 'POSTGRESQL'
+  if ENV['DATABASE'] == 'POSTGRESQL'
     ar_connection_options = {
       host: "localhost",
       adapter: "postgresql",
@@ -32,13 +24,21 @@ if testing_rails?
       ActiveRecord::Base.connection.execute("create database graphql_ruby_test;")
     end
 
-    ActiveRecord::Base.establish_connection(ar_connection_options)
+    ActiveRecord::Base.configurations = {
+      starwars: ar_connection_options,
+      starwars_replica: ar_connection_options,
+    }
+
     SequelDB = Sequel.connect("postgres://postgres:#{ENV["PGPASSWORD"]}@localhost:5432/graphql_ruby_test")
   else
-    ActiveRecord::Base.establish_connection(adapter: "sqlite3", database: "./_test_.db")
+    ActiveRecord::Base.configurations = {
+      starwars: { adapter: "sqlite3", database: "./_test_.db" },
+      starwars_replica: { adapter: "sqlite3", database: "./_test_.db" },
+    }
     SequelDB = Sequel.sqlite("./_test_.db")
   end
 
+  ActiveRecord::Base.establish_connection(:starwars)
   ActiveRecord::Schema.define do
     self.verbose = false
     create_table :bases, force: true do |t|

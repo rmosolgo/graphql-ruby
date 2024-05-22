@@ -20,7 +20,7 @@ describe GraphQL::Schema::Validator::LengthValidator do
 
     schema = build_schema(String, {length: { minimum: 5 }, allow_null: true, allow_blank: false})
     result = schema.execute("{ validated(value: null) }")
-    assert_equal nil, result["data"]["validated"]
+    assert_nil result["data"]["validated"]
     refute result.key?("errors")
 
     result = schema.execute("query($str: String!) { validated(value: $str) }", variables: { str: blank_string })

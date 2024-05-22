@@ -6,7 +6,7 @@ class GraphQLGeneratorsObjectGeneratorTest < BaseGeneratorTest
   tests Graphql::Generators::ObjectGenerator
 
   ActiveRecord::Schema.define do
-    create_table :test_users do |t|
+    create_table :test_users, force: true do |t|
       t.datetime :created_at
       t.date :birthday
       t.integer :points, null: false

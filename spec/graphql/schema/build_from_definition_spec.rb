@@ -1752,4 +1752,12 @@ type ReachableType implements Node {
     schema = GraphQL::Schema.from_definition(schema_str)
     assert_equal schema_str, schema.to_definition
   end
+
+  if USING_C_PARSER
+    it "makes frozen identifiers with CParser" do
+      schema_class = GraphQL::Schema.from_definition("type Query { f: Boolean }")
+      assert_equal "Query", schema_class.query.ast_node.name
+      assert schema_class.query.ast_node.name.frozen?
+    end
+  end
 end

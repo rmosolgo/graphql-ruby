@@ -9,6 +9,7 @@ gemfiles/*.lock
 *.db
 *.db-shm
 *.db-wal
+.byebug_history
 .bundle/
 vendor/
 .idea/
@@ -19,7 +20,6 @@ _site
 .jekyll-cache
 gh-pages/
 tmp/*
-__*.db
 node_modules/
 yarn.lock
 OperationStoreClient.js

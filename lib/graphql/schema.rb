@@ -643,6 +643,17 @@ module GraphQL
         end
       end
 
+      # A limit on the number of tokens to accept on incoming query strings.
+      # Use this to prevent parsing maliciously-large query strings.
+      # @return [nil, Integer]
+      def max_query_string_tokens(new_max_tokens = NOT_CONFIGURED)
+        if NOT_CONFIGURED.equal?(new_max_tokens)
+          defined?(@max_query_string_tokens) ? @max_query_string_tokens : find_inherited_value(:max_query_string_tokens)
+        else
+          @max_query_string_tokens = new_max_tokens
+        end
+      end
+
       def default_page_size(new_default_page_size = nil)
         if new_default_page_size
           @default_page_size = new_default_page_size
@@ -738,13 +749,22 @@ module GraphQL
 
       attr_writer :max_complexity
 
-      def max_complexity(max_complexity = nil)
+      def max_complexity(max_complexity = nil, count_introspection_fields: true)
         if max_complexity
           @max_complexity = max_complexity
+          @max_complexity_count_introspection_fields = count_introspection_fields
         elsif defined?(@max_complexity)
           @max_complexity
         else
           find_inherited_value(:max_complexity)
+        end
+      end
+
+      def max_complexity_count_introspection_fields
+        if defined?(@max_complexity_count_introspection_fields)
+          @max_complexity_count_introspection_fields
+        else
+          find_inherited_value(:max_complexity_count_introspection_fields, true)
         end
       end
 

@@ -17,7 +17,7 @@ describe GraphQL::Schema::InputObject do
   describe "type info" do
     it "has it" do
       assert_equal "EnsembleInput", input_object.graphql_name
-      assert_equal nil, input_object.description
+      assert_nil input_object.description
       assert_equal 1, input_object.arguments.size
     end
 
@@ -389,6 +389,18 @@ describe GraphQL::Schema::InputObject do
         end
       end
 
+      class Thing < GraphQL::Schema::Object
+        field :name, String
+      end
+
+      class PrepareAndLoadInput < GraphQL::Schema::InputObject
+        argument :value, String
+        argument :thing_id, ID, loads: Thing
+        def prepare
+          { value: "Prepared: #{value}", thing: thing }
+        end
+      end
+
       class Query < GraphQL::Schema::Object
         field :inputs, String do
           argument :input, RangeInput
@@ -407,11 +419,49 @@ describe GraphQL::Schema::InputObject do
         def prepare_once(input:)
           input.prepared_count
         end
+
+        field :prepare_list, [Int] do
+          argument :input, [OnlyOnePrepareInputObject]
+        end
+
+        def prepare_list(input:)
+          input.map(&:prepared_count)
+        end
+
+        field :prepare_and_load, String do
+          argument :input, PrepareAndLoadInput
+        end
+
+        def prepare_and_load(input:)
+          "#{input[:value]}/#{input[:thing][:name]}"
+        end
+
+        field :prepare_list_of_lists, [[Int]] do
+          argument :input, [[OnlyOnePrepareInputObject]]
+        end
+
+        def prepare_list_of_lists(input:)
+          input.map { |i| i.map(&:prepared_count) }
+        end
       end
 
       class Schema < GraphQL::Schema
         query(Query)
+
+        def self.resolve_type(_abs_t, _obj, _ctx)
+          Thing
+        end
+
+        def self.object_from_id(id, _ctx)
+          { name: "Thing #{id}"}
+        end
       end
+    end
+
+    it "calls prepare and loads" do
+      query_str = "{ prepareAndLoad(input: { value: \"Hello\", thingId: \"123\"}) }"
+      res = InputObjectPrepareObjectTest::Schema.execute(query_str)
+      assert_equal "Prepared: Hello/Thing 123", res["data"]["prepareAndLoad"]
     end
 
     it "calls prepare on the input object (literal)" do
@@ -426,6 +476,14 @@ describe GraphQL::Schema::InputObject do
     it "only prepares once" do
       res = InputObjectPrepareObjectTest::Schema.execute("{ prepareOnce( input: { i: 1 } ) }")
       assert_equal 1, res["data"]["prepareOnce"]
+    end
+
+    it "calls prepare on lists of input objects" do
+      res = InputObjectPrepareObjectTest::Schema.execute("{ prepareList( input:[{ i: 1 }, { i: 1}]) }")
+      assert_equal [1, 1], res["data"]["prepareList"]
+
+      res = InputObjectPrepareObjectTest::Schema.execute("{ prepareListOfLists( input:[[{ i: 1 }, { i: 1}], [{i: 2}, {i: 2}]]) }")
+      assert_equal [[1, 1], [1, 1]], res["data"]["prepareListOfLists"]
     end
 
     it "calls prepare on the input object (variable)" do
@@ -1302,6 +1360,51 @@ describe GraphQL::Schema::InputObject do
 
       schema_sdl = schema.to_definition
       assert_includes schema_sdl, "input OneOfInput @oneOf {\n"
+    end
+  end
+
+  describe "when values aren't given" do
+    class MissingValuesSchema < GraphQL::Schema
+      class ValuesInput < GraphQL::Schema::InputObject
+        argument :a, Int
+        argument :b, Int, required: false
+        argument :c, Int, required: false, default_value: nil
+      end
+
+      class ValuesMutation < GraphQL::Schema::Mutation
+        argument :values, ValuesInput
+        field :result, String
+        def resolve(values:)
+          {
+            result: "[a: #{values[:a].inspect}, #{values.key?(:a)}], [b: #{values[:b].inspect}, #{values.key?(:b)}], [c: #{values[:c].inspect}, #{values.key?(:c)}]"
+          }
+        end
+      end
+
+      class Mutation < GraphQL::Schema::Object
+        field :values, mutation: ValuesMutation
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :result, String do
+          argument :values, ValuesInput
+        end
+
+        def result(values:)
+          "[a: #{values[:a].inspect}, #{values.key?(:a)}], [b: #{values[:b].inspect}, #{values.key?(:b)}], [c: #{values[:c].inspect}, #{values.key?(:c)}]"
+        end
+      end
+
+      query(Query)
+      mutation(Mutation)
+    end
+
+    it "doesn't add keys for arguments that aren't present and uses default values for ones that are" do
+      result = MissingValuesSchema.execute("{ result(values: { a: 1 }) }")
+      assert_equal "[a: 1, true], [b: nil, false], [c: nil, true]", result["data"]["result"]
+
+      result = MissingValuesSchema.execute("mutation { values(values: { a: 1 }) { result } }")
+      assert_equal "[a: 1, true], [b: nil, false], [c: nil, true]", result["data"]["values"]["result"]
     end
   end
 end
