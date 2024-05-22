@@ -45,8 +45,8 @@ describe GraphQL::StaticValidation::FragmentTypesExist do
     fragment_def_error = {
       "message"=>"No such type Chese, so it can't be a fragment condition (Did you mean `Cheese`?)",
       "locations"=>[{"line"=>18, "column"=>5}],
-      "path"=>["query getCheese", "cheese", "... on Nothing"],
-      "extensions"=>{"code"=>"undefinedType", "typeName"=>"Nothing"}
+      "path"=>["fragment cf2"],
+      "extensions"=>{"code"=>"undefinedType", "typeName"=>"Chese"}
     }
     assert_includes(errors, fragment_def_error, "on fragment definitions")
   end
