@@ -55,7 +55,7 @@ describe GraphQL::StaticValidation::VariableDefaultValuesAreCorrectlyTyped do
 
     assert_equal false, res.key?("data")
     assert_equal 1, res["errors"].length
-    assert_equal "IDX isn't a defined input type (on $msg)", res["errors"][0]["message"]
+    assert_equal "IDX isn't a defined input type (on $msg) (Did you mean `ID`?)", res["errors"][0]["message"]
   end
 
   describe "null default values" do

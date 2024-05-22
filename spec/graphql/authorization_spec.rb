@@ -393,7 +393,7 @@ describe "GraphQL::Authorization" do
 
       error_queries.each do |name, q|
         hidden_res = auth_execute(q, context: { hide: true})
-        assert_equal ["Field '#{name}' doesn't exist on type 'Query'"], hidden_res["errors"].map { |e| e["message"] }
+        assert_equal ["Field '#{name}' doesn't exist on type 'Query' (Did you mean `hiddenConnection`?)"], hidden_res["errors"].map { |e| e["message"] }
 
         visible_res = auth_execute(q)
         # Both fields exist; the interface resolves to the object type, though

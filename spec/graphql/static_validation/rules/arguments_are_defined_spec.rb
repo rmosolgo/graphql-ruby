@@ -48,7 +48,7 @@ describe GraphQL::StaticValidation::ArgumentsAreDefined do
         "message"=>"Field '__type' doesn't accept argument 'nme' (Did you mean `name`?)",
         "locations"=>[{"line"=>3, "column"=>37}],
         "path"=>["query", "__type", "nme"],
-        "extensions"=>{"code"=>"argumentNotAccepted", "name"=>"__type", "typeName"=>"Field", "argumentName"=>"somethingInvalid"}
+        "extensions"=>{"code"=>"argumentNotAccepted", "name"=>"__type", "typeName"=>"Field", "argumentName"=>"nme"}
       })
     end
   end

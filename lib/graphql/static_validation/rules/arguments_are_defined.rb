@@ -11,7 +11,6 @@ module GraphQL
           kind_of_node = node_type(parent)
           error_arg_name = parent_name(parent, parent_defn)
           arg_names = context.warden.arguments(parent_defn).map(&:graphql_name)
-          pp [:Dym, node.name, arg_names]
           add_error(GraphQL::StaticValidation::ArgumentsAreDefinedError.new(
             "#{kind_of_node} '#{error_arg_name}' doesn't accept argument '#{node.name}'#{context.did_you_mean_suggestion(node.name, arg_names)}",
             nodes: node,

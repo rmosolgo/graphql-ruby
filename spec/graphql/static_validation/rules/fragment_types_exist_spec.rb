@@ -27,7 +27,7 @@ describe GraphQL::StaticValidation::FragmentTypesExist do
   "}
 
   it "finds non-existent types on fragments" do
-    assert_equal(2, errors.length)
+    assert_equal(3, errors.length)
     inline_fragment_error =  {
       "message"=>"No such type Something, so it can't be a fragment condition",
       "locations"=>[{"line"=>11, "column"=>5}],
