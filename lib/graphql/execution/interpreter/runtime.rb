@@ -99,7 +99,6 @@ module GraphQL
                     selection_response,
                     final_response,
                     nil,
-                    nil,
                   )
                 }
               end
@@ -196,7 +195,7 @@ module GraphQL
         NO_ARGS = GraphQL::EmptyObjects::EMPTY_HASH
 
         # @return [void]
-        def evaluate_selections(is_eager_selection, gathered_selections, selections_result, target_result, parent_object, runtime_state) # rubocop:disable Metrics/ParameterLists
+        def evaluate_selections(is_eager_selection, gathered_selections, selections_result, target_result, runtime_state) # rubocop:disable Metrics/ParameterLists
           runtime_state ||= get_current_runtime_state
           runtime_state.current_result_name = nil
           runtime_state.current_result = selections_result
@@ -211,7 +210,7 @@ module GraphQL
             gathered_selections.each do |result_name, field_ast_nodes_or_ast_node|
               @dataloader.append_job {
                 evaluate_selection(
-                  result_name, field_ast_nodes_or_ast_node, is_eager_selection, selections_result, parent_object
+                  result_name, field_ast_nodes_or_ast_node, is_eager_selection, selections_result
                 )
                 finished_jobs += 1
                 if target_result && finished_jobs == enqueued_jobs
@@ -232,7 +231,7 @@ module GraphQL
         end
 
         # @return [void]
-        def evaluate_selection(result_name, field_ast_nodes_or_ast_node, is_eager_field, selections_result, parent_object) # rubocop:disable Metrics/ParameterLists
+        def evaluate_selection(result_name, field_ast_nodes_or_ast_node, is_eager_field, selections_result) # rubocop:disable Metrics/ParameterLists
           return if selections_result.graphql_dead
           # As a performance optimization, the hash key will be a `Node` if
           # there's only one selection of the field. But if there are multiple
@@ -264,20 +263,20 @@ module GraphQL
             resolved_arguments = GraphQL::Execution::Interpreter::Arguments::EMPTY
             if field_defn.extras.size == 0
               evaluate_selection_with_resolved_keyword_args(
-                NO_ARGS, resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_object, is_eager_field, result_name, selections_result, parent_object, return_type, return_type.non_null?, runtime_state
+                NO_ARGS, resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_object, is_eager_field, result_name, selections_result, return_type, return_type.non_null?, runtime_state
               )
             else
-              evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_object, is_eager_field, result_name, selections_result, parent_object, return_type, runtime_state)
+              evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_object, is_eager_field, result_name, selections_result, return_type, runtime_state)
             end
           else
             @query.arguments_cache.dataload_for(ast_node, field_defn, owner_object) do |resolved_arguments|
               runtime_state = get_current_runtime_state # This might be in a different fiber
-              evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_object, is_eager_field, result_name, selections_result, parent_object, return_type, runtime_state)
+              evaluate_selection_with_args(resolved_arguments, field_defn, ast_node, field_ast_nodes, owner_object, is_eager_field, result_name, selections_result, return_type, runtime_state)
             end
           end
         end
 
-        def evaluate_selection_with_args(arguments, field_defn, ast_node, field_ast_nodes, object, is_eager_field, result_name, selection_result, parent_object, return_type, runtime_state)  # rubocop:disable Metrics/ParameterLists
+        def evaluate_selection_with_args(arguments, field_defn, ast_node, field_ast_nodes, object, is_eager_field, result_name, selection_result, return_type, runtime_state)  # rubocop:disable Metrics/ParameterLists
           after_lazy(arguments, field: field_defn, ast_node: ast_node, owner_object: object, arguments: arguments, result_name: result_name, result: selection_result, runtime_state: runtime_state) do |resolved_arguments, runtime_state|
             return_type_non_null = return_type.non_null?
             if resolved_arguments.is_a?(GraphQL::ExecutionError) || resolved_arguments.is_a?(GraphQL::UnauthorizedError)
@@ -319,7 +318,8 @@ module GraphQL
                   # to the keyword args hash _before_ freezing everything.
                   extra_args[:argument_details] = :__arguments_add_self
                 when :parent
-                  extra_args[:parent] = parent_object
+                  parent_result = selection_result.graphql_parent
+                  extra_args[:parent] = parent_result&.graphql_application_value&.object
                 else
                   extra_args[extra] = field_defn.fetch_extra(extra, context)
                 end
@@ -330,11 +330,11 @@ module GraphQL
               resolved_arguments.keyword_arguments
             end
 
-            evaluate_selection_with_resolved_keyword_args(kwarg_arguments, resolved_arguments, field_defn, ast_node, field_ast_nodes, object, is_eager_field, result_name, selection_result, parent_object, return_type, return_type_non_null, runtime_state)
+            evaluate_selection_with_resolved_keyword_args(kwarg_arguments, resolved_arguments, field_defn, ast_node, field_ast_nodes, object, is_eager_field, result_name, selection_result, return_type, return_type_non_null, runtime_state)
           end
         end
 
-        def evaluate_selection_with_resolved_keyword_args(kwarg_arguments, resolved_arguments, field_defn, ast_node, field_ast_nodes, object, is_eager_field, result_name, selection_result, parent_object, return_type, return_type_non_null, runtime_state)  # rubocop:disable Metrics/ParameterLists
+        def evaluate_selection_with_resolved_keyword_args(kwarg_arguments, resolved_arguments, field_defn, ast_node, field_ast_nodes, object, is_eager_field, result_name, selection_result, return_type, return_type_non_null, runtime_state)  # rubocop:disable Metrics/ParameterLists
           runtime_state.current_field = field_defn
           runtime_state.current_arguments = resolved_arguments
           runtime_state.current_result_name = result_name
@@ -616,7 +616,6 @@ module GraphQL
                     selections,
                     this_result,
                     final_result,
-                    owner_object.object,
                     runtime_state,
                   )
                 end
@@ -627,7 +626,7 @@ module GraphQL
             # This is true for objects, unions, and interfaces
             use_dataloader_job = !inner_type.unwrap.kind.input?
             inner_type_non_null = inner_type.non_null?
-            response_list = GraphQLResultArray.new(result_name, current_type, value, selection_result, is_non_null, next_selections)
+            response_list = GraphQLResultArray.new(result_name, current_type, owner_object, selection_result, is_non_null, next_selections)
             set_result(selection_result, result_name, response_list, true, is_non_null)
             idx = nil
             list_value = begin
