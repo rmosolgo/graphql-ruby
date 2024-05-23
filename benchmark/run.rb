@@ -303,23 +303,23 @@ module GraphQLBenchmark
       }
     GRAPHQL
 
-    Benchmark.ips do |x|
-      x.config(time: 10)
-      x.report("Querying for #{ProfileLargeResult::DATA.size} objects") {
-        schema.execute(document: document)
-      }
-    end
+    # Benchmark.ips do |x|
+    #   x.config(time: 10)
+    #   x.report("Querying for #{ProfileLargeResult::DATA.size} objects") {
+    #     schema.execute(document: document)
+    #   }
+    # end
 
-    StackProf.run(mode: :wall, interval: 1, out: "tmp/small.dump") do
-      schema.execute(document: document)
-    end
+    # StackProf.run(mode: :wall, interval: 1, out: "tmp/small.dump") do
+    #   schema.execute(document: document)
+    # end
 
-    result = StackProf.run(mode: :wall, interval: 1) do
-      schema.execute(document: document)
-    end
-    StackProf::Report.new(result).print_text
-
-    report = MemoryProfiler.report do
+    # result = StackProf.run(mode: :wall, interval: 1) do
+    #   schema.execute(document: document)
+    # end
+    # StackProf::Report.new(result).print_text
+    schema.execute(document: document)
+    report = MemoryProfiler.report(trace: [Proc]) do
       schema.execute(document: document)
     end
 

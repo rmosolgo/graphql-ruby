@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 require "graphql/execution/interpreter/runtime/graphql_result"
-
+require "graphql/execution/interpreter/run_queue"
 module GraphQL
   module Execution
     class Interpreter
@@ -88,41 +88,16 @@ module GraphQL
           st = get_current_runtime_state
           st.current_result = @response
 
+          run_queue = RunQueue.new(query)
+
           if runtime_object.nil?
             # Root .authorized? returned false.
             @response = nil
           else
-            call_method_on_directives(:resolve, runtime_object, root_operation.directives) do # execute query level directives
-              gathered_selections = gather_selections(runtime_object, root_type, root_operation.selections)
-              # This is kind of a hack -- `gathered_selections` is an Array if any of the selections
-              # require isolation during execution (because of runtime directives). In that case,
-              # make a new, isolated result hash for writing the result into. (That isolated response
-              # is eventually merged back into the main response)
-              #
-              # Otherwise, `gathered_selections` is a hash of selections which can be
-              # directly evaluated and the results can be written right into the main response hash.
-              tap_or_each(gathered_selections) do |selections, is_selection_array|
-                if is_selection_array
-                  selection_response = GraphQLResultHash.new(nil, root_type, runtime_object, nil, false)
-                  final_response = @response
-                else
-                  selection_response = @response
-                  final_response = nil
-                end
-
-                @dataloader.append_job {
-                  evaluate_selections(
-                    root_op_type == "mutation",
-                    selections,
-                    selection_response,
-                    final_response,
-                    nil,
-                    nil,
-                  )
-                }
-              end
-            end
+            run_queue.next(ResolveOperationDirectives.new(runtime_object, root_type, root_operation, @response))
           end
+
+          run_queue.run
           nil
         end
 

@@ -161,7 +161,8 @@ describe GraphQL::Execution::Interpreter do
       end
 
       def card(name:)
-        Box.new(value: CARDS.find { |c| c.name == name })
+        # Box.new(value: CARDS.find { |c| c.name == name })
+        CARDS.find { |c| c.name == name }
       end
 
       field :expansion, Expansion do
@@ -323,6 +324,7 @@ describe GraphQL::Execution::Interpreter do
     end
   end
 
+  focus
   it "runs a query" do
     query_string = <<-GRAPHQL
     query($expansion: String!, $id1: ID!, $id2: ID!){
@@ -360,6 +362,7 @@ describe GraphQL::Execution::Interpreter do
 
     vars = {expansion: "RAV", id1: "Dark Confidant", id2: "RAV"}
     result = InterpreterTest::Schema.execute(query_string, variables: vars)
+    pp result.to_h
     assert_equal ["BLACK"], result["data"]["card"]["colors"]
     assert_equal "Ravnica, City of Guilds", result["data"]["card"]["expansion"]["name"]
     assert_equal [{"name" => "Dark Confidant"}], result["data"]["card"]["expansion"]["cards"]
