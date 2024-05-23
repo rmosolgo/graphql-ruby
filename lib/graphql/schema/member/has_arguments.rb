@@ -263,14 +263,15 @@ module GraphQL
         # @return [Interpreter::Arguments, Execution::Lazy<Interpeter::Arguments>]
         def coerce_arguments(parent_object, values, context, queue = nil)
           queue_was_given = !!queue
-          queue = queue ? queue.spawn_child : GraphQL::Execution::Interpreter::ArgumentsCache::RunQueue.new
+          queue ||= GraphQL::Execution::Interpreter::ArgumentsCache::RunQueue.new(dataloader: context.dataloader)
+
           # Cache this hash to avoid re-merging it
           arg_defns = context.warden.arguments(self)
           total_args_count = arg_defns.size
 
           if total_args_count == 0
-            queue.steps << -> {
-              queue.terminate_with(GraphQL::Execution::Interpreter::Arguments::EMPTY)
+            queue.when_finished {
+              GraphQL::Execution::Interpreter::Arguments::EMPTY
             }
           else
             argument_values = {}
@@ -283,18 +284,20 @@ module GraphQL
                 end
               }
             end
-            queue.callbacks << -> {
-              finished_args = context.schema.after_any_lazies(argument_values.values) {
+            queue.when_finished do
+              context.schema.after_any_lazies(argument_values.values) {
                 GraphQL::Execution::Interpreter::Arguments.new(
                   argument_values: argument_values,
                 )
               }
-              queue.terminate_with(finished_args)
-            }
+            end
           end
 
           if !queue_was_given
-            queue.call
+            context.dataloader.run_isolated {
+              queue.call
+            }
+            queue.final_result
           end
         end
 

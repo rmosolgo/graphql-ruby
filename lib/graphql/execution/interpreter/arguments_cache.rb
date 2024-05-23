@@ -38,39 +38,69 @@ module GraphQL
         end
 
         class RunQueue
-          def initialize(parent: nil)
+          def initialize(dataloader:, parent: nil, &when_finished)
+            @dataloader = dataloader
             @parent = parent
             @steps = []
-            @callbacks = []
+            if block_given?
+              @when_finished = when_finished
+            end
           end
 
-          attr_reader :steps, :callbacks
+          attr_reader :steps, :callbacks, :parent, :final_result
 
           def call
             catch do |terminate_with_flag|
               @terminate_with_flag = terminate_with_flag
-              raise if @already_ran
+              raise "Was already called" if @already_ran
               @already_ran = true
-              final_result = nil
-              while (step = steps.shift)
-                final_result = step.call
-              end
-              while (cb = callbacks.shift) do
-                final_result = cb.call
-              end
-              final_result
+              @running_steps = 0
+              @dataloader.append_job {
+                while (step = steps.shift) || @running_steps > 0
+                  if step
+                    run_step(step, steps, running_steps)
+                  else
+                    @dataloader.yield
+                  end
+                end
+
+                @final_result = @when_finished.call(@final_result)
+                if parent
+                  parent.running_steps -= 1
+                end
+              }
             end
+            @final_result
+          end
+
+          def run_step(step, steps, running_steps)
+            @running_steps += 1
+            @dataloader.append_job {
+              @final_result = step.call
+              if !step.is_a?(self.class)
+                @running_steps -= 1
+              end
+            }
+          end
+
+          def when_finished(&handler)
+            @when_finished = handler
           end
 
           def terminate_with(arg)
+            @final_result = arg
             throw @terminate_with_flag, arg
           end
 
           def spawn_child
-            child_queue = self.class.new(parent: self)
+            child_queue = self.class.new(parent: self, dataloader: @dataloader)
             steps << child_queue
             child_queue
           end
+
+          protected
+
+          attr_accessor :running_steps
         end
 
         # @yield [Interpreter::Arguments, Lazy<Interpreter::Arguments>] The finally-loaded arguments
@@ -81,13 +111,17 @@ module GraphQL
             yield(args)
           else
             args_hash = self.class.prepare_args_hash(@query, ast_node)
-            queue = RunQueue.new
+            child_queue = nil
+            queue = RunQueue.new(dataloader: @query.context.dataloader) do
+              resolved_args = child_queue.final_result
+              arg_storage[ast_node] = resolved_args
+              block.call(resolved_args)
+            end
             queue.steps << -> {
-              argument_owner.coerce_arguments(parent_object, args_hash, @query.context, queue)
+              child_queue = queue.spawn_child
+              argument_owner.coerce_arguments(parent_object, args_hash, @query.context, child_queue)
             }
-            resolved_args = queue.call
-            arg_storage[ast_node] = resolved_args
-            block.call(resolved_args)
+            queue.call
           end
           nil
         end
