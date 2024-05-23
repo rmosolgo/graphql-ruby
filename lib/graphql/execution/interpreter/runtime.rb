@@ -94,7 +94,7 @@ module GraphQL
             # Root .authorized? returned false.
             @response = nil
           else
-            run_queue.next(ResolveOperationDirectives.new(runtime_object, root_type, root_operation, @response))
+            run_queue.next_step(ResolveOperationDirectives.new(runtime_object, root_type, root_operation, @response))
           end
 
           run_queue.run

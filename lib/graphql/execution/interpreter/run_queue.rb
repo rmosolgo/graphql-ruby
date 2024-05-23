@@ -11,8 +11,17 @@ module GraphQL
 
         attr_reader :query
 
-        def next(step)
+        def next_step(step)
           @steps << step
+        end
+
+        def after_lazy(maybe_lazy, into, next_step)
+          if @query.schema.lazy?(maybe_lazy)
+            step = ResolveLazy.new(maybe_lazy, into, next_step)
+            self.next_step(step)
+          else
+            self.next_step(next_step)
+          end
         end
 
         def run
@@ -20,6 +29,21 @@ module GraphQL
             step.call(self)
           end
           nil
+        end
+      end
+
+      class ResolveLazy
+        def initialize(value, into, next_step)
+          @value = value
+          @into = into
+          @next_step = next_step
+        end
+
+        def call(run_queue)
+          resolved_value = run_queue.query.schema.sync_lazy(@value)
+
+          @next_step.public_send(:"#{@into}=", resolved_value)
+          run_queue.next_step(@next_step)
         end
       end
 
@@ -34,7 +58,7 @@ module GraphQL
         def call(run_queue)
           directives = @root_operation.directives
           if directives.nil? || directives.empty?
-            run_queue.next(GatherSelections.new(@object, @type, @root_operation.selections, @response))
+            run_queue.next_step(GatherSelections.new(@object, @type, @root_operation.selections, @response))
           else
             # TODO
             run_directive(method_name, object, directives, 0, &block)
@@ -56,7 +80,7 @@ module GraphQL
           if gathered_selections.is_a?(Array)
             raise "TODO"
           else
-            run_queue.next(EvaluateSelections.new(gathered_selections, @graphql_response, @object))
+            run_queue.next_step(EvaluateSelections.new(gathered_selections, @graphql_response, @object))
           end
         end
 
@@ -150,9 +174,9 @@ module GraphQL
         def call(run_queue)
           @gathered_selections.each do |result_name, field_ast_nodes_or_ast_node|
             # TODO directives on each selection
-            run_queue.next(EvaluateSelection.new(result_name, field_ast_nodes_or_ast_node, @result, @object))
+            run_queue.next_step(EvaluateSelection.new(result_name, field_ast_nodes_or_ast_node, @result, @object))
           end
-          # run_queue.next(MergeResults)
+          # run_queue.next_step(MergeResults)
           # TODO clear cache
         end
       end
@@ -166,7 +190,6 @@ module GraphQL
         end
 
         def call(run_queue)
-          object = @object
           if @field_ast_nodes_or_ast_node.is_a?(Array)
             field_ast_nodes = @field_ast_nodes_or_ast_node
             ast_node = field_ast_nodes.first
@@ -236,7 +259,11 @@ module GraphQL
                 end
               end
 
-              run_queue.next(HandleResult.new(app_result, return_type, @result_name, @result, next_selections))
+              run_queue.after_lazy(
+                app_result,
+                :result_value,
+                HandleResult.new(app_result, return_type, @result_name, @result, next_selections)
+              )
             end
             # If this field is a root mutation field, immediately resolve
             # all of its child fields before moving on to the next root mutation field.
@@ -257,6 +284,8 @@ module GraphQL
           @next_selections = next_selections
         end
 
+        attr_writer :result_value
+
         def call(run_queue)
           next_type_non_null = @result_type.non_null?
           next_type = if next_type_non_null
@@ -270,16 +299,16 @@ module GraphQL
             @result.set_leaf(@result_name, @result_value)
           when "UNION", "INTERFACE"
             resolved_type, _resolved_value = run_queue.query.schema.resolve_type(next_type, @result_value, run_queue.query.context)
-            run_queue.next(HandleResult.new(@result_value, resolved_type, @result_name, @result, @next_selections))
+            run_queue.next_step(HandleResult.new(@result_value, resolved_type, @result_name, @result, @next_selections))
           when "OBJECT"
             type_obj = next_type.wrap(@result_value, run_queue.query.context)
             response_hash = GraphQL::Execution::Interpreter::Runtime::GraphQLResultHash.new(@result_name, next_type, type_obj, @result, next_type_non_null)
             @result.set_child_result(@result_name, response_hash)
-            run_queue.next(GatherSelections.new(type_obj, next_type, @next_selections, response_hash))
+            run_queue.next_step(GatherSelections.new(type_obj, next_type, @next_selections, response_hash))
           when "LIST"
             response_arr = GraphQL::Execution::Interpreter::Runtime::GraphQLResultArray.new(@result_name, next_type, @result_value, @result, next_type_non_null)
             @result.set_child_result(@result_name, response_arr)
-            run_queue.next(EvaluateList.new(response_arr, @result_value, next_type.of_type, @next_selections))
+            run_queue.next_step(EvaluateList.new(response_arr, @result_value, next_type.of_type, @next_selections))
           else
             raise "Unhandled TYPE_KIND #{next_type.kind.name}"
           end
@@ -296,7 +325,7 @@ module GraphQL
 
         def call(run_queue)
           @list.each_with_index do |item, idx|
-            run_queue.next(HandleResult.new(item, @inner_type, idx, @result, @selections))
+            run_queue.next_step(HandleResult.new(item, @inner_type, idx, @result, @selections))
           end
         end
       end
