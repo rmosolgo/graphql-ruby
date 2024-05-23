@@ -65,16 +65,6 @@ module GraphQL
           "#<#{self.class.name} response=#{@response.inspect}>"
         end
 
-        def tap_or_each(obj_or_array)
-          if obj_or_array.is_a?(Array)
-            obj_or_array.each do |item|
-              yield(item, true)
-            end
-          else
-            yield(obj_or_array, false)
-          end
-        end
-
         # This _begins_ the execution. Some deferred work
         # might be stored up in lazies.
         # @return [void]
@@ -84,7 +74,7 @@ module GraphQL
           root_type = schema.root_type_for_operation(root_op_type)
           runtime_object = root_type.wrap(query.root_value, context)
           runtime_object = schema.sync_lazy(runtime_object)
-          @response = GraphQLResultHash.new(nil, root_type, runtime_object, nil, false)
+          @response = GraphQLResultHash.new(nil, root_type, runtime_object, nil, false, root_operation.selections)
           st = get_current_runtime_state
           st.current_result = @response
 
@@ -93,17 +83,9 @@ module GraphQL
             @response = nil
           else
             call_method_on_directives(:resolve, runtime_object, root_operation.directives) do # execute query level directives
-              gathered_selections = gather_selections(runtime_object, root_type, root_operation.selections)
-              # This is kind of a hack -- `gathered_selections` is an Array if any of the selections
-              # require isolation during execution (because of runtime directives). In that case,
-              # make a new, isolated result hash for writing the result into. (That isolated response
-              # is eventually merged back into the main response)
-              #
-              # Otherwise, `gathered_selections` is a hash of selections which can be
-              # directly evaluated and the results can be written right into the main response hash.
-              tap_or_each(gathered_selections) do |selections, is_selection_array|
+              each_gathered_selections(@response) do |selections, is_selection_array|
                 if is_selection_array
-                  selection_response = GraphQLResultHash.new(nil, root_type, runtime_object, nil, false)
+                  selection_response = GraphQLResultHash.new(nil, root_type, runtime_object, nil, false, selections)
                   final_response = @response
                 else
                   selection_response = @response
@@ -124,6 +106,17 @@ module GraphQL
             end
           end
           nil
+        end
+
+        def each_gathered_selections(response_hash)
+          gathered_selections = gather_selections(response_hash.graphql_application_value, response_hash.graphql_result_type, response_hash.graphql_selections)
+          if gathered_selections.is_a?(Array)
+            gathered_selections.each do |item|
+              yield(item, true)
+            end
+          else
+            yield(gathered_selections, false)
+          end
         end
 
         def gather_selections(owner_object, owner_type, selections, selections_to_run = nil, selections_by_name = {})
@@ -607,21 +600,11 @@ module GraphQL
             after_lazy(object_proxy, ast_node: ast_node, field: field, owner_object: owner_object, arguments: arguments, trace: false, result_name: result_name, result: selection_result, runtime_state: runtime_state) do |inner_object, runtime_state|
               continue_value = continue_value(inner_object, field, is_non_null, ast_node, result_name, selection_result)
               if HALT != continue_value
-                response_hash = GraphQLResultHash.new(result_name, current_type, continue_value, selection_result, is_non_null)
+                response_hash = GraphQLResultHash.new(result_name, current_type, continue_value, selection_result, is_non_null, next_selections)
                 set_result(selection_result, result_name, response_hash, true, is_non_null)
-
-                gathered_selections = gather_selections(continue_value, current_type, next_selections)
-                # There are two possibilities for `gathered_selections`:
-                # 1. All selections of this object should be evaluated together (there are no runtime directives modifying execution).
-                #    This case is handled below, and the result can be written right into the main `response_hash` above.
-                #    In this case, `gathered_selections` is a hash of selections.
-                # 2. Some selections of this object have runtime directives that may or may not modify execution.
-                #    That part of the selection is evaluated in an isolated way, writing into a sub-response object which is
-                #    eventually merged into the final response. In this case, `gathered_selections` is an array of things to run in isolation.
-                #    (Technically, it's possible that one of those entries _doesn't_ require isolation.)
-                tap_or_each(gathered_selections) do |selections, is_selection_array|
+                each_gathered_selections(response_hash) do |selections, is_selection_array|
                   if is_selection_array
-                    this_result = GraphQLResultHash.new(result_name, current_type, continue_value, selection_result, is_non_null)
+                    this_result = GraphQLResultHash.new(result_name, current_type, continue_value, selection_result, is_non_null, selections)
                     final_result = response_hash
                   else
                     this_result = response_hash
@@ -644,7 +627,7 @@ module GraphQL
             # This is true for objects, unions, and interfaces
             use_dataloader_job = !inner_type.unwrap.kind.input?
             inner_type_non_null = inner_type.non_null?
-            response_list = GraphQLResultArray.new(result_name, current_type, response_list, selection_result, is_non_null)
+            response_list = GraphQLResultArray.new(result_name, current_type, value, selection_result, is_non_null, next_selections)
             set_result(selection_result, result_name, response_list, true, is_non_null)
             idx = nil
             list_value = begin
@@ -654,10 +637,10 @@ module GraphQL
                 idx += 1
                 if use_dataloader_job
                   @dataloader.append_job do
-                    resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type, was_scoped, runtime_state)
+                    resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, owner_type, was_scoped, runtime_state)
                   end
                 else
-                  resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type, was_scoped, runtime_state)
+                  resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, owner_type, was_scoped, runtime_state)
                 end
               end
 
@@ -688,7 +671,7 @@ module GraphQL
           end
         end
 
-        def resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, next_selections, owner_type, was_scoped, runtime_state) # rubocop:disable Metrics/ParameterLists
+        def resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, owner_type, was_scoped, runtime_state) # rubocop:disable Metrics/ParameterLists
           runtime_state.current_result_name = this_idx
           runtime_state.current_result = response_list
           call_method_on_directives(:resolve_each, owner_object, ast_node.directives) do
@@ -696,7 +679,7 @@ module GraphQL
             after_lazy(inner_value, ast_node: ast_node, field: field, owner_object: owner_object, arguments: arguments, result_name: this_idx, result: response_list, runtime_state: runtime_state) do |inner_inner_value, runtime_state|
               continue_value = continue_value(inner_inner_value, field, inner_type_non_null, ast_node, this_idx, response_list)
               if HALT != continue_value
-                continue_field(continue_value, owner_type, field, inner_type, ast_node, next_selections, false, owner_object, arguments, this_idx, response_list, was_scoped, runtime_state)
+                continue_field(continue_value, owner_type, field, inner_type, ast_node, response_list.graphql_selections, false, owner_object, arguments, this_idx, response_list, was_scoped, runtime_state)
               end
             end
           end

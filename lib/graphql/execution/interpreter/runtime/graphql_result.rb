@@ -5,7 +5,7 @@ module GraphQL
     class Interpreter
       class Runtime
         module GraphQLResult
-          def initialize(result_name, result_type, application_value, parent_result, is_non_null_in_parent)
+          def initialize(result_name, result_type, application_value, parent_result, is_non_null_in_parent, selections)
             @graphql_parent = parent_result
             @graphql_application_value = application_value
             @graphql_result_type = result_type
@@ -16,6 +16,7 @@ module GraphQL
             @graphql_is_non_null_in_parent = is_non_null_in_parent
             # Jump through some hoops to avoid creating this duplicate storage if at all possible.
             @graphql_metadata = nil
+            @graphql_selections = selections
           end
 
           def path
@@ -28,14 +29,14 @@ module GraphQL
           end
 
           attr_accessor :graphql_dead
-          attr_reader :graphql_parent, :graphql_result_name, :graphql_is_non_null_in_parent, :graphql_application_value, :graphql_result_type
+          attr_reader :graphql_parent, :graphql_result_name, :graphql_is_non_null_in_parent, :graphql_application_value, :graphql_result_type, :graphql_selections
 
           # @return [Hash] Plain-Ruby result data (`@graphql_metadata` contains Result wrapper objects)
           attr_accessor :graphql_result_data
         end
 
         class GraphQLResultHash
-          def initialize(_result_name, _result_type, _application_value, _parent_result, _is_non_null_in_parent)
+          def initialize(_result_name, _result_type, _application_value, _parent_result, _is_non_null_in_parent, _selections)
             super
             @graphql_result_data = {}
           end
@@ -123,7 +124,7 @@ module GraphQL
         class GraphQLResultArray
           include GraphQLResult
 
-          def initialize(_result_name, _result_type, _application_value, _parent_result, _is_non_null_in_parent)
+          def initialize(_result_name, _result_type, _application_value, _parent_result, _is_non_null_in_parent, _selections)
             super
             @graphql_result_data = []
           end
