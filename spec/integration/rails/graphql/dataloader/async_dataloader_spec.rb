@@ -9,11 +9,13 @@ describe GraphQL::Dataloader::AsyncDataloader do
 
       def get_fiber_variables
         vars = super
+        pp [:before_tables, StarWars::StarWarsModel.connection.tables]
         vars[:connected_to] = {
           role: StarWars::StarWarsModel.current_role,
           shard: StarWars::StarWarsModel.current_shard,
           prevent_writes: StarWars::StarWarsModel.current_preventing_writes
         }
+        pp [:connected_to, vars[:connected_to]]
         vars
       end
 
