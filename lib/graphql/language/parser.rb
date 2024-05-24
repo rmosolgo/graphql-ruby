@@ -356,7 +356,7 @@ module GraphQL
             name = parse_name
             directives = parse_directives
             input_fields_definition = parse_input_object_field_definitions
-            InputObjectTypeDefinition.new(pos: loc, definition_pos: defn_loc, description: desc, name: name, directives: directives, fields: input_fields_definition, filename: @filename, source: self)
+            InputObjectTypeDefinition.new(pos: loc, definition_pos: defn_loc, description: desc, comment: comment, name: name, directives: directives, fields: input_fields_definition, filename: @filename, source: self)
           else
             expect_one_of([:SCHEMA, :SCALAR, :TYPE, :ENUM, :INPUT, :UNION, :INTERFACE])
           end

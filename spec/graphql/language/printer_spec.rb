@@ -189,6 +189,7 @@ describe GraphQL::Language::Printer do
           """
           Input description
           """
+          # Input type comment
           input InputType {
             key: String!
             answer: Int = 42

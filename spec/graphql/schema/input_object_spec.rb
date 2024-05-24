@@ -18,6 +18,7 @@ describe GraphQL::Schema::InputObject do
     it "has it" do
       assert_equal "EnsembleInput", input_object.graphql_name
       assert_nil input_object.description
+      assert_equal "Ensemble input comment", input_object.comment
       assert_equal 1, input_object.arguments.size
     end
 
