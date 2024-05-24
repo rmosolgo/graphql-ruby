@@ -339,7 +339,7 @@ module GraphQL
             name = parse_name
             directives = parse_directives
             union_member_types = parse_union_members
-            UnionTypeDefinition.new(pos: loc, definition_pos: defn_loc, description: desc, name: name, directives: directives, types: union_member_types, filename: @filename, source: self)
+            UnionTypeDefinition.new(pos: loc, definition_pos: defn_loc, description: desc, comment: comment, name: name, directives: directives, types: union_member_types, filename: @filename, source: self)
           when :SCALAR
             advance_token
             name = parse_name

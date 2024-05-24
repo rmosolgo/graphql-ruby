@@ -13,6 +13,7 @@ describe GraphQL::Schema::Union do
   describe "type info" do
     it "has some" do
       assert_equal 2, union.possible_types.size
+      assert_equal "Performing act comment", union.comment
     end
   end
 

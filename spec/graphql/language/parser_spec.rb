@@ -195,8 +195,7 @@ createRecord(data: {
     |}
 
     let(:fragment) { document.definitions.first }
-
-    it "creates an anonymous fragment definition" do
+it "creates an anonymous fragment definition" do
       assert fragment.is_a?(GraphQL::Language::Nodes::FragmentDefinition)
       assert_nil fragment.name
       assert_equal 1, fragment.selections.length
@@ -207,7 +206,7 @@ createRecord(data: {
   end
 
   describe "string comment" do
-    it "is parsed for fields, enum, enum values and arguments" do
+    it "is parsed for fields, unions, enums, enum values and arguments" do
       document = subject.parse <<-GRAPHQL
       # type comment
       type Thing {
@@ -226,6 +225,9 @@ createRecord(data: {
 
       # Scalar comment
       scalar CustomScalar
+
+      # Union comment
+      union CustomUnion = TypeA | TypeB
       GRAPHQL
 
       thing_defn = document.definitions[0]
@@ -249,6 +251,9 @@ createRecord(data: {
 
       custom_scalar_defn = document.definitions[2]
       assert_equal "Scalar comment", custom_scalar_defn.comment
+
+      custom_union_defn = document.definitions[3]
+      assert_equal "Union comment", custom_union_defn.comment
     end
   end
 
