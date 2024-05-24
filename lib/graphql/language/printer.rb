@@ -255,7 +255,8 @@ module GraphQL
 
 
       def print_scalar_type_definition(scalar_type, extension: false)
-        extension ? print_string("extend ") : print_description(scalar_type) && print_comment(scalar_type)
+        extension ? print_string("extend ") : print_description_and_comment(scalar_type)
+
         print_string("scalar ")
         print_string(scalar_type.name)
         print_directives(scalar_type.directives)
@@ -329,7 +330,7 @@ module GraphQL
       end
 
       def print_interface_type_definition(interface_type, extension: false)
-        extension ? print_string("extend ") : print_description(interface_type)
+        extension ? print_string("extend ") : print_description_and_comment(interface_type)
         print_string("interface ")
         print_string(interface_type.name)
         print_implements(interface_type) if interface_type.interfaces.any?
@@ -338,7 +339,7 @@ module GraphQL
       end
 
       def print_union_type_definition(union_type, extension: false)
-        extension ? print_string("extend ") : print_description(union_type) && print_comment(union_type)
+        extension ? print_string("extend ") : print_description_and_comment(union_type)
         print_string("union ")
         print_string(union_type.name)
         print_directives(union_type.directives)
@@ -356,7 +357,7 @@ module GraphQL
       end
 
       def print_enum_type_definition(enum_type, extension: false)
-        extension ? print_string("extend ") : print_description(enum_type) && print_comment(enum_type)
+        extension ? print_string("extend ") : print_description_and_comment(enum_type)
         print_string("enum ")
         print_string(enum_type.name)
         print_directives(enum_type.directives)
@@ -561,6 +562,11 @@ module GraphQL
         else
           print_string(GraphQL::Language.serialize(node.to_s))
         end
+      end
+
+      def print_description_and_comment(node)
+        print_description(node)
+        print_comment(node)
       end
     end
   end

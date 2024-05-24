@@ -156,6 +156,7 @@ describe GraphQL::Language::Printer do
             annotatedField(arg: Type = "default" @onArg): Type @onField
           }
 
+          # Interface comment
           interface Bar {
             one: Type
             four(argument: String = "string"): String
