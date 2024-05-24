@@ -398,6 +398,7 @@ module GraphQL
 
       def print_directive_definition(directive)
         print_description(directive)
+        print_comment(directive)
         print_string("directive @")
         print_string(directive.name)
 

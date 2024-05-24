@@ -3,10 +3,15 @@ require "spec_helper"
 
 describe GraphQL::Schema::Directive do
   class MultiWord < GraphQL::Schema::Directive
+    comment "MultiWord comment"
   end
 
   it "uses a downcased class name" do
     assert_equal "multiWord", MultiWord.graphql_name
+  end
+
+  it "has a comment" do
+    assert_equal "MultiWord comment", MultiWord.comment
   end
 
   module DirectiveTest
@@ -248,19 +253,26 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
     end
 
     it "runs things twice when they're in with-directive and without-directive parts of the query" do
+      # TODO: Improve parser to support original inline comment positions
       query_str = <<-GRAPHQL
       {
-        t1: thing { name }      # name_resolved_count = 1
-        t2: thing { name }      # name_resolved_count = 2
+        # name_resolved_count = 1
+        t1: thing { name }
+        # name_resolved_count = 2
+        t2: thing { name }
 
         ... @countFields {
-          t1: thing { name }    # name_resolved_count = 3
-          t3: thing { name }    # name_resolved_count = 4
+          # name_resolved_count = 3
+          t1: thing { name }
+          # name_resolved_count = 4
+          t3: thing { name }
         }
 
-        t3: thing { name }      # name_resolved_count = 5
+        # name_resolved_count = 5
+        t3: thing { name }
         ... {
-          t2: thing { name @countFields } # This is merged back into `t2` above
+          # This is merged back into `t2` above
+          t2: thing { name @countFields }
         }
       }
       GRAPHQL

@@ -202,6 +202,7 @@ describe GraphQL::Language::Printer do
           """
           Directive description
           """
+          # Directive comment
           directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
           scalar AnnotatedScalar @onScalar

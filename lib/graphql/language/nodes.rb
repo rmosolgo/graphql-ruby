@@ -375,7 +375,7 @@ module GraphQL
       end
 
       class DirectiveDefinition < AbstractNode
-        attr_reader :description
+        attr_reader :comment, :description
         scalar_methods :name, :repeatable
         children_methods(
           arguments: Nodes::Argument,
