@@ -543,6 +543,8 @@ module Jazz
   end
 
   class EnsembleInput < GraphQL::Schema::InputObject
+    comment "Ensemble input comment"
+
     argument :name, String
   end
 
