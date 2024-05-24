@@ -318,7 +318,7 @@ module GraphQL
               advance_token
               directive_locations << DirectiveLocation.new(pos: pos, name: parse_name, filename: @filename, source: self)
             end
-            DirectiveDefinition.new(pos: loc, definition_pos: defn_loc, description: desc, name: name, arguments: arguments_definition, locations: directive_locations, repeatable: repeatable, filename: @filename, source: self)
+            DirectiveDefinition.new(pos: loc, definition_pos: defn_loc, description: desc, comment: comment, name: name, arguments: arguments_definition, locations: directive_locations, repeatable: repeatable, filename: @filename, source: self)
           when :TYPE
             advance_token
             name = parse_name

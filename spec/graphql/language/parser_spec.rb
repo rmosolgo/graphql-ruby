@@ -206,7 +206,7 @@ it "creates an anonymous fragment definition" do
   end
 
   describe "string comment" do
-    it "is parsed for fields, unions, interfaces, enums, enum values, inputs and arguments" do
+    it "is parsed for fields, unions, interfaces, enums, enum values, inputs, directives and arguments" do
       document = subject.parse <<-GRAPHQL
       # type comment
       type Thing {
@@ -239,6 +239,9 @@ it "creates an anonymous fragment definition" do
         # Custom input name comment
         name: String!
       }
+
+      # Directive comment
+      directive @skip(if: Boolean!) on FIELD
       GRAPHQL
 
       thing_defn = document.definitions[0]
@@ -275,6 +278,9 @@ it "creates an anonymous fragment definition" do
       input_field_defn = custom_input_defn.fields[0]
       assert_equal "name", input_field_defn.name
       assert_equal "Custom input name comment", input_field_defn.comment
+
+      custom_directive_defn = document.definitions[6]
+      assert_equal "Directive comment", custom_directive_defn.comment
     end
   end
 
