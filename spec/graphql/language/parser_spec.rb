@@ -206,7 +206,7 @@ it "creates an anonymous fragment definition" do
   end
 
   describe "string comment" do
-    it "is parsed for fields, unions, enums, enum values and arguments" do
+    it "is parsed for fields, unions, interfaces, enums, enum values and arguments" do
       document = subject.parse <<-GRAPHQL
       # type comment
       type Thing {
@@ -228,6 +228,11 @@ it "creates an anonymous fragment definition" do
 
       # Union comment
       union CustomUnion = TypeA | TypeB
+
+      # Interface comment
+      interface CustomInterface {
+        name: String!
+      }
       GRAPHQL
 
       thing_defn = document.definitions[0]
@@ -254,6 +259,9 @@ it "creates an anonymous fragment definition" do
 
       custom_union_defn = document.definitions[3]
       assert_equal "Union comment", custom_union_defn.comment
+
+      custom_interface_defn = document.definitions[4]
+      assert_equal "Interface comment", custom_interface_defn.comment
     end
   end
 

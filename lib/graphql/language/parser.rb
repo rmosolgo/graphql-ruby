@@ -333,7 +333,7 @@ module GraphQL
             interfaces = parse_implements
             directives = parse_directives
             fields_definition = parse_field_definitions
-            InterfaceTypeDefinition.new(pos: loc, definition_pos: defn_loc, description: desc, name: name, directives: directives, fields: fields_definition, interfaces: interfaces, filename: @filename, source: self)
+            InterfaceTypeDefinition.new(pos: loc, definition_pos: defn_loc, description: desc, comment: comment, name: name, directives: directives, fields: fields_definition, interfaces: interfaces, filename: @filename, source: self)
           when :UNION
             advance_token
             name = parse_name
