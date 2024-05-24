@@ -9,8 +9,7 @@ describe GraphQL::Dataloader::AsyncDataloader do
 
       def get_fiber_variables
         vars = super
-        pp [Fiber.current.object_id, :get_fiber_variables_tables, StarWars::StarWarsModel.connection.tables, StarWars::StarWarsModel.connection.current_database]
-        pp StarWars::StarWarsModel.connection.raw_connection.conninfo_hash
+        pp [Fiber.current.object_id, :get_fiber_variables_tables, StarWars::StarWarsModel.connection.tables, StarWars::StarWarsModel.connection_db_config]
         vars[:connected_to] = {
           role: StarWars::StarWarsModel.current_role,
           shard: StarWars::StarWarsModel.current_shard,
@@ -56,9 +55,7 @@ describe GraphQL::Dataloader::AsyncDataloader do
       end
 
       def inline_base_name(id:)
-        p [Fiber.current.object_id, :inline_base_name_tables, StarWars::StarWarsModel.connection.tables, StarWars::StarWarsModel.connection.current_database]
-        pp StarWars::StarWarsModel.connection.raw_connection.conninfo_hash
-
+        p [Fiber.current.object_id, :inline_base_name_tables, StarWars::StarWarsModel.connection.tables, StarWars::StarWarsModel.connection_db_config]
         StarWars::Base.where(id: id).first&.name
       end
 
@@ -79,7 +76,7 @@ describe GraphQL::Dataloader::AsyncDataloader do
 
   before {
     skip("Only test when isolation_level = :fiber") unless ENV["ISOLATION_LEVEL_FIBER"]
-    p [Fiber.current.object_id, :before_tables, StarWars::StarWarsModel.connection.tables, StarWars::StarWarsModel.connection.current_database]
+    p [Fiber.current.object_id, :before_tables, StarWars::StarWarsModel.connection.tables, StarWars::StarWarsModel.connection_db_config]
     if Rails::VERSION::STRING.start_with?("7.0")
       ActiveRecord.legacy_connection_handling = false
     end
