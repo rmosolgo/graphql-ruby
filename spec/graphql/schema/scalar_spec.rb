@@ -178,6 +178,8 @@ describe GraphQL::Schema::Scalar do
     let(:custom_scalar) {
       Class.new(GraphQL::Schema::Scalar) do
         graphql_name "BigInt"
+        comment "Custom scalar comment"
+
         def self.coerce_input(value, _ctx)
           value =~ /\d+/ ? Integer(value) : nil
         end
@@ -188,6 +190,10 @@ describe GraphQL::Schema::Scalar do
       end
     }
     let(:bignum) { 2 ** 128 }
+
+    it "allows comments" do
+      assert_equal("Custom scalar comment", custom_scalar.comment)
+    end
 
     it "is not a default scalar" do
       assert_equal(false, custom_scalar.default_scalar?)
