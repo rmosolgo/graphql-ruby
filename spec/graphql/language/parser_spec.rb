@@ -207,7 +207,7 @@ createRecord(data: {
   end
 
   describe "string comment" do
-    it "is parsed for fields, enum values and arguments" do
+    it "is parsed for fields, enum, enum values and arguments" do
       document = subject.parse <<-GRAPHQL
       # type comment
       type Thing {
@@ -218,6 +218,7 @@ createRecord(data: {
         ): Stuff @wow
       }
 
+      # Enum comment
       enum Color {
         # Enum value comment
         Blue
@@ -240,6 +241,7 @@ createRecord(data: {
       assert_equal ["yikes"], arg_defn.directives.map(&:name)
 
       color_defn = document.definitions[1]
+      assert_equal "Enum comment", color_defn.comment
       assert_equal "Enum value comment", color_defn.values[0].comment
     end
   end

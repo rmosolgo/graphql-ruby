@@ -350,7 +350,7 @@ module GraphQL
             name = parse_name
             directives = parse_directives
             enum_values_definition = parse_enum_value_definitions
-            Nodes::EnumTypeDefinition.new(pos: loc, definition_pos: defn_loc, description: desc, name: name, directives: directives, values: enum_values_definition, filename: @filename, source: self)
+            Nodes::EnumTypeDefinition.new(pos: loc, definition_pos: defn_loc, description: desc, comment: comment, name: name, directives: directives, values: enum_values_definition, filename: @filename, source: self)
           when :INPUT
             advance_token
             name = parse_name

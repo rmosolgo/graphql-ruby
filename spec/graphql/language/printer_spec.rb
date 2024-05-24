@@ -162,6 +162,7 @@ describe GraphQL::Language::Printer do
           """
           Enum description
           """
+          # Site comment
           enum Site {
             """
             Enum value description
