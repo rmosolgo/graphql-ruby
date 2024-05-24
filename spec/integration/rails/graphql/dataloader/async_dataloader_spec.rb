@@ -54,6 +54,8 @@ describe GraphQL::Dataloader::AsyncDataloader do
       end
 
       def inline_base_name(id:)
+        pp StarWars::Base.connection.tables
+        pp ActiveRecord::Base.connection.tables
         StarWars::Base.where(id: id).first&.name
       end
 
