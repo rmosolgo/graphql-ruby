@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require_relative "../spec_helper"
+require "spec_helper"
 
 describe "GraphQL::Directive" do
   let(:variables) { {"t" => true, "f" => false} }
