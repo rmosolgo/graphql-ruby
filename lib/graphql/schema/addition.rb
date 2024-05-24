@@ -126,6 +126,7 @@ module GraphQL
           @types[type.graphql_name] = type
         when GraphQL::Schema::Field, GraphQL::Schema::Argument
           orig_type = owner.type
+          unwrapped_t = type
           # Apply list/non-null wrapper as needed
           if orig_type.respond_to?(:of_type)
             transforms = []
@@ -142,6 +143,7 @@ module GraphQL
             transforms.reverse_each { |t| type = type.public_send(t) }
           end
           owner.type = type
+          references_to(unwrapped_t, from: owner)
         else
           raise "Unexpected update: #{owner.inspect} #{type.inspect}"
         end
@@ -164,7 +166,9 @@ module GraphQL
           @directives << type
           type.all_argument_definitions.each do |arg|
             arg_type = arg.type.unwrap
-            references_to(arg_type, from: arg)
+            if !arg_type.is_a?(GraphQL::Schema::LateBoundType)
+              references_to(arg_type, from: arg)
+            end
             path.push(arg.graphql_name)
             add_type(arg_type, owner: arg, late_types: late_types, path: path)
             path.pop
@@ -187,14 +191,18 @@ module GraphQL
             type.all_field_definitions.each do |field|
               name = field.graphql_name
               field_type = field.type.unwrap
-              references_to(field_type, from: field)
+              if !field_type.is_a?(GraphQL::Schema::LateBoundType)
+                references_to(field_type, from: field)
+              end
               path.push(name)
               add_type(field_type, owner: field, late_types: late_types, path: path)
               add_directives_from(field)
               field.all_argument_definitions.each do |arg|
                 add_directives_from(arg)
                 arg_type = arg.type.unwrap
-                references_to(arg_type, from: arg)
+                if !arg_type.is_a?(GraphQL::Schema::LateBoundType)
+                  references_to(arg_type, from: arg)
+                end
                 path.push(arg.graphql_name)
                 add_type(arg_type, owner: arg, late_types: late_types, path: path)
                 path.pop
@@ -209,7 +217,9 @@ module GraphQL
             type.all_argument_definitions.each do |arg|
               add_directives_from(arg)
               arg_type = arg.type.unwrap
-              references_to(arg_type, from: arg)
+              if !arg_type.is_a?(GraphQL::Schema::LateBoundType)
+                references_to(arg_type, from: arg)
+              end
               path.push(arg.graphql_name)
               add_type(arg_type, owner: arg, late_types: late_types, path: path)
               path.pop

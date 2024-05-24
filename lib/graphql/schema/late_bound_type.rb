@@ -25,6 +25,10 @@ module GraphQL
         @to_list_type ||= GraphQL::Schema::List.new(self)
       end
 
+      def to_type_signature
+        name
+      end
+
       def inspect
         "#<LateBoundType @name=#{name}>"
       end

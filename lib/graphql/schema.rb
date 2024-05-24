@@ -553,12 +553,8 @@ module GraphQL
       attr_writer :dataloader_class
 
       def references_to(to_type = nil, from: nil)
-        @own_references_to ||= {}
+        @own_references_to ||= {}.tap(&:compare_by_identity)
         if to_type
-          if !to_type.is_a?(String)
-            to_type = to_type.graphql_name
-          end
-
           if from
             refs = @own_references_to[to_type] ||= []
             refs << from
@@ -1529,15 +1525,15 @@ module GraphQL
       end
 
       # This is overridden in subclasses to check the inheritance chain
-      def get_references_to(type_name)
-        @own_references_to[type_name]
+      def get_references_to(type_defn)
+        @own_references_to[type_defn]
       end
     end
 
     module SubclassGetReferencesTo
-      def get_references_to(type_name)
-        own_refs = @own_references_to[type_name]
-        inherited_refs = superclass.references_to(type_name)
+      def get_references_to(type_defn)
+        own_refs = @own_references_to[type_defn]
+        inherited_refs = superclass.references_to(type_defn)
         if inherited_refs&.any?
           if own_refs&.any?
             own_refs + inherited_refs
