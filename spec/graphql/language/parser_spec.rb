@@ -223,6 +223,9 @@ createRecord(data: {
         # Enum value comment
         Blue
       }
+
+      # Scalar comment
+      scalar CustomScalar
       GRAPHQL
 
       thing_defn = document.definitions[0]
@@ -243,6 +246,9 @@ createRecord(data: {
       color_defn = document.definitions[1]
       assert_equal "Enum comment", color_defn.comment
       assert_equal "Enum value comment", color_defn.values[0].comment
+
+      custom_scalar_defn = document.definitions[2]
+      assert_equal "Scalar comment", custom_scalar_defn.comment
     end
   end
 

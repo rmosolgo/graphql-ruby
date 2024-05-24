@@ -344,7 +344,7 @@ module GraphQL
             advance_token
             name = parse_name
             directives = parse_directives
-            ScalarTypeDefinition.new(pos: loc, definition_pos: defn_loc, description: desc, name: name, directives: directives, filename: @filename, source: self)
+            ScalarTypeDefinition.new(pos: loc, definition_pos: defn_loc, description: desc, comment: comment, name: name, directives: directives, filename: @filename, source: self)
           when :ENUM
             advance_token
             name = parse_name

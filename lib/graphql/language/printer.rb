@@ -255,7 +255,7 @@ module GraphQL
 
 
       def print_scalar_type_definition(scalar_type, extension: false)
-        extension ? print_string("extend ") : print_description(scalar_type)
+        extension ? print_string("extend ") : print_description(scalar_type) && print_comment(scalar_type)
         print_string("scalar ")
         print_string(scalar_type.name)
         print_directives(scalar_type.directives)
