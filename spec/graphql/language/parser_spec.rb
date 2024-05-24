@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require_relative "../../spec_helper"
+require "spec_helper"
 
 describe GraphQL::Language::Parser do
   subject { GraphQL }
@@ -207,7 +207,7 @@ createRecord(data: {
   end
 
   describe "string comment" do
-    it "is parsed for fields and arguments" do
+    it "is parsed for fields, enum values and arguments" do
       document = subject.parse <<-GRAPHQL
       # type comment
       type Thing {
@@ -216,6 +216,11 @@ createRecord(data: {
           # arg comment
           "arg description" arg: Stuff @yikes
         ): Stuff @wow
+      }
+
+      enum Color {
+        # Enum value comment
+        Blue
       }
       GRAPHQL
 
@@ -233,6 +238,9 @@ createRecord(data: {
       assert_equal "arg comment", arg_defn.comment
       assert_equal "arg description", arg_defn.description
       assert_equal ["yikes"], arg_defn.directives.map(&:name)
+
+      color_defn = document.definitions[1]
+      assert_equal "Enum value comment", color_defn.values[0].comment
     end
   end
 

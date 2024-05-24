@@ -470,6 +470,7 @@ module GraphQL
 
       # Application of a named fragment in a selection
       class FragmentSpread < AbstractNode
+        attr_reader :comment
         scalar_methods :name
         children_methods(directives: GraphQL::Language::Nodes::Directive)
 
@@ -741,7 +742,7 @@ module GraphQL
       end
 
       class EnumValueDefinition < AbstractNode
-        attr_reader :description
+        attr_reader :comment, :description
         scalar_methods :name
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,

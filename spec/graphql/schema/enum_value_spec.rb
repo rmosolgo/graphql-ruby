@@ -35,4 +35,13 @@ describe GraphQL::Schema::EnumValue do
       assert_equal "No good!", enum_value.deprecation_reason
     end
   end
+
+  describe '#comment' do
+    it "can be written and read"  do
+      enum_value = GraphQL::Schema::EnumValue.new(:x, owner: nil, comment: 'Original comment')
+      assert_equal 'Original comment', enum_value.comment
+      enum_value.comment = 'New comment'
+      assert_equal "New comment", enum_value.comment
+    end
+  end
 end

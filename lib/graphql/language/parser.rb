@@ -384,6 +384,7 @@ module GraphQL
           while !at?(:RCURLY)
             v_loc = pos
             description = if at?(:STRING); string_value; end
+            comment = if at?(:COMMENT); value; end
             defn_loc = pos
             # Any identifier, but not true, false, or null
             enum_value = if at?(:TRUE) || at?(:FALSE) || at?(:NULL)
@@ -392,7 +393,7 @@ module GraphQL
               parse_name
             end
             v_directives = parse_directives
-            list << EnumValueDefinition.new(pos: v_loc, definition_pos: defn_loc, description: description, name: enum_value, directives: v_directives, filename: @filename, source: self)
+            list << EnumValueDefinition.new(pos: v_loc, definition_pos: defn_loc, description: description, comment: comment, name: enum_value, directives: v_directives, filename: @filename, source: self)
           end
           expect_token :RCURLY
           list

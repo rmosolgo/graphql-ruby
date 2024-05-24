@@ -50,6 +50,20 @@ module GraphQL
           end
         end
 
+        # Call this method to provide a new comment; OR
+        # call it without an argument to get the comment
+        # @param new_comment [String]
+        # @return [String]
+        def comment(new_comment = nil)
+          if new_comment
+            @comment = new_comment
+          elsif defined?(@comment)
+            @comment
+          else
+            @comment = nil
+          end
+        end
+
         # This pushes some configurations _down_ the inheritance tree,
         # in order to prevent repetitive lookups at runtime.
         module ConfigurationExtension
