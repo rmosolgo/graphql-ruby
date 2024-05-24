@@ -724,7 +724,7 @@ module GraphQL
       end
 
       class UnionTypeDefinition < AbstractNode
-        attr_reader :description, :types
+        attr_reader :comment, :description, :types
         scalar_methods :name
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,

@@ -125,6 +125,7 @@ describe GraphQL::Language::Printer do
           """
           Union description
           """
+          # Union comment
           union AnnotatedUnion @onUnion = A | B
 
           type Foo implements Bar & AnnotatedInterface {

@@ -338,7 +338,7 @@ module GraphQL
       end
 
       def print_union_type_definition(union_type, extension: false)
-        extension ? print_string("extend ") : print_description(union_type)
+        extension ? print_string("extend ") : print_description(union_type) && print_comment(union_type)
         print_string("union ")
         print_string(union_type.name)
         print_directives(union_type.directives)

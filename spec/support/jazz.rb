@@ -357,6 +357,8 @@ module Jazz
   end
 
   class PerformingAct < GraphQL::Schema::Union
+    comment "Performing act comment"
+
     type_membership_class PerformingActVisibility
     possible_types Musician
     possible_types Ensemble, visibility: :hide_ensemble
