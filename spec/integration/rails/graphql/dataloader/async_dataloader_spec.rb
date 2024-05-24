@@ -9,7 +9,7 @@ describe GraphQL::Dataloader::AsyncDataloader do
 
       def get_fiber_variables
         vars = super
-        pp [:before_tables, StarWars::StarWarsModel.connection.tables]
+        pp [Fiber.current.object_id, :get_fiber_variables_tables, StarWars::StarWarsModel.connection.tables]
         vars[:connected_to] = {
           role: StarWars::StarWarsModel.current_role,
           shard: StarWars::StarWarsModel.current_shard,
@@ -56,8 +56,7 @@ describe GraphQL::Dataloader::AsyncDataloader do
       end
 
       def inline_base_name(id:)
-        pp StarWars::Base.connection.tables
-        pp ActiveRecord::Base.connection.tables
+        p [Fiber.current.object_id, :inline_base_name_tables, StarWars::Base.connection.tables]
         StarWars::Base.where(id: id).first&.name
       end
 
@@ -78,6 +77,7 @@ describe GraphQL::Dataloader::AsyncDataloader do
 
   before {
     skip("Only test when isolation_level = :fiber") unless ENV["ISOLATION_LEVEL_FIBER"]
+    [Fiber.current.object_id, :before_tables, StarWars::StarWarsModel.connection.tables]
     if Rails::VERSION::STRING.start_with?("7.0")
       ActiveRecord.legacy_connection_handling = false
     end
