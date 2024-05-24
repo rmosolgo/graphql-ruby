@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require_relative "../../spec_helper"
+require "spec_helper"
 
 describe GraphQL::Language::Printer do
   let(:document) { GraphQL.parse(query_string) }
@@ -166,7 +166,13 @@ describe GraphQL::Language::Printer do
             """
             Enum value description
             """
+            # Desktop comment
             DESKTOP
+
+            """
+            Enum value description 2
+            """
+            # Mobile comment
             MOBILE
           }
 

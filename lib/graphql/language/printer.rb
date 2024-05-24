@@ -306,7 +306,7 @@ module GraphQL
 
         print_string("(\n")
         arguments.each_with_index do |arg, i|
-          print_comment(arg, indent: "  " + indent, first_in_block: i == 0)
+          print_comment(arg, indent: "  " + indent, skip_new_line: i == 0)
           print_description(arg, indent: "  " + indent, first_in_block: i == 0)
           print_string("  ")
           print_string(indent)
@@ -364,6 +364,7 @@ module GraphQL
           print_string(" {\n")
           enum_type.values.each.with_index do |value, i|
             print_description(value, indent: "  ", first_in_block: i == 0)
+            print_comment(value, indent: "  ", skip_new_line: value.description || i == 0)
             print_enum_value_definition(value)
           end
           print_string("}")
@@ -418,10 +419,10 @@ module GraphQL
         end
       end
 
-      def print_comment(node, indent: "", first_in_block: true)
+      def print_comment(node, indent: "", skip_new_line: true)
         return unless node.comment
 
-        print_string("\n") if indent != "" && !first_in_block
+        print_string("\n") if indent != "" && !skip_new_line
         print_string(GraphQL::Language::Comment.print(node.comment, indent: indent))
       end
 
@@ -439,7 +440,7 @@ module GraphQL
         i = 0
         fields.each do |field|
           print_description(field, indent: "  ", first_in_block: i == 0)
-          print_comment(field, indent: "  ", first_in_block: i == 0)
+          print_comment(field, indent: "  ", skip_new_line: i == 0)
           print_string("  ")
           print_field_definition(field)
           print_string("\n")
