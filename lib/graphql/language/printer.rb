@@ -356,7 +356,7 @@ module GraphQL
       end
 
       def print_enum_type_definition(enum_type, extension: false)
-        extension ? print_string("extend ") : print_description(enum_type)
+        extension ? print_string("extend ") : print_description(enum_type) && print_comment(enum_type)
         print_string("enum ")
         print_string(enum_type.name)
         print_directives(enum_type.directives)

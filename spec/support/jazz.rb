@@ -235,6 +235,7 @@ module Jazz
   end
 
   class Family < BaseEnum
+    comment "Pseudo TODO: Rename family to InstrumentFamily"
     description "Groups of musical instruments"
     # support string and symbol
     value "STRING", "Makes a sound by vibrating strings", value: :str, custom_setting: 1

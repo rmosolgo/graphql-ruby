@@ -14,6 +14,7 @@ describe GraphQL::Schema::Enum do
     it "tells about the definition" do
       assert_equal "Family", enum.graphql_name
       assert_equal 29, enum.description.length
+      assert_equal 46, enum.comment.length
       assert_equal 7, enum.values.size
     end
 
