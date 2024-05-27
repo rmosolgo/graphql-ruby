@@ -45,10 +45,9 @@ module GraphQL
           return
         end
         parent_types = context.warden.possible_types(parent_type.unwrap)
-        if !parent_types.include?(child_type) && (
-            (child_types = context.warden.possible_types(child_type.unwrap)) &&
-            child_types.none? { |c| parent_types.include?(c) }
-          )
+        child_types = context.warden.possible_types(child_type.unwrap)
+
+        if child_types.none? { |c| parent_types.include?(c) }
           name = node.respond_to?(:name) ? " #{node.name}" : ""
           add_error(GraphQL::StaticValidation::FragmentSpreadsArePossibleError.new(
             "Fragment#{name} on #{child_type.graphql_name} can't be spread inside #{parent_type.graphql_name}",

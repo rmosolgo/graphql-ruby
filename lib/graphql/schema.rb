@@ -339,6 +339,7 @@ module GraphQL
       # @return [Hash<String => Class>] A dictionary of type classes by their GraphQL name
       # @see get_type Which is more efficient for finding _one type_ by name, because it doesn't merge hashes.
       def types(context = GraphQL::Query::NullContext.instance)
+        build_types_hash
         all_types = non_introspection_types.merge(introspection_system.types)
         visible_types = {}
         all_types.each do |k, v|
@@ -1417,6 +1418,7 @@ module GraphQL
       def build_types_hash
         if !@built_types_hash
           @built_types_hash = true
+          return if self == GraphQL::Schema
           roots = [query, mutation, subscription].compact
           add_type_and_traverse(roots, root: true)
           non_roots = orphan_types + directives.values

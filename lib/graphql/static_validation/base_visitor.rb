@@ -170,24 +170,7 @@ module GraphQL
 
         def on_fragment_with_type(node)
           object_type = if node.type
-            next_type_name = node.type.name
-            prev_type = @object_types.last
-            looked_up_type = if prev_type.nil?
-              nil
-            elsif prev_type.graphql_name == next_type_name
-              prev_type
-            else
-              case prev_type.kind.name
-              when "UNION"
-                prev_type.possible_types.find { |t| t.graphql_name == next_type_name}
-              when "INTERFACE"
-                # TODO
-              when "OBJECT"
-                prev_type.interfaces.find { |i| i.graphql_name == next_type_name }
-                # TODO somehow check unions
-              end
-            end
-            looked_up_type || @context.warden.get_type(next_type_name)
+            @context.warden.get_type(node.type.name)
           else
             @object_types.last
           end
