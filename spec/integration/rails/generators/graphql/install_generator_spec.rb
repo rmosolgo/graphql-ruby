@@ -80,6 +80,10 @@ class DummySchema < GraphQL::Schema
 
   # Stop validating when it encounters this many errors:
   validate_max_errors(100)
+
+  if Rails.env.production?
+    eager_load_types!
+  end
 end
 RUBY
     assert_file "app/graphql/dummy_schema.rb", expected_schema
@@ -386,6 +390,10 @@ class DummySchema < GraphQL::Schema
 
   # Stop validating when it encounters this many errors:
   validate_max_errors(100)
+
+  if Rails.env.production?
+    eager_load_types!
+  end
 
   # Relay-style Object Identification:
 

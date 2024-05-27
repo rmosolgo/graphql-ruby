@@ -1435,11 +1435,11 @@ module GraphQL
       # @param t [Module, Array<Module>]
       # @return [void]
       def add_type_and_traverse(t, root:)
+        new_types = Array(t)
         if root
           @root_types ||= []
-          @root_types << t
+          @root_types.concat(new_types)
         end
-        new_types = Array(t)
         addition = Schema::Addition.new(schema: self, own_types: own_types, new_types: new_types)
         addition.types.each do |name, types_entry| # rubocop:disable Development/ContextIsPassedCop -- build-time, not query-time
           if (prev_entry = own_types[name])
