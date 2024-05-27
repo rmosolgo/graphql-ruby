@@ -89,11 +89,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-      - gemfile: gemfiles/rails_master.gemfile
-        ruby: 3.3
-        isolation_level_fiber: 1
-      - gemfile: gemfiles/rails_7.1_postgresql.gemfile
-        ruby: 3.3
+        include:
+        - gemfile: gemfiles/rails_master.gemfile
+          ruby: 3.3
+          isolation_level_fiber: 1
+        - gemfile: gemfiles/rails_7.1_postgresql.gemfile
+          ruby: 3.3
     services:
       postgres:
         image: postgres:latest
