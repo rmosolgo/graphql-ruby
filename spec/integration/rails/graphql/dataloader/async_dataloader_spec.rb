@@ -21,6 +21,7 @@ describe GraphQL::Dataloader::AsyncDataloader do
       def set_fiber_variables(vars)
         connection_config = vars.delete(:connected_to)
         StarWars::StarWarsModel.connecting_to(**connection_config)
+        pp [Fiber.current.object_id, :SET_fiber_variables_tables, StarWars::StarWarsModel.connection.tables, StarWars::StarWarsModel.connection_db_config]
         super(vars)
       end
     end
