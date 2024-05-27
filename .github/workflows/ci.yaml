@@ -50,10 +50,6 @@ jobs:
             ruby: 3.1
           - gemfile: gemfiles/rails_7.0.gemfile
             ruby: 3.2
-          - gemfile: gemfiles/rails_7.0.gemfile
-            ruby: 3.2
-          - gemfile: gemfiles/rails_7.1.gemfile
-            ruby: 3.3
           - gemfile: gemfiles/rails_7.1.gemfile
             ruby: 3.3
           - gemfile: gemfiles/rails_master.gemfile
@@ -62,11 +58,14 @@ jobs:
           - gemfile: gemfiles/rails_master.gemfile
             ruby: 3.3
             graphql_reject_numbers_followed_by_names: 1
+            isolation_level_fiber: 1
     runs-on: ubuntu-latest
     steps:
     - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > $GITHUB_ENV
     - run: echo GRAPHQL_REJECT_NUMBERS_FOLLOWED_BY_NAMES=1 > $GITHUB_ENV
       if: ${{ !!matrix.graphql_reject_numbers_followed_by_names }}
+    - run: echo ISOLATION_LEVEL_FIBER=1 > $GITHUB_ENV
+      if: ${{ !!matrix.isolation_level_fiber }}
     - uses: actions/checkout@v4
     - uses: ruby/setup-ruby@v1
       with:
