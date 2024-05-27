@@ -31,5 +31,9 @@ class <%= schema_name %> < GraphQL::Schema
 
   # Stop validating when it encounters this many errors:
   validate_max_errors(100)
+
+  if Rails.env.production?
+    eager_load_types!
+  end
 end
 <% end -%>

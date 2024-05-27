@@ -135,6 +135,7 @@ module GraphQL
               query query_root_type
               mutation mutation_root_type
               subscription subscription_root_type
+              add_type_and_traverse([query_root_type, mutation_root_type, subscription_root_type].compact, root: true)
             rescue Schema::UnresolvedLateBoundTypeError  => err
               type_name = err.type.name
               err_backtrace =  err.backtrace
@@ -151,7 +152,9 @@ module GraphQL
               end
             end
 
-            directives directives.values
+            dirs = directives.values
+            directives(dirs)
+            add_type_and_traverse(dirs, root: false)
 
             if schema_definition
               ast_node(schema_definition)

@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 require "spec_helper"
-require_relative "../subscriptions_spec"
 
 describe GraphQL::Execution::Interpreter do
   module InterpreterTest

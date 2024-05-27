@@ -289,6 +289,7 @@ module GraphQL
       # @param context [Hash]
       # @return [String]
       def to_definition(context: {})
+        build_types_hash
         GraphQL::Schema::Printer.print_schema(self, context: context)
       end
 
@@ -362,9 +363,14 @@ module GraphQL
         visible_types
       end
 
+      def eager_load_types!
+        build_types_hash
+      end
+
       # @param type_name [String]
       # @return [Module, nil] A type, or nil if there's no type called `type_name`
       def get_type(type_name, context = GraphQL::Query::NullContext.instance)
+        build_types_hash
         local_entry = own_types[type_name]
         type_defn = case local_entry
         when nil
@@ -429,7 +435,6 @@ module GraphQL
             raise GraphQL::Error, "Second definition of `query(...)` (#{new_query_object.inspect}) is invalid, already configured with #{@query_object.inspect}"
           else
             @query_object = new_query_object
-            add_type_and_traverse(new_query_object, root: true)
             nil
           end
         else
@@ -443,7 +448,6 @@ module GraphQL
             raise GraphQL::Error, "Second definition of `mutation(...)` (#{new_mutation_object.inspect}) is invalid, already configured with #{@mutation_object.inspect}"
           else
             @mutation_object = new_mutation_object
-            add_type_and_traverse(new_mutation_object, root: true)
             nil
           end
         else
@@ -458,7 +462,6 @@ module GraphQL
           else
             @subscription_object = new_subscription_object
             add_subscription_extension_if_necessary
-            add_type_and_traverse(new_subscription_object, root: true)
             nil
           end
         else
@@ -502,6 +505,7 @@ module GraphQL
       # @return [Array<Module>] Possible types for `type`, if it's given.
       def possible_types(type = nil, context = GraphQL::Query::NullContext.instance)
         if type
+          build_types_hash
           # TODO duck-typing `.possible_types` would probably be nicer here
           if type.kind.union?
             type.possible_types(context: context)
@@ -553,7 +557,10 @@ module GraphQL
       attr_writer :dataloader_class
 
       def references_to(to_type = nil, from: nil)
-        @own_references_to ||= {}.tap(&:compare_by_identity)
+        if !defined?(@own_references_to)
+          @own_references_to = {}.tap(&:compare_by_identity)
+          build_types_hash
+        end
         if to_type
           if from
             refs = @own_references_to[to_type] ||= []
@@ -888,7 +895,6 @@ module GraphQL
               To add other types to your schema, you might want `extra_types`: https://graphql-ruby.org/schema/definition.html#extra-types
             ERR
           end
-          add_type_and_traverse(new_orphan_types, root: false)
           own_orphan_types.concat(new_orphan_types.flatten)
         end
 
@@ -1143,7 +1149,8 @@ module GraphQL
       # @param new_directive [Class]
       # @return void
       def directive(new_directive)
-        add_type_and_traverse(new_directive, root: false)
+        own_directives[new_directive.graphql_name] = new_directive
+        nil
       end
 
       def default_directives
@@ -1406,6 +1413,16 @@ module GraphQL
       end
 
       private
+
+      def build_types_hash
+        if !@built_types_hash
+          @built_types_hash = true
+          roots = [query, mutation, subscription].compact
+          add_type_and_traverse(roots, root: true)
+          non_roots = orphan_types + directives.values
+          add_type_and_traverse(non_roots, root: false)
+        end
+      end
 
       def add_trace_options_for(mode, new_options)
         t_opts = trace_options_for(mode)

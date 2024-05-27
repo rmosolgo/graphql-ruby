@@ -311,7 +311,6 @@ module GraphQL
             end
           end
         end
-
         @visible_and_reachable_type[type_defn]
       end
 
