@@ -50,14 +50,8 @@ jobs:
             ruby: 3.1
           - gemfile: gemfiles/rails_7.0.gemfile
             ruby: 3.2
-          - gemfile: gemfiles/rails_7.0.gemfile
-            ruby: 3.2
-            isolation_level_fiber: 1
           - gemfile: gemfiles/rails_7.1.gemfile
             ruby: 3.3
-          - gemfile: gemfiles/rails_7.1.gemfile
-            ruby: 3.3
-            isolation_level_fiber: 1
           - gemfile: gemfiles/rails_master.gemfile
             ruby: 3.3
             graphql_reject_numbers_followed_by_names: 1
@@ -93,6 +87,14 @@ jobs:
       working-directory: ./javascript_client
   postgres_test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+        - gemfile: gemfiles/rails_master.gemfile
+          ruby: 3.3
+          isolation_level_fiber: 1
+        - gemfile: gemfiles/rails_7.1_postgresql.gemfile
+          ruby: 3.3
     services:
       postgres:
         image: postgres:latest
@@ -109,10 +111,12 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-    - run: echo BUNDLE_GEMFILE='gemfiles/rails_7.1_postgresql.gemfile' > $GITHUB_ENV
+    - run: echo BUNDLE_GEMFILE='' > $GITHUB_ENV
     - run: echo DATABASE='POSTGRESQL' > $GITHUB_ENV
     - run: echo PGPASSWORD='postgres' > $GITHUB_ENV
     - run: echo GRAPHQL_CPARSER=1 > $GITHUB_ENV
+    - run: echo ISOLATION_LEVEL_FIBER=1 > $GITHUB_ENV
+      if: ${{ !!matrix.isolation_level_fiber }}
     - uses: actions/checkout@v4
     - uses: ruby/setup-ruby@v1
       with:

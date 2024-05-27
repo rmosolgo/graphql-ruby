@@ -43,11 +43,12 @@ describe GraphQL::Schema do
   describe "#references_to" do
     it "returns a list of Field and Arguments of that type" do
       cow_field = schema.get_field("Query", "cow")
-      assert_equal [cow_field], schema.references_to("Cow")
+      cow_t = schema.get_type("Cow")
+      assert_equal [cow_field], schema.references_to(cow_t)
     end
 
     it "returns an empty list when type is not referenced by any field or argument" do
-      assert_equal [], schema.references_to("Goat")
+      assert_equal [], schema.references_to(Jazz::InstrumentType)
     end
   end
 

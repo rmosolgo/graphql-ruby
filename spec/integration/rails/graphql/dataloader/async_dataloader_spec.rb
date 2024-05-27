@@ -74,15 +74,6 @@ describe GraphQL::Dataloader::AsyncDataloader do
 
   before {
     skip("Only test when isolation_level = :fiber") unless ENV["ISOLATION_LEVEL_FIBER"]
-    if Rails::VERSION::STRING.start_with?("7.0")
-      ActiveRecord.legacy_connection_handling = false
-    end
-  }
-
-  after {
-    if Rails::VERSION::STRING.start_with?("7.0")
-      ActiveRecord.legacy_connection_handling = true
-    end
   }
 
   it "cleans up database connections" do

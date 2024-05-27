@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 if testing_rails?
   # Remove the old sqlite database
+  puts "Removing _test_.db"
   `rm -f ./_test_.db`
 
   if ActiveRecord.respond_to?(:async_query_executor=) # Rails 7.1+
