@@ -482,8 +482,8 @@ interface Timestamped implements Node {
     let(:interface) { Dummy::Edible }
 
     it "has possible types" do
-      expected_defns = [Dummy::Cheese, Dummy::Milk, Dummy::Honey, Dummy::Aspartame]
-      assert_equal(expected_defns, Dummy::Schema.possible_types(interface))
+      expected_defns = [Dummy::Cheese, Dummy::Milk, Dummy::Honey, Dummy::Aspartame].sort_by(&:graphql_name)
+      assert_equal(expected_defns, Dummy::Schema.possible_types(interface).sort_by(&:graphql_name))
     end
 
     describe "query evaluation" do
