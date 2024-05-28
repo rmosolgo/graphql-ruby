@@ -175,6 +175,7 @@ module GraphQL
       end
 
       def print_operation_definition(operation_definition, indent: "")
+        print_comment(operation_definition)
         print_string(indent)
         print_string(operation_definition.operation_type)
         if operation_definition.name

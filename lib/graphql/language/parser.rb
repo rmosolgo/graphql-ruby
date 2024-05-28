@@ -112,6 +112,11 @@ module GraphQL
       end
 
       def definition
+        comment = nil
+        if token_name == :COMMENT
+          comment = value
+        end
+
         case token_name
         when :FRAGMENT
           loc = pos
@@ -181,6 +186,7 @@ module GraphQL
             pos: op_loc,
             operation_type: op_type,
             name: op_name,
+            comment: comment,
             variables: variable_definitions,
             directives: directives,
             selections: selection_set,
@@ -269,7 +275,7 @@ module GraphQL
         else
           loc = pos
           desc = at?(:STRING) ? string_value : nil
-          comment = at?(:COMMENT) ? value : nil
+          comment = at?(:COMMENT) ? value : comment
           defn_loc = pos
           case token_name
           when :SCHEMA
