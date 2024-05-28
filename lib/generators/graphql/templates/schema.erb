@@ -5,7 +5,6 @@ class <%= schema_name %> < GraphQL::Schema
   if Rails.env.development?
     defer_loading_types # for faster application boot
   end
-  query("Types::QueryType")
 <% if options[:batch] %>
   # GraphQL::Batch setup:
   use GraphQL::Batch
