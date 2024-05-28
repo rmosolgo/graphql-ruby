@@ -20,7 +20,7 @@ module Graphql
 
         in_root do
           if File.exist?(schema_file_path)
-            inject_into_file schema_file_path, "  #{type}(Types::#{name})\n", after: sentinel, verbose: false, force: false
+            inject_into_file schema_file_path, "  #{type}(\"Types::#{name}\")\n", after: sentinel, verbose: false, force: false
           end
         end
       end

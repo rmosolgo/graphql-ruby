@@ -53,8 +53,11 @@ class GraphQLGeneratorsInstallGeneratorTest < Rails::Generators::TestCase
 # frozen_string_literal: true
 
 class DummySchema < GraphQL::Schema
-  mutation(Types::MutationType)
-  query(Types::QueryType)
+  if Rails.env.development?
+    defer_loading_types # for faster application boot
+  end
+  mutation("Types::MutationType")
+  query("Types::QueryType")
 
   # For batch-loading (see https://graphql-ruby.org/dataloader/overview.html)
   use GraphQL::Dataloader
@@ -80,10 +83,6 @@ class DummySchema < GraphQL::Schema
 
   # Stop validating when it encounters this many errors:
   validate_max_errors(100)
-
-  if Rails.env.production?
-    eager_load_types!
-  end
 end
 RUBY
     assert_file "app/graphql/dummy_schema.rb", expected_schema
@@ -363,8 +362,11 @@ RUBY
   EXPECTED_RELAY_BATCH_SCHEMA = '# frozen_string_literal: true
 
 class DummySchema < GraphQL::Schema
-  mutation(Types::MutationType)
-  query(Types::QueryType)
+  if Rails.env.development?
+    defer_loading_types # for faster application boot
+  end
+  mutation("Types::MutationType")
+  query("Types::QueryType")
 
   # GraphQL::Batch setup:
   use GraphQL::Batch
@@ -390,10 +392,6 @@ class DummySchema < GraphQL::Schema
 
   # Stop validating when it encounters this many errors:
   validate_max_errors(100)
-
-  if Rails.env.production?
-    eager_load_types!
-  end
 
   # Relay-style Object Identification:
 

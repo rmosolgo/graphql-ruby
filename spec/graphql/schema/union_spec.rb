@@ -288,7 +288,6 @@ describe GraphQL::Schema::Union do
     err2 = assert_raises ArgumentError do
       Class.new(GraphQL::Schema) do
         query(object_type)
-        eager_load_types!
       end
     end
 

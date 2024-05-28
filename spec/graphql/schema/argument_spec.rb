@@ -400,7 +400,6 @@ describe GraphQL::Schema::Argument do
       err = assert_raises ArgumentError do
         Class.new(GraphQL::Schema) do
           query(query_type)
-          eager_load_types!
         end
       end
 
@@ -430,7 +429,6 @@ describe GraphQL::Schema::Argument do
       err = assert_raises ArgumentError do
         Class.new(InvalidArgumentTypeSchema) do
           query(InvalidArgumentTypeSchema::InvalidArgumentObject)
-          eager_load_types!
         end
       end
 
@@ -440,7 +438,6 @@ describe GraphQL::Schema::Argument do
       err = assert_raises ArgumentError do
         Class.new(InvalidArgumentTypeSchema) do
           query(InvalidArgumentTypeSchema::InvalidLazyArgumentObject)
-          eager_load_types!
         end
       end
 
@@ -461,7 +458,6 @@ describe GraphQL::Schema::Argument do
       err = assert_raises GraphQL::Schema::Argument::InvalidDefaultValueError do
         Class.new(GraphQL::Schema) do
           query(query_type)
-          eager_load_types!
         end
       end
       expected_message = "`Query.f1.arg1` has an invalid default value: `nil` isn't accepted by `Int!`; update the default value or the argument type."
@@ -484,7 +480,6 @@ describe GraphQL::Schema::Argument do
       err = assert_raises GraphQL::Schema::Argument::InvalidDefaultValueError do
         Class.new(GraphQL::Schema) do
           query(query_type)
-          eager_load_types!
         end
       end
 
@@ -508,7 +503,6 @@ describe GraphQL::Schema::Argument do
       err = assert_raises GraphQL::Schema::Argument::InvalidDefaultValueError do
         Class.new(GraphQL::Schema) do
           directive(localize)
-          eager_load_types!
         end
       end
 
@@ -544,8 +538,7 @@ describe GraphQL::Schema::Argument do
 
       err2 = assert_raises GraphQL::Schema::Argument::InvalidDefaultValueError do
         schema = GraphQL::Schema.from_definition(directive_schema_str)
-        schema.eager_load_types!
-        puts schema.to_definition
+        schema.to_definition
       end
       expected_message = "`@localize.lang` has an invalid default value: `\"ZH\"` isn't accepted by `Language`; update the default value or the argument type."
       assert_equal expected_message, err2.message

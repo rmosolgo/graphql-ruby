@@ -436,6 +436,9 @@ module GraphQL
             raise GraphQL::Error, "Second definition of `query(...)` (#{new_query_object.inspect}) is invalid, already configured with #{@query_object.inspect}"
           else
             @query_object = new_query_object
+            if !defer_loading_types?
+              add_type_and_traverse(new_query_object, root: true)
+            end
             nil
           end
         else
@@ -449,6 +452,9 @@ module GraphQL
             raise GraphQL::Error, "Second definition of `mutation(...)` (#{new_mutation_object.inspect}) is invalid, already configured with #{@mutation_object.inspect}"
           else
             @mutation_object = new_mutation_object
+            if !defer_loading_types?
+              add_type_and_traverse(new_mutation_object, root: true)
+            end
             nil
           end
         else
@@ -462,6 +468,9 @@ module GraphQL
             raise GraphQL::Error, "Second definition of `subscription(...)` (#{new_subscription_object.inspect}) is invalid, already configured with #{@subscription_object.inspect}"
           else
             @subscription_object = new_subscription_object
+            if !defer_loading_types?
+              add_type_and_traverse(new_subscription_object, root: true)
+            end
             add_subscription_extension_if_necessary
             nil
           end
@@ -896,6 +905,9 @@ module GraphQL
               To add other types to your schema, you might want `extra_types`: https://graphql-ruby.org/schema/definition.html#extra-types
             ERR
           end
+          if !defer_loading_types?
+            add_type_and_traverse(new_orphan_types, root: false)
+          end
           own_orphan_types.concat(new_orphan_types.flatten)
         end
 
@@ -1151,6 +1163,9 @@ module GraphQL
       # @return void
       def directive(new_directive)
         own_directives[new_directive.graphql_name] = new_directive
+        if !defer_loading_types?
+          add_type_and_traverse(new_directive, root: false)
+        end
         nil
       end
 
@@ -1411,6 +1426,16 @@ module GraphQL
         else
           yield maybe_lazies
         end
+      end
+
+      def defer_loading_types?
+        defined?(@defer_loading_types) ? @defer_loading_types : (superclass.respond_to?(:defer_loading_types?) ? superclass.defer_loading_types? : false)
+      end
+
+      # Call this method to set (or unset) lazy-loading types.
+      # @return [void]
+      def defer_loading_types(new_setting = true )
+        @defer_loading_types = new_setting
       end
 
       private
