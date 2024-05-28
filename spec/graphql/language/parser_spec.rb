@@ -282,6 +282,20 @@ it "creates an anonymous fragment definition" do
       custom_directive_defn = document.definitions[6]
       assert_equal "Directive comment", custom_directive_defn.comment
     end
+
+    it "is parsed for anonymous query" do
+      query_str = <<-GRAPHQL
+        # Anonymous query comment
+        query ($sizes: [ImageSize]) {
+          imageUrl(sizes: $sizes)
+        }
+      GRAPHQL
+
+      doc = subject.parse(query_str)
+      field = doc.definitions.first.selections.first
+      assert_equal 1, field.arguments.length
+      assert_equal "Anonymous query comment", doc.definitions.first.comment
+    end
   end
 
   describe "string description" do

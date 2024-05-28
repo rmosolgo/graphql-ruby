@@ -561,6 +561,7 @@ module GraphQL
       # May be anonymous or named.
       # May be explicitly typed (eg `mutation { ... }`) or implicitly a query (eg `{ ... }`).
       class OperationDefinition < AbstractNode
+        attr_accessor :comment
         scalar_methods :operation_type, :name
         children_methods({
           variables: GraphQL::Language::Nodes::VariableDefinition,
