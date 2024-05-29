@@ -32,7 +32,7 @@ module GraphQL
         end
 
         Class.new(GraphQL::Schema) do
-          add_type_and_traverse(types.values, root: false)
+          add_types_and_traverse(types: types.values)
           orphan_types(types.values.select { |t| t.kind.object? })
           directives(directives)
           description(schema["description"])
