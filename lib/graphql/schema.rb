@@ -437,7 +437,7 @@ module GraphQL
           else
             @query_object = new_query_object
             if !defer_loading_types?
-              add_type_and_traverse(new_query_object, root: true)
+              add_types_and_traverse(query: new_query_object)
             end
             nil
           end
@@ -453,7 +453,7 @@ module GraphQL
           else
             @mutation_object = new_mutation_object
             if !defer_loading_types?
-              add_type_and_traverse(new_mutation_object, root: true)
+              add_types_and_traverse(mutation: new_mutation_object)
             end
             nil
           end
@@ -469,7 +469,7 @@ module GraphQL
           else
             @subscription_object = new_subscription_object
             if !defer_loading_types?
-              add_type_and_traverse(new_subscription_object, root: true)
+              add_types_and_traverse(subscription: new_subscription_object)
             end
             add_subscription_extension_if_necessary
             nil
@@ -894,21 +894,12 @@ module GraphQL
       def orphan_types(*new_orphan_types)
         if new_orphan_types.any?
           new_orphan_types = new_orphan_types.flatten
-          non_object_types = new_orphan_types.reject { |ot| ot.is_a?(Class) && ot < GraphQL::Schema::Object }
-          if non_object_types.any?
-            raise ArgumentError, <<~ERR
-              Only object type classes should be added as `orphan_types(...)`.
-
-              - Remove these no-op types from `orphan_types`: #{non_object_types.map { |t| "#{t.inspect} (#{t.kind.name})"}.join(", ")}
-              - See https://graphql-ruby.org/type_definitions/interfaces.html#orphan-types
-
-              To add other types to your schema, you might want `extra_types`: https://graphql-ruby.org/schema/definition.html#extra-types
-            ERR
-          end
-          if !defer_loading_types?
-            add_type_and_traverse(new_orphan_types, root: false)
-          end
+          validate_orphan_types(new_orphan_types)
           own_orphan_types.concat(new_orphan_types.flatten)
+          if !defer_loading_types?
+            new_orphan_types = load_defered_orphan_types(new_orphan_types)
+            add_types_and_traverse(types: new_orphan_types)
+          end
         end
 
         inherited_ot = find_inherited_value(:orphan_types, nil)
@@ -1164,7 +1155,7 @@ module GraphQL
       def directive(new_directive)
         own_directives[new_directive.graphql_name] = new_directive
         if !defer_loading_types?
-          add_type_and_traverse(new_directive, root: false)
+          add_types_and_traverse(types: [new_directive])
         end
         nil
       end
@@ -1444,11 +1435,28 @@ module GraphQL
         if !@built_types_hash
           @built_types_hash = true
           return if self == GraphQL::Schema
-          roots = [query, mutation, subscription].compact
-          add_type_and_traverse(roots, root: true)
+
+          load_defered_orphan_types
           non_roots = orphan_types + directives.values
-          add_type_and_traverse(non_roots, root: false)
+          add_types_and_traverse(query: query, mutation: mutation, subscription: subscription, types: non_roots)
         end
+      end
+
+      def load_defered_orphan_types(types = orphan_types)
+        new_ots = []
+        new_types = types.map do |ot|
+          if ot.is_a?(String)
+            own_orphan_types.delete(ot)
+            ot = Object.const_get(ot)
+            new_ots << ot
+            ot
+          else
+            ot
+          end
+        end
+        validate_orphan_types(new_ots)
+        own_orphan_types.concat(new_ots)
+        new_types
       end
 
       def add_trace_options_for(mode, new_options)
@@ -1459,12 +1467,36 @@ module GraphQL
 
       # @param t [Module, Array<Module>]
       # @return [void]
-      def add_type_and_traverse(t, root:)
-        new_types = Array(t)
-        if root
-          @root_types ||= []
-          @root_types.concat(new_types)
+      def add_types_and_traverse(query: nil, mutation: nil, subscription: nil, types: EmptyObjects::EMPTY_ARRAY)
+        @root_types ||= []
+        new_types = []
+
+        if query
+          if query.is_a?(String)
+            @query_object = query = Object.const_get(query)
+          end
+          @root_types << query
+          new_types << query
         end
+
+        if mutation
+          if mutation.is_a?(String)
+            @mutation_object = mutation = Object.const_get(mutation)
+          end
+          @root_types << mutation
+          new_types << mutation
+        end
+
+        if subscription
+          if subscription.is_a?(String)
+            @subscription_object = subscription = Object.const_get(subscription)
+          end
+          @root_types << subscription
+          new_types << subscription
+        end
+
+        new_types.concat(types)
+
         addition = Schema::Addition.new(schema: self, own_types: own_types, new_types: new_types)
         addition.types.each do |name, types_entry| # rubocop:disable Development/ContextIsPassedCop -- build-time, not query-time
           if (prev_entry = own_types[name])
@@ -1538,6 +1570,20 @@ module GraphQL
 
       def own_orphan_types
         @own_orphan_types ||= []
+      end
+
+      def validate_orphan_types(new_orphan_types)
+        non_object_types = new_orphan_types.reject { |ot| ot.is_a?(String) ||(ot.is_a?(Class) && ot < GraphQL::Schema::Object) }
+        if non_object_types.any?
+          raise ArgumentError, <<~ERR
+            Only object type classes should be added as `orphan_types(...)`.
+
+            - Remove these no-op types from `orphan_types`: #{non_object_types.map { |t| "#{t.inspect} (#{t.kind.name})"}.join(", ")}
+            - See https://graphql-ruby.org/type_definitions/interfaces.html#orphan-types
+
+            To add other types to your schema, you might want `extra_types`: https://graphql-ruby.org/schema/definition.html#extra-types
+          ERR
+        end
       end
 
       def own_possible_types

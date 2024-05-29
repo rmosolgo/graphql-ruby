@@ -528,11 +528,11 @@ module Dummy
   end
 
   class Schema < GraphQL::Schema
-    query DairyAppQuery
+    query "Dummy::DairyAppQuery"
     mutation DairyAppMutation
     subscription Subscription
     max_depth 5
-    orphan_types Honey
+    orphan_types "Dummy::Honey"
     trace_with GraphQL::Tracing::CallLegacyTracers
 
     rescue_from(NoSuchDairyError) { |err| raise GraphQL::ExecutionError, err.message  }
