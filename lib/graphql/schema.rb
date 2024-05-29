@@ -289,7 +289,7 @@ module GraphQL
       # @param context [Hash]
       # @return [String]
       def to_definition(context: {})
-        build_types_hash
+        eager_load_types if load_types_as_needed?
         GraphQL::Schema::Printer.print_schema(self, context: context)
       end
 
@@ -339,7 +339,7 @@ module GraphQL
       # @return [Hash<String => Class>] A dictionary of type classes by their GraphQL name
       # @see get_type Which is more efficient for finding _one type_ by name, because it doesn't merge hashes.
       def types(context = GraphQL::Query::NullContext.instance)
-        build_types_hash
+        eager_load_types if load_types_as_needed?
         all_types = non_introspection_types.merge(introspection_system.types)
         visible_types = {}
         all_types.each do |k, v|
@@ -364,14 +364,31 @@ module GraphQL
         visible_types
       end
 
-      def eager_load_types!
-        build_types_hash
+      def eager_load_types
+        if !@loaded_all_types
+          @loaded_all_types = true
+          return if self == GraphQL::Schema
+
+          load_defered_orphan_types
+          non_roots = orphan_types + directives.values
+          add_types_and_traverse(query: query, mutation: mutation, subscription: subscription, types: non_roots)
+        end
+      end
+
+      def unload_types
+        @loaded_all_types = false
+        # clear all the caches
+        @own_types.clear
+        @own_possible_types.clear
+        @own_union_memberships.clear
+        @own_references_to.clear
+        @own_directives.clear
       end
 
       # @param type_name [String]
       # @return [Module, nil] A type, or nil if there's no type called `type_name`
       def get_type(type_name, context = GraphQL::Query::NullContext.instance)
-        build_types_hash
+        eager_load_types if load_types_as_needed?
         local_entry = own_types[type_name]
         type_defn = case local_entry
         when nil
@@ -436,7 +453,7 @@ module GraphQL
             raise GraphQL::Error, "Second definition of `query(...)` (#{new_query_object.inspect}) is invalid, already configured with #{@query_object.inspect}"
           else
             @query_object = new_query_object
-            if !defer_loading_types?
+            if !load_types_as_needed?
               add_types_and_traverse(query: new_query_object)
             end
             nil
@@ -452,7 +469,7 @@ module GraphQL
             raise GraphQL::Error, "Second definition of `mutation(...)` (#{new_mutation_object.inspect}) is invalid, already configured with #{@mutation_object.inspect}"
           else
             @mutation_object = new_mutation_object
-            if !defer_loading_types?
+            if !load_types_as_needed?
               add_types_and_traverse(mutation: new_mutation_object)
             end
             nil
@@ -468,7 +485,7 @@ module GraphQL
             raise GraphQL::Error, "Second definition of `subscription(...)` (#{new_subscription_object.inspect}) is invalid, already configured with #{@subscription_object.inspect}"
           else
             @subscription_object = new_subscription_object
-            if !defer_loading_types?
+            if !load_types_as_needed?
               add_types_and_traverse(subscription: new_subscription_object)
             end
             add_subscription_extension_if_necessary
@@ -515,7 +532,7 @@ module GraphQL
       # @return [Array<Module>] Possible types for `type`, if it's given.
       def possible_types(type = nil, context = GraphQL::Query::NullContext.instance)
         if type
-          build_types_hash
+          eager_load_types if load_types_as_needed?
           # TODO duck-typing `.possible_types` would probably be nicer here
           if type.kind.union?
             type.possible_types(context: context)
@@ -569,7 +586,7 @@ module GraphQL
       def references_to(to_type = nil, from: nil)
         if !defined?(@own_references_to)
           @own_references_to = {}.tap(&:compare_by_identity)
-          build_types_hash
+          eager_load_types if load_types_as_needed?
         end
         if to_type
           if from
@@ -896,7 +913,7 @@ module GraphQL
           new_orphan_types = new_orphan_types.flatten
           validate_orphan_types(new_orphan_types)
           own_orphan_types.concat(new_orphan_types.flatten)
-          if !defer_loading_types?
+          if !load_types_as_needed?
             new_orphan_types = load_defered_orphan_types(new_orphan_types)
             add_types_and_traverse(types: new_orphan_types)
           end
@@ -1154,7 +1171,7 @@ module GraphQL
       # @return void
       def directive(new_directive)
         own_directives[new_directive.graphql_name] = new_directive
-        if !defer_loading_types?
+        if !load_types_as_needed?
           add_types_and_traverse(types: [new_directive])
         end
         nil
@@ -1419,28 +1436,17 @@ module GraphQL
         end
       end
 
-      def defer_loading_types?
-        defined?(@defer_loading_types) ? @defer_loading_types : (superclass.respond_to?(:defer_loading_types?) ? superclass.defer_loading_types? : false)
+      def load_types_as_needed?
+        defined?(@load_types_as_needed) ? @load_types_as_needed : (superclass.respond_to?(:load_types_as_needed?) ? superclass.load_types_as_needed? : false)
       end
 
       # Call this method to set (or unset) lazy-loading types.
       # @return [void]
-      def defer_loading_types(new_setting = true )
-        @defer_loading_types = new_setting
+      def load_types_as_needed(new_setting = true )
+        @load_types_as_needed = new_setting
       end
 
       private
-
-      def build_types_hash
-        if !@built_types_hash
-          @built_types_hash = true
-          return if self == GraphQL::Schema
-
-          load_defered_orphan_types
-          non_roots = orphan_types + directives.values
-          add_types_and_traverse(query: query, mutation: mutation, subscription: subscription, types: non_roots)
-        end
-      end
 
       def load_defered_orphan_types(types = orphan_types)
         new_ots = []

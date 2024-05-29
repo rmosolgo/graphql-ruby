@@ -54,7 +54,7 @@ class GraphQLGeneratorsInstallGeneratorTest < Rails::Generators::TestCase
 
 class DummySchema < GraphQL::Schema
   if Rails.env.development?
-    defer_loading_types # for faster application boot
+    load_types_as_needed # for faster application boot
   end
   mutation("Types::MutationType")
   query("Types::QueryType")
@@ -363,7 +363,7 @@ RUBY
 
 class DummySchema < GraphQL::Schema
   if Rails.env.development?
-    defer_loading_types # for faster application boot
+    load_types_as_needed # for faster application boot
   end
   mutation("Types::MutationType")
   query("Types::QueryType")

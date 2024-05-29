@@ -16,7 +16,7 @@ module Graphql
 
       def insert_root_type(type, name)
         log :add_root_type, type
-        sentinel = "defer_loading_types # for faster application boot\n  end\n"
+        sentinel = "load_types_as_needed # for faster application boot\n  end\n"
 
         in_root do
           if File.exist?(schema_file_path)

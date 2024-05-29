@@ -3,7 +3,7 @@
 <% module_namespacing_when_supported do -%>
 class <%= schema_name %> < GraphQL::Schema
   if Rails.env.development?
-    defer_loading_types # for faster application boot
+    load_types_as_needed # for faster application boot
   end
 <% if options[:batch] %>
   # GraphQL::Batch setup:
