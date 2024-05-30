@@ -590,6 +590,15 @@ module GraphQL
         end
         if to_type
           if from
+            begin
+              if to_type.name == "Jazz::Family" && from.path == "Query.instruments.family"
+                puts "(#{self}) #{to_type.name} => #{from.path}"
+                puts caller
+              end
+            rescue StandardError => err
+              puts err.message
+            end
+
             refs = @own_references_to[to_type] ||= []
             refs << from
           else
