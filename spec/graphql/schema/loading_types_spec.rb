@@ -28,6 +28,7 @@ describe "Schema loading types as needed" do
     end
   end
   it "can unload and reload types" do
+    pp [:before, Jazz::Query.get_field("inspectInput").all_argument_definitions]
     unload_and_reload_types(Dummy::Schema)
     unload_and_reload_types(Jazz::Schema)
   end
