@@ -25,6 +25,9 @@ describe GraphQL::Schema::Field do
 
       assert_equal "family", field.arguments["family"].name
       assert_equal Jazz::Family, field.arguments["family"].type
+
+      field.send(:own_arguments).delete("family")
+      refute field.arguments["family"]
     end
 
     it "camelizes the field name, unless camelize: false" do
