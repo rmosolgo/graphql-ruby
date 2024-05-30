@@ -78,14 +78,6 @@ module GraphQL
         # @param arg_defn [GraphQL::Schema::Argument]
         # @return [GraphQL::Schema::Argument]
         def add_argument(arg_defn)
-          begin
-            if self.is_a?(GraphQL::Schema::Field) && !arg_defn.path.start_with?(path)
-              puts "--> #{path} is getting #{arg_defn.path}"
-              puts caller
-            end
-          rescue GraphQL::RequiredImplementationMissingError
-            # can't tell
-          end
           @own_arguments ||= {}
           prev_defn = @own_arguments[arg_defn.name]
           case prev_defn

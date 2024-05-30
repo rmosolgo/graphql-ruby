@@ -377,7 +377,7 @@ module GraphQL
 
       def unload_types
         @loaded_all_types = false
-        # clear all the caches
+        @root_types.clear
         @own_types.clear
         @own_possible_types.clear
         @own_union_memberships.clear

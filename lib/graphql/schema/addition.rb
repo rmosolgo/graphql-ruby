@@ -20,12 +20,7 @@ module GraphQL
       private
 
       def references_to(thing, from:)
-        refs = @references[thing]
-        if @schema.name == "Jazz::Schema" && from.path == "Query.instruments.family"
-          puts "(#{@schema}) #{thing} => #{from.path}"
-          puts caller
-        end
-        refs << from
+        @references[thing] << from
       end
 
       def get_type(name)
@@ -202,16 +197,10 @@ module GraphQL
               path.push(name)
               add_type(field_type, owner: field, late_types: late_types, path: path)
               add_directives_from(field)
-              if @schema.name == "Jazz::Schema" && field.path == "Query.instruments"
-                pp field.all_argument_definitions
-              end
               field.all_argument_definitions.each do |arg|
                 add_directives_from(arg)
                 arg_type = arg.type.unwrap
                 if !arg_type.is_a?(GraphQL::Schema::LateBoundType)
-                  if @schema.name == "Jazz::Schema" && arg.path == "Query.instruments.family"
-                    pp [type, field.path, arg.path]
-                  end
                   references_to(arg_type, from: arg)
                 end
                 path.push(arg.graphql_name)
