@@ -8,6 +8,10 @@
 
 ### Bug Fix
 
+# 1.4.1 (30 May 2024)
+
+- ObjectCache: properly handle when object fingerprints are evicted but the cached result wasn't
+
 # 1.4.0 (11 Apr 2024)
 
 - ObjectCache: add support for `redis_cluster: ...` backend
