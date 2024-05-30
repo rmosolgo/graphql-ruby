@@ -20,7 +20,12 @@ module GraphQL
       private
 
       def references_to(thing, from:)
-        @references[thing] << from
+        refs = @references[thing]
+        if @schema.name == "Jazz::Schema" && from.path == "Query.instruments.family"
+          puts "(#{@schema}) #{thing} => #{from.path}"
+          puts caller
+        end
+        refs << from
       end
 
       def get_type(name)
