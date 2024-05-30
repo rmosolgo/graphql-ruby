@@ -209,6 +209,9 @@ module GraphQL
                 add_directives_from(arg)
                 arg_type = arg.type.unwrap
                 if !arg_type.is_a?(GraphQL::Schema::LateBoundType)
+                  if @schema.name == "Jazz::Schema" && arg.path == "Query.instruments.family"
+                    pp [type, field.path, arg.path]
+                  end
                   references_to(arg_type, from: arg)
                 end
                 path.push(arg.graphql_name)
