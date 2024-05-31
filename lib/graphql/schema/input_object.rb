@@ -136,6 +136,7 @@ module GraphQL
             def #{method_name}
               self[#{method_name.inspect}]
             end
+            alias_method :#{method_name}, :#{method_name}
           RUBY
           argument_defn
         end
