@@ -615,9 +615,6 @@ module GraphQL
         when :ON
           advance_token
           "on"
-        when :DIRECTIVE
-          advance_token
-          "directive"
         when :EXTEND
           advance_token
           "extend"
