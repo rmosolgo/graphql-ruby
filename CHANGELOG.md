@@ -2158,7 +2158,7 @@ FieldExtension: pass extended values instead of originals to `after_resolve` #31
 ### Bug fixes
 
 - Argument default values include nested default values #1728
-- Clean up duplciate method defs #1739
+- Clean up duplicate method defs #1739
 
 ### New features
 
