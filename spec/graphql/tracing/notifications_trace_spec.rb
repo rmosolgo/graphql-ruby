@@ -18,7 +18,7 @@ describe GraphQL::Tracing::NotificationsTrace do
   end
 
   describe "Observing" do
-    it "dispatchs the event to the notifications engine with suffixed key" do
+    it "dispatches the event to the notifications engine with suffixed key" do
       dispatched_events = trigger_fake_notifications_tracer(NotificationsTraceTest::Schema).to_h
 
       assert dispatched_events.length > 0
