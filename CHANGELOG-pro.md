@@ -806,7 +806,7 @@
 
 ### Bug Fix
 
-- Pundit integration: use overriden `pundit_policy_class` for scoping and mutation authorization
+- Pundit integration: use overridden `pundit_policy_class` for scoping and mutation authorization
 
 ## 1.9.11 (20 Feb 2019)
 

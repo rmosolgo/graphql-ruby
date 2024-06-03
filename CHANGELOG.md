@@ -1758,7 +1758,7 @@ FieldExtension: pass extended values instead of originals to `after_resolve` #31
 
 ### Breaking changes
 
-- `GraphQL::Schema::Resolver#initialize` accepts a new keyword argument, `field:`. If you have overriden this method, you'll have to add that keyword to your argument list (and pass it along to `super`.) #2605
+- `GraphQL::Schema::Resolver#initialize` accepts a new keyword argument, `field:`. If you have overridden this method, you'll have to add that keyword to your argument list (and pass it along to `super`.) #2605
 
 ### Deprecations
 
@@ -3201,7 +3201,7 @@ FieldExtension: pass extended values instead of originals to `after_resolve` #31
 
 - Absent variables aren't present in `args` #479
 - Fix grouped ActiveRecord relation with `last` only #476
-- `Schema#default_mask` & query `only:`/`except:` are combined, not overriden #485
+- `Schema#default_mask` & query `only:`/`except:` are combined, not overridden #485
 - Root types can be hidden with dynamic filters #480
 
 ## 1.4.0 (8 Jan 2017)

@@ -612,7 +612,7 @@ interface Timestamped implements Node {
             include GraphQL::Schema::Interface
             definition_methods do
               def resolve_type(obj, ctx)
-                raise "This should never be called -- it's overriden"
+                raise "This should never be called -- it's overridden"
               end
             end
           end

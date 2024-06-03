@@ -119,7 +119,7 @@ describe GraphQL::Subscriptions::BroadcastAnalyzer do
         subscription {
           throwableWasThrown {
             throwable {
-              # Although this is false on Javelin, it's not overriden on Shot,
+              # Although this is false on Javelin, it's not overridden on Shot,
               # so it should use the default of `true`
               ...on Shot {
                 splitBroadcastableTest
