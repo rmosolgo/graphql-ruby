@@ -453,7 +453,7 @@ describe "GraphQL::Authorization" do
       assert_equal "RelayObjectEdge", visible_res["data"]["hiddenEdge"]["__typename"]
     end
 
-    it "treats hidden enum values as non-existant, even in lists" do
+    it "treats hidden enum values as non-existent, even in lists" do
       hidden_res_1 = auth_execute <<-GRAPHQL, context: { hide: true }
       {
         landscapeFeature(enum: TAR_PIT)
