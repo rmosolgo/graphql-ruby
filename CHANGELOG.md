@@ -1583,7 +1583,7 @@ FieldExtension: pass extended values instead of originals to `after_resolve` #31
 
 ### New features
 
-- Add options to `implements(...)` and inteface type visibility #2791
+- Add options to `implements(...)` and interface type visibility #2791
 - Add `Query#fingerprint` for logging #2859
 - Add `--playground` option to install generator #2839
 - Support lazy-loaded objects from input object `loads:` #2834
