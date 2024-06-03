@@ -499,7 +499,7 @@ interface Timestamped implements Node {
       end
     end
 
-    describe "mergable query evaluation" do
+    describe "mergeable query evaluation" do
       let(:result) { Dummy::Schema.execute(query_string, variables: {"cheeseId" => 2})}
       let(:query_string) {%|
         query fav {
