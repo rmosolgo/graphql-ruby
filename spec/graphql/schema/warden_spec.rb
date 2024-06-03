@@ -748,7 +748,7 @@ describe GraphQL::Schema::Warden do
     end
   end
 
-  describe "hidding input type arguments" do
+  describe "hiding input type arguments" do
     let(:mask) {
       ->(member, ctx) { MaskHelpers.has_flag?(member, :hidden_input_field) }
     }
@@ -797,7 +797,7 @@ describe GraphQL::Schema::Warden do
     end
   end
 
-  describe "hidding input types" do
+  describe "hiding input types" do
     let(:mask) {
       ->(member, ctx) { MaskHelpers.has_flag?(member, :hidden_input_object_type) }
     }
