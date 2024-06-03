@@ -2682,7 +2682,7 @@ FieldExtension: pass extended values instead of originals to `after_resolve` #31
 - `GraphQL::Argument.define` builds re-usable arguments #948
 - `GraphQL::Subscriptions` provides hooks for subscription platforms #672
 - `GraphQL::Subscriptions::ActionCableSubscriptions` implements subscriptions over ActionCable #672
-- More runtime values are accessble from a `ctx` object #923 :
+- More runtime values are accessible from a `ctx` object #923 :
   - `ctx.parent` returns the `ctx` from the parent field
   - `ctx.object` returns the current `obj` for that field
   - `ctx.value` returns the resolved GraphQL value for that field
