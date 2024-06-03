@@ -180,7 +180,7 @@ describe GraphQL::Schema::List do
       assert_equal [expected_error], res["errors"].map { |e| e["message"] }
     end
 
-    it "raises only 1 errror with max_validation + 1 problems" do
+    it "raises only 1 error with max_validation + 1 problems" do
       res = MaxValidationSchema.execute("query($ids: [Int!]!) { items(ids: $ids) }", variables: { ids: ["1", "2", "3", "4"] })
 
       assert_equal 1, res["errors"].count
