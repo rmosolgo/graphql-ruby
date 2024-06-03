@@ -42,7 +42,7 @@ BudgetSchema.subscriptions.trigger(:budget_was_approved, {}, { ... }, scope: "ac
 Alternatively, `subscription_scope` might name something that _belongs_ to the tenant:
 
 ```ruby
-class BudgetWasApproved < GraphQL::Schema::Subcription
+class BudgetWasApproved < GraphQL::Schema::Subscription
   subscription_scope :project_id # This would work with `context[:project_id] = 1234`
 end
 
