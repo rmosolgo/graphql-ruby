@@ -26,7 +26,7 @@ In this example, a single object is batch-loaded to satisfy a GraphQL field.
   record_promise = Loaders::Record.load(1)
   ```
 
-  Then, under the hood, GraphQL-Ruby manages the promise (using its `lazy_resolve` feature, upstreamed from GraphQL-Batch many years ago). GraphQL-Ruby will call `.sync` on it when no futher execution is possible; `promise.rb` implements `Promise#sync` to execute the pending work.
+  Then, under the hood, GraphQL-Ruby manages the promise (using its `lazy_resolve` feature, upstreamed from GraphQL-Batch many years ago). GraphQL-Ruby will call `.sync` on it when no further execution is possible; `promise.rb` implements `Promise#sync` to execute the pending work.
 
 - With __GraphQL::Dataloader__, you get a source, then call `.load` on it, which may pause the current Fiber, but it returns the requested object.
 
