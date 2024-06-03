@@ -4,7 +4,7 @@ require 'rubygems'
 require 'bundler'
 Bundler.require
 
-# Print full backtrace for failiures:
+# Print full backtrace for failures:
 ENV["BACKTRACE"] = "1"
 
 require "graphql"
