@@ -226,7 +226,7 @@ type Query implements InterfaceA & InterfaceB {
     end
   end
 
-  describe "transitive implemention of same interface twice" do
+  describe "transitive implementation of same interface twice" do
     class TransitiveInterfaceSchema < GraphQL::Schema
       module Node
         include GraphQL::Schema::Interface
