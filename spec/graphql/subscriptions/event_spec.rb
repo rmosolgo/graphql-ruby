@@ -35,7 +35,7 @@ describe GraphQL::Subscriptions::Event do
     assert_equal event.context[:my_id], "abc"
   end
 
-  it "should serialize two eqivalent JSON hashes with different key orderings into equivalent topic names" do
+  it "should serialize two equivalent JSON hashes with different key orderings into equivalent topic names" do
     field = EventSchema.subscription.fields["jsonSubscription"]
     event_a = GraphQL::Subscriptions::Event.new(name: "test", arguments: { "someJson" => { "b" => 1, "a" => 0 } }, field: field, context: nil, scope: nil)
     event_b = GraphQL::Subscriptions::Event.new(name: "test", arguments: { "someJson" => { "a" => 0, "b" => 1 } }, field: field, context: nil, scope: nil)
