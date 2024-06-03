@@ -324,7 +324,7 @@
 ### Bug fixes
 
 - Fix merging results after calling directives #4639 #4660
-- Visibility: don't reveal implementors of hidden abstract types #4589
+- Visibility: don't reveal implementers of hidden abstract types #4589
 - Bump required Ruby version to 2.7 since numbered block arguments are used  #4659
 - `hash_key:`: use the configured hash key when the underlying Hash has a default value Proc #4656
 
