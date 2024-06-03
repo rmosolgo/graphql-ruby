@@ -150,7 +150,7 @@ describe GraphQL::Schema::List do
     end
   end
 
-  describe "when max validation errros exists" do
+  describe "when max validation errors exists" do
     class MaxValidationSchema < GraphQL::Schema
       class Item < GraphQL::Schema::Enum
         value "A"
@@ -171,7 +171,7 @@ describe GraphQL::Schema::List do
       validate_max_errors(2)
     end
 
-    it "checks only for 2 errors and appends too many errros in the message" do
+    it "checks only for 2 errors and appends too many errors in the message" do
       res = MaxValidationSchema.execute("query($ids: [Int!]!) { items(ids: $ids) }", variables: { ids: ["1", "2", "3", "4"] })
 
       expected_error = "Variable $ids of type [Int!]! was provided invalid value for 0 "\
