@@ -187,7 +187,7 @@ module GraphQL
       # {default_trace_mode} is used when no `trace_mode: ...` is requested.
       #
       # When a `trace_class` is added this way, it will _not_ receive other modules added with `trace_with(...)`
-      # unless `trace_mode` is explicitly given. (This class will not recieve any default trace modules.)
+      # unless `trace_mode` is explicitly given. (This class will not receive any default trace modules.)
       #
       # Subclasses of the schema will use `trace_class` as a base class for this mode and those
       # subclass also will _not_ receive default tracing modules.
