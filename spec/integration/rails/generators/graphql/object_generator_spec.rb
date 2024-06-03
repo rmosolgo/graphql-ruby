@@ -75,7 +75,7 @@ RUBY
     end
   end
 
-  test "it generates namespaced classifed file" do
+  test "it generates namespaced classified file" do
     run_generator(["books/page"])
     assert_file "app/graphql/types/books/page_type.rb", <<-RUBY
 # frozen_string_literal: true
