@@ -107,7 +107,7 @@ The hooks are:
 
 ## Instrumentation
 
-While the limiter is installed, it adds some information to the query context about its operation. It can be acccessed at `context[:active_operation_limiter]`:
+While the limiter is installed, it adds some information to the query context about its operation. It can be accessed at `context[:active_operation_limiter]`:
 
 ```ruby
 result = MySchema.execute(...)
