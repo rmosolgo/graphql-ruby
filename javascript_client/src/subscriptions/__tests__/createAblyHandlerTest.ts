@@ -408,7 +408,7 @@ describe("createAblyHandler", () => {
       }
       await Promise.all(disposals)
 
-      // 201st subscription - should work now that previous 200 subscriptions have been diposed
+      // 201st subscription - should work now that previous 200 subscriptions have been disposed
       const { dispose } = ablyHandler(
         operation,
         variables,
