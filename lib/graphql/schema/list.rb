@@ -52,7 +52,7 @@ module GraphQL
           unless item_result.valid?
             if max_errors
               if max_errors == 0
-                add_max_errros_reached_message(result)
+                add_max_errors_reached_message(result)
                 break
               end
 
@@ -76,7 +76,7 @@ module GraphQL
         end
       end
 
-      def add_max_errros_reached_message(result)
+      def add_max_errors_reached_message(result)
         message = "Too many errors processing list variable, max validation error limit reached. Execution aborted"
         item_result = GraphQL::Query::InputValidationResult.from_problem(message)
         result.merge_result!(nil, item_result)

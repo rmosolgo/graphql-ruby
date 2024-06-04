@@ -312,7 +312,7 @@ createRecord(data: {
     assert_equal "b\\", document.definitions[0].selections[0].arguments[1].value
   end
 
-  it "parses backslases in non-last arguments" do
+  it "parses backslashes in non-last arguments" do
     document = subject.parse <<-GRAPHQL
       query {
         item(text: "b\\\\", otherText: "a") {

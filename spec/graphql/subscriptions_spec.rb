@@ -973,7 +973,7 @@ describe GraphQL::Subscriptions do
       assert_equal({"validate_true" => 1, "validate_false" => 1, "counter_1" => 1}, schema::COUNTERS)
     end
 
-    describe "when the method is overriden" do
+    describe "when the method is overridden" do
       let(:schema) { SometimesSkipUpdateValidationSchema }
       it "calls `validate_update?`" do
         schema.execute("subscription { counter(id: \"3\") { value } }", context: { socket: "2" })

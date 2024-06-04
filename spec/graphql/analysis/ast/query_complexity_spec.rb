@@ -387,7 +387,7 @@ describe GraphQL::Analysis::AST::QueryComplexity do
     end
   end
 
-  describe "calucation complexity for a multiplex" do
+  describe "calculation complexity for a multiplex" do
     let(:query_string) {%|
       query cheeses {
         cheese(id: 1) {

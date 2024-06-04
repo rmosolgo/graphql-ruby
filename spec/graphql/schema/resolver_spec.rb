@@ -969,7 +969,7 @@ describe GraphQL::Schema::Resolver do
     end
 
     describe "extensions" do
-      it "returns extension whe no arguments passed" do
+      it "returns extension when no arguments passed" do
         assert 1, ResolverTest::ResolverWithExtension.extensions.count
       end
 

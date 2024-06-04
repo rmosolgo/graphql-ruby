@@ -213,7 +213,7 @@ A few `extras` are available:
 - `owner` (the type that this field belongs to)
 - `lookahead` (see {% internal_link "Lookahead", "/queries/lookahead" %})
 - `execution_errors`, whose `#add(err_or_msg)` method should be used for adding errors
-- `argument_details` (Intepreter only), an instance of {{ "GraphQL::Execution::Interpreter::Arguments" | api_doc }} with argument metadata
+- `argument_details` (Interpreter only), an instance of {{ "GraphQL::Execution::Interpreter::Arguments" | api_doc }} with argument metadata
 - `parent` (the previous `object` in the query)
 - Custom extras, see below
 

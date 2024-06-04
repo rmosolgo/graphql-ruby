@@ -130,7 +130,7 @@ module GraphQL
               selections = selections_by_name[response_key]
               # if there was already a selection of this field,
               # use an array to hold all selections,
-              # otherise, use the single node to represent the selection
+              # otherwise, use the single node to represent the selection
               if selections
                 # This field was already selected at least once,
                 # add this node to the list of selections

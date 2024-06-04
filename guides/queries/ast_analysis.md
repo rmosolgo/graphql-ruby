@@ -31,7 +31,7 @@ Pass the **class** (and not an _instance_) of your analyzer. The analysis engine
 Analyzers respond to methods similar to AST visitors. They're named like `on_enter_#{ast_node}` and `on_leave_#{ast_node}`. Methods are called with three arguments:
 
 - `node`: The current AST node (being entered or left)
-- `parent`: The AST node which preceeds this one in the tree
+- `parent`: The AST node which precedes this one in the tree
 - `visitor`: A {{ "GraphQL::Analysis::AST::Visitor" | api_doc }} which is managing this analysis run
 
 For example:

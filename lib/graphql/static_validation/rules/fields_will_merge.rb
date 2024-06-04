@@ -396,7 +396,7 @@ module GraphQL
       end
 
       # Given two list of parents, find out if they are mutually exclusive
-      # In this context, `parents` represends the "self scope" of the field,
+      # In this context, `parents` represents the "self scope" of the field,
       # what types may be found at this point in the query.
       def mutually_exclusive?(parents1, parents2)
         if parents1.empty? || parents2.empty?

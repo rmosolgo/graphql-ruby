@@ -226,7 +226,7 @@ type Query implements InterfaceA & InterfaceB {
     end
   end
 
-  describe "transitive implemention of same interface twice" do
+  describe "transitive implementation of same interface twice" do
     class TransitiveInterfaceSchema < GraphQL::Schema
       module Node
         include GraphQL::Schema::Interface
@@ -499,7 +499,7 @@ interface Timestamped implements Node {
       end
     end
 
-    describe "mergable query evaluation" do
+    describe "mergeable query evaluation" do
       let(:result) { Dummy::Schema.execute(query_string, variables: {"cheeseId" => 2})}
       let(:query_string) {%|
         query fav {
@@ -612,7 +612,7 @@ interface Timestamped implements Node {
             include GraphQL::Schema::Interface
             definition_methods do
               def resolve_type(obj, ctx)
-                raise "This should never be called -- it's overriden"
+                raise "This should never be called -- it's overridden"
               end
             end
           end

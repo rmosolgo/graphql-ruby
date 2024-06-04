@@ -48,7 +48,7 @@ RUBY
     end
   end
 
-  test "it generates classifed file" do
+  test "it generates classified file" do
     run_generator(["page"])
     assert_file "app/graphql/types/page_input_type.rb", <<-RUBY
 # frozen_string_literal: true
@@ -60,7 +60,7 @@ end
 RUBY
   end
 
-  test "it generates namespaced classifed file" do
+  test "it generates namespaced classified file" do
     run_generator(["page", "--namespaced-types"])
     assert_file "app/graphql/types/inputs/page_input_type.rb", <<-RUBY
 # frozen_string_literal: true

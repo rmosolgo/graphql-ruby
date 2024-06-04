@@ -12,7 +12,7 @@ module GraphQL
           @complexities_on_type_by_query = {}
         end
 
-        # Overide this method to use the complexity result
+        # Override this method to use the complexity result
         def result
           max_possible_complexity
         end

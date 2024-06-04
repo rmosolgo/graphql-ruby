@@ -322,7 +322,7 @@ type Query {
       end
     end
 
-    describe "with a visiblity check" do
+    describe "with a visibility check" do
       let(:expected_idl) { <<-GRAPHQL
         type QueryType {
           foo: Foo

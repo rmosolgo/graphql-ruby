@@ -107,7 +107,7 @@ module GraphQL
         when 2
           true
         else
-          raise ArgumentError, "#{@serializer} must repond to `.load` accepting one or two arguments"
+          raise ArgumentError, "#{@serializer} must respond to `.load` accepting one or two arguments"
         end
         @transmit_ns = namespace
         super

@@ -259,8 +259,8 @@ module GraphQL
         #
         # @param values [Hash<String, Object>]
         # @param context [GraphQL::Query::Context]
-        # @yield [Interpreter::Arguments, Execution::Lazy<Interpeter::Arguments>]
-        # @return [Interpreter::Arguments, Execution::Lazy<Interpeter::Arguments>]
+        # @yield [Interpreter::Arguments, Execution::Lazy<Interpreter::Arguments>]
+        # @return [Interpreter::Arguments, Execution::Lazy<Interpreter::Arguments>]
         def coerce_arguments(parent_object, values, context, &block)
           # Cache this hash to avoid re-merging it
           arg_defns = context.warden.arguments(self)

@@ -141,7 +141,7 @@ describe GraphQL::Pagination::Connections do
     end
 
     schema = Class.new(GraphQL::Schema) do
-      # This value should be overriden by `max_page_size: nil` in the field definition above
+      # This value should be overridden by `max_page_size: nil` in the field definition above
       default_max_page_size 2
       query(query_type)
     end

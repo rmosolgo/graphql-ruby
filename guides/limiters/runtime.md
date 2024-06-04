@@ -108,7 +108,7 @@ The hooks are:
 
 ## Instrumentation
 
-While the limiter is installed, it adds some information to the query context about its operation. It can be acccessed at `context[:runtime_limiter]`:
+While the limiter is installed, it adds some information to the query context about its operation. It can be accessed at `context[:runtime_limiter]`:
 
 
 ```ruby

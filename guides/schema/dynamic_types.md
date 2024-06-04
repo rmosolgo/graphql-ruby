@@ -207,7 +207,7 @@ end
 
 You can also use different types for each query. A few behaviors depend on the methods defined above:
 
-- If a type is not used as a return type, an argument type, or as a member of a union or implementor of an interface, it will be hidden
+- If a type is not used as a return type, an argument type, or as a member of a union or implementer of an interface, it will be hidden
 - If an interface or union has members, it will be hidden
 - If a field's return type is hidden, the field will be hidden
 - If an argument's input type is hidden, the argument will be hidden

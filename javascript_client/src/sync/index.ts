@@ -171,7 +171,7 @@ function sync(options: SyncOptions) {
             })
 
             var failed = responseData.failed.length
-            // These might get overriden for status output
+            // These might get overridden for status output
             var notModified = responseData.not_modified.length
             var added = responseData.added.length
             if (failed) {

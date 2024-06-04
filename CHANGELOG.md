@@ -324,7 +324,7 @@
 ### Bug fixes
 
 - Fix merging results after calling directives #4639 #4660
-- Visibility: don't reveal implementors of hidden abstract types #4589
+- Visibility: don't reveal implementers of hidden abstract types #4589
 - Bump required Ruby version to 2.7 since numbered block arguments are used  #4659
 - `hash_key:`: use the configured hash key when the underlying Hash has a default value Proc #4656
 
@@ -1583,7 +1583,7 @@ FieldExtension: pass extended values instead of originals to `after_resolve` #31
 
 ### New features
 
-- Add options to `implements(...)` and inteface type visibility #2791
+- Add options to `implements(...)` and interface type visibility #2791
 - Add `Query#fingerprint` for logging #2859
 - Add `--playground` option to install generator #2839
 - Support lazy-loaded objects from input object `loads:` #2834
@@ -1758,7 +1758,7 @@ FieldExtension: pass extended values instead of originals to `after_resolve` #31
 
 ### Breaking changes
 
-- `GraphQL::Schema::Resolver#initialize` accepts a new keyword argument, `field:`. If you have overriden this method, you'll have to add that keyword to your argument list (and pass it along to `super`.) #2605
+- `GraphQL::Schema::Resolver#initialize` accepts a new keyword argument, `field:`. If you have overridden this method, you'll have to add that keyword to your argument list (and pass it along to `super`.) #2605
 
 ### Deprecations
 
@@ -2158,7 +2158,7 @@ FieldExtension: pass extended values instead of originals to `after_resolve` #31
 ### Bug fixes
 
 - Argument default values include nested default values #1728
-- Clean up duplciate method defs #1739
+- Clean up duplicate method defs #1739
 
 ### New features
 
@@ -2682,7 +2682,7 @@ FieldExtension: pass extended values instead of originals to `after_resolve` #31
 - `GraphQL::Argument.define` builds re-usable arguments #948
 - `GraphQL::Subscriptions` provides hooks for subscription platforms #672
 - `GraphQL::Subscriptions::ActionCableSubscriptions` implements subscriptions over ActionCable #672
-- More runtime values are accessble from a `ctx` object #923 :
+- More runtime values are accessible from a `ctx` object #923 :
   - `ctx.parent` returns the `ctx` from the parent field
   - `ctx.object` returns the current `obj` for that field
   - `ctx.value` returns the resolved GraphQL value for that field
@@ -3201,7 +3201,7 @@ FieldExtension: pass extended values instead of originals to `after_resolve` #31
 
 - Absent variables aren't present in `args` #479
 - Fix grouped ActiveRecord relation with `last` only #476
-- `Schema#default_mask` & query `only:`/`except:` are combined, not overriden #485
+- `Schema#default_mask` & query `only:`/`except:` are combined, not overridden #485
 - Root types can be hidden with dynamic filters #480
 
 ## 1.4.0 (8 Jan 2017)
@@ -3383,7 +3383,7 @@ FieldExtension: pass extended values instead of originals to `after_resolve` #31
 
 ### Deprecations
 
-- `InternalRepresentation::Node#children` and `InternalRepresentation::Node#definitions` are deprecated due to the bug described below and the breaking change described above. Instead, use `InternalRepresentation::Node#typed_children` and `InternalRepresentation::Node#defininition`. #373
+- `InternalRepresentation::Node#children` and `InternalRepresentation::Node#definitions` are deprecated due to the bug described below and the breaking change described above. Instead, use `InternalRepresentation::Node#typed_children` and `InternalRepresentation::Node#definition`. #373
 
 ### New features
 
