@@ -729,7 +729,7 @@ module GraphQL
           advance_token
           NullValue.new(pos: pos, name: "null", filename: @filename, source: self)
         when :COMMENT
-          val = @lexer.token_value.sub('# ', '')
+          val = @lexer.token_value.sub(/^#(\s+)?/, '')
           advance_token
           val
         when :IDENTIFIER
