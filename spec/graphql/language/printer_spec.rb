@@ -151,6 +151,7 @@ describe GraphQL::Language::Printer do
           Scalar description
           """
           # Scalar comment
+          # Multiline
           scalar CustomScalar
 
           type AnnotatedObject implements Bar @onObject(arg: "value") {

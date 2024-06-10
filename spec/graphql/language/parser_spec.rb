@@ -214,6 +214,7 @@ it "creates an anonymous fragment definition" do
       }
 
       # Enum comment
+      # multiline
       enum Color {
         # Enum value comment
         Blue
@@ -256,7 +257,7 @@ it "creates an anonymous fragment definition" do
       assert_equal ["yikes"], arg_defn.directives.map(&:name)
 
       color_defn = document.definitions[1]
-      assert_equal "Enum comment", color_defn.comment
+      assert_equal "Enum comment\nmultiline", color_defn.comment
       assert_equal "Enum value comment", color_defn.values[0].comment
 
       custom_scalar_defn = document.definitions[2]
