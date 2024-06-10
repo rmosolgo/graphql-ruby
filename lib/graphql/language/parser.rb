@@ -114,7 +114,7 @@ module GraphQL
       def definition
         comment = nil
         if token_name == :COMMENT
-          comment = value
+          comment = parse_comments
         end
 
         case token_name
@@ -280,7 +280,7 @@ module GraphQL
         else
           loc = pos
           desc = at?(:STRING) ? string_value : nil
-          comment = at?(:COMMENT) ? parse_comments(comment) : comment
+          comment = at?(:COMMENT) ? parse_comments : comment
           defn_loc = pos
           case token_name
           when :SCHEMA
@@ -383,8 +383,8 @@ module GraphQL
         end
       end
 
-      def parse_comments(initial_comment)
-        comments = initial_comment.nil? ? [] : [initial_comment]
+      def parse_comments
+        comments = []
         while at?(:COMMENT)
           comments << value
         end
