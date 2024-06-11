@@ -170,6 +170,17 @@ To add other types to your schema, you might want `extra_types`: https://graphql
     assert_equal expected_msg, err.message
   end
 
+  describe ".references_to" do
+    it "doesn't include any duplicates" do
+      [Dummy::Schema, Jazz::Schema].each do |schema_class|
+        schema_class.references_to.each do |referent, references|
+          ref_paths = references.map { |r| "#{r.class}/#{r.path}"}.sort
+          assert_equal ref_paths.uniq, ref_paths, "#{schema_class}.references_to has unique entries for `#{referent}`"
+        end
+      end
+    end
+  end
+
   describe "merged, inherited caches" do
     METHODS_TO_CACHE = {
       types: 1,

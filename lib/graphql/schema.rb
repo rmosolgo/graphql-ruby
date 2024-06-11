@@ -553,10 +553,9 @@ module GraphQL
       attr_writer :dataloader_class
 
       def references_to(to_type = nil, from: nil)
-        @own_references_to ||= {}.tap(&:compare_by_identity)
         if to_type
           if from
-            refs = @own_references_to[to_type] ||= []
+            refs = own_references_to[to_type] ||= []
             refs << from
           else
             get_references_to(to_type) || EMPTY_ARRAY
@@ -567,9 +566,9 @@ module GraphQL
           # So optimize the most common case -- don't create a duplicate Hash.
           inherited_value = find_inherited_value(:references_to, EMPTY_HASH)
           if inherited_value.any?
-            inherited_value.merge(@own_references_to)
+            inherited_value.merge(own_references_to)
           else
-            @own_references_to
+            own_references_to
           end
         end
       end
@@ -1456,7 +1455,8 @@ module GraphQL
         own_union_memberships.merge!(addition.union_memberships)
 
         addition.references.each { |thing, pointers|
-          pointers.each { |pointer| references_to(thing, from: pointer) }
+          prev_refs = own_references_to[thing] || []
+          own_references_to[thing] = prev_refs | pointers.to_a
         }
 
         addition.directives.each { |dir_class| own_directives[dir_class.graphql_name] = dir_class }
@@ -1482,6 +1482,10 @@ module GraphQL
 
       def own_types
         @own_types ||= {}
+      end
+
+      def own_references_to
+        @own_references_to ||= {}.tap(&:compare_by_identity)
       end
 
       def non_introspection_types

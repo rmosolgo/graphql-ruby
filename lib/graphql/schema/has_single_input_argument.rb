@@ -47,6 +47,7 @@ module GraphQL
         def dummy
           @dummy ||= begin
             d = Class.new(GraphQL::Schema::Resolver)
+            d.graphql_name "#{self.graphql_name}DummyResolver"
             d.argument_class(self.argument_class)
             # TODO make this lazier?
             d.argument(:input, input_type, description: "Parameters for #{self.graphql_name}")
