@@ -1530,13 +1530,13 @@ module GraphQL
 
       # This is overridden in subclasses to check the inheritance chain
       def get_references_to(type_defn)
-        @own_references_to[type_defn]
+        own_references_to[type_defn]
       end
     end
 
     module SubclassGetReferencesTo
       def get_references_to(type_defn)
-        own_refs = @own_references_to[type_defn]
+        own_refs = own_references_to[type_defn]
         inherited_refs = superclass.references_to(type_defn)
         if inherited_refs&.any?
           if own_refs&.any?
