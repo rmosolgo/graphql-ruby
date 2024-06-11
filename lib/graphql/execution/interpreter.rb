@@ -20,7 +20,7 @@ module GraphQL
         # @param queries [Array<GraphQL::Query, Hash>]
         # @param context [Hash]
         # @param max_complexity [Integer, nil]
-        # @return [Array<Hash>] One result per query
+        # @return [Array<GraphQL::Query::Result>] One result per query
         def run_all(schema, query_options, context: {}, max_complexity: schema.max_complexity)
           queries = query_options.map do |opts|
             case opts

@@ -222,7 +222,7 @@ module GraphQL
     end
 
     # Get the result for this query, executing it once
-    # @return [Hash] A GraphQL response, with `"data"` and/or `"errors"` keys
+    # @return [GraphQL::Query::Result] A Hash-like GraphQL response, with `"data"` and/or `"errors"` keys
     def result
       if !@executed
         Execution::Interpreter.run_all(@schema, [self], context: @context)
