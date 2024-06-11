@@ -311,6 +311,7 @@ module Dummy
 
     def self.build(type:, data:, id_type: "Int")
       Class.new(self) do
+        graphql_name("Fetch#{type.graphql_name}")
         self.data = data
         type(type, null: true)
         description("Find a #{type.name} by id")
@@ -332,6 +333,7 @@ module Dummy
 
     def self.build(type:, data:)
       Class.new(self) do
+        graphql_name("Get#{type.graphql_name}")
         description("Find the only #{type.name}")
         type(type, null: true)
         self.data = data
