@@ -84,3 +84,17 @@ The returned strings are used as cache keys in the database -- whenever they cha
 - `def self.resolve_type(abstract_type, object, context)` which returns a GraphQL object type definition to use for `object`
 
 After your schema is setup, you can {% internal_link "configure caching on your types and fields", "/object_cache/caching", %}.
+
+## Schema Fingerprint
+
+ `ObjectCache` will also call `.fingerprint` on your Schema class. You can implement this method to return a new string if you make breaking changes to your schema, for example:
+
+ ```ruby
+class MySchema < GraphQL::Schema
+  def self.fingerprint
+    "v2" # increment this if there are breaking changes to the schema
+  end
+end
+```
+
+By returning a new `MySchema.fingerprint`, _all_ previously-cached results will be expired.
