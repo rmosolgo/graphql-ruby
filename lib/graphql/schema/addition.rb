@@ -95,7 +95,7 @@ module GraphQL
             # It's a union with possible_types
             # Replace the item by class name
             owner.assign_type_membership_object_type(type)
-            @possible_types[owner.graphql_name] = owner.possible_types
+            @possible_types[owner] = owner.possible_types
           elsif type.kind.interface? && (owner.kind.object? || owner.kind.interface?)
             new_interfaces = []
             owner.interfaces.each do |int_t|
@@ -110,7 +110,7 @@ module GraphQL
             end
             owner.implements(*new_interfaces)
             new_interfaces.each do |int|
-              pt = @possible_types[int.graphql_name] ||= []
+              pt = @possible_types[int] ||= []
               if !pt.include?(owner) && owner.is_a?(Class)
                 pt << owner
               end
@@ -229,7 +229,7 @@ module GraphQL
             end
           end
           if type.kind.union?
-            @possible_types[type.graphql_name] = type.all_possible_types
+            @possible_types[type] = type.all_possible_types
             path.push("possible_types")
             type.all_possible_types.each do |t|
               add_type(t, owner: type, late_types: late_types, path: path)
@@ -244,7 +244,7 @@ module GraphQL
             path.pop
           end
           if type.kind.object?
-            possible_types_for_this_name = @possible_types[type.graphql_name] ||= []
+            possible_types_for_this_name = @possible_types[type] ||= []
             possible_types_for_this_name << type
           end
 
@@ -256,7 +256,7 @@ module GraphQL
                 interface_type = interface_type_membership.abstract_type
                 # We can get these now; we'll have to get late-bound types later
                 if interface_type.is_a?(Module) && type.is_a?(Class)
-                  implementers = @possible_types[interface_type.graphql_name] ||= []
+                  implementers = @possible_types[interface_type] ||= []
                   implementers << type
                 end
               when String, Schema::LateBoundType

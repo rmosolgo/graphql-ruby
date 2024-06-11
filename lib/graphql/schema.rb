@@ -506,7 +506,7 @@ module GraphQL
           if type.kind.union?
             type.possible_types(context: context)
           else
-            stored_possible_types = own_possible_types[type.graphql_name]
+            stored_possible_types = own_possible_types[type]
             visible_possible_types = if stored_possible_types && type.kind.interface?
               stored_possible_types.select do |possible_type|
                 possible_type.interfaces(context).include?(type)
@@ -515,7 +515,7 @@ module GraphQL
               stored_possible_types
             end
             visible_possible_types ||
-              introspection_system.possible_types[type.graphql_name] ||
+              introspection_system.possible_types[type] ||
               (
                 superclass.respond_to?(:possible_types) ?
                   superclass.possible_types(type, context) :
@@ -1497,7 +1497,7 @@ module GraphQL
       end
 
       def own_possible_types
-        @own_possible_types ||= {}
+        @own_possible_types ||= {}.tap(&:compare_by_identity)
       end
 
       def own_union_memberships
