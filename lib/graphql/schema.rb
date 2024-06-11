@@ -1283,7 +1283,7 @@ module GraphQL
 
       # Execute a query on itself.
       # @see {Query#initialize} for arguments.
-      # @return [Hash] query result, ready to be serialized as JSON
+      # @return [GraphQL::Query::Result] query result, ready to be serialized as JSON
       def execute(query_str = nil, **kwargs)
         if query_str
           kwargs[:query] = query_str
@@ -1323,7 +1323,7 @@ module GraphQL
       # @see {Execution::Multiplex#run_all} for multiplex keyword arguments
       # @param queries [Array<Hash>] Keyword arguments for each query
       # @param context [Hash] Multiplex-level context
-      # @return [Array<Hash>] One result for each query in the input
+      # @return [Array<GraphQL::Query::Result>] One result for each query in the input
       def multiplex(queries, **kwargs)
         GraphQL::Execution::Interpreter.run_all(self, queries, **kwargs)
       end
