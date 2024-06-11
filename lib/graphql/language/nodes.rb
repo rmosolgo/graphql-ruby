@@ -274,6 +274,8 @@ module GraphQL
           ]
 
           def generate_initialize
+            return if method_defined?(:marshal_load, false) # checking for `:initialize` doesn't work right
+
             scalar_method_names = @scalar_methods
             # TODO: These probably should be scalar methods, but `types` returns an array
             [:types, :description].each do |extra_method|
@@ -392,16 +394,6 @@ module GraphQL
 
       # A single selection in a GraphQL query.
       class Field < AbstractNode
-        scalar_methods :name, :alias
-        children_methods({
-          arguments: GraphQL::Language::Nodes::Argument,
-          selections: GraphQL::Language::Nodes::Field,
-          directives: GraphQL::Language::Nodes::Directive,
-        })
-
-        # @!attribute selections
-        #   @return [Array<Nodes::Field>] Selections on this object (or empty array if this is a scalar field)
-
         def initialize(name: nil, arguments: NONE, directives: NONE, selections: NONE, field_alias: nil, line: nil, col: nil, pos: nil, filename: nil, source: nil)
           @name = name
           @arguments = arguments || NONE
@@ -428,24 +420,19 @@ module GraphQL
           @line, @col, @filename, @name, @arguments, @directives, @selections, @alias = values
         end
 
+        scalar_methods :name, :alias
+        children_methods({
+          arguments: GraphQL::Language::Nodes::Argument,
+          selections: GraphQL::Language::Nodes::Field,
+          directives: GraphQL::Language::Nodes::Directive,
+        })
+
         # Override this because default is `:fields`
         self.children_method_name = :selections
       end
 
       # A reusable fragment, defined at document-level.
       class FragmentDefinition < AbstractNode
-        scalar_methods :name, :type
-        children_methods({
-          selections: GraphQL::Language::Nodes::Field,
-          directives: GraphQL::Language::Nodes::Directive,
-        })
-
-        self.children_method_name = :definitions
-        # @!attribute name
-        #   @return [String] the identifier for this fragment, which may be applied with `...#{name}`
-
-        # @!attribute type
-        #   @return [String] the type condition for this fragment (name of type which it may apply to)
         def initialize(name: nil, type: nil, directives: NONE, selections: NONE, filename: nil, pos: nil, source: nil, line: nil, col: nil)
           @name = name
           @type = type
@@ -469,6 +456,14 @@ module GraphQL
         def marshal_load(values)
           @line, @col, @filename, @name, @type, @directives, @selections = values
         end
+
+        scalar_methods :name, :type
+        children_methods({
+          selections: GraphQL::Language::Nodes::Field,
+          directives: GraphQL::Language::Nodes::Directive,
+        })
+
+        self.children_method_name = :definitions
       end
 
       # Application of a named fragment in a selection
