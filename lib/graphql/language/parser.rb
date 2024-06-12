@@ -379,7 +379,12 @@ module GraphQL
             v_loc = pos
             description = if at?(:STRING); string_value; end
             defn_loc = pos
-            enum_value = parse_enum_name
+            # Any identifier, but not true, false, or null
+            enum_value = if at?(:TRUE) || at?(:FALSE) || at?(:NULL)
+              expect_token(:IDENTIFIER)
+            else
+              parse_name
+            end
             v_directives = parse_directives
             list << EnumValueDefinition.new(pos: v_loc, definition_pos: defn_loc, description: description, name: enum_value, directives: v_directives, filename: @filename, source: self)
           end
@@ -631,15 +636,6 @@ module GraphQL
         end
       end
 
-      # Any identifier, but not true, false, or null
-      def parse_enum_name
-        if at?(:TRUE) || at?(:FALSE) || at?(:NULL)
-          expect_token(:IDENTIFIER)
-        else
-          parse_name
-        end
-      end
-
       def parse_type_name
         TypeName.new(pos: pos, name: parse_name, filename: @filename, source: self)
       end
@@ -730,6 +726,54 @@ module GraphQL
           loc = pos
           advance_token
           VariableIdentifier.new(pos: loc, name: parse_name, filename: @filename, source: self)
+        when :SCHEMA
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "schema", filename: @filename, source: self)
+        when :SCALAR
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "scalar", filename: @filename, source: self)
+        when :IMPLEMENTS
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "implements", filename: @filename, source: self)
+        when :INTERFACE
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "interface", filename: @filename, source: self)
+        when :UNION
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "union", filename: @filename, source: self)
+        when :ENUM
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "enum", filename: @filename, source: self)
+        when :INPUT
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "input", filename: @filename, source: self)
+        when :DIRECTIVE
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "directive", filename: @filename, source: self)
+        when :TYPE
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "type", filename: @filename, source: self)
+        when :QUERY
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "query", filename: @filename, source: self)
+        when :MUTATION
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "mutation", filename: @filename, source: self)
+        when :SUBSCRIPTION
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "subscription", filename: @filename, source: self)
+        when :FRAGMENT
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "fragment", filename: @filename, source: self)
+        when :REPEATABLE
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "repeatable", filename: @filename, source: self)
+        when :ON
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "on", filename: @filename, source: self)
+        when :EXTEND
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "extend", filename: @filename, source: self)
         else
           expect_token(:VALUE)
         end

@@ -96,12 +96,18 @@ createRecord(data: {
     assert GraphQL.parse("{ field(null: false) ... null } fragment null on Query { null }")
   end
 
-  it "allows fields and arguments named on and directive" do
-    assert GraphQL.parse("{ on(on: false) directive(directive: false)}")
+  it "allows fields, arguments, and enum values named on and directive" do
+    assert GraphQL.parse("{ on(on: on) directive(directive: directive)}")
   end
 
-  it "allows fields and arguments extend" do
-    assert GraphQL.parse("{ extend(extend: false) }")
+  it "allows fields, arguments, and enum values named extend" do
+    assert GraphQL.parse("{ extend(extend: extend) }")
+  end
+
+  it "allows fields, arguments, and enum values named type" do
+    doc = GraphQL.parse("{ type(type: type) }")
+    assert_instance_of GraphQL::Language::Nodes::Enum, doc.definitions.first.selections.first.arguments.first.value
+
   end
 
   it "raises an error when unicode is used as names" do
