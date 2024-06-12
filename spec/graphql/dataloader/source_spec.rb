@@ -24,7 +24,11 @@ describe GraphQL::Dataloader::Source do
 
     source_cache = dl.instance_variable_get(:@source_cache)
     source_cache_for_source = source_cache[FailsToLoadSource]
-    source_inst = source_cache_for_source[[{}]]
+
+    # The value of this changed in Ruby 3.3.3, see https://bugs.ruby-lang.org/issues/20180
+    # In previous versions, it was `[{}]`, but now it's `[]`
+    empty_batch_key = [*[], **{}]
+    source_inst = source_cache_for_source[empty_batch_key]
     assert_instance_of FailsToLoadSource, source_inst, "The cache includes a pending source (#{source_cache_for_source.inspect})"
     assert source_inst.pending?
   end
