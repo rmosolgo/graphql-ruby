@@ -30,10 +30,7 @@ Rake::TestTask.new do |t|
 
   # After 2.7, there were not warnings for uninitialized ivars anymore
   if RUBY_VERSION < "3"
-    puts "Disabling warnings on Ruby #{RUBY_VERSION.inspect}"
     t.warning = false
-  else
-    puts "Enabling warnings on Ruby #{RUBY_VERSION.inspect}"
   end
 end
 

@@ -24,7 +24,9 @@ describe GraphQL::Dataloader::Source do
 
     source_cache = dl.instance_variable_get(:@source_cache)
     source_cache_for_source = source_cache[FailsToLoadSource]
-    assert source_cache_for_source[[{}]].pending?, "The cache includes a pending source (#{source_cache_for_source.inspect})"
+    source_inst = source_cache_for_source[[{}]]
+    assert_instance_of FailsToLoadSource, source_inst, "The cache includes a pending source (#{source_cache_for_source.inspect})"
+    assert source_inst.pending?
   end
 
   class CustomKeySource < GraphQL::Dataloader::Source
