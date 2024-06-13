@@ -10,6 +10,10 @@
 
 ### Bug fixes
 
+# 2.0.31 (13 Jun 2024)
+
+- Runtime: fix directives inside nested fragments #4988
+
 # 2.0.30 (9 May 2024)
 
 - Runtime: fix variable name error #4948
