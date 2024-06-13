@@ -10,6 +10,22 @@
 
 ### Bug fixes
 
+# 2.3.5 (13 Jun 2024)
+
+### Breaking changes
+
+- Remove default `load_*` implementations in arguments -- this could break calls to `super` if you have redefined this method in subclasses #4978
+
+### Bug fixes
+
+- Enums: fix parsing enum values that match GraphQL keywords (eg `type`, `extend`) #4987
+- Consolidate runtime state #4969
+- Simplify schema type indexes #4971 #4986
+- Remove duplicate when clause #4976
+- Address many Ruby warnings #4978
+- Remove needless `ruby2_keywords` usage #4989
+- Fix some YARD docs #4984
+
 # 2.3.4 (21 May 2024)
 
 ### New features
