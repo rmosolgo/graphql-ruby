@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.3.4/">API</a>
+            <a href="/api-doc/2.3.5/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -154,7 +154,7 @@
 <div class="guide-container">
   <p>Connections use <em>cursors</em> to advance through paginated lists. A cursor is an opaque string that indicates a specific point in this.</p>
 
-<p>Here, <em>opaque</em> means that the string has no meaning except its value. cursors shouldn’t be decoded, reverse-engineered, or generated ad-hoc. The only guarantee of a cursor is that, after you retrieve one, you can use it to request subsequent or preceeding items in the list.</p>
+<p>Here, <em>opaque</em> means that the string has no meaning except its value. cursors shouldn’t be decoded, reverse-engineered, or generated ad-hoc. The only guarantee of a cursor is that, after you retrieve one, you can use it to request subsequent or preceding items in the list.</p>
 
 <p>Although cursors can be tricky, they were chosen for Relay-style connections because they can be implemented in stable and high-performing ways.</p>
 
@@ -182,7 +182,7 @@
 
 <p>Now, all connections will use URL-safe base-64 encoding.</p>
 
-<p>From a connection instance, the <code class="language-plaintext highlighter-rouge">cursor_encoders</code> methods are available via <a href="/api-doc/2.3.4/GraphQL/Pagination/Connection#encode-instance_method" target="_blank" title="API docs for GraphQL::Pagination::Connection#encode"><code>GraphQL::Pagination::Connection#encode</code></a> and <a href="/api-doc/2.3.4/GraphQL/Pagination/Connection#decode-instance_method" target="_blank" title="API docs for GraphQL::Pagination::Connection#decode"><code>GraphQL::Pagination::Connection#decode</code></a></p>
+<p>From a connection instance, the <code class="language-plaintext highlighter-rouge">cursor_encoders</code> methods are available via <a href="/api-doc/2.3.5/GraphQL/Pagination/Connection#encode-instance_method" target="_blank" title="API docs for GraphQL::Pagination::Connection#encode"><code>GraphQL::Pagination::Connection#encode</code></a> and <a href="/api-doc/2.3.5/GraphQL/Pagination/Connection#decode-instance_method" target="_blank" title="API docs for GraphQL::Pagination::Connection#decode"><code>GraphQL::Pagination::Connection#decode</code></a></p>
 
 </div>
 <p class="guide-footer">

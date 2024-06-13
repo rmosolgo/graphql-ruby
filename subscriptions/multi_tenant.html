@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.3.4/">API</a>
+            <a href="/api-doc/2.3.5/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -192,7 +192,7 @@
 
 <p>Alternatively, <code class="language-plaintext highlighter-rouge">subscription_scope</code> might name something that <em>belongs</em> to the tenant:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BudgetWasApproved</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Subcription</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BudgetWasApproved</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Subscription</span>
   <span class="n">subscription_scope</span> <span class="ss">:project_id</span> <span class="c1"># This would work with `context[:project_id] = 1234`</span>
 <span class="k">end</span>
 

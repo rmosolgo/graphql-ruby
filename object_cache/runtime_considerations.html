@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.3.4/">API</a>
+            <a href="/api-doc/2.3.5/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -157,6 +157,7 @@
   <ol class='contents-list'><li class='contents-entry'><a href='#skipping-the-cache'>Skipping the cache
 </a></li><li class='contents-entry'><a href='#manually-adding-an-object-to-caching'>Manually adding an object to caching
 </a></li><li class='contents-entry'><a href='#measuring-the-cache'>Measuring the cache
+</a></li><li class='contents-entry'><a href='#manually-refreshing-the-cache'>Manually refreshing the cache
 </a></li></ol>
 </div>
 </div>
@@ -207,6 +208,12 @@
   <span class="ss">uncacheable: </span><span class="kp">true</span><span class="p">,</span>          <span class="c1"># if ObjectCache found a reason that this query couldn't be cached (see `messages: ...` for reason)</span>
 <span class="p">}</span>
 </code></pre></div></div>
+
+<h2 id="manually-refreshing-the-cache">Manually refreshing the cache</h2>
+
+<p>If you need to manually clear the cache for a query, pass <code class="language-plaintext highlighter-rouge">context: { refresh_object_cache: true, ... }</code>. This will cause the <code class="language-plaintext highlighter-rouge">ObjectCache</code> to remove the already-cached result (if there was one), reassess the query for cache validity, and return a freshly-executed result.</p>
+
+<p>Usually, this shouldn’t be necessary; making sure objects update their <a href="/object_cache/schema_setup.html#object-fingerprint">cache fingerprints</a> will cause entries to expire when they should be re-executed. See also <a href="/object_cache/schema_setup.html#schema-fingerprin">Schema fingerprint</a> for expiring <em>all</em> results in the cache.</p>
 
 </div>
 <p class="guide-footer">

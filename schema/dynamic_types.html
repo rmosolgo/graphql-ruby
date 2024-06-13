@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.3.4/">API</a>
+            <a href="/api-doc/2.3.5/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -294,7 +294,7 @@
 
 <h3 id="using-def-argumentscontext-and-def-get_argumentname-context">Using <code class="language-plaintext highlighter-rouge">def arguments(context)</code> and <code class="language-plaintext highlighter-rouge">def get_argument(name, context)</code></h3>
 
-<p>Also, you can implement <code class="language-plaintext highlighter-rouge">def arguments(context)</code> on your base field class to return a Hash of <code class="language-plaintext highlighter-rouge">{ String =&gt; GraphQL::Schema::Argument }</code> and <code class="language-plaintext highlighter-rouge">def get_argument(name, context)</code> to return a <a href="/api-doc/2.3.4/GraphQL/Schema/Argument" target="_blank" title="API docs for GraphQL::Schema::Argument"><code>GraphQL::Schema::Argument</code></a> or <code class="language-plaintext highlighter-rouge">nil</code>. . If you take this approach, you might want some custom field classes for any types or resolvers that use these methods. That way, you don’t have to reimplement the method for <em>all</em> the fields in the schema.</p>
+<p>Also, you can implement <code class="language-plaintext highlighter-rouge">def arguments(context)</code> on your base field class to return a Hash of <code class="language-plaintext highlighter-rouge">{ String =&gt; GraphQL::Schema::Argument }</code> and <code class="language-plaintext highlighter-rouge">def get_argument(name, context)</code> to return a <a href="/api-doc/2.3.5/GraphQL/Schema/Argument" target="_blank" title="API docs for GraphQL::Schema::Argument"><code>GraphQL::Schema::Argument</code></a> or <code class="language-plaintext highlighter-rouge">nil</code>. . If you take this approach, you might want some custom field classes for any types or resolvers that use these methods. That way, you don’t have to reimplement the method for <em>all</em> the fields in the schema.</p>
 
 <h3 id="hidden-input-types">Hidden Input Types</h3>
 
@@ -341,7 +341,7 @@
 
 <h3 id="using-enum_valuescontext">Using <code class="language-plaintext highlighter-rouge">.enum_values(context)</code></h3>
 
-<p>Alternatively, you can implement <code class="language-plaintext highlighter-rouge">def self.enum_values(context)</code> in your enum types to return an Array of <a href="/api-doc/2.3.4/GraphQL/Schema/EnumValue" target="_blank" title="API docs for GraphQL::Schema::EnumValue"><code>GraphQL::Schema::EnumValue</code></a>s. For example, to return a dynamic set of enum values:</p>
+<p>Alternatively, you can implement <code class="language-plaintext highlighter-rouge">def self.enum_values(context)</code> in your enum types to return an Array of <a href="/api-doc/2.3.5/GraphQL/Schema/EnumValue" target="_blank" title="API docs for GraphQL::Schema::EnumValue"><code>GraphQL::Schema::EnumValue</code></a>s. For example, to return a dynamic set of enum values:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">ProjectStatus</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseEnum</span>
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">enum_values</span><span class="p">(</span><span class="n">context</span> <span class="o">=</span> <span class="p">{})</span>
@@ -362,7 +362,7 @@
 <p>You can also use different types for each query. A few behaviors depend on the methods defined above:</p>
 
 <ul>
-  <li>If a type is not used as a return type, an argument type, or as a member of a union or implementor of an interface, it will be hidden</li>
+  <li>If a type is not used as a return type, an argument type, or as a member of a union or implementer of an interface, it will be hidden</li>
   <li>If an interface or union has members, it will be hidden</li>
   <li>If a field’s return type is hidden, the field will be hidden</li>
   <li>If an argument’s input type is hidden, the argument will be hidden</li>
@@ -449,7 +449,7 @@
 
 <h2 id="schema-dumps">Schema Dumps</h2>
 
-<p>To dump a certain <em>version</em> of the schema, provide the applicable <code class="language-plaintext highlighter-rouge">context: ...</code> to <a href="/api-doc/2.3.4/GraphQL/Schema#to_definition-class_method" target="_blank" title="API docs for GraphQL::Schema.to_definition"><code>Schema.to_definition</code></a>. For example:</p>
+<p>To dump a certain <em>version</em> of the schema, provide the applicable <code class="language-plaintext highlighter-rouge">context: ...</code> to <a href="/api-doc/2.3.5/GraphQL/Schema#to_definition-class_method" target="_blank" title="API docs for GraphQL::Schema.to_definition"><code>Schema.to_definition</code></a>. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Legacy money schema:</span>
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">to_definition</span><span class="p">(</span><span class="ss">context: </span><span class="p">{</span> <span class="ss">requests_legacy_money: </span><span class="kp">true</span> <span class="p">})</span>

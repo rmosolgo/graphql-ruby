@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.3.4/">API</a>
+            <a href="/api-doc/2.3.5/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -156,7 +156,7 @@
 </div>
 </div>
 <div class="guide-container">
-  <p><a href="/api-doc/2.3.4/GraphQL/Dataloader" target="_blank" title="API docs for GraphQL::Dataloader"><code>GraphQL::Dataloader</code></a> solves the same problem as <a href="https://github.com/shopify/graphql-batch"><code class="language-plaintext highlighter-rouge">GraphQL::Batch</code></a>. There are a few major differences between the modules:</p>
+  <p><a href="/api-doc/2.3.5/GraphQL/Dataloader" target="_blank" title="API docs for GraphQL::Dataloader"><code>GraphQL::Dataloader</code></a> solves the same problem as <a href="https://github.com/shopify/graphql-batch"><code class="language-plaintext highlighter-rouge">GraphQL::Batch</code></a>. There are a few major differences between the modules:</p>
 
 <ul>
   <li><strong>Concurrency Primitive:</strong> GraphQL-Batch uses <code class="language-plaintext highlighter-rouge">Promise</code>s from <a href="https://github.com/lgierth/promise.rb"><code class="language-plaintext highlighter-rouge">promise.rb</code></a>; GraphQL::Dataloader uses Ruby’s <a href="https://ruby-doc.org/core-3.0.0/Fiber.html"><code class="language-plaintext highlighter-rouge">Fiber</code> API</a>. These primitives dictate how batch loading code is written (see below for comparisons).</li>
@@ -177,7 +177,7 @@
     <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">record_promise</span> <span class="o">=</span> <span class="no">Loaders</span><span class="o">::</span><span class="no">Record</span><span class="p">.</span><span class="nf">load</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 </code></pre></div>    </div>
 
-    <p>Then, under the hood, GraphQL-Ruby manages the promise (using its <code class="language-plaintext highlighter-rouge">lazy_resolve</code> feature, upstreamed from GraphQL-Batch many years ago). GraphQL-Ruby will call <code class="language-plaintext highlighter-rouge">.sync</code> on it when no futher execution is possible; <code class="language-plaintext highlighter-rouge">promise.rb</code> implements <code class="language-plaintext highlighter-rouge">Promise#sync</code> to execute the pending work.</p>
+    <p>Then, under the hood, GraphQL-Ruby manages the promise (using its <code class="language-plaintext highlighter-rouge">lazy_resolve</code> feature, upstreamed from GraphQL-Batch many years ago). GraphQL-Ruby will call <code class="language-plaintext highlighter-rouge">.sync</code> on it when no further execution is possible; <code class="language-plaintext highlighter-rouge">promise.rb</code> implements <code class="language-plaintext highlighter-rouge">Promise#sync</code> to execute the pending work.</p>
   </li>
   <li>
     <p>With <strong>GraphQL::Dataloader</strong>, you get a source, then call <code class="language-plaintext highlighter-rouge">.load</code> on it, which may pause the current Fiber, but it returns the requested object.</p>
@@ -215,7 +215,7 @@
 
 <h2 id="comparison-fetching-objects-concurrently-independent">Comparison: Fetching objects concurrently (independent)</h2>
 
-<p>Sometimes, you need multiple <em>independent</em> records to perform a calcuation. Each record is loaded, then they’re combined in some bit of work.</p>
+<p>Sometimes, you need multiple <em>independent</em> records to perform a calculation. Each record is loaded, then they’re combined in some bit of work.</p>
 
 <ul>
   <li>
