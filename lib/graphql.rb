@@ -6,14 +6,6 @@ require "singleton"
 require "forwardable"
 
 module GraphQL
-  # forwards-compat for argument handling
-  module Ruby2Keywords
-    if RUBY_VERSION < "2.7"
-      def ruby2_keywords(*)
-      end
-    end
-  end
-
   class Error < StandardError
   end
 
