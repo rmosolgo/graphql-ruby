@@ -951,7 +951,7 @@ type Type implements Interface {
       assert_equal [22, 1], schema.types["Input"].ast_node.position
       assert_equal [23, 3], schema.types["Input"].arguments["argument"].ast_node.position
       assert_equal [26, 1], schema.directives["Directive"].ast_node.position
-      assert_equal [28, 3], schema.directives["Directive"].arguments["argument"].ast_node.position
+      assert_equal [27, 3], schema.directives["Directive"].arguments["argument"].ast_node.position
       assert_equal [33, 22], schema.types["Type"].ast_node.interfaces[0].position
     end
 

@@ -288,7 +288,16 @@ it "creates an anonymous fragment definition" do
       query_str = <<-GRAPHQL
         # Anonymous query comment
         query ($sizes: [ImageSize]) {
-          imageUrl(sizes: $sizes)
+          imageUrl(sizes: $sizes) {
+            # Handles error
+            # Testing multiline comment
+            ... on ImageNotFound {
+              message
+            }
+            ... on ImageUrl {
+              url
+            }
+          }
         }
       GRAPHQL
 
