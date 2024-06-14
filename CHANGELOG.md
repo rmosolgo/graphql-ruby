@@ -15,6 +15,7 @@
 ### Breaking changes
 
 - Remove default `load_*` implementations in arguments -- this could break calls to `super` if you have redefined this method in subclasses #4978
+- `Schema.possible_types` and `Schema.references_to` now use type classes as keys instead of type names (Strings). You can create a new Hash with the old structure using `.transform_keys(&:graphql_name)`. #4986 #4971
 
 ### Bug fixes
 
