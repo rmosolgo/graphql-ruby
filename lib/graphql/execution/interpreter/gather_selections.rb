@@ -29,6 +29,12 @@ module GraphQL
               else
                 gather_for(object, type, node.selections, selections)
               end
+            when GraphQL::Language::Nodes::FragmentSpread
+              fragment_def = @query.fragments[node.name]
+              next_sels_config = @selections_on_node[node]
+              next_sels_config[0] = fragment_def.type
+              next_sels_config[1] = node.directives # Use directives from the spread, not the def
+              gather_for(object, type, fragment_def.selections, next_sels_config[2])
             end
           end
 

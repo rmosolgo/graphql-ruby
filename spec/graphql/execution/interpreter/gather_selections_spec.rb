@@ -35,8 +35,12 @@ describe GraphQL::Execution::Interpreter::GatherSelections do
     expected_selections = [
       ["a",
       "b", # TODO not this because skipped
-      "c", "d"]
-      # TODO Fragment spreads (matching and not)
+      "c",
+      "d",
+      # "e" This fails typecheck
+      "f",
+      # "g" This fails typecheck
+      ]
       # TODO Runtime directives on fragments
     ]
     str = "{
@@ -45,7 +49,18 @@ describe GraphQL::Execution::Interpreter::GatherSelections do
       ... { c }
       ... on Test { d }
       ... on Other { e }
-    }"
+      ...F
+      ...G
+    }
+
+    fragment F on Test {
+      f
+    }
+
+    fragment G on Other {
+      g
+    }
+    "
 
     assert_equal expected_selections, get_yielded_selections(:thing, GatherSelectionsSchema::TestType, str)
   end
