@@ -1358,7 +1358,7 @@ module GraphQL
         if defined?(@new_gather_selections)
           @new_gather_selections
         else
-          find_inherited_value(:new_gathered_selections, false )
+          find_inherited_value(:new_gather_selections, false )
         end
       end
 
