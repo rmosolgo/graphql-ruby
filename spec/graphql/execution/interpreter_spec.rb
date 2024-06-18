@@ -278,6 +278,8 @@ describe GraphQL::Execution::Interpreter do
       mutation(Mutation)
       lazy_resolve(Box, :value)
 
+      new_gather_selections true
+
       use GraphQL::Schema::AlwaysVisible
 
       def self.object_from_id(id, ctx)

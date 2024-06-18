@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require "graphql/execution/interpreter/gather_selections"
 require "graphql/execution/interpreter/runtime/graphql_result"
 
 module GraphQL
@@ -55,6 +56,13 @@ module GraphQL
           # { Class => Boolean }
           @lazy_cache = {}
           @lazy_cache.compare_by_identity
+
+          use_new_gather_selections = @context.key?(:new_gather_selections) ? @context[:new_gather_selections] : @schema.new_gather_selections
+          @gather_selections = if use_new_gather_selections
+            GatherSelections.new(query)
+          else
+            self
+          end
         end
 
         def final_result
@@ -84,7 +92,7 @@ module GraphQL
             @response = nil
           else
             call_method_on_directives(:resolve, runtime_object, root_operation.directives) do # execute query level directives
-              each_gathered_selections(@response) do |selections, is_selection_array|
+              @gather_selections.each_gathered_selections(@response) do |selections, is_selection_array|
                 if is_selection_array
                   selection_response = GraphQLResultHash.new(nil, root_type, runtime_object, nil, false, selections, is_eager)
                   final_response = @response
@@ -602,7 +610,7 @@ module GraphQL
               if HALT != continue_value
                 response_hash = GraphQLResultHash.new(result_name, current_type, continue_value, selection_result, is_non_null, next_selections, false)
                 set_result(selection_result, result_name, response_hash, true, is_non_null)
-                each_gathered_selections(response_hash) do |selections, is_selection_array|
+                @gather_selections.each_gathered_selections(response_hash) do |selections, is_selection_array|
                   if is_selection_array
                     this_result = GraphQLResultHash.new(result_name, current_type, continue_value, selection_result, is_non_null, selections, false)
                     final_result = response_hash

@@ -6,9 +6,18 @@ describe GraphQL::Execution::Interpreter::GatherSelections do
   def get_yielded_selections(object, type, *query_args, **query_kwargs)
     query = GraphQL::Query.new(GatherSelectionsSchema, *query_args, **query_kwargs)
     sels = query.document.definitions.first.selections
-    selections = GraphQL::Execution::Interpreter::GatherSelections.new(query, sels)
+    gql_result = GraphQL::Execution::Interpreter::Runtime::GraphQLResultHash.new(
+      nil,
+      type,
+      object,
+      nil,
+      false,
+      sels,
+      false
+    )
+    selections = GraphQL::Execution::Interpreter::GatherSelections.new(query)
     results = []
-    selections.gather_for(object, type) do |selections, is_array|
+    selections.each_gathered_selections(gql_result) do |selections, is_array|
       results << selections.keys
     end
     results
@@ -28,18 +37,25 @@ describe GraphQL::Execution::Interpreter::GatherSelections do
       field :other_type, OtherType
     end
 
+    class Capitalize < GraphQL::Schema::Directive
+      def self.resolve(obj, args, ctx)
+        result = yield
+        result.upcase
+      end
+    end
+
     query(Query)
+    directive(Capitalize)
   end
 
   it "yields simple selections" do
     expected_selections = [
       [
-        # TODO these are moved up because they don't have conditions on them.
-        # But it would be better to preserve their order.
         "b2",
         "c",
         "a",
         # "b", @skip
+        "b3",
         "d",
         # "e" This fails typecheck
         "f",
@@ -53,6 +69,7 @@ describe GraphQL::Execution::Interpreter::GatherSelections do
       a @skip(if: false)
       b @skip(if: true)
       b2
+      b3 @capitalize
       ... { c }
       ... on Test { d }
       ... on Other { e }

@@ -1350,6 +1350,18 @@ module GraphQL
         query.context.errors.push(GraphQL::ExecutionError.new("This query is too large to execute."))
       end
 
+      def new_gather_selections(new_value = NOT_CONFIGURED)
+        if NOT_CONFIGURED != new_value
+          @new_gather_selections = new_value
+        end
+
+        if defined?(@new_gather_selections)
+          @new_gather_selections
+        else
+          find_inherited_value(:new_gathered_selections, false )
+        end
+      end
+
       # Call the given block at the right time, either:
       # - Right away, if `value` is not registered with `lazy_resolve`
       # - After resolving `value`, if it's registered with `lazy_resolve` (eg, `Promise`)
