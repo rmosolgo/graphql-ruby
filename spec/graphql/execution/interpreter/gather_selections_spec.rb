@@ -33,33 +33,39 @@ describe GraphQL::Execution::Interpreter::GatherSelections do
 
   it "yields simple selections" do
     expected_selections = [
-      ["a",
-      "b", # TODO not this because skipped
-      "c",
-      "d",
-      # "e" This fails typecheck
-      "f",
-      # "g" This fails typecheck
+      [
+        # TODO these are moved up because they don't have conditions on them.
+        # But it would be better to preserve their order.
+        "b2",
+        "c",
+        "a",
+        # "b", @skip
+        "d",
+        # "e" This fails typecheck
+        "f",
+        # "g" This fails typecheck,
+        # "h", @skip
+        "i"
       ]
       # TODO Runtime directives on fragments
     ]
     str = "{
       a @skip(if: false)
       b @skip(if: true)
+      b2
       ... { c }
       ... on Test { d }
       ... on Other { e }
       ...F
       ...G
+      ...H @skip(if: true)
+      ...I @skip(if: false)
     }
 
-    fragment F on Test {
-      f
-    }
-
-    fragment G on Other {
-      g
-    }
+    fragment F on Test { f }
+    fragment G on Other { g }
+    fragment H on Test { h }
+    fragment I on Test { i }
     "
 
     assert_equal expected_selections, get_yielded_selections(:thing, GatherSelectionsSchema::TestType, str)
