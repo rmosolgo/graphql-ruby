@@ -295,16 +295,28 @@ it "creates an anonymous fragment definition" do
               message
             }
             ... on ImageUrl {
-              url
+              ...ImageUrlFragment
             }
           }
         }
+
+        # Another
+        # multiline
+        # comment
+        fragment ImageUrlFragment on ImageUrl {
+          url
+        }
+
+        # throwaway comment
       GRAPHQL
 
       doc = subject.parse(query_str)
       field = doc.definitions.first.selections.first
       assert_equal 1, field.arguments.length
       assert_equal "Anonymous query comment", doc.definitions.first.comment
+
+      fragment = doc.definitions[1]
+      assert_equal "Another\nmultiline\ncomment", fragment.comment
     end
   end
 

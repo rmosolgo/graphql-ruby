@@ -108,7 +108,14 @@ module GraphQL
         while !@lexer.eos?
           defns << definition
         end
-        Document.new(pos: 0, definitions: defns, filename: @filename, source: self)
+
+        valid_defns = defns.filter { |defn| !defn.is_a?(OrphanComment) }
+
+        if valid_defns.empty?
+          raise GraphQL::ParseError.new("Unexpected end of document", nil, nil, @graphql_str)
+        end
+
+        Document.new(pos: 0, definitions: valid_defns, filename: @filename, source: self)
       end
 
       def definition
@@ -134,6 +141,7 @@ module GraphQL
             type: f_type,
             directives: directives,
             selections: selections,
+            comment: comment,
             filename: @filename,
             source: self
           )
@@ -364,6 +372,8 @@ module GraphQL
             input_fields_definition = parse_input_object_field_definitions
             InputObjectTypeDefinition.new(pos: loc, definition_pos: defn_loc, description: desc, comment: comment, name: name, directives: directives, fields: input_fields_definition, filename: @filename, source: self)
           else
+            return OrphanComment.new(comment: comment) if comment && @lexer.eos?
+
             expect_one_of([:SCHEMA, :SCALAR, :TYPE, :ENUM, :INPUT, :UNION, :INTERFACE])
           end
         end

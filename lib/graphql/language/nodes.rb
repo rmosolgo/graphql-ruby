@@ -338,6 +338,14 @@ module GraphQL
         end
       end
 
+      class OrphanComment < AbstractNode
+        attr_reader :comment
+
+        def initialize(comment: nil)
+          @comment = comment
+        end
+      end
+
       # Base class for non-null type names and list type names
       class WrapperType < AbstractNode
         scalar_methods :of_type
@@ -394,12 +402,12 @@ module GraphQL
 
       # A single selection in a GraphQL query.
       class Field < AbstractNode
-        def initialize(name: nil, arguments: NONE, directives: NONE, selections: NONE, comment: NONE, field_alias: nil, line: nil, col: nil, pos: nil, filename: nil, source: nil)
+        def initialize(name: nil, arguments: NONE, directives: NONE, selections: NONE, comment: nil, field_alias: nil, line: nil, col: nil, pos: nil, filename: nil, source: nil)
           @name = name
           @arguments = arguments || NONE
           @directives = directives || NONE
           @selections = selections || NONE
-          @comment = comment || NONE
+          @comment = comment
           # oops, alias is a keyword:
           @alias = field_alias
           @line = line
@@ -434,7 +442,9 @@ module GraphQL
 
       # A reusable fragment, defined at document-level.
       class FragmentDefinition < AbstractNode
-        def initialize(name: nil, type: nil, directives: NONE, selections: NONE, comment: NONE, filename: nil, pos: nil, source: nil, line: nil, col: nil)
+        attr_reader :comment
+
+        def initialize(name: nil, type: nil, directives: NONE, selections: NONE, comment: nil, filename: nil, pos: nil, source: nil, line: nil, col: nil)
           @name = name
           @type = type
           @directives = directives
