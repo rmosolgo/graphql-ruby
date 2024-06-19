@@ -551,7 +551,10 @@ module GraphQL
         expect_token(:LCURLY)
         selections = []
         while @token_name != :RCURLY
-          comment = if at?(:COMMENT); parse_comments; end
+          comment = parse_comments if at?(:COMMENT)
+
+          # Skip parsing selections after last inline comment
+          break if at?(:RCURLY)
 
           selections << if at?(:ELLIPSIS)
             loc = pos
