@@ -287,8 +287,11 @@ it "creates an anonymous fragment definition" do
     it "is parsed for anonymous query" do
       query_str = <<-GRAPHQL
         # Anonymous query comment
-        query ($sizes: [ImageSize]) {
-          imageUrl(sizes: $sizes) {
+        query ($sizes: [ImageSize]) # Anonymous inline comment
+        {
+          # Field comment
+          imageUrl(sizes: $sizes) # Field inline comment
+          {
             # Handles error
             # Testing multiline comment
             ... on ImageNotFound {
@@ -311,9 +314,12 @@ it "creates an anonymous fragment definition" do
       GRAPHQL
 
       doc = subject.parse(query_str)
-      field = doc.definitions.first.selections.first
-      assert_equal 1, field.arguments.length
-      assert_equal "Anonymous query comment", doc.definitions.first.comment
+      query_selection = doc.definitions[0]
+      assert_equal "Anonymous query comment\nAnonymous inline comment", query_selection.comment
+
+      field_selection = query_selection.selections[0]
+      assert_equal 1, field_selection.arguments.length
+      assert_equal "Field comment\nField inline comment", field_selection.comment
 
       fragment = doc.definitions[1]
       assert_equal "Another\nmultiline\ncomment", fragment.comment
