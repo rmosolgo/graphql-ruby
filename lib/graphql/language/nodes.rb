@@ -429,7 +429,7 @@ module GraphQL
           @line, @col, @filename, @name, @arguments, @directives, @selections, @alias = values
         end
 
-        scalar_methods :name, :alias
+        scalar_methods :comment, :name, :alias
         children_methods({
           arguments: GraphQL::Language::Nodes::Argument,
           selections: GraphQL::Language::Nodes::Field,

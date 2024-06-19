@@ -190,6 +190,9 @@ module GraphQL
 
           directives = parse_directives
 
+          # Parses also an inline comment and joins it with a regular comment
+          comment = join_comments(comment, parse_comments) if at?(:COMMENT)
+
           OperationDefinition.new(
             pos: op_loc,
             operation_type: op_type,
@@ -586,6 +589,8 @@ module GraphQL
 
             arguments = at?(:LPAREN) ? parse_arguments : nil
             directives = at?(:DIR_SIGN) ? parse_directives : nil
+            # Parses also an inline comment and joins it with a regular comment
+            comment = join_comments(comment, parse_comments) if at?(:COMMENT)
             selection_set = at?(:LCURLY) ? self.selection_set : nil
 
             Nodes::Field.new(pos: loc, field_alias: field_alias, name: name, arguments: arguments, directives: directives, comment: comment, selections: selection_set, filename: @filename, source: self)
@@ -851,6 +856,10 @@ module GraphQL
         end
         expect_token(tok)
         token_value
+      end
+
+      def join_comments(*comments)
+        comments.reject(&:nil?).join("\n")
       end
 
       # token_value works for when the scanner matched something
