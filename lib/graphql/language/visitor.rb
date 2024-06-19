@@ -243,6 +243,7 @@ module GraphQL
         Language::Nodes::ObjectTypeDefinition,
         Language::Nodes::ObjectTypeExtension,
         Language::Nodes::OperationDefinition,
+        Language::Nodes::OrphanComment,
         Language::Nodes::ScalarTypeDefinition,
         Language::Nodes::ScalarTypeExtension,
         Language::Nodes::SchemaDefinition,

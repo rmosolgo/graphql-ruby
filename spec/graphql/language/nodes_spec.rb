@@ -12,8 +12,8 @@ describe GraphQL::Language::Nodes::AbstractNode do
 
 
       node_classes -= [GraphQL::Language::Nodes::WrapperType, GraphQL::Language::Nodes::NameOnlyNode]
-      expected_classes = 35
-      assert_equal 35, node_classes.size
+      expected_classes = 36
+      assert_equal 36, node_classes.size
       tested_classes = 0
       node_classes.each do |node_class|
         expected_method_name = "on_#{GraphQL::Schema::Member::BuildType.underscore(node_class.name.split("::").last)}"
