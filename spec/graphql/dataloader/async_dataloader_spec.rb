@@ -52,6 +52,12 @@ if RUBY_VERSION >= "3.1.1"
         end
       end
 
+      class FiberLocalContextSource < GraphQL::Dataloader::Source
+        def fetch(keys)
+          keys.map { |key| Thread.current[key] }
+        end
+      end
+
       class Sleeper < GraphQL::Schema::Object
         field :sleeper, Sleeper, null: false, resolver_method: :sleep do
           argument :duration, Float
@@ -125,6 +131,13 @@ if RUBY_VERSION >= "3.1.1"
         def list_waiters(wait:, tags:)
           Kernel.sleep(0.1)
           tags.map { |t| { tag: t, wait: wait }}
+        end
+
+        field :fiber_local_context, String do
+          argument :key, String
+        end
+        def fiber_local_context(key:)
+          dataloader.with(FiberLocalContextSource).load(key)
         end
       end
 
@@ -272,6 +285,20 @@ if RUBY_VERSION >= "3.1.1"
             # The field itself waits 0.1
             assert_in_delta 0.3, t2 - t1, 0.06, "Wait was parallel"
             assert_equal [["a", "b", "c"]], AsyncSchema::KeyWaitForSource.fetches, "All keys were fetched at once"
+          end
+
+          it 'copies fiber-local variables over to sources' do
+            key = 'arbitrary_context'
+            value = 'test'
+            Thread.current[key] = value
+            query_str = <<-GRAPHQL
+              {
+                fiberLocalContext(key: "#{key}")
+              }
+            GRAPHQL
+
+            result = AsyncSchema.execute(query_str)
+            assert_equal value, result['data']['fiberLocalContext']
           end
         end
       end

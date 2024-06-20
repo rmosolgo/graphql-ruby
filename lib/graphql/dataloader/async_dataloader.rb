@@ -21,6 +21,7 @@ module GraphQL
         manager = spawn_fiber do
           while first_pass || job_fibers.any?
             first_pass = false
+            fiber_vars = get_fiber_variables
 
             while (f = (job_fibers.shift || spawn_job_fiber))
               if f.alive?
@@ -34,6 +35,7 @@ module GraphQL
             next_job_fibers.clear
 
             Sync do |root_task|
+              set_fiber_variables(fiber_vars)
               while source_tasks.any? || @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
                 while (task = source_tasks.shift || spawn_source_task(root_task, sources_condition))
                   if task.alive?
