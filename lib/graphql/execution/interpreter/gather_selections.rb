@@ -23,18 +23,12 @@ module GraphQL
           object = graphql_result_hash.graphql_application_value
           type = graphql_result_hash.graphql_result_type
           selections = graphql_result_hash.graphql_selections
-          root_selections = {}
-          all_selections = [[nil, nil, root_selections, nil]]
-          build_cached_selections(selections, root_selections, all_selections)
+          all_selections = []
+          build_cached_selections(selections, nil, all_selections)
           single_selection = nil
           multiple_selections = nil
           has_merged_selections = false
           all_selections.each do |(type_condition, directives, selections, child_selections)|
-            if selections.empty?
-              # This can happen if the selection contains _only_
-              # selections modified by directives -- TODO don't allocate this
-              next
-            end
             runtime_dirs = nil
             if type_condition
               type_defn = @query.get_type(type_condition.name)
@@ -86,9 +80,16 @@ module GraphQL
             else
               if single_selection.nil?
                 single_selection = selections
+                if multiple_selections
+                  multiple_selections << single_selection
+                end
               else
                 if has_merged_selections == false
+                  idx = multiple_selections&.index(single_selection)
                   single_selection = single_selection.dup
+                  if idx
+                    multiple_selections[idx] = single_selection
+                  end
                   has_merged_selections = true
                 end
                 single_selection.merge!(selections)
@@ -100,7 +101,7 @@ module GraphQL
             multiple_selections.each do |sel|
               yield(sel, true)
             end
-          else
+          elsif single_selection # Maybe `nil` if all were skipped
             yield(single_selection)
           end
         end
@@ -118,6 +119,10 @@ module GraphQL
                 next_sels[2][key] = node
                 all_selection_groups << next_sels
               else
+                if gathered_selections.nil?
+                  gathered_selections = {}
+                  all_selection_groups << [nil, nil, gathered_selections, nil]
+                end
                 gathered_selections[key] = node
               end
             when GraphQL::Language::Nodes::InlineFragment

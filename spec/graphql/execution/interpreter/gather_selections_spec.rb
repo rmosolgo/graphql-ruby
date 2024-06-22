@@ -51,10 +51,10 @@ describe GraphQL::Execution::Interpreter::GatherSelections do
   it "yields simple selections" do
     expected_selections = [
       [
-        "b2",
-        "c",
         "a",
         # "b", @skip
+        "b2",
+        "c",
         "b3",
         "d",
         # "e" This fails typecheck
@@ -99,8 +99,8 @@ describe GraphQL::Execution::Interpreter::GatherSelections do
     GRAPHQL
 
     expected_selections = [
-      ["c", "d"],
       ["a", "b", :graphql_directives],
+      ["c", "d", "e"],
     ]
     assert_equal expected_selections, get_yielded_selections(:thing, GatherSelectionsSchema::TestType, str)
   end
