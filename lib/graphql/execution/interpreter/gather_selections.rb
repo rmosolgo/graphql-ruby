@@ -19,15 +19,37 @@ module GraphQL
           end
         end
 
-        def each_gathered_selections(graphql_result_hash)
+        class RuntimeSelections
+          def initialize
+            @single_selection = nil
+            @multiple_selections = nil
+            @has_merged_selections = false
+          end
+
+          attr_accessor  :single_selection, :multiple_selections, :has_merged_selections
+        end
+
+        def each_gathered_selections(graphql_result_hash, &block)
           object = graphql_result_hash.graphql_application_value
           type = graphql_result_hash.graphql_result_type
           selections = graphql_result_hash.graphql_selections
           all_selections = []
           build_cached_selections(selections, nil, all_selections)
-          single_selection = nil
-          multiple_selections = nil
-          has_merged_selections = false
+          runtime_selections = RuntimeSelections.new
+          build_runtime_selections(object, type, all_selections, runtime_selections)
+
+          if runtime_selections.multiple_selections
+            runtime_selections.multiple_selections.each do |sel|
+              yield(sel, true)
+            end
+          elsif runtime_selections.single_selection # Maybe `nil` if all were skipped
+            yield(runtime_selections.single_selection)
+          end
+        end
+
+        private
+
+        def build_runtime_selections(object, type, all_selections, runtime_selections)
           all_selections.each do |(type_condition, directives, selections, child_selections)|
             runtime_dirs = nil
             if type_condition
@@ -66,47 +88,50 @@ module GraphQL
               end
             end
 
+            if child_selections
+              build_runtime_selections(object, type, child_selections, runtime_selections)
+            end
+
             if runtime_dirs && child_selections
               # Don't include runtime directives with single fields here;
               # That's not how the runtime code expects it to be.
-              if multiple_selections.nil?
-                multiple_selections = []
-                if single_selection
-                  multiple_selections << single_selection
+              if runtime_selections.multiple_selections.nil?
+                runtime_selections.multiple_selections = []
+                if runtime_selections.single_selection
+                  runtime_selections.multiple_selections << runtime_selections.single_selection
                 end
               end
               selections[:graphql_directives] = runtime_dirs
-              multiple_selections << selections
+              runtime_selections.multiple_selections << selections
             else
-              if single_selection.nil?
-                single_selection = selections
-                if multiple_selections
-                  multiple_selections << single_selection
+              if runtime_selections.single_selection.nil?
+                runtime_selections.single_selection = selections
+                if runtime_selections.multiple_selections
+                  runtime_selections.multiple_selections << runtime_selections.single_selection
                 end
               else
-                if has_merged_selections == false
-                  idx = multiple_selections&.index(single_selection)
-                  single_selection = single_selection.dup
+                if runtime_selections.has_merged_selections == false
+                  ss = runtime_selections.single_selection
+                  idx = runtime_selections.multiple_selections&.index(ss)
+                  ss = runtime_selections.single_selection = ss.dup
                   if idx
-                    multiple_selections[idx] = single_selection
+                    runtime_selections.multiple_selections[idx] = ss
                   end
-                  has_merged_selections = true
+                  runtime_selections.has_merged_selections = true
                 end
-                single_selection.merge!(selections)
+
+                runtime_selections.single_selection.merge!(selections) { |key, old_v, new_v|
+                  old_a = Array(old_v)
+                  if new_v.is_a?(Array)
+                    old_a.concat(new_v)
+                  else
+                    old_a << new_v
+                  end
+                }
               end
             end
           end
-
-          if multiple_selections
-            multiple_selections.each do |sel|
-              yield(sel, true)
-            end
-          elsif single_selection # Maybe `nil` if all were skipped
-            yield(single_selection)
-          end
         end
-
-        private
 
         def build_cached_selections(ast_selections, gathered_selections, all_selection_groups)
           ast_selections.each do |node|
@@ -116,36 +141,44 @@ module GraphQL
               if node.directives.any?
                 next_sels = @selections_by_node[node]
                 next_sels[1] = node.directives
-                next_sels[2][key] = node
                 all_selection_groups << next_sels
+                sels = next_sels[2]
               else
                 if gathered_selections.nil?
                   gathered_selections = {}
                   all_selection_groups << [nil, nil, gathered_selections, nil]
                 end
-                gathered_selections[key] = node
+                sels = gathered_selections
+              end
+              if (existing_sel = sels[key])
+                sel_a = sels[key] = Array(existing_sel)
+                sel_a << node
+              else
+                sels[key] = node
               end
             when GraphQL::Language::Nodes::InlineFragment
               if node.directives.any? || node.type
                 next_sels_config = @selections_by_node[node]
-                next_sels_config[0] = node.type
-                next_sels_config[1] = node.directives
-                next_sels_config[3] = []
-                build_cached_selections(node.selections, next_sels_config[2], next_sels_config[3])
+                # if next_sels_config[3].nil?
+                  next_sels_config[0] = node.type
+                  next_sels_config[1] = node.directives
+                  next_sels_config[3] = []
+                  build_cached_selections(node.selections, next_sels_config[2], next_sels_config[3])
+                # end
                 all_selection_groups << next_sels_config
-                all_selection_groups.concat(next_sels_config[3])
               else
                 build_cached_selections(node.selections, gathered_selections, all_selection_groups)
               end
             when GraphQL::Language::Nodes::FragmentSpread
               fragment_def = @query.fragments[node.name]
               next_sels_config = @selections_by_node[node]
-              next_sels_config[0] = fragment_def.type
-              next_sels_config[1] = node.directives # Use directives from the spread, not the def
-              next_sels_config[3] = []
-              build_cached_selections(fragment_def.selections, next_sels_config[2], next_sels_config[3])
+              # if next_sels_config[3].nil?
+                next_sels_config[0] = fragment_def.type
+                next_sels_config[1] = node.directives # Use directives from the spread, not the def
+                next_sels_config[3] = []
+                build_cached_selections(fragment_def.selections, next_sels_config[2], next_sels_config[3])
+              # end
               all_selection_groups << next_sels_config
-              all_selection_groups.concat(next_sels_config[3])
             end
           end
         end

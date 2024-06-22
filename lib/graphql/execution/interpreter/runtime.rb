@@ -357,6 +357,8 @@ module GraphQL
               next_selections.concat(f.selections)
               directives.concat(f.directives)
             }
+            # This could include duplicates from nested fragment spreads:
+            next_selections.uniq!
           end
 
           field_result = call_method_on_directives(:resolve, object, directives) do
