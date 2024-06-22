@@ -7,7 +7,7 @@ module GraphQL
           @query = query
           @selections_by_node = Hash.new { |h, ast_node|
           # TODO dedicated class for storage
-            h[ast_node] = [nil, nil, {}, []]
+            h[ast_node] = [nil, nil, {}, nil]
           }.compare_by_identity
           @runtime_directive_names = []
           noop_resolve_owner = GraphQL::Schema::Directive.singleton_class
@@ -27,8 +27,15 @@ module GraphQL
           all_selections = [[nil, nil, root_selections, nil]]
           build_cached_selections(selections, root_selections, all_selections)
           single_selection = nil
+          multiple_selections = nil
           has_merged_selections = false
-          all_selections.each do |(type_condition, directives, selections, _child_selections)|
+          all_selections.each do |(type_condition, directives, selections, child_selections)|
+            if selections.empty?
+              # This can happen if the selection contains _only_
+              # selections modified by directives -- TODO don't allocate this
+              next
+            end
+            runtime_dirs = nil
             if type_condition
               type_defn = @query.get_type(type_condition.name)
               pt = @query.warden.possible_types(type_defn)
@@ -39,7 +46,8 @@ module GraphQL
             end
 
             if directives&.any?
-              passes_dirs = directives.all? do |dir_node|
+              passes_dirs = true
+              directives.each do |dir_node|
                 dir_defn = @schema_directives.fetch(dir_node.name)
                 args = if dir_defn.arguments_statically_coercible?
                   @query.arguments_for(dir_node, dir_defn)
@@ -48,7 +56,15 @@ module GraphQL
                   @query.arguments_for(dir_node, dir_defn, parent_object: object)
                 end
 
-                dir_defn.include?(object, args, @query.context)
+                if !dir_defn.include?(object, args, @query.context)
+                  passes_dirs = false
+                  break
+                end
+
+                if @runtime_directive_names.include?(dir_node.name)
+                  runtime_dirs ||= []
+                  runtime_dirs << dir_node
+                end
               end
               if !passes_dirs
                 # Skipped by directives
@@ -56,19 +72,37 @@ module GraphQL
               end
             end
 
-            if single_selection.nil?
-              single_selection = selections
-            else
-              if has_merged_selections == false
-                single_selection = single_selection.dup
-                has_merged_selections = true
+            if runtime_dirs && child_selections
+              # Don't include runtime directives with single fields here;
+              # That's not how the runtime code expects it to be.
+              if multiple_selections.nil?
+                multiple_selections = []
+                if single_selection
+                  multiple_selections << single_selection
+                end
               end
-
-              single_selection.merge!(selections)
+              selections[:graphql_directives] = runtime_dirs
+              multiple_selections << selections
+            else
+              if single_selection.nil?
+                single_selection = selections
+              else
+                if has_merged_selections == false
+                  single_selection = single_selection.dup
+                  has_merged_selections = true
+                end
+                single_selection.merge!(selections)
+              end
             end
           end
 
-          yield(single_selection)
+          if multiple_selections
+            multiple_selections.each do |sel|
+              yield(sel, true)
+            end
+          else
+            yield(single_selection)
+          end
         end
 
         private
@@ -91,6 +125,7 @@ module GraphQL
                 next_sels_config = @selections_by_node[node]
                 next_sels_config[0] = node.type
                 next_sels_config[1] = node.directives
+                next_sels_config[3] = []
                 build_cached_selections(node.selections, next_sels_config[2], next_sels_config[3])
                 all_selection_groups << next_sels_config
                 all_selection_groups.concat(next_sels_config[3])
@@ -102,6 +137,7 @@ module GraphQL
               next_sels_config = @selections_by_node[node]
               next_sels_config[0] = fragment_def.type
               next_sels_config[1] = node.directives # Use directives from the spread, not the def
+              next_sels_config[3] = []
               build_cached_selections(fragment_def.selections, next_sels_config[2], next_sels_config[3])
               all_selection_groups << next_sels_config
               all_selection_groups.concat(next_sels_config[3])

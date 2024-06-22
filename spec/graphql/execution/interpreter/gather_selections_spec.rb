@@ -88,4 +88,20 @@ describe GraphQL::Execution::Interpreter::GatherSelections do
     assert_equal expected_selections, get_yielded_selections(:thing, GatherSelectionsSchema::TestType, str)
   end
 
+  it "yields selections grouped by directive" do
+    str = <<~GRAPHQL
+      {
+        ... @capitalize { a b }
+        c
+        d
+        e @capitalize
+      }
+    GRAPHQL
+
+    expected_selections = [
+      ["c", "d"],
+      ["a", "b", :graphql_directives],
+    ]
+    assert_equal expected_selections, get_yielded_selections(:thing, GatherSelectionsSchema::TestType, str)
+  end
 end
