@@ -41,6 +41,14 @@ module GraphQL
         end
       end
 
+      def directives
+        if @resolver_class
+          @resolver_class.directives
+        else
+          super
+        end
+      end
+
       # @return [Class] The thing this field was defined on (type, mutation, resolver)
       attr_accessor :owner
 

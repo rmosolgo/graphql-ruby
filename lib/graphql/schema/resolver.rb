@@ -25,6 +25,7 @@ module GraphQL
       extend GraphQL::Schema::Member::HasValidators
       include Schema::Member::HasPath
       extend Schema::Member::HasPath
+      extend Schema::Member::HasDirectives
 
       # @param object [Object] The application object that this field is being resolved on
       # @param context [GraphQL::Query::Context]
