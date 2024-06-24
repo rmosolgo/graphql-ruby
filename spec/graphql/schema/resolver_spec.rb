@@ -1162,4 +1162,42 @@ describe GraphQL::Schema::Resolver do
       assert_equal ["Unauthorized Field"], unauthorized_res["errors"].map { |err|  err["message"] }
     end
   end
+
+  describe "with directives" do
+    class ResolverDirectivesSchema < GraphQL::Schema
+      class GetThing < GraphQL::Schema::Resolver
+        directive GraphQL::Schema::Directive::Flagged, by: "getThing"
+
+        argument :id, ID
+
+        type String, null: false
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :get_thing, resolver: GetThing
+      end
+
+      query(Query)
+    end
+  end
+
+  it "caries them into the field definition" do
+    expected_str = <<~GRAPHQL
+    """
+    Hides this part of the schema unless the named flag is present in context[:flags]
+    """
+    directive @flagged(
+      """
+      Flags to check for this schema member
+      """
+      by: [String!]!
+    ) on ARGUMENT_DEFINITION | ENUM | ENUM_VALUE | FIELD_DEFINITION | INPUT_FIELD_DEFINITION | INPUT_OBJECT | INTERFACE | OBJECT | SCALAR | UNION
+
+    type Query {
+      getThing(id: ID!): String! @flagged(by: ["getThing"])
+    }
+    GRAPHQL
+
+    assert_equal expected_str, ResolverDirectivesSchema.to_definition(context: { flags: ["getThing"] })
+  end
 end

@@ -188,6 +188,8 @@ module GraphQL
             assert_has_location(SCALAR)
           elsif @owner < GraphQL::Schema
             assert_has_location(SCHEMA)
+          elsif @owner < GraphQL::Schema::Resolver
+            assert_has_location(FIELD_DEFINITION)
           else
             raise "Unexpected directive owner class: #{@owner}"
           end
