@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::Analysis::AST do
-  class AstTypeCollector < GraphQL::Analysis::AST::Analyzer
+describe GraphQL::Analysis do
+  class AstTypeCollector < GraphQL::Analysis::Analyzer
     def initialize(query)
       super
       @types = []
@@ -21,7 +21,7 @@ describe GraphQL::Analysis::AST do
     end
   end
 
-  class AstNodeCounter < GraphQL::Analysis::AST::Analyzer
+  class AstNodeCounter < GraphQL::Analysis::Analyzer
     def initialize(query)
       super
       @nodes = Hash.new { |h,k| h[k] = 0 }
@@ -40,7 +40,7 @@ describe GraphQL::Analysis::AST do
     end
   end
 
-  class AstConditionalAnalyzer < GraphQL::Analysis::AST::Analyzer
+  class AstConditionalAnalyzer < GraphQL::Analysis::Analyzer
     def initialize(query)
       super
       @i_have_been_called = false
@@ -59,7 +59,7 @@ describe GraphQL::Analysis::AST do
     end
   end
 
-  class AstPrecomputedAnalyzer < GraphQL::Analysis::AST::Analyzer
+  class AstPrecomputedAnalyzer < GraphQL::Analysis::Analyzer
     def initialize(query)
       super
       @i_have_been_visited = false
@@ -78,13 +78,13 @@ describe GraphQL::Analysis::AST do
     end
   end
 
-  class AstErrorAnalyzer < GraphQL::Analysis::AST::Analyzer
+  class AstErrorAnalyzer < GraphQL::Analysis::Analyzer
     def result
       GraphQL::AnalysisError.new("An Error!")
     end
   end
 
-  class AstPreviousField < GraphQL::Analysis::AST::Analyzer
+  class AstPreviousField < GraphQL::Analysis::Analyzer
     def on_enter_field(node, parent, visitor)
       @previous_field = visitor.previous_field_definition
     end
@@ -94,7 +94,7 @@ describe GraphQL::Analysis::AST do
     end
   end
 
-  class AstArguments < GraphQL::Analysis::AST::Analyzer
+  class AstArguments < GraphQL::Analysis::Analyzer
     def on_enter_argument(node, parent, visitor)
       @argument = visitor.argument_definition
       @previous_argument = visitor.previous_argument_definition
@@ -105,7 +105,7 @@ describe GraphQL::Analysis::AST do
     end
   end
 
-  class AstSkipInclude < GraphQL::Analysis::AST::Analyzer
+  class AstSkipInclude < GraphQL::Analysis::Analyzer
     def initialize(query)
       super
       @included = []
@@ -141,7 +141,7 @@ describe GraphQL::Analysis::AST do
   end
 
   describe "skip and include behaviors" do
-    let(:reduce_result) { GraphQL::Analysis::AST.analyze_query(query, [AstSkipInclude]) }
+    let(:reduce_result) { GraphQL::Analysis.analyze_query(query, [AstSkipInclude]) }
     let(:query) { GraphQL::Query.new(Dummy::Schema, query_string) }
     let(:query_string) {%|{}|}
 
@@ -256,7 +256,7 @@ describe GraphQL::Analysis::AST do
 
   describe ".analyze_query" do
     let(:analyzers) { [AstTypeCollector, AstNodeCounter] }
-    let(:reduce_result) { GraphQL::Analysis::AST.analyze_query(query, analyzers) }
+    let(:reduce_result) { GraphQL::Analysis.analyze_query(query, analyzers) }
     let(:variables) { {} }
     let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables) }
     let(:query_string) {%|
@@ -368,7 +368,7 @@ describe GraphQL::Analysis::AST do
     end
 
     class FinishedSchema < GraphQL::Schema
-      class FinishedAnalyzer < GraphQL::Analysis::AST::Analyzer
+      class FinishedAnalyzer < GraphQL::Analysis::Analyzer
         def on_enter_field(node, parent, visitor)
           if query.context[:force_prepare]
             visitor.arguments_for(node, visitor.field_definition)
@@ -429,7 +429,7 @@ describe GraphQL::Analysis::AST do
       end
     end
 
-    class AstConnectionCounter < GraphQL::Analysis::AST::Analyzer
+    class AstConnectionCounter < GraphQL::Analysis::Analyzer
       def initialize(query)
         super
         @fields = 0
@@ -454,7 +454,7 @@ describe GraphQL::Analysis::AST do
 
     describe "when processing fields" do
       let(:analyzers) { [AstConnectionCounter] }
-      let(:reduce_result) { GraphQL::Analysis::AST.analyze_query(query, analyzers) }
+      let(:reduce_result) { GraphQL::Analysis.analyze_query(query, analyzers) }
       let(:query) { GraphQL::Query.new(StarWars::Schema, query_string, variables: variables) }
       let(:query_string) {%|
         query getBases {
@@ -484,7 +484,7 @@ describe GraphQL::Analysis::AST do
       query(Query)
     end
 
-    class AllIntrospectionAnalyzer < GraphQL::Analysis::AST::Analyzer
+    class AllIntrospectionAnalyzer < GraphQL::Analysis::Analyzer
       def initialize(query)
         @is_introspection = true
         super
@@ -501,7 +501,7 @@ describe GraphQL::Analysis::AST do
 
     def is_introspection?(query_str)
       query = GraphQL::Query.new(AllIntrospectionSchema, query_str)
-      result = GraphQL::Analysis::AST.analyze_query(query, [AllIntrospectionAnalyzer])
+      result = GraphQL::Analysis.analyze_query(query, [AllIntrospectionAnalyzer])
       result.first
     end
 
@@ -516,7 +516,7 @@ describe GraphQL::Analysis::AST do
 
   describe "when there's a hidden field" do
     class HiddenAnalyzedFieldSchema < GraphQL::Schema
-      class DoNothingAnalyzer < GraphQL::Analysis::AST::Analyzer
+      class DoNothingAnalyzer < GraphQL::Analysis::Analyzer
         def on_enter_field(node, parent, visitor)
           @result ||= []
           @result << [node.name, visitor.field_definition.class]
@@ -569,7 +569,7 @@ describe GraphQL::Analysis::AST do
       GQL
 
       query = GraphQL::Query.new(HiddenAnalyzedFieldSchema, gql)
-      result = GraphQL::Analysis::AST.analyze_query(query, [HiddenAnalyzedFieldSchema::DoNothingAnalyzer])
+      result = GraphQL::Analysis.analyze_query(query, [HiddenAnalyzedFieldSchema::DoNothingAnalyzer])
       assert_equal [[["article", NilClass], ["title", NilClass]]], result
     end
   end
@@ -577,7 +577,7 @@ describe GraphQL::Analysis::AST do
 
   describe ".validate_timeout" do
     class AnalysisTimeoutSchema < GraphQL::Schema
-      class SlowAnalyzer < GraphQL::Analysis::AST::Analyzer
+      class SlowAnalyzer < GraphQL::Analysis::Analyzer
         def on_enter_field(node, parent, visitor)
           sleep 0.1
           super

@@ -100,10 +100,10 @@ module GraphQL
           # Depending on the analysis engine, we must use different analyzers
           # remove this once everything has switched over to AST analyzers
           if max_depth
-            qa << GraphQL::Analysis::AST::MaxQueryDepth
+            qa << GraphQL::Analysis::MaxQueryDepth
           end
           if max_complexity
-            qa << GraphQL::Analysis::AST::MaxQueryComplexity
+            qa << GraphQL::Analysis::MaxQueryComplexity
           end
           qa
         else

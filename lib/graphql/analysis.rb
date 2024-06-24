@@ -17,7 +17,7 @@ module GraphQL
     # Query analyzers are ran per query, without carrying state between queries.
     #
     # @param multiplex [GraphQL::Execution::Multiplex]
-    # @param analyzers [Array<GraphQL::Analysis::AST::Analyzer>]
+    # @param analyzers [Array<GraphQL::Analysis::Analyzer>]
     # @return [Array<Any>] Results from multiplex analyzers
     def analyze_multiplex(multiplex, analyzers)
       multiplex_analyzers = analyzers.map { |analyzer| analyzer.new(multiplex) }
@@ -46,7 +46,7 @@ module GraphQL
     end
 
     # @param query [GraphQL::Query]
-    # @param analyzers [Array<GraphQL::Analysis::AST::Analyzer>]
+    # @param analyzers [Array<GraphQL::Analysis::Analyzer>]
     # @return [Array<Any>] Results from those analyzers
     def analyze_query(query, analyzers, multiplex_analyzers: [])
       query.current_trace.analyze_query(query: query) do
@@ -59,7 +59,7 @@ module GraphQL
 
           analyzers_to_run.select!(&:visit?)
           if analyzers_to_run.any?
-            visitor = GraphQL::Analysis::AST::Visitor.new(
+            visitor = GraphQL::Analysis::Visitor.new(
               query: query,
               analyzers: analyzers_to_run
             )

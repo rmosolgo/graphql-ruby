@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::Analysis::AST::QueryComplexity do
+describe GraphQL::Analysis::QueryComplexity do
   let(:schema) { Dummy::Schema }
-  let(:reduce_result) { GraphQL::Analysis::AST.analyze_query(query, [GraphQL::Analysis::AST::QueryComplexity]) }
+  let(:reduce_result) { GraphQL::Analysis.analyze_query(query, [GraphQL::Analysis::QueryComplexity]) }
   let(:reduce_multiplex_result) {
-    GraphQL::Analysis::AST.analyze_multiplex(multiplex, [GraphQL::Analysis::AST::QueryComplexity])
+    GraphQL::Analysis.analyze_multiplex(multiplex, [GraphQL::Analysis::QueryComplexity])
   }
   let(:variables) { {} }
   let(:query_context) { {} }
@@ -684,7 +684,7 @@ describe GraphQL::Analysis::AST::QueryComplexity do
   end
 
   describe "field_complexity hook" do
-    class CustomComplexityAnalyzer < GraphQL::Analysis::AST::QueryComplexity
+    class CustomComplexityAnalyzer < GraphQL::Analysis::QueryComplexity
       def initialize(query)
         super
         @field_complexities_by_query = {}
@@ -706,7 +706,7 @@ describe GraphQL::Analysis::AST::QueryComplexity do
       end
     end
 
-    let(:reduce_result) { GraphQL::Analysis::AST.analyze_query(query, [CustomComplexityAnalyzer]) }
+    let(:reduce_result) { GraphQL::Analysis.analyze_query(query, [CustomComplexityAnalyzer]) }
 
     let(:query_string) {%|
     {

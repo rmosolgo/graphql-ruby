@@ -8,7 +8,7 @@ describe GraphQL::Backtrace do
     end
   end
 
-  class ErrorAnalyzer < GraphQL::Analysis::AST::Analyzer
+  class ErrorAnalyzer < GraphQL::Analysis::Analyzer
     def on_enter_operation_definition(node, parent_node, visitor)
       if node.name == "raiseError"
         raise GraphQL::AnalysisError, "this should not be wrapped by a backtrace, but instead, returned to the client"
@@ -235,18 +235,18 @@ describe GraphQL::Backtrace do
   end
 
   it "works with stand-alone analysis" do
-    example_analyzer = Class.new(GraphQL::Analysis::AST::Analyzer) do
+    example_analyzer = Class.new(GraphQL::Analysis::Analyzer) do
       def result
         :finished
       end
     end
     query = GraphQL::Query.new(backtrace_schema, "{ __typename }")
-    result = GraphQL::Analysis::AST.analyze_query(query, [example_analyzer])
+    result = GraphQL::Analysis.analyze_query(query, [example_analyzer])
     assert_equal [:finished], result
   end
 
   it "works with multiplex analysis" do
-    example_analyzer = Class.new(GraphQL::Analysis::AST::Analyzer) do
+    example_analyzer = Class.new(GraphQL::Analysis::Analyzer) do
       def result
         :finished
       end
@@ -258,7 +258,7 @@ describe GraphQL::Backtrace do
       context: {},
       max_complexity: nil,
     )
-    result = GraphQL::Analysis::AST.analyze_multiplex(multiplex, [example_analyzer])
+    result = GraphQL::Analysis.analyze_multiplex(multiplex, [example_analyzer])
     assert_equal [:finished], result
   end
 

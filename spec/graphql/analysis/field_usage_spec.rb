@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::Analysis::AST::FieldUsage do
-  let(:result) { GraphQL::Analysis::AST.analyze_query(query, [GraphQL::Analysis::AST::FieldUsage]).first }
+describe GraphQL::Analysis::FieldUsage do
+  let(:result) { GraphQL::Analysis.analyze_query(query, [GraphQL::Analysis::FieldUsage]).first }
   let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables) }
   let(:variables) { {} }
 
@@ -268,7 +268,7 @@ describe GraphQL::Analysis::AST::FieldUsage do
 
   describe "when an argument prepare raises a GraphQL::ExecutionError" do
     class ArgumentErrorFieldUsageSchema < GraphQL::Schema
-      class FieldUsage < GraphQL::Analysis::AST::FieldUsage
+      class FieldUsage < GraphQL::Analysis::FieldUsage
         def result
           values = super
           query.context[:field_usage] = values

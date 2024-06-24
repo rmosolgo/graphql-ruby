@@ -8,7 +8,7 @@ module GraphQL
     # only the selected operation, providing helpers for common use cases such
     # as skipped fields and visiting fragment spreads.
     #
-    # @see {GraphQL::Analysis::AST::Analyzer} AST Analyzers for queries
+    # @see {GraphQL::Analysis::Analyzer} AST Analyzers for queries
     class Visitor < GraphQL::Language::StaticVisitor
       def initialize(query:, analyzers:)
         @analyzers = analyzers

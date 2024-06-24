@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::Analysis::AST::QueryDepth do
-  let(:result) { GraphQL::Analysis::AST.analyze_query(query, [GraphQL::Analysis::AST::QueryDepth]) }
+describe GraphQL::Analysis::QueryDepth do
+  let(:result) { GraphQL::Analysis.analyze_query(query, [GraphQL::Analysis::QueryDepth]) }
   let(:query) { GraphQL::Query.new(Dummy::Schema, query_string, variables: variables) }
   let(:variables) { {} }
 
