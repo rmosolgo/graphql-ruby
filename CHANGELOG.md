@@ -10,6 +10,18 @@
 
 ### Bug fixes
 
+# 2.3.6 (25 Jun 2024)
+
+### New features
+
+- Analysis classes are now in `GraphQL::Analysis` (`GraphQL::Analysis::AST` still works, too) #4996
+- Resolvers and Mutations accept `directive ...` configurations #4995
+
+### Bug fixes
+
+- `AsyncDataloader`: Copy Fiber-local variables into Async tasks #4994
+- `Dataloader`: properly batch `fetch` calls with `loads:` arguments that call Dataloader sources during `.authorized?` #4997
+
 # 2.3.5 (13 Jun 2024)
 
 ### Breaking changes

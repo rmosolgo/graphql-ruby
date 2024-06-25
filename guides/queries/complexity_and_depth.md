@@ -34,10 +34,10 @@ You can use `nil` to disable the validation:
 MySchema.execute(query_string, max_depth: nil)
 ```
 
-To get a feeling for depth of queries in your system, you can extend {{ "GraphQL::Analysis::AST::QueryDepth" | api_doc }}. Hook it up to log out values from each query:
+To get a feeling for depth of queries in your system, you can extend {{ "GraphQL::Analysis::QueryDepth" | api_doc }}. Hook it up to log out values from each query:
 
 ```ruby
-class LogQueryDepth < GraphQL::Analysis::AST::QueryDepth
+class LogQueryDepth < GraphQL::Analysis::QueryDepth
   def result
     query_depth = super
     message = "[GraphQL Query Depth] #{query_depth} || staff?  #{query.context[:current_user].staff?}"
@@ -100,10 +100,10 @@ Using `nil` will disable the validation:
 MySchema.execute(query_string, max_complexity: nil)
 ```
 
-To get a feeling for complexity of queries in your system, you can extend {{ "GraphQL::Analysis::AST::QueryComplexity" | api_doc }}. Hook it up to log out values from each query:
+To get a feeling for complexity of queries in your system, you can extend {{ "GraphQL::Analysis::QueryComplexity" | api_doc }}. Hook it up to log out values from each query:
 
 ```ruby
-class LogQueryComplexityAnalyzer < GraphQL::Analysis::AST::QueryComplexity
+class LogQueryComplexityAnalyzer < GraphQL::Analysis::QueryComplexity
   # Override this method to _do something_ with the calculated complexity value
   def result
     complexity = super
