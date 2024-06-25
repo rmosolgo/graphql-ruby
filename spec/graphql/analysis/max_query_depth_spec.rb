@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::Analysis::AST::MaxQueryDepth do
+describe GraphQL::Analysis::MaxQueryDepth do
   let(:schema) {
     schema = Class.new(Dummy::Schema)
     schema.analysis_engine = GraphQL::Analysis::AST
@@ -36,7 +36,7 @@ describe GraphQL::Analysis::AST::MaxQueryDepth do
     )
   }
   let(:result) {
-    GraphQL::Analysis::AST.analyze_query(query, [GraphQL::Analysis::AST::MaxQueryDepth]).first
+    GraphQL::Analysis.analyze_query(query, [GraphQL::Analysis::MaxQueryDepth]).first
   }
   let(:multiplex) {
     GraphQL::Execution::Multiplex.new(
@@ -47,7 +47,7 @@ describe GraphQL::Analysis::AST::MaxQueryDepth do
     )
   }
   let(:multiplex_result) {
-    GraphQL::Analysis::AST.analyze_multiplex(multiplex, [GraphQL::Analysis::AST::MaxQueryDepth]).first
+    GraphQL::Analysis.analyze_multiplex(multiplex, [GraphQL::Analysis::MaxQueryDepth]).first
   }
 
   describe "when the query is deeper than max depth" do

@@ -256,7 +256,7 @@ To add other types to your schema, you might want `extra_types`: https://graphql
       end
     end
 
-    class NoOpAnalyzer < GraphQL::Analysis::AST::Analyzer
+    class NoOpAnalyzer < GraphQL::Analysis::Analyzer
       def initialize(query_or_multiplex)
         query_or_multiplex.context[:no_op_analyzer_ran_initialize] = true
         super

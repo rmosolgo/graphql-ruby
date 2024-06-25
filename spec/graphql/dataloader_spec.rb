@@ -420,7 +420,7 @@ describe GraphQL::Dataloader do
     end
   end
 
-  class UsageAnalyzer < GraphQL::Analysis::AST::Analyzer
+  class UsageAnalyzer < GraphQL::Analysis::Analyzer
     def initialize(query)
       @query = query
       @fields = Set.new
@@ -794,7 +794,7 @@ describe GraphQL::Dataloader do
           }
           GRAPHQL
           query = GraphQL::Query.new(schema, query_str)
-          results = GraphQL::Analysis::AST.analyze_query(query, [UsageAnalyzer])
+          results = GraphQL::Analysis.analyze_query(query, [UsageAnalyzer])
           expected_results = [
             ["commonIngredientsWithLoad", [:recipe_1, :recipe_2]],
             ["name", []],

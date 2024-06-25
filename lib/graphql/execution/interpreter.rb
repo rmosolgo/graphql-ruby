@@ -40,7 +40,7 @@ module GraphQL
             lazies_at_depth = Hash.new { |h, k| h[k] = [] }
             multiplex_analyzers = schema.multiplex_analyzers
             if multiplex.max_complexity
-              multiplex_analyzers += [GraphQL::Analysis::AST::MaxQueryComplexity]
+              multiplex_analyzers += [GraphQL::Analysis::MaxQueryComplexity]
             end
 
             schema.analysis_engine.analyze_multiplex(multiplex, multiplex_analyzers)

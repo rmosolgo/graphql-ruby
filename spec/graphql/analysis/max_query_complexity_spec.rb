@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::Analysis::AST::MaxQueryComplexity do
+describe GraphQL::Analysis::MaxQueryComplexity do
   let(:schema) { Class.new(Dummy::Schema) }
   let(:query_string) {%|
     {
@@ -14,7 +14,7 @@ describe GraphQL::Analysis::AST::MaxQueryComplexity do
   |}
   let(:query) { GraphQL::Query.new(schema, query_string, variables: {}, max_complexity: max_complexity) }
   let(:result) {
-    GraphQL::Analysis::AST.analyze_query(query, [GraphQL::Analysis::AST::MaxQueryComplexity]).first
+    GraphQL::Analysis.analyze_query(query, [GraphQL::Analysis::MaxQueryComplexity]).first
   }
 
 
@@ -141,7 +141,7 @@ describe GraphQL::Analysis::AST::MaxQueryComplexity do
     let(:max_complexity) { 9 }
     let(:multiplex) { GraphQL::Execution::Multiplex.new(schema: schema, queries: queries, context: {}, max_complexity: max_complexity) }
     let(:analyze_multiplex) {
-      GraphQL::Analysis::AST.analyze_multiplex(multiplex, [GraphQL::Analysis::AST::MaxQueryComplexity])
+      GraphQL::Analysis.analyze_multiplex(multiplex, [GraphQL::Analysis::MaxQueryComplexity])
     }
 
     it "returns errors for all queries" do

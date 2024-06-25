@@ -9,7 +9,7 @@ module GraphQL
     # Assign the result to `context.namespace(:subscriptions)[:subscription_broadcastable]`
     # @api private
     # @see Subscriptions#broadcastable? for a public API
-    class BroadcastAnalyzer < GraphQL::Analysis::AST::Analyzer
+    class BroadcastAnalyzer < GraphQL::Analysis::Analyzer
       def initialize(subject)
         super
         @default_broadcastable = subject.schema.subscriptions.default_broadcastable

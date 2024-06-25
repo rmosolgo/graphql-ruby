@@ -235,7 +235,7 @@ module GraphQL
       if !query.valid?
         raise "Invalid query: #{query.validation_errors.map(&:to_h).inspect}"
       end
-      GraphQL::Analysis::AST.analyze_query(query, @schema.query_analyzers)
+      GraphQL::Analysis.analyze_query(query, @schema.query_analyzers)
       query.context.namespace(:subscriptions)[:subscription_broadcastable]
     end
 
