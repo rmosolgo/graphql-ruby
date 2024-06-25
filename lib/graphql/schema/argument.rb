@@ -312,10 +312,15 @@ module GraphQL
           context.query.after_lazy(custom_loaded_value) do |custom_value|
             if loads
               if type.list?
-                loaded_values = custom_value.each_with_index.map { |custom_val, idx|
-                  id = coerced_value[idx]
-                  load_method_owner.authorize_application_object(self, id, context, custom_val)
-                }
+                loaded_values = []
+                context.dataloader.run_isolated do
+                  custom_value.each_with_index.map { |custom_val, idx|
+                    id = coerced_value[idx]
+                    context.dataloader.append_job do
+                      loaded_values[idx] = load_method_owner.authorize_application_object(self, id, context, custom_val)
+                    end
+                  }
+                end
                 context.schema.after_any_lazies(loaded_values, &:itself)
               else
                 load_method_owner.authorize_application_object(self, coerced_value, context, custom_loaded_value)
@@ -326,7 +331,16 @@ module GraphQL
           end
         elsif loads
           if type.list?
-            loaded_values = coerced_value.map { |val| load_method_owner.load_and_authorize_application_object(self, val, context) }
+            loaded_values = []
+            # We want to run these list items all together,
+            # but we also need to wait for the result so we can return it :S
+            context.dataloader.run_isolated do
+              coerced_value.each_with_index { |val, idx|
+                context.dataloader.append_job do
+                  loaded_values[idx] = load_method_owner.load_and_authorize_application_object(self, val, context)
+                end
+              }
+            end
             context.schema.after_any_lazies(loaded_values, &:itself)
           else
             load_method_owner.load_and_authorize_application_object(self, coerced_value, context)

@@ -126,7 +126,7 @@ describe GraphQL::Dataloader do
       end
 
       def fetch(recipes)
-        @counter && @counter.increment
+        @counter&.increment
         recipes.map { true }
       end
     end
@@ -229,6 +229,14 @@ describe GraphQL::Dataloader do
 
       def recipe(recipe:)
         recipe
+      end
+
+      field :recipes_by_id, [Recipe] do
+        argument :ids, [ID], loads: Recipe, as: :recipes
+      end
+
+      def recipes_by_id(recipes:)
+        recipes
       end
 
       field :key_ingredient, Ingredient do
@@ -837,6 +845,11 @@ describe GraphQL::Dataloader do
           assert_equal 1, context[:batched_calls_counter].count
 
           query_str = "{ recipes { name } }"
+          context = { batched_calls_counter: BatchedCallsCounter.new }
+          schema.execute(query_str, context: context)
+          assert_equal 1, context[:batched_calls_counter].count
+
+          query_str = "{ recipesById(ids: [5, 6]) { name } }"
           context = { batched_calls_counter: BatchedCallsCounter.new }
           schema.execute(query_str, context: context)
           assert_equal 1, context[:batched_calls_counter].count
