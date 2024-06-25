@@ -1,0 +1,32 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.3.6/GraphQL/Analysis/QueryDepth" />
+  </head>
+  <body>
+    <p>Class: GraphQL::Analysis::QueryDepth &lt; GraphQL::Analysis::Analyzer
+A query reducer for measuring the depth of a given query. 
+See https://graphql-ruby.org/queries/ast_analysis.html for more
+examples. 
+Examples:</p>
+<h1 id="logging-the-depth-of-a-query">Logging the depth of a query</h1>
+<p>class LogQueryDepth &lt; GraphQL::Analysis::QueryDepth
+def result
+log(“GraphQL query depth: #{@max_depth}”)
+end
+end</p>
+<h1 id="in-your-schema-file">In your Schema file:</h1>
+<p>class MySchema &lt; GraphQL::Schema
+query_analyzer LogQueryDepth
+end</p>
+<h1 id="when-you-run-the-query-the-depth-will-get-logged">When you run the query, the depth will get logged:</h1>
+<p>Schema.execute(query_str)</p>
+<h1 id="graphql-query-depth-8">GraphQL query depth: 8</h1>
+<p>Direct Known Subclasses:
+MaxQueryDepth
+Instance methods:
+initialize, on_enter_field, on_leave_field, result</p>
+
+
+  </body>
+</html>

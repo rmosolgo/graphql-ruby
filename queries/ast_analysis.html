@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.3.5/">API</a>
+            <a href="/api-doc/2.3.6/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -169,7 +169,7 @@
 <div class="guide-container">
   <p>You can do ahead-of-time analysis for your queries.</p>
 
-<p>The primitive for analysis is <a href="/api-doc/2.3.5/GraphQL/Analysis/AST/Analyzer" target="_blank" title="API docs for GraphQL::Analysis::AST::Analyzer"><code>GraphQL::Analysis::AST::Analyzer</code></a>. Analyzers must inherit from this base class and implement the desired methods for analysis.</p>
+<p>The primitive for analysis is <a href="/api-doc/2.3.6/GraphQL/Analysis/Analyzer" target="_blank" title="API docs for GraphQL::Analysis::Analyzer"><code>GraphQL::Analysis::Analyzer</code></a>. Analyzers must inherit from this base class and implement the desired methods for analysis.</p>
 
 <h2 id="using-analyzers">Using Analyzers</h2>
 
@@ -189,19 +189,19 @@
 <ul>
   <li><code class="language-plaintext highlighter-rouge">node</code>: The current AST node (being entered or left)</li>
   <li><code class="language-plaintext highlighter-rouge">parent</code>: The AST node which precedes this one in the tree</li>
-  <li><code class="language-plaintext highlighter-rouge">visitor</code>: A <a href="/api-doc/2.3.5/GraphQL/Analysis/AST/Visitor" target="_blank" title="API docs for GraphQL::Analysis::AST::Visitor"><code>GraphQL::Analysis::AST::Visitor</code></a> which is managing this analysis run</li>
+  <li><code class="language-plaintext highlighter-rouge">visitor</code>: A <a href="/api-doc/2.3.6/GraphQL/Analysis/Visitor" target="_blank" title="API docs for GraphQL::Analysis::Visitor"><code>GraphQL::Analysis::Visitor</code></a> which is managing this analysis run</li>
 </ul>
 
 <p>For example:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BasicCounterAnalyzer</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span><span class="o">::</span><span class="no">Analyzer</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BasicCounterAnalyzer</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">Analyzer</span>
   <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">query_or_multiplex</span><span class="p">)</span>
     <span class="k">super</span>
     <span class="vi">@fields</span> <span class="o">=</span> <span class="no">Set</span><span class="p">.</span><span class="nf">new</span>
     <span class="vi">@arguments</span> <span class="o">=</span> <span class="no">Set</span><span class="p">.</span><span class="nf">new</span>
   <span class="k">end</span>
 
-  <span class="c1"># Visitors are all defined on the AST::Analyzer base class</span>
+  <span class="c1"># Visitors are all defined on the Analyzer base class</span>
   <span class="c1"># We override them for custom analyzers.</span>
   <span class="k">def</span> <span class="nf">on_leave_field</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">_parent</span><span class="p">,</span> <span class="n">_visitor</span><span class="p">)</span>
     <span class="vi">@fields</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="nf">name</span><span class="p">)</span>
@@ -218,13 +218,13 @@
 or if it was skipped by directives. If we want to detect those contexts, we can use helper
 methods:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BasicFieldAnalyzer</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span><span class="o">::</span><span class="no">Analyzer</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BasicFieldAnalyzer</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">Analyzer</span>
   <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">query_or_multiplex</span><span class="p">)</span>
     <span class="k">super</span>
     <span class="vi">@fields</span> <span class="o">=</span> <span class="no">Set</span><span class="p">.</span><span class="nf">new</span>
   <span class="k">end</span>
 
-  <span class="c1"># Visitors are all defined on the AST::Analyzer base class</span>
+  <span class="c1"># Visitors are all defined on the Analyzer base class</span>
   <span class="c1"># We override them for custom analyzers.</span>
   <span class="k">def</span> <span class="nf">on_leave_field</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">_parent</span><span class="p">,</span> <span class="n">visitor</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">visitor</span><span class="p">.</span><span class="nf">skipping?</span> <span class="o">||</span> <span class="n">visitor</span><span class="p">.</span><span class="nf">visiting_fragment_definition?</span>
@@ -241,17 +241,17 @@ methods:</p>
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>See <a href="/api-doc/2.3.5/GraphQL/Analysis/AST/Visitor" target="_blank" title="API docs for GraphQL::Analysis::AST::Visitor"><code>GraphQL::Analysis::AST::Visitor</code></a> for more information about the <code class="language-plaintext highlighter-rouge">visitor</code> object.</p>
+<p>See <a href="/api-doc/2.3.6/GraphQL/Analysis/Visitor" target="_blank" title="API docs for GraphQL::Analysis::Visitor"><code>GraphQL::Analysis::Visitor</code></a> for more information about the <code class="language-plaintext highlighter-rouge">visitor</code> object.</p>
 
 <h3 id="field-arguments">Field Arguments</h3>
 
-<p>Usually, analyzers will use <code class="language-plaintext highlighter-rouge">on_enter_field</code> and <code class="language-plaintext highlighter-rouge">on_leave_field</code> to process queries. To get a field’s arguments during analysis, use <code class="language-plaintext highlighter-rouge">visitor.query.arguments_for(node, visitor.field_definition)</code> (<a href="/api-doc/2.3.5/GraphQL/Query#arguments_for-instance_method" target="_blank" title="API docs for GraphQL::Query#arguments_for"><code>GraphQL::Query#arguments_for</code></a>). That method returns coerced argument values and normalizes argument literals and variable values.</p>
+<p>Usually, analyzers will use <code class="language-plaintext highlighter-rouge">on_enter_field</code> and <code class="language-plaintext highlighter-rouge">on_leave_field</code> to process queries. To get a field’s arguments during analysis, use <code class="language-plaintext highlighter-rouge">visitor.query.arguments_for(node, visitor.field_definition)</code> (<a href="/api-doc/2.3.6/GraphQL/Query#arguments_for-instance_method" target="_blank" title="API docs for GraphQL::Query#arguments_for"><code>GraphQL::Query#arguments_for</code></a>). That method returns coerced argument values and normalizes argument literals and variable values.</p>
 
 <h3 id="errors">Errors</h3>
 
-<p>It is still possible to return errors from an analyzer. To reject a query and halt its execution, you may return <a href="/api-doc/2.3.5/GraphQL/AnalysisError" target="_blank" title="API docs for GraphQL::AnalysisError"><code>GraphQL::AnalysisError</code></a> in the <code class="language-plaintext highlighter-rouge">result</code> method:</p>
+<p>It is still possible to return errors from an analyzer. To reject a query and halt its execution, you may return <a href="/api-doc/2.3.6/GraphQL/AnalysisError" target="_blank" title="API docs for GraphQL::AnalysisError"><code>GraphQL::AnalysisError</code></a> in the <code class="language-plaintext highlighter-rouge">result</code> method:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">NoFieldsCalledHello</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span><span class="o">::</span><span class="no">Analyzer</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">NoFieldsCalledHello</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">Analyzer</span>
   <span class="k">def</span> <span class="nf">on_leave_field</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">_parent</span><span class="p">,</span> <span class="n">visitor</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">node</span><span class="p">.</span><span class="nf">name</span> <span class="o">==</span> <span class="s2">"hello"</span>
       <span class="vi">@field_called_hello</span> <span class="o">=</span> <span class="kp">true</span>
@@ -268,7 +268,7 @@ methods:</p>
 
 <p>Some analyzers might only make sense in certain context, or some might be too expensive to run for every query. To handle these scenarios, your analyzers may answer to an <code class="language-plaintext highlighter-rouge">analyze?</code> method:</p>
 
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BasicFieldAnalyzer</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">AST</span><span class="o">::</span><span class="no">Analyzer</span>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">BasicFieldAnalyzer</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Analysis</span><span class="o">::</span><span class="no">Analyzer</span>
   <span class="c1"># Use the analyze? method to enable or disable a certain analyzer</span>
   <span class="c1"># at query time.</span>
   <span class="k">def</span> <span class="nf">analyze?</span>
