@@ -614,7 +614,7 @@ module GraphQL
               using_arg_values = false
             end
 
-            args = context.warden.arguments(self)
+            args = context.types.arguments(self)
             args.each do |arg|
               arg_key = arg.keyword
               if arg_values.key?(arg_key)

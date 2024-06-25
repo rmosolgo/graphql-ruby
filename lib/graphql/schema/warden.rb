@@ -61,13 +61,20 @@ module GraphQL
           def interface_type_memberships(obj_t, ctx); obj_t.interface_type_memberships; end
           def arguments(owner, ctx); owner.arguments(ctx); end
           def loadable?(type, ctx); type.visible?(ctx); end
+          def shapish
+            @shapish ||= Warden::Shapish.new(self)
+          end
         end
+
       end
 
       class NullWarden
         def initialize(_filter = nil, context:, schema:)
           @schema = schema
+          @shapish = Warden::Shapish.new(self)
         end
+
+        attr_reader :shapish
 
         def visible_field?(field_defn, _ctx = nil, owner = nil); true; end
         def visible_argument?(arg_defn, _ctx = nil); true; end
@@ -91,6 +98,48 @@ module GraphQL
         def interfaces(obj_type); obj_type.interfaces; end
       end
 
+      def shapish
+        @shapish ||= Shapish.new(self)
+      end
+
+      class Shapish
+        def initialize(warden)
+          @warden = warden
+        end
+
+        def directive_exists?(dir_name)
+          @warden.directives.any? { |d| d.graphql_name == dir_name }
+        end
+
+        def type(name)
+          @warden.get_type(name)
+        end
+
+        def field(owner, field_name)
+          @warden.get_field(owner, field_name)
+        end
+
+        def argument(owner, arg_name)
+          @warden.get_argument(owner, arg_name)
+        end
+
+        def query_root
+          @warden.root_type_for_operation("query")
+        end
+
+        def arguments(owner)
+          @warden.arguments(owner)
+        end
+
+        def possible_types(type)
+          @warden.possible_types(type)
+        end
+
+        def enum_values(enum_type)
+          @warden.enum_values(enum_type)
+        end
+      end
+
       # @param context [GraphQL::Query::Context]
       # @param schema [GraphQL::Schema]
       def initialize(context:, schema:)
@@ -107,7 +156,7 @@ module GraphQL
           @visible_possible_types = @visible_fields = @visible_arguments = @visible_enum_arrays =
           @visible_enum_values = @visible_interfaces = @type_visibility = @type_memberships =
           @visible_and_reachable_type = @unions = @unfiltered_interfaces =
-          @reachable_type_set =
+          @reachable_type_set = @shapish =
             nil
       end
 

@@ -46,6 +46,7 @@ require "graphql/schema/mutation"
 require "graphql/schema/has_single_input_argument"
 require "graphql/schema/relay_classic_mutation"
 require "graphql/schema/subscription"
+require "graphql/schema/shape"
 
 module GraphQL
   # A GraphQL schema which may be queried with {GraphQL::Query}.
@@ -574,7 +575,7 @@ module GraphQL
       end
 
       def type_from_ast(ast_node, context: nil)
-        type_owner = context ? context.warden : self
+        type_owner = context ? context.query.types : self
         GraphQL::Schema::TypeExpression.build_type(type_owner, ast_node)
       end
 
@@ -1053,6 +1054,10 @@ module GraphQL
         Member::HasDirectives.get_directives(self, @own_schema_directives, :schema_directives)
       end
 
+      # Called when a type is needed by name at runtime
+      def load_type(type_name, ctx)
+        get_type(type_name, ctx)
+      end
       # This hook is called when an object fails an `authorized?` check.
       # You might report to your bug tracker here, so you can correct
       # the field resolvers not to return unauthorized objects.

@@ -141,8 +141,8 @@ module GraphQL
         end
 
         def coerce_result(value, ctx)
-          warden = ctx.warden
-          all_values = warden ? warden.enum_values(self) : values.each_value
+          types = ctx.types
+          all_values = types ? types.enum_values(self) : values.each_value
           enum_value = all_values.find { |val| val.value == value }
           if enum_value
             enum_value.graphql_name
