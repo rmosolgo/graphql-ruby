@@ -149,7 +149,8 @@ module GraphQL
 
       def authorize_arguments(args, values)
         # remove the `input` wrapper to match values
-        input_args = args["input"].type.unwrap.arguments(context)
+        input_type = args.find { |a| a.graphql_name == "input" }.type.unwrap
+        input_args = context.types.arguments(input_type)
         super(input_args, values)
       end
     end

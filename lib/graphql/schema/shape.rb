@@ -12,13 +12,17 @@ module GraphQL
 
       def type(type_name)
         # TODO filter
-        @all_types.find { |t| t.graphql_name == t } || @schema.load_type(type_name, @context)
+        t = @all_types.find { |t| t.graphql_name == t } || @schema.load_type(type_name, @context)
+        if t&.visible?(@context)
+          t
+        else
+          nil
+        end
       end
 
       def field(owner, field_name)
         # TODO filter
-        @all_types.add(owner)
-        f = if owner.kind.fields? && (field = owner.get_field(field_name)) # TODO pass context
+        f = if owner.kind.fields? && (field = owner.get_field(field_name, @context)) # TODO pass context
           field
         elsif owner == query_root && (entry_point_field = @schema.introspection_system.entry_point(name: field_name))
           entry_point_field
@@ -27,26 +31,35 @@ module GraphQL
         else
           nil
         end
-        f && @all_types.add(f.type.unwrap)
-        f
+        if f&.visible?(@context) && (ret_type = f.type.unwrap).visible?(@context)
+          @all_types.add(owner)
+          @all_types.add(ret_type)
+          f
+        else
+          nil
+        end
       end
 
       def fields(owner)
         # TODO filter
-        owner.fields.values
+        owner.fields.values.select { |f| f.visible?(@context) }
       end
 
       def arguments(owner)
         # TODO filter
-        owner.arguments.values
+        owner.arguments.values.select { |a| a.visible?(@context) }
       end
 
       def argument(owner, arg_name)
         arg = owner.get_argument(arg_name) # TODO filter
-        if arg.loads
-          @all_types.add(arg.loads)
+        if arg&.visible?(@context)
+          if arg&.loads
+            @all_types.add(arg.loads)
+          end
+          arg
+        else
+          nil
         end
-        arg
       end
 
       def possible_types(type)
@@ -92,16 +105,16 @@ module GraphQL
 
       def enum_values(owner)
         @all_types.add(owner)
-        owner.enum_values # TODO filter
+        # TODO filter
+        owner.enum_values.select { |v| v.visible?(@context) }
       end
 
       def directive_exists?(dir_name)
-        # TODO filter
-        @schema.directives.key?(dir_name)
+        @schema.directives[dir_name]&.visible?(@context)
       end
 
       def directives
-        @schema.directives.values
+        @schema.directives.each_value.select { |d| d.visible?(@context) }
       end
 
       def loadable?(t, _ctx)

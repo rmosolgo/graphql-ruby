@@ -21,15 +21,20 @@ describe GraphQL::Subscriptions::Event do
     subscription(Subscription)
   end
 
+  def build_dummy_context(context = {})
+    GraphQL::Query.new(EventSchema, "{ __typename }", context: context).context
+  end
+
+
   it "should serialize a JSON argument into the topic name" do
     field = EventSchema.subscription.fields["jsonSubscription"]
-    event = GraphQL::Subscriptions::Event.new(name: "test", arguments: { "someJson" => { "b" => 1, "a" => 0 } }, field: field, context: nil, scope: nil)
+    event = GraphQL::Subscriptions::Event.new(name: "test", arguments: { "someJson" => { "b" => 1, "a" => 0 } }, field: field, context: build_dummy_context, scope: nil)
     assert_equal %Q{:jsonSubscription:someJson:{"a":0,"b":1}}, event.topic
   end
 
   it "should not serialize the context into the topic name" do
     field = EventSchema.subscription.fields["jsonSubscription"]
-    context = { my_id: "abc" }
+    context = build_dummy_context({ my_id: "abc" })
     event = GraphQL::Subscriptions::Event.new(name: "test", arguments: { "someJson" => { "b" => 1, "a" => 0 } }, field: field, context: context, scope: nil)
     assert_equal %Q{:jsonSubscription:someJson:{"a":0,"b":1}}, event.topic
     assert_equal event.context[:my_id], "abc"
@@ -37,8 +42,8 @@ describe GraphQL::Subscriptions::Event do
 
   it "should serialize two equivalent JSON hashes with different key orderings into equivalent topic names" do
     field = EventSchema.subscription.fields["jsonSubscription"]
-    event_a = GraphQL::Subscriptions::Event.new(name: "test", arguments: { "someJson" => { "b" => 1, "a" => 0 } }, field: field, context: nil, scope: nil)
-    event_b = GraphQL::Subscriptions::Event.new(name: "test", arguments: { "someJson" => { "a" => 0, "b" => 1 } }, field: field, context: nil, scope: nil)
+    event_a = GraphQL::Subscriptions::Event.new(name: "test", arguments: { "someJson" => { "b" => 1, "a" => 0 } }, field: field, context: build_dummy_context, scope: nil)
+    event_b = GraphQL::Subscriptions::Event.new(name: "test", arguments: { "someJson" => { "a" => 0, "b" => 1 } }, field: field, context: build_dummy_context, scope: nil)
     assert_equal event_a.topic, event_b.topic
   end
 
@@ -52,25 +57,25 @@ describe GraphQL::Subscriptions::Event do
       },
       "a" => 0
     }
-    event = GraphQL::Subscriptions::Event.new(name: "test", arguments: { "someJson" => nested_hash }, field: field, context: nil, scope: nil)
+    event = GraphQL::Subscriptions::Event.new(name: "test", arguments: { "someJson" => nested_hash }, field: field, context: build_dummy_context, scope: nil)
     assert_equal %Q{:jsonSubscription:someJson:{"a":0,"b":1,"c":{"y":99,"z":100}}}, event.topic
   end
 
   it "should serialize a hash inside an array as a sorted hash" do
     field = EventSchema.subscription.fields["jsonSubscription"]
-    event = GraphQL::Subscriptions::Event.new(name: "test", arguments: { "someJson" => [{ "b" => 1, "a" => 0 }] }, field: field, context: nil, scope: nil)
+    event = GraphQL::Subscriptions::Event.new(name: "test", arguments: { "someJson" => [{ "b" => 1, "a" => 0 }] }, field: field, context: build_dummy_context, scope: nil)
     assert_equal %Q{:jsonSubscription:someJson:[{"a":0,"b":1}]}, event.topic
   end
 
   it "should serialize a hash inside an array of an array as a sorted hash" do
     field = EventSchema.subscription.fields["jsonSubscription"]
-    event = GraphQL::Subscriptions::Event.new(name: "test", arguments: { "someJson" => [[{ "b" => 1, "a" => 0 }]] }, field: field, context: nil, scope: nil)
+    event = GraphQL::Subscriptions::Event.new(name: "test", arguments: { "someJson" => [[{ "b" => 1, "a" => 0 }]] }, field: field, context: build_dummy_context, scope: nil)
     assert_equal %Q{:jsonSubscription:someJson:[[{"a":0,"b":1}]]}, event.topic
   end
 
   it "should serialize a hash inside an array inside of a hash" do
     field = EventSchema.subscription.fields["jsonSubscription"]
-    event = GraphQL::Subscriptions::Event.new(name: "test", arguments: { "someJson" => { "key" => [{ "b" => 1, "a" => 0}]} }, field: field, context: nil, scope: nil)
+    event = GraphQL::Subscriptions::Event.new(name: "test", arguments: { "someJson" => { "key" => [{ "b" => 1, "a" => 0}]} }, field: field, context: build_dummy_context, scope: nil)
     assert_equal %Q{:jsonSubscription:someJson:{"key":[{"a":0,"b":1}]}}, event.topic
   end
 end

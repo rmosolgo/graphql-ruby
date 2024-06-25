@@ -137,7 +137,7 @@ module GraphQL
         end
 
         def get_arg_definition(arg_owner, arg_name, context)
-          arg_owner.get_argument(arg_name, context) || arg_owner.arguments(context).each_value.find { |v| v.keyword.to_s == arg_name }
+          context.types.argument(arg_owner, arg_name) || context.types.arguments(arg_owner).find { |v| v.keyword.to_s == arg_name }
         end
       end
     end
