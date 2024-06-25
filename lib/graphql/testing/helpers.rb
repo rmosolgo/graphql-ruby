@@ -43,7 +43,7 @@ module GraphQL
         type_name, *field_names = field_path.split(".")
         dummy_query = GraphQL::Query.new(schema, "{ __typename }", context: context)
         query_context = dummy_query.context
-        object_type = dummy_query.get_type(type_name) # rubocop:disable Development/ContextIsPassedCop
+        object_type = dummy_query.types.type(type_name) # rubocop:disable Development/ContextIsPassedCop
         if object_type
           graphql_result = object
           field_names.each do |field_name|
@@ -52,7 +52,7 @@ module GraphQL
             if graphql_result.nil?
               return nil
             end
-            visible_field = dummy_query.get_field(object_type, field_name)
+            visible_field = dummy_query.types.field(object_type, field_name)
             if visible_field
               dummy_query.context.dataloader.run_isolated {
                 field_args = visible_field.coerce_arguments(graphql_result, arguments, query_context)

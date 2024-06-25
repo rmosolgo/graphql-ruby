@@ -117,8 +117,8 @@ module GraphQL
 
         return if fragment1.nil? || fragment2.nil?
 
-        fragment_type1 = context.warden.get_type(fragment1.type.name)
-        fragment_type2 = context.warden.get_type(fragment2.type.name)
+        fragment_type1 = context.query.types.type(fragment1.type.name)
+        fragment_type2 = context.query.types.type(fragment2.type.name)
 
         return if fragment_type1.nil? || fragment_type2.nil?
 
@@ -411,8 +411,8 @@ module GraphQL
               false
             else
               # Check if these two scopes have _any_ types in common.
-              possible_right_types = context.query.possible_types(type1)
-              possible_left_types = context.query.possible_types(type2)
+              possible_right_types = context.types.possible_types(type1)
+              possible_left_types = context.types.possible_types(type2)
               (possible_right_types & possible_left_types).empty?
             end
           end

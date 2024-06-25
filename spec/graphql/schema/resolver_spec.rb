@@ -543,7 +543,7 @@ describe GraphQL::Schema::Resolver do
     end
 
     it "works on instances" do
-      r = ResolverTest::Resolver1.new(object: nil, context: nil, field: nil)
+      r = ResolverTest::Resolver1.new(object: nil, context: GraphQL::Query::NullContext.instance, field: nil)
       assert_equal "Resolver1", r.path
     end
   end

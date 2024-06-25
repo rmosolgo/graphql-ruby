@@ -36,7 +36,7 @@ module GraphQL
         @field = field
         # Since this hash is constantly rebuilt, cache it for this call
         @arguments_by_keyword = {}
-        self.class.arguments(context).each do |name, arg|
+        context.types.arguments(self.class).each do |arg|
           @arguments_by_keyword[arg.keyword] = arg
         end
         @prepared_arguments = nil
@@ -152,7 +152,7 @@ module GraphQL
       # @return [Boolean, early_return_data] If `false`, execution will stop (and `early_return_data` will be returned instead, if present.)
       def authorized?(**inputs)
         arg_owner = @field # || self.class
-        args = arg_owner.arguments(context)
+        args = context.types.arguments(arg_owner)
         authorize_arguments(args, inputs)
       end
 
@@ -169,7 +169,7 @@ module GraphQL
       private
 
       def authorize_arguments(args, inputs)
-        args.each_value do |argument|
+        args.each do |argument|
           arg_keyword = argument.keyword
           if inputs.key?(arg_keyword) && !(arg_value = inputs[arg_keyword]).nil? && (arg_value != argument.default_value)
             auth_result = argument.authorized?(self, arg_value, context)
@@ -182,10 +182,9 @@ module GraphQL
             elsif auth_result == false
               return auth_result
             end
-          else
-            true
           end
         end
+        true
       end
 
       def load_arguments(args)

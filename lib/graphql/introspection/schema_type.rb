@@ -20,7 +20,7 @@ module GraphQL
       end
 
       def types
-        types = context.warden.reachable_types + context.schema.extra_types
+        types = context.types.all_types.to_a + context.schema.extra_types
         types.sort_by!(&:graphql_name)
         types
       end
@@ -38,13 +38,22 @@ module GraphQL
       end
 
       def directives
-        @context.warden.directives
+        @context.types.directives
       end
 
       private
 
       def permitted_root_type(op_type)
-        @context.warden.root_type_for_operation(op_type)
+        case op_type
+        when "query"
+          @context.types.query_root
+        when "mutation"
+          @context.types.mutation_root
+        when "subcription"
+          @context.types.subscription_root
+        else
+          nil
+        end
       end
     end
   end

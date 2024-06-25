@@ -98,7 +98,7 @@ module GraphQL
         possible_scope_types.keys.each do |possible_scope_type|
           next unless possible_scope_type.kind.abstract?
 
-          query.possible_types(possible_scope_type).each do |impl_type|
+          query.types.possible_types(possible_scope_type).each do |impl_type|
             possible_scope_types[impl_type] ||= true
           end
           possible_scope_types.delete(possible_scope_type)
@@ -123,8 +123,8 @@ module GraphQL
       def types_intersect?(query, a, b)
         return true if a == b
 
-        a_types = query.possible_types(a)
-        query.possible_types(b).any? { |t| a_types.include?(t) }
+        a_types = query.types.possible_types(a)
+        query.types.possible_types(b).any? { |t| a_types.include?(t) }
       end
 
       # A hook which is called whenever a field's max complexity is calculated.

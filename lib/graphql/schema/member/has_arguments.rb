@@ -364,8 +364,8 @@ module GraphQL
                   end
 
                   if !(
-                      context.warden.possible_types(argument.loads).include?(application_object_type) ||
-                      context.warden.loadable?(argument.loads, context)
+                      context.types.possible_types(argument.loads).include?(application_object_type) ||
+                      context.types.loadable?(argument.loads, context)
                     )
                     err = GraphQL::LoadApplicationObjectFailedError.new(context: context, argument: argument, id: id, object: application_object)
                     application_object = load_application_object_failed(err)

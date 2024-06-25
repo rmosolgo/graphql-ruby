@@ -31,13 +31,22 @@ module GraphQL
         f
       end
 
+      def fields(owner)
+        # TODO filter
+        owner.fields.values
+      end
+
       def arguments(owner)
         # TODO filter
         owner.arguments.values
       end
 
       def argument(owner, arg_name)
-        owner.get_argument(arg_name) # TODO filter
+        arg = owner.get_argument(arg_name) # TODO filter
+        if arg.loads
+          @all_types.add(arg.loads)
+        end
+        arg
       end
 
       def possible_types(type)
@@ -55,8 +64,24 @@ module GraphQL
         pt
       end
 
+      def interfaces(obj_type)
+        obj_type.interfaces # TODO filter
+      end
+
       def query_root
         t = @schema.query # TODO filter
+        @all_types.add(t)
+        t
+      end
+
+      def mutation_root
+        t = @schema.mutation # TODO filter
+        @all_types.add(t)
+        t
+      end
+
+      def subscription_root
+        t = @schema.subscription # TODO filter
         @all_types.add(t)
         t
       end
@@ -68,6 +93,23 @@ module GraphQL
       def enum_values(owner)
         @all_types.add(owner)
         owner.enum_values # TODO filter
+      end
+
+      def directive_exists?(dir_name)
+        # TODO filter
+        @schema.directives.key?(dir_name)
+      end
+
+      def directives
+        @schema.directives.values
+      end
+
+      def loadable?(t, _ctx)
+        !@all_types.include?(t) # TODO make sure t is not reachable but t is visible
+      end
+
+      def reachable_type?(t)
+        true # TODO ...
       end
     end
   end

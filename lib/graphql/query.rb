@@ -101,7 +101,7 @@ module GraphQL
       @schema = schema
       @context = schema.context_class.new(query: self, values: context)
       @warden = warden
-      if shape
+      if true # shape
         @shape = GraphQL::Schema::Shape.new(self)
         @warden = :__using_shape_instead__
       end
@@ -199,7 +199,14 @@ module GraphQL
     def lookahead
       @lookahead ||= begin
         ast_node = selected_operation
-        root_type = warden.root_type_for_operation(ast_node.operation_type || "query")
+        root_type = case ast_node.operation_type
+        when nil, "query"
+          types.query_root
+        when "mutation"
+          types.mutation_root
+        when "subscription"
+          types.subscription_root
+        end
         GraphQL::Execution::Lookahead.new(query: self, root_type: root_type, ast_nodes: [ast_node])
       end
     end

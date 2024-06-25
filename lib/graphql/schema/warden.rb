@@ -138,6 +138,18 @@ module GraphQL
         def enum_values(enum_type)
           @warden.enum_values(enum_type)
         end
+
+        def all_types
+          @warden.reachable_types
+        end
+
+        def interfaces(obj_type)
+          @warden.interfaces(obj_type)
+        end
+
+        def loadable?(t, ctx) # TODO remove ctx here?
+          @warden.loadable?(t, ctx)
+        end
       end
 
       # @param context [GraphQL::Query::Context]

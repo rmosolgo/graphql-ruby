@@ -108,16 +108,16 @@ module GraphQL
       def selection(field_name, selected_type: @selected_type, arguments: nil)
         next_field_defn = case field_name
         when String
-          @query.get_field(selected_type, field_name)
+          @query.types.field(selected_type, field_name)
         when Symbol
           # Try to avoid the `.to_s` below, if possible
           all_fields = if selected_type.kind.fields?
-            @query.warden.fields(selected_type)
+            @query.types.fields(selected_type)
           else
             # Handle unions by checking possible
-            @query.warden
+            @query.types
               .possible_types(selected_type)
-              .map { |t| @query.warden.fields(t) }
+              .map { |t| @query.types.fields(t) }
               .tap(&:flatten!)
           end
 
@@ -128,7 +128,7 @@ module GraphQL
             # Symbol#name is only present on 3.0+
             sym_s = field_name.respond_to?(:name) ? field_name.name : field_name.to_s
             guessed_name = Schema::Member::BuildType.camelize(sym_s)
-            @query.get_field(selected_type, guessed_name)
+            @query.types.field(selected_type, guessed_name)
           end
         end
         lookahead_for_selection(next_field_defn, selected_type, arguments)
@@ -144,7 +144,7 @@ module GraphQL
         alias_node = lookup_alias_node(ast_nodes, alias_name)
         return NULL_LOOKAHEAD unless alias_node
 
-        next_field_defn = @query.get_field(selected_type, alias_node.name)
+        next_field_defn = @query.types.field(selected_type, alias_node.name)
 
         alias_arguments = @query.arguments_for(alias_node, next_field_defn)
         if alias_arguments.is_a?(::GraphQL::Execution::Interpreter::Arguments)
@@ -183,7 +183,7 @@ module GraphQL
 
         subselections_by_type.each do |type, ast_nodes_by_response_key|
           ast_nodes_by_response_key.each do |response_key, ast_nodes|
-            field_defn = @query.get_field(type, ast_nodes.first.name)
+            field_defn = @query.types.field(type, ast_nodes.first.name)
             lookahead = Lookahead.new(query: @query, ast_nodes: ast_nodes, field: field_defn, owner_type: type)
             subselections.push(lookahead)
           end
@@ -266,7 +266,7 @@ module GraphQL
             elsif arguments.nil? || arguments.empty?
               selections_on_type[response_key] = [ast_selection]
             else
-              field_defn = @query.get_field(selected_type, ast_selection.name)
+              field_defn = @query.types.field(selected_type, ast_selection.name)
               if arguments_match?(arguments, field_defn, ast_selection)
                 selections_on_type[response_key] = [ast_selection]
               end
@@ -276,14 +276,14 @@ module GraphQL
             subselections_on_type = selections_on_type
             if (t = ast_selection.type)
               # Assuming this is valid, that `t` will be found.
-              on_type = @query.get_type(t.name)
+              on_type = @query.types.type(t.name)
               subselections_on_type = subselections_by_type[on_type] ||= {}
             end
             find_selections(subselections_by_type, subselections_on_type, on_type, ast_selection.selections, arguments)
           when GraphQL::Language::Nodes::FragmentSpread
             frag_defn = lookup_fragment(ast_selection)
             # Again, assuming a valid AST
-            on_type = @query.get_type(frag_defn.type.name)
+            on_type = @query.types.type(frag_defn.type.name)
             subselections_on_type = subselections_by_type[on_type] ||= {}
             find_selections(subselections_by_type, subselections_on_type, on_type, frag_defn.selections, arguments)
           else
