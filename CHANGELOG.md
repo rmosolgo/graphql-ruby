@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 2.3.7 (27 Jun 2024)
+
+### Bug fixes
+
+- Properly merge field directives and resolver directives #5001
+
 # 2.3.6 (25 Jun 2024)
 
 ### New features
