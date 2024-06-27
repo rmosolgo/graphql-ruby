@@ -42,8 +42,12 @@ module GraphQL
       end
 
       def directives
-        if @resolver_class
-          @resolver_class.directives
+        if @resolver_class && (r_dirs = @resolver_class.directives).any?
+          if (own_dirs = super).any?
+            own_dirs + r_dirs
+          else
+            r_dirs
+          end
         else
           super
         end
