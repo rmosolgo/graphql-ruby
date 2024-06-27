@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.3.6/">API</a>
+            <a href="/api-doc/2.3.7/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -160,7 +160,7 @@
 </div>
 </div>
 <div class="guide-container">
-  <p><em>Sources</em> are what <a href="/api-doc/2.3.6/GraphQL/Dataloader" target="_blank" title="API docs for GraphQL::Dataloader"><code>GraphQL::Dataloader</code></a> uses to fetch data from external services.</p>
+  <p><em>Sources</em> are what <a href="/api-doc/2.3.7/GraphQL/Dataloader" target="_blank" title="API docs for GraphQL::Dataloader"><code>GraphQL::Dataloader</code></a> uses to fetch data from external services.</p>
 
 <h2 id="source-concepts">Source Concepts</h2>
 
@@ -183,7 +183,7 @@
 
     <p>(<code class="language-plaintext highlighter-rouge">dataloader.with(source_class, *batch_parameters)</code> returns an instance of <code class="language-plaintext highlighter-rouge">source_class</code> with the given batch parameters – but it might be an instance which was cached by <code class="language-plaintext highlighter-rouge">dataloader</code>.)</p>
 
-    <p>Additionally, batch parameters are used to de-duplicate Source initializations during a query run. <code class="language-plaintext highlighter-rouge">.with(...)</code> calls that have the same batch parameters will use the same Source instance under the hood. To customize how Sources are de-duplicated, see <a href="/api-doc/2.3.6/GraphQL/Dataloader/Source#batch_key_for-class_method" target="_blank" title="API docs for GraphQL::Dataloader::Source.batch_key_for"><code>GraphQL::Dataloader::Source.batch_key_for</code></a>.</p>
+    <p>Additionally, batch parameters are used to de-duplicate Source initializations during a query run. <code class="language-plaintext highlighter-rouge">.with(...)</code> calls that have the same batch parameters will use the same Source instance under the hood. To customize how Sources are de-duplicated, see <a href="/api-doc/2.3.7/GraphQL/Dataloader/Source#batch_key_for-class_method" target="_blank" title="API docs for GraphQL::Dataloader::Source.batch_key_for"><code>GraphQL::Dataloader::Source.batch_key_for</code></a>.</p>
   </li>
 </ul>
 
@@ -287,7 +287,7 @@
 
 <h2 id="filling-the-dataloader-cache">Filling the Dataloader Cache</h2>
 
-<p>If you load records from the database, you can use them to populate a source’s cache by using <a href="/api-doc/2.3.6/GraphQL/Dataloader/Source#merge-instance_method" target="_blank" title="API docs for GraphQL::Dataloader::Source#merge"><code>Dataloader::Source#merge</code></a>. For example:</p>
+<p>If you load records from the database, you can use them to populate a source’s cache by using <a href="/api-doc/2.3.7/GraphQL/Dataloader/Source#merge-instance_method" target="_blank" title="API docs for GraphQL::Dataloader::Source#merge"><code>Dataloader::Source#merge</code></a>. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Build a `{ key =&gt; value }` map to populate the cache</span>
 <span class="n">comments_by_id</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="nf">comments</span><span class="p">.</span><span class="nf">each_with_object</span><span class="p">({})</span> <span class="p">{</span> <span class="o">|</span><span class="n">comment</span><span class="p">,</span> <span class="nb">hash</span><span class="o">|</span> <span class="nb">hash</span><span class="p">[</span><span class="n">comment</span><span class="p">.</span><span class="nf">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">comment</span> <span class="p">}</span>
