@@ -1165,16 +1165,22 @@ describe GraphQL::Schema::Resolver do
 
   describe "with directives" do
     class ResolverDirectivesSchema < GraphQL::Schema
+
       class GetThing < GraphQL::Schema::Resolver
         directive GraphQL::Schema::Directive::Flagged, by: "getThing"
-
         argument :id, ID
+        type String, null: false
+      end
 
+      class GetThingWithoutDirective < GraphQL::Schema::Resolver
+        argument :id, ID
         type String, null: false
       end
 
       class Query < GraphQL::Schema::Object
         field :get_thing, resolver: GetThing
+        field :get_thing_flagged, resolver: GetThing, directives: { GraphQL::Schema::Directive::Flagged => { by: "getThingFlagged" } }
+        field :get_thing_field, resolver: GetThingWithoutDirective, directives: { GraphQL::Schema::Directive::Flagged => { by: "getField" } }
       end
 
       query(Query)
@@ -1195,9 +1201,11 @@ describe GraphQL::Schema::Resolver do
 
     type Query {
       getThing(id: ID!): String! @flagged(by: ["getThing"])
+      getThingField(id: ID!): String! @flagged(by: ["getField"])
+      getThingFlagged(id: ID!): String! @flagged(by: ["getThingFlagged"]) @flagged(by: ["getThing"])
     }
     GRAPHQL
 
-    assert_equal expected_str, ResolverDirectivesSchema.to_definition(context: { flags: ["getThing"] })
+    assert_equal expected_str, ResolverDirectivesSchema.to_definition(context: { flags: ["getField", "getThing", "getThingFlagged"] })
   end
 end
