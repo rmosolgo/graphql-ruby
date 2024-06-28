@@ -166,6 +166,11 @@ module MaskHelpers
     field :test, String
   end
 
+  class CheremeDirective < GraphQL::Schema::Directive
+    graphql_name("cheremeDirectives")
+    locations(GraphQL::Schema::Directive::OBJECT)
+  end
+
   class CheremeWithInterface < BaseObject
     # Commenting this would make the test pass
     implements PublicInterfaceType
@@ -176,6 +181,8 @@ module MaskHelpers
   class Chereme < BaseObject
     description "A basic unit of signed communication"
     implements LanguageMemberType
+    directive CheremeDirective
+
     field :name, String, null: false
 
     field :chereme_with_interface, CheremeWithInterface
@@ -393,6 +400,26 @@ describe GraphQL::Schema::Warden do
 
       res = MaskHelpers.query_with_mask(query_string, mask)
       assert_nil res["data"]["CheremeWithInterface"]
+    end
+
+    it "hides directives if no other fields are using it" do
+      query_string = %|
+        {
+          __schema { directives { name } }
+        }
+      |
+
+      res = MaskHelpers.query_with_mask(query_string, mask)
+      expected_directives = ["include", "skip", "deprecated", "oneOf", "specifiedBy"]
+
+      # Failure:
+      # GraphQL::Schema::Warden::hiding fields#test_0003_hides directives if no other fields are using it
+      # Minitest::Assertion: --- expected
+      # +++ actual
+      # @@ -1 +1 @@
+      # -["include", "skip", "deprecated", "oneOf", "specifiedBy"]
+      # +["include", "skip", "deprecated", "oneOf", "specifiedBy", "cheremeDirectives"]
+      assert_equal(expected_directives, res["data"]["__schema"]["directives"].map { |d| d["name"] })
     end
 
     it "causes validation errors" do
@@ -707,15 +734,15 @@ describe GraphQL::Schema::Warden do
     }
 
     it "hides types if no other fields or arguments are using it" do
-       query_string = %|
-         {
-           CheremeInput: __type(name: "CheremeInput") { fields { name } }
-         }
-       |
+      query_string = %|
+        {
+          CheremeInput: __type(name: "CheremeInput") { fields { name } }
+        }
+      |
 
-       res = MaskHelpers.query_with_mask(query_string, mask)
-       assert_nil res["data"]["CheremeInput"]
-     end
+      res = MaskHelpers.query_with_mask(query_string, mask)
+      assert_nil res["data"]["CheremeInput"]
+    end
 
     it "isn't present in introspection" do
       query_string = %|
