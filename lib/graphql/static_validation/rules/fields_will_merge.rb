@@ -33,26 +33,19 @@ module GraphQL
 
       private
 
-      def field_conflicts
-        @field_conflicts ||= Hash.new do |errors, field|
-          errors[field] = GraphQL::StaticValidation::FieldsWillMergeError.new(kind: :field, field_name: field)
-        end
-      end
-
-      def arg_conflicts
-        @arg_conflicts ||= Hash.new do |errors, field|
-          errors[field] = GraphQL::StaticValidation::FieldsWillMergeError.new(kind: :argument, field_name: field)
+      def conflicts
+        @conflicts ||= Hash.new do |h, error_type|
+          h[error_type] = Hash.new do |h2, field_name|
+            h2[field_name] = GraphQL::StaticValidation::FieldsWillMergeError.new(kind: error_type, field_name: field_name)
+          end
         end
       end
 
       def setting_errors
-        @field_conflicts = nil
-        @arg_conflicts = nil
-
+        @conflicts = nil
         yield
         # don't initialize these if they weren't initialized in the block:
-        @field_conflicts && @field_conflicts.each_value { |error| add_error(error) }
-        @arg_conflicts && @arg_conflicts.each_value { |error| add_error(error) }
+        @conflicts && @conflicts.each_value { |error_type| error_type.each_value { |error| add_error(error) } }
       end
 
       def conflicts_within_selection_set(node, parent_type)
@@ -221,7 +214,7 @@ module GraphQL
 
         if !are_mutually_exclusive
           if node1.name != node2.name
-            conflict = field_conflicts[response_key]
+            conflict = conflicts[:field][response_key]
 
             conflict.add_conflict(node1, node1.name)
             conflict.add_conflict(node2, node2.name)
@@ -230,7 +223,7 @@ module GraphQL
           end
 
           if !same_arguments?(node1, node2)
-            conflict = arg_conflicts[response_key]
+            conflict = conflicts[:argument][response_key]
 
             conflict.add_conflict(node1, GraphQL::Language.serialize(serialize_field_args(node1)))
             conflict.add_conflict(node2, GraphQL::Language.serialize(serialize_field_args(node2)))
@@ -239,11 +232,48 @@ module GraphQL
           end
         end
 
+        if !conflicts[:field].key?(response_key) &&
+            (t1 = field1.definition&.type) &&
+            (t2 = field2.definition&.type) &&
+            return_types_conflict?(t1, t2)
+
+          conflict = conflicts[:return_type][response_key]
+          conflict.add_conflict(node1, "`#{t1.to_type_signature}`")
+          conflict.add_conflict(node2, "`#{t2.to_type_signature}`")
+
+          @conflict_count += 1
+        end
+
         find_conflicts_between_sub_selection_sets(
           field1,
           field2,
           mutually_exclusive: are_mutually_exclusive,
         )
+      end
+
+      def return_types_conflict?(type1, type2)
+        if type1.list?
+          if type2.list?
+            return_types_conflict?(type1.of_type, type2.of_type)
+          else
+            true
+          end
+        elsif type2.list?
+        elsif type1.non_null?
+          if type2.non_null?
+            return_types_conflict?(type1.of_type, type2.of_type)
+          else
+            true
+          end
+        elsif type2.non_null?
+          true
+        elsif !type1.kind.fields? && !type2.kind.fields?
+          type1 != type2
+        else
+          # One or more of these are composite types,
+          # their selections will be validated later on.
+          false
+        end
       end
 
       def find_conflicts_between_sub_selection_sets(field1, field2, mutually_exclusive:)
@@ -344,7 +374,7 @@ module GraphQL
             fields << Field.new(node, definition, owner_type, parents)
           when GraphQL::Language::Nodes::InlineFragment
             fragment_type = node.type ? context.warden.get_type(node.type.name) : owner_type
-            find_fields_and_fragments(node.selections, parents: [*parents, fragment_type], owner_type: owner_type, fields: fields, fragment_spreads: fragment_spreads) if fragment_type
+            find_fields_and_fragments(node.selections, parents: [*parents, fragment_type], owner_type: fragment_type, fields: fields, fragment_spreads: fragment_spreads) if fragment_type
           when GraphQL::Language::Nodes::FragmentSpread
             fragment_spreads << FragmentSpread.new(node.name, parents)
           end
