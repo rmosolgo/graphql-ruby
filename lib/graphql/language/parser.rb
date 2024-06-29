@@ -49,6 +49,10 @@ module GraphQL
         end
       end
 
+      def inspect
+        "#<#{self.class}:#{self.object_id}>"
+      end
+
       def line_at(pos)
         line = lines_at.bsearch_index { |l| l >= pos }
         if line.nil?
