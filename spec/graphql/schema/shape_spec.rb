@@ -20,6 +20,6 @@ describe GraphQL::Schema::Shape do
     res = query.result
 
     assert_equal "Something", res["data"]["thing"]["name"]
-    assert_equal ["Query", "Thing", "String"], query.types.all_types.to_a.map(&:graphql_name)
+    assert_equal ["Query", "Thing", "String"], query.types.all_types.map(&:graphql_name)
   end
 end

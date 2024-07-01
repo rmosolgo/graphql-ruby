@@ -65,7 +65,6 @@ module GraphQL
             @shapish ||= Warden::Shapish.new(self)
           end
         end
-
       end
 
       class NullWarden

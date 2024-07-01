@@ -103,7 +103,7 @@ module GraphQL
       @warden = warden
       if true # shape
         @shape = GraphQL::Schema::Shape.new(self)
-        @warden = Schema::Warden::PassThruWarden
+        @warden = Schema::Warden::NullWarden.new(context: self, schema: @schema)
       end
       @subscription_topic = subscription_topic
       @root_value = root_value

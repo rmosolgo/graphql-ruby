@@ -227,8 +227,8 @@ module GraphQL
           any_arguments?
         end
 
-        def get_field_argument(name, context = GraphQL::Query::NullContext.instance)
-          get_argument(name, context)
+        def get_field_argument(name, context = GraphQL::Query::NullContext.instance, skip_visible:)
+          get_argument(name, context, skip_visible: skip_visible)
         end
 
         def all_field_argument_definitions

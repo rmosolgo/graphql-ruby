@@ -160,7 +160,7 @@ module GraphQL
               case node
               when GraphQL::Language::Nodes::InlineFragment
                 if node.type
-                  type_defn = schema.get_type(node.type.name, context)
+                  type_defn = query.types.type(node.type.name)
 
                   if query.types.possible_types(type_defn).include?(owner_type)
                     result = gather_selections(owner_object, owner_type, node.selections, selections_to_run, next_selections)

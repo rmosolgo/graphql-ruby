@@ -20,7 +20,7 @@ module GraphQL
       end
 
       def types
-        query_types = context.types.all_types.to_a
+        query_types = context.types.all_types
         types = query_types + context.schema.extra_types
         types.sort_by!(&:graphql_name)
         types

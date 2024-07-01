@@ -365,26 +365,30 @@ module GraphQL
 
       # @param type_name [String]
       # @return [Module, nil] A type, or nil if there's no type called `type_name`
-      def get_type(type_name, context = GraphQL::Query::NullContext.instance)
+      def get_type(type_name, context = GraphQL::Query::NullContext.instance, skip_visible: false)
         local_entry = own_types[type_name]
         type_defn = case local_entry
         when nil
           nil
         when Array
-          visible_t = nil
-          warden = Warden.from_context(context)
-          local_entry.each do |t|
-            if warden.visible_type?(t, context)
-              if visible_t.nil?
-                visible_t = t
-              else
-                raise DuplicateNamesError.new(
-                  duplicated_name: type_name, duplicated_definition_1: visible_t.inspect, duplicated_definition_2: t.inspect
-                )
+          if skip_visible
+            local_entry
+          else
+            visible_t = nil
+            warden = Warden.from_context(context)
+            local_entry.each do |t|
+              if warden.visible_type?(t, context)
+                if visible_t.nil?
+                  visible_t = t
+                else
+                  raise DuplicateNamesError.new(
+                    duplicated_name: type_name, duplicated_definition_1: visible_t.inspect, duplicated_definition_2: t.inspect
+                  )
+                end
               end
             end
+            visible_t
           end
-          visible_t
         when Module
           local_entry
         else
@@ -1056,7 +1060,7 @@ module GraphQL
 
       # Called when a type is needed by name at runtime
       def load_type(type_name, ctx)
-        get_type(type_name, ctx)
+        get_type(type_name, ctx, skip_visible: true)
       end
       # This hook is called when an object fails an `authorized?` check.
       # You might report to your bug tracker here, so you can correct
