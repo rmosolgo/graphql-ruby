@@ -8,12 +8,14 @@ module GraphQL
         @context = query.context
         @schema = query.schema
         @all_types = Set.new.compare_by_identity
+        @all_types_loaded = false
       end
 
       def type(type_name)
         # TODO filter
         t = @all_types.find { |t| t.graphql_name == t } || @schema.load_type(type_name, @context)
         if t&.visible?(@context)
+          # TODO add type?
           t
         else
           nil
@@ -32,8 +34,8 @@ module GraphQL
           nil
         end
         if f&.visible?(@context) && (ret_type = f.type.unwrap).visible?(@context)
-          @all_types.add(owner)
-          @all_types.add(ret_type)
+          add_type(owner)
+          add_type(ret_type)
           f
         else
           nil
@@ -54,7 +56,7 @@ module GraphQL
         arg = owner.get_argument(arg_name) # TODO filter
         if arg&.visible?(@context)
           if arg&.loads
-            @all_types.add(arg.loads)
+            add_type(arg.loads)
           end
           arg
         else
@@ -73,7 +75,7 @@ module GraphQL
         when "UNION"
           type.possible_types
         end
-        @all_types.merge(pt)
+        pt.each { |t| add_type(t) }
         pt
       end
 
@@ -83,28 +85,32 @@ module GraphQL
 
       def query_root
         t = @schema.query # TODO filter
-        @all_types.add(t)
+        add_type(t)
         t
       end
 
       def mutation_root
         t = @schema.mutation # TODO filter
-        @all_types.add(t)
+        add_type(t)
         t
       end
 
       def subscription_root
         t = @schema.subscription # TODO filter
-        @all_types.add(t)
+        add_type(t)
         t
       end
 
       def all_types
+        if !@all_types_loaded
+          @schema.types.each_value { |t| add_type(t) }
+          @all_types_loaded = true
+        end
         @all_types
       end
 
       def enum_values(owner)
-        @all_types.add(owner)
+        add_type(owner)
         # TODO filter
         owner.enum_values.select { |v| v.visible?(@context) }
       end
@@ -123,6 +129,12 @@ module GraphQL
 
       def reachable_type?(t)
         true # TODO ...
+      end
+
+      private
+
+      def add_type(t)
+        t && @all_types.add(t)
       end
     end
   end
