@@ -29,7 +29,15 @@ module GraphQL
             false
           end
         }.compare_by_identity
-        # TODO don't I also need @cached_visible_args?
+
+        @cached_visible_arguments = Hash.new do |h, arg|
+          h[arg] = if @cached_visible[arg] && (arg_type = arg.type.unwrap) && @cached_visible[arg_type]
+            add_type(arg_type)
+            true
+          else
+            false
+          end
+        end.compare_by_identity
       end
 
       def type(type_name)
@@ -98,7 +106,7 @@ module GraphQL
       end
 
       def arguments(owner)
-        non_duplicate_items(owner.all_argument_definitions, @cached_visible)
+        non_duplicate_items(owner.all_argument_definitions, @cached_visible_arguments)
       end
 
       def argument(owner, arg_name)
@@ -108,7 +116,7 @@ module GraphQL
         if arg.is_a?(Array)
           visible_arg = nil
           arg.each do |arg_defn|
-            if @cached_visible[arg_defn]
+            if @cached_visible_arguments[arg_defn]
               if arg_defn&.loads
                 add_type(arg_defn.loads)
               end
@@ -121,7 +129,7 @@ module GraphQL
           end
           visible_arg
         else
-          if arg && @cached_visible[arg]
+          if arg && @cached_visible_arguments[arg]
             if arg&.loads
               add_type(arg.loads)
             end
@@ -152,21 +160,15 @@ module GraphQL
       end
 
       def query_root
-        t = @schema.query # TODO filter
-        add_type(t)
-        t
+        add_if_visible(@schema.query)
       end
 
       def mutation_root
-        t = @schema.mutation # TODO filter
-        add_type(t)
-        t
+        add_if_visible(@schema.mutation)
       end
 
       def subscription_root
-        t = @schema.subscription # TODO filter
-        add_type(t)
-        t
+        add_if_visible(@schema.subscription)
       end
 
       def all_types
@@ -192,11 +194,16 @@ module GraphQL
         !@all_types[t.graphql_name] # TODO make sure t is not reachable but t is visible
       end
 
-      def reachable_type?(t)
-        true # TODO ...
+      def reachable_type?(type_name)
+        load_all_types
+        !!@all_types[type_name]
       end
 
       private
+
+      def add_if_visible(t)
+        (t && @cached_visible[t]) ? (add_type(t); t) : nil
+      end
 
       def add_type(t)
         if t && @cached_visible[t]
@@ -207,9 +214,6 @@ module GraphQL
             end
             false
           else
-            if !t.respond_to?(:kind)
-              binding.pry
-            end
             @all_types[n] = t
             @unvisited_types << t
             true
@@ -239,7 +243,12 @@ module GraphQL
       def load_all_types
         return if @all_types_loaded
         @all_types_loaded = true
-        schema_types = @schema.types.values
+        schema_types = [
+          query_root,
+          mutation_root,
+          subscription_root,
+          *@schema.orphan_types
+        ]
         schema_types.compact! # TODO why is this necessary?!
         schema_types.flatten! # handle multiple defns
         schema_types.each { |t| add_type(t) }

@@ -50,43 +50,64 @@ module MaskHelpers
     end
   end
 
+  module VisibleByFilters
+    def visible?(context)
+      result = super(context)
+      if result && context[:only] && !Array(context[:only]).all? { |func| func.call(self, context) }
+        return false
+      end
+      if result && context[:except] && Array(context[:except]).any? { |func| func.call(self, context) }
+        return false
+      end
+      result
+    end
+  end
+
 
   class BaseArgument < GraphQL::Schema::Argument
     include HasMetadata
+    include VisibleByFilters
   end
 
   class BaseField < GraphQL::Schema::Field
     include HasMetadata
+    include VisibleByFilters
     argument_class BaseArgument
   end
 
   class BaseObject < GraphQL::Schema::Object
     extend HasMetadata
+    extend VisibleByFilters
     field_class BaseField
   end
 
   class BaseEnumValue < GraphQL::Schema::EnumValue
     include HasMetadata
+    include VisibleByFilters
   end
 
   class BaseEnum < GraphQL::Schema::Enum
     extend HasMetadata
+    extend VisibleByFilters
     enum_value_class BaseEnumValue
   end
 
   class BaseInputObject < GraphQL::Schema::InputObject
     extend HasMetadata
+    extend VisibleByFilters
     argument_class BaseArgument
   end
 
   class BaseUnion < GraphQL::Schema::Union
     extend HasMetadata
+    extend VisibleByFilters
   end
 
   module BaseInterface
     include GraphQL::Schema::Interface
     module DefinitionMethods
       include HasMetadata
+      include VisibleByFilters
     end
     field_class BaseField
   end
@@ -249,16 +270,7 @@ module MaskHelpers
       PhonemeType
     end
 
-    def self.visible?(member, context)
-      result = super(member, context)
-      if result && context[:only] && !Array(context[:only]).all? { |func| func.call(member, context) }
-        return false
-      end
-      if result && context[:except] && Array(context[:except]).any? { |func| func.call(member, context) }
-        return false
-      end
-      result
-    end
+
   end
 
   module Data
