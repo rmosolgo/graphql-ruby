@@ -10,6 +10,7 @@ module GraphQL
         @all_types = {}
         @all_types_loaded = false
         @unvisited_types = []
+        @included_interface_possible_types_set = nil
         @cached_visible = Hash.new { |h, k| h[k] = k.visible?(@context) }.compare_by_identity
 
         @cached_reachable = Hash.new do |h, type|
@@ -156,7 +157,11 @@ module GraphQL
       end
 
       def interfaces(obj_type)
-        obj_type.interface_type_memberships.select { |itm| @cached_visible[itm] && @cached_visible[itm.abstract_type] }.map!(&:abstract_type)
+        ints = obj_type.interface_type_memberships
+          .select { |itm| @cached_visible[itm] && @cached_visible[itm.abstract_type] }
+          .map!(&:abstract_type)
+        ints.uniq! # Remove any duplicate interfaces implemented via other interfaces
+        ints
       end
 
       def query_root
@@ -247,6 +252,7 @@ module GraphQL
       def load_all_types
         return if @all_types_loaded
         @all_types_loaded = true
+        @included_interface_possible_types_set = Set.new
         schema_types = [
           query_root,
           mutation_root,
@@ -281,7 +287,7 @@ module GraphQL
             end
           elsif include_interface_possible_types
             possible_types(type).each do |pt|
-              add_type(interface)
+              add_type(pt)
             end
           end
           # Don't visit interface possible types -- it's not enough to justify visibility
@@ -291,9 +297,11 @@ module GraphQL
           t_f.each do |field|
             field_type = field.type.unwrap
             # In this case, if it's an interface, we want to include
-            # visit_type(unvisited_types, field_type, include_interface_possible_types: true)
-            # TODO ^^ reimplement that
-            add_type(field_type)
+            if field_type.kind.interface? && @included_interface_possible_types_set.add?(field_type)
+              visit_type(field_type, include_interface_possible_types: true)
+            else
+              add_type(field_type)
+            end
             # recurse into visible arguments
             arguments(field).each do |argument|
               add_type(argument.type.unwrap)
