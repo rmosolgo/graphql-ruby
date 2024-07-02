@@ -16,10 +16,10 @@ describe GraphQL::Schema::Shape do
   end
   it "only loads the types it needs" do
     query = GraphQL::Query.new(ShapeSchema, "{ thing { name } }", shape: true)
-    assert_equal [], query.types.to_a
+    assert_equal [], query.types.loaded_types
     res = query.result
 
     assert_equal "Something", res["data"]["thing"]["name"]
-    assert_equal ["Query", "Thing", "String"], query.types.all_types.map(&:graphql_name)
+    assert_equal ["Query", "String", "Thing"], query.types.loaded_types.map(&:graphql_name).sort
   end
 end

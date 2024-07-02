@@ -100,9 +100,11 @@ module GraphQL
       variables ||= {}
       @schema = schema
       @context = schema.context_class.new(query: self, values: context)
-      @warden = warden
-      if true # shape
-        @shape = GraphQL::Schema::Shape.new(self)
+      if warden
+        @shape = nil
+        @warden = warden
+      else
+        @shape = @schema.shape_class.new(self)
         @warden = Schema::Warden::NullWarden.new(context: self, schema: @schema)
       end
       @subscription_topic = subscription_topic

@@ -152,12 +152,12 @@ module GraphQL
         @cached_possible_types ||= Hash.new do |h, type|
           add_type(type)
           pt = case type.kind.name
-          when "OBJECT"
-            [type]
           when "INTERFACE"
             @schema.possible_types(type)
           when "UNION"
             type.type_memberships.select { |tm| @cached_visible[tm] && @cached_visible[tm.object_type] }.map!(&:object_type)
+          else
+            [type]
           end
 
           h[type] = pt.select { |t|  @cached_visible[t] ? (add_type(t); true) : false  }
@@ -215,6 +215,10 @@ module GraphQL
       def reachable_type?(type_name)
         load_all_types
         !!@all_types[type_name]
+      end
+
+      def loaded_types
+        @all_types.values
       end
 
       private

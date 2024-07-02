@@ -73,6 +73,13 @@ module GraphQL
           @shapish = Warden::Shapish.new(self)
         end
 
+        # @api private
+        module NullShape
+          def self.new(query)
+            NullWarden.new(context: query.context, schema: query.schema).shapish
+          end
+        end
+
         attr_reader :shapish
 
         def visible_field?(field_defn, _ctx = nil, owner = nil); true; end

@@ -502,6 +502,18 @@ module GraphQL
 
       attr_writer :warden_class
 
+      def shape_class
+        if defined?(@shape_class)
+          @shape_class
+        elsif superclass.respond_to?(:shape_class)
+          superclass.shape_class
+        else
+          GraphQL::Schema::Shape
+        end
+      end
+
+      attr_writer :shape_class
+
       # @param type [Module] The type definition whose possible types you want to see
       # @return [Hash<String, Module>] All possible types, if no `type` is given.
       # @return [Array<Module>] Possible types for `type`, if it's given.
