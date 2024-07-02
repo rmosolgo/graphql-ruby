@@ -12,7 +12,9 @@ module GraphQL
         @unvisited_types = []
         @included_interface_possible_types_set = nil
         @cached_possible_types = nil
-        @cached_visible = Hash.new { |h, member| h[member] = @schema.visible?(member, @context) }.compare_by_identity
+        @cached_visible = Hash.new { |h, member|
+          h[member] = @schema.visible?(member, @context)
+        }.compare_by_identity
         # TODO rename to distinguish from `#reachable_type?` ?
         @cached_reachable = Hash.new do |h, type|
           h[type] = case type.kind.name
@@ -49,10 +51,14 @@ module GraphQL
       end
 
       def type(type_name)
-        if (loaded_t = @all_types[type_name])
+        t = if (loaded_t = @all_types[type_name])
           loaded_t
-        else
-          t = @schema.load_type(type_name, @context)
+       elsif !@all_types_loaded
+         load_all_types
+          @all_types[type_name]
+        end
+
+        if t
           if t.is_a?(Array)
             vis_t = nil
             t.each do |t_defn|
@@ -213,8 +219,13 @@ module GraphQL
       end
 
       def reachable_type?(type_name)
-        load_all_types
-        !!@all_types[type_name]
+        t = type(type_name)
+        if t && @cached_reachable[t]
+          load_all_types
+          !!@all_types[type_name]
+        else
+          false
+        end
       end
 
       def loaded_types
@@ -266,11 +277,12 @@ module GraphQL
         return if @all_types_loaded
         @all_types_loaded = true
         @included_interface_possible_types_set = Set.new
+        @referenced_types = Set.new
         schema_types = [
           query_root,
           mutation_root,
           subscription_root,
-          *@schema.orphan_types,
+          # *@schema.orphan_types,
           *@schema.introspection_system.types.values,
         ]
         schema_types.compact! # TODO why is this necessary?!

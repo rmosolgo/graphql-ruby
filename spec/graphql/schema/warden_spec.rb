@@ -269,8 +269,6 @@ module MaskHelpers
     def self.resolve_type(type, obj, ctx)
       PhonemeType
     end
-
-
   end
 
   module Data
