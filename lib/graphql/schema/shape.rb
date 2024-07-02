@@ -11,7 +11,8 @@ module GraphQL
         @all_types_loaded = false
         @unvisited_types = []
         @included_interface_possible_types_set = nil
-        @cached_visible = Hash.new { |h, k| h[k] = k.visible?(@context) }.compare_by_identity
+        @cached_possible_types = nil
+        @cached_visible = Hash.new { |h, member| h[member] = @schema.visible?(member, @context) }.compare_by_identity
 
         @cached_reachable = Hash.new do |h, type|
           h[type] = case type.kind.name
@@ -142,18 +143,20 @@ module GraphQL
       end
 
       def possible_types(type)
-        add_type(type)
-        pt = case type.kind.name
-        when "OBJECT"
-          [type]
-        when "INTERFACE"
-          @schema.possible_types(type)
-        when "UNION"
-          type.type_memberships.select { |tm| @cached_visible[tm] && @cached_visible[tm.object_type] }.map!(&:object_type)
-        end
+        @cached_possible_types ||= Hash.new do |h, type|
+          add_type(type)
+          pt = case type.kind.name
+          when "OBJECT"
+            [type]
+          when "INTERFACE"
+            @schema.possible_types(type)
+          when "UNION"
+            type.type_memberships.select { |tm| @cached_visible[tm] && @cached_visible[tm.object_type] }.map!(&:object_type)
+          end
 
-        pt = pt.select { |t|  @cached_visible[t] ? (add_type(t); true) : false  }
-        pt
+          h[type] = pt.select { |t|  @cached_visible[t] ? (add_type(t); true) : false  }
+        end.compare_by_identity
+        @cached_possible_types[type]
       end
 
       def interfaces(obj_type)
@@ -257,7 +260,8 @@ module GraphQL
           query_root,
           mutation_root,
           subscription_root,
-          *@schema.orphan_types
+          *@schema.orphan_types,
+          *@schema.introspection_system.types.values,
         ]
         schema_types.compact! # TODO why is this necessary?!
         schema_types.flatten! # handle multiple defns
