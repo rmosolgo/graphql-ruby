@@ -178,7 +178,11 @@ module GraphQL
 
       def enum_values(owner)
         add_type(owner)
-        non_duplicate_items(owner.all_enum_value_definitions, @cached_visible)
+        values = non_duplicate_items(owner.all_enum_value_definitions, @cached_visible)
+        if values.size == 0
+          raise GraphQL::Schema::Enum::MissingValuesError.new(owner)
+        end
+        values
       end
 
       def directive_exists?(dir_name)
