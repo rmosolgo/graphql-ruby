@@ -13,10 +13,10 @@ module GraphQL
         @included_interface_possible_types_set = nil
         @cached_possible_types = nil
         @cached_visible = Hash.new { |h, member| h[member] = @schema.visible?(member, @context) }.compare_by_identity
-
+        # TODO rename to distinguish from `#reachable_type?` ?
         @cached_reachable = Hash.new do |h, type|
           h[type] = case type.kind.name
-          when "UNION"
+          when "UNION", "INTERFACE"
             possible_types(type).any?
           else
             true
@@ -25,7 +25,13 @@ module GraphQL
 
         @cached_visible_fields = Hash.new { |h, field|
           h[field] = if @cached_visible[field] && (ret_type = field.type.unwrap) && @cached_visible[ret_type] && @cached_reachable[ret_type]
-            add_type(ret_type)
+            if !field.introspection?
+              # The problem is that some introspection fields may have references
+              # to non-custom introspection types.
+              # If those were added here, they'd cause a DuplicateNamesError.
+              # This is basically a bug -- those fields _should_ reference the custom types.
+              add_type(ret_type)
+            end
             true
           else
             false
@@ -266,6 +272,7 @@ module GraphQL
         schema_types.compact! # TODO why is this necessary?!
         schema_types.flatten! # handle multiple defns
         schema_types.each { |t| add_type(t) }
+
         while t = @unvisited_types.pop
           # These have already been checked for `.visible?`
           visit_type(t)

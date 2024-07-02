@@ -5,7 +5,7 @@ module GraphQL
     module TypeExpression
       # Fetch a type from a type map by its AST specification.
       # Return `nil` if not found.
-      # @param type_owner [#get_type] A thing for looking up types by name
+      # @param type_owner [#type] A thing for looking up types by name
       # @param ast_node [GraphQL::Language::Nodes::AbstractNode]
       # @return [Class, GraphQL::Schema::NonNull, GraphQL::Schema:List]
       def self.build_type(type_owner, ast_node)

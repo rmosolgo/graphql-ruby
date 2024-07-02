@@ -149,6 +149,10 @@ module GraphQL
         def loadable?(t, ctx) # TODO remove ctx here?
           @warden.loadable?(t, ctx)
         end
+
+        def reachable_type?(type_name)
+          @warden.reachable_type?(type_name)
+        end
       end
 
       # @param context [GraphQL::Query::Context]

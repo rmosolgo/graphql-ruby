@@ -578,9 +578,8 @@ module GraphQL
         end
       end
 
-      def type_from_ast(ast_node, context: nil)
-        type_owner = context ? context.query.types : self
-        GraphQL::Schema::TypeExpression.build_type(type_owner, ast_node)
+      def type_from_ast(ast_node, context: self.query_class.new(self, "{ __typename }").context)
+        GraphQL::Schema::TypeExpression.build_type(context.query.types, ast_node)
       end
 
       def get_field(type_or_name, field_name, context = GraphQL::Query::NullContext.instance)
