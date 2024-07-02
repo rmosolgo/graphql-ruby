@@ -278,7 +278,7 @@ module GraphQL
 
             scalar_method_names = @scalar_methods
             # TODO: These probably should be scalar methods, but `types` returns an array
-            [:types, :description].each do |extra_method|
+            [:types, :description, :comment].each do |extra_method|
               if method_defined?(extra_method)
                 scalar_method_names += [extra_method]
               end
@@ -338,6 +338,14 @@ module GraphQL
         end
       end
 
+      class OrphanComment < AbstractNode
+        attr_reader :comment
+
+        def initialize(comment: nil)
+          @comment = comment
+        end
+      end
+
       # Base class for non-null type names and list type names
       class WrapperType < AbstractNode
         scalar_methods :of_type
@@ -375,7 +383,7 @@ module GraphQL
       end
 
       class DirectiveDefinition < AbstractNode
-        attr_reader :description
+        attr_reader :comment, :description
         scalar_methods :name, :repeatable
         children_methods(
           arguments: Nodes::Argument,
@@ -394,11 +402,12 @@ module GraphQL
 
       # A single selection in a GraphQL query.
       class Field < AbstractNode
-        def initialize(name: nil, arguments: NONE, directives: NONE, selections: NONE, field_alias: nil, line: nil, col: nil, pos: nil, filename: nil, source: nil)
+        def initialize(name: nil, arguments: NONE, directives: NONE, selections: NONE, comment: nil, field_alias: nil, line: nil, col: nil, pos: nil, filename: nil, source: nil)
           @name = name
           @arguments = arguments || NONE
           @directives = directives || NONE
           @selections = selections || NONE
+          @comment = comment
           # oops, alias is a keyword:
           @alias = field_alias
           @line = line
@@ -420,7 +429,7 @@ module GraphQL
           @line, @col, @filename, @name, @arguments, @directives, @selections, @alias = values
         end
 
-        scalar_methods :name, :alias
+        scalar_methods :comment, :name, :alias
         children_methods({
           arguments: GraphQL::Language::Nodes::Argument,
           selections: GraphQL::Language::Nodes::Field,
@@ -433,11 +442,14 @@ module GraphQL
 
       # A reusable fragment, defined at document-level.
       class FragmentDefinition < AbstractNode
-        def initialize(name: nil, type: nil, directives: NONE, selections: NONE, filename: nil, pos: nil, source: nil, line: nil, col: nil)
+        attr_reader :comment
+
+        def initialize(name: nil, type: nil, directives: NONE, selections: NONE, comment: nil, filename: nil, pos: nil, source: nil, line: nil, col: nil)
           @name = name
           @type = type
           @directives = directives
           @selections = selections
+          @comment = comment
           @filename  = filename
           @pos = pos
           @source = source
@@ -468,6 +480,7 @@ module GraphQL
 
       # Application of a named fragment in a selection
       class FragmentSpread < AbstractNode
+        attr_reader :comment
         scalar_methods :name
         children_methods(directives: GraphQL::Language::Nodes::Directive)
 
@@ -558,6 +571,7 @@ module GraphQL
       # May be anonymous or named.
       # May be explicitly typed (eg `mutation { ... }`) or implicitly a query (eg `{ ... }`).
       class OperationDefinition < AbstractNode
+        attr_accessor :comment
         scalar_methods :operation_type, :name
         children_methods({
           variables: GraphQL::Language::Nodes::VariableDefinition,
@@ -635,7 +649,7 @@ module GraphQL
       end
 
       class ScalarTypeDefinition < AbstractNode
-        attr_reader :description
+        attr_reader :comment, :description
         scalar_methods :name
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
@@ -652,7 +666,7 @@ module GraphQL
       end
 
       class InputValueDefinition < AbstractNode
-        attr_reader :description
+        attr_reader :comment, :description
         scalar_methods :name, :type, :default_value
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
@@ -661,7 +675,7 @@ module GraphQL
       end
 
       class FieldDefinition < AbstractNode
-        attr_reader :description
+        attr_reader :comment, :description
         scalar_methods :name, :type
         children_methods({
           arguments: GraphQL::Language::Nodes::InputValueDefinition,
@@ -681,7 +695,7 @@ module GraphQL
       end
 
       class ObjectTypeDefinition < AbstractNode
-        attr_reader :description
+        attr_reader :comment, :description
         scalar_methods :name, :interfaces
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
@@ -700,7 +714,7 @@ module GraphQL
       end
 
       class InterfaceTypeDefinition < AbstractNode
-        attr_reader :description
+        attr_reader :comment, :description
         scalar_methods :name
         children_methods({
           interfaces: GraphQL::Language::Nodes::TypeName,
@@ -721,7 +735,7 @@ module GraphQL
       end
 
       class UnionTypeDefinition < AbstractNode
-        attr_reader :description, :types
+        attr_reader :comment, :description, :types
         scalar_methods :name
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
@@ -739,7 +753,7 @@ module GraphQL
       end
 
       class EnumValueDefinition < AbstractNode
-        attr_reader :description
+        attr_reader :comment, :description
         scalar_methods :name
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
@@ -748,7 +762,7 @@ module GraphQL
       end
 
       class EnumTypeDefinition < AbstractNode
-        attr_reader :description
+        attr_reader :comment, :description
         scalar_methods :name
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
@@ -767,7 +781,7 @@ module GraphQL
       end
 
       class InputObjectTypeDefinition < AbstractNode
-        attr_reader :description
+        attr_reader :comment, :description
         scalar_methods :name
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,

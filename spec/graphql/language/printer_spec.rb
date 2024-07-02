@@ -4,6 +4,7 @@ require "spec_helper"
 describe GraphQL::Language::Printer do
   let(:document) { GraphQL.parse(query_string) }
   let(:query_string) {%|
+    # query string comment
     query getStuff($someVar: Int = 1, $anotherVar: [String!] @special(very: true), $skipNested: Boolean! = false) @skip(if: false) {
       myField: someField(someArg: $someVar, ok: 1.4) @skip(if: $anotherVar) @thing(or: "Whatever")
       anotherField(someArg: [1, 2, 3]) {
@@ -125,6 +126,7 @@ describe GraphQL::Language::Printer do
           """
           Union description
           """
+          # Union comment
           union AnnotatedUnion @onUnion = A | B
 
           type Foo implements Bar & AnnotatedInterface {
@@ -137,15 +139,27 @@ describe GraphQL::Language::Printer do
             seven(argument: String = null): Type
           }
 
+          type QueryType {
+            # Book comment.
+            bookByName(
+              # Book name comment.
+              name: String!
+            ): Book
+          }
+
           """
           Scalar description
           """
+          # Scalar comment
+          #
+          # Multiline
           scalar CustomScalar
 
           type AnnotatedObject implements Bar @onObject(arg: "value") {
             annotatedField(arg: Type = "default" @onArg): Type @onField
           }
 
+          # Interface comment
           interface Bar {
             one: Type
             four(argument: String = "string"): String
@@ -154,11 +168,18 @@ describe GraphQL::Language::Printer do
           """
           Enum description
           """
+          # Site comment
           enum Site {
             """
             Enum value description
             """
+            # Desktop comment
             DESKTOP
+
+            """
+            Enum value description 2
+            """
+            # Mobile comment
             MOBILE
           }
 
@@ -171,6 +192,7 @@ describe GraphQL::Language::Printer do
           """
           Input description
           """
+          # Input type comment
           input InputType {
             key: String!
             answer: Int = 42
@@ -183,6 +205,7 @@ describe GraphQL::Language::Printer do
           """
           Directive description
           """
+          # Directive comment
           directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
 
           scalar AnnotatedScalar @onScalar

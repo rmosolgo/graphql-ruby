@@ -191,14 +191,134 @@ createRecord(data: {
     |}
 
     let(:fragment) { document.definitions.first }
-
-    it "creates an anonymous fragment definition" do
+it "creates an anonymous fragment definition" do
       assert fragment.is_a?(GraphQL::Language::Nodes::FragmentDefinition)
       assert_nil fragment.name
       assert_equal 1, fragment.selections.length
       assert_equal "NestedType", fragment.type.name
       assert_equal 1, fragment.directives.length
       assert_equal [2, 7], fragment.position
+    end
+  end
+
+  describe "string comment" do
+    it "is parsed for fields, unions, interfaces, enums, enum values, inputs, directives and arguments" do
+      document = subject.parse <<-GRAPHQL
+      # type comment
+      type Thing {
+        # field comment
+        field(
+          # arg comment
+          "arg description" arg: Stuff @yikes
+        ): Stuff @wow
+      }
+
+      # Enum comment
+      # multiline
+      enum Color {
+        # Enum value comment
+        Blue
+      }
+
+      # Scalar comment
+      scalar CustomScalar
+
+      # Union comment
+      union CustomUnion = TypeA | TypeB
+
+      # Interface comment
+      interface CustomInterface {
+        name: String!
+      }
+
+      # Input comment
+      input CustomInput {
+        # Custom input name comment
+        name: String!
+      }
+
+      # Directive comment
+      directive @skip(if: Boolean!) on FIELD
+      GRAPHQL
+
+      thing_defn = document.definitions[0]
+      assert_equal "type comment", thing_defn.comment
+      assert_equal "Thing", thing_defn.name
+
+      field_defn = thing_defn.fields[0]
+      assert_equal "field", field_defn.name
+      assert_equal "field comment", field_defn.comment
+      assert_equal ["wow"], field_defn.directives.map(&:name)
+
+      arg_defn = field_defn.arguments[0]
+      assert_equal "arg", arg_defn.name
+      assert_equal "arg comment", arg_defn.comment
+      assert_equal "arg description", arg_defn.description
+      assert_equal ["yikes"], arg_defn.directives.map(&:name)
+
+      color_defn = document.definitions[1]
+      assert_equal "Enum comment\nmultiline", color_defn.comment
+      assert_equal "Enum value comment", color_defn.values[0].comment
+
+      custom_scalar_defn = document.definitions[2]
+      assert_equal "Scalar comment", custom_scalar_defn.comment
+
+      custom_union_defn = document.definitions[3]
+      assert_equal "Union comment", custom_union_defn.comment
+
+      custom_interface_defn = document.definitions[4]
+      assert_equal "Interface comment", custom_interface_defn.comment
+
+      custom_input_defn = document.definitions[5]
+      assert_equal "Input comment", custom_input_defn.comment
+
+      input_field_defn = custom_input_defn.fields[0]
+      assert_equal "name", input_field_defn.name
+      assert_equal "Custom input name comment", input_field_defn.comment
+
+      custom_directive_defn = document.definitions[6]
+      assert_equal "Directive comment", custom_directive_defn.comment
+    end
+
+    it "is parsed for anonymous query" do
+      query_str = <<-GRAPHQL
+        # Anonymous query comment
+        query ($sizes: [ImageSize]) # Anonymous inline comment
+        {
+          # Field comment
+          imageUrl(sizes: $sizes) # Field inline comment
+          {
+            # Handles error
+            # Testing multiline comment
+            ... on ImageNotFound {
+              message
+            }
+            ... on ImageUrl {
+              ...ImageUrlFragment
+            }
+          }
+        }
+
+        # Another
+        # multiline
+        # comment
+        fragment ImageUrlFragment on ImageUrl {
+          url
+        }
+
+        # throwaway comment
+      GRAPHQL
+
+      doc = subject.parse(query_str)
+      query_selection = doc.definitions[0]
+      assert_equal "Anonymous query comment\nAnonymous inline comment", query_selection.comment
+
+      field_selection = query_selection.selections[0]
+      assert_equal 1, field_selection.arguments.length
+      assert_equal "Field comment\nField inline comment", field_selection.comment
+
+      fragment = doc.definitions[1]
+      assert_equal "Another\nmultiline\ncomment", fragment.comment
     end
   end
 
@@ -218,6 +338,7 @@ createRecord(data: {
       "Thing description"
       type Thing {
         "field description"
+        # field comment
         field("arg description" arg: Stuff @yikes): Stuff @wow
       }
       GRAPHQL
@@ -229,6 +350,7 @@ createRecord(data: {
       field_defn = thing_defn.fields[0]
       assert_equal "field", field_defn.name
       assert_equal "field description", field_defn.description
+      assert_equal "field comment", field_defn.comment
       assert_equal ["wow"], field_defn.directives.map(&:name)
 
       arg_defn = field_defn.arguments[0]
@@ -401,9 +523,9 @@ type Query {
 
   it "parses input types" do
     doc = subject.parse <<~GRAPHQL
-input ReplaceValuesInput {
-  values: [Int!]!
-}
+      input ReplaceValuesInput {
+        values: [Int!]!
+      }
 GRAPHQL
     input_t = doc.definitions.first
     assert_equal "ReplaceValuesInput", input_t.name

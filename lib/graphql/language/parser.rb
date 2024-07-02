@@ -108,10 +108,22 @@ module GraphQL
         while !@lexer.eos?
           defns << definition
         end
-        Document.new(pos: 0, definitions: defns, filename: @filename, source: self)
+
+        valid_defns = defns.filter { |defn| !defn.is_a?(OrphanComment) }
+
+        if valid_defns.empty?
+          raise GraphQL::ParseError.new("Unexpected end of document", nil, nil, @graphql_str)
+        end
+
+        Document.new(pos: 0, definitions: valid_defns, filename: @filename, source: self)
       end
 
       def definition
+        comment = nil
+        if token_name == :COMMENT
+          comment = parse_comments
+        end
+
         case token_name
         when :FRAGMENT
           loc = pos
@@ -129,6 +141,7 @@ module GraphQL
             type: f_type,
             directives: directives,
             selections: selections,
+            comment: comment,
             filename: @filename,
             source: self
           )
@@ -177,10 +190,14 @@ module GraphQL
 
           directives = parse_directives
 
+          # Parses also an inline comment and joins it with a regular comment
+          comment = join_comments(comment, parse_comments) if at?(:COMMENT)
+
           OperationDefinition.new(
             pos: op_loc,
             operation_type: op_type,
             name: op_name,
+            comment: comment,
             variables: variable_definitions,
             directives: directives,
             selections: selection_set,
@@ -269,6 +286,7 @@ module GraphQL
         else
           loc = pos
           desc = at?(:STRING) ? string_value : nil
+          comment = at?(:COMMENT) ? parse_comments : comment
           defn_loc = pos
           case token_name
           when :SCHEMA
@@ -312,7 +330,7 @@ module GraphQL
               advance_token
               directive_locations << DirectiveLocation.new(pos: pos, name: parse_name, filename: @filename, source: self)
             end
-            DirectiveDefinition.new(pos: loc, definition_pos: defn_loc, description: desc, name: name, arguments: arguments_definition, locations: directive_locations, repeatable: repeatable, filename: @filename, source: self)
+            DirectiveDefinition.new(pos: loc, definition_pos: defn_loc, description: desc, comment: comment, name: name, arguments: arguments_definition, locations: directive_locations, repeatable: repeatable, filename: @filename, source: self)
           when :TYPE
             advance_token
             name = parse_name
@@ -320,38 +338,40 @@ module GraphQL
             directives = parse_directives
             field_defns = at?(:LCURLY) ? parse_field_definitions : EMPTY_ARRAY
 
-            ObjectTypeDefinition.new(pos: loc, definition_pos: defn_loc, description: desc, name: name, interfaces: implements_interfaces, directives: directives, fields: field_defns, filename: @filename, source: self)
+            ObjectTypeDefinition.new(pos: loc, definition_pos: defn_loc, description: desc, comment: comment, name: name, interfaces: implements_interfaces, directives: directives, fields: field_defns, filename: @filename, source: self)
           when :INTERFACE
             advance_token
             name = parse_name
             interfaces = parse_implements
             directives = parse_directives
             fields_definition = parse_field_definitions
-            InterfaceTypeDefinition.new(pos: loc, definition_pos: defn_loc, description: desc, name: name, directives: directives, fields: fields_definition, interfaces: interfaces, filename: @filename, source: self)
+            InterfaceTypeDefinition.new(pos: loc, definition_pos: defn_loc, description: desc, comment: comment, name: name, directives: directives, fields: fields_definition, interfaces: interfaces, filename: @filename, source: self)
           when :UNION
             advance_token
             name = parse_name
             directives = parse_directives
             union_member_types = parse_union_members
-            UnionTypeDefinition.new(pos: loc, definition_pos: defn_loc, description: desc, name: name, directives: directives, types: union_member_types, filename: @filename, source: self)
+            UnionTypeDefinition.new(pos: loc, definition_pos: defn_loc, description: desc, comment: comment, name: name, directives: directives, types: union_member_types, filename: @filename, source: self)
           when :SCALAR
             advance_token
             name = parse_name
             directives = parse_directives
-            ScalarTypeDefinition.new(pos: loc, definition_pos: defn_loc, description: desc, name: name, directives: directives, filename: @filename, source: self)
+            ScalarTypeDefinition.new(pos: loc, definition_pos: defn_loc, description: desc, comment: comment, name: name, directives: directives, filename: @filename, source: self)
           when :ENUM
             advance_token
             name = parse_name
             directives = parse_directives
             enum_values_definition = parse_enum_value_definitions
-            Nodes::EnumTypeDefinition.new(pos: loc, definition_pos: defn_loc, description: desc, name: name, directives: directives, values: enum_values_definition, filename: @filename, source: self)
+            Nodes::EnumTypeDefinition.new(pos: loc, definition_pos: defn_loc, description: desc, comment: comment, name: name, directives: directives, values: enum_values_definition, filename: @filename, source: self)
           when :INPUT
             advance_token
             name = parse_name
             directives = parse_directives
             input_fields_definition = parse_input_object_field_definitions
-            InputObjectTypeDefinition.new(pos: loc, definition_pos: defn_loc, description: desc, name: name, directives: directives, fields: input_fields_definition, filename: @filename, source: self)
+            InputObjectTypeDefinition.new(pos: loc, definition_pos: defn_loc, description: desc, comment: comment, name: name, directives: directives, fields: input_fields_definition, filename: @filename, source: self)
           else
+            return OrphanComment.new(comment: comment) if comment && @lexer.eos?
+
             expect_one_of([:SCHEMA, :SCALAR, :TYPE, :ENUM, :INPUT, :UNION, :INTERFACE])
           end
         end
@@ -371,6 +391,14 @@ module GraphQL
         end
       end
 
+      def parse_comments
+        comments = []
+        while at?(:COMMENT)
+          comments << value
+        end
+        comments.join("\n")
+      end
+
       def parse_enum_value_definitions
         if at?(:LCURLY)
           expect_token :LCURLY
@@ -378,6 +406,7 @@ module GraphQL
           while !at?(:RCURLY)
             v_loc = pos
             description = if at?(:STRING); string_value; end
+            comment = if at?(:COMMENT); value; end
             defn_loc = pos
             # Any identifier, but not true, false, or null
             enum_value = if at?(:TRUE) || at?(:FALSE) || at?(:NULL)
@@ -386,7 +415,7 @@ module GraphQL
               parse_name
             end
             v_directives = parse_directives
-            list << EnumValueDefinition.new(pos: v_loc, definition_pos: defn_loc, description: description, name: enum_value, directives: v_directives, filename: @filename, source: self)
+            list << EnumValueDefinition.new(pos: v_loc, definition_pos: defn_loc, description: description, comment: comment, name: enum_value, directives: v_directives, filename: @filename, source: self)
           end
           expect_token :RCURLY
           list
@@ -430,6 +459,7 @@ module GraphQL
         while !at?(:RCURLY)
           loc = pos
           description = if at?(:STRING); string_value; end
+          comment = if at?(:COMMENT); value; end
           defn_loc = pos
           name = parse_name
           arguments_definition = parse_argument_definitions
@@ -437,7 +467,7 @@ module GraphQL
           type = self.type
           directives = parse_directives
 
-          list << FieldDefinition.new(pos: loc, definition_pos: defn_loc, description: description, name: name, arguments: arguments_definition, type: type, directives: directives, filename: @filename, source: self)
+          list << FieldDefinition.new(pos: loc, definition_pos: defn_loc, description: description, comment: comment, name: name, arguments: arguments_definition, type: type, directives: directives, filename: @filename, source: self)
         end
         expect_token :RCURLY
         list
@@ -459,6 +489,7 @@ module GraphQL
 
       def parse_input_value_definition
         loc = pos
+        comment = if at?(:COMMENT); value; end
         description = if at?(:STRING); string_value; end
         defn_loc = pos
         name = parse_name
@@ -471,7 +502,7 @@ module GraphQL
           nil
         end
         directives = parse_directives
-        InputValueDefinition.new(pos: loc, definition_pos: defn_loc, description: description, name: name, type: type, default_value: default_value, directives: directives, filename: @filename, source: self)
+        InputValueDefinition.new(pos: loc, definition_pos: defn_loc, description: description, comment: comment, name: name, type: type, default_value: default_value, directives: directives, filename: @filename, source: self)
       end
 
       def type
@@ -515,6 +546,11 @@ module GraphQL
         expect_token(:LCURLY)
         selections = []
         while @token_name != :RCURLY
+          comment = parse_comments if at?(:COMMENT)
+
+          # Skip parsing selections after last inline comment
+          break if at?(:RCURLY)
+
           selections << if at?(:ELLIPSIS)
             loc = pos
             advance_token
@@ -537,7 +573,7 @@ module GraphQL
               # Can this ever happen?
               # expect_token(:IDENTIFIER) if at?(:ON)
 
-              FragmentSpread.new(pos: loc, name: name, directives: directives, filename: @filename, source: self)
+              FragmentSpread.new(pos: loc, name: name, directives: directives, comment: comment, filename: @filename, source: self)
             end
           else
             loc = pos
@@ -553,9 +589,11 @@ module GraphQL
 
             arguments = at?(:LPAREN) ? parse_arguments : nil
             directives = at?(:DIR_SIGN) ? parse_directives : nil
+            # Parses also an inline comment and joins it with a regular comment
+            comment = join_comments(comment, parse_comments) if at?(:COMMENT)
             selection_set = at?(:LCURLY) ? self.selection_set : nil
 
-            Nodes::Field.new(pos: loc, field_alias: field_alias, name: name, arguments: arguments, directives: directives, selections: selection_set, filename: @filename, source: self)
+            Nodes::Field.new(pos: loc, field_alias: field_alias, name: name, arguments: arguments, directives: directives, comment: comment, selections: selection_set, filename: @filename, source: self)
           end
         end
         expect_token(:RCURLY)
@@ -700,6 +738,10 @@ module GraphQL
         when :NULL
           advance_token
           NullValue.new(pos: pos, name: "null", filename: @filename, source: self)
+        when :COMMENT
+          val = @lexer.token_value.sub(/^#(\s+)?/, '')
+          advance_token
+          val
         when :IDENTIFIER
           Nodes::Enum.new(pos: pos, name: expect_token_value(:IDENTIFIER), filename: @filename, source: self)
         when :LBRACKET
@@ -814,6 +856,10 @@ module GraphQL
         end
         expect_token(tok)
         token_value
+      end
+
+      def join_comments(*comments)
+        comments.reject(&:nil?).join("\n")
       end
 
       # token_value works for when the scanner matched something

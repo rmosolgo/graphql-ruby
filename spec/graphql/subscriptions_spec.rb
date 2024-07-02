@@ -236,8 +236,7 @@ class FromDefinitionInMemoryBackend < InMemoryBackend
     payloadType: PayloadType = ONE
   }
 
-  # Arbitrary "kinds" of payloads which may be
-  # subscribed to separately
+  # Arbitrary "kinds" of payloads which may be subscribed to separately
   enum PayloadType {
     ONE
     TWO

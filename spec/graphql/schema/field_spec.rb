@@ -53,6 +53,13 @@ describe GraphQL::Schema::Field do
       assert_equal "tt", object.fields["t"].method_str
     end
 
+    it "accepts a comment" do
+      object = Class.new(Jazz::BaseObject) do
+        field :test, String, comment: "A comment"
+      end
+      assert_equal "A comment", object.fields["test"].comment
+    end
+
     it "accepts a block for definition" do
       object = Class.new(Jazz::BaseObject) do
         graphql_name "JustAName"
@@ -60,11 +67,13 @@ describe GraphQL::Schema::Field do
         field :test, String do
           argument :test, String
           description "A Description."
+          comment "A Comment."
         end
       end
 
       assert_equal "test", object.fields["test"].arguments["test"].name
       assert_equal "A Description.", object.fields["test"].description
+      assert_equal "A Comment.", object.fields["test"].comment
     end
 
     it "accepts a block for definition and yields the field if the block has an arity of one" do
@@ -74,11 +83,13 @@ describe GraphQL::Schema::Field do
         field :test, String do |field|
           field.argument :test, String
           field.description "A Description."
+          field.comment "A Comment."
         end
       end
 
       assert_equal "test", object.fields["test"].arguments["test"].name
       assert_equal "A Description.", object.fields["test"].description
+      assert_equal "A Comment.", object.fields["test"].comment
     end
 
     it "accepts anonymous classes as type" do

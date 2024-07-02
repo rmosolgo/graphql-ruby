@@ -235,6 +235,7 @@ module Jazz
   end
 
   class Family < BaseEnum
+    comment "Pseudo TODO: Rename family to InstrumentFamily"
     description "Groups of musical instruments"
     # support string and symbol
     value "STRING", "Makes a sound by vibrating strings", value: :str, custom_setting: 1
@@ -356,6 +357,8 @@ module Jazz
   end
 
   class PerformingAct < GraphQL::Schema::Union
+    comment "Performing act comment"
+
     type_membership_class PerformingActVisibility
     possible_types Musician
     possible_types Ensemble, visibility: :hide_ensemble
@@ -540,6 +543,8 @@ module Jazz
   end
 
   class EnsembleInput < GraphQL::Schema::InputObject
+    comment "Ensemble input comment"
+
     argument :name, String
   end
 
