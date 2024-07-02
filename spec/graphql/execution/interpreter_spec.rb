@@ -359,7 +359,7 @@ describe GraphQL::Execution::Interpreter do
     GRAPHQL
 
     vars = {expansion: "RAV", id1: "Dark Confidant", id2: "RAV"}
-    result = InterpreterTest::Schema.execute(query_string, shape: true, variables: vars)
+    result = InterpreterTest::Schema.execute(query_string, variables: vars)
     assert_equal ["BLACK"], result["data"]["card"]["colors"]
     assert_equal "Ravnica, City of Guilds", result["data"]["card"]["expansion"]["name"]
     assert_equal [{"name" => "Dark Confidant"}], result["data"]["card"]["expansion"]["cards"]

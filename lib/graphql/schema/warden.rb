@@ -133,8 +133,20 @@ module GraphQL
           @warden.root_type_for_operation("query")
         end
 
+        def mutation_root
+          @warden.root_type_for_operation("mutation")
+        end
+
+        def subscription_root
+          @warden.root_type_for_operation("subscription")
+        end
+
         def arguments(owner)
           @warden.arguments(owner)
+        end
+
+        def fields(owner)
+          @warden.fields(owner)
         end
 
         def possible_types(type)
