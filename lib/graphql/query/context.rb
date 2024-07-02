@@ -84,6 +84,10 @@ module GraphQL
 
       def_delegators :@query, :trace, :interpreter?
 
+      def types
+        @query.types
+      end
+
       RUNTIME_METADATA_KEYS = Set.new([:current_object, :current_arguments, :current_field, :current_path])
       # @!method []=(key, value)
       #   Reassign `key` to the hash passed to {Schema#execute} as `context:`

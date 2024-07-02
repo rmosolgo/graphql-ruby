@@ -22,7 +22,7 @@ module GraphQL
       field :is_repeatable, Boolean, method: :repeatable?
 
       def args(include_deprecated:)
-        args = @context.warden.arguments(@object)
+        args = @context.types.arguments(@object)
         args = args.reject(&:deprecation_reason) unless include_deprecated
         args
       end

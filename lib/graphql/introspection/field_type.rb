@@ -19,7 +19,7 @@ module GraphQL
       end
 
       def args(include_deprecated:)
-        args = @context.warden.arguments(@object)
+        args = @context.types.arguments(@object)
         args = args.reject(&:deprecation_reason) unless include_deprecated
         args
       end

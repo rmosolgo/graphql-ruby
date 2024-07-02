@@ -206,7 +206,7 @@ describe GraphQL::Schema::Enum do
         assert_equal("YAK", enum.coerce_isolated_result("YAK"))
         # NOT OK
         assert_raises(GraphQL::Schema::Enum::UnresolvedValueError) {
-          enum.coerce_result("YAK", OpenStruct.new(warden: NothingWarden))
+          enum.coerce_result("YAK", OpenStruct.new(types: NothingWarden))
         }
       end
     end

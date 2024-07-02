@@ -59,8 +59,8 @@ module GraphQL
           dummy.arguments(context)
         end
 
-        def get_field_argument(name, context = GraphQL::Query::NullContext.instance)
-          dummy.get_argument(name, context)
+        def get_field_argument(name, context = GraphQL::Query::NullContext.instance, skip_visible:)
+          dummy.get_argument(name, context, skip_visible: skip_visible)
         end
 
         def own_field_arguments
@@ -149,7 +149,8 @@ module GraphQL
 
       def authorize_arguments(args, values)
         # remove the `input` wrapper to match values
-        input_args = args["input"].type.unwrap.arguments(context)
+        input_type = args.find { |a| a.graphql_name == "input" }.type.unwrap
+        input_args = context.types.arguments(input_type)
         super(input_args, values)
       end
     end

@@ -19,7 +19,7 @@ module GraphQL
           true
         else
           type_name = node_type.to_query_string
-          type_def = context.warden.get_type(type_name)
+          type_def = @types.type(type_name)
           if type_def.nil? || !type_def.kind.composite?
             add_error(GraphQL::StaticValidation::FragmentsAreOnCompositeTypesError.new(
               "Invalid fragment on type #{type_name} (must be Union, Interface or Object)",

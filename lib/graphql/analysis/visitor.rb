@@ -21,6 +21,7 @@ module GraphQL
         @rescued_errors = []
         @query = query
         @schema = query.schema
+        @types = query.types
         @response_path = []
         @skip_stack = [false]
         super(query.selected_operation)
@@ -131,7 +132,7 @@ module GraphQL
         @response_path.push(node.alias || node.name)
         parent_type = @object_types.last
         # This could be nil if the previous field wasn't found:
-        field_definition = parent_type && @schema.get_field(parent_type, node.name, @query.context)
+        field_definition = parent_type && @types.field(parent_type, node.name)
         @field_definitions.push(field_definition)
         if !field_definition.nil?
           next_object_type = field_definition.type.unwrap
@@ -167,14 +168,14 @@ module GraphQL
         argument_defn = if (arg = @argument_definitions.last)
           arg_type = arg.type.unwrap
           if arg_type.kind.input_object?
-            arg_type.get_argument(node.name, @query.context)
+            @types.argument(arg_type, node.name)
           else
             nil
           end
         elsif (directive_defn = @directive_definitions.last)
-          directive_defn.get_argument(node.name, @query.context)
+          @types.argument(directive_defn, node.name)
         elsif (field_defn = @field_definitions.last)
-          field_defn.get_argument(node.name, @query.context)
+          @types.argument(field_defn, node.name)
         else
           nil
         end
@@ -245,7 +246,7 @@ module GraphQL
         fragment_def = query.fragments[fragment_spread.name]
 
         object_type = if fragment_def.type
-          @query.warden.get_type(fragment_def.type.name)
+          @types.type(fragment_def.type.name)
         else
           object_types.last
         end
@@ -268,7 +269,7 @@ module GraphQL
 
       def on_fragment_with_type(node)
         object_type = if node.type
-          @query.warden.get_type(node.type.name)
+          @types.type(node.type.name)
         else
           @object_types.last
         end

@@ -26,7 +26,7 @@ module GraphQL
           context.directive_definition || context.field_definition
         end
 
-        parent_type = context.warden.get_argument(defn, parent_name(parent, defn))
+        parent_type = context.types.argument(defn, parent_name(parent, defn))
         parent_type ? parent_type.type.unwrap : nil
       end
 
@@ -34,7 +34,7 @@ module GraphQL
         parent_type = get_parent_type(context, parent)
         return unless parent_type && parent_type.kind.input_object?
 
-        required_fields = context.warden.arguments(parent_type)
+        required_fields = context.types.arguments(parent_type)
           .select{ |arg| arg.type.kind.non_null? && !arg.default_value? }
           .map!(&:graphql_name)
 
@@ -43,7 +43,7 @@ module GraphQL
 
         missing_fields.each do |missing_field|
           path = [*context.path, missing_field]
-          missing_field_type = context.warden.get_argument(parent_type, missing_field).type
+          missing_field_type = context.types.argument(parent_type, missing_field).type
           add_error(RequiredInputObjectAttributesArePresentError.new(
             "Argument '#{missing_field}' on InputObject '#{parent_type.to_type_signature}' is required. Expected type #{missing_field_type.to_type_signature}",
             argument_name: missing_field,

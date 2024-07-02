@@ -4,7 +4,7 @@ module GraphQL
     module FieldsAreDefinedOnType
       def on_field(node, parent)
         parent_type = @object_types[-2]
-        field = context.warden.get_field(parent_type, node.name)
+        field = context.query.types.field(parent_type, node.name)
 
         if field.nil?
           if parent_type.kind.union?

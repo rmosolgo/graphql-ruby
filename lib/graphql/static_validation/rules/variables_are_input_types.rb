@@ -4,7 +4,7 @@ module GraphQL
     module VariablesAreInputTypes
       def on_variable_definition(node, parent)
         type_name = get_type_name(node.type)
-        type = context.warden.get_type(type_name)
+        type = context.query.types.type(type_name)
 
         if type.nil?
           add_error(GraphQL::StaticValidation::VariablesAreInputTypesError.new(

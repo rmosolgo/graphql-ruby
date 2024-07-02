@@ -117,8 +117,8 @@ module GraphQL
 
         return if fragment1.nil? || fragment2.nil?
 
-        fragment_type1 = context.warden.get_type(fragment1.type.name)
-        fragment_type2 = context.warden.get_type(fragment2.type.name)
+        fragment_type1 = context.query.types.type(fragment1.type.name)
+        fragment_type2 = context.query.types.type(fragment2.type.name)
 
         return if fragment_type1.nil? || fragment_type2.nil?
 
@@ -170,7 +170,7 @@ module GraphQL
         fragment = context.fragments[fragment_name]
         return if fragment.nil?
 
-        fragment_type = context.warden.get_type(fragment.type.name)
+        fragment_type = @types.type(fragment.type.name)
         return if fragment_type.nil?
 
         fragment_fields, fragment_spreads = fields_and_fragments_from_selection(fragment, owner_type: fragment_type, parents: [*fragment_spread.parents, fragment_type])
@@ -340,10 +340,10 @@ module GraphQL
         selections.each do |node|
           case node
           when GraphQL::Language::Nodes::Field
-            definition = context.warden.get_field(owner_type, node.name)
+            definition = @types.field(owner_type, node.name)
             fields << Field.new(node, definition, owner_type, parents)
           when GraphQL::Language::Nodes::InlineFragment
-            fragment_type = node.type ? context.warden.get_type(node.type.name) : owner_type
+            fragment_type = node.type ? @types.type(node.type.name) : owner_type
             find_fields_and_fragments(node.selections, parents: [*parents, fragment_type], owner_type: owner_type, fields: fields, fragment_spreads: fragment_spreads) if fragment_type
           when GraphQL::Language::Nodes::FragmentSpread
             fragment_spreads << FragmentSpread.new(node.name, parents)
@@ -411,8 +411,8 @@ module GraphQL
               false
             else
               # Check if these two scopes have _any_ types in common.
-              possible_right_types = context.query.possible_types(type1)
-              possible_left_types = context.query.possible_types(type2)
+              possible_right_types = context.types.possible_types(type1)
+              possible_left_types = context.types.possible_types(type2)
               (possible_right_types & possible_left_types).empty?
             end
           end

@@ -72,7 +72,7 @@ module GraphQL
       end
 
       def extract_deprecated_enum_value(enum_type, value)
-        enum_value = @query.warden.enum_values(enum_type).find { |ev| ev.value == value }
+        enum_value = @query.types.enum_values(enum_type).find { |ev| ev.value == value }
         if enum_value&.deprecation_reason
           @used_deprecated_enum_values << enum_value.path
         end

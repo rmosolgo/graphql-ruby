@@ -3,7 +3,7 @@ module GraphQL
   module StaticValidation
     module SubscriptionRootExists
       def on_operation_definition(node, _parent)
-        if node.operation_type == "subscription" && context.warden.root_type_for_operation("subscription").nil?
+        if node.operation_type == "subscription" && context.types.subscription_root.nil?
           add_error(GraphQL::StaticValidation::SubscriptionRootExistsError.new(
             'Schema is not configured for subscriptions',
             nodes: node

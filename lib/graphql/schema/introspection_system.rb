@@ -69,7 +69,7 @@ module GraphQL
       def resolve_late_bindings
         @types.each do |name, t|
           if t.kind.fields?
-            t.fields.each do |_name, field_defn|
+            t.all_field_definitions.each do |field_defn|
               field_defn.type = resolve_late_binding(field_defn.type)
             end
           end
@@ -113,19 +113,7 @@ module GraphQL
 
       def get_fields_from_class(class_sym:)
         object_type_defn = load_constant(class_sym)
-
-        if object_type_defn.is_a?(Module)
-          object_type_defn.fields
-        else
-          extracted_field_defns = {}
-          object_class = object_type_defn.metadata[:type_class]
-          object_type_defn.all_fields.each do |field_defn|
-            inner_resolve = field_defn.resolve_proc
-            resolve_with_instantiate = PerFieldProxyResolve.new(object_class: object_class, inner_resolve: inner_resolve)
-            extracted_field_defns[field_defn.name] = field_defn.redefine(resolve: resolve_with_instantiate)
-          end
-          extracted_field_defns
-        end
+        object_type_defn.fields
       end
 
       # This is probably not 100% robust -- but it has to be good enough to avoid modifying the built-in introspection types

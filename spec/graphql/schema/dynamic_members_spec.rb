@@ -672,7 +672,8 @@ GRAPHQL
     expected_message = "Found two visible definitions for `Money`: MultifieldSchema::Money, MultifieldSchema::MoneyScalar"
     assert_equal expected_message, err.message
 
-    assert_equal "⚛︎100",exec_query("{ thing( input: { id: 1 }) { price } }")["data"]["thing"]["price"]
+    res = exec_query("{ thing( input: { id: 1 }) { price } }")
+    assert_equal "⚛︎100",res["data"]["thing"]["price"]
     res = exec_query("{ __type(name: \"Money\") { kind name } }")
     assert_equal "SCALAR", res["data"]["__type"]["kind"]
     assert_equal "Money", res["data"]["__type"]["name"]

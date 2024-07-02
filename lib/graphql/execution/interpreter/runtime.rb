@@ -160,9 +160,9 @@ module GraphQL
               case node
               when GraphQL::Language::Nodes::InlineFragment
                 if node.type
-                  type_defn = schema.get_type(node.type.name, context)
+                  type_defn = query.types.type(node.type.name)
 
-                  if query.warden.possible_types(type_defn).include?(owner_type)
+                  if query.types.possible_types(type_defn).include?(owner_type)
                     result = gather_selections(owner_object, owner_type, node.selections, selections_to_run, next_selections)
                     if !result.equal?(next_selections)
                       selections_to_run = result
@@ -177,8 +177,8 @@ module GraphQL
                 end
               when GraphQL::Language::Nodes::FragmentSpread
                 fragment_def = query.fragments[node.name]
-                type_defn = query.get_type(fragment_def.type.name)
-                if query.warden.possible_types(type_defn).include?(owner_type)
+                type_defn = query.types.type(fragment_def.type.name)
+                if query.types.possible_types(type_defn).include?(owner_type)
                   result = gather_selections(owner_object, owner_type, fragment_def.selections, selections_to_run, next_selections)
                   if !result.equal?(next_selections)
                     selections_to_run = result
@@ -245,7 +245,7 @@ module GraphQL
           end
           field_name = ast_node.name
           owner_type = selections_result.graphql_result_type
-          field_defn = query.warden.get_field(owner_type, field_name)
+          field_defn = query.types.field(owner_type, field_name)
 
           # Set this before calling `run_with_directives`, so that the directive can have the latest path
           runtime_state = get_current_runtime_state
@@ -579,7 +579,7 @@ module GraphQL
                 resolved_value = value
               end
 
-              possible_types = query.possible_types(current_type)
+              possible_types = query.types.possible_types(current_type)
               if !possible_types.include?(resolved_type)
                 parent_type = field.owner_type
                 err_class = current_type::UnresolvedTypeError
