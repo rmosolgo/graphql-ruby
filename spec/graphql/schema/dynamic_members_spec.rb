@@ -333,6 +333,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
       # just to attach these to the schema:
       field :example_locale, Locale
       field :example_region, Region
+      field :example_country, Country
     end
 
     class BaseMutation < GraphQL::Schema::RelayClassicMutation
@@ -478,6 +479,7 @@ ERR
 type Query {
   actor: Actor
   add(left: Int!, right: Int!): String!
+  exampleCountry: Country
   f1: Int
   favoriteLanguage(lang: Language): Language!
   legacyThing(id: ID!): LegacyThing!
@@ -491,6 +493,7 @@ GRAPHQL
 type Query {
   actor: Actor
   add(left: Float!, right: Float!): String!
+  exampleCountry: Country
   exampleLocale: Locale
   exampleRegion: Region
   f1: String

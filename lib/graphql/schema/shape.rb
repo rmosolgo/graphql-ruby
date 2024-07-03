@@ -166,7 +166,14 @@ module GraphQL
             [type]
           end
 
-          h[type] = pt.select { |t|  @cached_visible[t] ? (add_type(t); true) : false  }
+          h[type] = pt.select { |t|
+            if @cached_visible[t] && reachable_type?(t.graphql_name)
+              add_type(t)
+              true
+            else
+              false
+            end
+          }
         end.compare_by_identity
         @cached_possible_types[type]
       end
@@ -295,7 +302,7 @@ module GraphQL
         end
       end
 
-      def visit_type(type, include_interface_possible_types: false)
+      def visit_type(type)
         if type.kind.input_object?
           # recurse into visible arguments
           arguments(type).each do |argument|
@@ -312,23 +319,17 @@ module GraphQL
             interfaces(type).each do |interface|
               add_type(interface)
             end
-          elsif include_interface_possible_types
+          else
             possible_types(type).each do |pt|
               add_type(pt)
             end
           end
-          # Don't visit interface possible types -- it's not enough to justify visibility
 
           # recurse into visible fields
           t_f = fields(type)
           t_f.each do |field|
             field_type = field.type.unwrap
-            # In this case, if it's an interface, we want to include
-            if field_type.kind.interface? && @included_interface_possible_types_set.add?(field_type)
-              visit_type(field_type, include_interface_possible_types: true)
-            else
-              add_type(field_type)
-            end
+            add_type(field_type)
             # recurse into visible arguments
             arguments(field).each do |argument|
               add_type(argument.type.unwrap)

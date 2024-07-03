@@ -188,7 +188,6 @@ module MaskHelpers
   end
 
   class CheremeWithInterface < BaseObject
-    # Commenting this would make the test pass
     implements PublicInterfaceType
 
     field :name, String, null: false
@@ -245,8 +244,9 @@ module MaskHelpers
 
     field :manners, [MannerType], null: false
 
-    # Commenting this would make the test pass
-    field :test, PublicType, null: false
+    field :public_type, PublicType, null: false do
+      metadata :hidden_field, true
+    end
   end
 
   class MutationType < BaseObject
