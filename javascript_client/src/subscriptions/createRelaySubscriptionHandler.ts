@@ -45,7 +45,7 @@ function createRelaySubscriptionHandler(options: ActionCableHandlerOptions | Pus
       }) => {
         const client = handler(
           {
-            text: request.text || "",
+            text: request.text,
             name: request.name,
             id: request.id,
           },
