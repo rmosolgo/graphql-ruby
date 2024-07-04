@@ -329,9 +329,16 @@ module GraphQL
           query_root,
           mutation_root,
           subscription_root,
-          *@schema.orphan_types,
           *@schema.introspection_system.types.values,
         ]
+
+        # Don't include any orphan_types whose interfaces aren't visible.
+        @schema.orphan_types.each do |orphan_type|
+          if @cached_visible[orphan_type] &&
+            orphan_type.interface_type_memberships.any? { |tm| @cached_visible[tm] && @cached_visible[tm.abstract_type] }
+            schema_types << orphan_type
+          end
+        end
         schema_types.compact! # TODO why is this necessary?!
         schema_types.flatten! # handle multiple defns
         schema_types.each { |t| add_type(t) }
