@@ -25,22 +25,26 @@ module GraphQL
           end
         end.compare_by_identity
 
-        @cached_visible_fields = Hash.new { |h, field|
-          h[field] = if @cached_visible[field] &&
-              (ret_type = field.type.unwrap) &&
-              @cached_visible[ret_type] &&
-              reachable_type?(ret_type.graphql_name)
-            if !field.introspection?
-              # The problem is that some introspection fields may have references
-              # to non-custom introspection types.
-              # If those were added here, they'd cause a DuplicateNamesError.
-              # This is basically a bug -- those fields _should_ reference the custom types.
-              add_type(ret_type)
+        @cached_visible_fields = Hash.new { |h, owner|
+          h[owner] = Hash.new do |h2, field|
+            h2[field] = if @cached_visible[field] &&
+                (ret_type = field.type.unwrap) &&
+                @cached_visible[ret_type] &&
+                reachable_type?(ret_type.graphql_name) &&
+                (owner == field.owner || (!owner.kind.object?) || field_on_visible_interface?(field, owner))
+
+              if !field.introspection?
+                # The problem is that some introspection fields may have references
+                # to non-custom introspection types.
+                # If those were added here, they'd cause a DuplicateNamesError.
+                # This is basically a bug -- those fields _should_ reference the custom types.
+                add_type(ret_type)
+              end
+              true
+            else
+              false
             end
-            true
-          else
-            false
-          end
+          end.compare_by_identity
         }.compare_by_identity
 
         @cached_visible_arguments = Hash.new do |h, arg|
@@ -51,6 +55,30 @@ module GraphQL
             false
           end
         end.compare_by_identity
+      end
+
+      def field_on_visible_interface?(field, owner)
+        ints = owner.interface_type_memberships.map(&:abstract_type)
+        field_name = field.graphql_name
+        filtered_ints = interfaces(owner)
+        any_interface_has_field = false
+        any_interface_has_visible_field = false
+        ints.each do |int_t|
+          if (_int_f_defn = int_t.get_field(field_name, @context, skip_visible: true))
+            any_interface_has_field = true
+
+            if filtered_ints.include?(int_t) # TODO cycles, or maybe not necessary since previously checked? && @cached_visible_fields[owner][field]
+              any_interface_has_visible_field = true
+              break
+            end
+          end
+        end
+
+        if any_interface_has_field
+          any_interface_has_visible_field
+        else
+          true
+        end
       end
 
       def type(type_name)
@@ -99,7 +127,7 @@ module GraphQL
         if f.is_a?(Array)
           visible_f = nil
           f.each do |f_defn|
-            if @cached_visible_fields[f_defn]
+            if @cached_visible_fields[owner][f_defn]
 
               if visible_f.nil?
                 visible_f = f_defn
@@ -110,7 +138,7 @@ module GraphQL
           end
           visible_f
         else
-          if f && @cached_visible_fields[f]
+          if f && @cached_visible_fields[owner][f]
             f
           else
             nil
@@ -119,7 +147,7 @@ module GraphQL
       end
 
       def fields(owner)
-        non_duplicate_items(owner.all_field_definitions, @cached_visible_fields)
+        non_duplicate_items(owner.all_field_definitions, @cached_visible_fields[owner])
       end
 
       def arguments(owner)
@@ -341,16 +369,15 @@ module GraphQL
             if @cached_visible[field]
               field_type = field.type.unwrap
               if field_type.kind.interface?
-
-                @schema.possible_types(field_type).each do |obj_type|
+                @unfiltered_pt ||= {}.compare_by_identity
+                pt = @unfiltered_pt[field_type] ||= @schema.possible_types(field_type)
+                pt.each do |obj_type|
                   if @cached_visible[obj_type] &&
                       (tm = obj_type.interface_type_memberships.find { |tm| tm.abstract_type == field_type }) &&
                       @cached_visible[tm]
                     add_type(obj_type)
                   end
                 end
-
-
               end
               add_type(field_type)
 
