@@ -203,11 +203,11 @@ module GraphQL
         ast_node = selected_operation
         root_type = case ast_node.operation_type
         when nil, "query"
-          types.query_root
+          types.query_root # rubocop:disable Development/ContextIsPassedCop
         when "mutation"
-          types.mutation_root
+          types.mutation_root # rubocop:disable Development/ContextIsPassedCop
         when "subscription"
-          types.subscription_root
+          types.subscription_root # rubocop:disable Development/ContextIsPassedCop
         end
         GraphQL::Execution::Lookahead.new(query: self, root_type: root_type, ast_nodes: [ast_node])
       end

@@ -52,7 +52,7 @@ module GraphQL
             if graphql_result.nil?
               return nil
             end
-            visible_field = dummy_query.types.field(object_type, field_name)
+            visible_field = dummy_query.types.field(object_type, field_name) # rubocop:disable Development/ContextIsPassedCop
             if visible_field
               dummy_query.context.dataloader.run_isolated {
                 field_args = visible_field.coerce_arguments(graphql_result, arguments, query_context)

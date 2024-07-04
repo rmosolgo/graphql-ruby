@@ -25,7 +25,7 @@ module GraphQL
         @include_one_of = false
 
         dummy_query = @schema.query_class.new(@schema, "{ __typename }", validate: false, context: context)
-        @types = dummy_query.types
+        @types = dummy_query.types # rubocop:disable Development/ContextIsPassedCop
       end
 
       def document
