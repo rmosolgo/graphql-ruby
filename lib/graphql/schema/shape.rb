@@ -333,10 +333,6 @@ module GraphQL
             interfaces(type).each do |interface|
               add_type(interface)
             end
-          else
-            # possible_types(type).each do |pt|
-            #   add_type(pt)
-            # end
           end
 
           # recurse into visible fields
@@ -344,7 +340,20 @@ module GraphQL
           t_f.each do |field|
             if @cached_visible[field]
               field_type = field.type.unwrap
+              if field_type.kind.interface?
+
+                @schema.possible_types(field_type).each do |obj_type|
+                  if @cached_visible[obj_type] &&
+                      (tm = obj_type.interface_type_memberships.find { |tm| tm.abstract_type == field_type }) &&
+                      @cached_visible[tm]
+                    add_type(obj_type)
+                  end
+                end
+
+
+              end
               add_type(field_type)
+
               # recurse into visible arguments
               arguments(field).each do |argument|
                 add_type(argument.type.unwrap)
