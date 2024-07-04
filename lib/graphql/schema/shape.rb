@@ -10,7 +10,7 @@ module GraphQL
         @all_types = {}
         @all_types_loaded = false
         @unvisited_types = []
-        @included_interface_possible_types_set = nil
+        @referenced_types = Set.new
         @cached_possible_types = nil
         @cached_visible = Hash.new { |h, member|
           h[member] = @schema.visible?(member, @context)
@@ -26,8 +26,9 @@ module GraphQL
         end.compare_by_identity
 
         @cached_visible_fields = Hash.new { |h, field|
-          h[field] = if @cached_visible[field] && (ret_type = field.type.unwrap) && @cached_visible[ret_type] && @cached_reachable[ret_type]
+          h[field] = if @cached_visible[field] && (ret_type = field.type.unwrap) && @cached_visible[ret_type]
             if !field.introspection?
+              referenced(ret_type)
               # The problem is that some introspection fields may have references
               # to non-custom introspection types.
               # If those were added here, they'd cause a DuplicateNamesError.
@@ -166,14 +167,7 @@ module GraphQL
             [type]
           end
 
-          h[type] = pt.select { |t|
-            if @cached_visible[t] && reachable_type?(t.graphql_name)
-              add_type(t)
-              true
-            else
-              false
-            end
-          }
+          h[type] = pt.select { |t| @cached_visible[t] && referenced?(t) }
         end.compare_by_identity
         @cached_possible_types[type]
       end
@@ -254,6 +248,7 @@ module GraphQL
             end
             false
           else
+            referenced(t)
             @all_types[n] = t
             @unvisited_types << t
             true
@@ -280,16 +275,24 @@ module GraphQL
         raise DuplicateNamesError.new(duplicated_name: first_defn.path, duplicated_definition_1: first_defn.inspect, duplicated_definition_2: second_defn.inspect)
       end
 
+      private
+
+      def referenced?(t)
+        @referenced_types.include?(t)
+      end
+
+      def referenced(type)
+        @referenced_types.add(type)
+      end
+
       def load_all_types
         return if @all_types_loaded
         @all_types_loaded = true
-        @included_interface_possible_types_set = Set.new
-        @referenced_types = Set.new
         schema_types = [
           query_root,
           mutation_root,
           subscription_root,
-          # *@schema.orphan_types,
+          *@schema.orphan_types,
           *@schema.introspection_system.types.values,
         ]
         schema_types.compact! # TODO why is this necessary?!
@@ -310,8 +313,10 @@ module GraphQL
           end
         elsif type.kind.union?
           # recurse into visible possible types
-          possible_types(type).each do |possible_type|
-            add_type(possible_type)
+          type.type_memberships.each do |tm|
+            if @cached_visible[tm] && @cached_visible[tm.object_type]
+              add_type(tm.object_type)
+            end
           end
         elsif type.kind.fields?
           if type.kind.object?
@@ -320,9 +325,9 @@ module GraphQL
               add_type(interface)
             end
           else
-            possible_types(type).each do |pt|
-              add_type(pt)
-            end
+            # possible_types(type).each do |pt|
+            #   add_type(pt)
+            # end
           end
 
           # recurse into visible fields
