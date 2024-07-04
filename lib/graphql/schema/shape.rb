@@ -26,9 +26,11 @@ module GraphQL
         end.compare_by_identity
 
         @cached_visible_fields = Hash.new { |h, field|
-          h[field] = if @cached_visible[field] && (ret_type = field.type.unwrap) && @cached_visible[ret_type]
+          h[field] = if @cached_visible[field] &&
+              (ret_type = field.type.unwrap) &&
+              @cached_visible[ret_type] &&
+              reachable_type?(ret_type.graphql_name)
             if !field.introspection?
-              referenced(ret_type)
               # The problem is that some introspection fields may have references
               # to non-custom introspection types.
               # If those were added here, they'd cause a DuplicateNamesError.
@@ -157,7 +159,6 @@ module GraphQL
 
       def possible_types(type)
         @cached_possible_types ||= Hash.new do |h, type|
-          add_type(type)
           pt = case type.kind.name
           when "INTERFACE"
             @schema.possible_types(type)
@@ -167,7 +168,9 @@ module GraphQL
             [type]
           end
 
-          h[type] = pt.select { |t| @cached_visible[t] && referenced?(t) }
+          h[type] = pt.select { |t|
+            @cached_visible[t] && referenced?(t)
+          }
         end.compare_by_identity
         @cached_possible_types[type]
       end
@@ -219,6 +222,7 @@ module GraphQL
         !@all_types[t.graphql_name] # TODO make sure t is not reachable but t is visible
       end
 
+      # TODO rename this to indicate that it is called with a typename
       def reachable_type?(type_name)
         t = type(type_name)
         if t && @cached_reachable[t]
@@ -242,7 +246,7 @@ module GraphQL
       def add_type(t)
         if t && @cached_visible[t]
           n = t.graphql_name
-          if prev_t = @all_types[n]
+          if (prev_t = @all_types[n])
             if !prev_t.equal?(t)
               raise_duplicate_definition(prev_t, t)
             end
@@ -275,10 +279,15 @@ module GraphQL
         raise DuplicateNamesError.new(duplicated_name: first_defn.path, duplicated_definition_1: first_defn.inspect, duplicated_definition_2: second_defn.inspect)
       end
 
-      private
-
       def referenced?(t)
-        @referenced_types.include?(t)
+        if @referenced_types.include?(t)
+          true
+        elsif !@all_types_loaded
+          load_all_types
+          @referenced_types.include?(t)
+        else
+          false
+        end
       end
 
       def referenced(type)
@@ -331,13 +340,15 @@ module GraphQL
           end
 
           # recurse into visible fields
-          t_f = fields(type)
+          t_f = type.all_field_definitions
           t_f.each do |field|
-            field_type = field.type.unwrap
-            add_type(field_type)
-            # recurse into visible arguments
-            arguments(field).each do |argument|
-              add_type(argument.type.unwrap)
+            if @cached_visible[field]
+              field_type = field.type.unwrap
+              add_type(field_type)
+              # recurse into visible arguments
+              arguments(field).each do |argument|
+                add_type(argument.type.unwrap)
+              end
             end
           end
         end

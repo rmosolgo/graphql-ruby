@@ -897,6 +897,8 @@ GRAPHQL
             raise ArgumentError, "Unhandled type kind: #{type_kind.inspect}"
           end
         end
+
+        field :other, OtherObject
       end
 
       query(Query)

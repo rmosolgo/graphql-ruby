@@ -160,6 +160,7 @@ describe GraphQL::ExecutionError do
       }
     }
     |}
+
     it "the error is inserted into the errors key and the rest of the query is fulfilled" do
       expected_result = {
         "data"=>{
