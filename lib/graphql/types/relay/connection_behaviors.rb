@@ -37,6 +37,20 @@ module GraphQL
             true
           end
 
+          def relay_broadcastable?
+            if defined?(@relay_broadcastable)
+              @relay_broadcastable
+            elsif superclass.respond_to?(:relay_broadcastable?)
+              superclass.relay_broadcastable?
+            else
+              nil
+            end
+          end
+
+          def relay_broadcastable(new_value)
+            @relay_broadcastable = new_value
+          end
+
           # @return [Class]
           attr_reader :node_type
 

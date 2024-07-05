@@ -28,9 +28,8 @@ module GraphQL
         end
 
         current_field = visitor.field_definition
-        apply_broadcastable(current_field)
-
         current_type = visitor.parent_type_definition
+        apply_broadcastable(current_type, current_field)
         if current_type.kind.interface?
           pt = @query.possible_types(current_type)
           pt.each do |object_type|
@@ -38,7 +37,7 @@ module GraphQL
             # Inherited fields would be exactly the same object;
             # only check fields that are overrides of the inherited one
             if ot_field && ot_field != current_field
-              apply_broadcastable(ot_field)
+              apply_broadcastable(object_type, ot_field)
             end
           end
         end
@@ -55,10 +54,16 @@ module GraphQL
       private
 
       # Modify `@subscription_broadcastable` based on `field_defn`'s configuration (and/or the default value)
-      def apply_broadcastable(field_defn)
+      def apply_broadcastable(owner_type, field_defn)
         current_field_broadcastable = field_defn.introspection? || field_defn.broadcastable?
+
+        if current_field_broadcastable.nil? && owner_type.respond_to?(:relay_broadcastable?)
+          current_field_broadcastable = owner_type.relay_broadcastable?
+        end
+
         case current_field_broadcastable
         when nil
+          query.logger.debug { "`broadcastable: nil` for field: #{field_defn.path}" }
           # If the value wasn't set, mix in the default value:
           # - If the default is false and the current value is true, make it false
           # - If the default is true and the current value is true, it stays true
@@ -66,6 +71,7 @@ module GraphQL
           # - If the default is true and the current value is false, keep it false
           @subscription_broadcastable = @subscription_broadcastable && @default_broadcastable
         when false
+          query.logger.debug { "`broadcastable: false` for field: #{field_defn.path}" }
           # One non-broadcastable field is enough to make the whole subscription non-broadcastable
           @subscription_broadcastable = false
         when true
