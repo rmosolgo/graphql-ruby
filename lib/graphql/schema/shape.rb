@@ -64,7 +64,7 @@ module GraphQL
         any_interface_has_field = false
         any_interface_has_visible_field = false
         ints.each do |int_t|
-          if (_int_f_defn = int_t.get_field(field_name, @context, skip_visible: true))
+          if (_int_f_defn = int_t.get_field(field_name, @context))
             any_interface_has_field = true
 
             if filtered_ints.include?(int_t) # TODO cycles, or maybe not necessary since previously checked? && @cached_visible_fields[owner][field]
@@ -115,7 +115,7 @@ module GraphQL
       end
 
       def field(owner, field_name)
-        f = if owner.kind.fields? && (field = owner.get_field(field_name, @context, skip_visible: true))
+        f = if owner.kind.fields? && (field = owner.get_field(field_name, @context))
           field
         elsif owner == query_root && (entry_point_field = @schema.introspection_system.entry_point(name: field_name))
           entry_point_field
@@ -157,7 +157,7 @@ module GraphQL
       def argument(owner, arg_name)
         # TODO this makes a Warden.visible_entry call down the stack
         # I need a non-Warden implementation
-        arg = owner.get_argument(arg_name, @context, skip_visible: true)
+        arg = owner.get_argument(arg_name, @context)
         if arg.is_a?(Array)
           visible_arg = nil
           arg.each do |arg_defn|

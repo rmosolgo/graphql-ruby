@@ -59,8 +59,8 @@ module GraphQL
           dummy.arguments(context)
         end
 
-        def get_field_argument(name, context = GraphQL::Query::NullContext.instance, skip_visible:)
-          dummy.get_argument(name, context, skip_visible: skip_visible)
+        def get_field_argument(name, context = GraphQL::Query::NullContext.instance)
+          dummy.get_argument(name, context)
         end
 
         def own_field_arguments
