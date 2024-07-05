@@ -25,6 +25,7 @@ module GraphQL
             super
             child_class.node_type = nil
             child_class.node_nullable = nil
+            child_class.relay_broadcastable(relay_broadcastable?)
           end
 
           def default_relay?
@@ -32,11 +33,7 @@ module GraphQL
           end
 
           def relay_broadcastable?
-            if defined?(@relay_broadcastable)
-              @relay_broadcastable
-            else
-              superclass.relay_broadcastable?
-            end
+            @relay_broadcastable
           end
 
           def relay_broadcastable(new_value)
