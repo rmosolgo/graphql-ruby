@@ -18,6 +18,7 @@ module GraphQL
             self.node_type = nil
             self.edge_class = nil
           }
+          child_class.relay_broadcastable(nil)
           add_page_info_field(child_class)
         end
 
@@ -40,10 +41,8 @@ module GraphQL
           def relay_broadcastable?
             if defined?(@relay_broadcastable)
               @relay_broadcastable
-            elsif superclass.respond_to?(:relay_broadcastable?)
-              superclass.relay_broadcastable?
             else
-              nil
+              superclass.relay_broadcastable?
             end
           end
 

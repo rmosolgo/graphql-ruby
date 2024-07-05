@@ -10,6 +10,7 @@ module GraphQL
           child_class.extend(ClassMethods)
           child_class.class_eval { self.node_type = nil }
           child_class.node_nullable(true)
+          child_class.relay_broadcastable(nil)
         end
 
         def node
@@ -33,10 +34,8 @@ module GraphQL
           def relay_broadcastable?
             if defined?(@relay_broadcastable)
               @relay_broadcastable
-            elsif superclass.respond_to?(:relay_broadcastable?)
-              superclass.relay_broadcastable?
             else
-              nil
+              superclass.relay_broadcastable?
             end
           end
 
