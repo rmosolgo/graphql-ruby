@@ -69,10 +69,6 @@ describe "Logger" do
         module Node
           include GraphQL::Schema::Interface
           field :id, ID
-
-          def self.visible?(ctx)
-            false
-          end
         end
 
         class Query < GraphQL::Schema::Object

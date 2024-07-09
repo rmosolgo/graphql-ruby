@@ -201,7 +201,7 @@ module GraphQL
       end
 
       def to_h
-        if (current_scoped_context = @scoped_context&.merged_context)
+        if (current_scoped_context = @scoped_context.merged_context)
           @provided_values.merge(current_scoped_context)
         else
           @provided_values

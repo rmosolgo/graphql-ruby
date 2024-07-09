@@ -104,15 +104,13 @@ module GraphQL
       if use_subset.nil?
         use_subset = schema.use_schema_subset?
       end
-      if warden
-        @schema_subset = nil
-        @warden = warden
-      elsif use_subset
+
+      if use_subset
         @schema_subset = @schema.subset_class.new(self)
         @warden = Schema::Warden::NullWarden.new(context: self, schema: @schema)
       else
         @schema_subset = nil
-        @warden = nil # initialized lazily later
+        @warden = warden
       end
 
       @subscription_topic = subscription_topic
