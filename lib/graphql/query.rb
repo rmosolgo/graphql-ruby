@@ -102,7 +102,7 @@ module GraphQL
       @context = schema.context_class.new(query: self, values: context)
 
       if use_subset.nil?
-        use_subset = schema.use_schema_subset?
+        use_subset = warden ? false : schema.use_schema_subset?
       end
 
       if use_subset
