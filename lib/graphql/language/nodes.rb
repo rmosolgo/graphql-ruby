@@ -417,16 +417,16 @@ module GraphQL
           @source = source
         end
 
-        def self.from_a(filename, line, col, field_alias, name, arguments, directives, selections) # rubocop:disable Metrics/ParameterLists
-          self.new(filename: filename, line: line, col: col, field_alias: field_alias, name: name, arguments: arguments, directives: directives, selections: selections)
+        def self.from_a(filename, line, col, field_alias, name, arguments, directives, selections, comment) # rubocop:disable Metrics/ParameterLists
+          self.new(filename: filename, line: line, col: col, field_alias: field_alias, name: name, arguments: arguments, directives: directives, selections: selections, comment: comment)
         end
 
         def marshal_dump
-          [line, col, @filename, @name, @arguments, @directives, @selections, @alias]
+          [line, col, @filename, @name, @arguments, @directives, @selections, @alias, @comment]
         end
 
         def marshal_load(values)
-          @line, @col, @filename, @name, @arguments, @directives, @selections, @alias = values
+          @line, @col, @filename, @name, @arguments, @directives, @selections, @alias, @comment = values
         end
 
         scalar_methods :comment, :name, :alias
@@ -457,16 +457,16 @@ module GraphQL
           @col = col
         end
 
-        def self.from_a(filename, line, col, name, type, directives, selections)
-          self.new(filename: filename, line: line, col: col, name: name, type: type, directives: directives, selections: selections)
+        def self.from_a(filename, line, col, name, type, directives, selections, comment) # rubocop:disable Metrics/ParameterLists
+          self.new(filename: filename, line: line, col: col, name: name, type: type, directives: directives, selections: selections, comment: comment)
         end
 
         def marshal_dump
-          [line, col, @filename, @name, @type, @directives, @selections]
+          [line, col, @filename, @name, @type, @directives, @selections, @comment]
         end
 
         def marshal_load(values)
-          @line, @col, @filename, @name, @type, @directives, @selections = values
+          @line, @col, @filename, @name, @type, @directives, @selections, @comment = values
         end
 
         scalar_methods :name, :type

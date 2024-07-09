@@ -381,9 +381,7 @@ void emit(TokenType tt, char *ts, char *te, Meta *meta) {
       INT2FIX(200 + (int)tt)
     );
 
-    if (tt != COMMENT) {
-      rb_ary_push(meta->tokens, token);
-    }
+    rb_ary_push(meta->tokens, token);
     meta->preceeded_by_number = this_token_is_number;
   }
   // Bump the column counter for the next token
