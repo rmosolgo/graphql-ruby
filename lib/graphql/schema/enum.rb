@@ -77,7 +77,7 @@ module GraphQL
               visible_values << v
             end
           end
-          visible_values.flatten!
+
           if inherited_values
             # Local values take precedence over inherited ones
             inherited_values.each do |i_val|
