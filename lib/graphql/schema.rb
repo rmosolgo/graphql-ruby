@@ -46,7 +46,7 @@ require "graphql/schema/mutation"
 require "graphql/schema/has_single_input_argument"
 require "graphql/schema/relay_classic_mutation"
 require "graphql/schema/subscription"
-require "graphql/schema/shape"
+require "graphql/schema/subset"
 
 module GraphQL
   # A GraphQL schema which may be queried with {GraphQL::Query}.
@@ -371,7 +371,7 @@ module GraphQL
         when nil
           nil
         when Array
-          if context.respond_to?(:types) && context.types.is_a?(GraphQL::Schema::Shape)
+          if context.respond_to?(:types) && context.types.is_a?(GraphQL::Schema::Subset)
             local_entry
           else
             visible_t = nil
@@ -502,17 +502,27 @@ module GraphQL
 
       attr_writer :warden_class
 
-      def shape_class
-        if defined?(@shape_class)
-          @shape_class
-        elsif superclass.respond_to?(:shape_class)
-          superclass.shape_class
+      def subset_class
+        if defined?(@subset_class)
+          @subset_class
+        elsif superclass.respond_to?(:subset_class)
+          superclass.subset_class
         else
-          GraphQL::Schema::Shape
+          GraphQL::Schema::Subset
         end
       end
 
-      attr_writer :shape_class
+      attr_writer :subset_class, :use_schema_subset
+
+      def use_schema_subset?
+        if defined?(@use_schema_subset)
+          @use_schema_subset
+        elsif superclass.respond_to?(:use_schema_subset?)
+          superclass.use_schema_subset?
+        else
+          false
+        end
+      end
 
       # @param type [Module] The type definition whose possible types you want to see
       # @return [Hash<String, Module>] All possible types, if no `type` is given.

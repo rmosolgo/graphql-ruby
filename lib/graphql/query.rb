@@ -95,18 +95,26 @@ module GraphQL
     # @param root_value [Object] the object used to resolve fields on the root type
     # @param max_depth [Numeric] the maximum number of nested selections allowed for this query (falls back to schema-level value)
     # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
-    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, static_validator: nil, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, warden: nil, shape: false)
+    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, static_validator: nil, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, warden: nil, use_subset: nil)
       # Even if `variables: nil` is passed, use an empty hash for simpler logic
       variables ||= {}
       @schema = schema
       @context = schema.context_class.new(query: self, values: context)
-      if warden
-        @shape = nil
-        @warden = warden
-      else
-        @shape = @schema.shape_class.new(self)
-        @warden = Schema::Warden::NullWarden.new(context: self, schema: @schema)
+
+      if use_subset.nil?
+        use_subset = schema.use_schema_subset?
       end
+      if warden
+        @schema_subset = nil
+        @warden = warden
+      elsif use_subset
+        @schema_subset = @schema.subset_class.new(self)
+        @warden = Schema::Warden::NullWarden.new(context: self, schema: @schema)
+      else
+        @schema_subset = nil
+        @warden = nil # initialized lazily later
+      end
+
       @subscription_topic = subscription_topic
       @root_value = root_value
       @fragments = nil
@@ -344,7 +352,7 @@ module GraphQL
     def_delegators :warden, :get_type, :get_field, :possible_types, :root_type_for_operation
 
     def types
-      @shape || warden.shapish
+      @schema_subset || warden.schema_subset
     end
 
     # @param abstract_type [GraphQL::UnionType, GraphQL::InterfaceType]

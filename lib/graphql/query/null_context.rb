@@ -32,7 +32,7 @@ module GraphQL
       end
 
       def types
-        @types ||= GraphQL::Schema::Warden::Shapish.new(@warden)
+        @types ||= GraphQL::Schema::Warden::SchemaSubset.new(@warden)
       end
     end
   end

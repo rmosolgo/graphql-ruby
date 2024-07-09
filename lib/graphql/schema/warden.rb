@@ -61,8 +61,8 @@ module GraphQL
           def interface_type_memberships(obj_t, ctx); obj_t.interface_type_memberships; end
           def arguments(owner, ctx); owner.arguments(ctx); end
           def loadable?(type, ctx); type.visible?(ctx); end
-          def shapish
-            @shapish ||= Warden::Shapish.new(self)
+          def schema_subset
+            @schema_subset ||= Warden::SchemaSubset.new(self)
           end
         end
       end
@@ -70,17 +70,17 @@ module GraphQL
       class NullWarden
         def initialize(_filter = nil, context:, schema:)
           @schema = schema
-          @shapish = Warden::Shapish.new(self)
+          @schema_subset = Warden::SchemaSubset.new(self)
         end
 
         # @api private
-        module NullShape
+        module NullSubset
           def self.new(query)
-            NullWarden.new(context: query.context, schema: query.schema).shapish
+            NullWarden.new(context: query.context, schema: query.schema).schema_subset
           end
         end
 
-        attr_reader :shapish
+        attr_reader :schema_subset
 
         def visible_field?(field_defn, _ctx = nil, owner = nil); true; end
         def visible_argument?(arg_defn, _ctx = nil); true; end
@@ -104,13 +104,17 @@ module GraphQL
         def interfaces(obj_type); obj_type.interfaces; end
       end
 
-      def shapish
-        @shapish ||= Shapish.new(self)
+      def schema_subset
+        @schema_subset ||= SchemaSubset.new(self)
       end
 
-      class Shapish
+      class SchemaSubset
         def initialize(warden)
           @warden = warden
+        end
+
+        def directives
+          @warden.directives
         end
 
         def directive_exists?(dir_name)
@@ -190,7 +194,7 @@ module GraphQL
           @visible_possible_types = @visible_fields = @visible_arguments = @visible_enum_arrays =
           @visible_enum_values = @visible_interfaces = @type_visibility = @type_memberships =
           @visible_and_reachable_type = @unions = @unfiltered_interfaces =
-          @reachable_type_set = @shapish =
+          @reachable_type_set = @schema_subset =
             nil
       end
 

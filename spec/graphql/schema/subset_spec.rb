@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::Schema::Shape do
-  class ShapeSchema < GraphQL::Schema
+describe GraphQL::Schema::Subset do
+  class SubsetSchema < GraphQL::Schema
     class Thing < GraphQL::Schema::Object
       field :name, String
     end
@@ -16,7 +16,7 @@ describe GraphQL::Schema::Shape do
   end
   it "only loads the types it needs" do
     skip "TODO optimize how this thing works"
-    query = GraphQL::Query.new(ShapeSchema, "{ thing { name } }", shape: true)
+    query = GraphQL::Query.new(SubsetSchema, "{ thing { name } }", use_subset: true)
     assert_equal [], query.types.loaded_types
     res = query.result
 

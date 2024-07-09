@@ -2,7 +2,7 @@
 
 module GraphQL
   class Schema
-    class Shape
+    class Subset
       def initialize(query)
         @query = query
         @context = query.context
