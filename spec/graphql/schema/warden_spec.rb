@@ -250,7 +250,7 @@ module MaskHelpers
     end
 
     def self.visible?(member, context)
-      result = super
+      result = super(member, context)
       if result && context[:only] && !Array(context[:only]).all? { |func| func.call(member, context) }
         return false
       end
