@@ -10,7 +10,7 @@ module GraphQL
         @all_types = {}
         @all_types_loaded = false
         @unvisited_types = []
-        @referenced_types = Set.new
+        @referenced_types = Hash.new { |h, type_defn| h[type_defn] = [] }.compare_by_identity
         @cached_possible_types = nil
         @cached_visible = Hash.new { |h, member|
           h[member] = @schema.visible?(member, @context)
@@ -29,7 +29,7 @@ module GraphQL
                 # to non-custom introspection types.
                 # If those were added here, they'd cause a DuplicateNamesError.
                 # This is basically a bug -- those fields _should_ reference the custom types.
-                add_type(ret_type)
+                add_type(ret_type, field)
               end
               true
             else
@@ -40,7 +40,7 @@ module GraphQL
 
         @cached_visible_arguments = Hash.new do |h, arg|
           h[arg] = if @cached_visible[arg] && (arg_type = arg.type.unwrap) && @cached_visible[arg_type]
-            add_type(arg_type)
+            add_type(arg_type, arg)
             true
           else
             false
@@ -86,7 +86,6 @@ module GraphQL
             t.each do |t_defn|
               if @cached_visible[t_defn]
                 if vis_t.nil?
-                  add_type(t_defn)
                   vis_t = t_defn
                 else
                   raise_duplicate_definition(vis_t, t_defn)
@@ -96,7 +95,6 @@ module GraphQL
             vis_t
           else
             if t && @cached_visible[t]
-              add_type(t)
               t
             else
               nil
@@ -154,7 +152,7 @@ module GraphQL
           arg.each do |arg_defn|
             if @cached_visible_arguments[arg_defn]
               if arg_defn&.loads
-                add_type(arg_defn.loads)
+                add_type(arg_defn.loads, arg_defn)
               end
               if visible_arg.nil?
                 visible_arg = arg_defn
@@ -167,7 +165,7 @@ module GraphQL
         else
           if arg && @cached_visible_arguments[arg]
             if arg&.loads
-              add_type(arg.loads)
+              add_type(arg.loads, arg)
             end
             arg
           else
@@ -188,6 +186,7 @@ module GraphQL
             [type]
           end
 
+          # TODO use `select!` when possible, skip it for `[type]`
           h[type] = pt.select { |t|
             @cached_visible[t] && referenced?(t)
           }
@@ -216,12 +215,19 @@ module GraphQL
       end
 
       def all_types
-        load_all_types
-        @all_types.values
+        @all_types_filtered ||= begin
+          load_all_types
+          at = []
+          @all_types.each do |_name, type_defn|
+            if possible_types(type_defn).any? || referenced?(type_defn)
+              at << type_defn
+            end
+          end
+          at
+        end
       end
 
       def enum_values(owner)
-        add_type(owner)
         values = non_duplicate_items(owner.all_enum_value_definitions, @cached_visible)
         if values.size == 0
           raise GraphQL::Schema::Enum::MissingValuesError.new(owner)
@@ -243,15 +249,9 @@ module GraphQL
       end
 
       # TODO rename this to indicate that it is called with a typename
-      # TODO use `referenced?` here?
       def reachable_type?(type_name)
-        t = type(type_name)
-        if t && possible_types(t).any?
-          load_all_types
-          !!@all_types[type_name]
-        else
-          false
-        end
+        load_all_types
+        !!((t = @all_types[type_name]) && referenced?(t))
       end
 
       def loaded_types
@@ -261,10 +261,10 @@ module GraphQL
       private
 
       def add_if_visible(t)
-        (t && @cached_visible[t]) ? (add_type(t); t) : nil
+        (t && @cached_visible[t]) ? (add_type(t, true); t) : nil
       end
 
-      def add_type(t)
+      def add_type(t, by_member)
         if t && @cached_visible[t]
           n = t.graphql_name
           if (prev_t = @all_types[n])
@@ -273,7 +273,7 @@ module GraphQL
             end
             false
           else
-            referenced(t)
+            @referenced_types[t] << by_member
             @all_types[n] = t
             @unvisited_types << t
             true
@@ -301,18 +301,16 @@ module GraphQL
       end
 
       def referenced?(t)
-        if @referenced_types.include?(t)
-          true
-        elsif !@all_types_loaded
-          load_all_types
-          @referenced_types.include?(t)
-        else
-          false
+        load_all_types
+        res = if (ref = @referenced_types[t].find{ |member| (member == true) || @cached_visible[member] } )
+          if t.kind.abstract?
+            possible_types(t).any?
+          else
+            true
+          end
         end
-      end
-
-      def referenced(type)
-        @referenced_types.add(type)
+        # p [:referenced?, t.graphql_name, res, ref, :Visible?, @cached_visible[t]]
+        res
       end
 
       def load_all_types
@@ -334,7 +332,7 @@ module GraphQL
         end
         schema_types.compact! # TODO why is this necessary?!
         schema_types.flatten! # handle multiple defns
-        schema_types.each { |t| add_type(t) }
+        schema_types.each { |t| add_type(t, true) }
 
         while t = @unvisited_types.pop
           # These have already been checked for `.visible?`
@@ -349,20 +347,20 @@ module GraphQL
         if type.kind.input_object?
           # recurse into visible arguments
           arguments(type).each do |argument|
-            add_type(argument.type.unwrap)
+            add_type(argument.type.unwrap, argument)
           end
         elsif type.kind.union?
           # recurse into visible possible types
           type.type_memberships.each do |tm|
             if @cached_visible[tm] && @cached_visible[tm.object_type]
-              add_type(tm.object_type)
+              add_type(tm.object_type, tm)
             end
           end
         elsif type.kind.fields?
           if type.kind.object?
             # recurse into visible implemented interfaces
             interfaces(type).each do |interface|
-              add_type(interface)
+              add_type(interface, type)
             end
           end
 
@@ -378,15 +376,15 @@ module GraphQL
                   if @cached_visible[obj_type] &&
                       (tm = obj_type.interface_type_memberships.find { |tm| tm.abstract_type == field_type }) &&
                       @cached_visible[tm]
-                    add_type(obj_type)
+                    add_type(obj_type, tm)
                   end
                 end
               end
-              add_type(field_type)
+              add_type(field_type, field)
 
               # recurse into visible arguments
               arguments(field).each do |argument|
-                add_type(argument.type.unwrap)
+                add_type(argument.type.unwrap, argument)
               end
             end
           end

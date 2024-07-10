@@ -475,7 +475,8 @@ ERR
     assert_equal "String", exec_future_query(introspection_query_str)["data"]["__type"]["fields"].find { |f| f["name"] == "f1" }["type"]["name"]
 
     # Schema dump
-    assert_includes legacy_schema_sdl, <<-GRAPHQL
+    legacy_query_type_str = legacy_schema_sdl[/type Query \{[^}]*\}/m]
+    assert_equal legacy_query_type_str, <<-GRAPHQL.chomp
 type Query {
   actor: Actor
   add(left: Int!, right: Int!): String!
