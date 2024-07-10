@@ -15,15 +15,6 @@ module GraphQL
         @cached_visible = Hash.new { |h, member|
           h[member] = @schema.visible?(member, @context)
         }.compare_by_identity
-        # TODO rename to distinguish from `#reachable_type?` ?
-        @cached_reachable = Hash.new do |h, type|
-          h[type] = case type.kind.name
-          when "UNION", "INTERFACE"
-            possible_types(type).any?
-          else
-            true
-          end
-        end.compare_by_identity
 
         @cached_visible_fields = Hash.new { |h, owner|
           h[owner] = Hash.new do |h2, field|
@@ -204,8 +195,8 @@ module GraphQL
         @cached_possible_types[type]
       end
 
-      def interfaces(obj_type)
-        ints = obj_type.interface_type_memberships
+      def interfaces(obj_or_int_type)
+        ints = obj_or_int_type.interface_type_memberships
           .select { |itm| @cached_visible[itm] && @cached_visible[itm.abstract_type] }
           .map!(&:abstract_type)
         ints.uniq! # Remove any duplicate interfaces implemented via other interfaces
@@ -252,9 +243,10 @@ module GraphQL
       end
 
       # TODO rename this to indicate that it is called with a typename
+      # TODO use `referenced?` here?
       def reachable_type?(type_name)
         t = type(type_name)
-        if t && @cached_reachable[t]
+        if t && possible_types(t).any?
           load_all_types
           !!@all_types[type_name]
         else
@@ -348,6 +340,9 @@ module GraphQL
           # These have already been checked for `.visible?`
           visit_type(t)
         end
+
+        @all_types.delete_if { |type_name, type_defn| !referenced?(type_defn) }
+        nil
       end
 
       def visit_type(type)
@@ -374,10 +369,8 @@ module GraphQL
           # recurse into visible fields
           t_f = type.all_field_definitions
           t_f.each do |field|
-            if @cached_visible[field] &&
-                (field_type = field.type.unwrap) &&
-                (@cached_reachable[field_type])
-
+            if @cached_visible[field]
+              field_type = field.type.unwrap
               if field_type.kind.interface?
                 @unfiltered_pt ||= {}.compare_by_identity
                 pt = @unfiltered_pt[field_type] ||= @schema.possible_types(field_type)
