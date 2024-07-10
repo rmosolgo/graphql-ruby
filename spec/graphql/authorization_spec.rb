@@ -72,19 +72,17 @@ describe "GraphQL::Authorization" do
     module HiddenInterface
       include BaseInterface
 
-      definition_methods do
-        def visible?(ctx)
-          super && !ctx[:hide]
-        end
+      def self.visible?(ctx)
+        super && !ctx[:hide]
+      end
 
-        def resolve_type(obj, ctx)
-          HiddenObject
-        end
+      def self.resolve_type(obj, ctx)
+        HiddenObject
       end
     end
 
     module HiddenDefaultInterface
-      include HiddenInterface
+      include BaseInterface
       # visible? will call the super method
       def self.resolve_type(obj, ctx)
         HiddenObject

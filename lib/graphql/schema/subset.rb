@@ -189,6 +189,7 @@ module GraphQL
         @cached_possible_types ||= Hash.new do |h, type|
           pt = case type.kind.name
           when "INTERFACE"
+            # TODO this requires the global map
             @schema.possible_types(type)
           when "UNION"
             type.type_memberships.select { |tm| @cached_visible[tm] && @cached_visible[tm.object_type] }.map!(&:object_type)
@@ -373,8 +374,10 @@ module GraphQL
           # recurse into visible fields
           t_f = type.all_field_definitions
           t_f.each do |field|
-            if @cached_visible[field]
-              field_type = field.type.unwrap
+            if @cached_visible[field] &&
+                (field_type = field.type.unwrap) &&
+                (@cached_reachable[field_type])
+
               if field_type.kind.interface?
                 @unfiltered_pt ||= {}.compare_by_identity
                 pt = @unfiltered_pt[field_type] ||= @schema.possible_types(field_type)
