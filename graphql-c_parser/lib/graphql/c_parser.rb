@@ -75,7 +75,6 @@ module GraphQL
               1,
               1,
               graphql_string,
-              nil, # prev token
               241 # BAD_UNICODE_ESCAPE in lexer.rl
             ]
           ]
