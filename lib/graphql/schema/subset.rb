@@ -306,14 +306,13 @@ module GraphQL
 
       def referenced?(t)
         load_all_types
-        res = if (ref = @referenced_types[t].find{ |member| (member == true) || @cached_visible[member] } )
+        res = if @referenced_types[t].any? { |member| (member == true) || @cached_visible[member] }
           if t.kind.abstract?
             possible_types(t).any?
           else
             true
           end
         end
-        # p [:referenced?, t.graphql_name, res, ref, :Visible?, @cached_visible[t]]
         res
       end
 
