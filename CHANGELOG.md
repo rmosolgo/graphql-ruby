@@ -10,6 +10,19 @@
 
 ### Bug fixes
 
+# 2.3.8 (12 Jul 2024)
+
+### New features
+
+- Input validation: Add `all: { ... }` validator #5013
+- Visibility: Add `Query#types` for future type filtering improvements #4998
+- Broadcast: Add `default_broadcast(true)` option for Connection and Edge types #5012
+
+### Bug fixes
+
+- Remove unused `InvalidTypeError` #5003
+- Parser: remove unused `previous_token` and `Token` #5015
+
 # 2.3.7 (27 Jun 2024)
 
 ### Bug fixes
