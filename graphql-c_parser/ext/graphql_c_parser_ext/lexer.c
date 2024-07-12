@@ -951,7 +951,7 @@ void emit(TokenType tt, char *ts, char *te, Meta *meta) {
 			}
 		}
 		
-		VALUE token = rb_ary_new_from_args(6,
+		VALUE token = rb_ary_new_from_args(5,
 		token_sym,
 		rb_int2inum(meta->line),
 		rb_int2inum(meta->col),

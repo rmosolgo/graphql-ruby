@@ -3250,7 +3250,7 @@ int yylex (YYSTYPE *lvalp, VALUE parser, VALUE filename) {
     return YYEOF;
   }
   rb_ivar_set(parser, rb_intern("@next_token_index"), INT2FIX(next_token_idx + 1));
-  VALUE token_type_rb_int = rb_ary_entry(next_token, 5);
+  VALUE token_type_rb_int = rb_ary_entry(next_token, 4);
   int next_token_type = FIX2INT(token_type_rb_int);
   if (next_token_type == 241) { // BAD_UNICODE_ESCAPE
     VALUE mGraphQL = rb_const_get_at(rb_cObject, rb_intern("GraphQL"));
