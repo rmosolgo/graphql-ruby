@@ -44,6 +44,7 @@ See each validator's API docs for details:
 - `required: { one_of: [...] }` {{ "Schema::Validator::RequiredValidator" | api_doc }}
 - `allow_blank: true|false` {{  "Schema::Validator::AllowBlankValidator" | api_doc }}
 - `allow_null: true|false` {{  "Schema::Validator::AllowNullValidator" | api_doc }}
+- `all: { ... }` {{  "Schema::Validator::AllValidator" | api_doc }}
 
 Some of the validators accept customizable messages for certain validation failures; see the API docs for examples.
 
