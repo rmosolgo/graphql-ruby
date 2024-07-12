@@ -12,7 +12,7 @@ if defined?(GraphQL::CParser::Lexer)
 
     it "makes tokens like the other lexer" do
       str = "{ f1(type: \"str\") ...F2 }\nfragment F2 on SomeType { f2 }"
-      tokens = GraphQL.scan_with_c(str).map { |t| [*t, t[3].encoding] }
+      tokens = GraphQL.scan_with_c(str).map { |t| [*t.first(4), t[3].encoding] }
       old_tokens = GraphQL.scan_with_ruby(str).map { |t| [*t, t[3].encoding] }
 
       assert_equal [
