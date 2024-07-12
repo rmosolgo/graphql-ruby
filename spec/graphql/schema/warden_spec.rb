@@ -223,9 +223,7 @@ module MaskHelpers
 
     field :manners, [MannerType], null: false
 
-    field :public_type, PublicType, null: false do
-      metadata :hidden_field, true
-    end
+    field :public_type, PublicType, null: false
   end
 
   class MutationType < BaseObject
