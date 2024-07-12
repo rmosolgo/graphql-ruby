@@ -10,7 +10,7 @@ module GraphQL
           child_class.extend(ClassMethods)
           child_class.class_eval { self.node_type = nil }
           child_class.node_nullable(true)
-          child_class.relay_broadcastable(nil)
+          child_class.default_broadcastable(nil)
         end
 
         def node
@@ -25,19 +25,19 @@ module GraphQL
             super
             child_class.node_type = nil
             child_class.node_nullable = nil
-            child_class.relay_broadcastable(relay_broadcastable?)
+            child_class.default_broadcastable(default_broadcastable?)
           end
 
           def default_relay?
             true
           end
 
-          def relay_broadcastable?
-            @relay_broadcastable
+          def default_broadcastable?
+            @default_broadcastable
           end
 
-          def relay_broadcastable(new_value)
-            @relay_broadcastable = new_value
+          def default_broadcastable(new_value)
+            @default_broadcastable = new_value
           end
 
           # Get or set the Object type that this edge wraps.

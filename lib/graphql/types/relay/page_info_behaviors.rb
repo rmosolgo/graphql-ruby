@@ -25,7 +25,7 @@ module GraphQL
           true
         end
 
-        def relay_broadcastable?
+        def default_broadcastable?
           true
         end
       end

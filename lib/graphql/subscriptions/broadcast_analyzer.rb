@@ -57,8 +57,8 @@ module GraphQL
       def apply_broadcastable(owner_type, field_defn)
         current_field_broadcastable = field_defn.introspection? || field_defn.broadcastable?
 
-        if current_field_broadcastable.nil? && owner_type.respond_to?(:relay_broadcastable?)
-          current_field_broadcastable = owner_type.relay_broadcastable?
+        if current_field_broadcastable.nil? && owner_type.respond_to?(:default_broadcastable?)
+          current_field_broadcastable = owner_type.default_broadcastable?
         end
 
         case current_field_broadcastable

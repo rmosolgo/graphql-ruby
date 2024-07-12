@@ -14,11 +14,11 @@ describe GraphQL::Subscriptions::BroadcastAnalyzer do
     end
 
     class BroadcastableConnection < GraphQL::Types::Relay::BaseConnection
-      relay_broadcastable(true)
+      default_broadcastable(true)
     end
 
     class BroadcastableEdge < GraphQL::Types::Relay::BaseEdge
-      relay_broadcastable(true)
+      default_broadcastable(true)
     end
 
     class Javelin < GraphQL::Schema::Object
