@@ -18,6 +18,7 @@ module GraphQL
             self.node_type = nil
             self.edge_class = nil
           }
+          child_class.default_broadcastable(nil)
           add_page_info_field(child_class)
         end
 
@@ -31,10 +32,19 @@ module GraphQL
             child_class.edge_type = nil
             child_class.node_type = nil
             child_class.edge_class = nil
+            child_class.default_broadcastable(default_broadcastable?)
           end
 
           def default_relay?
             true
+          end
+
+          def default_broadcastable?
+            @default_broadcastable
+          end
+
+          def default_broadcastable(new_value)
+            @default_broadcastable = new_value
           end
 
           # @return [Class]
