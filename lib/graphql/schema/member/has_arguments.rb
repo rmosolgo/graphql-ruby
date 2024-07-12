@@ -135,10 +135,11 @@ module GraphQL
 
             def get_argument(argument_name, context = GraphQL::Query::NullContext.instance)
               warden = Warden.from_context(context)
+              skip_visible = context.respond_to?(:types) && context.types.is_a?(GraphQL::Schema::Subset)
               for ancestor in ancestors
                 if ancestor.respond_to?(:own_arguments) &&
                   (a = ancestor.own_arguments[argument_name]) &&
-                  (a = Warden.visible_entry?(:visible_argument?, a, context, warden))
+                  (skip_visible || (a = Warden.visible_entry?(:visible_argument?, a, context, warden)))
                   return a
                 end
               end
@@ -205,8 +206,8 @@ module GraphQL
         # @return [GraphQL::Schema::Argument, nil] Argument defined on this thing, fetched by name.
         def get_argument(argument_name, context = GraphQL::Query::NullContext.instance)
           warden = Warden.from_context(context)
-          if (arg_config = own_arguments[argument_name]) && (visible_arg = Warden.visible_entry?(:visible_argument?, arg_config, context, warden))
-            visible_arg
+          if (arg_config = own_arguments[argument_name]) && ((context.respond_to?(:types) && context.types.is_a?(GraphQL::Schema::Subset)) || (visible_arg = Warden.visible_entry?(:visible_argument?, arg_config, context, warden)))
+            visible_arg || arg_config
           elsif defined?(@resolver_class) && @resolver_class
             @resolver_class.get_field_argument(argument_name, context)
           else
@@ -230,7 +231,7 @@ module GraphQL
         # @return [Interpreter::Arguments, Execution::Lazy<Interpreter::Arguments>]
         def coerce_arguments(parent_object, values, context, &block)
           # Cache this hash to avoid re-merging it
-          arg_defns = context.warden.arguments(self)
+          arg_defns = context.types.arguments(self)
           total_args_count = arg_defns.size
 
           finished_args = nil
@@ -364,8 +365,8 @@ module GraphQL
                   end
 
                   if !(
-                      context.warden.possible_types(argument.loads).include?(application_object_type) ||
-                      context.warden.loadable?(argument.loads, context)
+                      context.types.possible_types(argument.loads).include?(application_object_type) ||
+                      context.types.loadable?(argument.loads, context)
                     )
                     err = GraphQL::LoadApplicationObjectFailedError.new(context: context, argument: argument, id: id, object: application_object)
                     application_object = load_application_object_failed(err)

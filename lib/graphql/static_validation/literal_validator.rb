@@ -5,7 +5,7 @@ module GraphQL
     class LiteralValidator
       def initialize(context:)
         @context = context
-        @warden = context.warden
+        @types = context.types
         @invalid_response = GraphQL::Query::InputValidationResult.new(valid: false, problems: [])
         @valid_response = GraphQL::Query::InputValidationResult.new(valid: true, problems: [])
       end
@@ -109,7 +109,7 @@ module GraphQL
       def required_input_fields_are_present(type, ast_node)
         # TODO - would be nice to use these to create an error message so the caller knows
         # that required fields are missing
-        required_field_names = @warden.arguments(type)
+        required_field_names = @types.arguments(type)
           .select { |argument| argument.type.kind.non_null? && !argument.default_value? }
           .map!(&:name)
 
@@ -119,7 +119,7 @@ module GraphQL
           missing_required_field_names.empty? ? @valid_response : @invalid_response
         else
           results = missing_required_field_names.map do |name|
-            arg_type = @warden.get_argument(type, name).type
+            arg_type = @types.argument(type, name).type
             recursively_validate(GraphQL::Language::Nodes::NullValue.new(name: name), arg_type)
           end
           if type.one_of? && ast_node.arguments.size != 1
@@ -131,7 +131,7 @@ module GraphQL
 
       def present_input_field_values_are_valid(type, ast_node)
         results = ast_node.arguments.map do |value|
-          field = @warden.get_argument(type, value.name)
+          field = @types.argument(type, value.name)
           # we want to call validate on an argument even if it's an invalid one
           # so that our raise exception is on it instead of the entire InputObject
           field_type = field && field.type

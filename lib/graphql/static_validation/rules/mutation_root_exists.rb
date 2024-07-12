@@ -3,7 +3,7 @@ module GraphQL
   module StaticValidation
     module MutationRootExists
       def on_operation_definition(node, _parent)
-        if node.operation_type == 'mutation' && context.warden.root_type_for_operation("mutation").nil?
+        if node.operation_type == 'mutation' && context.query.types.mutation_root.nil?
           add_error(GraphQL::StaticValidation::MutationRootExistsError.new(
             'Schema is not configured for mutations',
             nodes: node

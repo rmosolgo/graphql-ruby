@@ -45,6 +45,7 @@ require "graphql/schema/mutation"
 require "graphql/schema/has_single_input_argument"
 require "graphql/schema/relay_classic_mutation"
 require "graphql/schema/subscription"
+require "graphql/schema/subset"
 
 module GraphQL
   # A GraphQL schema which may be queried with {GraphQL::Query}.
@@ -369,20 +370,24 @@ module GraphQL
         when nil
           nil
         when Array
-          visible_t = nil
-          warden = Warden.from_context(context)
-          local_entry.each do |t|
-            if warden.visible_type?(t, context)
-              if visible_t.nil?
-                visible_t = t
-              else
-                raise DuplicateNamesError.new(
-                  duplicated_name: type_name, duplicated_definition_1: visible_t.inspect, duplicated_definition_2: t.inspect
-                )
+          if context.respond_to?(:types) && context.types.is_a?(GraphQL::Schema::Subset)
+            local_entry
+          else
+            visible_t = nil
+            warden = Warden.from_context(context)
+            local_entry.each do |t|
+              if warden.visible_type?(t, context)
+                if visible_t.nil?
+                  visible_t = t
+                else
+                  raise DuplicateNamesError.new(
+                    duplicated_name: type_name, duplicated_definition_1: visible_t.inspect, duplicated_definition_2: t.inspect
+                  )
+                end
               end
             end
+            visible_t
           end
-          visible_t
         when Module
           local_entry
         else
@@ -496,6 +501,28 @@ module GraphQL
 
       attr_writer :warden_class
 
+      def subset_class
+        if defined?(@subset_class)
+          @subset_class
+        elsif superclass.respond_to?(:subset_class)
+          superclass.subset_class
+        else
+          GraphQL::Schema::Subset
+        end
+      end
+
+      attr_writer :subset_class, :use_schema_subset
+
+      def use_schema_subset?
+        if defined?(@use_schema_subset)
+          @use_schema_subset
+        elsif superclass.respond_to?(:use_schema_subset?)
+          superclass.use_schema_subset?
+        else
+          false
+        end
+      end
+
       # @param type [Module] The type definition whose possible types you want to see
       # @return [Hash<String, Module>] All possible types, if no `type` is given.
       # @return [Array<Module>] Possible types for `type`, if it's given.
@@ -572,9 +599,8 @@ module GraphQL
         end
       end
 
-      def type_from_ast(ast_node, context: nil)
-        type_owner = context ? context.warden : self
-        GraphQL::Schema::TypeExpression.build_type(type_owner, ast_node)
+      def type_from_ast(ast_node, context: self.query_class.new(self, "{ __typename }").context)
+        GraphQL::Schema::TypeExpression.build_type(context.query.types, ast_node)
       end
 
       def get_field(type_or_name, field_name, context = GraphQL::Query::NullContext.instance)
@@ -1052,6 +1078,10 @@ module GraphQL
         Member::HasDirectives.get_directives(self, @own_schema_directives, :schema_directives)
       end
 
+      # Called when a type is needed by name at runtime
+      def load_type(type_name, ctx)
+        get_type(type_name, ctx)
+      end
       # This hook is called when an object fails an `authorized?` check.
       # You might report to your bug tracker here, so you can correct
       # the field resolvers not to return unauthorized objects.

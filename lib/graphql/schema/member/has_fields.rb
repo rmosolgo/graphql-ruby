@@ -99,11 +99,12 @@ module GraphQL
         module InterfaceMethods
           def get_field(field_name, context = GraphQL::Query::NullContext.instance)
             warden = Warden.from_context(context)
+            skip_visible = context.respond_to?(:types) && context.types.is_a?(GraphQL::Schema::Subset)
             for ancestor in ancestors
               if ancestor.respond_to?(:own_fields) &&
                   (f_entry = ancestor.own_fields[field_name]) &&
-                  (f = Warden.visible_entry?(:visible_field?, f_entry, context, warden))
-                return f
+                  (skip_visible || (f_entry = Warden.visible_entry?(:visible_field?, f_entry, context, warden)))
+                return f_entry
               end
             end
             nil
@@ -134,13 +135,14 @@ module GraphQL
             # Objects need to check that the interface implementation is visible, too
             warden = Warden.from_context(context)
             ancs = ancestors
+            skip_visible = context.respond_to?(:types) && context.types.is_a?(GraphQL::Schema::Subset)
             i = 0
             while (ancestor = ancs[i])
               if ancestor.respond_to?(:own_fields) &&
                   visible_interface_implementation?(ancestor, context, warden) &&
                   (f_entry = ancestor.own_fields[field_name]) &&
-                  (f = Warden.visible_entry?(:visible_field?, f_entry, context, warden))
-                return f
+                  (skip_visible || (f_entry = Warden.visible_entry?(:visible_field?, f_entry, context, warden)))
+                return f_entry
               end
               i += 1
             end

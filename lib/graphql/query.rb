@@ -95,12 +95,24 @@ module GraphQL
     # @param root_value [Object] the object used to resolve fields on the root type
     # @param max_depth [Numeric] the maximum number of nested selections allowed for this query (falls back to schema-level value)
     # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
-    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, static_validator: nil, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, warden: nil)
+    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, static_validator: nil, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, warden: nil, use_schema_subset: nil)
       # Even if `variables: nil` is passed, use an empty hash for simpler logic
       variables ||= {}
       @schema = schema
       @context = schema.context_class.new(query: self, values: context)
-      @warden = warden
+
+      if use_schema_subset.nil?
+        use_schema_subset = warden ? false : schema.use_schema_subset?
+      end
+
+      if use_schema_subset
+        @schema_subset = @schema.subset_class.new(self)
+        @warden = Schema::Warden::NullWarden.new(context: self, schema: @schema)
+      else
+        @schema_subset = nil
+        @warden = warden
+      end
+
       @subscription_topic = subscription_topic
       @root_value = root_value
       @fragments = nil
@@ -195,7 +207,14 @@ module GraphQL
     def lookahead
       @lookahead ||= begin
         ast_node = selected_operation
-        root_type = warden.root_type_for_operation(ast_node.operation_type || "query")
+        root_type = case ast_node.operation_type
+        when nil, "query"
+          types.query_root # rubocop:disable Development/ContextIsPassedCop
+        when "mutation"
+          types.mutation_root # rubocop:disable Development/ContextIsPassedCop
+        when "subscription"
+          types.subscription_root # rubocop:disable Development/ContextIsPassedCop
+        end
         GraphQL::Execution::Lookahead.new(query: self, root_type: root_type, ast_nodes: [ast_node])
       end
     end
@@ -329,6 +348,10 @@ module GraphQL
     end
 
     def_delegators :warden, :get_type, :get_field, :possible_types, :root_type_for_operation
+
+    def types
+      @schema_subset || warden.schema_subset
+    end
 
     # @param abstract_type [GraphQL::UnionType, GraphQL::InterfaceType]
     # @param value [Object] Any runtime value

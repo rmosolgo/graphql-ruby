@@ -61,13 +61,26 @@ module GraphQL
           def interface_type_memberships(obj_t, ctx); obj_t.interface_type_memberships; end
           def arguments(owner, ctx); owner.arguments(ctx); end
           def loadable?(type, ctx); type.visible?(ctx); end
+          def schema_subset
+            @schema_subset ||= Warden::SchemaSubset.new(self)
+          end
         end
       end
 
       class NullWarden
         def initialize(_filter = nil, context:, schema:)
           @schema = schema
+          @schema_subset = Warden::SchemaSubset.new(self)
         end
+
+        # @api private
+        module NullSubset
+          def self.new(query)
+            NullWarden.new(context: query.context, schema: query.schema).schema_subset
+          end
+        end
+
+        attr_reader :schema_subset
 
         def visible_field?(field_defn, _ctx = nil, owner = nil); true; end
         def visible_argument?(arg_defn, _ctx = nil); true; end
@@ -91,6 +104,80 @@ module GraphQL
         def interfaces(obj_type); obj_type.interfaces; end
       end
 
+      def schema_subset
+        @schema_subset ||= SchemaSubset.new(self)
+      end
+
+      class SchemaSubset
+        def initialize(warden)
+          @warden = warden
+        end
+
+        def directives
+          @warden.directives
+        end
+
+        def directive_exists?(dir_name)
+          @warden.directives.any? { |d| d.graphql_name == dir_name }
+        end
+
+        def type(name)
+          @warden.get_type(name)
+        end
+
+        def field(owner, field_name)
+          @warden.get_field(owner, field_name)
+        end
+
+        def argument(owner, arg_name)
+          @warden.get_argument(owner, arg_name)
+        end
+
+        def query_root
+          @warden.root_type_for_operation("query")
+        end
+
+        def mutation_root
+          @warden.root_type_for_operation("mutation")
+        end
+
+        def subscription_root
+          @warden.root_type_for_operation("subscription")
+        end
+
+        def arguments(owner)
+          @warden.arguments(owner)
+        end
+
+        def fields(owner)
+          @warden.fields(owner)
+        end
+
+        def possible_types(type)
+          @warden.possible_types(type)
+        end
+
+        def enum_values(enum_type)
+          @warden.enum_values(enum_type)
+        end
+
+        def all_types
+          @warden.reachable_types
+        end
+
+        def interfaces(obj_type)
+          @warden.interfaces(obj_type)
+        end
+
+        def loadable?(t, ctx) # TODO remove ctx here?
+          @warden.loadable?(t, ctx)
+        end
+
+        def reachable_type?(type_name)
+          @warden.reachable_type?(type_name)
+        end
+      end
+
       # @param context [GraphQL::Query::Context]
       # @param schema [GraphQL::Schema]
       def initialize(context:, schema:)
@@ -107,7 +194,7 @@ module GraphQL
           @visible_possible_types = @visible_fields = @visible_arguments = @visible_enum_arrays =
           @visible_enum_values = @visible_interfaces = @type_visibility = @type_memberships =
           @visible_and_reachable_type = @unions = @unfiltered_interfaces =
-          @reachable_type_set =
+          @reachable_type_set = @schema_subset =
             nil
       end
 

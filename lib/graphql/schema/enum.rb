@@ -130,7 +130,7 @@ module GraphQL
         end
 
         def validate_non_null_input(value_name, ctx, max_errors: nil)
-          allowed_values = ctx.warden.enum_values(self)
+          allowed_values = ctx.types.enum_values(self)
           matching_value = allowed_values.find { |v| v.graphql_name == value_name }
 
           if matching_value.nil?
@@ -141,8 +141,8 @@ module GraphQL
         end
 
         def coerce_result(value, ctx)
-          warden = ctx.warden
-          all_values = warden ? warden.enum_values(self) : values.each_value
+          types = ctx.types
+          all_values = types ? types.enum_values(self) : values.each_value
           enum_value = all_values.find { |val| val.value == value }
           if enum_value
             enum_value.graphql_name
@@ -152,7 +152,7 @@ module GraphQL
         end
 
         def coerce_input(value_name, ctx)
-          all_values = ctx.warden ? ctx.warden.enum_values(self) : values.each_value
+          all_values = ctx.types ? ctx.types.enum_values(self) : values.each_value
 
           if v = all_values.find { |val| val.graphql_name == value_name }
             v.value

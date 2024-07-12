@@ -30,6 +30,10 @@ module GraphQL
       def interpreter?
         true
       end
+
+      def types
+        @types ||= GraphQL::Schema::Warden::SchemaSubset.new(@warden)
+      end
     end
   end
 end
