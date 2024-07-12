@@ -108,7 +108,7 @@ module GraphQL
         end
 
         def visible?(context)
-          @mutation ? @mutation.visible?(context) : true
+          true
         end
 
         def authorized?(object, context)
