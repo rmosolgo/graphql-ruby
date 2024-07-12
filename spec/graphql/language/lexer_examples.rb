@@ -21,14 +21,6 @@ module TokenMethods
       self[2]
     end
 
-    def prev_token
-      self[4]
-    end
-
-    def previous_token
-      self[4]
-    end
-
     def inspect
       "(#{name} #{value.inspect} [#{line}:#{col}])"
     end
@@ -62,10 +54,6 @@ module LexerExamples
           str = "{ a(type: 1) }"
           tokens = subject.tokenize(str)
           assert_equal Encoding::UTF_8, tokens[2].value.encoding
-        end
-
-        it "keeps track of previous_token" do
-          assert_equal tokens[0], tokens[1].prev_token
         end
 
         it "handles integers with a leading zero" do
@@ -163,11 +151,6 @@ GRAPHQL
           assert_bad_unicode(text1, 'Bad unicode escape in "\\xED\\xB0\\x80\\xED\\xBC\\xAC"')
           text2 = '"\\u{dc00}\\u{df2c}"'
           assert_bad_unicode(text2, 'Bad unicode escape in "\\xED\\xB0\\x80\\xED\\xBC\\xAC"')
-        end
-
-        it "clears the previous_token between runs" do
-          tok_2 = subject.tokenize(query_string)
-          assert_nil tok_2[0].prev_token
         end
 
         it "counts string position properly" do

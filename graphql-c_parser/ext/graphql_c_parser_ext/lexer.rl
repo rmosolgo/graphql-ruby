@@ -198,7 +198,6 @@ typedef struct Meta {
   char *query_cstr;
   char *pe;
   VALUE tokens;
-  VALUE previous_token;
   int dedup_identifiers;
   int reject_numbers_followed_by_names;
   int preceeded_by_number;
@@ -289,12 +288,13 @@ void emit(TokenType tt, char *ts, char *te, Meta *meta) {
       if (meta->reject_numbers_followed_by_names && meta->preceeded_by_number) {
         VALUE mGraphQL = rb_const_get_at(rb_cObject, rb_intern("GraphQL"));
         VALUE mCParser = rb_const_get_at(mGraphQL, rb_intern("CParser"));
+        VALUE prev_token = rb_ary_entry(meta->tokens, -1);
         VALUE exception = rb_funcall(
             mCParser, rb_intern("prepare_number_name_parse_error"), 5,
             LONG2NUM(meta->line),
             LONG2NUM(meta->col),
             rb_str_new_cstr(meta->query_cstr),
-            rb_ary_entry(meta->previous_token, 3),
+            rb_ary_entry(prev_token, 3),
             rb_utf8_str_new(ts, te - ts)
         );
         rb_exc_raise(exception);
@@ -378,16 +378,13 @@ void emit(TokenType tt, char *ts, char *te, Meta *meta) {
       rb_int2inum(meta->line),
       rb_int2inum(meta->col),
       token_content,
-      meta->previous_token,
       INT2FIX(200 + (int)tt)
     );
 
-    // COMMENTs are retained as `previous_token` but aren't pushed to the normal token list
     if (tt != COMMENT) {
       rb_ary_push(meta->tokens, token);
     }
     meta->preceeded_by_number = this_token_is_number;
-    meta->previous_token = token;
   }
   // Bump the column counter for the next token
   meta->col += te - ts;
@@ -403,7 +400,7 @@ VALUE tokenize(VALUE query_rbstr, int fstring_identifiers, int reject_numbers_fo
   char *ts = 0;
   char *te = 0;
   VALUE tokens = rb_ary_new();
-  struct Meta meta_s = {1, 1, p, pe, tokens, Qnil, fstring_identifiers, reject_numbers_followed_by_names, 0, max_tokens, 0};
+  struct Meta meta_s = {1, 1, p, pe, tokens, fstring_identifiers, reject_numbers_followed_by_names, 0, max_tokens, 0};
   Meta *meta = &meta_s;
 
   %% write init;
