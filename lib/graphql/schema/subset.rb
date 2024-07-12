@@ -46,6 +46,10 @@ module GraphQL
             false
           end
         end.compare_by_identity
+
+        @unfiltered_pt = Hash.new do |hash, type|
+          hash[type] = @schema.possible_types(type)
+        end.compare_by_identity
       end
 
       def field_on_visible_interface?(field, owner)
@@ -179,7 +183,7 @@ module GraphQL
           pt = case type.kind.name
           when "INTERFACE"
             # TODO this requires the global map
-            @schema.possible_types(type)
+            @unfiltered_pt[type]
           when "UNION"
             type.type_memberships.select { |tm| @cached_visible[tm] && @cached_visible[tm.object_type] }.map!(&:object_type)
           else
@@ -370,8 +374,7 @@ module GraphQL
             if @cached_visible[field]
               field_type = field.type.unwrap
               if field_type.kind.interface?
-                @unfiltered_pt ||= {}.compare_by_identity
-                pt = @unfiltered_pt[field_type] ||= @schema.possible_types(field_type)
+                pt = @unfiltered_pt[field_type]
                 pt.each do |obj_type|
                   if @cached_visible[obj_type] &&
                       (tm = obj_type.interface_type_memberships.find { |tm| tm.abstract_type == field_type }) &&
