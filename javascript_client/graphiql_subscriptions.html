@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.3.7/">API</a>
+            <a href="/api-doc/2.3.8/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -167,15 +167,15 @@
 
 <p>Then, install GraphiQL (eg, <code class="language-plaintext highlighter-rouge">yarn add graphiql</code>) and add JavaScript code to import GraphiQL and render it on your page:</p>
 
-<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="p">{</span> <span class="nx">GraphiQL</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">graphiql</span><span class="dl">'</span><span class="p">;</span>
-<span class="k">import</span> <span class="nx">React</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">react</span><span class="dl">'</span><span class="p">;</span>
-<span class="k">import</span> <span class="p">{</span> <span class="nx">createRoot</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">react-dom/client</span><span class="dl">'</span><span class="p">;</span>
-<span class="k">import</span> <span class="dl">'</span><span class="s1">graphiql/graphiql.css</span><span class="dl">'</span><span class="p">;</span>
-<span class="k">import</span> <span class="p">{</span> <span class="nx">createGraphiQLFetcher</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">@graphiql/toolkit</span><span class="dl">'</span><span class="p">;</span>
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="p">{</span> <span class="nx">GraphiQL</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">graphiql</span><span class="dl">'</span>
+<span class="k">import</span> <span class="nx">React</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">react</span><span class="dl">'</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">createRoot</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">react-dom/client</span><span class="dl">'</span>
+<span class="k">import</span> <span class="dl">'</span><span class="s1">graphiql/graphiql.css</span><span class="dl">'</span>
+<span class="k">import</span> <span class="p">{</span> <span class="nx">createGraphiQLFetcher</span> <span class="p">}</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">@graphiql/toolkit</span><span class="dl">'</span>
 
-<span class="kd">const</span> <span class="nx">fetcher</span> <span class="o">=</span> <span class="nf">createGraphiQLFetcher</span><span class="p">({</span> <span class="na">url</span><span class="p">:</span> <span class="dl">'</span><span class="s1">/graphql</span><span class="dl">'</span> <span class="p">});</span>
-<span class="kd">const</span> <span class="nx">root</span> <span class="o">=</span> <span class="nf">createRoot</span><span class="p">(</span><span class="nb">document</span><span class="p">.</span><span class="nf">getElementById</span><span class="p">(</span><span class="dl">'</span><span class="s1">root</span><span class="dl">'</span><span class="p">));</span>
-<span class="nx">root</span><span class="p">.</span><span class="nf">render</span><span class="p">(</span><span class="o">&lt;</span><span class="nx">GraphiQL</span> <span class="nx">fetcher</span><span class="o">=</span><span class="p">{</span><span class="nx">fetcher</span><span class="p">}</span><span class="sr">/&gt;</span><span class="se">)</span><span class="err">;
+<span class="kd">const</span> <span class="nx">fetcher</span> <span class="o">=</span> <span class="nf">createGraphiQLFetcher</span><span class="p">({</span> <span class="na">url</span><span class="p">:</span> <span class="dl">'</span><span class="s1">/graphql</span><span class="dl">'</span> <span class="p">})</span>
+<span class="kd">const</span> <span class="nx">root</span> <span class="o">=</span> <span class="nf">createRoot</span><span class="p">(</span><span class="nb">document</span><span class="p">.</span><span class="nf">getElementById</span><span class="p">(</span><span class="dl">'</span><span class="s1">root</span><span class="dl">'</span><span class="p">))</span>
+<span class="nx">root</span><span class="p">.</span><span class="nf">render</span><span class="p">(</span><span class="o">&lt;</span><span class="nx">GraphiQL</span> <span class="nx">fetcher</span><span class="o">=</span><span class="p">{</span><span class="nx">fetcher</span><span class="p">}</span><span class="sr">/&gt;</span><span class="err">)
 </span></code></pre></div></div>
 
 <p>After that, you should be able to load the page in your app and see the GraphiQL editor.</p>
@@ -185,7 +185,7 @@
 <p>To integrate <a href="/subscriptions/ably_implementation">Ably subscriptions</a>, use <code class="language-plaintext highlighter-rouge">createAblyFetcher</code>,  for example:</p>
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nx">Ably</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">ably</span><span class="dl">"</span>
-<span class="k">import</span> <span class="nx">createAblyFetcher</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">graphql-ruby-client/subscriptions/createAblyFetcher</span><span class="dl">'</span><span class="p">;</span>
+<span class="k">import</span> <span class="nx">createAblyFetcher</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">graphql-ruby-client/subscriptions/createAblyFetcher</span><span class="dl">'</span>
 
 <span class="c1">// Initialize a client</span>
 <span class="c1">// the key must have "subscribe" and "presence" permissions</span>
@@ -193,8 +193,8 @@
 
 <span class="c1">// Initialize a new fetcher and pass it to GraphiQL below</span>
 <span class="kd">var</span> <span class="nx">fetcher</span> <span class="o">=</span> <span class="nf">createAblyFetcher</span><span class="p">({</span> <span class="na">ably</span><span class="p">:</span> <span class="nx">ably</span><span class="p">,</span> <span class="na">url</span><span class="p">:</span> <span class="dl">"</span><span class="s2">/graphql</span><span class="dl">"</span> <span class="p">})</span>
-<span class="kd">const</span> <span class="nx">root</span> <span class="o">=</span> <span class="nf">createRoot</span><span class="p">(</span><span class="nb">document</span><span class="p">.</span><span class="nf">getElementById</span><span class="p">(</span><span class="dl">'</span><span class="s1">root</span><span class="dl">'</span><span class="p">));</span>
-<span class="nx">root</span><span class="p">.</span><span class="nf">render</span><span class="p">(</span><span class="o">&lt;</span><span class="nx">GraphiQL</span> <span class="nx">fetcher</span><span class="o">=</span><span class="p">{</span><span class="nx">fetcher</span><span class="p">}</span> <span class="sr">/&gt;</span><span class="se">)</span><span class="err">;
+<span class="kd">const</span> <span class="nx">root</span> <span class="o">=</span> <span class="nf">createRoot</span><span class="p">(</span><span class="nb">document</span><span class="p">.</span><span class="nf">getElementById</span><span class="p">(</span><span class="dl">'</span><span class="s1">root</span><span class="dl">'</span><span class="p">))</span>
+<span class="nx">root</span><span class="p">.</span><span class="nf">render</span><span class="p">(</span><span class="o">&lt;</span><span class="nx">GraphiQL</span> <span class="nx">fetcher</span><span class="o">=</span><span class="p">{</span><span class="nx">fetcher</span><span class="p">}</span> <span class="sr">/&gt;</span><span class="err">)
 </span></code></pre></div></div>
 
 <p>Under the hood, it will use <code class="language-plaintext highlighter-rouge">window.fetch</code> to send GraphQL operations to the server, then listen for <code class="language-plaintext highlighter-rouge">X-Subscription-ID</code> headers in responses. To customize its HTTP requests, you can pass a <code class="language-plaintext highlighter-rouge">fetchOptions:</code> object or a custom <code class="language-plaintext highlighter-rouge">fetch:</code> function to <code class="language-plaintext highlighter-rouge">createAblyFetcher({ ... })</code>.</p>
@@ -204,15 +204,15 @@
 <p>To integrate <a href="/subscriptions/pusher_implementation">Pusher subscriptions</a>, use <code class="language-plaintext highlighter-rouge">createPusherFetcher</code>,  for example:</p>
 
 <div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nx">Pusher</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">pusher-js</span><span class="dl">"</span>
-<span class="k">import</span> <span class="nx">createPusherFetcher</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">graphql-ruby-client/subscriptions/createPusherFetcher</span><span class="dl">'</span><span class="p">;</span>
+<span class="k">import</span> <span class="nx">createPusherFetcher</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">graphql-ruby-client/subscriptions/createPusherFetcher</span><span class="dl">'</span>
 
 <span class="c1">// Initialize a client</span>
 <span class="kd">const</span> <span class="nx">pusher</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Pusher</span><span class="p">(</span><span class="dl">"</span><span class="s2">your-app-key</span><span class="dl">"</span><span class="p">,</span> <span class="p">{</span> <span class="na">cluster</span><span class="p">:</span> <span class="dl">"</span><span class="s2">your-cluster</span><span class="dl">"</span> <span class="p">})</span>
 
 <span class="c1">// Initialize a new fetcher and pass it to GraphiQL below</span>
 <span class="kd">var</span> <span class="nx">fetcher</span> <span class="o">=</span> <span class="nf">createPusherFetcher</span><span class="p">({</span> <span class="na">pusher</span><span class="p">:</span> <span class="nx">pusher</span><span class="p">,</span> <span class="na">url</span><span class="p">:</span> <span class="dl">"</span><span class="s2">/graphql</span><span class="dl">"</span> <span class="p">})</span>
-<span class="kd">const</span> <span class="nx">root</span> <span class="o">=</span> <span class="nf">createRoot</span><span class="p">(</span><span class="nb">document</span><span class="p">.</span><span class="nf">getElementById</span><span class="p">(</span><span class="dl">'</span><span class="s1">root</span><span class="dl">'</span><span class="p">));</span>
-<span class="nx">root</span><span class="p">.</span><span class="nf">render</span><span class="p">(</span><span class="o">&lt;</span><span class="nx">GraphiQL</span> <span class="nx">fetcher</span><span class="o">=</span><span class="p">{</span><span class="nx">fetcher</span><span class="p">}</span> <span class="sr">/&gt;</span><span class="se">)</span><span class="err">;
+<span class="kd">const</span> <span class="nx">root</span> <span class="o">=</span> <span class="nf">createRoot</span><span class="p">(</span><span class="nb">document</span><span class="p">.</span><span class="nf">getElementById</span><span class="p">(</span><span class="dl">'</span><span class="s1">root</span><span class="dl">'</span><span class="p">))</span>
+<span class="nx">root</span><span class="p">.</span><span class="nf">render</span><span class="p">(</span><span class="o">&lt;</span><span class="nx">GraphiQL</span> <span class="nx">fetcher</span><span class="o">=</span><span class="p">{</span><span class="nx">fetcher</span><span class="p">}</span> <span class="sr">/&gt;</span><span class="err">)
 </span></code></pre></div></div>
 
 <p>Under the hood, it will use <code class="language-plaintext highlighter-rouge">window.fetch</code> to send GraphQL operations to the server, then listen for <code class="language-plaintext highlighter-rouge">X-Subscription-ID</code> headers in responses. To customize its HTTP requests, you can pass a <code class="language-plaintext highlighter-rouge">fetchOptions:</code> object or a custom <code class="language-plaintext highlighter-rouge">fetch:</code> function to <code class="language-plaintext highlighter-rouge">createPusherFetcher({ ... })</code>.</p>
@@ -229,11 +229,11 @@
 
 <span class="c1">// Initialize a new fetcher and pass it to GraphiQL below</span>
 <span class="kd">var</span> <span class="nx">fetcher</span> <span class="o">=</span> <span class="nf">createActionCableFetcher</span><span class="p">({</span> <span class="na">consumer</span><span class="p">:</span> <span class="nx">actionCable</span><span class="p">,</span> <span class="na">url</span><span class="p">:</span> <span class="dl">"</span><span class="s2">/graphql</span><span class="dl">"</span> <span class="p">})</span>
-<span class="kd">const</span> <span class="nx">root</span> <span class="o">=</span> <span class="nf">createRoot</span><span class="p">(</span><span class="nb">document</span><span class="p">.</span><span class="nf">getElementById</span><span class="p">(</span><span class="dl">'</span><span class="s1">root</span><span class="dl">'</span><span class="p">));</span>
-<span class="nx">root</span><span class="p">.</span><span class="nf">render</span><span class="p">(</span><span class="o">&lt;</span><span class="nx">GraphiQL</span> <span class="nx">fetcher</span><span class="o">=</span><span class="p">{</span><span class="nx">fetcher</span><span class="p">}</span> <span class="sr">/&gt;</span><span class="se">)</span><span class="err">;
+<span class="kd">const</span> <span class="nx">root</span> <span class="o">=</span> <span class="nf">createRoot</span><span class="p">(</span><span class="nb">document</span><span class="p">.</span><span class="nf">getElementById</span><span class="p">(</span><span class="dl">'</span><span class="s1">root</span><span class="dl">'</span><span class="p">))</span>
+<span class="nx">root</span><span class="p">.</span><span class="nf">render</span><span class="p">(</span><span class="o">&lt;</span><span class="nx">GraphiQL</span> <span class="nx">fetcher</span><span class="o">=</span><span class="p">{</span><span class="nx">fetcher</span><span class="p">}</span> <span class="sr">/&gt;</span><span class="err">)
 </span></code></pre></div></div>
 
-<p>Under the hood, it will split traffic: it will send <code class="language-plaintext highlighter-rouge">subscription { ... }</code> operations via ActionCable and send queries and mutations via HTTP <code class="language-plaintext highlighter-rouge">POST</code> using <code class="language-plaintext highlighter-rouge">window.fetch</code>. To customize its HTTP requests, you can pass a <code class="language-plaintext highlighter-rouge">fetchOptions:</code> object or a custom <code class="language-plaintext highlighter-rouge">fetch:</code> function to <code class="language-plaintext highlighter-rouge">createPusherFetcher({ ... })</code>.</p>
+<p>Under the hood, it will split traffic: it will send <code class="language-plaintext highlighter-rouge">subscription { ... }</code> operations via ActionCable and send queries and mutations via HTTP <code class="language-plaintext highlighter-rouge">POST</code> using <code class="language-plaintext highlighter-rouge">window.fetch</code>. To customize its HTTP requests, you can pass a <code class="language-plaintext highlighter-rouge">fetchOptions:</code> object or a custom <code class="language-plaintext highlighter-rouge">fetch:</code> function to <code class="language-plaintext highlighter-rouge">createActionCableFetcher({ ... })</code>.</p>
 
 </div>
 <p class="guide-footer">

@@ -1,0 +1,24 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.3.8/GraphQL/Schema/Validator/AllValidator" />
+  </head>
+  <body>
+    <p>Class: GraphQL::Schema::Validator::AllValidator &lt; GraphQL::Schema::V…
+Use this to validate each member of an array value. 
+Examples:</p>
+<h1 id="validate-format-of-all-strings-in-an-array">validate format of all strings in an array</h1>
+<p>argument :handles, [String],
+validates: { all: { format: { with: /\A[a-z0-9_]+\Z/ } } }</p>
+<h1 id="multiple-validators-can-be-combined">multiple validators can be combined</h1>
+<p>argument :handles, [String],
+validates: { all: { format: { with: /\A[a-z0-9_]+\Z/ }, length: { maximum: 32 } } }</p>
+<h1 id="any-type-can-be-used">any type can be used</h1>
+<p>argument :choices, [Integer],
+validates: { all: { inclusion: { in: 1..12 } } }
+Instance methods:
+initialize, validate</p>
+
+
+  </body>
+</html>

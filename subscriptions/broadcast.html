@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.3.7/">API</a>
+            <a href="/api-doc/2.3.8/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -159,11 +159,12 @@
 </a></li><li class='contents-entry'><a href='#what-fields-are-broadcastable'>What fields are broadcastable?
 </a></li><li class='contents-entry'><a href='#under-the-hood'>Under the Hood
 </a></li><li class='contents-entry'><a href='#checking-for-broadcastable'>Checking for Broadcastable
+</a></li><li class='contents-entry'><a href='#connections-and-edges'>Connections and Edges
 </a></li></ol>
 </div>
 </div>
 <div class="guide-container">
-  <p>GraphQL-Ruby 1.11+ introduced a new algorithm for tracking subscriptions and delivering updates, <em>broadcasts</em>.</p>
+  <p>GraphQL subscription updates may <em>broadcast</em> data to multiple subscribers.</p>
 
 <p>A broadcast is a subscription update which is executed <em>once</em>, then delivered to <em>any number</em> of subscribers. This reduces the time your server spends running GraphQL queries, since it doesn’t have to re-run the query for every subscriber.</p>
 
@@ -239,11 +240,11 @@
 
 <p>So, take care to <a href="/subscriptions/subscription_classes#scope">set subscription_scope</a> whenever a subscription should be implicitly scoped!</p>
 
-<p>(See <a href="/api-doc/2.3.7/GraphQL/Subscriptions/Event#fingerprint-instance_method" target="_blank" title="API docs for GraphQL::Subscriptions::Event#fingerprint"><code>GraphQL::Subscriptions::Event#fingerprint</code></a> for the implementation of broadcast fingerprints.)</p>
+<p>(See <a href="/api-doc/2.3.8/GraphQL/Subscriptions/Event#fingerprint-instance_method" target="_blank" title="API docs for GraphQL::Subscriptions::Event#fingerprint"><code>GraphQL::Subscriptions::Event#fingerprint</code></a> for the implementation of broadcast fingerprints.)</p>
 
 <h2 id="checking-for-broadcastable">Checking for Broadcastable</h2>
 
-<p>For testing purposes, you can confirm that a GraphQL query string is broadcastable by using <a href="/api-doc/2.3.7/GraphQL/Subscriptions#broadcastable?-instance_method" target="_blank" title="API docs for GraphQL::Subscriptions#broadcastable?"><code>Subscriptions#broadcastable?</code></a>:</p>
+<p>For testing purposes, you can confirm that a GraphQL query string is broadcastable by using <a href="/api-doc/2.3.8/GraphQL/Subscriptions#broadcastable?-instance_method" target="_blank" title="API docs for GraphQL::Subscriptions#broadcastable?"><code>Subscriptions#broadcastable?</code></a>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">subscription_string</span> <span class="o">=</span> <span class="s2">"subscription { ... }"</span>
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">subscriptions</span><span class="p">.</span><span class="nf">broadcastable?</span><span class="p">(</span><span class="n">subscription_string</span><span class="p">)</span>
@@ -251,6 +252,27 @@
 </code></pre></div></div>
 
 <p>Use this in your application’s tests to make sure that broadcastable fields aren’t accidentally made non-broadcastable.</p>
+
+<h2 id="connections-and-edges">Connections and Edges</h2>
+
+<p>You can configure your generated <code class="language-plaintext highlighter-rouge">Connection</code> and <code class="language-plaintext highlighter-rouge">Edge</code> types to be broadcastable by setting <code class="language-plaintext highlighter-rouge">default_broadcastable(true)</code> in their definition:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># app/types/base_connection.rb</span>
+<span class="k">class</span> <span class="nc">Types::BaseConnection</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+  <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">ConnectionBehaviors</span>
+  <span class="n">default_broadcastable</span><span class="p">(</span><span class="kp">true</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="c1"># app/types/base_edge.rb</span>
+<span class="k">class</span> <span class="nc">Types::BaseEdge</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseObject</span>
+  <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Types</span><span class="o">::</span><span class="no">Relay</span><span class="o">::</span><span class="no">EdgeBehaviors</span>
+  <span class="n">default_broadcastable</span><span class="p">(</span><span class="kp">true</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>(In your <code class="language-plaintext highlighter-rouge">BaseObject</code>, you should also have <code class="language-plaintext highlighter-rouge">connection_type_class(Types::BaseConnection)</code> and <code class="language-plaintext highlighter-rouge">edge_type_class(Types::BaseEdge)</code>.)</p>
+
+<p><code class="language-plaintext highlighter-rouge">PageInfo</code> is broadcastable by default.</p>
 
 </div>
 <p class="guide-footer">
