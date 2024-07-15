@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 2.3.9 (13 Jul 2024)
+
+### Bug fixes
+
+- Subscriptions: fix `subscriptionType` in introspection #5019
+
 # 2.3.8 (12 Jul 2024)
 
 ### New features
