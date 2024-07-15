@@ -27,34 +27,19 @@ module GraphQL
       end
 
       def query_type
-        permitted_root_type("query")
+        @context.types.query_root
       end
 
       def mutation_type
-        permitted_root_type("mutation")
+        @context.types.mutation_root
       end
 
       def subscription_type
-        permitted_root_type("subscription")
+        @context.types.subscription_root
       end
 
       def directives
         @context.types.directives
-      end
-
-      private
-
-      def permitted_root_type(op_type)
-        case op_type
-        when "query"
-          @context.types.query_root
-        when "mutation"
-          @context.types.mutation_root
-        when "subcription"
-          @context.types.subscription_root
-        else
-          nil
-        end
       end
     end
   end

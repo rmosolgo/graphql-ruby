@@ -340,6 +340,11 @@ describe GraphQL::Subscriptions do
         end
       end
 
+      it "works with the introspection query" do
+        res = schema.execute("{ __schema { subscriptionType { name } } }")
+        assert_equal "Subscription", res["data"]["__schema"]["subscriptionType"]["name"]
+      end
+
       if in_memory_backend_class != FromDefinitionInMemoryBackend # No way to specify this when using IDL
         it "supports filtering in the subscription class" do
           query_str = "subscription($channel: Int) { filteredStream(channel: $channel) { message } }"
