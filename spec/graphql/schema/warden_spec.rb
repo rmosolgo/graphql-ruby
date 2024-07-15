@@ -524,6 +524,15 @@ describe GraphQL::Schema::Warden do
 
         class BagOfThings < GraphQL::Schema::Union
           possible_types A, B, C
+
+          if GraphQL::Schema.use_schema_subset?
+            def self.visible?(ctx)
+              (
+                possible_types.any? { |pt| ctx.schema.visible?(pt, ctx) } ||
+                ctx.schema.extra_types.include?(self)
+              ) && super
+            end
+          end
         end
 
         class Query < GraphQL::Schema::Object
@@ -615,10 +624,17 @@ describe GraphQL::Schema::Warden do
       assert res["data"]["Node"]
       assert_equal ["a", "node"], res["data"]["Query"]["fields"].map { |f| f["name"] }
 
-      # When the possible types are all hidden, hide the interface and fields pointing to it
       res = schema.execute(query_string, context: { except: ->(m, _) { ["A", "B", "C"].include?(m.graphql_name) } })
-      assert_nil res["data"]["Node"]
-      assert_equal [], res["data"]["Query"]["fields"]
+
+      if GraphQL::Schema.use_schema_subset?
+        # Node is still visible even though it has no possible types
+        assert res["data"]["Node"]
+        assert_equal [{ "name" => "node" }], res["data"]["Query"]["fields"]
+      else
+        # When the possible types are all hidden, hide the interface and fields pointing to it
+        assert_nil res["data"]["Node"]
+        assert_equal [], res["data"]["Query"]["fields"]
+      end
 
       # Even when it's not the return value of a field,
       # still show the interface since it allows code reuse

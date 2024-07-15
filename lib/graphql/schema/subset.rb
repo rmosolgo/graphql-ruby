@@ -21,7 +21,6 @@ module GraphQL
             h2[field] = if @cached_visible[field] &&
                 (ret_type = field.type.unwrap) &&
                 @cached_visible[ret_type] &&
-                reachable_type?(ret_type.graphql_name) &&
                 (owner == field.owner || (!owner.kind.object?) || field_on_visible_interface?(field, owner))
 
               if !field.introspection?
@@ -83,7 +82,6 @@ module GraphQL
          load_all_types
           @all_types[type_name]
         end
-
         if t
           if t.is_a?(Array)
             vis_t = nil
@@ -219,16 +217,8 @@ module GraphQL
       end
 
       def all_types
-        @all_types_filtered ||= begin
-          load_all_types
-          at = []
-          @all_types.each do |_name, type_defn|
-            if possible_types(type_defn).any? || referenced?(type_defn)
-              at << type_defn
-            end
-          end
-          at
-        end
+        load_all_types
+        @all_types.values
       end
 
       def enum_values(owner)
@@ -254,8 +244,7 @@ module GraphQL
 
       # TODO rename this to indicate that it is called with a typename
       def reachable_type?(type_name)
-        load_all_types
-        !!((t = @all_types[type_name]) && referenced?(t))
+        true
       end
 
       def loaded_types
@@ -306,17 +295,13 @@ module GraphQL
 
       def referenced?(t)
         load_all_types
-        res = if @referenced_types[t].any? { |member| (member == true) || @cached_visible[member] }
-          if t.kind.abstract?
-            possible_types(t).any?
-          else
-            true
-          end
-        end
-        res
+        @referenced_types[t].any? { |member| (member == true) || @cached_visible[member] }
       end
 
       def load_all_types
+        # puts "#{self.class}##{__method__}"
+        # puts caller(0,5).map { |l| "  #{l}"}
+        # puts ""
         return if @all_types_loaded
         @all_types_loaded = true
         schema_types = [

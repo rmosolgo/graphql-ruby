@@ -475,7 +475,7 @@ ERR
 
     # Schema dump
     legacy_query_type_str = legacy_schema_sdl[/type Query \{[^}]*\}/m]
-    assert_equal legacy_query_type_str, <<-GRAPHQL.chomp
+    expected_legacy_query_type_str = <<-GRAPHQL.chomp
 type Query {
   actor: Actor
   add(left: Int!, right: Int!): String!
@@ -487,6 +487,7 @@ type Query {
   yell(scream: Scream!): String!
 }
 GRAPHQL
+    assert_equal expected_legacy_query_type_str, legacy_query_type_str
 
     assert_includes future_schema_sdl, <<-GRAPHQL
 type Query {

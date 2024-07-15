@@ -15,7 +15,6 @@ describe GraphQL::Schema::Subset do
     query(Query)
   end
   it "only loads the types it needs" do
-    skip "TODO optimize how this thing works"
     query = GraphQL::Query.new(SubsetSchema, "{ thing { name } }", use_schema_subset: true)
     assert_equal [], query.types.loaded_types
     res = query.result
