@@ -520,8 +520,8 @@ module GraphQL
               list_type_at_all = (field && (field.type.list?))
               if selection_result.nil? || !selection_result.graphql_dead
                 value.each_with_index do |error, index|
-                  error.ast_node ||= ast_node
-                  error.path ||= current_path + (list_type_at_all ? [index] : [])
+                  error.ast_node = ast_node
+                  error.path = current_path + (list_type_at_all ? [index] : [])
                   context.errors << error
                 end
                 if selection_result
