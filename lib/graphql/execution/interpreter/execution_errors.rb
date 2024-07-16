@@ -19,8 +19,8 @@ module GraphQL
           else
             raise ArgumentError, "expected String or GraphQL::ExecutionError, not #{err_or_msg.class} (#{err_or_msg.inspect})"
           end
-          err.ast_node ||= @ast_node
-          err.path ||= @path
+          err.ast_node = @ast_node
+          err.path = @path
           @context.add_error(err)
         end
       end
