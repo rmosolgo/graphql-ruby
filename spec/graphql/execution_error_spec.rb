@@ -455,21 +455,22 @@ describe GraphQL::ExecutionError do
             }
           ]
         }
-        assert_equal expected_result, result.to_h
+
+        assert_equal(expected_result, result.to_h)
       end
     end
 
     describe "when querying for duplicate items" do
       let(:query_string) {
-          <<-GRAPHQL
-            query {
-              query0: item(key: "a")
-              query1: item(key: "a")
-            }
-          GRAPHQL
-        }
-      it "returns execution errors for duplicate items" do
+        <<-GRAPHQL
+          query {
+            query0: item(key: "a")
+            query1: item(key: "a")
+          }
+        GRAPHQL
+      }
 
+      it "returns execution errors for duplicate items" do
         expected_result = {
           "data" => {
             "query0" => nil,
@@ -478,17 +479,18 @@ describe GraphQL::ExecutionError do
           "errors" => [
             {
               "message" => "Error for a",
-              "locations" => [{"line" => 2, "column" => 15}],
+              "locations" => [{"line" => 2, "column" => 13}],
               "path" => ["query0"]
             },
             {
               "message" => "Error for a",
-              "locations" => [{"line" => 3, "column" => 15}],
+              "locations" => [{"line" => 3, "column" => 13}],
               "path" => ["query1"]
             }
           ]
         }
-        assert_equal expected_result, result.to_h
+
+        assert_equal(expected_result, result.to_h)
       end
     end
   end
