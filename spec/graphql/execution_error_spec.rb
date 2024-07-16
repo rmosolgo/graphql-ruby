@@ -401,15 +401,6 @@ describe GraphQL::ExecutionError do
   end
 
  describe "when using DataLoaders" do
-    let(:query_string) {
-      <<-GRAPHQL
-        query {
-          query0: item(key: "a")
-          query1: item(key: "b")
-        }
-      GRAPHQL
-    }
-
     let(:schema) do
       item_error_loader = Class.new(GraphQL::Dataloader::Source) do
         def fetch(keys)
@@ -435,57 +426,70 @@ describe GraphQL::ExecutionError do
 
     let(:result) { schema.execute(query_string) }
 
-    it "returns execution errors for unique items" do
-      expected_result = {
-        "data" => {
-          "query0" => nil,
-          "query1" => nil
-        },
-        "errors" => [
-          {
-            "message" => "Error for a",
-            "locations" => [{"line" => 2, "column" => 9}],
-            "path" => ["query0"]
-          },
-          {
-            "message" => "Error for b",
-            "locations" => [{"line" => 3, "column" => 11}],
-            "path" => ["query1"]
-          }
-        ]
-      }
-      assert_equal expected_result, result.to_h
-    end
-
-    it "returns execution errors for duplicate items" do
+    describe "when querying for unique items" do
       let(:query_string) {
         <<-GRAPHQL
           query {
             query0: item(key: "a")
-            query1: item(key: "a")
+            query1: item(key: "b")
           }
         GRAPHQL
       }
 
-      expected_result = {
-        "data" => {
-          "query0" => nil,
-          "query1" => nil
-        },
-        "errors" => [
-          {
-            "message" => "Error for a",
-            "locations" => [{"line" => 2, "column" => 9}],
-            "path" => ["query0"]
+      it "returns unique execution errors locations and paths" do
+        expected_result = {
+          "data" => {
+            "query0" => nil,
+            "query1" => nil
           },
-          {
-            "message" => "Error for a",
-            "locations" => [{"line" => 3, "column" => 11}],
-            "path" => ["query1"]
-          }
-        ]
-      }
-      assert_equal expected_result, result.to_h
+          "errors" => [
+            {
+              "message" => "Error for a",
+              "locations" => [{"line" => 2, "column" => 11}],
+              "path" => ["query0"]
+            },
+            {
+              "message" => "Error for b",
+              "locations" => [{"line" => 3, "column" => 11}],
+              "path" => ["query1"]
+            }
+          ]
+        }
+        assert_equal expected_result, result.to_h
+      end
+    end
+
+    describe "when querying for duplicate items" do
+      let(:query_string) {
+          <<-GRAPHQL
+            query {
+              query0: item(key: "a")
+              query1: item(key: "a")
+            }
+          GRAPHQL
+        }
+      it "returns execution errors for duplicate items" do
+
+        expected_result = {
+          "data" => {
+            "query0" => nil,
+            "query1" => nil
+          },
+          "errors" => [
+            {
+              "message" => "Error for a",
+              "locations" => [{"line" => 2, "column" => 11}],
+              "path" => ["query0"]
+            },
+            {
+              "message" => "Error for a",
+              "locations" => [{"line" => 3, "column" => 11}],
+              "path" => ["query1"]
+            }
+          ]
+        }
+        assert_equal expected_result, result.to_h
+      end
     end
   end
 end
