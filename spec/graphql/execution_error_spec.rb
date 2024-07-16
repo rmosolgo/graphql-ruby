@@ -478,12 +478,12 @@ describe GraphQL::ExecutionError do
           "errors" => [
             {
               "message" => "Error for a",
-              "locations" => [{"line" => 2, "column" => 13}],
+              "locations" => [{"line" => 2, "column" => 15}],
               "path" => ["query0"]
             },
             {
               "message" => "Error for a",
-              "locations" => [{"line" => 3, "column" => 13}],
+              "locations" => [{"line" => 3, "column" => 15}],
               "path" => ["query1"]
             }
           ]
