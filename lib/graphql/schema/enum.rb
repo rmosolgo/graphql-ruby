@@ -166,7 +166,11 @@ module GraphQL
         end
 
         def inherited(child_class)
-          child_class.const_set(:UnresolvedValueError, Class.new(Schema::Enum::UnresolvedValueError))
+          if child_class.name
+            # Don't assign a custom error class to anonymous classes
+            # because they would end up with names like `#<Class0x1234>::UnresolvedValueError` which messes up bug trackers
+            child_class.const_set(:UnresolvedValueError, Class.new(Schema::Enum::UnresolvedValueError))
+          end
           super
         end
 
