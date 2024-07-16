@@ -411,23 +411,19 @@ describe GraphQL::ExecutionError do
     }
 
     let(:schema) do
-      let(:item_error_loader) do
-        Class.new(GraphQL::Dataloader::Source) do
-          def fetch(keys)
-            keys.map { |key| GraphQL::ExecutionError.new("Error for #{key}") }
-          end
+      item_error_loader = Class.new(GraphQL::Dataloader::Source) do
+        def fetch(keys)
+          keys.map { |key| GraphQL::ExecutionError.new("Error for #{key}") }
         end
       end
 
-      let(:query_type) do
-        Class.new(GraphQL::Schema::Object) do
-          graphql_name "Query"
-          field :item, String do
-            argument :key, String
-          end
-          def item(key:)
-            dataloader.with(item_error_loader).load(key)
-          end
+      query_type = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Query"
+        field :item, String do
+          argument :key, String
+        end
+        define_method(:item) do |key:|
+          dataloader.with(item_error_loader).load(key)
         end
       end
 
@@ -462,6 +458,15 @@ describe GraphQL::ExecutionError do
     end
 
     it "returns execution errors for duplicate items" do
+      let(:query_string) {
+        <<-GRAPHQL
+          query {
+            query0: item(key: "a")
+            query1: item(key: "a")
+          }
+        GRAPHQL
+      }
+
       expected_result = {
         "data" => {
           "query0" => nil,
