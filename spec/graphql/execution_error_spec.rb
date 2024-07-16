@@ -399,4 +399,88 @@ describe GraphQL::ExecutionError do
     ]
     assert_equal(expected_errors, result["errors"])
   end
+
+ describe "when using DataLoaders" do
+    let(:query_string) {
+      <<-GRAPHQL
+        query {
+          query0: item(key: "a")
+          query1: item(key: "b")
+        }
+      GRAPHQL
+    }
+
+    let(:schema) do
+      let(:item_error_loader) do
+        Class.new(GraphQL::Dataloader::Source) do
+          def fetch(keys)
+            keys.map { |key| GraphQL::ExecutionError.new("Error for #{key}") }
+          end
+        end
+      end
+
+      let(:query_type) do
+        Class.new(GraphQL::Schema::Object) do
+          graphql_name "Query"
+          field :item, String do
+            argument :key, String
+          end
+          def item(key:)
+            dataloader.with(item_error_loader).load(key)
+          end
+        end
+      end
+
+      Class.new(GraphQL::Schema) do
+        query query_type
+        use GraphQL::Dataloader
+      end
+    end
+
+    let(:result) { schema.execute(query_string) }
+
+    it "returns execution errors for unique items" do
+      expected_result = {
+        "data" => {
+          "query0" => nil,
+          "query1" => nil
+        },
+        "errors" => [
+          {
+            "message" => "Error for a",
+            "locations" => [{"line" => 2, "column" => 9}],
+            "path" => ["query0"]
+          },
+          {
+            "message" => "Error for b",
+            "locations" => [{"line" => 3, "column" => 11}],
+            "path" => ["query1"]
+          }
+        ]
+      }
+      assert_equal expected_result, result.to_h
+    end
+
+    it "returns execution errors for duplicate items" do
+      expected_result = {
+        "data" => {
+          "query0" => nil,
+          "query1" => nil
+        },
+        "errors" => [
+          {
+            "message" => "Error for a",
+            "locations" => [{"line" => 2, "column" => 9}],
+            "path" => ["query0"]
+          },
+          {
+            "message" => "Error for a",
+            "locations" => [{"line" => 3, "column" => 11}],
+            "path" => ["query1"]
+          }
+        ]
+      }
+      assert_equal expected_result, result.to_h
+    end
+  end
 end
