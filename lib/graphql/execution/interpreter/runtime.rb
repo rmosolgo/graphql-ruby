@@ -469,7 +469,7 @@ module GraphQL
             # every time.
             if value.is_a?(GraphQL::ExecutionError)
               if selection_result.nil? || !selection_result.graphql_dead
-                # Duplicate the error in case to ensure path info is unique
+                # Duplicate the error to ensure path info is unique
                 dup_value = value.dup
                 dup_value.path = current_path
                 dup_value.ast_node = ast_node
