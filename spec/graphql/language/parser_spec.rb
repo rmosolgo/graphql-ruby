@@ -443,6 +443,11 @@ GRAPHQL
     assert_equal expected_names, doc3.definitions.first.interfaces.map(&:name)
   end
 
+  it "parses union types with leading pipes" do
+    doc = subject.parse("union U =\n  | A\n  | B")
+    assert_equal ["A", "B"], doc.definitions.first.types.map(&:name)
+  end
+
   describe "parse errors" do
     it "raises parse errors for nil" do
       assert_raises(GraphQL::ParseError) {

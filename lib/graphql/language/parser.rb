@@ -398,6 +398,9 @@ module GraphQL
       def parse_union_members
         if at?(:EQUALS)
           expect_token :EQUALS
+          if at?(:PIPE)
+            advance_token
+          end
           list = [parse_type_name]
           while at?(:PIPE)
             advance_token
