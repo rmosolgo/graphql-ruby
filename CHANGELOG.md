@@ -10,6 +10,10 @@
 
 ### Bug fixes
 
+# 2.2.16 (17 Jul 2024)
+
+- Fix path on errors raised in Dataloader Sources #5026
+
 # 2.2.15 (20 May 2024)
 
 ### Bug fixes
