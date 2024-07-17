@@ -10,6 +10,10 @@
 
 ### Bug fixes
 
+# 2.1.13 (17 Jul 2024)
+
+- Fix paths in errors raised from Dataloader sources #5025
+
 # 2.1.12 (28 Feb 2024)
 
 - Fix for Ruby 3.4 compatibility #3862
