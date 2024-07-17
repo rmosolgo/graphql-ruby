@@ -187,7 +187,11 @@ ERR
         end
         result = @results[key]
 
-        raise result if result.class <= StandardError
+        if result.is_a?(StandardError)
+          # Dup it because the rescuer may modify it.
+          # (This happens for GraphQL::ExecutionErrors, at least)
+          raise result.dup
+        end
 
         result
       end
