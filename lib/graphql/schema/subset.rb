@@ -45,10 +45,6 @@ module GraphQL
             false
           end
         end.compare_by_identity
-
-        @unfiltered_pt = Hash.new do |hash, type|
-          hash[type] = @schema.possible_types(type)
-        end.compare_by_identity
       end
 
       def field_on_visible_interface?(field, owner)
@@ -178,20 +174,24 @@ module GraphQL
 
       def possible_types(type)
         @cached_possible_types ||= Hash.new do |h, type|
-          pt = case type.kind.name
+          h[type] = case type.kind.name
           when "INTERFACE"
-            # TODO this requires the global map
-            @unfiltered_pt[type]
+            load_all_types
+            @unfiltered_pt[type].select { |pt| @cached_visible[pt] && referenced?(pt) }
           when "UNION"
-            type.type_memberships.select { |tm| @cached_visible[tm] && @cached_visible[tm.object_type] }.map!(&:object_type)
+            pts = []
+            type.type_memberships.each { |tm|
+              if @cached_visible[tm] &&
+                  (ot = tm.object_type) &&
+                  @cached_visible[ot] &&
+                  referenced?(ot)
+                pts << ot
+              end
+            }
+            pts
           else
             [type]
           end
-
-          # TODO use `select!` when possible, skip it for `[type]`
-          h[type] = pt.select { |t|
-            @cached_visible[t] && referenced?(t)
-          }
         end.compare_by_identity
         @cached_possible_types[type]
       end
@@ -299,9 +299,6 @@ module GraphQL
       end
 
       def load_all_types
-        # puts "#{self.class}##{__method__}"
-        # puts caller(0,5).map { |l| "  #{l}"}
-        # puts ""
         return if @all_types_loaded
         @all_types_loaded = true
         schema_types = [
@@ -322,9 +319,25 @@ module GraphQL
         schema_types.flatten! # handle multiple defns
         schema_types.each { |t| add_type(t, true) }
 
-        while t = @unvisited_types.pop
-          # These have already been checked for `.visible?`
-          visit_type(t)
+        @unfiltered_pt = Hash.new { |h, k| h[k] = [] }.compare_by_identity
+        @add_possible_types = Set.new
+
+        while @unvisited_types.any?
+          while t = @unvisited_types.pop
+            # These have already been checked for `.visible?`
+            visit_type(t)
+          end
+          @add_possible_types.each do |int_t|
+            pt = @unfiltered_pt[int_t]
+            pt.each do |obj_type|
+              if @cached_visible[obj_type] &&
+                  (tm = obj_type.interface_type_memberships.find { |tm| tm.abstract_type == int_t }) &&
+                  @cached_visible[tm]
+                add_type(obj_type, tm)
+              end
+            end
+          end
+          @add_possible_types.clear
         end
 
         @all_types.delete_if { |type_name, type_defn| !referenced?(type_defn) }
@@ -345,6 +358,9 @@ module GraphQL
             end
           end
         elsif type.kind.fields?
+          type.interface_type_memberships.each do |itm|
+            @unfiltered_pt[itm.abstract_type] << type
+          end
           if type.kind.object?
             # recurse into visible implemented interfaces
             interfaces(type).each do |interface|
@@ -358,14 +374,7 @@ module GraphQL
             if @cached_visible[field]
               field_type = field.type.unwrap
               if field_type.kind.interface?
-                pt = @unfiltered_pt[field_type]
-                pt.each do |obj_type|
-                  if @cached_visible[obj_type] &&
-                      (tm = obj_type.interface_type_memberships.find { |tm| tm.abstract_type == field_type }) &&
-                      @cached_visible[tm]
-                    add_type(obj_type, tm)
-                  end
-                end
+                @add_possible_types.add(field_type)
               end
               add_type(field_type, field)
 
