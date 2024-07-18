@@ -24,8 +24,8 @@ describe GraphQL::Schema::Directive::Flagged do
 
       def animals
         [
-          context[:flags].include?("southPole") ? { type: "Penguin", name: "King Dedede" } : nil,
-          context[:flags].include?("northPole") ? { type: "PolarBear", name: "Iorek" } : nil,
+          context[:flags]&.include?("southPole") ? { type: "Penguin", name: "King Dedede" } : nil,
+          context[:flags]&.include?("northPole") ? { type: "PolarBear", name: "Iorek" } : nil,
         ].compact
       end
 
@@ -81,7 +81,11 @@ describe GraphQL::Schema::Directive::Flagged do
 
   it "hides types when the required flags are not present" do
     res = exec_query("{ animals { __typename } }")
-    assert_equal ["Field 'animals' doesn't exist on type 'Query'"], error_messages(res), "All implementers are hidden"
+    if GraphQL::Schema.use_schema_subset?
+      assert_equal [], res["data"]["animals"]
+    else
+      assert_equal ["Field 'animals' doesn't exist on type 'Query'"], error_messages(res), "All implementers are hidden"
+    end
 
     res = exec_query("{ animals { ... on Penguin { name } } }", context: { flags: ["southPole"] })
     assert_equal ["King Dedede"], res["data"]["animals"].map { |a| a["name"] }
