@@ -851,6 +851,10 @@ GRAPHQL
         field :f, Int, null: false
       end
 
+      if GraphQL::Schema.use_schema_subset?
+        ThingInterface.implementers(OtherObject)
+      end
+
       class ThingUnion < GraphQL::Schema::Union
         graphql_name "Thing"
         possible_types OtherObject

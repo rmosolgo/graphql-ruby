@@ -366,6 +366,8 @@ module GraphQL
             interfaces(type).each do |interface|
               add_type(interface, type)
             end
+          else
+            type.implementers.each { |t| add_type(t, type)}
           end
 
           # recurse into visible fields

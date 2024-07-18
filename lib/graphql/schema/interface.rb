@@ -84,12 +84,18 @@ module GraphQL
 
         def orphan_types(*types)
           if types.any?
-            @orphan_types = types
+            @orphan_types ||= []
+            @orphan_types.concat(types)
           else
+            # TODO optimize
             all_orphan_types = @orphan_types || []
             all_orphan_types += super if defined?(super)
             all_orphan_types.uniq
           end
+        end
+
+        def implementers(...)
+          orphan_types(...)
         end
 
         def kind
