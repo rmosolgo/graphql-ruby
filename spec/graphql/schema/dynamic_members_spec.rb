@@ -199,6 +199,11 @@ describe "Dynamic types, fields, arguments, and enum values" do
 
     class Locale < BaseUnion
       possible_types Country, future_schema: true
+
+      if GraphQL::Schema.use_schema_subset?
+        # Subset won't check possible_types, this must be flagged
+        self.future_schema = true
+      end
     end
 
     class Place < BaseObject
@@ -591,9 +596,13 @@ GRAPHQL
   end
 
   it "hides hidden union memberships" do
-    # in this case, the union is always visible:
     assert MultifieldSchema::Locale.visible?({ future_schema: true })
-    assert MultifieldSchema::Locale.visible?({ future_schema: false })
+    if GraphQL::Schema.use_schema_subset?
+      refute MultifieldSchema::Locale.visible?({ future_schema: false })
+    else
+      # Warden will check possible types -- but Subset doesn't
+      assert MultifieldSchema::Locale.visible?({ future_schema: false })
+    end
 
     # and the possible types relationship is sometimes hidden:
     refute_includes MultifieldSchema.possible_types(MultifieldSchema::Locale, { future_schema: false }), MultifieldSchema::Country
