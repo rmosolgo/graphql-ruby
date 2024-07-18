@@ -4,7 +4,7 @@ require "spec_helper"
 describe GraphQL::Schema::Subset do
   class SubsetSchema < GraphQL::Schema
     class Thing < GraphQL::Schema::Object
-      field :name, String
+      field :name, String, method: :to_s
     end
 
     class Query < GraphQL::Schema::Object
