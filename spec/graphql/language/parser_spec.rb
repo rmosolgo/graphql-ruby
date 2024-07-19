@@ -107,7 +107,11 @@ createRecord(data: {
   it "allows fields, arguments, and enum values named type" do
     doc = GraphQL.parse("{ type(type: type) }")
     assert_instance_of GraphQL::Language::Nodes::Enum, doc.definitions.first.selections.first.arguments.first.value
+  end
 
+  it "allows operation names to match operation types" do
+    doc = GraphQL.parse("query subscription { foo }")
+    assert_equal "subscription", doc.definitions.first.name
   end
 
   it "raises an error when unicode is used as names" do
