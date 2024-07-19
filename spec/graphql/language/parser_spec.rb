@@ -121,7 +121,7 @@ createRecord(data: {
     expected_msg = if USING_C_PARSER
       "syntax error, unexpected invalid token (\"\\xF0\"), expecting LCURLY at [1, 7]"
     else
-      "Expected LCURLY, actual: UNKNOWN_CHAR (\"\\xF0\") at [1, 7]"
+      "Expected NAME, actual: UNKNOWN_CHAR (\"\\xF0\") at [1, 7]"
     end
 
     assert_equal expected_msg, err.message
