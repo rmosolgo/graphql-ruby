@@ -246,6 +246,11 @@ module GraphQL
         @all_types.values
       end
 
+      def reachable_type?(name)
+        load_all_types
+        !!@all_types[name]
+      end
+
       private
 
       def add_if_visible(t)

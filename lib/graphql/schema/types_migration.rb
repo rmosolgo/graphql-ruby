@@ -66,7 +66,8 @@ module GraphQL
         :mutation_root,
         :possible_types,
         :subscription_root,
-        :loaded_types
+        :loaded_types,
+        :reachable_type?
       ]
 
       PUBLIC_SUBSET_METHODS.each do |subset_method|

@@ -74,7 +74,12 @@ describe GraphQL::Schema do
       assert_equal base_schema.query_analyzers, schema.query_analyzers
       assert_equal base_schema.multiplex_analyzers, schema.multiplex_analyzers
       assert_equal base_schema.disable_introspection_entry_points?, schema.disable_introspection_entry_points?
-      assert_equal [GraphQL::Backtrace, GraphQL::Subscriptions::ActionCableSubscriptions], schema.plugins.map(&:first)
+      expected_plugins = [
+        (GraphQL::Schema.use_schema_subset? ? GraphQL::Schema::TypesMigration : nil),
+        GraphQL::Backtrace,
+        GraphQL::Subscriptions::ActionCableSubscriptions
+      ].compact
+      assert_equal expected_plugins, schema.plugins.map(&:first)
       assert_equal [ExtraType], base_schema.extra_types
       assert_equal [ExtraType], schema.extra_types
       assert_instance_of GraphQL::Subscriptions::ActionCableSubscriptions, schema.subscriptions
@@ -143,7 +148,11 @@ describe GraphQL::Schema do
       assert_equal schema.directives, GraphQL::Schema.default_directives.merge(DummyFeature1.graphql_name => DummyFeature1, DummyFeature2.graphql_name => DummyFeature2)
       assert_equal base_schema.query_analyzers + [query_analyzer], schema.query_analyzers
       assert_equal base_schema.multiplex_analyzers + [multiplex_analyzer], schema.multiplex_analyzers
-      assert_equal [GraphQL::Backtrace, GraphQL::Subscriptions::ActionCableSubscriptions, CustomSubscriptions], schema.plugins.map(&:first)
+      expected_plugins = [GraphQL::Backtrace, GraphQL::Subscriptions::ActionCableSubscriptions, CustomSubscriptions]
+      if GraphQL::Schema.use_schema_subset?
+        expected_plugins.unshift(GraphQL::Schema::TypesMigration)
+      end
+      assert_equal expected_plugins, schema.plugins.map(&:first)
       assert_equal custom_query_class, schema.query_class
       assert_equal [ExtraType, extra_type_2], schema.extra_types
       assert_instance_of CustomSubscriptions, schema.subscriptions
