@@ -122,7 +122,7 @@ module GraphQL
         end
 
         def type(name)
-          @warden.get_type(name)
+          @warden.reachable_type?(name) && @warden.get_type(name)
         end
 
         def field(owner, field_name)
@@ -171,10 +171,6 @@ module GraphQL
 
         def loadable?(t, ctx) # TODO remove ctx here?
           @warden.loadable?(t, ctx)
-        end
-
-        def reachable_type?(type_name)
-          @warden.reachable_type?(type_name)
         end
       end
 

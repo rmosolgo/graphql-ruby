@@ -242,11 +242,6 @@ module GraphQL
         !@all_types[t.graphql_name] # TODO make sure t is not reachable but t is visible
       end
 
-      # TODO rename this to indicate that it is called with a typename
-      def reachable_type?(type_name)
-        true
-      end
-
       def loaded_types
         @all_types.values
       end
