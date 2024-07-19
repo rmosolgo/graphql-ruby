@@ -141,7 +141,12 @@ module GraphQL
             parse_operation_type
           end
 
-          op_name = at?(:IDENTIFIER) ? parse_name : nil
+          op_name = case token_name
+          when :LPAREN, :LCURLY, :DIR_SIGN
+            nil
+          else
+            parse_name
+          end
 
           variable_definitions = if at?(:LPAREN)
             expect_token(:LPAREN)

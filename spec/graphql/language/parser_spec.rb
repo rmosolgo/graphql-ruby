@@ -107,7 +107,11 @@ createRecord(data: {
   it "allows fields, arguments, and enum values named type" do
     doc = GraphQL.parse("{ type(type: type) }")
     assert_instance_of GraphQL::Language::Nodes::Enum, doc.definitions.first.selections.first.arguments.first.value
+  end
 
+  it "allows operation names to match operation types" do
+    doc = GraphQL.parse("query subscription { foo }")
+    assert_equal "subscription", doc.definitions.first.name
   end
 
   it "raises an error when unicode is used as names" do
@@ -117,7 +121,7 @@ createRecord(data: {
     expected_msg = if USING_C_PARSER
       "syntax error, unexpected invalid token (\"\\xF0\"), expecting LCURLY at [1, 7]"
     else
-      "Expected LCURLY, actual: UNKNOWN_CHAR (\"\\xF0\") at [1, 7]"
+      "Expected NAME, actual: UNKNOWN_CHAR (\"\\xF0\") at [1, 7]"
     end
 
     assert_equal expected_msg, err.message
