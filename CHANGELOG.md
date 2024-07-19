@@ -10,6 +10,16 @@
 
 ### Bug fixes
 
+# 2.3.10 (19 Jul 2024)
+
+### Bug fixes
+
+- Parser: fix parsing operation names that match keywords #5033
+- Parser: support leading pipes in Union type definitions #5027
+- Validation: remove rule that prohibits non-null variables from having default values #5030
+- Dataloader: raise fresh error instances when sources return errors #5021
+- Enum and Union: don't create nested error classes in anonymous classes (eg, when parsing SDL -- to improve bug tracker integration) #5022
+
 # 2.3.9 (13 Jul 2024)
 
 ### Bug fixes
