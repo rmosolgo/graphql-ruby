@@ -5,6 +5,10 @@ describe GraphQL::Schema::Directive::Flagged do
   class FlaggedSchema < GraphQL::Schema
     module Animal
       include GraphQL::Schema::Interface
+      if GraphQL::Schema.use_schema_subset?
+        # It won't check possible types, so it needs this directly
+        directive GraphQL::Schema::Directive::Flagged, by: ["northPole", "southPole"]
+      end
     end
 
     class PolarBear < GraphQL::Schema::Object
@@ -81,11 +85,7 @@ describe GraphQL::Schema::Directive::Flagged do
 
   it "hides types when the required flags are not present" do
     res = exec_query("{ animals { __typename } }")
-    if GraphQL::Schema.use_schema_subset?
-      assert_equal [], res["data"]["animals"]
-    else
-      assert_equal ["Field 'animals' doesn't exist on type 'Query'"], error_messages(res), "All implementers are hidden"
-    end
+    assert_equal ["Field 'animals' doesn't exist on type 'Query'"], error_messages(res), "All implementers are hidden"
 
     res = exec_query("{ animals { ... on Penguin { name } } }", context: { flags: ["southPole"] })
     assert_equal ["King Dedede"], res["data"]["animals"].map { |a| a["name"] }
