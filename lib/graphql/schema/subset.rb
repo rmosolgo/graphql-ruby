@@ -189,8 +189,10 @@ module GraphQL
               end
             }
             pts
-          else
+          when "OBJECT"
             [type]
+          else
+            GraphQL::EmptyObjects::EMPTY_ARRAY
           end
         end.compare_by_identity
         @cached_possible_types[type]
@@ -231,7 +233,7 @@ module GraphQL
 
       def directive_exists?(dir_name)
         dir = @schema.directives[dir_name]
-        dir && @cached_visible[dir]
+        !!(dir && @cached_visible[dir])
       end
 
       def directives
@@ -358,10 +360,10 @@ module GraphQL
             end
           end
         elsif type.kind.fields?
-          type.interface_type_memberships.each do |itm|
-            @unfiltered_pt[itm.abstract_type] << type
-          end
           if type.kind.object?
+            type.interface_type_memberships.each do |itm|
+              @unfiltered_pt[itm.abstract_type] << type
+            end
             # recurse into visible implemented interfaces
             interfaces(type).each do |interface|
               add_type(interface, type)

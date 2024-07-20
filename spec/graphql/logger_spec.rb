@@ -91,6 +91,7 @@ describe "Logger" do
     end
 
     before do
+      skip("GraphQL::Schema::Subset doesn't do this") if GraphQL::Schema.use_schema_subset?
       LoggerTest::CustomLoggerSchema::LOG_STRING.truncate(0)
     end
 

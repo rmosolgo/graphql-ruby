@@ -22,14 +22,17 @@ module GraphQL
         private
         def compare_results(warden_result, subset_result)
           if warden_result.is_a?(Array) && subset_result.is_a?(Array)
-            width = 60
-            res = "".dup
-            res << "#{"Result".center(width)} Warden  Subset \n"
             all_results = warden_result | subset_result
             all_results.sort_by!(&:graphql_name)
-            all_results.each do |entry|
-              id = "#{entry.graphql_name} (#{entry})".ljust(width)
-              res << "#{id}#{warden_result.include?(entry) ? "    X   " : "        "}#{subset_result.include?(entry) ? "    X   " : "        "}\n"
+
+            entries_text = all_results.map { |entry| "#{entry.graphql_name} (#{entry})"}
+            width = entries_text.map(&:size).max
+            yes = "    ✔   "
+            no =  "        "
+            res = "".dup
+            res << "#{"Result".center(width)} Warden  Subset \n"
+            all_results.each_with_index do |entry, idx|
+              res << "#{entries_text[idx].ljust(width)}#{warden_result.include?(entry) ? yes : no}#{subset_result.include?(entry) ? yes : no}\n"
             end
             res << "\n"
           else

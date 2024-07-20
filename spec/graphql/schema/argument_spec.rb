@@ -82,6 +82,13 @@ describe GraphQL::Schema::Argument do
       end
 
       field :other_unauthorized_instruments, resolver: LoadUnauthorizedInstruments
+
+      # Warden's answer for `possible_types(UnauthorizedInstrumentType)` was an empty array
+      # because the type wasn't used in the schema except as `loads:...`
+      # This makes Subset and Warden behave the same.
+      field :example_unauthorized_instrument, UnauthorizedInstrumentType
+      # Same thing:
+      field :example_instrument, Jazz::InstrumentType
     end
 
     class Schema < GraphQL::Schema
