@@ -1,12 +1,17 @@
+# frozen_string_literals: true
 require "spec_helper"
 
 describe "Integration with ActiveRecord::QueryLogs" do
-  ActiveRecord::Schema.define do
-    create_table :things, force: true do |t|
-      t.string :name
-      t.integer :other_thing_id
+  def prepare_things_database
+    ActiveRecord::Schema.define do
+      create_table :things, force: true do |t|
+        t.string :name
+        t.integer :other_thing_id
+      end
     end
   end
+
+  prepare_things_database
 
   class QueryLogSchema < GraphQL::Schema
     class Thing < ActiveRecord::Base
@@ -70,6 +75,7 @@ describe "Integration with ActiveRecord::QueryLogs" do
     use GraphQL::Dataloader
   end
   before do
+    prepare_things_database
     @prev_tags = ActiveRecord::QueryLogs.tags
     ActiveRecord.query_transformers << ActiveRecord::QueryLogs
     ActiveRecord::QueryLogs.tags = [{
