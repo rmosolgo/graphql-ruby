@@ -691,9 +691,9 @@ SCHEMA
             when "SCALAR"
               true
             when "OBJECT", "UNION", "INTERFACE"
-              ctx[:names].include?(member.graphql_name)
+              ctx[:names].include?(member.graphql_name) || member.introspection?
             else
-              false
+              member.introspection?
             end
           end
         when GraphQL::Schema::Argument

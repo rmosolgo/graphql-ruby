@@ -31,7 +31,7 @@ GraphQL::RakeTask.new(schema_name: "RakeTaskSchema")
 # Configured task
 GraphQL::RakeTask.new(idl_outfile: "tmp/configured_schema.graphql") do |t|
   t.namespace = "graphql_custom"
-  t.load_context = ->(task) { {filtered: true} }
+  t.load_context = ->(task) { {filtered: true, skip_types_migration_error: true } }
   t.load_schema = ->(task) { FilteredRakeTaskSchema }
 end
 

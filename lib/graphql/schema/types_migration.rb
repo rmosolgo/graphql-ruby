@@ -70,6 +70,10 @@ module GraphQL
         end
       end
 
+      def loaded_types
+        @subset_types.loaded_types
+      end
+
       PUBLIC_SUBSET_METHODS = [
         :enum_values,
         :interfaces,
@@ -86,7 +90,6 @@ module GraphQL
         :mutation_root,
         :possible_types,
         :subscription_root,
-        :loaded_types,
         :reachable_type?
       ]
 
@@ -113,8 +116,6 @@ module GraphQL
           res_1
         end
       end
-
-
     end
   end
 end
