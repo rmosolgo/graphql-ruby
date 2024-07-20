@@ -11,9 +11,7 @@ module GraphQL
           super(<<~ERR)
             Mismatch in types for `##{method_called}(#{method_args.map(&:inspect).join(", ")})`:
 
-            - Warden returned: #{humanize(warden_result)}
-
-            - Subset returned: #{humanize(subset_result)}
+            #{compare_results(warden_result, subset_result)}
 
             Update your `.visible?` implementation to make these implementations return the same value.
 
@@ -22,11 +20,26 @@ module GraphQL
         end
 
         private
-
+        def compare_results(warden_result, subset_result)
+          if warden_result.is_a?(Array) && subset_result.is_a?(Array)
+            width = 60
+            res = "".dup
+            res << "#{"Result".center(width)} Warden  Subset \n"
+            all_results = warden_result | subset_result
+            all_results.sort_by!(&:graphql_name)
+            all_results.each do |entry|
+              id = "#{entry.graphql_name} (#{entry})".ljust(width)
+              res << "#{id}#{warden_result.include?(entry) ? "    X   " : "        "}#{subset_result.include?(entry) ? "    X   " : "        "}\n"
+            end
+            res << "\n"
+          else
+            "- Warden returned: #{humanize(warden_result)}\n\n- Subset returned: #{humanize(subset_result)}"
+          end
+        end
         def humanize(val)
           case val
           when Array
-            val.map { |v| humanize(v) }.sort.inspect
+            "#{val.size}: #{val.map { |v| humanize(v) }.sort.inspect}"
           when Module
             if val.respond_to?(:graphql_name)
               "#{val.graphql_name} (#{val.inspect})"
@@ -40,14 +53,18 @@ module GraphQL
       end
 
       def initialize(query)
-        warden_ctx_vals = query.context.to_h.dup
-        warden_ctx_vals[:visible_calls] = warden_ctx_vals[:visible_calls].dup
-        warden_ctx = GraphQL::Query::Context.new(query: query, values: warden_ctx_vals)
-        example_warden = GraphQL::Schema::Warden.new(schema: query.schema, context: warden_ctx)
-        @warden_types = example_warden.schema_subset
-        warden_ctx.warden = example_warden
-        warden_ctx.types = @warden_types
+        @skip_error = query.context[:skip_types_migration_error]
         @subset_types = GraphQL::Schema::Subset.new(query)
+        if !@skip_error
+          warden_ctx_vals = query.context.to_h.dup
+          warden_ctx_vals[:visible_calls] = warden_ctx_vals[:visible_calls].dup
+          warden_ctx = GraphQL::Query::Context.new(query: query, values: warden_ctx_vals)
+          example_warden = GraphQL::Schema::Warden.new(schema: query.schema, context: warden_ctx)
+          @warden_types = example_warden.schema_subset
+          warden_ctx.warden = example_warden
+          warden_ctx.types = @warden_types
+          @subset_types = GraphQL::Schema::Subset.new(query)
+        end
       end
 
       PUBLIC_SUBSET_METHODS = [
@@ -77,16 +94,20 @@ module GraphQL
       end
 
       def call_method_and_compare(method, args)
-        res_1 = @warden_types.public_send(method, *args)
-        res_2 = @subset_types.public_send(method, *args)
+        res_1 = @subset_types.public_send(method, *args)
+        if @skip_error
+          return res_1
+        end
+
+        res_2 = @warden_types.public_send(method, *args)
         normalized_res_1 = res_1.is_a?(Array) ? Set.new(res_1) : res_1
         normalized_res_2 = res_2.is_a?(Array) ? Set.new(res_2) : res_2
         if normalized_res_1 != normalized_res_2
           # Raise the errors with the orignally returned values:
-          err = RuntimeTypesMismatchError.new(method, res_1, res_2, args)
+          err = RuntimeTypesMismatchError.new(method, res_2, res_1, args)
           raise err
         else
-          res_2
+          res_1
         end
       end
 
