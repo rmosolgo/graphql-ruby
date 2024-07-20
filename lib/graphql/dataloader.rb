@@ -271,7 +271,10 @@ module GraphQL
 
       if pending_sources
         spawn_fiber do
-          pending_sources.each(&:run_pending_keys)
+          pending_sources.each do |source|
+            Fiber[:__graphql_current_dataloader_source] = source
+            source.run_pending_keys
+          end
         end
       end
     end
