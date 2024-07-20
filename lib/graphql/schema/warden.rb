@@ -174,7 +174,7 @@ module GraphQL
         end
 
         def reachable_type?(type_name)
-          @warden.reachable_type?(type_name)
+          !!@warden.reachable_type?(type_name)
         end
       end
 
