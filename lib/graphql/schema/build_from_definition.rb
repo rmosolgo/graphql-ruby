@@ -144,7 +144,7 @@ module GraphQL
 
             object_types.each do |t|
               t.interfaces.each do |int_t|
-                int_t.implementers(t)
+                int_t.orphan_types(t)
               end
             end
 

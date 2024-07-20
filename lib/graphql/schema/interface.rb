@@ -88,28 +88,24 @@ module GraphQL
         # they may have to be registered using this method so that GraphQL-Ruby can find them.
         # @param types [Class, Module]
         # @return [Array<Module, Class>] Implementers of this interface, if they're registered
-        def implementers(*types)
+        def orphan_types(*types)
           if types.any?
-            @implementers ||= []
-            @implementers.concat(types)
+            @orphan_types ||= []
+            @orphan_types.concat(types)
           else
-            if defined?(@implementers)
-              all_implementers = @implementers.dup
+            if defined?(@orphan_types)
+              all_orphan_types = @orphan_types.dup
               if defined?(super)
-                all_implementers += super
-                all_implementers.uniq!
+                all_orphan_types += super
+                all_orphan_types.uniq!
               end
-              all_implementers
+              all_orphan_types
             elsif defined?(super)
               super
             else
               EmptyObjects::EMPTY_ARRAY
             end
           end
-        end
-
-        def orphan_types(...)
-          implementers(...)
         end
 
         def kind

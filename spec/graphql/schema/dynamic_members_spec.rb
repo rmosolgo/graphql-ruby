@@ -855,7 +855,7 @@ GRAPHQL
       end
 
       if GraphQL::Schema.use_schema_subset?
-        ThingInterface.implementers(OtherObject)
+        ThingInterface.orphan_types(OtherObject)
       end
 
       class ThingUnion < GraphQL::Schema::Union
