@@ -28,8 +28,8 @@ describe GraphQL::Schema::Directive::Flagged do
 
       def animals
         [
-          context[:flags]&.include?("southPole") ? { type: "Penguin", name: "King Dedede" } : nil,
-          context[:flags]&.include?("northPole") ? { type: "PolarBear", name: "Iorek" } : nil,
+          context[:flags].include?("southPole") ? { type: "Penguin", name: "King Dedede" } : nil,
+          context[:flags].include?("northPole") ? { type: "PolarBear", name: "Iorek" } : nil,
         ].compact
       end
 

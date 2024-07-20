@@ -74,8 +74,8 @@ module GraphQL
       def type(type_name)
         t = if (loaded_t = @all_types[type_name])
           loaded_t
-       elsif !@all_types_loaded
-         load_all_types
+        elsif !@all_types_loaded
+          load_all_types
           @all_types[type_name]
         end
         if t
@@ -142,8 +142,6 @@ module GraphQL
       end
 
       def argument(owner, arg_name)
-        # TODO this makes a Warden.visible_entry call down the stack
-        # I need a non-Warden implementation
         arg = owner.get_argument(arg_name, @context)
         if arg.is_a?(Array)
           visible_arg = nil
@@ -241,7 +239,7 @@ module GraphQL
       end
 
       def loadable?(t, _ctx)
-        !@all_types[t.graphql_name] # TODO make sure t is not reachable but t is visible
+        !@all_types[t.graphql_name]
       end
 
       def loaded_types
@@ -297,7 +295,7 @@ module GraphQL
 
       def referenced?(t)
         load_all_types
-        @referenced_types[t].any? { |member| (member == true) || @cached_visible[member] }
+        @referenced_types[t].any? { |reference| (reference == true) || @cached_visible[reference] }
       end
 
       def load_all_types

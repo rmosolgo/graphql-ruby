@@ -82,20 +82,34 @@ module GraphQL
           super
         end
 
-        def orphan_types(*types)
+        # Register other Interface or Object types as implementers of this Interface.
+        #
+        # When those Interfaces or Objects aren't used as the return values of fields,
+        # they may have to be registered using this method so that GraphQL-Ruby can find them.
+        # @param types [Class, Module]
+        # @return [Array<Module, Class>] Implementers of this interface, if they're registered
+        def implementers(*types)
           if types.any?
-            @orphan_types ||= []
-            @orphan_types.concat(types)
+            @implementers ||= []
+            @implementers.concat(types)
           else
-            # TODO optimize
-            all_orphan_types = @orphan_types || []
-            all_orphan_types += super if defined?(super)
-            all_orphan_types.uniq
+            if defined?(@implementers)
+              all_implementers = @implementers.dup
+              if defined?(super)
+                all_implementers += super
+                all_implementers.uniq!
+              end
+              all_implementers
+            elsif defined?(super)
+              super
+            else
+              EmptyObjects::EMPTY_ARRAY
+            end
           end
         end
 
-        def implementers(...)
-          orphan_types(...)
+        def orphan_types(...)
+          implementers(...)
         end
 
         def kind

@@ -91,12 +91,11 @@ describe "Logger" do
     end
 
     before do
-      skip("GraphQL::Schema::Subset doesn't do this") if GraphQL::Schema.use_schema_subset?
       LoggerTest::CustomLoggerSchema::LOG_STRING.truncate(0)
     end
 
     it "logs about hidden interfaces with no implementations" do
-      res = LoggerTest::CustomLoggerSchema.execute("{ node(id: \"5\") { id } }")
+      res = LoggerTest::CustomLoggerSchema.execute("{ node(id: \"5\") { id } }", context: { skip_types_migration_error: true })
       if GraphQL::Schema.use_schema_subset?
         assert_nil res["data"]["node"], "Schema::Subset doesn't warn in this case -- it doesn't check possible types because it doesn't have to"
       else
@@ -108,7 +107,7 @@ describe "Logger" do
     it "doesn't print messages by default" do
       res = nil
       stdout, stderr = capture_io do
-        res = LoggerTest::DefaultLoggerSchema.execute("{ node(id: \"5\") { id } }")
+        res = LoggerTest::DefaultLoggerSchema.execute("{ node(id: \"5\") { id } }", context: { skip_types_migration_error: true })
       end
 
       if GraphQL::Schema.use_schema_subset?

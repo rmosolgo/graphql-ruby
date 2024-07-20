@@ -1,6 +1,21 @@
 # frozen_string_literal: true
 module GraphQL
   class Schema
+    # You can add this plugin to your schema to see how {GraphQL::Schema::Warden} and {GraphQL::Schema::Subset}
+    # handle `.visible?` differently in your schema.
+    #
+    # This plugin runs the same method on both implementations and raises an error when the results diverge.
+    #
+    # To fix the error, modify your schema so that both implementations return the same thing.
+    # Or, open an issue on GitHub to discuss the difference.
+    #
+    # This plugin adds overhead to runtime and may cause unexpected crashes -- **don't** use it in production!
+    #
+    # @example Adding this plugin
+    #
+    #   if !Rails.env.production?
+    #     use GrpahQL::Schema::TypesMigration
+    #   end
     class TypesMigration < GraphQL::Schema::Subset
       def self.use(schema)
         schema.subset_class = self
