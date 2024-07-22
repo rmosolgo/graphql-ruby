@@ -10,7 +10,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
       end
 
       def visible?(context)
-        if context[:visible_calls]
+        if context[:visible_calls] && !context[:types_migration_warden_running]
           context[:visible_calls][self] << caller
         end
         super && (@future_schema.nil? || (@future_schema == !!context[:future_schema]))
@@ -33,7 +33,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
         if RUBY_VERSION > "3"
           define_method(dynamic_members_method_name) do |*args, **kwargs, &block|
             context = args.last
-            if context && (context.is_a?(Hash) || context.is_a?(GraphQL::Query::Context)) && context[:visible_calls]
+            if context && (context.is_a?(Hash) || context.is_a?(GraphQL::Query::Context)) && context[:visible_calls] && !context[:types_migration_warden_running]
               method_obj = self.method(dynamic_members_method_name)
               context[:visible_calls][MethodInspection.new(method_obj)] << caller
             end
@@ -42,7 +42,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
         else
           define_method(dynamic_members_method_name) do |*args, &block|
             context = args.last
-            if context && (context.is_a?(Hash) || context.is_a?(GraphQL::Query::Context)) && context[:visible_calls]
+            if context && (context.is_a?(Hash) || context.is_a?(GraphQL::Query::Context)) && context[:visible_calls] && !context[:types_migration_warden_running]
               method_obj = self.method(dynamic_members_method_name)
               context[:visible_calls][MethodInspection.new(method_obj)] << caller
             end

@@ -72,11 +72,11 @@ module GraphQL
 
       def initialize(query)
         @skip_error = query.context[:skip_types_migration_error]
+        query.context[:types_migration_running] = true
         @subset_types = GraphQL::Schema::Subset.new(query)
         if !@skip_error
           warden_ctx_vals = query.context.to_h.dup
-          # TODO: this is a hack for the test suite, remove this and fix the tests
-          warden_ctx_vals[:visible_calls] = warden_ctx_vals[:visible_calls].dup
+          warden_ctx_vals[:types_migration_warden_running] = true
           warden_ctx = GraphQL::Query::Context.new(query: query, values: warden_ctx_vals)
           example_warden = GraphQL::Schema::Warden.new(schema: query.schema, context: warden_ctx)
           @warden_types = example_warden.schema_subset
