@@ -147,9 +147,6 @@ module GraphQL
           visible_arg = nil
           arg.each do |arg_defn|
             if @cached_visible_arguments[arg_defn]
-              if arg_defn&.loads
-                add_type(arg_defn.loads, arg_defn)
-              end
               if visible_arg.nil?
                 visible_arg = arg_defn
               else
@@ -160,9 +157,6 @@ module GraphQL
           visible_arg
         else
           if arg && @cached_visible_arguments[arg]
-            if arg&.loads
-              add_type(arg.loads, arg)
-            end
             arg
           else
             nil
@@ -188,7 +182,12 @@ module GraphQL
             }
             pts
           when "OBJECT"
-            [type]
+            load_all_types
+            if @all_types[type.graphql_name] == type
+              [type]
+            else
+              EmptyObjects::EMPTY_ARRAY
+            end
           else
             GraphQL::EmptyObjects::EMPTY_ARRAY
           end
@@ -239,7 +238,7 @@ module GraphQL
       end
 
       def loadable?(t, _ctx)
-        !@all_types[t.graphql_name]
+        !@all_types[t.graphql_name] && @cached_visible[t]
       end
 
       def loaded_types

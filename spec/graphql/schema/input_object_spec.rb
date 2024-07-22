@@ -217,7 +217,6 @@ describe GraphQL::Schema::InputObject do
         end
 
         field :list_instruments, mutation: ListInstruments
-        field :example_instrument, Jazz::InstrumentType
       end
 
       class Schema < GraphQL::Schema
@@ -238,6 +237,7 @@ describe GraphQL::Schema::InputObject do
         def self.resolve_type(type, obj, ctx)
           type
         end
+
         max_complexity 100
       end
     end
