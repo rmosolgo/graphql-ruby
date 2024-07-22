@@ -198,9 +198,13 @@ module GraphQL
         end
 
         def all_argument_definitions
-          all_defns = own_arguments.values
-          all_defns.flatten!
-          all_defns
+          if own_arguments.any?
+            all_defns = own_arguments.values
+            all_defns.flatten!
+            all_defns
+          else
+            EmptyObjects::EMPTY_ARRAY
+          end
         end
 
         # @return [GraphQL::Schema::Argument, nil] Argument defined on this thing, fetched by name.

@@ -56,6 +56,62 @@ module GraphQL
             false
           end
         end.compare_by_identity
+
+        @cached_parent_fields = Hash.new do |h, type|
+          h[type] = Hash.new do |h2, field_name|
+            h2[field_name] = type.get_field(field_name, @context)
+          end
+        end.compare_by_identity
+
+        @cached_parent_arguments = Hash.new do |h, arg_owner|
+          h[arg_owner] = Hash.new do |h2, arg_name|
+            h2[arg_name] = arg_owner.get_argument(arg_name, @context)
+          end
+        end.compare_by_identity
+
+        @cached_possible_types = Hash.new do |h, type|
+          h[type] = case type.kind.name
+          when "INTERFACE"
+            load_all_types
+            @unfiltered_pt[type].select { |pt| @cached_visible[pt] && referenced?(pt) }
+          when "UNION"
+            pts = []
+            type.type_memberships.each { |tm|
+              if @cached_visible[tm] &&
+                  (ot = tm.object_type) &&
+                  @cached_visible[ot] &&
+                  referenced?(ot)
+                pts << ot
+              end
+            }
+            pts
+          when "OBJECT"
+            load_all_types
+            if @all_types[type.graphql_name] == type
+              [type]
+            else
+              EmptyObjects::EMPTY_ARRAY
+            end
+          else
+            GraphQL::EmptyObjects::EMPTY_ARRAY
+          end
+        end.compare_by_identity
+
+        @cached_enum_values = Hash.new do |h, enum_t|
+          values = non_duplicate_items(enum_t.all_enum_value_definitions, @cached_visible)
+          if values.size == 0
+            raise GraphQL::Schema::Enum::MissingValuesError.new(enum_t)
+          end
+          h[enum_t] = values
+        end.compare_by_identity
+
+        @cached_fields = Hash.new do |h, owner|
+          h[owner] = non_duplicate_items(owner.all_field_definitions, @cached_visible_fields[owner])
+        end.compare_by_identity
+
+        @cached_arguments = Hash.new do |h, owner|
+          h[owner] = non_duplicate_items(owner.all_argument_definitions, @cached_visible_arguments)
+        end.compare_by_identity
       end
 
       def field_on_visible_interface?(field, owner)
@@ -65,7 +121,7 @@ module GraphQL
         any_interface_has_field = false
         any_interface_has_visible_field = false
         ints.each do |int_t|
-          if (_int_f_defn = int_t.get_field(field_name, @context))
+          if (_int_f_defn = @cached_parent_fields[int_t][field_name])
             any_interface_has_field = true
 
             if filtered_ints.include?(int_t) # TODO cycles, or maybe not necessary since previously checked? && @cached_visible_fields[owner][field]
@@ -113,7 +169,7 @@ module GraphQL
       end
 
       def field(owner, field_name)
-        f = if owner.kind.fields? && (field = owner.get_field(field_name, @context))
+        f = if owner.kind.fields? && (field = @cached_parent_fields[owner][field_name])
           field
         elsif owner == query_root && (entry_point_field = @schema.introspection_system.entry_point(name: field_name))
           entry_point_field
@@ -145,15 +201,15 @@ module GraphQL
       end
 
       def fields(owner)
-        non_duplicate_items(owner.all_field_definitions, @cached_visible_fields[owner])
+        @cached_fields[owner]
       end
 
       def arguments(owner)
-        non_duplicate_items(owner.all_argument_definitions, @cached_visible_arguments)
+        @cached_arguments[owner]
       end
 
       def argument(owner, arg_name)
-        arg = owner.get_argument(arg_name, @context)
+        arg = @cached_parent_arguments[owner][arg_name]
         if arg.is_a?(Array)
           visible_arg = nil
           arg.each do |arg_defn|
@@ -176,33 +232,6 @@ module GraphQL
       end
 
       def possible_types(type)
-        @cached_possible_types ||= Hash.new do |h, type|
-          h[type] = case type.kind.name
-          when "INTERFACE"
-            load_all_types
-            @unfiltered_pt[type].select { |pt| @cached_visible[pt] && referenced?(pt) }
-          when "UNION"
-            pts = []
-            type.type_memberships.each { |tm|
-              if @cached_visible[tm] &&
-                  (ot = tm.object_type) &&
-                  @cached_visible[ot] &&
-                  referenced?(ot)
-                pts << ot
-              end
-            }
-            pts
-          when "OBJECT"
-            load_all_types
-            if @all_types[type.graphql_name] == type
-              [type]
-            else
-              EmptyObjects::EMPTY_ARRAY
-            end
-          else
-            GraphQL::EmptyObjects::EMPTY_ARRAY
-          end
-        end.compare_by_identity
         @cached_possible_types[type]
       end
 
@@ -232,11 +261,7 @@ module GraphQL
       end
 
       def enum_values(owner)
-        values = non_duplicate_items(owner.all_enum_value_definitions, @cached_visible)
-        if values.size == 0
-          raise GraphQL::Schema::Enum::MissingValuesError.new(owner)
-        end
-        values
+        @cached_enum_values[owner]
       end
 
       def directive_exists?(dir_name)
