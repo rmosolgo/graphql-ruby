@@ -166,8 +166,9 @@ describe GraphQL::Schema do
         assert multiplex_ctx[:second_instrumenter_did_begin]
         refute multiplex_ctx[:second_instrumenter_did_end]
         # No query instrumentation was run at all
-        assert_equal 0, query_1_ctx.size
-        assert_equal 0, query_2_ctx.size
+        expected_ctx_size = GraphQL::Schema.use_schema_subset? ? 1 : 0
+        assert_equal expected_ctx_size, query_1_ctx.size
+        assert_equal expected_ctx_size, query_2_ctx.size
       end
 
       it "does full and partial query runs" do

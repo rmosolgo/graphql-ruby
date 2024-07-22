@@ -11,6 +11,16 @@ module GraphQL
     #
     # This plugin adds overhead to runtime and may cause unexpected crashes -- **don't** use it in production!
     #
+    # This plugin adds two keys to `context` when running:
+    #
+    # - `types_migration_running: true`
+    # - For the {Warden} which it instantiates, it adds `types_migration_warden_running: true`.
+    #
+    # Use those keys to modify your `visible?` behavior as needed.
+    #
+    # Also, in a pinch, you can set `skip_types_migration_error: true` in context to turn off this plugin's behavior per-query.
+    # (In that case, it uses {Subset} directly.)
+    #
     # @example Adding this plugin
     #
     #   if !Rails.env.production?
