@@ -2,11 +2,22 @@
 
 module GraphQL
   class Schema
+    # This class filters the types, fields, arguments, enum values, and directives in a schema
+    # based on the given `context`.
+    #
+    # It's like {Warden}, but has some differences:
+    #
+    # - It doesn't use {Schema}'s top-level caches (eg {Schema.references_to}, {Schema.possible_types}, {Schema.types})
+    # - It doesn't hide Interface or Union types when all their possible types are hidden. (Instead, those types should implement `.visible?` to hide in that case.)
+    # - It checks `.visible?` on root introspection types
+    #
+    # In the future, {Subset} will support lazy-loading types as needed during execution and multi-request caching of subsets.
+    #
+    # @see Schema::TypesMigration for a helper class in adopting this filter
     class Subset
-      def initialize(query)
-        @query = query
-        @context = query.context
-        @schema = query.schema
+      def initialize(context:, schema:)
+        @context = context
+        @schema = schema
         @all_types = {}
         @all_types_loaded = false
         @unvisited_types = []

@@ -106,8 +106,8 @@ module GraphQL
       end
 
       if use_schema_subset
-        @schema_subset = @schema.subset_class.new(self)
-        @warden = Schema::Warden::NullWarden.new(context: self, schema: @schema)
+        @schema_subset = @schema.subset_class.new(context: @context, schema: @schema)
+        @warden = Schema::Warden::NullWarden.new(context: @context, schema: @schema)
       else
         @schema_subset = nil
         @warden = warden

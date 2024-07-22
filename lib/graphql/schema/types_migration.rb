@@ -14,7 +14,7 @@ module GraphQL
     # @example Adding this plugin
     #
     #   if !Rails.env.production?
-    #     use GrpahQL::Schema::TypesMigration
+    #     use GraphQL::Schema::TypesMigration
     #   end
     class TypesMigration < GraphQL::Schema::Subset
       def self.use(schema)
@@ -70,19 +70,18 @@ module GraphQL
         end
       end
 
-      def initialize(query)
-        @skip_error = query.context[:skip_types_migration_error]
-        query.context[:types_migration_running] = true
-        @subset_types = GraphQL::Schema::Subset.new(query)
+      def initialize(context:, schema:)
+        @skip_error = context[:skip_types_migration_error]
+        context[:types_migration_running] = true
+        @subset_types = GraphQL::Schema::Subset.new(context: context, schema: schema)
         if !@skip_error
-          warden_ctx_vals = query.context.to_h.dup
+          warden_ctx_vals = context.to_h.dup
           warden_ctx_vals[:types_migration_warden_running] = true
-          warden_ctx = GraphQL::Query::Context.new(query: query, values: warden_ctx_vals)
-          example_warden = GraphQL::Schema::Warden.new(schema: query.schema, context: warden_ctx)
+          warden_ctx = GraphQL::Query::Context.new(query: context.query, values: warden_ctx_vals)
+          example_warden = GraphQL::Schema::Warden.new(schema: schema, context: warden_ctx)
           @warden_types = example_warden.schema_subset
           warden_ctx.warden = example_warden
           warden_ctx.types = @warden_types
-          @subset_types = GraphQL::Schema::Subset.new(query)
         end
       end
 
