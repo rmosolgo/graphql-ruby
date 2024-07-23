@@ -25,7 +25,7 @@ module GraphQL
           load_constant(:DirectiveLocationEnum)
         ]
         @types = {}
-        @possible_types = {}.tap(&:compare_by_identity)
+        @possible_types = {}.compare_by_identity
         type_defns.each do |t|
           @types[t.graphql_name] = t
           @possible_types[t] = [t]

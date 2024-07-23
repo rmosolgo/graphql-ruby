@@ -8,22 +8,17 @@ module GraphQL
           @query = query
           @dataloader = query.context.dataloader
           @storage = Hash.new do |h, argument_owner|
-            args_by_parent = if argument_owner.arguments_statically_coercible?
+            h[argument_owner] = if argument_owner.arguments_statically_coercible?
               shared_values_cache = {}
               Hash.new do |h2, ignored_parent_object|
                 h2[ignored_parent_object] = shared_values_cache
-              end
+              end.compare_by_identity
             else
               Hash.new do |h2, parent_object|
-                args_by_node = {}
-                args_by_node.compare_by_identity
-                h2[parent_object] = args_by_node
-              end
+                h2[parent_object] = {}.compare_by_identity
+              end.compare_by_identity
             end
-            args_by_parent.compare_by_identity
-            h[argument_owner] = args_by_parent
-          end
-          @storage.compare_by_identity
+          end.compare_by_identity
         end
 
         def fetch(ast_node, argument_owner, parent_object)
