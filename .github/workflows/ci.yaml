@@ -64,6 +64,8 @@ jobs:
     - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > $GITHUB_ENV
     - run: echo GRAPHQL_REJECT_NUMBERS_FOLLOWED_BY_NAMES=1 > $GITHUB_ENV
       if: ${{ !!matrix.graphql_reject_numbers_followed_by_names }}
+    - run: echo NEW_GATHER_SELECTIONS=1 > $GITHUB_ENV
+      if: ${{ !!matrix.graphql_reject_numbers_followed_by_names }}
     - run: echo ISOLATION_LEVEL_FIBER=1 > $GITHUB_ENV
       if: ${{ !!matrix.isolation_level_fiber }}
     - uses: actions/checkout@v4
