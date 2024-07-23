@@ -82,7 +82,7 @@ module GraphQL
         @provided_values[key] = value
       end
 
-      def_delegators :@query, :trace, :interpreter?
+      def_delegators :@query, :trace
 
       def types
         @types ||= @query.types

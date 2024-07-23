@@ -187,10 +187,6 @@ module GraphQL
       @query_string ||= (document ? document.to_query_string : nil)
     end
 
-    def interpreter?
-      true
-    end
-
     attr_accessor :multiplex
 
     # @return [GraphQL::Tracing::Trace]

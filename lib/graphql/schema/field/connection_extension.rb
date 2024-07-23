@@ -50,7 +50,7 @@ module GraphQL
               if field.has_default_page_size? && !value.has_default_page_size_override?
                 value.default_page_size = field.default_page_size
               end
-              if context.schema.new_connections? && (custom_t = context.schema.connections.edge_class_for_field(@field))
+              if (custom_t = context.schema.connections.edge_class_for_field(@field))
                 value.edge_class = custom_t
               end
               value
