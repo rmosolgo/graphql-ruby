@@ -424,10 +424,6 @@ module GraphQL
         end
       end
 
-      def new_connections?
-        !!connections
-      end
-
       def query(new_query_object = nil)
         if new_query_object
           if @query_object
@@ -794,16 +790,6 @@ module GraphQL
       def analysis_engine
         @analysis_engine || find_inherited_value(:analysis_engine, self.default_analysis_engine)
       end
-
-      def using_ast_analysis?
-        true
-      end
-
-      def interpreter?
-        true
-      end
-
-      attr_writer :interpreter
 
       def error_bubbling(new_error_bubbling = nil)
         if !new_error_bubbling.nil?

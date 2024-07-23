@@ -431,14 +431,6 @@ describe GraphQL::Execution::Interpreter do
     assert_nil Thread.current[:__graphql_runtime_info]
   end
 
-  describe "temporary interpreter flag" do
-    it "is set" do
-      # This can be removed later, just a sanity check during migration
-      res = InterpreterTest::Schema.execute("{ __typename }")
-      assert_equal true, res.context.interpreter?
-    end
-  end
-
   describe "runtime info in context" do
     it "is available" do
       res = InterpreterTest::Schema.execute <<-GRAPHQL

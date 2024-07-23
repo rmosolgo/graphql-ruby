@@ -27,10 +27,6 @@ module GraphQL
         @warden = Schema::Warden::NullWarden.new(context: self, schema: @schema)
       end
 
-      def interpreter?
-        true
-      end
-
       def types
         @types ||= GraphQL::Schema::Warden::SchemaSubset.new(@warden)
       end
