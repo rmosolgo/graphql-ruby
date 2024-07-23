@@ -137,14 +137,7 @@ type Word {
       secret_type = parsed_schema.get_type("Secret")
       assert_equal 2, secret_type.directives.size
 
-      if GraphQL::Schema.use_schema_subset?
-        # Subset hides this because it has no possible types of its own :S
-        schema_output = GraphQL::Schema.from_definition(schema).to_definition
-        expected_output = schema.sub(/interface Secret2[^}]+\}\n\n/m, "")
-        assert_equal expected_output, schema_output
-      else
-        assert_schema_and_compare_output(schema)
-      end
+      assert_schema_and_compare_output(schema)
     end
 
     it 'supports descriptions and definition_line' do

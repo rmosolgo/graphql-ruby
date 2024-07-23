@@ -2,11 +2,22 @@
 
 module GraphQL
   class Schema
+    # This class filters the types, fields, arguments, enum values, and directives in a schema
+    # based on the given `context`.
+    #
+    # It's like {Warden}, but has some differences:
+    #
+    # - It doesn't use {Schema}'s top-level caches (eg {Schema.references_to}, {Schema.possible_types}, {Schema.types})
+    # - It doesn't hide Interface or Union types when all their possible types are hidden. (Instead, those types should implement `.visible?` to hide in that case.)
+    # - It checks `.visible?` on root introspection types
+    #
+    # In the future, {Subset} will support lazy-loading types as needed during execution and multi-request caching of subsets.
+    #
+    # @see Schema::TypesMigration for a helper class in adopting this filter
     class Subset
-      def initialize(query)
-        @query = query
-        @context = query.context
-        @schema = query.schema
+      def initialize(context:, schema:)
+        @context = context
+        @schema = schema
         @all_types = {}
         @all_types_loaded = false
         @unvisited_types = []
@@ -21,7 +32,6 @@ module GraphQL
             h2[field] = if @cached_visible[field] &&
                 (ret_type = field.type.unwrap) &&
                 @cached_visible[ret_type] &&
-                reachable_type?(ret_type.graphql_name) &&
                 (owner == field.owner || (!owner.kind.object?) || field_on_visible_interface?(field, owner))
 
               if !field.introspection?
@@ -47,8 +57,60 @@ module GraphQL
           end
         end.compare_by_identity
 
-        @unfiltered_pt = Hash.new do |hash, type|
-          hash[type] = @schema.possible_types(type)
+        @cached_parent_fields = Hash.new do |h, type|
+          h[type] = Hash.new do |h2, field_name|
+            h2[field_name] = type.get_field(field_name, @context)
+          end
+        end.compare_by_identity
+
+        @cached_parent_arguments = Hash.new do |h, arg_owner|
+          h[arg_owner] = Hash.new do |h2, arg_name|
+            h2[arg_name] = arg_owner.get_argument(arg_name, @context)
+          end
+        end.compare_by_identity
+
+        @cached_possible_types = Hash.new do |h, type|
+          h[type] = case type.kind.name
+          when "INTERFACE"
+            load_all_types
+            @unfiltered_pt[type].select { |pt| @cached_visible[pt] && referenced?(pt) }
+          when "UNION"
+            pts = []
+            type.type_memberships.each { |tm|
+              if @cached_visible[tm] &&
+                  (ot = tm.object_type) &&
+                  @cached_visible[ot] &&
+                  referenced?(ot)
+                pts << ot
+              end
+            }
+            pts
+          when "OBJECT"
+            load_all_types
+            if @all_types[type.graphql_name] == type
+              [type]
+            else
+              EmptyObjects::EMPTY_ARRAY
+            end
+          else
+            GraphQL::EmptyObjects::EMPTY_ARRAY
+          end
+        end.compare_by_identity
+
+        @cached_enum_values = Hash.new do |h, enum_t|
+          values = non_duplicate_items(enum_t.all_enum_value_definitions, @cached_visible)
+          if values.size == 0
+            raise GraphQL::Schema::Enum::MissingValuesError.new(enum_t)
+          end
+          h[enum_t] = values
+        end.compare_by_identity
+
+        @cached_fields = Hash.new do |h, owner|
+          h[owner] = non_duplicate_items(owner.all_field_definitions, @cached_visible_fields[owner])
+        end.compare_by_identity
+
+        @cached_arguments = Hash.new do |h, owner|
+          h[owner] = non_duplicate_items(owner.all_argument_definitions, @cached_visible_arguments)
         end.compare_by_identity
       end
 
@@ -59,7 +121,7 @@ module GraphQL
         any_interface_has_field = false
         any_interface_has_visible_field = false
         ints.each do |int_t|
-          if (_int_f_defn = int_t.get_field(field_name, @context))
+          if (_int_f_defn = @cached_parent_fields[int_t][field_name])
             any_interface_has_field = true
 
             if filtered_ints.include?(int_t) # TODO cycles, or maybe not necessary since previously checked? && @cached_visible_fields[owner][field]
@@ -79,11 +141,10 @@ module GraphQL
       def type(type_name)
         t = if (loaded_t = @all_types[type_name])
           loaded_t
-       elsif !@all_types_loaded
-         load_all_types
+        elsif !@all_types_loaded
+          load_all_types
           @all_types[type_name]
         end
-
         if t
           if t.is_a?(Array)
             vis_t = nil
@@ -108,7 +169,7 @@ module GraphQL
       end
 
       def field(owner, field_name)
-        f = if owner.kind.fields? && (field = owner.get_field(field_name, @context))
+        f = if owner.kind.fields? && (field = @cached_parent_fields[owner][field_name])
           field
         elsif owner == query_root && (entry_point_field = @schema.introspection_system.entry_point(name: field_name))
           entry_point_field
@@ -140,24 +201,19 @@ module GraphQL
       end
 
       def fields(owner)
-        non_duplicate_items(owner.all_field_definitions, @cached_visible_fields[owner])
+        @cached_fields[owner]
       end
 
       def arguments(owner)
-        non_duplicate_items(owner.all_argument_definitions, @cached_visible_arguments)
+        @cached_arguments[owner]
       end
 
       def argument(owner, arg_name)
-        # TODO this makes a Warden.visible_entry call down the stack
-        # I need a non-Warden implementation
-        arg = owner.get_argument(arg_name, @context)
+        arg = @cached_parent_arguments[owner][arg_name]
         if arg.is_a?(Array)
           visible_arg = nil
           arg.each do |arg_defn|
             if @cached_visible_arguments[arg_defn]
-              if arg_defn&.loads
-                add_type(arg_defn.loads, arg_defn)
-              end
               if visible_arg.nil?
                 visible_arg = arg_defn
               else
@@ -168,9 +224,6 @@ module GraphQL
           visible_arg
         else
           if arg && @cached_visible_arguments[arg]
-            if arg&.loads
-              add_type(arg.loads, arg)
-            end
             arg
           else
             nil
@@ -179,22 +232,6 @@ module GraphQL
       end
 
       def possible_types(type)
-        @cached_possible_types ||= Hash.new do |h, type|
-          pt = case type.kind.name
-          when "INTERFACE"
-            # TODO this requires the global map
-            @unfiltered_pt[type]
-          when "UNION"
-            type.type_memberships.select { |tm| @cached_visible[tm] && @cached_visible[tm.object_type] }.map!(&:object_type)
-          else
-            [type]
-          end
-
-          # TODO use `select!` when possible, skip it for `[type]`
-          h[type] = pt.select { |t|
-            @cached_visible[t] && referenced?(t)
-          }
-        end.compare_by_identity
         @cached_possible_types[type]
       end
 
@@ -219,29 +256,17 @@ module GraphQL
       end
 
       def all_types
-        @all_types_filtered ||= begin
-          load_all_types
-          at = []
-          @all_types.each do |_name, type_defn|
-            if possible_types(type_defn).any? || referenced?(type_defn)
-              at << type_defn
-            end
-          end
-          at
-        end
+        load_all_types
+        @all_types.values
       end
 
       def enum_values(owner)
-        values = non_duplicate_items(owner.all_enum_value_definitions, @cached_visible)
-        if values.size == 0
-          raise GraphQL::Schema::Enum::MissingValuesError.new(owner)
-        end
-        values
+        @cached_enum_values[owner]
       end
 
       def directive_exists?(dir_name)
         dir = @schema.directives[dir_name]
-        dir && @cached_visible[dir]
+        !!(dir && @cached_visible[dir])
       end
 
       def directives
@@ -249,17 +274,16 @@ module GraphQL
       end
 
       def loadable?(t, _ctx)
-        !@all_types[t.graphql_name] # TODO make sure t is not reachable but t is visible
-      end
-
-      # TODO rename this to indicate that it is called with a typename
-      def reachable_type?(type_name)
-        load_all_types
-        !!((t = @all_types[type_name]) && referenced?(t))
+        !@all_types[t.graphql_name] && @cached_visible[t]
       end
 
       def loaded_types
         @all_types.values
+      end
+
+      def reachable_type?(name)
+        load_all_types
+        !!@all_types[name]
       end
 
       private
@@ -306,14 +330,7 @@ module GraphQL
 
       def referenced?(t)
         load_all_types
-        res = if @referenced_types[t].any? { |member| (member == true) || @cached_visible[member] }
-          if t.kind.abstract?
-            possible_types(t).any?
-          else
-            true
-          end
-        end
-        res
+        @referenced_types[t].any? { |reference| (reference == true) || @cached_visible[reference] }
       end
 
       def load_all_types
@@ -337,9 +354,25 @@ module GraphQL
         schema_types.flatten! # handle multiple defns
         schema_types.each { |t| add_type(t, true) }
 
-        while t = @unvisited_types.pop
-          # These have already been checked for `.visible?`
-          visit_type(t)
+        @unfiltered_pt = Hash.new { |h, k| h[k] = [] }.compare_by_identity
+        @add_possible_types = Set.new
+
+        while @unvisited_types.any?
+          while t = @unvisited_types.pop
+            # These have already been checked for `.visible?`
+            visit_type(t)
+          end
+          @add_possible_types.each do |int_t|
+            pt = @unfiltered_pt[int_t]
+            pt.each do |obj_type|
+              if @cached_visible[obj_type] &&
+                  (tm = obj_type.interface_type_memberships.find { |tm| tm.abstract_type == int_t }) &&
+                  @cached_visible[tm]
+                add_type(obj_type, tm)
+              end
+            end
+          end
+          @add_possible_types.clear
         end
 
         @all_types.delete_if { |type_name, type_defn| !referenced?(type_defn) }
@@ -361,10 +394,15 @@ module GraphQL
           end
         elsif type.kind.fields?
           if type.kind.object?
+            type.interface_type_memberships.each do |itm|
+              @unfiltered_pt[itm.abstract_type] << type
+            end
             # recurse into visible implemented interfaces
             interfaces(type).each do |interface|
               add_type(interface, type)
             end
+          else
+            type.orphan_types.each { |t| add_type(t, type)}
           end
 
           # recurse into visible fields
@@ -373,14 +411,7 @@ module GraphQL
             if @cached_visible[field]
               field_type = field.type.unwrap
               if field_type.kind.interface?
-                pt = @unfiltered_pt[field_type]
-                pt.each do |obj_type|
-                  if @cached_visible[obj_type] &&
-                      (tm = obj_type.interface_type_memberships.find { |tm| tm.abstract_type == field_type }) &&
-                      @cached_visible[tm]
-                    add_type(obj_type, tm)
-                  end
-                end
+                @add_possible_types.add(field_type)
               end
               add_type(field_type, field)
 

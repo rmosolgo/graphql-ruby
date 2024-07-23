@@ -10,7 +10,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
       end
 
       def visible?(context)
-        if context[:visible_calls]
+        if context[:visible_calls] && !context[:types_migration_warden_running]
           context[:visible_calls][self] << caller
         end
         super && (@future_schema.nil? || (@future_schema == !!context[:future_schema]))
@@ -33,7 +33,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
         if RUBY_VERSION > "3"
           define_method(dynamic_members_method_name) do |*args, **kwargs, &block|
             context = args.last
-            if context && (context.is_a?(Hash) || context.is_a?(GraphQL::Query::Context)) && context[:visible_calls]
+            if context && (context.is_a?(Hash) || context.is_a?(GraphQL::Query::Context)) && context[:visible_calls] && !context[:types_migration_warden_running]
               method_obj = self.method(dynamic_members_method_name)
               context[:visible_calls][MethodInspection.new(method_obj)] << caller
             end
@@ -42,7 +42,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
         else
           define_method(dynamic_members_method_name) do |*args, &block|
             context = args.last
-            if context && (context.is_a?(Hash) || context.is_a?(GraphQL::Query::Context)) && context[:visible_calls]
+            if context && (context.is_a?(Hash) || context.is_a?(GraphQL::Query::Context)) && context[:visible_calls] && !context[:types_migration_warden_running]
               method_obj = self.method(dynamic_members_method_name)
               context[:visible_calls][MethodInspection.new(method_obj)] << caller
             end
@@ -199,6 +199,11 @@ describe "Dynamic types, fields, arguments, and enum values" do
 
     class Locale < BaseUnion
       possible_types Country, future_schema: true
+
+      if GraphQL::Schema.use_schema_subset?
+        # Subset won't check possible_types, this must be flagged
+        self.future_schema = true
+      end
     end
 
     class Place < BaseObject
@@ -333,6 +338,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
       # just to attach these to the schema:
       field :example_locale, Locale
       field :example_region, Region
+      field :example_country, Country
     end
 
     class BaseMutation < GraphQL::Schema::RelayClassicMutation
@@ -475,10 +481,11 @@ ERR
 
     # Schema dump
     legacy_query_type_str = legacy_schema_sdl[/type Query \{[^}]*\}/m]
-    assert_equal legacy_query_type_str, <<-GRAPHQL.chomp
+    expected_legacy_query_type_str = <<-GRAPHQL.chomp
 type Query {
   actor: Actor
   add(left: Int!, right: Int!): String!
+  exampleCountry: Country
   f1: Int
   favoriteLanguage(lang: Language): Language!
   legacyThing(id: ID!): LegacyThing!
@@ -487,11 +494,13 @@ type Query {
   yell(scream: Scream!): String!
 }
 GRAPHQL
+    assert_equal expected_legacy_query_type_str, legacy_query_type_str
 
     assert_includes future_schema_sdl, <<-GRAPHQL
 type Query {
   actor: Actor
   add(left: Float!, right: Float!): String!
+  exampleCountry: Country
   exampleLocale: Locale
   exampleRegion: Region
   f1: String
@@ -590,9 +599,13 @@ GRAPHQL
   end
 
   it "hides hidden union memberships" do
-    # in this case, the union is always visible:
     assert MultifieldSchema::Locale.visible?({ future_schema: true })
-    assert MultifieldSchema::Locale.visible?({ future_schema: false })
+    if GraphQL::Schema.use_schema_subset?
+      refute MultifieldSchema::Locale.visible?({ future_schema: false })
+    else
+      # Warden will check possible types -- but Subset doesn't
+      assert MultifieldSchema::Locale.visible?({ future_schema: false })
+    end
 
     # and the possible types relationship is sometimes hidden:
     refute_includes MultifieldSchema.possible_types(MultifieldSchema::Locale, { future_schema: false }), MultifieldSchema::Country
@@ -841,6 +854,10 @@ GRAPHQL
         field :f, Int, null: false
       end
 
+      if GraphQL::Schema.use_schema_subset?
+        ThingInterface.orphan_types(OtherObject)
+      end
+
       class ThingUnion < GraphQL::Schema::Union
         graphql_name "Thing"
         possible_types OtherObject
@@ -897,6 +914,7 @@ GRAPHQL
       end
 
       query(Query)
+      use GraphQL::Schema::TypesMigration
     end
   end
 

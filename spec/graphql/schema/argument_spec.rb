@@ -95,8 +95,6 @@ describe GraphQL::Schema::Argument do
       def self.resolve_type(type, obj, ctx)
         -> { type } # just for `loads:`
       end
-
-      orphan_types [Jazz::InstrumentType, UnauthorizedInstrumentType]
     end
   end
 

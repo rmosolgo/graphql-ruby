@@ -21,6 +21,7 @@ if ENV["GRAPHQL_REJECT_NUMBERS_FOLLOWED_BY_NAMES"]
   GraphQL.reject_numbers_followed_by_names = true
   puts "Opting into GraphQL::Schema::Subset"
   GraphQL::Schema.use_schema_subset = true
+  GraphQL::Schema.use(GraphQL::Schema::TypesMigration)
 end
 
 require "rake"

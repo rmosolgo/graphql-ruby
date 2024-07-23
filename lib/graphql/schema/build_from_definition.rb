@@ -127,11 +127,12 @@ module GraphQL
           builder = self
 
           found_types = types.values
+          object_types = found_types.select { |t| t.respond_to?(:kind) && t.kind.object? }
           schema_class = Class.new(schema_superclass) do
             begin
               # Add these first so that there's some chance of resolving late-bound types
               add_type_and_traverse(found_types, root: false)
-              orphan_types(found_types.select { |t| t.respond_to?(:kind) && t.kind.object? })
+              orphan_types(object_types)
               query query_root_type
               mutation mutation_root_type
               subscription subscription_root_type
@@ -139,6 +140,12 @@ module GraphQL
               type_name = err.type.name
               err_backtrace =  err.backtrace
               raise InvalidDocumentError, "Type \"#{type_name}\" not found in document.", err_backtrace
+            end
+
+            object_types.each do |t|
+              t.interfaces.each do |int_t|
+                int_t.orphan_types(t)
+              end
             end
 
             if default_resolve.respond_to?(:resolve_type)

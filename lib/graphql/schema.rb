@@ -46,6 +46,7 @@ require "graphql/schema/has_single_input_argument"
 require "graphql/schema/relay_classic_mutation"
 require "graphql/schema/subscription"
 require "graphql/schema/subset"
+require "graphql/schema/types_migration"
 
 module GraphQL
   # A GraphQL schema which may be queried with {GraphQL::Query}.

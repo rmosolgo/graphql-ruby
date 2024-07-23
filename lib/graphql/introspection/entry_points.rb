@@ -15,8 +15,8 @@ module GraphQL
       end
 
       def __type(name:)
-        if context.types.reachable_type?(name)
-          context.types.type(name)
+        if context.types.reachable_type?(name) && (type = context.types.type(name))
+          type
         elsif (type = context.schema.extra_types.find { |t| t.graphql_name == name })
           type
         else

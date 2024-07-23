@@ -75,8 +75,8 @@ module GraphQL
 
         # @api private
         module NullSubset
-          def self.new(query)
-            NullWarden.new(context: query.context, schema: query.schema).schema_subset
+          def self.new(context:, schema:)
+            NullWarden.new(context: context, schema: schema).schema_subset
           end
         end
 
@@ -174,7 +174,7 @@ module GraphQL
         end
 
         def reachable_type?(type_name)
-          @warden.reachable_type?(type_name)
+          !!@warden.reachable_type?(type_name)
         end
       end
 

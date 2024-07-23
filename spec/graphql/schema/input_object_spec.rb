@@ -238,7 +238,6 @@ describe GraphQL::Schema::InputObject do
           type
         end
 
-        orphan_types [Jazz::InstrumentType]
         max_complexity 100
       end
     end
@@ -443,6 +442,8 @@ describe GraphQL::Schema::InputObject do
         def prepare_list_of_lists(input:)
           input.map { |i| i.map(&:prepared_count) }
         end
+
+        field :example_thing, Thing
       end
 
       class Schema < GraphQL::Schema

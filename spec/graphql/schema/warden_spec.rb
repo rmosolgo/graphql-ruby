@@ -224,6 +224,12 @@ module MaskHelpers
     field :manners, [MannerType], null: false
 
     field :public_type, PublicType, null: false
+
+    # Warden would exclude this when it was only referenced as a possible_type of LanguageMemberType.
+    # But Subset always included it. This makes them behave the
+    field :example_character, Character do
+      metadata :hidden_abstract_type, true
+    end
   end
 
   class MutationType < BaseObject
@@ -464,7 +470,10 @@ describe GraphQL::Schema::Warden do
       }
       |
 
-      res = MaskHelpers.run_query(query_string, context: { except: ->(member, ctx) { MaskHelpers.has_flag?(member, :hidden_type) } })
+      res = MaskHelpers.run_query(query_string, context: {
+        skip_types_migration_error: true,
+        except: ->(member, ctx) { MaskHelpers.has_flag?(member, :hidden_type)
+      } })
       # It's not visible by name
       assert_nil res["data"]["Phoneme"]
 
@@ -478,6 +487,7 @@ describe GraphQL::Schema::Warden do
       # It's not visible as a union or interface member
       assert_equal false, possible_type_names(res["data"]["EmicUnit"]).include?("Phoneme")
       assert_equal false, possible_type_names(res["data"]["LanguageMember"]).include?("Phoneme")
+      assert_equal ["Character", "Chereme", "Grapheme"], possible_type_names(res["data"]["LanguageMember"]).sort
     end
 
     it "hides interfaces if all possible types are hidden" do
@@ -524,6 +534,15 @@ describe GraphQL::Schema::Warden do
 
         class BagOfThings < GraphQL::Schema::Union
           possible_types A, B, C
+
+          if GraphQL::Schema.use_schema_subset?
+            def self.visible?(ctx)
+              (
+                possible_types.any? { |pt| ctx.schema.visible?(pt, ctx) } ||
+                ctx.schema.extra_types.include?(self)
+              ) && super
+            end
+          end
         end
 
         class Query < GraphQL::Schema::Object
@@ -615,10 +634,17 @@ describe GraphQL::Schema::Warden do
       assert res["data"]["Node"]
       assert_equal ["a", "node"], res["data"]["Query"]["fields"].map { |f| f["name"] }
 
-      # When the possible types are all hidden, hide the interface and fields pointing to it
-      res = schema.execute(query_string, context: { except: ->(m, _) { ["A", "B", "C"].include?(m.graphql_name) } })
-      assert_nil res["data"]["Node"]
-      assert_equal [], res["data"]["Query"]["fields"]
+      res = schema.execute(query_string, context: { skip_types_migration_error: true, except: ->(m, _) { ["A", "B", "C"].include?(m.graphql_name) } })
+
+      if GraphQL::Schema.use_schema_subset?
+        # Node is still visible even though it has no possible types
+        assert res["data"]["Node"]
+        assert_equal [{ "name" => "node" }], res["data"]["Query"]["fields"]
+      else
+        # When the possible types are all hidden, hide the interface and fields pointing to it
+        assert_nil res["data"]["Node"]
+        assert_equal [], res["data"]["Query"]["fields"]
+      end
 
       # Even when it's not the return value of a field,
       # still show the interface since it allows code reuse

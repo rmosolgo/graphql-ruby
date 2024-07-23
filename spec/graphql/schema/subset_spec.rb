@@ -4,7 +4,7 @@ require "spec_helper"
 describe GraphQL::Schema::Subset do
   class SubsetSchema < GraphQL::Schema
     class Thing < GraphQL::Schema::Object
-      field :name, String
+      field :name, String, method: :to_s
     end
 
     class Query < GraphQL::Schema::Object
@@ -15,7 +15,6 @@ describe GraphQL::Schema::Subset do
     query(Query)
   end
   it "only loads the types it needs" do
-    skip "TODO optimize how this thing works"
     query = GraphQL::Query.new(SubsetSchema, "{ thing { name } }", use_schema_subset: true)
     assert_equal [], query.types.loaded_types
     res = query.result

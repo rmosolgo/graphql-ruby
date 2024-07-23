@@ -85,8 +85,10 @@ module GraphQL
       def_delegators :@query, :trace, :interpreter?
 
       def types
-        @query.types
+        @types ||= @query.types
       end
+
+      attr_writer :types
 
       RUNTIME_METADATA_KEYS = Set.new([:current_object, :current_arguments, :current_field, :current_path])
       # @!method []=(key, value)
