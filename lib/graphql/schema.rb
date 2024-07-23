@@ -1501,7 +1501,7 @@ module GraphQL
       end
 
       def own_references_to
-        @own_references_to ||= {}.tap(&:compare_by_identity)
+        @own_references_to ||= {}.compare_by_identity
       end
 
       def non_introspection_types
@@ -1517,7 +1517,7 @@ module GraphQL
       end
 
       def own_possible_types
-        @own_possible_types ||= {}.tap(&:compare_by_identity)
+        @own_possible_types ||= {}.compare_by_identity
       end
 
       def own_union_memberships

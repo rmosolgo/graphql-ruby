@@ -53,8 +53,7 @@ module GraphQL
             end
           end
           # { Class => Boolean }
-          @lazy_cache = {}
-          @lazy_cache.compare_by_identity
+          @lazy_cache = {}.compare_by_identity
         end
 
         def final_result
@@ -727,12 +726,7 @@ module GraphQL
         end
 
         def get_current_runtime_state
-          current_state = Thread.current[:__graphql_runtime_info] ||= begin
-            per_query_state = {}
-            per_query_state.compare_by_identity
-            per_query_state
-          end
-
+          current_state = Thread.current[:__graphql_runtime_info] ||= {}.compare_by_identity
           current_state[@query] ||= CurrentState.new
         end
 

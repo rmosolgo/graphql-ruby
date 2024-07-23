@@ -188,7 +188,6 @@ module GraphQL
         @subscription = @schema.subscription
         @context = context
         @visibility_cache = read_through { |m| schema.visible?(m, context) }
-        @visibility_cache.compare_by_identity
         # Initialize all ivars to improve object shape consistency:
         @types = @visible_types = @reachable_types = @visible_parent_fields =
           @visible_possible_types = @visible_fields = @visible_arguments = @visible_enum_arrays =
@@ -463,9 +462,7 @@ module GraphQL
       end
 
       def read_through
-        h = Hash.new { |h, k| h[k] = yield(k) }
-        h.compare_by_identity
-        h
+        Hash.new { |h, k| h[k] = yield(k) }.compare_by_identity
       end
 
       def reachable_type_set
