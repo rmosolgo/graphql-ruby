@@ -339,6 +339,9 @@ module GraphQL
       # @return [Hash<String => Class>] A dictionary of type classes by their GraphQL name
       # @see get_type Which is more efficient for finding _one type_ by name, because it doesn't merge hashes.
       def types(context = GraphQL::Query::NullContext.instance)
+        if use_schema_subset?
+          return Subset.from_context(context, self).all_types_h
+        end
         all_types = non_introspection_types.merge(introspection_system.types)
         visible_types = {}
         all_types.each do |k, v|
@@ -366,6 +369,9 @@ module GraphQL
       # @param type_name [String]
       # @return [Module, nil] A type, or nil if there's no type called `type_name`
       def get_type(type_name, context = GraphQL::Query::NullContext.instance)
+        if use_schema_subset?
+          return Subset.from_context(context, self).type(type_name)
+        end
         local_entry = own_types[type_name]
         type_defn = case local_entry
         when nil
@@ -434,7 +440,7 @@ module GraphQL
             raise GraphQL::Error, "Second definition of `query(...)` (#{new_query_object.inspect}) is invalid, already configured with #{@query_object.inspect}"
           else
             @query_object = new_query_object
-            add_type_and_traverse(new_query_object, root: true)
+            add_type_and_traverse(new_query_object, root: true) unless use_schema_subset?
             nil
           end
         else
@@ -448,7 +454,7 @@ module GraphQL
             raise GraphQL::Error, "Second definition of `mutation(...)` (#{new_mutation_object.inspect}) is invalid, already configured with #{@mutation_object.inspect}"
           else
             @mutation_object = new_mutation_object
-            add_type_and_traverse(new_mutation_object, root: true)
+            add_type_and_traverse(new_mutation_object, root: true) unless use_schema_subset?
             nil
           end
         else
@@ -463,7 +469,7 @@ module GraphQL
           else
             @subscription_object = new_subscription_object
             add_subscription_extension_if_necessary
-            add_type_and_traverse(new_subscription_object, root: true)
+            add_type_and_traverse(new_subscription_object, root: true) unless use_schema_subset?
             nil
           end
         else
@@ -528,6 +534,13 @@ module GraphQL
       # @return [Hash<String, Module>] All possible types, if no `type` is given.
       # @return [Array<Module>] Possible types for `type`, if it's given.
       def possible_types(type = nil, context = GraphQL::Query::NullContext.instance)
+        if use_schema_subset?
+          if type
+            return Subset.from_context(context, self).possible_types(type)
+          else
+            raise "Schema.possible_types is not implemented for `use_schema_subset?`"
+          end
+        end
         if type
           # TODO duck-typing `.possible_types` would probably be nicer here
           if type.kind.union?
@@ -913,7 +926,7 @@ module GraphQL
               To add other types to your schema, you might want `extra_types`: https://graphql-ruby.org/schema/definition.html#extra-types
             ERR
           end
-          add_type_and_traverse(new_orphan_types, root: false)
+          add_type_and_traverse(new_orphan_types, root: false) unless use_schema_subset?
           own_orphan_types.concat(new_orphan_types.flatten)
         end
 
@@ -1172,7 +1185,11 @@ module GraphQL
       # @param new_directive [Class]
       # @return void
       def directive(new_directive)
-        add_type_and_traverse(new_directive, root: false)
+        if use_schema_subset?
+          own_directives[new_directive.graphql_name] = new_directive
+        else
+          add_type_and_traverse(new_directive, root: false)
+        end
       end
 
       def default_directives

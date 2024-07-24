@@ -15,6 +15,16 @@ module GraphQL
     #
     # @see Schema::TypesMigration for a helper class in adopting this filter
     class Subset
+      # @return [Schema::Subset]
+      def self.from_context(ctx, schema)
+        if ctx.respond_to?(:types) && (types = ctx.types).is_a?(self)
+          types
+        else
+          # TODO use a cached instance from the schema
+          self.new(context: ctx, schema: schema)
+        end
+      end
+
       def initialize(context:, schema:)
         @context = context
         @schema = schema
@@ -258,6 +268,11 @@ module GraphQL
       def all_types
         load_all_types
         @all_types.values
+      end
+
+      def all_types_h
+        load_all_types
+        @all_types
       end
 
       def enum_values(owner)
