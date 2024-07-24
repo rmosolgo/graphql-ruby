@@ -915,7 +915,7 @@ describe GraphQL::Schema::InputObject do
       describe "validate_input with null" do
         let(:schema) { GraphQL::Schema.from_definition(%|
           type Query {
-            a: Int
+            a(input: ExampleInputObject): Int
           }
 
           input ExampleInputObject {
@@ -1095,7 +1095,8 @@ describe GraphQL::Schema::InputObject do
     describe "coercion of null inputs" do
       let(:schema) { GraphQL::Schema.from_definition(%|
         type Query {
-          a: Int
+          a(input: ExampleInputObject): Int
+          b(input: SecondLevelInputObject): Int
         }
 
         input ExampleInputObject {
