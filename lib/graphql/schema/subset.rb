@@ -288,7 +288,7 @@ module GraphQL
 
       def directive_exists?(dir_name)
         if (dir = @schema.directives[dir_name]) && @cached_visible[dir]
-          dir
+          !!dir
         else
           load_all_types
           !!@cached_directives[dir_name]
