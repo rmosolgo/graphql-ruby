@@ -83,7 +83,13 @@ module GraphQL
           h[type] = case type.kind.name
           when "INTERFACE"
             load_all_types
-            @unfiltered_pt[type].select { |pt| @cached_visible[pt] && referenced?(pt) }
+            pts = []
+            @unfiltered_interface_type_memberships[type].each { |itm|
+              if @cached_visible[itm] && (ot = itm.object_type) && @cached_visible[ot] && referenced?(ot)
+                pts << ot
+              end
+            }
+            pts
           when "UNION"
             pts = []
             type.type_memberships.each { |tm|
@@ -369,7 +375,7 @@ module GraphQL
         schema_types.flatten! # handle multiple defns
         schema_types.each { |t| add_type(t, true) }
 
-        @unfiltered_pt = Hash.new { |h, k| h[k] = [] }.compare_by_identity
+        @unfiltered_interface_type_memberships = Hash.new { |h, k| h[k] = [] }.compare_by_identity
         @add_possible_types = Set.new
 
         while @unvisited_types.any?
@@ -378,12 +384,10 @@ module GraphQL
             visit_type(t)
           end
           @add_possible_types.each do |int_t|
-            pt = @unfiltered_pt[int_t]
-            pt.each do |obj_type|
-              if @cached_visible[obj_type] &&
-                  (tm = obj_type.interface_type_memberships.find { |tm| tm.abstract_type == int_t }) &&
-                  @cached_visible[tm]
-                add_type(obj_type, tm)
+            itms = @unfiltered_interface_type_memberships[int_t]
+            itms.each do |itm|
+              if @cached_visible[itm] && (obj_type = itm.object_type) && @cached_visible[obj_type]
+                add_type(obj_type, itm)
               end
             end
           end
@@ -410,7 +414,7 @@ module GraphQL
         elsif type.kind.fields?
           if type.kind.object?
             type.interface_type_memberships.each do |itm|
-              @unfiltered_pt[itm.abstract_type] << type
+              @unfiltered_interface_type_memberships[itm.abstract_type] << itm
             end
             # recurse into visible implemented interfaces
             interfaces(type).each do |interface|
