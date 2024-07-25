@@ -32,7 +32,8 @@ module GraphQL
         @all_types_loaded = false
         @unvisited_types = []
         @referenced_types = Hash.new { |h, type_defn| h[type_defn] = [] }.compare_by_identity
-        @cached_possible_types = nil
+        @cached_directives = {}
+        @all_directives = nil
         @cached_visible = Hash.new { |h, member|
           h[member] = @schema.visible?(member, @context)
         }.compare_by_identity
@@ -286,12 +287,17 @@ module GraphQL
       end
 
       def directive_exists?(dir_name)
-        dir = @schema.directives[dir_name]
-        !!(dir && @cached_visible[dir])
+        if (dir = @schema.directives[dir_name]) && @cached_visible[dir]
+          dir
+        else
+          load_all_types
+          !!@cached_directives[dir_name]
+        end
       end
 
       def directives
-        @schema.directives.each_value.select { |d| @cached_visible[d] }
+        load_all_types
+        @all_directives ||= @schema.directives.merge(@cached_directives).values
       end
 
       def loadable?(t, _ctx)
@@ -399,19 +405,9 @@ module GraphQL
       end
 
       def visit_type(type)
-        if type.kind.input_object?
-          # recurse into visible arguments
-          arguments(type).each do |argument|
-            add_type(argument.type.unwrap, argument)
-          end
-        elsif type.kind.union?
-          # recurse into visible possible types
-          type.type_memberships.each do |tm|
-            if @cached_visible[tm] && @cached_visible[tm.object_type]
-              add_type(tm.object_type, tm)
-            end
-          end
-        elsif type.kind.fields?
+        visit_directives(type)
+        case type.kind.name
+        when "OBJECT", "INTERFACE"
           if type.kind.object?
             type.interface_type_memberships.each do |itm|
               @unfiltered_interface_type_memberships[itm.abstract_type] << itm
@@ -428,6 +424,7 @@ module GraphQL
           t_f = type.all_field_definitions
           t_f.each do |field|
             if @cached_visible[field]
+              visit_directives(field)
               field_type = field.type.unwrap
               if field_type.kind.interface?
                 @add_possible_types.add(field_type)
@@ -436,11 +433,47 @@ module GraphQL
 
               # recurse into visible arguments
               arguments(field).each do |argument|
+                visit_directives(argument)
                 add_type(argument.type.unwrap, argument)
               end
             end
           end
+        when "INPUT_OBJECT"
+          # recurse into visible arguments
+          arguments(type).each do |argument|
+            visit_directives(argument)
+            add_type(argument.type.unwrap, argument)
+          end
+        when "UNION"
+          # recurse into visible possible types
+          type.type_memberships.each do |tm|
+            if @cached_visible[tm] && @cached_visible[tm.object_type]
+              add_type(tm.object_type, tm)
+            end
+          end
+        when "ENUM"
+          enum_values(type).each do |val|
+            visit_directives(val)
+          end
+        when "SCALAR"
+          # pass
         end
+      end
+
+      def visit_directives(member)
+        member.directives.each { |dir|
+          dir_class = dir.class
+          if @cached_visible[dir_class]
+            dir_name = dir_class.graphql_name
+            if (existing_dir = @cached_directives[dir_name])
+              if existing_dir != dir_class
+                raise ArgumentError, "Two directives for `@#{dir_name}`: #{existing_dir}, #{dir.class}"
+              end
+            else
+              @cached_directives[dir.graphql_name] = dir_class
+            end
+          end
+        }
       end
     end
   end

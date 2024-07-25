@@ -899,10 +899,22 @@ type Query {
       end
 
       directive CustomThing
+
+      class Query < GraphQL::Schema::Object
+        field :f, Int, directives: { CustomThing => { stuff: "ok" } }
+      end
+      query(Query)
     end
 
     it "prints them out" do
-      assert_equal "directive @customThing(stuff: String!) on FIELD_DEFINITION\n", CustomSDLDirectiveSchema.to_definition
+      expected_str = <<~GRAPHQL
+        directive @customThing(stuff: String!) on FIELD_DEFINITION
+
+        type Query {
+          f: Int @customThing(stuff: "ok")
+        }
+      GRAPHQL
+      assert_equal expected_str, CustomSDLDirectiveSchema.to_definition
     end
   end
 end
