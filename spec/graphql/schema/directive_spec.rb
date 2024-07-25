@@ -382,7 +382,7 @@ Use `locations(OBJECT)` to update this directive's definition, or remove it from
       type Query @tag(name: "t1") @tag(name: "t2") {
         something(
           arg: Boolean @tag(name: "t3") @tag(name: "t4")
-        ): Int @tag(name: "t5") @tag(name: "t6")
+        ): Stuff @tag(name: "t5") @tag(name: "t6")
       }
 
       enum Stuff {

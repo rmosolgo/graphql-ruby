@@ -296,8 +296,16 @@ module GraphQL
       end
 
       def directives
-        load_all_types
-        @all_directives ||= @schema.directives.merge(@cached_directives).values
+        @all_directives ||= begin
+          load_all_types
+          dirs = []
+          @schema.directives.each do |name, dir_defn|
+            if !@cached_directives[name] && @cached_visible[dir_defn]
+              dirs << dir_defn
+            end
+          end
+          dirs.concat(@cached_directives.values)
+        end
       end
 
       def loadable?(t, _ctx)
@@ -363,7 +371,7 @@ module GraphQL
       def load_all_types
         return if @all_types_loaded
         @all_types_loaded = true
-        schema_types = [
+        entry_point_types = [
           query_root,
           mutation_root,
           subscription_root,
@@ -374,12 +382,21 @@ module GraphQL
         @schema.orphan_types.each do |orphan_type|
           if @cached_visible[orphan_type] &&
             orphan_type.interface_type_memberships.any? { |tm| @cached_visible[tm] && @cached_visible[tm.abstract_type] }
-            schema_types << orphan_type
+            entry_point_types << orphan_type
           end
         end
-        schema_types.compact! # TODO why is this necessary?!
-        schema_types.flatten! # handle multiple defns
-        schema_types.each { |t| add_type(t, true) }
+
+        @schema.directives.each do |_dir_name, dir_class|
+          if @cached_visible[dir_class]
+            arguments(dir_class).each do |arg|
+              entry_point_types << arg.type.unwrap
+            end
+          end
+        end
+
+        entry_point_types.compact! # TODO why is this necessary?!
+        entry_point_types.flatten! # handle multiple defns
+        entry_point_types.each { |t| add_type(t, true) }
 
         @unfiltered_interface_type_memberships = Hash.new { |h, k| h[k] = [] }.compare_by_identity
         @add_possible_types = Set.new
@@ -447,8 +464,15 @@ module GraphQL
         when "UNION"
           # recurse into visible possible types
           type.type_memberships.each do |tm|
-            if @cached_visible[tm] && @cached_visible[tm.object_type]
-              add_type(tm.object_type, tm)
+            if @cached_visible[tm]
+              obj_t = tm.object_type
+              if obj_t.is_a?(String)
+                obj_t = Member::BuildType.constantize(obj_t)
+                tm.object_type = obj_t
+              end
+              if @cached_visible[obj_t]
+                add_type(obj_t, tm)
+              end
             end
           end
         when "ENUM"
