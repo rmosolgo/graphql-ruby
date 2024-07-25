@@ -90,10 +90,13 @@ module GraphQL
             end
           end
           graphql_result
-        elsif schema.has_defined_type?(type_name)
-          raise TypeNotVisibleError.new(type_name: type_name)
         else
-          raise TypeNotDefinedError.new(type_name: type_name)
+          unfiltered_type = Schema::Subset.pass_thru(schema: schema, context: context).type(type_name)
+          if unfiltered_type
+            raise TypeNotVisibleError.new(type_name: type_name)
+          else
+            raise TypeNotDefinedError.new(type_name: type_name)
+          end
         end
       end
 

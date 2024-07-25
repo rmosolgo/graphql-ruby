@@ -25,6 +25,12 @@ module GraphQL
         end
       end
 
+      def self.pass_thru(context:, schema:)
+        subset = self.new(context: context, schema: schema)
+        subset.instance_variable_set(:@cached_visible, Hash.new { |h,k| h[k] = true })
+        subset
+      end
+
       def initialize(context:, schema:)
         @context = context
         @schema = schema

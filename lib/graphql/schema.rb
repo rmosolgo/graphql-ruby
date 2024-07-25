@@ -493,7 +493,11 @@ module GraphQL
       end
 
       def root_types
-        @root_types
+        if use_schema_subset?
+          [query, mutation, subscription].compact
+        else
+          @root_types
+        end
       end
 
       def warden_class
