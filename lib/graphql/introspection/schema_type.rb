@@ -39,7 +39,7 @@ module GraphQL
       end
 
       def directives
-        @context.types.directives
+        @context.types.directives.sort_by(&:graphql_name)
       end
     end
   end

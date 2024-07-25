@@ -591,16 +591,16 @@ GRAPHQL
 
     # and the interface relationship is sometimes hidden:
     refute_includes MultifieldSchema::Country.interfaces({ future_schema: false }), MultifieldSchema::HasCapital
-    if GraphQL::Schema.use_schema_subset?
-      # TODO I think this is wrong -- it should be hidden.
-      assert_equal [MultifieldSchema::Country], MultifieldSchema.possible_types(MultifieldSchema::HasCapital, { future_schema: false })
-    else
-      refute_includes MultifieldSchema.possible_types(MultifieldSchema::HasCapital, { future_schema: false }), MultifieldSchema::Country
-    end
+    refute_includes MultifieldSchema.possible_types(MultifieldSchema::HasCapital, { future_schema: false }), MultifieldSchema::Country
     assert_includes MultifieldSchema::Country.interfaces({ future_schema: true }), MultifieldSchema::HasCapital
     assert_includes MultifieldSchema.possible_types(MultifieldSchema::HasCapital, { future_schema: true }), MultifieldSchema::Country
     assert_includes MultifieldSchema::Country.interfaces, MultifieldSchema::HasCapital
-    assert_includes MultifieldSchema.possible_types(MultifieldSchema::HasCapital), MultifieldSchema::Country
+    if GraphQL::Schema.use_schema_subset?
+      # filtered with `future_schema: nil`
+      refute_includes MultifieldSchema.possible_types(MultifieldSchema::HasCapital), MultifieldSchema::Country
+    else
+      assert_includes MultifieldSchema.possible_types(MultifieldSchema::HasCapital), MultifieldSchema::Country
+    end
   end
 
   it "hides hidden union memberships" do
