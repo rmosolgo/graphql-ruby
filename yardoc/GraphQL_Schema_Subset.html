@@ -1,10 +1,25 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/2.3.9/GraphQL/Schema/Subset" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.3.10/GraphQL/Schema/Subset" />
   </head>
   <body>
     <p>Class: GraphQL::Schema::Subset &lt; Object
+This class filters the types, fields, arguments, enum values, and
+directives in a schema based on the given <code class="language-plaintext highlighter-rouge">context</code>. 
+It’s like Warden, but has some differences:</p>
+<ul>
+  <li>It doesn’t use Schema’s top-level caches (eg Schema.references_to,
+Schema.possible_types, Schema.types) - It doesn’t hide Interface or
+Union types when all their possible types are hidden. (Instead,
+those types should implement <code class="language-plaintext highlighter-rouge">.visible?</code> to hide in that case.) - It
+checks <code class="language-plaintext highlighter-rouge">.visible?</code> on root introspection types 
+In the future, Subset will support lazy-loading types as needed
+during execution and multi-request caching of subsets. 
+See Also:</li>
+  <li>Schema::TypesMigration - for a helper class in adopting this filter
+Direct Known Subclasses:
+TypesMigration
 Instance methods:
 add_if_visible, add_type, all_types, argument, arguments,
 directive_exists?, directives, enum_values, field,
@@ -12,7 +27,8 @@ field_on_visible_interface?, fields, initialize, interfaces,
 load_all_types, loadable?, loaded_types, mutation_root,
 non_duplicate_items, possible_types, query_root,
 raise_duplicate_definition, reachable_type?, referenced?,
-subscription_root, type, visit_type</p>
+subscription_root, type, visit_type</li>
+</ul>
 
 
   </body>
