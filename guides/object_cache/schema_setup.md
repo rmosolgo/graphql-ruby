@@ -21,7 +21,7 @@ class MySchema < GraphQL::Schema
 end
 ```
 
-See the {% internal_link "Redis guide", "/object_cache/redis" %} or {% "Memcached guide", "/object_cache/memcached" %} for details about configuring cache storage.
+See the {% internal_link "Redis guide", "/object_cache/redis" %} or {% internal_link "Memcached guide", "/object_cache/memcached" %} for details about configuring cache storage.
 
 Additionally, it accepts some options for customizing how introspection is cached, see {% internal_link "Caching Introspection", "/object_cache/caching#caching-introspection" %}
 
