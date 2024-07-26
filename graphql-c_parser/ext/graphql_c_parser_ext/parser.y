@@ -96,6 +96,7 @@ SETUP_NODE_CLASS_VARIABLE(SchemaExtension)
 %token TYPE_LITERAL 234
 %token UNION 235
 %token VAR_SIGN 236
+%token COMMENT 240
 
 %%
 
@@ -524,7 +525,7 @@ type_system_definition:
       /* none */      { $$ = Qnil; }
     | description
 
-  comment: STRING
+  comment: COMMENT
 
   comment_opt:
       /* none */      { $$ = Qnil; }
@@ -612,17 +613,16 @@ type_system_definition:
     | LPAREN input_value_definition_list RPAREN { $$ = $2; }
 
   field_definition:
-      description_opt comment_opt name arguments_definitions_opt COLON type directives_list_opt {
+      description_opt name arguments_definitions_opt COLON type directives_list_opt {
         $$ = MAKE_AST_NODE(FieldDefinition, 7,
-          rb_ary_entry($3, 1),
-          rb_ary_entry($3, 2),
-          rb_ary_entry($3, 3),
+          rb_ary_entry($2, 1),
+          rb_ary_entry($2, 2),
+          rb_ary_entry($2, 3),
           $5,
           // TODO see get_description for reading a description from comments
           (RB_TEST($1) ? rb_ary_entry($1, 3) : Qnil),
           $3,
-          $6,
-          $2
+          $6
         );
       }
 
