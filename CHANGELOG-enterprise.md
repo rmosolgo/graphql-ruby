@@ -8,6 +8,14 @@
 
 ### Bug Fix
 
+# 1.5.0 (26 Jul 2024)
+
+- ObjectCache: Add Dalli backend for Memcached
+
+# 1.4.2 (11 Jun 2024)
+
+- ObjectCache: Add `Schema.fingerprint` hook and `context[:refresh_object_cache]`
+
 # 1.4.1 (30 May 2024)
 
 - ObjectCache: properly handle when object fingerprints are evicted but the cached result wasn't

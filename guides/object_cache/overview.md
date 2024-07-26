@@ -38,6 +38,6 @@ If there is no cached response or if the fingerprints don't match, then the inco
 To get started with the object cache:
 
 - {% internal_link "Prepare the schema", "/object_cache/schema_setup" %}
-- {% internal_link "Set up a Redis backend", "/object_cache/redis" %}
+- Set up a {% internal_link "Redis backend", "/object_cache/redis" %} or {% internal_link "Memcached backend", "/object_cache/memcached" %}
 - {% internal_link "Configure types and fields for caching", "/object_cache/caching" %}
 - Check out the {% internal_link "runtime considerations", "/object_cache/runtime_considerations" %}
