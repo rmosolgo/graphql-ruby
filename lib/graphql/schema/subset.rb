@@ -15,6 +15,22 @@ module GraphQL
     #
     # @see Schema::TypesMigration for a helper class in adopting this filter
     class Subset
+      # @return [Schema::Subset]
+      def self.from_context(ctx, schema)
+        if ctx.respond_to?(:types) && (types = ctx.types).is_a?(self)
+          types
+        else
+          # TODO use a cached instance from the schema
+          self.new(context: ctx, schema: schema)
+        end
+      end
+
+      def self.pass_thru(context:, schema:)
+        subset = self.new(context: context, schema: schema)
+        subset.instance_variable_set(:@cached_visible, Hash.new { |h,k| h[k] = true })
+        subset
+      end
+
       def initialize(context:, schema:)
         @context = context
         @schema = schema
@@ -22,7 +38,8 @@ module GraphQL
         @all_types_loaded = false
         @unvisited_types = []
         @referenced_types = Hash.new { |h, type_defn| h[type_defn] = [] }.compare_by_identity
-        @cached_possible_types = nil
+        @cached_directives = {}
+        @all_directives = nil
         @cached_visible = Hash.new { |h, member|
           h[member] = @schema.visible?(member, @context)
         }.compare_by_identity
@@ -73,7 +90,13 @@ module GraphQL
           h[type] = case type.kind.name
           when "INTERFACE"
             load_all_types
-            @unfiltered_pt[type].select { |pt| @cached_visible[pt] && referenced?(pt) }
+            pts = []
+            @unfiltered_interface_type_memberships[type].each { |itm|
+              if @cached_visible[itm] && (ot = itm.object_type) && @cached_visible[ot] && referenced?(ot)
+                pts << ot
+              end
+            }
+            pts
           when "UNION"
             pts = []
             type.type_memberships.each { |tm|
@@ -260,17 +283,35 @@ module GraphQL
         @all_types.values
       end
 
+      def all_types_h
+        load_all_types
+        @all_types
+      end
+
       def enum_values(owner)
         @cached_enum_values[owner]
       end
 
       def directive_exists?(dir_name)
-        dir = @schema.directives[dir_name]
-        !!(dir && @cached_visible[dir])
+        if (dir = @schema.directives[dir_name]) && @cached_visible[dir]
+          !!dir
+        else
+          load_all_types
+          !!@cached_directives[dir_name]
+        end
       end
 
       def directives
-        @schema.directives.each_value.select { |d| @cached_visible[d] }
+        @all_directives ||= begin
+          load_all_types
+          dirs = []
+          @schema.directives.each do |name, dir_defn|
+            if !@cached_directives[name] && @cached_visible[dir_defn]
+              dirs << dir_defn
+            end
+          end
+          dirs.concat(@cached_directives.values)
+        end
       end
 
       def loadable?(t, _ctx)
@@ -336,7 +377,7 @@ module GraphQL
       def load_all_types
         return if @all_types_loaded
         @all_types_loaded = true
-        schema_types = [
+        entry_point_types = [
           query_root,
           mutation_root,
           subscription_root,
@@ -347,14 +388,23 @@ module GraphQL
         @schema.orphan_types.each do |orphan_type|
           if @cached_visible[orphan_type] &&
             orphan_type.interface_type_memberships.any? { |tm| @cached_visible[tm] && @cached_visible[tm.abstract_type] }
-            schema_types << orphan_type
+            entry_point_types << orphan_type
           end
         end
-        schema_types.compact! # TODO why is this necessary?!
-        schema_types.flatten! # handle multiple defns
-        schema_types.each { |t| add_type(t, true) }
 
-        @unfiltered_pt = Hash.new { |h, k| h[k] = [] }.compare_by_identity
+        @schema.directives.each do |_dir_name, dir_class|
+          if @cached_visible[dir_class]
+            arguments(dir_class).each do |arg|
+              entry_point_types << arg.type.unwrap
+            end
+          end
+        end
+
+        entry_point_types.compact! # TODO why is this necessary?!
+        entry_point_types.flatten! # handle multiple defns
+        entry_point_types.each { |t| add_type(t, true) }
+
+        @unfiltered_interface_type_memberships = Hash.new { |h, k| h[k] = [] }.compare_by_identity
         @add_possible_types = Set.new
 
         while @unvisited_types.any?
@@ -363,12 +413,10 @@ module GraphQL
             visit_type(t)
           end
           @add_possible_types.each do |int_t|
-            pt = @unfiltered_pt[int_t]
-            pt.each do |obj_type|
-              if @cached_visible[obj_type] &&
-                  (tm = obj_type.interface_type_memberships.find { |tm| tm.abstract_type == int_t }) &&
-                  @cached_visible[tm]
-                add_type(obj_type, tm)
+            itms = @unfiltered_interface_type_memberships[int_t]
+            itms.each do |itm|
+              if @cached_visible[itm] && (obj_type = itm.object_type) && @cached_visible[obj_type]
+                add_type(obj_type, itm)
               end
             end
           end
@@ -380,22 +428,12 @@ module GraphQL
       end
 
       def visit_type(type)
-        if type.kind.input_object?
-          # recurse into visible arguments
-          arguments(type).each do |argument|
-            add_type(argument.type.unwrap, argument)
-          end
-        elsif type.kind.union?
-          # recurse into visible possible types
-          type.type_memberships.each do |tm|
-            if @cached_visible[tm] && @cached_visible[tm.object_type]
-              add_type(tm.object_type, tm)
-            end
-          end
-        elsif type.kind.fields?
+        visit_directives(type)
+        case type.kind.name
+        when "OBJECT", "INTERFACE"
           if type.kind.object?
             type.interface_type_memberships.each do |itm|
-              @unfiltered_pt[itm.abstract_type] << type
+              @unfiltered_interface_type_memberships[itm.abstract_type] << itm
             end
             # recurse into visible implemented interfaces
             interfaces(type).each do |interface|
@@ -409,6 +447,7 @@ module GraphQL
           t_f = type.all_field_definitions
           t_f.each do |field|
             if @cached_visible[field]
+              visit_directives(field)
               field_type = field.type.unwrap
               if field_type.kind.interface?
                 @add_possible_types.add(field_type)
@@ -417,11 +456,54 @@ module GraphQL
 
               # recurse into visible arguments
               arguments(field).each do |argument|
+                visit_directives(argument)
                 add_type(argument.type.unwrap, argument)
               end
             end
           end
+        when "INPUT_OBJECT"
+          # recurse into visible arguments
+          arguments(type).each do |argument|
+            visit_directives(argument)
+            add_type(argument.type.unwrap, argument)
+          end
+        when "UNION"
+          # recurse into visible possible types
+          type.type_memberships.each do |tm|
+            if @cached_visible[tm]
+              obj_t = tm.object_type
+              if obj_t.is_a?(String)
+                obj_t = Member::BuildType.constantize(obj_t)
+                tm.object_type = obj_t
+              end
+              if @cached_visible[obj_t]
+                add_type(obj_t, tm)
+              end
+            end
+          end
+        when "ENUM"
+          enum_values(type).each do |val|
+            visit_directives(val)
+          end
+        when "SCALAR"
+          # pass
         end
+      end
+
+      def visit_directives(member)
+        member.directives.each { |dir|
+          dir_class = dir.class
+          if @cached_visible[dir_class]
+            dir_name = dir_class.graphql_name
+            if (existing_dir = @cached_directives[dir_name])
+              if existing_dir != dir_class
+                raise ArgumentError, "Two directives for `@#{dir_name}`: #{existing_dir}, #{dir.class}"
+              end
+            else
+              @cached_directives[dir.graphql_name] = dir_class
+            end
+          end
+        }
       end
     end
   end

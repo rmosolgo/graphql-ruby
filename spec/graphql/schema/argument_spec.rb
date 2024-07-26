@@ -398,7 +398,7 @@ describe GraphQL::Schema::Argument do
       err = assert_raises ArgumentError do
         Class.new(GraphQL::Schema) do
           query(query_type)
-        end
+        end.to_definition
       end
 
       assert_equal "Required arguments cannot be deprecated: MyInput2.foo.", err.message
@@ -427,7 +427,7 @@ describe GraphQL::Schema::Argument do
       err = assert_raises ArgumentError do
         Class.new(InvalidArgumentTypeSchema) do
           query(InvalidArgumentTypeSchema::InvalidArgumentObject)
-        end
+        end.to_definition
       end
 
       expected_message = "Invalid input type for InvalidArgumentObject.invalid.objectRef: InvalidArgument. Must be scalar, enum, or input object, not OBJECT."
@@ -436,7 +436,7 @@ describe GraphQL::Schema::Argument do
       err = assert_raises ArgumentError do
         Class.new(InvalidArgumentTypeSchema) do
           query(InvalidArgumentTypeSchema::InvalidLazyArgumentObject)
-        end
+        end.to_definition
       end
 
       expected_message = "Invalid input type for InvalidLazyArgumentObject.invalid.lazyObjectRef: InvalidArgument. Must be scalar, enum, or input object, not OBJECT."
@@ -456,7 +456,7 @@ describe GraphQL::Schema::Argument do
       err = assert_raises GraphQL::Schema::Argument::InvalidDefaultValueError do
         Class.new(GraphQL::Schema) do
           query(query_type)
-        end
+        end.to_definition
       end
       expected_message = "`Query.f1.arg1` has an invalid default value: `nil` isn't accepted by `Int!`; update the default value or the argument type."
       assert_equal expected_message, err.message
@@ -478,7 +478,7 @@ describe GraphQL::Schema::Argument do
       err = assert_raises GraphQL::Schema::Argument::InvalidDefaultValueError do
         Class.new(GraphQL::Schema) do
           query(query_type)
-        end
+        end.to_definition
       end
 
       expected_message = "`InputObj.arg1` has an invalid default value: `[nil]` isn't accepted by `[String!]`; update the default value or the argument type."
@@ -501,7 +501,7 @@ describe GraphQL::Schema::Argument do
       err = assert_raises GraphQL::Schema::Argument::InvalidDefaultValueError do
         Class.new(GraphQL::Schema) do
           directive(localize)
-        end
+        end.to_definition
       end
 
       expected_message = "`@localize.lang` has an invalid default value: `\"ZH\"` isn't accepted by `Language`; update the default value or the argument type."
@@ -535,7 +535,7 @@ describe GraphQL::Schema::Argument do
 
 
       err2 = assert_raises GraphQL::Schema::Argument::InvalidDefaultValueError do
-        GraphQL::Schema.from_definition(directive_schema_str)
+        GraphQL::Schema.from_definition(directive_schema_str).to_definition
       end
       expected_message = "`@localize.lang` has an invalid default value: `\"ZH\"` isn't accepted by `Language`; update the default value or the argument type."
       assert_equal expected_message, err2.message

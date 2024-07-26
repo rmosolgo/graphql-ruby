@@ -39,6 +39,26 @@ describe GraphQL::Introspection::DirectiveType do
       "__schema" => {
         "directives" => [
           {
+            "name" => "deprecated",
+            "args" => [
+              {"name"=>"reason", "type"=>{"kind"=>"SCALAR", "name"=>"String", "ofType"=>nil}}
+            ],
+            "locations"=>["FIELD_DEFINITION", "ENUM_VALUE", "ARGUMENT_DEFINITION", "INPUT_FIELD_DEFINITION"],
+            "isRepeatable" => false,
+            "onField" => false,
+            "onFragment" => false,
+            "onOperation" => false,
+          },
+          {
+            "name"=>"doStuff",
+            "args"=>[],
+            "locations"=>[],
+            "isRepeatable"=>true,
+            "onField"=>false,
+            "onFragment"=>false,
+            "onOperation"=>false,
+          },
+          {
             "name" => "include",
             "args" => [
               {"name"=>"if", "type"=>{"kind"=>"NON_NULL", "name"=>nil, "ofType"=>{"name"=>"Boolean"}}}
@@ -47,6 +67,15 @@ describe GraphQL::Introspection::DirectiveType do
             "isRepeatable" => false,
             "onField" => true,
             "onFragment" => true,
+            "onOperation" => false,
+          },
+          {
+            "name" => "oneOf",
+            "args" => [],
+            "locations"=>["INPUT_OBJECT"],
+            "isRepeatable" => false,
+            "onField" => false,
+            "onFragment" => false,
             "onOperation" => false,
           },
           {
@@ -61,26 +90,6 @@ describe GraphQL::Introspection::DirectiveType do
             "onOperation" => false,
           },
           {
-            "name" => "deprecated",
-            "args" => [
-              {"name"=>"reason", "type"=>{"kind"=>"SCALAR", "name"=>"String", "ofType"=>nil}}
-            ],
-            "locations"=>["FIELD_DEFINITION", "ENUM_VALUE", "ARGUMENT_DEFINITION", "INPUT_FIELD_DEFINITION"],
-            "isRepeatable" => false,
-            "onField" => false,
-            "onFragment" => false,
-            "onOperation" => false,
-          },
-          {
-            "name" => "oneOf",
-            "args" => [],
-            "locations"=>["INPUT_OBJECT"],
-            "isRepeatable" => false,
-            "onField" => false,
-            "onFragment" => false,
-            "onOperation" => false,
-          },
-          {
             "name" => "specifiedBy",
             "args" => [
               {"name"=>"url", "type"=>{"kind"=>"NON_NULL", "name"=>nil, "ofType"=>{"name"=>"String"}}}
@@ -91,19 +100,10 @@ describe GraphQL::Introspection::DirectiveType do
             "onFragment" => false,
             "onOperation" => false,
           },
-          {
-            "name"=>"doStuff",
-            "args"=>[],
-            "locations"=>[],
-            "isRepeatable"=>true,
-            "onField"=>false,
-            "onFragment"=>false,
-            "onOperation"=>false,
-          }
         ]
       }
     }}
-    assert_equal(expected, result)
+    assert_equal(expected, result.to_h)
   end
 
   it "hides deprecated arguments by default" do

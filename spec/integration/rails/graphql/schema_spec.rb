@@ -16,6 +16,7 @@ describe GraphQL::Schema do
 
   describe "#union_memberships" do
     it "returns a list of unions that include the type" do
+      skip("Not implemented for Subset") if GraphQL::Schema.use_schema_subset?
       assert_equal [schema.types["Animal"], schema.types["AnimalAsCow"]], schema.union_memberships(schema.types["Cow"])
     end
   end
@@ -42,6 +43,7 @@ describe GraphQL::Schema do
 
   describe "#references_to" do
     it "returns a list of Field and Arguments of that type" do
+      skip "Not implemented when using Subset" if GraphQL::Schema.use_schema_subset?
       cow_field = schema.get_field("Query", "cow")
       cow_t = schema.get_type("Cow")
       assert_equal [cow_field], schema.references_to(cow_t)

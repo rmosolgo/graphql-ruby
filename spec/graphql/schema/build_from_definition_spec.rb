@@ -904,8 +904,8 @@ enum Enum {
 }
 
 type Query {
-  field(argument: String): String
-  deprecatedField(argument: String): String @deprecated(reason: "Test")
+  field(argument: Enum): Interface
+  deprecatedField(argument: Input): Union @deprecated(reason: "Test")
 }
 
 interface Interface {
@@ -928,7 +928,7 @@ directive @Directive (
 directive @custom(thing: Boolean) on SCHEMA
 
 type Type implements Interface {
-  field(argument: String): String
+  field(argument: Scalar): Type
 }
       GRAPHQL
 
@@ -941,8 +941,8 @@ type Type implements Interface {
       assert_equal [9, 1], schema.types["Query"].ast_node.position
       assert_equal [10, 3], schema.types["Query"].fields["field"].ast_node.position
       assert_equal [10, 9], schema.types["Query"].fields["field"].arguments["argument"].ast_node.position
-      assert_equal [11, 45], schema.types["Query"].fields["deprecatedField"].ast_node.directives[0].position
-      assert_equal [11, 57], schema.types["Query"].fields["deprecatedField"].ast_node.directives[0].arguments[0].position
+      assert_equal [11, 43], schema.types["Query"].fields["deprecatedField"].ast_node.directives[0].position
+      assert_equal [11, 55], schema.types["Query"].fields["deprecatedField"].ast_node.directives[0].arguments[0].position
       assert_equal [14, 1], schema.types["Interface"].ast_node.position
       assert_equal [15, 3], schema.types["Interface"].fields["field"].ast_node.position
       assert_equal [15, 9], schema.types["Interface"].fields["field"].arguments["argument"].ast_node.position
@@ -1485,7 +1485,7 @@ type ThingEdge {
     GRAPHQL
 
     schema = GraphQL::Schema.from_definition(schema_str)
-    assert_equal schema.directives["myDirective"].get_argument("id").type, schema.find("ID")
+    assert_equal schema.directives["myDirective"].get_argument("id").type, schema.get_type("ID")
   end
 
   describe "orphan types" do

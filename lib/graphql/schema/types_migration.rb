@@ -87,8 +87,17 @@ module GraphQL
         if !@skip_error
           warden_ctx_vals = context.to_h.dup
           warden_ctx_vals[:types_migration_warden_running] = true
+          if defined?(schema::WardenCompatSchema)
+            warden_schema = schema::WardenCompatSchema
+          else
+            warden_schema = Class.new(schema)
+            warden_schema.use_schema_subset = false
+            # TODO public API
+            warden_schema.send(:add_type_and_traverse, [warden_schema.query, warden_schema.mutation, warden_schema.subscription].compact, root: true)
+            warden_schema.send(:add_type_and_traverse, warden_schema.directives.values + warden_schema.orphan_types, root: false)
+          end
           warden_ctx = GraphQL::Query::Context.new(query: context.query, values: warden_ctx_vals)
-          example_warden = GraphQL::Schema::Warden.new(schema: schema, context: warden_ctx)
+          example_warden = GraphQL::Schema::Warden.new(schema: warden_schema, context: warden_ctx)
           @warden_types = example_warden.schema_subset
           warden_ctx.warden = example_warden
           warden_ctx.types = @warden_types
@@ -133,12 +142,42 @@ module GraphQL
         res_2 = @warden_types.public_send(method, *args)
         normalized_res_1 = res_1.is_a?(Array) ? Set.new(res_1) : res_1
         normalized_res_2 = res_2.is_a?(Array) ? Set.new(res_2) : res_2
-        if normalized_res_1 != normalized_res_2
+        if !equivalent_schema_members?(normalized_res_1, normalized_res_2)
           # Raise the errors with the orignally returned values:
           err = RuntimeTypesMismatchError.new(method, res_2, res_1, args)
           raise err
         else
           res_1
+        end
+      end
+
+      def equivalent_schema_members?(member1, member2)
+        if member1.class != member2.class
+          return false
+        end
+
+        case member1
+        when Set
+          member1_array = member1.to_a.sort_by(&:graphql_name)
+          member2_array = member2.to_a.sort_by(&:graphql_name)
+          member1_array.each_with_index do |inner_member1, idx|
+            inner_member2 = member2_array[idx]
+            equivalent_schema_members?(inner_member1, inner_member2)
+          end
+        when GraphQL::Schema::Field
+          if member1.introspection? && member2.introspection?
+            member1.inspect == member2.inspect
+          else
+            member1 == member2
+          end
+        when Module
+          if member1.introspection? && member2.introspection?
+            member1.graphql_name == member2.graphql_name
+          else
+            member1 == member2
+          end
+        else
+          member1 == member2
         end
       end
     end
