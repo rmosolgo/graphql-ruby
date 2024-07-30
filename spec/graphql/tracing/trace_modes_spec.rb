@@ -277,4 +277,42 @@ describe "Trace modes for schemas" do
       assert ChildSchema.new_trace.instance_variable_defined?(:@executor_class)
     end
   end
+
+  describe "when GraphQL::Schema gets a new default trace" do
+    module NewDefaultTrace
+      module ParentClassTrace
+        def execute_query(query:)
+          puts "ParentClassTrace running"
+          query[:parent_trace_ran] = true
+          super
+        end
+      end
+
+      module ChildClassTrace
+        def execute_query(query:)
+          puts "ChildClassTrace running"
+          query[:child_trace_ran] = true
+          super
+        end
+      end
+
+      class ParentSchema < GraphQL::Schema
+      end
+
+      class ChildSchema < ParentSchema
+        trace_with(ChildClassTrace)
+      end
+
+      ParentSchema.trace_with(ParentClassTrace)
+    end
+
+    it "still uses custom traces on subclasses" do
+      dummy_query = {}
+      finished = false
+      NewDefaultTrace::ChildSchema.new_trace.execute_query(query: dummy_query) { finished = true }
+      assert dummy_query[:child_trace_ran]
+      assert dummy_query[:parent_trace_ran]
+      assert finished
+    end
+  end
 end
