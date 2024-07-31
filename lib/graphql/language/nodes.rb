@@ -34,11 +34,11 @@ module GraphQL
         attr_reader :filename
 
         def line
-          @line ||= @source.line_at(@pos)
+          @line ||= @source&.line_at(@pos)
         end
 
         def col
-          @col ||= @source.column_at(@pos)
+          @col ||= @source&.column_at(@pos)
         end
 
         def definition_line
