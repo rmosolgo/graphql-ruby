@@ -28,6 +28,8 @@ module GraphQL
         end
 
         def validate(object, context, value)
+          return EMPTY_ARRAY if permitted_empty_value?(value)
+
           all_errors = EMPTY_ARRAY
 
           value.each do |subvalue|
