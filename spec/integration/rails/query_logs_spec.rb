@@ -101,7 +101,9 @@ describe "Integration with ActiveRecord::QueryLogs" do
       res = exec_query("query GetThingNames { t1: thing(id: 1) { name } t2: thing(id: 2) { name } }")
     end
     assert_equal ["Fork", "Spoon"], [res["data"]["t1"]["name"], res["data"]["t2"]["name"]]
-    assert_includes log, 'SELECT "things".* FROM "things" WHERE "things"."id" IN (?, ?) /*current_dataloader_source:QueryLogSchema::ThingSource*/'
+    assert_includes log, 'SELECT "things".* FROM "things" WHERE "things"."id" IN (?, ?) '
+    assert_includes log, 'current_dataloader_source:QueryLogSchema::ThingSource'
+    assert_includes log, 'current_graphql_operation:GetThingNames'
   end
 
   it "works for nested dataloader sources" do
@@ -109,8 +111,9 @@ describe "Integration with ActiveRecord::QueryLogs" do
     log = with_active_record_log(colorize: false) do
       res = exec_query("{ t1: otherThing(thingId: 1) { name } t2: otherThing(thingId: 2) { name } t5: otherThing(thingId: 5) { name } }")
     end
+
     assert_equal [nil, "Fork", nil], [res.dig("data", "t1", "name"), res.dig("data", "t2", "name"), res.dig("data", "t5")]
     assert_includes log, 'SELECT "things".* FROM "things" WHERE "things"."id" IN (?, ?, ?) /*current_dataloader_source:QueryLogSchema::ThingSource*/'
-    assert_includes log, 'QueryLogSchema::Thing Load (0.1ms)  SELECT "things".* FROM "things" WHERE "things"."id" = ? /*current_dataloader_source:QueryLogSchema::OtherThingSource*/'
+    assert_includes log, 'SELECT "things".* FROM "things" WHERE "things"."id" = ? /*current_dataloader_source:QueryLogSchema::OtherThingSource*/'
   end
 end
