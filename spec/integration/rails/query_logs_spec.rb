@@ -99,8 +99,10 @@ describe "Integration with ActiveRecord::QueryLogs" do
       res = exec_query("query OtherThingName { someThing { otherThing { name } } }")
     end
     assert_equal "Fork", res["data"]["someThing"]["otherThing"]["name"]
-    assert_includes log, "/*current_graphql_operation:OtherThingName,current_graphql_field:Query.someThing*/"
-    assert_includes log, "/*current_graphql_operation:OtherThingName,current_graphql_field:Thing.otherThing*/"
+    # These can appear in different orders in the SQL comment:
+    assert_includes log, "current_graphql_operation:OtherThingName"
+    assert_includes log, "current_graphql_field:Query.someThing"
+    assert_includes log, "current_graphql_field:Thing.otherThing"
   end
 
   it "includes dataloader source when configured" do
