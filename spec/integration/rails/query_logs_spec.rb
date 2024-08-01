@@ -1,20 +1,7 @@
-# frozen_string_literals: true
+# frozen_string_literal: true
 require "spec_helper"
 
 describe "Integration with ActiveRecord::QueryLogs" do
-  def self.prepare_things_database
-    ActiveRecord::Schema.define do
-      create_table :things, force: true do |t|
-        t.string :name
-        t.integer :other_thing_id
-      end
-    end
-
-    t1 = QueryLogSchema::Thing.create!(name: "Fork")
-    QueryLogSchema::Thing.create!(name: "Spoon", other_thing: t1)
-    QueryLogSchema::Thing.create!(name: "Knife")
-  end
-
   class QueryLogSchema < GraphQL::Schema
     class Thing < ActiveRecord::Base
       belongs_to :other_thing, class_name: "Thing"
@@ -73,8 +60,11 @@ describe "Integration with ActiveRecord::QueryLogs" do
     use GraphQL::Dataloader
   end
 
+  t1 = QueryLogSchema::Thing.create!(name: "Fork")
+  QueryLogSchema::Thing.create!(name: "Spoon", other_thing: t1)
+  QueryLogSchema::Thing.create!(name: "Knife")
+
   before do
-    self.class.prepare_things_database
     @prev_tags = ActiveRecord::QueryLogs.tags
     ActiveRecord.query_transformers << ActiveRecord::QueryLogs
     ActiveRecord::QueryLogs.tags = [{
