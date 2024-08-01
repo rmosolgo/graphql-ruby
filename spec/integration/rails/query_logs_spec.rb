@@ -2,16 +2,18 @@
 require "spec_helper"
 
 describe "Integration with ActiveRecord::QueryLogs" do
-  def prepare_things_database
+  def self.prepare_things_database
     ActiveRecord::Schema.define do
       create_table :things, force: true do |t|
         t.string :name
         t.integer :other_thing_id
       end
     end
-  end
 
-  prepare_things_database
+    t1 = QueryLogSchema::Thing.create!(name: "Fork")
+    QueryLogSchema::Thing.create!(name: "Spoon", other_thing: t1)
+    QueryLogSchema::Thing.create!(name: "Knife")
+  end
 
   class QueryLogSchema < GraphQL::Schema
     class Thing < ActiveRecord::Base
@@ -38,10 +40,6 @@ describe "Integration with ActiveRecord::QueryLogs" do
       end
     end
 
-    Thing1 = Thing.create!(name: "Fork")
-    Thing2 = Thing.create!(name: "Spoon", other_thing: Thing1)
-    Thing3 = Thing.create!(name: "Knife")
-
     class ThingType < GraphQL::Schema::Object
       field :name, String
       field :other_thing, self
@@ -51,7 +49,7 @@ describe "Integration with ActiveRecord::QueryLogs" do
       field :some_thing, ThingType
 
       def some_thing
-        Thing.find(Thing2.id)
+        Thing.find(2)
       end
 
       field :thing, ThingType do
@@ -74,8 +72,9 @@ describe "Integration with ActiveRecord::QueryLogs" do
     query(Query)
     use GraphQL::Dataloader
   end
+
   before do
-    prepare_things_database
+    self.class.prepare_things_database
     @prev_tags = ActiveRecord::QueryLogs.tags
     ActiveRecord.query_transformers << ActiveRecord::QueryLogs
     ActiveRecord::QueryLogs.tags = [{
