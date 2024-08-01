@@ -51,6 +51,11 @@ if testing_rails?
     create_table :foods, force: true do |t|
       t.column :name, :string
     end
+
+    create_table :things, force: true do |t|
+      t.string :name
+      t.integer :other_thing_id
+    end
   end
 
   class Food < ActiveRecord::Base

@@ -34,6 +34,7 @@ module GraphQL
           end
 
           multiplex = Execution::Multiplex.new(schema: schema, queries: queries, context: context, max_complexity: max_complexity)
+          Fiber[:__graphql_current_multiplex] = multiplex
           multiplex.current_trace.execute_multiplex(multiplex: multiplex) do
             schema = multiplex.schema
             queries = multiplex.queries
@@ -136,6 +137,7 @@ module GraphQL
               queries.map { |q| q.result_values ||= {} }
               raise
             ensure
+              Fiber[:__graphql_current_multiplex] = nil
               queries.map { |query|
                 runtime = query.context.namespace(:interpreter_runtime)[:runtime]
                 if runtime
