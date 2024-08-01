@@ -69,7 +69,7 @@ describe "Integration with ActiveRecord::QueryLogs" do
     ActiveRecord.query_transformers << ActiveRecord::QueryLogs
     ActiveRecord::QueryLogs.tags = [{
       current_graphql_operation: -> { GraphQL::Current.operation_name },
-      current_graphql_field: -> { GraphQL::Current.field_path },
+      current_graphql_field: -> { GraphQL::Current.field&.path },
       current_dataloader_source: -> { GraphQL::Current.dataloader_source_class },
     }]
   end
