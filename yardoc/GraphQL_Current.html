@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.3.11/GraphQL/Current" />
+  </head>
+  <body>
+    <p>Module: GraphQL::Current
+This module exposes Fiber-level runtime information. 
+It won’t work across unrelated fibers, although it will work in
+child Fibers. 
+Examples:</p>
+<h1 id="setting-up-activerecordquerylogs">Setting Up ActiveRecord::QueryLogs</h1>
+<p>config.active_record.query_log_tags = [
+:namespaced_controller,
+:action,
+:job,</p>
+<h1>…</h1>
+<p>{</p>
+<h1 id="graphql-runtime-info">GraphQL runtime info:</h1>
+<p>current_graphql_operation: -&gt; { GraphQL::Current.operation_name },
+current_graphql_field: -&gt; { GraphQL::Current.field&amp;.path },
+current_dataloader_source: -&gt; { GraphQL::Current.dataloader_source_class },</p>
+<h1 id="-1">…</h1>
+<p>},
+]
+Class methods:
+dataloader_source_class, field, operation_name</p>
+
+
+  </body>
+</html>
