@@ -10,6 +10,19 @@
 
 ### Bug fixes
 
+# 2.3.11 (2 Aug 2024)
+
+### New features
+
+- `GraphQL::Current` offers globally-available methods for runtime metadata #5034
+- Continue improving `Schema::Subset` (not production-ready yet, though) #5018 #5039
+
+### Bug fixes
+
+- Fix `Node#line` and `Node#col` when nodes are created by manually #5047
+- Remove unused `interpreter?`, `using_ast_analysis?` and `new_connections?` flag methods #5039
+- Clean up `.compare_by_identity` usages #5037
+
 # 2.3.10 (19 Jul 2024)
 
 ### Bug fixes
