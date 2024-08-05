@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 2.3.12 (5 Aug 2024)
+
+### Bug fixes
+
+- Add `fiber-storage` dependency for Ruby < 3.2 support
+
 # 2.3.11 (2 Aug 2024)
 
 ### New features
