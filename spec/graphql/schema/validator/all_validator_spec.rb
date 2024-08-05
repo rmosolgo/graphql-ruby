@@ -48,4 +48,20 @@ describe GraphQL::Schema::Validator::AllValidator do
   ]
 
   build_tests(:all, [Integer], expectations)
+
+  expectations = [
+    {
+      config: { allow_null: true, inclusion: { in: 1..5 }, numericality: { odd: true } },
+      cases: [
+        { query: "{ validated(value: null) }", result: nil, error_messages: [] },
+        { query: "{ validated(value: []) }", result: [], error_messages: [] },
+        { query: "{ validated(value: [1]) }", result: [1], error_messages: [] },
+        { query: "{ validated(value: [1, 3]) }", result: [1, 3], error_messages: [] },
+        { query: "{ validated(value: [4]) }", result: nil, error_messages: ["value must be odd"] },
+        { query: "{ validated(value: [7]) }", result: nil, error_messages: ["value is not included in the list"] },
+      ],
+    },
+  ]
+
+  build_tests(:all, [Integer], expectations)
 end
