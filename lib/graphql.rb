@@ -4,6 +4,7 @@ require "json"
 require "set"
 require "singleton"
 require "forwardable"
+require "fiber/storage"
 
 module GraphQL
   class Error < StandardError
