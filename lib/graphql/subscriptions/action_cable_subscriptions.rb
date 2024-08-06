@@ -223,8 +223,18 @@ module GraphQL
       # The channel was closed, forget about it.
       def delete_subscription(subscription_id)
         query = @subscriptions.delete(subscription_id)
-        # In case this came from the server, tell the client to unsubscribe:
-        @action_cable.server.broadcast(stream_subscription_name(subscription_id), { more: false })
+
+        begin
+          # In case this came from the server, tell the client to unsubscribe:
+          @action_cable.server.broadcast(stream_subscription_name(subscription_id), { more: false })
+        rescue StandardError => err
+          if err.message.include?("Unable to find subscription")
+            # This client is already unsubscribed from the front-end, ignore this error
+          else
+            raise
+          end
+        end
+
         # This can be `nil` when `.trigger` happens inside an unsubscribed ActionCable channel,
         # see https://github.com/rmosolgo/graphql-ruby/issues/2478
         if query
