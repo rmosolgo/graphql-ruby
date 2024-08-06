@@ -32,7 +32,7 @@ describe GraphQL::Schema::Field do
 
       underscored_field = GraphQL::Schema::Field.from_options(:underscored_field, String, null: false, camelize: false, owner: nil) do
         argument :underscored_arg, String, camelize: false
-      end
+      end.ensure_loaded
 
       arg_name, arg_defn = underscored_field.arguments.first
       assert_equal 'underscored_arg', arg_name
@@ -345,7 +345,7 @@ describe GraphQL::Schema::Field do
 
             field :complexityTest, String do
               complexity 'One hundred and eighty'
-            end
+            end.ensure_loaded
           end
         end
 
@@ -359,7 +359,7 @@ describe GraphQL::Schema::Field do
 
             field :complexityTest, String do
               complexity ->(one, two) { 52 }
-            end
+            end.ensure_loaded
           end
         end
 
@@ -726,6 +726,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     field = GraphQL::Schema::Field.new(name: "blah", owner: nil, resolver_class: resolver, extras: [:blah]) do
       argument :a, GraphQL::Types::Int
     end
+    field.ensure_loaded
 
     assert_equal "description 1", field.description
     assert_equal "[Float!]", field.type.to_type_signature

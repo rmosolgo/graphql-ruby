@@ -302,6 +302,7 @@ module GraphQL
         @ast_node = ast_node
         @method_conflict_warning = method_conflict_warning
         @fallback_value = fallback_value
+        @definition_block = nil
 
         arguments.each do |name, arg|
           case arg
@@ -320,26 +321,25 @@ module GraphQL
         @subscription_scope = subscription_scope
 
         @extensions = EMPTY_ARRAY
-        @call_after_define = false
         # This should run before connection extension,
         # but should it run after the definition block?
         if scoped?
-          self.extension(ScopeExtension)
+          self.extension(ScopeExtension, call_after_define: false)
         end
 
         # The problem with putting this after the definition_block
         # is that it would override arguments
         if connection? && connection_extension
-          self.extension(connection_extension)
+          self.extension(connection_extension, call_after_define: false)
         end
 
         # Do this last so we have as much context as possible when initializing them:
         if extensions.any?
-          self.extensions(extensions)
+          self.extensions(extensions, call_after_define: false)
         end
 
         if resolver_class && resolver_class.extensions.any?
-          self.extensions(resolver_class.extensions)
+          self.extensions(resolver_class.extensions, call_after_define: false)
         end
 
         if directives.any?
@@ -353,15 +353,24 @@ module GraphQL
         end
 
         if block_given?
-          if definition_block.arity == 1
-            yield self
-          else
-            instance_eval(&definition_block)
-          end
+          @definition_block = definition_block
+        else
+          self.extensions.each(&:after_define_apply)
         end
+      end
 
-        self.extensions.each(&:after_define_apply)
-        @call_after_define = true
+      # @return [self]
+      def ensure_loaded
+        if @definition_block
+          if @definition_block.arity == 1
+            @definition_block.call(self)
+          else
+            instance_eval(&@definition_block)
+          end
+          self.extensions.each(&:after_define_apply)
+          @definition_block = nil
+        end
+        self
       end
 
       attr_accessor :dynamic_introspection
@@ -408,14 +417,14 @@ module GraphQL
       #
       # @param extensions [Array<Class, Hash<Class => Hash>>] Add extensions to this field. For hash elements, only the first key/value is used.
       # @return [Array<GraphQL::Schema::FieldExtension>] extensions to apply to this field
-      def extensions(new_extensions = nil)
+      def extensions(new_extensions = nil, call_after_define: !@definition_block)
         if new_extensions
           new_extensions.each do |extension_config|
             if extension_config.is_a?(Hash)
               extension_class, options = *extension_config.to_a[0]
-              self.extension(extension_class, options)
+              self.extension(extension_class, call_after_define: call_after_define, **options)
             else
-              self.extension(extension_config)
+              self.extension(extension_config, call_after_define: call_after_define)
             end
           end
         end
@@ -433,12 +442,12 @@ module GraphQL
       # @param extension_class [Class] subclass of {Schema::FieldExtension}
       # @param options [Hash] if provided, given as `options:` when initializing `extension`.
       # @return [void]
-      def extension(extension_class, options = nil)
+      def extension(extension_class, call_after_define: !@definition_block, **options)
         extension_inst = extension_class.new(field: self, options: options)
         if @extensions.frozen?
           @extensions = @extensions.dup
         end
-        if @call_after_define
+        if call_after_define
           extension_inst.after_define_apply
         end
         @extensions << extension_inst
