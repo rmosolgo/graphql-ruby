@@ -104,7 +104,7 @@ module GraphQL
               if ancestor.respond_to?(:own_fields) &&
                   (f_entry = ancestor.own_fields[field_name]) &&
                   (skip_visible || (f_entry = Warden.visible_entry?(:visible_field?, f_entry, context, warden)))
-                return f_entry.ensure_loaded
+                return f_entry
               end
             end
             nil
@@ -142,7 +142,7 @@ module GraphQL
                   visible_interface_implementation?(ancestor, context, warden) &&
                   (f_entry = ancestor.own_fields[field_name]) &&
                   (skip_visible || (f_entry = Warden.visible_entry?(:visible_field?, f_entry, context, warden)))
-                return f_entry.ensure_loaded
+                return (skip_visible ? f_entry : f_entry.ensure_loaded)
               end
               i += 1
             end

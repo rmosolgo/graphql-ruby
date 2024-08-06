@@ -16,7 +16,7 @@ describe GraphQL::Schema::Directive::OneOf do
 
         field :one_of_field, output_type, null: false do
           argument :one_of_arg, this.one_of_input_object
-        end
+        end.ensure_loaded
 
         def one_of_field(one_of_arg:)
           one_of_arg
