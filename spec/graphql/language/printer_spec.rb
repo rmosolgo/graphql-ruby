@@ -263,6 +263,37 @@ describe GraphQL::Language::Printer do
     end
   end
 
+  it "handles comments"  do
+    query_type = Class.new(GraphQL::Schema::Object) do
+      graphql_name "Query"
+      field :issue, Integer do
+        argument :number, Integer, comment: "Argument comment"
+      end
+
+      def issue(number:)
+        number
+      end
+    end
+
+    schema = Class.new(GraphQL::Schema) do
+      query(query_type)
+    end
+
+    expected = <<~SCHEMA.chomp
+      type Query {
+        issue(
+          # Argument comment
+          number: Int!
+        ): Int
+      }
+    SCHEMA
+
+    assert_equal(
+      expected,
+      printer.print(schema.to_document),
+    )
+  end
+
   it "handles large ints" do
     query_type = Class.new(GraphQL::Schema::Object) do
       graphql_name "Query"

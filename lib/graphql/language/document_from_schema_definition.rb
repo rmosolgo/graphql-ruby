@@ -134,6 +134,7 @@ module GraphQL
           type: build_type_name_node(argument.type),
           default_value: default_value,
           directives: directives(argument),
+          comment: argument.comment
         )
 
         argument_node
