@@ -430,44 +430,58 @@ module GraphQL
         end
       end
 
-      def query(new_query_object = nil)
-        if new_query_object
+      def query(new_query_object = nil, &lazy_load_block)
+        if new_query_object || block_given?
           if @query_object
-            raise GraphQL::Error, "Second definition of `query(...)` (#{new_query_object.inspect}) is invalid, already configured with #{@query_object.inspect}"
+            dup_defn = new_query_object || yield
+            raise GraphQL::Error, "Second definition of `query(...)` (#{dup_defn.inspect}) is invalid, already configured with #{@query_object.inspect}"
+          elsif use_schema_subset?
+            @query_object = block_given? ? lazy_load_block : new_query_object
           else
-            @query_object = new_query_object
-            add_type_and_traverse(new_query_object, root: true) unless use_schema_subset?
-            nil
+            @query_object = new_query_object || lazy_load_block.call
+            add_type_and_traverse(@query_object, root: true)
           end
+          nil
+        elsif @query_object.is_a?(Proc)
+          @query_object = @query_object.call
         else
           @query_object || find_inherited_value(:query)
         end
       end
 
-      def mutation(new_mutation_object = nil)
-        if new_mutation_object
+      def mutation(new_mutation_object = nil, &lazy_load_block)
+        if new_mutation_object || block_given?
           if @mutation_object
-            raise GraphQL::Error, "Second definition of `mutation(...)` (#{new_mutation_object.inspect}) is invalid, already configured with #{@mutation_object.inspect}"
+            dup_defn = new_mutation_object || yield
+            raise GraphQL::Error, "Second definition of `mutation(...)` (#{dup_defn.inspect}) is invalid, already configured with #{@mutation_object.inspect}"
+          elsif use_schema_subset?
+            @mutation_object = block_given? ? lazy_load_block : new_mutation_object
           else
-            @mutation_object = new_mutation_object
-            add_type_and_traverse(new_mutation_object, root: true) unless use_schema_subset?
-            nil
+            @mutation_object = new_mutation_object || lazy_load_block.call
+            add_type_and_traverse(@mutation_object, root: true)
           end
+          nil
+        elsif @mutation_object.is_a?(Proc)
+          @mutation_object = @mutation_object.call
         else
           @mutation_object || find_inherited_value(:mutation)
         end
       end
 
-      def subscription(new_subscription_object = nil)
-        if new_subscription_object
+      def subscription(new_subscription_object = nil, &lazy_load_block)
+        if new_subscription_object || block_given?
           if @subscription_object
-            raise GraphQL::Error, "Second definition of `subscription(...)` (#{new_subscription_object.inspect}) is invalid, already configured with #{@subscription_object.inspect}"
+            dup_defn = new_subscription_object || yield
+            raise GraphQL::Error, "Second definition of `subscription(...)` (#{dup_defn.inspect}) is invalid, already configured with #{@subscription_object.inspect}"
+          elsif use_schema_subset?
+            @subscription_object = block_given? ? lazy_load_block : new_subscription_object
           else
-            @subscription_object = new_subscription_object
-            add_subscription_extension_if_necessary
-            add_type_and_traverse(new_subscription_object, root: true) unless use_schema_subset?
-            nil
+            @subscription_object = new_subscription_object || lazy_load_block.call
+            add_type_and_traverse(@subscription_object, root: true)
           end
+          nil
+        elsif @subscription_object.is_a?(Proc)
+          @subscription_object = @subscription_object.call
         else
           @subscription_object || find_inherited_value(:subscription)
         end
