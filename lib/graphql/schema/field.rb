@@ -600,7 +600,7 @@ module GraphQL
             end
             nullable = @return_type_null.nil? ? @resolver_class.null : @return_type_null
             Member::BuildType.parse_type(return_type, null: nullable)
-          elsif @return_type_expr
+          elsif !@return_type_expr.nil?
             @type ||= Member::BuildType.parse_type(@return_type_expr, null: @return_type_null)
           end
         else
