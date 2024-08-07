@@ -146,11 +146,16 @@ module GraphQL
             Member::BuildType.to_type_name(@return_type_expr)
           elsif @resolver_class && @resolver_class.type
             Member::BuildType.to_type_name(@resolver_class.type)
-          else
+          elsif type
             # As a last ditch, try to force loading the return type:
             type.unwrap.name
           end
-          @connection = return_type_name.end_with?("Connection") && return_type_name != "Connection"
+          if return_type_name
+            @connection = return_type_name.end_with?("Connection") && return_type_name != "Connection"
+          else
+            # TODO set this when type is set by method
+            false # not loaded yet?
+          end
         else
           @connection
         end
@@ -236,8 +241,8 @@ module GraphQL
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
         if !(resolver_class)
-          if type.nil?
-            raise ArgumentError, "missing second `type` argument or keyword `type:`"
+          if type.nil? && !block_given?
+            raise ArgumentError, "missing second `type` argument, keyword `type:`, or a block containing `type(...)`"
           end
         end
         @original_name = name
@@ -586,16 +591,20 @@ module GraphQL
       class MissingReturnTypeError < GraphQL::Error; end
       attr_writer :type
 
-      def type
-        if @resolver_class
-          return_type = @return_type_expr || @resolver_class.type_expr
-          if return_type.nil?
-            raise MissingReturnTypeError, "Can't determine the return type for #{self.path} (it has `resolver: #{@resolver_class}`, perhaps that class is missing a `type ...` declaration, or perhaps its type causes a cyclical loading issue)"
+      def type(new_type = NOT_CONFIGURED)
+        if NOT_CONFIGURED.equal?(new_type)
+          if @resolver_class
+            return_type = @return_type_expr || @resolver_class.type_expr
+            if return_type.nil?
+              raise MissingReturnTypeError, "Can't determine the return type for #{self.path} (it has `resolver: #{@resolver_class}`, perhaps that class is missing a `type ...` declaration, or perhaps its type causes a cyclical loading issue)"
+            end
+            nullable = @return_type_null.nil? ? @resolver_class.null : @return_type_null
+            Member::BuildType.parse_type(return_type, null: nullable)
+          elsif @return_type_expr
+            @type ||= Member::BuildType.parse_type(@return_type_expr, null: @return_type_null)
           end
-          nullable = @return_type_null.nil? ? @resolver_class.null : @return_type_null
-          Member::BuildType.parse_type(return_type, null: nullable)
         else
-          @type ||= Member::BuildType.parse_type(@return_type_expr, null: @return_type_null)
+          @return_type_expr = new_type
         end
       rescue GraphQL::Schema::InvalidDocumentError, MissingReturnTypeError => err
         # Let this propagate up

@@ -214,8 +214,8 @@ module GraphQL
             end
           end
           visible_f.ensure_loaded
-        elsif f && @cached_visible_fields[owner][f]
-          f.ensure_loaded
+        elsif f && @cached_visible_fields[owner][f.ensure_loaded]
+          f
         else
           nil
         end
