@@ -4,7 +4,7 @@ require 'spec_helper'
 describe "GraphQL::Cop::FieldTypeInBlock" do
   include RubocopTestHelpers
 
-  it "finds and autocorrects `null: true` field configurations" do
+  it "finds and autocorrects field corrections with inline types" do
     result = run_rubocop_on("spec/fixtures/cop/field_type.rb")
     assert_equal 3, rubocop_errors(result)
 
