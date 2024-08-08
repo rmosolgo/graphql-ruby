@@ -410,7 +410,10 @@ module Dummy
       result
     end
 
-    field :all_edible, [Edible, null: true]
+    field :all_edible do
+      type [Edible, null: true]
+    end
+
     def all_edible
       CHEESES.values + MILKS.values
     end
@@ -474,7 +477,10 @@ module Dummy
       )
     end
 
-    field :deep_non_null, DeepNonNull, null: false
+    field :deep_non_null, null: false do
+      type(DeepNonNull)
+    end
+
     def deep_non_null; :deep_non_null; end
 
     field :huge_integer, Integer

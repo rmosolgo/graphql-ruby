@@ -165,6 +165,8 @@ module GraphQL
             equivalent_schema_members?(inner_member1, inner_member2)
           end
         when GraphQL::Schema::Field
+          member1.ensure_loaded
+          member2.ensure_loaded
           if member1.introspection? && member2.introspection?
             member1.inspect == member2.inspect
           else
