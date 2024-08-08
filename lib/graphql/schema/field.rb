@@ -326,18 +326,7 @@ module GraphQL
         @subscription_scope = subscription_scope
 
         @extensions = EMPTY_ARRAY
-        # This should run before connection extension,
-        # but should it run after the definition block?
-        if scoped?
-          self.extension(ScopeExtension, call_after_define: false)
-        end
-
-        # The problem with putting this after the definition_block
-        # is that it would override arguments
-        if connection? && connection_extension
-          self.extension(connection_extension, call_after_define: false)
-        end
-
+        set_pagination_extensions(connection_extension: connection_extension)
         # Do this last so we have as much context as possible when initializing them:
         if extensions.any?
           self.extensions(extensions, call_after_define: false)
@@ -605,6 +594,10 @@ module GraphQL
           end
         else
           @return_type_expr = new_type
+          # If `type` is set in the definition block, then the `connection_extension: ...` given as a keyword won't be used, hmm...
+          # Also, arguments added by `connection_extension` will clobber anything previously defined,
+          # so `type(...)` should go first.
+          set_pagination_extensions(connection_extension: self.class.connection_extension)
         end
       rescue GraphQL::Schema::InvalidDocumentError, MissingReturnTypeError => err
         # Let this propagate up
@@ -913,6 +906,20 @@ ERR
           own_complexity.call(query.context, arguments, child_complexity)
         else
           raise ArgumentError, "Invalid complexity for #{self.path}: #{own_complexity.inspect}"
+        end
+      end
+
+      def set_pagination_extensions(connection_extension:)
+        # This should run before connection extension,
+        # but should it run after the definition block?
+        if scoped?
+          self.extension(ScopeExtension, call_after_define: false)
+        end
+
+        # The problem with putting this after the definition_block
+        # is that it would override arguments
+        if connection? && connection_extension
+          self.extension(connection_extension, call_after_define: false)
         end
       end
     end

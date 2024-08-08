@@ -54,17 +54,43 @@ describe GraphQL::Schema::Field do
     end
 
     it "accepts a block for definition" do
+      field_defn = nil
       object = Class.new(Jazz::BaseObject) do
         graphql_name "JustAName"
 
-        field :test, String do
+        field_defn = field :test do
           argument :test, String
           description "A Description."
+          type String
         end
       end
 
+      assert_nil field_defn.description, "The block isn't called right away"
+      assert_nil field_defn.type, "The block isn't called right away"
+      field_defn.ensure_loaded
+      assert_equal "String", field_defn.type.graphql_name
+
       assert_equal "test", object.fields["test"].arguments["test"].name
       assert_equal "A Description.", object.fields["test"].description
+    end
+
+    it "sets connection? when type is given in a block" do
+      field_defn = nil
+      Class.new(Jazz::BaseObject) do
+        graphql_name "JustAName"
+
+        field_defn = field :instruments do
+          type Jazz::InstrumentType.connection_type
+        end
+      end
+
+      assert_equal false, field_defn.connection?
+      assert_equal false, field_defn.scoped?
+      assert_equal [], field_defn.extensions
+      field_defn.ensure_loaded
+      assert_equal true, field_defn.scoped?
+      assert_equal true, field_defn.connection?
+      assert_equal [GraphQL::Schema::Field::ScopeExtension, GraphQL::Schema::Field::ConnectionExtension], field_defn.extensions.map(&:class)
     end
 
     it "accepts a block for definition and yields the field if the block has an arity of one" do
