@@ -482,6 +482,8 @@ module GraphQL
           nil
         elsif @subscription_object.is_a?(Proc)
           @subscription_object = @subscription_object.call
+          add_subscription_extension_if_necessary
+          @subscription_object
         else
           @subscription_object || find_inherited_value(:subscription)
         end
@@ -1387,7 +1389,8 @@ module GraphQL
 
       # @api private
       def add_subscription_extension_if_necessary
-        if !defined?(@subscription_extension_added) && subscription && self.subscriptions
+        # TODO: when there's a proper API for extending root types, migrat this to use it.
+        if !defined?(@subscription_extension_added) && @subscription_object.is_a?(Class) && self.subscriptions
           @subscription_extension_added = true
           subscription.all_field_definitions.each do |field|
             if !field.extensions.any? { |ext| ext.is_a?(Subscriptions::DefaultSubscriptionResolveExtension) }
