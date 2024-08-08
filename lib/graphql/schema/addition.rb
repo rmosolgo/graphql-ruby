@@ -189,6 +189,7 @@ module GraphQL
           add_directives_from(type)
           if type.kind.fields?
             type.all_field_definitions.each do |field|
+              field.ensure_loaded
               name = field.graphql_name
               field_type = field.type.unwrap
               if !field_type.is_a?(GraphQL::Schema::LateBoundType)

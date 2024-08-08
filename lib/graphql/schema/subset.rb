@@ -129,7 +129,7 @@ module GraphQL
         end.compare_by_identity
 
         @cached_fields = Hash.new do |h, owner|
-          h[owner] = non_duplicate_items(owner.all_field_definitions, @cached_visible_fields[owner])
+          h[owner] = non_duplicate_items(owner.all_field_definitions.each(&:ensure_loaded), @cached_visible_fields[owner])
         end.compare_by_identity
 
         @cached_arguments = Hash.new do |h, owner|
@@ -213,13 +213,11 @@ module GraphQL
               end
             end
           end
-          visible_f
+          visible_f.ensure_loaded
+        elsif f && @cached_visible_fields[owner][f.ensure_loaded]
+          f
         else
-          if f && @cached_visible_fields[owner][f]
-            f
-          else
-            nil
-          end
+          nil
         end
       end
 
@@ -446,6 +444,7 @@ module GraphQL
           # recurse into visible fields
           t_f = type.all_field_definitions
           t_f.each do |field|
+            field.ensure_loaded
             if @cached_visible[field]
               visit_directives(field)
               field_type = field.type.unwrap
