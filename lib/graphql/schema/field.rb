@@ -353,7 +353,11 @@ module GraphQL
         end
       end
 
+      # Calls the definition block, if one was given.
+      # This is deferred so that references to the return type
+      # can be lazily evaluated, reducing Rails boot time.
       # @return [self]
+      # @api private
       def ensure_loaded
         if @definition_block
           if @definition_block.arity == 1
@@ -580,6 +584,11 @@ module GraphQL
       class MissingReturnTypeError < GraphQL::Error; end
       attr_writer :type
 
+      # Get or set the return type of this field.
+      #
+      # It may return nil if no type was configured or if the given definition block wasn't called yet.
+      # @param new_type [Module, GraphQL::Schema::NonNull, GraphQL::Schema::List] A GraphQL return type
+      # @return [Module, GraphQL::Schema::NonNull, GraphQL::Schema::List, nil] the configured type for this field
       def type(new_type = NOT_CONFIGURED)
         if NOT_CONFIGURED.equal?(new_type)
           if @resolver_class
