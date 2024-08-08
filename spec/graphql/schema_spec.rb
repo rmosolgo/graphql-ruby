@@ -476,4 +476,24 @@ To add other types to your schema, you might want `extra_types`: https://graphql
   it "starts with no references_to" do
     assert_equal({}, GraphQL::Schema.references_to)
   end
+
+  it "defers root type blocks until those types are used" do
+    calls = []
+    schema = Class.new(GraphQL::Schema) do
+      self.use_schema_subset = true
+      query { calls << :query; Class.new(GraphQL::Schema::Object) { graphql_name("Query") } }
+      mutation { calls << :mutation; Class.new(GraphQL::Schema::Object) { graphql_name("Mutation") } }
+      subscription { calls << :subscription; Class.new(GraphQL::Schema::Object) { graphql_name("Subscription") } }
+      # Test this because it tries to modify `subscription` -- currently hardcoded in Schema.add_subscription_extension_if_necessary
+      use GraphQL::Subscriptions
+    end
+
+    assert_equal [], calls
+    assert_equal "Query", schema.query.graphql_name
+    assert_equal [:query], calls
+    assert_equal "Mutation", schema.mutation.graphql_name
+    assert_equal [:query, :mutation], calls
+    assert_equal "Subscription", schema.subscription.graphql_name
+    assert_equal [:query, :mutation, :subscription], calls
+  end
 end

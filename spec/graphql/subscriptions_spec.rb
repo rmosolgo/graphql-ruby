@@ -205,8 +205,8 @@ class ClassBasedInMemoryBackend < InMemoryBackend
   end
 
   class Schema < GraphQL::Schema
-    query(Query)
-    subscription(Subscription)
+    query { Query }
+    subscription { Subscription }
     use InMemoryBackend::Subscriptions, extra: 123
     max_complexity(InMemoryBackend::MAX_COMPLEXITY)
   end

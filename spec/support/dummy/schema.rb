@@ -536,9 +536,9 @@ module Dummy
   end
 
   class Schema < GraphQL::Schema
-    query DairyAppQuery
-    mutation DairyAppMutation
-    subscription Subscription
+    query { DairyAppQuery }
+    mutation { DairyAppMutation }
+    subscription { Subscription }
     max_depth 5
     orphan_types Honey
     trace_with GraphQL::Tracing::CallLegacyTracers
