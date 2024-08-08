@@ -17,6 +17,7 @@ Schema members have `authorized?` methods which will be called during execution:
 - Fields have `#authorized?(object, args, context)` instance methods
 - Arguments have `#authorized?(object, arg_value, context)` instance methods
 - Mutations and Resolvers have `.authorized?(object, context)` class methods and `#authorized?(args)` instance methods
+- Enum values have `#authorized?(context)` instance methods
 
 These methods are called with:
 
@@ -89,6 +90,14 @@ For this to work, the base argument class must be {% internal_link "configured w
 ## Mutation Authorization
 
 See mutations/mutation_authorization.html#can-this-user-perform-this-action {% internal_link "Mutation Authorization", "/mutations/mutation_authorization.html#can-this-user-perform-this-action" %}) in the Mutation Guides.
+
+## Enum Value Authorization
+
+{{ "GraphQL::Schema::EnumValue#authorized?" | api_doc }} is called when client input is received and when the schema returns values to the client.
+
+For authorizing input, if a value's `#authorized?` method returns false, then a {{ "GraphQL::UnauthorizedEnumValueError" | api_doc }} is raised. It passed to your schema's `.unauthorized_object` hook, where you can handle it another way if you want.
+
+For authorizing return values, if an outgoing value's `#authorized?` method returns false, then a {{ "GraphQL::Schema::Enum::UnresolvedValueError" | api_doc }} is raised, which crashes the query. In this case, you should modify your field or resolver to _not_ return this value to an unauthorized viewer. (In this case, the error isn't returned to the viewer because the viewer can't do anything about it -- it's a developer-facing issue instead.)
 
 ## Handling Unauthorized Objects
 
