@@ -11,6 +11,7 @@ describe GraphQL::StaticValidation::DirectivesAreDefined do
         ... on Cheese {
           flavor @moreNonsense @moreNonsense
         }
+        id2: id @sikp(if: true)
       }
     }
   "}
@@ -34,6 +35,12 @@ describe GraphQL::StaticValidation::DirectivesAreDefined do
           "locations"=>[{"line"=>7, "column"=>18}, {"line"=>7, "column"=>32}],
           "path"=>["query getCheese", "okCheese", "... on Cheese", "flavor"],
           "extensions"=>{"code"=>"undefinedDirective", "directiveName"=>"moreNonsense"}
+        },
+        {
+          "message"=>"Directive @sikp is not defined (Did you mean `skip`?)",
+          "locations"=>[{"line"=>9, "column"=>17}],
+          "path"=>["query getCheese", "okCheese", "id2"],
+          "extensions"=>{"code"=>"undefinedDirective", "directiveName"=>"sikp"}
         }
       ]
       assert_equal(expected, errors)
