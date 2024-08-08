@@ -63,6 +63,10 @@ describe "GraphQL::Authorization" do
       def visible?(context)
         super && (context[:hide] ? @role != :hidden : true)
       end
+
+      def authorized?(context)
+        super && (context[:authorized] ? true : @role != :unauthorized)
+      end
     end
 
     class BaseEnum < GraphQL::Schema::Enum
@@ -477,7 +481,7 @@ describe "GraphQL::Authorization" do
 
       assert_equal ["Argument 'enums' on Field 'landscapeFeatures' has an invalid value ([STREAM, TAR_PIT]). Expected type '[LandscapeFeature!]'."], hidden_res_2["errors"].map { |e| e["message"] }
 
-      success_res = auth_execute <<-GRAPHQL, context: { hide: false }
+      success_res = auth_execute <<-GRAPHQL, context: { hide: false, authorized: true }
       {
         landscapeFeature(enum: TAR_PIT)
         landscapeFeatures(enums: [STREAM, TAR_PIT])
@@ -505,6 +509,28 @@ describe "GraphQL::Authorization" do
         }
         GRAPHQL
       end
+    end
+
+    it "rejects incoming unauthorized enum values" do
+      res = auth_execute <<-GRAPHQL, context: { }
+        {
+          landscapeFeature(enum: STREAM)
+        }
+      GRAPHQL
+
+      assert_equal ["Unauthorized LandscapeFeature: \"STREAM\""], res["errors"].map { |e| e["message"] }
+    end
+
+    it "rejects outgoing unauthorized enum values" do
+      err = assert_raises(AuthTest::LandscapeFeature::UnresolvedValueError) do
+        auth_execute <<-GRAPHQL, context: { }
+          {
+            landscapeFeature(string: "STREAM")
+          }
+        GRAPHQL
+      end
+
+      assert_equal "`Query.landscapeFeature` returned `\"STREAM\"` at `landscapeFeature`, but this value was unauthorized. Update the field or resolver to return a different value in this case (or return `nil`).", err.message
     end
 
     it "works in introspection" do

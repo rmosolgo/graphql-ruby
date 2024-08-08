@@ -119,6 +119,7 @@ require "graphql/parse_error"
 require "graphql/backtrace"
 
 require "graphql/unauthorized_error"
+require "graphql/unauthorized_enum_value_error"
 require "graphql/unauthorized_field_error"
 require "graphql/load_application_object_failed_error"
 require "graphql/testing"

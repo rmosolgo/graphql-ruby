@@ -23,8 +23,12 @@ module GraphQL
       extend GraphQL::Schema::Member::ValidatesInput
 
       class UnresolvedValueError < GraphQL::Error
-        def initialize(value:, enum:, context:)
-          fix_message = ", but this isn't a valid value for `#{enum.graphql_name}`. Update the field or resolver to return one of `#{enum.graphql_name}`'s values instead."
+        def initialize(value:, enum:, context:, authorized:)
+          fix_message = if authorized == false
+            ", but this value was unauthorized. Update the field or resolver to return a different value in this case (or return `nil`)."
+          else
+            ", but this isn't a valid value for `#{enum.graphql_name}`. Update the field or resolver to return one of `#{enum.graphql_name}`'s values instead."
+          end
           message = if (cp = context[:current_path]) && (cf = context[:current_field])
             "`#{cf.path}` returned `#{value.inspect}` at `#{cp.join(".")}`#{fix_message}"
           else
@@ -144,22 +148,23 @@ module GraphQL
           types = ctx.types
           all_values = types ? types.enum_values(self) : values.each_value
           enum_value = all_values.find { |val| val.value == value }
-          if enum_value
+          if enum_value && (was_authed = enum_value.authorized?(ctx))
             enum_value.graphql_name
           else
-            raise self::UnresolvedValueError.new(enum: self, value: value, context: ctx)
+            raise self::UnresolvedValueError.new(enum: self, value: value, context: ctx, authorized: was_authed)
           end
         end
 
         def coerce_input(value_name, ctx)
           all_values = ctx.types ? ctx.types.enum_values(self) : values.each_value
 
-          if v = all_values.find { |val| val.graphql_name == value_name }
-            v.value
-          elsif v = all_values.find { |val| val.value == value_name }
-            # this is for matching default values, which are "inputs", but they're
-            # the Ruby value, not the GraphQL string.
-            v.value
+          # This tries matching by incoming GraphQL string, then checks Ruby-defined values
+          if v = (all_values.find { |val| val.graphql_name == value_name } || all_values.find { |val| val.value == value_name })
+            if v.authorized?(ctx)
+              v.value
+            else
+              raise GraphQL::UnauthorizedEnumValueError.new(type: self, enum_value: v, context: ctx)
+            end
           else
             nil
           end
