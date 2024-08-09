@@ -207,22 +207,32 @@ module GraphQL
             finished_jobs = 0
             enqueued_jobs = gathered_selections.size
             gathered_selections.each do |result_name, field_ast_nodes_or_ast_node|
-              @dataloader.append_job {
-                evaluate_selection(
-                  result_name, field_ast_nodes_or_ast_node, selections_result
-                )
-                finished_jobs += 1
-                if target_result && finished_jobs == enqueued_jobs
-                  selections_result.merge_into(target_result)
-                end
-              }
+
               # Field resolution may pause the fiber,
               # so it wouldn't get to the `Resolve` call that happens below.
               # So instead trigger a run from this outer context.
               if selections_result.graphql_is_eager
                 @dataloader.clear_cache
-                @dataloader.run
-                @dataloader.clear_cache
+                @dataloader.run_isolated {
+                  evaluate_selection(
+                    result_name, field_ast_nodes_or_ast_node, selections_result
+                  )
+                  finished_jobs += 1
+                  if target_result && finished_jobs == enqueued_jobs
+                    selections_result.merge_into(target_result)
+                  end
+                  @dataloader.clear_cache
+                }
+              else
+                @dataloader.append_job {
+                  evaluate_selection(
+                    result_name, field_ast_nodes_or_ast_node, selections_result
+                  )
+                  finished_jobs += 1
+                  if target_result && finished_jobs == enqueued_jobs
+                    selections_result.merge_into(target_result)
+                  end
+                }
               end
             end
             selections_result
