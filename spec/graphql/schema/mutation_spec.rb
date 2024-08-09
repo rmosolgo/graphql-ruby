@@ -303,8 +303,24 @@ describe GraphQL::Schema::Mutation do
         end
       end
 
+      class ReadyCounter < GraphQL::Schema::Mutation
+        field :id, ID
+        argument :counter_id, ID
+
+        def ready?(counter_id:)
+          # Just fill the cache:
+          dataloader.with(CounterSource).load(counter_id)
+          true
+        end
+
+        def resolve(counter_id:)
+          { id: counter_id }
+        end
+      end
+
       class Mutation < GraphQL::Schema::Object
         field :increment, mutation: Increment
+        field :ready_counter, mutation: ReadyCounter
       end
 
       mutation(Mutation)
@@ -327,6 +343,16 @@ describe GraphQL::Schema::Mutation do
 
       res2 = MutationDataloaderCacheSchema.execute("mutation { increment(counterId: \"4\") { counter { value } } }")
       assert_equal 2, res2["data"]["increment"]["counter"]["value"]
+    end
+
+    it "uses a fresh cache for `ready?` calls" do
+      multiplex = [
+        { query: "mutation { r1: readyCounter(counterId: 1) { id } }" },
+        { query: "mutation { r2: readyCounter(counterId: 1) { id } }" },
+        { query: "mutation { r3: readyCounter(counterId: 1) { id } }" },
+      ]
+      result = MutationDataloaderCacheSchema.multiplex(multiplex)
+      assert_equal ["1", "1", "1"], result.map { |r| r["data"].first.last["id"] }
     end
   end
 end
