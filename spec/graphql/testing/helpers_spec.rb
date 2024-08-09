@@ -77,6 +77,14 @@ describe GraphQL::Testing::Helpers do
     class Query < GraphQL::Schema::Object
       field :students, [Student]
 
+      field :student, Student do
+        argument :student_id, ID, loads: Student
+      end
+
+      def student(student:)
+        student
+      end
+
       field :lookahead_selections, String, extras: [:lookahead]
 
       def lookahead_selections(lookahead:)
@@ -95,6 +103,18 @@ describe GraphQL::Testing::Helpers do
     def self.unauthorized_field(err)
       raise err
     end
+
+    def self.object_from_id(id, ctx)
+      if id == "s1"
+        -> do { name: "Student1", type: Student } end
+      else
+        raise ArgumentError, "No data for id: #{id.inspect}"
+      end
+    end
+
+    def self.resolve_type(abs_t, obj, ctx)
+      obj.fetch(:type)
+    end
   end
 
   include GraphQL::Testing::Helpers
@@ -106,7 +126,17 @@ describe GraphQL::Testing::Helpers do
       it "resolves fields" do
         assert_equal "Blah", run_graphql_field(AssertionsSchema, "Student.name", { name: "Blah" })
         assert_equal "Blah McBlah", run_graphql_field(AssertionsSchema, "Student.name", { name: "Blah" }, arguments: { "fullName" => true })
+        assert_equal "Blah McBlah", run_graphql_field(AssertionsSchema, "Student.name", { name: "Blah" }, arguments: { full_name: true })
         assert_equal({ amount: 1_000_001 }, run_graphql_field(AssertionsSchema, "Student.latestBill", :student, context: admin_context))
+      end
+
+      it "loads arguments with lazy_resolve" do
+        student = run_graphql_field(AssertionsSchema, "Query.student", nil, arguments: { "studentId" => "s1" })
+        expected_student = { name: "Student1", type: AssertionsSchema::Student }
+        assert_equal(expected_student, student)
+
+        student2 = run_graphql_field(AssertionsSchema, "Query.student", nil, arguments: { student: "s1" })
+        assert_equal(expected_student, student2)
       end
 
       it "works with resolution context" do
