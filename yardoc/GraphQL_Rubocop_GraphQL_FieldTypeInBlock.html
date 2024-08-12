@@ -1,0 +1,24 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.3.13/GraphQL/Rubocop/GraphQL/FieldTypeInBlock" />
+  </head>
+  <body>
+    <p>Class: GraphQL::Rubocop::GraphQL::FieldTypeInBlock &lt; GraphQL::Ruboco…
+Identify (and auto-correct) any field whose type configuration isn’t
+given in the configuration block. 
+Examples:
+#</p>
+<h1 id="bad-immediately-causes-rails-to-load-appgraphqltypesthingrb">bad, immediately causes Rails to load <code class="language-plaintext highlighter-rouge">app/graphql/types/thing.rb</code></h1>
+<p>field :thing, Types::Thing</p>
+<h1 id="good-defers-loading-until-the-file-is-needed">good, defers loading until the file is needed</h1>
+<p>field :thing do
+type(Types::Thing)
+end
+Instance methods:
+delete_type_argument, determine_field_indent, get_type_argument_str,
+ignore_inline_type_str?, on_block, on_send</p>
+
+
+  </body>
+</html>

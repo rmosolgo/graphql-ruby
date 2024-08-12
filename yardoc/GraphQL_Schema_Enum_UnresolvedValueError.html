@@ -1,12 +1,22 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/2.3.12/GraphQL/Schema/Enum/UnresolvedValueError" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.3.13/GraphQL/Schema/Enum/UnresolvedValueError" />
   </head>
   <body>
     <p>Class: GraphQL::Schema::Enum::UnresolvedValueError &lt; GraphQL::Error
+This is raised when either:</p>
+<ul>
+  <li>A resolver returns a value which doesn’t match any of the enum’s
+configured values; - Or, the resolver returns a value which matches
+a value, but that value’s <code class="language-plaintext highlighter-rouge">authorized?</code> check returns false. 
+In either case, the field should be modified so that the invalid
+value isn’t returned. 
+GraphQL::Schema::Enum subclasses get their own subclass of this
+error, so that bug trackers can better show where they came from. 
 Instance methods:
-initialize</p>
+initialize</li>
+</ul>
 
 
   </body>
