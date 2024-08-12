@@ -10,6 +10,18 @@
 
 ### Bug fixes
 
+# 2.3.13 (12 Aug 2024)
+
+### New features
+
+- Authorization: Call `EnumValue#authorized?` during execution #5058
+- `Subset`: support lazy-loading root types and field return types (not documented yet) #5055, #5054
+
+### Bug fixes
+
+- Validation: don't validate `nil` if null value is permitted for incoming lists #5048
+- Multiplex: fix `Mutation#ready?` dataloader cache in multiplexes #5059
+
 # 2.3.12 (5 Aug 2024)
 
 ### Bug fixes
