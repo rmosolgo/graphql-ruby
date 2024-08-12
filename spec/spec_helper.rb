@@ -33,6 +33,24 @@ require "minitest/focus"
 require "minitest/reporters"
 require "graphql/batch"
 
+module Minitest
+  module Assertions
+    def assert_graphql_equal(data1, data2, message = "GraphQL Result was equal")
+      case data1
+      when Hash
+        assert_equal(data1, data2, message)
+        assert_equal(data1.keys, data2.keys, "Order of keys matched (#{message})")
+      when Array
+        data1.each_with_index do |item1, idx|
+          assert_graphql_equal(item1, data2[idx], message + "[Item #{idx + 1}] ")
+        end
+      else
+        raise ArgumentError, "assert_graphql_equal doesn't support #{data1.class} yet"
+      end
+    end
+  end
+end
+
 running_in_rubymine = ENV["RM_INFO"]
 unless running_in_rubymine
   Minitest::Reporters.use! Minitest::Reporters::DefaultReporter.new(color: true)
