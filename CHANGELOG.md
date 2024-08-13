@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 2.3.14 (13 Aug 2024)
+
+### Bug fixes
+
+- Subscriptions: fix subscriptions when subscription type is added after subscription plug-in #5063
+
 # 2.3.13 (12 Aug 2024)
 
 ### New features
