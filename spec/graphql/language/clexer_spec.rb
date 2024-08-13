@@ -54,6 +54,13 @@ if defined?(GraphQL::CParser::Lexer)
       refute default_ast.definitions.first.name.frozen?
     end
 
+    it "exposes tokens_count" do
+      str = "type Query { f1: Int }"
+      parser = GraphQL::CParser::Parser.new(str, nil, GraphQL::Tracing::NullTrace, nil)
+
+      assert_equal 7, parser.tokens_count
+    end
+
     include LexerExamples
   end
 end

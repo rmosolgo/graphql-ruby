@@ -49,6 +49,11 @@ module GraphQL
         end
       end
 
+      def tokens_count
+        parse
+        @lexer.tokens_count
+      end
+
       def line_at(pos)
         line = lines_at.bsearch_index { |l| l >= pos }
         if line.nil?
