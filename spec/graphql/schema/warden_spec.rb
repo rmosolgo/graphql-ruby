@@ -471,7 +471,7 @@ describe GraphQL::Schema::Warden do
       |
 
       res = MaskHelpers.run_query(query_string, context: {
-        skip_types_migration_error: true,
+        skip_visibility_migration_error: true,
         except: ->(member, ctx) { MaskHelpers.has_flag?(member, :hidden_type)
       } })
       # It's not visible by name
@@ -634,7 +634,7 @@ describe GraphQL::Schema::Warden do
       assert res["data"]["Node"]
       assert_equal ["a", "node"], res["data"]["Query"]["fields"].map { |f| f["name"] }
 
-      res = schema.execute(query_string, context: { skip_types_migration_error: true, except: ->(m, _) { ["A", "B", "C"].include?(m.graphql_name) } })
+      res = schema.execute(query_string, context: { skip_visibility_migration_error: true, except: ->(m, _) { ["A", "B", "C"].include?(m.graphql_name) } })
 
       if GraphQL::Schema.use_schema_visibility?
         # Node is still visible even though it has no possible types

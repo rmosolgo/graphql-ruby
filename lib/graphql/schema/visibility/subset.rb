@@ -13,8 +13,6 @@ module GraphQL
       # - It checks `.visible?` on root introspection types
       #
       # In the future, {Subset} will support lazy-loading types as needed during execution and multi-request caching of subsets.
-      #
-      # @see Schema::TypesMigration for a helper class in adopting this filter
       class Subset
         # @return [Schema::Visibility::Subset]
         def self.from_context(ctx, schema)

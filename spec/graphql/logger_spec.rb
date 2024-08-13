@@ -95,7 +95,7 @@ describe "Logger" do
     end
 
     it "logs about hidden interfaces with no implementations" do
-      res = LoggerTest::CustomLoggerSchema.execute("{ node(id: \"5\") { id } }", context: { skip_types_migration_error: true })
+      res = LoggerTest::CustomLoggerSchema.execute("{ node(id: \"5\") { id } }", context: { skip_visibility_migration_error: true })
       if GraphQL::Schema.use_schema_visibility?
         assert_nil res["data"]["node"], "Schema::Visibility::Subset doesn't warn in this case -- it doesn't check possible types because it doesn't have to"
       else
@@ -107,7 +107,7 @@ describe "Logger" do
     it "doesn't print messages by default" do
       res = nil
       stdout, stderr = capture_io do
-        res = LoggerTest::DefaultLoggerSchema.execute("{ node(id: \"5\") { id } }", context: { skip_types_migration_error: true })
+        res = LoggerTest::DefaultLoggerSchema.execute("{ node(id: \"5\") { id } }", context: { skip_visibility_migration_error: true })
       end
 
       if GraphQL::Schema.use_schema_visibility?

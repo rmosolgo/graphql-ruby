@@ -75,7 +75,7 @@ describe GraphQL::Schema do
       assert_equal base_schema.multiplex_analyzers, schema.multiplex_analyzers
       assert_equal base_schema.disable_introspection_entry_points?, schema.disable_introspection_entry_points?
       expected_plugins = [
-        (GraphQL::Schema.use_schema_visibility? ? GraphQL::Schema::TypesMigration : nil),
+        (GraphQL::Schema.use_schema_visibility? ? GraphQL::Schema::Visibility : nil),
         GraphQL::Backtrace,
         GraphQL::Subscriptions::ActionCableSubscriptions
       ].compact
@@ -150,7 +150,7 @@ describe GraphQL::Schema do
       assert_equal base_schema.multiplex_analyzers + [multiplex_analyzer], schema.multiplex_analyzers
       expected_plugins = [GraphQL::Backtrace, GraphQL::Subscriptions::ActionCableSubscriptions, CustomSubscriptions]
       if GraphQL::Schema.use_schema_visibility?
-        expected_plugins.unshift(GraphQL::Schema::TypesMigration)
+        expected_plugins.unshift(GraphQL::Schema::Visibility)
       end
       assert_equal expected_plugins, schema.plugins.map(&:first)
       assert_equal custom_query_class, schema.query_class

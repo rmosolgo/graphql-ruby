@@ -20,8 +20,7 @@ if ENV["GRAPHQL_REJECT_NUMBERS_FOLLOWED_BY_NAMES"]
   puts "Opting into GraphQL.reject_numbers_followed_by_names"
   GraphQL.reject_numbers_followed_by_names = true
   puts "Opting into GraphQL::Schema::Visibility::Subset"
-  GraphQL::Schema.use(GraphQL::Schema::Visibility)
-  GraphQL::Schema.use(GraphQL::Schema::TypesMigration)
+  GraphQL::Schema.use(GraphQL::Schema::Visibility, migration_errors: true)
 end
 
 require "rake"
