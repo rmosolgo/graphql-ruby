@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 module GraphQL
   class Schema
-    # You can add this plugin to your schema to see how {GraphQL::Schema::Warden} and {GraphQL::Schema::Subset}
+    # You can add this plugin to your schema to see how {GraphQL::Schema::Warden} and {GraphQL::Schema::Visibility::Subset}
     # handle `.visible?` differently in your schema.
     #
     # This plugin runs the same method on both implementations and raises an error when the results diverge.
@@ -26,7 +26,7 @@ module GraphQL
     #   if !Rails.env.production?
     #     use GraphQL::Schema::TypesMigration
     #   end
-    class TypesMigration < GraphQL::Schema::Subset
+    class TypesMigration < GraphQL::Schema::Visibility::Subset
       def self.use(schema)
         schema.subset_class = self
       end
@@ -83,7 +83,7 @@ module GraphQL
       def initialize(context:, schema:)
         @skip_error = context[:skip_types_migration_error]
         context[:types_migration_running] = true
-        @subset_types = GraphQL::Schema::Subset.new(context: context, schema: schema)
+        @subset_types = GraphQL::Schema::Visibility::Subset.new(context: context, schema: schema)
         if !@skip_error
           warden_ctx_vals = context.to_h.dup
           warden_ctx_vals[:types_migration_warden_running] = true
@@ -91,7 +91,7 @@ module GraphQL
             warden_schema = schema::WardenCompatSchema
           else
             warden_schema = Class.new(schema)
-            warden_schema.use_schema_subset = false
+            warden_schema.use_schema_visibility = false
             # TODO public API
             warden_schema.send(:add_type_and_traverse, [warden_schema.query, warden_schema.mutation, warden_schema.subscription].compact, root: true)
             warden_schema.send(:add_type_and_traverse, warden_schema.directives.values + warden_schema.orphan_types, root: false)

@@ -88,7 +88,7 @@ describe "GraphQL::Authorization" do
     end
 
     module HiddenDefaultInterface
-      if GraphQL::Schema.use_schema_subset?
+      if GraphQL::Schema.use_schema_visibility?
         include HiddenInterface
       else
         # Warden will detect no possible types

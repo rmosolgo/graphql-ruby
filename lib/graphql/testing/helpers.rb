@@ -91,7 +91,7 @@ module GraphQL
           end
           graphql_result
         else
-          unfiltered_type = Schema::Subset.pass_thru(schema: schema, context: context).type(type_name)
+          unfiltered_type = Schema::Visibility::Subset.pass_thru(schema: schema, context: context).type(type_name)
           if unfiltered_type
             raise TypeNotVisibleError.new(type_name: type_name)
           else

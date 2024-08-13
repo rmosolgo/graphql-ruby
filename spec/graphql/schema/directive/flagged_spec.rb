@@ -5,7 +5,7 @@ describe GraphQL::Schema::Directive::Flagged do
   class FlaggedSchema < GraphQL::Schema
     module Animal
       include GraphQL::Schema::Interface
-      if GraphQL::Schema.use_schema_subset?
+      if GraphQL::Schema.use_schema_visibility?
         # It won't check possible types, so it needs this directly
         directive GraphQL::Schema::Directive::Flagged, by: ["northPole", "southPole"]
       end

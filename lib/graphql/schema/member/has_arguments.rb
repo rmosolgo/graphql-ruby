@@ -135,7 +135,7 @@ module GraphQL
 
             def get_argument(argument_name, context = GraphQL::Query::NullContext.instance)
               warden = Warden.from_context(context)
-              skip_visible = context.respond_to?(:types) && context.types.is_a?(GraphQL::Schema::Subset)
+              skip_visible = context.respond_to?(:types) && context.types.is_a?(GraphQL::Schema::Visibility::Subset)
               for ancestor in ancestors
                 if ancestor.respond_to?(:own_arguments) &&
                   (a = ancestor.own_arguments[argument_name]) &&
@@ -210,7 +210,7 @@ module GraphQL
         # @return [GraphQL::Schema::Argument, nil] Argument defined on this thing, fetched by name.
         def get_argument(argument_name, context = GraphQL::Query::NullContext.instance)
           warden = Warden.from_context(context)
-          if (arg_config = own_arguments[argument_name]) && ((context.respond_to?(:types) && context.types.is_a?(GraphQL::Schema::Subset)) || (visible_arg = Warden.visible_entry?(:visible_argument?, arg_config, context, warden)))
+          if (arg_config = own_arguments[argument_name]) && ((context.respond_to?(:types) && context.types.is_a?(GraphQL::Schema::Visibility::Subset)) || (visible_arg = Warden.visible_entry?(:visible_argument?, arg_config, context, warden)))
             visible_arg || arg_config
           elsif defined?(@resolver_class) && @resolver_class
             @resolver_class.get_field_argument(argument_name, context)

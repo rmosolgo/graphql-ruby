@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::Schema::Subset do
+describe GraphQL::Schema::Visibility::Subset do
   class SubsetSchema < GraphQL::Schema
     class Thing < GraphQL::Schema::Object
       field :name, String, method: :to_s

@@ -535,7 +535,7 @@ describe GraphQL::Schema::Warden do
         class BagOfThings < GraphQL::Schema::Union
           possible_types A, B, C
 
-          if GraphQL::Schema.use_schema_subset?
+          if GraphQL::Schema.use_schema_visibility?
             def self.visible?(ctx)
               (
                 possible_types.any? { |pt| ctx.schema.visible?(pt, ctx) } ||
@@ -636,7 +636,7 @@ describe GraphQL::Schema::Warden do
 
       res = schema.execute(query_string, context: { skip_types_migration_error: true, except: ->(m, _) { ["A", "B", "C"].include?(m.graphql_name) } })
 
-      if GraphQL::Schema.use_schema_subset?
+      if GraphQL::Schema.use_schema_visibility?
         # Node is still visible even though it has no possible types
         assert res["data"]["Node"]
         assert_equal [{ "name" => "node" }], res["data"]["Query"]["fields"]
