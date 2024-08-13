@@ -495,5 +495,23 @@ To add other types to your schema, you might want `extra_types`: https://graphql
     assert_equal [:query, :mutation], calls
     assert_equal "Subscription", schema.subscription.graphql_name
     assert_equal [:query, :mutation, :subscription], calls
+    assert schema.instance_variable_get(:@subscription_extension_added)
+  end
+
+  it "adds the subscription extension if subscription(...) is called second" do
+    schema = Class.new(GraphQL::Schema) do
+      use GraphQL::Subscriptions
+      subscription(Class.new(GraphQL::Schema::Object) { graphql_name("Subscription") })
+    end
+    assert schema.subscription
+    assert schema.instance_variable_get(:@subscription_extension_added)
+
+    schema2 = Class.new(GraphQL::Schema) do
+      self.use_schema_subset = true
+      use GraphQL::Subscriptions
+      subscription(Class.new(GraphQL::Schema::Object) { graphql_name("Subscription") })
+    end
+    assert schema2.subscription
+    assert schema2.instance_variable_get(:@subscription_extension_added)
   end
 end

@@ -475,8 +475,10 @@ module GraphQL
             raise GraphQL::Error, "Second definition of `subscription(...)` (#{dup_defn.inspect}) is invalid, already configured with #{@subscription_object.inspect}"
           elsif use_schema_subset?
             @subscription_object = block_given? ? lazy_load_block : new_subscription_object
+            add_subscription_extension_if_necessary
           else
             @subscription_object = new_subscription_object || lazy_load_block.call
+            add_subscription_extension_if_necessary
             add_type_and_traverse(@subscription_object, root: true)
           end
           nil
