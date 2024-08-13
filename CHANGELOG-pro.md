@@ -6,6 +6,10 @@
 
 ### New Features
 
+# 1.27.7 (13 Aug 2024)
+
+- Subscriptions: Fix _another_ Lua error in big cleanup operations
+
 # 1.27.6 (13 Aug 2024)
 
 - Subscriptions: Fix Lua error when cleaning up huge numbers of inactive subscriptions
