@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Schema::Validator::AllValidator
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::Schema::Validator::AllValidator";
+  relpath = '../../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../../_index.html">Index (A)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Validator.html" title="GraphQL::Schema::Validator (class)">Validator</a></span></span>
+     &raquo; 
+    <span class="title">AllValidator</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Schema::Validator::AllValidator
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName"><span class='object_link'><a href="../Validator.html" title="GraphQL::Schema::Validator (class)">GraphQL::Schema::Validator</a></span></span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next"><span class='object_link'><a href="../Validator.html" title="GraphQL::Schema::Validator (class)">GraphQL::Schema::Validator</a></span></li>
+          
+            <li class="next">GraphQL::Schema::Validator::AllValidator</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/schema/validator/all_validator.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>Use this to validate each member of an array value.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+        <p class="example_title"><div class='inline'><p>validate format of all strings in an array</p>
+</div></p>
+      
+      <pre class="example code"><code>
+<span class='id identifier rubyid_argument'>argument</span> <span class='symbol'>:handles</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='const'>String</span><span class='rbracket'>]</span><span class='comma'>,</span>
+  <span class='label'>validates:</span> <span class='lbrace'>{</span> <span class='label'>all:</span> <span class='lbrace'>{</span> <span class='label'>format:</span> <span class='lbrace'>{</span> <span class='label'>with:</span> <span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>\A[a-z0-9_]+\Z</span><span class='regexp_end'>/</span></span> <span class='rbrace'>}</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span></code></pre>
+    
+      
+        <p class="example_title"><div class='inline'><p>multiple validators can be combined</p>
+</div></p>
+      
+      <pre class="example code"><code>
+<span class='id identifier rubyid_argument'>argument</span> <span class='symbol'>:handles</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='const'>String</span><span class='rbracket'>]</span><span class='comma'>,</span>
+  <span class='label'>validates:</span> <span class='lbrace'>{</span> <span class='label'>all:</span> <span class='lbrace'>{</span> <span class='label'>format:</span> <span class='lbrace'>{</span> <span class='label'>with:</span> <span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>\A[a-z0-9_]+\Z</span><span class='regexp_end'>/</span></span> <span class='rbrace'>}</span><span class='comma'>,</span> <span class='label'>length:</span> <span class='lbrace'>{</span> <span class='label'>maximum:</span> <span class='int'>32</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span></code></pre>
+    
+      
+        <p class="example_title"><div class='inline'><p>any type can be used</p>
+</div></p>
+      
+      <pre class="example code"><code>
+<span class='id identifier rubyid_argument'>argument</span> <span class='symbol'>:choices</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='const'>Integer</span><span class='rbracket'>]</span><span class='comma'>,</span>
+  <span class='label'>validates:</span> <span class='lbrace'>{</span> <span class='label'>all:</span> <span class='lbrace'>{</span> <span class='label'>inclusion:</span> <span class='lbrace'>{</span> <span class='label'>in:</span> <span class='int'>1</span><span class='op'>..</span><span class='int'>12</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span> <span class='rbrace'>}</span></code></pre>
+    
+  </div>
+
+
+</div>
+
+
+  <h2>Constant Summary</h2>
+  
+  <h3 class="inherited">Constants included
+     from <span class='object_link'><a href="../../EmptyObjects.html" title="GraphQL::EmptyObjects (module)">EmptyObjects</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../../EmptyObjects.html#EMPTY_ARRAY-constant" title="GraphQL::EmptyObjects::EMPTY_ARRAY (constant)">EmptyObjects::EMPTY_ARRAY</a></span>, <span class='object_link'><a href="../../EmptyObjects.html#EMPTY_HASH-constant" title="GraphQL::EmptyObjects::EMPTY_HASH (constant)">EmptyObjects::EMPTY_HASH</a></span></p>
+
+
+
+
+  <h2>Instance Attribute Summary</h2>
+  
+  <h3 class="inherited">Attributes inherited from <span class='object_link'><a href="../Validator.html" title="GraphQL::Schema::Validator (class)">GraphQL::Schema::Validator</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../Validator.html#validated-instance_method" title="GraphQL::Schema::Validator#validated (method)">#validated</a></span></p>
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(validated:, allow_blank: false, allow_null: false, **validators)  &#x21d2; AllValidator </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A new instance of AllValidator.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#validate-instance_method" title="#validate (instance method)">#<strong>validate</strong>(object, context, value)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods inherited from <span class='object_link'><a href="../Validator.html" title="GraphQL::Schema::Validator (class)">GraphQL::Schema::Validator</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="../Validator.html#from_config-class_method" title="GraphQL::Schema::Validator.from_config (method)">from_config</a></span>, <span class='object_link'><a href="../Validator.html#install-class_method" title="GraphQL::Schema::Validator.install (method)">install</a></span>, <span class='object_link'><a href="../Validator.html#partial_format-instance_method" title="GraphQL::Schema::Validator#partial_format (method)">#partial_format</a></span>, <span class='object_link'><a href="../Validator.html#permitted_empty_value%3F-instance_method" title="GraphQL::Schema::Validator#permitted_empty_value? (method)">#permitted_empty_value?</a></span>, <span class='object_link'><a href="../Validator.html#uninstall-class_method" title="GraphQL::Schema::Validator.uninstall (method)">uninstall</a></span>, <span class='object_link'><a href="../Validator.html#validate!-class_method" title="GraphQL::Schema::Validator.validate! (method)">validate!</a></span></p>
+
+  
+  
+  
+  
+  
+  <div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(validated:, allow_blank: false, allow_null: false, **validators)  &#x21d2; <tt><span class='object_link'><a href="" title="GraphQL::Schema::Validator::AllValidator (class)">AllValidator</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns a new instance of AllValidator.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+24
+25
+26
+27
+28</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/validator/all_validator.rb', line 24</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='label'>validated:</span><span class='comma'>,</span> <span class='label'>allow_blank:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='label'>allow_null:</span> <span class='kw'>false</span><span class='comma'>,</span> <span class='op'>**</span><span class='id identifier rubyid_validators'>validators</span><span class='rparen'>)</span>
+  <span class='kw'>super</span><span class='lparen'>(</span><span class='label'>validated:</span> <span class='id identifier rubyid_validated'>validated</span><span class='comma'>,</span> <span class='label'>allow_blank:</span> <span class='id identifier rubyid_allow_blank'>allow_blank</span><span class='comma'>,</span> <span class='label'>allow_null:</span> <span class='id identifier rubyid_allow_null'>allow_null</span><span class='rparen'>)</span>
+
+  <span class='ivar'>@validators</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../Validator.html" title="GraphQL::Schema::Validator (class)">Validator</a></span></span><span class='period'>.</span><span class='id identifier rubyid_from_config'><span class='object_link'><a href="../Validator.html#from_config-class_method" title="GraphQL::Schema::Validator.from_config (method)">from_config</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_validated'>validated</span><span class='comma'>,</span> <span class='id identifier rubyid_validators'>validators</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="validate-instance_method">
+  
+    #<strong>validate</strong>(object, context, value)  &#x21d2; <tt><span class='object_link'><a href="../Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/validator/all_validator.rb', line 30</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_validate'>validate</span><span class='lparen'>(</span><span class='id identifier rubyid_object'>object</span><span class='comma'>,</span> <span class='id identifier rubyid_context'>context</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='const'><span class='object_link'><a href="../../EmptyObjects.html#EMPTY_ARRAY-constant" title="GraphQL::EmptyObjects::EMPTY_ARRAY (constant)">EMPTY_ARRAY</a></span></span> <span class='kw'>if</span> <span class='id identifier rubyid_permitted_empty_value?'>permitted_empty_value?</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
+
+  <span class='id identifier rubyid_all_errors'>all_errors</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../EmptyObjects.html#EMPTY_ARRAY-constant" title="GraphQL::EmptyObjects::EMPTY_ARRAY (constant)">EMPTY_ARRAY</a></span></span>
+
+  <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_subvalue'>subvalue</span><span class='op'>|</span>
+    <span class='ivar'>@validators</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_validator'>validator</span><span class='op'>|</span>
+      <span class='id identifier rubyid_errors'>errors</span> <span class='op'>=</span> <span class='id identifier rubyid_validator'>validator</span><span class='period'>.</span><span class='id identifier rubyid_validate'>validate</span><span class='lparen'>(</span><span class='id identifier rubyid_object'>object</span><span class='comma'>,</span> <span class='id identifier rubyid_context'>context</span><span class='comma'>,</span> <span class='id identifier rubyid_subvalue'>subvalue</span><span class='rparen'>)</span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_errors'>errors</span> <span class='op'>&amp;&amp;</span>
+          <span class='lparen'>(</span><span class='id identifier rubyid_errors'>errors</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Array</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_errors'>errors</span> <span class='op'>!=</span> <span class='const'><span class='object_link'><a href="../../EmptyObjects.html#EMPTY_ARRAY-constant" title="GraphQL::EmptyObjects::EMPTY_ARRAY (constant)">EMPTY_ARRAY</a></span></span><span class='rparen'>)</span> <span class='op'>||</span>
+          <span class='lparen'>(</span><span class='id identifier rubyid_errors'>errors</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>String</span><span class='rparen'>)</span><span class='rparen'>)</span>
+        <span class='kw'>if</span> <span class='id identifier rubyid_all_errors'>all_errors</span><span class='period'>.</span><span class='id identifier rubyid_frozen?'>frozen?</span> <span class='comment'># It&#39;s empty
+</span>          <span class='id identifier rubyid_all_errors'>all_errors</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+        <span class='kw'>end</span>
+        <span class='kw'>if</span> <span class='id identifier rubyid_errors'>errors</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>String</span><span class='rparen'>)</span>
+          <span class='id identifier rubyid_all_errors'>all_errors</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_errors'>errors</span>
+        <span class='kw'>else</span>
+          <span class='id identifier rubyid_all_errors'>all_errors</span><span class='period'>.</span><span class='id identifier rubyid_concat'>concat</span><span class='lparen'>(</span><span class='id identifier rubyid_errors'>errors</span><span class='rparen'>)</span>
+        <span class='kw'>end</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>unless</span> <span class='id identifier rubyid_all_errors'>all_errors</span><span class='period'>.</span><span class='id identifier rubyid_frozen?'>frozen?</span>
+    <span class='id identifier rubyid_all_errors'>all_errors</span><span class='period'>.</span><span class='id identifier rubyid_uniq!'>uniq!</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_all_errors'>all_errors</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Tue Aug 13 13:43:31 2024 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.28 (ruby-3.2.5).
+</div>
+
+    </div>
+  </body>
+</html>
