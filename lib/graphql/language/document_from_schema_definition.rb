@@ -80,6 +80,7 @@ module GraphQL
       def build_union_type_node(union_type)
         GraphQL::Language::Nodes::UnionTypeDefinition.new(
           name: union_type.graphql_name,
+          comment: union_type.comment,
           description: union_type.description,
           types: @types.possible_types(union_type).sort_by(&:graphql_name).map { |type| build_type_name_node(type) },
           directives: directives(union_type),

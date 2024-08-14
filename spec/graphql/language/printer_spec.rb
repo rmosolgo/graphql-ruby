@@ -311,6 +311,8 @@ describe GraphQL::Language::Printer do
     union = Class.new(GraphQL::Schema::Union) do
       graphql_name "CreateUserResponse"
 
+      comment "Union comment"
+
       possible_types(
         Class.new(GraphQL::Schema::Object) do
           graphql_name "CreateUserSuccess"
@@ -370,6 +372,7 @@ describe GraphQL::Language::Printer do
         payload: CreateUserResponse!
       }
 
+      # Union comment
       union CreateUserResponse = CreateUserError | CreateUserSuccess
 
       type CreateUserSuccess {
