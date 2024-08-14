@@ -661,7 +661,7 @@ module GraphQL
       end
 
       class FieldDefinition < AbstractNode
-        attr_reader :description
+        attr_reader :description, :comment
         scalar_methods :name, :type
         children_methods({
           arguments: GraphQL::Language::Nodes::InputValueDefinition,

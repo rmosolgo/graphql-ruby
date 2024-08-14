@@ -68,6 +68,7 @@ module GraphQL
       def build_field_node(field)
         GraphQL::Language::Nodes::FieldDefinition.new(
           name: field.graphql_name,
+          comment: field.comment,
           arguments: build_argument_nodes(@types.arguments(field)),
           type: build_type_name_node(field.type),
           description: field.description,

@@ -280,7 +280,7 @@ describe GraphQL::Language::Printer do
       implements MyInterface
 
       graphql_name "Query"
-      field :issue, Integer do
+      field :issue, Integer, comment: "Field comment" do
         argument :number, Integer, comment: "Argument comment"
         argument :date_time, scalar
       end
@@ -302,6 +302,7 @@ describe GraphQL::Language::Printer do
       interface MyInterface
       
       type Query implements MyInterface {
+        # Field comment
         issue(
           dateTime: DateTime!
 

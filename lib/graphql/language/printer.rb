@@ -444,6 +444,7 @@ module GraphQL
         i = 0
         fields.each do |field|
           print_description(field, indent: "  ", first_in_block: i == 0)
+          print_comment(field, indent: "  ", first_in_block: i == 0)
           print_string("  ")
           print_field_definition(field)
           print_string("\n")

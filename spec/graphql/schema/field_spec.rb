@@ -61,6 +61,7 @@ describe GraphQL::Schema::Field do
         field_defn = field :test do
           argument :test, String
           description "A Description."
+          comment "A Comment."
           type String
         end
       end
@@ -72,6 +73,7 @@ describe GraphQL::Schema::Field do
 
       assert_equal "test", object.fields["test"].arguments["test"].name
       assert_equal "A Description.", object.fields["test"].description
+      assert_equal "A Comment.", object.fields["test"].comment
     end
 
     it "sets connection? when type is given in a block" do
@@ -100,11 +102,13 @@ describe GraphQL::Schema::Field do
         field :test, String do |field|
           field.argument :test, String
           field.description "A Description."
+          field.comment "A Comment."
         end
       end
 
       assert_equal "test", object.fields["test"].arguments["test"].name
       assert_equal "A Description.", object.fields["test"].description
+      assert_equal "A Comment.", object.fields["test"].comment
     end
 
     it "accepts anonymous classes as type" do
@@ -744,6 +748,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   it "Delegates many properties to its @resolver_class" do
     resolver = Class.new(GraphQL::Schema::Resolver) do
       description "description 1"
+      comment "comment 1"
       type [GraphQL::Types::Float], null: true
 
       argument :b, GraphQL::Types::Float
@@ -755,6 +760,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     field.ensure_loaded
 
     assert_equal "description 1", field.description
+    assert_equal "comment 1", field.comment
     assert_equal "[Float!]", field.type.to_type_signature
     assert_equal 1, field.complexity
     assert_equal :resolve_with_support, field.resolver_method
@@ -766,6 +772,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     assert_equal true, field.scoped?
 
     resolver.description("description 2")
+    resolver.comment("comment 2")
     resolver.type(GraphQL::Types::String, null: false)
     resolver.complexity(5)
     resolver.resolver_method(:blah)
@@ -775,6 +782,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     resolver.argument(:c, GraphQL::Types::Boolean)
 
     assert_equal "description 2", field.description
+    assert_equal "comment 2", field.comment
     assert_equal "String!", field.type.to_type_signature
     assert_equal 5, field.complexity
     assert_equal :blah, field.resolver_method
