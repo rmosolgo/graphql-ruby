@@ -146,6 +146,7 @@ module GraphQL
       def build_input_object_node(input_object)
         GraphQL::Language::Nodes::InputObjectTypeDefinition.new(
           name: input_object.graphql_name,
+          comment: input_object.comment,
           fields: build_argument_nodes(@types.arguments(input_object)),
           description: input_object.description,
           directives: directives(input_object),

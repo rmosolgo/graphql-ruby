@@ -378,7 +378,7 @@ module GraphQL
       end
 
       def print_input_object_type_definition(input_object_type, extension: false)
-        extension ? print_string("extend ") : print_description(input_object_type)
+        extension ? print_string("extend ") : print_description_and_comment(input_object_type)
         print_string("input ")
         print_string(input_object_type.name)
         print_directives(input_object_type.directives)

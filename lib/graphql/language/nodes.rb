@@ -767,7 +767,7 @@ module GraphQL
       end
 
       class InputObjectTypeDefinition < AbstractNode
-        attr_reader :description
+        attr_reader :description, :comment
         scalar_methods :name
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
