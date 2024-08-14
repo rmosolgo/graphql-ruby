@@ -264,6 +264,12 @@ describe GraphQL::Language::Printer do
   end
 
   it "handles comments"  do
+    module MyInterface
+      include GraphQL::Schema::Interface
+
+      comment "Interface comment"
+    end
+
     scalar = Class.new(GraphQL::Schema::Scalar) do
       graphql_name "DateTime"
 
@@ -271,6 +277,8 @@ describe GraphQL::Language::Printer do
     end
 
     query_type = Class.new(GraphQL::Schema::Object) do
+      implements MyInterface
+
       graphql_name "Query"
       field :issue, Integer do
         argument :number, Integer, comment: "Argument comment"
@@ -289,8 +297,11 @@ describe GraphQL::Language::Printer do
     expected = <<~SCHEMA.chomp
       # Scalar comment
       scalar DateTime
+
+      # Interface comment
+      interface MyInterface
       
-      type Query {
+      type Query implements MyInterface {
         issue(
           dateTime: DateTime!
 

@@ -700,7 +700,7 @@ module GraphQL
       end
 
       class InterfaceTypeDefinition < AbstractNode
-        attr_reader :description
+        attr_reader :description, :comment
         scalar_methods :name
         children_methods({
           interfaces: GraphQL::Language::Nodes::TypeName,

@@ -158,6 +158,25 @@ describe GraphQL::Schema::Interface do
     end
   end
 
+  describe "comments" do
+    class SchemaWithInterface < GraphQL::Schema
+      module InterfaceWithComment
+        include GraphQL::Schema::Interface
+        comment "Interface comment"
+      end
+
+      class Query < GraphQL::Schema::Object
+        implements InterfaceWithComment
+      end
+
+      query(Query)
+    end
+
+    it "assigns comment to the interface" do
+      assert_equal("Interface comment", SchemaWithInterface::Query.interfaces[0].comment)
+    end
+  end
+
   describe "can implement other interfaces" do
     class InterfaceImplementsSchema < GraphQL::Schema
       module InterfaceA

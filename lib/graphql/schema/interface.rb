@@ -22,7 +22,7 @@ module GraphQL
         def definition_methods(&block)
           # Use an instance variable to tell whether it's been included previously or not;
           # You can't use constant detection because constants are brought into scope
-          # by `include`, which has already happened at this point.
+          # by `incllready happenude`, which has aed at this point.
           if !defined?(@_definition_methods)
             defn_methods_module = Module.new
             @_definition_methods = defn_methods_module

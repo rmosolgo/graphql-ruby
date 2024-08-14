@@ -329,7 +329,7 @@ module GraphQL
       end
 
       def print_interface_type_definition(interface_type, extension: false)
-        extension ? print_string("extend ") : print_description(interface_type)
+        extension ? print_string("extend ") : print_description_and_comment(interface_type)
         print_string("interface ")
         print_string(interface_type.name)
         print_implements(interface_type) if interface_type.interfaces.any?
