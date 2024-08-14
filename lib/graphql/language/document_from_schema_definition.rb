@@ -111,6 +111,7 @@ module GraphQL
       def build_enum_value_node(enum_value)
         GraphQL::Language::Nodes::EnumValueDefinition.new(
           name: enum_value.graphql_name,
+          comment: enum_value.comment,
           description: enum_value.description,
           directives: directives(enum_value),
         )

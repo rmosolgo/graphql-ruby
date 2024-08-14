@@ -296,7 +296,7 @@ describe GraphQL::Language::Printer do
       comment "Enum comment"
 
       value "ADMIN"
-      value "VIEWER"
+      value "VIEWER", comment: "Enum value comment"
     end
 
     input_object = Class.new(GraphQL::Schema::InputObject) do
@@ -369,6 +369,8 @@ describe GraphQL::Language::Printer do
       # Enum comment
       enum UserRole {
         ADMIN
+
+        # Enum value comment
         VIEWER
       }
     SCHEMA

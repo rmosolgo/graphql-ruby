@@ -364,6 +364,7 @@ module GraphQL
           print_string(" {\n")
           enum_type.values.each.with_index do |value, i|
             print_description(value, indent: "  ", first_in_block: i == 0)
+            print_comment(value, indent: "  ", first_in_block: i == 0)
             print_enum_value_definition(value)
           end
           print_string("}")
