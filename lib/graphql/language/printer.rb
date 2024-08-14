@@ -255,7 +255,7 @@ module GraphQL
 
 
       def print_scalar_type_definition(scalar_type, extension: false)
-        extension ? print_string("extend ") : print_description(scalar_type)
+        extension ? print_string("extend ") : print_description_and_comment(scalar_type)
         print_string("scalar ")
         print_string(scalar_type.name)
         print_directives(scalar_type.directives)
@@ -430,6 +430,11 @@ module GraphQL
 
         print_string("\n") if indent != "" && !first_in_block
         print_string(GraphQL::Language::Comment.print(node.comment, indent: indent))
+      end
+
+      def print_description_and_comment(node)
+        print_description(node)
+        print_comment(node)
       end
 
       def print_field_definitions(fields)

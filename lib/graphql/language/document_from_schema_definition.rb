@@ -116,6 +116,7 @@ module GraphQL
       def build_scalar_type_node(scalar_type)
         GraphQL::Language::Nodes::ScalarTypeDefinition.new(
           name: scalar_type.graphql_name,
+          comment: scalar_type.comment,
           description: scalar_type.description,
           directives: directives(scalar_type),
         )
@@ -130,11 +131,11 @@ module GraphQL
 
         argument_node = GraphQL::Language::Nodes::InputValueDefinition.new(
           name: argument.graphql_name,
+          comment: argument.comment,
           description: argument.description,
           type: build_type_name_node(argument.type),
           default_value: default_value,
           directives: directives(argument),
-          comment: argument.comment
         )
 
         argument_node

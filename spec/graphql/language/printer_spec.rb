@@ -264,10 +264,17 @@ describe GraphQL::Language::Printer do
   end
 
   it "handles comments"  do
+    scalar = Class.new(GraphQL::Schema::Scalar) do
+      graphql_name "DateTime"
+
+      comment "Scalar comment"
+    end
+
     query_type = Class.new(GraphQL::Schema::Object) do
       graphql_name "Query"
       field :issue, Integer do
         argument :number, Integer, comment: "Argument comment"
+        argument :date_time, scalar
       end
 
       def issue(number:)
@@ -280,8 +287,13 @@ describe GraphQL::Language::Printer do
     end
 
     expected = <<~SCHEMA.chomp
+      # Scalar comment
+      scalar DateTime
+      
       type Query {
         issue(
+          dateTime: DateTime!
+
           # Argument comment
           number: Int!
         ): Int
