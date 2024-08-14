@@ -58,6 +58,7 @@ module GraphQL
 
         GraphQL::Language::Nodes::ObjectTypeDefinition.new(
           name: object_type.graphql_name,
+          comment: object_type.comment,
           interfaces: ints,
           fields: build_field_nodes(@types.fields(object_type)),
           description: object_type.description,

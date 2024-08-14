@@ -681,7 +681,7 @@ module GraphQL
       end
 
       class ObjectTypeDefinition < AbstractNode
-        attr_reader :description
+        attr_reader :description, :comment
         scalar_methods :name, :interfaces
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,

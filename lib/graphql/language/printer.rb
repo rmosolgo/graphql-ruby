@@ -262,7 +262,7 @@ module GraphQL
       end
 
       def print_object_type_definition(object_type, extension: false)
-        extension ? print_string("extend ") : print_description(object_type)
+        extension ? print_string("extend ") : print_description_and_comment(object_type)
         print_string("type ")
         print_string(object_type.name)
         print_implements(object_type) unless object_type.interfaces.empty?
