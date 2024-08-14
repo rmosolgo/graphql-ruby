@@ -387,6 +387,7 @@ module GraphQL
           print_string(" {\n")
           input_object_type.fields.each.with_index do |field, i|
             print_description(field, indent: "  ", first_in_block: i == 0)
+            print_comment(field, indent: "  ", first_in_block: i == 0)
             print_string("  ")
             print_input_value_definition(field)
             print_string("\n")

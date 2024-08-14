@@ -304,8 +304,10 @@ describe GraphQL::Language::Printer do
 
       comment "Input object comment"
 
-      argument :first_name, String
-      argument :role, enum_type
+      argument :first_name, String, comment: "Argument comment"
+      argument :role, enum_type do
+        comment "Argument comment"
+      end
     end
 
     union = Class.new(GraphQL::Schema::Union) do
@@ -320,7 +322,7 @@ describe GraphQL::Language::Printer do
           field :user, (Class.new(GraphQL::Schema::Object) do
             graphql_name "User"
 
-            field :first_name, String
+            field :first_name, String, comment: "Field comment"
           end)
         end,
         Class.new(GraphQL::Schema::Object) do
@@ -328,7 +330,9 @@ describe GraphQL::Language::Printer do
 
           comment "Object type comment"
 
-          field :message, String, null: false
+          field :message, String, null: false do
+            comment "Field comment"
+          end
         end
       )
     end
@@ -356,12 +360,16 @@ describe GraphQL::Language::Printer do
     expected = <<~SCHEMA.chomp
       # Object type comment
       type CreateUserError {
+        # Field comment
         message: String!
       }
 
       # Input object comment
       input CreateUserInput {
+        # Argument comment
         firstName: String!
+
+        # Argument comment
         role: UserRole!
       }
 
@@ -404,6 +412,7 @@ describe GraphQL::Language::Printer do
       }
 
       type User {
+        # Field comment
         firstName: String
       }
 
