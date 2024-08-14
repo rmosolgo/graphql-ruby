@@ -290,12 +290,22 @@ describe GraphQL::Language::Printer do
       end
     end
 
+    enum_type = Class.new(GraphQL::Schema::Enum) do
+      graphql_name "UserRole"
+
+      comment "Enum comment"
+
+      value "ADMIN"
+      value "VIEWER"
+    end
+
     input_object = Class.new(GraphQL::Schema::InputObject) do
       graphql_name "CreateUserInput"
 
       comment "Input object comment"
 
       argument :first_name, String
+      argument :role, enum_type
     end
 
     mutation = Class.new(GraphQL::Schema::Mutation) do
@@ -322,6 +332,7 @@ describe GraphQL::Language::Printer do
       # Input object comment
       input CreateUserInput {
         firstName: String!
+        role: UserRole!
       }
 
       """
@@ -353,6 +364,12 @@ describe GraphQL::Language::Printer do
           # Argument comment
           number: Int!
         ): Int
+      }
+
+      # Enum comment
+      enum UserRole {
+        ADMIN
+        VIEWER
       }
     SCHEMA
 

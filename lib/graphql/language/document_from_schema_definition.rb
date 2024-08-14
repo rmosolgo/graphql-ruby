@@ -99,6 +99,7 @@ module GraphQL
       def build_enum_type_node(enum_type)
         GraphQL::Language::Nodes::EnumTypeDefinition.new(
           name: enum_type.graphql_name,
+          comment: enum_type.comment,
           values: @types.enum_values(enum_type).sort_by(&:graphql_name).map do |enum_value|
             build_enum_value_node(enum_value)
           end,
