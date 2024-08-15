@@ -787,13 +787,11 @@ module GraphQL
 
       attr_writer :validate_max_errors
 
-      def validate_max_errors(new_validate_max_errors = nil)
-        if new_validate_max_errors
-          @validate_max_errors = new_validate_max_errors
-        elsif defined?(@validate_max_errors)
-          @validate_max_errors
+      def validate_max_errors(new_validate_max_errors = NOT_CONFIGURED)
+        if NOT_CONFIGURED.equal?(new_validate_max_errors)
+          defined?(@validate_max_errors) ? @validate_max_errors : find_inherited_value(:validate_max_errors)
         else
-          find_inherited_value(:validate_max_errors)
+          @validate_max_errors = new_validate_max_errors
         end
       end
 
