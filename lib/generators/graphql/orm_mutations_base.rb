@@ -18,7 +18,7 @@ module Graphql
       class_option :orm, banner: "NAME", type: :string, required: true,
                          desc: "ORM to generate the controller for"
 
-      class_option 'namespaced_types',
+      class_option :namespaced_types,
         type: :boolean,
         required: false,
         default: false,
