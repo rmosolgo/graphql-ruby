@@ -506,6 +506,15 @@ GRAPHQL
     end
   end
 
+  describe "#tokens_count" do
+    it "counts parsed token" do
+      str = "type Query { f1: Int }"
+      parser = GraphQL::Language::Parser.new(str)
+
+      assert_equal 7, parser.tokens_count
+    end
+  end
+
   module ParserTrace
     TRACES = []
     def parse(query_string:)
