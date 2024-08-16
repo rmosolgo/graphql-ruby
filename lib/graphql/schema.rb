@@ -205,24 +205,19 @@ module GraphQL
         @own_trace_modes ||= {}
       end
 
-      module DefaultTraceClass
-      end
-
-      private_constant :DefaultTraceClass
-
       def build_trace_mode(mode)
         case mode
         when :default
           # Use the superclass's default mode if it has one, or else start an inheritance chain at the built-in base class.
-          base_class = (superclass.respond_to?(:trace_class_for) && superclass.trace_class_for(mode)) || GraphQL::Tracing::Trace
-          Class.new(base_class) do
+          base_class = (superclass.respond_to?(:trace_class_for) && superclass.trace_class_for(mode, build: true)) || GraphQL::Tracing::Trace
+          const_set(:DefaultTrace, Class.new(base_class) do
             include DefaultTraceClass
-          end
+          end)
         when :default_backtrace
           schema_base_class = trace_class_for(:default, build: true)
-          Class.new(schema_base_class) do
+          const_set(:DefaultTraceBacktrace, Class.new(schema_base_class) do
             include(GraphQL::Backtrace::Trace)
-          end
+          end)
         else
           # First, see if the superclass has a custom-defined class for this.
           # Then, if it doesn't, use this class's default trace
@@ -1444,8 +1439,17 @@ module GraphQL
       private
 
       def add_trace_options_for(mode, new_options)
-        t_opts = trace_options_for(mode)
-        t_opts.merge!(new_options)
+        if mode == :default
+          own_trace_modes.each do |mode_name, t_class|
+            if t_class <= DefaultTraceClass
+              t_opts = trace_options_for(mode_name)
+              t_opts.merge!(new_options)
+            end
+          end
+        else
+          t_opts = trace_options_for(mode)
+          t_opts.merge!(new_options)
+        end
         nil
       end
 
@@ -1589,5 +1593,9 @@ module GraphQL
 
     # Install these here so that subclasses will also install it.
     self.connections = GraphQL::Pagination::Connections.new(schema: self)
+
+    # @api private
+    module DefaultTraceClass
+    end
   end
 end
