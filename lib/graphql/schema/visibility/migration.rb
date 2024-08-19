@@ -24,9 +24,13 @@ module GraphQL
       #
       # @example Adding this plugin
       #
-      #   use GraphQL::Schema::Visibility, migration_errors: true
+      #   use GraphQL::Schema::Visibility::Migration
       #
       class Migration < GraphQL::Schema::Visibility::Subset
+        def self.use(schema)
+          schema.subset_class = self
+        end
+
         class RuntimeTypesMismatchError < GraphQL::Error
           def initialize(method_called, warden_result, subset_result, method_args)
             super(<<~ERR)

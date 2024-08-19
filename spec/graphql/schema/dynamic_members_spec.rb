@@ -934,7 +934,7 @@ GRAPHQL
       end
 
       query(Query)
-      use GraphQL::Schema::Visibility, migration_errors: true
+      use GraphQL::Schema::Visibility::Migration
     end
   end
 
@@ -991,9 +991,9 @@ GRAPHQL
     assert_equal 12, res["data"]["thing"]["f"]
 
     schema_dump, context = check_thing_type_is_kind("INTERFACE")
-    assert_equal 3, schema_dump.scan("Thing").size, "Interface definition, interface field, object field: #{schema_dump}"
     assert_includes schema_dump, "interface Thing {\n"
     assert_includes schema_dump, "type OtherObject implements Thing {\n"
+    assert_equal 3, schema_dump.scan("Thing").size, "Interface definition, interface field, object field: #{schema_dump}"
     res = NameConflictSchema.execute("{ thing { ... on Thing { __typename  } ... on OtherObject { f } } }", context: context)
     assert_equal "OtherObject", res["data"]["thing"]["__typename"]
     assert_equal 22, res["data"]["thing"]["f"]
