@@ -10,7 +10,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
       end
 
       def visible?(context)
-        if context[:visible_calls] && !context[:types_migration_warden_running]
+        if context[:visible_calls] && !context[:visibility_migration_warden_running]
           context[:visible_calls][self] << caller
         end
         super && (@future_schema.nil? || (@future_schema == !!context[:future_schema]))
@@ -33,7 +33,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
         if RUBY_VERSION > "3"
           define_method(dynamic_members_method_name) do |*args, **kwargs, &block|
             context = args.last
-            if context && (context.is_a?(Hash) || context.is_a?(GraphQL::Query::Context)) && context[:visible_calls] && !context[:types_migration_warden_running]
+            if context && (context.is_a?(Hash) || context.is_a?(GraphQL::Query::Context)) && context[:visible_calls] && !context[:visibility_migration_warden_running]
               method_obj = self.method(dynamic_members_method_name)
               context[:visible_calls][MethodInspection.new(method_obj)] << caller
             end
@@ -42,7 +42,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
         else
           define_method(dynamic_members_method_name) do |*args, &block|
             context = args.last
-            if context && (context.is_a?(Hash) || context.is_a?(GraphQL::Query::Context)) && context[:visible_calls] && !context[:types_migration_warden_running]
+            if context && (context.is_a?(Hash) || context.is_a?(GraphQL::Query::Context)) && context[:visible_calls] && !context[:visibility_migration_warden_running]
               method_obj = self.method(dynamic_members_method_name)
               context[:visible_calls][MethodInspection.new(method_obj)] << caller
             end
@@ -200,7 +200,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
     class Locale < BaseUnion
       possible_types Country, future_schema: true
 
-      if GraphQL::Schema.use_schema_subset?
+      if GraphQL::Schema.use_schema_visibility?
         # Subset won't check possible_types, this must be flagged
         self.future_schema = true
       end
@@ -595,7 +595,7 @@ GRAPHQL
     assert_includes MultifieldSchema::Country.interfaces({ future_schema: true }), MultifieldSchema::HasCapital
     assert_includes MultifieldSchema.possible_types(MultifieldSchema::HasCapital, { future_schema: true }), MultifieldSchema::Country
     assert_includes MultifieldSchema::Country.interfaces, MultifieldSchema::HasCapital
-    if GraphQL::Schema.use_schema_subset?
+    if GraphQL::Schema.use_schema_visibility?
       # filtered with `future_schema: nil`
       refute_includes MultifieldSchema.possible_types(MultifieldSchema::HasCapital), MultifieldSchema::Country
     else
@@ -605,7 +605,7 @@ GRAPHQL
 
   it "hides hidden union memberships" do
     assert MultifieldSchema::Locale.visible?({ future_schema: true })
-    if GraphQL::Schema.use_schema_subset?
+    if GraphQL::Schema.use_schema_visibility?
       refute MultifieldSchema::Locale.visible?({ future_schema: false })
     else
       # Warden will check possible types -- but Subset doesn't
@@ -615,7 +615,7 @@ GRAPHQL
     # and the possible types relationship is sometimes hidden:
     refute_includes MultifieldSchema.possible_types(MultifieldSchema::Locale, { future_schema: false }), MultifieldSchema::Country
     assert_includes MultifieldSchema.possible_types(MultifieldSchema::Locale, { future_schema: true }), MultifieldSchema::Country
-    if GraphQL::Schema.use_schema_subset?
+    if GraphQL::Schema.use_schema_visibility?
       # This type is hidden in this case
       assert_equal [], MultifieldSchema.possible_types(MultifieldSchema::Locale)
     else
@@ -631,7 +631,7 @@ GRAPHQL
     # and the possible types relationship is sometimes hidden:
     assert_equal [], MultifieldSchema.possible_types(MultifieldSchema::Region, { future_schema: false })
     assert_equal [MultifieldSchema::Country, MultifieldSchema::Place], MultifieldSchema.possible_types(MultifieldSchema::Region, { future_schema: true })
-    if GraphQL::Schema.use_schema_subset?
+    if GraphQL::Schema.use_schema_visibility?
       # Filtered like `future_schema: false`
       assert_equal [MultifieldSchema::Country, MultifieldSchema::LegacyPlace], MultifieldSchema.possible_types(MultifieldSchema::Region)
     else
@@ -694,7 +694,7 @@ GRAPHQL
     assert_equal MultifieldSchema::MoneyScalar, MultifieldSchema.get_type("Money", { future_schema: nil })
     assert_equal MultifieldSchema::MoneyScalar, MultifieldSchema.get_type("Money", { future_schema: false })
     assert_equal MultifieldSchema::Money, MultifieldSchema.get_type("Money", { future_schema: true })
-    if GraphQL::Schema.use_schema_subset?
+    if GraphQL::Schema.use_schema_visibility?
       # Filtered like `future_schema: nil`
       assert_equal MultifieldSchema::MoneyScalar, MultifieldSchema.get_type("Money")
     else
@@ -874,7 +874,7 @@ GRAPHQL
         field :f, Int, null: false
       end
 
-      if GraphQL::Schema.use_schema_subset?
+      if GraphQL::Schema.use_schema_visibility?
         ThingInterface.orphan_types(OtherObject)
       end
 
@@ -934,7 +934,7 @@ GRAPHQL
       end
 
       query(Query)
-      use GraphQL::Schema::TypesMigration
+      use GraphQL::Schema::Visibility::Migration
     end
   end
 
@@ -991,9 +991,9 @@ GRAPHQL
     assert_equal 12, res["data"]["thing"]["f"]
 
     schema_dump, context = check_thing_type_is_kind("INTERFACE")
-    assert_equal 3, schema_dump.scan("Thing").size, "Interface definition, interface field, object field: #{schema_dump}"
     assert_includes schema_dump, "interface Thing {\n"
     assert_includes schema_dump, "type OtherObject implements Thing {\n"
+    assert_equal 3, schema_dump.scan("Thing").size, "Interface definition, interface field, object field: #{schema_dump}"
     res = NameConflictSchema.execute("{ thing { ... on Thing { __typename  } ... on OtherObject { f } } }", context: context)
     assert_equal "OtherObject", res["data"]["thing"]["__typename"]
     assert_equal 22, res["data"]["thing"]["f"]

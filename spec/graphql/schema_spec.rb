@@ -75,7 +75,7 @@ describe GraphQL::Schema do
       assert_equal base_schema.multiplex_analyzers, schema.multiplex_analyzers
       assert_equal base_schema.disable_introspection_entry_points?, schema.disable_introspection_entry_points?
       expected_plugins = [
-        (GraphQL::Schema.use_schema_subset? ? GraphQL::Schema::TypesMigration : nil),
+        (GraphQL::Schema.use_schema_visibility? ? GraphQL::Schema::Visibility : nil),
         GraphQL::Backtrace,
         GraphQL::Subscriptions::ActionCableSubscriptions
       ].compact
@@ -149,8 +149,8 @@ describe GraphQL::Schema do
       assert_equal base_schema.query_analyzers + [query_analyzer], schema.query_analyzers
       assert_equal base_schema.multiplex_analyzers + [multiplex_analyzer], schema.multiplex_analyzers
       expected_plugins = [GraphQL::Backtrace, GraphQL::Subscriptions::ActionCableSubscriptions, CustomSubscriptions]
-      if GraphQL::Schema.use_schema_subset?
-        expected_plugins.unshift(GraphQL::Schema::TypesMigration)
+      if GraphQL::Schema.use_schema_visibility?
+        expected_plugins.unshift(GraphQL::Schema::Visibility)
       end
       assert_equal expected_plugins, schema.plugins.map(&:first)
       assert_equal custom_query_class, schema.query_class
@@ -480,7 +480,7 @@ To add other types to your schema, you might want `extra_types`: https://graphql
   it "defers root type blocks until those types are used" do
     calls = []
     schema = Class.new(GraphQL::Schema) do
-      self.use_schema_subset = true
+      use(GraphQL::Schema::Visibility)
       query { calls << :query; Class.new(GraphQL::Schema::Object) { graphql_name("Query") } }
       mutation { calls << :mutation; Class.new(GraphQL::Schema::Object) { graphql_name("Mutation") } }
       subscription { calls << :subscription; Class.new(GraphQL::Schema::Object) { graphql_name("Subscription") } }
@@ -507,7 +507,7 @@ To add other types to your schema, you might want `extra_types`: https://graphql
     assert schema.instance_variable_get(:@subscription_extension_added)
 
     schema2 = Class.new(GraphQL::Schema) do
-      self.use_schema_subset = true
+      use(GraphQL::Schema::Visibility)
       use GraphQL::Subscriptions
       subscription(Class.new(GraphQL::Schema::Object) { graphql_name("Subscription") })
     end

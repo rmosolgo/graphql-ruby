@@ -45,8 +45,7 @@ require "graphql/schema/mutation"
 require "graphql/schema/has_single_input_argument"
 require "graphql/schema/relay_classic_mutation"
 require "graphql/schema/subscription"
-require "graphql/schema/subset"
-require "graphql/schema/types_migration"
+require "graphql/schema/visibility"
 
 module GraphQL
   # A GraphQL schema which may be queried with {GraphQL::Query}.
@@ -339,8 +338,8 @@ module GraphQL
       # @return [Hash<String => Class>] A dictionary of type classes by their GraphQL name
       # @see get_type Which is more efficient for finding _one type_ by name, because it doesn't merge hashes.
       def types(context = GraphQL::Query::NullContext.instance)
-        if use_schema_subset?
-          return Subset.from_context(context, self).all_types_h
+        if use_schema_visibility?
+          return Visibility::Subset.from_context(context, self).all_types_h
         end
         all_types = non_introspection_types.merge(introspection_system.types)
         visible_types = {}
@@ -369,15 +368,15 @@ module GraphQL
       # @param type_name [String]
       # @return [Module, nil] A type, or nil if there's no type called `type_name`
       def get_type(type_name, context = GraphQL::Query::NullContext.instance)
-        if use_schema_subset?
-          return Subset.from_context(context, self).type(type_name)
+        if use_schema_visibility?
+          return Visibility::Subset.from_context(context, self).type(type_name)
         end
         local_entry = own_types[type_name]
         type_defn = case local_entry
         when nil
           nil
         when Array
-          if context.respond_to?(:types) && context.types.is_a?(GraphQL::Schema::Subset)
+          if context.respond_to?(:types) && context.types.is_a?(GraphQL::Schema::Visibility::Subset)
             local_entry
           else
             visible_t = nil
@@ -435,7 +434,7 @@ module GraphQL
           if @query_object
             dup_defn = new_query_object || yield
             raise GraphQL::Error, "Second definition of `query(...)` (#{dup_defn.inspect}) is invalid, already configured with #{@query_object.inspect}"
-          elsif use_schema_subset?
+          elsif use_schema_visibility?
             @query_object = block_given? ? lazy_load_block : new_query_object
           else
             @query_object = new_query_object || lazy_load_block.call
@@ -454,7 +453,7 @@ module GraphQL
           if @mutation_object
             dup_defn = new_mutation_object || yield
             raise GraphQL::Error, "Second definition of `mutation(...)` (#{dup_defn.inspect}) is invalid, already configured with #{@mutation_object.inspect}"
-          elsif use_schema_subset?
+          elsif use_schema_visibility?
             @mutation_object = block_given? ? lazy_load_block : new_mutation_object
           else
             @mutation_object = new_mutation_object || lazy_load_block.call
@@ -473,7 +472,7 @@ module GraphQL
           if @subscription_object
             dup_defn = new_subscription_object || yield
             raise GraphQL::Error, "Second definition of `subscription(...)` (#{dup_defn.inspect}) is invalid, already configured with #{@subscription_object.inspect}"
-          elsif use_schema_subset?
+          elsif use_schema_visibility?
             @subscription_object = block_given? ? lazy_load_block : new_subscription_object
             add_subscription_extension_if_necessary
           else
@@ -507,7 +506,7 @@ module GraphQL
       end
 
       def root_types
-        if use_schema_subset?
+        if use_schema_visibility?
           [query, mutation, subscription].compact
         else
           @root_types
@@ -532,17 +531,17 @@ module GraphQL
         elsif superclass.respond_to?(:subset_class)
           superclass.subset_class
         else
-          GraphQL::Schema::Subset
+          GraphQL::Schema::Visibility::Subset
         end
       end
 
-      attr_writer :subset_class, :use_schema_subset
+      attr_writer :subset_class, :use_schema_visibility, :visibility
 
-      def use_schema_subset?
-        if defined?(@use_schema_subset)
-          @use_schema_subset
-        elsif superclass.respond_to?(:use_schema_subset?)
-          superclass.use_schema_subset?
+      def use_schema_visibility?
+        if defined?(@use_schema_visibility)
+          @use_schema_visibility
+        elsif superclass.respond_to?(:use_schema_visibility?)
+          superclass.use_schema_visibility?
         else
           false
         end
@@ -552,11 +551,11 @@ module GraphQL
       # @return [Hash<String, Module>] All possible types, if no `type` is given.
       # @return [Array<Module>] Possible types for `type`, if it's given.
       def possible_types(type = nil, context = GraphQL::Query::NullContext.instance)
-        if use_schema_subset?
+        if use_schema_visibility?
           if type
-            return Subset.from_context(context, self).possible_types(type)
+            return Visibility::Subset.from_context(context, self).possible_types(type)
           else
-            raise "Schema.possible_types is not implemented for `use_schema_subset?`"
+            raise "Schema.possible_types is not implemented for `use_schema_visibility?`"
           end
         end
         if type
@@ -752,11 +751,13 @@ module GraphQL
 
       attr_writer :validate_timeout
 
-      def validate_timeout(new_validate_timeout = NOT_CONFIGURED)
-        if NOT_CONFIGURED.equal?(new_validate_timeout)
-          defined?(@validate_timeout) ? @validate_timeout : find_inherited_value(:validate_timeout)
-        else
+      def validate_timeout(new_validate_timeout = nil)
+        if new_validate_timeout
           @validate_timeout = new_validate_timeout
+        elsif defined?(@validate_timeout)
+          @validate_timeout
+        else
+          find_inherited_value(:validate_timeout)
         end
       end
 
@@ -930,7 +931,7 @@ module GraphQL
               To add other types to your schema, you might want `extra_types`: https://graphql-ruby.org/schema/definition.html#extra-types
             ERR
           end
-          add_type_and_traverse(new_orphan_types, root: false) unless use_schema_subset?
+          add_type_and_traverse(new_orphan_types, root: false) unless use_schema_visibility?
           own_orphan_types.concat(new_orphan_types.flatten)
         end
 
@@ -1189,7 +1190,7 @@ module GraphQL
       # @param new_directive [Class]
       # @return void
       def directive(new_directive)
-        if use_schema_subset?
+        if use_schema_visibility?
           own_directives[new_directive.graphql_name] = new_directive
         else
           add_type_and_traverse(new_directive, root: false)
