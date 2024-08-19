@@ -1037,4 +1037,52 @@ describe GraphQL::Schema::Warden do
       assert_equal GraphQL::Schema::Warden::PassThruWarden, GraphQL::Schema::Warden.from_context(context)
     end
   end
+
+  it "doesn't hide subclasses of invisible objects" do
+    identifiable = Module.new do
+      include GraphQL::Schema::Interface
+      graphql_name "Identifiable"
+      field :id, "ID", null: false
+    end
+
+    hidden_account = Class.new(GraphQL::Schema::Object) do
+      graphql_name "Account"
+      implements identifiable
+      def self.visible?(_ctx); false; end
+    end
+
+    visible_account = Class.new(hidden_account) do
+      graphql_name "NewAccount"
+      def self.visible?(_ctx); true; end
+    end
+
+    query_type = Class.new(GraphQL::Schema::Object) do
+      graphql_name "Query"
+      field :account, visible_account
+
+      def account
+        { id: "1" }
+      end
+    end
+
+    schema = Class.new(GraphQL::Schema) do
+      query(query_type)
+    end
+
+    query_str = <<-GRAPHQL
+      query {
+        account {
+          id
+        }
+      }
+    GRAPHQL
+
+    result = schema.execute(query_str, context: { skip_visibility_migration_error: true })
+
+    if GraphQL::Schema.use_schema_visibility?
+      assert_equal "1", result["data"]["account"]["id"]
+    else
+      assert_equal ["Field 'id' doesn't exist on type 'NewAccount'"], result["errors"].map { |e| e["message"] }
+    end
+  end
 end
