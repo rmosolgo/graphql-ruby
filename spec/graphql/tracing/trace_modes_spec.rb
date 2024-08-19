@@ -128,6 +128,7 @@ describe "Trace modes for schemas" do
       # Use a new base trace mode class to avoid polluting the base class
       # which already-initialized schemas have in their inheritance chain
       # (It causes `CallLegacyTracers` to end up in the chain twice otherwise)
+      GraphQL::Schema.send(:remove_const, :DefaultTrace)
       GraphQL::Schema.own_trace_modes[:default] = GraphQL::Schema.build_trace_mode(:default)
 
       child_class = Class.new(GraphQL::Schema)
@@ -145,6 +146,7 @@ describe "Trace modes for schemas" do
       assert_includes child_class.trace_class_for(:default).ancestors, GraphQL::Tracing::CallLegacyTracers
 
       # Reset GraphQL::Schema tracer state:
+      GraphQL::Schema.send(:remove_const, :DefaultTrace)
       GraphQL::Schema.send(:own_tracers).delete(tracer_class)
       GraphQL::Schema.own_trace_modes[:default] = GraphQL::Schema.build_trace_mode(:default)
       refute_includes GraphQL::Schema.new_trace.class.ancestors, GraphQL::Tracing::CallLegacyTracers
@@ -275,6 +277,42 @@ describe "Trace modes for schemas" do
     it "inherits parent trace modules" do
       assert_equal [GraphQL::Batch::SetupMultiplex::Trace, SomeTraceMod], ChildSchema.trace_modules_for(:default)
       assert ChildSchema.new_trace.instance_variable_defined?(:@executor_class)
+    end
+  end
+
+  describe "when GraphQL::Schema gets a new default trace" do
+    module NewDefaultTrace
+      module ParentClassTrace
+        def execute_query(query:)
+          query[:parent_trace_ran] = true
+          super
+        end
+      end
+
+      module ChildClassTrace
+        def execute_query(query:)
+          query[:child_trace_ran] = true
+          super
+        end
+      end
+
+      class ParentSchema < GraphQL::Schema
+      end
+
+      class ChildSchema < ParentSchema
+        trace_with(ChildClassTrace)
+      end
+
+      ParentSchema.trace_with(ParentClassTrace)
+    end
+
+    it "still uses custom traces on subclasses" do
+      dummy_query = {}
+      finished = false
+      NewDefaultTrace::ChildSchema.new_trace.execute_query(query: dummy_query) { finished = true }
+      assert dummy_query[:child_trace_ran]
+      assert dummy_query[:parent_trace_ran]
+      assert finished
     end
   end
 end
