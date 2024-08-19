@@ -19,7 +19,7 @@ module GraphQL
         @scanner.eos?
       end
 
-      attr_reader :pos
+      attr_reader :pos, :tokens_count
 
       def advance
         @scanner.skip(IGNORE_REGEXP)

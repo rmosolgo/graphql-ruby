@@ -11,7 +11,7 @@ module Graphql
     class TypeGeneratorBase < Rails::Generators::NamedBase
       include Core
 
-      class_option 'namespaced_types',
+      class_option :namespaced_types,
         type: :boolean,
         required: false,
         default: false,

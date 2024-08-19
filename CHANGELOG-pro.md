@@ -6,6 +6,14 @@
 
 ### New Features
 
+# 1.27.7 (13 Aug 2024)
+
+- Subscriptions: Fix _another_ Lua error in big cleanup operations
+
+# 1.27.6 (13 Aug 2024)
+
+- Subscriptions: Fix Lua error when cleaning up huge numbers of inactive subscriptions
+
 # 1.27.5 (9 May 2024)
 
 - OperationStore: remove needless call to `.metadata` #4947
