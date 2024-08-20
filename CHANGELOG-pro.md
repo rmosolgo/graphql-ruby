@@ -6,6 +6,10 @@
 
 ### New Features
 
+# 1.28.0 (20 Aug 2024)
+
+- OperationStore: require the `ActiveRecord` backend inside an `ActiveSupport.on_load(:active_record) { ... }` block to improve Rails compatibility
+
 # 1.27.7 (13 Aug 2024)
 
 - Subscriptions: Fix _another_ Lua error in big cleanup operations
