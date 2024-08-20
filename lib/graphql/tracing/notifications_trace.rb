@@ -33,8 +33,8 @@ module GraphQL
         "resolve_type_lazy" => "resolve_type.graphql",
       }.each do |trace_method, platform_key|
         module_eval <<-RUBY, __FILE__, __LINE__
-          def #{trace_method}(**metadata, &blk)
-            @notifications_engine.instrument("#{platform_key}", metadata, &blk)
+          def #{trace_method}(**metadata, &block)
+            @notifications_engine.instrument("#{platform_key}", metadata) { super(**metadata, &block) }
           end
         RUBY
       end
