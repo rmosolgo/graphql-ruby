@@ -490,7 +490,7 @@ module GraphQL
             if arguments[:last] && (max_possible_page_size.nil? || arguments[:last] > max_possible_page_size)
               max_possible_page_size = arguments[:last]
             end
-          elsif arguments.is_a?(GraphQL::UnauthorizedError)
+          elsif arguments.is_a?(GraphQL::ExecutionError) || arguments.is_a?(GraphQL::UnauthorizedError)
             raise arguments
           end
 

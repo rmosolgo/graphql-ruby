@@ -668,8 +668,7 @@ describe GraphQL::Analysis::QueryComplexity do
       it "handles the error" do
         res = GraphQL::Query.new(complexity_schema, query_string).result
         assert_equal ["count must be less than 50"], res["errors"].map { |e| e["message"] }
-        complexity = reduce_result.first
-        assert_equal 102, complexity, "It uses max page size"
+        assert_equal [], reduce_result, "It doesn't finish calculation"
       end
     end
 

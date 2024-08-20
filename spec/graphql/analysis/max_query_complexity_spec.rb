@@ -190,7 +190,11 @@ describe GraphQL::Analysis::MaxQueryComplexity do
       end
 
       def self.object_from_id(id, ctx)
-        { name: "Loaded thing #{id}" }
+        if id == "13"
+          raise GraphQL::ExecutionError, "No Thing ##{id}"
+        else
+          { name: "Loaded thing #{id}" }
+        end
       end
 
       def self.unauthorized_object(err)
@@ -208,6 +212,12 @@ describe GraphQL::Analysis::MaxQueryComplexity do
 
       res2 = AuthorizedTypeSchema.execute(query_str)
       assert_equal ["Unauthorized Object: \"Loaded thing 123\""], res2["errors"].map { |e| e["message"] }
+    end
+
+    it "returns the right error when the loaded object raises an error" do
+      query_str = "{ things(thingId: \"13\", first: 1) { nodes { name } } }"
+      res = AuthorizedTypeSchema.execute(query_str, context: { authorized: true })
+      assert_equal ["No Thing #13"], res["errors"].map { |e| e["message"] }
     end
   end
 end
