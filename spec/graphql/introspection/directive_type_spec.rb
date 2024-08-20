@@ -50,6 +50,15 @@ describe GraphQL::Introspection::DirectiveType do
             "onOperation" => false,
           },
           {
+            "name"=>"directiveForVariableDefinition",
+            "args"=>[],
+            "locations"=>["VARIABLE_DEFINITION"],
+            "isRepeatable"=>false,
+            "onField"=>false,
+            "onFragment"=>false,
+            "onOperation"=>false,
+          },
+          {
             "name"=>"doStuff",
             "args"=>[],
             "locations"=>[],
