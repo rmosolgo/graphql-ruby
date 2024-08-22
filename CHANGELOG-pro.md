@@ -6,6 +6,10 @@
 
 ### New Features
 
+# 1.28.1 (22 Aug 2024)
+
+- Subscriptions: Track `last_triggered_at`; add more metadata to the dashboard.
+
 # 1.28.0 (20 Aug 2024)
 
 - OperationStore: require the `ActiveRecord` backend inside an `ActiveSupport.on_load(:active_record) { ... }` block to improve Rails compatibility
