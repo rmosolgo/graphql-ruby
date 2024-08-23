@@ -33,6 +33,9 @@ module Dummy
   class BaseScalar < GraphQL::Schema::Scalar
   end
 
+  class BaseDirective < GraphQL::Schema::Directive
+  end
+
   module LocalProduct
     include BaseInterface
     description "Something that comes from somewhere"
@@ -530,6 +533,10 @@ module Dummy
     end
   end
 
+  class DirectiveForVariableDefinition < BaseDirective
+    locations(VARIABLE_DEFINITION)
+  end
+
   class Subscription < BaseObject
     field :test, String
     def test; "Test"; end
@@ -542,6 +549,7 @@ module Dummy
     max_depth 5
     orphan_types Honey
     trace_with GraphQL::Tracing::CallLegacyTracers
+    directives(DirectiveForVariableDefinition)
 
     rescue_from(NoSuchDairyError) { |err| raise GraphQL::ExecutionError, err.message  }
 
