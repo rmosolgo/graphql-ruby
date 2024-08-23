@@ -271,14 +271,17 @@ module GraphQL
             "pos: nil",
             "filename: nil",
             "source: nil",
+            "comment: nil"
           ]
+
+          IGNORED_MARSHALLING_KEYWORDS = [:comment]
 
           def generate_initialize
             return if method_defined?(:marshal_load, false) # checking for `:initialize` doesn't work right
 
             scalar_method_names = @scalar_methods
             # TODO: These probably should be scalar methods, but `types` returns an array
-            [:types, :description, :comment].each do |extra_method|
+            [:types, :description].each do |extra_method|
               if method_defined?(extra_method)
                 scalar_method_names += [extra_method]
               end
@@ -307,6 +310,10 @@ module GraphQL
               keywords = scalar_method_names.map { |m| "#{m}: #{m}"} +
                 children_method_names.map { |m| "#{m}: #{m}" }
 
+              ignored_keywords = IGNORED_MARSHALLING_KEYWORDS.map do |keyword|
+                "#{keyword.to_s}: nil"
+              end
+
               module_eval <<-RUBY, __FILE__, __LINE__
                 def initialize(#{arguments.join(", ")})
                   @line = line
@@ -317,7 +324,7 @@ module GraphQL
                   #{assignments.join("\n")}
                 end
 
-                def self.from_a(filename, line, col, #{all_method_names.join(", ")})
+                def self.from_a(filename, line, col, #{all_method_names.join(", ")}, #{ignored_keywords.join(", ")})
                   self.new(filename: filename, line: line, col: col, #{keywords.join(", ")})
                 end
 
