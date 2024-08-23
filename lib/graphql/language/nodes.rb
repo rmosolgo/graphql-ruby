@@ -270,8 +270,7 @@ module GraphQL
             "col: nil",
             "pos: nil",
             "filename: nil",
-            "source: nil",
-            "comment: nil"
+            "source: nil"
           ]
 
           IGNORED_MARSHALLING_KEYWORDS = [:comment]
@@ -281,7 +280,7 @@ module GraphQL
 
             scalar_method_names = @scalar_methods
             # TODO: These probably should be scalar methods, but `types` returns an array
-            [:types, :description].each do |extra_method|
+            [:types, :description, :comment].each do |extra_method|
               if method_defined?(extra_method)
                 scalar_method_names += [extra_method]
               end
@@ -314,6 +313,8 @@ module GraphQL
                 "#{keyword.to_s}: nil"
               end
 
+              marshalling_method_names = all_method_names - IGNORED_MARSHALLING_KEYWORDS
+
               module_eval <<-RUBY, __FILE__, __LINE__
                 def initialize(#{arguments.join(", ")})
                   @line = line
@@ -324,7 +325,7 @@ module GraphQL
                   #{assignments.join("\n")}
                 end
 
-                def self.from_a(filename, line, col, #{all_method_names.join(", ")}, #{ignored_keywords.join(", ")})
+                def self.from_a(filename, line, col, #{marshalling_method_names.join(", ")}, #{ignored_keywords.join(", ")})
                   self.new(filename: filename, line: line, col: col, #{keywords.join(", ")})
                 end
 
@@ -332,12 +333,12 @@ module GraphQL
                   [
                     line, col, # use methods here to force them to be calculated
                     @filename,
-                    #{all_method_names.map { |n| "@#{n}," }.join}
+                    #{marshalling_method_names.map { |n| "@#{n}," }.join}
                   ]
                 end
 
                 def marshal_load(values)
-                  @line, @col, @filename #{all_method_names.map { |n| ", @#{n}"}.join} = values
+                  @line, @col, @filename #{marshalling_method_names.map { |n| ", @#{n}"}.join} = values
                 end
               RUBY
             end
