@@ -70,6 +70,7 @@ module GraphQL
           def inherited(child_class)
             child_class.introspection(introspection)
             child_class.description(description)
+            child_class.comment(comment)
             child_class.default_graphql_name = nil
 
             if defined?(@graphql_name) && @graphql_name && (self.name.nil? || graphql_name != default_graphql_name)

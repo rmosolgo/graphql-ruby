@@ -375,7 +375,6 @@ describe GraphQL::Schema::Object do
         shape.delete(:@configs)
         shape.delete(:@future_schema)
         shape.delete(:@metadata)
-        shape.delete(:@comment)
         if type_defn_shapes.add?(shape)
           example_shapes_by_name[cls.graphql_name] = shape
         end
