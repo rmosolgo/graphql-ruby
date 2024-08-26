@@ -13,6 +13,8 @@ describe GraphQL::Schema::Visibility::Subset do
     end
 
     query(Query)
+
+    use GraphQL::Schema::Visibility
   end
   it "only loads the types it needs" do
     query = GraphQL::Query.new(SubsetSchema, "{ thing { name } }", use_schema_subset: true)
