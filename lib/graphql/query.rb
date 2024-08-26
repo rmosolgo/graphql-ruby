@@ -95,7 +95,8 @@ module GraphQL
     # @param root_value [Object] the object used to resolve fields on the root type
     # @param max_depth [Numeric] the maximum number of nested selections allowed for this query (falls back to schema-level value)
     # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
-    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, static_validator: nil, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, warden: nil, use_schema_subset: nil)
+    # @param visibility_profile [Symbol]
+    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, static_validator: nil, visibility_profile: nil, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, warden: nil, use_schema_subset: nil)
       # Even if `variables: nil` is passed, use an empty hash for simpler logic
       variables ||= {}
       @schema = schema
@@ -106,7 +107,7 @@ module GraphQL
       end
 
       if use_schema_subset
-        @schema_subset = @schema.subset_class.new(context: @context, schema: @schema)
+        @schema_subset = @schema.visibility.profile_for(@context, visibility_profile)
         @warden = Schema::Warden::NullWarden.new(context: @context, schema: @schema)
       else
         @schema_subset = nil

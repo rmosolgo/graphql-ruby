@@ -4,25 +4,52 @@ require "graphql/schema/visibility/migration"
 
 module GraphQL
   class Schema
+    # Use this plugin to make some parts of your schema hidden from some viewers.
+    #
     class Visibility
-      def self.use(schema, preload: nil, migration_errors: false)
-        schema.visibility = self.new(schema, preload: preload)
+      # @param schema [Class<GraphQL::Schema>]
+      # @param profiles [Hash<Symbol => Hash>] A hash of `name => context` pairs for preloading visibility profiles
+      # @param preload [Boolean] if `true`, load the default schema profile and all named profiles immediately (defaults to `true` for `Rails.env.production?`)
+      # @param migration_errors [Boolean] if `true`, raise an error when `Visibility` and `Warden` return different results
+      def self.use(schema, dynamic: false, profiles: nil, preload: (defined?(Rails) ? Rails.env.production? : nil), migration_errors: false)
+        schema.visibility = self.new(schema, dynamic: dynamic, preload: preload, profiles: profiles,)
         schema.use_schema_visibility = true
         if migration_errors
           schema.subset_class = Migration
         end
       end
 
-      def initialize(schema, preload:)
+      def initialize(schema, dynamic:, preload:, profiles:)
         @schema = schema
-        @cached_subsets = {}
-
-        if preload.nil? && defined?(Rails) && Rails.env.production?
-          preload = true
-        end
+        @profiles = profiles
+        @cached_profiles = {}
+        @dynamic = dynamic
 
         if preload
+          profiles.each do |profile_name, example_ctx|
+            prof = profile_for(example_ctx, profile_name)
+            prof.all_types # force loading
+          end
+        end
+      end
 
+      attr_reader :cached_profiles
+
+      def profile_for(context, visibility_profile)
+        if @profiles.any?
+          if visibility_profile.nil?
+            if @dynamic
+              Subset.new(context: context, schema: @schema)
+            elsif @profiles.any?
+              raise ArgumentError, "#{@schema} expects a visibility profile, but `visibility_profile:` wasn't passed. Provide a `visibility_profile:` value or add `dynamic: true` to your visibility configuration."
+            end
+          elsif !@profiles.include?(visibility_profile)
+            raise ArgumentError, "`#{visibility_profile.inspect}` isn't allowed for `visibility_profile:` (must be one of #{@profiles.keys.map(&:inspect).join(", ")}). Or, add `#{visibility_profile.inspect}` to the list of profiles in the schema definition."
+          else
+            @cached_profiles[visibility_profile] ||= Subset.new(name: visibility_profile, context: context, schema: @schema)
+          end
+        else
+          Subset.new(context: context, schema: @schema)
         end
       end
     end

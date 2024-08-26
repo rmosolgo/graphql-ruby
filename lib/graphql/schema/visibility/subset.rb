@@ -13,14 +13,14 @@ module GraphQL
       # - It checks `.visible?` on root introspection types
       #
       # In the future, {Subset} will support lazy-loading types as needed during execution and multi-request caching of subsets.
+      # TODO rename to Profile?
       class Subset
         # @return [Schema::Visibility::Subset]
         def self.from_context(ctx, schema)
           if ctx.respond_to?(:types) && (types = ctx.types).is_a?(self)
             types
           else
-            # TODO use a cached instance from the schema
-            self.new(context: ctx, schema: schema)
+            schema.visibility.profile_for(ctx, nil)
           end
         end
 
@@ -30,7 +30,11 @@ module GraphQL
           subset
         end
 
-        def initialize(context:, schema:)
+        # @return [Symbol, nil]
+        attr_reader :name
+
+        def initialize(name: nil, context:, schema:)
+          @name = name
           @context = context
           @schema = schema
           @all_types = {}

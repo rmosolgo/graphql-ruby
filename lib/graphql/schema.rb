@@ -530,7 +530,8 @@ module GraphQL
         end
       end
 
-      attr_writer :subset_class, :use_schema_visibility, :visibility
+      attr_writer :subset_class, :use_schema_visibility
+      attr_accessor :visibility
 
       def use_schema_visibility?
         if defined?(@use_schema_visibility)
