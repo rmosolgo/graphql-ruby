@@ -26,23 +26,22 @@ describe GraphQL::Schema::Visibility do
       field :name, String
       field :price, Integer
       field :cost_of_goods_sold, Integer, admin_only: true
-      field :quantity_in_stock, Integer
     end
 
     class Query < BaseObject
       field :products, [Product]
 
       def products
-        [{ name: "Pool Noodle", price: 100, cost_of_goods_sold: 5, quantity_in_stock: 100 }]
+        [{ name: "Pool Noodle", price: 100, cost_of_goods_sold: 5 }]
       end
     end
 
     query(Query)
-    use GraphQL::Schema::Visibility, profiles: { public: {}, admin: { is_admin: true }, edge: {} }, preload: true
+    use GraphQL::Schema::Visibility, profiles: { public: {}, admin: { is_admin: true } }, preload: true
   end
 
   class DynVisSchema < VisSchema
-    use GraphQL::Schema::Visibility, profiles: { public: {}, admin: {}, edge: {} }, dynamic: true, preload: false
+    use GraphQL::Schema::Visibility, profiles: { public: {}, admin: {} }, dynamic: true, preload: false
   end
 
   def exec_query(...)
@@ -61,7 +60,7 @@ describe GraphQL::Schema::Visibility do
       err = assert_raises ArgumentError do
         exec_query("{ products { name } }", visibility_profile: :nonsense )
       end
-      expected_msg = "`:nonsense` isn't allowed for `visibility_profile:` (must be one of :public, :admin, :edge). Or, add `:nonsense` to the list of profiles in the schema definition."
+      expected_msg = "`:nonsense` isn't allowed for `visibility_profile:` (must be one of :public, :admin). Or, add `:nonsense` to the list of profiles in the schema definition."
       assert_equal expected_msg, err.message
     end
 
@@ -88,8 +87,44 @@ describe GraphQL::Schema::Visibility do
 
   describe "preloading profiles" do
     it "preloads when true" do
-      assert_equal [:public, :admin, :edge], VisSchema.visibility.cached_profiles.keys, "preload: true"
+      assert_equal [:public, :admin], VisSchema.visibility.cached_profiles.keys, "preload: true"
       assert_equal 0, DynVisSchema.visibility.cached_profiles.size, "preload: false"
+    end
+  end
+
+  describe "configuring named profiles" do
+    class NamedVisSchema < GraphQL::Schema
+      class BaseField < GraphQL::Schema::Field
+        include GraphQL::Schema::Visibility::FieldIntegration
+        visible_in([:public, :admin])
+      end
+      class BaseObject < GraphQL::Schema::Object
+        include GraphQL::Schema::Visibility::TypeIntegration
+        field_class(BaseField)
+        visible_in([:public, :admin])
+      end
+      class Query < BaseObject
+        field :i, Int, fallback_value: 1
+        field :i2, Int, fallback_value: 2, visible_in: :admin
+      end
+
+      query(Query)
+      use GraphQL::Schema::Visibility, profiles: [:public, :admin]
+    end
+
+    it "runs queries by named profile" do
+      res = NamedVisSchema.execute("{ i }", visibility_profile: :public)
+      assert_equal 1, res["data"]["i"]
+
+      res = NamedVisSchema.execute("{ i2 }", visibility_profile: :admin)
+      assert_equal 2, res["data"]["i2"]
+
+      res = NamedVisSchema.execute("{ i i2 }", visibility_profile: :public)
+      assert_equal ["Field 'i2' doesn't exist on type 'Query'"], res["errors"].map { |e| e["message"] }
+
+      res = NamedVisSchema.execute("{ i i2 }", visibility_profile: :admin)
+      assert_equal 1, res["data"]["i"]
+      assert_equal 2, res["data"]["i2"]
     end
   end
 end

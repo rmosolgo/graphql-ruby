@@ -316,6 +316,9 @@ module GraphQL
         GraphQL::StaticValidation::Validator.new(schema: self)
       end
 
+      # Add `plugin` to this schema
+      # @param plugin [#use] A Schema plugin
+      # @return void
       def use(plugin, **kwargs)
         if kwargs.any?
           plugin.use(self, **kwargs)

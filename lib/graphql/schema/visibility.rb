@@ -27,6 +27,7 @@ module GraphQL
 
         if preload
           profiles.each do |profile_name, example_ctx|
+            example_ctx ||= { visibility_profile: profile_name }
             prof = profile_for(example_ctx, profile_name)
             prof.all_types # force loading
           end
@@ -50,6 +51,62 @@ module GraphQL
           end
         else
           Subset.new(context: context, schema: @schema)
+        end
+      end
+
+      module TypeIntegration
+        def self.included(child_cls)
+          child_cls.extend(ClassMethods)
+        end
+
+        module ClassMethods
+          def visible_in(profiles = NOT_CONFIGURED)
+            if NOT_CONFIGURED.equal?(profiles)
+              @visible_in
+            else
+              @visible_in = Array(profiles)
+            end
+          end
+
+          # TODO visible?
+
+          def inherited(child_cls)
+            super
+            if visible_in
+              child_cls.visible_in(visible_in)
+            else
+              child_cls.visible_in(nil)
+            end
+          end
+        end
+      end
+      module FieldIntegration
+        def self.included(child_cls)
+          child_cls.extend(ClassMethods)
+        end
+
+        module ClassMethods
+          def visible_in(visible_in = NOT_CONFIGURED)
+            if NOT_CONFIGURED.equal?(visible_in)
+              @visible_in
+            else
+              @visible_in = Array(visible_in)
+            end
+          end
+        end
+        def initialize(*args, visible_in: nil, **kwargs, &block)
+          @visible_in = visible_in ? Array(visible_in) : nil
+          super(*args, **kwargs, &block)
+        end
+
+        def visible?(context)
+          v_i = @visible_in || self.class.visible_in
+          if v_i
+            v_p = context.respond_to?(:query) ? context.query.visibility_profile : context[:visibility_profile]
+            super && v_i.include?(v_p)
+          else
+            super
+          end
         end
       end
     end

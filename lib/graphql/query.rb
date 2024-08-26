@@ -106,6 +106,8 @@ module GraphQL
         use_schema_subset = warden ? false : schema.use_schema_visibility?
       end
 
+      @visibility_profile = visibility_profile
+
       if use_schema_subset
         @schema_subset = @schema.visibility.profile_for(@context, visibility_profile)
         @warden = Schema::Warden::NullWarden.new(context: @context, schema: @schema)
@@ -187,6 +189,9 @@ module GraphQL
     def query_string
       @query_string ||= (document ? document.to_query_string : nil)
     end
+
+    # @return [Symbol, nil]
+    attr_reader :visibility_profile
 
     attr_accessor :multiplex
 
