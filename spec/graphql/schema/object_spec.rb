@@ -489,4 +489,22 @@ describe GraphQL::Schema::Object do
       assert_equal expected_log, log
     end
   end
+
+  describe ".comment" do
+    it "isn't inherited and can be set to nil" do
+      obj1 = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Obj1"
+        comment "TODO: fix this"
+      end
+
+      obj2 = Class.new(obj1) do
+        graphql_name("Obj2")
+      end
+
+      assert_equal "TODO: fix this", obj1.comment
+      assert_nil obj2.comment
+      obj1.comment(nil)
+      assert_nil obj1.comment
+    end
+  end
 end

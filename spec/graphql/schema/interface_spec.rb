@@ -681,4 +681,22 @@ interface Timestamped implements Node {
       end
     end
   end
+
+  describe ".comment" do
+    it "isn't inherited" do
+      int1 = Module.new do
+        include GraphQL::Schema::Interface
+        graphql_name "Int1"
+        comment "TODO: fix this"
+      end
+
+      int2 = Module.new do
+        include int1
+        graphql_name "Int2"
+      end
+
+      assert_equal "TODO: fix this", int1.comment
+      assert_nil int2.comment
+    end
+  end
 end
