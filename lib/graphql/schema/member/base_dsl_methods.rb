@@ -54,13 +54,13 @@ module GraphQL
         # call it without an argument to get the comment
         # @param new_comment [String]
         # @return [String, nil]
-        def comment(new_comment = nil)
-          if new_comment
+        def comment(new_comment = NOT_CONFIGURED)
+          if !NOT_CONFIGURED.equal?(new_comment)
             @comment = new_comment
-          elsif defined?(comment)
+          elsif defined?(@comment)
             @comment
           else
-            @comment = nil
+            nil
           end
         end
 
@@ -70,7 +70,7 @@ module GraphQL
           def inherited(child_class)
             child_class.introspection(introspection)
             child_class.description(description)
-            child_class.comment(comment)
+            child_class.comment(nil)
             child_class.default_graphql_name = nil
 
             if defined?(@graphql_name) && @graphql_name && (self.name.nil? || graphql_name != default_graphql_name)
