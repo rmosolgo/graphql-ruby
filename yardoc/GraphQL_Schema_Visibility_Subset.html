@@ -1,10 +1,10 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/2.3.14/GraphQL/Schema/Subset" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.3.14/GraphQL/Schema/Visibility/Subset" />
   </head>
   <body>
-    <p>Class: GraphQL::Schema::Subset &lt; Object
+    <p>Class: GraphQL::Schema::Visibility::Subset &lt; Object
 This class filters the types, fields, arguments, enum values, and
 directives in a schema based on the given <code class="language-plaintext highlighter-rouge">context</code>. 
 It’s like Warden, but has some differences:</p>
@@ -16,10 +16,8 @@ those types should implement <code class="language-plaintext highlighter-rouge">
 checks <code class="language-plaintext highlighter-rouge">.visible?</code> on root introspection types 
 In the future, Subset will support lazy-loading types as needed
 during execution and multi-request caching of subsets. 
-See Also:</li>
-  <li>Schema::TypesMigration - for a helper class in adopting this filter
 Direct Known Subclasses:
-TypesMigration
+Migration
 Class methods:
 from_context, pass_thru
 Instance methods:

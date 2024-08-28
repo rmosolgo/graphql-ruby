@@ -1,0 +1,39 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.3.14/GraphQL/Schema/Visibility/Migration" />
+  </head>
+  <body>
+    <p>Class: GraphQL::Schema::Visibility::Migration &lt; GraphQL::Schema::Vis…
+You can use this to see how GraphQL::Schema::Warden and
+GraphQL::Schema::Visibility::Subset handle <code class="language-plaintext highlighter-rouge">.visible?</code> differently
+in your schema. 
+It runs the same method on both implementations and raises an error
+when the results diverge. 
+To fix the error, modify your schema so that both implementations
+return the same thing. Or, open an issue on GitHub to discuss the
+difference. 
+This plugin adds overhead to runtime and may cause unexpected
+crashes   <strong>don’t</strong> use it in production! 
+This plugin adds two keys to <code class="language-plaintext highlighter-rouge">context</code> when running:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">visibility_migration_running: true</code> - For the Warden which it
+instantiates, it adds <code class="language-plaintext highlighter-rouge">visibility_migration_warden_running: true</code>. 
+Use those keys to modify your <code class="language-plaintext highlighter-rouge">visible?</code> behavior as needed. 
+Also, in a pinch, you can set <code class="language-plaintext highlighter-rouge">skip_visibility_migration_error:
+true</code> in context to turn off this behavior per-query. (In that case,
+it uses Subset directly.) 
+Examples:
+    <h1 id="adding-this-plugin">Adding this plugin</h1>
+    <p>use GraphQL::Schema::Visibility::Migration
+Class methods:
+use
+Instance methods:
+call_method_and_compare, equivalent_schema_members?, initialize,
+loaded_types</p>
+  </li>
+</ul>
+
+
+  </body>
+</html>

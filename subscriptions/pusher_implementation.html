@@ -168,6 +168,7 @@
 </a></li><li class='contents-entry'><a href='#database-setup'>Database setup
 </a></li><li class='contents-entry'><a href='#schema-configuration'>Schema configuration
 </a><ol class='contents-list'><li class='contents-entry'><a href='#connection-pool'>Connection Pool
+</a></li><li class='contents-entry'><a href='#broadcasts'>Broadcasts
 </a></li></ol></li><li class='contents-entry'><a href='#execution-configuration'>Execution configuration
 </a><ol class='contents-list'><li class='contents-entry'><a href='#payload-compression'>Payload Compression
 </a></li><li class='contents-entry'><a href='#batched-deliveries'>Batched Deliveries
@@ -287,6 +288,18 @@ appendonly <span class="nb">yes</span>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Pro</span><span class="o">::</span><span class="no">PusherSubscriptions</span><span class="p">,</span>
     <span class="ss">connection_pool: </span><span class="no">ConnectionPool</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">size: </span><span class="mi">5</span><span class="p">,</span> <span class="ss">timeout: </span><span class="mi">5</span><span class="p">)</span> <span class="p">{</span> <span class="no">Redis</span><span class="p">.</span><span class="nf">new</span> <span class="p">},</span>
+</code></pre></div></div>
+
+<h3 id="broadcasts">Broadcasts</h3>
+
+<p>If you set up <a href="/subscriptions/broadcast">Broadcasts</a>, then you can update many clients over a single Pusher channel.</p>
+
+<p>Broadcast channels have stable, predictable IDs. To prevent unauthorized clients from “listening in,” use an <a href="#authorization">authorized Pusher channel</a> for transport. In your authorization code, you can check for a broadcast using <code class="language-plaintext highlighter-rouge">.broadcast_subscription_id?</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># In your Pusher authorization endpoint:</span>
+<span class="n">channel_name</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="ss">:channel_name</span><span class="p">]</span>
+<span class="no">MySchema</span><span class="p">.</span><span class="nf">subscriptions</span><span class="p">.</span><span class="nf">broadcast_subscription_id?</span><span class="p">(</span><span class="n">channel_name</span><span class="p">)</span>
+<span class="c1"># =&gt; true | false</span>
 </code></pre></div></div>
 
 <h2 id="execution-configuration">Execution configuration</h2>

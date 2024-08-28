@@ -169,6 +169,7 @@
 </a></li><li class='contents-entry'><a href='#database-setup'>Database setup
 </a></li><li class='contents-entry'><a href='#schema-configuration'>Schema configuration
 </a><ol class='contents-list'><li class='contents-entry'><a href='#connection-pool'>Connection Pool
+</a></li><li class='contents-entry'><a href='#broadcasts'>Broadcasts
 </a></li></ol></li><li class='contents-entry'><a href='#execution-configuration'>Execution configuration
 </a></li><li class='contents-entry'><a href='#webhook-configuration'>Webhook configuration
 </a><ol class='contents-list'><li class='contents-entry'><a href='#server'>Server
@@ -301,6 +302,12 @@ appendonly <span class="nb">yes</span>
     <span class="ss">connection_pool: </span><span class="no">ConnectionPool</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">size: </span><span class="mi">5</span><span class="p">,</span> <span class="ss">timeout: </span><span class="mi">5</span><span class="p">)</span> <span class="p">{</span> <span class="no">Redis</span><span class="p">.</span><span class="nf">new</span> <span class="p">},</span>
     <span class="ss">ably: </span><span class="no">Ably</span><span class="o">::</span><span class="no">Rest</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">key: </span><span class="no">ABLY_API_KEY</span><span class="p">)</span>
 </code></pre></div></div>
+
+<h3 id="broadcasts">Broadcasts</h3>
+
+<p>If you set up <a href="/subscriptions/broadcast">Broadcasts</a>, then you can update many clients over a single Ably channel.</p>
+
+<p>Broadcast channels have stable, predictable IDs. To prevent unauthorized clients from “listening in,” use <a href="#authorization">token authorization</a> for transport. Broadcasts channels use the namespace <code class="language-plaintext highlighter-rouge">gqlbdcst:</code>, so you can provide capabilities to receive them using <code class="language-plaintext highlighter-rouge">"gqlbdcst:*" =&gt; [ ... ]</code> in your authorization code. (If you’re using <a href="#encryption">encryption</a>, the prefix will be <code class="language-plaintext highlighter-rouge">ablyencr-gqlbdcst:</code> instead.)</p>
 
 <h2 id="execution-configuration">Execution configuration</h2>
 
