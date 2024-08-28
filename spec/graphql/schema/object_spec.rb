@@ -411,7 +411,13 @@ describe GraphQL::Schema::Object do
     assert type_defn_shapes_a.find { |sh| sh == default_connection_shape }, "There's a match for default_connection_shape"
     assert type_defn_shapes_a.find { |sh| sh == default_mutation_payload_shape }, "There's a match for default_mutation_payload_shape"
 
-    assert_equal [], type_defn_shapes_a - expected_default_shapes, "There aren't any other shape profiles"
+    extra_shapes = type_defn_shapes_a - expected_default_shapes
+    extra_shapes_by_name = {}
+    extra_shapes.each do |shape|
+      name = example_shapes_by_name.key(shape)
+      extra_shapes_by_name[name] = shape
+    end
+    assert_equal({}, extra_shapes_by_name, "There aren't any extras shape profiles")
   end
 
   describe "overriding wrap" do
