@@ -6,6 +6,11 @@
 
 ### New Features
 
+# 1.29.0 (27 Aug 2024)
+
+- Subscriptions: use a single Pusher or Ably channel to deliver broadcast payloads to subscribers
+- Dashboard: fix crash when a topic had no active subscriptions
+
 # 1.28.1 (22 Aug 2024)
 
 - Subscriptions: Track `last_triggered_at`; add more metadata to the dashboard.
