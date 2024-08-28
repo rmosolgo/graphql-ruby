@@ -396,15 +396,22 @@ describe GraphQL::Schema::Object do
     default_edge_shape = Class.new(GraphQL::Types::Relay::BaseEdge).instance_variables
     default_connection_shape = Class.new(GraphQL::Types::Relay::BaseConnection).instance_variables
     default_mutation_payload_shape = Class.new(GraphQL::Schema::RelayClassicMutation) { graphql_name("DoSomething") }.payload_type.instance_variables
-    expected_default_shapes = Set.new([
+    expected_default_shapes = [
       default_shape,
       default_shape_with_connection_type,
       default_edge_shape,
       default_connection_shape,
       default_mutation_payload_shape
-    ])
+    ]
 
-    assert_equal expected_default_shapes, type_defn_shapes
+    type_defn_shapes_a = type_defn_shapes.to_a
+    assert type_defn_shapes_a.find { |sh| sh == default_shape }, "There's a match for default_shape"
+    assert type_defn_shapes_a.find { |sh| sh == default_shape_with_connection_type }, "There's a match for default_shape_with_connection_type"
+    assert type_defn_shapes_a.find { |sh| sh == default_edge_shape }, "There's a match for default_edge_shape"
+    assert type_defn_shapes_a.find { |sh| sh == default_connection_shape }, "There's a match for default_connection_shape"
+    assert type_defn_shapes_a.find { |sh| sh == default_mutation_payload_shape }, "There's a match for default_mutation_payload_shape"
+
+    assert_equal [], type_defn_shapes_a - expected_default_shapes, "There aren't any other shape profiles"
   end
 
   describe "overriding wrap" do
