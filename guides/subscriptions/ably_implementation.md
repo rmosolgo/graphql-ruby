@@ -130,7 +130,7 @@ For better performance reading and writing to Redis, you can pass a `connection_
 
 ### Broadcasts
 
-If you set up {% internal_link "Broadcasts", "/subscriptions/broadcasts" %}, then you can update many clients over a single Ably channel.
+If you set up {% internal_link "Broadcasts", "/subscriptions/broadcast" %}, then you can update many clients over a single Ably channel.
 
 Broadcast channels have stable, predictable IDs. To prevent unauthorized clients from "listening in," use [token authorization](#authorization) for transport. Broadcasts channels use the namespace `gqlbdcst:`, so you can provide capabilities to receive them using `"gqlbdcst:*" => [ ... ]` in your authorization code. (If you're using [encryption](#encryption), the prefix will be `ablyencr-gqlbdcst:` instead.)
 

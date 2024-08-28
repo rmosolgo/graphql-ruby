@@ -118,7 +118,7 @@ For better performance reading and writing to Redis, you can pass a `connection_
 
 ### Broadcasts
 
-If you set up {% internal_link "Broadcasts", "/subscriptions/broadcasts" %}, then you can update many clients over a single Pusher channel.
+If you set up {% internal_link "Broadcasts", "/subscriptions/broadcast" %}, then you can update many clients over a single Pusher channel.
 
 Broadcast channels have stable, predictable IDs. To prevent unauthorized clients from "listening in," use an [authorized Pusher channel](#authorization) for transport. In your authorization code, you can check for a broadcast using `.broadcast_subscription_id?`:
 
