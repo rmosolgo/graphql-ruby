@@ -6,7 +6,11 @@
 
 ### New Features
 
-# 1.29.0 (27 Aug 2024)
+# 1.29.1 (29 Aug 2024)
+
+- OperationStore: Accept a `context:` in `#add`
+
+# 1.29.0 (28 Aug 2024)
 
 - Subscriptions: use a single Pusher or Ably channel to deliver broadcast payloads to subscribers
 - Dashboard: fix crash when a topic had no active subscriptions
