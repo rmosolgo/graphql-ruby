@@ -255,14 +255,14 @@ module GraphQL
 
 
       def print_scalar_type_definition(scalar_type, extension: false)
-        extension ? print_string("extend ") : print_description(scalar_type)
+        extension ? print_string("extend ") : print_description_and_comment(scalar_type)
         print_string("scalar ")
         print_string(scalar_type.name)
         print_directives(scalar_type.directives)
       end
 
       def print_object_type_definition(object_type, extension: false)
-        extension ? print_string("extend ") : print_description(object_type)
+        extension ? print_string("extend ") : print_description_and_comment(object_type)
         print_string("type ")
         print_string(object_type.name)
         print_implements(object_type) unless object_type.interfaces.empty?
@@ -294,7 +294,7 @@ module GraphQL
       end
 
       def print_arguments(arguments, indent: "")
-        if arguments.all? { |arg| !arg.description }
+        if arguments.all? { |arg| !arg.description && !arg.comment }
           print_string("(")
           arguments.each_with_index do |arg, i|
             print_input_value_definition(arg)
@@ -306,6 +306,7 @@ module GraphQL
 
         print_string("(\n")
         arguments.each_with_index do |arg, i|
+          print_comment(arg, indent: "  " + indent, first_in_block: i == 0)
           print_description(arg, indent: "  " + indent, first_in_block: i == 0)
           print_string("  ")
           print_string(indent)
@@ -328,7 +329,7 @@ module GraphQL
       end
 
       def print_interface_type_definition(interface_type, extension: false)
-        extension ? print_string("extend ") : print_description(interface_type)
+        extension ? print_string("extend ") : print_description_and_comment(interface_type)
         print_string("interface ")
         print_string(interface_type.name)
         print_implements(interface_type) if interface_type.interfaces.any?
@@ -337,7 +338,7 @@ module GraphQL
       end
 
       def print_union_type_definition(union_type, extension: false)
-        extension ? print_string("extend ") : print_description(union_type)
+        extension ? print_string("extend ") : print_description_and_comment(union_type)
         print_string("union ")
         print_string(union_type.name)
         print_directives(union_type.directives)
@@ -355,7 +356,7 @@ module GraphQL
       end
 
       def print_enum_type_definition(enum_type, extension: false)
-        extension ? print_string("extend ") : print_description(enum_type)
+        extension ? print_string("extend ") : print_description_and_comment(enum_type)
         print_string("enum ")
         print_string(enum_type.name)
         print_directives(enum_type.directives)
@@ -363,6 +364,7 @@ module GraphQL
           print_string(" {\n")
           enum_type.values.each.with_index do |value, i|
             print_description(value, indent: "  ", first_in_block: i == 0)
+            print_comment(value, indent: "  ", first_in_block: i == 0)
             print_enum_value_definition(value)
           end
           print_string("}")
@@ -377,7 +379,7 @@ module GraphQL
       end
 
       def print_input_object_type_definition(input_object_type, extension: false)
-        extension ? print_string("extend ") : print_description(input_object_type)
+        extension ? print_string("extend ") : print_description_and_comment(input_object_type)
         print_string("input ")
         print_string(input_object_type.name)
         print_directives(input_object_type.directives)
@@ -385,6 +387,7 @@ module GraphQL
           print_string(" {\n")
           input_object_type.fields.each.with_index do |field, i|
             print_description(field, indent: "  ", first_in_block: i == 0)
+            print_comment(field, indent: "  ", first_in_block: i == 0)
             print_string("  ")
             print_input_value_definition(field)
             print_string("\n")
@@ -424,6 +427,18 @@ module GraphQL
         print_string(GraphQL::Language::BlockString.print(node.description, indent: indent))
       end
 
+      def print_comment(node, indent: "", first_in_block: true)
+        return unless node.comment
+
+        print_string("\n") if indent != "" && !first_in_block
+        print_string(GraphQL::Language::Comment.print(node.comment, indent: indent))
+      end
+
+      def print_description_and_comment(node)
+        print_description(node)
+        print_comment(node)
+      end
+
       def print_field_definitions(fields)
         return if fields.empty?
 
@@ -431,6 +446,7 @@ module GraphQL
         i = 0
         fields.each do |field|
           print_description(field, indent: "  ", first_in_block: i == 0)
+          print_comment(field, indent: "  ", first_in_block: i == 0)
           print_string("  ")
           print_field_definition(field)
           print_string("\n")

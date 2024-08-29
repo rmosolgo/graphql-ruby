@@ -59,6 +59,7 @@ module GraphQL
         # Define a value for this enum
         # @option kwargs [String, Symbol] :graphql_name the GraphQL value for this, usually `SCREAMING_CASE`
         # @option kwargs [String] :description, the GraphQL description for this value, present in documentation
+        # @option kwargs [String] :comment, the GraphQL comment for this value, present in documentation
         # @option kwargs [::Object] :value the translated Ruby value for this object (defaults to `graphql_name`)
         # @option kwargs [String] :deprecation_reason if this object is deprecated, include a message here
         # @return [void]

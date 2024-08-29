@@ -58,6 +58,7 @@ module GraphQL
 
         GraphQL::Language::Nodes::ObjectTypeDefinition.new(
           name: object_type.graphql_name,
+          comment: object_type.comment,
           interfaces: ints,
           fields: build_field_nodes(@types.fields(object_type)),
           description: object_type.description,
@@ -68,6 +69,7 @@ module GraphQL
       def build_field_node(field)
         GraphQL::Language::Nodes::FieldDefinition.new(
           name: field.graphql_name,
+          comment: field.comment,
           arguments: build_argument_nodes(@types.arguments(field)),
           type: build_type_name_node(field.type),
           description: field.description,
@@ -78,6 +80,7 @@ module GraphQL
       def build_union_type_node(union_type)
         GraphQL::Language::Nodes::UnionTypeDefinition.new(
           name: union_type.graphql_name,
+          comment: union_type.comment,
           description: union_type.description,
           types: @types.possible_types(union_type).sort_by(&:graphql_name).map { |type| build_type_name_node(type) },
           directives: directives(union_type),
@@ -87,6 +90,7 @@ module GraphQL
       def build_interface_type_node(interface_type)
         GraphQL::Language::Nodes::InterfaceTypeDefinition.new(
           name: interface_type.graphql_name,
+          comment: interface_type.comment,
           interfaces: @types.interfaces(interface_type).sort_by(&:graphql_name).map { |type| build_type_name_node(type) },
           description: interface_type.description,
           fields: build_field_nodes(@types.fields(interface_type)),
@@ -97,6 +101,7 @@ module GraphQL
       def build_enum_type_node(enum_type)
         GraphQL::Language::Nodes::EnumTypeDefinition.new(
           name: enum_type.graphql_name,
+          comment: enum_type.comment,
           values: @types.enum_values(enum_type).sort_by(&:graphql_name).map do |enum_value|
             build_enum_value_node(enum_value)
           end,
@@ -108,6 +113,7 @@ module GraphQL
       def build_enum_value_node(enum_value)
         GraphQL::Language::Nodes::EnumValueDefinition.new(
           name: enum_value.graphql_name,
+          comment: enum_value.comment,
           description: enum_value.description,
           directives: directives(enum_value),
         )
@@ -116,6 +122,7 @@ module GraphQL
       def build_scalar_type_node(scalar_type)
         GraphQL::Language::Nodes::ScalarTypeDefinition.new(
           name: scalar_type.graphql_name,
+          comment: scalar_type.comment,
           description: scalar_type.description,
           directives: directives(scalar_type),
         )
@@ -130,6 +137,7 @@ module GraphQL
 
         argument_node = GraphQL::Language::Nodes::InputValueDefinition.new(
           name: argument.graphql_name,
+          comment: argument.comment,
           description: argument.description,
           type: build_type_name_node(argument.type),
           default_value: default_value,
@@ -142,6 +150,7 @@ module GraphQL
       def build_input_object_node(input_object)
         GraphQL::Language::Nodes::InputObjectTypeDefinition.new(
           name: input_object.graphql_name,
+          comment: input_object.comment,
           fields: build_argument_nodes(@types.arguments(input_object)),
           description: input_object.description,
           directives: directives(input_object),
