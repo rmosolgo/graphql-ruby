@@ -168,7 +168,7 @@
 <ul>
   <li><a href="#field-names">Names</a> identify the field in GraphQL</li>
   <li><a href="#field-return-type">Return types</a> say what kind of data this field returns</li>
-  <li><a href="#field-documentation">Documentation</a> includes description and deprecation notes</li>
+  <li><a href="#field-documentation">Documentation</a> includes description, comments and deprecation notes</li>
   <li><a href="#field-resolution">Resolution behavior</a> hooks up Ruby code to the GraphQL field</li>
   <li><a href="#field-arguments">Arguments</a> allow fields to take input when they’re queried</li>
   <li><a href="#extra-field-metadata">Extra field metadata</a> for low-level access to the GraphQL-Ruby runtime</li>
@@ -217,7 +217,7 @@
 
 <h2 id="field-documentation">Field Documentation</h2>
 
-<p>Fields may be documented with a <strong>description</strong> and may be <strong>deprecated</strong>.</p>
+<p>Fields may be documented with a <strong>description</strong>, <strong>comment</strong> and may be <strong>deprecated</strong>.</p>
 
 <p><strong>Descriptions</strong> can be added with the <code class="language-plaintext highlighter-rouge">field(...)</code> method as a positional argument, a keyword argument, or inside the block:</p>
 
@@ -233,6 +233,24 @@
   <span class="n">description</span> <span class="s2">"The name of this thing"</span>
 <span class="k">end</span>
 </code></pre></div></div>
+
+<p><strong>Comments</strong> can be added with the <code class="language-plaintext highlighter-rouge">field(...)</code> method as a keyword argument, or inside the block:</p>
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># `comment:` keyword</span>
+<span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">comment: </span><span class="s2">"Rename to full name"</span>
+
+<span class="c1"># inside the block</span>
+<span class="n">field</span> <span class="ss">:name</span><span class="p">,</span> <span class="no">String</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span> <span class="k">do</span>
+  <span class="n">comment</span> <span class="s2">"Rename to full name"</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Generates field name with comment above “Rename to full name” above.</p>
+
+<div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">type</span><span class="w"> </span><span class="n">Foo</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="c"># Rename to full name</span><span class="w">
+    </span><span class="n">name</span><span class="p">:</span><span class="w"> </span><span class="nb">String</span><span class="p">!</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
 
 <p><strong>Deprecated</strong> fields can be marked by adding a <code class="language-plaintext highlighter-rouge">deprecation_reason:</code> keyword argument:</p>
 

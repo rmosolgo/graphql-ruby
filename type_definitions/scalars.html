@@ -225,6 +225,7 @@
 
 <span class="c1"># app/graphql/types/url.rb</span>
 <span class="k">class</span> <span class="nc">Types::Url</span> <span class="o">&lt;</span> <span class="no">Types</span><span class="o">::</span><span class="no">BaseScalar</span>
+  <span class="n">comment</span> <span class="s2">"TODO comment of the scalar"</span>
   <span class="n">description</span> <span class="s2">"A valid URL, transported as a string"</span>
 
   <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">coerce_input</span><span class="p">(</span><span class="n">input_value</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>

@@ -156,14 +156,41 @@
 <h1 class="guide-header">Redis Configuration</h1>
 <div class="guide-table-of-contents"><div class="table-of-contents">
   <h3 class="contents-header">Contents</h3>
-  <ol class='contents-list'><li class='contents-entry'><a href='#data-structure'>Data Structure
-</a></li><li class='contents-entry'><a href='#memory-management'>Memory Management
+  <ol class='contents-list'><li class='contents-entry'><a href='#memory-management'>Memory Management
 </a></li><li class='contents-entry'><a href='#redis-cluster'>Redis Cluster
+</a></li><li class='contents-entry'><a href='#connection-pool'>Connection Pool
+</a></li><li class='contents-entry'><a href='#data-structure'>Data Structure
 </a></li></ol>
 </div>
 </div>
 <div class="guide-container">
   <p><code class="language-plaintext highlighter-rouge">GraphQL::Enterprise::ObjectCache</code> requires a Redis connection to store cached responses. Unlike <code class="language-plaintext highlighter-rouge">OperationStore</code> or rate limiters, this Redis instance should be configured to evict keys as needed.</p>
+
+<h2 id="memory-management">Memory Management</h2>
+
+<p>Memory consumption is hard to estimate since it depends on how many queries the cache receives, how many objects those queries reference, how big the response is for those queries, and how long the fingerprints are for each object and query. To manage memory, configure the Redis instance with a <code class="language-plaintext highlighter-rouge">maxmemory</code> and <code class="language-plaintext highlighter-rouge">maxmemory-policy</code> directive, for example:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>maxmemory 1gb
+maxmemory-policy allkeys-lfu
+</code></pre></div></div>
+
+<p>Additionally, consider conditionally skipping the cache to prioritize your most critical GraphQL traffic.</p>
+
+<h2 id="redis-cluster">Redis Cluster</h2>
+
+<p><code class="language-plaintext highlighter-rouge">ObjectCache</code> also supports Redis Cluster. To use, pass <code class="language-plaintext highlighter-rouge">redis_cluster:</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">ObjectCache</span><span class="p">,</span> <span class="ss">redis_cluster: </span><span class="no">Redis</span><span class="o">::</span><span class="no">Cluster</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Under the hood, it uses query fingerprints as <a href="https://redis.io/docs/latest/operate/oss_and_stack/reference/cluster-spec/#hash-tags">hash tags</a> and each cached result has its own set of object metadata.</p>
+
+<h2 id="connection-pool">Connection Pool</h2>
+
+<p><code class="language-plaintext highlighter-rouge">ObjectCache</code> also supports <a href="https://github.com/mperham/connection_pool">ConnectionPool</a>. To use it, pass <code class="language-plaintext highlighter-rouge">connection_pool:</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">ObjectCache</span><span class="p">,</span> <span class="ss">connection_pool: </span><span class="no">ConnectionPool</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+</code></pre></div></div>
 
 <h2 id="data-structure">Data Structure</h2>
 
@@ -185,25 +212,6 @@
 </code></pre></div></div>
 
 <p>These mappings enable proper clean-up when queries or objects are expired from the cache. Additionally, whenever <code class="language-plaintext highlighter-rouge">ObjectCache</code> finds incomplete data in storage (for example, a necessary key was evicted), then it invalidates the whole query and re-runs it.</p>
-
-<h2 id="memory-management">Memory Management</h2>
-
-<p>Memory consumption is hard to estimate since it depends on how many queries the cache receives, how many objects those queries reference, how big the response is for those queries, and how long the fingerprints are for each object and query. To manage memory, configure the Redis instance with a <code class="language-plaintext highlighter-rouge">maxmemory</code> and <code class="language-plaintext highlighter-rouge">maxmemory-policy</code> directive, for example:</p>
-
-<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>maxmemory 1gb
-maxmemory-policy allkeys-lfu
-</code></pre></div></div>
-
-<p>Additionally, consider conditionally skipping the cache to prioritize your most critical GraphQL traffic.</p>
-
-<h2 id="redis-cluster">Redis Cluster</h2>
-
-<p><code class="language-plaintext highlighter-rouge">ObjectCache</code> also supports Redis Cluster. To use, pass <code class="language-plaintext highlighter-rouge">redis_cluster:</code>:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">ObjectCache</span><span class="p">,</span> <span class="ss">redis_cluster: </span><span class="no">Redis</span><span class="o">::</span><span class="no">Cluster</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
-</code></pre></div></div>
-
-<p>Under the hood, it uses query fingerprints as <a href="https://redis.io/docs/latest/operate/oss_and_stack/reference/cluster-spec/#hash-tags">hash tags</a> and each cached result has its own set of object metadata.</p>
 
 </div>
 <p class="guide-footer">
