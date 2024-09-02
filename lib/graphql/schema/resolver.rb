@@ -409,9 +409,7 @@ module GraphQL
 
         private
 
-        def own_extensions
-          @own_extensions
-        end
+        attr_reader :own_extensions
       end
     end
   end
