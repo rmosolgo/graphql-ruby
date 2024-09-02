@@ -523,9 +523,7 @@ describe GraphQL::Analysis do
           super
         end
 
-        def result
-          @result
-        end
+        attr_reader :result
       end
       class BaseField < GraphQL::Schema::Field
         def initialize(*args, visible: true, **kwargs, &block)

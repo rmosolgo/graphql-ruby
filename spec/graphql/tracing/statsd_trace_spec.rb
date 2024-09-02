@@ -9,9 +9,7 @@ describe GraphQL::Tracing::StatsdTracing do
         yield
       end
 
-      def timings
-        @timings
-      end
+      attr_reader :timings
 
       def clear
         @timings = []
