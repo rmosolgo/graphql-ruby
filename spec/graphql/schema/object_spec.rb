@@ -397,7 +397,7 @@ describe GraphQL::Schema::Object do
     default_edge_shape = Class.new(GraphQL::Types::Relay::BaseEdge).instance_variables
     default_connection_shape = Class.new(GraphQL::Types::Relay::BaseConnection).instance_variables
     default_mutation_payload_shape = Class.new(GraphQL::Schema::RelayClassicMutation) { graphql_name("DoSomething") }.payload_type.instance_variables
-    default_visibility_shape = Class.new(GraphQL::Schema::Object) { graphql_name("Thing2"); include(GraphQL::Schema::Visibility::TypeIntegration) }.instance_variables
+    default_visibility_shape = Class.new(GraphQL::Schema::Object) { include(GraphQL::Schema::Visibility::TypeIntegration); visible_in(:x) }.instance_variables
     expected_default_shapes = [
       default_shape,
       default_shape_with_connection_type,
@@ -421,6 +421,7 @@ describe GraphQL::Schema::Object do
       name = example_shapes_by_name.key(shape)
       extra_shapes_by_name[name] = shape
     end
+
     assert_equal({}, extra_shapes_by_name, "There aren't any extra shape profiles")
   end
 

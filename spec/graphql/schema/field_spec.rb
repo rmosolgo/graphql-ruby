@@ -834,7 +834,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     shapes = Set.new
 
     # This is custom state added by some test schemas:
-    custom_ivars = [:@upcase, :@future_schema, :@visible, :@allow_for, :@metadata]
+    custom_ivars = [:@upcase, :@future_schema, :@visible, :@allow_for, :@metadata, :@admin_only]
 
     ObjectSpace.each_object(GraphQL::Schema::Field) do |field_obj|
       field_ivars = field_obj.instance_variables
@@ -852,7 +852,13 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     #   end
     # end
     default_field_shape = GraphQL::Introspection::TypeType.get_field("name").instance_variables
-    default_visibility_field_shape = Class.new(GraphQL::Schema::Field) { include(GraphQL::Schema::Visibility::FieldIntegration) }.instance_variables
+    vis_field = Class.new(GraphQL::Schema::Field) { include(GraphQL::Schema::Visibility::FieldIntegration) }
+    vis_field_owner = Class.new(GraphQL::Schema::Object) do
+      graphql_name "Thing"
+      field_class(vis_field)
+      field :x, String, visible_in: :x
+    end
+    default_visibility_field_shape = vis_field_owner.get_field("x").instance_variables
     assert_equal [default_field_shape, default_visibility_field_shape], shapes.to_a
   end
 
