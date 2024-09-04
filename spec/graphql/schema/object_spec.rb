@@ -397,12 +397,14 @@ describe GraphQL::Schema::Object do
     default_edge_shape = Class.new(GraphQL::Types::Relay::BaseEdge).instance_variables
     default_connection_shape = Class.new(GraphQL::Types::Relay::BaseConnection).instance_variables
     default_mutation_payload_shape = Class.new(GraphQL::Schema::RelayClassicMutation) { graphql_name("DoSomething") }.payload_type.instance_variables
+    default_visibility_shape = Class.new(GraphQL::Schema::Object) { graphql_name("Thing2"); include(GraphQL::Schema::Visibility::TypeIntegration) }.instance_variables
     expected_default_shapes = Set.new([
       default_shape,
       default_shape_with_connection_type,
       default_edge_shape,
       default_connection_shape,
       default_mutation_payload_shape
+      default_visibility_shape
     ])
 
     assert_equal expected_default_shapes, type_defn_shapes

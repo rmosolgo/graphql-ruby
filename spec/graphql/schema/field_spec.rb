@@ -844,7 +844,8 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     #   end
     # end
     default_field_shape = GraphQL::Introspection::TypeType.get_field("name").instance_variables
-    assert_equal [default_field_shape], shapes.to_a
+    default_visibility_field_shape = Class.new(GraphQL::Schema::Field) { include(GraphQL::Schema::Visibility::FieldIntegration) }.instance_variables
+    assert_equal [default_field_shape, default_visibility_field_shape], shapes.to_a
   end
 
   it "works with implicit hash key and default value" do
