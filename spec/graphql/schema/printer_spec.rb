@@ -967,4 +967,30 @@ enum Thing {
     schema = GraphQL::Schema.from_definition(input)
     assert_equal input, GraphQL::Schema::Printer.print_schema(schema)
   end
+
+  describe "when Union is used in extra_types" do
+    it "can be included" do
+      obj_1 = Class.new(GraphQL::Schema::Object) { graphql_name("Obj1"); field(:f1, String)}
+      obj_2 = Class.new(GraphQL::Schema::Object) { graphql_name("Obj2"); field(:f2, obj_1) }
+      union_type = Class.new(GraphQL::Schema::Union) do
+        graphql_name "Union1"
+        possible_types(obj_1, obj_2)
+      end
+
+      assert_equal "union Union1 = Obj1 | Obj2\n", Class.new(GraphQL::Schema) { extra_types(union_type) }.to_definition
+
+      expected_defn = <<~GRAPHQL
+        type Obj1 {
+          f1: String
+        }
+
+        type Obj2 {
+          f2: Obj1
+        }
+
+        union Union1 = Obj1 | Obj2
+      GRAPHQL
+      assert_equal expected_defn, Class.new(GraphQL::Schema) { extra_types(union_type, obj_1, obj_2) }.to_definition
+    end
+  end
 end
