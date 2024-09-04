@@ -6,6 +6,10 @@
 
 ### New Features
 
+# 1.29.2 (4 Sept 2024)
+
+- Subscriptions: show broadcast subscriber count in dashboard (Pusher requires "subscription count" to be turned on and `use ... show_broadcast_subscribers_count: true`)
+
 # 1.29.1 (29 Aug 2024)
 
 - OperationStore: Accept a `context:` in `#add`
