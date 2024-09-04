@@ -158,6 +158,25 @@ describe GraphQL::Schema::Interface do
     end
   end
 
+  describe "comments" do
+    class SchemaWithInterface < GraphQL::Schema
+      module InterfaceWithComment
+        include GraphQL::Schema::Interface
+        comment "Interface comment"
+      end
+
+      class Query < GraphQL::Schema::Object
+        implements InterfaceWithComment
+      end
+
+      query(Query)
+    end
+
+    it "assigns comment to the interface" do
+      assert_equal("Interface comment", SchemaWithInterface::Query.interfaces[0].comment)
+    end
+  end
+
   describe "can implement other interfaces" do
     class InterfaceImplementsSchema < GraphQL::Schema
       module InterfaceA
@@ -660,6 +679,24 @@ interface Timestamped implements Node {
           assert_equal "Cat", res["data"]["pet"]["__typename"]
         end
       end
+    end
+  end
+
+  describe ".comment" do
+    it "isn't inherited" do
+      int1 = Module.new do
+        include GraphQL::Schema::Interface
+        graphql_name "Int1"
+        comment "TODO: fix this"
+      end
+
+      int2 = Module.new do
+        include int1
+        graphql_name "Int2"
+      end
+
+      assert_equal "TODO: fix this", int1.comment
+      assert_nil int2.comment
     end
   end
 end

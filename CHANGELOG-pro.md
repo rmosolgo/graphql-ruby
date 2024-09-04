@@ -6,6 +6,19 @@
 
 ### New Features
 
+# 1.29.2 (4 Sept 2024)
+
+- Subscriptions: show broadcast subscriber count in dashboard (Pusher requires "subscription count" to be turned on and `use ... show_broadcast_subscribers_count: true`)
+
+# 1.29.1 (29 Aug 2024)
+
+- OperationStore: Accept a `context:` in `#add`
+
+# 1.29.0 (28 Aug 2024)
+
+- Subscriptions: use a single Pusher or Ably channel to deliver broadcast payloads to subscribers
+- Dashboard: fix crash when a topic had no active subscriptions
+
 # 1.28.1 (22 Aug 2024)
 
 - Subscriptions: Track `last_triggered_at`; add more metadata to the dashboard.

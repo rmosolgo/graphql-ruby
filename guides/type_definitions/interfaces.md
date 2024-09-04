@@ -80,6 +80,7 @@ Then, include that into each interface:
 ```ruby
 module Types::RetailItem
   include Types::BaseInterface
+  comment "TODO comment in the RetailItem interface"
   description "Something that can be bought"
   field :price, Types::Price, "How much this item costs", null: false
 

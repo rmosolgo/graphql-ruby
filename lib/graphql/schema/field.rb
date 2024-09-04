@@ -106,7 +106,7 @@ module GraphQL
       # @param subscription [Class] A {GraphQL::Schema::Subscription} class to use for field configuration
       # @return [GraphQL::Schema:Field] an instance of `self`
       # @see {.initialize} for other options
-      def self.from_options(name = nil, type = nil, desc = nil, resolver: nil, mutation: nil, subscription: nil,**kwargs, &block)
+      def self.from_options(name = nil, type = nil, desc = nil, comment: nil, resolver: nil, mutation: nil, subscription: nil,**kwargs, &block)
         if (resolver_class = resolver || mutation || subscription)
           # Add a reference to that parent class
           kwargs[:resolver_class] = resolver_class
@@ -114,6 +114,10 @@ module GraphQL
 
         if name
           kwargs[:name] = name
+        end
+
+        if comment
+          kwargs[:comment] = comment
         end
 
         if !type.nil?
@@ -212,6 +216,7 @@ module GraphQL
       # @param owner [Class] The type that this field belongs to
       # @param null [Boolean] (defaults to `true`) `true` if this field may return `null`, `false` if it is never `null`
       # @param description [String] Field description
+      # @param comment [String] Field comment
       # @param deprecation_reason [String] If present, the field is marked "deprecated" with this message
       # @param method [Symbol] The method to call on the underlying object to resolve this field (defaults to `name`)
       # @param hash_key [String, Symbol] The hash key to lookup on the underlying object (if its a Hash) to resolve this field (defaults to `name` or `name.to_s`)
@@ -236,7 +241,7 @@ module GraphQL
       # @param method_conflict_warning [Boolean] If false, skip the warning if this field's method conflicts with a built-in method
       # @param validates [Array<Hash>] Configurations for validating this field
       # @param fallback_value [Object] A fallback value if the method is not defined
-      def initialize(type: nil, name: nil, owner: nil, null: nil, description: NOT_CONFIGURED, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: NOT_CONFIGURED, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: NOT_CONFIGURED, dynamic_introspection: false, &definition_block)
+      def initialize(type: nil, name: nil, owner: nil, null: nil, description: NOT_CONFIGURED, comment: NOT_CONFIGURED, deprecation_reason: nil, method: nil, hash_key: nil, dig: nil, resolver_method: nil, connection: nil, max_page_size: NOT_CONFIGURED, default_page_size: NOT_CONFIGURED, scope: nil, introspection: false, camelize: true, trace: nil, complexity: nil, ast_node: nil, extras: EMPTY_ARRAY, extensions: EMPTY_ARRAY, connection_extension: self.class.connection_extension, resolver_class: nil, subscription_scope: nil, relay_node_field: false, relay_nodes_field: false, method_conflict_warning: true, broadcastable: NOT_CONFIGURED, arguments: EMPTY_HASH, directives: EMPTY_HASH, validates: EMPTY_ARRAY, fallback_value: NOT_CONFIGURED, dynamic_introspection: false, &definition_block)
         if name.nil?
           raise ArgumentError, "missing first `name` argument or keyword `name:`"
         end
@@ -252,6 +257,7 @@ module GraphQL
         @name = -(camelize ? Member::BuildType.camelize(name_s) : name_s)
 
         @description = description
+        @comment = comment
         @type = @owner_type = @own_validators = @own_directives = @own_arguments = @arguments_statically_coercible = nil # these will be prepared later if necessary
 
         self.deprecation_reason = deprecation_reason
@@ -395,6 +401,20 @@ module GraphQL
           @description
         elsif @resolver_class
           @resolver_class.description
+        else
+          nil
+        end
+      end
+
+      # @param text [String]
+      # @return [String, nil]
+      def comment(text = nil)
+        if text
+          @comment = text
+        elsif !NOT_CONFIGURED.equal?(@comment)
+          @comment
+        elsif @resolver_class
+          @resolver_class.comment
         else
           nil
         end

@@ -50,12 +50,27 @@ module GraphQL
           end
         end
 
+        # Call this method to provide a new comment; OR
+        # call it without an argument to get the comment
+        # @param new_comment [String]
+        # @return [String, nil]
+        def comment(new_comment = NOT_CONFIGURED)
+          if !NOT_CONFIGURED.equal?(new_comment)
+            @comment = new_comment
+          elsif defined?(@comment)
+            @comment
+          else
+            nil
+          end
+        end
+
         # This pushes some configurations _down_ the inheritance tree,
         # in order to prevent repetitive lookups at runtime.
         module ConfigurationExtension
           def inherited(child_class)
             child_class.introspection(introspection)
             child_class.description(description)
+            child_class.comment(nil)
             child_class.default_graphql_name = nil
 
             if defined?(@graphql_name) && @graphql_name && (self.name.nil? || graphql_name != default_graphql_name)

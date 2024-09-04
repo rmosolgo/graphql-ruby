@@ -270,15 +270,17 @@ module GraphQL
             "col: nil",
             "pos: nil",
             "filename: nil",
-            "source: nil",
+            "source: nil"
           ]
+
+          IGNORED_MARSHALLING_KEYWORDS = [:comment]
 
           def generate_initialize
             return if method_defined?(:marshal_load, false) # checking for `:initialize` doesn't work right
 
             scalar_method_names = @scalar_methods
             # TODO: These probably should be scalar methods, but `types` returns an array
-            [:types, :description].each do |extra_method|
+            [:types, :description, :comment].each do |extra_method|
               if method_defined?(extra_method)
                 scalar_method_names += [extra_method]
               end
@@ -307,6 +309,12 @@ module GraphQL
               keywords = scalar_method_names.map { |m| "#{m}: #{m}"} +
                 children_method_names.map { |m| "#{m}: #{m}" }
 
+              ignored_keywords = IGNORED_MARSHALLING_KEYWORDS.map do |keyword|
+                "#{keyword.to_s}: nil"
+              end
+
+              marshalling_method_names = all_method_names - IGNORED_MARSHALLING_KEYWORDS
+
               module_eval <<-RUBY, __FILE__, __LINE__
                 def initialize(#{arguments.join(", ")})
                   @line = line
@@ -317,7 +325,7 @@ module GraphQL
                   #{assignments.join("\n")}
                 end
 
-                def self.from_a(filename, line, col, #{all_method_names.join(", ")})
+                def self.from_a(filename, line, col, #{marshalling_method_names.join(", ")}, #{ignored_keywords.join(", ")})
                   self.new(filename: filename, line: line, col: col, #{keywords.join(", ")})
                 end
 
@@ -325,12 +333,12 @@ module GraphQL
                   [
                     line, col, # use methods here to force them to be calculated
                     @filename,
-                    #{all_method_names.map { |n| "@#{n}," }.join}
+                    #{marshalling_method_names.map { |n| "@#{n}," }.join}
                   ]
                 end
 
                 def marshal_load(values)
-                  @line, @col, @filename #{all_method_names.map { |n| ", @#{n}"}.join} = values
+                  @line, @col, @filename #{marshalling_method_names.map { |n| ", @#{n}"}.join} = values
                 end
               RUBY
             end
@@ -635,7 +643,7 @@ module GraphQL
       end
 
       class ScalarTypeDefinition < AbstractNode
-        attr_reader :description
+        attr_reader :description, :comment
         scalar_methods :name
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
@@ -652,7 +660,7 @@ module GraphQL
       end
 
       class InputValueDefinition < AbstractNode
-        attr_reader :description
+        attr_reader :description, :comment
         scalar_methods :name, :type, :default_value
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
@@ -661,7 +669,7 @@ module GraphQL
       end
 
       class FieldDefinition < AbstractNode
-        attr_reader :description
+        attr_reader :description, :comment
         scalar_methods :name, :type
         children_methods({
           arguments: GraphQL::Language::Nodes::InputValueDefinition,
@@ -681,7 +689,7 @@ module GraphQL
       end
 
       class ObjectTypeDefinition < AbstractNode
-        attr_reader :description
+        attr_reader :description, :comment
         scalar_methods :name, :interfaces
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
@@ -700,7 +708,7 @@ module GraphQL
       end
 
       class InterfaceTypeDefinition < AbstractNode
-        attr_reader :description
+        attr_reader :description, :comment
         scalar_methods :name
         children_methods({
           interfaces: GraphQL::Language::Nodes::TypeName,
@@ -721,7 +729,7 @@ module GraphQL
       end
 
       class UnionTypeDefinition < AbstractNode
-        attr_reader :description, :types
+        attr_reader :description, :comment, :types
         scalar_methods :name
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
@@ -739,7 +747,7 @@ module GraphQL
       end
 
       class EnumValueDefinition < AbstractNode
-        attr_reader :description
+        attr_reader :description, :comment
         scalar_methods :name
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
@@ -748,7 +756,7 @@ module GraphQL
       end
 
       class EnumTypeDefinition < AbstractNode
-        attr_reader :description
+        attr_reader :description, :comment
         scalar_methods :name
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,
@@ -767,7 +775,7 @@ module GraphQL
       end
 
       class InputObjectTypeDefinition < AbstractNode
-        attr_reader :description
+        attr_reader :description, :comment
         scalar_methods :name
         children_methods({
           directives: GraphQL::Language::Nodes::Directive,

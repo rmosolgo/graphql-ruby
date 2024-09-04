@@ -8,6 +8,10 @@
 
 ### Bug Fix
 
+# 1.5.1 (30 Aug 2024)
+
+- ObjectCache: Add `connection_pool:` support
+
 # 1.5.0 (26 Jul 2024)
 
 - ObjectCache: Add Dalli backend for Memcached

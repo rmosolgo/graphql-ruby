@@ -63,6 +63,7 @@ module GraphQL
 
             child_class.introspection(introspection)
             child_class.description(description)
+            child_class.comment(nil)
             # If interfaces are mixed into each other, only define this class once
             if !child_class.const_defined?(:UnresolvedTypeError, false)
               add_unresolved_type_error(child_class)

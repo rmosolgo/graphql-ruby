@@ -59,6 +59,7 @@ end
 Each value may have:
 
 - A description (as the second argument or `description:` keyword)
+- A comment (as a `comment:` keyword)
 - A deprecation reason (as `deprecation_reason:`), marking this value as deprecated
 - A corresponding Ruby value (as `value:`), see below
 

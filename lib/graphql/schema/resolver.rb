@@ -8,6 +8,7 @@ module GraphQL
     # - Arguments, via `.argument(...)` helper, which will be applied to the field.
     # - Return type, via `.type(..., null: ...)`, which will be applied to the field.
     # - Description, via `.description(...)`, which will be applied to the field
+    # - Comment, via `.comment(...)`, which will be applied to the field
     # - Resolution, via `#resolve(**args)` method, which will be called to resolve the field.
     # - `#object` and `#context` accessors for use during `#resolve`.
     #
@@ -19,7 +20,7 @@ module GraphQL
     # @see {GraphQL::Function} `Resolver` is a replacement for `GraphQL::Function`
     class Resolver
       include Schema::Member::GraphQLTypeNames
-      # Really we only need description from here, but:
+      # Really we only need description & comment from here, but:
       extend Schema::Member::BaseDSLMethods
       extend GraphQL::Schema::Member::HasArguments
       extend GraphQL::Schema::Member::HasValidators
@@ -408,9 +409,7 @@ module GraphQL
 
         private
 
-        def own_extensions
-          @own_extensions
-        end
+        attr_reader :own_extensions
       end
     end
   end
