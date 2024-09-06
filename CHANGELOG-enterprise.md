@@ -8,6 +8,10 @@
 
 ### Bug Fix
 
+# 1.5.2 (6 Sept 2024)
+
+- Limiters: Add `connection_pool:` support
+
 # 1.5.1 (30 Aug 2024)
 
 - ObjectCache: Add `connection_pool:` support
