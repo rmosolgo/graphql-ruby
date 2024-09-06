@@ -30,6 +30,8 @@ class MySchema < GraphQL::Schema
 end
 ```
 
+> [SQIDs](https://sqids.org/ruby) are an alternative to `to_gid_param` which generate shorter IDs. Here is a [detailed guide](https://blog.gripdev.xyz/2024/06/09/sqids-graphql-and-ruby/) of how they can be used.
+
 ## Node interface
 
 One requirement for Relay's object management is implementing the `"Node"` interface.
