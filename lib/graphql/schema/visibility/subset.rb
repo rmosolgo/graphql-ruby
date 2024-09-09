@@ -71,6 +71,7 @@ module GraphQL
           @cached_visible_arguments = Hash.new do |h, arg|
             h[arg] = if @cached_visible[arg] && (arg_type = arg.type.unwrap) && @cached_visible[arg_type]
               add_type(arg_type, arg)
+              arg.validate_default_value
               true
             else
               false
@@ -407,8 +408,9 @@ module GraphQL
 
           @unfiltered_interface_type_memberships = Hash.new { |h, k| h[k] = [] }.compare_by_identity
           @add_possible_types = Set.new
+          @late_types = []
 
-          while @unvisited_types.any?
+          while @unvisited_types.any? || @late_types.any?
             while t = @unvisited_types.pop
               # These have already been checked for `.visible?`
               visit_type(t)
@@ -422,6 +424,12 @@ module GraphQL
               end
             end
             @add_possible_types.clear
+
+            while (union_tm = @late_types.shift)
+              late_obj_t = union_tm.object_type
+              obj_t = @all_types[late_obj_t.graphql_name] || raise("Failed to resolve #{late_obj_t.graphql_name.inspect} from #{union_tm.inspect}")
+              union_tm.abstract_type.assign_type_membership_object_type(obj_t)
+            end
           end
 
           @all_types.delete_if { |type_name, type_defn| !referenced?(type_defn) }
@@ -474,12 +482,16 @@ module GraphQL
             type.type_memberships.each do |tm|
               if @cached_visible[tm]
                 obj_t = tm.object_type
-                if obj_t.is_a?(String)
-                  obj_t = Member::BuildType.constantize(obj_t)
-                  tm.object_type = obj_t
-                end
-                if @cached_visible[obj_t]
-                  add_type(obj_t, tm)
+                if obj_t.is_a?(GraphQL::Schema::LateBoundType)
+                  @late_types << tm
+                else
+                  if obj_t.is_a?(String)
+                    obj_t = Member::BuildType.constantize(obj_t)
+                    tm.object_type = obj_t
+                  end
+                  if @cached_visible[obj_t]
+                    add_type(obj_t, tm)
+                  end
                 end
               end
             end

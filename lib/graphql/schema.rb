@@ -337,7 +337,8 @@ module GraphQL
       # @see get_type Which is more efficient for finding _one type_ by name, because it doesn't merge hashes.
       def types(context = GraphQL::Query::NullContext.instance)
         if use_schema_visibility?
-          return Visibility::Subset.from_context(context, self).all_types_h
+          types = Visibility::Subset.from_context(context, self)
+          return types.all_types_h
         end
         all_types = non_introspection_types.merge(introspection_system.types)
         visible_types = {}
@@ -365,8 +366,8 @@ module GraphQL
 
       # @param type_name [String]
       # @return [Module, nil] A type, or nil if there's no type called `type_name`
-      def get_type(type_name, context = GraphQL::Query::NullContext.instance)
-        if use_schema_visibility?
+      def get_type(type_name, context = GraphQL::Query::NullContext.instance, use_schema_visibility: use_schema_visibility?)
+        if use_schema_visibility
           return Visibility::Subset.from_context(context, self).type(type_name)
         end
         local_entry = own_types[type_name]
@@ -400,7 +401,7 @@ module GraphQL
 
         type_defn ||
           introspection_system.types[type_name] || # todo context-specific introspection?
-          (superclass.respond_to?(:get_type) ? superclass.get_type(type_name, context) : nil)
+          (superclass.respond_to?(:get_type) ? superclass.get_type(type_name, context, use_schema_visibility: use_schema_visibility) : nil)
       end
 
       # @return [Boolean] Does this schema have _any_ definition for a type named `type_name`, regardless of visibility?
@@ -549,8 +550,8 @@ module GraphQL
       # @param type [Module] The type definition whose possible types you want to see
       # @return [Hash<String, Module>] All possible types, if no `type` is given.
       # @return [Array<Module>] Possible types for `type`, if it's given.
-      def possible_types(type = nil, context = GraphQL::Query::NullContext.instance)
-        if use_schema_visibility?
+      def possible_types(type = nil, context = GraphQL::Query::NullContext.instance, use_schema_visibility: use_schema_visibility?)
+        if use_schema_visibility
           if type
             return Visibility::Subset.from_context(context, self).possible_types(type)
           else
@@ -574,7 +575,7 @@ module GraphQL
               introspection_system.possible_types[type] ||
               (
                 superclass.respond_to?(:possible_types) ?
-                  superclass.possible_types(type, context) :
+                  superclass.possible_types(type, context, use_schema_visibility: use_schema_visibility) :
                   EMPTY_ARRAY
               )
           end
@@ -1072,6 +1073,11 @@ module GraphQL
           child_class.own_trace_modes[name] = child_class.build_trace_mode(name)
         end
         child_class.singleton_class.prepend(ResolveTypeWithType)
+
+        if use_schema_visibility?
+          vis = self.visibility
+          child_class.visibility = vis.dup_for(child_class)
+        end
         super
       end
 

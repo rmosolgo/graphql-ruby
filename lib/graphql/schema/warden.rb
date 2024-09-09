@@ -218,7 +218,7 @@ module GraphQL
       # @return [GraphQL::BaseType, nil] The type named `type_name`, if it exists (else `nil`)
       def get_type(type_name)
         @visible_types ||= read_through do |name|
-          type_defn = @schema.get_type(name, @context)
+          type_defn = @schema.get_type(name, @context, use_schema_visibility: false)
           if type_defn && visible_and_reachable_type?(type_defn)
             type_defn
           else
@@ -265,7 +265,7 @@ module GraphQL
       # @return [Array<GraphQL::BaseType>] The types which may be member of `type_defn`
       def possible_types(type_defn)
         @visible_possible_types ||= read_through { |type_defn|
-          pt = @schema.possible_types(type_defn, @context)
+          pt = @schema.possible_types(type_defn, @context, use_schema_visibility: false)
           pt.select { |t| visible_and_reachable_type?(t) }
         }
         @visible_possible_types[type_defn]

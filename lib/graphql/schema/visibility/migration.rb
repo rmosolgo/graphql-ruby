@@ -80,11 +80,11 @@ module GraphQL
           end
         end
 
-        def initialize(context:, schema:)
-          @skip_error = context[:skip_visibility_migration_error]
-          context[:visibility_migration_running] = true
+        def initialize(context:, schema:, name: nil)
+          @skip_error = context[:skip_visibility_migration_error] || context.is_a?(Query::NullContext) || context.is_a?(Hash)
           @subset_types = GraphQL::Schema::Visibility::Subset.new(context: context, schema: schema)
           if !@skip_error
+            context[:visibility_migration_running] = true
             warden_ctx_vals = context.to_h.dup
             warden_ctx_vals[:visibility_migration_warden_running] = true
             if defined?(schema::WardenCompatSchema)
@@ -95,6 +95,7 @@ module GraphQL
               # TODO public API
               warden_schema.send(:add_type_and_traverse, [warden_schema.query, warden_schema.mutation, warden_schema.subscription].compact, root: true)
               warden_schema.send(:add_type_and_traverse, warden_schema.directives.values + warden_schema.orphan_types, root: false)
+              schema.const_set(:WardenCompatSchema, warden_schema)
             end
             warden_ctx = GraphQL::Query::Context.new(query: context.query, values: warden_ctx_vals)
             example_warden = GraphQL::Schema::Warden.new(schema: warden_schema, context: warden_ctx)
@@ -112,6 +113,7 @@ module GraphQL
           :enum_values,
           :interfaces,
           :all_types,
+          :all_types_h,
           :fields,
           :loadable?,
           :type,
