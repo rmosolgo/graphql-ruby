@@ -205,7 +205,7 @@ To add other types to your schema, you might want `extra_types`: https://graphql
         end
 
         METHODS_TO_CACHE.each do |method_name, allowed_calls|
-          define_singleton_method(method_name) do |*args, &block|
+          define_singleton_method(method_name) do |*args, **kwargs, &block|
             if @calls
               call_count = @calls[method_name] += 1
               @callers[method_name] << caller
@@ -215,7 +215,7 @@ To add other types to your schema, you might want `extra_types`: https://graphql
             if call_count > allowed_calls
               raise "Called #{method_name} more than #{allowed_calls} times, previous caller: \n#{@callers[method_name].first.join("\n")}"
             end
-            super(*args, &block)
+            super(*args, **kwargs, &block)
           end
         end
       end
