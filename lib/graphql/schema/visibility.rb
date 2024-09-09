@@ -25,12 +25,10 @@ module GraphQL
         @cached_profiles = {}
         @dynamic = dynamic
         @migration_errors = migration_errors
-
         if preload
           profiles.each do |profile_name, example_ctx|
-            example_ctx ||= { visibility_profile: profile_name }
-            query_ctx = GraphQL::Query.new(@schema, "{ __typename }", context: example_ctx).context
-            prof = profile_for(query_ctx, profile_name)
+            example_ctx[:visibility_profile] = profile_name
+            prof = profile_for(example_ctx, profile_name)
             prof.all_types # force loading
           end
         end
