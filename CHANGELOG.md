@@ -10,6 +10,27 @@
 
 ### Bug fixes
 
+# 2.3.15 (10 Sept 2024)
+
+### New features
+
+- Type definitions accept `comment("...")` for annotating SDL #5067
+- Parser: add `tokens_count` method #5066
+- Schema: allow `validate_timeout` to be reset #5062
+
+### Bug fixes
+
+- Optimize `Language.escape_single_quoted_newlines` #5095
+- Generators: Add `# frozen_string_literal: true` to base resolver #5092
+- Parser: Properly handle minus followed by name #5090
+- Migrate some attr_reader methods #5080
+- Handle variable definition directives #5072
+- Handle `GraphQL::ExecutionError` when loading arguments during analysis #5071
+- NotificationsTrace: properly call `super`
+- Use symbols for namespaced_types generator option #5068
+- Reduce memory usage in lazy resolution #5061
+- Fix default trace inheritance #5045
+
 # 2.3.14 (13 Aug 2024)
 
 ### Bug fixes
