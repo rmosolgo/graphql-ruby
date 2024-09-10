@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.3.14/">API</a>
+            <a href="/api-doc/2.3.15/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -240,11 +240,11 @@
 
 <p>So, take care to <a href="/subscriptions/subscription_classes#scope">set subscription_scope</a> whenever a subscription should be implicitly scoped!</p>
 
-<p>(See <a href="/api-doc/2.3.14/GraphQL/Subscriptions/Event#fingerprint-instance_method" target="_blank" title="API docs for GraphQL::Subscriptions::Event#fingerprint"><code>GraphQL::Subscriptions::Event#fingerprint</code></a> for the implementation of broadcast fingerprints.)</p>
+<p>(See <a href="/api-doc/2.3.15/GraphQL/Subscriptions/Event#fingerprint-instance_method" target="_blank" title="API docs for GraphQL::Subscriptions::Event#fingerprint"><code>GraphQL::Subscriptions::Event#fingerprint</code></a> for the implementation of broadcast fingerprints.)</p>
 
 <h2 id="checking-for-broadcastable">Checking for Broadcastable</h2>
 
-<p>For testing purposes, you can confirm that a GraphQL query string is broadcastable by using <a href="/api-doc/2.3.14/GraphQL/Subscriptions#broadcastable?-instance_method" target="_blank" title="API docs for GraphQL::Subscriptions#broadcastable?"><code>Subscriptions#broadcastable?</code></a>:</p>
+<p>For testing purposes, you can confirm that a GraphQL query string is broadcastable by using <a href="/api-doc/2.3.15/GraphQL/Subscriptions#broadcastable?-instance_method" target="_blank" title="API docs for GraphQL::Subscriptions#broadcastable?"><code>Subscriptions#broadcastable?</code></a>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">subscription_string</span> <span class="o">=</span> <span class="s2">"subscription { ... }"</span>
 <span class="no">MySchema</span><span class="p">.</span><span class="nf">subscriptions</span><span class="p">.</span><span class="nf">broadcastable?</span><span class="p">(</span><span class="n">subscription_string</span><span class="p">)</span>
