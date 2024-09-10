@@ -72,6 +72,12 @@ describe GraphQL::Testing::Helpers do
           ctx[:current_user]&.admin?
         end
       end
+
+      field :current_field, String
+
+      def current_field
+        context[:current_field].path
+      end
     end
 
     class Query < GraphQL::Schema::Object
@@ -143,6 +149,7 @@ describe GraphQL::Testing::Helpers do
         with_resolution_context(AssertionsSchema, object: { name: "Foo" }, type: "Student", context: { admin_for: ["Foo"] }) do |rc|
           rc.run_graphql_field("name")
           rc.run_graphql_field("isAdminFor")
+          assert_equal "Student.currentField", rc.run_graphql_field("currentField")
         end
       end
 

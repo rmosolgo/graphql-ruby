@@ -55,6 +55,7 @@ module GraphQL
             visible_field = dummy_query.types.field(object_type, field_name) # rubocop:disable Development/ContextIsPassedCop
             if visible_field
               dummy_query.context.dataloader.run_isolated {
+                query_context[:current_field] = visible_field
                 field_args = visible_field.coerce_arguments(graphql_result, arguments, query_context)
                 field_args = schema.sync_lazy(field_args)
                 if visible_field.extras.any?
