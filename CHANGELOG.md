@@ -10,6 +10,13 @@
 
 ### Bug fixes
 
+# 2.3.16 (12 Sept 2024)
+
+### Bug fixes
+
+- RuboCop: fix `FieldTypeInBlock` for single-line classes #5098
+- Testing: Add `context[:current_field]` to testing helpers #5096
+
 # 2.3.15 (10 Sept 2024)
 
 ### New features
