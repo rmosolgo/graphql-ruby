@@ -124,7 +124,7 @@ REASON
   describe ".print_introspection_schema" do
     it "returns the schema as a string for the introspection types" do
       # From https://github.com/graphql/graphql-js/blob/6a0e00fe46951767287f2cc62e1a10b167b2eaa6/src/utilities/__tests__/schemaPrinter-test.js#L599
-      expected = <<SCHEMA
+      expected = <<-GRAPHQL
 schema {
   query: Root
 }
@@ -440,7 +440,7 @@ enum __TypeKind {
   """
   UNION
 }
-SCHEMA
+GRAPHQL
       assert_equal expected.chomp, GraphQL::Schema::Printer.print_introspection_schema
     end
   end
@@ -479,19 +479,19 @@ SCHEMA
       custom_subscription = Class.new(PrinterTestSchema::Subscription) { graphql_name "MySubscriptionRoot" }
       custom_schema = Class.new(PrinterTestSchema) { subscription(custom_subscription) }
 
-      expected = <<SCHEMA
+      expected = <<GRAPHQL
 schema {
   query: Query
   mutation: Mutation
   subscription: MySubscriptionRoot
 }
-SCHEMA
+GRAPHQL
 
       assert_match expected, GraphQL::Schema::Printer.print_schema(custom_schema)
     end
 
     it "returns the schema as a string for the defined types" do
-      expected = <<SCHEMA
+      expected = <<GRAPHQL
 type Audio {
   duration: Int!
   id: ID!
@@ -630,7 +630,7 @@ input Varied {
   someEnum: Choice = FOO
   sub: [Sub]
 }
-SCHEMA
+GRAPHQL
 
       assert_equal expected, GraphQL::Schema::Printer.print_schema(schema)
     end

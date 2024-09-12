@@ -1037,7 +1037,7 @@ describe GraphQL::Subscriptions do
       end
 
       class MySubscription < GraphQL::Schema::Subscription
-        argument :my_enum, MyEnumType, required: true
+        argument :my_enum, MyEnumType
         field :my_enum, MyEnumType
       end
 

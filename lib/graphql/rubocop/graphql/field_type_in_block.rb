@@ -110,7 +110,15 @@ module GraphQL
         end
 
         def determine_field_indent(send_node)
-          surrounding_node = send_node.parent.parent
+          surrounding_node = send_node.parent
+          if !surrounding_node.is_a?(RuboCop::AST::ClassNode)
+            surrounding_node = surrounding_node.parent
+          end
+
+          if !surrounding_node.is_a?(RuboCop::AST::ClassNode)
+            raise "Invariant: Something went wrong in GraphQL-Ruby, couldn't find surrounding class definition for field (#{send_node}).\n\nPlease report this error on GitHub."
+          end
+
           surrounding_source = surrounding_node.source
           indent_test_idx = send_node.location.expression.begin_pos - surrounding_node.source_range.begin_pos - 1
           field_indent = "".dup
