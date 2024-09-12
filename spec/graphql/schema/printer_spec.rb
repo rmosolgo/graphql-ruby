@@ -440,7 +440,7 @@ enum __TypeKind {
   """
   UNION
 }
-SCHEMA
+GRAPHQL
       assert_equal expected.chomp, GraphQL::Schema::Printer.print_introspection_schema
     end
   end
@@ -479,19 +479,19 @@ SCHEMA
       custom_subscription = Class.new(PrinterTestSchema::Subscription) { graphql_name "MySubscriptionRoot" }
       custom_schema = Class.new(PrinterTestSchema) { subscription(custom_subscription) }
 
-      expected = <<SCHEMA
+      expected = <<GRAPHQL
 schema {
   query: Query
   mutation: Mutation
   subscription: MySubscriptionRoot
 }
-SCHEMA
+GRAPHQL
 
       assert_match expected, GraphQL::Schema::Printer.print_schema(custom_schema)
     end
 
     it "returns the schema as a string for the defined types" do
-      expected = <<SCHEMA
+      expected = <<GRAPHQL
 type Audio {
   duration: Int!
   id: ID!
