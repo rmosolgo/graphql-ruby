@@ -25,4 +25,9 @@ describe "GraphQL::Cop::FieldTypeInBlock" do
 
     assert_rubocop_autocorrects_all("spec/fixtures/cop/field_type.rb")
   end
+
+  it "works on small classes" do
+    result = run_rubocop_on("spec/fixtures/cop/small_field_type.rb")
+    assert_equal 1, rubocop_errors(result)
+  end
 end

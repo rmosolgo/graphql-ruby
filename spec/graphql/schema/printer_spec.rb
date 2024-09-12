@@ -124,7 +124,7 @@ REASON
   describe ".print_introspection_schema" do
     it "returns the schema as a string for the introspection types" do
       # From https://github.com/graphql/graphql-js/blob/6a0e00fe46951767287f2cc62e1a10b167b2eaa6/src/utilities/__tests__/schemaPrinter-test.js#L599
-      expected = <<SCHEMA
+      expected = <<-GRAPHQL
 schema {
   query: Root
 }
@@ -630,7 +630,7 @@ input Varied {
   someEnum: Choice = FOO
   sub: [Sub]
 }
-SCHEMA
+GRAPHQL
 
       assert_equal expected, GraphQL::Schema::Printer.print_schema(schema)
     end

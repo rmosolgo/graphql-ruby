@@ -15,6 +15,7 @@ GraphQL/FieldTypeInBlock:
   Enabled: true
   Include:
     - field_type.rb
+    - small_field_type.rb
     - field_type_autocorrect.rb
 
 GraphQL/RootTypesInBlock:

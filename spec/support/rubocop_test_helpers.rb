@@ -6,7 +6,7 @@ module RubocopTestHelpers
   end
 
   def rubocop_errors(rubocop_result)
-    rubocop_result =~ /(\d) offenses detected/
+    rubocop_result =~ /(\d) offenses? detected/
     $1.to_i
   end
 
