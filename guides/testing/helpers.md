@@ -8,7 +8,7 @@ desc: Running GraphQL fields in isolation
 index: 3
 ---
 
-GraphQL-Ruby ships with a test helper method, `run_graphql_field`, that can execute a GraphQL field in isolation. It use it in your test suite, include a module, with your schema class:
+GraphQL-Ruby ships with a test helper method, `run_graphql_field`, that can execute a GraphQL field in isolation. To use it in your test suite, include the module with your schema class:
 
 ```ruby
 # Mix in `run_graphql_field(...)` to run on `MySchema`
