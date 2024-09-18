@@ -1,0 +1,284 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+      <title>GraphQL Enterprise - Rate Limiters - Deploying Rate Limiters</title>
+    
+    <link href="https://fonts.googleapis.com/css?family=Rubik:300,400,700" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="icon" href="/graphql-ruby-icon.png">
+  </head>
+  <body>
+    <script>
+      function detectDarkTheme(toggle) {
+        var prefersDarkSchemeSetting = localStorage.getItem("prefersDarkScheme")
+        if (prefersDarkSchemeSetting == null) {
+          prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+        } else {
+          prefersDarkScheme = prefersDarkSchemeSetting == "true"
+        }
+
+        if (toggle) {
+          if (prefersDarkScheme) {
+            prefersDarkScheme = false
+            localStorage.setItem("prefersDarkScheme", "false")
+          } else {
+            prefersDarkScheme = true
+            localStorage.setItem("prefersDarkScheme", "true")
+          }
+        }
+
+        if (prefersDarkScheme) {
+          document.body.classList.add('dark-theme');
+          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
+            el.src = "/graphql-ruby-dark.png"
+          })
+        } else {
+          document.body.classList.remove('dark-theme');
+          document.querySelectorAll(".graphql-ruby-img").forEach(function(el) {
+            el.src = "/graphql-ruby.png"
+          })
+        }
+      }
+
+      detectDarkTheme(false)
+    </script>
+    <div class="header">
+      <div class="header-container">
+        <div class="nav">
+          <a href="/" class="img-link">
+            <img class="graphql-ruby-img" src="/graphql-ruby.png" alt="GraphQL Ruby Logo" />
+          </a>
+          <div class="nav-links">
+            <a href="/getting_started">Get Started</a>
+            <a href="/guides">Guides</a>
+            <a href="/api-doc/2.3.16/">API</a>
+            <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
+            <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
+            <a href="https://graphql.pro">Upgrade to Pro</a>
+            <input
+              class="search-input"
+              onkeyup="GraphQLRubySearch.run(this)"
+              type="text"
+              placeholder="Search the docs..."
+            />
+            <a href="#" onclick="event.preventDefault(); detectDarkTheme(true)" class="dark-theme-button"></a>
+          </div>
+        </div>
+      </div>
+      <div class="search-results-container">
+        <div id="search-results">
+        </div>
+      </div>
+    </div>
+    <div class="container  fullwidth ">
+      <ul class="breadcrumb">
+  <li><a href="/guides">Guides</a></li>
+  <li>
+    <select class="jump-to-select" onchange="navigateToSelected(this)">
+      
+        <option  data-target="/schema/definition.html">Schema</option>
+      
+        <option  data-target="/queries/executing_queries.html">Queries</option>
+      
+        <option  data-target="/type_definitions/objects.html">Type Definitions</option>
+      
+        <option  data-target="/authorization/overview.html">Authorization</option>
+      
+        <option  data-target="/fields/introduction.html">Fields</option>
+      
+        <option  data-target="/mutations/mutation_root.html">Mutations</option>
+      
+        <option  data-target="/errors/overview.html">Errors</option>
+      
+        <option  data-target="/pagination/overview.html">Pagination</option>
+      
+        <option  data-target="/relay/range_add.html">Relay</option>
+      
+        <option  data-target="/dataloader/overview.html">Dataloader</option>
+      
+        <option  data-target="/subscriptions/overview.html">Subscriptions</option>
+      
+        <option  data-target="/pro/home.html">GraphQL Pro</option>
+      
+        <option  data-target="/operation_store/overview.html">GraphQL Pro - OperationStore</option>
+      
+        <option  data-target="/defer/overview.html">GraphQL Pro - Defer</option>
+      
+        <option  selected data-target="/limiters/overview.html">GraphQL Enterprise - Rate Limiters</option>
+      
+        <option  data-target="/object_cache/overview.html">GraphQL Enterprise - Object Cache</option>
+      
+        <option  data-target="/changesets/overview.html">GraphQL Enterprise - Changesets</option>
+      
+        <option  data-target="/javascript_client/overview.html">JavaScript Client</option>
+      
+        <option  data-target="/language_tools/visitor.html">Language Tools</option>
+      
+        <option  data-target="/testing/overview.html">Testing</option>
+      
+        <option  data-target="/development.html">Other</option>
+      
+    </select>
+  </li>
+  <li>
+    <select class="jump-to-select" onchange="navigateToSelected(this)">
+      
+        <option  data-target="/limiters/overview.html">Rate Limiters for GraphQL</option>
+      
+        <option  data-target="/limiters/redis.html">Configuring Redis</option>
+      
+        <option  data-target="/limiters/active_operations.html">Active Operation Limiter</option>
+      
+        <option  data-target="/limiters/runtime.html">Runtime Limiter</option>
+      
+        <option  selected data-target="/limiters/deployment.html">Deploying Rate Limiters</option>
+      
+    </select>
+  </li>
+</ul>
+
+
+
+  <div class="enterprise-header">
+    <p>
+      <strong>🌟 Enterprise Feature 🌟</strong>
+      <span style="font-style: italic;">
+        This feature is bundled with <a href="https://graphql.pro/enterprise">GraphQL-Enterprise</a>.
+      </span>
+    </p>
+  </div>
+
+<h1 class="guide-header">Deploying Rate Limiters</h1>
+<div class="guide-table-of-contents"><div class="table-of-contents">
+  <h3 class="contents-header">Contents</h3>
+  <ol class='contents-list'><li class='contents-entry'><a href='#dashboard'>Dashboard
+</a></li><li class='contents-entry'><a href='#soft-limits'>Soft Limits
+</a></li><li class='contents-entry'><a href='#subscriptions'>Subscriptions
+</a></li></ol>
+</div>
+</div>
+<div class="guide-container">
+  <p>Here are a few options for deploying GraphQL-Enterprise’s rate limiters:</p>
+
+<ul>
+  <li>The <a href="#dashboard">Dashboard</a> shows some basic metrics about the limiter.</li>
+  <li><a href="#soft-limits">Soft limits</a> start logging over-limit requests to the dashboard but don’t actually halt traffic.</li>
+  <li><a href="#subscriptions">Subscriptions</a> need extra consideration</li>
+</ul>
+
+<h2 id="dashboard">Dashboard</h2>
+
+<p>Once installed, your <a href="/pro/dashboard">GraphQL-Pro dashboard</a> will include a simple metrics view:</p>
+
+<p><a href="/limiters/active_operation_limiter_dashboard.png" target="_blank" class="img-link">
+  <img src="/limiters/active_operation_limiter_dashboard.png" title="GraphQL Active Operation Limiter Dashboard" alt="GraphQL Active Operation Limiter Dashboard" />
+</a></p>
+
+<p>To disable dashboard charts, add <code class="language-plaintext highlighter-rouge">use(... dashboard_charts: false)</code> to your configuration.</p>
+
+<p>Also, the dashboard includes a link to enable or disable “soft mode”:</p>
+
+<p><a href="/limiters/soft_button.png" target="_blank" class="img-link">
+  <img src="/limiters/soft_button.png" title="GraphQL Rate Limiter Soft Mode Button" alt="GraphQL Rate Limiter Soft Mode Button" />
+</a></p>
+
+<p>When “soft mode” is enabled, limited requests are <em>not</em> actually halted (although they are <em>counted</em>). When “soft mode” is disabled, any over-limit requests are halted.</p>
+
+<p>For more detailed metrics, see the “Instrumentation” section of the documentation for each limiter.</p>
+
+<h2 id="soft-limits">Soft Limits</h2>
+
+<p>By default, limiters don’t actually halt queries; instead, they start out in “soft mode”. In this mode:</p>
+
+<ul>
+  <li>limited/unlimited requests are counted in the <a href="#dashboard">Dashboard</a></li>
+  <li>but, no requests are actually halted</li>
+</ul>
+
+<p>This mode is for assessing the impact of the limiter before it’s applied to production traffic. Additionally, if you release the limiter but find that it’s affecting production traffic adversely, you can re-enable “soft mode” to stop blocking traffic.</p>
+
+<p>To disable “soft mode” and start limiting, use the <a href="#dashboard">Dashboard</a> or re-implement some of the customization methods of the limiter.</p>
+
+<p>You can also disable “soft mode” in Ruby:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Turn "soft mode" off for the ActiveOperationLimiter</span>
+<span class="no">MySchema</span><span class="p">.</span><span class="nf">enterprise_active_operation_limiter</span><span class="p">.</span><span class="nf">set_soft_limit</span><span class="p">(</span><span class="kp">false</span><span class="p">)</span>
+<span class="c1"># or, for RuntimeLimiter</span>
+<span class="no">MySchema</span><span class="p">.</span><span class="nf">enterprise_runtime_limiter</span><span class="p">.</span><span class="nf">set_soft_limit</span><span class="p">(</span><span class="kp">false</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="subscriptions">Subscriptions</h2>
+
+<p>If you’re using <a href="/subscriptions/pusher_implementation">PusherSubscriptions</a> or <a href="/subscriptions/ably_implementation">AblySubscriptions</a>, then you’ll need to accomodate subscriptions that were created <em>before</em> you deployed the rate limiter. Those subscriptions are already stored in Redis and their contexts <em>don’t</em> include the required <code class="language-plaintext highlighter-rouge">limiter_key:</code> value.</p>
+
+<p>To address this, you can customize the limiter(s) you’re using to provide a default value in this case. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">CustomRuntimeLimiter</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Enterprise</span><span class="o">::</span><span class="no">RuntimeLimiter</span>
+  <span class="k">def</span> <span class="nf">limiter_key</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">query</span><span class="p">.</span><span class="nf">subscription_update?</span> <span class="o">&amp;&amp;</span> <span class="n">query</span><span class="p">.</span><span class="nf">context</span><span class="p">[</span><span class="ss">:limiter_key</span><span class="p">].</span><span class="nf">nil?</span>
+      <span class="c1"># This subscription was created before limiter_key was required,</span>
+      <span class="c1"># so provide a value for it.</span>
+      <span class="c1"># If `context` includes enough information to create a</span>
+      <span class="c1"># "real" limiter key, you could also do that here.</span>
+      <span class="c1"># In this case, we're providing a default flag:</span>
+      <span class="s2">"legacy-subscription-update"</span>
+    <span class="k">else</span>
+      <span class="k">super</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">limit_for</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">"legacy-subscription-update"</span>
+      <span class="kp">nil</span> <span class="c1"># no limit in this case</span>
+    <span class="k">else</span>
+      <span class="k">super</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>With methods like that, any subscriptions created <em>before</em> <code class="language-plaintext highlighter-rouge">limiter_key:</code> was required will not be subject to rate limits. Adjust those methods as needed for your application. Finally, be sure to attach your custom limiter in your schema, for example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Use a custom subclass of GraphQL::Enterprise::RuntimeLimiter:</span>
+<span class="n">use</span> <span class="no">CustomRuntimeLimiter</span><span class="p">,</span> <span class="o">...</span>
+</code></pre></div></div>
+
+</div>
+<p class="guide-footer">
+  Suggestion, improvement, or correction?
+  <a href="https://github.com/rmosolgo/graphql-ruby/edit/master/guides/limiters/deployment.md">Edit this file</a> or
+  <a href="https://github.com/rmosolgo/graphql-ruby/issues/new?title=Guide: Deploying Rate Limiters">report an issue</a>.
+</p>
+<script>
+  // Find headers with IDs and wrap their text in `<a href=></a>`
+  // That way people can easily copy the link.
+  var headers = document.querySelectorAll("h1, h2, h3, h4, h5");
+  var header, idText, headerLink;
+  for (var i = 0; i < headers.length; i++) {
+    header = headers[i];
+    idText = header.id;
+    if (idText) {
+      headerLink = document.createElement("a");
+      headerLink.href = "#" + idText;
+      headerLink.textContent = header.textContent;
+      header.textContent = "";
+      header.appendChild(headerLink);
+    }
+  }
+  function navigateToSelected(selectElement) {
+    var nextPage = selectElement.selectedOptions[0].dataset["target"]
+    document.location = nextPage
+  }
+</script>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/algoliasearch/3/algoliasearchLite.min.js"></script>
+    <script src="/js/search.js"></script>
+    <script>
+      detectDarkTheme(false) // do it again to update the images
+    </script>
+  </body>
+</html>

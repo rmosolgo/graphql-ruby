@@ -150,7 +150,7 @@
 </div>
 </div>
 <div class="guide-container">
-  <p>GraphQL-Ruby ships with a test helper method, <code class="language-plaintext highlighter-rouge">run_graphql_field</code>, that can execute a GraphQL field in isolation. It use it in your test suite, include a module, with your schema class:</p>
+  <p>GraphQL-Ruby ships with a test helper method, <code class="language-plaintext highlighter-rouge">run_graphql_field</code>, that can execute a GraphQL field in isolation. To use it in your test suite, include the module with your schema class:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Mix in `run_graphql_field(...)` to run on `MySchema`</span>
 <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Testing</span><span class="o">::</span><span class="no">Helpers</span><span class="p">.</span><span class="nf">for</span><span class="p">(</span><span class="no">MySchema</span><span class="p">)</span>

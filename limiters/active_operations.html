@@ -134,6 +134,8 @@
       
         <option  data-target="/limiters/runtime.html">Runtime Limiter</option>
       
+        <option  data-target="/limiters/deployment.html">Deploying Rate Limiters</option>
+      
     </select>
   </li>
 </ul>
@@ -156,9 +158,7 @@
 </a></li><li class='contents-entry'><a href='#setup'>Setup
 </a><ol class='contents-list'><li class='contents-entry'><a href='#schema-setup'>Schema Setup
 </a></li><li class='contents-entry'><a href='#query-setup'>Query Setup
-</a></li></ol></li><li class='contents-entry'><a href='#soft-limits'>Soft Limits
-</a></li><li class='contents-entry'><a href='#dashboard'>Dashboard
-</a></li><li class='contents-entry'><a href='#customization'>Customization
+</a></li></ol></li><li class='contents-entry'><a href='#customization'>Customization
 </a></li><li class='contents-entry'><a href='#instrumentation'>Instrumentation
 </a></li></ol>
 </div>
@@ -190,7 +190,7 @@
 
 <p>It also accepts a <code class="language-plaintext highlighter-rouge">stale_request_seconds:</code> option. The limiter uses that value to clean up request data in case of a crash or other unexpected scenario.</p>
 
-<p>Before requests will actually be halted, <a href="#soft-limits">“soft mode”</a> must be disabled as described below.</p>
+<p>Before requests will actually be halted, <a href="/limiters/deployment#soft-limits">soft mode</a> must be disabled.</p>
 
 <h4 id="query-setup">Query Setup</h4>
 
@@ -209,41 +209,6 @@
 <p>Operations with the same <code class="language-plaintext highlighter-rouge">context[:limiter_key]</code> will rate limited in the same buckets. A limiter key is required; if a query is run without one, the limiter will raise an error.</p>
 
 <p>To provide a client identifier another way, see <a href="#customization">Customization</a>.</p>
-
-<h2 id="soft-limits">Soft Limits</h2>
-
-<p>By default, the limiter doesn’t actually halt queries; instead, it starts out in “soft mode”. In this mode:</p>
-
-<ul>
-  <li>limited/unlimited requests are counted in the <a href="#dashboard">Dashboard</a></li>
-  <li>but, no requests are actually halted</li>
-</ul>
-
-<p>This mode is for assessing the impact of the limiter before it’s applied to production traffic. Additionally, if you release the limiter but find that it’s affecting production traffic adversely, you can re-enable “soft mode” to stop blocking traffic.</p>
-
-<p>To disable “soft mode” and start limiting, use the <a href="#dashboard">Dashboard</a> or <a href="#customization">customize the limiter</a>. You can also disable “soft mode” in Ruby:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Turn "soft mode" off for the ActiveOperationLimiter</span>
-<span class="no">MySchema</span><span class="p">.</span><span class="nf">enterprise_active_operation_limiter</span><span class="p">.</span><span class="nf">set_soft_limit</span><span class="p">(</span><span class="kp">false</span><span class="p">)</span>
-</code></pre></div></div>
-
-<h2 id="dashboard">Dashboard</h2>
-
-<p>Once installed, your <a href="/pro/dashboard">GraphQL-Pro dashboard</a> will include a simple metrics view:</p>
-
-<p><a href="/limiters/active_operation_limiter_dashboard.png" target="_blank" class="img-link">
-  <img src="/limiters/active_operation_limiter_dashboard.png" title="GraphQL Active Operation Limiter Dashboard" alt="GraphQL Active Operation Limiter Dashboard" />
-</a></p>
-
-<p>See <a href="#instrumentation">Instrumentation</a> below for more details on limiter metrics. To disable dashboard charts, add <code class="language-plaintext highlighter-rouge">use(... dashboard_charts: false)</code> to your configuration.</p>
-
-<p>Also, the dashboard includes a link to enable or disable “soft mode”:</p>
-
-<p><a href="/limiters/soft_button.png" target="_blank" class="img-link">
-  <img src="/limiters/soft_button.png" title="GraphQL Rate Limiter Soft Mode Button" alt="GraphQL Rate Limiter Soft Mode Button" />
-</a></p>
-
-<p>When “soft mode” is enabled, limited requests are <em>not</em> actually halted (although they are <em>counted</em>). When “soft mode” is disabled, any over-limit requests are halted.</p>
 
 <h2 id="customization">Customization</h2>
 
