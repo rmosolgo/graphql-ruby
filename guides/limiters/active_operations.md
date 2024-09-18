@@ -36,7 +36,7 @@ end
 
 It also accepts a `stale_request_seconds:` option. The limiter uses that value to clean up request data in case of a crash or other unexpected scenario.
 
-Before requests will actually be halted, ["soft mode"](#soft-limits) must be disabled as described below.
+Before requests will actually be halted, {% internal_link "soft mode", "/limiters/deployment#soft-limits" %} must be disabled.
 
 #### Query Setup
 
@@ -56,36 +56,6 @@ result = MySchema.execute(query_str, context: context)
 Operations with the same `context[:limiter_key]` will rate limited in the same buckets. A limiter key is required; if a query is run without one, the limiter will raise an error.
 
 To provide a client identifier another way, see [Customization](#customization).
-
-## Soft Limits
-
-By default, the limiter doesn't actually halt queries; instead, it starts out in "soft mode". In this mode:
-
-- limited/unlimited requests are counted in the [Dashboard](#dashboard)
-- but, no requests are actually halted
-
-This mode is for assessing the impact of the limiter before it's applied to production traffic. Additionally, if you release the limiter but find that it's affecting production traffic adversely, you can re-enable "soft mode" to stop blocking traffic.
-
-To disable "soft mode" and start limiting, use the [Dashboard](#dashboard) or [customize the limiter](#customization). You can also disable "soft mode" in Ruby:
-
-```ruby
-# Turn "soft mode" off for the ActiveOperationLimiter
-MySchema.enterprise_active_operation_limiter.set_soft_limit(false)
-```
-
-## Dashboard
-
-Once installed, your {% internal_link "GraphQL-Pro dashboard", "/pro/dashboard" %} will include a simple metrics view:
-
-{{ "/limiters/active_operation_limiter_dashboard.png" | link_to_img:"GraphQL Active Operation Limiter Dashboard" }}
-
-See [Instrumentation](#instrumentation) below for more details on limiter metrics. To disable dashboard charts, add `use(... dashboard_charts: false)` to your configuration.
-
-Also, the dashboard includes a link to enable or disable "soft mode":
-
-{{ "/limiters/soft_button.png" | link_to_img:"GraphQL Rate Limiter Soft Mode Button" }}
-
-When "soft mode" is enabled, limited requests are _not_ actually halted (although they are _counted_). When "soft mode" is disabled, any over-limit requests are halted.
 
 ## Customization
 

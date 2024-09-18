@@ -36,7 +36,7 @@ end
 
 It also accepts a `window_ms:` option, which is the duration over which `limit_ms:` is added to a client's bucket. It defaults to `60_000` (one minute).
 
-Before requests will actually be halted, ["soft mode"](#soft-limits) must be disabled as described below.
+Before requests will actually be halted, {% internal_link "soft mode", "/limiters/deployment#soft-limits" %} must be disabled.
 
 ### Query Setup
 
