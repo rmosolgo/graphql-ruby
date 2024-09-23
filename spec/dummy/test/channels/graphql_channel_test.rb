@@ -17,10 +17,15 @@ class GraphqlChannelTest < ActionCable::Channel::TestCase
   end
 
   def setup
+    @prev_server = ActionCable.server
     @server = TestServer.new(subscription_adapter: ActionCable::SubscriptionAdapter::Async)
     @server.config.allowed_request_origins = [ 'http://rubyonrails.com' ]
 
     ActionCable.instance_variable_set(:@server, @server)
+  end
+
+  def teardown
+    ActionCable.instance_variable_set(:@server, @prev_server)
   end
 
   def wait_for_async
@@ -86,6 +91,7 @@ class GraphqlChannelTest < ActionCable::Channel::TestCase
       subscription.execute({
         "query" => "subscription { payload(id: \"abc\") { value } }"
       })
+      wait_for_async
 
       sub_id = subscription.instance_variable_get(:@subscription_ids).first
       subscription_stream = "graphql-subscription:#{sub_id}"
