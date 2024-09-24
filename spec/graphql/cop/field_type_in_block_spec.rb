@@ -33,6 +33,14 @@ describe "GraphQL::Cop::FieldTypeInBlock" do
 
   it "works with array types" do
     result = run_rubocop_on("spec/fixtures/cop/field_type_array.rb")
-    assert_equal 0, rubocop_errors(result)
+    assert_equal 1, rubocop_errors(result)
+
+    assert_includes result, <<-RUBY
+  field :bar, [Thing], null: false do
+              ^^^^^^^
+    RUBY
+
+    assert_rubocop_autocorrects_all("spec/fixtures/cop/field_type_array.rb")
+
   end
 end
