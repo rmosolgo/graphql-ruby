@@ -365,8 +365,10 @@ module GraphQL
       end
 
       # @param type_name [String]
+      # @param context [GraphQL::Query::Context] Used for filtering definitions at query-time
+      # @param use_schema_visibility Private, for migration to {Schema::Visibility}
       # @return [Module, nil] A type, or nil if there's no type called `type_name`
-      def get_type(type_name, context = GraphQL::Query::NullContext.instance, use_schema_visibility: use_schema_visibility?)
+      def get_type(type_name, context = GraphQL::Query::NullContext.instance, use_schema_visibility = use_schema_visibility?)
         if use_schema_visibility
           return Visibility::Subset.from_context(context, self).type(type_name)
         end
@@ -401,7 +403,7 @@ module GraphQL
 
         type_defn ||
           introspection_system.types[type_name] || # todo context-specific introspection?
-          (superclass.respond_to?(:get_type) ? superclass.get_type(type_name, context, use_schema_visibility: use_schema_visibility) : nil)
+          (superclass.respond_to?(:get_type) ? superclass.get_type(type_name, context, use_schema_visibility) : nil)
       end
 
       # @return [Boolean] Does this schema have _any_ definition for a type named `type_name`, regardless of visibility?
@@ -548,9 +550,11 @@ module GraphQL
       end
 
       # @param type [Module] The type definition whose possible types you want to see
+      # @param context [GraphQL::Query::Context] used for filtering visible possible types at runtime
+      # @param use_schema_visibility Private, for migration to {Schema::Visibility}
       # @return [Hash<String, Module>] All possible types, if no `type` is given.
       # @return [Array<Module>] Possible types for `type`, if it's given.
-      def possible_types(type = nil, context = GraphQL::Query::NullContext.instance, use_schema_visibility: use_schema_visibility?)
+      def possible_types(type = nil, context = GraphQL::Query::NullContext.instance, use_schema_visibility = use_schema_visibility?)
         if use_schema_visibility
           if type
             return Visibility::Subset.from_context(context, self).possible_types(type)
@@ -575,7 +579,7 @@ module GraphQL
               introspection_system.possible_types[type] ||
               (
                 superclass.respond_to?(:possible_types) ?
-                  superclass.possible_types(type, context, use_schema_visibility: use_schema_visibility) :
+                  superclass.possible_types(type, context, use_schema_visibility) :
                   EMPTY_ARRAY
               )
           end
