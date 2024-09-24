@@ -166,7 +166,8 @@ module GraphQL
       #
       def setup_stream(channel, initial_event)
         topic = initial_event.topic
-        channel.stream_from(stream_event_name(initial_event), coder: @action_cable_coder) do |message|
+        event_stream = stream_event_name(initial_event)
+        channel.stream_from(event_stream, coder: @action_cable_coder) do |message|
           events_by_fingerprint = @events[topic]
           object = nil
           events_by_fingerprint.each do |_fingerprint, events|
