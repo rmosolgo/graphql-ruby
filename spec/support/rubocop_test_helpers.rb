@@ -36,6 +36,9 @@ module RubocopTestHelpers
     file_name = fixture_path.split("/").last
     cop_name = "GraphQL/" + self.class.name.split("::").last
     cop_config = @rubocop_config[cop_name] || raise("No config for #{cop_name.inspect} (#{@rubocop_config.inspect})")
-    assert (cop_config["Enabled"] || cop_config["Include"].include?(file_name))
+    assert cop_config["Enabled"], "#{cop_name} is enabled"
+    if cop_config.key?("Include")
+      assert cop_config["Include"].include?(file_name), "#{file_name.inspect} is included for #{cop_name}"
+    end
   end
 end

@@ -41,6 +41,17 @@ describe "GraphQL::Cop::FieldTypeInBlock" do
     RUBY
 
     assert_rubocop_autocorrects_all("spec/fixtures/cop/field_type_array.rb")
+  end
 
+  it "Works with interfaces" do
+    result = run_rubocop_on("spec/fixtures/cop/field_type_interface.rb")
+    assert_equal 1, rubocop_errors(result)
+
+    assert_includes result, <<-RUBY
+  field :thing, Thing
+                ^^^^^
+    RUBY
+
+    assert_rubocop_autocorrects_all("spec/fixtures/cop/field_type_interface.rb")
   end
 end

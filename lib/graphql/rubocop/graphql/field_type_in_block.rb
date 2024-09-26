@@ -116,20 +116,20 @@ module GraphQL
         end
 
         def determine_field_indent(send_node)
-          class_node = send_node
+          type_defn_node = send_node
 
-          while (class_node && !class_node.class_definition?)
-            class_node = class_node.parent
+          while (type_defn_node && !(type_defn_node.class_definition? || type_defn_node.module_definition?))
+            type_defn_node = type_defn_node.parent
           end
 
-          if class_node.nil?
+          if type_defn_node.nil?
             raise "Invariant: Something went wrong in GraphQL-Ruby, couldn't find surrounding class definition for field (#{send_node}).\n\nPlease report this error on GitHub."
           end
 
-          class_source = class_node.source
-          indent_test_idx = send_node.location.expression.begin_pos - class_node.source_range.begin_pos - 1
+          type_defn_source = type_defn_node.source
+          indent_test_idx = send_node.location.expression.begin_pos - type_defn_node.source_range.begin_pos - 1
           field_indent = "".dup
-          while class_source[indent_test_idx] == " "
+          while type_defn_source[indent_test_idx] == " "
             field_indent << " "
             indent_test_idx -= 1
             if indent_test_idx == 0
