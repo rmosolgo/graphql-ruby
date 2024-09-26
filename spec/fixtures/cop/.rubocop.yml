@@ -19,6 +19,8 @@ GraphQL/FieldTypeInBlock:
     - field_type_autocorrect.rb
     - field_type_array.rb
     - field_type_array_autocorrect.rb
+    - field_type_interface.rb
+    - field_type_interface_autocorrect.rb
 
 GraphQL/RootTypesInBlock:
   Enabled: true
