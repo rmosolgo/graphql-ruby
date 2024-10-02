@@ -116,7 +116,7 @@ createRecord(data: {
     expected_message = if USING_C_PARSER
       "syntax error, unexpected invalid token (\"-\") at [1, 8]"
     else
-      "Expected a number, but it was malformed (\"-\")"
+      "Argument 'b' on Field 'a' has an invalid value (-c). Expected type 'number'."
     end
     assert_equal expected_message, err.message
   end
@@ -192,7 +192,7 @@ createRecord(data: {
     expected_msg = if USING_C_PARSER
       "syntax error, unexpected invalid token (\"-\") at [1, 19]"
     else
-      "Expected a number, but it was malformed (\"-\")"
+      "Argument 'argument' on Field 'field' has an invalid value (a-b). Expected type 'number'."
     end
 
     assert_equal expected_msg, err.message
