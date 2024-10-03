@@ -1,10 +1,13 @@
 # frozen_string_literal: true
 module GraphQL
   class Schema
-    class AlwaysVisible
+    module AlwaysVisible
       def self.use(schema, **opts)
-        schema.warden_class = GraphQL::Schema::Warden::NullWarden
-        schema.subset_class = GraphQL::Schema::Warden::NullWarden::NullSubset
+        schema.extend(self)
+      end
+
+      def visible?(_member, _context)
+        true
       end
     end
   end

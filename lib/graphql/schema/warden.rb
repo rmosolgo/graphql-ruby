@@ -88,7 +88,7 @@ module GraphQL
         def visible_enum_value?(enum_value, _ctx = nil); true; end
         def visible_type_membership?(type_membership, _ctx = nil); true; end
         def interface_type_memberships(obj_type, _ctx = nil); obj_type.interface_type_memberships; end
-        def get_type(type_name); @schema.get_type(type_name); end # rubocop:disable Development/ContextIsPassedCop
+        def get_type(type_name); @schema.get_type(type_name, Query::NullContext.instance, false); end # rubocop:disable Development/ContextIsPassedCop
         def arguments(argument_owner, ctx = nil); argument_owner.all_argument_definitions; end
         def enum_values(enum_defn); enum_defn.enum_values; end # rubocop:disable Development/ContextIsPassedCop
         def get_argument(parent_type, argument_name); parent_type.get_argument(argument_name); end # rubocop:disable Development/ContextIsPassedCop
@@ -100,7 +100,7 @@ module GraphQL
         def reachable_type?(type_name); true; end
         def loadable?(type, _ctx); true; end
         def reachable_types; @schema.types.values; end # rubocop:disable Development/ContextIsPassedCop
-        def possible_types(type_defn); @schema.possible_types(type_defn); end
+        def possible_types(type_defn); @schema.possible_types(type_defn, Query::NullContext.instance, false); end
         def interfaces(obj_type); obj_type.interfaces; end
       end
 

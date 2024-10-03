@@ -87,8 +87,8 @@ module GraphQL
             context[:visibility_migration_running] = true
             warden_ctx_vals = context.to_h.dup
             warden_ctx_vals[:visibility_migration_warden_running] = true
-            if defined?(schema::WardenCompatSchema)
-              warden_schema = schema::WardenCompatSchema
+            if schema.const_defined?(:WardenCompatSchema, false) # don't use a defn from a superclass
+              warden_schema = schema.const_get(:WardenCompatSchema, false)
             else
               warden_schema = Class.new(schema)
               warden_schema.use_schema_visibility = false
@@ -98,10 +98,8 @@ module GraphQL
               schema.const_set(:WardenCompatSchema, warden_schema)
             end
             warden_ctx = GraphQL::Query::Context.new(query: context.query, values: warden_ctx_vals)
-            example_warden = GraphQL::Schema::Warden.new(schema: warden_schema, context: warden_ctx)
-            @warden_types = example_warden.schema_subset
-            warden_ctx.warden = example_warden
-            warden_ctx.types = @warden_types
+            warden_ctx.warden = GraphQL::Schema::Warden.new(schema: warden_schema, context: warden_ctx)
+            warden_ctx.types = @warden_types = warden_ctx.warden.schema_subset
           end
         end
 

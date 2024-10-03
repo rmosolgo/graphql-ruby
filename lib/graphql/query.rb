@@ -349,7 +349,30 @@ module GraphQL
       with_prepared_ast { @warden }
     end
 
-    def_delegators :warden, :get_type, :get_field, :possible_types, :root_type_for_operation
+    def get_type(type_name)
+      types.type(type_name) # rubocop:disable Development/ContextIsPassedCop
+    end
+
+    def get_field(owner, field_name)
+      types.field(owner, field_name) # rubocop:disable Development/ContextIsPassedCop
+    end
+
+    def possible_types(type)
+      types.possible_types(type) # rubocop:disable Development/ContextIsPassedCop
+    end
+
+    def root_type_for_operation(op_type)
+      case op_type
+      when "query"
+        types.query_root # rubocop:disable Development/ContextIsPassedCop
+      when "mutation"
+        types.mutation_root # rubocop:disable Development/ContextIsPassedCop
+      when "subscription"
+        types.subscription_root # rubocop:disable Development/ContextIsPassedCop
+      else
+        raise ArgumentError, "unexpected root type name: #{op_type.inspect}; expected 'query', 'mutation', or 'subscription'"
+      end
+    end
 
     def types
       @schema_subset || warden.schema_subset
