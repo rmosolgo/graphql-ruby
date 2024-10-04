@@ -94,6 +94,18 @@ describe GraphQL::Schema::FieldExtension do
       end
     end
 
+    class AddNestedExtensionExtension < GraphQL::Schema::FieldExtension
+      def apply
+        field.extension(NestedExtension)
+      end
+
+      class NestedExtension < GraphQL::Schema::FieldExtension
+        def resolve(**_args)
+          1
+        end
+      end
+    end
+
     class BaseObject < GraphQL::Schema::Object
     end
 
@@ -154,6 +166,8 @@ describe GraphQL::Schema::FieldExtension do
       end
 
       field :object_class_test, [String], null: false, extensions: [ObjectClassExtension]
+
+      field :nested_extension, Integer, null: false, extensions: [AddNestedExtensionExtension]
     end
 
     class Schema < GraphQL::Schema
@@ -233,6 +247,13 @@ describe GraphQL::Schema::FieldExtension do
       # doubled then multiplied by 3 specified via option
       res = exec_query("{ multipleExtensions(input: 3) }")
       assert_equal 18, res["data"]["multipleExtensions"]
+    end
+  end
+
+  describe "nested extension in apply method" do
+    it "applies the nested extension" do
+      res = exec_query("{ nestedExtension }")
+      assert_equal 1, res["data"]["nestedExtension"]
     end
   end
 

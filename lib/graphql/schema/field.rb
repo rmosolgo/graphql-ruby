@@ -313,7 +313,7 @@ module GraphQL
         @ast_node = ast_node
         @method_conflict_warning = method_conflict_warning
         @fallback_value = fallback_value
-        @definition_block = nil
+        @definition_block = definition_block
 
         arguments.each do |name, arg|
           case arg
@@ -332,14 +332,15 @@ module GraphQL
         @subscription_scope = subscription_scope
 
         @extensions = EMPTY_ARRAY
+        @call_after_define = false
         set_pagination_extensions(connection_extension: connection_extension)
         # Do this last so we have as much context as possible when initializing them:
         if extensions.any?
-          self.extensions(extensions, call_after_define: false)
+          self.extensions(extensions)
         end
 
         if resolver_class && resolver_class.extensions.any?
-          self.extensions(resolver_class.extensions, call_after_define: false)
+          self.extensions(resolver_class.extensions)
         end
 
         if directives.any?
@@ -352,10 +353,9 @@ module GraphQL
           self.validates(validates)
         end
 
-        if block_given?
-          @definition_block = definition_block
-        else
+        if @definition_block.nil?
           self.extensions.each(&:after_define_apply)
+          @call_after_define = true
         end
       end
 
@@ -372,6 +372,7 @@ module GraphQL
             instance_eval(&@definition_block)
           end
           self.extensions.each(&:after_define_apply)
+          @call_after_define = true
           @definition_block = nil
         end
         self
@@ -435,14 +436,14 @@ module GraphQL
       #
       # @param extensions [Array<Class, Hash<Class => Hash>>] Add extensions to this field. For hash elements, only the first key/value is used.
       # @return [Array<GraphQL::Schema::FieldExtension>] extensions to apply to this field
-      def extensions(new_extensions = nil, call_after_define: !@definition_block)
+      def extensions(new_extensions = nil)
         if new_extensions
           new_extensions.each do |extension_config|
             if extension_config.is_a?(Hash)
               extension_class, options = *extension_config.to_a[0]
-              self.extension(extension_class, call_after_define: call_after_define, **options)
+              self.extension(extension_class, **options)
             else
-              self.extension(extension_config, call_after_define: call_after_define)
+              self.extension(extension_config)
             end
           end
         end
@@ -460,12 +461,12 @@ module GraphQL
       # @param extension_class [Class] subclass of {Schema::FieldExtension}
       # @param options [Hash] if provided, given as `options:` when initializing `extension`.
       # @return [void]
-      def extension(extension_class, call_after_define: !@definition_block, **options)
+      def extension(extension_class, **options)
         extension_inst = extension_class.new(field: self, options: options)
         if @extensions.frozen?
           @extensions = @extensions.dup
         end
-        if call_after_define
+        if @call_after_define
           extension_inst.after_define_apply
         end
         @extensions << extension_inst
