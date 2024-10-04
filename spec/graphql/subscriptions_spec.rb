@@ -1143,5 +1143,22 @@ describe GraphQL::Subscriptions do
       assert_equal(':mySubscription:input:innerInput:', write_subscription_events[0].topic)
       assert_equal(':mySubscription:input:innerInput:', execute_all_events[0].topic)
     end
+
+    it 'correctly generates subscription topics when triggering with nil as input value' do
+      query_str = <<-GRAPHQL
+        subscription ($input: OuterInput) {
+          mySubscription (input: $input) {
+            fullName
+          }
+        }
+      GRAPHQL
+
+      schema.execute(query_str, variables: { 'input' => nil })
+
+      schema.subscriptions.trigger(:mySubscription, { 'input' => nil }, nil)
+
+      assert_equal(':mySubscription:input:', write_subscription_events[0].topic)
+      assert_equal(':mySubscription:input:', execute_all_events[0].topic)
+    end
   end
 end

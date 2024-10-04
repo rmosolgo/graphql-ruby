@@ -250,6 +250,8 @@ module GraphQL
     def normalize_arguments(event_name, arg_owner, args, context)
       case arg_owner
       when GraphQL::Schema::Field, Class
+        return args if args.nil?
+
         if arg_owner.is_a?(Class) && !arg_owner.kind.input_object?
           # it's a type, but not an input object
           return args
