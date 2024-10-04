@@ -81,6 +81,7 @@ module GraphQL
         end
 
         def initialize(context:, schema:, name: nil)
+          @name = name
           @skip_error = context[:skip_visibility_migration_error] || context.is_a?(Query::NullContext) || context.is_a?(Hash)
           @subset_types = GraphQL::Schema::Visibility::Subset.new(context: context, schema: schema)
           if !@skip_error
