@@ -87,40 +87,4 @@ describe GraphQL::Schema::Visibility do
       assert_equal 0, DynVisSchema.visibility.cached_profiles.size, "preload: false"
     end
   end
-
-  describe "configuring named profiles" do
-    class NamedVisSchema < GraphQL::Schema
-      class BaseField < GraphQL::Schema::Field
-        include GraphQL::Schema::Visibility::FieldIntegration
-        visible_in([:public, :admin])
-      end
-      class BaseObject < GraphQL::Schema::Object
-        include GraphQL::Schema::Visibility::TypeIntegration
-        field_class(BaseField)
-        visible_in([:public, :admin])
-      end
-      class Query < BaseObject
-        field :i, Int, fallback_value: 1
-        field :i2, Int, fallback_value: 2, visible_in: :admin
-      end
-
-      query(Query)
-      use GraphQL::Schema::Visibility, profiles: [:public, :admin]
-    end
-
-    it "runs queries by named profile" do
-      res = NamedVisSchema.execute("{ i }", visibility_profile: :public)
-      assert_equal 1, res["data"]["i"]
-
-      res = NamedVisSchema.execute("{ i2 }", visibility_profile: :admin)
-      assert_equal 2, res["data"]["i2"]
-
-      res = NamedVisSchema.execute("{ i i2 }", visibility_profile: :public)
-      assert_equal ["Field 'i2' doesn't exist on type 'Query'"], res["errors"].map { |e| e["message"] }
-
-      res = NamedVisSchema.execute("{ i i2 }", visibility_profile: :admin)
-      assert_equal 1, res["data"]["i"]
-      assert_equal 2, res["data"]["i2"]
-    end
-  end
 end
