@@ -11,11 +11,9 @@ module GraphQL
       # - It doesn't use {Schema}'s top-level caches (eg {Schema.references_to}, {Schema.possible_types}, {Schema.types})
       # - It doesn't hide Interface or Union types when all their possible types are hidden. (Instead, those types should implement `.visible?` to hide in that case.)
       # - It checks `.visible?` on root introspection types
-      #
-      # In the future, {Subset} will support lazy-loading types as needed during execution and multi-request caching of subsets.
-      # TODO rename to Profile?
-      class Subset
-        # @return [Schema::Visibility::Subset]
+      # - It can be used to cache profiles by name for re-use across queries
+      class Profile
+        # @return [Schema::Visibility::Profile]
         def self.from_context(ctx, schema)
           if ctx.respond_to?(:types) && (types = ctx.types).is_a?(self)
             types
@@ -25,9 +23,9 @@ module GraphQL
         end
 
         def self.pass_thru(context:, schema:)
-          subset = self.new(context: context, schema: schema)
-          subset.instance_variable_set(:@cached_visible, Hash.new { |h,k| h[k] = true })
-          subset
+          profile = self.new(context: context, schema: schema)
+          profile.instance_variable_set(:@cached_visible, Hash.new { |h,k| h[k] = true })
+          profile
         end
 
         # @return [Symbol, nil]

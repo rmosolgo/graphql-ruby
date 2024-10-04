@@ -96,23 +96,23 @@ module GraphQL
     # @param max_depth [Numeric] the maximum number of nested selections allowed for this query (falls back to schema-level value)
     # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
     # @param visibility_profile [Symbol]
-    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, static_validator: nil, visibility_profile: nil, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, warden: nil, use_schema_subset: nil)
+    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, static_validator: nil, visibility_profile: nil, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, warden: nil, use_visibility_profile: nil)
       # Even if `variables: nil` is passed, use an empty hash for simpler logic
       variables ||= {}
       @schema = schema
       @context = schema.context_class.new(query: self, values: context)
 
-      if use_schema_subset.nil?
-        use_schema_subset = warden ? false : schema.use_schema_visibility?
+      if use_visibility_profile.nil?
+        use_visibility_profile = warden ? false : schema.use_visibility_profile?
       end
 
       @visibility_profile = visibility_profile
 
-      if use_schema_subset
-        @schema_subset = @schema.visibility.profile_for(@context, visibility_profile)
+      if use_visibility_profile
+        @visibility_profile = @schema.visibility.profile_for(@context, visibility_profile)
         @warden = Schema::Warden::NullWarden.new(context: @context, schema: @schema)
       else
-        @schema_subset = nil
+        @visibility_profile = nil
         @warden = warden
       end
 
@@ -375,7 +375,7 @@ module GraphQL
     end
 
     def types
-      @schema_subset || warden.schema_subset
+      @visibility_profile || warden.visibility_profile
     end
 
     # @param abstract_type [GraphQL::UnionType, GraphQL::InterfaceType]

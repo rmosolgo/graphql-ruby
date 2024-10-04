@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 require "spec_helper"
 
-describe GraphQL::Schema::Visibility::Subset do
-  class SubsetSchema < GraphQL::Schema
+describe GraphQL::Schema::Visibility::Profile do
+  class ProfileSchema < GraphQL::Schema
     class Thing < GraphQL::Schema::Object
       field :name, String, method: :to_s
     end
@@ -17,7 +17,7 @@ describe GraphQL::Schema::Visibility::Subset do
     use GraphQL::Schema::Visibility
   end
   it "only loads the types it needs" do
-    query = GraphQL::Query.new(SubsetSchema, "{ thing { name } }", use_schema_subset: true)
+    query = GraphQL::Query.new(ProfileSchema, "{ thing { name } }", use_visibility_profile: true)
     assert_equal [], query.types.loaded_types
     res = query.result
 

@@ -24,7 +24,7 @@ describe GraphQL::Query::Result do
 
   it "exposes the context" do
     assert_instance_of GraphQL::Query::Context, result.context
-    expected_ctx = if GraphQL::Schema.use_schema_visibility? && result.context.schema.visibility.migration_errors?
+    expected_ctx = if GraphQL::Schema.use_visibility_profile? && result.context.schema.visibility.migration_errors?
       {a: :b, visibility_migration_running: true}
     else
       {a: :b}

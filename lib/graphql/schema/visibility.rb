@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require "graphql/schema/visibility/subset"
+require "graphql/schema/visibility/profile"
 require "graphql/schema/visibility/migration"
 
 module GraphQL
@@ -17,9 +17,9 @@ module GraphQL
 
       def initialize(schema, dynamic:, preload:, profiles:, migration_errors:)
         @schema = schema
-        schema.use_schema_visibility = true
+        schema.use_visibility_profile = true
         if migration_errors
-          schema.subset_class = Migration
+          schema.visibility_profile_class = Migration
         end
         @profiles = profiles
         @cached_profiles = {}
@@ -57,17 +57,17 @@ module GraphQL
         if @profiles.any?
           if visibility_profile.nil?
             if @dynamic
-              @schema.subset_class.new(context: context, schema: @schema)
+              @schema.visibility_profile_class.new(context: context, schema: @schema)
             elsif @profiles.any?
               raise ArgumentError, "#{@schema} expects a visibility profile, but `visibility_profile:` wasn't passed. Provide a `visibility_profile:` value or add `dynamic: true` to your visibility configuration."
             end
           elsif !@profiles.include?(visibility_profile)
             raise ArgumentError, "`#{visibility_profile.inspect}` isn't allowed for `visibility_profile:` (must be one of #{@profiles.keys.map(&:inspect).join(", ")}). Or, add `#{visibility_profile.inspect}` to the list of profiles in the schema definition."
           else
-            @cached_profiles[visibility_profile] ||= @schema.subset_class.new(name: visibility_profile, context: context, schema: @schema)
+            @cached_profiles[visibility_profile] ||= @schema.visibility_profile_class.new(name: visibility_profile, context: context, schema: @schema)
           end
         else
-          @schema.subset_class.new(context: context, schema: @schema)
+          @schema.visibility_profile_class.new(context: context, schema: @schema)
         end
       end
     end

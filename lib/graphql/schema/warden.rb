@@ -61,8 +61,8 @@ module GraphQL
           def interface_type_memberships(obj_t, ctx); obj_t.interface_type_memberships; end
           def arguments(owner, ctx); owner.arguments(ctx); end
           def loadable?(type, ctx); type.visible?(ctx); end
-          def schema_subset
-            @schema_subset ||= Warden::SchemaSubset.new(self)
+          def visibility_profile
+            @visibility_profile ||= Warden::VisibilityProfile.new(self)
           end
         end
       end
@@ -70,17 +70,17 @@ module GraphQL
       class NullWarden
         def initialize(_filter = nil, context:, schema:)
           @schema = schema
-          @schema_subset = Warden::SchemaSubset.new(self)
+          @visibility_profile = Warden::VisibilityProfile.new(self)
         end
 
         # @api private
-        module NullSubset
+        module NullVisibilityProfile
           def self.new(context:, schema:)
-            NullWarden.new(context: context, schema: schema).schema_subset
+            NullWarden.new(context: context, schema: schema).visibility_profile
           end
         end
 
-        attr_reader :schema_subset
+        attr_reader :visibility_profile
 
         def visible_field?(field_defn, _ctx = nil, owner = nil); true; end
         def visible_argument?(arg_defn, _ctx = nil); true; end
@@ -104,11 +104,11 @@ module GraphQL
         def interfaces(obj_type); obj_type.interfaces; end
       end
 
-      def schema_subset
-        @schema_subset ||= SchemaSubset.new(self)
+      def visibility_profile
+        @visibility_profile ||= VisibilityProfile.new(self)
       end
 
-      class SchemaSubset
+      class VisibilityProfile
         def initialize(warden)
           @warden = warden
         end
@@ -193,7 +193,7 @@ module GraphQL
           @visible_possible_types = @visible_fields = @visible_arguments = @visible_enum_arrays =
           @visible_enum_values = @visible_interfaces = @type_visibility = @type_memberships =
           @visible_and_reachable_type = @unions = @unfiltered_interfaces =
-          @reachable_type_set = @schema_subset =
+          @reachable_type_set = @visibility_profile =
             nil
       end
 
