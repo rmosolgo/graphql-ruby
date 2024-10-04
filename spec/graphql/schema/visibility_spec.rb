@@ -10,11 +10,7 @@ describe GraphQL::Schema::Visibility do
       end
 
       def visible?(ctx)
-        super && if @admin_only
-          !!ctx[:is_admin]
-        else
-          true
-        end
+        super && (@admin_only ? !!ctx[:is_admin] : true)
       end
     end
 
