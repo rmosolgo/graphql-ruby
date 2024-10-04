@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.14.1 (30 Sept 2024)
+
+- `AblyLink`: don't set up an Ably subscription when no Subscription header is present #5113
+
 # 1.14.0 (3 Jul 2024)
 
 - Subscriptions: with Relay and ActionCable, don't send an empty query string (`""`) when using persisted operations #5008

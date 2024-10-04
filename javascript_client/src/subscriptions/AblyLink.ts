@@ -56,7 +56,7 @@ class AblyLink extends ApolloLink {
       forward(operation).subscribe({ next: (data) => {
         // If the operation has the subscription header, it's a subscription
         const subscriptionChannelConfig = this._getSubscriptionChannel(operation)
-        if (subscriptionChannelConfig) {
+        if (subscriptionChannelConfig.channel) {
           // This will keep pushing to `.next`
           this._createSubscription(subscriptionChannelConfig, observer)
         }

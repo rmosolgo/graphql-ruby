@@ -27,7 +27,7 @@ jobs:
         bundler-cache: true
       env:
         BUNDLE_GEMFILE: ./spec/dummy/Gemfile
-    - run: bundle exec rails test:system
+    - run: bundle exec rails test:all
       working-directory: ./spec/dummy
   # Some coverage goals of these tests:
   # - Test once without Rails at all

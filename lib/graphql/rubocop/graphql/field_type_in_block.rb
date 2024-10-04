@@ -29,7 +29,7 @@ module GraphQL
         def_node_matcher :field_config_with_inline_type_and_block, <<-Pattern
         (
           block
-            (send {nil? _} :field sym ${const array}) ...
+            (send {nil? _} :field sym ${const array} ...) ...
             (args)
             _
 
@@ -37,8 +37,8 @@ module GraphQL
         Pattern
 
         def on_block(node)
+          ignore_node(node)
           field_config_with_inline_type_and_block(node) do |type_const|
-            ignore_node(type_const)
             type_const_str = get_type_argument_str(node, type_const)
             if ignore_inline_type_str?(type_const_str)
               # Do nothing ...
@@ -54,8 +54,8 @@ module GraphQL
         end
 
         def on_send(node)
+          return if part_of_ignored_node?(node)
           field_config_with_inline_type(node) do |type_const|
-            return if ignored_node?(type_const)
             type_const_str = get_type_argument_str(node, type_const)
             if ignore_inline_type_str?(type_const_str)
               # Do nothing -- not loading from another file
@@ -74,7 +74,13 @@ module GraphQL
         private
 
         def ignore_inline_type_str?(type_str)
-          BUILT_IN_SCALAR_NAMES.include?(type_str)
+          if BUILT_IN_SCALAR_NAMES.include?(type_str)
+            true
+          elsif (inner_type_str = type_str.sub(/\[([A-Za-z]+)(, null: (true|false))?\]/, '\1')) && BUILT_IN_SCALAR_NAMES.include?(inner_type_str)
+            true
+          else
+            false
+          end
         end
 
         def get_type_argument_str(send_node, type_const)
@@ -110,11 +116,20 @@ module GraphQL
         end
 
         def determine_field_indent(send_node)
-          surrounding_node = send_node.parent.parent
-          surrounding_source = surrounding_node.source
-          indent_test_idx = send_node.location.expression.begin_pos - surrounding_node.source_range.begin_pos - 1
+          type_defn_node = send_node
+
+          while (type_defn_node && !(type_defn_node.class_definition? || type_defn_node.module_definition?))
+            type_defn_node = type_defn_node.parent
+          end
+
+          if type_defn_node.nil?
+            raise "Invariant: Something went wrong in GraphQL-Ruby, couldn't find surrounding class definition for field (#{send_node}).\n\nPlease report this error on GitHub."
+          end
+
+          type_defn_source = type_defn_node.source
+          indent_test_idx = send_node.location.expression.begin_pos - type_defn_node.source_range.begin_pos - 1
           field_indent = "".dup
-          while surrounding_source[indent_test_idx] == " "
+          while type_defn_source[indent_test_idx] == " "
             field_indent << " "
             indent_test_idx -= 1
             if indent_test_idx == 0

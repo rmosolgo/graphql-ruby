@@ -18,6 +18,7 @@ module GraphQL
         include_built_in_directives: false, include_built_in_scalars: false, always_include_schema: false
       )
         @schema = schema
+        @context = context
         @always_include_schema = always_include_schema
         @include_introspection_types = include_introspection_types
         @include_built_in_scalars = include_built_in_scalars
@@ -268,7 +269,33 @@ module GraphQL
         end
         definitions = build_directive_nodes(dirs_to_build)
         all_types = @types.all_types
-        type_nodes = build_type_definition_nodes(all_types + schema.extra_types)
+        type_nodes = build_type_definition_nodes(all_types)
+
+        if (ex_t = schema.extra_types).any?
+          dummy_query = Class.new(GraphQL::Schema::Object) do
+            graphql_name "DummyQuery"
+            (all_types + ex_t).each_with_index do |type, idx|
+              if !type.kind.input_object? && !type.introspection?
+                field "f#{idx}", type
+              end
+            end
+          end
+
+          extra_types_schema = Class.new(GraphQL::Schema) do
+            query(dummy_query)
+          end
+
+          extra_types_types = GraphQL::Query.new(extra_types_schema, "{ __typename }", context: @context).types  # rubocop:disable Development/ContextIsPassedCop
+          # Temporarily replace `@types` with something from this example schema.
+          # It'd be much nicer to pass this in, but that would be a big refactor :S
+          prev_types = @types
+          @types = extra_types_types
+          type_nodes += build_type_definition_nodes(ex_t)
+          @types = prev_types
+        end
+
+        type_nodes.sort_by!(&:name)
+
         if @include_one_of
           # This may have been set to true when iterating over all types
           definitions.concat(build_directive_nodes([GraphQL::Schema::Directive::OneOf]))
@@ -291,9 +318,7 @@ module GraphQL
           types = types.reject { |type| type.kind.scalar? && type.default_scalar? }
         end
 
-        types
-          .map { |type| build_type_definition_node(type) }
-          .sort_by(&:name)
+        types.map { |type| build_type_definition_node(type) }
       end
 
       def build_field_nodes(fields)

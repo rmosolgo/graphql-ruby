@@ -109,6 +109,18 @@ createRecord(data: {
     assert_instance_of GraphQL::Language::Nodes::Enum, doc.definitions.first.selections.first.arguments.first.value
   end
 
+  it "handles invalid minus signs" do
+    err = assert_raises GraphQL::ParseError do
+      GraphQL.parse("{ a(b: -c) }")
+    end
+    expected_message = if USING_C_PARSER
+      "syntax error, unexpected invalid token (\"-\") at [1, 8]"
+    else
+      "Expected a number, but it was malformed (\"-\")"
+    end
+    assert_equal expected_message, err.message
+  end
+
   it "allows operation names to match operation types" do
     doc = GraphQL.parse("query subscription { foo }")
     assert_equal "subscription", doc.definitions.first.name
@@ -180,7 +192,7 @@ createRecord(data: {
     expected_msg = if USING_C_PARSER
       "syntax error, unexpected invalid token (\"-\") at [1, 19]"
     else
-      "Expected NAME, actual: INT (\"-\") at [1, 19]"
+      "Expected a number, but it was malformed (\"-\")"
     end
 
     assert_equal expected_msg, err.message

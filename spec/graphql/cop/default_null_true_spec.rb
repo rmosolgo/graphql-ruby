@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require 'spec_helper'
 
-describe "GraphQL::Cop::DefaultNullFalse" do
+describe "GraphQL::Cop::DefaultNullTrue" do
   include RubocopTestHelpers
 
   it "finds and autocorrects `null: true` field configurations" do

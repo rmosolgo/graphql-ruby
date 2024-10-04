@@ -49,19 +49,19 @@ module GraphQL
       inside_single_quoted_string = false
       new_query_str = nil
       while !scanner.eos?
-        if (match = scanner.scan(/(?:\\"|[^"\n\r]|""")+/m)) && new_query_str
-          new_query_str << match
-        elsif scanner.scan('"')
+        if scanner.skip(/(?:\\"|[^"\n\r]|""")+/m)
+          new_query_str && (new_query_str << scanner.matched)
+        elsif scanner.skip('"')
           new_query_str && (new_query_str << '"')
           inside_single_quoted_string = !inside_single_quoted_string
-        elsif scanner.scan("\n")
+        elsif scanner.skip("\n")
           if inside_single_quoted_string
             new_query_str ||= query_str[0, scanner.pos - 1]
             new_query_str << '\\n'
           else
             new_query_str && (new_query_str << "\n")
           end
-        elsif scanner.scan("\r")
+        elsif scanner.skip("\r")
           if inside_single_quoted_string
             new_query_str ||= query_str[0, scanner.pos - 1]
             new_query_str << '\\r'
