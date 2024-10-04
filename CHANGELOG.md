@@ -10,6 +10,17 @@
 
 ### Bug fixes
 
+# 2.3.17 (4 Oct 2024)
+
+### Bug fixes
+
+- Fix `InvalidNullError#inspect` #5103
+- Add server-side tests for ActionCableSubscriptions #5108
+- RuboCop: Fix FieldTypeInBlock for list types and interface types #5107 #5112
+- Subscriptions: Fix triggering with nested input objects #5117
+- Extensions: fix extensions which add other extensions #5116
+
+
 # 2.3.16 (12 Sept 2024)
 
 ### Bug fixes
