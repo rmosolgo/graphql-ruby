@@ -1073,4 +1073,75 @@ describe GraphQL::Subscriptions do
       assert_equal(":mySubscription:myEnum:one", execute_all_events[0].topic)
     end
   end
+
+  describe "Triggering with nested input object" do
+    module SubscriptionNestedInput
+      class InMemoryBackend < GraphQL::Subscriptions
+        attr_reader :write_subscription_events, :execute_all_events
+
+        def initialize(...)
+          super
+          reset
+        end
+
+        def write_subscription(_query, events)
+          @write_subscription_events.concat(events)
+        end
+
+        def execute_all(event, _object)
+          @execute_all_events.push(event)
+        end
+
+        def reset
+          @write_subscription_events = []
+          @execute_all_events = []
+        end
+      end
+
+      class InnerInput < GraphQL::Schema::InputObject
+        argument :first_name, String, required: false
+        argument :last_name, String, required: false
+      end
+
+      class OuterInput < GraphQL::Schema::InputObject
+        argument :inner_input, [InnerInput, { null: true }], required: false
+      end
+
+      class MySubscription < GraphQL::Schema::Subscription
+        argument :input, OuterInput, required: false
+        field :full_name, String
+      end
+
+      class SubscriptionType < GraphQL::Schema::Object
+        field :my_subscription, resolver: MySubscription
+      end
+
+      class Schema < GraphQL::Schema
+        subscription SubscriptionType
+        use InMemoryBackend
+      end
+    end
+
+    let(:schema) { SubscriptionNestedInput::Schema }
+    let(:implementation) { schema.subscriptions }
+    let(:write_subscription_events) { implementation.write_subscription_events }
+    let(:execute_all_events) { implementation.execute_all_events }
+
+    it 'correctly generates subscription topics when triggering with nil inner input' do
+      query_str = <<-GRAPHQL
+        subscription ($input: OuterInput) {
+          mySubscription (input: $input) {
+            fullName
+          }
+        }
+      GRAPHQL
+
+      schema.execute(query_str, variables: { 'input' => { 'innerInput' => nil } })
+
+      schema.subscriptions.trigger(:mySubscription, { 'input' => { 'innerInput' => nil } }, nil)
+
+      assert_equal(':mySubscription:input:innerInput:', write_subscription_events[0].topic)
+      assert_equal(':mySubscription:input:innerInput:', execute_all_events[0].topic)
+    end
+  end
 end

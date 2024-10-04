@@ -302,7 +302,7 @@ module GraphQL
 
         normalized_args
       when GraphQL::Schema::List
-        args.map { |a| normalize_arguments(event_name, arg_owner.of_type, a, context) }
+        args&.map { |a| normalize_arguments(event_name, arg_owner.of_type, a, context) }
       when GraphQL::Schema::NonNull
         normalize_arguments(event_name, arg_owner.of_type, args, context)
       else
