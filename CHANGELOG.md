@@ -10,6 +10,12 @@
 
 ### Bug fixes
 
+# 2.3.18 (7 Oct 2024)
+
+### Bug fixes
+
+- Properly use trace options when `trace_with` is used after `trace_class` #5118
+
 # 2.3.17 (4 Oct 2024)
 
 ### Bug fixes
