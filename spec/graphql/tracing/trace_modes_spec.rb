@@ -171,6 +171,22 @@ describe "Trace modes for schemas" do
       trace_with Module.new, mode: :special_with_base_class
     end
 
+    class TraceWithWithOptionsSchema < GraphQL::Schema
+      class CustomTrace < GraphQL::Tracing::Trace
+      end
+
+      module OptionsTrace
+        def initialize(configured_option:, **_rest)
+          @configured_option = configured_option
+          super
+        end
+      end
+
+      trace_class CustomTrace
+      trace_with OptionsTrace, configured_option: :foo
+    end
+
+
     it "uses the default trace class for default mode" do
       assert_equal CustomBaseTraceParentSchema::CustomTrace, CustomBaseTraceParentSchema.trace_class_for(:default)
       assert_equal CustomBaseTraceParentSchema::CustomTrace, CustomBaseTraceSubclassSchema.trace_class_for(:default).superclass
@@ -182,6 +198,10 @@ describe "Trace modes for schemas" do
     it "uses the default trace class for special modes" do
       assert_includes CustomBaseTraceSubclassSchema.trace_class_for(:special_with_base_class).ancestors, CustomBaseTraceParentSchema::CustomTrace
       assert_kind_of CustomBaseTraceParentSchema::CustomTrace, CustomBaseTraceSubclassSchema.new_trace(mode: :special_with_base_class)
+    end
+
+    it "custom options are retained when using `trace_with` when there is already default tracer configured with `trace_class`" do
+      assert_equal({configured_option: :foo}, TraceWithWithOptionsSchema.trace_options_for(:default))
     end
   end
 
