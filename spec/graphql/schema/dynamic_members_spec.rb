@@ -874,6 +874,7 @@ GRAPHQL
         field :f, Int, null: false
       end
 
+      # TODO why is this necessary?
       if GraphQL::Schema.use_visibility_profile?
         ThingInterface.orphan_types(OtherObject)
       end
@@ -934,7 +935,6 @@ GRAPHQL
       end
 
       query(Query)
-      use GraphQL::Schema::Visibility::Migration
     end
   end
 

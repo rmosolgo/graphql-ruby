@@ -24,13 +24,9 @@ module GraphQL
       #
       # @example Adding this plugin
       #
-      #   use GraphQL::Schema::Visibility::Migration
+      #   use GraphQL::Schema::Visibility, migration_errors: true
       #
       class Migration < GraphQL::Schema::Visibility::Profile
-        def self.use(schema)
-          schema.visibility_profile_class = self
-        end
-
         class RuntimeTypesMismatchError < GraphQL::Error
           def initialize(method_called, warden_result, profile_result, method_args)
             super(<<~ERR)

@@ -11,7 +11,7 @@ module GraphQL
       # @param profiles [Hash<Symbol => Hash>] A hash of `name => context` pairs for preloading visibility profiles
       # @param preload [Boolean] if `true`, load the default schema profile and all named profiles immediately (defaults to `true` for `Rails.env.production?`)
       # @param migration_errors [Boolean] if `true`, raise an error when `Visibility` and `Warden` return different results
-      def self.use(schema, dynamic: false, profiles: EmptyObjects::EMPTY_ARRAY, preload: (defined?(Rails) ? Rails.env.production? : nil), migration_errors: false)
+      def self.use(schema, dynamic: false, profiles: EmptyObjects::EMPTY_HASH, preload: (defined?(Rails) ? Rails.env.production? : nil), migration_errors: false)
         schema.visibility = self.new(schema, dynamic: dynamic, preload: preload, profiles: profiles, migration_errors: migration_errors)
       end
 
