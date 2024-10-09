@@ -873,12 +873,6 @@ GRAPHQL
         implements ThingInterface
         field :f, Int, null: false
       end
-
-      # TODO why is this necessary?
-      if GraphQL::Schema.use_visibility_profile?
-        ThingInterface.orphan_types(OtherObject)
-      end
-
       class ThingUnion < GraphQL::Schema::Union
         graphql_name "Thing"
         possible_types OtherObject
@@ -932,6 +926,8 @@ GRAPHQL
             raise ArgumentError, "Unhandled type kind: #{type_kind.inspect}"
           end
         end
+
+        field :other_object, OtherObject
       end
 
       query(Query)
