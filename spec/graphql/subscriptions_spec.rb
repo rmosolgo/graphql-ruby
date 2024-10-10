@@ -1163,6 +1163,11 @@ describe GraphQL::Subscriptions do
     let(:write_subscription_events) { implementation.write_subscription_events }
     let(:execute_all_events) { implementation.execute_all_events }
 
+    before do
+      write_subscription_events.clear
+      execute_all_events.clear
+    end
+
     it 'correctly generates subscription topics when triggering with nil inner input' do
       query_str = <<-GRAPHQL
         subscription ($input: OuterInput) {
