@@ -61,8 +61,8 @@ module GraphQL
           def interface_type_memberships(obj_t, ctx); obj_t.interface_type_memberships; end
           def arguments(owner, ctx); owner.arguments(ctx); end
           def loadable?(type, ctx); type.visible?(ctx); end
-          def schema_subset
-            @schema_subset ||= Warden::SchemaSubset.new(self)
+          def visibility_profile
+            @visibility_profile ||= Warden::VisibilityProfile.new(self)
           end
         end
       end
@@ -70,17 +70,17 @@ module GraphQL
       class NullWarden
         def initialize(_filter = nil, context:, schema:)
           @schema = schema
-          @schema_subset = Warden::SchemaSubset.new(self)
+          @visibility_profile = Warden::VisibilityProfile.new(self)
         end
 
         # @api private
-        module NullSubset
+        module NullVisibilityProfile
           def self.new(context:, schema:)
-            NullWarden.new(context: context, schema: schema).schema_subset
+            NullWarden.new(context: context, schema: schema).visibility_profile
           end
         end
 
-        attr_reader :schema_subset
+        attr_reader :visibility_profile
 
         def visible_field?(field_defn, _ctx = nil, owner = nil); true; end
         def visible_argument?(arg_defn, _ctx = nil); true; end
@@ -88,7 +88,7 @@ module GraphQL
         def visible_enum_value?(enum_value, _ctx = nil); true; end
         def visible_type_membership?(type_membership, _ctx = nil); true; end
         def interface_type_memberships(obj_type, _ctx = nil); obj_type.interface_type_memberships; end
-        def get_type(type_name); @schema.get_type(type_name); end # rubocop:disable Development/ContextIsPassedCop
+        def get_type(type_name); @schema.get_type(type_name, Query::NullContext.instance, false); end # rubocop:disable Development/ContextIsPassedCop
         def arguments(argument_owner, ctx = nil); argument_owner.all_argument_definitions; end
         def enum_values(enum_defn); enum_defn.enum_values; end # rubocop:disable Development/ContextIsPassedCop
         def get_argument(parent_type, argument_name); parent_type.get_argument(argument_name); end # rubocop:disable Development/ContextIsPassedCop
@@ -100,15 +100,15 @@ module GraphQL
         def reachable_type?(type_name); true; end
         def loadable?(type, _ctx); true; end
         def reachable_types; @schema.types.values; end # rubocop:disable Development/ContextIsPassedCop
-        def possible_types(type_defn); @schema.possible_types(type_defn); end
+        def possible_types(type_defn); @schema.possible_types(type_defn, Query::NullContext.instance, false); end
         def interfaces(obj_type); obj_type.interfaces; end
       end
 
-      def schema_subset
-        @schema_subset ||= SchemaSubset.new(self)
+      def visibility_profile
+        @visibility_profile ||= VisibilityProfile.new(self)
       end
 
-      class SchemaSubset
+      class VisibilityProfile
         def initialize(warden)
           @warden = warden
         end
@@ -193,7 +193,7 @@ module GraphQL
           @visible_possible_types = @visible_fields = @visible_arguments = @visible_enum_arrays =
           @visible_enum_values = @visible_interfaces = @type_visibility = @type_memberships =
           @visible_and_reachable_type = @unions = @unfiltered_interfaces =
-          @reachable_type_set = @schema_subset =
+          @reachable_type_set = @visibility_profile =
             nil
       end
 
@@ -218,7 +218,7 @@ module GraphQL
       # @return [GraphQL::BaseType, nil] The type named `type_name`, if it exists (else `nil`)
       def get_type(type_name)
         @visible_types ||= read_through do |name|
-          type_defn = @schema.get_type(name, @context)
+          type_defn = @schema.get_type(name, @context, false)
           if type_defn && visible_and_reachable_type?(type_defn)
             type_defn
           else
@@ -265,7 +265,7 @@ module GraphQL
       # @return [Array<GraphQL::BaseType>] The types which may be member of `type_defn`
       def possible_types(type_defn)
         @visible_possible_types ||= read_through { |type_defn|
-          pt = @schema.possible_types(type_defn, @context)
+          pt = @schema.possible_types(type_defn, @context, false)
           pt.select { |t| visible_and_reachable_type?(t) }
         }
         @visible_possible_types[type_defn]

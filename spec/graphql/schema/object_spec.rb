@@ -375,6 +375,7 @@ describe GraphQL::Schema::Object do
         shape.delete(:@configs)
         shape.delete(:@future_schema)
         shape.delete(:@metadata)
+        shape.delete(:@admin_only)
         if type_defn_shapes.add?(shape)
           example_shapes_by_name[cls.graphql_name] = shape
         end
@@ -396,12 +397,14 @@ describe GraphQL::Schema::Object do
     default_edge_shape = Class.new(GraphQL::Types::Relay::BaseEdge).instance_variables
     default_connection_shape = Class.new(GraphQL::Types::Relay::BaseConnection).instance_variables
     default_mutation_payload_shape = Class.new(GraphQL::Schema::RelayClassicMutation) { graphql_name("DoSomething") }.payload_type.instance_variables
+    default_visibility_shape = Class.new(GraphQL::Schema::Object).instance_variables
     expected_default_shapes = [
       default_shape,
       default_shape_with_connection_type,
       default_edge_shape,
       default_connection_shape,
-      default_mutation_payload_shape
+      default_mutation_payload_shape,
+      default_visibility_shape
     ]
 
     type_defn_shapes_a = type_defn_shapes.to_a
@@ -410,6 +413,7 @@ describe GraphQL::Schema::Object do
     assert type_defn_shapes_a.find { |sh| sh == default_edge_shape }, "There's a match for default_edge_shape"
     assert type_defn_shapes_a.find { |sh| sh == default_connection_shape }, "There's a match for default_connection_shape"
     assert type_defn_shapes_a.find { |sh| sh == default_mutation_payload_shape }, "There's a match for default_mutation_payload_shape"
+    assert type_defn_shapes_a.find { |sh| sh == default_visibility_shape }, "There's a match for default_visibility_shape"
 
     extra_shapes = type_defn_shapes_a - expected_default_shapes
     extra_shapes_by_name = {}
@@ -417,7 +421,8 @@ describe GraphQL::Schema::Object do
       name = example_shapes_by_name.key(shape)
       extra_shapes_by_name[name] = shape
     end
-    assert_equal({}, extra_shapes_by_name, "There aren't any extras shape profiles")
+
+    assert_equal({}, extra_shapes_by_name, "There aren't any extra shape profiles")
   end
 
   describe "overriding wrap" do

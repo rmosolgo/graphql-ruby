@@ -317,6 +317,9 @@ module GraphQL
         GraphQL::StaticValidation::Validator.new(schema: self)
       end
 
+      # Add `plugin` to this schema
+      # @param plugin [#use] A Schema plugin
+      # @return void
       def use(plugin, **kwargs)
         if kwargs.any?
           plugin.use(self, **kwargs)
@@ -334,8 +337,9 @@ module GraphQL
       # @return [Hash<String => Class>] A dictionary of type classes by their GraphQL name
       # @see get_type Which is more efficient for finding _one type_ by name, because it doesn't merge hashes.
       def types(context = GraphQL::Query::NullContext.instance)
-        if use_schema_visibility?
-          return Visibility::Subset.from_context(context, self).all_types_h
+        if use_visibility_profile?
+          types = Visibility::Profile.from_context(context, self)
+          return types.all_types_h
         end
         all_types = non_introspection_types.merge(introspection_system.types)
         visible_types = {}
@@ -362,17 +366,19 @@ module GraphQL
       end
 
       # @param type_name [String]
+      # @param context [GraphQL::Query::Context] Used for filtering definitions at query-time
+      # @param use_visibility_profile Private, for migration to {Schema::Visibility}
       # @return [Module, nil] A type, or nil if there's no type called `type_name`
-      def get_type(type_name, context = GraphQL::Query::NullContext.instance)
-        if use_schema_visibility?
-          return Visibility::Subset.from_context(context, self).type(type_name)
+      def get_type(type_name, context = GraphQL::Query::NullContext.instance, use_visibility_profile = use_visibility_profile?)
+        if use_visibility_profile
+          return Visibility::Profile.from_context(context, self).type(type_name)
         end
         local_entry = own_types[type_name]
         type_defn = case local_entry
         when nil
           nil
         when Array
-          if context.respond_to?(:types) && context.types.is_a?(GraphQL::Schema::Visibility::Subset)
+          if context.respond_to?(:types) && context.types.is_a?(GraphQL::Schema::Visibility::Profile)
             local_entry
           else
             visible_t = nil
@@ -398,7 +404,7 @@ module GraphQL
 
         type_defn ||
           introspection_system.types[type_name] || # todo context-specific introspection?
-          (superclass.respond_to?(:get_type) ? superclass.get_type(type_name, context) : nil)
+          (superclass.respond_to?(:get_type) ? superclass.get_type(type_name, context, use_visibility_profile) : nil)
       end
 
       # @return [Boolean] Does this schema have _any_ definition for a type named `type_name`, regardless of visibility?
@@ -430,7 +436,7 @@ module GraphQL
           if @query_object
             dup_defn = new_query_object || yield
             raise GraphQL::Error, "Second definition of `query(...)` (#{dup_defn.inspect}) is invalid, already configured with #{@query_object.inspect}"
-          elsif use_schema_visibility?
+          elsif use_visibility_profile?
             @query_object = block_given? ? lazy_load_block : new_query_object
           else
             @query_object = new_query_object || lazy_load_block.call
@@ -449,7 +455,7 @@ module GraphQL
           if @mutation_object
             dup_defn = new_mutation_object || yield
             raise GraphQL::Error, "Second definition of `mutation(...)` (#{dup_defn.inspect}) is invalid, already configured with #{@mutation_object.inspect}"
-          elsif use_schema_visibility?
+          elsif use_visibility_profile?
             @mutation_object = block_given? ? lazy_load_block : new_mutation_object
           else
             @mutation_object = new_mutation_object || lazy_load_block.call
@@ -468,7 +474,7 @@ module GraphQL
           if @subscription_object
             dup_defn = new_subscription_object || yield
             raise GraphQL::Error, "Second definition of `subscription(...)` (#{dup_defn.inspect}) is invalid, already configured with #{@subscription_object.inspect}"
-          elsif use_schema_visibility?
+          elsif use_visibility_profile?
             @subscription_object = block_given? ? lazy_load_block : new_subscription_object
             add_subscription_extension_if_necessary
           else
@@ -502,7 +508,7 @@ module GraphQL
       end
 
       def root_types
-        if use_schema_visibility?
+        if use_visibility_profile?
           [query, mutation, subscription].compact
         else
           @root_types
@@ -521,37 +527,43 @@ module GraphQL
 
       attr_writer :warden_class
 
-      def subset_class
-        if defined?(@subset_class)
-          @subset_class
-        elsif superclass.respond_to?(:subset_class)
-          superclass.subset_class
+      # @api private
+      def visibility_profile_class
+        if defined?(@visibility_profile_class)
+          @visibility_profile_class
+        elsif superclass.respond_to?(:visibility_profile_class)
+          superclass.visibility_profile_class
         else
-          GraphQL::Schema::Visibility::Subset
+          GraphQL::Schema::Visibility::Profile
         end
       end
 
-      attr_writer :subset_class, :use_schema_visibility, :visibility
-
-      def use_schema_visibility?
-        if defined?(@use_schema_visibility)
-          @use_schema_visibility
-        elsif superclass.respond_to?(:use_schema_visibility?)
-          superclass.use_schema_visibility?
+      # @api private
+      attr_writer :visibility_profile_class, :use_visibility_profile
+      # @api private
+      attr_accessor :visibility
+      # @api private
+      def use_visibility_profile?
+        if defined?(@use_visibility_profile)
+          @use_visibility_profile
+        elsif superclass.respond_to?(:use_visibility_profile?)
+          superclass.use_visibility_profile?
         else
           false
         end
       end
 
       # @param type [Module] The type definition whose possible types you want to see
+      # @param context [GraphQL::Query::Context] used for filtering visible possible types at runtime
+      # @param use_visibility_profile Private, for migration to {Schema::Visibility}
       # @return [Hash<String, Module>] All possible types, if no `type` is given.
       # @return [Array<Module>] Possible types for `type`, if it's given.
-      def possible_types(type = nil, context = GraphQL::Query::NullContext.instance)
-        if use_schema_visibility?
+      def possible_types(type = nil, context = GraphQL::Query::NullContext.instance, use_visibility_profile = use_visibility_profile?)
+        if use_visibility_profile
           if type
-            return Visibility::Subset.from_context(context, self).possible_types(type)
+            return Visibility::Profile.from_context(context, self).possible_types(type)
           else
-            raise "Schema.possible_types is not implemented for `use_schema_visibility?`"
+            raise "Schema.possible_types is not implemented for `use_visibility_profile?`"
           end
         end
         if type
@@ -571,7 +583,7 @@ module GraphQL
               introspection_system.possible_types[type] ||
               (
                 superclass.respond_to?(:possible_types) ?
-                  superclass.possible_types(type, context) :
+                  superclass.possible_types(type, context, use_visibility_profile) :
                   EMPTY_ARRAY
               )
           end
@@ -927,7 +939,7 @@ module GraphQL
               To add other types to your schema, you might want `extra_types`: https://graphql-ruby.org/schema/definition.html#extra-types
             ERR
           end
-          add_type_and_traverse(new_orphan_types, root: false) unless use_schema_visibility?
+          add_type_and_traverse(new_orphan_types, root: false) unless use_visibility_profile?
           own_orphan_types.concat(new_orphan_types.flatten)
         end
 
@@ -1069,6 +1081,11 @@ module GraphQL
           child_class.own_trace_modes[name] = child_class.build_trace_mode(name)
         end
         child_class.singleton_class.prepend(ResolveTypeWithType)
+
+        if use_visibility_profile?
+          vis = self.visibility
+          child_class.visibility = vis.dup_for(child_class)
+        end
         super
       end
 
@@ -1186,7 +1203,7 @@ module GraphQL
       # @param new_directive [Class]
       # @return void
       def directive(new_directive)
-        if use_schema_visibility?
+        if use_visibility_profile?
           own_directives[new_directive.graphql_name] = new_directive
         else
           add_type_and_traverse(new_directive, root: false)

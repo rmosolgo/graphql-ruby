@@ -364,6 +364,7 @@ module GraphQL
 
       # @api private
       def validate_default_value
+        return unless default_value?
         coerced_default_value = begin
           # This is weird, but we should accept single-item default values for list-type arguments.
           # If we used `coerce_isolated_input` below, it would do this for us, but it's not really

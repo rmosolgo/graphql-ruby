@@ -200,8 +200,8 @@ describe "Dynamic types, fields, arguments, and enum values" do
     class Locale < BaseUnion
       possible_types Country, future_schema: true
 
-      if GraphQL::Schema.use_schema_visibility?
-        # Subset won't check possible_types, this must be flagged
+      if GraphQL::Schema.use_visibility_profile?
+        # Profile won't check possible_types, this must be flagged
         self.future_schema = true
       end
     end
@@ -595,7 +595,7 @@ GRAPHQL
     assert_includes MultifieldSchema::Country.interfaces({ future_schema: true }), MultifieldSchema::HasCapital
     assert_includes MultifieldSchema.possible_types(MultifieldSchema::HasCapital, { future_schema: true }), MultifieldSchema::Country
     assert_includes MultifieldSchema::Country.interfaces, MultifieldSchema::HasCapital
-    if GraphQL::Schema.use_schema_visibility?
+    if GraphQL::Schema.use_visibility_profile?
       # filtered with `future_schema: nil`
       refute_includes MultifieldSchema.possible_types(MultifieldSchema::HasCapital), MultifieldSchema::Country
     else
@@ -605,17 +605,17 @@ GRAPHQL
 
   it "hides hidden union memberships" do
     assert MultifieldSchema::Locale.visible?({ future_schema: true })
-    if GraphQL::Schema.use_schema_visibility?
+    if GraphQL::Schema.use_visibility_profile?
       refute MultifieldSchema::Locale.visible?({ future_schema: false })
     else
-      # Warden will check possible types -- but Subset doesn't
+      # Warden will check possible types -- but Profile doesn't
       assert MultifieldSchema::Locale.visible?({ future_schema: false })
     end
 
     # and the possible types relationship is sometimes hidden:
     refute_includes MultifieldSchema.possible_types(MultifieldSchema::Locale, { future_schema: false }), MultifieldSchema::Country
     assert_includes MultifieldSchema.possible_types(MultifieldSchema::Locale, { future_schema: true }), MultifieldSchema::Country
-    if GraphQL::Schema.use_schema_visibility?
+    if GraphQL::Schema.use_visibility_profile?
       # This type is hidden in this case
       assert_equal [], MultifieldSchema.possible_types(MultifieldSchema::Locale)
     else
@@ -631,7 +631,7 @@ GRAPHQL
     # and the possible types relationship is sometimes hidden:
     assert_equal [], MultifieldSchema.possible_types(MultifieldSchema::Region, { future_schema: false })
     assert_equal [MultifieldSchema::Country, MultifieldSchema::Place], MultifieldSchema.possible_types(MultifieldSchema::Region, { future_schema: true })
-    if GraphQL::Schema.use_schema_visibility?
+    if GraphQL::Schema.use_visibility_profile?
       # Filtered like `future_schema: false`
       assert_equal [MultifieldSchema::Country, MultifieldSchema::LegacyPlace], MultifieldSchema.possible_types(MultifieldSchema::Region)
     else
@@ -694,7 +694,7 @@ GRAPHQL
     assert_equal MultifieldSchema::MoneyScalar, MultifieldSchema.get_type("Money", { future_schema: nil })
     assert_equal MultifieldSchema::MoneyScalar, MultifieldSchema.get_type("Money", { future_schema: false })
     assert_equal MultifieldSchema::Money, MultifieldSchema.get_type("Money", { future_schema: true })
-    if GraphQL::Schema.use_schema_visibility?
+    if GraphQL::Schema.use_visibility_profile?
       # Filtered like `future_schema: nil`
       assert_equal MultifieldSchema::MoneyScalar, MultifieldSchema.get_type("Money")
     else
@@ -873,11 +873,6 @@ GRAPHQL
         implements ThingInterface
         field :f, Int, null: false
       end
-
-      if GraphQL::Schema.use_schema_visibility?
-        ThingInterface.orphan_types(OtherObject)
-      end
-
       class ThingUnion < GraphQL::Schema::Union
         graphql_name "Thing"
         possible_types OtherObject
@@ -931,10 +926,11 @@ GRAPHQL
             raise ArgumentError, "Unhandled type kind: #{type_kind.inspect}"
           end
         end
+
+        field :other_object, OtherObject
       end
 
       query(Query)
-      use GraphQL::Schema::Visibility::Migration
     end
   end
 

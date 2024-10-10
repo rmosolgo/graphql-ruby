@@ -834,7 +834,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     shapes = Set.new
 
     # This is custom state added by some test schemas:
-    custom_ivars = [:@upcase, :@future_schema, :@visible, :@allow_for, :@metadata]
+    custom_ivars = [:@upcase, :@future_schema, :@visible, :@allow_for, :@metadata, :@admin_only]
 
     ObjectSpace.each_object(GraphQL::Schema::Field) do |field_obj|
       field_ivars = field_obj.instance_variables

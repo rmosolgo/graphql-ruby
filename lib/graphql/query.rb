@@ -95,21 +95,24 @@ module GraphQL
     # @param root_value [Object] the object used to resolve fields on the root type
     # @param max_depth [Numeric] the maximum number of nested selections allowed for this query (falls back to schema-level value)
     # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
-    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, static_validator: nil, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, warden: nil, use_schema_subset: nil)
+    # @param visibility_profile [Symbol]
+    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, static_validator: nil, visibility_profile: nil, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, warden: nil, use_visibility_profile: nil)
       # Even if `variables: nil` is passed, use an empty hash for simpler logic
       variables ||= {}
       @schema = schema
       @context = schema.context_class.new(query: self, values: context)
 
-      if use_schema_subset.nil?
-        use_schema_subset = warden ? false : schema.use_schema_visibility?
+      if use_visibility_profile.nil?
+        use_visibility_profile = warden ? false : schema.use_visibility_profile?
       end
 
-      if use_schema_subset
-        @schema_subset = @schema.subset_class.new(context: @context, schema: @schema)
+      @visibility_profile = visibility_profile
+
+      if use_visibility_profile
+        @visibility_profile = @schema.visibility.profile_for(@context, visibility_profile)
         @warden = Schema::Warden::NullWarden.new(context: @context, schema: @schema)
       else
-        @schema_subset = nil
+        @visibility_profile = nil
         @warden = warden
       end
 
@@ -186,6 +189,9 @@ module GraphQL
     def query_string
       @query_string ||= (document ? document.to_query_string : nil)
     end
+
+    # @return [Symbol, nil]
+    attr_reader :visibility_profile
 
     attr_accessor :multiplex
 
@@ -343,10 +349,33 @@ module GraphQL
       with_prepared_ast { @warden }
     end
 
-    def_delegators :warden, :get_type, :get_field, :possible_types, :root_type_for_operation
+    def get_type(type_name)
+      types.type(type_name) # rubocop:disable Development/ContextIsPassedCop
+    end
+
+    def get_field(owner, field_name)
+      types.field(owner, field_name) # rubocop:disable Development/ContextIsPassedCop
+    end
+
+    def possible_types(type)
+      types.possible_types(type) # rubocop:disable Development/ContextIsPassedCop
+    end
+
+    def root_type_for_operation(op_type)
+      case op_type
+      when "query"
+        types.query_root # rubocop:disable Development/ContextIsPassedCop
+      when "mutation"
+        types.mutation_root # rubocop:disable Development/ContextIsPassedCop
+      when "subscription"
+        types.subscription_root # rubocop:disable Development/ContextIsPassedCop
+      else
+        raise ArgumentError, "unexpected root type name: #{op_type.inspect}; expected 'query', 'mutation', or 'subscription'"
+      end
+    end
 
     def types
-      @schema_subset || warden.schema_subset
+      @visibility_profile || warden.visibility_profile
     end
 
     # @param abstract_type [GraphQL::UnionType, GraphQL::InterfaceType]

@@ -28,7 +28,7 @@ module GraphQL
       end
 
       def types
-        @types ||= GraphQL::Schema::Warden::SchemaSubset.new(@warden)
+        @types ||= Schema::Warden::VisibilityProfile.new(@warden)
       end
     end
   end

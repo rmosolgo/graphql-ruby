@@ -226,7 +226,7 @@ module MaskHelpers
     field :public_type, PublicType, null: false
 
     # Warden would exclude this when it was only referenced as a possible_type of LanguageMemberType.
-    # But Subset always included it. This makes them behave the
+    # But Profile always included it. This makes them behave the same
     field :example_character, Character do
       metadata :hidden_abstract_type, true
     end
@@ -535,7 +535,7 @@ describe GraphQL::Schema::Warden do
         class BagOfThings < GraphQL::Schema::Union
           possible_types A, B, C
 
-          if GraphQL::Schema.use_schema_visibility?
+          if GraphQL::Schema.use_visibility_profile?
             def self.visible?(ctx)
               (
                 possible_types.any? { |pt| ctx.schema.visible?(pt, ctx) } ||
@@ -636,7 +636,7 @@ describe GraphQL::Schema::Warden do
 
       res = schema.execute(query_string, context: { skip_visibility_migration_error: true, except: ->(m, _) { ["A", "B", "C"].include?(m.graphql_name) } })
 
-      if GraphQL::Schema.use_schema_visibility?
+      if GraphQL::Schema.use_visibility_profile?
         # Node is still visible even though it has no possible types
         assert res["data"]["Node"]
         assert_equal [{ "name" => "node" }], res["data"]["Query"]["fields"]
@@ -1079,7 +1079,7 @@ describe GraphQL::Schema::Warden do
 
     result = schema.execute(query_str, context: { skip_visibility_migration_error: true })
 
-    if GraphQL::Schema.use_schema_visibility?
+    if GraphQL::Schema.use_visibility_profile?
       assert_equal "1", result["data"]["account"]["id"]
     else
       assert_equal ["Field 'id' doesn't exist on type 'NewAccount'"], result["errors"].map { |e| e["message"] }

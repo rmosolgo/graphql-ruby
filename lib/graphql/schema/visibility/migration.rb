@@ -2,7 +2,7 @@
 module GraphQL
   class Schema
     class Visibility
-      # You can use this to see how {GraphQL::Schema::Warden} and {GraphQL::Schema::Visibility::Subset}
+      # You can use this to see how {GraphQL::Schema::Warden} and {GraphQL::Schema::Visibility::Profile}
       # handle `.visible?` differently in your schema.
       #
       # It runs the same method on both implementations and raises an error when the results diverge.
@@ -15,28 +15,24 @@ module GraphQL
       # This plugin adds two keys to `context` when running:
       #
       # - `visibility_migration_running: true`
-      # - For the {Warden} which it instantiates, it adds `visibility_migration_warden_running: true`.
+      # - For the {Schema::Warden} which it instantiates, it adds `visibility_migration_warden_running: true`.
       #
       # Use those keys to modify your `visible?` behavior as needed.
       #
       # Also, in a pinch, you can set `skip_visibility_migration_error: true` in context to turn off this behavior per-query.
-      # (In that case, it uses {Subset} directly.)
+      # (In that case, it uses {Profile} directly.)
       #
       # @example Adding this plugin
       #
-      #   use GraphQL::Schema::Visibility::Migration
+      #   use GraphQL::Schema::Visibility, migration_errors: true
       #
-      class Migration < GraphQL::Schema::Visibility::Subset
-        def self.use(schema)
-          schema.subset_class = self
-        end
-
+      class Migration < GraphQL::Schema::Visibility::Profile
         class RuntimeTypesMismatchError < GraphQL::Error
-          def initialize(method_called, warden_result, subset_result, method_args)
+          def initialize(method_called, warden_result, profile_result, method_args)
             super(<<~ERR)
               Mismatch in types for `##{method_called}(#{method_args.map(&:inspect).join(", ")})`:
 
-              #{compare_results(warden_result, subset_result)}
+              #{compare_results(warden_result, profile_result)}
 
               Update your `.visible?` implementation to make these implementations return the same value.
 
@@ -45,9 +41,9 @@ module GraphQL
           end
 
           private
-          def compare_results(warden_result, subset_result)
-            if warden_result.is_a?(Array) && subset_result.is_a?(Array)
-              all_results = warden_result | subset_result
+          def compare_results(warden_result, profile_result)
+            if warden_result.is_a?(Array) && profile_result.is_a?(Array)
+              all_results = warden_result | profile_result
               all_results.sort_by!(&:graphql_name)
 
               entries_text = all_results.map { |entry| "#{entry.graphql_name} (#{entry})"}
@@ -55,13 +51,13 @@ module GraphQL
               yes = "    ✔   "
               no =  "        "
               res = "".dup
-              res << "#{"Result".center(width)} Warden  Subset \n"
+              res << "#{"Result".center(width)} Warden  Profile \n"
               all_results.each_with_index do |entry, idx|
-                res << "#{entries_text[idx].ljust(width)}#{warden_result.include?(entry) ? yes : no}#{subset_result.include?(entry) ? yes : no}\n"
+                res << "#{entries_text[idx].ljust(width)}#{warden_result.include?(entry) ? yes : no}#{profile_result.include?(entry) ? yes : no}\n"
               end
               res << "\n"
             else
-              "- Warden returned: #{humanize(warden_result)}\n\n- Subset returned: #{humanize(subset_result)}"
+              "- Warden returned: #{humanize(warden_result)}\n\n- Visibility::Profile returned: #{humanize(profile_result)}"
             end
           end
           def humanize(val)
@@ -80,38 +76,39 @@ module GraphQL
           end
         end
 
-        def initialize(context:, schema:)
-          @skip_error = context[:skip_visibility_migration_error]
-          context[:visibility_migration_running] = true
-          @subset_types = GraphQL::Schema::Visibility::Subset.new(context: context, schema: schema)
+        def initialize(context:, schema:, name: nil)
+          @name = name
+          @skip_error = context[:skip_visibility_migration_error] || context.is_a?(Query::NullContext) || context.is_a?(Hash)
+          @profile_types = GraphQL::Schema::Visibility::Profile.new(context: context, schema: schema)
           if !@skip_error
+            context[:visibility_migration_running] = true
             warden_ctx_vals = context.to_h.dup
             warden_ctx_vals[:visibility_migration_warden_running] = true
-            if defined?(schema::WardenCompatSchema)
-              warden_schema = schema::WardenCompatSchema
+            if schema.const_defined?(:WardenCompatSchema, false) # don't use a defn from a superclass
+              warden_schema = schema.const_get(:WardenCompatSchema, false)
             else
               warden_schema = Class.new(schema)
-              warden_schema.use_schema_visibility = false
+              warden_schema.use_visibility_profile = false
               # TODO public API
               warden_schema.send(:add_type_and_traverse, [warden_schema.query, warden_schema.mutation, warden_schema.subscription].compact, root: true)
               warden_schema.send(:add_type_and_traverse, warden_schema.directives.values + warden_schema.orphan_types, root: false)
+              schema.const_set(:WardenCompatSchema, warden_schema)
             end
             warden_ctx = GraphQL::Query::Context.new(query: context.query, values: warden_ctx_vals)
-            example_warden = GraphQL::Schema::Warden.new(schema: warden_schema, context: warden_ctx)
-            @warden_types = example_warden.schema_subset
-            warden_ctx.warden = example_warden
-            warden_ctx.types = @warden_types
+            warden_ctx.warden = GraphQL::Schema::Warden.new(schema: warden_schema, context: warden_ctx)
+            warden_ctx.types = @warden_types = warden_ctx.warden.visibility_profile
           end
         end
 
         def loaded_types
-          @subset_types.loaded_types
+          @profile_types.loaded_types
         end
 
-        PUBLIC_SUBSET_METHODS = [
+        PUBLIC_PROFILE_METHODS = [
           :enum_values,
           :interfaces,
           :all_types,
+          :all_types_h,
           :fields,
           :loadable?,
           :type,
@@ -127,14 +124,14 @@ module GraphQL
           :reachable_type?
         ]
 
-        PUBLIC_SUBSET_METHODS.each do |subset_method|
-          define_method(subset_method) do |*args|
-            call_method_and_compare(subset_method, args)
+        PUBLIC_PROFILE_METHODS.each do |profile_method|
+          define_method(profile_method) do |*args|
+            call_method_and_compare(profile_method, args)
           end
         end
 
         def call_method_and_compare(method, args)
-          res_1 = @subset_types.public_send(method, *args)
+          res_1 = @profile_types.public_send(method, *args)
           if @skip_error
             return res_1
           end

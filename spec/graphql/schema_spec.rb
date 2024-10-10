@@ -75,7 +75,7 @@ describe GraphQL::Schema do
       assert_equal base_schema.multiplex_analyzers, schema.multiplex_analyzers
       assert_equal base_schema.disable_introspection_entry_points?, schema.disable_introspection_entry_points?
       expected_plugins = [
-        (GraphQL::Schema.use_schema_visibility? ? GraphQL::Schema::Visibility : nil),
+        (GraphQL::Schema.use_visibility_profile? ? GraphQL::Schema::Visibility : nil),
         GraphQL::Backtrace,
         GraphQL::Subscriptions::ActionCableSubscriptions
       ].compact
@@ -149,7 +149,7 @@ describe GraphQL::Schema do
       assert_equal base_schema.query_analyzers + [query_analyzer], schema.query_analyzers
       assert_equal base_schema.multiplex_analyzers + [multiplex_analyzer], schema.multiplex_analyzers
       expected_plugins = [GraphQL::Backtrace, GraphQL::Subscriptions::ActionCableSubscriptions, CustomSubscriptions]
-      if GraphQL::Schema.use_schema_visibility?
+      if GraphQL::Schema.use_visibility_profile?
         expected_plugins.unshift(GraphQL::Schema::Visibility)
       end
       assert_equal expected_plugins, schema.plugins.map(&:first)
@@ -205,7 +205,7 @@ To add other types to your schema, you might want `extra_types`: https://graphql
         end
 
         METHODS_TO_CACHE.each do |method_name, allowed_calls|
-          define_singleton_method(method_name) do |*args, &block|
+          define_singleton_method(method_name) do |*args, **kwargs, &block|
             if @calls
               call_count = @calls[method_name] += 1
               @callers[method_name] << caller
@@ -215,7 +215,7 @@ To add other types to your schema, you might want `extra_types`: https://graphql
             if call_count > allowed_calls
               raise "Called #{method_name} more than #{allowed_calls} times, previous caller: \n#{@callers[method_name].first.join("\n")}"
             end
-            super(*args, &block)
+            super(*args, **kwargs, &block)
           end
         end
       end

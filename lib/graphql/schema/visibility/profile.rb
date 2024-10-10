@@ -11,26 +11,28 @@ module GraphQL
       # - It doesn't use {Schema}'s top-level caches (eg {Schema.references_to}, {Schema.possible_types}, {Schema.types})
       # - It doesn't hide Interface or Union types when all their possible types are hidden. (Instead, those types should implement `.visible?` to hide in that case.)
       # - It checks `.visible?` on root introspection types
-      #
-      # In the future, {Subset} will support lazy-loading types as needed during execution and multi-request caching of subsets.
-      class Subset
-        # @return [Schema::Visibility::Subset]
+      # - It can be used to cache profiles by name for re-use across queries
+      class Profile
+        # @return [Schema::Visibility::Profile]
         def self.from_context(ctx, schema)
           if ctx.respond_to?(:types) && (types = ctx.types).is_a?(self)
             types
           else
-            # TODO use a cached instance from the schema
-            self.new(context: ctx, schema: schema)
+            schema.visibility.profile_for(ctx, nil)
           end
         end
 
         def self.pass_thru(context:, schema:)
-          subset = self.new(context: context, schema: schema)
-          subset.instance_variable_set(:@cached_visible, Hash.new { |h,k| h[k] = true })
-          subset
+          profile = self.new(context: context, schema: schema)
+          profile.instance_variable_set(:@cached_visible, Hash.new { |h,k| h[k] = true })
+          profile
         end
 
-        def initialize(context:, schema:)
+        # @return [Symbol, nil]
+        attr_reader :name
+
+        def initialize(name: nil, context:, schema:)
+          @name = name
           @context = context
           @schema = schema
           @all_types = {}
@@ -67,6 +69,7 @@ module GraphQL
           @cached_visible_arguments = Hash.new do |h, arg|
             h[arg] = if @cached_visible[arg] && (arg_type = arg.type.unwrap) && @cached_visible[arg_type]
               add_type(arg_type, arg)
+              arg.validate_default_value
               true
             else
               false
@@ -403,8 +406,9 @@ module GraphQL
 
           @unfiltered_interface_type_memberships = Hash.new { |h, k| h[k] = [] }.compare_by_identity
           @add_possible_types = Set.new
+          @late_types = []
 
-          while @unvisited_types.any?
+          while @unvisited_types.any? || @late_types.any?
             while t = @unvisited_types.pop
               # These have already been checked for `.visible?`
               visit_type(t)
@@ -418,6 +422,12 @@ module GraphQL
               end
             end
             @add_possible_types.clear
+
+            while (union_tm = @late_types.shift)
+              late_obj_t = union_tm.object_type
+              obj_t = @all_types[late_obj_t.graphql_name] || raise("Failed to resolve #{late_obj_t.graphql_name.inspect} from #{union_tm.inspect}")
+              union_tm.abstract_type.assign_type_membership_object_type(obj_t)
+            end
           end
 
           @all_types.delete_if { |type_name, type_defn| !referenced?(type_defn) }
@@ -470,12 +480,16 @@ module GraphQL
             type.type_memberships.each do |tm|
               if @cached_visible[tm]
                 obj_t = tm.object_type
-                if obj_t.is_a?(String)
-                  obj_t = Member::BuildType.constantize(obj_t)
-                  tm.object_type = obj_t
-                end
-                if @cached_visible[obj_t]
-                  add_type(obj_t, tm)
+                if obj_t.is_a?(GraphQL::Schema::LateBoundType)
+                  @late_types << tm
+                else
+                  if obj_t.is_a?(String)
+                    obj_t = Member::BuildType.constantize(obj_t)
+                    tm.object_type = obj_t
+                  end
+                  if @cached_visible[obj_t]
+                    add_type(obj_t, tm)
+                  end
                 end
               end
             end
