@@ -162,6 +162,7 @@ module GraphQL
           # re-apply them here
           mods = trace_modules_for(:default)
           mods.each { |mod| new_class.include(mod) }
+          new_class.include(DefaultTraceClass)
           trace_mode(:default, new_class)
           backtrace_class = Class.new(new_class)
           backtrace_class.include(GraphQL::Backtrace::Trace)

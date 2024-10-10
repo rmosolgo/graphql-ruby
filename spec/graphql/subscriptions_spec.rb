@@ -36,6 +36,7 @@ class InMemoryBackend
             validate_update: query.context[:validate_update],
             other_int: query.context[:other_int],
             hidden_event: query.context[:hidden_event],
+            shared_stream: query.context[:shared_stream],
           },
           transport: :socket,
         }
@@ -168,6 +169,19 @@ class ClassBasedInMemoryBackend < InMemoryBackend
     end
   end
 
+  class SharedEvent < GraphQL::Schema::Subscription
+    subscription_scope :shared_stream
+
+    field :ok, Boolean
+
+    def self.topic_for(arguments:, field:, scope:)
+      scope.to_s
+    end
+  end
+
+  class OtherSharedEvent < SharedEvent
+  end
+
   class Subscription < GraphQL::Schema::Object
     field :payload, Payload, null: false do
       argument :id, ID
@@ -198,6 +212,9 @@ class ClassBasedInMemoryBackend < InMemoryBackend
         !!context[:hidden_event]
       end
     end
+
+    field :shared_event, subscription: SharedEvent
+    field :other_shared_event, subscription: OtherSharedEvent
   end
 
   class Query < GraphQL::Schema::Object
@@ -283,12 +300,11 @@ class ToParamUser
 end
 
 describe GraphQL::Subscriptions do
-  before do
-    schema.subscriptions.reset
-  end
-
   [ClassBasedInMemoryBackend, FromDefinitionInMemoryBackend].each do |in_memory_backend_class|
     describe "using #{in_memory_backend_class}" do
+      before do
+        schema.subscriptions.reset
+      end
       let(:root_object) {
         OpenStruct.new(
           payload: in_memory_backend_class::SubscriptionPayload.new,
@@ -839,6 +855,26 @@ describe GraphQL::Subscriptions do
         end
       end
     end
+  end
+
+  it "can share topics" do
+    schema = ClassBasedInMemoryBackend::Schema
+    schema.subscriptions.reset
+    schema.execute("subscription { sharedEvent { ok } }", context: { shared_stream: "stream-1", socket: "1" } )
+    schema.execute("subscription { otherSharedEvent { ok __typename } }", context: { shared_stream: "stream-1", socket: "2" } )
+
+    schema.subscriptions.trigger(:shared_event, {}, OpenStruct.new(ok: true), scope: "stream-1")
+    schema.subscriptions.trigger(:other_shared_event, {}, OpenStruct.new(ok: false), scope: "stream-1")
+
+    pushed_results = schema.subscriptions.deliveries.map do |socket, results|
+      [socket, results.map { |r| r["data"] }]
+    end
+
+    expected_results = [
+      ["1", [{ "sharedEvent" => { "ok" => true } }, { "sharedEvent" => { "ok" => false } }]],
+      ["2", [{ "otherSharedEvent" => {"ok" => true, "__typename" => "OtherSharedEventPayload" } }, { "otherSharedEvent" => { "ok" => false, "__typename" => "OtherSharedEventPayload" } }]]
+    ]
+    assert_equal expected_results, pushed_results
   end
 
   describe "broadcast: true" do
