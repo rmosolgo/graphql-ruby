@@ -187,7 +187,7 @@ module GraphQL
         @mutation = @schema.mutation
         @subscription = @schema.subscription
         @context = context
-        @visibility_cache = read_through { |m| schema.visible?(m, context) }
+        @visibility_cache = read_through { |m| check_visible(schema, m) }
         # Initialize all ivars to improve object shape consistency:
         @types = @visible_types = @reachable_types = @visible_parent_fields =
           @visible_possible_types = @visible_fields = @visible_arguments = @visible_enum_arrays =
@@ -195,7 +195,10 @@ module GraphQL
           @visible_and_reachable_type = @unions = @unfiltered_interfaces =
           @reachable_type_set = @visibility_profile =
             nil
+        @skip_warning = false # TODO make this true when `use`'d
       end
+
+      attr_writer :skip_warning
 
       # @return [Hash<String, GraphQL::BaseType>] Visible types in the schema
       def types
@@ -464,6 +467,49 @@ module GraphQL
       def read_through
         Hash.new { |h, k| h[k] = yield(k) }.compare_by_identity
       end
+
+      def check_visible(schema, member)
+        if schema.visible?(member, @context)
+          true
+        elsif @skip_warning
+          false
+        else
+          member_s = member.respond_to?(:path) ? member.path : member.inspect
+          member_type = case member
+          when Module
+            if member.respond_to?(:kind)
+              member.kind.name.downcase
+            else
+              ""
+            end
+          when GraphQL::Schema::Field
+            "field"
+          when GraphQL::Schema::EnumValue
+            "enum value"
+          when GraphQL::Schema::Argument
+            "argument"
+          else
+            ""
+          end
+
+          schema_s = schema.name ? "#{schema.name}'s" : ""
+          warn(ADD_WARDEN_WARNING % { schema: schema_s, member: member_s, member_type: member_type })
+          @skip_warning = true # only warn once per query
+          false
+        end
+      end
+
+      ADD_WARDEN_WARNING = <<~WARNING
+%{schema} "%{member}" %{member_type} returned `false` for `.visible?` but no Visibility system was added. Address this warning by adding:
+
+  use GraphQL::Schema::Visibility
+
+Alternatively, for legacy behavior, add:
+
+  use GraphQL::Schema::Warden # legacy visibility behavior
+
+For more information see: https://graphql-ruby.org/authorization/visibility.html
+      WARNING
 
       def reachable_type_set
         return @reachable_type_set if @reachable_type_set
