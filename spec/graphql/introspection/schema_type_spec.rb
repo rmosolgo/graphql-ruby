@@ -119,6 +119,7 @@ describe GraphQL::Introspection::SchemaType do
       Class.new(GraphQL::Schema) do
         query query_type
         orphan_types invisible_orphan_type
+        use GraphQL::Schema::Warden if ADD_WARDEN
       end
     end
 

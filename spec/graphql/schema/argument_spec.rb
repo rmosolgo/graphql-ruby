@@ -680,6 +680,7 @@ describe GraphQL::Schema::Argument do
 
   describe "multiple argument definitions with default values" do
     class MultipleArgumentDefaultValuesSchema < GraphQL::Schema
+      use GraphQL::Schema::Warden if ADD_WARDEN
       class BaseArgument < GraphQL::Schema::Argument
         def initialize(*args, use_if:, **kwargs, &block)
           @use_if = use_if

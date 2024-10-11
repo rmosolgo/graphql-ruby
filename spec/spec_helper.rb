@@ -21,6 +21,9 @@ if ENV["GRAPHQL_REJECT_NUMBERS_FOLLOWED_BY_NAMES"]
   GraphQL.reject_numbers_followed_by_names = true
   puts "Opting into GraphQL::Schema::Visibility::Profile"
   GraphQL::Schema.use(GraphQL::Schema::Visibility, migration_errors: true)
+  ADD_WARDEN = false
+else
+  ADD_WARDEN = true
 end
 
 require "rake"

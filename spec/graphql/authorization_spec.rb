@@ -370,7 +370,7 @@ describe "GraphQL::Authorization" do
 
     class SchemaWithFieldHook < GraphQL::Schema
       query(Query)
-
+      use GraphQL::Schema::Warden if ADD_WARDEN
       lazy_resolve(Box, :value)
 
       def self.unauthorized_field(err)

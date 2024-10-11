@@ -19,6 +19,10 @@ module GraphQL
         PassThruWarden
       end
 
+      def self.use(schema)
+        # no-op
+      end
+
       # @param visibility_method [Symbol] a Warden method to call for this entry
       # @param entry [Object, Array<Object>] One or more definitions for a given name in a GraphQL Schema
       # @param context [GraphQL::Query::Context]
@@ -198,7 +202,7 @@ module GraphQL
           @visible_and_reachable_type = @unions = @unfiltered_interfaces =
           @reachable_type_set = @visibility_profile =
             nil
-        @skip_warning = false # TODO make this true when `use`'d
+        @skip_warning = schema.plugins.any? { |(plugin, _opts)| plugin == GraphQL::Schema::Warden }
       end
 
       attr_writer :skip_warning
@@ -499,6 +503,10 @@ module GraphQL
           schema_name = schema.name ? "#{schema.name}" : "your schema"
           warn(ADD_WARDEN_WARNING % { schema_s: schema_s, schema_name: schema_name, member: member_s, member_type: member_type })
           @skip_warning = true # only warn once per query
+          # If there's no schema name, add the backtrace for additional context:
+          if schema_s == ""
+            puts caller.map { |l| "    #{l}"}
+          end
           false
         end
       end

@@ -226,6 +226,7 @@ class ClassBasedInMemoryBackend < InMemoryBackend
     subscription { Subscription }
     use InMemoryBackend::Subscriptions, extra: 123
     max_complexity(InMemoryBackend::MAX_COMPLEXITY)
+    use GraphQL::Schema::Warden if ADD_WARDEN
   end
 end
 
