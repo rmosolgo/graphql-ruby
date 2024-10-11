@@ -1123,7 +1123,7 @@ GRAPHQL
       schema = Class.new(GraphQL::Schema) {
         query(query_type)
         use GraphQL::Schema::Warden if ADD_WARDEN
-       }
+      }
 
       assert_equal "first definition", enum_type.values({ allowed_for: 1 })["ONE"].description
       assert_equal "second definition", enum_type.values({ allowed_for: 3 })["ONE"].description

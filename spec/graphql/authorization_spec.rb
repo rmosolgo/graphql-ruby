@@ -350,7 +350,7 @@ describe "GraphQL::Authorization" do
       query(Query)
       mutation(Mutation)
       directive(Nothing)
-
+      use GraphQL::Schema::Warden if ADD_WARDEN
       lazy_resolve(Box, :value)
 
       def self.unauthorized_object(err)

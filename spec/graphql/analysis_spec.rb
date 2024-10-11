@@ -516,6 +516,7 @@ describe GraphQL::Analysis do
 
   describe "when there's a hidden field" do
     class HiddenAnalyzedFieldSchema < GraphQL::Schema
+      use GraphQL::Schema::Warden if ADD_WARDEN
       class DoNothingAnalyzer < GraphQL::Analysis::Analyzer
         def on_enter_field(node, parent, visitor)
           @result ||= []

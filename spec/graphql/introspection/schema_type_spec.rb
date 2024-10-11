@@ -180,6 +180,7 @@ describe GraphQL::Introspection::SchemaType do
       end
 
       Class.new(GraphQL::Schema) do
+        use GraphQL::Schema::Visibility
         query query_type
         directives invisible_directive, visible_directive
       end
