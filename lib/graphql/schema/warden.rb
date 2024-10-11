@@ -73,6 +73,9 @@ module GraphQL
           @visibility_profile = Warden::VisibilityProfile.new(self)
         end
 
+        # No-op, but for compatibility:
+        attr_writer :skip_warning
+
         # @api private
         module NullVisibilityProfile
           def self.new(context:, schema:)
@@ -493,22 +496,27 @@ module GraphQL
           end
 
           schema_s = schema.name ? "#{schema.name}'s" : ""
-          warn(ADD_WARDEN_WARNING % { schema: schema_s, member: member_s, member_type: member_type })
+          schema_name = schema.name ? "#{schema.name}" : "your schema"
+          warn(ADD_WARDEN_WARNING % { schema_s: schema_s, schema_name: schema_name, member: member_s, member_type: member_type })
           @skip_warning = true # only warn once per query
           false
         end
       end
 
       ADD_WARDEN_WARNING = <<~WARNING
-%{schema} "%{member}" %{member_type} returned `false` for `.visible?` but no Visibility system was added. Address this warning by adding:
+DEPRECATION: %{schema} "%{member}" %{member_type} returned `false` for `.visible?` but `GraphQL::Schema::Visibility` isn't configured yet.
 
-  use GraphQL::Schema::Visibility
+  Address this warning by adding:
 
-Alternatively, for legacy behavior, add:
+      use GraphQL::Schema::Visibility
 
-  use GraphQL::Schema::Warden # legacy visibility behavior
+  to the definition for %{schema_name}. (Future GraphQL-Ruby versions won't check `.visible?` methods by default.)
 
-For more information see: https://graphql-ruby.org/authorization/visibility.html
+  Alternatively, for legacy behavior, add:
+
+      use GraphQL::Schema::Warden # legacy visibility behavior
+
+  For more information see: https://graphql-ruby.org/authorization/visibility.html
       WARNING
 
       def reachable_type_set
