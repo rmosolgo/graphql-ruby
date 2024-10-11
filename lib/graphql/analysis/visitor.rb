@@ -66,8 +66,8 @@ module GraphQL
 
       # Visitor Hooks
       [
-        :operation_definition, :fragment_definition,
-        :inline_fragment, :field, :directive, :argument, :fragment_spread
+        :field, :operation_definition, :fragment_definition,
+        :inline_fragment, :directive, :argument, :fragment_spread
       ].each do |node_type|
         module_eval <<-RUBY, __FILE__, __LINE__
         def call_on_enter_#{node_type}(node, parent)
