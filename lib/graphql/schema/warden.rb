@@ -504,7 +504,7 @@ module GraphQL
       end
 
       ADD_WARDEN_WARNING = <<~WARNING
-DEPRECATION: %{schema} "%{member}" %{member_type} returned `false` for `.visible?` but `GraphQL::Schema::Visibility` isn't configured yet.
+DEPRECATION: %{schema_s} "%{member}" %{member_type} returned `false` for `.visible?` but `GraphQL::Schema::Visibility` isn't configured yet.
 
   Address this warning by adding:
 
