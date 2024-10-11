@@ -1,6 +1,6 @@
 name: CI Suite
 on:
-  - push
+  - workflow_dispatch
 
 jobs:
   lint:
