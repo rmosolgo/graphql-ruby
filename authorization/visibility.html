@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.3.17/">API</a>
+            <a href="/api-doc/2.3.18/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -148,11 +148,16 @@
 <div class="guide-table-of-contents"><div class="table-of-contents">
   <h3 class="contents-header">Contents</h3>
   <ol class='contents-list'><li class='contents-entry'><a href='#hiding-parts-of-the-schema'>Hiding Parts of the Schema
-</a></li><li class='contents-entry'><a href='#object-visibility'>Object Visibility
+</a></li><li class='contents-entry'><a href='#visibility-profiles'>Visibility Profiles
+</a><ol class='contents-list'><li class='contents-entry'><a href='#preloading-profiles'>Preloading profiles
+</a></li><li class='contents-entry'><a href='#dynamic-profiles'>Dynamic profiles
+</a></li></ol></li><li class='contents-entry'><a href='#object-visibility'>Object Visibility
 </a></li><li class='contents-entry'><a href='#field-visibility'>Field Visibility
 </a></li><li class='contents-entry'><a href='#argument-visibility'>Argument Visibility
 </a></li><li class='contents-entry'><a href='#opting-out'>Opting Out
-</a></li></ol>
+</a></li><li class='contents-entry'><a href='#migration-notes'>Migration Notes
+</a><ol class='contents-list'><li class='contents-entry'><a href='#migration-mode'>Migration Mode
+</a></li></ol></li></ol>
 </div>
 </div>
 <div class="guide-container">
@@ -167,7 +172,15 @@
 
 <h2 id="hiding-parts-of-the-schema">Hiding Parts of the Schema</h2>
 
-<p>You can customize the visibility of parts of your schema by reimplementing various <code class="language-plaintext highlighter-rouge">visible?</code> methods:</p>
+<p>To start limiting visibility of your schema, add the plugin:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
+  <span class="c1"># ...</span>
+  <span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Visibility</span> <span class="c1"># see below for options</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>Then, you can customize the visibility of parts of your schema by reimplementing various <code class="language-plaintext highlighter-rouge">visible?</code> methods:</p>
 
 <ul>
   <li>Type classes have a <code class="language-plaintext highlighter-rouge">.visible?(context)</code> class method</li>
@@ -182,6 +195,30 @@
   <li>In introspection, the member will <em>not</em> be included in the result</li>
   <li>In normal queries, if a query references that member, it will return a validation error, since that member doesn’t exist</li>
 </ul>
+
+<h2 id="visibility-profiles">Visibility Profiles</h2>
+
+<p>You can use named profiles to cache your schema’s visibility modes. For example:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">use</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span><span class="o">::</span><span class="no">Visibility</span><span class="p">,</span> <span class="ss">profiles: </span><span class="p">{</span>
+  <span class="c1"># mode_name =&gt; example_context_hash</span>
+  <span class="ss">public: </span><span class="p">{</span> <span class="ss">public: </span><span class="kp">true</span> <span class="p">},</span>
+  <span class="ss">beta: </span><span class="p">{</span> <span class="ss">public: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">beta: </span><span class="kp">true</span> <span class="p">},</span>
+  <span class="ss">internal_admin: </span><span class="p">{</span> <span class="ss">internal_admin: </span><span class="kp">true</span> <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Then, you can run queries with <code class="language-plaintext highlighter-rouge">context[:visibility_profile]</code> equal to one of the pre-defined profiles. When you do, GraphQL-Ruby will use a precomputed set of types and fields for that query.</p>
+
+<h3 id="preloading-profiles">Preloading profiles</h3>
+
+<p>By default, GraphQL-Ruby will preload all named visibility profiles when <code class="language-plaintext highlighter-rouge">Rails.env.production?</code> is present and true. You can manually set this option by passing <code class="language-plaintext highlighter-rouge">use ... preload: true</code> (or <code class="language-plaintext highlighter-rouge">false</code>). Enable preloading in production to reduce latency of the first request to each visibility profile. Disable preloading in development to speed up application boot.</p>
+
+<h3 id="dynamic-profiles">Dynamic profiles</h3>
+
+<p>When you provide named visibility profiles, <code class="language-plaintext highlighter-rouge">context[:visibility_profile]</code> is required for query execution. You can also permit dynamic visibility for queries which <em>don’t</em> have that key set by passing <code class="language-plaintext highlighter-rouge">use ..., dynamic: true</code>. You could use this to support backwards compatibility or when visibility calculations are too complex to predefine.</p>
+
+<p>When no named profiles are defined, all queries use dynamic visibility.</p>
 
 <h2 id="object-visibility">Object Visibility</h2>
 
@@ -260,6 +297,36 @@
 </code></pre></div></div>
 
 <p>For big schemas, this can be a worthwhile speed-up.</p>
+
+<h2 id="migration-notes">Migration Notes</h2>
+
+<p><a href="/api-doc/2.3.18/GraphQL/Schema/Visibility" target="_blank" title="API docs for GraphQL::Schema::Visibility"><code>GraphQL::Schema::Visibility</code></a> is a <em>new</em> implementation of visibility in GraphQL-Ruby. It has some slight differences from the previous implementation (<a href="/api-doc/2.3.18/GraphQL/Schema/Warden" target="_blank" title="API docs for GraphQL::Schema::Warden"><code>GraphQL::Schema::Warden</code></a>):</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">Visibility</code> speeds up Rails app boot because it doesn’t require all types to be loaded during boot and only loads types as they are used by queries.</li>
+  <li><code class="language-plaintext highlighter-rouge">Visibility</code> supports predefined, reusable visibility profiles which speeds up queries using complicated <code class="language-plaintext highlighter-rouge">visible?</code> checks.</li>
+  <li><code class="language-plaintext highlighter-rouge">Visibility</code> hides types differently in a few edge cases:
+    <ul>
+      <li>Previously, <code class="language-plaintext highlighter-rouge">Warden</code> hide interface and union types which had no possible types. <code class="language-plaintext highlighter-rouge">Visibility</code> doesn’t check possible types (in order to support performance improvements), so those types must return <code class="language-plaintext highlighter-rouge">false</code> for <code class="language-plaintext highlighter-rouge">visible?</code> in the same cases where all possible types were hidden. Otherwise, that interface or union type will be visible but have no possible types.</li>
+      <li>Some other thing, see TODO</li>
+    </ul>
+  </li>
+  <li>When <code class="language-plaintext highlighter-rouge">Visibility</code> is used, several (Ruby-level) Schema introspection methods don’t work because the caches they draw on haven’t been calculated (<code class="language-plaintext highlighter-rouge">Schema.references_to</code>, <code class="language-plaintext highlighter-rouge">Schema.union_memberships</code>). If you’re using these, please get in touch so that we can find a way forward.</li>
+</ul>
+
+<h3 id="migration-mode">Migration Mode</h3>
+
+<p>You can use <code class="language-plaintext highlighter-rouge">use GraphQL::Schema::Visibility, ... migration_errors: true</code> to enable migration mode. In this mode, GraphQL-Ruby will make visibility checks with <em>both</em> <code class="language-plaintext highlighter-rouge">Visibility</code> and <code class="language-plaintext highlighter-rouge">Warden</code> and compare the result, raising a descriptive error when the two systems return different results. As you migrate to <code class="language-plaintext highlighter-rouge">Visibility</code>, enable this mode in test to find any unexpected discrepancies.</p>
+
+<p>Sometimes, there’s a discrepancy that is hard to resolve but doesn’t make any <em>real</em> difference in application behavior. To address these cases, you can use these flags in <code class="language-plaintext highlighter-rouge">context</code>:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">context[:visibility_migration_running] = true</code> is set in the main query context.</li>
+  <li><code class="language-plaintext highlighter-rouge">context[:visibility_migration_warden_running] = true</code> is set in the <em>duplicate</em> context which is passed to a <code class="language-plaintext highlighter-rouge">Warden</code> instance.</li>
+  <li>If you set <code class="language-plaintext highlighter-rouge">context[:skip_migration_error] = true</code>, then no migration error will be raised for that query.</li>
+</ul>
+
+<p>You can use these flags to conditionally handle edge cases that should be ignored in testing.</p>
 
 </div>
 <p class="guide-footer">

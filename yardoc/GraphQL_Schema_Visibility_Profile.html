@@ -1,10 +1,10 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta http-equiv="refresh" content="1;url=/api-doc/2.3.17/GraphQL/Schema/Visibility/Subset" />
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.3.18/GraphQL/Schema/Visibility/Profile" />
   </head>
   <body>
-    <p>Class: GraphQL::Schema::Visibility::Subset &lt; Object
+    <p>Class: GraphQL::Schema::Visibility::Profile &lt; Object
 This class filters the types, fields, arguments, enum values, and
 directives in a schema based on the given <code class="language-plaintext highlighter-rouge">context</code>. 
 It’s like Warden, but has some differences:</p>
@@ -13,9 +13,8 @@ It’s like Warden, but has some differences:</p>
 Schema.possible_types, Schema.types) - It doesn’t hide Interface or
 Union types when all their possible types are hidden. (Instead,
 those types should implement <code class="language-plaintext highlighter-rouge">.visible?</code> to hide in that case.) - It
-checks <code class="language-plaintext highlighter-rouge">.visible?</code> on root introspection types 
-In the future, Subset will support lazy-loading types as needed
-during execution and multi-request caching of subsets. 
+checks <code class="language-plaintext highlighter-rouge">.visible?</code> on root introspection types - It can be used to
+cache profiles by name for re-use across queries 
 Direct Known Subclasses:
 Migration
 Class methods:

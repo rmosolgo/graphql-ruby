@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.3.17/">API</a>
+            <a href="/api-doc/2.3.18/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -228,7 +228,7 @@
 
 <h2 id="caching-lists-and-connections">Caching lists and connections</h2>
 
-<p>Lists and connections require a little extra consideration. In order to effectively bust the cache, items that belong to the list of “parent” object should update the parent whenever they’re modified in a way that changes the state of the list. For example, if there’s a list of players on a team:</p>
+<p>Lists and connections require a little extra consideration. In order to effectively bust the cache, items that belong to the list of “parent” object should <strong>update the parent</strong> (eg, Rails <code class="language-plaintext highlighter-rouge">.touch</code>) whenever they’re created, destroyed, or updated. For example, if there’s a list of players on a team:</p>
 
 <div class="language-graphql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
   </span><span class="n">team</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">players</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">totalCount</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
@@ -238,6 +238,12 @@
 <p>None of the <em>specific</em> <code class="language-plaintext highlighter-rouge">Player</code>s will be part of the cached response, but the <code class="language-plaintext highlighter-rouge">Team</code> will be. To properly invalidate the cache, the <code class="language-plaintext highlighter-rouge">Team</code>’s <code class="language-plaintext highlighter-rouge">updated_at</code> (or other cache key) should be updated whenever a <code class="language-plaintext highlighter-rouge">Player</code> is added or removed from the <code class="language-plaintext highlighter-rouge">Team</code>.</p>
 
 <p>If a list may be sorted, then updates to <code class="language-plaintext highlighter-rouge">Player</code>s should also update the <code class="language-plaintext highlighter-rouge">Team</code> so that any sorted results in the cache are invalidated, too. Alternatively (or additionally), you could use a <code class="language-plaintext highlighter-rouge">ttl:</code> to expire cached results after a certain duration, just to be sure that results are eventually expired.</p>
+
+<p>With Rails, you can accomplish this with:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="c1"># update the team whenever a player is saved or destroyed:</span>
+  <span class="n">belongs_to</span> <span class="ss">:team</span><span class="p">,</span> <span class="ss">touch: </span><span class="kp">true</span>
+</code></pre></div></div>
 
 <p>By default, connection-related objects (like <code class="language-plaintext highlighter-rouge">*Connection</code> and <code class="language-plaintext highlighter-rouge">*Edge</code> types) “inherit” cacheability from their node types. You can override this in your base classes as long as <code class="language-plaintext highlighter-rouge">GraphQL::Enterprise::ObjectCache::ObjectIntegration</code> is included in the inheritance chain somewhere.</p>
 
