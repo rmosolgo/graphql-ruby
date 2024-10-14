@@ -73,7 +73,7 @@ Under the hood, `ttl:` is implemented with Redis's `EXPIRE`.
 
 ## Caching lists and connections
 
-Lists and connections require a little extra consideration. In order to effectively bust the cache, items that belong to the list of "parent" object should update the parent whenever they're modified in a way that changes the state of the list. For example, if there's a list of players on a team:
+Lists and connections require a little extra consideration. In order to effectively bust the cache, items that belong to the list of "parent" object should __update the parent__ (eg, Rails `.touch`) whenever they're created, destroyed, or updated. For example, if there's a list of players on a team:
 
 ```graphql
 {
@@ -84,6 +84,13 @@ Lists and connections require a little extra consideration. In order to effectiv
 None of the _specific_ `Player`s will be part of the cached response, but the `Team` will be. To properly invalidate the cache, the `Team`'s `updated_at` (or other cache key) should be updated whenever a `Player` is added or removed from the `Team`.
 
 If a list may be sorted, then updates to `Player`s should also update the `Team` so that any sorted results in the cache are invalidated, too. Alternatively (or additionally), you could use a `ttl:` to expire cached results after a certain duration, just to be sure that results are eventually expired.
+
+With Rails, you can accomplish this with:
+
+```ruby
+  # update the team whenever a player is saved or destroyed:
+  belongs_to :team, touch: true
+```
 
 By default, connection-related objects (like `*Connection` and `*Edge` types) "inherit" cacheability from their node types. You can override this in your base classes as long as `GraphQL::Enterprise::ObjectCache::ObjectIntegration` is included in the inheritance chain somewhere.
 
