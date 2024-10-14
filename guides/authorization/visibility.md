@@ -144,7 +144,7 @@ For big schemas, this can be a worthwhile speed-up.
 
 ## Migration Notes
 
-{% "GraphQL::Schema::Visibility" | api_doc %} is a _new_ implementation of visibility in GraphQL-Ruby. It has some slight differences from the previous implementation ({% "GraphQL::Schema::Warden" | api_doc %}):
+{{ "GraphQL::Schema::Visibility" | api_doc }} is a _new_ implementation of visibility in GraphQL-Ruby. It has some slight differences from the previous implementation ({{ "GraphQL::Schema::Warden" | api_doc }}):
 
 - `Visibility` speeds up Rails app boot because it doesn't require all types to be loaded during boot and only loads types as they are used by queries.
 - `Visibility` supports predefined, reusable visibility profiles which speeds up queries using complicated `visible?` checks.
