@@ -245,6 +245,7 @@ module MaskHelpers
   end
 
   class Schema < GraphQL::Schema
+    use GraphQL::Schema::Warden if ADD_WARDEN
     query QueryType
     mutation MutationType
     subscription MutationType
@@ -507,6 +508,7 @@ describe GraphQL::Schema::Warden do
       |
 
       schema = GraphQL::Schema.from_definition(sdl)
+      schema.use(GraphQL::Schema::Warden)
       schema.define_singleton_method(:visible?) do |member, ctx|
         super(member, ctx) && (ctx[:hiding] ? member.graphql_name != "Repository" : true)
       end
@@ -525,6 +527,7 @@ describe GraphQL::Schema::Warden do
 
     it "hides unions if all possible types are hidden or its references are hidden" do
       class PossibleTypesSchema < GraphQL::Schema
+        use GraphQL::Schema::Warden if ADD_WARDEN
         class A < GraphQL::Schema::Object
           field :id, ID, null: false
         end
@@ -614,6 +617,7 @@ describe GraphQL::Schema::Warden do
       "
 
       schema = GraphQL::Schema.from_definition(sdl)
+      schema.use(GraphQL::Schema::Warden) if ADD_WARDEN
       schema.define_singleton_method(:visible?) do |member, context|
         res = super(member, context)
         if res && context[:except]
@@ -1067,6 +1071,7 @@ describe GraphQL::Schema::Warden do
 
     schema = Class.new(GraphQL::Schema) do
       query(query_type)
+      use GraphQL::Schema::Warden if ADD_WARDEN
     end
 
     query_str = <<-GRAPHQL

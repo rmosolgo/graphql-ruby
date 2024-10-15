@@ -252,6 +252,8 @@ describe GraphQL::Schema::IntrospectionSystem do
 
   describe "Dynamically hiding them" do
     class HidingIntrospectionSchema < GraphQL::Schema
+      use GraphQL::Schema::Warden if ADD_WARDEN
+
       module HideIntrospectionByContext
         def visible?(ctx)
           super &&

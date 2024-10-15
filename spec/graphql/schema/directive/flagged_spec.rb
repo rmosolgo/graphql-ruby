@@ -3,6 +3,7 @@ require "spec_helper"
 
 describe GraphQL::Schema::Directive::Flagged do
   class FlaggedSchema < GraphQL::Schema
+    use GraphQL::Schema::Warden if ADD_WARDEN
     module Animal
       include GraphQL::Schema::Interface
       if GraphQL::Schema.use_visibility_profile?

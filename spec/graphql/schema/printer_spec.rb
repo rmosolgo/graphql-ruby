@@ -681,6 +681,7 @@ type Query {
 SCHEMA
 
     custom_filter_schema = Class.new(schema) do
+      use GraphQL::Schema::Warden if ADD_WARDEN
       def self.visible?(member, ctx)
         case member
         when Module
@@ -810,6 +811,7 @@ type Subscription {
 SCHEMA
 
     custom_filter_schema = Class.new(schema) do
+      use GraphQL::Schema::Warden if ADD_WARDEN
       def self.visible?(member, ctx)
         !(ctx[:names].include?(member.graphql_name) || (member.respond_to?(:deprecation_reason) && member.deprecation_reason))
       end

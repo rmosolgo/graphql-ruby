@@ -914,6 +914,7 @@ module Jazz
     BlogPost = Class.new(GraphQL::Schema::Object)
     extra_types BlogPost
     use GraphQL::Dataloader
+    use GraphQL::Schema::Warden if ADD_WARDEN
   end
 
   class SchemaWithoutIntrospection < GraphQL::Schema
@@ -922,18 +923,21 @@ module Jazz
     disable_introspection_entry_points
 
     use GraphQL::Dataloader
+    use GraphQL::Schema::Warden if ADD_WARDEN
   end
 
   class SchemaWithoutSchemaIntrospection < GraphQL::Schema
     query(Query)
 
     disable_schema_introspection_entry_point
+    use GraphQL::Schema::Warden if ADD_WARDEN
   end
 
   class SchemaWithoutTypeIntrospection < GraphQL::Schema
     query(Query)
 
     disable_type_introspection_entry_point
+    use GraphQL::Schema::Warden if ADD_WARDEN
   end
 
   class SchemaWithoutSchemaOrTypeIntrospection < GraphQL::Schema
@@ -941,5 +945,6 @@ module Jazz
 
     disable_schema_introspection_entry_point
     disable_type_introspection_entry_point
+    use GraphQL::Schema::Warden if ADD_WARDEN
   end
 end

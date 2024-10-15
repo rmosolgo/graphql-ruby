@@ -3,6 +3,7 @@ require "spec_helper"
 
 describe GraphQL::Schema::Subscription do
   class SubscriptionFieldSchema < GraphQL::Schema
+    use GraphQL::Schema::Warden if ADD_WARDEN
     TOOTS = []
     ALL_USERS = {
       "dhh" => {handle: "dhh", private: false},
