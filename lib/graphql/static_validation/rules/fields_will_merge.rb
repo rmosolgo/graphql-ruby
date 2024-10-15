@@ -212,6 +212,7 @@ module GraphQL
 
       def find_conflict(response_key, field1, field2, mutually_exclusive: false)
         return if @conflict_count >= context.max_errors
+        return if field1.definition.nil? || field2.definition.nil?
 
         node1 = field1.node
         node2 = field2.node
