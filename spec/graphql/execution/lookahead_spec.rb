@@ -142,6 +142,11 @@ describe GraphQL::Execution::Lookahead do
       assert_equal true, query.lookahead.selects?("__typename")
     end
 
+    it "uses null lookahead when no operation is selected" do
+      query = GraphQL::Query.new(schema, document: document, variables: { name: "Cardinal" }, operation_name: "Invalid")
+      assert_selection_is_null query.lookahead
+    end
+
     describe "with a NullWarden" do
       let(:schema) { LookaheadTest::AlwaysVisibleSchema }
 
