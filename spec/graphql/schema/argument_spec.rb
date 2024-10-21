@@ -604,7 +604,7 @@ describe GraphQL::Schema::Argument do
       res = RequiredNullableSchema.execute('{ echo(str: null) }')
       assert_nil res["data"].fetch("echo")
       res = RequiredNullableSchema.execute('{ echo }')
-      assert_equal ["echo has the wrong arguments"], res["errors"].map { |e| e["message"] }
+      assert_equal ["echo must include the following argument: str."], res["errors"].map { |e| e["message"] }
     end
   end
 

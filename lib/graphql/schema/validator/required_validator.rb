@@ -37,7 +37,7 @@ module GraphQL
       class RequiredValidator < Validator
         # @param one_of [Symbol, Array<Symbol>] An argument, or a list of arguments, that represents a valid set of inputs for this field
         # @param message [String]
-        def initialize(one_of: nil, argument: nil, message: "%{validated} has the wrong arguments", **default_options)
+        def initialize(one_of: nil, argument: nil, message: nil, **default_options)
           @one_of = if one_of
             one_of
           elsif argument
@@ -49,7 +49,7 @@ module GraphQL
           super(**default_options)
         end
 
-        def validate(_object, _context, value)
+        def validate(_object, context, value)
           matched_conditions = 0
 
           if !value.nil?
@@ -73,8 +73,31 @@ module GraphQL
           if matched_conditions == 1
             nil # OK
           else
-            @message
+            @message || build_message(context)
           end
+        end
+
+        def build_message(context)
+          argument_definitions = @validated.arguments(context).values
+          required_names = @one_of.map do |arg_keyword|
+            if arg_keyword.is_a?(Array)
+              names = arg_keyword.map { |arg| arg_keyword_to_grapqhl_name(argument_definitions, arg) }
+              "(" + names.join(" and ") + ")"
+            else
+              arg_keyword_to_grapqhl_name(argument_definitions, arg_keyword)
+            end
+          end
+
+          if required_names.size == 1
+            "%{validated} must include the following argument: #{required_names.first}."
+          else
+            "%{validated} must include exactly one of the following arguments: #{required_names.join(", ")}."
+          end
+        end
+
+        def arg_keyword_to_grapqhl_name(argument_definitions, arg_keyword)
+          argument_definition = argument_definitions.find { |defn| defn.keyword == arg_keyword }
+          argument_definition.graphql_name
         end
       end
     end
