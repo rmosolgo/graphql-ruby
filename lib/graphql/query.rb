@@ -209,15 +209,19 @@ module GraphQL
     def lookahead
       @lookahead ||= begin
         ast_node = selected_operation
-        root_type = case ast_node.operation_type
-        when nil, "query"
-          types.query_root # rubocop:disable Development/ContextIsPassedCop
-        when "mutation"
-          types.mutation_root # rubocop:disable Development/ContextIsPassedCop
-        when "subscription"
-          types.subscription_root # rubocop:disable Development/ContextIsPassedCop
+        if ast_node.nil?
+          GraphQL::Execution::Lookahead::NULL_LOOKAHEAD
+        else
+          root_type = case ast_node.operation_type
+          when nil, "query"
+            types.query_root # rubocop:disable Development/ContextIsPassedCop
+          when "mutation"
+            types.mutation_root # rubocop:disable Development/ContextIsPassedCop
+          when "subscription"
+            types.subscription_root # rubocop:disable Development/ContextIsPassedCop
+          end
+          GraphQL::Execution::Lookahead.new(query: self, root_type: root_type, ast_nodes: [ast_node])
         end
-        GraphQL::Execution::Lookahead.new(query: self, root_type: root_type, ast_nodes: [ast_node])
       end
     end
 
