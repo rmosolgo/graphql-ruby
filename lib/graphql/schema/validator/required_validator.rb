@@ -35,7 +35,8 @@ module GraphQL
       #   end
       #
       class RequiredValidator < Validator
-        # @param one_of [Symbol, Array<Symbol>] An argument, or a list of arguments, that represents a valid set of inputs for this field
+        # @param one_of [Array<Symbol>] A list of arguments, exactly one of which is required for this field
+        # @param argument [Symbol] An argument that is required for this field
         # @param message [String]
         def initialize(one_of: nil, argument: nil, message: nil, **default_options)
           @one_of = if one_of
