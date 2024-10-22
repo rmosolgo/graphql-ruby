@@ -544,7 +544,9 @@ describe GraphQL::Dataloader do
 
       def spawn_source_task(parent_task, condition)
         result = super
-        update_fiber_counts
+        if result
+          update_fiber_counts
+        end
         result
       end
 
@@ -558,7 +560,6 @@ describe GraphQL::Dataloader do
         end
       end
     end
-
 
     def self.included(child_class)
       child_class.class_eval do
@@ -1085,7 +1086,6 @@ describe GraphQL::Dataloader do
         end
 
         describe "fiber_limit" do
-          focus
           it "respects a configured fiber_limit" do
             query_str = <<-GRAPHQL
             {
@@ -1109,7 +1109,6 @@ describe GraphQL::Dataloader do
             fiber_counting_dataloader_class = Class.new(schema.dataloader_class)
             fiber_counting_dataloader_class.include(FiberCounting)
 
-            # TODO figure out if these counts are doing their jobs
             _res = schema.execute(query_str, context: { dataloader: fiber_counting_dataloader_class.new })
             assert_equal 12, FiberCounting.last_spawn_fiber_count
             assert_equal 9, FiberCounting.last_max_fiber_count

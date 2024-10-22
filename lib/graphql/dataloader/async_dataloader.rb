@@ -12,6 +12,7 @@ module GraphQL
       end
 
       def run
+        jobs_fiber_limit, total_fiber_limit = calculate_fiber_limit
         job_fibers = []
         next_job_fibers = []
         source_tasks = []
@@ -23,7 +24,7 @@ module GraphQL
             first_pass = false
             fiber_vars = get_fiber_variables
 
-            while (f = (job_fibers.shift || spawn_job_fiber))
+            while (f = (job_fibers.shift || (((job_fibers.size + next_job_fibers.size + source_tasks.size) < jobs_fiber_limit) && spawn_job_fiber)))
               if f.alive?
                 finished = run_fiber(f)
                 if !finished
@@ -37,7 +38,7 @@ module GraphQL
             Sync do |root_task|
               set_fiber_variables(fiber_vars)
               while source_tasks.any? || @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
-                while (task = source_tasks.shift || spawn_source_task(root_task, sources_condition))
+                while (task = (source_tasks.shift || (((job_fibers.size + next_job_fibers.size + source_tasks.size + next_source_tasks.size) < total_fiber_limit) && spawn_source_task(root_task, sources_condition))))
                   if task.alive?
                     root_task.yield # give the source task a chance to run
                     next_source_tasks << task
