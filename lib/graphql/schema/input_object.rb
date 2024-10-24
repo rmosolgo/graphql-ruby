@@ -133,12 +133,14 @@ module GraphQL
           end
           # Add a method access
           method_name = argument_defn.keyword
-          class_eval <<-RUBY, __FILE__, __LINE__
-            def #{method_name}
-              self[#{method_name.inspect}]
-            end
-            alias_method :#{method_name}, :#{method_name}
-          RUBY
+          suppress_redefinition_warning do
+            class_eval <<-RUBY, __FILE__, __LINE__
+              def #{method_name}
+                self[#{method_name.inspect}]
+              end
+              alias_method :#{method_name}, :#{method_name}
+            RUBY
+          end
           argument_defn
         end
 
@@ -242,6 +244,17 @@ module GraphQL
           end
 
           result
+        end
+
+        private
+
+        # Suppress redefinition warning for objectId arguments
+        def suppress_redefinition_warning
+          verbose = $VERBOSE
+          $VERBOSE = nil
+          yield
+        ensure
+          $VERBOSE = verbose
         end
       end
 

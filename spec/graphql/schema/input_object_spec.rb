@@ -1409,4 +1409,14 @@ describe GraphQL::Schema::InputObject do
       assert_equal "[a: 1, true], [b: nil, false], [c: nil, true]", result["data"]["values"]["result"]
     end
   end
+
+  describe "when argument is named objectId" do
+    it "doesn't emit a warning" do
+      assert_output "", "" do
+        Class.new(GraphQL::Schema::InputObject) do
+          argument :object_id, GraphQL::Types::ID, required: false
+        end
+      end
+    end
+  end
 end
