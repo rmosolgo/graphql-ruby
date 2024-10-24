@@ -520,10 +520,10 @@ describe GraphQL::Dataloader do
         attr_accessor :starting_fiber_count, :last_spawn_fiber_count, :last_max_fiber_count
 
         def current_fiber_count
-          count_all_fibers - starting_fiber_count
+          count_active_fibers - starting_fiber_count
         end
 
-        def count_all_fibers
+        def count_active_fibers
           GC.start
           ObjectSpace.each_object(Fiber).count
         end
@@ -531,7 +531,7 @@ describe GraphQL::Dataloader do
 
       def initialize(*args, **kwargs, &block)
         super
-        FiberCounting.starting_fiber_count = FiberCounting.count_all_fibers
+        FiberCounting.starting_fiber_count = FiberCounting.count_active_fibers
         FiberCounting.last_max_fiber_count = 0
         FiberCounting.last_spawn_fiber_count = 0
       end
@@ -1109,17 +1109,21 @@ describe GraphQL::Dataloader do
             fiber_counting_dataloader_class = Class.new(schema.dataloader_class)
             fiber_counting_dataloader_class.include(FiberCounting)
 
-            _res = schema.execute(query_str, context: { dataloader: fiber_counting_dataloader_class.new })
+            res = schema.execute(query_str, context: { dataloader: fiber_counting_dataloader_class.new })
+            assert_nil res.context.dataloader.fiber_limit
+            assert_equal 1, FiberCounting.starting_fiber_count
             assert_equal 12, FiberCounting.last_spawn_fiber_count
             assert_equal 9, FiberCounting.last_max_fiber_count
 
             res = schema.execute(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 4) })
             assert_equal 4, res.context.dataloader.fiber_limit
+            assert_equal 1, FiberCounting.starting_fiber_count
             assert_equal 14, FiberCounting.last_spawn_fiber_count
             assert_equal 4, FiberCounting.last_max_fiber_count
 
             res = schema.execute(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 6) })
             assert_equal 6, res.context.dataloader.fiber_limit
+            assert_equal 1, FiberCounting.starting_fiber_count
             assert_equal 10, FiberCounting.last_spawn_fiber_count
             assert_equal 6, FiberCounting.last_max_fiber_count
           end
