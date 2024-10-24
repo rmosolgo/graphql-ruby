@@ -195,7 +195,7 @@ describe GraphQL::Schema::Validator do
 
       res = ValidationInheritanceSchema.execute("{ intInput(input: { int: 1, otherInt: 2 }) }")
       assert_nil res["data"]["intInput"]
-      assert_equal ["IntInput has the wrong arguments"], res["errors"].map { |e| e["message"] }
+      assert_equal ["IntInput must include exactly one of the following arguments: int, otherInt."], res["errors"].map { |e| e["message"] }
     end
 
     it "works with resolvers" do
@@ -204,7 +204,7 @@ describe GraphQL::Schema::Validator do
 
       res = ValidationInheritanceSchema.execute("{ int(int: 1, otherInt: 2) }")
       assert_nil res["data"]["int"]
-      assert_equal ["int has the wrong arguments"], res["errors"].map { |e| e["message"] }
+      assert_equal ["int must include exactly one of the following arguments: int, otherInt."], res["errors"].map { |e| e["message"] }
     end
   end
 end
