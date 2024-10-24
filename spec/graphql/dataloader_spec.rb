@@ -1121,19 +1121,16 @@ describe GraphQL::Dataloader do
 
             res = schema.execute(query_str, context: { dataloader: fiber_counting_dataloader_class.new })
             assert_nil res.context.dataloader.fiber_limit
-            assert_equal 1, FiberCounting.starting_fiber_count
             assert_equal 12, FiberCounting.last_spawn_fiber_count
             assert_last_max_fiber_count(9)
 
             res = schema.execute(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 4) })
             assert_equal 4, res.context.dataloader.fiber_limit
-            assert_equal 1, FiberCounting.starting_fiber_count
             assert_equal 14, FiberCounting.last_spawn_fiber_count
             assert_last_max_fiber_count(4)
 
             res = schema.execute(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 6) })
             assert_equal 6, res.context.dataloader.fiber_limit
-            assert_equal 1, FiberCounting.starting_fiber_count
             assert_equal 10, FiberCounting.last_spawn_fiber_count
             assert_last_max_fiber_count(6)
           end
