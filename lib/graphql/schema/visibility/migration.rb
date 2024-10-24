@@ -96,6 +96,7 @@ module GraphQL
             end
             warden_ctx = GraphQL::Query::Context.new(query: context.query, values: warden_ctx_vals)
             warden_ctx.warden = GraphQL::Schema::Warden.new(schema: warden_schema, context: warden_ctx)
+            warden_ctx.warden.skip_warning = true
             warden_ctx.types = @warden_types = warden_ctx.warden.visibility_profile
           end
         end

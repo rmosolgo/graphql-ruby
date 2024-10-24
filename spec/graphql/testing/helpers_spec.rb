@@ -3,6 +3,7 @@ require "spec_helper"
 
 describe GraphQL::Testing::Helpers do
   class AssertionsSchema < GraphQL::Schema
+    use GraphQL::Schema::Warden if ADD_WARDEN
     class BillSource < GraphQL::Dataloader::Source
       def fetch(students)
         students.map { |s| { amount: 1_000_001 } }

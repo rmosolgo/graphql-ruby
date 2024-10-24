@@ -33,6 +33,7 @@ describe GraphQL::Introspection::EntryPoints do
 
       Class.new(GraphQL::Schema) do
         query query_type
+        use GraphQL::Schema::Warden if ADD_WARDEN
       end
     end
 
