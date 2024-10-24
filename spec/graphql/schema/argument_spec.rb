@@ -766,4 +766,35 @@ describe GraphQL::Schema::Argument do
       assert_equal expected_errors, schema.execute(query).to_h['errors']
     end
   end
+
+  describe "default values for non-null input object arguments when not present in variables" do
+    class InputObjectArgumentWithDefaultValueSchema < GraphQL::Schema
+      class Add < GraphQL::Schema::Resolver
+        class AddInput < GraphQL::Schema::InputObject
+          argument :a, Integer
+          argument :b, Integer
+          argument :c, Integer, default_value: 10
+        end
+
+        argument :input, AddInput
+        type(Integer, null: false)
+
+        def resolve(input:)
+          input[:a] + input[:b] + input[:c]
+        end
+      end
+      class Query < GraphQL::Schema::Object
+        field :add, resolver: Add
+      end
+      query(Query)
+    end
+
+    it "uses the default value" do
+      res1 = InputObjectArgumentWithDefaultValueSchema.execute("{ add(input: { a: 1, b: 2 })}")
+      assert_equal 13, res1["data"]["add"]
+
+      res2 = InputObjectArgumentWithDefaultValueSchema.execute("query Add($input: AddInput!) { add(input: $input) }", variables: { input: { a: 1, b: 4 } })
+      assert_equal 15, res2["data"]["add"]
+    end
+  end
 end

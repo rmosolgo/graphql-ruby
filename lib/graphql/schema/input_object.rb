@@ -163,7 +163,7 @@ module GraphQL
 
           # Inject missing required arguments
           missing_required_inputs = ctx.types.arguments(self).reduce({}) do |m, (argument)|
-            if !input.key?(argument.graphql_name) && argument.type.non_null? && types.argument(self, argument.graphql_name)
+            if !input.key?(argument.graphql_name) && argument.type.non_null? && !argument.default_value? && types.argument(self, argument.graphql_name)
               m[argument.graphql_name] = nil
             end
 
