@@ -10,6 +10,18 @@
 
 ### Bug fixes
 
+# 2.3.19 (24 Oct 2024)
+
+### New features
+
+- Dataloader: accept a `fiber_limit:` option #5132
+
+### Bug fixes
+
+- Argument Validation: improve the `one_of:` error message #5130
+- Lookahead: return a null lookahead from `Query#lookahead` when no operation is selected #5129
+- Static Validation: speed up FieldsWillMerge when some fields are not defined #5125
+
 # 2.3.18 (7 Oct 2024)
 
 ### Bug fixes
