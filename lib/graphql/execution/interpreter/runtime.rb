@@ -207,7 +207,7 @@ module GraphQL
             finished_jobs = 0
             enqueued_jobs = gathered_selections.size
             gathered_selections.each do |result_name, field_ast_nodes_or_ast_node|
-
+              selections_result.set_placeholder(result_name)
               # Field resolution may pause the fiber,
               # so it wouldn't get to the `Resolve` call that happens below.
               # So instead trigger a run from this outer context.

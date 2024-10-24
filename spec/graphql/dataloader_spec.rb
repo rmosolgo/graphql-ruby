@@ -583,7 +583,7 @@ describe GraphQL::Dataloader do
               ]
             }
           }
-          assert_equal expected_data, res
+          assert_graphql_equal expected_data, res
           assert_equal [[:mget, ["5", "6"]], [:mget, ["2", "3"]]], database_log
         end
 
@@ -595,7 +595,7 @@ describe GraphQL::Dataloader do
             }
           GRAPHQL
 
-          assert_equal({ "first" => "first", "second" => "second" }, res["data"])
+          assert_graphql_equal({ "first" => "first", "second" => "second" }, res["data"])
           assert_equal ["begin first", "end first", "begin second", "end second"], res.context[:mutation_log]
         end
 
@@ -607,7 +607,7 @@ describe GraphQL::Dataloader do
             }
           GRAPHQL
 
-          assert_equal({"setCache" => "Salad", "getCache" => "1"}, res["data"])
+          assert_graphql_equal({"setCache" => "Salad", "getCache" => "1"}, res["data"])
         end
 
         it "batch-loads" do
@@ -623,6 +623,7 @@ describe GraphQL::Dataloader do
             ri1: recipeIngredient(recipe: { id: 6, ingredientNumber: 3 }) {
               name
             }
+            __typename
           }
           GRAPHQL
 
@@ -640,8 +641,10 @@ describe GraphQL::Dataloader do
             "ri1" => {
               "name" => "Cheese",
             },
+            "__typename" => "Query",
           }
-          assert_equal(expected_data, res["data"])
+
+          assert_graphql_equal(expected_data, res["data"])
 
           expected_log = [
             [:mget, [
@@ -672,7 +675,7 @@ describe GraphQL::Dataloader do
             {"data"=>{"i2"=>{"name"=>"Corn"}, "r1"=>{"ingredients"=>[{"name"=>"Wheat"}, {"name"=>"Corn"}, {"name"=>"Butter"}, {"name"=>"Baking Soda"}]}}},
             {"data"=>{"i1"=>{"name"=>"Wheat"}, "ri1"=>{"name"=>"Corn"}}},
           ]
-          assert_equal expected_result, result
+          assert_graphql_equal expected_result, result
           expected_log = [
             [:mget, ["1", "2", "5"]],
             [:mget, ["3", "4"]],
@@ -689,7 +692,7 @@ describe GraphQL::Dataloader do
           GRAPHQL
 
           expected_data = { "i1" => { "name" => "Wheat" }, "i2" => { "name" => "Corn" } }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
           assert_equal [[:mget, ["1", "2"]]], database_log
         end
 
@@ -755,7 +758,7 @@ describe GraphQL::Dataloader do
               "name" => "Wheat",
             }
           }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
         end
 
         it "Works when the parent field didn't yield" do
@@ -785,7 +788,7 @@ describe GraphQL::Dataloader do
               ]},
             ]
           }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
 
           expected_log = [
             [:mget, ["5", "6"]],
@@ -810,7 +813,7 @@ describe GraphQL::Dataloader do
               {"name"=>"Butter"},
             ]
           }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
 
           expected_log = [
             [:mget, ["5", "6"]],
@@ -836,7 +839,7 @@ describe GraphQL::Dataloader do
               "name" => "Wheat",
             }
           }
-          assert_equal expected_data, res["data"]
+          assert_graphql_equal expected_data, res["data"]
         end
 
         it "Works with analyzing arguments with `loads:`, even with .request" do
