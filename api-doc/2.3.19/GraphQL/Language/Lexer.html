@@ -1,0 +1,1586 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Language::Lexer
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::Language::Lexer";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (L)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span>
+     &raquo; 
+    <span class="title">Lexer</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Language::Lexer
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">GraphQL::Language::Lexer</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/language/lexer.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Defined Under Namespace</h2>
+<p class="children">
+  
+    
+      <strong class="modules">Modules:</strong> <span class='object_link'><a href="Lexer/ByteFor.html" title="GraphQL::Language::Lexer::ByteFor (module)">ByteFor</a></span>, <span class='object_link'><a href="Lexer/Punctuation.html" title="GraphQL::Language::Lexer::Punctuation (module)">Punctuation</a></span>
+    
+  
+    
+  
+</p>
+
+  
+    <h2>
+      Constant Summary
+      <small><a href="#" class="constants_summary_toggle">collapse</a></small>
+    </h2>
+
+    <dl class="constants">
+      
+        <dt id="ESCAPES-constant" class="">ESCAPES =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>\\[&quot;\\\/bfnrt]</span><span class='regexp_end'>/</span></span></pre></dd>
+      
+        <dt id="ESCAPES_REPLACE-constant" class="">ESCAPES_REPLACE =
+          
+        </dt>
+        <dd><pre class="code"><span class='lbrace'>{</span>
+  <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>\\&quot;</span><span class='tstring_end'>&#39;</span></span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>&quot;</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\\\\</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\\</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\\/</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>/</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\\b</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\b</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\\f</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\f</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\\n</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\n</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\\r</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\r</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\\t</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\t</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+<span class='rbrace'>}</span></pre></dd>
+      
+        <dt id="UTF_8-constant" class="">UTF_8 =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>\\u(?:([\dAa-f]{4})|\{([\da-f]{4,})\})(?:\\u([\dAa-f]{4}))?</span><span class='regexp_end'>/i</span></span></pre></dd>
+      
+        <dt id="VALID_STRING-constant" class="">VALID_STRING =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>\A(?:[^\\]|</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#ESCAPES-constant" title="GraphQL::Language::Lexer::ESCAPES (constant)">ESCAPES</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>|</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#UTF_8-constant" title="GraphQL::Language::Lexer::UTF_8 (constant)">UTF_8</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>)*\z</span><span class='regexp_end'>/o</span></span></pre></dd>
+      
+        <dt id="ESCAPED-constant" class="">ESCAPED =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>(?:</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#ESCAPES-constant" title="GraphQL::Language::Lexer::ESCAPES (constant)">ESCAPES</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>|</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#UTF_8-constant" title="GraphQL::Language::Lexer::UTF_8 (constant)">UTF_8</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='regexp_end'>/o</span></span></pre></dd>
+      
+        <dt id="IGNORE_REGEXP-constant" class="">IGNORE_REGEXP =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>
+  (?:
+    [, \c\r\n\t]+ |
+    \#.*$
+  )*
+</span><span class='regexp_end'>}x</span></span></pre></dd>
+      
+        <dt id="IDENTIFIER_REGEXP-constant" class="">IDENTIFIER_REGEXP =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>[_A-Za-z][_0-9A-Za-z]*</span><span class='regexp_end'>/</span></span></pre></dd>
+      
+        <dt id="INT_REGEXP-constant" class="">INT_REGEXP =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>-?(?:[0]|[1-9][0-9]*)</span><span class='regexp_end'>/</span></span></pre></dd>
+      
+        <dt id="FLOAT_DECIMAL_REGEXP-constant" class="">FLOAT_DECIMAL_REGEXP =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>[.][0-9]+</span><span class='regexp_end'>/</span></span></pre></dd>
+      
+        <dt id="FLOAT_EXP_REGEXP-constant" class="">FLOAT_EXP_REGEXP =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>[eE][+-]?[0-9]+</span><span class='regexp_end'>/</span></span></pre></dd>
+      
+        <dt id="NUMERIC_REGEXP-constant" class="">NUMERIC_REGEXP =
+          <div class="docstring">
+  <div class="discussion">
+    <p>TODO: FLOAT_EXP_REGEXP should not be allowed to follow INT_REGEXP, integers are not allowed to have exponent parts.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>/</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#INT_REGEXP-constant" title="GraphQL::Language::Lexer::INT_REGEXP (constant)">INT_REGEXP</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>(</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#FLOAT_DECIMAL_REGEXP-constant" title="GraphQL::Language::Lexer::FLOAT_DECIMAL_REGEXP (constant)">FLOAT_DECIMAL_REGEXP</a></span></span><span class='embexpr_end'>}</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#FLOAT_EXP_REGEXP-constant" title="GraphQL::Language::Lexer::FLOAT_EXP_REGEXP (constant)">FLOAT_EXP_REGEXP</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>|</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#FLOAT_DECIMAL_REGEXP-constant" title="GraphQL::Language::Lexer::FLOAT_DECIMAL_REGEXP (constant)">FLOAT_DECIMAL_REGEXP</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>|</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#FLOAT_EXP_REGEXP-constant" title="GraphQL::Language::Lexer::FLOAT_EXP_REGEXP (constant)">FLOAT_EXP_REGEXP</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>)?</span><span class='regexp_end'>/</span></span></pre></dd>
+      
+        <dt id="KEYWORDS-constant" class="">KEYWORDS =
+          
+        </dt>
+        <dd><pre class="code"><span class='lbracket'>[</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>on</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>fragment</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>true</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>false</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>null</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>query</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>mutation</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>subscription</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>schema</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>scalar</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>type</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>extend</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>implements</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>interface</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>union</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>enum</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>input</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>directive</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>repeatable</span><span class='tstring_end'>&quot;</span></span>
+<span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_freeze'>freeze</span></pre></dd>
+      
+        <dt id="KEYWORD_REGEXP-constant" class="">KEYWORD_REGEXP =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>/</span><span class='embexpr_beg'>#{</span><span class='const'>Regexp</span><span class='period'>.</span><span class='id identifier rubyid_union'>union</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="#KEYWORDS-constant" title="GraphQL::Language::Lexer::KEYWORDS (constant)">KEYWORDS</a></span></span><span class='period'>.</span><span class='id identifier rubyid_sort'>sort</span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_content'>\b</span><span class='regexp_end'>/</span></span></pre></dd>
+      
+        <dt id="KEYWORD_BY_TWO_BYTES-constant" class="">KEYWORD_BY_TWO_BYTES =
+          
+        </dt>
+        <dd><pre class="code"><span class='lbracket'>[</span>
+  <span class='symbol'>:INTERFACE</span><span class='comma'>,</span>
+  <span class='symbol'>:MUTATION</span><span class='comma'>,</span>
+  <span class='symbol'>:EXTEND</span><span class='comma'>,</span>
+  <span class='symbol'>:FALSE</span><span class='comma'>,</span>
+  <span class='symbol'>:ENUM</span><span class='comma'>,</span>
+  <span class='symbol'>:TRUE</span><span class='comma'>,</span>
+  <span class='symbol'>:NULL</span><span class='comma'>,</span>
+  <span class='kw'>nil</span><span class='comma'>,</span>
+  <span class='kw'>nil</span><span class='comma'>,</span>
+  <span class='kw'>nil</span><span class='comma'>,</span>
+  <span class='kw'>nil</span><span class='comma'>,</span>
+  <span class='kw'>nil</span><span class='comma'>,</span>
+  <span class='kw'>nil</span><span class='comma'>,</span>
+  <span class='kw'>nil</span><span class='comma'>,</span>
+  <span class='symbol'>:QUERY</span><span class='comma'>,</span>
+  <span class='kw'>nil</span><span class='comma'>,</span>
+  <span class='kw'>nil</span><span class='comma'>,</span>
+  <span class='symbol'>:REPEATABLE</span><span class='comma'>,</span>
+  <span class='symbol'>:IMPLEMENTS</span><span class='comma'>,</span>
+  <span class='symbol'>:INPUT</span><span class='comma'>,</span>
+  <span class='symbol'>:TYPE</span><span class='comma'>,</span>
+  <span class='symbol'>:SCHEMA</span><span class='comma'>,</span>
+  <span class='kw'>nil</span><span class='comma'>,</span>
+  <span class='kw'>nil</span><span class='comma'>,</span>
+  <span class='kw'>nil</span><span class='comma'>,</span>
+  <span class='symbol'>:DIRECTIVE</span><span class='comma'>,</span>
+  <span class='symbol'>:UNION</span><span class='comma'>,</span>
+  <span class='kw'>nil</span><span class='comma'>,</span>
+  <span class='kw'>nil</span><span class='comma'>,</span>
+  <span class='symbol'>:SCALAR</span><span class='comma'>,</span>
+  <span class='kw'>nil</span><span class='comma'>,</span>
+  <span class='symbol'>:FRAGMENT</span>
+<span class='rbracket'>]</span></pre></dd>
+      
+        <dt id="PUNCTUATION_NAME_FOR_BYTE-constant" class="">PUNCTUATION_NAME_FOR_BYTE =
+          <div class="docstring">
+  <div class="discussion">
+    <p>A sparse array mapping the bytes for each punctuation
+to a symbol name for that punctuation</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='const'><span class='object_link'><a href="Lexer/Punctuation.html" title="GraphQL::Language::Lexer::Punctuation (module)">Punctuation</a></span></span><span class='period'>.</span><span class='id identifier rubyid_constants'>constants</span><span class='period'>.</span><span class='id identifier rubyid_each_with_object'>each_with_object</span><span class='lparen'>(</span><span class='lbracket'>[</span><span class='rbracket'>]</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_arr'>arr</span><span class='op'>|</span>
+  <span class='id identifier rubyid_punct'>punct</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="Lexer/Punctuation.html" title="GraphQL::Language::Lexer::Punctuation (module)">Punctuation</a></span></span><span class='period'>.</span><span class='id identifier rubyid_const_get'>const_get</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_arr'>arr</span><span class='lbracket'>[</span><span class='id identifier rubyid_punct'>punct</span><span class='period'>.</span><span class='id identifier rubyid_ord'>ord</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_name'>name</span>
+<span class='rbrace'>}</span></pre></dd>
+      
+        <dt id="QUOTE-constant" class="">QUOTE =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>&quot;</span><span class='tstring_end'>&#39;</span></span></pre></dd>
+      
+        <dt id="UNICODE_DIGIT-constant" class="">UNICODE_DIGIT =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>[0-9A-Za-z]</span><span class='regexp_end'>/</span></span></pre></dd>
+      
+        <dt id="FOUR_DIGIT_UNICODE-constant" class="">FOUR_DIGIT_UNICODE =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>/</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#UNICODE_DIGIT-constant" title="GraphQL::Language::Lexer::UNICODE_DIGIT (constant)">UNICODE_DIGIT</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>{4}</span><span class='regexp_end'>/</span></span></pre></dd>
+      
+        <dt id="N_DIGIT_UNICODE-constant" class="">N_DIGIT_UNICODE =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>%r{</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="Lexer/Punctuation.html" title="GraphQL::Language::Lexer::Punctuation (module)">Punctuation</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Lexer/Punctuation.html#LCURLY-constant" title="GraphQL::Language::Lexer::Punctuation::LCURLY (constant)">LCURLY</a></span></span><span class='embexpr_end'>}</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#UNICODE_DIGIT-constant" title="GraphQL::Language::Lexer::UNICODE_DIGIT (constant)">UNICODE_DIGIT</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>{4,}</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="Lexer/Punctuation.html" title="GraphQL::Language::Lexer::Punctuation (module)">Punctuation</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Lexer/Punctuation.html#RCURLY-constant" title="GraphQL::Language::Lexer::Punctuation::RCURLY (constant)">RCURLY</a></span></span><span class='embexpr_end'>}</span><span class='regexp_end'>}x</span></span></pre></dd>
+      
+        <dt id="UNICODE_ESCAPE-constant" class="">UNICODE_ESCAPE =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>\\u(?:</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#FOUR_DIGIT_UNICODE-constant" title="GraphQL::Language::Lexer::FOUR_DIGIT_UNICODE (constant)">FOUR_DIGIT_UNICODE</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>|</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#N_DIGIT_UNICODE-constant" title="GraphQL::Language::Lexer::N_DIGIT_UNICODE (constant)">N_DIGIT_UNICODE</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='regexp_end'>}</span></span></pre></dd>
+      
+        <dt id="STRING_ESCAPE-constant" class="">STRING_ESCAPE =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>[\\][\\/bfnrt]</span><span class='regexp_end'>}</span></span></pre></dd>
+      
+        <dt id="BLOCK_QUOTE-constant" class="">BLOCK_QUOTE =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>&quot;&quot;&quot;</span><span class='tstring_end'>&#39;</span></span></pre></dd>
+      
+        <dt id="ESCAPED_QUOTE-constant" class="">ESCAPED_QUOTE =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>\\&quot;</span><span class='regexp_end'>/</span></span></pre></dd>
+      
+        <dt id="STRING_CHAR-constant" class="">STRING_CHAR =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>/</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#ESCAPED_QUOTE-constant" title="GraphQL::Language::Lexer::ESCAPED_QUOTE (constant)">ESCAPED_QUOTE</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>|[^&quot;\\\n\r]|</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#UNICODE_ESCAPE-constant" title="GraphQL::Language::Lexer::UNICODE_ESCAPE (constant)">UNICODE_ESCAPE</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>|</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#STRING_ESCAPE-constant" title="GraphQL::Language::Lexer::STRING_ESCAPE (constant)">STRING_ESCAPE</a></span></span><span class='embexpr_end'>}</span><span class='regexp_end'>/</span></span></pre></dd>
+      
+        <dt id="QUOTED_STRING_REGEXP-constant" class="">QUOTED_STRING_REGEXP =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>%r{</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#QUOTE-constant" title="GraphQL::Language::Lexer::QUOTE (constant)">QUOTE</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'> (?:</span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#STRING_CHAR-constant" title="GraphQL::Language::Lexer::STRING_CHAR (constant)">STRING_CHAR</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>)* </span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#QUOTE-constant" title="GraphQL::Language::Lexer::QUOTE (constant)">QUOTE</a></span></span><span class='embexpr_end'>}</span><span class='regexp_end'>}x</span></span></pre></dd>
+      
+        <dt id="BLOCK_STRING_REGEXP-constant" class="">BLOCK_STRING_REGEXP =
+          
+        </dt>
+        <dd><pre class="code"><span class='tstring'><span class='regexp_beg'>%r{</span><span class='tstring_content'>
+  </span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#BLOCK_QUOTE-constant" title="GraphQL::Language::Lexer::BLOCK_QUOTE (constant)">BLOCK_QUOTE</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>
+  (?: [^&quot;\\]               |  # Any characters that aren&#39;t a quote or slash
+     (?&lt;!&quot;) [&quot;]{1,2} (?!&quot;) |  # Any quotes that don&#39;t have quotes next to them
+     \\&quot;{0,3}(?!&quot;)         |  # A slash followed by &lt;= 3 quotes that aren&#39;t followed by a quote
+     \\                    |  # A slash
+     &quot;{1,2}(?!&quot;)              # 1 or 2 &quot; followed by something that isn&#39;t a quote
+  )*
+  (?:&quot;&quot;)?
+  </span><span class='embexpr_beg'>#{</span><span class='const'><span class='object_link'><a href="#BLOCK_QUOTE-constant" title="GraphQL::Language::Lexer::BLOCK_QUOTE (constant)">BLOCK_QUOTE</a></span></span><span class='embexpr_end'>}</span><span class='tstring_content'>
+</span><span class='regexp_end'>}xm</span></span></pre></dd>
+      
+        <dt id="FIRST_BYTES-constant" class="">FIRST_BYTES =
+          <div class="docstring">
+  <div class="discussion">
+    <p>Use this array to check, for a given byte that will start a token,
+what kind of token might it start?</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+        </dt>
+        <dd><pre class="code"><span class='const'>Array</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='int'>255</span><span class='rparen'>)</span></pre></dd>
+      
+    </dl>
+  
+
+
+
+
+  <h2>Instance Attribute Summary <small><a href="#" class="summary_toggle">collapse</a></small></h2>
+  <ul class="summary">
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#pos-instance_method" title="#pos (instance method)">#<strong>pos</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute pos.</p>
+</div></span>
+  
+</li>
+
+    
+      <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#tokens_count-instance_method" title="#tokens_count (instance method)">#<strong>tokens_count</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+    
+      <span class="note title readonly">readonly</span>
+    
+    
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Returns the value of attribute tokens_count.</p>
+</div></span>
+  
+</li>
+
+    
+  </ul>
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#replace_escaped_characters_in_place-class_method" title="replace_escaped_characters_in_place (class method)">.<strong>replace_escaped_characters_in_place</strong>(raw_string)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Replace any escaped unicode or whitespace with the <em>actual</em> characters To avoid allocating more strings, this modifies the string passed into it.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#tokenize-class_method" title="tokenize (class method)">.<strong>tokenize</strong>(string)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>This is not used during parsing because the parser doesn’t actually need tokens.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#_hash-instance_method" title="#_hash (instance method)">#<strong>_hash</strong>(key)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>This produces a unique integer for bytes 2 and 3 of each keyword string See https://tenderlovemaking.com/2023/09/02/fast-tokenizers-with-stringscanner.html.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#advance-instance_method" title="#advance (instance method)">#<strong>advance</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#column_number-instance_method" title="#column_number (instance method)">#<strong>column_number</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#debug_token_value-instance_method" title="#debug_token_value (instance method)">#<strong>debug_token_value</strong>(token_name)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#eos%3F-instance_method" title="#eos? (instance method)">#<strong>eos?</strong>  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#initialize-instance_method" title="#initialize (instance method)">#<strong>initialize</strong>(graphql_str, filename: nil, max_tokens: nil)  &#x21d2; Lexer </a>
+    
+
+    
+  </span>
+  
+  
+    <span class="note title constructor">constructor</span>
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>A new instance of Lexer.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#line_number-instance_method" title="#line_number (instance method)">#<strong>line_number</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#raise_parse_error-instance_method" title="#raise_parse_error (instance method)">#<strong>raise_parse_error</strong>(message, line = line_number, col = column_number)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#string_value-instance_method" title="#string_value (instance method)">#<strong>string_value</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#token_value-instance_method" title="#token_value (instance method)">#<strong>token_value</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <div class="method_details first">
+  <h3 class="signature first" id="initialize-instance_method">
+  
+    #<strong>initialize</strong>(graphql_str, filename: nil, max_tokens: nil)  &#x21d2; <tt><span class='object_link'><a href="" title="GraphQL::Language::Lexer (class)">Lexer</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns a new instance of Lexer.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/lexer.rb', line 6</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_graphql_str'>graphql_str</span><span class='comma'>,</span> <span class='label'>filename:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>max_tokens:</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='op'>!</span><span class='lparen'>(</span><span class='id identifier rubyid_graphql_str'>graphql_str</span><span class='period'>.</span><span class='id identifier rubyid_encoding'>encoding</span> <span class='op'>==</span> <span class='const'>Encoding</span><span class='op'>::</span><span class='const'>UTF_8</span> <span class='op'>||</span> <span class='id identifier rubyid_graphql_str'>graphql_str</span><span class='period'>.</span><span class='id identifier rubyid_ascii_only?'>ascii_only?</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_graphql_str'>graphql_str</span> <span class='op'>=</span> <span class='id identifier rubyid_graphql_str'>graphql_str</span><span class='period'>.</span><span class='id identifier rubyid_dup'>dup</span><span class='period'>.</span><span class='id identifier rubyid_force_encoding'>force_encoding</span><span class='lparen'>(</span><span class='const'>Encoding</span><span class='op'>::</span><span class='const'>UTF_8</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+  <span class='ivar'>@string</span> <span class='op'>=</span> <span class='id identifier rubyid_graphql_str'>graphql_str</span>
+  <span class='ivar'>@filename</span> <span class='op'>=</span> <span class='id identifier rubyid_filename'>filename</span>
+  <span class='ivar'>@scanner</span> <span class='op'>=</span> <span class='const'>StringScanner</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='id identifier rubyid_graphql_str'>graphql_str</span><span class='rparen'>)</span>
+  <span class='ivar'>@pos</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='ivar'>@max_tokens</span> <span class='op'>=</span> <span class='id identifier rubyid_max_tokens'>max_tokens</span> <span class='op'>||</span> <span class='const'>Float</span><span class='op'>::</span><span class='const'>INFINITY</span>
+  <span class='ivar'>@tokens_count</span> <span class='op'>=</span> <span class='int'>0</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+  
+</div>
+
+  <div id="instance_attr_details" class="attr_details">
+    <h2>Instance Attribute Details</h2>
+    
+      
+      <span id=""></span>
+      <div class="method_details first">
+  <h3 class="signature first" id="pos-instance_method">
+  
+    #<strong>pos</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute pos.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+22
+23
+24</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/lexer.rb', line 22</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_pos'>pos</span>
+  <span class='ivar'>@pos</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      
+      <span id=""></span>
+      <div class="method_details ">
+  <h3 class="signature " id="tokens_count-instance_method">
+  
+    #<strong>tokens_count</strong>  &#x21d2; <tt>Object</tt>  <span class="extras">(readonly)</span>
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the value of attribute tokens_count.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+22
+23
+24</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/lexer.rb', line 22</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_tokens_count'>tokens_count</span>
+  <span class='ivar'>@tokens_count</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="replace_escaped_characters_in_place-class_method">
+  
+    .<strong>replace_escaped_characters_in_place</strong>(raw_string)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Replace any escaped unicode or whitespace with the <em>actual</em> characters
+To avoid allocating more strings, this modifies the string passed into it</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+321
+322
+323
+324
+325
+326
+327
+328
+329
+330
+331
+332
+333
+334
+335
+336
+337
+338
+339
+340
+341
+342
+343
+344</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/lexer.rb', line 321</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_replace_escaped_characters_in_place'>replace_escaped_characters_in_place</span><span class='lparen'>(</span><span class='id identifier rubyid_raw_string'>raw_string</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_raw_string'>raw_string</span><span class='period'>.</span><span class='id identifier rubyid_gsub!'>gsub!</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="#ESCAPED-constant" title="GraphQL::Language::Lexer::ESCAPED (constant)">ESCAPED</a></span></span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_matched_str'>matched_str</span><span class='op'>|</span>
+    <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_point_str_1'>point_str_1</span> <span class='op'>=</span> <span class='backref'>$1</span> <span class='op'>||</span> <span class='backref'>$2</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_codepoint_1'>codepoint_1</span> <span class='op'>=</span> <span class='id identifier rubyid_point_str_1'>point_str_1</span><span class='period'>.</span><span class='id identifier rubyid_to_i'>to_i</span><span class='lparen'>(</span><span class='int'>16</span><span class='rparen'>)</span>
+      <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_codepoint_2'>codepoint_2</span> <span class='op'>=</span> <span class='backref'>$3</span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_codepoint_2'>codepoint_2</span> <span class='op'>=</span> <span class='id identifier rubyid_codepoint_2'>codepoint_2</span><span class='period'>.</span><span class='id identifier rubyid_to_i'>to_i</span><span class='lparen'>(</span><span class='int'>16</span><span class='rparen'>)</span>
+        <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_codepoint_1'>codepoint_1</span> <span class='op'>&gt;=</span> <span class='int'>0xD800</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_codepoint_1'>codepoint_1</span> <span class='op'>&lt;=</span> <span class='int'>0xDBFF</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='comment'># leading surrogate
+</span>            <span class='lparen'>(</span><span class='id identifier rubyid_codepoint_2'>codepoint_2</span> <span class='op'>&gt;=</span> <span class='int'>0xDC00</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_codepoint_2'>codepoint_2</span> <span class='op'>&lt;=</span> <span class='int'>0xDFFF</span><span class='rparen'>)</span> <span class='comment'># trailing surrogate
+</span>          <span class='comment'># A surrogate pair
+</span>          <span class='id identifier rubyid_combined'>combined</span> <span class='op'>=</span> <span class='lparen'>(</span><span class='lparen'>(</span><span class='id identifier rubyid_codepoint_1'>codepoint_1</span> <span class='op'>-</span> <span class='int'>0xD800</span><span class='rparen'>)</span> <span class='op'>*</span> <span class='int'>0x400</span><span class='rparen'>)</span> <span class='op'>+</span> <span class='lparen'>(</span><span class='id identifier rubyid_codepoint_2'>codepoint_2</span> <span class='op'>-</span> <span class='int'>0xDC00</span><span class='rparen'>)</span> <span class='op'>+</span> <span class='int'>0x10000</span>
+          <span class='lbracket'>[</span><span class='id identifier rubyid_combined'>combined</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_pack'>pack</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>U</span><span class='tstring_end'>&#39;</span></span><span class='period'>.</span><span class='id identifier rubyid_freeze'>freeze</span><span class='rparen'>)</span>
+        <span class='kw'>else</span>
+          <span class='comment'># Two separate code points
+</span>          <span class='lbracket'>[</span><span class='id identifier rubyid_codepoint_1'>codepoint_1</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_pack'>pack</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>U</span><span class='tstring_end'>&#39;</span></span><span class='period'>.</span><span class='id identifier rubyid_freeze'>freeze</span><span class='rparen'>)</span> <span class='op'>+</span> <span class='lbracket'>[</span><span class='id identifier rubyid_codepoint_2'>codepoint_2</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_pack'>pack</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>U</span><span class='tstring_end'>&#39;</span></span><span class='period'>.</span><span class='id identifier rubyid_freeze'>freeze</span><span class='rparen'>)</span>
+        <span class='kw'>end</span>
+      <span class='kw'>else</span>
+        <span class='lbracket'>[</span><span class='id identifier rubyid_codepoint_1'>codepoint_1</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_pack'>pack</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>U</span><span class='tstring_end'>&#39;</span></span><span class='period'>.</span><span class='id identifier rubyid_freeze'>freeze</span><span class='rparen'>)</span>
+      <span class='kw'>end</span>
+    <span class='kw'>else</span>
+      <span class='const'><span class='object_link'><a href="#ESCAPES_REPLACE-constant" title="GraphQL::Language::Lexer::ESCAPES_REPLACE (constant)">ESCAPES_REPLACE</a></span></span><span class='lbracket'>[</span><span class='id identifier rubyid_matched_str'>matched_str</span><span class='rbracket'>]</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+  <span class='kw'>nil</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="tokenize-class_method">
+  
+    .<strong>tokenize</strong>(string)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>This is not used during parsing because the parser
+doesn’t actually need tokens.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+348
+349
+350
+351
+352
+353
+354
+355
+356
+357
+358
+359
+360
+361</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/lexer.rb', line 348</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_tokenize'>tokenize</span><span class='lparen'>(</span><span class='id identifier rubyid_string'>string</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_lexer'>lexer</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="" title="GraphQL::Language::Lexer (class)">Lexer</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="#initialize-instance_method" title="GraphQL::Language::Lexer#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_string'>string</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_tokens'>tokens</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='kw'>while</span> <span class='lparen'>(</span><span class='id identifier rubyid_token_name'>token_name</span> <span class='op'>=</span> <span class='id identifier rubyid_lexer'>lexer</span><span class='period'>.</span><span class='id identifier rubyid_advance'>advance</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_new_token'>new_token</span> <span class='op'>=</span> <span class='lbracket'>[</span>
+      <span class='id identifier rubyid_token_name'>token_name</span><span class='comma'>,</span>
+      <span class='id identifier rubyid_lexer'>lexer</span><span class='period'>.</span><span class='id identifier rubyid_line_number'>line_number</span><span class='comma'>,</span>
+      <span class='id identifier rubyid_lexer'>lexer</span><span class='period'>.</span><span class='id identifier rubyid_column_number'>column_number</span><span class='comma'>,</span>
+      <span class='id identifier rubyid_lexer'>lexer</span><span class='period'>.</span><span class='id identifier rubyid_debug_token_value'>debug_token_value</span><span class='lparen'>(</span><span class='id identifier rubyid_token_name'>token_name</span><span class='rparen'>)</span><span class='comma'>,</span>
+    <span class='rbracket'>]</span>
+    <span class='id identifier rubyid_tokens'>tokens</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_new_token'>new_token</span>
+  <span class='kw'>end</span>
+  <span class='id identifier rubyid_tokens'>tokens</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="_hash-instance_method">
+  
+    #<strong>_hash</strong>(key)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>This produces a unique integer for bytes 2 and 3 of each keyword string
+See https://tenderlovemaking.com/2023/09/02/fast-tokenizers-with-stringscanner.html</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+242
+243
+244</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/lexer.rb', line 242</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid__hash'>_hash</span> <span class='id identifier rubyid_key'>key</span>
+  <span class='lparen'>(</span><span class='id identifier rubyid_key'>key</span> <span class='op'>*</span> <span class='int'>18592990</span><span class='rparen'>)</span> <span class='op'>&gt;&gt;</span> <span class='int'>27</span> <span class='op'>&amp;</span> <span class='int'>0x1f</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="advance-instance_method">
+  
+    #<strong>advance</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/lexer.rb', line 24</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_advance'>advance</span>
+  <span class='ivar'>@scanner</span><span class='period'>.</span><span class='id identifier rubyid_skip'>skip</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="#IGNORE_REGEXP-constant" title="GraphQL::Language::Lexer::IGNORE_REGEXP (constant)">IGNORE_REGEXP</a></span></span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='kw'>false</span> <span class='kw'>if</span> <span class='ivar'>@scanner</span><span class='period'>.</span><span class='id identifier rubyid_eos?'>eos?</span>
+  <span class='ivar'>@tokens_count</span> <span class='op'>+=</span> <span class='int'>1</span>
+  <span class='kw'>if</span> <span class='ivar'>@tokens_count</span> <span class='op'>&gt;</span> <span class='ivar'>@max_tokens</span>
+    <span class='id identifier rubyid_raise_parse_error'>raise_parse_error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>This query is too large to execute.</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+  <span class='ivar'>@pos</span> <span class='op'>=</span> <span class='ivar'>@scanner</span><span class='period'>.</span><span class='id identifier rubyid_pos'>pos</span>
+  <span class='id identifier rubyid_next_byte'>next_byte</span> <span class='op'>=</span> <span class='ivar'>@string</span><span class='period'>.</span><span class='id identifier rubyid_getbyte'>getbyte</span><span class='lparen'>(</span><span class='ivar'>@pos</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_next_byte_is_for'>next_byte_is_for</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="#FIRST_BYTES-constant" title="GraphQL::Language::Lexer::FIRST_BYTES (constant)">FIRST_BYTES</a></span></span><span class='lbracket'>[</span><span class='id identifier rubyid_next_byte'>next_byte</span><span class='rbracket'>]</span>
+  <span class='kw'>case</span> <span class='id identifier rubyid_next_byte_is_for'>next_byte_is_for</span>
+  <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="Lexer/ByteFor.html" title="GraphQL::Language::Lexer::ByteFor (module)">ByteFor</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Lexer/ByteFor.html#PUNCTUATION-constant" title="GraphQL::Language::Lexer::ByteFor::PUNCTUATION (constant)">PUNCTUATION</a></span></span>
+    <span class='ivar'>@scanner</span><span class='period'>.</span><span class='id identifier rubyid_pos'>pos</span> <span class='op'>+=</span> <span class='int'>1</span>
+    <span class='const'><span class='object_link'><a href="#PUNCTUATION_NAME_FOR_BYTE-constant" title="GraphQL::Language::Lexer::PUNCTUATION_NAME_FOR_BYTE (constant)">PUNCTUATION_NAME_FOR_BYTE</a></span></span><span class='lbracket'>[</span><span class='id identifier rubyid_next_byte'>next_byte</span><span class='rbracket'>]</span>
+  <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="Lexer/ByteFor.html" title="GraphQL::Language::Lexer::ByteFor (module)">ByteFor</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Lexer/ByteFor.html#NAME-constant" title="GraphQL::Language::Lexer::ByteFor::NAME (constant)">NAME</a></span></span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_len'>len</span> <span class='op'>=</span> <span class='ivar'>@scanner</span><span class='period'>.</span><span class='id identifier rubyid_skip'>skip</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="#KEYWORD_REGEXP-constant" title="GraphQL::Language::Lexer::KEYWORD_REGEXP (constant)">KEYWORD_REGEXP</a></span></span><span class='rparen'>)</span>
+      <span class='kw'>case</span> <span class='id identifier rubyid_len'>len</span>
+      <span class='kw'>when</span> <span class='int'>2</span>
+        <span class='symbol'>:ON</span>
+      <span class='kw'>when</span> <span class='int'>12</span>
+        <span class='symbol'>:SUBSCRIPTION</span>
+      <span class='kw'>else</span>
+        <span class='id identifier rubyid_pos'>pos</span> <span class='op'>=</span> <span class='ivar'>@pos</span>
+
+        <span class='comment'># Use bytes 2 and 3 as a unique identifier for this keyword
+</span>        <span class='id identifier rubyid_bytes'>bytes</span> <span class='op'>=</span> <span class='lparen'>(</span><span class='ivar'>@string</span><span class='period'>.</span><span class='id identifier rubyid_getbyte'>getbyte</span><span class='lparen'>(</span><span class='id identifier rubyid_pos'>pos</span> <span class='op'>+</span> <span class='int'>2</span><span class='rparen'>)</span> <span class='op'>&lt;&lt;</span> <span class='int'>8</span><span class='rparen'>)</span> <span class='op'>|</span> <span class='ivar'>@string</span><span class='period'>.</span><span class='id identifier rubyid_getbyte'>getbyte</span><span class='lparen'>(</span><span class='id identifier rubyid_pos'>pos</span> <span class='op'>+</span> <span class='int'>1</span><span class='rparen'>)</span>
+        <span class='const'><span class='object_link'><a href="#KEYWORD_BY_TWO_BYTES-constant" title="GraphQL::Language::Lexer::KEYWORD_BY_TWO_BYTES (constant)">KEYWORD_BY_TWO_BYTES</a></span></span><span class='lbracket'>[</span><span class='id identifier rubyid__hash'>_hash</span><span class='lparen'>(</span><span class='id identifier rubyid_bytes'>bytes</span><span class='rparen'>)</span><span class='rbracket'>]</span>
+      <span class='kw'>end</span>
+    <span class='kw'>else</span>
+      <span class='ivar'>@scanner</span><span class='period'>.</span><span class='id identifier rubyid_skip'>skip</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="#IDENTIFIER_REGEXP-constant" title="GraphQL::Language::Lexer::IDENTIFIER_REGEXP (constant)">IDENTIFIER_REGEXP</a></span></span><span class='rparen'>)</span>
+      <span class='symbol'>:IDENTIFIER</span>
+    <span class='kw'>end</span>
+  <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="Lexer/ByteFor.html" title="GraphQL::Language::Lexer::ByteFor (module)">ByteFor</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Lexer/ByteFor.html#IDENTIFIER-constant" title="GraphQL::Language::Lexer::ByteFor::IDENTIFIER (constant)">IDENTIFIER</a></span></span>
+    <span class='ivar'>@scanner</span><span class='period'>.</span><span class='id identifier rubyid_skip'>skip</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="#IDENTIFIER_REGEXP-constant" title="GraphQL::Language::Lexer::IDENTIFIER_REGEXP (constant)">IDENTIFIER_REGEXP</a></span></span><span class='rparen'>)</span>
+    <span class='symbol'>:IDENTIFIER</span>
+  <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="Lexer/ByteFor.html" title="GraphQL::Language::Lexer::ByteFor (module)">ByteFor</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Lexer/ByteFor.html#NUMBER-constant" title="GraphQL::Language::Lexer::ByteFor::NUMBER (constant)">NUMBER</a></span></span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_len'>len</span> <span class='op'>=</span> <span class='ivar'>@scanner</span><span class='period'>.</span><span class='id identifier rubyid_skip'>skip</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="#NUMERIC_REGEXP-constant" title="GraphQL::Language::Lexer::NUMERIC_REGEXP (constant)">NUMERIC_REGEXP</a></span></span><span class='rparen'>)</span>
+
+      <span class='kw'>if</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='period'>.</span><span class='id identifier rubyid_reject_numbers_followed_by_names'><span class='object_link'><a href="../../GraphQL.html#reject_numbers_followed_by_names-class_method" title="GraphQL.reject_numbers_followed_by_names (method)">reject_numbers_followed_by_names</a></span></span>
+        <span class='id identifier rubyid_new_pos'>new_pos</span> <span class='op'>=</span> <span class='ivar'>@scanner</span><span class='period'>.</span><span class='id identifier rubyid_pos'>pos</span>
+        <span class='id identifier rubyid_peek_byte'>peek_byte</span> <span class='op'>=</span> <span class='ivar'>@string</span><span class='period'>.</span><span class='id identifier rubyid_getbyte'>getbyte</span><span class='lparen'>(</span><span class='id identifier rubyid_new_pos'>new_pos</span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_next_first_byte'>next_first_byte</span> <span class='op'>=</span> <span class='const'><span class='object_link'><a href="#FIRST_BYTES-constant" title="GraphQL::Language::Lexer::FIRST_BYTES (constant)">FIRST_BYTES</a></span></span><span class='lbracket'>[</span><span class='id identifier rubyid_peek_byte'>peek_byte</span><span class='rbracket'>]</span>
+        <span class='kw'>if</span> <span class='id identifier rubyid_next_first_byte'>next_first_byte</span> <span class='op'>==</span> <span class='const'><span class='object_link'><a href="Lexer/ByteFor.html" title="GraphQL::Language::Lexer::ByteFor (module)">ByteFor</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Lexer/ByteFor.html#NAME-constant" title="GraphQL::Language::Lexer::ByteFor::NAME (constant)">NAME</a></span></span> <span class='op'>||</span> <span class='id identifier rubyid_next_first_byte'>next_first_byte</span> <span class='op'>==</span> <span class='const'><span class='object_link'><a href="Lexer/ByteFor.html" title="GraphQL::Language::Lexer::ByteFor (module)">ByteFor</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Lexer/ByteFor.html#IDENTIFIER-constant" title="GraphQL::Language::Lexer::ByteFor::IDENTIFIER (constant)">IDENTIFIER</a></span></span>
+          <span class='id identifier rubyid_number_part'>number_part</span> <span class='op'>=</span> <span class='id identifier rubyid_token_value'>token_value</span>
+          <span class='id identifier rubyid_name_part'>name_part</span> <span class='op'>=</span> <span class='ivar'>@scanner</span><span class='period'>.</span><span class='id identifier rubyid_scan'>scan</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="#IDENTIFIER_REGEXP-constant" title="GraphQL::Language::Lexer::IDENTIFIER_REGEXP (constant)">IDENTIFIER_REGEXP</a></span></span><span class='rparen'>)</span>
+          <span class='id identifier rubyid_raise_parse_error'>raise_parse_error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Name after number is not allowed (in `</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_number_part'>number_part</span><span class='embexpr_end'>}</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_name_part'>name_part</span><span class='embexpr_end'>}</span><span class='tstring_content'>`)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+        <span class='kw'>end</span>
+      <span class='kw'>end</span>
+      <span class='comment'># Check for a matched decimal:
+</span>      <span class='ivar'>@scanner</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span> <span class='op'>?</span> <span class='symbol'>:FLOAT</span> <span class='op'>:</span> <span class='symbol'>:INT</span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_raise_parse_error'>raise_parse_error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Expected a number, but it was malformed (</span><span class='embexpr_beg'>#{</span><span class='ivar'>@string</span><span class='lbracket'>[</span><span class='ivar'>@pos</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+  <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="Lexer/ByteFor.html" title="GraphQL::Language::Lexer::ByteFor (module)">ByteFor</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Lexer/ByteFor.html#ELLIPSIS-constant" title="GraphQL::Language::Lexer::ByteFor::ELLIPSIS (constant)">ELLIPSIS</a></span></span>
+    <span class='kw'>if</span> <span class='ivar'>@string</span><span class='period'>.</span><span class='id identifier rubyid_getbyte'>getbyte</span><span class='lparen'>(</span><span class='ivar'>@pos</span> <span class='op'>+</span> <span class='int'>1</span><span class='rparen'>)</span> <span class='op'>!=</span> <span class='int'>46</span> <span class='op'>||</span> <span class='ivar'>@string</span><span class='period'>.</span><span class='id identifier rubyid_getbyte'>getbyte</span><span class='lparen'>(</span><span class='ivar'>@pos</span> <span class='op'>+</span> <span class='int'>2</span><span class='rparen'>)</span> <span class='op'>!=</span> <span class='int'>46</span>
+      <span class='id identifier rubyid_raise_parse_error'>raise_parse_error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Expected `...`, actual: </span><span class='embexpr_beg'>#{</span><span class='ivar'>@string</span><span class='lbracket'>[</span><span class='ivar'>@pos</span><span class='op'>..</span><span class='ivar'>@pos</span> <span class='op'>+</span> <span class='int'>2</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+    <span class='ivar'>@scanner</span><span class='period'>.</span><span class='id identifier rubyid_pos'>pos</span> <span class='op'>+=</span> <span class='int'>3</span>
+    <span class='symbol'>:ELLIPSIS</span>
+  <span class='kw'>when</span> <span class='const'><span class='object_link'><a href="Lexer/ByteFor.html" title="GraphQL::Language::Lexer::ByteFor (module)">ByteFor</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Lexer/ByteFor.html#STRING-constant" title="GraphQL::Language::Lexer::ByteFor::STRING (constant)">STRING</a></span></span>
+    <span class='kw'>if</span> <span class='ivar'>@scanner</span><span class='period'>.</span><span class='id identifier rubyid_skip'>skip</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="#BLOCK_STRING_REGEXP-constant" title="GraphQL::Language::Lexer::BLOCK_STRING_REGEXP (constant)">BLOCK_STRING_REGEXP</a></span></span><span class='rparen'>)</span> <span class='op'>||</span> <span class='ivar'>@scanner</span><span class='period'>.</span><span class='id identifier rubyid_skip'>skip</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="#QUOTED_STRING_REGEXP-constant" title="GraphQL::Language::Lexer::QUOTED_STRING_REGEXP (constant)">QUOTED_STRING_REGEXP</a></span></span><span class='rparen'>)</span>
+      <span class='symbol'>:STRING</span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_raise_parse_error'>raise_parse_error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Expected string or block string, but it was malformed</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+  <span class='kw'>else</span>
+    <span class='ivar'>@scanner</span><span class='period'>.</span><span class='id identifier rubyid_pos'>pos</span> <span class='op'>+=</span> <span class='int'>1</span>
+    <span class='symbol'>:UNKNOWN_CHAR</span>
+  <span class='kw'>end</span>
+<span class='kw'>rescue</span> <span class='const'>ArgumentError</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_err'>err</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_err'>err</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>invalid byte sequence in UTF-8</span><span class='tstring_end'>&quot;</span></span>
+    <span class='id identifier rubyid_raise_parse_error'>raise_parse_error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Parse error on bad Unicode escape sequence</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="column_number-instance_method">
+  
+    #<strong>column_number</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+161
+162
+163</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/lexer.rb', line 161</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_column_number'>column_number</span>
+  <span class='ivar'>@scanner</span><span class='period'>.</span><span class='id identifier rubyid_string'>string</span><span class='lbracket'>[</span><span class='int'>0</span><span class='op'>..</span><span class='ivar'>@pos</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_split'>split</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\n</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_last'>last</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="debug_token_value-instance_method">
+  
+    #<strong>debug_token_value</strong>(token_name)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/lexer.rb', line 105</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_debug_token_value'>debug_token_value</span><span class='lparen'>(</span><span class='id identifier rubyid_token_name'>token_name</span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_token_name'>token_name</span> <span class='op'>&amp;&amp;</span> <span class='const'><span class='object_link'><a href="" title="GraphQL::Language::Lexer (class)">Lexer</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Lexer/Punctuation.html" title="GraphQL::Language::Lexer::Punctuation (module)">Punctuation</a></span></span><span class='period'>.</span><span class='id identifier rubyid_const_defined?'>const_defined?</span><span class='lparen'>(</span><span class='id identifier rubyid_token_name'>token_name</span><span class='rparen'>)</span>
+    <span class='const'><span class='object_link'><a href="" title="GraphQL::Language::Lexer (class)">Lexer</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="Lexer/Punctuation.html" title="GraphQL::Language::Lexer::Punctuation (module)">Punctuation</a></span></span><span class='period'>.</span><span class='id identifier rubyid_const_get'>const_get</span><span class='lparen'>(</span><span class='id identifier rubyid_token_name'>token_name</span><span class='rparen'>)</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_token_name'>token_name</span> <span class='op'>==</span> <span class='symbol'>:ELLIPSIS</span>
+    <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>...</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_token_name'>token_name</span> <span class='op'>==</span> <span class='symbol'>:STRING</span>
+    <span class='id identifier rubyid_string_value'>string_value</span>
+  <span class='kw'>elsif</span> <span class='ivar'>@scanner</span><span class='period'>.</span><span class='id identifier rubyid_matched_size'>matched_size</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+    <span class='ivar'>@scanner</span><span class='period'>.</span><span class='id identifier rubyid_peek'>peek</span><span class='lparen'>(</span><span class='int'>1</span><span class='rparen'>)</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_token_value'>token_value</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="eos?-instance_method">
+  
+    #<strong>eos?</strong>  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+18
+19
+20</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/lexer.rb', line 18</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_eos?'>eos?</span>
+  <span class='ivar'>@scanner</span><span class='period'>.</span><span class='id identifier rubyid_eos?'>eos?</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="line_number-instance_method">
+  
+    #<strong>line_number</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+157
+158
+159</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/lexer.rb', line 157</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_line_number'>line_number</span>
+  <span class='ivar'>@scanner</span><span class='period'>.</span><span class='id identifier rubyid_string'>string</span><span class='lbracket'>[</span><span class='int'>0</span><span class='op'>..</span><span class='ivar'>@pos</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_count'>count</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\n</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='op'>+</span> <span class='int'>1</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="raise_parse_error-instance_method">
+  
+    #<strong>raise_parse_error</strong>(message, line = line_number, col = column_number)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Raises:</p>
+<ul class="raise">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt><span class='object_link'><a href="../ParseError.html" title="GraphQL::ParseError (class)">GraphQL::ParseError</a></span></tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+165
+166
+167</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/lexer.rb', line 165</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_raise_parse_error'>raise_parse_error</span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='id identifier rubyid_line'>line</span> <span class='op'>=</span> <span class='id identifier rubyid_line_number'>line_number</span><span class='comma'>,</span> <span class='id identifier rubyid_col'>col</span> <span class='op'>=</span> <span class='id identifier rubyid_column_number'>column_number</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../ParseError.html" title="GraphQL::ParseError (class)">ParseError</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="../ParseError.html#initialize-instance_method" title="GraphQL::ParseError#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_message'>message</span><span class='comma'>,</span> <span class='id identifier rubyid_line'>line</span><span class='comma'>,</span> <span class='id identifier rubyid_col'>col</span><span class='comma'>,</span> <span class='ivar'>@string</span><span class='comma'>,</span> <span class='label'>filename:</span> <span class='ivar'>@filename</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="string_value-instance_method">
+  
+    #<strong>string_value</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/lexer.rb', line 134</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_string_value'>string_value</span>
+  <span class='id identifier rubyid_str'>str</span> <span class='op'>=</span> <span class='id identifier rubyid_token_value'>token_value</span>
+  <span class='id identifier rubyid_is_block'>is_block</span> <span class='op'>=</span> <span class='id identifier rubyid_str'>str</span><span class='period'>.</span><span class='id identifier rubyid_start_with?'>start_with?</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>&quot;&quot;&quot;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_is_block'>is_block</span>
+    <span class='id identifier rubyid_str'>str</span><span class='period'>.</span><span class='id identifier rubyid_gsub!'>gsub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>\A&quot;&quot;&quot;|&quot;&quot;&quot;\z</span><span class='regexp_end'>/</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+    <span class='kw'>return</span> <span class='const'><span class='object_link'><a href="../Language.html" title="GraphQL::Language (module)">Language</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="BlockString.html" title="GraphQL::Language::BlockString (module)">BlockString</a></span></span><span class='period'>.</span><span class='id identifier rubyid_trim_whitespace'><span class='object_link'><a href="BlockString.html#trim_whitespace-class_method" title="GraphQL::Language::BlockString.trim_whitespace (method)">trim_whitespace</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_str'>str</span><span class='rparen'>)</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_str'>str</span><span class='period'>.</span><span class='id identifier rubyid_gsub!'>gsub!</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>\A&quot;|&quot;\z</span><span class='regexp_end'>/</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+
+    <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_str'>str</span><span class='period'>.</span><span class='id identifier rubyid_valid_encoding?'>valid_encoding?</span> <span class='op'>||</span> <span class='op'>!</span><span class='id identifier rubyid_str'>str</span><span class='period'>.</span><span class='id identifier rubyid_match?'>match?</span><span class='lparen'>(</span><span class='const'><span class='object_link'><a href="#VALID_STRING-constant" title="GraphQL::Language::Lexer::VALID_STRING (constant)">VALID_STRING</a></span></span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_raise_parse_error'>raise_parse_error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Bad unicode escape in </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_str'>str</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+    <span class='kw'>else</span>
+      <span class='const'><span class='object_link'><a href="" title="GraphQL::Language::Lexer (class)">Lexer</a></span></span><span class='period'>.</span><span class='id identifier rubyid_replace_escaped_characters_in_place'><span class='object_link'><a href="#replace_escaped_characters_in_place-class_method" title="GraphQL::Language::Lexer.replace_escaped_characters_in_place (method)">replace_escaped_characters_in_place</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_str'>str</span><span class='rparen'>)</span>
+
+      <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_str'>str</span><span class='period'>.</span><span class='id identifier rubyid_valid_encoding?'>valid_encoding?</span>
+        <span class='id identifier rubyid_raise_parse_error'>raise_parse_error</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Bad unicode escape in </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_str'>str</span><span class='period'>.</span><span class='id identifier rubyid_inspect'>inspect</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+      <span class='kw'>else</span>
+        <span class='id identifier rubyid_str'>str</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="token_value-instance_method">
+  
+    #<strong>token_value</strong>  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+99
+100
+101
+102
+103</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/language/lexer.rb', line 99</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_token_value'>token_value</span>
+  <span class='ivar'>@string</span><span class='period'>.</span><span class='id identifier rubyid_byteslice'>byteslice</span><span class='lparen'>(</span><span class='ivar'>@scanner</span><span class='period'>.</span><span class='id identifier rubyid_pos'>pos</span> <span class='op'>-</span> <span class='ivar'>@scanner</span><span class='period'>.</span><span class='id identifier rubyid_matched_size'>matched_size</span><span class='comma'>,</span> <span class='ivar'>@scanner</span><span class='period'>.</span><span class='id identifier rubyid_matched_size'>matched_size</span><span class='rparen'>)</span>
+<span class='kw'>rescue</span> <span class='const'>StandardError</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_err'>err</span>
+  <span class='id identifier rubyid_raise'>raise</span> <span class='const'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="../Error.html" title="GraphQL::Error (class)">Error</a></span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>(token_value failed: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_err'>err</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='embexpr_end'>}</span><span class='tstring_content'>: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_err'>err</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Thu Oct 24 18:06:46 2024 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.37 (ruby-3.2.5).
+</div>
+
+    </div>
+  </body>
+</html>
