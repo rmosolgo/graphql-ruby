@@ -153,6 +153,8 @@ module GraphQL
           else
             nil
           end
+        # rescue MissingValuesError
+        #   nil
         end
 
         # Called by the runtime when a field returns a value to give back to the client.
