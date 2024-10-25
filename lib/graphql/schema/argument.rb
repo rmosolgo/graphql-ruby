@@ -394,6 +394,10 @@ module GraphQL
       class InvalidDefaultValueError < GraphQL::Error
         def initialize(argument)
           message = "`#{argument.path}` has an invalid default value: `#{argument.default_value.inspect}` isn't accepted by `#{argument.type.to_type_signature}`; update the default value or the argument type."
+          arg_type = argument.type.unwrap
+          if arg_type.kind.enum?
+            message += "Should be one of: #{arg_type.all_enum_value_definitions.map(&:value).uniq.map(&:inspect).join(", ")}"
+          end
           super(message)
         end
       end
