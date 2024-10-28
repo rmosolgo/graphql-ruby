@@ -431,6 +431,14 @@ module GraphQL
         end
       end
 
+      # Get or set the root `query { ... }` object for this schema.
+      #
+      # @example Using `Types::Query` as the entry-point
+      #   query { Types::Query }
+      #
+      # @param new_query_object [Class<GraphQL::Schema::Object>] The root type to use for queries
+      # @param lazy_load_block If a block is given, then it will be called when GraphQL-Ruby needs the root query type.
+      # @return [Class<GraphQL::Schema::Object>, nil] The configured query root type, if there is one.
       def query(new_query_object = nil, &lazy_load_block)
         if new_query_object || block_given?
           if @query_object
@@ -450,6 +458,14 @@ module GraphQL
         end
       end
 
+      # Get or set the root `mutation { ... }` object for this schema.
+      #
+      # @example Using `Types::Mutation` as the entry-point
+      #   mutation { Types::Mutation }
+      #
+      # @param new_mutation_object [Class<GraphQL::Schema::Object>] The root type to use for mutations
+      # @param lazy_load_block If a block is given, then it will be called when GraphQL-Ruby needs the root mutation type.
+      # @return [Class<GraphQL::Schema::Object>, nil] The configured mutation root type, if there is one.
       def mutation(new_mutation_object = nil, &lazy_load_block)
         if new_mutation_object || block_given?
           if @mutation_object
@@ -469,6 +485,14 @@ module GraphQL
         end
       end
 
+      # Get or set the root `subscription { ... }` object for this schema.
+      #
+      # @example Using `Types::Subscription` as the entry-point
+      #   subscription { Types::Subscription }
+      #
+      # @param new_subscription_object [Class<GraphQL::Schema::Object>] The root type to use for subscriptions
+      # @param lazy_load_block If a block is given, then it will be called when GraphQL-Ruby needs the root subscription type.
+      # @return [Class<GraphQL::Schema::Object>, nil] The configured subscription root type, if there is one.
       def subscription(new_subscription_object = nil, &lazy_load_block)
         if new_subscription_object || block_given?
           if @subscription_object
@@ -492,8 +516,7 @@ module GraphQL
         end
       end
 
-      # @see [GraphQL::Schema::Warden] Restricted access to root types
-      # @return [GraphQL::ObjectType, nil]
+      # @api private
       def root_type_for_operation(operation)
         case operation
         when "query"
@@ -507,6 +530,7 @@ module GraphQL
         end
       end
 
+      # @return [Array<Class>] The root types (query, mutation, subscription) defined for this schema
       def root_types
         if use_visibility_profile?
           [query, mutation, subscription].compact
@@ -515,6 +539,7 @@ module GraphQL
         end
       end
 
+      # @api private
       def warden_class
         if defined?(@warden_class)
           @warden_class
@@ -525,6 +550,7 @@ module GraphQL
         end
       end
 
+      # @api private
       attr_writer :warden_class
 
       # @api private
@@ -786,6 +812,7 @@ module GraphQL
         res[:errors]
       end
 
+      # @param new_query_class [Class<GraphQL::Query>] A subclass to use when executing queries
       def query_class(new_query_class = NOT_CONFIGURED)
         if NOT_CONFIGURED.equal?(new_query_class)
           @query_class || (superclass.respond_to?(:query_class) ? superclass.query_class : GraphQL::Query)
@@ -971,6 +998,8 @@ module GraphQL
         end
       end
 
+
+      # @param new_default_logger [#log] Something to use for logging messages
       def default_logger(new_default_logger = NOT_CONFIGURED)
         if NOT_CONFIGURED.equal?(new_default_logger)
           if defined?(@default_logger)
@@ -991,6 +1020,7 @@ module GraphQL
         end
       end
 
+      # @param new_context_class [Class<GraphQL::Query::Context>] A subclass to use when executing queries
       def context_class(new_context_class = nil)
         if new_context_class
           @context_class = new_context_class
@@ -999,6 +1029,20 @@ module GraphQL
         end
       end
 
+      # Register a handler for errors raised during execution. The handlers can return a new value or raise a new error.
+      #
+      # @example Handling "not found" with a client-facing error
+      #   rescue_from(ActiveRecord::NotFound) { raise GraphQL::ExecutionError, "An object could not be found" }
+      #
+      # @param err_classes [Array<StandardError>] Classes which should be rescued by `handler_block`
+      # @param handler_block The code to run when one of those errors is raised during execution
+      # @yieldparam error [StandardError] An instance of one of the configured `err_classes`
+      # @yieldparam object [Object] The current application object in the query when the error was raised
+      # @yieldparam arguments [GraphQL::Query::Arguments] The current field arguments when the error was raised
+      # @yieldparam context [GraphQL::Query::Context] The context for the currently-running operation
+      # @yieldreturn [Object] Some object to use in the place where this error was raised
+      # @raise [GraphQL::ExecutionError] In the handler, raise to add a client-facing error to the response
+      # @raise [StandardError] In the handler, raise to crash the query with a developer-facing error
       def rescue_from(*err_classes, &handler_block)
         err_classes.each do |err_class|
           Execution::Errors.register_rescue_from(err_class, error_handlers[:subclass_handlers], handler_block)
@@ -1065,8 +1109,24 @@ module GraphQL
         end
       end
 
-      def resolve_type(type, obj, ctx)
-        raise GraphQL::RequiredImplementationMissingError, "#{self.name}.resolve_type(type, obj, ctx) must be implemented to use Union types, Interface types, or `loads:` (tried to resolve: #{type.name})"
+      # GraphQL-Ruby calls this method during execution when it needs the application to determine the type to use for an object.
+      #
+      # Usually, this object was returned from a field whose return type is an {GraphQL::Schema::Interface} or a {GraphQL::Schema::Union}.
+      # But this method is called in other cases, too -- for example, when {GraphQL::Schema::Argument.loads} cases an object to be directly loaded from the database.
+      #
+      # @example Returning a GraphQL type based on the object's class name
+      #   class MySchema < GraphQL::Schema
+      #     def resolve_type(_abs_type, object, _context)
+      #       graphql_type_name = "Types::#{object.class.name}Type"
+      #       graphql_type_name.constantize # If this raises a NameError, then come implement special cases in this method
+      #     end
+      #   end
+      # @param abstract_type [Class, Module, nil] The Interface or Union type which is being resolved, if there is one
+      # @param application_object [Object] The object returned from a field whose type must be determined
+      # @param context [GraphQL::Query::Context] The query context for the currently-executing query
+      # @return [Class<GraphQL::Schema::Object] The Object type definition to use for `obj`
+      def resolve_type(abstract_type, application_object, context)
+        raise GraphQL::RequiredImplementationMissingError, "#{self.name}.resolve_type(abstract_type, application_object, context) must be implemented to use Union types, Interface types, or `loads:` (tried to resolve: #{abstract_type.name})"
       end
       # rubocop:enable Lint/DuplicateMethods
 
@@ -1089,12 +1149,37 @@ module GraphQL
         super
       end
 
-      def object_from_id(node_id, ctx)
-        raise GraphQL::RequiredImplementationMissingError, "#{self.name}.object_from_id(node_id, ctx) must be implemented to load by ID (tried to load from id `#{node_id}`)"
+      # Fetch an object based on an incoming ID and the current context. This method should return an object
+      # from your application, or return `nil` if there is no object or the object shouldn't be available to this operation.
+      #
+      # @example Fetching an object with Rails's GlobalID
+      #   def self.object_from_id(object_id, _context)
+      #     GlobalID.find(global_id)
+      #     # TODO: use `context[:current_user]` to determine if this object is authorized.
+      #   end
+      # @param object_id [String] The ID to fetch an object for. This may be client-provided (as in `node(id: ...)` or `loads:`) or previously stored by the schema (eg, by the `ObjectCache`)
+      # @param context [GraphQL::Query::Context] The context for the currently-executing operation
+      # @return [Object, nil] The application which `object_id` references, or `nil` if there is no object or the current operation shouldn't have access to the object
+      # @see id_from_object which produces these IDs
+      def object_from_id(object_id, context)
+        raise GraphQL::RequiredImplementationMissingError, "#{self.name}.object_from_id(object_id, context) must be implemented to load by ID (tried to load from id `#{node_id}`)"
       end
 
-      def id_from_object(object, type, ctx)
-        raise GraphQL::RequiredImplementationMissingError, "#{self.name}.id_from_object(object, type, ctx) must be implemented to create global ids (tried to create an id for `#{object.inspect}`)"
+      # Return a stable ID string for `object` so that it can be refetched later, using {.object_from_id}.
+      #
+      # {GlobalID}(https://github.com/rails/globalid) and {SQIDs}(https://sqids.org/ruby) can both be used to create IDs.
+      #
+      # @example Using Rails's GlobalID to generate IDs
+      #   def self.id_from_object(application_object, graphql_type, context)
+      #     application_object.to_gid_param
+      #   end
+      #
+      # @param application_object [Object] Some object encountered by GraphQL-Ruby while running a query
+      # @param graphql_type [Class, Module] The type that GraphQL-Ruby is using for `application_object` during this query
+      # @param context [GraphQL::Query::Context] The context for the operation that is currently running
+      # @return [String] A stable identifier which can be passed to {.object_from_id} later to re-fetch `application_object`
+      def id_from_object(application_object, graphql_type, context)
+        raise GraphQL::RequiredImplementationMissingError, "#{self.name}.id_from_object(application_object, graphql_type, context) must be implemented to create global ids (tried to create an id for `#{application_object.inspect}`)"
       end
 
       def visible?(member, ctx)
@@ -1149,6 +1234,16 @@ module GraphQL
         unauthorized_object(unauthorized_error)
       end
 
+      # Called at runtime when GraphQL-Ruby encounters a mismatch between the application behavior
+      # and the GraphQL type system.
+      #
+      # The default implementation of this method is to follow the GraphQL specification,
+      # but you can override this to report errors to your bug tracker or customize error handling.
+      # @param type_error [GraphQL::Error] several specific error classes are passed here, see the default implementation for details
+      # @param context [GraphQL::Query::Context] the context for the currently-running operation
+      # @return [void]
+      # @raise [GraphQL::ExecutionError] to return this error to the client
+      # @raise [GraphQL::Error] to crash the query and raise a developer-facing error
       def type_error(type_error, ctx)
         case type_error
         when GraphQL::InvalidNullError
@@ -1244,6 +1339,7 @@ module GraphQL
       # @param mode [Symbol] Trace module will only be used for this trade mode
       # @param options [Hash] Keywords that will be passed to the tracing class during `#initialize`
       # @return [void]
+      # @see GraphQL::Tracing::Trace for available tracing methods
       def trace_with(trace_mod, mode: :default, **options)
         if mode.is_a?(Array)
           mode.each { |m| trace_with(trace_mod, mode: m, **options) }
@@ -1321,6 +1417,8 @@ module GraphQL
         trace_class_for_mode.new(**trace_options)
       end
 
+      # @param new_analyzer [Class<GraphQL::Analysis::Analyzer>] An analyzer to run on queries to this schema
+      # @see GraphQL::Analysis the analysis system
       def query_analyzer(new_analyzer)
         own_query_analyzers << new_analyzer
       end
@@ -1329,6 +1427,8 @@ module GraphQL
         find_inherited_value(:query_analyzers, EMPTY_ARRAY) + own_query_analyzers
       end
 
+      # @param new_analyzer [Class<GraphQL::Analysis::Analyzer>] An analyzer to run on multiplexes to this schema
+      # @see GraphQL::Analysis the analysis system
       def multiplex_analyzer(new_analyzer)
         own_multiplex_analyzers << new_analyzer
       end
@@ -1412,6 +1512,11 @@ module GraphQL
         end
       end
 
+      # Called when execution encounters a `SystemStackError`. By default, it adds a client-facing error to the response.
+      # You could modify this method to report this error to your bug tracker.
+      # @param query [GraphQL::Query]
+      # @param err [SystemStackError]
+      # @return [void]
       def query_stack_error(query, err)
         query.context.errors.push(GraphQL::ExecutionError.new("This query is too large to execute."))
       end

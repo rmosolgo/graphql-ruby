@@ -131,6 +131,8 @@ describe "GraphQL::Query::Variables" do
       expected_messages = [
         "Variable $input of type FilterInput! was provided invalid value for filter (Field is not defined on FilterInput)"
       ]
+
+      assert query2.variables
       assert_equal expected_messages, query2.result["errors"].map { |err| err["message"] }
     end
   end
