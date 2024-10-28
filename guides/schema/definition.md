@@ -44,8 +44,33 @@ For defining GraphQL types, see the guides for those types: {% internal_link "ob
 
 {{ "Schema.orphan_types" | api_doc }} declares object types which implement {% internal_link "Interfaces", "/type_definitions/interfaces" %} but aren't used as field return types in the schema. For more about this specific scenario, see {% internal_link "Orphan Types", "/type_definitions/interfaces#orphan-types" %}
 
-## Object Identification
+### Lazy-loading types
 
+In development, GraphQL-Ruby can defer loading your type definitions until they're needed. This requires some configuration to opt in:
+
+- Add `use GraphQL::Schema::Visibility` to your schema. ({{ "GraphQL::Schema::Visibility" | api_doc }} supports lazy loading and will be the default in a future GraphQL-Ruby version. See {% internal_link "Migration Notes", "/authorization/visibility#migration-notes" %} if you have an existing visibility implementation.)
+- Move your entry-point type definitions into a block, for example:
+
+  ```diff
+  - query Types::Query
+  + query { Types::Query }
+  ```
+
+- Optionally, move field types into blocks, too:
+
+  ```diff
+  - field :posts, [Types::Post] # Loads `types/post.rb` immediately
+  + field :posts do
+  +   type([Types::Post]) # Loads `types/post.rb` when this field is used in a query
+  + end
+  ```
+
+To enforce these patterns, you can enable two Rubocop rules that ship with GraphQL-Ruby:
+
+- `GraphQL/RootTypesInBlock` will make sure that `query`, `mutation`, and `subscription` are all defined in a block.
+- `GraphQL/FieldTypeInBlock` will make sure that non-built-in field return types are defined in blocks.
+
+## Object Identification
 
 Some GraphQL features use unique IDs to load objects:
 

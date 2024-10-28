@@ -696,9 +696,9 @@ ul.breadcrumb {
   .highlight .cpf { color: #75715e } /* Comment.PreprocFile */
   .highlight .c1 { color: #75715e } /* Comment.Single */
   .highlight .cs { color: #75715e } /* Comment.Special */
-  .highlight .gd { color: #f92672 } /* Generic.Deleted */
+  .highlight .gd { color: #f92672; background-color: #5e4343; } /* Generic.Deleted */
   .highlight .ge { font-style: italic } /* Generic.Emph */
-  .highlight .gi { color: #a6e22e } /* Generic.Inserted */
+  .highlight .gi { color: #a6e22e; background-color: #475547; } /* Generic.Inserted */
   .highlight .gs { font-weight: bold } /* Generic.Strong */
   .highlight .gu { color: #75715e } /* Generic.Subheading */
   .highlight .kc { color: #66d9ef } /* Keyword.Constant */
