@@ -151,7 +151,8 @@
 <h1 class="guide-header">Object Identification</h1>
 <div class="guide-table-of-contents"><div class="table-of-contents">
   <h3 class="contents-header">Contents</h3>
-  <ol class='contents-list'><li class='contents-entry'><a href='#node-interface'>Node interface
+  <ol class='contents-list'><li class='contents-entry'><a href='#schema-methods'>Schema methods
+</a></li><li class='contents-entry'><a href='#node-interface'>Node interface
 </a></li><li class='contents-entry'><a href='#uuid-fields'>UUID fields
 </a></li><li class='contents-entry'><a href='#node-field-find-by-uuid'><code>node</code> field (find-by-UUID)
 </a></li><li class='contents-entry'><a href='#nodes-field'><code>nodes</code> field
@@ -159,32 +160,11 @@
 </div>
 </div>
 <div class="guide-container">
-  <p>Some GraphQL features use unique IDs to load objects:</p>
+  <p>GraphQL-Ruby ships with some helpers to implement <a href="https://relay.dev/graphql/objectidentification.htm">Relay-style object identification</a>.</p>
 
-<ul>
-  <li>the <code class="language-plaintext highlighter-rouge">node(id:)</code> field looks up objects by ID</li>
-  <li>any arguments with <code class="language-plaintext highlighter-rouge">loads:</code> configurations look up objects by ID</li>
-</ul>
+<h2 id="schema-methods">Schema methods</h2>
 
-<p>To use these features, you must provide a function for generating UUIDs and fetching objects with them. In your schema, define <code class="language-plaintext highlighter-rouge">self.id_from_object</code> and <code class="language-plaintext highlighter-rouge">self.object_from_id</code>:</p>
-
-<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
-  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">id_from_object</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">type_definition</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span>
-    <span class="c1"># Generate a unique string ID for `object` here</span>
-    <span class="c1"># For example, use Rails' GlobalID library (https://github.com/rails/globalid):</span>
-    <span class="n">object</span><span class="p">.</span><span class="nf">to_gid_param</span>
-  <span class="k">end</span>
-
-  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">object_from_id</span><span class="p">(</span><span class="n">global_id</span><span class="p">,</span> <span class="n">query_ctx</span><span class="p">)</span>
-    <span class="c1"># For example, use Rails' GlobalID library (https://github.com/rails/globalid):</span>
-    <span class="no">GlobalID</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">global_id</span><span class="p">)</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</code></pre></div></div>
-
-<blockquote>
-  <p><a href="https://sqids.org/ruby">SQIDs</a> are an alternative to <code class="language-plaintext highlighter-rouge">to_gid_param</code> which generate shorter IDs. Here is a <a href="https://blog.gripdev.xyz/2024/06/09/sqids-graphql-and-ruby/">detailed guide</a> of how they can be used.</p>
-</blockquote>
+<p>See <a href="/schema/definition#object-identification">the Schema definition guide</a> for required top-level hooks.</p>
 
 <h2 id="node-interface">Node interface</h2>
 

@@ -208,6 +208,8 @@
   <span class="ss">messages: </span><span class="p">[</span><span class="s2">"..."</span><span class="p">,</span> <span class="s2">"..."</span><span class="p">],</span>   <span class="c1"># status messages about the cache's behavior</span>
   <span class="ss">objects: </span><span class="no">Set</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>          <span class="c1"># application objects encountered during the query</span>
   <span class="ss">uncacheable: </span><span class="kp">true</span><span class="p">,</span>          <span class="c1"># if ObjectCache found a reason that this query couldn't be cached (see `messages: ...` for reason)</span>
+  <span class="ss">reauthorized_cached_objects: </span><span class="kp">true</span><span class="p">,</span>
+                              <span class="c1"># if `.authorized?` was checked for cached objects, see "Disabling Reauthorization"</span>
 <span class="p">}</span>
 </code></pre></div></div>
 

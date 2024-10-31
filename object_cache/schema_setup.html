@@ -161,6 +161,7 @@
 </a></li><li class='contents-entry'><a href='#object-fingerprint'>Object Fingerprint
 </a></li><li class='contents-entry'><a href='#object-identification'>Object Identification
 </a></li><li class='contents-entry'><a href='#schema-fingerprint'>Schema Fingerprint
+</a></li><li class='contents-entry'><a href='#disabling-reauthorization'>Disabling Reauthorization
 </a></li></ol>
 </div>
 </div>
@@ -252,6 +253,15 @@
 </code></pre></div></div>
 
 <p>By returning a new <code class="language-plaintext highlighter-rouge">MySchema.fingerprint</code>, <em>all</em> previously-cached results will be expired.</p>
+
+<h2 id="disabling-reauthorization">Disabling Reauthorization</h2>
+
+<p>By default, <code class="language-plaintext highlighter-rouge">ObjectCache</code> checks <code class="language-plaintext highlighter-rouge">.authorized?</code> on each object before returning a cached result. However, if all authorization-related considerations are present in the object’s cache fingerprint, then you can disable this check in two ways:</p>
+
+<ul>
+  <li><strong>per-query</strong>, by passing <code class="language-plaintext highlighter-rouge">context: { reauthorize_cached_objects: false }</code></li>
+  <li><strong>globally</strong>, by configuring <code class="language-plaintext highlighter-rouge">use GraphQL::Enterprise::ObjectCache, ... reauthorize_cached_objects: false</code></li>
+</ul>
 
 </div>
 <p class="guide-footer">
