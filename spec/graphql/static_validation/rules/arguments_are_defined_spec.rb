@@ -33,7 +33,7 @@ describe GraphQL::StaticValidation::ArgumentsAreDefined do
   describe "dynamic fields" do
     let(:query_string) {"
       query {
-        __type(somethingInvalid: 1) { name }
+        __type(somethingInvalid: 1, nme: \"something\") { name }
       }
     "}
 
@@ -43,6 +43,12 @@ describe GraphQL::StaticValidation::ArgumentsAreDefined do
         "locations"=>[{"line"=>3, "column"=>16}],
         "path"=>["query", "__type", "somethingInvalid"],
         "extensions"=>{"code"=>"argumentNotAccepted", "name"=>"__type", "typeName"=>"Field", "argumentName"=>"somethingInvalid"}
+      })
+      assert_includes(errors, {
+        "message"=>"Field '__type' doesn't accept argument 'nme' (Did you mean `name`?)",
+        "locations"=>[{"line"=>3, "column"=>37}],
+        "path"=>["query", "__type", "nme"],
+        "extensions"=>{"code"=>"argumentNotAccepted", "name"=>"__type", "typeName"=>"Field", "argumentName"=>"nme"}
       })
     end
   end

@@ -477,6 +477,38 @@ To add other types to your schema, you might want `extra_types`: https://graphql
     assert_equal({}, GraphQL::Schema.references_to)
   end
 
+  describe "DidYouMean support" do
+    class DidYouMeanSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        field :first_field, String
+        field :second_field, String
+        field :second_fiel, String
+        field :scond_field, String
+      end
+
+      query(Query)
+    end
+
+    it "returns helpful messages" do
+      res = DidYouMeanSchema.execute("{ first_field }")
+      assert_equal ["Field 'first_field' doesn't exist on type 'Query' (Did you mean `firstField`?)"], res["errors"].map { |err| err["message"] }
+
+      res = DidYouMeanSchema.execute("{ seconField }")
+      assert_equal ["Field 'seconField' doesn't exist on type 'Query' (Did you mean `secondFiel`, `secondField` or `scondField`?)"], res["errors"].map { |err| err["message"] }
+    end
+
+    it "can disable those messages" do
+      no_dym_schema = Class.new(DidYouMeanSchema) do
+        did_you_mean(nil)
+      end
+      res = no_dym_schema.execute("{ first_field }")
+      assert_equal ["Field 'first_field' doesn't exist on type 'Query'"], res["errors"].map { |err| err["message"] }
+
+      res = no_dym_schema.execute("{ seconField }")
+      assert_equal ["Field 'seconField' doesn't exist on type 'Query'"], res["errors"].map { |err| err["message"] }
+    end
+  end 
+  
   it "defers root type blocks until those types are used" do
     calls = []
     schema = Class.new(GraphQL::Schema) do

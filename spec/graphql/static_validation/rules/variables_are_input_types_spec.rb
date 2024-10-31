@@ -12,6 +12,7 @@ describe GraphQL::StaticValidation::VariablesAreInputTypes do
       $object:    Milk = 1,
       $objects:   [Cheese]!,
       $unknownType: Nonsense,
+      $misspelled: Bolean,
     ) {
       cheese(id: $id) { source }
       __type(name: $str) { name }
@@ -46,10 +47,18 @@ describe GraphQL::StaticValidation::VariablesAreInputTypes do
       "path"=>["query getCheese"],
       "extensions"=>{"code"=>"variableRequiresValidType", "typeName"=>"Nonsense", "variableName"=>"unknownType"}
     })
+
+    assert_includes(errors, {
+      "message"=>"Bolean isn't a defined input type (on $misspelled) (Did you mean `Boolean`?)",
+      "locations"=>[{"line"=>9, "column"=>7}],
+      "path"=>["query getCheese"],
+      "extensions"=>{"code"=>"variableRequiresValidType", "typeName"=>"Bolean", "variableName"=>"misspelled"}
+    })
   end
 
   describe "typos" do
     it "returns a client error" do
+
       res = schema.execute <<-GRAPHQL
         query GetCheese($id: IDX) {
           cheese(id: $id) { flavor }
@@ -58,7 +67,7 @@ describe GraphQL::StaticValidation::VariablesAreInputTypes do
 
       assert_equal false, res.key?("data")
       assert_equal 1, res["errors"].length
-      assert_equal "IDX isn't a defined input type (on $id)", res["errors"][0]["message"]
+      assert_equal "IDX isn't a defined input type (on $id) (Did you mean `ID`?)", res["errors"][0]["message"]
     end
 
     it "returns a client error when there are directives" do
@@ -70,7 +79,7 @@ describe GraphQL::StaticValidation::VariablesAreInputTypes do
 
       assert_equal false, res.key?("data")
       assert_equal 3, res["errors"].length
-      assert_equal "IDX isn't a defined input type (on $msg)", res["errors"][0]["message"]
+      assert_equal "IDX isn't a defined input type (on $msg) (Did you mean `ID`?)", res["errors"][0]["message"]
       assert_equal "Variable $msg is declared by GetCheese but not used", res["errors"][1]["message"]
       assert_equal "Variable $id is used by GetCheese but not declared", res["errors"][2]["message"]
     end

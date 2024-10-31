@@ -409,7 +409,7 @@ describe GraphQL::Schema::Warden do
       query_string = %|{ language(name: "Uyghur") { name } }|
       res = MaskHelpers.query_with_mask(query_string, mask)
       err_msg = res["errors"][0]["message"]
-      assert_equal "Field 'language' doesn't exist on type 'Query'", err_msg
+      assert_equal "Field 'language' doesn't exist on type 'Query' (Did you mean `languages`?)", err_msg
     end
 
     it "doesn't show in introspection" do

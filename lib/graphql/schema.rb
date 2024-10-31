@@ -1162,7 +1162,7 @@ module GraphQL
       # @return [Object, nil] The application which `object_id` references, or `nil` if there is no object or the current operation shouldn't have access to the object
       # @see id_from_object which produces these IDs
       def object_from_id(object_id, context)
-        raise GraphQL::RequiredImplementationMissingError, "#{self.name}.object_from_id(object_id, context) must be implemented to load by ID (tried to load from id `#{node_id}`)"
+        raise GraphQL::RequiredImplementationMissingError, "#{self.name}.object_from_id(object_id, context) must be implemented to load by ID (tried to load from id `#{object_id}`)"
       end
 
       # Return a stable ID string for `object` so that it can be refetched later, using {.object_from_id}.
@@ -1572,6 +1572,20 @@ module GraphQL
           end
         else
           yield maybe_lazies
+        end
+      end
+
+      # Returns `DidYouMean` if it's defined.
+      # Override this to return `nil` if you don't want to use `DidYouMean`
+      def did_you_mean(new_dym = NOT_CONFIGURED)
+        if NOT_CONFIGURED.equal?(new_dym)
+          if defined?(@did_you_mean)
+            @did_you_mean
+          else
+            find_inherited_value(:did_you_mean, defined?(DidYouMean) ? DidYouMean : nil)
+          end
+        else
+          @did_you_mean = new_dym
         end
       end
 
