@@ -10,6 +10,13 @@
 
 ### Bug fixes
 
+# 2.3.20 (31 Oct 2024)
+
+### Bug fixes
+
+- Arguments: suppress warning for `objectId` arguments #5124
+- Arguments: don't require input object arguments when a default value is configured
+
 # 2.3.19 (24 Oct 2024)
 
 ### New features
