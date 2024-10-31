@@ -18,6 +18,7 @@ describe GraphQL::Schema::AlwaysVisible do
 
   class NotAlwaysVisibleSchema < GraphQL::Schema
     query(AlwaysVisibleSchema::Query)
+    use GraphQL::Schema::Warden if ADD_WARDEN
   end
 
   it "Doesn't call visibility methods" do

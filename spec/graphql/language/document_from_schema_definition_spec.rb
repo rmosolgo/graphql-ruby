@@ -374,6 +374,7 @@ type Query {
 
       let(:document) {
         doc_schema = Class.new(schema) do
+          use GraphQL::Schema::Visibility
           def self.visible?(m, _ctx)
             m.respond_to?(:graphql_name) && m.graphql_name != "Type"
           end

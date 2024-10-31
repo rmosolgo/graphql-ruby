@@ -3,6 +3,7 @@ require "spec_helper"
 
 describe "Dynamic types, fields, arguments, and enum values" do
   class MultifieldSchema < GraphQL::Schema
+    use GraphQL::Schema::Warden if ADD_WARDEN
     module AppliesToFutureSchema
       def initialize(*args, future_schema: nil, **kwargs, &block)
         @future_schema = future_schema
@@ -829,6 +830,7 @@ GRAPHQL
 
   describe "A schema with every possible type having the same name" do
     class NameConflictSchema < GraphQL::Schema
+      use GraphQL::Schema::Warden if ADD_WARDEN
       module ConflictingThing
         def visible?(context)
           super && kind.name == context[:thing_kind]
@@ -1071,7 +1073,10 @@ GRAPHQL
         field(:f1, DuplicateNames::DuplicateNameObject1, null: false)
         field(:f2, DuplicateNames::DuplicateNameObject2, null: false)
       }
-      schema = Class.new(GraphQL::Schema) { query(query_type) }
+      schema = Class.new(GraphQL::Schema) {
+        query(query_type)
+        use GraphQL::Schema::Warden if ADD_WARDEN
+      }
       assert_equal "first definition", schema.types({ allowed_for: 1 })["DuplicateNameObject"].description
       assert_equal "second definition", schema.get_type("DuplicateNameObject", { allowed_for: 3 }).description
       assert_includes schema.to_definition(context: { allowed_for: 1 }), "first definition"
@@ -1115,7 +1120,10 @@ GRAPHQL
     it "raises when a given context would permit multiple enum values with the same name" do
       enum_type = DuplicateNames::DuplicateEnumValue
       query_type = Class.new(GraphQL::Schema::Object) { graphql_name("Query"); field(:f, enum_type, null: false) }
-      schema = Class.new(GraphQL::Schema) { query(query_type) }
+      schema = Class.new(GraphQL::Schema) {
+        query(query_type)
+        use GraphQL::Schema::Warden if ADD_WARDEN
+      }
 
       assert_equal "first definition", enum_type.values({ allowed_for: 1 })["ONE"].description
       assert_equal "second definition", enum_type.values({ allowed_for: 3 })["ONE"].description
@@ -1151,7 +1159,10 @@ GRAPHQL
     end
 
     it "raises when a given context would permit multiple argument definitions" do
-      schema = Class.new(GraphQL::Schema) { query(DuplicateNames::DuplicateArgumentObject) }
+      schema = Class.new(GraphQL::Schema) {
+        query(DuplicateNames::DuplicateArgumentObject)
+        use GraphQL::Schema::Warden if ADD_WARDEN
+      }
       field = DuplicateNames::DuplicateArgumentObject.get_field("multiArg")
 
       assert_equal "first definition", field.get_argument("a", { allowed_for: 1 }).description
@@ -1193,7 +1204,10 @@ GRAPHQL
     end
 
     it "raises when a given context would permit multiple field definitions" do
-      schema = Class.new(GraphQL::Schema) { query(DuplicateNames::DuplicateFieldObject) }
+      schema = Class.new(GraphQL::Schema) {
+        query(DuplicateNames::DuplicateFieldObject)
+        use GraphQL::Schema::Warden if ADD_WARDEN
+      }
       assert_equal "first definition", DuplicateNames::DuplicateFieldObject.get_field("f", { allowed_for: 1 }).description
       assert_equal "second definition", DuplicateNames::DuplicateFieldObject.fields({ allowed_for: 3 })["f"].description
       assert_includes schema.to_definition(context: { allowed_for: 1 }), "first definition"
