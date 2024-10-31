@@ -14,7 +14,7 @@ module GraphQL
               node_name: parent_type.graphql_name
             ))
           else
-            message = "Field '#{node.name}' doesn't exist on type '#{parent_type.graphql_name}'#{context.did_you_mean_suggestion(node.name, context.warden.fields(parent_type).map(&:graphql_name))}"
+            message = "Field '#{node.name}' doesn't exist on type '#{parent_type.graphql_name}'#{context.did_you_mean_suggestion(node.name, context.types.fields(parent_type).map(&:graphql_name))}"
             add_error(GraphQL::StaticValidation::FieldsAreDefinedOnTypeError.new(
               message,
               nodes: node,

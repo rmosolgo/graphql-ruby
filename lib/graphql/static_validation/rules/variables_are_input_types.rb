@@ -9,9 +9,9 @@ module GraphQL
         if type.nil?
           @all_possible_input_type_names ||= begin
             names = []
-            context.warden.types.each { |(name, t)|
+            context.types.all_types.each { |(t)|
               if t.kind.input?
-                names << name
+                names << t.graphql_name
               end
             }
             names
