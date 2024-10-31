@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Module: GraphQL::Current
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::Current";
+  relpath = '../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../_index.html">Index (C)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span>
+     &raquo; 
+    <span class="title">Current</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Module: GraphQL::Current
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/current.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>This module exposes Fiber-level runtime information.</p>
+
+<p>It won’t work across unrelated fibers, although it will work in child Fibers.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+  <div class="examples">
+    <h4 class="tag_title">Examples:</h4>
+    
+      
+        <h5 class="example_title"><div class='inline'><p>Setting Up ActiveRecord::QueryLogs</p>
+</div></h5>
+      
+      <pre class="example code"><code>
+<span class='id identifier rubyid_config'>config</span><span class='period'>.</span><span class='id identifier rubyid_active_record'>active_record</span><span class='period'>.</span><span class='id identifier rubyid_query_log_tags'>query_log_tags</span> <span class='op'>=</span> <span class='lbracket'>[</span>
+  <span class='symbol'>:namespaced_controller</span><span class='comma'>,</span>
+  <span class='symbol'>:action</span><span class='comma'>,</span>
+  <span class='symbol'>:job</span><span class='comma'>,</span>
+  <span class='comment'># ...
+</span>  <span class='lbrace'>{</span>
+    <span class='comment'># GraphQL runtime info:
+</span>    <span class='label'>current_graphql_operation:</span> <span class='tlambda'>-&gt;</span> <span class='tlambeg'>{</span> <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Current</span><span class='period'>.</span><span class='id identifier rubyid_operation_name'><span class='object_link'><a href="#operation_name-class_method" title="GraphQL::Current.operation_name (method)">operation_name</a></span></span> <span class='rbrace'>}</span><span class='comma'>,</span>
+    <span class='label'>current_graphql_field:</span> <span class='tlambda'>-&gt;</span> <span class='tlambeg'>{</span> <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Current</span><span class='period'>.</span><span class='id identifier rubyid_field'><span class='object_link'><a href="#field-class_method" title="GraphQL::Current.field (method)">field</a></span></span><span class='op'>&amp;.</span><span class='id identifier rubyid_path'>path</span> <span class='rbrace'>}</span><span class='comma'>,</span>
+    <span class='label'>current_dataloader_source:</span> <span class='tlambda'>-&gt;</span> <span class='tlambeg'>{</span> <span class='const'><span class='object_link'><a href="../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span><span class='op'>::</span><span class='const'>Current</span><span class='period'>.</span><span class='id identifier rubyid_dataloader_source_class'><span class='object_link'><a href="#dataloader_source_class-class_method" title="GraphQL::Current.dataloader_source_class (method)">dataloader_source_class</a></span></span> <span class='rbrace'>}</span><span class='comma'>,</span>
+    <span class='comment'># ...
+</span>  <span class='rbrace'>}</span><span class='comma'>,</span>
+<span class='rbracket'>]</span></code></pre>
+    
+  </div>
+
+
+</div>
+
+
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#dataloader_source_class-class_method" title="dataloader_source_class (class method)">.<strong>dataloader_source_class</strong>  &#x21d2; Class<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The currently-running <span class='object_link'><a href="Dataloader/Source.html" title="GraphQL::Dataloader::Source (class)">Dataloader::Source</a></span> class, if there is one.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#field-class_method" title="field (class method)">.<strong>field</strong>  &#x21d2; GraphQL::Field<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The currently-running field, if there is one.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#operation_name-class_method" title="operation_name (class method)">.<strong>operation_name</strong>  &#x21d2; String<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Comma-joined operation names for the currently-running Multiplex.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="dataloader_source_class-class_method">
+  
+    .<strong>dataloader_source_class</strong>  &#x21d2; <tt>Class</tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns The currently-running <span class='object_link'><a href="Dataloader/Source.html" title="GraphQL::Dataloader::Source (class)">Dataloader::Source</a></span> class, if there is one.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Class</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The currently-running <span class='object_link'><a href="Dataloader/Source.html" title="GraphQL::Dataloader::Source (class)">Dataloader::Source</a></span> class, if there is one.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+48
+49
+50</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/current.rb', line 48</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_dataloader_source_class'>dataloader_source_class</span>
+  <span class='const'>Fiber</span><span class='lbracket'>[</span><span class='symbol'>:__graphql_current_dataloader_source</span><span class='rbracket'>]</span><span class='op'>&amp;.</span><span class='id identifier rubyid_class'>class</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="field-class_method">
+  
+    .<strong>field</strong>  &#x21d2; <tt>GraphQL::Field</tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns The currently-running field, if there is one.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>GraphQL::Field</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The currently-running field, if there is one.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+  <p class="tag_title">See Also:</p>
+  <ul class="see">
+    
+      <li>for a string identifying this field</li>
+    
+  </ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+43
+44
+45</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/current.rb', line 43</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_field'>field</span>
+  <span class='const'>Thread</span><span class='period'>.</span><span class='id identifier rubyid_current'>current</span><span class='lbracket'>[</span><span class='symbol'>:__graphql_runtime_info</span><span class='rbracket'>]</span><span class='op'>&amp;.</span><span class='id identifier rubyid_values'>values</span><span class='op'>&amp;.</span><span class='id identifier rubyid_first'>first</span><span class='op'>&amp;.</span><span class='id identifier rubyid_current_field'>current_field</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="operation_name-class_method">
+  
+    .<strong>operation_name</strong>  &#x21d2; <tt>String</tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns Comma-joined operation names for the currently-running Multiplex. <code>nil</code> if all operations are anonymous.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Comma-joined operation names for the currently-running Multiplex. <code>nil</code> if all operations are anonymous.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/current.rb', line 26</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_operation_name'>operation_name</span>
+  <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_m'>m</span> <span class='op'>=</span> <span class='const'>Fiber</span><span class='lbracket'>[</span><span class='symbol'>:__graphql_current_multiplex</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_m'>m</span><span class='period'>.</span><span class='id identifier rubyid_context'>context</span><span class='lbracket'>[</span><span class='symbol'>:__graphql_current_operation_name</span><span class='rbracket'>]</span> <span class='op'>||=</span> <span class='kw'>begin</span>
+      <span class='id identifier rubyid_names'>names</span> <span class='op'>=</span> <span class='id identifier rubyid_m'>m</span><span class='period'>.</span><span class='id identifier rubyid_queries'>queries</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_q'>q</span><span class='op'>|</span> <span class='id identifier rubyid_q'>q</span><span class='period'>.</span><span class='id identifier rubyid_selected_operation_name'>selected_operation_name</span> <span class='rbrace'>}</span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_names'>names</span><span class='period'>.</span><span class='id identifier rubyid_all?'>all?</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:nil?</span><span class='rparen'>)</span>
+        <span class='kw'>nil</span>
+      <span class='kw'>else</span>
+        <span class='id identifier rubyid_names'>names</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>,</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>else</span>
+    <span class='kw'>nil</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Thu Oct 31 18:05:17 2024 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.37 (ruby-3.2.6).
+</div>
+
+    </div>
+  </body>
+</html>
