@@ -10,6 +10,17 @@
 
 ### Bug fixes
 
+# 2.4.0
+
+### Deprecations
+
+- Visibility: Implementing `visible?` now requires `use GraphQL::Schema::Visibility` or `use GraphQL::Schema::Warden` in your schema definition #5123
+
+### New features
+
+- Validation: Add "did you mean" to error messages when `DidYouMean` is available #4966
+- Schema: types can be lazy-loaded when using `GraphQL::Schema::Visibility` #4919
+
 # 2.3.20 (31 Oct 2024)
 
 ### Bug fixes
