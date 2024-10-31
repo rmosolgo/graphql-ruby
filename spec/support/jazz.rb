@@ -911,7 +911,9 @@ module Jazz
       GloballyIdentifiableType.find(id)
     end
 
-    BlogPost = Class.new(GraphQL::Schema::Object)
+    class BlogPost < GraphQL::Schema::Object
+      field :title, String
+    end
     extra_types BlogPost
     use GraphQL::Dataloader
     use GraphQL::Schema::Warden if ADD_WARDEN
