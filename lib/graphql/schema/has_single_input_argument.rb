@@ -47,6 +47,7 @@ module GraphQL
         def dummy
           @dummy ||= begin
             d = Class.new(GraphQL::Schema::Resolver)
+            d.graphql_name "#{self.graphql_name}DummyResolver"
             d.argument_class(self.argument_class)
             # TODO make this lazier?
             d.argument(:input, input_type, description: "Parameters for #{self.graphql_name}")
@@ -148,7 +149,8 @@ module GraphQL
 
       def authorize_arguments(args, values)
         # remove the `input` wrapper to match values
-        input_args = args["input"].type.unwrap.arguments(context)
+        input_type = args.find { |a| a.graphql_name == "input" }.type.unwrap
+        input_args = context.types.arguments(input_type)
         super(input_args, values)
       end
     end

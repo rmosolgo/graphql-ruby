@@ -106,7 +106,7 @@ describe GraphQL::Schema::Resolver do
 
     class PrepResolver1 < BaseResolver
       argument :int, Integer
-      undef_method :load_int
+
       def load_int(i)
         i * 10
       end
@@ -543,7 +543,7 @@ describe GraphQL::Schema::Resolver do
     end
 
     it "works on instances" do
-      r = ResolverTest::Resolver1.new(object: nil, context: nil, field: nil)
+      r = ResolverTest::Resolver1.new(object: nil, context: GraphQL::Query::NullContext.instance, field: nil)
       assert_equal "Resolver1", r.path
     end
   end
@@ -969,7 +969,7 @@ describe GraphQL::Schema::Resolver do
     end
 
     describe "extensions" do
-      it "returns extension whe no arguments passed" do
+      it "returns extension when no arguments passed" do
         assert 1, ResolverTest::ResolverWithExtension.extensions.count
       end
 
@@ -1161,5 +1161,51 @@ describe GraphQL::Schema::Resolver do
       unauthorized_res = UnauthorizedArgResolverSchema.execute("{ echo(input: \"unauthorized\") }")
       assert_equal ["Unauthorized Field"], unauthorized_res["errors"].map { |err|  err["message"] }
     end
+  end
+
+  describe "with directives" do
+    class ResolverDirectivesSchema < GraphQL::Schema
+
+      class GetThing < GraphQL::Schema::Resolver
+        directive GraphQL::Schema::Directive::Flagged, by: "getThing"
+        argument :id, ID
+        type String, null: false
+      end
+
+      class GetThingWithoutDirective < GraphQL::Schema::Resolver
+        argument :id, ID
+        type String, null: false
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :get_thing, resolver: GetThing
+        field :get_thing_flagged, resolver: GetThing, directives: { GraphQL::Schema::Directive::Flagged => { by: "getThingFlagged" } }
+        field :get_thing_field, resolver: GetThingWithoutDirective, directives: { GraphQL::Schema::Directive::Flagged => { by: "getField" } }
+      end
+
+      query(Query)
+    end
+  end
+
+  it "caries them into the field definition" do
+    expected_str = <<~GRAPHQL
+    """
+    Hides this part of the schema unless the named flag is present in context[:flags]
+    """
+    directive @flagged(
+      """
+      Flags to check for this schema member
+      """
+      by: [String!]!
+    ) on ARGUMENT_DEFINITION | ENUM | ENUM_VALUE | FIELD_DEFINITION | INPUT_FIELD_DEFINITION | INPUT_OBJECT | INTERFACE | OBJECT | SCALAR | UNION
+
+    type Query {
+      getThing(id: ID!): String! @flagged(by: ["getThing"])
+      getThingField(id: ID!): String! @flagged(by: ["getField"])
+      getThingFlagged(id: ID!): String! @flagged(by: ["getThingFlagged"]) @flagged(by: ["getThing"])
+    }
+    GRAPHQL
+
+    assert_equal expected_str, ResolverDirectivesSchema.to_definition(context: { flags: ["getField", "getThing", "getThingFlagged"] })
   end
 end

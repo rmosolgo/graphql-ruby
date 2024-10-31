@@ -16,6 +16,14 @@ describe GraphQL::Dataloader::Source do
     end
     expected_message = "FailsToLoadSource#sync tried 1000 times to load pending keys ([1]), but they still weren't loaded. There is likely a circular dependency."
     assert_equal expected_message, err.message
+
+    dl = GraphQL::Dataloader.new(fiber_limit: 10000)
+    dl.append_job { dl.with(FailsToLoadSource).load(1) }
+    err = assert_raises RuntimeError do
+      dl.run
+    end
+    expected_message = "FailsToLoadSource#sync tried 1000 times to load pending keys ([1]), but they still weren't loaded. There is likely a circular dependency or `fiber_limit: 10000` is set too low."
+    assert_equal expected_message, err.message
   end
 
   it "is pending when waiting for false and nil" do
@@ -23,7 +31,14 @@ describe GraphQL::Dataloader::Source do
     dl.with(FailsToLoadSource).request(nil)
 
     source_cache = dl.instance_variable_get(:@source_cache)
-    assert source_cache[FailsToLoadSource][[{}]].pending?
+    source_cache_for_source = source_cache[FailsToLoadSource]
+
+    # The value of this changed in Ruby 3.3.3, see https://bugs.ruby-lang.org/issues/20180
+    # In previous versions, it was `[{}]`, but now it's `[]`
+    empty_batch_key = [*[], **{}]
+    source_inst = source_cache_for_source[empty_batch_key]
+    assert_instance_of FailsToLoadSource, source_inst, "The cache includes a pending source (#{source_cache_for_source.inspect})"
+    assert source_inst.pending?
   end
 
   class CustomKeySource < GraphQL::Dataloader::Source

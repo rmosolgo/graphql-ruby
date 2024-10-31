@@ -8,7 +8,10 @@ desc: Using different schema members for each request
 index: 8
 ---
 
-You can use different versions of your GraphQL schema for each operation. To do this, implement `visible?(context)` on the parts of your schema that will be conditionally accessible. Additionally, many schema elements have definition methods which are called at runtime by GraphQL-Ruby. You can re-implement those to return any valid schema objects. GraphQL-Ruby caches schema elements for the duration of the operation, but if you're making external service calls to implement the methods below, consider adding a cache layer to improve the client experience and reduce load on your backend.
+You can use different versions of your GraphQL schema for each operation. To do this, add `use GraphQL::Schema::Visibility` and implement `visible?(context)` on the parts of your schema that will be conditionally accessible. Additionally, many schema elements have definition methods which are called at runtime by GraphQL-Ruby. You can re-implement those to return any valid schema objects.
+
+
+GraphQL-Ruby caches schema elements for the duration of the operation, but if you're making external service calls to implement the methods below, consider adding a cache layer to improve the client experience and reduce load on your backend.
 
 At runtime, ensure that only one object is visible per name (type name, field name, etc.). (If `.visible?(context)` returns `false`, then that part of the schema will be hidden for the current operation.)
 
@@ -207,7 +210,7 @@ end
 
 You can also use different types for each query. A few behaviors depend on the methods defined above:
 
-- If a type is not used as a return type, an argument type, or as a member of a union or implementor of an interface, it will be hidden
+- If a type is not used as a return type, an argument type, or as a member of a union or implementer of an interface, it will be hidden
 - If an interface or union has members, it will be hidden
 - If a field's return type is hidden, the field will be hidden
 - If an argument's input type is hidden, the argument will be hidden

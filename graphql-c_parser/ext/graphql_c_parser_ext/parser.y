@@ -642,12 +642,16 @@ type_system_definition:
         );
       }
 
+  pipe_opt:
+      /* none */ { $$ = GraphQL_Language_Nodes_NONE; }
+    | PIPE     { $$ = GraphQL_Language_Nodes_NONE; }
+
   union_members:
-      name {
+      pipe_opt name {
         VALUE new_member = MAKE_AST_NODE(TypeName, 3,
-          rb_ary_entry($1, 1),
-          rb_ary_entry($1, 2),
-          rb_ary_entry($1, 3)
+          rb_ary_entry($2, 1),
+          rb_ary_entry($2, 2),
+          rb_ary_entry($2, 3)
         );
         $$ = rb_ary_new_from_args(1, new_member);
       }
@@ -874,7 +878,7 @@ int yylex (YYSTYPE *lvalp, VALUE parser, VALUE filename) {
     return YYEOF;
   }
   rb_ivar_set(parser, rb_intern("@next_token_index"), INT2FIX(next_token_idx + 1));
-  VALUE token_type_rb_int = rb_ary_entry(next_token, 5);
+  VALUE token_type_rb_int = rb_ary_entry(next_token, 4);
   int next_token_type = FIX2INT(token_type_rb_int);
   if (next_token_type == 241) { // BAD_UNICODE_ESCAPE
     VALUE mGraphQL = rb_const_get_at(rb_cObject, rb_intern("GraphQL"));

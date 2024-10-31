@@ -95,12 +95,27 @@ module GraphQL
     # @param root_value [Object] the object used to resolve fields on the root type
     # @param max_depth [Numeric] the maximum number of nested selections allowed for this query (falls back to schema-level value)
     # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
-    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, static_validator: nil, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, warden: nil)
+    # @param visibility_profile [Symbol]
+    def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, static_validator: nil, visibility_profile: nil, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, warden: nil, use_visibility_profile: nil)
       # Even if `variables: nil` is passed, use an empty hash for simpler logic
       variables ||= {}
       @schema = schema
       @context = schema.context_class.new(query: self, values: context)
-      @warden = warden
+
+      if use_visibility_profile.nil?
+        use_visibility_profile = warden ? false : schema.use_visibility_profile?
+      end
+
+      @visibility_profile = visibility_profile
+
+      if use_visibility_profile
+        @visibility_profile = @schema.visibility.profile_for(@context, visibility_profile)
+        @warden = Schema::Warden::NullWarden.new(context: @context, schema: @schema)
+      else
+        @visibility_profile = nil
+        @warden = warden
+      end
+
       @subscription_topic = subscription_topic
       @root_value = root_value
       @fragments = nil
@@ -175,9 +190,8 @@ module GraphQL
       @query_string ||= (document ? document.to_query_string : nil)
     end
 
-    def interpreter?
-      true
-    end
+    # @return [Symbol, nil]
+    attr_reader :visibility_profile
 
     attr_accessor :multiplex
 
@@ -195,8 +209,19 @@ module GraphQL
     def lookahead
       @lookahead ||= begin
         ast_node = selected_operation
-        root_type = warden.root_type_for_operation(ast_node.operation_type || "query")
-        GraphQL::Execution::Lookahead.new(query: self, root_type: root_type, ast_nodes: [ast_node])
+        if ast_node.nil?
+          GraphQL::Execution::Lookahead::NULL_LOOKAHEAD
+        else
+          root_type = case ast_node.operation_type
+          when nil, "query"
+            types.query_root # rubocop:disable Development/ContextIsPassedCop
+          when "mutation"
+            types.mutation_root # rubocop:disable Development/ContextIsPassedCop
+          when "subscription"
+            types.subscription_root # rubocop:disable Development/ContextIsPassedCop
+          end
+          GraphQL::Execution::Lookahead.new(query: self, root_type: root_type, ast_nodes: [ast_node])
+        end
       end
     end
 
@@ -222,7 +247,7 @@ module GraphQL
     end
 
     # Get the result for this query, executing it once
-    # @return [Hash] A GraphQL response, with `"data"` and/or `"errors"` keys
+    # @return [GraphQL::Query::Result] A Hash-like GraphQL response, with `"data"` and/or `"errors"` keys
     def result
       if !@executed
         Execution::Interpreter.run_all(@schema, [self], context: @context)
@@ -328,7 +353,34 @@ module GraphQL
       with_prepared_ast { @warden }
     end
 
-    def_delegators :warden, :get_type, :get_field, :possible_types, :root_type_for_operation
+    def get_type(type_name)
+      types.type(type_name) # rubocop:disable Development/ContextIsPassedCop
+    end
+
+    def get_field(owner, field_name)
+      types.field(owner, field_name) # rubocop:disable Development/ContextIsPassedCop
+    end
+
+    def possible_types(type)
+      types.possible_types(type) # rubocop:disable Development/ContextIsPassedCop
+    end
+
+    def root_type_for_operation(op_type)
+      case op_type
+      when "query"
+        types.query_root # rubocop:disable Development/ContextIsPassedCop
+      when "mutation"
+        types.mutation_root # rubocop:disable Development/ContextIsPassedCop
+      when "subscription"
+        types.subscription_root # rubocop:disable Development/ContextIsPassedCop
+      else
+        raise ArgumentError, "unexpected root type name: #{op_type.inspect}; expected 'query', 'mutation', or 'subscription'"
+      end
+    end
+
+    def types
+      @visibility_profile || warden.visibility_profile
+    end
 
     # @param abstract_type [GraphQL::UnionType, GraphQL::InterfaceType]
     # @param value [Object] Any runtime value

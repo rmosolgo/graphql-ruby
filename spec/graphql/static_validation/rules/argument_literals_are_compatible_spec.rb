@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 require "spec_helper"
-
+require "uri"
 describe GraphQL::StaticValidation::ArgumentLiteralsAreCompatible do
   include StaticValidationHelpers
 

@@ -18,12 +18,16 @@ end
 require_relative "generators/base_generator_test"
 require_relative "data"
 
-def with_active_record_log
+def with_active_record_log(colorize: true)
   io = StringIO.new
   prev_logger = ActiveRecord::Base.logger
   ActiveRecord::Base.logger = Logger.new(io)
   yield
-  io.string
+  str = io.string
+  if !colorize
+    str.gsub!(/\e\[([;\d]+)?m/, '')
+  end
+  str
 ensure
   ActiveRecord::Base.logger = prev_logger
 end

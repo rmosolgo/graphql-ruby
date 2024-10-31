@@ -21,7 +21,7 @@ describe GraphQL::Schema::Timeout do
         object
       end
 
-      field :nested_sleep, GraphQL::Schema::LateBoundType.new(graphql_name) do
+      field :nested_sleep, self do
         argument :seconds, Float
       end
 

@@ -20,9 +20,20 @@ describe GraphQL::Schema::Validator::AllowBlankValidator do
   end
 
   it "can be used standalone" do
-    schema = build_schema(String, { allow_blank: false })
+    schema = build_schema(String, { allow_blank: false, allow_null: false })
     result = schema.execute("query($str: String) { validated(value: $str) }", variables: { str: ValidatorHelpers::BlankString.new })
     assert_nil result["data"]["validated"]
     assert_equal ["value can't be blank"], result["errors"].map { |e| e["message"] }
+
+    result = schema.execute("query($str: String) { validated: validatedArgResolver(input: $str) }", variables: { str: "abc" })
+    assert_equal "ABC", result["data"]["validated"]
+
+    result = schema.execute("query($str: String) { validated: validatedArgResolver(input: $str) }", variables: { str: ValidatorHelpers::BlankString.new })
+    assert_nil result.fetch("data")
+    assert_equal ["input can't be blank"], result["errors"].map { |e| e["message"] }
+
+    # The validator doesn't run if the argument isn't present:
+    result = schema.execute("query($str: String) { validated: validatedArgResolver(input: $str) }", variables: {  })
+    assert_equal "NO_INPUT", result["data"]["validated"]
   end
 end

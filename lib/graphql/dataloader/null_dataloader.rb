@@ -8,7 +8,7 @@ module GraphQL
     # simple internal code while adding the option to add Dataloader.
     class NullDataloader < Dataloader
       # These are all no-ops because code was
-      # executed sychronously.
+      # executed synchronously.
       def run; end
       def run_isolated; yield; end
       def yield

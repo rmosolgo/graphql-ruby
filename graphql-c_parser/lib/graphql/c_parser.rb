@@ -75,7 +75,6 @@ module GraphQL
               1,
               1,
               graphql_string,
-              nil, # prev token
               241 # BAD_UNICODE_ESCAPE in lexer.rl
             ]
           ]
@@ -122,6 +121,11 @@ module GraphQL
           end
         end
         @result
+      end
+
+      def tokens_count
+        result
+        @tokens.length
       end
 
       attr_reader :tokens, :next_token_index, :query_string, :filename

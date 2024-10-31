@@ -43,7 +43,7 @@ module GraphQL
         type_name, *field_names = field_path.split(".")
         dummy_query = GraphQL::Query.new(schema, "{ __typename }", context: context)
         query_context = dummy_query.context
-        object_type = dummy_query.get_type(type_name) # rubocop:disable Development/ContextIsPassedCop
+        object_type = dummy_query.types.type(type_name) # rubocop:disable Development/ContextIsPassedCop
         if object_type
           graphql_result = object
           field_names.each do |field_name|
@@ -52,9 +52,10 @@ module GraphQL
             if graphql_result.nil?
               return nil
             end
-            visible_field = dummy_query.get_field(object_type, field_name)
+            visible_field = dummy_query.types.field(object_type, field_name) # rubocop:disable Development/ContextIsPassedCop
             if visible_field
               dummy_query.context.dataloader.run_isolated {
+                query_context[:current_field] = visible_field
                 field_args = visible_field.coerce_arguments(graphql_result, arguments, query_context)
                 field_args = schema.sync_lazy(field_args)
                 if visible_field.extras.any?
@@ -90,10 +91,13 @@ module GraphQL
             end
           end
           graphql_result
-        elsif schema.has_defined_type?(type_name)
-          raise TypeNotVisibleError.new(type_name: type_name)
         else
-          raise TypeNotDefinedError.new(type_name: type_name)
+          unfiltered_type = Schema::Visibility::Profile.pass_thru(schema: schema, context: context).type(type_name)
+          if unfiltered_type
+            raise TypeNotVisibleError.new(type_name: type_name)
+          else
+            raise TypeNotDefinedError.new(type_name: type_name)
+          end
         end
       end
 

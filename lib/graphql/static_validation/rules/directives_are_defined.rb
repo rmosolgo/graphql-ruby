@@ -4,11 +4,10 @@ module GraphQL
     module DirectivesAreDefined
       def initialize(*)
         super
-        @directive_names = context.warden.directives.map(&:graphql_name)
       end
 
       def on_directive(node, parent)
-        if !@directive_names.include?(node.name)
+        if !@types.directive_exists?(node.name)
           @directives_are_defined_errors_by_name ||= {}
           error = @directives_are_defined_errors_by_name[node.name] ||= begin
             err = GraphQL::StaticValidation::DirectivesAreDefinedError.new(

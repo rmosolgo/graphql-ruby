@@ -33,6 +33,9 @@ module Dummy
   class BaseScalar < GraphQL::Schema::Scalar
   end
 
+  class BaseDirective < GraphQL::Schema::Directive
+  end
+
   module LocalProduct
     include BaseInterface
     description "Something that comes from somewhere"
@@ -311,6 +314,7 @@ module Dummy
 
     def self.build(type:, data:, id_type: "Int")
       Class.new(self) do
+        graphql_name("Fetch#{type.graphql_name}")
         self.data = data
         type(type, null: true)
         description("Find a #{type.name} by id")
@@ -332,6 +336,7 @@ module Dummy
 
     def self.build(type:, data:)
       Class.new(self) do
+        graphql_name("Get#{type.graphql_name}")
         description("Find the only #{type.name}")
         type(type, null: true)
         self.data = data
@@ -408,7 +413,10 @@ module Dummy
       result
     end
 
-    field :all_edible, [Edible, null: true]
+    field :all_edible do
+      type [Edible, null: true]
+    end
+
     def all_edible
       CHEESES.values + MILKS.values
     end
@@ -472,7 +480,10 @@ module Dummy
       )
     end
 
-    field :deep_non_null, DeepNonNull, null: false
+    field :deep_non_null, null: false do
+      type(DeepNonNull)
+    end
+
     def deep_non_null; :deep_non_null; end
 
     field :huge_integer, Integer
@@ -522,18 +533,23 @@ module Dummy
     end
   end
 
+  class DirectiveForVariableDefinition < BaseDirective
+    locations(VARIABLE_DEFINITION)
+  end
+
   class Subscription < BaseObject
     field :test, String
     def test; "Test"; end
   end
 
   class Schema < GraphQL::Schema
-    query DairyAppQuery
-    mutation DairyAppMutation
-    subscription Subscription
+    query { DairyAppQuery }
+    mutation { DairyAppMutation }
+    subscription { Subscription }
     max_depth 5
     orphan_types Honey
     trace_with GraphQL::Tracing::CallLegacyTracers
+    directives(DirectiveForVariableDefinition)
 
     rescue_from(NoSuchDairyError) { |err| raise GraphQL::ExecutionError, err.message  }
 

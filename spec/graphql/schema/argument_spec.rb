@@ -29,11 +29,12 @@ describe GraphQL::Schema::Argument do
 
     class Query < GraphQL::Schema::Object
       field :field, String do
-        argument :arg, String, description: "test", required: false
+        argument :arg, String, description: "test", comment: "test comment", required: false
         argument :deprecated_arg, String, deprecation_reason: "don't use me!", required: false
 
         argument :arg_with_block, String, required: false do
           description "test"
+          comment "test comment"
         end
         argument :required_with_default_arg, Int, default_value: 1
         argument :aliased_arg, String, required: false, as: :renamed
@@ -95,8 +96,6 @@ describe GraphQL::Schema::Argument do
       def self.resolve_type(type, obj, ctx)
         -> { type } # just for `loads:`
       end
-
-      orphan_types [Jazz::InstrumentType, UnauthorizedInstrumentType]
     end
   end
 
@@ -146,6 +145,24 @@ describe GraphQL::Schema::Argument do
     it "has an assignment method" do
       arg.description = "another new description"
       assert_equal "another new description", arg.description
+    end
+  end
+
+  describe "#comment" do
+    let(:arg) { SchemaArgumentTest::Query.fields["field"].arguments["arg"] }
+
+    it "sets comment" do
+      arg.comment "new comment"
+      assert_equal "new comment", arg.comment
+    end
+
+    it "returns comment" do
+      assert_equal "test comment", SchemaArgumentTest::Query.fields["field"].arguments["argWithBlock"].comment
+    end
+
+    it "has an assignment method" do
+      arg.comment = "another new comment"
+      assert_equal "another new comment", arg.comment
     end
   end
 
@@ -400,7 +417,7 @@ describe GraphQL::Schema::Argument do
       err = assert_raises ArgumentError do
         Class.new(GraphQL::Schema) do
           query(query_type)
-        end
+        end.to_definition
       end
 
       assert_equal "Required arguments cannot be deprecated: MyInput2.foo.", err.message
@@ -429,7 +446,7 @@ describe GraphQL::Schema::Argument do
       err = assert_raises ArgumentError do
         Class.new(InvalidArgumentTypeSchema) do
           query(InvalidArgumentTypeSchema::InvalidArgumentObject)
-        end
+        end.to_definition
       end
 
       expected_message = "Invalid input type for InvalidArgumentObject.invalid.objectRef: InvalidArgument. Must be scalar, enum, or input object, not OBJECT."
@@ -438,7 +455,7 @@ describe GraphQL::Schema::Argument do
       err = assert_raises ArgumentError do
         Class.new(InvalidArgumentTypeSchema) do
           query(InvalidArgumentTypeSchema::InvalidLazyArgumentObject)
-        end
+        end.to_definition
       end
 
       expected_message = "Invalid input type for InvalidLazyArgumentObject.invalid.lazyObjectRef: InvalidArgument. Must be scalar, enum, or input object, not OBJECT."
@@ -458,7 +475,7 @@ describe GraphQL::Schema::Argument do
       err = assert_raises GraphQL::Schema::Argument::InvalidDefaultValueError do
         Class.new(GraphQL::Schema) do
           query(query_type)
-        end
+        end.to_definition
       end
       expected_message = "`Query.f1.arg1` has an invalid default value: `nil` isn't accepted by `Int!`; update the default value or the argument type."
       assert_equal expected_message, err.message
@@ -480,7 +497,7 @@ describe GraphQL::Schema::Argument do
       err = assert_raises GraphQL::Schema::Argument::InvalidDefaultValueError do
         Class.new(GraphQL::Schema) do
           query(query_type)
-        end
+        end.to_definition
       end
 
       expected_message = "`InputObj.arg1` has an invalid default value: `[nil]` isn't accepted by `[String!]`; update the default value or the argument type."
@@ -503,7 +520,7 @@ describe GraphQL::Schema::Argument do
       err = assert_raises GraphQL::Schema::Argument::InvalidDefaultValueError do
         Class.new(GraphQL::Schema) do
           directive(localize)
-        end
+        end.to_definition
       end
 
       expected_message = "`@localize.lang` has an invalid default value: `\"ZH\"` isn't accepted by `Language`; update the default value or the argument type."
@@ -537,7 +554,7 @@ describe GraphQL::Schema::Argument do
 
 
       err2 = assert_raises GraphQL::Schema::Argument::InvalidDefaultValueError do
-        GraphQL::Schema.from_definition(directive_schema_str)
+        GraphQL::Schema.from_definition(directive_schema_str).to_definition
       end
       expected_message = "`@localize.lang` has an invalid default value: `\"ZH\"` isn't accepted by `Language`; update the default value or the argument type."
       assert_equal expected_message, err2.message
@@ -587,7 +604,7 @@ describe GraphQL::Schema::Argument do
       res = RequiredNullableSchema.execute('{ echo(str: null) }')
       assert_nil res["data"].fetch("echo")
       res = RequiredNullableSchema.execute('{ echo }')
-      assert_equal ["echo has the wrong arguments"], res["errors"].map { |e| e["message"] }
+      assert_equal ["echo must include the following argument: str."], res["errors"].map { |e| e["message"] }
     end
   end
 
@@ -747,6 +764,37 @@ describe GraphQL::Schema::Argument do
       query = "{ test(a: -4, b: -5) }"
 
       assert_equal expected_errors, schema.execute(query).to_h['errors']
+    end
+  end
+
+  describe "default values for non-null input object arguments when not present in variables" do
+    class InputObjectArgumentWithDefaultValueSchema < GraphQL::Schema
+      class Add < GraphQL::Schema::Resolver
+        class AddInput < GraphQL::Schema::InputObject
+          argument :a, Integer
+          argument :b, Integer
+          argument :c, Integer, default_value: 10
+        end
+
+        argument :input, AddInput
+        type(Integer, null: false)
+
+        def resolve(input:)
+          input[:a] + input[:b] + input[:c]
+        end
+      end
+      class Query < GraphQL::Schema::Object
+        field :add, resolver: Add
+      end
+      query(Query)
+    end
+
+    it "uses the default value" do
+      res1 = InputObjectArgumentWithDefaultValueSchema.execute("{ add(input: { a: 1, b: 2 })}")
+      assert_equal 13, res1["data"]["add"]
+
+      res2 = InputObjectArgumentWithDefaultValueSchema.execute("query Add($input: AddInput!) { add(input: $input) }", variables: { input: { a: 1, b: 4 } })
+      assert_equal 15, res2["data"]["add"]
     end
   end
 end

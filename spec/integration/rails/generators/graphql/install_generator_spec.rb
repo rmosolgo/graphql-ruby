@@ -163,6 +163,11 @@ end
 RUBY
     assert_file "app/graphql/types/base_interface.rb", expected_base_interface
 
+    expected_query_log_hook = "current_graphql_operation: -> { GraphQL::Current.operation_name }"
+    assert_file "config/application.rb" do |contents|
+      assert_includes contents, expected_query_log_hook
+    end
+
     # Run it again and make sure the gemfile only contains graphiql-rails once
     FileUtils.cd(File.join(destination_root)) do
       run_generator(["--relay", "false", "--force"])
@@ -192,6 +197,10 @@ RUBY
 
       assert_file "Gemfile" do |contents|
         refute_match %r{gem ('|")graphiql-rails('|"), :?group(:| =>) :development}, contents
+      end
+
+      assert_file "config/application.rb" do |contents|
+        refute_includes contents, expected_query_log_hook
       end
     end
   end
@@ -254,6 +263,7 @@ RUBY
   end
 
   test "it doesn't install graphiql when API Only" do
+
     run_generator(['--api'])
 
     assert_file "Gemfile" do |contents|
@@ -265,8 +275,8 @@ RUBY
     end
   end
 
-  test "it can skip keeps, skip graphiql and customize schema name" do
-    run_generator(["--skip-keeps", "--skip-graphiql", "--schema=CustomSchema"])
+  test "it can skip keeps, skip graphiql, skip query logs and customize schema name" do
+    run_generator(["--skip-keeps", "--skip-graphiql", "--schema=CustomSchema","--skip-query-logs"])
     assert_no_file "app/graphql/types/.keep"
     assert_no_file "app/graphql/mutations/.keep"
     assert_file "app/graphql/types"
@@ -279,11 +289,24 @@ RUBY
       refute_includes contents, "GraphiQL::Rails"
     end
 
+    assert_file "config/application.rb" do |contents|
+      refute_includes contents, "graphql"
+    end
+
     assert_file "app/graphql/custom_schema.rb", /class CustomSchema < GraphQL::Schema/
     assert_file "app/controllers/graphql_controller.rb", /CustomSchema\.execute/
   end
 
-  test "it can add GraphQL Playground as an IDE through the --playground option" do
+  test "it can add GraphQL Playground as an IDE through the --playground option and modify existing query tags" do
+    # Make it look like QueryLogs was already added:
+    config_file_path = File.expand_path("config/application.rb", destination_root)
+    config_file_contents = File.read(config_file_path)
+    config_file_contents.sub!("class Application < Rails::Application", "class Application < Rails::Application
+    config.active_record.query_log_tags_enabled = true
+    config.active_record.query_log_tags = [ :application, :controller, :action, :job ]
+")
+
+    File.write(config_file_path, config_file_contents)
     run_generator(["--playground"])
 
     assert_file "Gemfile" do |contents|
@@ -298,6 +321,17 @@ RUBY
 
     assert_file "config/routes.rb" do |contents|
       assert_includes contents, expected_playground_route
+    end
+
+    assert_file "config/application.rb" do |contents|
+      assert_includes contents, "
+    config.active_record.query_log_tags = [ :application, :controller, :action, :job ,
+      # GraphQL-Ruby query log tags:
+      current_graphql_operation: -> { GraphQL::Current.operation_name },
+      current_graphql_field: -> { GraphQL::Current.field&.path },
+      current_dataloader_source: -> { GraphQL::Current.dataloader_source_class },
+    ]
+"
     end
   end
 

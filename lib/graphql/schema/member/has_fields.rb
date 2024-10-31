@@ -99,11 +99,12 @@ module GraphQL
         module InterfaceMethods
           def get_field(field_name, context = GraphQL::Query::NullContext.instance)
             warden = Warden.from_context(context)
+            skip_visible = context.respond_to?(:types) && context.types.is_a?(GraphQL::Schema::Visibility::Profile)
             for ancestor in ancestors
               if ancestor.respond_to?(:own_fields) &&
                   (f_entry = ancestor.own_fields[field_name]) &&
-                  (f = Warden.visible_entry?(:visible_field?, f_entry, context, warden))
-                return f
+                  (skip_visible || (f_entry = Warden.visible_entry?(:visible_field?, f_entry, context, warden)))
+                return f_entry
               end
             end
             nil
@@ -120,7 +121,7 @@ module GraphQL
                   # Choose the most local definition that passes `.visible?` --
                   # stop checking for fields by name once one has been found.
                   if !visible_fields.key?(field_name) && (f = Warden.visible_entry?(:visible_field?, fields_entry, context, warden))
-                    visible_fields[field_name] = f
+                    visible_fields[field_name] = f.ensure_loaded
                   end
                 end
               end
@@ -134,13 +135,14 @@ module GraphQL
             # Objects need to check that the interface implementation is visible, too
             warden = Warden.from_context(context)
             ancs = ancestors
+            skip_visible = context.respond_to?(:types) && context.types.is_a?(GraphQL::Schema::Visibility::Profile)
             i = 0
             while (ancestor = ancs[i])
               if ancestor.respond_to?(:own_fields) &&
                   visible_interface_implementation?(ancestor, context, warden) &&
                   (f_entry = ancestor.own_fields[field_name]) &&
-                  (f = Warden.visible_entry?(:visible_field?, f_entry, context, warden))
-                return f
+                  (skip_visible || (f_entry = Warden.visible_entry?(:visible_field?, f_entry, context, warden)))
+                return (skip_visible ? f_entry : f_entry.ensure_loaded)
               end
               i += 1
             end
@@ -159,7 +161,7 @@ module GraphQL
                   # Choose the most local definition that passes `.visible?` --
                   # stop checking for fields by name once one has been found.
                   if !visible_fields.key?(field_name) && (f = Warden.visible_entry?(:visible_field?, fields_entry, context, warden))
-                    visible_fields[field_name] = f
+                    visible_fields[field_name] = f.ensure_loaded
                   end
                 end
               end

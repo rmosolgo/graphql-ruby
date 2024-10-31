@@ -22,9 +22,21 @@ module GraphQL
     class Enum < GraphQL::Schema::Member
       extend GraphQL::Schema::Member::ValidatesInput
 
+      # This is raised when either:
+      #
+      # - A resolver returns a value which doesn't match any of the enum's configured values;
+      # - Or, the resolver returns a value which matches a value, but that value's `authorized?` check returns false.
+      #
+      # In either case, the field should be modified so that the invalid value isn't returned.
+      #
+      # {GraphQL::Schema::Enum} subclasses get their own subclass of this error, so that bug trackers can better show where they came from.
       class UnresolvedValueError < GraphQL::Error
-        def initialize(value:, enum:, context:)
-          fix_message = ", but this isn't a valid value for `#{enum.graphql_name}`. Update the field or resolver to return one of `#{enum.graphql_name}`'s values instead."
+        def initialize(value:, enum:, context:, authorized:)
+          fix_message = if authorized == false
+            ", but this value was unauthorized. Update the field or resolver to return a different value in this case (or return `nil`)."
+          else
+            ", but this isn't a valid value for `#{enum.graphql_name}`. Update the field or resolver to return one of `#{enum.graphql_name}`'s values instead."
+          end
           message = if (cp = context[:current_path]) && (cf = context[:current_field])
             "`#{cf.path}` returned `#{value.inspect}` at `#{cp.join(".")}`#{fix_message}"
           else
@@ -34,6 +46,8 @@ module GraphQL
         end
       end
 
+      # Raised when a {GraphQL::Schema::Enum} is defined to have no values.
+      # This can also happen when all values return false for `.visible?`.
       class MissingValuesError < GraphQL::Error
         def initialize(enum_type)
           @enum_type = enum_type
@@ -43,10 +57,11 @@ module GraphQL
 
       class << self
         # Define a value for this enum
-        # @param graphql_name [String, Symbol] the GraphQL value for this, usually `SCREAMING_CASE`
-        # @param description [String], the GraphQL description for this value, present in documentation
-        # @param value [Object], the translated Ruby value for this object (defaults to `graphql_name`)
-        # @param deprecation_reason [String] if this object is deprecated, include a message here
+        # @option kwargs [String, Symbol] :graphql_name the GraphQL value for this, usually `SCREAMING_CASE`
+        # @option kwargs [String] :description, the GraphQL description for this value, present in documentation
+        # @option kwargs [String] :comment, the GraphQL comment for this value, present in documentation
+        # @option kwargs [::Object] :value the translated Ruby value for this object (defaults to `graphql_name`)
+        # @option kwargs [String] :deprecation_reason if this object is deprecated, include a message here
         # @return [void]
         # @see {Schema::EnumValue} which handles these inputs by default
         def value(*args, **kwargs, &block)
@@ -130,7 +145,7 @@ module GraphQL
         end
 
         def validate_non_null_input(value_name, ctx, max_errors: nil)
-          allowed_values = ctx.warden.enum_values(self)
+          allowed_values = ctx.types.enum_values(self)
           matching_value = allowed_values.find { |v| v.graphql_name == value_name }
 
           if matching_value.nil?
@@ -138,35 +153,54 @@ module GraphQL
           else
             nil
           end
+        # rescue MissingValuesError
+        #   nil
         end
 
+        # Called by the runtime when a field returns a value to give back to the client.
+        # This method checks that the incoming {value} matches one of the enum's defined values.
+        # @param value [Object] Any value matching the values for this enum.
+        # @param ctx [GraphQL::Query::Context]
+        # @raise [GraphQL::Schema::Enum::UnresolvedValueError] if {value} doesn't match a configured value or if the matching value isn't authorized.
+        # @return [String] The GraphQL-ready string for {value}
         def coerce_result(value, ctx)
-          warden = ctx.warden
-          all_values = warden ? warden.enum_values(self) : values.each_value
+          types = ctx.types
+          all_values = types ? types.enum_values(self) : values.each_value
           enum_value = all_values.find { |val| val.value == value }
-          if enum_value
+          if enum_value && (was_authed = enum_value.authorized?(ctx))
             enum_value.graphql_name
           else
-            raise self::UnresolvedValueError.new(enum: self, value: value, context: ctx)
+            raise self::UnresolvedValueError.new(enum: self, value: value, context: ctx, authorized: was_authed)
           end
         end
 
+        # Called by the runtime with incoming string representations from a query.
+        # It will match the string to a configured by name or by Ruby value.
+        # @param value_name [String, Object] A string from a GraphQL query, or a Ruby value matching a `value(..., value: ...)` configuration
+        # @param ctx [GraphQL::Query::Context]
+        # @raise [GraphQL::UnauthorizedEnumValueError] if an {EnumValue} matches but returns false for `.authorized?`. Goes to {Schema.unauthorized_object}.
+        # @return [Object] The Ruby value for the matched {GraphQL::Schema::EnumValue}
         def coerce_input(value_name, ctx)
-          all_values = ctx.warden ? ctx.warden.enum_values(self) : values.each_value
+          all_values = ctx.types ? ctx.types.enum_values(self) : values.each_value
 
-          if v = all_values.find { |val| val.graphql_name == value_name }
-            v.value
-          elsif v = all_values.find { |val| val.value == value_name }
-            # this is for matching default values, which are "inputs", but they're
-            # the Ruby value, not the GraphQL string.
-            v.value
+          # This tries matching by incoming GraphQL string, then checks Ruby-defined values
+          if v = (all_values.find { |val| val.graphql_name == value_name } || all_values.find { |val| val.value == value_name })
+            if v.authorized?(ctx)
+              v.value
+            else
+              raise GraphQL::UnauthorizedEnumValueError.new(type: self, enum_value: v, context: ctx)
+            end
           else
             nil
           end
         end
 
         def inherited(child_class)
-          child_class.const_set(:UnresolvedValueError, Class.new(Schema::Enum::UnresolvedValueError))
+          if child_class.name
+            # Don't assign a custom error class to anonymous classes
+            # because they would end up with names like `#<Class0x1234>::UnresolvedValueError` which messes up bug trackers
+            child_class.const_set(:UnresolvedValueError, Class.new(Schema::Enum::UnresolvedValueError))
+          end
           super
         end
 

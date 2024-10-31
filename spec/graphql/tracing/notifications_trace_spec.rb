@@ -12,17 +12,40 @@ describe GraphQL::Tracing::NotificationsTrace do
       end
     end
 
+    class DummyEngine
+      def self.dispatched_events
+        @dispatched_events ||= []
+      end
+
+      def self.instrument(event, payload)
+        dispatched_events << [event, payload]
+        yield if block_given?
+      end
+    end
+
+    module OtherTrace
+      def execute_query(query:)
+        query.context[:other_trace_ran] = true
+        super
+      end
+    end
+
     class Schema < GraphQL::Schema
       query Query
+      trace_with OtherTrace
+      trace_with GraphQL::Tracing::NotificationsTrace, engine: DummyEngine
     end
   end
 
+  before do
+    NotificationsTraceTest::DummyEngine.dispatched_events.clear
+  end
+
+
   describe "Observing" do
-    it "dispatchs the event to the notifications engine with suffixed key" do
-      dispatched_events = trigger_fake_notifications_tracer(NotificationsTraceTest::Schema).to_h
-
-      assert dispatched_events.length > 0
-
+    it "dispatches the event to the notifications engine with suffixed key" do
+      NotificationsTraceTest::Schema.execute "query X { int }"
+      dispatched_events = NotificationsTraceTest::DummyEngine.dispatched_events.to_h
       expected_event_keys = [
         'execute_multiplex.graphql',
         'analyze_multiplex.graphql',
@@ -43,20 +66,10 @@ describe GraphQL::Tracing::NotificationsTrace do
         assert payload.is_a?(Hash)
       end
     end
-  end
 
-  def trigger_fake_notifications_tracer(schema)
-    dispatched_events = []
-    engine = Object.new
-
-    engine.define_singleton_method(:instrument) do |event, payload, &blk|
-      dispatched_events << [event, payload]
-      blk.call if blk
+    it "works with other tracers" do
+      res = NotificationsTraceTest::Schema.execute "query X { int }"
+      assert res.context[:other_trace_ran]
     end
-
-    schema.trace_with GraphQL::Tracing::NotificationsTrace, engine: engine
-    schema.execute "query X { int }"
-
-    dispatched_events
   end
 end

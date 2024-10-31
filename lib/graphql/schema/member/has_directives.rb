@@ -91,7 +91,7 @@ module GraphQL
           private
 
           # Modify `target` by adding items from `dirs` such that:
-          # - Any name conflict is overriden by the incoming member of `dirs`
+          # - Any name conflict is overridden by the incoming member of `dirs`
           # - Any other member of `dirs` is appended
           # @param target [Array<GraphQL::Schema::Directive>]
           # @param dirs [Array<GraphQL::Schema::Directive>]

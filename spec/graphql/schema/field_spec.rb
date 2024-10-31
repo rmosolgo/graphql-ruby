@@ -32,7 +32,7 @@ describe GraphQL::Schema::Field do
 
       underscored_field = GraphQL::Schema::Field.from_options(:underscored_field, String, null: false, camelize: false, owner: nil) do
         argument :underscored_arg, String, camelize: false
-      end
+      end.ensure_loaded
 
       arg_name, arg_defn = underscored_field.arguments.first
       assert_equal 'underscored_arg', arg_name
@@ -54,17 +54,45 @@ describe GraphQL::Schema::Field do
     end
 
     it "accepts a block for definition" do
+      field_defn = nil
       object = Class.new(Jazz::BaseObject) do
         graphql_name "JustAName"
 
-        field :test, String do
+        field_defn = field :test do
           argument :test, String
           description "A Description."
+          comment "A Comment."
+          type String
         end
       end
 
+      assert_nil field_defn.description, "The block isn't called right away"
+      assert_nil field_defn.type, "The block isn't called right away"
+      field_defn.ensure_loaded
+      assert_equal "String", field_defn.type.graphql_name
+
       assert_equal "test", object.fields["test"].arguments["test"].name
       assert_equal "A Description.", object.fields["test"].description
+      assert_equal "A Comment.", object.fields["test"].comment
+    end
+
+    it "sets connection? when type is given in a block" do
+      field_defn = nil
+      Class.new(Jazz::BaseObject) do
+        graphql_name "JustAName"
+
+        field_defn = field :instruments do
+          type Jazz::InstrumentType.connection_type
+        end
+      end
+
+      assert_equal false, field_defn.connection?
+      assert_equal false, field_defn.scoped?
+      assert_equal [], field_defn.extensions
+      field_defn.ensure_loaded
+      assert_equal true, field_defn.scoped?
+      assert_equal true, field_defn.connection?
+      assert_equal [GraphQL::Schema::Field::ScopeExtension, GraphQL::Schema::Field::ConnectionExtension], field_defn.extensions.map(&:class)
     end
 
     it "accepts a block for definition and yields the field if the block has an arity of one" do
@@ -74,11 +102,13 @@ describe GraphQL::Schema::Field do
         field :test, String do |field|
           field.argument :test, String
           field.description "A Description."
+          field.comment "A Comment."
         end
       end
 
       assert_equal "test", object.fields["test"].arguments["test"].name
       assert_equal "A Description.", object.fields["test"].description
+      assert_equal "A Comment.", object.fields["test"].comment
     end
 
     it "accepts anonymous classes as type" do
@@ -345,7 +375,7 @@ describe GraphQL::Schema::Field do
 
             field :complexityTest, String do
               complexity 'One hundred and eighty'
-            end
+            end.ensure_loaded
           end
         end
 
@@ -359,7 +389,7 @@ describe GraphQL::Schema::Field do
 
             field :complexityTest, String do
               complexity ->(one, two) { 52 }
-            end
+            end.ensure_loaded
           end
         end
 
@@ -718,6 +748,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   it "Delegates many properties to its @resolver_class" do
     resolver = Class.new(GraphQL::Schema::Resolver) do
       description "description 1"
+      comment "comment 1"
       type [GraphQL::Types::Float], null: true
 
       argument :b, GraphQL::Types::Float
@@ -726,8 +757,10 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     field = GraphQL::Schema::Field.new(name: "blah", owner: nil, resolver_class: resolver, extras: [:blah]) do
       argument :a, GraphQL::Types::Int
     end
+    field.ensure_loaded
 
     assert_equal "description 1", field.description
+    assert_equal "comment 1", field.comment
     assert_equal "[Float!]", field.type.to_type_signature
     assert_equal 1, field.complexity
     assert_equal :resolve_with_support, field.resolver_method
@@ -739,6 +772,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     assert_equal true, field.scoped?
 
     resolver.description("description 2")
+    resolver.comment("comment 2")
     resolver.type(GraphQL::Types::String, null: false)
     resolver.complexity(5)
     resolver.resolver_method(:blah)
@@ -748,6 +782,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     resolver.argument(:c, GraphQL::Types::Boolean)
 
     assert_equal "description 2", field.description
+    assert_equal "comment 2", field.comment
     assert_equal "String!", field.type.to_type_signature
     assert_equal 5, field.complexity
     assert_equal :blah, field.resolver_method
@@ -799,7 +834,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     shapes = Set.new
 
     # This is custom state added by some test schemas:
-    custom_ivars = [:@upcase, :@future_schema, :@visible, :@allow_for, :@metadata]
+    custom_ivars = [:@upcase, :@future_schema, :@visible, :@allow_for, :@metadata, :@admin_only]
 
     ObjectSpace.each_object(GraphQL::Schema::Field) do |field_obj|
       field_ivars = field_obj.instance_variables

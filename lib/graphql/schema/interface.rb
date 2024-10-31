@@ -63,6 +63,7 @@ module GraphQL
 
             child_class.introspection(introspection)
             child_class.description(description)
+            child_class.comment(nil)
             # If interfaces are mixed into each other, only define this class once
             if !child_class.const_defined?(:UnresolvedTypeError, false)
               add_unresolved_type_error(child_class)
@@ -82,13 +83,29 @@ module GraphQL
           super
         end
 
+        # Register other Interface or Object types as implementers of this Interface.
+        #
+        # When those Interfaces or Objects aren't used as the return values of fields,
+        # they may have to be registered using this method so that GraphQL-Ruby can find them.
+        # @param types [Class, Module]
+        # @return [Array<Module, Class>] Implementers of this interface, if they're registered
         def orphan_types(*types)
           if types.any?
-            @orphan_types = types
+            @orphan_types ||= []
+            @orphan_types.concat(types)
           else
-            all_orphan_types = @orphan_types || []
-            all_orphan_types += super if defined?(super)
-            all_orphan_types.uniq
+            if defined?(@orphan_types)
+              all_orphan_types = @orphan_types.dup
+              if defined?(super)
+                all_orphan_types += super
+                all_orphan_types.uniq!
+              end
+              all_orphan_types
+            elsif defined?(super)
+              super
+            else
+              EmptyObjects::EMPTY_ARRAY
+            end
           end
         end
 

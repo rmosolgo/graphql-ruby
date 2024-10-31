@@ -288,7 +288,7 @@ describe GraphQL::Schema::Union do
     err2 = assert_raises ArgumentError do
       Class.new(GraphQL::Schema) do
         query(object_type)
-      end
+      end.to_definition
     end
 
     assert_match expected_message, err2.message

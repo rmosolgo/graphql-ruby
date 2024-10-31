@@ -74,7 +74,12 @@ describe GraphQL::Schema do
       assert_equal base_schema.query_analyzers, schema.query_analyzers
       assert_equal base_schema.multiplex_analyzers, schema.multiplex_analyzers
       assert_equal base_schema.disable_introspection_entry_points?, schema.disable_introspection_entry_points?
-      assert_equal [GraphQL::Backtrace, GraphQL::Subscriptions::ActionCableSubscriptions], schema.plugins.map(&:first)
+      expected_plugins = [
+        (GraphQL::Schema.use_visibility_profile? ? GraphQL::Schema::Visibility : nil),
+        GraphQL::Backtrace,
+        GraphQL::Subscriptions::ActionCableSubscriptions
+      ].compact
+      assert_equal expected_plugins, schema.plugins.map(&:first)
       assert_equal [ExtraType], base_schema.extra_types
       assert_equal [ExtraType], schema.extra_types
       assert_instance_of GraphQL::Subscriptions::ActionCableSubscriptions, schema.subscriptions
@@ -143,7 +148,11 @@ describe GraphQL::Schema do
       assert_equal schema.directives, GraphQL::Schema.default_directives.merge(DummyFeature1.graphql_name => DummyFeature1, DummyFeature2.graphql_name => DummyFeature2)
       assert_equal base_schema.query_analyzers + [query_analyzer], schema.query_analyzers
       assert_equal base_schema.multiplex_analyzers + [multiplex_analyzer], schema.multiplex_analyzers
-      assert_equal [GraphQL::Backtrace, GraphQL::Subscriptions::ActionCableSubscriptions, CustomSubscriptions], schema.plugins.map(&:first)
+      expected_plugins = [GraphQL::Backtrace, GraphQL::Subscriptions::ActionCableSubscriptions, CustomSubscriptions]
+      if GraphQL::Schema.use_visibility_profile?
+        expected_plugins.unshift(GraphQL::Schema::Visibility)
+      end
+      assert_equal expected_plugins, schema.plugins.map(&:first)
       assert_equal custom_query_class, schema.query_class
       assert_equal [ExtraType, extra_type_2], schema.extra_types
       assert_instance_of CustomSubscriptions, schema.subscriptions
@@ -170,6 +179,17 @@ To add other types to your schema, you might want `extra_types`: https://graphql
     assert_equal expected_msg, err.message
   end
 
+  describe ".references_to" do
+    it "doesn't include any duplicates" do
+      [Dummy::Schema, Jazz::Schema].each do |schema_class|
+        schema_class.references_to.each do |referent, references|
+          ref_paths = references.map { |r| "#{r.class}/#{r.path}"}.sort
+          assert_equal ref_paths.uniq, ref_paths, "#{schema_class}.references_to has unique entries for `#{referent}`"
+        end
+      end
+    end
+  end
+
   describe "merged, inherited caches" do
     METHODS_TO_CACHE = {
       types: 1,
@@ -185,7 +205,7 @@ To add other types to your schema, you might want `extra_types`: https://graphql
         end
 
         METHODS_TO_CACHE.each do |method_name, allowed_calls|
-          define_singleton_method(method_name) do |*args, &block|
+          define_singleton_method(method_name) do |*args, **kwargs, &block|
             if @calls
               call_count = @calls[method_name] += 1
               @callers[method_name] << caller
@@ -195,7 +215,7 @@ To add other types to your schema, you might want `extra_types`: https://graphql
             if call_count > allowed_calls
               raise "Called #{method_name} more than #{allowed_calls} times, previous caller: \n#{@callers[method_name].first.join("\n")}"
             end
-            super(*args, &block)
+            super(*args, **kwargs, &block)
           end
         end
       end
@@ -245,7 +265,7 @@ To add other types to your schema, you might want `extra_types`: https://graphql
       end
     end
 
-    class NoOpAnalyzer < GraphQL::Analysis::AST::Analyzer
+    class NoOpAnalyzer < GraphQL::Analysis::Analyzer
       def initialize(query_or_multiplex)
         query_or_multiplex.context[:no_op_analyzer_ran_initialize] = true
         super
@@ -457,7 +477,6 @@ To add other types to your schema, you might want `extra_types`: https://graphql
     assert_equal({}, GraphQL::Schema.references_to)
   end
 
-
   describe "DidYouMean support" do
     class DidYouMeanSchema < GraphQL::Schema
       class Query < GraphQL::Schema::Object
@@ -488,5 +507,43 @@ To add other types to your schema, you might want `extra_types`: https://graphql
       res = no_dym_schema.execute("{ seconField }")
       assert_equal ["Field 'seconField' doesn't exist on type 'Query'"], res["errors"].map { |err| err["message"] }
     end
+  end 
+  
+  it "defers root type blocks until those types are used" do
+    calls = []
+    schema = Class.new(GraphQL::Schema) do
+      use(GraphQL::Schema::Visibility)
+      query { calls << :query; Class.new(GraphQL::Schema::Object) { graphql_name("Query") } }
+      mutation { calls << :mutation; Class.new(GraphQL::Schema::Object) { graphql_name("Mutation") } }
+      subscription { calls << :subscription; Class.new(GraphQL::Schema::Object) { graphql_name("Subscription") } }
+      # Test this because it tries to modify `subscription` -- currently hardcoded in Schema.add_subscription_extension_if_necessary
+      use GraphQL::Subscriptions
+    end
+
+    assert_equal [], calls
+    assert_equal "Query", schema.query.graphql_name
+    assert_equal [:query], calls
+    assert_equal "Mutation", schema.mutation.graphql_name
+    assert_equal [:query, :mutation], calls
+    assert_equal "Subscription", schema.subscription.graphql_name
+    assert_equal [:query, :mutation, :subscription], calls
+    assert schema.instance_variable_get(:@subscription_extension_added)
+  end
+
+  it "adds the subscription extension if subscription(...) is called second" do
+    schema = Class.new(GraphQL::Schema) do
+      use GraphQL::Subscriptions
+      subscription(Class.new(GraphQL::Schema::Object) { graphql_name("Subscription") })
+    end
+    assert schema.subscription
+    assert schema.instance_variable_get(:@subscription_extension_added)
+
+    schema2 = Class.new(GraphQL::Schema) do
+      use(GraphQL::Schema::Visibility)
+      use GraphQL::Subscriptions
+      subscription(Class.new(GraphQL::Schema::Object) { graphql_name("Subscription") })
+    end
+    assert schema2.subscription
+    assert schema2.instance_variable_get(:@subscription_extension_added)
   end
 end

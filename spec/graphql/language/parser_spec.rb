@@ -96,12 +96,34 @@ createRecord(data: {
     assert GraphQL.parse("{ field(null: false) ... null } fragment null on Query { null }")
   end
 
-  it "allows fields and arguments named on and directive" do
-    assert GraphQL.parse("{ on(on: false) directive(directive: false)}")
+  it "allows fields, arguments, and enum values named on and directive" do
+    assert GraphQL.parse("{ on(on: on) directive(directive: directive)}")
   end
 
-  it "allows fields and arguments extend" do
-    assert GraphQL.parse("{ extend(extend: false) }")
+  it "allows fields, arguments, and enum values named extend" do
+    assert GraphQL.parse("{ extend(extend: extend) }")
+  end
+
+  it "allows fields, arguments, and enum values named type" do
+    doc = GraphQL.parse("{ type(type: type) }")
+    assert_instance_of GraphQL::Language::Nodes::Enum, doc.definitions.first.selections.first.arguments.first.value
+  end
+
+  it "handles invalid minus signs" do
+    err = assert_raises GraphQL::ParseError do
+      GraphQL.parse("{ a(b: -c) }")
+    end
+    expected_message = if USING_C_PARSER
+      "syntax error, unexpected invalid token (\"-\") at [1, 8]"
+    else
+      "Expected a number, but it was malformed (\"-\")"
+    end
+    assert_equal expected_message, err.message
+  end
+
+  it "allows operation names to match operation types" do
+    doc = GraphQL.parse("query subscription { foo }")
+    assert_equal "subscription", doc.definitions.first.name
   end
 
   it "raises an error when unicode is used as names" do
@@ -111,7 +133,7 @@ createRecord(data: {
     expected_msg = if USING_C_PARSER
       "syntax error, unexpected invalid token (\"\\xF0\"), expecting LCURLY at [1, 7]"
     else
-      "Expected LCURLY, actual: UNKNOWN_CHAR (\"\\xF0\") at [1, 7]"
+      "Expected NAME, actual: UNKNOWN_CHAR (\"\\xF0\") at [1, 7]"
     end
 
     assert_equal expected_msg, err.message
@@ -170,7 +192,7 @@ createRecord(data: {
     expected_msg = if USING_C_PARSER
       "syntax error, unexpected invalid token (\"-\") at [1, 19]"
     else
-      "Expected NAME, actual: INT (\"-\") at [1, 19]"
+      "Expected a number, but it was malformed (\"-\")"
     end
 
     assert_equal expected_msg, err.message
@@ -312,7 +334,7 @@ createRecord(data: {
     assert_equal "b\\", document.definitions[0].selections[0].arguments[1].value
   end
 
-  it "parses backslases in non-last arguments" do
+  it "parses backslashes in non-last arguments" do
     document = subject.parse <<-GRAPHQL
       query {
         item(text: "b\\\\", otherText: "a") {
@@ -437,6 +459,11 @@ GRAPHQL
     assert_equal expected_names, doc3.definitions.first.interfaces.map(&:name)
   end
 
+  it "parses union types with leading pipes" do
+    doc = subject.parse("union U =\n  | A\n  | B")
+    assert_equal ["A", "B"], doc.definitions.first.types.map(&:name)
+  end
+
   describe "parse errors" do
     it "raises parse errors for nil" do
       assert_raises(GraphQL::ParseError) {
@@ -488,6 +515,15 @@ GRAPHQL
       assert_includes err_2.message, error_filename_2
       assert_includes err_2.message, "3, 11"
 
+    end
+  end
+
+  describe "#tokens_count" do
+    it "counts parsed token" do
+      str = "type Query { f1: Int }"
+      parser = GraphQL::Language::Parser.new(str)
+
+      assert_equal 7, parser.tokens_count
     end
   end
 

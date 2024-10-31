@@ -49,6 +49,11 @@ module GraphQL
         end
       end
 
+      def tokens_count
+        parse
+        @lexer.tokens_count
+      end
+
       def line_at(pos)
         line = lines_at.bsearch_index { |l| l >= pos }
         if line.nil?
@@ -141,7 +146,12 @@ module GraphQL
             parse_operation_type
           end
 
-          op_name = at?(:IDENTIFIER) ? parse_name : nil
+          op_name = case token_name
+          when :LPAREN, :LCURLY, :DIR_SIGN
+            nil
+          else
+            parse_name
+          end
 
           variable_definitions = if at?(:LPAREN)
             expect_token(:LPAREN)
@@ -379,7 +389,12 @@ module GraphQL
             v_loc = pos
             description = if at?(:STRING); string_value; end
             defn_loc = pos
-            enum_value = parse_enum_name
+            # Any identifier, but not true, false, or null
+            enum_value = if at?(:TRUE) || at?(:FALSE) || at?(:NULL)
+              expect_token(:IDENTIFIER)
+            else
+              parse_name
+            end
             v_directives = parse_directives
             list << EnumValueDefinition.new(pos: v_loc, definition_pos: defn_loc, description: description, name: enum_value, directives: v_directives, filename: @filename, source: self)
           end
@@ -393,6 +408,9 @@ module GraphQL
       def parse_union_members
         if at?(:EQUALS)
           expect_token :EQUALS
+          if at?(:PIPE)
+            advance_token
+          end
           list = [parse_type_name]
           while at?(:PIPE)
             advance_token
@@ -615,9 +633,6 @@ module GraphQL
         when :ON
           advance_token
           "on"
-        when :DIRECTIVE
-          advance_token
-          "directive"
         when :EXTEND
           advance_token
           "extend"
@@ -628,15 +643,6 @@ module GraphQL
 
       def parse_name_without_on
         if at?(:ON)
-          expect_token(:IDENTIFIER)
-        else
-          parse_name
-        end
-      end
-
-      # Any identifier, but not true, false, or null
-      def parse_enum_name
-        if at?(:TRUE) || at?(:FALSE) || at?(:NULL)
           expect_token(:IDENTIFIER)
         else
           parse_name
@@ -733,6 +739,54 @@ module GraphQL
           loc = pos
           advance_token
           VariableIdentifier.new(pos: loc, name: parse_name, filename: @filename, source: self)
+        when :SCHEMA
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "schema", filename: @filename, source: self)
+        when :SCALAR
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "scalar", filename: @filename, source: self)
+        when :IMPLEMENTS
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "implements", filename: @filename, source: self)
+        when :INTERFACE
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "interface", filename: @filename, source: self)
+        when :UNION
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "union", filename: @filename, source: self)
+        when :ENUM
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "enum", filename: @filename, source: self)
+        when :INPUT
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "input", filename: @filename, source: self)
+        when :DIRECTIVE
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "directive", filename: @filename, source: self)
+        when :TYPE
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "type", filename: @filename, source: self)
+        when :QUERY
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "query", filename: @filename, source: self)
+        when :MUTATION
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "mutation", filename: @filename, source: self)
+        when :SUBSCRIPTION
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "subscription", filename: @filename, source: self)
+        when :FRAGMENT
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "fragment", filename: @filename, source: self)
+        when :REPEATABLE
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "repeatable", filename: @filename, source: self)
+        when :ON
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "on", filename: @filename, source: self)
+        when :EXTEND
+          advance_token
+          Nodes::Enum.new(pos: pos, name: "extend", filename: @filename, source: self)
         else
           expect_token(:VALUE)
         end

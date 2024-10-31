@@ -36,6 +36,7 @@ class InMemoryBackend
             validate_update: query.context[:validate_update],
             other_int: query.context[:other_int],
             hidden_event: query.context[:hidden_event],
+            shared_stream: query.context[:shared_stream],
           },
           transport: :socket,
         }
@@ -168,6 +169,19 @@ class ClassBasedInMemoryBackend < InMemoryBackend
     end
   end
 
+  class SharedEvent < GraphQL::Schema::Subscription
+    subscription_scope :shared_stream
+
+    field :ok, Boolean
+
+    def self.topic_for(arguments:, field:, scope:)
+      scope.to_s
+    end
+  end
+
+  class OtherSharedEvent < SharedEvent
+  end
+
   class Subscription < GraphQL::Schema::Object
     field :payload, Payload, null: false do
       argument :id, ID
@@ -198,6 +212,9 @@ class ClassBasedInMemoryBackend < InMemoryBackend
         !!context[:hidden_event]
       end
     end
+
+    field :shared_event, subscription: SharedEvent
+    field :other_shared_event, subscription: OtherSharedEvent
   end
 
   class Query < GraphQL::Schema::Object
@@ -205,8 +222,8 @@ class ClassBasedInMemoryBackend < InMemoryBackend
   end
 
   class Schema < GraphQL::Schema
-    query(Query)
-    subscription(Subscription)
+    query { Query }
+    subscription { Subscription }
     use InMemoryBackend::Subscriptions, extra: 123
     max_complexity(InMemoryBackend::MAX_COMPLEXITY)
   end
@@ -283,12 +300,11 @@ class ToParamUser
 end
 
 describe GraphQL::Subscriptions do
-  before do
-    schema.subscriptions.reset
-  end
-
   [ClassBasedInMemoryBackend, FromDefinitionInMemoryBackend].each do |in_memory_backend_class|
     describe "using #{in_memory_backend_class}" do
+      before do
+        schema.subscriptions.reset
+      end
       let(:root_object) {
         OpenStruct.new(
           payload: in_memory_backend_class::SubscriptionPayload.new,
@@ -338,6 +354,11 @@ describe GraphQL::Subscriptions do
           assert_equal({"str" => "Update", "int" => 2}, deliveries["2"][0]["data"]["firstPayload"])
           assert_equal({"str" => "Update", "int" => 3}, deliveries["1"][1]["data"]["firstPayload"])
         end
+      end
+
+      it "works with the introspection query" do
+        res = schema.execute("{ __schema { subscriptionType { name } } }")
+        assert_equal "Subscription", res["data"]["__schema"]["subscriptionType"]["name"]
       end
 
       if in_memory_backend_class != FromDefinitionInMemoryBackend # No way to specify this when using IDL
@@ -836,6 +857,26 @@ describe GraphQL::Subscriptions do
     end
   end
 
+  it "can share topics" do
+    schema = ClassBasedInMemoryBackend::Schema
+    schema.subscriptions.reset
+    schema.execute("subscription { sharedEvent { ok } }", context: { shared_stream: "stream-1", socket: "1" } )
+    schema.execute("subscription { otherSharedEvent { ok __typename } }", context: { shared_stream: "stream-1", socket: "2" } )
+
+    schema.subscriptions.trigger(:shared_event, {}, OpenStruct.new(ok: true), scope: "stream-1")
+    schema.subscriptions.trigger(:other_shared_event, {}, OpenStruct.new(ok: false), scope: "stream-1")
+
+    pushed_results = schema.subscriptions.deliveries.map do |socket, results|
+      [socket, results.map { |r| r["data"] }]
+    end
+
+    expected_results = [
+      ["1", [{ "sharedEvent" => { "ok" => true } }, { "sharedEvent" => { "ok" => false } }]],
+      ["2", [{ "otherSharedEvent" => {"ok" => true, "__typename" => "OtherSharedEventPayload" } }, { "otherSharedEvent" => { "ok" => false, "__typename" => "OtherSharedEventPayload" } }]]
+    ]
+    assert_equal expected_results, pushed_results
+  end
+
   describe "broadcast: true" do
     let(:schema) { BroadcastTrueSchema }
 
@@ -973,7 +1014,7 @@ describe GraphQL::Subscriptions do
       assert_equal({"validate_true" => 1, "validate_false" => 1, "counter_1" => 1}, schema::COUNTERS)
     end
 
-    describe "when the method is overriden" do
+    describe "when the method is overridden" do
       let(:schema) { SometimesSkipUpdateValidationSchema }
       it "calls `validate_update?`" do
         schema.execute("subscription { counter(id: \"3\") { value } }", context: { socket: "2" })
@@ -1032,7 +1073,7 @@ describe GraphQL::Subscriptions do
       end
 
       class MySubscription < GraphQL::Schema::Subscription
-        argument :my_enum, MyEnumType, required: true
+        argument :my_enum, MyEnumType
         field :my_enum, MyEnumType
       end
 
@@ -1066,6 +1107,99 @@ describe GraphQL::Subscriptions do
 
       assert_equal(":mySubscription:myEnum:one", write_subscription_events[0].topic)
       assert_equal(":mySubscription:myEnum:one", execute_all_events[0].topic)
+    end
+  end
+
+  describe "Triggering with nested input object" do
+    module SubscriptionNestedInput
+      class InMemoryBackend < GraphQL::Subscriptions
+        attr_reader :write_subscription_events, :execute_all_events
+
+        def initialize(...)
+          super
+          reset
+        end
+
+        def write_subscription(_query, events)
+          @write_subscription_events.concat(events)
+        end
+
+        def execute_all(event, _object)
+          @execute_all_events.push(event)
+        end
+
+        def reset
+          @write_subscription_events = []
+          @execute_all_events = []
+        end
+      end
+
+      class InnerInput < GraphQL::Schema::InputObject
+        argument :first_name, String, required: false
+        argument :last_name, String, required: false
+      end
+
+      class OuterInput < GraphQL::Schema::InputObject
+        argument :inner_input, [InnerInput, { null: true }], required: false
+      end
+
+      class MySubscription < GraphQL::Schema::Subscription
+        argument :input, OuterInput, required: false
+        field :full_name, String
+      end
+
+      class SubscriptionType < GraphQL::Schema::Object
+        field :my_subscription, resolver: MySubscription
+      end
+
+      class Schema < GraphQL::Schema
+        subscription SubscriptionType
+        use InMemoryBackend
+      end
+    end
+
+    let(:schema) { SubscriptionNestedInput::Schema }
+    let(:implementation) { schema.subscriptions }
+    let(:write_subscription_events) { implementation.write_subscription_events }
+    let(:execute_all_events) { implementation.execute_all_events }
+
+    before do
+      write_subscription_events.clear
+      execute_all_events.clear
+    end
+
+    it 'correctly generates subscription topics when triggering with nil inner input' do
+      query_str = <<-GRAPHQL
+        subscription ($input: OuterInput) {
+          mySubscription (input: $input) {
+            fullName
+          }
+        }
+      GRAPHQL
+
+      schema.execute(query_str, variables: { 'input' => { 'innerInput' => nil } })
+
+      schema.subscriptions.trigger(:mySubscription, { 'input' => { 'innerInput' => nil } }, nil)
+
+      assert_equal(':mySubscription:input:innerInput:', write_subscription_events[0].topic)
+      assert_equal(':mySubscription:input:innerInput:', execute_all_events[0].topic)
+    end
+
+    it 'correctly generates subscription topics when triggering with nil as input value' do
+      query_str = <<-GRAPHQL
+        subscription ($input: OuterInput) {
+          mySubscription (input: $input) {
+            fullName
+          }
+        }
+      GRAPHQL
+
+      schema.execute(query_str, variables: { 'input' => nil })
+
+      schema.subscriptions.trigger(:mySubscription, { 'input' => nil }, nil)
+
+      assert_equal(':mySubscription:input:', write_subscription_events[0].topic)
+      assert_equal(':mySubscription:input:', execute_all_events[0].topic)
     end
   end
 end

@@ -198,6 +198,21 @@ describe GraphQL::Schema::Enum do
       }
       expected_isolated_message = "`:nonsense` was returned for `DairyAnimal`, but this isn't a valid value for `DairyAnimal`. Update the field or resolver to return one of `DairyAnimal`'s values instead."
       assert_equal expected_isolated_message, err2.message
+      assert_equal "Dummy::DairyAnimal::UnresolvedValueError", err2.class.name
+
+      anon_enum = Class.new(GraphQL::Schema::Enum) do
+        graphql_name "AnonEnum"
+        value :one
+        value :two
+      end
+
+      err3 = assert_raises(GraphQL::Schema::Enum::UnresolvedValueError) {
+        anon_enum.coerce_isolated_result(:nonsense)
+      }
+
+      expected_anonymous_message = "`:nonsense` was returned for `AnonEnum`, but this isn't a valid value for `AnonEnum`. Update the field or resolver to return one of `AnonEnum`'s values instead."
+      assert_equal expected_anonymous_message, err3.message
+      assert_equal "GraphQL::Schema::Enum::UnresolvedValueError", err3.class.name
     end
 
     describe "resolving with a warden" do
@@ -206,7 +221,7 @@ describe GraphQL::Schema::Enum do
         assert_equal("YAK", enum.coerce_isolated_result("YAK"))
         # NOT OK
         assert_raises(GraphQL::Schema::Enum::UnresolvedValueError) {
-          enum.coerce_result("YAK", OpenStruct.new(warden: NothingWarden))
+          enum.coerce_result("YAK", OpenStruct.new(types: NothingWarden))
         }
       end
     end

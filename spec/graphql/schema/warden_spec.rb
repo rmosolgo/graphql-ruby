@@ -167,7 +167,6 @@ module MaskHelpers
   end
 
   class CheremeWithInterface < BaseObject
-    # Commenting this would make the test pass
     implements PublicInterfaceType
 
     field :name, String, null: false
@@ -224,8 +223,13 @@ module MaskHelpers
 
     field :manners, [MannerType], null: false
 
-    # Commenting this would make the test pass
-    field :test, PublicType, null: false
+    field :public_type, PublicType, null: false
+
+    # Warden would exclude this when it was only referenced as a possible_type of LanguageMemberType.
+    # But Profile always included it. This makes them behave the same
+    field :example_character, Character do
+      metadata :hidden_abstract_type, true
+    end
   end
 
   class MutationType < BaseObject
@@ -466,7 +470,10 @@ describe GraphQL::Schema::Warden do
       }
       |
 
-      res = MaskHelpers.run_query(query_string, context: { except: ->(member, ctx) { MaskHelpers.has_flag?(member, :hidden_type) } })
+      res = MaskHelpers.run_query(query_string, context: {
+        skip_visibility_migration_error: true,
+        except: ->(member, ctx) { MaskHelpers.has_flag?(member, :hidden_type)
+      } })
       # It's not visible by name
       assert_nil res["data"]["Phoneme"]
 
@@ -480,6 +487,7 @@ describe GraphQL::Schema::Warden do
       # It's not visible as a union or interface member
       assert_equal false, possible_type_names(res["data"]["EmicUnit"]).include?("Phoneme")
       assert_equal false, possible_type_names(res["data"]["LanguageMember"]).include?("Phoneme")
+      assert_equal ["Character", "Chereme", "Grapheme"], possible_type_names(res["data"]["LanguageMember"]).sort
     end
 
     it "hides interfaces if all possible types are hidden" do
@@ -526,6 +534,15 @@ describe GraphQL::Schema::Warden do
 
         class BagOfThings < GraphQL::Schema::Union
           possible_types A, B, C
+
+          if GraphQL::Schema.use_visibility_profile?
+            def self.visible?(ctx)
+              (
+                possible_types.any? { |pt| ctx.schema.visible?(pt, ctx) } ||
+                ctx.schema.extra_types.include?(self)
+              ) && super
+            end
+          end
         end
 
         class Query < GraphQL::Schema::Object
@@ -617,10 +634,17 @@ describe GraphQL::Schema::Warden do
       assert res["data"]["Node"]
       assert_equal ["a", "node"], res["data"]["Query"]["fields"].map { |f| f["name"] }
 
-      # When the possible types are all hidden, hide the interface and fields pointing to it
-      res = schema.execute(query_string, context: { except: ->(m, _) { ["A", "B", "C"].include?(m.graphql_name) } })
-      assert_nil res["data"]["Node"]
-      assert_equal [], res["data"]["Query"]["fields"]
+      res = schema.execute(query_string, context: { skip_visibility_migration_error: true, except: ->(m, _) { ["A", "B", "C"].include?(m.graphql_name) } })
+
+      if GraphQL::Schema.use_visibility_profile?
+        # Node is still visible even though it has no possible types
+        assert res["data"]["Node"]
+        assert_equal [{ "name" => "node" }], res["data"]["Query"]["fields"]
+      else
+        # When the possible types are all hidden, hide the interface and fields pointing to it
+        assert_nil res["data"]["Node"]
+        assert_equal [], res["data"]["Query"]["fields"]
+      end
 
       # Even when it's not the return value of a field,
       # still show the interface since it allows code reuse
@@ -748,7 +772,7 @@ describe GraphQL::Schema::Warden do
     end
   end
 
-  describe "hidding input type arguments" do
+  describe "hiding input type arguments" do
     let(:mask) {
       ->(member, ctx) { MaskHelpers.has_flag?(member, :hidden_input_field) }
     }
@@ -797,7 +821,7 @@ describe GraphQL::Schema::Warden do
     end
   end
 
-  describe "hidding input types" do
+  describe "hiding input types" do
     let(:mask) {
       ->(member, ctx) { MaskHelpers.has_flag?(member, :hidden_input_object_type) }
     }
@@ -1011,6 +1035,54 @@ describe GraphQL::Schema::Warden do
     it "uses PassThruWarden when a warden on the context nor query" do
       context = GraphQL::Query::Context.new(query: OpenStruct.new(schema: GraphQL::Schema.new), values: {})
       assert_equal GraphQL::Schema::Warden::PassThruWarden, GraphQL::Schema::Warden.from_context(context)
+    end
+  end
+
+  it "doesn't hide subclasses of invisible objects" do
+    identifiable = Module.new do
+      include GraphQL::Schema::Interface
+      graphql_name "Identifiable"
+      field :id, "ID", null: false
+    end
+
+    hidden_account = Class.new(GraphQL::Schema::Object) do
+      graphql_name "Account"
+      implements identifiable
+      def self.visible?(_ctx); false; end
+    end
+
+    visible_account = Class.new(hidden_account) do
+      graphql_name "NewAccount"
+      def self.visible?(_ctx); true; end
+    end
+
+    query_type = Class.new(GraphQL::Schema::Object) do
+      graphql_name "Query"
+      field :account, visible_account
+
+      def account
+        { id: "1" }
+      end
+    end
+
+    schema = Class.new(GraphQL::Schema) do
+      query(query_type)
+    end
+
+    query_str = <<-GRAPHQL
+      query {
+        account {
+          id
+        }
+      }
+    GRAPHQL
+
+    result = schema.execute(query_str, context: { skip_visibility_migration_error: true })
+
+    if GraphQL::Schema.use_visibility_profile?
+      assert_equal "1", result["data"]["account"]["id"]
+    else
+      assert_equal ["Field 'id' doesn't exist on type 'NewAccount'"], result["errors"].map { |e| e["message"] }
     end
   end
 end

@@ -10,6 +10,171 @@
 
 ### Bug fixes
 
+# 2.3.20 (31 Oct 2024)
+
+### Bug fixes
+
+- Arguments: suppress warning for `objectId` arguments #5124
+- Arguments: don't require input object arguments when a default value is configured
+
+# 2.3.19 (24 Oct 2024)
+
+### New features
+
+- Dataloader: accept a `fiber_limit:` option #5132
+
+### Bug fixes
+
+- Argument Validation: improve the `one_of:` error message #5130
+- Lookahead: return a null lookahead from `Query#lookahead` when no operation is selected #5129
+- Static Validation: speed up FieldsWillMerge when some fields are not defined #5125
+
+# 2.3.18 (7 Oct 2024)
+
+### Bug fixes
+
+- Properly use trace options when `trace_with` is used after `trace_class` #5118
+
+# 2.3.17 (4 Oct 2024)
+
+### Bug fixes
+
+- Fix `InvalidNullError#inspect` #5103
+- Add server-side tests for ActionCableSubscriptions #5108
+- RuboCop: Fix FieldTypeInBlock for list types and interface types #5107 #5112
+- Subscriptions: Fix triggering with nested input objects #5117
+- Extensions: fix extensions which add other extensions #5116
+
+
+# 2.3.16 (12 Sept 2024)
+
+### Bug fixes
+
+- RuboCop: fix `FieldTypeInBlock` for single-line classes #5098
+- Testing: Add `context[:current_field]` to testing helpers #5096
+
+# 2.3.15 (10 Sept 2024)
+
+### New features
+
+- Type definitions accept `comment("...")` for annotating SDL #5067
+- Parser: add `tokens_count` method #5066
+- Schema: allow `validate_timeout` to be reset #5062
+
+### Bug fixes
+
+- Optimize `Language.escape_single_quoted_newlines` #5095
+- Generators: Add `# frozen_string_literal: true` to base resolver #5092
+- Parser: Properly handle minus followed by name #5090
+- Migrate some attr_reader methods #5080
+- Handle variable definition directives #5072
+- Handle `GraphQL::ExecutionError` when loading arguments during analysis #5071
+- NotificationsTrace: properly call `super`
+- Use symbols for namespaced_types generator option #5068
+- Reduce memory usage in lazy resolution #5061
+- Fix default trace inheritance #5045
+
+# 2.3.14 (13 Aug 2024)
+
+### Bug fixes
+
+- Subscriptions: fix subscriptions when subscription type is added after subscription plug-in #5063
+
+# 2.3.13 (12 Aug 2024)
+
+### New features
+
+- Authorization: Call `EnumValue#authorized?` during execution #5058
+- `Subset`: support lazy-loading root types and field return types (not documented yet) #5055, #5054
+
+### Bug fixes
+
+- Validation: don't validate `nil` if null value is permitted for incoming lists #5048
+- Multiplex: fix `Mutation#ready?` dataloader cache in multiplexes #5059
+
+# 2.3.12 (5 Aug 2024)
+
+### Bug fixes
+
+- Add `fiber-storage` dependency for Ruby < 3.2 support
+
+# 2.3.11 (2 Aug 2024)
+
+### New features
+
+- `GraphQL::Current` offers globally-available methods for runtime metadata #5034
+- Continue improving `Schema::Subset` (not production-ready yet, though) #5018 #5039
+
+### Bug fixes
+
+- Fix `Node#line` and `Node#col` when nodes are created by manually #5047
+- Remove unused `interpreter?`, `using_ast_analysis?` and `new_connections?` flag methods #5039
+- Clean up `.compare_by_identity` usages #5037
+
+# 2.3.10 (19 Jul 2024)
+
+### Bug fixes
+
+- Parser: fix parsing operation names that match keywords #5033
+- Parser: support leading pipes in Union type definitions #5027
+- Validation: remove rule that prohibits non-null variables from having default values #5030
+- Dataloader: raise fresh error instances when sources return errors #5021
+- Enum and Union: don't create nested error classes in anonymous classes (eg, when parsing SDL -- to improve bug tracker integration) #5022
+
+# 2.3.9 (13 Jul 2024)
+
+### Bug fixes
+
+- Subscriptions: fix `subscriptionType` in introspection #5019
+
+# 2.3.8 (12 Jul 2024)
+
+### New features
+
+- Input validation: Add `all: { ... }` validator #5013
+- Visibility: Add `Query#types` for future type filtering improvements #4998
+- Broadcast: Add `default_broadcast(true)` option for Connection and Edge types #5012
+
+### Bug fixes
+
+- Remove unused `InvalidTypeError` #5003
+- Parser: remove unused `previous_token` and `Token` #5015
+
+# 2.3.7 (27 Jun 2024)
+
+### Bug fixes
+
+- Properly merge field directives and resolver directives #5001
+
+# 2.3.6 (25 Jun 2024)
+
+### New features
+
+- Analysis classes are now in `GraphQL::Analysis` (`GraphQL::Analysis::AST` still works, too) #4996
+- Resolvers and Mutations accept `directive ...` configurations #4995
+
+### Bug fixes
+
+- `AsyncDataloader`: Copy Fiber-local variables into Async tasks #4994
+- `Dataloader`: properly batch `fetch` calls with `loads:` arguments that call Dataloader sources during `.authorized?` #4997
+
+# 2.3.5 (13 Jun 2024)
+
+### Breaking changes
+
+- Remove default `load_*` implementations in arguments -- this could break calls to `super` if you have redefined this method in subclasses #4978
+- `Schema.possible_types` and `Schema.references_to` now use type classes as keys instead of type names (Strings). You can create a new Hash with the old structure using `.transform_keys(&:graphql_name)`. #4986 #4971
+
+### Bug fixes
+
+- Enums: fix parsing enum values that match GraphQL keywords (eg `type`, `extend`) #4987
+- Consolidate runtime state #4969
+- Simplify schema type indexes #4971 #4986
+- Remove duplicate when clause #4976
+- Address many Ruby warnings #4978
+- Remove needless `ruby2_keywords` usage #4989
+- Fix some YARD docs #4984
+
 # 2.3.4 (21 May 2024)
 
 ### New features
@@ -324,7 +489,7 @@
 ### Bug fixes
 
 - Fix merging results after calling directives #4639 #4660
-- Visibility: don't reveal implementors of hidden abstract types #4589
+- Visibility: don't reveal implementers of hidden abstract types #4589
 - Bump required Ruby version to 2.7 since numbered block arguments are used  #4659
 - `hash_key:`: use the configured hash key when the underlying Hash has a default value Proc #4656
 
@@ -1583,7 +1748,7 @@ FieldExtension: pass extended values instead of originals to `after_resolve` #31
 
 ### New features
 
-- Add options to `implements(...)` and inteface type visibility #2791
+- Add options to `implements(...)` and interface type visibility #2791
 - Add `Query#fingerprint` for logging #2859
 - Add `--playground` option to install generator #2839
 - Support lazy-loaded objects from input object `loads:` #2834
@@ -1758,7 +1923,7 @@ FieldExtension: pass extended values instead of originals to `after_resolve` #31
 
 ### Breaking changes
 
-- `GraphQL::Schema::Resolver#initialize` accepts a new keyword argument, `field:`. If you have overriden this method, you'll have to add that keyword to your argument list (and pass it along to `super`.) #2605
+- `GraphQL::Schema::Resolver#initialize` accepts a new keyword argument, `field:`. If you have overridden this method, you'll have to add that keyword to your argument list (and pass it along to `super`.) #2605
 
 ### Deprecations
 
@@ -2158,7 +2323,7 @@ FieldExtension: pass extended values instead of originals to `after_resolve` #31
 ### Bug fixes
 
 - Argument default values include nested default values #1728
-- Clean up duplciate method defs #1739
+- Clean up duplicate method defs #1739
 
 ### New features
 
@@ -2682,7 +2847,7 @@ FieldExtension: pass extended values instead of originals to `after_resolve` #31
 - `GraphQL::Argument.define` builds re-usable arguments #948
 - `GraphQL::Subscriptions` provides hooks for subscription platforms #672
 - `GraphQL::Subscriptions::ActionCableSubscriptions` implements subscriptions over ActionCable #672
-- More runtime values are accessble from a `ctx` object #923 :
+- More runtime values are accessible from a `ctx` object #923 :
   - `ctx.parent` returns the `ctx` from the parent field
   - `ctx.object` returns the current `obj` for that field
   - `ctx.value` returns the resolved GraphQL value for that field
@@ -3201,7 +3366,7 @@ FieldExtension: pass extended values instead of originals to `after_resolve` #31
 
 - Absent variables aren't present in `args` #479
 - Fix grouped ActiveRecord relation with `last` only #476
-- `Schema#default_mask` & query `only:`/`except:` are combined, not overriden #485
+- `Schema#default_mask` & query `only:`/`except:` are combined, not overridden #485
 - Root types can be hidden with dynamic filters #480
 
 ## 1.4.0 (8 Jan 2017)
@@ -3383,7 +3548,7 @@ FieldExtension: pass extended values instead of originals to `after_resolve` #31
 
 ### Deprecations
 
-- `InternalRepresentation::Node#children` and `InternalRepresentation::Node#definitions` are deprecated due to the bug described below and the breaking change described above. Instead, use `InternalRepresentation::Node#typed_children` and `InternalRepresentation::Node#defininition`. #373
+- `InternalRepresentation::Node#children` and `InternalRepresentation::Node#definitions` are deprecated due to the bug described below and the breaking change described above. Instead, use `InternalRepresentation::Node#typed_children` and `InternalRepresentation::Node#definition`. #373
 
 ### New features
 

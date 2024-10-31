@@ -64,12 +64,12 @@ module GraphQL
       event_name = event_name.to_s
 
       # Try with the verbatim input first:
-      field = @schema.get_field(@schema.subscription, event_name, context)
+      field = dummy_query.types.field(@schema.subscription, event_name) # rubocop:disable Development/ContextIsPassedCop
 
       if field.nil?
         # And if it wasn't found, normalize it:
         normalized_event_name = normalize_name(event_name)
-        field = @schema.get_field(@schema.subscription, normalized_event_name, context)
+        field = dummy_query.types.field(@schema.subscription, normalized_event_name) # rubocop:disable Development/ContextIsPassedCop
         if field.nil?
           raise InvalidTriggerError, "No subscription matching trigger: #{event_name} (looked for #{@schema.subscription.graphql_name}.#{normalized_event_name})"
         end
@@ -235,7 +235,7 @@ module GraphQL
       if !query.valid?
         raise "Invalid query: #{query.validation_errors.map(&:to_h).inspect}"
       end
-      GraphQL::Analysis::AST.analyze_query(query, @schema.query_analyzers)
+      GraphQL::Analysis.analyze_query(query, @schema.query_analyzers)
       query.context.namespace(:subscriptions)[:subscription_broadcastable]
     end
 
@@ -250,6 +250,8 @@ module GraphQL
     def normalize_arguments(event_name, arg_owner, args, context)
       case arg_owner
       when GraphQL::Schema::Field, Class
+        return args if args.nil?
+
         if arg_owner.is_a?(Class) && !arg_owner.kind.input_object?
           # it's a type, but not an input object
           return args
@@ -302,7 +304,7 @@ module GraphQL
 
         normalized_args
       when GraphQL::Schema::List
-        args.map { |a| normalize_arguments(event_name, arg_owner.of_type, a, context) }
+        args&.map { |a| normalize_arguments(event_name, arg_owner.of_type, a, context) }
       when GraphQL::Schema::NonNull
         normalize_arguments(event_name, arg_owner.of_type, args, context)
       else

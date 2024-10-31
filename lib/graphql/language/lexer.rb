@@ -19,7 +19,7 @@ module GraphQL
         @scanner.eos?
       end
 
-      attr_reader :pos
+      attr_reader :pos, :tokens_count
 
       def advance
         @scanner.skip(IGNORE_REGEXP)
@@ -57,20 +57,23 @@ module GraphQL
           @scanner.skip(IDENTIFIER_REGEXP)
           :IDENTIFIER
         when ByteFor::NUMBER
-          @scanner.skip(NUMERIC_REGEXP)
+          if len = @scanner.skip(NUMERIC_REGEXP)
 
-          if GraphQL.reject_numbers_followed_by_names
-            new_pos = @scanner.pos
-            peek_byte = @string.getbyte(new_pos)
-            next_first_byte = FIRST_BYTES[peek_byte]
-            if next_first_byte == ByteFor::NAME || next_first_byte == ByteFor::IDENTIFIER
-              number_part = token_value
-              name_part = @scanner.scan(IDENTIFIER_REGEXP)
-              raise_parse_error("Name after number is not allowed (in `#{number_part}#{name_part}`)")
+            if GraphQL.reject_numbers_followed_by_names
+              new_pos = @scanner.pos
+              peek_byte = @string.getbyte(new_pos)
+              next_first_byte = FIRST_BYTES[peek_byte]
+              if next_first_byte == ByteFor::NAME || next_first_byte == ByteFor::IDENTIFIER
+                number_part = token_value
+                name_part = @scanner.scan(IDENTIFIER_REGEXP)
+                raise_parse_error("Name after number is not allowed (in `#{number_part}#{name_part}`)")
+              end
             end
+            # Check for a matched decimal:
+            @scanner[1] ? :FLOAT : :INT
+          else
+            raise_parse_error("Expected a number, but it was malformed (#{@string[@pos].inspect})")
           end
-          # Check for a matched decimal:
-          @scanner[1] ? :FLOAT : :INT
         when ByteFor::ELLIPSIS
           if @string.getbyte(@pos + 1) != 46 || @string.getbyte(@pos + 2) != 46
             raise_parse_error("Expected `...`, actual: #{@string[@pos..@pos + 2].inspect}")
@@ -345,17 +348,14 @@ module GraphQL
       def self.tokenize(string)
         lexer = GraphQL::Language::Lexer.new(string)
         tokens = []
-        prev_token = nil
         while (token_name = lexer.advance)
           new_token = [
             token_name,
             lexer.line_number,
             lexer.column_number,
             lexer.debug_token_value(token_name),
-            prev_token,
           ]
           tokens << new_token
-          prev_token = new_token
         end
         tokens
       end

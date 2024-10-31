@@ -8,6 +8,30 @@
 
 ### Bug Fix
 
+# 1.5.3 (1 Oct 2024)
+
+- Limiters: Add expiration to rate limit data (to reduce Redis footprint)
+
+# 1.5.2 (6 Sept 2024)
+
+- Limiters: Add `connection_pool:` support
+
+# 1.5.1 (30 Aug 2024)
+
+- ObjectCache: Add `connection_pool:` support
+
+# 1.5.0 (26 Jul 2024)
+
+- ObjectCache: Add Dalli backend for Memcached
+
+# 1.4.2 (11 Jun 2024)
+
+- ObjectCache: Add `Schema.fingerprint` hook and `context[:refresh_object_cache]`
+
+# 1.4.1 (30 May 2024)
+
+- ObjectCache: properly handle when object fingerprints are evicted but the cached result wasn't
+
 # 1.4.0 (11 Apr 2024)
 
 - ObjectCache: add support for `redis_cluster: ...` backend

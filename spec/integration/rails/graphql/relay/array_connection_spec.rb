@@ -81,16 +81,16 @@ describe "GraphQL::Relay::ArrayConnection" do
       last_cursor = get_last_cursor(result)
 
       result = star_wars_query(query_string, { "after" => last_cursor, "first" => 2 })
-      assert_equal(["Millenium Falcon", "Home One"], get_names(result))
+      assert_equal(["Millennium Falcon", "Home One"], get_names(result))
 
       result = star_wars_query(query_string, { "before" => last_cursor, "last" => 2 })
       assert_equal(["X-Wing", "Y-Wing"], get_names(result))
 
       result = star_wars_query(query_string, { "last" => 2 })
-      assert_equal(["Millenium Falcon", "Home One"], get_names(result))
+      assert_equal(["Millennium Falcon", "Home One"], get_names(result))
 
       result = star_wars_query(query_string, { "last" => 10 })
-      assert_equal(["X-Wing", "Y-Wing", "A-Wing", "Millenium Falcon", "Home One"], get_names(result))
+      assert_equal(["X-Wing", "Y-Wing", "A-Wing", "Millennium Falcon", "Home One"], get_names(result))
       assert_equal(false, result["data"]["rebels"]["ships"]["pageInfo"]["hasNextPage"])
       assert_equal(false, result["data"]["rebels"]["ships"]["pageInfo"]["hasPreviousPage"])
     end

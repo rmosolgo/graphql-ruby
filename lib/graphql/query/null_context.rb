@@ -27,8 +27,8 @@ module GraphQL
         @warden = Schema::Warden::NullWarden.new(context: self, schema: @schema)
       end
 
-      def interpreter?
-        true
+      def types
+        @types ||= Schema::Warden::VisibilityProfile.new(@warden)
       end
     end
   end

@@ -45,6 +45,13 @@ module Graphql
     # post "/graphql", to: "graphql#execute"
     # ```
     #
+    # Add ActiveRecord::QueryLogs metadata:
+    # ```ruby
+    #   current_graphql_operation: -> { GraphQL::Current.operation_name },
+    #   current_graphql_field: -> { GraphQL::Current.field&.path },
+    #   current_dataloader_source: -> { GraphQL::Current.dataloader_source_class },
+    # ```
+    #
     # Accept a `--batch` option which adds `GraphQL::Batch` setup.
     #
     # Use `--skip-graphiql` to skip `graphiql-rails` installation.
@@ -91,6 +98,11 @@ module Graphql
         type: :boolean,
         default: false,
         desc: "Use GraphQL Playground over Graphiql as IDE"
+
+      class_option :skip_query_logs,
+        type: :boolean,
+        default: false,
+        desc: "Skip ActiveRecord::QueryLogs hooks in config/application.rb"
 
       # These two options are taken from Rails' own generators'
       class_option :api,
@@ -178,6 +190,40 @@ RUBY
 
         if options[:relay]
           install_relay
+        end
+
+        if !options[:skip_query_logs]
+          config_file = "config/application.rb"
+          current_app_rb = File.read(Rails.root.join(config_file))
+          existing_log_tags_pattern = /config.active_record.query_log_tags = \[\n?(\s*:[a-z_]+,?\s*\n?|\s*#[^\]]*\n)*/m
+          existing_log_tags = existing_log_tags_pattern.match(current_app_rb)
+          if existing_log_tags && behavior == :invoke
+            code = <<-RUBY
+      # GraphQL-Ruby query log tags:
+      current_graphql_operation: -> { GraphQL::Current.operation_name },
+      current_graphql_field: -> { GraphQL::Current.field&.path },
+      current_dataloader_source: -> { GraphQL::Current.dataloader_source_class },
+RUBY
+            if !existing_log_tags.to_s.end_with?(",")
+              code = ",\n#{code}    "
+            end
+            # Try to insert this code _after_ any plain symbol entries in the array of query log tags:
+            after_code = existing_log_tags_pattern
+          else
+            code = <<-RUBY
+    config.active_record.query_log_tags_enabled = true
+    config.active_record.query_log_tags = [
+      # Rails query log tags:
+      :application, :controller, :action, :job,
+      # GraphQL-Ruby query log tags:
+      current_graphql_operation: -> { GraphQL::Current.operation_name },
+      current_graphql_field: -> { GraphQL::Current.field&.path },
+      current_dataloader_source: -> { GraphQL::Current.dataloader_source_class },
+    ]
+RUBY
+            after_code = "class Application < Rails::Application\n"
+          end
+          insert_into_file(config_file, code, after: after_code)
         end
 
         if gemfile_modified?

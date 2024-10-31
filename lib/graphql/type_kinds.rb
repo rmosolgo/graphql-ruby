@@ -16,7 +16,7 @@ module GraphQL
         @description = description
       end
 
-      # Does this TypeKind have multiple possible implementors?
+      # Does this TypeKind have multiple possible implementers?
       # @deprecated Use `abstract?` instead of `resolves?`.
       def resolves?;  @abstract;  end
       # Is this TypeKind abstract?

@@ -579,7 +579,7 @@ describe GraphQL::Schema::Subscription do
   end
 
   describe "`subscription_scope` method" do
-    it "provdes a subscription scope that is recognized in the schema" do
+    it "provides a subscription scope that is recognized in the schema" do
       scoped_subscription = SubscriptionFieldSchema::get_field("Subscription", "directTootWasTooted")
 
       assert_equal :viewer, scoped_subscription.subscription_scope

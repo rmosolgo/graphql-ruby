@@ -195,10 +195,10 @@ describe GraphQL::Schema::RelayClassicMutation do
 
     it "returns an error instead when the ID resolves to nil" do
       res = Jazz::Schema.execute(query_str, variables: {
-        ids: ["Ensemble/Nonexistant Name"],
+        ids: ["Ensemble/Nonexistent Name"],
       })
       assert_nil res["data"].fetch("upvoteEnsembles")
-      assert_equal ['No object found for `ensembleIds: "Ensemble/Nonexistant Name"`'], res["errors"].map { |e| e["message"] }
+      assert_equal ['No object found for `ensembleIds: "Ensemble/Nonexistent Name"`'], res["errors"].map { |e| e["message"] }
     end
 
     it "returns an error instead when the ID resolves to an object of the wrong type" do
@@ -283,11 +283,11 @@ describe GraphQL::Schema::RelayClassicMutation do
 
     it "returns an error instead when the ID resolves to nil" do
       res = Jazz::Schema.execute(query_str, variables: {
-        id: "Ensemble/Nonexistant Name",
+        id: "Ensemble/Nonexistent Name",
         newName: "August Greene"
       })
       assert_nil res["data"].fetch("renameEnsemble")
-      assert_equal ['No object found for `ensembleId: "Ensemble/Nonexistant Name"`'], res["errors"].map { |e| e["message"] }
+      assert_equal ['No object found for `ensembleId: "Ensemble/Nonexistent Name"`'], res["errors"].map { |e| e["message"] }
     end
 
     it "returns an error instead when the ID resolves to an object of the wrong type" do

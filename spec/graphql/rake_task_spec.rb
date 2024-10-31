@@ -19,9 +19,15 @@ class FilteredRakeTaskSchema < RakeTaskSchema
   def self.visible?(member, ctx)
     (
       member.is_a?(Class) &&
-      member < GraphQL::Schema::Scalar
+        member < GraphQL::Schema::Scalar &&
+        # Warden doesn't include these for some reason:
+        !(member.graphql_name.start_with?("Boolean", "String"))
     ) || (
       ctx[:filtered] && ["Query", "allowed"].include?(member.graphql_name)
+    ) || (
+      member.respond_to?(:introspection?) && member.introspection?
+    ) || (
+      member.respond_to?(:owner) && member.owner.introspection?
     )
   end
 end
@@ -31,7 +37,7 @@ GraphQL::RakeTask.new(schema_name: "RakeTaskSchema")
 # Configured task
 GraphQL::RakeTask.new(idl_outfile: "tmp/configured_schema.graphql") do |t|
   t.namespace = "graphql_custom"
-  t.load_context = ->(task) { {filtered: true} }
+  t.load_context = ->(task) { {filtered: true } }
   t.load_schema = ->(task) { FilteredRakeTaskSchema }
 end
 

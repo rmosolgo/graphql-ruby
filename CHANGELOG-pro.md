@@ -6,6 +6,35 @@
 
 ### New Features
 
+# 1.29.2 (4 Sept 2024)
+
+- Subscriptions: show broadcast subscriber count in dashboard (Pusher requires "subscription count" to be turned on and `use ... show_broadcast_subscribers_count: true`)
+
+# 1.29.1 (29 Aug 2024)
+
+- OperationStore: Accept a `context:` in `#add`
+
+# 1.29.0 (28 Aug 2024)
+
+- Subscriptions: use a single Pusher or Ably channel to deliver broadcast payloads to subscribers
+- Dashboard: fix crash when a topic had no active subscriptions
+
+# 1.28.1 (22 Aug 2024)
+
+- Subscriptions: Track `last_triggered_at`; add more metadata to the dashboard.
+
+# 1.28.0 (20 Aug 2024)
+
+- OperationStore: require the `ActiveRecord` backend inside an `ActiveSupport.on_load(:active_record) { ... }` block to improve Rails compatibility
+
+# 1.27.7 (13 Aug 2024)
+
+- Subscriptions: Fix _another_ Lua error in big cleanup operations
+
+# 1.27.6 (13 Aug 2024)
+
+- Subscriptions: Fix Lua error when cleaning up huge numbers of inactive subscriptions
+
 # 1.27.5 (9 May 2024)
 
 - OperationStore: remove needless call to `.metadata` #4947
@@ -806,7 +835,7 @@
 
 ### Bug Fix
 
-- Pundit integration: use overriden `pundit_policy_class` for scoping and mutation authorization
+- Pundit integration: use overridden `pundit_policy_class` for scoping and mutation authorization
 
 ## 1.9.11 (20 Feb 2019)
 

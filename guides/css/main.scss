@@ -124,15 +124,15 @@ strong, b {
     a, span {
       transition: background-color $fade-time;
       transition: color $fade-time;
-      &:hover {
-        background-color: $brand-color;
-        color: white;
-      }
       padding: $margin;
       height: $height;
       display: flex;
       align-items: center;
       text-decoration: none;
+      &:hover {
+        background-color: $brand-color;
+        color: white;
+      }
     }
   }
 }
@@ -143,13 +143,13 @@ strong, b {
 
 .container {
   max-width: 1200px;
+  margin: 0px auto;
+  padding: 10px 20px;
+  background: $container-color;
   &.fullwidth {
     max-width: 100%;
     margin: 0px 20px 0px 20px;
   }
-  margin: 0px auto;
-  padding: 10px 20px;
-  background: $container-color;
 }
 
 .dark-theme {
@@ -159,15 +159,15 @@ strong, b {
 }
 
 .callout {
+  padding: 20px 20px 10px 20px;
+  margin: 20px;
+  border: 2px;
+  border-radius: 10px;
   .heading {
     font-size: 20px;
     font-weight: bold;
     margin-bottom: 20px;
   }
-  padding: 20px 20px 10px 20px;
-  margin: 20px;
-  border: 2px;
-  border-radius: 10px;
 
   &.callout-warning {
     background-color: rgba(255, 217, 0, 0.2);
@@ -380,14 +380,18 @@ a:hover, a:hover code {
   }
 
   .hero-subtitle {
+    padding: 10px 0px;
     p {
       margin: 5px auto;
       text-align: center;
     }
-    padding: 10px 0px;
   }
 
   .hero-part {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+
     &.shaded {
       background: $faint-color;
     }
@@ -398,9 +402,6 @@ a:hover, a:hover code {
       font-size: 1.4em;
     }
 
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
     .hero-feature {
       padding: 15px;
       flex-basis: calc(50% - 60px);
@@ -512,11 +513,11 @@ table {
 
       &:focus, &:hover {
         outline: none;
+        background-color: $bg-highlight;
+        border-bottom-color: $brand-color;
         .search-title {
           color: $brand-color;
         }
-        background-color: $bg-highlight;
-        border-bottom-color: $brand-color;
       }
     }
   }
@@ -525,7 +526,6 @@ table {
 .dark-theme  ul.breadcrumb .jump-to-select {
   color: $dark-theme-brand-color;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='292.4' height='292.4'%3E%3Cpath fill='%23e5534b' d='M287 69.4a17.6 17.6 0 0 0-13-5.4H18.4c-5 0-9.3 1.8-12.9 5.4A17.6 17.6 0 0 0 0 82.2c0 5 1.8 9.3 5.4 12.9l128 127.9c3.6 3.6 7.8 5.4 12.8 5.4s9.2-1.8 12.8-5.4L287 95c3.5-3.5 5.4-7.8 5.4-12.8 0-5-1.9-9.2-5.5-12.8z'/%3E%3C/svg%3E");
-
 }
 
 ul.breadcrumb {
@@ -696,9 +696,9 @@ ul.breadcrumb {
   .highlight .cpf { color: #75715e } /* Comment.PreprocFile */
   .highlight .c1 { color: #75715e } /* Comment.Single */
   .highlight .cs { color: #75715e } /* Comment.Special */
-  .highlight .gd { color: #f92672 } /* Generic.Deleted */
+  .highlight .gd { color: #f92672; background-color: #5e4343; } /* Generic.Deleted */
   .highlight .ge { font-style: italic } /* Generic.Emph */
-  .highlight .gi { color: #a6e22e } /* Generic.Inserted */
+  .highlight .gi { color: #a6e22e; background-color: #475547; } /* Generic.Inserted */
   .highlight .gs { font-weight: bold } /* Generic.Strong */
   .highlight .gu { color: #75715e } /* Generic.Subheading */
   .highlight .kc { color: #66d9ef } /* Keyword.Constant */

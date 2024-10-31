@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-require_relative 'spec_helper'
 require 'ostruct'
 
 module StarWars
@@ -7,7 +6,7 @@ module StarWars
     'X-Wing',
     'Y-Wing',
     'A-Wing',
-    'Millenium Falcon',
+    'Millennium Falcon',
     'Home One',
     'TIE Fighter',
     'TIE Interceptor',

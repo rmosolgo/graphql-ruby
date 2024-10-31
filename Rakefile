@@ -28,7 +28,10 @@ Rake::TestTask.new do |t|
     excluded
   end
 
-  t.warning = false
+  # After 2.7, there were not warnings for uninitialized ivars anymore
+  if RUBY_VERSION < "3"
+    t.warning = false
+  end
 end
 
 require 'rubocop/rake_task'

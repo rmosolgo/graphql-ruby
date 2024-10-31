@@ -23,7 +23,8 @@ module GraphQL
         @ruby_style_hash = ruby_kwargs
         @arguments = arguments
         # Apply prepares, not great to have it duplicated here.
-        self.class.arguments(context).each_value do |arg_defn|
+        arg_defns = context ? context.types.arguments(self.class) : self.class.arguments(context).each_value
+        arg_defns.each do |arg_defn|
           ruby_kwargs_key = arg_defn.keyword
           if @ruby_style_hash.key?(ruby_kwargs_key)
             # Weirdly, procs are applied during coercion, but not methods.
@@ -58,7 +59,7 @@ module GraphQL
       def self.authorized?(obj, value, ctx)
         # Authorize each argument (but this doesn't apply if `prepare` is implemented):
         if value.respond_to?(:key?)
-          arguments(ctx).each do |_name, input_obj_arg|
+          ctx.types.arguments(self).each do |input_obj_arg|
             if value.key?(input_obj_arg.keyword) &&
               !input_obj_arg.authorized?(obj, value[input_obj_arg.keyword], ctx)
               return false
@@ -132,11 +133,14 @@ module GraphQL
           end
           # Add a method access
           method_name = argument_defn.keyword
-          class_eval <<-RUBY, __FILE__, __LINE__
-            def #{method_name}
-              self[#{method_name.inspect}]
-            end
-          RUBY
+          suppress_redefinition_warning do
+            class_eval <<-RUBY, __FILE__, __LINE__
+              def #{method_name}
+                self[#{method_name.inspect}]
+              end
+              alias_method :#{method_name}, :#{method_name}
+            RUBY
+          end
           argument_defn
         end
 
@@ -148,7 +152,7 @@ module GraphQL
         INVALID_OBJECT_MESSAGE = "Expected %{object} to be a key-value object."
 
         def validate_non_null_input(input, ctx, max_errors: nil)
-          warden = ctx.warden
+          types = ctx.types
 
           if input.is_a?(Array)
             return GraphQL::Query::InputValidationResult.from_problem(INVALID_OBJECT_MESSAGE % { object: JSON.generate(input, quirks_mode: true) })
@@ -160,9 +164,9 @@ module GraphQL
           end
 
           # Inject missing required arguments
-          missing_required_inputs = self.arguments(ctx).reduce({}) do |m, (argument_name, argument)|
-            if !input.key?(argument_name) && argument.type.non_null? && warden.get_argument(self, argument_name)
-              m[argument_name] = nil
+          missing_required_inputs = ctx.types.arguments(self).reduce({}) do |m, (argument)|
+            if !input.key?(argument.graphql_name) && argument.type.non_null? && !argument.default_value? && types.argument(self, argument.graphql_name)
+              m[argument.graphql_name] = nil
             end
 
             m
@@ -171,7 +175,7 @@ module GraphQL
           result = nil
           [input, missing_required_inputs].each do |args_to_validate|
             args_to_validate.each do |argument_name, value|
-              argument = warden.get_argument(self, argument_name)
+              argument = types.argument(self, argument_name)
               # Items in the input that are unexpected
               if argument.nil?
                 result ||= Query::InputValidationResult.new
@@ -240,6 +244,17 @@ module GraphQL
           end
 
           result
+        end
+
+        private
+
+        # Suppress redefinition warning for objectId arguments
+        def suppress_redefinition_warning
+          verbose = $VERBOSE
+          $VERBOSE = nil
+          yield
+        ensure
+          $VERBOSE = verbose
         end
       end
 

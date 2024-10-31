@@ -7,7 +7,7 @@ module GraphQL
       # In this case, the server hides types and fields _entirely_, unless the current context has certain `:flags` present.
       class Flagged < GraphQL::Schema::Directive
         def initialize(target, **options)
-          if target.is_a?(Module) && !target.ancestors.include?(VisibleByFlag)
+          if target.is_a?(Module)
             # This is type class of some kind, `include` will put this module
             # in between the type class itself and its super class, so `super` will work fine
             target.include(VisibleByFlag)

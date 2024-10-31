@@ -375,6 +375,7 @@ describe GraphQL::Schema::Object do
         shape.delete(:@configs)
         shape.delete(:@future_schema)
         shape.delete(:@metadata)
+        shape.delete(:@admin_only)
         if type_defn_shapes.add?(shape)
           example_shapes_by_name[cls.graphql_name] = shape
         end
@@ -396,15 +397,32 @@ describe GraphQL::Schema::Object do
     default_edge_shape = Class.new(GraphQL::Types::Relay::BaseEdge).instance_variables
     default_connection_shape = Class.new(GraphQL::Types::Relay::BaseConnection).instance_variables
     default_mutation_payload_shape = Class.new(GraphQL::Schema::RelayClassicMutation) { graphql_name("DoSomething") }.payload_type.instance_variables
-    expected_default_shapes = Set.new([
+    default_visibility_shape = Class.new(GraphQL::Schema::Object).instance_variables
+    expected_default_shapes = [
       default_shape,
       default_shape_with_connection_type,
       default_edge_shape,
       default_connection_shape,
-      default_mutation_payload_shape
-    ])
+      default_mutation_payload_shape,
+      default_visibility_shape
+    ]
 
-    assert_equal expected_default_shapes, type_defn_shapes
+    type_defn_shapes_a = type_defn_shapes.to_a
+    assert type_defn_shapes_a.find { |sh| sh == default_shape }, "There's a match for default_shape"
+    assert type_defn_shapes_a.find { |sh| sh == default_shape_with_connection_type }, "There's a match for default_shape_with_connection_type"
+    assert type_defn_shapes_a.find { |sh| sh == default_edge_shape }, "There's a match for default_edge_shape"
+    assert type_defn_shapes_a.find { |sh| sh == default_connection_shape }, "There's a match for default_connection_shape"
+    assert type_defn_shapes_a.find { |sh| sh == default_mutation_payload_shape }, "There's a match for default_mutation_payload_shape"
+    assert type_defn_shapes_a.find { |sh| sh == default_visibility_shape }, "There's a match for default_visibility_shape"
+
+    extra_shapes = type_defn_shapes_a - expected_default_shapes
+    extra_shapes_by_name = {}
+    extra_shapes.each do |shape|
+      name = example_shapes_by_name.key(shape)
+      extra_shapes_by_name[name] = shape
+    end
+
+    assert_equal({}, extra_shapes_by_name, "There aren't any extra shape profiles")
   end
 
   describe "overriding wrap" do
@@ -474,6 +492,24 @@ describe GraphQL::Schema::Object do
       ]
 
       assert_equal expected_log, log
+    end
+  end
+
+  describe ".comment" do
+    it "isn't inherited and can be set to nil" do
+      obj1 = Class.new(GraphQL::Schema::Object) do
+        graphql_name "Obj1"
+        comment "TODO: fix this"
+      end
+
+      obj2 = Class.new(obj1) do
+        graphql_name("Obj2")
+      end
+
+      assert_equal "TODO: fix this", obj1.comment
+      assert_nil obj2.comment
+      obj1.comment(nil)
+      assert_nil obj1.comment
     end
   end
 end

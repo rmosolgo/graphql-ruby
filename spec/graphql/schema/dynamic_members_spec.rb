@@ -10,7 +10,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
       end
 
       def visible?(context)
-        if context[:visible_calls]
+        if context[:visible_calls] && !context[:visibility_migration_warden_running]
           context[:visible_calls][self] << caller
         end
         super && (@future_schema.nil? || (@future_schema == !!context[:future_schema]))
@@ -33,7 +33,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
         if RUBY_VERSION > "3"
           define_method(dynamic_members_method_name) do |*args, **kwargs, &block|
             context = args.last
-            if context && (context.is_a?(Hash) || context.is_a?(GraphQL::Query::Context)) && context[:visible_calls]
+            if context && (context.is_a?(Hash) || context.is_a?(GraphQL::Query::Context)) && context[:visible_calls] && !context[:visibility_migration_warden_running]
               method_obj = self.method(dynamic_members_method_name)
               context[:visible_calls][MethodInspection.new(method_obj)] << caller
             end
@@ -42,7 +42,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
         else
           define_method(dynamic_members_method_name) do |*args, &block|
             context = args.last
-            if context && (context.is_a?(Hash) || context.is_a?(GraphQL::Query::Context)) && context[:visible_calls]
+            if context && (context.is_a?(Hash) || context.is_a?(GraphQL::Query::Context)) && context[:visible_calls] && !context[:visibility_migration_warden_running]
               method_obj = self.method(dynamic_members_method_name)
               context[:visible_calls][MethodInspection.new(method_obj)] << caller
             end
@@ -199,6 +199,11 @@ describe "Dynamic types, fields, arguments, and enum values" do
 
     class Locale < BaseUnion
       possible_types Country, future_schema: true
+
+      if GraphQL::Schema.use_visibility_profile?
+        # Profile won't check possible_types, this must be flagged
+        self.future_schema = true
+      end
     end
 
     class Place < BaseObject
@@ -333,6 +338,7 @@ describe "Dynamic types, fields, arguments, and enum values" do
       # just to attach these to the schema:
       field :example_locale, Locale
       field :example_region, Region
+      field :example_country, Country
     end
 
     class BaseMutation < GraphQL::Schema::RelayClassicMutation
@@ -474,10 +480,12 @@ ERR
     assert_equal "String", exec_future_query(introspection_query_str)["data"]["__type"]["fields"].find { |f| f["name"] == "f1" }["type"]["name"]
 
     # Schema dump
-    assert_includes legacy_schema_sdl, <<-GRAPHQL
+    legacy_query_type_str = legacy_schema_sdl[/type Query \{[^}]*\}/m]
+    expected_legacy_query_type_str = <<-GRAPHQL.chomp
 type Query {
   actor: Actor
   add(left: Int!, right: Int!): String!
+  exampleCountry: Country
   f1: Int
   favoriteLanguage(lang: Language): Language!
   legacyThing(id: ID!): LegacyThing!
@@ -486,11 +494,13 @@ type Query {
   yell(scream: Scream!): String!
 }
 GRAPHQL
+    assert_equal expected_legacy_query_type_str, legacy_query_type_str
 
     assert_includes future_schema_sdl, <<-GRAPHQL
 type Query {
   actor: Actor
   add(left: Float!, right: Float!): String!
+  exampleCountry: Country
   exampleLocale: Locale
   exampleRegion: Region
   f1: String
@@ -585,18 +595,32 @@ GRAPHQL
     assert_includes MultifieldSchema::Country.interfaces({ future_schema: true }), MultifieldSchema::HasCapital
     assert_includes MultifieldSchema.possible_types(MultifieldSchema::HasCapital, { future_schema: true }), MultifieldSchema::Country
     assert_includes MultifieldSchema::Country.interfaces, MultifieldSchema::HasCapital
-    assert_includes MultifieldSchema.possible_types(MultifieldSchema::HasCapital), MultifieldSchema::Country
+    if GraphQL::Schema.use_visibility_profile?
+      # filtered with `future_schema: nil`
+      refute_includes MultifieldSchema.possible_types(MultifieldSchema::HasCapital), MultifieldSchema::Country
+    else
+      assert_includes MultifieldSchema.possible_types(MultifieldSchema::HasCapital), MultifieldSchema::Country
+    end
   end
 
   it "hides hidden union memberships" do
-    # in this case, the union is always visible:
     assert MultifieldSchema::Locale.visible?({ future_schema: true })
-    assert MultifieldSchema::Locale.visible?({ future_schema: false })
+    if GraphQL::Schema.use_visibility_profile?
+      refute MultifieldSchema::Locale.visible?({ future_schema: false })
+    else
+      # Warden will check possible types -- but Profile doesn't
+      assert MultifieldSchema::Locale.visible?({ future_schema: false })
+    end
 
     # and the possible types relationship is sometimes hidden:
     refute_includes MultifieldSchema.possible_types(MultifieldSchema::Locale, { future_schema: false }), MultifieldSchema::Country
     assert_includes MultifieldSchema.possible_types(MultifieldSchema::Locale, { future_schema: true }), MultifieldSchema::Country
-    assert_includes MultifieldSchema.possible_types(MultifieldSchema::Locale), MultifieldSchema::Country
+    if GraphQL::Schema.use_visibility_profile?
+      # This type is hidden in this case
+      assert_equal [], MultifieldSchema.possible_types(MultifieldSchema::Locale)
+    else
+      assert_includes MultifieldSchema.possible_types(MultifieldSchema::Locale), MultifieldSchema::Country
+    end
   end
 
   it "hides hidden unions" do
@@ -607,7 +631,12 @@ GRAPHQL
     # and the possible types relationship is sometimes hidden:
     assert_equal [], MultifieldSchema.possible_types(MultifieldSchema::Region, { future_schema: false })
     assert_equal [MultifieldSchema::Country, MultifieldSchema::Place], MultifieldSchema.possible_types(MultifieldSchema::Region, { future_schema: true })
-    assert_equal [MultifieldSchema::Country, MultifieldSchema::Place, MultifieldSchema::LegacyPlace], MultifieldSchema.possible_types(MultifieldSchema::Region)
+    if GraphQL::Schema.use_visibility_profile?
+      # Filtered like `future_schema: false`
+      assert_equal [MultifieldSchema::Country, MultifieldSchema::LegacyPlace], MultifieldSchema.possible_types(MultifieldSchema::Region)
+    else
+      assert_equal [MultifieldSchema::Country, MultifieldSchema::Place, MultifieldSchema::LegacyPlace], MultifieldSchema.possible_types(MultifieldSchema::Region)
+    end
   end
 
   it "supports different versions of input object arguments" do
@@ -665,12 +694,17 @@ GRAPHQL
     assert_equal MultifieldSchema::MoneyScalar, MultifieldSchema.get_type("Money", { future_schema: nil })
     assert_equal MultifieldSchema::MoneyScalar, MultifieldSchema.get_type("Money", { future_schema: false })
     assert_equal MultifieldSchema::Money, MultifieldSchema.get_type("Money", { future_schema: true })
-    err = assert_raises GraphQL::Schema::DuplicateNamesError do
-      MultifieldSchema.get_type("Money")
+    if GraphQL::Schema.use_visibility_profile?
+      # Filtered like `future_schema: nil`
+      assert_equal MultifieldSchema::MoneyScalar, MultifieldSchema.get_type("Money")
+    else
+      err = assert_raises GraphQL::Schema::DuplicateNamesError do
+        assert_nil MultifieldSchema.get_type("Money")
+      end
+      assert_equal "Money", err.duplicated_name
+      expected_message = "Found two visible definitions for `Money`: MultifieldSchema::Money, MultifieldSchema::MoneyScalar"
+      assert_equal expected_message, err.message
     end
-    assert_equal "Money", err.duplicated_name
-    expected_message = "Found two visible definitions for `Money`: MultifieldSchema::Money, MultifieldSchema::MoneyScalar"
-    assert_equal expected_message, err.message
 
     assert_equal "⚛︎100",exec_query("{ thing( input: { id: 1 }) { price } }")["data"]["thing"]["price"]
     res = exec_query("{ __type(name: \"Money\") { kind name } }")
@@ -839,7 +873,6 @@ GRAPHQL
         implements ThingInterface
         field :f, Int, null: false
       end
-
       class ThingUnion < GraphQL::Schema::Union
         graphql_name "Thing"
         possible_types OtherObject
@@ -893,6 +926,8 @@ GRAPHQL
             raise ArgumentError, "Unhandled type kind: #{type_kind.inspect}"
           end
         end
+
+        field :other_object, OtherObject
       end
 
       query(Query)
@@ -952,9 +987,9 @@ GRAPHQL
     assert_equal 12, res["data"]["thing"]["f"]
 
     schema_dump, context = check_thing_type_is_kind("INTERFACE")
-    assert_equal 3, schema_dump.scan("Thing").size, "Interface definition, interface field, object field: #{schema_dump}"
     assert_includes schema_dump, "interface Thing {\n"
     assert_includes schema_dump, "type OtherObject implements Thing {\n"
+    assert_equal 3, schema_dump.scan("Thing").size, "Interface definition, interface field, object field: #{schema_dump}"
     res = NameConflictSchema.execute("{ thing { ... on Thing { __typename  } ... on OtherObject { f } } }", context: context)
     assert_equal "OtherObject", res["data"]["thing"]["__typename"]
     assert_equal 22, res["data"]["thing"]["f"]

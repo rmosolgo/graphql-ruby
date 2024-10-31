@@ -75,4 +75,65 @@ describe "GraphQL::Query::Variables" do
       end
     end
   end
+
+  describe "when an invalid enum value is given" do
+    class EnumVariableSchema < GraphQL::Schema
+      class Filter < GraphQL::Schema::Enum
+        value(:contains) { def visible?(ctx); !ctx[:hide_enum_value]; end }
+        value(:equals) { def visible?(ctx); !ctx[:hide_enum_value]; end }
+
+        def self.visible?(ctx)
+          !ctx[:hide_enum]
+        end
+      end
+
+      class FilterInput < GraphQL::Schema::InputObject
+        argument :filter, Filter, default_value: "contains" do
+          def visible?(_ctx); true; end
+        end
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :filter, String do
+          argument :input, FilterInput
+        end
+
+        def filter(input:)
+          input.filter.to_s
+        end
+      end
+
+      query(Query)
+    end
+
+    it "handles the error nicely" do
+      query_str = "query EchoFilter($input: FilterInput!) { filter(input: $input) }"
+      variables = { "input"  => { "filter" => "contains" } }
+
+      query = GraphQL::Query.new(
+        EnumVariableSchema,
+        query_str,
+        variables: variables,
+        context: { hide_enum_value: true }
+      )
+
+      assert_raises GraphQL::Schema::Enum::MissingValuesError do
+        query.result
+      end
+
+      query2 = GraphQL::Query.new(
+        EnumVariableSchema,
+        query_str,
+        variables: variables,
+        context: { hide_enum_value: true, hide_enum: true }
+      )
+
+      expected_messages = [
+        "Variable $input of type FilterInput! was provided invalid value for filter (Field is not defined on FilterInput)"
+      ]
+
+      assert query2.variables
+      assert_equal expected_messages, query2.result["errors"].map { |err| err["message"] }
+    end
+  end
 end

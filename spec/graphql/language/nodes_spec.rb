@@ -187,4 +187,41 @@ type Query {
       assert_equal "myField: f1(arg1: 5, arg2: HELLO) @topSecret {\n  myOtherField: f2\n}", node_2.to_query_string
     end
   end
+
+  describe "manually-created AST nodes" do
+    it "works with line and column" do
+      node = GraphQL::Language::Nodes::Document.new(
+        definitions: [
+          GraphQL::Language::Nodes::OperationDefinition.new(
+            operation_type: "query",
+            selections: [
+              GraphQL::Language::Nodes::Field.new(name: "f1"),
+              GraphQL::Language::Nodes::FragmentSpread.new(name: "DoesntExist")
+            ]
+          )
+        ]
+      )
+
+      assert_equal "query {\n  f1\n  ...DoesntExist\n}", node.to_query_string
+
+      schema = GraphQL::Schema.from_definition <<-GRAPHQL
+        type Query {
+          f1: String
+        }
+      GRAPHQL
+      result = GraphQL::StaticValidation::Validator.new(schema: schema).validate(GraphQL::Query.new(schema, nil, document: node))
+      expected_errs = [
+        {
+          "message"=>"Fragment DoesntExist was used, but not defined",
+          "locations"=>[{"line"=>nil, "column"=>nil}],
+          "path"=>["query", "... DoesntExist"],
+          "extensions"=> {
+            "code"=>"useAndDefineFragment",
+            "fragmentName"=>"DoesntExist"
+          }
+        }
+      ]
+      assert_equal expected_errs, result[:errors].map(&:to_h)
+    end
+  end
 end

@@ -238,7 +238,6 @@ describe GraphQL::Schema::InputObject do
           type
         end
 
-        orphan_types [Jazz::InstrumentType]
         max_complexity 100
       end
     end
@@ -443,6 +442,8 @@ describe GraphQL::Schema::InputObject do
         def prepare_list_of_lists(input:)
           input.map { |i| i.map(&:prepared_count) }
         end
+
+        field :example_thing, Thing
       end
 
       class Schema < GraphQL::Schema
@@ -914,7 +915,7 @@ describe GraphQL::Schema::InputObject do
       describe "validate_input with null" do
         let(:schema) { GraphQL::Schema.from_definition(%|
           type Query {
-            a: Int
+            a(input: ExampleInputObject): Int
           }
 
           input ExampleInputObject {
@@ -1094,7 +1095,8 @@ describe GraphQL::Schema::InputObject do
     describe "coercion of null inputs" do
       let(:schema) { GraphQL::Schema.from_definition(%|
         type Query {
-          a: Int
+          a(input: ExampleInputObject): Int
+          b(input: SecondLevelInputObject): Int
         }
 
         input ExampleInputObject {
@@ -1405,6 +1407,16 @@ describe GraphQL::Schema::InputObject do
 
       result = MissingValuesSchema.execute("mutation { values(values: { a: 1 }) { result } }")
       assert_equal "[a: 1, true], [b: nil, false], [c: nil, true]", result["data"]["values"]["result"]
+    end
+  end
+
+  describe "when argument is named objectId" do
+    it "doesn't emit a warning" do
+      assert_output "", "" do
+        Class.new(GraphQL::Schema::InputObject) do
+          argument :object_id, GraphQL::Types::ID, required: false
+        end
+      end
     end
   end
 end

@@ -4,16 +4,9 @@ require "json"
 require "set"
 require "singleton"
 require "forwardable"
+require "fiber/storage"
 
 module GraphQL
-  # forwards-compat for argument handling
-  module Ruby2Keywords
-    if RUBY_VERSION < "2.7"
-      def ruby2_keywords(*)
-      end
-    end
-  end
-
   class Error < StandardError
   end
 
@@ -126,6 +119,8 @@ require "graphql/parse_error"
 require "graphql/backtrace"
 
 require "graphql/unauthorized_error"
+require "graphql/unauthorized_enum_value_error"
 require "graphql/unauthorized_field_error"
 require "graphql/load_application_object_failed_error"
 require "graphql/testing"
+require "graphql/current"
