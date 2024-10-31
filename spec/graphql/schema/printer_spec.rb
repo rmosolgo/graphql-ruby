@@ -73,12 +73,6 @@ REASON
       value :BOO_HISS
     end
 
-    class NoFields < GraphQL::Schema::Object
-    end
-
-    class NoArguments < GraphQL::Schema::InputObject
-    end
-
     class Query < GraphQL::Schema::Object
       description "The query root of this schema"
 
@@ -87,10 +81,6 @@ REASON
         argument :varied, Varied, required: false, default_value: { id: "123", int: 234, float: 2.3, some_enum: :foo, sub: [{ string: "str" }] }
         argument :varied_with_nulls, Varied, required: false, default_value: { id: nil, int: nil, float: nil, some_enum: nil, sub: nil }
         argument :deprecated_arg, String, required: false, deprecation_reason: "Use something else"
-      end
-
-      field :no_fields_type, NoFields do
-        argument :no_arguments_input, NoArguments
       end
 
       field :example_media, Media
@@ -566,10 +556,6 @@ type Mutation {
   ): CreatePostPayload
 }
 
-input NoArguments
-
-type NoFields
-
 interface Node {
   id: ID!
 }
@@ -590,7 +576,6 @@ The query root of this schema
 """
 type Query {
   exampleMedia: Media
-  noFieldsType(noArgumentsInput: NoArguments!): NoFields
   post(
     deprecatedArg: String @deprecated(reason: "Use something else")
 
@@ -710,7 +695,6 @@ SCHEMA
     assert_equal expected, custom_filter_schema.to_definition(context: context)
   end
 
-
   it "applies an `except` filter" do
     expected = <<SCHEMA
 type Audio {
@@ -773,10 +757,6 @@ type Mutation {
   ): CreatePostPayload
 }
 
-input NoArguments
-
-type NoFields
-
 interface Node {
   id: ID!
 }
@@ -796,7 +776,6 @@ The query root of this schema
 """
 type Query {
   exampleMedia: Media
-  noFieldsType(noArgumentsInput: NoArguments!): NoFields
   post(
     """
     Post ID

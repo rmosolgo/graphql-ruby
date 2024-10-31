@@ -155,9 +155,11 @@ module GraphQL
             warden = Warden.from_context(context)
             # Local overrides take precedence over inherited fields
             visible_fields = {}
+            had_any_fields_at_all = false
             for ancestor in ancestors
               if ancestor.respond_to?(:own_fields) && visible_interface_implementation?(ancestor, context, warden)
                 ancestor.own_fields.each do |field_name, fields_entry|
+                  had_any_fields_at_all = true
                   # Choose the most local definition that passes `.visible?` --
                   # stop checking for fields by name once one has been found.
                   if !visible_fields.key?(field_name) && (f = Warden.visible_entry?(:visible_field?, fields_entry, context, warden))
@@ -166,7 +168,13 @@ module GraphQL
                 end
               end
             end
-            visible_fields
+            if !had_any_fields_at_all
+              raise GraphQL::Error, "Object types must have fields, but #{graphql_name} doesn't have any. Define a field for this type or remove it from your schema."
+            elsif visible_fields.empty?
+              raise GraphQL::Error, "Object types must have fields, but #{graphql_name}'s fields were all hidden. Implement `.visible?` to hide the type, too."
+            else
+              visible_fields
+            end
           end
         end
 
