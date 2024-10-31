@@ -1162,7 +1162,7 @@ module GraphQL
       # @return [Object, nil] The application which `object_id` references, or `nil` if there is no object or the current operation shouldn't have access to the object
       # @see id_from_object which produces these IDs
       def object_from_id(object_id, context)
-        raise GraphQL::RequiredImplementationMissingError, "#{self.name}.object_from_id(object_id, context) must be implemented to load by ID (tried to load from id `#{node_id}`)"
+        raise GraphQL::RequiredImplementationMissingError, "#{self.name}.object_from_id(object_id, context) must be implemented to load by ID (tried to load from id `#{object_id}`)"
       end
 
       # Return a stable ID string for `object` so that it can be refetched later, using {.object_from_id}.
