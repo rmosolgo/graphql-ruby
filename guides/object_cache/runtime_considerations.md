@@ -55,6 +55,8 @@ pp result.context[:object_cache]
   messages: ["...", "..."],   # status messages about the cache's behavior
   objects: Set(...),          # application objects encountered during the query
   uncacheable: true,          # if ObjectCache found a reason that this query couldn't be cached (see `messages: ...` for reason)
+  reauthorized_cached_objects: true,
+                              # if `.authorized?` was checked for cached objects, see "Disabling Reauthorization"
 }
 ```
 

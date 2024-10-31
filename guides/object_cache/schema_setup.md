@@ -98,3 +98,10 @@ end
 ```
 
 By returning a new `MySchema.fingerprint`, _all_ previously-cached results will be expired.
+
+## Disabling Reauthorization
+
+By default, `ObjectCache` checks `.authorized?` on each object before returning a cached result. However, if all authorization-related considerations are present in the object's cache fingerprint, then you can disable this check in two ways:
+
+- __per-query__, by passing `context: { reauthorize_cached_objects: false }`
+- __globally__, by configuring `use GraphQL::Enterprise::ObjectCache, ... reauthorize_cached_objects: false`

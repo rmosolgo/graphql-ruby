@@ -29,7 +29,9 @@ This reduces latency for clients and reduces the load on your database and appli
 
 ## How
 
-Before running a query, `ObjectCache` creates a fingerprint for the query using {{ "GraphQL::Query#fingerprint" | api_doc }} and {% internal_link "`Schema.context_fingerprint_for(ctx)`", "/object_cache/schema_setup#context-fingerprint" %}. Then, it checks the backend for a cached response which matches the fingerprint. If a match is found, the `ObjectCache` fetches the objects previously visited by this query and compares their current fingerprints to the ones in the cache. If the fingerprints all match, then the cached response returned.
+Before running a query, `ObjectCache` creates a fingerprint for the query using {{ "GraphQL::Query#fingerprint" | api_doc }} and {% internal_link "`Schema.context_fingerprint_for(ctx)`", "/object_cache/schema_setup#context-fingerprint" %}. Then, it checks the backend for a cached response which matches the fingerprint.
+
+If a match is found, the `ObjectCache` fetches the objects previously visited by this query. Then, it compares the current fingerprint of each object ot the one in the cache and checks `.authorized?` for that object. If the fingerprints all match and all objects pass authorization checks, then the cached response returned. (Authorization checks can be {% internal_link "disabled", "/object_cache/schema_setup#disabling-reauthorization" %}.)
 
 If there is no cached response or if the fingerprints don't match, then the incoming query is re-evaluated. While it's executed, `ObjectCache` gathers the IDs and fingerprints of each object it encounters. When the query is done, the result and the new object fingerprints are written to the cache.
 
