@@ -550,6 +550,7 @@ describe GraphQL::Schema::Warden do
 
         class Query < GraphQL::Schema::Object
           field :bag, BagOfThings, null: false
+          field :something_not_hidden, String
         end
 
         query(Query)
@@ -575,16 +576,16 @@ describe GraphQL::Schema::Warden do
 
       res = schema.execute(query_string)
       assert res["data"]["BagOfThings"]
-      assert_equal ["bag"], res["data"]["Query"]["fields"].map { |f| f["name"] }
+      assert_equal ["bag", "somethingNotHidden"], res["data"]["Query"]["fields"].map { |f| f["name"] }
 
       # Hide the union when all its possible types are gone. This will cause the field to be hidden too.
       res = schema.execute(query_string, context: { except: ->(m, _) { ["A", "B", "C"].include?(m.graphql_name) } })
       assert_nil res["data"]["BagOfThings"]
-      assert_equal [], res["data"]["Query"]["fields"]
+      assert_equal [{ "name" => "somethingNotHidden" }], res["data"]["Query"]["fields"]
 
       res = schema.execute(query_string, context: { except: ->(m, _) { m.graphql_name == "bag" } })
       assert_nil res["data"]["BagOfThings"]
-      assert_equal [], res["data"]["Query"]["fields"]
+      assert_equal [{ "name" => "somethingNotHidden" }], res["data"]["Query"]["fields"]
 
       # Unreferenced but still visible because extra type
       schema.extra_types([schema.find("BagOfThings")])
@@ -597,6 +598,7 @@ describe GraphQL::Schema::Warden do
         type Query {
           node: Node
           a: A
+          notHidden: String
         }
 
         type A implements Node {
@@ -636,25 +638,25 @@ describe GraphQL::Schema::Warden do
 
       res = schema.execute(query_string)
       assert res["data"]["Node"]
-      assert_equal ["a", "node"], res["data"]["Query"]["fields"].map { |f| f["name"] }
+      assert_equal ["a", "node", "notHidden"], res["data"]["Query"]["fields"].map { |f| f["name"] }
 
       res = schema.execute(query_string, context: { skip_visibility_migration_error: true, except: ->(m, _) { ["A", "B", "C"].include?(m.graphql_name) } })
 
       if GraphQL::Schema.use_visibility_profile?
         # Node is still visible even though it has no possible types
         assert res["data"]["Node"]
-        assert_equal [{ "name" => "node" }], res["data"]["Query"]["fields"]
+        assert_equal [{ "name" => "node" }, { "name" => "notHidden" }], res["data"]["Query"]["fields"]
       else
         # When the possible types are all hidden, hide the interface and fields pointing to it
         assert_nil res["data"]["Node"]
-        assert_equal [], res["data"]["Query"]["fields"]
+        assert_equal [{ "name" => "notHidden" }], res["data"]["Query"]["fields"]
       end
 
       # Even when it's not the return value of a field,
       # still show the interface since it allows code reuse
       res = schema.execute(query_string, context: { except: ->(m, _) { m.graphql_name == "node" } })
       assert_equal "Node", res["data"]["Node"]["name"]
-      assert_equal [{"name" => "a"}], res["data"]["Query"]["fields"]
+      assert_equal [{"name" => "a"}, { "name" => "notHidden" }], res["data"]["Query"]["fields"]
     end
 
     it "can't be a fragment condition" do
@@ -1057,6 +1059,7 @@ describe GraphQL::Schema::Warden do
 
     visible_account = Class.new(hidden_account) do
       graphql_name "NewAccount"
+      field :username, String
       def self.visible?(_ctx); true; end
     end
 
