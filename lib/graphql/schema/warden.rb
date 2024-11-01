@@ -19,6 +19,13 @@ module GraphQL
         PassThruWarden
       end
 
+      def self.types_from_context(context)
+        context.types || PassThruWarden
+      rescue NoMethodError
+        # this might be a hash which won't respond to #warden
+        PassThruWarden
+      end
+
       def self.use(schema)
         # no-op
       end
@@ -182,6 +189,10 @@ module GraphQL
 
         def reachable_type?(type_name)
           !!@warden.reachable_type?(type_name)
+        end
+
+        def visible_enum_value?(enum_value, ctx = nil)
+          @warden.visible_enum_value?(enum_value, ctx)
         end
       end
 

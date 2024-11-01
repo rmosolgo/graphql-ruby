@@ -24,6 +24,7 @@ module GraphQL
         @query = NullQuery.new
         @dataloader = GraphQL::Dataloader::NullDataloader.new
         @schema = NullSchema
+        @types = Schema::Visibility::Profile.pass_thru(context: self, schema: @schema)
         @warden = Schema::Warden::NullWarden.new(context: self, schema: @schema)
       end
 
