@@ -512,4 +512,48 @@ describe GraphQL::Schema::Object do
       assert_nil obj1.comment
     end
   end
+
+  describe "when defined with no fields" do
+    class NoFieldsSchema < GraphQL::Schema
+      class NoFieldsThing < GraphQL::Schema::Object
+      end
+
+      class NoFieldsCompatThing < GraphQL::Schema::Object
+        has_no_fields(true)
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :no_fields_thing, NoFieldsThing
+        field :no_fields_compat_thing, NoFieldsCompatThing
+      end
+
+      query(Query)
+    end
+
+    it "raises an error at runtime and printing" do
+      refute NoFieldsSchema::NoFieldsThing.has_no_fields?
+
+      err = assert_raises GraphQL::Error do
+        NoFieldsSchema.execute("{ noFieldsThing { blah } }")
+      end
+      expected_message = "Object types must have fields, but NoFieldsThing doesn't have any. Define a field for this type, remove it from your schema, or add `has_no_fields(true)` to its definition."
+      assert_equal expected_message, err.message
+
+      err = assert_raises GraphQL::Error do
+        NoFieldsSchema.to_definition
+      end
+      assert_equal expected_message, err.message
+
+      err = assert_raises GraphQL::Error do
+        NoFieldsSchema.to_json
+      end
+      assert_equal expected_message, err.message
+    end
+
+    it "doesn't raise an error if has_no_fields(true)" do
+      assert NoFieldsSchema::NoFieldsCompatThing.has_no_fields?
+      res = NoFieldsSchema.execute("{ noFieldsCompatThing { blah } }")
+      assert_equal ["Field 'blah' doesn't exist on type 'NoFieldsCompatThing'"], res["errors"].map { |e| e["message"] }
+    end
+  end
 end

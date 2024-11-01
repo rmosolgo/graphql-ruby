@@ -73,6 +73,14 @@ REASON
       value :BOO_HISS
     end
 
+
+    class NoFields < GraphQL::Schema::Object
+      has_no_fields(true)
+    end
+
+    class NoArguments < GraphQL::Schema::InputObject
+    end
+
     class Query < GraphQL::Schema::Object
       description "The query root of this schema"
 
@@ -81,6 +89,10 @@ REASON
         argument :varied, Varied, required: false, default_value: { id: "123", int: 234, float: 2.3, some_enum: :foo, sub: [{ string: "str" }] }
         argument :varied_with_nulls, Varied, required: false, default_value: { id: nil, int: nil, float: nil, some_enum: nil, sub: nil }
         argument :deprecated_arg, String, required: false, deprecation_reason: "Use something else"
+      end
+
+      field :no_fields_type, NoFields do
+        argument :no_arguments_input, NoArguments
       end
 
       field :example_media, Media
@@ -556,6 +568,10 @@ type Mutation {
   ): CreatePostPayload
 }
 
+input NoArguments
+
+type NoFields
+
 interface Node {
   id: ID!
 }
@@ -576,6 +592,7 @@ The query root of this schema
 """
 type Query {
   exampleMedia: Media
+  noFieldsType(noArgumentsInput: NoArguments!): NoFields
   post(
     deprecatedArg: String @deprecated(reason: "Use something else")
 
@@ -757,6 +774,10 @@ type Mutation {
   ): CreatePostPayload
 }
 
+input NoArguments
+
+type NoFields
+
 interface Node {
   id: ID!
 }
@@ -776,6 +797,7 @@ The query root of this schema
 """
 type Query {
   exampleMedia: Media
+  noFieldsType(noArgumentsInput: NoArguments!): NoFields
   post(
     """
     Post ID

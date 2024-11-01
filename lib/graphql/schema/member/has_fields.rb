@@ -79,6 +79,14 @@ module GraphQL
           end
         end
 
+        def has_no_fields(new_has_no_fields)
+          @has_no_fields = new_has_no_fields
+        end
+
+        def has_no_fields?
+          @has_no_fields
+        end
+
         # @return [Hash<String => GraphQL::Schema::Field, Array<GraphQL::Schema::Field>>] Fields defined on this class _specifically_, not parent classes
         def own_fields
           @own_fields ||= {}
@@ -168,10 +176,8 @@ module GraphQL
                 end
               end
             end
-            if !had_any_fields_at_all
-              raise GraphQL::Error, "Object types must have fields, but #{graphql_name} doesn't have any. Define a field for this type or remove it from your schema."
-            elsif visible_fields.empty?
-              raise GraphQL::Error, "Object types must have fields, but #{graphql_name}'s fields were all hidden. Implement `.visible?` to hide the type, too."
+            if !had_any_fields_at_all && !has_no_fields?
+              raise GraphQL::Error, "Object types must have fields, but #{graphql_name} doesn't have any. Define a field for this type, remove it from your schema, or add `has_no_fields(true)` to its definition."
             else
               visible_fields
             end
@@ -196,6 +202,7 @@ module GraphQL
           subclass.class_eval do
             @own_fields ||= nil
             @field_class ||= nil
+            @has_no_fields ||= false
           end
         end
 
