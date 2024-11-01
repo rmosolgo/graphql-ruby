@@ -1419,4 +1419,55 @@ describe GraphQL::Schema::InputObject do
       end
     end
   end
+
+  describe "when no arguments are defined" do
+    describe "when defined with no fields" do
+      class NoArgumentsSchema < GraphQL::Schema
+        class NoArgumentsInput < GraphQL::Schema::InputObject
+        end
+
+        class NoArgumentsCompatInput < GraphQL::Schema::InputObject
+          has_no_arguments(true)
+        end
+
+        class Query < GraphQL::Schema::Object
+          field :no_arguments, String do
+            argument :input, NoArgumentsInput
+          end
+
+          field :no_arguments_compat, String, fallback_value: "OK" do
+            argument :input, NoArgumentsCompatInput
+          end
+        end
+
+        query(Query)
+      end
+
+      it "raises an error at runtime and printing" do
+        refute NoArgumentsSchema::NoArgumentsInput.has_no_arguments?
+
+        err = assert_raises GraphQL::Error do
+          NoArgumentsSchema.execute("{ noArguments(input: {}) }")
+        end
+        expected_message = "Input Object types must have arguments, but NoArgumentsInput doesn't have any. Define an argument for this type, remove it from your schema, or add `has_no_arguments(true)` to its definition."
+        assert_equal expected_message, err.message
+
+        err = assert_raises GraphQL::Error do
+          NoArgumentsSchema.to_definition
+        end
+        assert_equal expected_message, err.message
+
+        err = assert_raises GraphQL::Error do
+          NoArgumentsSchema.to_json
+        end
+        assert_equal expected_message, err.message
+      end
+
+      it "doesn't raise an error if has_no_arguments(true)" do
+        assert NoArgumentsSchema::NoArgumentsCompatInput.has_no_arguments?
+        res = NoArgumentsSchema.execute("{ noArgumentsCompat(input: {}) }")
+        assert_equal "OK", res["data"]["noArgumentsCompat"]
+      end
+    end
+  end
 end

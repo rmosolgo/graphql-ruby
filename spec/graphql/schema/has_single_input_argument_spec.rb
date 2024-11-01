@@ -124,7 +124,6 @@ describe GraphQL::Schema::HasSingleInputArgument do
             name: 'name',
           }
         end
-
       end
       class Mutation < GraphQL::Schema::Object
         field_class GraphQL::Schema::Field

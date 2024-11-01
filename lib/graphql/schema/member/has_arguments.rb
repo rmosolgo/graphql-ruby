@@ -76,7 +76,7 @@ module GraphQL
         end
 
         # @return [Hash<String => GraphQL::Schema::Argument] Arguments defined on this thing, keyed by name. Includes inherited definitions
-        def arguments(context = GraphQL::Query::NullContext.instance)
+        def arguments(context = GraphQL::Query::NullContext.instance, _require_defined_arguments = nil)
           if own_arguments.any?
             own_arguments_that_apply = {}
             own_arguments.each do |name, args_entry|
@@ -100,9 +100,9 @@ module GraphQL
           end
 
           module InheritedArguments
-            def arguments(context = GraphQL::Query::NullContext.instance)
-              own_arguments = super
-              inherited_arguments = superclass.arguments(context)
+            def arguments(context = GraphQL::Query::NullContext.instance, require_defined_arguments = true)
+              own_arguments = super(context, require_defined_arguments)
+              inherited_arguments = superclass.arguments(context, false)
 
               if own_arguments.any?
                 if inherited_arguments.any?
@@ -149,7 +149,7 @@ module GraphQL
         end
 
         module FieldConfigured
-          def arguments(context = GraphQL::Query::NullContext.instance)
+          def arguments(context = GraphQL::Query::NullContext.instance, _require_defined_arguments = nil)
             own_arguments = super
             if @resolver_class
               inherited_arguments = @resolver_class.field_arguments(context)

@@ -79,10 +79,14 @@ module GraphQL
           end
         end
 
+        # @param new_has_no_fields [Boolean] Call with `true` to make this Object type ignore the requirement to have any defined fields.
+        # @return [void]
         def has_no_fields(new_has_no_fields)
           @has_no_fields = new_has_no_fields
+          nil
         end
 
+        # @return [Boolean] `true` if `has_no_fields(true)` was configued
         def has_no_fields?
           @has_no_fields
         end

@@ -79,6 +79,7 @@ REASON
     end
 
     class NoArguments < GraphQL::Schema::InputObject
+      has_no_arguments(true)
     end
 
     class Query < GraphQL::Schema::Object
