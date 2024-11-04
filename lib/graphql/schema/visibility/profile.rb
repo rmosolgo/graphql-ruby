@@ -22,8 +22,10 @@ module GraphQL
           end
         end
 
-        def self.pass_thru(context:, schema:)
-          self.new(name: "PassThru", context: context, schema: schema)
+        def self.null_profile(context:, schema:)
+          profile = self.new(name: "NullProfile", context: context, schema: schema)
+          profile.instance_variable_set(:@cached_visible, Hash.new { |k, v| k[v] = true }.compare_by_identity)
+          profile
         end
 
         # @return [Symbol, nil]

@@ -87,24 +87,17 @@ module GraphQL
         # No-op, but for compatibility:
         attr_writer :skip_warning
 
-        # @api private
-        module NullVisibilityProfile
-          def self.new(context:, schema:)
-            NullWarden.new(context: context, schema: schema).visibility_profile
-          end
-        end
-
         attr_reader :visibility_profile
 
         def visible_field?(field_defn, _ctx = nil, owner = nil); true; end
         def visible_argument?(arg_defn, _ctx = nil); true; end
         def visible_type?(type_defn, _ctx = nil); true; end
-        def visible_enum_value?(enum_value, _ctx = nil); true; end
+        def visible_enum_value?(enum_value, _ctx = nil); enum_value.visible?(Query::NullContext.instance); end
         def visible_type_membership?(type_membership, _ctx = nil); true; end
         def interface_type_memberships(obj_type, _ctx = nil); obj_type.interface_type_memberships; end
         def get_type(type_name); @schema.get_type(type_name, Query::NullContext.instance, false); end # rubocop:disable Development/ContextIsPassedCop
         def arguments(argument_owner, ctx = nil); argument_owner.all_argument_definitions; end
-        def enum_values(enum_defn); enum_defn.enum_values; end # rubocop:disable Development/ContextIsPassedCop
+        def enum_values(enum_defn); enum_defn.enum_values(Query::NullContext.instance); end # rubocop:disable Development/ContextIsPassedCop
         def get_argument(parent_type, argument_name); parent_type.get_argument(argument_name); end # rubocop:disable Development/ContextIsPassedCop
         def types; @schema.types; end # rubocop:disable Development/ContextIsPassedCop
         def root_type_for_operation(op_name); @schema.root_type_for_operation(op_name); end
