@@ -55,6 +55,7 @@ option | description
 `--add-typename` | Add `__typename` to all selection sets (for use with Apollo Client)
 `--verbose` | Output some debug information
 `--changeset-version` | Set a {% internal_link "Changeset Version", "/changesets/installation#controller-setup" %} when syncing these queries. (`context[:changeset_version]` will also be required at runtime, when running these stored operations.)
+`--dump-payload` | A file to write the HTTP Post payload into, or if no filename is passed, then the payload will be written to stdout.
 
 You can see these and a few others with `graphql-ruby-client sync --help`.
 
