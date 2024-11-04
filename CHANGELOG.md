@@ -10,7 +10,13 @@
 
 ### Bug fixes
 
-# 2.4.0
+# 2.4.1 (4 Nov 2024)
+
+### Bug fixes
+
+- Visibility: support dynamically-generated `#enum_values` #5141
+
+# 2.4.0 (31 Oct 2024)
 
 ### Deprecations
 
