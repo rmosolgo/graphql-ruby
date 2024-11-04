@@ -696,4 +696,58 @@ describe GraphQL::Schema::Subscription do
       assert_nil PrivateSubscription.subscription_scope
     end
   end
+
+  describe "writing during resolution" do
+    class DirectWriteSchema < GraphQL::Schema
+      class WriteCheckSubscriptions
+        def use(schema)
+          schema.subscriptions = self
+        end
+
+        def write_subscription(query, events)
+          query.context[:write_subscription_count] ||= 0
+          query.context[:write_subscription_count] += 1
+          evs = query.context[:written_events] ||= []
+          evs << events
+          nil
+        end
+      end
+      class ImplicitWrite < GraphQL::Schema::Subscription
+        type String
+
+        def subscribe
+          "#{context[:written_events]&.size.inspect} / #{context[:write_subscription_count].inspect}"
+        end
+      end
+
+      class DirectWrite < ImplicitWrite
+        type String
+
+        def subscribe
+          write_subscription
+          super
+        end
+      end
+
+      class Subscription < GraphQL::Schema::Object
+        field :direct, subscription: DirectWrite
+        field :implicit, subscription: ImplicitWrite
+      end
+
+      use WriteCheckSubscriptions.new
+      subscription(Subscription)
+    end
+
+    it "only calls write_subscription once" do
+      res = DirectWriteSchema.execute("subscription { direct }")
+      assert_equal "1 / 1", res["data"]["direct"]
+      assert_equal 1, res.context[:write_subscription_count]
+      assert_equal [1], res.context[:written_events].map(&:size)
+
+      res = DirectWriteSchema.execute("subscription { implicit }")
+      assert_equal "nil / nil", res["data"]["implicit"]
+      assert_equal 1, res.context[:write_subscription_count]
+      assert_equal [1], res.context[:written_events].map(&:size)
+    end
+  end
 end

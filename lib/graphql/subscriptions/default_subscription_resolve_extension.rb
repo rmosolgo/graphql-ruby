@@ -20,12 +20,22 @@ module GraphQL
       def after_resolve(value:, context:, object:, arguments:, **rest)
         if value.is_a?(GraphQL::ExecutionError)
           value
+        elsif @field.resolver.method_defined?(:subscription_written?) &&
+          (subscription_namespace = context.namespace(:subscriptions)) &&
+          (subscriptions_by_path = subscription_namespace[:subscriptions])
+          (subscription_instance = subscriptions_by_path[context.current_path])
+          # If it was already written, don't append this event to be written later
+          if !subscription_instance.subscription_written?
+            events = context.namespace(:subscriptions)[:events]
+            events << subscription_instance.event
+          end
+          value
         elsif (events = context.namespace(:subscriptions)[:events])
           # This is the first execution, so gather an Event
           # for the backend to register:
           event = Subscriptions::Event.new(
             name: field.name,
-            arguments: arguments_without_field_extras(arguments: arguments),
+            arguments: arguments,
             context: context,
             field: field,
           )
@@ -33,7 +43,7 @@ module GraphQL
           value
         elsif context.query.subscription_topic == Subscriptions::Event.serialize(
             field.name,
-            arguments_without_field_extras(arguments: arguments),
+            arguments,
             field,
             scope: (field.subscription_scope ? context[field.subscription_scope] : nil),
           )
@@ -43,14 +53,6 @@ module GraphQL
         else
           # This is a subscription update, but this event wasn't triggered.
           context.skip
-        end
-      end
-
-      private
-
-      def arguments_without_field_extras(arguments:)
-        arguments.dup.tap do |event_args|
-          field.extras.each { |k| event_args.delete(k) }
         end
       end
     end
