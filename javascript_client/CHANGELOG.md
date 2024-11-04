@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.14.2 (4 Nov 2024)
+
+- `sync`: Add a `--dump-payload` option for printing out the HTTP Post data #5143
+
 # 1.14.1 (30 Sept 2024)
 
 - `AblyLink`: don't set up an Ably subscription when no Subscription header is present #5113
