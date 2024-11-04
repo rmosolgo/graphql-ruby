@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Execution::Errors
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::Execution::Errors";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (E)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Execution.html" title="GraphQL::Execution (module)">Execution</a></span></span>
+     &raquo; 
+    <span class="title">Errors</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Execution::Errors
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">GraphQL::Execution::Errors</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/execution/errors.rb</dd>
+  </dl>
+  
+</div>
+
+
+
+
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#find_handler_for-class_method" title="find_handler_for (class method)">.<strong>find_handler_for</strong>(schema, error_class)  &#x21d2; Proc<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The handler for <code>error_class</code>, if one was registered on this schema or inherited.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#register_rescue_from-class_method" title="register_rescue_from (class method)">.<strong>register_rescue_from</strong>(error_class, error_handlers, error_handler)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Register this handler, updating the internal handler index to maintain least-to-most specific.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="find_handler_for-class_method">
+  
+    .<strong>find_handler_for</strong>(schema, error_class)  &#x21d2; <tt>Proc</tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns The handler for <code>error_class</code>, if one was registered on this schema or inherited.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Proc</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The handler for <code>error_class</code>, if one was registered on this schema or inherited</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/errors.rb', line 56</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_find_handler_for'>find_handler_for</span><span class='lparen'>(</span><span class='id identifier rubyid_schema'>schema</span><span class='comma'>,</span> <span class='id identifier rubyid_error_class'>error_class</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_handlers'>handlers</span> <span class='op'>=</span> <span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_error_handlers'>error_handlers</span><span class='lbracket'>[</span><span class='symbol'>:subclass_handlers</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_handler'>handler</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='kw'>while</span> <span class='lparen'>(</span><span class='id identifier rubyid_handlers'>handlers</span><span class='rparen'>)</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid__err_class'>_err_class</span><span class='comma'>,</span> <span class='id identifier rubyid_next_handler'>next_handler</span> <span class='op'>=</span> <span class='id identifier rubyid_handlers'>handlers</span><span class='period'>.</span><span class='id identifier rubyid_find'>find</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_err_class'>err_class</span><span class='comma'>,</span> <span class='id identifier rubyid_handler'>handler</span><span class='op'>|</span> <span class='id identifier rubyid_error_class'>error_class</span> <span class='op'>&lt;=</span> <span class='id identifier rubyid_err_class'>err_class</span> <span class='rbrace'>}</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_next_handler'>next_handler</span>
+      <span class='id identifier rubyid_handlers'>handlers</span> <span class='op'>=</span> <span class='id identifier rubyid_next_handler'>next_handler</span><span class='lbracket'>[</span><span class='symbol'>:subclass_handlers</span><span class='rbracket'>]</span>
+      <span class='id identifier rubyid_handler'>handler</span> <span class='op'>=</span> <span class='id identifier rubyid_next_handler'>next_handler</span>
+    <span class='kw'>else</span>
+      <span class='comment'># Don&#39;t reassign `handler` --
+</span>      <span class='comment'># let the previous assignment carry over outside this block.
+</span>      <span class='kw'>break</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='comment'># check for a handler from a parent class:
+</span>  <span class='kw'>if</span> <span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_superclass'>superclass</span><span class='period'>.</span><span class='id identifier rubyid_respond_to?'>respond_to?</span><span class='lparen'>(</span><span class='symbol'>:error_handlers</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_parent_handler'>parent_handler</span> <span class='op'>=</span> <span class='id identifier rubyid_find_handler_for'>find_handler_for</span><span class='lparen'>(</span><span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_superclass'>superclass</span><span class='comma'>,</span> <span class='id identifier rubyid_error_class'>error_class</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+
+  <span class='comment'># If the inherited handler is more specific than the one defined here,
+</span>  <span class='comment'># use it.
+</span>  <span class='comment'># If it&#39;s a tie (or there is no parent handler), use the one defined here.
+</span>  <span class='comment'># If there&#39;s an inherited one, but not one defined here, use the inherited one.
+</span>  <span class='comment'># Otherwise, there&#39;s no handler for this error, return `nil`.
+</span>  <span class='kw'>if</span> <span class='id identifier rubyid_parent_handler'>parent_handler</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_handler'>handler</span> <span class='op'>&amp;&amp;</span> <span class='id identifier rubyid_parent_handler'>parent_handler</span><span class='lbracket'>[</span><span class='symbol'>:class</span><span class='rbracket'>]</span> <span class='op'>&lt;</span> <span class='id identifier rubyid_handler'>handler</span><span class='lbracket'>[</span><span class='symbol'>:class</span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_parent_handler'>parent_handler</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_handler'>handler</span>
+    <span class='id identifier rubyid_handler'>handler</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_parent_handler'>parent_handler</span>
+    <span class='id identifier rubyid_parent_handler'>parent_handler</span>
+  <span class='kw'>else</span>
+    <span class='kw'>nil</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="register_rescue_from-class_method">
+  
+    .<strong>register_rescue_from</strong>(error_class, error_handlers, error_handler)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>Register this handler, updating the
+internal handler index to maintain least-to-most specific.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>error_class</span>
+      
+      
+        <span class='type'>(<tt>Class&lt;Exception&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>error_handlers</span>
+      
+      
+        <span class='type'>(<tt>Hash</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>error_handler</span>
+      
+      
+        <span class='type'>(<tt>Proc</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/execution/errors.rb', line 13</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_register_rescue_from'>register_rescue_from</span><span class='lparen'>(</span><span class='id identifier rubyid_error_class'>error_class</span><span class='comma'>,</span> <span class='id identifier rubyid_error_handlers'>error_handlers</span><span class='comma'>,</span> <span class='id identifier rubyid_error_handler'>error_handler</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_subclasses_handlers'>subclasses_handlers</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
+  <span class='id identifier rubyid_this_level_subclasses'>this_level_subclasses</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='comment'># During this traversal, do two things:
+</span>  <span class='comment'># - Identify any already-registered subclasses of this error class
+</span>  <span class='comment'>#   and gather them up to be inserted _under_ this class
+</span>  <span class='comment'># - Find the point in the index where this handler should be inserted
+</span>  <span class='comment'>#   (That is, _under_ any superclasses, or at top-level, if there are no superclasses registered)
+</span>  <span class='kw'>while</span> <span class='lparen'>(</span><span class='id identifier rubyid_error_handlers'>error_handlers</span><span class='rparen'>)</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_this_level_subclasses'>this_level_subclasses</span><span class='period'>.</span><span class='id identifier rubyid_clear'>clear</span>
+    <span class='comment'># First, identify already-loaded handlers that belong
+</span>    <span class='comment'># _under_ this one. (That is, they&#39;re handlers
+</span>    <span class='comment'># for subclasses of `error_class`.)
+</span>    <span class='id identifier rubyid_error_handlers'>error_handlers</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_err_class'>err_class</span><span class='comma'>,</span> <span class='id identifier rubyid_handler'>handler</span><span class='op'>|</span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_err_class'>err_class</span> <span class='op'>&lt;</span> <span class='id identifier rubyid_error_class'>error_class</span>
+        <span class='id identifier rubyid_subclasses_handlers'>subclasses_handlers</span><span class='lbracket'>[</span><span class='id identifier rubyid_err_class'>err_class</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_handler'>handler</span>
+        <span class='id identifier rubyid_this_level_subclasses'>this_level_subclasses</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_err_class'>err_class</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+    <span class='comment'># Any handlers that we&#39;ll be moving, delete them from this point in the index
+</span>    <span class='id identifier rubyid_this_level_subclasses'>this_level_subclasses</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_err_class'>err_class</span><span class='op'>|</span>
+      <span class='id identifier rubyid_error_handlers'>error_handlers</span><span class='period'>.</span><span class='id identifier rubyid_delete'>delete</span><span class='lparen'>(</span><span class='id identifier rubyid_err_class'>err_class</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+
+    <span class='comment'># See if any keys in this hash are superclasses of this new class:
+</span>    <span class='id identifier rubyid_next_index_point'>next_index_point</span> <span class='op'>=</span> <span class='id identifier rubyid_error_handlers'>error_handlers</span><span class='period'>.</span><span class='id identifier rubyid_find'>find</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_err_class'>err_class</span><span class='comma'>,</span> <span class='id identifier rubyid_handler'>handler</span><span class='op'>|</span> <span class='id identifier rubyid_error_class'>error_class</span> <span class='op'>&lt;</span> <span class='id identifier rubyid_err_class'>err_class</span> <span class='rbrace'>}</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_next_index_point'>next_index_point</span>
+      <span class='id identifier rubyid_error_handlers'>error_handlers</span> <span class='op'>=</span> <span class='id identifier rubyid_next_index_point'>next_index_point</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='symbol'>:subclass_handlers</span><span class='rbracket'>]</span>
+    <span class='kw'>else</span>
+      <span class='comment'># this new handler doesn&#39;t belong to any sub-handlers,
+</span>      <span class='comment'># so insert it in the current set of `handlers`
+</span>      <span class='kw'>break</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+  <span class='comment'># Having found the point at which to insert this handler,
+</span>  <span class='comment'># register it and merge any subclass handlers back in at this point.
+</span>  <span class='id identifier rubyid_this_class_handlers'>this_class_handlers</span> <span class='op'>=</span> <span class='id identifier rubyid_error_handlers'>error_handlers</span><span class='lbracket'>[</span><span class='id identifier rubyid_error_class'>error_class</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_this_class_handlers'>this_class_handlers</span><span class='lbracket'>[</span><span class='symbol'>:handler</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_error_handler'>error_handler</span>
+  <span class='id identifier rubyid_this_class_handlers'>this_class_handlers</span><span class='lbracket'>[</span><span class='symbol'>:subclass_handlers</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_merge!'>merge!</span><span class='lparen'>(</span><span class='id identifier rubyid_subclasses_handlers'>subclasses_handlers</span><span class='rparen'>)</span>
+  <span class='kw'>nil</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Mon Nov  4 19:11:00 2024 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.37 (ruby-3.2.6).
+</div>
+
+    </div>
+  </body>
+</html>

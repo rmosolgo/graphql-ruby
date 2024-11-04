@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Module: GraphQL::Tracing::LegacyHooksTrace
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::Tracing::LegacyHooksTrace";
+  relpath = '../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../_index.html">Index (L)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Tracing.html" title="GraphQL::Tracing (module)">Tracing</a></span></span>
+     &raquo; 
+    <span class="title">LegacyHooksTrace</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Module: GraphQL::Tracing::LegacyHooksTrace
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/tracing/legacy_hooks_trace.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Defined Under Namespace</h2>
+<p class="children">
+  
+    
+      <strong class="modules">Modules:</strong> <span class='object_link'><a href="LegacyHooksTrace/RunHooks.html" title="GraphQL::Tracing::LegacyHooksTrace::RunHooks (module)">RunHooks</a></span>
+    
+  
+    
+  
+</p>
+
+
+
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#execute_multiplex-instance_method" title="#execute_multiplex (instance method)">#<strong>execute_multiplex</strong>(multiplex:)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="execute_multiplex-instance_method">
+  
+    #<strong>execute_multiplex</strong>(multiplex:)  &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/tracing/legacy_hooks_trace.rb', line 5</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_execute_multiplex'>execute_multiplex</span><span class='lparen'>(</span><span class='label'>multiplex:</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_multiplex_instrumenters'>multiplex_instrumenters</span> <span class='op'>=</span> <span class='id identifier rubyid_multiplex'>multiplex</span><span class='period'>.</span><span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_instrumenters'>instrumenters</span><span class='lbracket'>[</span><span class='symbol'>:multiplex</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_query_instrumenters'>query_instrumenters</span> <span class='op'>=</span> <span class='id identifier rubyid_multiplex'>multiplex</span><span class='period'>.</span><span class='id identifier rubyid_schema'>schema</span><span class='period'>.</span><span class='id identifier rubyid_instrumenters'>instrumenters</span><span class='lbracket'>[</span><span class='symbol'>:query</span><span class='rbracket'>]</span>
+  <span class='comment'># First, run multiplex instrumentation, then query instrumentation for each query
+</span>  <span class='const'><span class='object_link'><a href="LegacyHooksTrace/RunHooks.html" title="GraphQL::Tracing::LegacyHooksTrace::RunHooks (module)">RunHooks</a></span></span><span class='period'>.</span><span class='id identifier rubyid_call_hooks'><span class='object_link'><a href="LegacyHooksTrace/RunHooks.html#call_hooks-class_method" title="GraphQL::Tracing::LegacyHooksTrace::RunHooks.call_hooks (method)">call_hooks</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_multiplex_instrumenters'>multiplex_instrumenters</span><span class='comma'>,</span> <span class='id identifier rubyid_multiplex'>multiplex</span><span class='comma'>,</span> <span class='symbol'>:before_multiplex</span><span class='comma'>,</span> <span class='symbol'>:after_multiplex</span><span class='rparen'>)</span> <span class='kw'>do</span>
+    <span class='const'><span class='object_link'><a href="LegacyHooksTrace/RunHooks.html" title="GraphQL::Tracing::LegacyHooksTrace::RunHooks (module)">RunHooks</a></span></span><span class='period'>.</span><span class='id identifier rubyid_each_query_call_hooks'><span class='object_link'><a href="LegacyHooksTrace/RunHooks.html#each_query_call_hooks-class_method" title="GraphQL::Tracing::LegacyHooksTrace::RunHooks.each_query_call_hooks (method)">each_query_call_hooks</a></span></span><span class='lparen'>(</span><span class='id identifier rubyid_query_instrumenters'>query_instrumenters</span><span class='comma'>,</span> <span class='id identifier rubyid_multiplex'>multiplex</span><span class='period'>.</span><span class='id identifier rubyid_queries'>queries</span><span class='rparen'>)</span> <span class='kw'>do</span>
+      <span class='kw'>super</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Mon Nov  4 19:10:55 2024 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.37 (ruby-3.2.6).
+</div>
+
+    </div>
+  </body>
+</html>
