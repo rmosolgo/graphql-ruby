@@ -22,9 +22,9 @@ module GraphQL
           end
         end
 
-        def self.pass_thru(context:, schema:)
-          profile = self.new(context: context, schema: schema)
-          profile.instance_variable_set(:@cached_visible, Hash.new { |h,k| h[k] = true })
+        def self.null_profile(context:, schema:)
+          profile = self.new(name: "NullProfile", context: context, schema: schema)
+          profile.instance_variable_set(:@cached_visible, Hash.new { |k, v| k[v] = true }.compare_by_identity)
           profile
         end
 
@@ -123,7 +123,7 @@ module GraphQL
           end.compare_by_identity
 
           @cached_enum_values = Hash.new do |h, enum_t|
-            values = non_duplicate_items(enum_t.all_enum_value_definitions, @cached_visible)
+            values = non_duplicate_items(enum_t.enum_values(@context), @cached_visible)
             if values.size == 0
               raise GraphQL::Schema::Enum::MissingValuesError.new(enum_t)
             end
@@ -325,6 +325,10 @@ module GraphQL
         def reachable_type?(name)
           load_all_types
           !!@all_types[name]
+        end
+
+        def visible_enum_value?(enum_value, _ctx = nil)
+          @cached_visible[enum_value]
         end
 
         private

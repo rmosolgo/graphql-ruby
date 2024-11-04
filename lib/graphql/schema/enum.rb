@@ -86,10 +86,24 @@ module GraphQL
         def enum_values(context = GraphQL::Query::NullContext.instance)
           inherited_values = superclass.respond_to?(:enum_values) ? superclass.enum_values(context) : nil
           visible_values = []
-          warden = Warden.from_context(context)
+          types = Warden.types_from_context(context)
           own_values.each do |key, values_entry|
-            if (v = Warden.visible_entry?(:visible_enum_value?, values_entry, context, warden))
-              visible_values << v
+            visible_value = nil
+            if values_entry.is_a?(Array)
+              values_entry.each do |v|
+                if types.visible_enum_value?(v, context)
+                  if visible_value.nil?
+                    visible_value = v
+                    visible_values << v
+                  else
+                    raise DuplicateNamesError.new(
+                      duplicated_name: v.path, duplicated_definition_1: visible_value.inspect, duplicated_definition_2: v.inspect
+                    )
+                  end
+                end
+              end
+            elsif types.visible_enum_value?(values_entry, context)
+              visible_values << values_entry
             end
           end
 

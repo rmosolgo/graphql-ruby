@@ -122,7 +122,8 @@ module GraphQL
           :mutation_root,
           :possible_types,
           :subscription_root,
-          :reachable_type?
+          :reachable_type?,
+          :visible_enum_value?,
         ]
 
         PUBLIC_PROFILE_METHODS.each do |profile_method|
