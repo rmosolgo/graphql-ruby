@@ -479,11 +479,17 @@ To add other types to your schema, you might want `extra_types`: https://graphql
 
   describe "DidYouMean support" do
     class DidYouMeanSchema < GraphQL::Schema
+      class ExampleEnum < GraphQL::Schema::Enum
+        value "VALUE_ONE", "The first value"
+        value "VALUE_TWO", "The second value"
+      end
+
       class Query < GraphQL::Schema::Object
         field :first_field, String
         field :second_field, String
         field :second_fiel, String
         field :scond_field, String
+        field :third_field, ExampleEnum
       end
 
       query(Query)
@@ -507,8 +513,13 @@ To add other types to your schema, you might want `extra_types`: https://graphql
       res = no_dym_schema.execute("{ seconField }")
       assert_equal ["Field 'seconField' doesn't exist on type 'Query'"], res["errors"].map { |err| err["message"] }
     end
-  end 
-  
+
+    it "returns helpful message when non existing field is queried on enum" do
+      res = DidYouMeanSchema.execute("{ thirdField { foo } }")
+      assert_equal ["Field 'foo' doesn't exist on type 'ExampleEnum'"], res["errors"].map { |err| err["message"] }
+    end
+  end
+
   it "defers root type blocks until those types are used" do
     calls = []
     schema = Class.new(GraphQL::Schema) do
