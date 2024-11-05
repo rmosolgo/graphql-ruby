@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.14.3 (5 Nov 2024)
+
+- `ActionCableHandler`: Make sure `unsubscribe` is only called once #5109
+
 # 1.14.2 (4 Nov 2024)
 
 - `sync`: Add a `--dump-payload` option for printing out the HTTP Post data #5143
