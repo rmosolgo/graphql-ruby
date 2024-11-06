@@ -86,5 +86,27 @@ describe GraphQL::Schema::Visibility do
       assert_equal [:public, :admin], VisSchema.visibility.cached_profiles.keys, "preload: true"
       assert_equal 0, DynVisSchema.visibility.cached_profiles.size, "preload: false"
     end
+
+    describe "when no profile is defined" do
+      class NoProfileSchema < GraphQL::Schema
+        class ExampleExtension < GraphQL::Schema::FieldExtension
+        end
+
+        class Query < GraphQL::Schema::Object
+          field :str do
+            type(String)
+            extension(ExampleExtension)
+          end
+        end
+
+        use GraphQL::Schema::Visibility, preload: true
+      end
+
+      it "still preloads" do
+        assert_equal [], NoProfileSchema::Query.all_field_definitions.first.extensions.map(&:class)
+        NoProfileSchema.query(NoProfileSchema::Query)
+        assert_equal [NoProfileSchema::ExampleExtension], NoProfileSchema::Query.all_field_definitions.first.extensions.map(&:class)
+      end
+    end
   end
 end

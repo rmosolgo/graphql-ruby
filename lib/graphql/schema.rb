@@ -445,7 +445,12 @@ module GraphQL
             dup_defn = new_query_object || yield
             raise GraphQL::Error, "Second definition of `query(...)` (#{dup_defn.inspect}) is invalid, already configured with #{@query_object.inspect}"
           elsif use_visibility_profile?
-            @query_object = block_given? ? lazy_load_block : new_query_object
+            if block_given?
+              @query_object = lazy_load_block
+            else
+              @query_object = new_query_object
+              self.visibility.query_configured(@query_object)
+            end
           else
             @query_object = new_query_object || lazy_load_block.call
             add_type_and_traverse(@query_object, root: true)
@@ -453,6 +458,7 @@ module GraphQL
           nil
         elsif @query_object.is_a?(Proc)
           @query_object = @query_object.call
+          self.visibility&.query_configured(@query_object)
         else
           @query_object || find_inherited_value(:query)
         end
@@ -472,7 +478,12 @@ module GraphQL
             dup_defn = new_mutation_object || yield
             raise GraphQL::Error, "Second definition of `mutation(...)` (#{dup_defn.inspect}) is invalid, already configured with #{@mutation_object.inspect}"
           elsif use_visibility_profile?
-            @mutation_object = block_given? ? lazy_load_block : new_mutation_object
+            if block_given?
+              @mutation_object = lazy_load_block
+            else
+              @mutation_object = new_mutation_object
+              self.visibility.mutation_configured(@mutation_object)
+            end
           else
             @mutation_object = new_mutation_object || lazy_load_block.call
             add_type_and_traverse(@mutation_object, root: true)
@@ -480,6 +491,7 @@ module GraphQL
           nil
         elsif @mutation_object.is_a?(Proc)
           @mutation_object = @mutation_object.call
+          self.visibility&.mutation_configured(@query_object)
         else
           @mutation_object || find_inherited_value(:mutation)
         end
@@ -499,7 +511,12 @@ module GraphQL
             dup_defn = new_subscription_object || yield
             raise GraphQL::Error, "Second definition of `subscription(...)` (#{dup_defn.inspect}) is invalid, already configured with #{@subscription_object.inspect}"
           elsif use_visibility_profile?
-            @subscription_object = block_given? ? lazy_load_block : new_subscription_object
+            if block_given?
+              @subscription_object = lazy_load_block
+            else
+              @subscription_object = new_mutation_object
+              self.visibility.mutation_configured(@subscription_object)
+            end
             add_subscription_extension_if_necessary
           else
             @subscription_object = new_subscription_object || lazy_load_block.call

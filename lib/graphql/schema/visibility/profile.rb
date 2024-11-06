@@ -404,7 +404,7 @@ module GraphQL
             end
           end
 
-          entry_point_types.compact! # TODO why is this necessary?!
+          entry_point_types.compact! # Root types might be nil
           entry_point_types.flatten! # handle multiple defns
           entry_point_types.each { |t| add_type(t, true) }
 

@@ -21,18 +21,54 @@ module GraphQL
         if migration_errors
           schema.visibility_profile_class = Migration
         end
+        @preload = preload
         @profiles = profiles
         @cached_profiles = {}
         @dynamic = dynamic
         @migration_errors = migration_errors
         if preload
-          profiles.each do |profile_name, example_ctx|
-            example_ctx[:visibility_profile] = profile_name
-            prof = profile_for(example_ctx, profile_name)
-            prof.all_types # force loading
+          @preloaded_types = Set.new
+          if profiles.any?
+            profiles.each do |profile_name, example_ctx|
+              example_ctx[:visibility_profile] = profile_name
+              prof = profile_for(example_ctx, profile_name)
+              prof.all_types # force loading
+            end
+          else
+            types_to_visit = [
+              @schema.query,
+              @schema.mutation,
+              @schema.subscription,
+              *@schema.introspection_system.types.values,
+              *@schema.orphan_types,
+              *@schema.directives.map { |name, dir| dir.all_argument_definitions.map { |defn| defn.type.unwrap } }.flatten
+            ]
+            types_to_visit.compact!
+            ensure_all_loaded(types_to_visit)
+            # Somehow load files here
           end
         end
       end
+
+      def query_configured(query_type)
+        if @preload
+          ensure_all_loaded([query_type])
+        end
+      end
+
+      def mutation_configured(mutation_type)
+        if @preload
+          ensure_all_loaded([mutation_type])
+        end
+      end
+
+      def subscription_configured(subscription_type)
+        if @preload
+          ensure_all_loaded([subscription_type])
+        end
+      end
+
+      # TODO: on_orphan_types, on_directive, on_introspection_system
 
       # Make another Visibility for `schema` based on this one
       # @return [Visibility]
@@ -68,6 +104,19 @@ module GraphQL
           end
         else
           @schema.visibility_profile_class.new(context: context, schema: @schema)
+        end
+      end
+
+      private
+
+      def ensure_all_loaded(types_to_visit)
+        while (type = types_to_visit.shift)
+          if type.kind.fields? && @preloaded_types.add?(type)
+            type.all_field_definitions.each do |field_defn|
+              field_defn.ensure_loaded
+              types_to_visit << field_defn.type.unwrap
+            end
+          end
         end
       end
     end
