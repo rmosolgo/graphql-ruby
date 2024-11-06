@@ -313,7 +313,12 @@ module GraphQL
         @ast_node = ast_node
         @method_conflict_warning = method_conflict_warning
         @fallback_value = fallback_value
-        @definition_block = definition_block
+        if definition_block
+          @definition_mutex = Thread::Mutex.new
+          @definition_block = definition_block
+        else
+          @definition_mutex = @definition_block = nil
+        end
 
         arguments.each do |name, arg|
           case arg
@@ -365,15 +370,17 @@ module GraphQL
       # @return [self]
       # @api private
       def ensure_loaded
-        if @definition_block
-          if @definition_block.arity == 1
-            @definition_block.call(self)
-          else
-            instance_eval(&@definition_block)
+        @definition_mutex&.synchronize do
+          if @definition_block
+            if @definition_block.arity == 1
+              @definition_block.call(self)
+            else
+              instance_eval(&@definition_block)
+            end
+            self.extensions.each(&:after_define_apply)
+            @call_after_define = true
+            @definition_block = nil
           end
-          self.extensions.each(&:after_define_apply)
-          @call_after_define = true
-          @definition_block = nil
         end
         self
       end

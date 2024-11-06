@@ -893,4 +893,34 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     field = GraphQL::Schema::Field.new(name: "blah", owner: nil, type: FieldConnectionTest::Connection, connection: true)
     assert field.connection?
   end
+
+  describe "#ensure_loaded" do
+    # Slow down field loading to make a race condition happen:
+    class SlowExtension < GraphQL::Schema::FieldExtension
+      def initialize(...)
+        sleep 0.1
+        super
+      end
+    end
+
+    it "runs in a mutex" do
+      field_def = nil
+      Class.new(GraphQL::Schema::Object) do
+        graphql_name "SomeObject"
+        field_def = field :objects do |f|
+          puts "Calling def block"
+          f.type([self])
+          f.extension(SlowExtension)
+        end
+      end
+
+      3.times.map do |i|
+        Thread.new {
+          field_def.ensure_loaded
+        }
+      end.map(&:join)
+
+      assert "No error was raised"
+    end
+  end
 end
