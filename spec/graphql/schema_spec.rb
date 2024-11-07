@@ -514,9 +514,12 @@ To add other types to your schema, you might want `extra_types`: https://graphql
       assert_equal ["Field 'seconField' doesn't exist on type 'Query'"], res["errors"].map { |err| err["message"] }
     end
 
-    it "returns helpful message when non existing field is queried on enum" do
+    it "returns helpful message when non existing field is queried on a non-fields type" do
       res = DidYouMeanSchema.execute("{ thirdField { foo } }")
-      assert_equal ["Field 'foo' doesn't exist on type 'ExampleEnum'"], res["errors"].map { |err| err["message"] }
+      assert_equal ["Selections can't be made on enums (field 'thirdField' returns ExampleEnum but has selections [\"foo\"])"], res["errors"].map { |err| err["message"] }
+
+      res = DidYouMeanSchema.execute("{ secondField { foo } }")
+      assert_equal ["Selections can't be made on scalars (field 'secondField' returns String but has selections [\"foo\"])"], res["errors"].map { |err| err["message"] }
     end
   end
 
