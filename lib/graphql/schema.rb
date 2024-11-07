@@ -459,6 +459,7 @@ module GraphQL
         elsif @query_object.is_a?(Proc)
           @query_object = @query_object.call
           self.visibility&.query_configured(@query_object)
+          @query_object
         else
           @query_object || find_inherited_value(:query)
         end
@@ -492,6 +493,7 @@ module GraphQL
         elsif @mutation_object.is_a?(Proc)
           @mutation_object = @mutation_object.call
           self.visibility&.mutation_configured(@query_object)
+          @mutation_object
         else
           @mutation_object || find_inherited_value(:mutation)
         end
@@ -512,7 +514,7 @@ module GraphQL
             raise GraphQL::Error, "Second definition of `subscription(...)` (#{dup_defn.inspect}) is invalid, already configured with #{@subscription_object.inspect}"
           elsif use_visibility_profile?
             if block_given?
-              @subscription_object = new_subscription_object
+              @subscription_object = lazy_load_block
             else
               @subscription_object = new_subscription_object
               self.visibility.subscription_configured(@subscription_object)
@@ -527,6 +529,7 @@ module GraphQL
         elsif @subscription_object.is_a?(Proc)
           @subscription_object = @subscription_object.call
           add_subscription_extension_if_necessary
+          self.visibility.subscription_configured(@subscription_object)
           @subscription_object
         else
           @subscription_object || find_inherited_value(:subscription)
@@ -712,17 +715,22 @@ module GraphQL
         type.fields(context)
       end
 
+      # Pass a custom introspection module here to use it for this schema.
+      # @param new_introspection_namespace [Module] If given, use this module for custom introspection on the schema
+      # @return [Module, nil] The configured namespace, if there is one
       def introspection(new_introspection_namespace = nil)
         if new_introspection_namespace
           @introspection = new_introspection_namespace
           # reset this cached value:
           @introspection_system = nil
           introspection_system
+          @introspection
         else
           @introspection || find_inherited_value(:introspection)
         end
       end
 
+      # @return [Schema::IntrospectionSystem] Based on {introspection}
       def introspection_system
         if !@introspection_system
           @introspection_system = Schema::IntrospectionSystem.new(self)
