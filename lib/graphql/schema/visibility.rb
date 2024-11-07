@@ -27,48 +27,67 @@ module GraphQL
         @dynamic = dynamic
         @migration_errors = migration_errors
         if preload
+          # Traverse the schema now (and in the *_configured hooks below)
+          # To make sure things are loaded during boot
           @preloaded_types = Set.new
-          if profiles.any?
-            profiles.each do |profile_name, example_ctx|
-              example_ctx[:visibility_profile] = profile_name
-              prof = profile_for(example_ctx, profile_name)
-              prof.all_types # force loading
-            end
-          else
-            types_to_visit = [
-              @schema.query,
-              @schema.mutation,
-              @schema.subscription,
-              *@schema.introspection_system.types.values,
-              *@schema.orphan_types,
-              *@schema.directives.map { |name, dir| dir.all_argument_definitions.map { |defn| defn.type.unwrap } }.flatten
-            ]
-            types_to_visit.compact!
-            ensure_all_loaded(types_to_visit)
-            # Somehow load files here
+          types_to_visit = [
+            @schema.query,
+            @schema.mutation,
+            @schema.subscription,
+            *@schema.introspection_system.types.values,
+            *@schema.introspection_system.entry_points.map { |ep| ep.type.unwrap },
+            *@schema.orphan_types,
+          ]
+          # Root types may have been nil:
+          types_to_visit.compact!
+          ensure_all_loaded(types_to_visit)
+
+          profiles.each do |profile_name, example_ctx|
+            example_ctx[:visibility_profile] = profile_name
+            prof = profile_for(example_ctx, profile_name)
+            prof.all_types # force loading
           end
         end
       end
 
+      # @api private
       def query_configured(query_type)
         if @preload
           ensure_all_loaded([query_type])
         end
       end
 
+      # @api private
       def mutation_configured(mutation_type)
         if @preload
           ensure_all_loaded([mutation_type])
         end
       end
 
+      # @api private
       def subscription_configured(subscription_type)
         if @preload
           ensure_all_loaded([subscription_type])
         end
       end
 
-      # TODO: on_orphan_types, on_directive, on_introspection_system
+      # @api private
+      def orphan_types_configured(orphan_types)
+        if @preload
+          ensure_all_loaded(orphan_types)
+        end
+      end
+
+      # @api private
+      def introspection_system_configured(introspection_system)
+        if @preload
+          introspection_types = [
+            *@schema.introspection_system.types.values,
+            *@schema.introspection_system.entry_points.map { |ep| ep.type.unwrap },
+          ]
+          ensure_all_loaded(introspection_types)
+        end
+      end
 
       # Make another Visibility for `schema` based on this one
       # @return [Visibility]

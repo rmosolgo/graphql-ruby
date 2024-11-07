@@ -512,10 +512,10 @@ module GraphQL
             raise GraphQL::Error, "Second definition of `subscription(...)` (#{dup_defn.inspect}) is invalid, already configured with #{@subscription_object.inspect}"
           elsif use_visibility_profile?
             if block_given?
-              @subscription_object = lazy_load_block
+              @subscription_object = new_subscription_object
             else
-              @subscription_object = new_mutation_object
-              self.visibility.mutation_configured(@subscription_object)
+              @subscription_object = new_subscription_object
+              self.visibility.subscription_configured(@subscription_object)
             end
             add_subscription_extension_if_necessary
           else
@@ -717,6 +717,7 @@ module GraphQL
           @introspection = new_introspection_namespace
           # reset this cached value:
           @introspection_system = nil
+          introspection_system
         else
           @introspection || find_inherited_value(:introspection)
         end
@@ -726,6 +727,7 @@ module GraphQL
         if !@introspection_system
           @introspection_system = Schema::IntrospectionSystem.new(self)
           @introspection_system.resolve_late_bindings
+          self.visibility&.introspection_system_configured(@introspection_system)
         end
         @introspection_system
       end
@@ -969,6 +971,13 @@ module GraphQL
         end
       end
 
+      # Tell the schema about these types so that they can be registered as implementations of interfaces in the schema.
+      #
+      # This method must be used when an object type is connected to the schema as an interface implementor but
+      # not as a return type of a field. In that case, if the object type isn't registered here, GraphQL-Ruby won't be able to find it.
+      #
+      # @param new_orphan_types [Array<Class<GraphQL::Schema::Object>>] Object types to register as implementations of interfaces in the schema.
+      # @return [Array<Class<GraphQL::Schema::Object>>] All previously-registered orphan types for this schema
       def orphan_types(*new_orphan_types)
         if new_orphan_types.any?
           new_orphan_types = new_orphan_types.flatten
@@ -985,6 +994,7 @@ module GraphQL
           end
           add_type_and_traverse(new_orphan_types, root: false) unless use_visibility_profile?
           own_orphan_types.concat(new_orphan_types.flatten)
+          self.visibility&.orphan_types_configured(new_orphan_types)
         end
 
         inherited_ot = find_inherited_value(:orphan_types, nil)
