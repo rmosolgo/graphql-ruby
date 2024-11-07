@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.4.1/">API</a>
+            <a href="/api-doc/2.4.2/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -253,6 +253,10 @@ Generating client module in app/javascript/graphql/OperationStoreClient.js...
     <tr>
       <td><code class="language-plaintext highlighter-rouge">--changeset-version</code></td>
       <td>Set a <a href="/changesets/installation#controller-setup">Changeset Version</a> when syncing these queries. (<code class="language-plaintext highlighter-rouge">context[:changeset_version]</code> will also be required at runtime, when running these stored operations.)</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">--dump-payload</code></td>
+      <td>A file to write the HTTP Post payload into, or if no filename is passed, then the payload will be written to stdout.</td>
     </tr>
   </tbody>
 </table>
