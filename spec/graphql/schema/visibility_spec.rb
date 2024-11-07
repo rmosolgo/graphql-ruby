@@ -86,5 +86,68 @@ describe GraphQL::Schema::Visibility do
       assert_equal [:public, :admin], VisSchema.visibility.cached_profiles.keys, "preload: true"
       assert_equal 0, DynVisSchema.visibility.cached_profiles.size, "preload: false"
     end
+
+    describe "when no profile is defined" do
+      class NoProfileSchema < GraphQL::Schema
+        class ExampleExtension < GraphQL::Schema::FieldExtension; end
+        class OtherExampleExtension < GraphQL::Schema::FieldExtension; end
+
+        class Query < GraphQL::Schema::Object
+          field :str do
+            type(String)
+            extension(ExampleExtension)
+          end
+        end
+
+        class Mutation < GraphQL::Schema::Object
+          field :str do
+            type(String)
+            extension(ExampleExtension)
+          end
+        end
+
+        class Subscription < GraphQL::Schema::Object
+          field :str do
+            type(String)
+            extension(ExampleExtension)
+          end
+        end
+
+        class OrphanType < GraphQL::Schema::Object
+          field :str do
+            type(String)
+            extension(ExampleExtension)
+            extension(OtherExampleExtension)
+          end
+        end
+        # This one is added before `Visibility`
+        mutation(Mutation)
+        use GraphQL::Schema::Visibility, preload: true
+        subscription(Subscription)
+        orphan_types(OrphanType)
+
+        module CustomIntrospection
+          class DynamicFields < GraphQL::Introspection::DynamicFields
+            field :__hello do
+              type(String)
+              extension(OtherExampleExtension)
+            end
+          end
+        end
+      end
+
+      it "still preloads" do
+        assert_equal [], NoProfileSchema::Query.all_field_definitions.first.extensions.map(&:class)
+        NoProfileSchema.query(NoProfileSchema::Query)
+        assert_equal [NoProfileSchema::ExampleExtension], NoProfileSchema::Query.all_field_definitions.first.extensions.map(&:class)
+        assert_equal [NoProfileSchema::ExampleExtension], NoProfileSchema::Mutation.all_field_definitions.first.extensions.map(&:class)
+        assert_equal [NoProfileSchema::ExampleExtension], NoProfileSchema::Subscription.all_field_definitions.first.extensions.map(&:class)
+        assert_equal [NoProfileSchema::ExampleExtension, NoProfileSchema::OtherExampleExtension], NoProfileSchema::OrphanType.all_field_definitions.first.extensions.map(&:class)
+        custom_int_field = NoProfileSchema::CustomIntrospection::DynamicFields.all_field_definitions.find { |f| f.original_name == :__hello }
+        assert_equal [], custom_int_field.extensions
+        NoProfileSchema.introspection(NoProfileSchema::CustomIntrospection)
+        assert_equal [NoProfileSchema::OtherExampleExtension], custom_int_field.extensions.map(&:class)
+      end
+    end
   end
 end

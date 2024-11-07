@@ -445,7 +445,12 @@ module GraphQL
             dup_defn = new_query_object || yield
             raise GraphQL::Error, "Second definition of `query(...)` (#{dup_defn.inspect}) is invalid, already configured with #{@query_object.inspect}"
           elsif use_visibility_profile?
-            @query_object = block_given? ? lazy_load_block : new_query_object
+            if block_given?
+              @query_object = lazy_load_block
+            else
+              @query_object = new_query_object
+              self.visibility.query_configured(@query_object)
+            end
           else
             @query_object = new_query_object || lazy_load_block.call
             add_type_and_traverse(@query_object, root: true)
@@ -453,6 +458,8 @@ module GraphQL
           nil
         elsif @query_object.is_a?(Proc)
           @query_object = @query_object.call
+          self.visibility&.query_configured(@query_object)
+          @query_object
         else
           @query_object || find_inherited_value(:query)
         end
@@ -472,7 +479,12 @@ module GraphQL
             dup_defn = new_mutation_object || yield
             raise GraphQL::Error, "Second definition of `mutation(...)` (#{dup_defn.inspect}) is invalid, already configured with #{@mutation_object.inspect}"
           elsif use_visibility_profile?
-            @mutation_object = block_given? ? lazy_load_block : new_mutation_object
+            if block_given?
+              @mutation_object = lazy_load_block
+            else
+              @mutation_object = new_mutation_object
+              self.visibility.mutation_configured(@mutation_object)
+            end
           else
             @mutation_object = new_mutation_object || lazy_load_block.call
             add_type_and_traverse(@mutation_object, root: true)
@@ -480,6 +492,8 @@ module GraphQL
           nil
         elsif @mutation_object.is_a?(Proc)
           @mutation_object = @mutation_object.call
+          self.visibility&.mutation_configured(@query_object)
+          @mutation_object
         else
           @mutation_object || find_inherited_value(:mutation)
         end
@@ -499,7 +513,12 @@ module GraphQL
             dup_defn = new_subscription_object || yield
             raise GraphQL::Error, "Second definition of `subscription(...)` (#{dup_defn.inspect}) is invalid, already configured with #{@subscription_object.inspect}"
           elsif use_visibility_profile?
-            @subscription_object = block_given? ? lazy_load_block : new_subscription_object
+            if block_given?
+              @subscription_object = lazy_load_block
+            else
+              @subscription_object = new_subscription_object
+              self.visibility.subscription_configured(@subscription_object)
+            end
             add_subscription_extension_if_necessary
           else
             @subscription_object = new_subscription_object || lazy_load_block.call
@@ -510,6 +529,7 @@ module GraphQL
         elsif @subscription_object.is_a?(Proc)
           @subscription_object = @subscription_object.call
           add_subscription_extension_if_necessary
+          self.visibility.subscription_configured(@subscription_object)
           @subscription_object
         else
           @subscription_object || find_inherited_value(:subscription)
@@ -695,20 +715,27 @@ module GraphQL
         type.fields(context)
       end
 
+      # Pass a custom introspection module here to use it for this schema.
+      # @param new_introspection_namespace [Module] If given, use this module for custom introspection on the schema
+      # @return [Module, nil] The configured namespace, if there is one
       def introspection(new_introspection_namespace = nil)
         if new_introspection_namespace
           @introspection = new_introspection_namespace
           # reset this cached value:
           @introspection_system = nil
+          introspection_system
+          @introspection
         else
           @introspection || find_inherited_value(:introspection)
         end
       end
 
+      # @return [Schema::IntrospectionSystem] Based on {introspection}
       def introspection_system
         if !@introspection_system
           @introspection_system = Schema::IntrospectionSystem.new(self)
           @introspection_system.resolve_late_bindings
+          self.visibility&.introspection_system_configured(@introspection_system)
         end
         @introspection_system
       end
@@ -952,6 +979,13 @@ module GraphQL
         end
       end
 
+      # Tell the schema about these types so that they can be registered as implementations of interfaces in the schema.
+      #
+      # This method must be used when an object type is connected to the schema as an interface implementor but
+      # not as a return type of a field. In that case, if the object type isn't registered here, GraphQL-Ruby won't be able to find it.
+      #
+      # @param new_orphan_types [Array<Class<GraphQL::Schema::Object>>] Object types to register as implementations of interfaces in the schema.
+      # @return [Array<Class<GraphQL::Schema::Object>>] All previously-registered orphan types for this schema
       def orphan_types(*new_orphan_types)
         if new_orphan_types.any?
           new_orphan_types = new_orphan_types.flatten
@@ -968,6 +1002,7 @@ module GraphQL
           end
           add_type_and_traverse(new_orphan_types, root: false) unless use_visibility_profile?
           own_orphan_types.concat(new_orphan_types.flatten)
+          self.visibility&.orphan_types_configured(new_orphan_types)
         end
 
         inherited_ot = find_inherited_value(:orphan_types, nil)

@@ -21,16 +21,71 @@ module GraphQL
         if migration_errors
           schema.visibility_profile_class = Migration
         end
+        @preload = preload
         @profiles = profiles
         @cached_profiles = {}
         @dynamic = dynamic
         @migration_errors = migration_errors
         if preload
+          # Traverse the schema now (and in the *_configured hooks below)
+          # To make sure things are loaded during boot
+          @preloaded_types = Set.new
+          types_to_visit = [
+            @schema.query,
+            @schema.mutation,
+            @schema.subscription,
+            *@schema.introspection_system.types.values,
+            *@schema.introspection_system.entry_points.map { |ep| ep.type.unwrap },
+            *@schema.orphan_types,
+          ]
+          # Root types may have been nil:
+          types_to_visit.compact!
+          ensure_all_loaded(types_to_visit)
+
           profiles.each do |profile_name, example_ctx|
             example_ctx[:visibility_profile] = profile_name
             prof = profile_for(example_ctx, profile_name)
             prof.all_types # force loading
           end
+        end
+      end
+
+      # @api private
+      def query_configured(query_type)
+        if @preload
+          ensure_all_loaded([query_type])
+        end
+      end
+
+      # @api private
+      def mutation_configured(mutation_type)
+        if @preload
+          ensure_all_loaded([mutation_type])
+        end
+      end
+
+      # @api private
+      def subscription_configured(subscription_type)
+        if @preload
+          ensure_all_loaded([subscription_type])
+        end
+      end
+
+      # @api private
+      def orphan_types_configured(orphan_types)
+        if @preload
+          ensure_all_loaded(orphan_types)
+        end
+      end
+
+      # @api private
+      def introspection_system_configured(introspection_system)
+        if @preload
+          introspection_types = [
+            *@schema.introspection_system.types.values,
+            *@schema.introspection_system.entry_points.map { |ep| ep.type.unwrap },
+          ]
+          ensure_all_loaded(introspection_types)
         end
       end
 
@@ -68,6 +123,19 @@ module GraphQL
           end
         else
           @schema.visibility_profile_class.new(context: context, schema: @schema)
+        end
+      end
+
+      private
+
+      def ensure_all_loaded(types_to_visit)
+        while (type = types_to_visit.shift)
+          if type.kind.fields? && @preloaded_types.add?(type)
+            type.all_field_definitions.each do |field_defn|
+              field_defn.ensure_loaded
+              types_to_visit << field_defn.type.unwrap
+            end
+          end
         end
       end
     end
