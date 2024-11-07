@@ -10,6 +10,13 @@
 
 ### Bug fixes
 
+# 2.4.2 (7 Nov 2024)
+
+### Bug fixes
+
+- Validation: fix error message when selections are made on an enum #5144 #5145
+- Visibility: fix preloading when no profiles are named #5148
+
 # 2.4.1 (4 Nov 2024)
 
 ### Bug fixes
