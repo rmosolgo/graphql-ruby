@@ -57,7 +57,7 @@ function createActionCableHandler(options: ActionCableHandlerOptions) {
         } else if (result) {
           observer.onNext({data: result.data})
         }
-        if (!payload.more) {
+        if (!payload.more && subscribed) {
           // Subscription is finished
           observer.onCompleted()
         }

@@ -99,40 +99,45 @@ function createPusherSubscription(pusher: Pusher) {
 
 
 function createUrqlActionCableSubscription(consumer: Consumer, channelName: string = "GraphqlChannel") {
-  return function(operation: Urql.Operation) {
-    let subscription: Subscription | null = null
+  return function (operation: Urql.Operation) {
+    const subscribe = ({ next, error, complete }: { next: ForwardCallback, error: ForwardCallback, complete: ForwardCallback }) => {
+        let subscribed = false;
+
+        const subscription: Subscription = consumer.subscriptions.create(channelName, {
+            connected() {
+                subscription.perform("execute", { query: operation.query, variables: operation.variables });
+                subscribed = true;
+            },
+            received(data: any) {
+                if (data?.result?.errors) {
+                    error(data.errors);
+                }
+                if (data?.result?.data) {
+                    next(data.result);
+                }
+                if (!data.more && subscribed) {
+                    complete();
+                }
+            }
+        });
+
+        // urql will call `.unsubscribe()` if it's returned here:
+        // https://github.com/FormidableLabs/urql/blob/f89cfd06d9f14ae9cb3be10b21bd5cbd12ca275c/packages/core/src/exchanges/subscription.ts#L102
+        const unsubscribe = () => {
+            if (subscribed) {
+                subscribed = false;
+                subscription?.unsubscribe();
+            }
+        };
+
+        return { unsubscribe };
+    };
+
     // urql will call `.subscribed` on the returned object:
     // https://github.com/FormidableLabs/urql/blob/f89cfd06d9f14ae9cb3be10b21bd5cbd12ca275c/packages/core/src/exchanges/subscription.ts#L68-L73
     // https://github.com/FormidableLabs/urql/blob/f89cfd06d9f14ae9cb3be10b21bd5cbd12ca275c/packages/core/src/exchanges/subscription.ts#L82-L97
-    return {
-      subscribe: ({next, error, complete}: { next: ForwardCallback, error: ForwardCallback, complete: ForwardCallback}) => {
-        subscription = consumer.subscriptions.create(channelName, {
-          connected() {
-            console.log(subscription)
-            subscription?.perform("execute", { query: operation.query, variables: operation.variables })
-          },
-          received(data: any) {
-            if (data?.result?.errors) {
-              error(data.errors)
-            }
-            if (data?.result?.data) {
-              next(data.result)
-            }
-            if (!data.more) {
-              complete()
-            }
-          }
-        } as any)
-        // urql will call `.unsubscribe()` if it's returned here:
-        // https://github.com/FormidableLabs/urql/blob/f89cfd06d9f14ae9cb3be10b21bd5cbd12ca275c/packages/core/src/exchanges/subscription.ts#L102
-        return {
-          unsubscribe: () => {
-            subscription?.unsubscribe()
-          }
-        }
-      }
-    }
-  }
+    return { subscribe };
+  };
 }
 
 export default SubscriptionExchange
