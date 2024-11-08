@@ -1,8 +1,12 @@
 # graphql-ruby-client
 
+# 1.14.4 (8 Nov 2024)
+
+- ActionCable: prevent unsubscribe being called twice with Relay and Urql #5150
+
 # 1.14.3 (5 Nov 2024)
 
-- `ActionCableHandler`: Make sure `unsubscribe` is only called once #5109
+- `createActionCableHandler`: Make sure `unsubscribe` is only called once #5109
 
 # 1.14.2 (4 Nov 2024)
 
