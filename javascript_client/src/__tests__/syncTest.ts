@@ -296,6 +296,28 @@ describe("sync operations", () => {
       })
     })
 
+    it("Can dump payload and outfile at the same time", () => {
+      var options = {
+        client: "test-2",
+        path: "./src/__tests__/project",
+        quiet: true,
+        outfile: "customOutfile.js",
+        dumpPayload: "customDumpPayload.js"
+      }
+
+      return sync(options).then(function() {
+        var generatedCode = fs.readFileSync("./customOutfile.js", "utf8")
+        expect(generatedCode).toMatch('"GetStuff": "4568c28d403794e011363caf815ec827"')
+        expect(generatedCode).toMatch('module.exports = OperationStoreClient')
+        expect(generatedCode).toMatch('var _client = "test-2"')
+
+        var generatedPayload = fs.readFileSync("./customDumpPayload.js", "utf8")
+        expect(generatedPayload).toMatchSnapshot()
+        fs.unlinkSync("./customOutfile.js")
+        fs.unlinkSync("./customDumpPayload.js")
+      })
+    })
+
     it("Skips outfile generation when using --persist-output artifact", () => {
       var options = {
         client: "test-2",

@@ -221,6 +221,7 @@ function sync(options: SyncOptions) {
       })
     } else if (dumpingPayload) {
       sendFunc(payload, { dumpPayload: options.dumpPayload })
+      resolve(payload)
       return
     } else {
       // This is a local-only run to generate an artifact
