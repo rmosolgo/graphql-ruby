@@ -1,5 +1,9 @@
 # graphql-ruby-client
 
+# 1.14.5 (8 Nov 2024)
+
+- `sync`: Fix `--dump-payload` with `--outfile` #5152
+
 # 1.14.4 (8 Nov 2024)
 
 - ActionCable: prevent unsubscribe being called twice with Relay and Urql #5150
