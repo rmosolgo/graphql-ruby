@@ -56,7 +56,14 @@ module GraphQL
         else
           @arguments = if @field
             @query.after_lazy(@query.arguments_for(@ast_nodes.first, @field)) do |args|
-              args.is_a?(Execution::Interpreter::Arguments) ? args.keyword_arguments : args
+              case args
+              when Execution::Interpreter::Arguments
+                args.keyword_arguments
+              when GraphQL::ExecutionError
+                EmptyObjects::EMPTY_HASH
+              else
+                args
+              end
             end
           else
             nil
