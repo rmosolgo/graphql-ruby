@@ -118,20 +118,6 @@ if testing_rails?
   require "integration/rails/spec_helper"
 end
 
-# Load dependencies
-['Mongoid', 'Rails'].each do |integration|
-  integration_loaded = begin
-    Object.const_get(integration)
-  rescue NameError
-    nil
-  end
-  if ENV["TEST"].nil? && integration_loaded
-    Dir["spec/integration/#{integration.downcase}/**/*.rb"].each do |f|
-      require f.sub("spec/", "")
-    end
-  end
-end
-
 def star_trek_query(string, variables={}, context: {})
   StarTrek::Schema.execute(string, variables: variables, context: context)
 end
