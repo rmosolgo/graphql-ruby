@@ -10,6 +10,14 @@
 
 ### Bug fixes
 
+# 2.4.3 (11 Nov 2024)
+
+### Bug fixes
+
+- Lookahead: return an empty hash for `.arguments` when they raised a `GraphQL::ExecutionError` #5155
+- Visibility: fix error when Mutation is lazy-loaded #5158
+- Visibility: improve performance of `Schema.types` #5157
+
 # 2.4.2 (7 Nov 2024)
 
 ### Bug fixes
