@@ -118,6 +118,11 @@ if testing_rails?
   require "integration/rails/spec_helper"
 end
 
+if testing_mongoid?
+  require "integration/mongoid/star_trek/data"
+  require "integration/mongoid/star_trek/schema"
+end
+
 def star_trek_query(string, variables={}, context: {})
   StarTrek::Schema.execute(string, variables: variables, context: context)
 end
