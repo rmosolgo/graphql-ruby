@@ -40,9 +40,21 @@ describe GraphQL::Schema::Visibility do
     use GraphQL::Schema::Visibility, profiles: { public: {}, admin: {} }, dynamic: true, preload: false
   end
 
+  class PreloadDynVisSchema < VisSchema
+    use GraphQL::Schema::Visibility, profiles: { public: {}, admin: {} }, dynamic: true, preload: true
+  end
+
   def exec_query(...)
     VisSchema.execute(...)
   end
+
+  describe "top-level schema caches" do
+    it "re-uses results" do
+      assert_equal DynVisSchema.types.object_id, DynVisSchema.types.object_id
+      assert_equal PreloadDynVisSchema.types.object_id, PreloadDynVisSchema.types.object_id
+    end
+  end
+
   describe "running queries" do
     it "requires context[:visibility]" do
       err = assert_raises ArgumentError do
