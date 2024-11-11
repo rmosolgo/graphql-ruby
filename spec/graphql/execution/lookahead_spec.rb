@@ -355,6 +355,42 @@ describe GraphQL::Execution::Lookahead do
       assert res.key?("errors")
       assert_equal 0, context[:lookahead_latin_name]
     end
+
+    describe "When there is an argument error" do
+      class NestedArgumentErrorSchema < GraphQL::Schema
+        class Data < GraphQL::Schema::Object
+          field :echo, String do
+            argument :input, String
+          end
+
+          def echo(input:)
+            input
+          end
+        end
+
+        class Query < GraphQL::Schema::Object
+          field :data, Data, extras: [:lookahead]
+
+          def data(lookahead:)
+            context[:args_class] = lookahead.selection(:echo).arguments.class
+            {}
+          end
+        end
+
+        query(Query)
+      end
+
+      it "uses empty arguments" do
+        query_str = "query getEcho($input: String = null) { data { echo(input: $input) } }"
+        res = NestedArgumentErrorSchema.execute(query_str, variables: {})
+        assert_equal ["`null` is not a valid input for `String!`, please provide a value for this argument."], res["errors"].map { |err| err["message"] }
+        assert_equal Hash, res.context[:args_class]
+
+        good_res = NestedArgumentErrorSchema.execute("{ data { echo(input: \"Hello\") } }")
+        assert_equal "Hello", good_res["data"]["data"]["echo"]
+        assert_equal Hash, good_res.context[:args_class]
+      end
+    end
   end
 
   describe '#selections' do
