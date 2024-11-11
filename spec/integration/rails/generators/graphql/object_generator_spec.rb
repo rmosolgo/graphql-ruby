@@ -6,6 +6,7 @@ class GraphQLGeneratorsObjectGeneratorTest < BaseGeneratorTest
   tests Graphql::Generators::ObjectGenerator
 
   ActiveRecord::Schema.define do
+    self.verbose = !!ENV["GITHUB_ACTIONS"]
     create_table :test_users, force: true do |t|
       t.datetime :created_at
       t.date :birthday
