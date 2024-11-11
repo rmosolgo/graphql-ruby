@@ -56,6 +56,7 @@ function sync(options: SyncOptions) {
   var verbose = !!options.verbose
   var url = options.url
   var dumpingPayload = "dumpPayload" in options
+  var dumpingToStdout = options.dumpPayload == true
   if (!url && !dumpingPayload) {
     logger.log("No URL; Generating artifacts without syncing them")
   }
@@ -241,12 +242,18 @@ function sync(options: SyncOptions) {
         operations: payload.operations,
         generatedCode,
       }
-      logger.log("Generating client module in " + logger.colorize("bright", outfile) + "...")
+      if (!dumpingToStdout) {
+        logger.log("Generating client module in " + logger.colorize("bright", outfile) + "...")
+      }
       fs.writeFileSync(outfile, generatedCode, "utf8")
-      logger.log(logger.green("✓ Done!"))
+      if (!dumpingToStdout) {
+        logger.log(logger.green("✓ Done!"))
+      }
       return finishedPayload
     } else {
-      logger.log(logger.green("✓ Done!"))
+      if (!dumpingToStdout) {
+        logger.log(logger.green("✓ Done!"))
+      }
       return payload
     }
   })
