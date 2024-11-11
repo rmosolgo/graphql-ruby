@@ -121,9 +121,10 @@ describe GraphQL::Schema::Visibility do
           end
         end
         # This one is added before `Visibility`
-        mutation(Mutation)
-        use GraphQL::Schema::Visibility, preload: true
         subscription(Subscription)
+        use GraphQL::Schema::Visibility, preload: true
+        query { Query }
+        mutation { Mutation }
         orphan_types(OrphanType)
 
         module CustomIntrospection
@@ -138,9 +139,15 @@ describe GraphQL::Schema::Visibility do
 
       it "still preloads" do
         assert_equal [], NoProfileSchema::Query.all_field_definitions.first.extensions.map(&:class)
-        NoProfileSchema.query(NoProfileSchema::Query)
-        assert_equal [NoProfileSchema::ExampleExtension], NoProfileSchema::Query.all_field_definitions.first.extensions.map(&:class)
+        assert_equal [], NoProfileSchema::Mutation.all_field_definitions.first.extensions.map(&:class)
+        NoProfileSchema.mutation
         assert_equal [NoProfileSchema::ExampleExtension], NoProfileSchema::Mutation.all_field_definitions.first.extensions.map(&:class)
+        # Didn't load this:
+        assert_equal [], NoProfileSchema::Query.all_field_definitions.first.extensions.map(&:class)
+
+        NoProfileSchema.query
+        assert_equal [NoProfileSchema::ExampleExtension], NoProfileSchema::Query.all_field_definitions.first.extensions.map(&:class)
+
         assert_equal [NoProfileSchema::ExampleExtension], NoProfileSchema::Subscription.all_field_definitions.first.extensions.map(&:class)
         assert_equal [NoProfileSchema::ExampleExtension, NoProfileSchema::OtherExampleExtension], NoProfileSchema::OrphanType.all_field_definitions.first.extensions.map(&:class)
         custom_int_field = NoProfileSchema::CustomIntrospection::DynamicFields.all_field_definitions.find { |f| f.original_name == :__hello }

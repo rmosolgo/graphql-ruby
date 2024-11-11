@@ -492,7 +492,7 @@ module GraphQL
           nil
         elsif @mutation_object.is_a?(Proc)
           @mutation_object = @mutation_object.call
-          self.visibility&.mutation_configured(@query_object)
+          self.visibility&.mutation_configured(@mutation_object)
           @mutation_object
         else
           @mutation_object || find_inherited_value(:mutation)
