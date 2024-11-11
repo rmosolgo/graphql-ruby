@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require 'ostruct'
+require "support/active_record_setup"
 
 module StarWars
   names = [
