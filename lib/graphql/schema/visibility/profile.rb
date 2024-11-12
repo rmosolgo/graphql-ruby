@@ -38,7 +38,6 @@ module GraphQL
           @all_types = {}
           @all_types_loaded = false
           @unvisited_types = []
-          @referenced_types = Hash.new { |h, type_defn| h[type_defn] = [] }.compare_by_identity
           @all_directives = nil
           @cached_visible = Hash.new { |h, member|
             h[member] = @schema.visible?(member, @context)
@@ -284,7 +283,6 @@ module GraphQL
               end
               false
             else
-              @referenced_types[t] << by_member
               @all_types[n] = t
               @unvisited_types << t
               true
@@ -309,11 +307,6 @@ module GraphQL
 
         def raise_duplicate_definition(first_defn, second_defn)
           raise DuplicateNamesError.new(duplicated_name: first_defn.path, duplicated_definition_1: first_defn.inspect, duplicated_definition_2: second_defn.inspect)
-        end
-
-        def referenced?(t)
-          load_all_types
-          @referenced_types[t].any? { |reference| (reference == true) || @cached_visible[reference] }
         end
 
         protected
