@@ -38,6 +38,8 @@ module GraphQL
           @loaded_all = false
           @interface_type_memberships = Hash.new { |h, interface_type| h[interface_type] = [] }.compare_by_identity
           @directives = []
+          @types = {}
+          @references = Hash.new { |h, member| h[member] = [] }.compare_by_identity
         end
 
         def directives
@@ -50,13 +52,39 @@ module GraphQL
           @interface_type_memberships
         end
 
+        def references
+          load_all
+          @references
+        end
+
+        def get_type(type_name)
+          load_all
+          @types[type_name]
+        end
+
         private
 
         def load_all
           # TODO thread-safe
           @loaded_all ||= begin
-            Visit.each(@schema) do |member|
-              if member.is_a?(Class)
+            visit = Visit.new(@schema)
+
+            visit.entry_point_types.each do |t|
+              @references[t] << true
+            end
+
+            visit.visit_each do |member|
+              if member.is_a?(Module)
+                type_name = member.graphql_name
+                if (prev_t = @types[type_name])
+                  if prev_t.is_a?(Array)
+                    prev_t << member
+                  else
+                    @types[type_name] = [prev_t, member]
+                  end
+                else
+                  @types[member.graphql_name] = member
+                end
                 if member < GraphQL::Schema::Directive
                   @directives << member
                 elsif member.respond_to?(:interface_type_memberships)
@@ -64,6 +92,11 @@ module GraphQL
                     @interface_type_memberships[itm.abstract_type] << itm
                   end
                 end
+              elsif member.is_a?(GraphQL::Schema::Argument)
+                member.validate_default_value
+                @references[member.type.unwrap] << member
+              elsif member.is_a?(GraphQL::Schema::Field)
+                @references[member.type.unwrap] << member
               end
               true
             end
@@ -73,19 +106,12 @@ module GraphQL
       end
 
       class Visit
-        def self.each(schema, &block)
-          self.new(schema).visit_each(&block)
-        end
-
         def initialize(schema)
           @schema = schema
         end
 
-        def visit_each
-          visited_types = Set.new.compare_by_identity
-          late_union_type_memberships = []
-          visited_directives = Set.new.compare_by_identity
-          unvisited_types = [
+        def entry_point_types
+          ept = [
             @schema.query,
             @schema.mutation,
             @schema.subscription,
@@ -93,11 +119,19 @@ module GraphQL
             *@schema.introspection_system.entry_points.map { |ep| ep.type.unwrap },
             *@schema.orphan_types,
           ]
+          ept.compact!
+          ept
+        end
+
+        def visit_each
+          visited_types = Set.new.compare_by_identity
+          late_union_type_memberships = []
+          visited_directives = Set.new.compare_by_identity
+          unvisited_types = entry_point_types
 
           possible_types_to_add = []
           directives_to_visit = []
 
-          unvisited_types.compact!
 
           @schema.directives.each_value { |dir_class| yield(dir_class) }
 
@@ -105,7 +139,62 @@ module GraphQL
             while (type = unvisited_types.pop)
               if visited_types.add?(type) && yield(type)
                 directives_to_visit.concat(type.directives)
-                append_next_visits(type, unvisited_types, possible_types_to_add, late_union_type_memberships, directives_to_visit)
+                case type.kind.name
+                when "OBJECT", "INTERFACE"
+                  type.interface_type_memberships.each do |itm|
+                    unvisited_types << itm.abstract_type
+                  end
+                  if type.kind.interface?
+                    unvisited_types.concat(type.orphan_types)
+                  end
+
+                  type.all_field_definitions.each do |field|
+                    field.ensure_loaded
+                    if yield(field)
+                      directives_to_visit.concat(field.directives)
+                      field_type = field.type.unwrap
+                      if field_type.kind.interface?
+                        possible_types_to_add << field_type
+                      end
+                      unvisited_types << field_type
+                      field.all_argument_definitions.each do |argument|
+                        if yield(argument)
+                          directives_to_visit.concat(argument.directives)
+                          unvisited_types << argument.type.unwrap
+                        end
+                      end
+                    end
+                  end
+                when "INPUT_OBJECT"
+                  type.all_argument_definitions.each do |argument|
+                    if yield(argument)
+                      directives_to_visit.concat(argument.directives)
+                      unvisited_types << argument.type.unwrap
+                    end
+                  end
+                when "UNION"
+                  type.type_memberships.each do |tm|
+                    obj_t = tm.object_type
+                    if obj_t.is_a?(GraphQL::Schema::LateBoundType)
+                      late_union_type_memberships << tm
+                    else
+                      if obj_t.is_a?(String)
+                        obj_t = Member::BuildType.constantize(obj_t)
+                        tm.object_type = obj_t
+                      end
+                      unvisited_types << obj_t
+                    end
+                  end
+                when "ENUM"
+                  type.all_enum_value_definitions.each do |val|
+                    # TODO yield val
+                    directives_to_visit.concat(val.directives)
+                  end
+                when "SCALAR"
+                  # pass
+                else
+                  raise "Invariant: unhandled type kind: #{type.kind.inspect}"
+                end
               end
             end
 
@@ -116,14 +205,6 @@ module GraphQL
               end
             end
 
-            # possible_types_to_add.each do |int_t|
-            #   int_t_mems = @interface_type_memberships[int_t]
-            #   int_t_mems.each do |int_t_mem|
-            #     unvisited_types << int_t_mem.object_type
-            #   end
-            # end
-            # possible_types_to_add.clear
-
             while (union_tm = late_union_type_memberships.shift)
               late_obj_t = union_tm.object_type
               obj_t = all_types[late_obj_t.graphql_name] || raise("Failed to resolve union type membership: #{late_obj_t.graphql_name.inspect} on #{union_tm.inspect}")
@@ -131,58 +212,6 @@ module GraphQL
             end
           end
           nil
-        end
-
-        def append_next_visits(type, unvisited_types, possible_types_to_add, late_union_type_memberships, directives)
-          case type.kind.name
-          when "OBJECT", "INTERFACE"
-            type.interface_type_memberships.each do |itm|
-              unvisited_types << itm.abstract_type
-            end
-            if type.kind.interface?
-              unvisited_types.concat(type.orphan_types)
-            end
-
-            type.all_field_definitions.each do |field|
-              field.ensure_loaded
-              directives.concat(field.directives)
-              field_type = field.type.unwrap
-              if field_type.kind.interface?
-                possible_types_to_add << field_type
-              end
-              unvisited_types << field_type
-              field.all_argument_definitions.each do |argument|
-                directives.concat(argument.directives)
-                unvisited_types << argument.type.unwrap
-              end
-            end
-          when "INPUT_OBJECT"
-            type.all_argument_definitions.each do |argument|
-              directives.concat(argument.directives)
-              unvisited_types << argument.type.unwrap
-            end
-          when "UNION"
-            type.type_memberships.each do |tm|
-              obj_t = tm.object_type
-              if obj_t.is_a?(GraphQL::Schema::LateBoundType)
-                late_union_type_memberships << tm
-              else
-                if obj_t.is_a?(String)
-                  obj_t = Member::BuildType.constantize(obj_t)
-                  tm.object_type = obj_t
-                end
-                unvisited_types << obj_t
-              end
-            end
-          when "ENUM"
-            type.all_enum_value_definitions.each do |val|
-              directives.concat(val.directives)
-            end
-          when "SCALAR"
-            # pass
-          else
-            raise "Invariant: unhandled type kind: #{type.kind.inspect}"
-          end
         end
       end
 

@@ -40,7 +40,6 @@ module GraphQL
           @unvisited_types = []
           @referenced_types = Hash.new { |h, type_defn| h[type_defn] = [] }.compare_by_identity
           @all_directives = nil
-          @unfiltered_interface_type_memberships = Hash.new { |h, k| h[k] = [] }.compare_by_identity
           @cached_visible = Hash.new { |h, member|
             h[member] = @schema.visible?(member, @context)
           }.compare_by_identity
@@ -54,7 +53,6 @@ module GraphQL
           @cached_visible_arguments = Hash.new do |h, arg|
             h[arg] = if @cached_visible[arg] && (arg_type = arg.type.unwrap) && @cached_visible[arg_type]
               add_type(arg_type, arg)
-              arg.validate_default_value
               true
             else
               false
@@ -119,17 +117,12 @@ module GraphQL
         end
 
         def type(type_name)
-          t = if (loaded_t = @all_types[type_name])
-            loaded_t
-          elsif !@all_types_loaded
-            load_all_types
-            @all_types[type_name]
-          end
+          t = @schema.visibility.top_level.get_type(type_name) # rubocop:disable ContextIsPassedCop
           if t
             if t.is_a?(Array)
               vis_t = nil
               t.each do |t_defn|
-                if @cached_visible[t_defn]
+                if @cached_visible[t_defn] && tl_referenced?(t_defn)
                   if vis_t.nil?
                     vis_t = t_defn
                   else
@@ -139,13 +132,17 @@ module GraphQL
               end
               vis_t
             else
-              if t && @cached_visible[t]
+              if t && @cached_visible[t] && tl_referenced?(t)
                 t
               else
                 nil
               end
             end
           end
+        end
+
+        def tl_referenced?(type_defn)
+          @schema.visibility.top_level.references[type_defn].any? { |ref_member| ref_member == true || @cached_visible[ref_member] }
         end
 
         def field(owner, field_name)
@@ -360,7 +357,7 @@ module GraphQL
               visit_type(t)
             end
             @add_possible_types.each do |int_t|
-              itms = @unfiltered_interface_type_memberships[int_t]
+              itms = @schema.visibility.top_level.interface_type_memberships[int_t]
               itms.each do |itm|
                 if @cached_visible[itm] && (obj_type = itm.object_type) && @cached_visible[obj_type]
                   add_type(obj_type, itm)
@@ -383,13 +380,9 @@ module GraphQL
         private
 
         def visit_type(type)
-          visit_directives(type)
           case type.kind.name
           when "OBJECT", "INTERFACE"
             if type.kind.object?
-              type.interface_type_memberships.each do |itm|
-                @unfiltered_interface_type_memberships[itm.abstract_type] << itm
-              end
               # recurse into visible implemented interfaces
               interfaces(type).each do |interface|
                 add_type(interface, type)
@@ -403,7 +396,6 @@ module GraphQL
             t_f.each do |field|
               field.ensure_loaded
               if @cached_visible[field]
-                visit_directives(field)
                 field_type = field.type.unwrap
                 if field_type.kind.interface?
                   @add_possible_types.add(field_type)
@@ -412,7 +404,6 @@ module GraphQL
 
                 # recurse into visible arguments
                 arguments(field).each do |argument|
-                  visit_directives(argument)
                   add_type(argument.type.unwrap, argument)
                 end
               end
@@ -420,7 +411,6 @@ module GraphQL
           when "INPUT_OBJECT"
             # recurse into visible arguments
             arguments(type).each do |argument|
-              visit_directives(argument)
               add_type(argument.type.unwrap, argument)
             end
           when "UNION"
@@ -441,29 +431,9 @@ module GraphQL
                 end
               end
             end
-          when "ENUM"
-            enum_values(type).each do |val|
-              visit_directives(val)
-            end
-          when "SCALAR"
+          when "ENUM", "SCALAR"
             # pass
           end
-        end
-
-        def visit_directives(member)
-          # member.directives.each { |dir|
-          #   dir_class = dir.class
-          #   if @cached_visible[dir_class]
-          #     dir_name = dir_class.graphql_name
-          #     if (existing_dir = @cached_directives[dir_name])
-          #       if existing_dir != dir_class
-          #         raise ArgumentError, "Two directives for `@#{dir_name}`: #{existing_dir}, #{dir.class}"
-          #       end
-          #     else
-          #       @cached_directives[dir.graphql_name] = dir_class
-          #     end
-          #   end
-          # }
         end
 
         def possible_types_for(type)
@@ -471,7 +441,7 @@ module GraphQL
           when "INTERFACE"
             pts = []
             @schema.visibility.top_level.interface_type_memberships[type].each do |itm|
-              if @cached_visible[itm] && (ot = itm.object_type) && @cached_visible[ot] && referenced?(ot)
+              if @cached_visible[itm] && (ot = itm.object_type) && @cached_visible[ot] && tl_referenced?(ot)
                 pts << ot
               end
             end
@@ -482,14 +452,13 @@ module GraphQL
               if @cached_visible[tm] &&
                   (ot = tm.object_type) &&
                   @cached_visible[ot] &&
-                  referenced?(ot)
+                  tl_referenced?(ot)
                 pts << ot
               end
             }
             pts
           when "OBJECT"
-            load_all_types
-            if @all_types[type.graphql_name] == type
+            if @cached_visible[type]
               [type]
             else
               EmptyObjects::EMPTY_ARRAY
