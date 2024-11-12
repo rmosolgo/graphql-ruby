@@ -39,30 +39,15 @@ module GraphQL
           @all_types_loaded = false
           @unvisited_types = []
           @referenced_types = Hash.new { |h, type_defn| h[type_defn] = [] }.compare_by_identity
-          @cached_directives = {}
           @all_directives = nil
+          @unfiltered_interface_type_memberships = Hash.new { |h, k| h[k] = [] }.compare_by_identity
           @cached_visible = Hash.new { |h, member|
             h[member] = @schema.visible?(member, @context)
           }.compare_by_identity
 
           @cached_visible_fields = Hash.new { |h, owner|
             h[owner] = Hash.new do |h2, field|
-              h2[field] = if @cached_visible[field] &&
-                  (ret_type = field.type.unwrap) &&
-                  @cached_visible[ret_type] &&
-                  (owner == field.owner || (!owner.kind.object?) || field_on_visible_interface?(field, owner))
-
-                if !field.introspection?
-                  # The problem is that some introspection fields may have references
-                  # to non-custom introspection types.
-                  # If those were added here, they'd cause a DuplicateNamesError.
-                  # This is basically a bug -- those fields _should_ reference the custom types.
-                  add_type(ret_type, field)
-                end
-                true
-              else
-                false
-              end
+              h2[field] = visible_field_for(owner, field)
             end.compare_by_identity
           }.compare_by_identity
 
@@ -89,37 +74,7 @@ module GraphQL
           end.compare_by_identity
 
           @cached_possible_types = Hash.new do |h, type|
-            h[type] = case type.kind.name
-            when "INTERFACE"
-              load_all_types
-              pts = []
-              @unfiltered_interface_type_memberships[type].each { |itm|
-                if @cached_visible[itm] && (ot = itm.object_type) && @cached_visible[ot] && referenced?(ot)
-                  pts << ot
-                end
-              }
-              pts
-            when "UNION"
-              pts = []
-              type.type_memberships.each { |tm|
-                if @cached_visible[tm] &&
-                    (ot = tm.object_type) &&
-                    @cached_visible[ot] &&
-                    referenced?(ot)
-                  pts << ot
-                end
-              }
-              pts
-            when "OBJECT"
-              load_all_types
-              if @all_types[type.graphql_name] == type
-                [type]
-              else
-                EmptyObjects::EMPTY_ARRAY
-              end
-            else
-              GraphQL::EmptyObjects::EMPTY_ARRAY
-            end
+            h[type] = possible_types_for(type)
           end.compare_by_identity
 
           @cached_enum_values = Hash.new do |h, enum_t|
@@ -293,25 +248,11 @@ module GraphQL
         end
 
         def directive_exists?(dir_name)
-          if (dir = @schema.directives[dir_name]) && @cached_visible[dir]
-            !!dir
-          else
-            load_all_types
-            !!@cached_directives[dir_name]
-          end
+          directives.any? { |d| d.graphql_name == dir_name }
         end
 
         def directives
-          @all_directives ||= begin
-            load_all_types
-            dirs = []
-            @schema.directives.each do |name, dir_defn|
-              if !@cached_directives[name] && @cached_visible[dir_defn]
-                dirs << dir_defn
-              end
-            end
-            dirs.concat(@cached_directives.values)
-          end
+          @all_directives ||= @schema.visibility.top_level.directives.select { |dir| @cached_visible[dir] }
         end
 
         def loadable?(t, _ctx)
@@ -378,6 +319,8 @@ module GraphQL
           @referenced_types[t].any? { |reference| (reference == true) || @cached_visible[reference] }
         end
 
+        protected
+
         def load_all_types
           return if @all_types_loaded
           @all_types_loaded = true
@@ -408,7 +351,6 @@ module GraphQL
           entry_point_types.flatten! # handle multiple defns
           entry_point_types.each { |t| add_type(t, true) }
 
-          @unfiltered_interface_type_memberships = Hash.new { |h, k| h[k] = [] }.compare_by_identity
           @add_possible_types = Set.new
           @late_types = []
 
@@ -437,6 +379,8 @@ module GraphQL
           @all_types.delete_if { |type_name, type_defn| !referenced?(type_defn) }
           nil
         end
+
+        private
 
         def visit_type(type)
           visit_directives(type)
@@ -507,19 +451,71 @@ module GraphQL
         end
 
         def visit_directives(member)
-          member.directives.each { |dir|
-            dir_class = dir.class
-            if @cached_visible[dir_class]
-              dir_name = dir_class.graphql_name
-              if (existing_dir = @cached_directives[dir_name])
-                if existing_dir != dir_class
-                  raise ArgumentError, "Two directives for `@#{dir_name}`: #{existing_dir}, #{dir.class}"
-                end
-              else
-                @cached_directives[dir.graphql_name] = dir_class
+          # member.directives.each { |dir|
+          #   dir_class = dir.class
+          #   if @cached_visible[dir_class]
+          #     dir_name = dir_class.graphql_name
+          #     if (existing_dir = @cached_directives[dir_name])
+          #       if existing_dir != dir_class
+          #         raise ArgumentError, "Two directives for `@#{dir_name}`: #{existing_dir}, #{dir.class}"
+          #       end
+          #     else
+          #       @cached_directives[dir.graphql_name] = dir_class
+          #     end
+          #   end
+          # }
+        end
+
+        def possible_types_for(type)
+          case type.kind.name
+          when "INTERFACE"
+            pts = []
+            @schema.visibility.top_level.interface_type_memberships[type].each do |itm|
+              if @cached_visible[itm] && (ot = itm.object_type) && @cached_visible[ot] && referenced?(ot)
+                pts << ot
               end
             end
-          }
+            pts
+          when "UNION"
+            pts = []
+            type.type_memberships.each { |tm|
+              if @cached_visible[tm] &&
+                  (ot = tm.object_type) &&
+                  @cached_visible[ot] &&
+                  referenced?(ot)
+                pts << ot
+              end
+            }
+            pts
+          when "OBJECT"
+            load_all_types
+            if @all_types[type.graphql_name] == type
+              [type]
+            else
+              EmptyObjects::EMPTY_ARRAY
+            end
+          else
+            GraphQL::EmptyObjects::EMPTY_ARRAY
+          end
+        end
+
+        def visible_field_for(owner, field)
+          if @cached_visible[field] &&
+            (ret_type = field.type.unwrap) &&
+            @cached_visible[ret_type] &&
+            (owner == field.owner || (!owner.kind.object?) || field_on_visible_interface?(field, owner))
+
+            if !field.introspection?
+              # The problem is that some introspection fields may have references
+              # to non-custom introspection types.
+              # If those were added here, they'd cause a DuplicateNamesError.
+              # This is basically a bug -- those fields _should_ reference the custom types.
+              add_type(ret_type, field)
+            end
+            true
+          else
+            false
+          end
         end
       end
     end
