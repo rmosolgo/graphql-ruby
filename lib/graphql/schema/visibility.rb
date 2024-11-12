@@ -133,7 +133,11 @@ module GraphQL
           directives_to_visit = []
 
 
-          @schema.directives.each_value { |dir_class| yield(dir_class) }
+          @schema.directives.each_value { |dir_class|
+            if visited_directives.add?(dir_class)
+              yield(dir_class)
+            end
+          }
 
           while unvisited_types.any? || late_union_type_memberships.any?
             while (type = unvisited_types.pop)

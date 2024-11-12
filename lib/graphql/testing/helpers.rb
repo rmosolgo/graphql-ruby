@@ -92,7 +92,7 @@ module GraphQL
           end
           graphql_result
         else
-          unfiltered_type = Schema::Visibility::Profile.null_profile(schema: schema, context: context).type(type_name)
+          unfiltered_type = schema.get_type(type_name, Query::NullContext.instance)
           if unfiltered_type
             raise TypeNotVisibleError.new(type_name: type_name)
           else
