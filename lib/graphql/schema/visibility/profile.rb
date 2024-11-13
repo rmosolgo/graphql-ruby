@@ -121,7 +121,7 @@ module GraphQL
             if t.is_a?(Array)
               vis_t = nil
               t.each do |t_defn|
-                if @cached_visible[t_defn] && tl_referenced?(t_defn)
+                if @cached_visible[t_defn] && referenced?(t_defn)
                   if vis_t.nil?
                     vis_t = t_defn
                   else
@@ -131,17 +131,13 @@ module GraphQL
               end
               vis_t
             else
-              if t && @cached_visible[t] && tl_referenced?(t)
+              if t && @cached_visible[t] && referenced?(t)
                 t
               else
                 nil
               end
             end
           end
-        end
-
-        def tl_referenced?(type_defn)
-          @schema.visibility.top_level.references[type_defn].any? { |ref_member| ref_member == true || @cached_visible[ref_member] }
         end
 
         def field(owner, field_name)
@@ -259,9 +255,9 @@ module GraphQL
           @all_types.values
         end
 
-        def reachable_type?(name)
+        def reachable_type?(type_name)
           load_all_types
-          !!@all_types[name]
+          !!@all_types[type_name]
         end
 
         def visible_enum_value?(enum_value, _ctx = nil)
@@ -372,6 +368,10 @@ module GraphQL
 
         private
 
+        def referenced?(type_defn)
+          @schema.visibility.top_level.references[type_defn].any? { |ref_member| ref_member == true || @cached_visible[ref_member] }
+        end
+
         def visit_type(type)
           case type.kind.name
           when "OBJECT", "INTERFACE"
@@ -434,7 +434,7 @@ module GraphQL
           when "INTERFACE"
             pts = []
             @schema.visibility.top_level.interface_type_memberships[type].each do |itm|
-              if @cached_visible[itm] && (ot = itm.object_type) && @cached_visible[ot] && tl_referenced?(ot)
+              if @cached_visible[itm] && (ot = itm.object_type) && @cached_visible[ot] && referenced?(ot)
                 pts << ot
               end
             end
@@ -445,7 +445,7 @@ module GraphQL
               if @cached_visible[tm] &&
                   (ot = tm.object_type) &&
                   @cached_visible[ot] &&
-                  tl_referenced?(ot)
+                  referenced?(ot)
                 pts << ot
               end
             }

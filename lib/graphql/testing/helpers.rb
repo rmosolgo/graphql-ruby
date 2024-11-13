@@ -92,7 +92,7 @@ module GraphQL
           end
           graphql_result
         else
-          unfiltered_type = schema.get_type(type_name, Query::NullContext.instance)
+          unfiltered_type = schema.use_visibility_profile? ? schema.visibility.top_level.get_type(type_name) : schema.get_type(type_name) # rubocop:disable ContextIsPassedCop
           if unfiltered_type
             raise TypeNotVisibleError.new(type_name: type_name)
           else

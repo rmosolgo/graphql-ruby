@@ -38,7 +38,7 @@ module GraphQL
           @loaded_all = false
           @interface_type_memberships = Hash.new { |h, interface_type| h[interface_type] = [] }.compare_by_identity
           @directives = []
-          @types = {}
+          @types = {} # String => Module
           @references = Hash.new { |h, member| h[member] = [] }.compare_by_identity
         end
 
@@ -73,6 +73,8 @@ module GraphQL
               @references[t] << true
             end
 
+            unions_for_references = []
+
             visit.visit_each do |member|
               if member.is_a?(Module)
                 type_name = member.graphql_name
@@ -80,7 +82,7 @@ module GraphQL
                   if prev_t.is_a?(Array)
                     prev_t << member
                   else
-                    @types[type_name] = [prev_t, member]
+                    @types[type_name] = [member, prev_t]
                   end
                 else
                   @types[member.graphql_name] = member
@@ -89,8 +91,11 @@ module GraphQL
                   @directives << member
                 elsif member.respond_to?(:interface_type_memberships)
                   member.interface_type_memberships.each do |itm|
+                    @references[itm.abstract_type] << member
                     @interface_type_memberships[itm.abstract_type] << itm
                   end
+                elsif member < GraphQL::Schema::Union
+                  unions_for_references << member
                 end
               elsif member.is_a?(GraphQL::Schema::Argument)
                 member.validate_default_value
@@ -100,6 +105,20 @@ module GraphQL
               end
               true
             end
+            @interface_type_memberships.each do |int_type, type_memberships|
+              referers = @references[int_type]
+              type_memberships.each do |type_membership|
+                implementor_type = type_membership.object_type
+                @references[implementor_type].concat(referers)
+              end
+            end
+
+            unions_for_references.each do |union_type|
+              refs = @references[union_type]
+              union_type.all_possible_types.each do |object_type|
+                @references[object_type].concat(refs)
+              end
+            end
             true
           end
         end
@@ -108,6 +127,8 @@ module GraphQL
       class Visit
         def initialize(schema)
           @schema = schema
+          @late_bound_types = nil
+          @unvisited_types = nil
         end
 
         def entry_point_types
@@ -124,47 +145,50 @@ module GraphQL
         end
 
         def visit_each
+          @unvisited_types && raise("Can't call #visit_each twice on this Visit object")
+          @unvisited_types = entry_point_types
+          @late_bound_types = []
           visited_types = Set.new.compare_by_identity
-          late_union_type_memberships = []
           visited_directives = Set.new.compare_by_identity
-          unvisited_types = entry_point_types
 
-          possible_types_to_add = []
           directives_to_visit = []
-
 
           @schema.directives.each_value { |dir_class|
             if visited_directives.add?(dir_class)
               yield(dir_class)
+              dir_class.all_argument_definitions.each do |arg_defn|
+                if yield(arg_defn)
+                  directives_to_visit.concat(arg_defn.directives)
+                  append_unvisited_type(dir_class, arg_defn.type.unwrap)
+                end
+              end
             end
           }
 
-          while unvisited_types.any? || late_union_type_memberships.any?
-            while (type = unvisited_types.pop)
+          while @unvisited_types.any? || @late_bound_types.any?
+            while (type = @unvisited_types.pop)
               if visited_types.add?(type) && yield(type)
                 directives_to_visit.concat(type.directives)
                 case type.kind.name
                 when "OBJECT", "INTERFACE"
                   type.interface_type_memberships.each do |itm|
-                    unvisited_types << itm.abstract_type
+                    append_unvisited_type(type, itm.abstract_type)
                   end
                   if type.kind.interface?
-                    unvisited_types.concat(type.orphan_types)
+                    type.orphan_types.each do |orphan_type|
+                      append_unvisited_type(type, orphan_type)
+                    end
                   end
 
                   type.all_field_definitions.each do |field|
                     field.ensure_loaded
                     if yield(field)
                       directives_to_visit.concat(field.directives)
-                      field_type = field.type.unwrap
-                      if field_type.kind.interface?
-                        possible_types_to_add << field_type
-                      end
-                      unvisited_types << field_type
+                      append_unvisited_type(type, field.type.unwrap)
                       field.all_argument_definitions.each do |argument|
                         if yield(argument)
                           directives_to_visit.concat(argument.directives)
-                          unvisited_types << argument.type.unwrap
+                          append_unvisited_type(field, argument.type.unwrap)
                         end
                       end
                     end
@@ -173,29 +197,21 @@ module GraphQL
                   type.all_argument_definitions.each do |argument|
                     if yield(argument)
                       directives_to_visit.concat(argument.directives)
-                      unvisited_types << argument.type.unwrap
+                      append_unvisited_type(type, argument.type.unwrap)
                     end
                   end
                 when "UNION"
                   type.type_memberships.each do |tm|
-                    obj_t = tm.object_type
-                    if obj_t.is_a?(GraphQL::Schema::LateBoundType)
-                      late_union_type_memberships << tm
-                    else
-                      if obj_t.is_a?(String)
-                        obj_t = Member::BuildType.constantize(obj_t)
-                        tm.object_type = obj_t
-                      end
-                      unvisited_types << obj_t
-                    end
+                    append_unvisited_type(type, tm.object_type)
                   end
                 when "ENUM"
                   type.all_enum_value_definitions.each do |val|
-                    # TODO yield val
-                    directives_to_visit.concat(val.directives)
+                    if yield(val)
+                      directives_to_visit.concat(val.directives)
+                    end
                   end
                 when "SCALAR"
-                  # pass
+                  # pass -- nothing else to visit
                 else
                   raise "Invariant: unhandled type kind: #{type.kind.inspect}"
                 end
@@ -209,13 +225,87 @@ module GraphQL
               end
             end
 
-            while (union_tm = late_union_type_memberships.shift)
-              late_obj_t = union_tm.object_type
-              obj_t = all_types[late_obj_t.graphql_name] || raise("Failed to resolve union type membership: #{late_obj_t.graphql_name.inspect} on #{union_tm.inspect}")
-              union_tm.abstract_type.assign_type_membership_object_type(obj_t)
+            missed_late_types_streak = 0
+            while (owner, late_type = @late_bound_types.shift)
+              if (late_type.is_a?(String) && (type = Member::BuildType.constantize(type))) ||
+                  (late_type.is_a?(LateBoundType) && (type = visited_types.find { |t| t.graphql_name == late_type.graphql_name }))
+                missed_late_types_streak = 0 # might succeed next round
+                update_type_owner(owner, type)
+                append_unvisited_type(owner, type)
+              else
+                # Didn't find it -- keep trying
+                missed_late_types_streak += 1
+                @late_bound_types << [owner, late_type]
+                if missed_late_types_streak == @late_bound_types.size
+                  raise UnresolvedLateBoundTypeError.new(type: late_type)
+                end
+              end
             end
           end
           nil
+        end
+
+        private
+
+        def append_unvisited_type(owner, type)
+          if type.is_a?(LateBoundType) || type.is_a?(String)
+            @late_bound_types << [owner, type]
+          else
+            @unvisited_types << type
+          end
+        end
+
+        def update_type_owner(owner, type)
+          case owner
+          when Module
+            if owner.kind.union?
+              owner.assign_type_membership_object_type(type)
+            elsif type.kind.interface?
+              new_interfaces = []
+              owner.interfaces.each do |int_t|
+                if int_t.is_a?(String) && int_t == type.graphql_name
+                  new_interfaces << type
+                elsif int_t.is_a?(LateBoundType) && int_t.graphql_name == type.graphql_name
+                  new_interfaces << type
+                else
+                  # Don't re-add proper interface definitions,
+                  # they were probably already added, maybe with options.
+                end
+              end
+              owner.implements(*new_interfaces)
+              new_interfaces.each do |int|
+                pt = @possible_types[int] ||= []
+                if !pt.include?(owner) && owner.is_a?(Class)
+                  pt << owner
+                end
+                int.interfaces.each do |indirect_int|
+                  if indirect_int.is_a?(LateBoundType) && (indirect_int_type = get_type(indirect_int.graphql_name))
+                    update_type_owner(owner, indirect_int_type)
+                  end
+                end
+              end
+            end
+          when GraphQL::Schema::Argument, GraphQL::Schema::Field
+            orig_type = owner.type
+            # Apply list/non-null wrapper as needed
+            if orig_type.respond_to?(:of_type)
+              transforms = []
+              while (orig_type.respond_to?(:of_type))
+                if orig_type.kind.non_null?
+                  transforms << :to_non_null_type
+                elsif orig_type.kind.list?
+                  transforms << :to_list_type
+                else
+                  raise "Invariant: :of_type isn't non-null or list"
+                end
+                orig_type = orig_type.of_type
+              end
+              transforms.reverse_each { |t| type = type.public_send(t) }
+            end
+            owner.type = type
+          else
+            raise "Unexpected update: #{owner.inspect} #{type.inspect}"
+          end
         end
       end
 
