@@ -209,15 +209,15 @@ module GraphQL
         end
 
         def query_root
-          (t = @schema.query) && @cached_visible[t] && t
+          ((t = @schema.query) && @cached_visible[t]) ? t : nil
         end
 
         def mutation_root
-          (t = @schema.mutation) && @cached_visible[t] && t
+          ((t = @schema.mutation) && @cached_visible[t]) ? t : nil
         end
 
         def subscription_root
-          (t = @schema.subscription) && @cached_visible[t] && t
+          ((t = @schema.subscription) && @cached_visible[t]) ? t : nil
         end
 
         def all_types
@@ -302,8 +302,6 @@ module GraphQL
           @all_types.delete_if { |type_name, type_defn| !referenced?(type_defn) }
           nil
         end
-
-        private
 
         def referenced?(type_defn)
           @schema.visibility.top_level.references[type_defn].any? { |ref_member| ref_member == true || @cached_visible[ref_member] }
