@@ -39,9 +39,7 @@ module GraphQL
           @all_types_loaded = false
           @unvisited_types = []
           @all_directives = nil
-          @cached_visible = Hash.new { |h, member|
-            h[member] = @schema.visible?(member, @context)
-          }.compare_by_identity
+          @cached_visible = Hash.new { |h, member| h[member] = @schema.visible?(member, @context) }.compare_by_identity
 
           @cached_visible_fields = Hash.new { |h, owner|
             h[owner] = Hash.new do |h2, field|
@@ -51,7 +49,6 @@ module GraphQL
 
           @cached_visible_arguments = Hash.new do |h, arg|
             h[arg] = if @cached_visible[arg] && (arg_type = arg.type.unwrap) && @cached_visible[arg_type]
-              add_type(arg_type, arg)
               true
             else
               false
@@ -70,9 +67,7 @@ module GraphQL
             end
           end.compare_by_identity
 
-          @cached_possible_types = Hash.new do |h, type|
-            h[type] = possible_types_for(type)
-          end.compare_by_identity
+          @cached_possible_types = Hash.new { |h, type| h[type] = possible_types_for(type) }.compare_by_identity
 
           @cached_enum_values = Hash.new do |h, enum_t|
             values = non_duplicate_items(enum_t.enum_values(@context), @cached_visible)
@@ -214,15 +209,15 @@ module GraphQL
         end
 
         def query_root
-          add_if_visible(@schema.query)
+          (t = @schema.query) && @cached_visible[t] && t
         end
 
         def mutation_root
-          add_if_visible(@schema.mutation)
+          (t = @schema.mutation) && @cached_visible[t] && t
         end
 
         def subscription_root
-          add_if_visible(@schema.subscription)
+          (t = @schema.subscription) && @cached_visible[t] && t
         end
 
         def all_types
@@ -266,28 +261,6 @@ module GraphQL
 
         private
 
-        def add_if_visible(t)
-          (t && @cached_visible[t]) ? (add_type(t, true); t) : nil
-        end
-
-        def add_type(t, by_member)
-          if t && @cached_visible[t]
-            n = t.graphql_name
-            if (prev_t = @all_types[n])
-              if !prev_t.equal?(t)
-                raise_duplicate_definition(prev_t, t)
-              end
-              false
-            else
-              @all_types[n] = t
-              @unvisited_types << t
-              true
-            end
-          else
-            false
-          end
-        end
-
         def non_duplicate_items(definitions, visibility_cache)
           non_dups = []
           definitions.each do |defn|
@@ -305,60 +278,24 @@ module GraphQL
           raise DuplicateNamesError.new(duplicated_name: first_defn.path, duplicated_definition_1: first_defn.inspect, duplicated_definition_2: second_defn.inspect)
         end
 
-        protected
-
         def load_all_types
           return if @all_types_loaded
           @all_types_loaded = true
-          entry_point_types = [
-            query_root,
-            mutation_root,
-            subscription_root,
-            *@schema.introspection_system.types.values,
-          ]
-
-          # Don't include any orphan_types whose interfaces aren't visible.
-          @schema.orphan_types.each do |orphan_type|
-            if @cached_visible[orphan_type] &&
-              orphan_type.interface_type_memberships.any? { |tm| @cached_visible[tm] && @cached_visible[tm.abstract_type] }
-              entry_point_types << orphan_type
-            end
-          end
-
-          @schema.directives.each do |_dir_name, dir_class|
-            if @cached_visible[dir_class]
-              arguments(dir_class).each do |arg|
-                entry_point_types << arg.type.unwrap
-              end
-            end
-          end
-
-          entry_point_types.compact! # Root types might be nil
-          entry_point_types.flatten! # handle multiple defns
-          entry_point_types.each { |t| add_type(t, true) }
-
-          @add_possible_types = Set.new
-          @late_types = []
-
-          while @unvisited_types.any? || @late_types.any?
-            while t = @unvisited_types.pop
-              # These have already been checked for `.visible?`
-              visit_type(t)
-            end
-            @add_possible_types.each do |int_t|
-              itms = @schema.visibility.top_level.interface_type_memberships[int_t]
-              itms.each do |itm|
-                if @cached_visible[itm] && (obj_type = itm.object_type) && @cached_visible[obj_type]
-                  add_type(obj_type, itm)
+          visit = Visibility::Visit.new(@schema)
+          visit.visit_each do |member|
+            if member.is_a?(Module) && member.respond_to?(:kind)
+              if @cached_visible[member]
+                type_name = member.graphql_name
+                if (prev_t = @all_types[type_name]) && !prev_t.equal?(member)
+                  raise_duplicate_definition(prev_t, member)
                 end
+                @all_types[type_name] = member
+                true
+              else
+                false
               end
-            end
-            @add_possible_types.clear
-
-            while (union_tm = @late_types.shift)
-              late_obj_t = union_tm.object_type
-              obj_t = @all_types[late_obj_t.graphql_name] || raise("Failed to resolve #{late_obj_t.graphql_name.inspect} from #{union_tm.inspect}")
-              union_tm.abstract_type.assign_type_membership_object_type(obj_t)
+            else
+              @cached_visible[member]
             end
           end
 
@@ -370,63 +307,6 @@ module GraphQL
 
         def referenced?(type_defn)
           @schema.visibility.top_level.references[type_defn].any? { |ref_member| ref_member == true || @cached_visible[ref_member] }
-        end
-
-        def visit_type(type)
-          case type.kind.name
-          when "OBJECT", "INTERFACE"
-            if type.kind.object?
-              # recurse into visible implemented interfaces
-              interfaces(type).each do |interface|
-                add_type(interface, type)
-              end
-            else
-              type.orphan_types.each { |t| add_type(t, type)}
-            end
-
-            # recurse into visible fields
-            t_f = type.all_field_definitions
-            t_f.each do |field|
-              field.ensure_loaded
-              if @cached_visible[field]
-                field_type = field.type.unwrap
-                if field_type.kind.interface?
-                  @add_possible_types.add(field_type)
-                end
-                add_type(field_type, field)
-
-                # recurse into visible arguments
-                arguments(field).each do |argument|
-                  add_type(argument.type.unwrap, argument)
-                end
-              end
-            end
-          when "INPUT_OBJECT"
-            # recurse into visible arguments
-            arguments(type).each do |argument|
-              add_type(argument.type.unwrap, argument)
-            end
-          when "UNION"
-            # recurse into visible possible types
-            type.type_memberships.each do |tm|
-              if @cached_visible[tm]
-                obj_t = tm.object_type
-                if obj_t.is_a?(GraphQL::Schema::LateBoundType)
-                  @late_types << tm
-                else
-                  if obj_t.is_a?(String)
-                    obj_t = Member::BuildType.constantize(obj_t)
-                    tm.object_type = obj_t
-                  end
-                  if @cached_visible[obj_t]
-                    add_type(obj_t, tm)
-                  end
-                end
-              end
-            end
-          when "ENUM", "SCALAR"
-            # pass
-          end
         end
 
         def possible_types_for(type)
@@ -462,22 +342,10 @@ module GraphQL
         end
 
         def visible_field_for(owner, field)
-          if @cached_visible[field] &&
+          @cached_visible[field] &&
             (ret_type = field.type.unwrap) &&
             @cached_visible[ret_type] &&
             (owner == field.owner || (!owner.kind.object?) || field_on_visible_interface?(field, owner))
-
-            if !field.introspection?
-              # The problem is that some introspection fields may have references
-              # to non-custom introspection types.
-              # If those were added here, they'd cause a DuplicateNamesError.
-              # This is basically a bug -- those fields _should_ reference the custom types.
-              add_type(ret_type, field)
-            end
-            true
-          else
-            false
-          end
         end
       end
     end
