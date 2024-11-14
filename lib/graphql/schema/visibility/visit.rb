@@ -156,7 +156,7 @@ module GraphQL
                   pt << owner
                 end
                 int.interfaces.each do |indirect_int|
-                  if indirect_int.is_a?(LateBoundType) && (indirect_int_type = get_type(indirect_int.graphql_name))
+                  if indirect_int.is_a?(LateBoundType) && (indirect_int_type = get_type(indirect_int.graphql_name)) # rubocop:disable ContextIsPassedCop
                     update_type_owner(owner, indirect_int_type)
                   end
                 end
