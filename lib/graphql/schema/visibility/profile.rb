@@ -111,7 +111,7 @@ module GraphQL
         end
 
         def type(type_name)
-          t = @schema.visibility.top_level.get_type(type_name) # rubocop:disable ContextIsPassedCop
+          t = @schema.visibility.get_type(type_name) # rubocop:disable ContextIsPassedCop
           if t
             if t.is_a?(Array)
               vis_t = nil
@@ -239,7 +239,7 @@ module GraphQL
         end
 
         def directives
-          @all_directives ||= @schema.visibility.top_level.directives.select { |dir| @cached_visible[dir] }
+          @all_directives ||= @schema.visibility.all_directives.select { |dir| @cached_visible[dir] }
         end
 
         def loadable?(t, _ctx)
@@ -288,7 +288,7 @@ module GraphQL
               if @cached_visible[member]
                 type_name = member.graphql_name
                 if (prev_t = @all_types[type_name]) && !prev_t.equal?(member)
-                  raise_duplicate_definition(prev_t, member)
+                  raise_duplicate_definition(member, prev_t)
                 end
                 @all_types[type_name] = member
                 true
@@ -305,14 +305,14 @@ module GraphQL
         end
 
         def referenced?(type_defn)
-          @schema.visibility.top_level.references[type_defn].any? { |r| r == true ||  @cached_visible[r] }
+          @schema.visibility.all_references[type_defn].any? { |r| r == true ||  @cached_visible[r] }
         end
 
         def possible_types_for(type)
           case type.kind.name
           when "INTERFACE"
             pts = []
-            @schema.visibility.top_level.interface_type_memberships[type].each do |itm|
+            @schema.visibility.all_interface_type_memberships[type].each do |itm|
               if @cached_visible[itm] && (ot = itm.object_type) && @cached_visible[ot] && referenced?(ot)
                 pts << ot
               end

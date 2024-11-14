@@ -30,105 +30,32 @@ module GraphQL
         @cached_profiles = {}
         @dynamic = dynamic
         @migration_errors = migration_errors
-        @top_level = TopLevel.new(@schema)
+        # Top-level type caches:
+        @loaded_all = false
+        @interface_type_memberships = nil
+        @directives = nil
+        @types = nil
+        @references = nil
       end
 
-      class TopLevel
-        def initialize(schema)
-          @schema = schema
-          @loaded_all = false
-          @interface_type_memberships = Hash.new { |h, interface_type| h[interface_type] = [] }.compare_by_identity
-          @directives = []
-          @types = {} # String => Module
-          @references = Hash.new { |h, member| h[member] = [] }.compare_by_identity
-        end
+      def all_directives
+        load_all
+        @directives
+      end
 
-        def directives
-          load_all
-          @directives
-        end
+      def all_interface_type_memberships
+        load_all
+        @interface_type_memberships
+      end
 
-        def interface_type_memberships
-          load_all
-          @interface_type_memberships
-        end
+      def all_references
+        load_all
+        @references
+      end
 
-        def references
-          load_all
-          @references
-        end
-
-        def get_type(type_name)
-          load_all
-          @types[type_name]
-        end
-
-        private
-
-        def load_all
-          # TODO thread-safe
-          @loaded_all ||= begin
-            visit = Visibility::Visit.new(@schema)
-
-            @schema.root_types.each do |t|
-              @references[t] << true
-            end
-
-            @schema.introspection_system.types.each_value do |t|
-              @references[t] << true
-            end
-
-            unions_for_references = []
-
-            visit.visit_each do |member|
-              if member.is_a?(Module)
-                type_name = member.graphql_name
-                if (prev_t = @types[type_name])
-                  if prev_t.is_a?(Array)
-                    prev_t << member
-                  else
-                    @types[type_name] = [member, prev_t]
-                  end
-                else
-                  @types[member.graphql_name] = member
-                end
-                if member < GraphQL::Schema::Directive
-                  @directives << member
-                elsif member.respond_to?(:interface_type_memberships)
-                  member.interface_type_memberships.each do |itm|
-                    @references[itm.abstract_type] << member
-                    @interface_type_memberships[itm.abstract_type] << itm
-                  end
-                elsif member < GraphQL::Schema::Union
-                  unions_for_references << member
-                end
-              elsif member.is_a?(GraphQL::Schema::Argument)
-                member.validate_default_value
-                @references[member.type.unwrap] << member
-              elsif member.is_a?(GraphQL::Schema::Field)
-                @references[member.type.unwrap] << member
-              end
-              true
-            end
-            @interface_type_memberships.each do |int_type, type_memberships|
-              referers = @references[int_type].select { |r| r.is_a?(GraphQL::Schema::Field) }
-              if referers.any?
-                type_memberships.each do |type_membership|
-                  implementor_type = type_membership.object_type
-                  @references[implementor_type].concat(referers)
-                end
-              end
-            end
-
-            unions_for_references.each do |union_type|
-              refs = @references[union_type]
-              union_type.all_possible_types.each do |object_type|
-                @references[object_type].concat(refs)
-              end
-            end
-            true
-          end
-        end
+      def get_type(type_name)
+        load_all
+        @types[type_name]
       end
 
       def preload
@@ -250,7 +177,7 @@ module GraphQL
 
       private
 
-      def ensure_all_loaded(types_to_visit)
+      def ensure_all_fields_loaded(types_to_visit)
         while (type = types_to_visit.shift)
           if type.kind.fields? && @preloaded_types.add?(type)
             type.all_field_definitions.each do |field_defn|
@@ -260,7 +187,79 @@ module GraphQL
           end
         end
         top_level_profile(refresh: true)
+        load_all(refresh: true)
         nil
+      end
+
+      def load_all(refresh: false)
+        if refresh
+          @loaded_all = nil
+        end
+        @loaded_all ||= begin
+          @interface_type_memberships = Hash.new { |h, interface_type| h[interface_type] = [] }.compare_by_identity
+          @directives = []
+          @types = {} # String => Module
+          @references = Hash.new { |h, member| h[member] = [] }.compare_by_identity
+          visit = Visibility::Visit.new(@schema)
+
+          @schema.root_types.each do |t|
+            @references[t] << true
+          end
+
+          @schema.introspection_system.types.each_value do |t|
+            @references[t] << true
+          end
+
+          unions_for_references = []
+
+          visit.visit_each do |member|
+            if member.is_a?(Module)
+              type_name = member.graphql_name
+              if (prev_t = @types[type_name])
+                if prev_t.is_a?(Array)
+                  prev_t << member
+                else
+                  @types[type_name] = [member, prev_t]
+                end
+              else
+                @types[member.graphql_name] = member
+              end
+              if member < GraphQL::Schema::Directive
+                @directives << member
+              elsif member.respond_to?(:interface_type_memberships)
+                member.interface_type_memberships.each do |itm|
+                  @references[itm.abstract_type] << member
+                  @interface_type_memberships[itm.abstract_type] << itm
+                end
+              elsif member < GraphQL::Schema::Union
+                unions_for_references << member
+              end
+            elsif member.is_a?(GraphQL::Schema::Argument)
+              member.validate_default_value
+              @references[member.type.unwrap] << member
+            elsif member.is_a?(GraphQL::Schema::Field)
+              @references[member.type.unwrap] << member
+            end
+            true
+          end
+          @interface_type_memberships.each do |int_type, type_memberships|
+            referers = @references[int_type].select { |r| r.is_a?(GraphQL::Schema::Field) }
+            if referers.any?
+              type_memberships.each do |type_membership|
+                implementor_type = type_membership.object_type
+                @references[implementor_type].concat(referers)
+              end
+            end
+          end
+
+          unions_for_references.each do |union_type|
+            refs = @references[union_type]
+            union_type.all_possible_types.each do |object_type|
+              @references[object_type].concat(refs)
+            end
+          end
+          true
+        end
       end
     end
   end
