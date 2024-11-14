@@ -177,7 +177,7 @@ module GraphQL
 
       private
 
-      def ensure_all_fields_loaded(types_to_visit)
+      def ensure_all_loaded(types_to_visit)
         while (type = types_to_visit.shift)
           if type.kind.fields? && @preloaded_types.add?(type)
             type.all_field_definitions.each do |field_defn|
