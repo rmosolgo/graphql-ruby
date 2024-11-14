@@ -70,7 +70,11 @@ module GraphQL
           @loaded_all ||= begin
             visit = Visibility::Visit.new(@schema)
 
-            visit.entry_point_types.each do |t|
+            @schema.root_types.each do |t|
+              @references[t] << true
+            end
+
+            @schema.introspection_system.types.each_value do |t|
               @references[t] << true
             end
 
@@ -107,10 +111,12 @@ module GraphQL
               true
             end
             @interface_type_memberships.each do |int_type, type_memberships|
-              referers = @references[int_type]
-              type_memberships.each do |type_membership|
-                implementor_type = type_membership.object_type
-                @references[implementor_type].concat(referers)
+              referers = @references[int_type].select { |r| r.is_a?(GraphQL::Schema::Field) }
+              if referers.any?
+                type_memberships.each do |type_membership|
+                  implementor_type = type_membership.object_type
+                  @references[implementor_type].concat(referers)
+                end
               end
             end
 

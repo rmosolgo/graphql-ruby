@@ -243,6 +243,7 @@ module GraphQL
         end
 
         def loadable?(t, _ctx)
+          load_all_types
           !@all_types[t.graphql_name] && @cached_visible[t]
         end
 
@@ -304,7 +305,7 @@ module GraphQL
         end
 
         def referenced?(type_defn)
-          @schema.visibility.top_level.references[type_defn].any? { |ref_member| ref_member == true || @cached_visible[ref_member] }
+          @schema.visibility.top_level.references[type_defn].any? { |r| r == true ||  @cached_visible[r] }
         end
 
         def possible_types_for(type)
