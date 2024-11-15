@@ -446,7 +446,12 @@ module GraphQL
             raise GraphQL::Error, "Second definition of `query(...)` (#{dup_defn.inspect}) is invalid, already configured with #{@query_object.inspect}"
           elsif use_visibility_profile?
             if block_given?
-              @query_object = lazy_load_block
+              if visibility.preload?
+                @query_object = lazy_load_block.call
+                self.visibility.query_configured(@query_object)
+              else
+                @query_object = lazy_load_block
+              end
             else
               @query_object = new_query_object
               self.visibility.query_configured(@query_object)
@@ -480,7 +485,12 @@ module GraphQL
             raise GraphQL::Error, "Second definition of `mutation(...)` (#{dup_defn.inspect}) is invalid, already configured with #{@mutation_object.inspect}"
           elsif use_visibility_profile?
             if block_given?
-              @mutation_object = lazy_load_block
+              if visibility.preload?
+                @mutation_object = lazy_load_block.call
+                self.visibility.mutation_configured(@mutation_object)
+              else
+                @mutation_object = lazy_load_block
+              end
             else
               @mutation_object = new_mutation_object
               self.visibility.mutation_configured(@mutation_object)
@@ -514,7 +524,12 @@ module GraphQL
             raise GraphQL::Error, "Second definition of `subscription(...)` (#{dup_defn.inspect}) is invalid, already configured with #{@subscription_object.inspect}"
           elsif use_visibility_profile?
             if block_given?
-              @subscription_object = lazy_load_block
+              if visibility.preload?
+                @subscription_object = lazy_load_block.call
+                visibility.subscription_configured(@subscription_object)
+              else
+                @subscription_object = lazy_load_block
+              end
             else
               @subscription_object = new_subscription_object
               self.visibility.subscription_configured(@subscription_object)

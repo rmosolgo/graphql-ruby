@@ -150,16 +150,8 @@ describe GraphQL::Schema::Visibility do
       end
 
       it "still preloads" do
-        assert_equal [], NoProfileSchema::Query.all_field_definitions.first.extensions.map(&:class)
-        assert_equal [], NoProfileSchema::Mutation.all_field_definitions.first.extensions.map(&:class)
-        NoProfileSchema.mutation
-        assert_equal [NoProfileSchema::ExampleExtension], NoProfileSchema::Mutation.all_field_definitions.first.extensions.map(&:class)
-        # Didn't load this:
-        assert_equal [], NoProfileSchema::Query.all_field_definitions.first.extensions.map(&:class)
-
-        NoProfileSchema.query
         assert_equal [NoProfileSchema::ExampleExtension], NoProfileSchema::Query.all_field_definitions.first.extensions.map(&:class)
-
+        assert_equal [NoProfileSchema::ExampleExtension], NoProfileSchema::Mutation.all_field_definitions.first.extensions.map(&:class)
         assert_equal [NoProfileSchema::ExampleExtension], NoProfileSchema::Subscription.all_field_definitions.first.extensions.map(&:class)
         assert_equal [NoProfileSchema::ExampleExtension, NoProfileSchema::OtherExampleExtension], NoProfileSchema::OrphanType.all_field_definitions.first.extensions.map(&:class)
         custom_int_field = NoProfileSchema::CustomIntrospection::DynamicFields.all_field_definitions.find { |f| f.original_name == :__hello }
@@ -167,6 +159,80 @@ describe GraphQL::Schema::Visibility do
         NoProfileSchema.introspection(NoProfileSchema::CustomIntrospection)
         assert_equal [NoProfileSchema::OtherExampleExtension], custom_int_field.extensions.map(&:class)
       end
+    end
+  end
+
+  describe "lazy-loading root types" do
+    class NoVisSchema < GraphQL::Schema
+      self.visibility = nil
+      @use_visibility_profile = false
+    end
+    class LazyLoadingSchema < NoVisSchema
+      class ExampleExtension < GraphQL::Schema::FieldExtension; end
+      class OtherExampleExtension < GraphQL::Schema::FieldExtension; end
+
+      class Query < GraphQL::Schema::Object
+        field :str, fallback_value: "Query field" do
+          type(String)
+          extension(ExampleExtension)
+        end
+      end
+
+      class Mutation < GraphQL::Schema::Object
+        field :str, fallback_value: "Mutation field" do
+          type(String)
+          extension(ExampleExtension)
+        end
+      end
+
+      class Subscription < GraphQL::Schema::Object
+        field :str do
+          type(String)
+          extension(ExampleExtension)
+        end
+      end
+
+      class OrphanType < GraphQL::Schema::Object
+        field :str do
+          type(String)
+          extension(ExampleExtension)
+          extension(OtherExampleExtension)
+        end
+      end
+      # This one is added before `Visibility`
+      subscription(Subscription)
+      use GraphQL::Schema::Visibility, preload: false
+      query { Query }
+      mutation { Mutation }
+      orphan_types(OrphanType)
+    end
+
+    it "loads types as-needed" do
+      assert_equal [LazyLoadingSchema::ExampleExtension], LazyLoadingSchema::Subscription.all_field_definitions.first.extensions.map(&:class)
+      assert_equal [], LazyLoadingSchema::Query.all_field_definitions.first.extensions.map(&:class)
+      assert_equal [], LazyLoadingSchema::Mutation.all_field_definitions.first.extensions.map(&:class)
+      assert_equal [], LazyLoadingSchema::OrphanType.all_field_definitions.first.extensions.map(&:class)
+
+      res = LazyLoadingSchema.execute("{ __typename }")
+      assert_equal "Query", res["data"]["__typename"]
+      assert_equal [], LazyLoadingSchema::Query.all_field_definitions.first.extensions.map(&:class)
+      assert_equal [LazyLoadingSchema::ExampleExtension], LazyLoadingSchema::Subscription.all_field_definitions.first.extensions.map(&:class)
+      assert_equal [], LazyLoadingSchema::Mutation.all_field_definitions.first.extensions.map(&:class)
+      assert_equal [], LazyLoadingSchema::OrphanType.all_field_definitions.first.extensions.map(&:class)
+
+      res = LazyLoadingSchema.execute("{ str }")
+      assert_equal "Query field", res["data"]["str"]
+      assert_equal [LazyLoadingSchema::ExampleExtension], LazyLoadingSchema::Query.all_field_definitions.first.extensions.map(&:class)
+      assert_equal [LazyLoadingSchema::ExampleExtension], LazyLoadingSchema::Subscription.all_field_definitions.first.extensions.map(&:class)
+      assert_equal [], LazyLoadingSchema::Mutation.all_field_definitions.first.extensions.map(&:class)
+      assert_equal [], LazyLoadingSchema::OrphanType.all_field_definitions.first.extensions.map(&:class)
+
+      res = LazyLoadingSchema.execute("mutation { str }")
+      assert_equal "Mutation field", res["data"]["str"]
+      assert_equal [LazyLoadingSchema::ExampleExtension], LazyLoadingSchema::Query.all_field_definitions.first.extensions.map(&:class)
+      assert_equal [LazyLoadingSchema::ExampleExtension], LazyLoadingSchema::Subscription.all_field_definitions.first.extensions.map(&:class)
+      assert_equal [LazyLoadingSchema::ExampleExtension], LazyLoadingSchema::Mutation.all_field_definitions.first.extensions.map(&:class)
+      assert_equal [], LazyLoadingSchema::OrphanType.all_field_definitions.first.extensions.map(&:class)
     end
   end
 end

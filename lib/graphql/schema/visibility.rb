@@ -22,8 +22,10 @@ module GraphQL
       def initialize(schema, dynamic:, preload:, profiles:, migration_errors:)
         @schema = schema
         schema.use_visibility_profile = true
-        if migration_errors
-          schema.visibility_profile_class = Migration
+        schema.visibility_profile_class = if migration_errors
+          Visibility::Migration
+        else
+          Visibility::Profile
         end
         @preload = preload
         @profiles = profiles
@@ -36,6 +38,7 @@ module GraphQL
         @directives = nil
         @types = nil
         @references = nil
+        @loaded_all = false
       end
 
       def all_directives
@@ -56,6 +59,10 @@ module GraphQL
       def get_type(type_name)
         load_all
         @types[type_name]
+      end
+
+      def preload?
+        @preload
       end
 
       def preload
@@ -240,8 +247,12 @@ module GraphQL
 
         if types
           @visit.visit_each(types: types, directives: [])
-        else
+        elsif @loaded_all == false
+          @loaded_all = true
           @visit.visit_each
+        else
+          # already loaded all
+          return
         end
 
         # TODO: somehow don't iterate over all these,
