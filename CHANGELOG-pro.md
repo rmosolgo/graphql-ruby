@@ -6,6 +6,10 @@
 
 ### New Features
 
+# 1.29.3 (15 Nov 2024)
+
+- OperationStore: Improve `sync` performance with `GraphQL::Schema::Visibility`
+
 # 1.29.2 (4 Sept 2024)
 
 - Subscriptions: show broadcast subscriber count in dashboard (Pusher requires "subscription count" to be turned on and `use ... show_broadcast_subscribers_count: true`)
