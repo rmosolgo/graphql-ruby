@@ -31,7 +31,7 @@ module GraphQL
         @dynamic = dynamic
         @migration_errors = migration_errors
         # Top-level type caches:
-        @loaded_all = false
+        @visit = nil
         @interface_type_memberships = nil
         @directives = nil
         @types = nil
@@ -73,7 +73,6 @@ module GraphQL
         # Root types may have been nil:
         types_to_visit.compact!
         ensure_all_loaded(types_to_visit)
-
         @profiles.each do |profile_name, example_ctx|
           example_ctx[:visibility_profile] = profile_name
           prof = profile_for(example_ctx, profile_name)
@@ -187,32 +186,18 @@ module GraphQL
           end
         end
         top_level_profile(refresh: true)
-        load_all(refresh: true)
         nil
       end
 
-      def load_all(refresh: false)
-        if refresh
-          @loaded_all = nil
-        end
-        @loaded_all ||= begin
+      def load_all(types: nil)
+        if @visit.nil?
+          # Set up the visit system
           @interface_type_memberships = Hash.new { |h, interface_type| h[interface_type] = [] }.compare_by_identity
           @directives = []
           @types = {} # String => Module
           @references = Hash.new { |h, member| h[member] = [] }.compare_by_identity
-          visit = Visibility::Visit.new(@schema)
-
-          @schema.root_types.each do |t|
-            @references[t] << true
-          end
-
-          @schema.introspection_system.types.each_value do |t|
-            @references[t] << true
-          end
-
-          unions_for_references = []
-
-          visit.visit_each do |member|
+          @unions_for_references = Set.new
+          @visit = Visibility::Visit.new(@schema) do |member|
             if member.is_a?(Module)
               type_name = member.graphql_name
               if (prev_t = @types[type_name])
@@ -232,7 +217,7 @@ module GraphQL
                   @interface_type_memberships[itm.abstract_type] << itm
                 end
               elsif member < GraphQL::Schema::Union
-                unions_for_references << member
+                @unions_for_references << member
               end
             elsif member.is_a?(GraphQL::Schema::Argument)
               member.validate_default_value
@@ -242,23 +227,41 @@ module GraphQL
             end
             true
           end
-          @interface_type_memberships.each do |int_type, type_memberships|
-            referers = @references[int_type].select { |r| r.is_a?(GraphQL::Schema::Field) }
-            if referers.any?
-              type_memberships.each do |type_membership|
-                implementor_type = type_membership.object_type
-                @references[implementor_type].concat(referers)
-              end
-            end
+
+          @schema.root_types.each do |t|
+            @references[t] << true
           end
 
-          unions_for_references.each do |union_type|
-            refs = @references[union_type]
-            union_type.all_possible_types.each do |object_type|
-              @references[object_type].concat(refs)
+          @schema.introspection_system.types.each_value do |t|
+            @references[t] << true
+          end
+          @visit.visit_each(types: []) # visit default directives
+        end
+
+        if types
+          @visit.visit_each(types: types, directives: [])
+        else
+          @visit.visit_each
+        end
+
+        # TODO: somehow don't iterate over all these,
+        # only the ones that may have been modified
+        @interface_type_memberships.each do |int_type, type_memberships|
+          referers = @references[int_type].select { |r| r.is_a?(GraphQL::Schema::Field) }
+          if referers.any?
+            type_memberships.each do |type_membership|
+              implementor_type = type_membership.object_type
+              # Add new items only:
+              @references[implementor_type] |= referers
             end
           end
-          true
+        end
+
+        @unions_for_references.each do |union_type|
+          refs = @references[union_type]
+          union_type.all_possible_types.each do |object_type|
+            @references[object_type] |= refs # Add new items
+          end
         end
       end
     end

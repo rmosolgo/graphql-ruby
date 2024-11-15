@@ -282,8 +282,7 @@ module GraphQL
         def load_all_types
           return if @all_types_loaded
           @all_types_loaded = true
-          visit = Visibility::Visit.new(@schema)
-          visit.visit_each do |member|
+          visit = Visibility::Visit.new(@schema) do |member|
             if member.is_a?(Module) && member.respond_to?(:kind)
               if @cached_visible[member]
                 type_name = member.graphql_name
@@ -299,7 +298,7 @@ module GraphQL
               @cached_visible[member]
             end
           end
-
+          visit.visit_each
           @all_types.delete_if { |type_name, type_defn| !referenced?(type_defn) }
           nil
         end

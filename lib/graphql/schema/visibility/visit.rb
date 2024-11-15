@@ -3,10 +3,14 @@ module GraphQL
   class Schema
     class Visibility
       class Visit
-        def initialize(schema)
+        def initialize(schema, &visit_block)
           @schema = schema
           @late_bound_types = nil
           @unvisited_types = nil
+          # These accumulate between calls to prevent re-visiting the same types
+          @visited_types = Set.new.compare_by_identity
+          @visited_directives = Set.new.compare_by_identity
+          @visit_block = visit_block
         end
 
         def entry_point_types
@@ -21,30 +25,19 @@ module GraphQL
           ept
         end
 
-        def visit_each
-          @unvisited_types && raise("Can't call #visit_each twice on this Visit object")
-          @unvisited_types = entry_point_types
+        def entry_point_directives
+          @schema.directives.values
+        end
+
+        def visit_each(types: entry_point_types, directives: entry_point_directives)
+          @unvisited_types && raise("Can't re-enter `visit_each` on this Visit (another visit is already in progress)")
+          @unvisited_types = types
           @late_bound_types = []
-          visited_types = Set.new.compare_by_identity
-          visited_directives = Set.new.compare_by_identity
-
-          directives_to_visit = []
-
-          @schema.directives.each_value { |dir_class|
-            if visited_directives.add?(dir_class)
-              yield(dir_class)
-              dir_class.all_argument_definitions.each do |arg_defn|
-                if yield(arg_defn)
-                  directives_to_visit.concat(arg_defn.directives)
-                  append_unvisited_type(dir_class, arg_defn.type.unwrap)
-                end
-              end
-            end
-          }
+          directives_to_visit = directives
 
           while @unvisited_types.any? || @late_bound_types.any?
             while (type = @unvisited_types.pop)
-              if visited_types.add?(type) && yield(type)
+              if @visited_types.add?(type) && @visit_block.call(type)
                 directives_to_visit.concat(type.directives)
                 case type.kind.name
                 when "OBJECT", "INTERFACE"
@@ -59,11 +52,11 @@ module GraphQL
 
                   type.all_field_definitions.each do |field|
                     field.ensure_loaded
-                    if yield(field)
+                    if @visit_block.call(field)
                       directives_to_visit.concat(field.directives)
                       append_unvisited_type(type, field.type.unwrap)
                       field.all_argument_definitions.each do |argument|
-                        if yield(argument)
+                        if @visit_block.call(argument)
                           directives_to_visit.concat(argument.directives)
                           append_unvisited_type(field, argument.type.unwrap)
                         end
@@ -72,7 +65,7 @@ module GraphQL
                   end
                 when "INPUT_OBJECT"
                   type.all_argument_definitions.each do |argument|
-                    if yield(argument)
+                    if @visit_block.call(argument)
                       directives_to_visit.concat(argument.directives)
                       append_unvisited_type(type, argument.type.unwrap)
                     end
@@ -83,7 +76,7 @@ module GraphQL
                   end
                 when "ENUM"
                   type.all_enum_value_definitions.each do |val|
-                    if yield(val)
+                    if @visit_block.call(val)
                       directives_to_visit.concat(val.directives)
                     end
                   end
@@ -96,16 +89,21 @@ module GraphQL
             end
 
             directives_to_visit.each do |dir|
-              dir_class = dir.class
-              if visited_directives.add?(dir_class)
-                yield(dir_class)
+              dir_class = dir.is_a?(Class) ? dir : dir.class
+              if @visited_directives.add?(dir_class) && @visit_block.call(dir_class)
+                dir_class.all_argument_definitions.each do |arg_defn|
+                  if @visit_block.call(arg_defn)
+                    directives_to_visit.concat(arg_defn.directives)
+                    append_unvisited_type(dir_class, arg_defn.type.unwrap)
+                  end
+                end
               end
             end
 
             missed_late_types_streak = 0
             while (owner, late_type = @late_bound_types.shift)
               if (late_type.is_a?(String) && (type = Member::BuildType.constantize(type))) ||
-                  (late_type.is_a?(LateBoundType) && (type = visited_types.find { |t| t.graphql_name == late_type.graphql_name }))
+                  (late_type.is_a?(LateBoundType) && (type = @visited_types.find { |t| t.graphql_name == late_type.graphql_name }))
                 missed_late_types_streak = 0 # might succeed next round
                 update_type_owner(owner, type)
                 append_unvisited_type(owner, type)
@@ -119,6 +117,8 @@ module GraphQL
               end
             end
           end
+
+          @unvisited_types = nil
           nil
         end
 
