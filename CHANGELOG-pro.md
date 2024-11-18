@@ -6,6 +6,10 @@
 
 ### New Features
 
+# 1.29.4 (18 Nov 2024)
+
+- OperationStore: Add forward compatibility for removing old validation code #5164
+
 # 1.29.3 (15 Nov 2024)
 
 - OperationStore: Improve `sync` performance with `GraphQL::Schema::Visibility`
