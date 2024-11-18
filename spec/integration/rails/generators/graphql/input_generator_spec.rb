@@ -6,6 +6,7 @@ class GraphQLGeneratorsInputGeneratorTest < BaseGeneratorTest
   tests Graphql::Generators::InputGenerator
 
   ActiveRecord::Schema.define do
+    self.verbose = !!ENV["GITHUB_ACTIONS"]
     create_table :input_test_users, force: true do |t|
       t.datetime :created_at
       t.date :birthday
