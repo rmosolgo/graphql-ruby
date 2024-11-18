@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.4.3/">API</a>
+            <a href="/api-doc/2.4.4/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -245,15 +245,15 @@
 
 <h2 id="enum-value-authorization">Enum Value Authorization</h2>
 
-<p><a href="/api-doc/2.4.3/GraphQL/Schema/EnumValue#authorized?-instance_method" target="_blank" title="API docs for GraphQL::Schema::EnumValue#authorized?"><code>GraphQL::Schema::EnumValue#authorized?</code></a> is called when client input is received and when the schema returns values to the client.</p>
+<p><a href="/api-doc/2.4.4/GraphQL/Schema/EnumValue#authorized?-instance_method" target="_blank" title="API docs for GraphQL::Schema::EnumValue#authorized?"><code>GraphQL::Schema::EnumValue#authorized?</code></a> is called when client input is received and when the schema returns values to the client.</p>
 
-<p>For authorizing input, if a value’s <code class="language-plaintext highlighter-rouge">#authorized?</code> method returns false, then a <a href="/api-doc/2.4.3/GraphQL/UnauthorizedEnumValueError" target="_blank" title="API docs for GraphQL::UnauthorizedEnumValueError"><code>GraphQL::UnauthorizedEnumValueError</code></a> is raised. It passed to your schema’s <code class="language-plaintext highlighter-rouge">.unauthorized_object</code> hook, where you can handle it another way if you want.</p>
+<p>For authorizing input, if a value’s <code class="language-plaintext highlighter-rouge">#authorized?</code> method returns false, then a <a href="/api-doc/2.4.4/GraphQL/UnauthorizedEnumValueError" target="_blank" title="API docs for GraphQL::UnauthorizedEnumValueError"><code>GraphQL::UnauthorizedEnumValueError</code></a> is raised. It passed to your schema’s <code class="language-plaintext highlighter-rouge">.unauthorized_object</code> hook, where you can handle it another way if you want.</p>
 
-<p>For authorizing return values, if an outgoing value’s <code class="language-plaintext highlighter-rouge">#authorized?</code> method returns false, then a <a href="/api-doc/2.4.3/GraphQL/Schema/Enum/UnresolvedValueError" target="_blank" title="API docs for GraphQL::Schema::Enum::UnresolvedValueError"><code>GraphQL::Schema::Enum::UnresolvedValueError</code></a> is raised, which crashes the query. In this case, you should modify your field or resolver to <em>not</em> return this value to an unauthorized viewer. (In this case, the error isn’t returned to the viewer because the viewer can’t do anything about it – it’s a developer-facing issue instead.)</p>
+<p>For authorizing return values, if an outgoing value’s <code class="language-plaintext highlighter-rouge">#authorized?</code> method returns false, then a <a href="/api-doc/2.4.4/GraphQL/Schema/Enum/UnresolvedValueError" target="_blank" title="API docs for GraphQL::Schema::Enum::UnresolvedValueError"><code>GraphQL::Schema::Enum::UnresolvedValueError</code></a> is raised, which crashes the query. In this case, you should modify your field or resolver to <em>not</em> return this value to an unauthorized viewer. (In this case, the error isn’t returned to the viewer because the viewer can’t do anything about it – it’s a developer-facing issue instead.)</p>
 
 <h2 id="handling-unauthorized-objects">Handling Unauthorized Objects</h2>
 
-<p>By default, GraphQL-Ruby silently replaces unauthorized objects with <code class="language-plaintext highlighter-rouge">nil</code>, as if they didn’t exist. You can customize this behavior by implementing <a href="/api-doc/2.4.3/GraphQL/Schema#unauthorized_object-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_object"><code>Schema.unauthorized_object</code></a> in your schema class, for example:</p>
+<p>By default, GraphQL-Ruby silently replaces unauthorized objects with <code class="language-plaintext highlighter-rouge">nil</code>, as if they didn’t exist. You can customize this behavior by implementing <a href="/api-doc/2.4.4/GraphQL/Schema#unauthorized_object-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_object"><code>Schema.unauthorized_object</code></a> in your schema class, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
   <span class="c1"># Override this hook to handle cases when `authorized?` returns false for an object:</span>
