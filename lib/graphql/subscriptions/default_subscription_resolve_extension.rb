@@ -20,7 +20,7 @@ module GraphQL
       def after_resolve(value:, context:, object:, arguments:, **rest)
         if value.is_a?(GraphQL::ExecutionError)
           value
-        elsif @field.resolver.method_defined?(:subscription_written?) &&
+        elsif @field.resolver&.method_defined?(:subscription_written?) &&
           (subscription_namespace = context.namespace(:subscriptions)) &&
           (subscriptions_by_path = subscription_namespace[:subscriptions])
           (subscription_instance = subscriptions_by_path[context.current_path])
