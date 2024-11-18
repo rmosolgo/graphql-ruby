@@ -10,6 +10,10 @@
 
 ### Bug fixes
 
+# 2.4.4 (18 Nov 2024)
+
+- Visibility: improve performance with `sync` #5161
+
 # 2.4.3 (11 Nov 2024)
 
 ### Bug fixes
