@@ -2,8 +2,6 @@
 module GraphQL
   module StaticValidation
     module NoDefinitionsArePresent
-      include GraphQL::StaticValidation::Error::ErrorHelper
-
       def initialize(*)
         super
         @schema_definition_nodes = []
