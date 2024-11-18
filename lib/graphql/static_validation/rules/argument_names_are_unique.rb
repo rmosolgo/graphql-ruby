@@ -2,8 +2,6 @@
 module GraphQL
   module StaticValidation
     module ArgumentNamesAreUnique
-      include GraphQL::StaticValidation::Error::ErrorHelper
-
       def on_field(node, parent)
         validate_arguments(node)
         super
