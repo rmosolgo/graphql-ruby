@@ -37,7 +37,7 @@ module GraphQL
         @interface_type_memberships = nil
         @directives = nil
         @types = nil
-        @references = nil
+        @all_references = nil
         @loaded_all = false
       end
 
@@ -53,7 +53,7 @@ module GraphQL
 
       def all_references
         load_all
-        @references
+        @all_references
       end
 
       def get_type(type_name)
@@ -202,7 +202,7 @@ module GraphQL
           @interface_type_memberships = Hash.new { |h, interface_type| h[interface_type] = [] }.compare_by_identity
           @directives = []
           @types = {} # String => Module
-          @references = Hash.new { |h, member| h[member] = [] }.compare_by_identity
+          @all_references = Hash.new { |h, member| h[member] = Set.new.compare_by_identity }.compare_by_identity
           @unions_for_references = Set.new
           @visit = Visibility::Visit.new(@schema) do |member|
             if member.is_a?(Module)
@@ -216,11 +216,12 @@ module GraphQL
               else
                 @types[member.graphql_name] = member
               end
+              member.directives.each { |dir| @all_references[dir.class] << member }
               if member < GraphQL::Schema::Directive
                 @directives << member
               elsif member.respond_to?(:interface_type_memberships)
                 member.interface_type_memberships.each do |itm|
-                  @references[itm.abstract_type] << member
+                  @all_references[itm.abstract_type] << member
                   @interface_type_memberships[itm.abstract_type] << itm
                 end
               elsif member < GraphQL::Schema::Union
@@ -228,20 +229,33 @@ module GraphQL
               end
             elsif member.is_a?(GraphQL::Schema::Argument)
               member.validate_default_value
-              @references[member.type.unwrap] << member
+              @all_references[member.type.unwrap] << member
+              if (dirs = member.directives).any?
+                dir_owner = member.owner
+                if dir_owner.respond_to?(:owner)
+                  dir_owner = dir_owner.owner
+                end
+                dirs.each { |dir| @all_references[dir.class] << dir_owner }
+              end
             elsif member.is_a?(GraphQL::Schema::Field)
-              @references[member.type.unwrap] << member
+              @all_references[member.type.unwrap] << member
+              if (dirs = member.directives).any?
+                dir_owner = member.owner
+                dirs.each { |dir| @all_references[dir.class] << dir_owner }
+              end
+            elsif member.is_a?(GraphQL::Schema::EnumValue)
+              if (dirs = member.directives).any?
+                dir_owner = member.owner
+                dirs.each { |dir| @all_references[dir.class] << dir_owner }
+              end
             end
             true
           end
 
-          @schema.root_types.each do |t|
-            @references[t] << true
-          end
+          @schema.root_types.each { |t| @all_references[t] << true }
+          @schema.introspection_system.types.each_value { |t| @all_references[t] << true }
+          @schema.directives.each_value { |dir_class| @all_references[dir_class] << true }
 
-          @schema.introspection_system.types.each_value do |t|
-            @references[t] << true
-          end
           @visit.visit_each(types: []) # visit default directives
         end
 
@@ -258,20 +272,20 @@ module GraphQL
         # TODO: somehow don't iterate over all these,
         # only the ones that may have been modified
         @interface_type_memberships.each do |int_type, type_memberships|
-          referers = @references[int_type].select { |r| r.is_a?(GraphQL::Schema::Field) }
+          referers = @all_references[int_type].select { |r| r.is_a?(GraphQL::Schema::Field) }
           if referers.any?
             type_memberships.each do |type_membership|
               implementor_type = type_membership.object_type
               # Add new items only:
-              @references[implementor_type] |= referers
+              @all_references[implementor_type] |= referers
             end
           end
         end
 
         @unions_for_references.each do |union_type|
-          refs = @references[union_type]
+          refs = @all_references[union_type]
           union_type.all_possible_types.each do |object_type|
-            @references[object_type] |= refs # Add new items
+            @all_references[object_type] |= refs # Add new items
           end
         end
       end

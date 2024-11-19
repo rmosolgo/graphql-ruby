@@ -239,7 +239,9 @@ module GraphQL
         end
 
         def directives
-          @all_directives ||= @schema.visibility.all_directives.select { |dir| @cached_visible[dir] }
+          @all_directives ||= @schema.visibility.all_directives.select { |dir|
+            @cached_visible[dir] && @schema.visibility.all_references[dir].any? { |ref| ref == true || (@cached_visible[ref] && referenced?(ref)) }
+          }
         end
 
         def loadable?(t, _ctx)
