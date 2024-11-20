@@ -533,18 +533,18 @@ describe GraphQL::Schema::Object do
     it "raises an error at runtime and printing" do
       refute NoFieldsSchema::NoFieldsThing.has_no_fields?
 
-      err = assert_raises GraphQL::Error do
+      err = assert_raises GraphQL::Schema::Object::FieldsAreRequiredError do
         NoFieldsSchema.execute("{ noFieldsThing { blah } }")
       end
       expected_message = "Object types must have fields, but NoFieldsThing doesn't have any. Define a field for this type, remove it from your schema, or add `has_no_fields(true)` to its definition."
       assert_equal expected_message, err.message
 
-      err = assert_raises GraphQL::Error do
+      err = assert_raises GraphQL::Schema::Object::FieldsAreRequiredError do
         NoFieldsSchema.to_definition
       end
       assert_equal expected_message, err.message
 
-      err = assert_raises GraphQL::Error do
+      err = assert_raises GraphQL::Schema::Object::FieldsAreRequiredError do
         NoFieldsSchema.to_json
       end
       assert_equal expected_message, err.message

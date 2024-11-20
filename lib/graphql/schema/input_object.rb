@@ -10,6 +10,14 @@ module GraphQL
 
       include GraphQL::Dig
 
+      # Raised when an InputObject doesn't have any arguments defined and hasn't explicitly opted out of this requirement
+      class ArgumentsAreRequiredError < GraphQL::Error
+        def initialize(input_object_type)
+          message = "Input Object types must have arguments, but #{input_object_type.graphql_name} doesn't have any. Define an argument for this type, remove it from your schema, or add `has_no_arguments(true)` to its definition."
+          super(message)
+        end
+      end
+
       # @return [GraphQL::Query::Context] The context for this query
       attr_reader :context
       # @return [GraphQL::Execution::Interpereter::Arguments] The underlying arguments instance
@@ -260,7 +268,7 @@ module GraphQL
 
         def arguments(context = GraphQL::Query::NullContext.instance, require_defined_arguments = true)
           if require_defined_arguments && !has_no_arguments? && !any_arguments?
-            raise GraphQL::Error, "Input Object types must have arguments, but #{graphql_name} doesn't have any. Define an argument for this type, remove it from your schema, or add `has_no_arguments(true)` to its definition."
+            raise GraphQL::Schema::InputObject::ArgumentsAreRequiredError.new(self)
           end
           super(context, false)
         end

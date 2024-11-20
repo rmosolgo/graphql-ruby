@@ -1446,18 +1446,18 @@ describe GraphQL::Schema::InputObject do
       it "raises an error at runtime and printing" do
         refute NoArgumentsSchema::NoArgumentsInput.has_no_arguments?
 
-        err = assert_raises GraphQL::Error do
+        err = assert_raises GraphQL::Schema::InputObject::ArgumentsAreRequiredError do
           NoArgumentsSchema.execute("{ noArguments(input: {}) }")
         end
         expected_message = "Input Object types must have arguments, but NoArgumentsInput doesn't have any. Define an argument for this type, remove it from your schema, or add `has_no_arguments(true)` to its definition."
         assert_equal expected_message, err.message
 
-        err = assert_raises GraphQL::Error do
+        err = assert_raises GraphQL::Schema::InputObject::ArgumentsAreRequiredError do
           NoArgumentsSchema.to_definition
         end
         assert_equal expected_message, err.message
 
-        err = assert_raises GraphQL::Error do
+        err = assert_raises GraphQL::Schema::InputObject::ArgumentsAreRequiredError do
           NoArgumentsSchema.to_json
         end
         assert_equal expected_message, err.message

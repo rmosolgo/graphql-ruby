@@ -181,7 +181,7 @@ module GraphQL
               end
             end
             if !had_any_fields_at_all && !has_no_fields?
-              raise GraphQL::Error, "Object types must have fields, but #{graphql_name} doesn't have any. Define a field for this type, remove it from your schema, or add `has_no_fields(true)` to its definition."
+              raise GraphQL::Schema::Object::FieldsAreRequiredError.new(self)
             else
               visible_fields
             end
