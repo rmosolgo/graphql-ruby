@@ -268,7 +268,7 @@ module GraphQL
 
         def arguments(context = GraphQL::Query::NullContext.instance, require_defined_arguments = true)
           if require_defined_arguments && !has_no_arguments? && !any_arguments?
-            raise GraphQL::Schema::InputObject::ArgumentsAreRequiredError.new(self)
+            warn(GraphQL::Schema::InputObject::ArgumentsAreRequiredError.new(self).message + "\n\nThis will raise an error in a future GraphQL-Ruby version.")
           end
           super(context, false)
         end

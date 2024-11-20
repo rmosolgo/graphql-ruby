@@ -181,10 +181,9 @@ module GraphQL
               end
             end
             if !had_any_fields_at_all && !has_no_fields?
-              raise GraphQL::Schema::Object::FieldsAreRequiredError.new(self)
-            else
-              visible_fields
+              warn(GraphQL::Schema::Object::FieldsAreRequiredError.new(self).message + "\n\nThis will raise an error in a future GraphQL-Ruby version.")
             end
+            visible_fields
           end
         end
 
