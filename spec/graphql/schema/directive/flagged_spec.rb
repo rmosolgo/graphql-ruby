@@ -41,6 +41,8 @@ describe GraphQL::Schema::Directive::Flagged do
       field :santas_workshop, Boolean, null: false,
         directives: { GraphQL::Schema::Directive::Flagged => { by: ["northPole"] } }
       def santas_workshop; true; end
+
+      field :something_not_flagged, String
     end
 
     query(Query)

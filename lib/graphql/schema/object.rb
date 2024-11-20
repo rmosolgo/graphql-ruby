@@ -8,6 +8,14 @@ module GraphQL
       extend GraphQL::Schema::Member::HasFields
       extend GraphQL::Schema::Member::HasInterfaces
 
+      # Raised when an Object doesn't have any field defined and hasn't explicitly opted out of this requirement
+      class FieldsAreRequiredError < GraphQL::Error
+        def initialize(object_type)
+          message = "Object types must have fields, but #{object_type.graphql_name} doesn't have any. Define a field for this type, remove it from your schema, or add `has_no_fields(true)` to its definition."
+          super(message)
+        end
+      end
+
       # @return [Object] the application object this type is wrapping
       attr_reader :object
 

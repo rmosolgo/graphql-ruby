@@ -1080,6 +1080,7 @@ describe GraphQL::Schema::Warden do
 
     visible_account = Class.new(hidden_account) do
       graphql_name "NewAccount"
+      has_no_fields(true)
       def self.visible?(_ctx); true; end
     end
 

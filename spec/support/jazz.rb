@@ -912,6 +912,7 @@ module Jazz
     end
 
     BlogPost = Class.new(GraphQL::Schema::Object)
+    BlogPost.has_no_fields(true)
     extra_types BlogPost
     use GraphQL::Dataloader
     use GraphQL::Schema::Warden if ADD_WARDEN

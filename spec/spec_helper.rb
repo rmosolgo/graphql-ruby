@@ -170,3 +170,11 @@ end
 if !USING_C_PARSER && defined?(GraphQL::CParser::Parser)
   raise "Load error: didn't opt in to C parser but GraphQL::CParser::Parser was defined"
 end
+
+def assert_warns(warning, printing = "")
+  return_val = nil
+  stdout, stderr = capture_io { return_val = yield }
+  assert_equal warning, stderr, "It produced the expected stderr"
+  assert_equal stdout, printing, "It produced the expected stdout"
+  return_val
+end

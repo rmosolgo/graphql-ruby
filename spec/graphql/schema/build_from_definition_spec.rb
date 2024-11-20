@@ -18,15 +18,12 @@ schema {
   query: HelloScalars
 }
 
-type EmptyType
-
 type HelloScalars {
   bool: Boolean
   float: Float
   id: ID
   int: Int
   str: String!
-  t: EmptyType
 }
       SCHEMA
 

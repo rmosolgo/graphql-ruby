@@ -78,6 +78,8 @@ describe "Logger" do
 
           def node(id:)
           end
+
+          field :something_else, String
         end
         query(Query)
       end

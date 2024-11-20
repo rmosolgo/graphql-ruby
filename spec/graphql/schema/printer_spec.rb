@@ -73,10 +73,13 @@ REASON
       value :BOO_HISS
     end
 
+
     class NoFields < GraphQL::Schema::Object
+      has_no_fields(true)
     end
 
     class NoArguments < GraphQL::Schema::InputObject
+      has_no_arguments(true)
     end
 
     class Query < GraphQL::Schema::Object
@@ -709,7 +712,6 @@ SCHEMA
     context = { names: ["Query", "Post"] }
     assert_equal expected, custom_filter_schema.to_definition(context: context)
   end
-
 
   it "applies an `except` filter" do
     expected = <<SCHEMA
