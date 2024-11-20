@@ -41,7 +41,7 @@ if testing_rails?
 
   ActiveRecord::Base.establish_connection(:starwars)
   ActiveRecord::Schema.define do
-    self.verbose = false
+    self.verbose = !!ENV["GITHUB_ACTIONS"]
     create_table :bases, force: true do |t|
       t.column :name, :string
       t.column :planet, :string

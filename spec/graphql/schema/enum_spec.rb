@@ -304,4 +304,40 @@ describe GraphQL::Schema::Enum do
       end
     end
   end
+
+  describe "when values are defined on-the-fly inside #enum_values" do
+    class DynamicEnumValuesSchema < GraphQL::Schema
+      class TransportationMode < GraphQL::Schema::Enum
+        def self.enum_values(context = {})
+          [
+            GraphQL::Schema::EnumValue.new("BICYCLE", owner: self),
+            GraphQL::Schema::EnumValue.new("CAR", owner: self),
+            GraphQL::Schema::EnumValue.new("BUS", owner: self),
+            GraphQL::Schema::EnumValue.new("SCOOTER", owner: self),
+          ]
+        end
+      end
+      class Query < GraphQL::Schema::Object
+        field :mode, TransportationMode, fallback_value: "SCOOTER"
+      end
+      query(Query)
+    end
+
+    it "uses them" do
+      expected_sdl = <<~GRAPHQL
+      type Query {
+        mode: TransportationMode
+      }
+
+      enum TransportationMode {
+        BICYCLE
+        BUS
+        CAR
+        SCOOTER
+      }
+      GRAPHQL
+
+      assert_equal expected_sdl, DynamicEnumValuesSchema.to_definition
+    end
+  end
 end

@@ -1,4 +1,5 @@
 var childProcess = require("child_process")
+let fs = require('fs')
 
 describe("CLI", () => {
   it("exits 1 on error", () => {
@@ -21,5 +22,36 @@ describe("CLI", () => {
     var buffer = childProcess.execSync("node ./cli.js sync --client=something --header=Ab-cd:ef-gh --mode=file --path=\"**/doc1.graphql\"", {stdio: "pipe"})
     var response = buffer.toString().replace(/\033\[[0-9;]*m/g, "")
     expect(response).toEqual("No URL; Generating artifacts without syncing them\nGenerating client module in src/OperationStoreClient.js...\n✓ Done!\n")
+  })
+
+  it("writes to a dump file", () => {
+    let buffer = childProcess.execSync("node ./cli.js sync --client=something --header=Ab-cd:ef-gh --dump-payload=./DumpPayloadExample.json --path=\"**/doc1.graphql\"", {stdio: "pipe"})
+    console.log(buffer.toString())
+    let dumpedJSON = fs.readFileSync("./DumpPayloadExample.json", 'utf8')
+    expect(dumpedJSON).toEqual(`{
+  "operations": [
+    {
+      "name": "GetStuff",
+      "body": "query GetStuff {\\n  stuff\\n}",
+      "alias": "b8086942c2fbb6ac69b97cbade848033"
+    }
+  ]
+}
+`)
+  })
+
+  it("writes to stdout", () => {
+    let buffer = childProcess.execSync("node ./cli.js sync --client=something --header=Ab-cd:ef-gh --dump-payload --path=\"**/doc1.graphql\"", {stdio: "pipe"})
+    let dumpedJSON = buffer.toString().replace(/\033\[[0-9;]*m/g, "")
+    expect(dumpedJSON).toEqual(`{
+  "operations": [
+    {
+      "name": "GetStuff",
+      "body": "query GetStuff {\\n  stuff\\n}",
+      "alias": "b8086942c2fbb6ac69b97cbade848033"
+    }
+  ]
+}
+`)
   })
 })

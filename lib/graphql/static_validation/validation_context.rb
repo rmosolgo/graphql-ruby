@@ -29,6 +29,7 @@ module GraphQL
         @visitor = visitor_class.new(document, self)
       end
 
+      # TODO stop using def_delegators because of Array allocations
       def_delegators :@visitor,
         :path, :type_definition, :field_definition, :argument_definition,
         :parent_type_definition, :directive_definition, :object_types, :dependencies

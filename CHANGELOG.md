@@ -10,7 +10,32 @@
 
 ### Bug fixes
 
-# 2.4.0
+# 2.4.4 (18 Nov 2024)
+
+- Visibility: improve performance with `sync` #5161
+
+# 2.4.3 (11 Nov 2024)
+
+### Bug fixes
+
+- Lookahead: return an empty hash for `.arguments` when they raised a `GraphQL::ExecutionError` #5155
+- Visibility: fix error when Mutation is lazy-loaded #5158
+- Visibility: improve performance of `Schema.types` #5157
+
+# 2.4.2 (7 Nov 2024)
+
+### Bug fixes
+
+- Validation: fix error message when selections are made on an enum #5144 #5145
+- Visibility: fix preloading when no profiles are named #5148
+
+# 2.4.1 (4 Nov 2024)
+
+### Bug fixes
+
+- Visibility: support dynamically-generated `#enum_values` #5141
+
+# 2.4.0 (31 Oct 2024)
 
 ### Deprecations
 

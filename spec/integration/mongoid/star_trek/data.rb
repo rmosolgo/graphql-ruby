@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require 'ostruct'
+require 'support/mongoid_setup'
 
 module StarTrek
   names = [

@@ -109,27 +109,18 @@ def testing_mongoid?
   defined?(::Mongoid)
 end
 
-# Load support files
-Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each do |f|
-  require f
-end
-
 if testing_rails?
   require "integration/rails/spec_helper"
 end
 
-# Load dependencies
-['Mongoid', 'Rails'].each do |integration|
-  integration_loaded = begin
-    Object.const_get(integration)
-  rescue NameError
-    nil
-  end
-  if ENV["TEST"].nil? && integration_loaded
-    Dir["spec/integration/#{integration.downcase}/**/*.rb"].each do |f|
-      require f.sub("spec/", "")
-    end
-  end
+if testing_mongoid?
+  require "integration/mongoid/star_trek/data"
+  require "integration/mongoid/star_trek/schema"
+end
+
+# Load support files
+Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each do |f|
+  require f
 end
 
 def star_trek_query(string, variables={}, context: {})
