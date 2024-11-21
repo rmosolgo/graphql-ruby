@@ -231,6 +231,22 @@ describe GraphQL::Dataloader do
         recipe
       end
 
+      field :recipe_by_id_using_load, Recipe do
+        argument :id, ID, required: false
+      end
+
+      def recipe_by_id_using_load(id:)
+        dataloader.with(DataObject).load(id)
+      end
+
+      field :recipes_by_id_using_load_all, [Recipe] do
+        argument :ids, [ID, null: true]
+      end
+
+      def recipes_by_id_using_load_all(ids:)
+        dataloader.with(DataObject).load_all(ids)
+      end
+
       field :recipes_by_id, [Recipe] do
         argument :ids, [ID], loads: Recipe, as: :recipes
       end
@@ -899,6 +915,30 @@ describe GraphQL::Dataloader do
           context = { batched_calls_counter: BatchedCallsCounter.new }
           schema.execute(query_str, context: context)
           assert_equal 1, context[:batched_calls_counter].count
+        end
+
+        it "works when passing nil into source" do
+          query_str = <<-GRAPHQL
+          query($id: ID) {
+            recipe: recipeByIdUsingLoad(id: $id) {
+              name
+            }
+          }
+          GRAPHQL
+          res = schema.execute(query_str, variables: { id: nil })
+          expected_data = { "recipe" => nil }
+          assert_equal expected_data, res["data"]
+
+          query_str = <<-GRAPHQL
+          query($ids: [ID]!) {
+            recipes: recipesByIdUsingLoadAll(ids: $ids) {
+              name
+            }
+          }
+          GRAPHQL
+          res = schema.execute(query_str, variables: { ids: [nil] })
+          expected_data = { "recipes" => nil }
+          assert_equal expected_data, res["data"]
         end
 
         it "Works with input objects using variables, load and request" do

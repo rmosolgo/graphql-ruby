@@ -73,7 +73,7 @@ module GraphQL
           end
         }
 
-        if pending_keys.any?
+        if pending_keys.size.positive?
           sync(pending_keys)
         end
 
