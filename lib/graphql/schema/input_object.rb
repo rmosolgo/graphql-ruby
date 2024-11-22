@@ -53,6 +53,15 @@ module GraphQL
         to_h
       end
 
+      def deconstruct_keys(keys = nil)
+        if keys.nil?
+          @ruby_style_hash
+        else
+          keys.select { @ruby_style_hash.key?(_1) }
+              .to_h { [_1, @ruby_style_hash[_1]] }
+        end
+      end
+
       def prepare
         if @context
           object = @context[:current_object]

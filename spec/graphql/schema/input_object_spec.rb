@@ -781,6 +781,63 @@ describe GraphQL::Schema::InputObject do
     end
   end
 
+  describe "pattern matching" do
+    module InputObjectPatternTest
+      class TestInput1 < GraphQL::Schema::InputObject
+        graphql_name "TestInput1"
+        argument :d, Int
+        argument :e, Int
+      end
+
+      class TestInput2 < GraphQL::Schema::InputObject
+        graphql_name "TestInput2"
+        argument :a, Int
+        argument :b, Int
+        argument :c, TestInput1, as: :inputObject
+      end
+    end
+    arg_values = {
+      a: 1,
+      b: 2,
+      inputObject: InputObjectPatternTest::TestInput1.new(nil, ruby_kwargs: { d: 3, e: 4 }, context: nil, defaults_used: Set.new)
+    }
+
+    input_object = InputObjectPatternTest::TestInput2.new(
+      nil,
+      ruby_kwargs: arg_values,
+      context: nil,
+      defaults_used: Set.new
+    )
+    it "matches the value at that key" do
+      assert case input_object
+      in { a: 1 }
+        true
+      else
+        false
+      end
+
+      assert input_object.dig(:inputObject).is_a?(GraphQL::Schema::InputObject)
+    end
+
+    it "matches nested input objects" do
+      assert case input_object
+      in { inputObject: { d: 3 } }
+        true
+      else
+        false
+      end
+    end
+
+    it "does not match missing keys" do
+      assert case input_object
+      in { z: }
+        false
+      else
+        true
+      end
+    end
+  end
+
   describe "introspection" do
     it "returns input fields" do
       res = Jazz::Schema.execute('
