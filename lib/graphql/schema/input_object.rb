@@ -57,8 +57,9 @@ module GraphQL
         if keys.nil?
           @ruby_style_hash
         else
-          keys.select { @ruby_style_hash.key?(_1) }
-              .to_h { [_1, @ruby_style_hash[_1]] }
+          new_h = {}
+          keys.each { |k| @ruby_style_hash.key?(k) && new_h[k] = @ruby_style_hash[k] }
+          new_h 
         end
       end
 
