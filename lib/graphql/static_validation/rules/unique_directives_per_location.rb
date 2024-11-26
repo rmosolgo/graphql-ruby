@@ -21,7 +21,7 @@ module GraphQL
 
       DIRECTIVE_NODE_HOOKS.each do |method_name|
         define_method(method_name) do |node, parent|
-          if node.directives.any?
+          if !node.directives.empty?
             validate_directive_location(node)
           end
           super(node, parent)

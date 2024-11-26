@@ -32,7 +32,7 @@ module GraphQL
 
             def validators
               inherited_validators = superclass.validators
-              if inherited_validators.any?
+              if !inherited_validators.empty?
                 if @own_validators.nil?
                   inherited_validators
                 else

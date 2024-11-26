@@ -6,7 +6,7 @@ module Cop
     # A custom Rubocop rule to catch uses of `.none?` without a block.
     #
     # @see https://github.com/rmosolgo/graphql-ruby/pull/2090
-    class NoneWithoutBlockCop < RuboCop::Cop::Cop
+    class NoneWithoutBlockCop < RuboCop::Cop::Base
       MSG = <<-MD
 Instead of `.none?` or `.any?` without a block:
 

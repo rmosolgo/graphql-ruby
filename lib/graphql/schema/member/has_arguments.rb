@@ -77,7 +77,7 @@ module GraphQL
 
         # @return [Hash<String => GraphQL::Schema::Argument] Arguments defined on this thing, keyed by name. Includes inherited definitions
         def arguments(context = GraphQL::Query::NullContext.instance, _require_defined_arguments = nil)
-          if own_arguments.any?
+          if !own_arguments.empty?
             own_arguments_that_apply = {}
             own_arguments.each do |name, args_entry|
               if (visible_defn = Warden.visible_entry?(:visible_argument?, args_entry, context))
@@ -90,7 +90,7 @@ module GraphQL
         end
 
         def any_arguments?
-          own_arguments.any?
+          !own_arguments.empty?
         end
 
         module ClassConfigured
@@ -104,8 +104,8 @@ module GraphQL
               own_arguments = super(context, require_defined_arguments)
               inherited_arguments = superclass.arguments(context, false)
 
-              if own_arguments.any?
-                if inherited_arguments.any?
+              if !own_arguments.empty?
+                if !inherited_arguments.empty?
                   # Local definitions override inherited ones
                   inherited_arguments.merge(own_arguments)
                 else
@@ -153,8 +153,8 @@ module GraphQL
             own_arguments = super
             if @resolver_class
               inherited_arguments = @resolver_class.field_arguments(context)
-              if own_arguments.any?
-                if inherited_arguments.any?
+              if !own_arguments.empty?
+                if !inherited_arguments.empty?
                   inherited_arguments.merge(own_arguments)
                 else
                   own_arguments
@@ -198,7 +198,7 @@ module GraphQL
         end
 
         def all_argument_definitions
-          if own_arguments.any?
+          if !own_arguments.empty?
             all_defns = own_arguments.values
             all_defns.flatten!
             all_defns

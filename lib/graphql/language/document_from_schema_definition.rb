@@ -52,7 +52,7 @@ module GraphQL
 
       def build_object_type_node(object_type)
         ints = @types.interfaces(object_type)
-        if ints.any?
+        if !ints.empty?
           ints.sort_by!(&:graphql_name)
           ints.map! { |iface| build_type_name_node(iface) }
         end
@@ -247,7 +247,7 @@ module GraphQL
       end
 
       def build_argument_nodes(arguments)
-        if arguments.any?
+        if !arguments.empty?
           nodes = arguments.map { |arg| build_argument_node(arg) }
           nodes.sort_by!(&:name)
           nodes
@@ -271,7 +271,7 @@ module GraphQL
         all_types = @types.all_types
         type_nodes = build_type_definition_nodes(all_types)
 
-        if (ex_t = schema.extra_types).any?
+        if !(ex_t = schema.extra_types).empty?
           dummy_query = Class.new(GraphQL::Schema::Object) do
             graphql_name "DummyQuery"
             (all_types + ex_t).each_with_index do |type, idx|

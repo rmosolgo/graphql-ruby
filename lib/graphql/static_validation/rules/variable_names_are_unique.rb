@@ -4,7 +4,7 @@ module GraphQL
     module VariableNamesAreUnique
       def on_operation_definition(node, parent)
         var_defns = node.variables
-        if var_defns.any?
+        if !var_defns.empty?
           vars_by_name = Hash.new { |h, k| h[k] = [] }
           var_defns.each { |v| vars_by_name[v.name] << v }
           vars_by_name.each do |name, defns|

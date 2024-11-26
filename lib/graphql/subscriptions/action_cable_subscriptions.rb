@@ -171,7 +171,7 @@ module GraphQL
           events_by_fingerprint = @events[topic]
           object = nil
           events_by_fingerprint.each do |_fingerprint, events|
-            if events.any? && events.first == initial_event
+            if !events.empty? && events.first == initial_event
               # The fingerprint has told us that this response should be shared by all subscribers,
               # so just run it once, then deliver the result to every subscriber
               first_event = events.first

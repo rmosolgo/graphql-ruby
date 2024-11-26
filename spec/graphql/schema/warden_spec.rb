@@ -291,7 +291,7 @@ module MaskHelpers
     if (except = kwargs.delete(:except))
       filters[:except] = except
     end
-    if filters.any?
+    if !filters.empty?
       context = kwargs[:context] ||= {}
       context[:filters] = filters
     end

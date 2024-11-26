@@ -264,7 +264,7 @@ module GraphQL
 
       def skip?(ast_node)
         dir = ast_node.directives
-        dir.any? && !GraphQL::Execution::DirectiveChecks.include?(dir, query)
+        !dir.empty? && !GraphQL::Execution::DirectiveChecks.include?(dir, query)
       end
 
       def on_fragment_with_type(node)

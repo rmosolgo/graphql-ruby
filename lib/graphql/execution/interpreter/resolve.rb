@@ -22,7 +22,7 @@ module GraphQL
 
           if smallest_depth
             lazies = lazies_at_depth.delete(smallest_depth)
-            if lazies.any?
+            if !lazies.empty?
               dataloader.append_job {
                 lazies.each(&:value) # resolve these Lazy instances
               }
@@ -55,7 +55,7 @@ module GraphQL
           # these approaches.
           dataloader.run
           next_results = []
-          while results.any?
+          while !results.empty?
             result_value = results.shift
             if result_value.is_a?(Runtime::GraphQLResultHash) || result_value.is_a?(Hash)
               results.concat(result_value.values)
@@ -81,7 +81,7 @@ module GraphQL
             end
           end
 
-          if next_results.any?
+          if !next_results.empty?
             # Any pending data loader jobs may populate the
             # resutl arrays or result hashes accumulated in
             # `next_results``. Run those **to completion**

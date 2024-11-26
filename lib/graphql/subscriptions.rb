@@ -291,7 +291,7 @@ module GraphQL
           end
         end
 
-        if missing_arg_names.any?
+        if !missing_arg_names.empty?
           arg_owner_name = if arg_owner.is_a?(GraphQL::Schema::Field)
             arg_owner.path
           elsif arg_owner.is_a?(Class)

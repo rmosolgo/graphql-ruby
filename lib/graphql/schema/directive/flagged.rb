@@ -45,7 +45,7 @@ module GraphQL
           def visible?(context)
             if dir = self.directives.find { |d| d.is_a?(Flagged) }
               relevant_flags = (f = context[:flags]) && dir.arguments[:by] & f # rubocop:disable Development/ContextIsPassedCop -- definition-related
-              relevant_flags && relevant_flags.any? && super
+              relevant_flags && !relevant_flags.empty? && super
             else
               super
             end

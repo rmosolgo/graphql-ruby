@@ -25,7 +25,7 @@ module GraphQL
       def validate_field_selections(ast_node, resolved_type)
         msg = if resolved_type.nil?
           nil
-        elsif ast_node.selections.any? && resolved_type.kind.leaf?
+        elsif !ast_node.selections.empty? && resolved_type.kind.leaf?
           selection_strs = ast_node.selections.map do |n|
             case n
             when GraphQL::Language::Nodes::InlineFragment

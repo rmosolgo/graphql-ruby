@@ -16,7 +16,7 @@ module GraphQL
 
       def validate_arguments(node)
         argument_defns = node.arguments
-        if argument_defns.any?
+        if !argument_defns.empty?
           args_by_name = Hash.new { |h, k| h[k] = [] }
           argument_defns.each { |a| args_by_name[a.name] << a }
           args_by_name.each do |name, defns|

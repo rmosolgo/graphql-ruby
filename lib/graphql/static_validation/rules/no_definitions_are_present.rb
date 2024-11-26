@@ -32,7 +32,7 @@ module GraphQL
 
       def on_document(node, parent)
         super
-        if @schema_definition_nodes.any?
+        if !@schema_definition_nodes.empty?
           add_error(GraphQL::StaticValidation::NoDefinitionsArePresentError.new(%|Query cannot contain schema definitions|, nodes: @schema_definition_nodes))
         end
       end

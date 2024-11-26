@@ -143,7 +143,7 @@ module GraphQL
           end
         end
 
-        if all_errors.any?
+        if !all_errors.empty?
           raise ValidationFailedError.new(errors: all_errors)
         end
         nil

@@ -194,7 +194,7 @@ module GraphQL
       next_source_fibers = []
       first_pass = true
       manager = spawn_fiber do
-        while first_pass || job_fibers.any?
+        while first_pass || !job_fibers.empty?
           first_pass = false
 
           while (f = (job_fibers.shift || (((next_job_fibers.size + job_fibers.size) < jobs_fiber_limit) && spawn_job_fiber)))
@@ -207,7 +207,7 @@ module GraphQL
           end
           join_queues(job_fibers, next_job_fibers)
 
-          while (source_fibers.any? || @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) })
+          while (!source_fibers.empty? || @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) })
             while (f = source_fibers.shift || (((job_fibers.size + source_fibers.size + next_source_fibers.size + next_job_fibers.size) < total_fiber_limit) && spawn_source_fiber))
               if f.alive?
                 finished = run_fiber(f)
@@ -227,10 +227,10 @@ module GraphQL
         raise "Invariant: Manager fiber didn't terminate properly."
       end
 
-      if job_fibers.any?
+      if !job_fibers.empty?
         raise "Invariant: job fibers should have exited but #{job_fibers.size} remained"
       end
-      if source_fibers.any?
+      if !source_fibers.empty?
         raise "Invariant: source fibers should have exited but #{source_fibers.size} remained"
       end
     rescue UncaughtThrowError => e
@@ -270,7 +270,7 @@ module GraphQL
     end
 
     def spawn_job_fiber
-      if @pending_jobs.any?
+      if !@pending_jobs.empty?
         spawn_fiber do
           while job = @pending_jobs.shift
             job.call

@@ -58,7 +58,7 @@ module GraphQL
                 query_context[:current_field] = visible_field
                 field_args = visible_field.coerce_arguments(graphql_result, arguments, query_context)
                 field_args = schema.sync_lazy(field_args)
-                if visible_field.extras.any?
+                if !visible_field.extras.empty?
                   extra_args = {}
                   visible_field.extras.each do |extra|
                     extra_args[extra] = case extra
@@ -92,7 +92,7 @@ module GraphQL
           end
           graphql_result
         else
-          unfiltered_type = schema.use_visibility_profile? ? schema.visibility.get_type(type_name) : schema.get_type(type_name) # rubocop:disable ContextIsPassedCop
+          unfiltered_type = schema.use_visibility_profile? ? schema.visibility.get_type(type_name) : schema.get_type(type_name) # rubocop:disable Development/ContextIsPassedCop
           if unfiltered_type
             raise TypeNotVisibleError.new(type_name: type_name)
           else

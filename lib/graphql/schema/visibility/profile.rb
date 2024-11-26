@@ -111,7 +111,7 @@ module GraphQL
         end
 
         def type(type_name)
-          t = @schema.visibility.get_type(type_name) # rubocop:disable ContextIsPassedCop
+          t = @schema.visibility.get_type(type_name) # rubocop:disable Development/ContextIsPassedCop
           if t
             if t.is_a?(Array)
               vis_t = nil

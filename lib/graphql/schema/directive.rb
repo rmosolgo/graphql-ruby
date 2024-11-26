@@ -29,7 +29,7 @@ module GraphQL
         end
 
         def locations(*new_locations)
-          if new_locations.any?
+          if !new_locations.empty?
             new_locations.each do |new_loc|
               if !LOCATIONS.include?(new_loc.to_sym)
                 raise ArgumentError, "#{self} (#{self.graphql_name}) has an invalid directive location: `locations #{new_loc}` "
