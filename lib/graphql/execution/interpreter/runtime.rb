@@ -736,7 +736,7 @@ module GraphQL
         end
 
         def get_current_runtime_state
-          current_state = Thread.current[:__graphql_runtime_info] ||= {}.compare_by_identity
+          current_state = Fiber[:__graphql_runtime_info] ||= {}.compare_by_identity
           current_state[@query] ||= CurrentState.new
         end
 
@@ -821,11 +821,11 @@ module GraphQL
         end
 
         def delete_all_interpreter_context
-          per_query_state = Thread.current[:__graphql_runtime_info]
+          per_query_state = Fiber[:__graphql_runtime_info]
           if per_query_state
             per_query_state.delete(@query)
             if per_query_state.size == 0
-              Thread.current[:__graphql_runtime_info] = nil
+              Fiber[:__graphql_runtime_info] = nil
             end
           end
           nil

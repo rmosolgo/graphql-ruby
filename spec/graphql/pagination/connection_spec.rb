@@ -11,11 +11,11 @@ describe GraphQL::Pagination::Connection do
       conn.context = context
       assert_nil conn.was_authorized_by_scope_items?
 
-      Thread.current[:__graphql_runtime_info] = { context.query => OpenStruct.new(was_authorized_by_scope_items: true) }
+      Fiber[:__graphql_runtime_info] = { context.query => OpenStruct.new(was_authorized_by_scope_items: true) }
       conn.context = context
       assert_equal true, conn.was_authorized_by_scope_items?
     ensure
-      Thread.current[:__graphql_runtime_info] = nil
+      Fiber[:__graphql_runtime_info] = nil
     end
   end
 end

@@ -3,7 +3,7 @@ module GraphQL
   class Dataloader
     class AsyncDataloader < Dataloader
       def yield
-        if (condition = Thread.current[:graphql_dataloader_next_tick])
+        if (condition = Fiber[:graphql_dataloader_next_tick])
           condition.wait
         else
           Fiber.yield
@@ -78,7 +78,7 @@ module GraphQL
           fiber_vars = get_fiber_variables
           parent_task.async do
             set_fiber_variables(fiber_vars)
-            Thread.current[:graphql_dataloader_next_tick] = condition
+            Fiber[:graphql_dataloader_next_tick] = condition
             pending_sources.each(&:run_pending_keys)
             cleanup_fiber
           end
