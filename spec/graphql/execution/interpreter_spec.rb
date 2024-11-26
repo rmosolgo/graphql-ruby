@@ -309,7 +309,7 @@ describe GraphQL::Execution::Interpreter do
       module EnsureThreadCleanedUp
         def execute_multiplex(multiplex:)
           res = super
-          runtime_info = Thread.current[:__graphql_runtime_info]
+          runtime_info = Fiber[:__graphql_runtime_info]
           if !runtime_info.nil? && runtime_info != {}
             if !multiplex.context[:allow_pending_thread_state]
               # `nestedQuery` can allow this
@@ -369,7 +369,7 @@ describe GraphQL::Execution::Interpreter do
       {"__typename" => "Expansion", "sym" => "RAV"},
     ]
     assert_equal expected_abstract_list, result["data"]["find"]
-    assert_nil Thread.current[:__graphql_runtime_info]
+    assert_nil Fiber[:__graphql_runtime_info]
   end
 
   it "runs a nested query and maintains proper state" do
@@ -377,7 +377,7 @@ describe GraphQL::Execution::Interpreter do
     result = InterpreterTest::Schema.execute(query_str, variables: { queryStr: "{ __typename }" })
     assert_equal '{"data":{"__typename":"Query"}}', result["data"]["nestedQuery"]["result"]
     assert_equal ["nestedQuery"], result["data"]["nestedQuery"]["currentPath"]
-    assert_nil Thread.current[:__graphql_runtime_info]
+    assert_nil Fiber[:__graphql_runtime_info]
   end
 
   it "runs mutation roots atomically and sequentially" do
@@ -428,7 +428,7 @@ describe GraphQL::Execution::Interpreter do
       "exp5" => {"name" => "Ravnica, City of Guilds"},
     }
     assert_equal expected_data, result["data"]
-    assert_nil Thread.current[:__graphql_runtime_info]
+    assert_nil Fiber[:__graphql_runtime_info]
   end
 
   describe "runtime info in context" do
@@ -469,7 +469,7 @@ describe GraphQL::Execution::Interpreter do
       # propagated to here
       assert_nil res["data"].fetch("expansion")
       assert_equal ["Cannot return null for non-nullable field Expansion.name"], res["errors"].map { |e| e["message"] }
-      assert_nil Thread.current[:__graphql_runtime_info]
+      assert_nil Fiber[:__graphql_runtime_info]
     end
 
     it "places errors ahead of data in the response" do
