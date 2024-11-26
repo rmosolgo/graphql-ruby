@@ -346,10 +346,11 @@ module GraphQL
       end
 
       def definition_directives(member, directives_method)
-        dirs = if !member.respond_to?(directives_method) || member.directives.empty?
+        if !member.respond_to?(directives_method) || member.directives.empty?
           EmptyObjects::EMPTY_ARRAY
         else
-          member.public_send(directives_method).map do |dir|
+          visible_directives = member.public_send(directives_method).select { |dir| @types.directive_exists?(dir.graphql_name) }
+          visible_directives.map! do |dir|
             args = []
             dir.arguments.argument_values.each_value do |arg_value| # rubocop:disable Development/ContextIsPassedCop -- directive instance method
               arg_defn = arg_value.definition
@@ -373,9 +374,9 @@ module GraphQL
               arguments: args
             )
           end
-        end
 
-        dirs
+          visible_directives
+        end
       end
 
       attr_reader :schema, :always_include_schema,
