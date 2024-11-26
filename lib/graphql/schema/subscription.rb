@@ -55,7 +55,7 @@ module GraphQL
 
       # Wrap the user-defined `#subscribe` hook
       def resolve_subscribe(**args)
-        ret_val = args.any? ? subscribe(**args) : subscribe
+        ret_val = !args.empty? ? subscribe(**args) : subscribe
         if ret_val == :no_response
           context.skip
         else
@@ -72,7 +72,7 @@ module GraphQL
 
       # Wrap the user-provided `#update` hook
       def resolve_update(**args)
-        ret_val = args.any? ? update(**args) : update
+        ret_val = !args.empty? ? update(**args) : update
         if ret_val == NO_UPDATE
           context.namespace(:subscriptions)[:no_update] = true
           context.skip

@@ -146,7 +146,7 @@ module GraphQL
       attr_reader :cached_profiles
 
       def profile_for(context, visibility_profile)
-        if @profiles.any?
+        if !@profiles.empty?
           if visibility_profile.nil?
             if @dynamic
               if context.is_a?(Query::NullContext)
@@ -154,7 +154,7 @@ module GraphQL
               else
                 @schema.visibility_profile_class.new(context: context, schema: @schema)
               end
-            elsif @profiles.any?
+            elsif !@profiles.empty?
               raise ArgumentError, "#{@schema} expects a visibility profile, but `visibility_profile:` wasn't passed. Provide a `visibility_profile:` value or add `dynamic: true` to your visibility configuration."
             end
           elsif !@profiles.include?(visibility_profile)
@@ -230,7 +230,7 @@ module GraphQL
             elsif member.is_a?(GraphQL::Schema::Argument)
               member.validate_default_value
               @all_references[member.type.unwrap] << member
-              if (dirs = member.directives).any?
+              if !(dirs = member.directives).empty?
                 dir_owner = member.owner
                 if dir_owner.respond_to?(:owner)
                   dir_owner = dir_owner.owner
@@ -239,12 +239,12 @@ module GraphQL
               end
             elsif member.is_a?(GraphQL::Schema::Field)
               @all_references[member.type.unwrap] << member
-              if (dirs = member.directives).any?
+              if !(dirs = member.directives).empty?
                 dir_owner = member.owner
                 dirs.each { |dir| @all_references[dir.class] << dir_owner }
               end
             elsif member.is_a?(GraphQL::Schema::EnumValue)
-              if (dirs = member.directives).any?
+              if !(dirs = member.directives).empty?
                 dir_owner = member.owner
                 dirs.each { |dir| @all_references[dir.class] << dir_owner }
               end
@@ -273,7 +273,7 @@ module GraphQL
         # only the ones that may have been modified
         @interface_type_memberships.each do |int_type, type_memberships|
           referers = @all_references[int_type].select { |r| r.is_a?(GraphQL::Schema::Field) }
-          if referers.any?
+          if !referers.empty?
             type_memberships.each do |type_membership|
               implementor_type = type_membership.object_type
               # Add new items only:

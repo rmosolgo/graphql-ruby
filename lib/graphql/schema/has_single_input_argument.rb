@@ -32,7 +32,7 @@ module GraphQL
           input_kwargs = {}
         end
 
-        if input_kwargs.any?
+        if !input_kwargs.empty?
           super(**input_kwargs)
         else
           super()

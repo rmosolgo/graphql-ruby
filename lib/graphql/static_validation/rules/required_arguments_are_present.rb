@@ -24,7 +24,7 @@ module GraphQL
           .map!(&:name)
 
         missing_names = required_argument_names - present_argument_names
-        if missing_names.any?
+        if !missing_names.empty?
           add_error(GraphQL::StaticValidation::RequiredArgumentsArePresentError.new(
             "#{ast_node.class.name.split("::").last} '#{ast_node.name}' is missing required arguments: #{missing_names.join(", ")}",
             nodes: ast_node,

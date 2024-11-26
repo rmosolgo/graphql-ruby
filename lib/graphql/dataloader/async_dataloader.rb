@@ -20,7 +20,7 @@ module GraphQL
         first_pass = true
         sources_condition = Async::Condition.new
         manager = spawn_fiber do
-          while first_pass || job_fibers.any?
+          while first_pass || !job_fibers.empty?
             first_pass = false
             fiber_vars = get_fiber_variables
 
@@ -37,7 +37,7 @@ module GraphQL
 
             Sync do |root_task|
               set_fiber_variables(fiber_vars)
-              while source_tasks.any? || @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
+              while !source_tasks.empty? || @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) }
                 while (task = (source_tasks.shift || (((job_fibers.size + next_job_fibers.size + source_tasks.size + next_source_tasks.size) < total_fiber_limit) && spawn_source_task(root_task, sources_condition))))
                   if task.alive?
                     root_task.yield # give the source task a chance to run

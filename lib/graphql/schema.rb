@@ -233,7 +233,7 @@ module GraphQL
           add_trace_options_for(mode, default_options)
 
           Class.new(base_class) do
-            mods.any? && include(*mods)
+            !mods.empty? && include(*mods)
           end
         end
       end
@@ -321,7 +321,7 @@ module GraphQL
       # @param plugin [#use] A Schema plugin
       # @return void
       def use(plugin, **kwargs)
-        if kwargs.any?
+        if !kwargs.empty?
           plugin.use(self, **kwargs)
         else
           plugin.use(self)
@@ -691,7 +691,7 @@ module GraphQL
           # and generally speaking, we won't inherit any values.
           # So optimize the most common case -- don't create a duplicate Hash.
           inherited_value = find_inherited_value(:references_to, EMPTY_HASH)
-          if inherited_value.any?
+          if !inherited_value.empty?
             inherited_value.merge(own_references_to)
           else
             own_references_to
@@ -977,7 +977,7 @@ module GraphQL
       # @param new_extra_types [Module] Type definitions to include in printing and introspection, even though they aren't referenced in the schema
       # @return [Array<Module>] Type definitions added to this schema
       def extra_types(*new_extra_types)
-        if new_extra_types.any?
+        if !new_extra_types.empty?
           new_extra_types = new_extra_types.flatten
           @own_extra_types ||= []
           @own_extra_types.concat(new_extra_types)
@@ -1002,10 +1002,10 @@ module GraphQL
       # @param new_orphan_types [Array<Class<GraphQL::Schema::Object>>] Object types to register as implementations of interfaces in the schema.
       # @return [Array<Class<GraphQL::Schema::Object>>] All previously-registered orphan types for this schema
       def orphan_types(*new_orphan_types)
-        if new_orphan_types.any?
+        if !new_orphan_types.empty?
           new_orphan_types = new_orphan_types.flatten
           non_object_types = new_orphan_types.reject { |ot| ot.is_a?(Class) && ot < GraphQL::Schema::Object }
-          if non_object_types.any?
+          if !non_object_types.empty?
             raise ArgumentError, <<~ERR
               Only object type classes should be added as `orphan_types(...)`.
 
@@ -1022,7 +1022,7 @@ module GraphQL
 
         inherited_ot = find_inherited_value(:orphan_types, nil)
         if inherited_ot
-          if own_orphan_types.any?
+          if !own_orphan_types.empty?
             inherited_ot + own_orphan_types
           else
             inherited_ot
@@ -1332,12 +1332,12 @@ module GraphQL
       # Add several directives at once
       # @param new_directives [Class]
       def directives(*new_directives)
-        if new_directives.any?
+        if !new_directives.empty?
           new_directives.flatten.each { |d| directive(d) }
         end
 
         inherited_dirs = find_inherited_value(:directives, default_directives)
-        if own_directives.any?
+        if !own_directives.empty?
           inherited_dirs.merge(own_directives)
         else
           inherited_dirs

@@ -55,14 +55,14 @@ module GraphQL
               else
                 GraphQL::EmptyObjects::EMPTY_ARRAY
               end
-              if inherited_directives.any? && directives
+              if !inherited_directives.empty? && directives
                 dirs = []
                 merge_directives(dirs, inherited_directives)
                 merge_directives(dirs, directives)
                 dirs
               elsif directives
                 directives
-              elsif inherited_directives.any?
+              elsif !inherited_directives.empty?
                 inherited_directives
               else
                 GraphQL::EmptyObjects::EMPTY_ARRAY
@@ -71,7 +71,7 @@ module GraphQL
               dirs = nil
               schema_member.ancestors.reverse_each do |ancestor|
                 if ancestor.respond_to?(:own_directives) &&
-                    (anc_dirs = ancestor.own_directives).any?
+                    !(anc_dirs = ancestor.own_directives).empty?
                   dirs ||= []
                   merge_directives(dirs, anc_dirs)
                 end

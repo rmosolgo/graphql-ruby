@@ -67,7 +67,7 @@ module GraphQL
       # @api private
       def resolve_with_support(**args)
         # First call the ready? hook which may raise
-        raw_ready_val = if args.any?
+        raw_ready_val = if !args.empty?
           ready?(**args)
         else
           ready?
@@ -88,7 +88,7 @@ module GraphQL
               @prepared_arguments = loaded_args
               Schema::Validator.validate!(self.class.validators, object, context, loaded_args, as: @field)
               # Then call `authorized?`, which may raise or may return a lazy object
-              raw_authorized_val = if loaded_args.any?
+              raw_authorized_val = if !loaded_args.empty?
                 authorized?(**loaded_args)
               else
                 authorized?
@@ -117,7 +117,7 @@ module GraphQL
 
       # @api private {GraphQL::Schema::Mutation} uses this to clear the dataloader cache
       def call_resolve(args_hash)
-        if args_hash.any?
+        if !args_hash.empty?
           public_send(self.class.resolve_method, **args_hash)
         else
           public_send(self.class.resolve_method)
@@ -208,7 +208,7 @@ module GraphQL
         end
 
         # Avoid returning a lazy if none are needed
-        if prepare_lazies.any?
+        if !prepare_lazies.empty?
           GraphQL::Execution::Lazy.all(prepare_lazies).then { prepared_args }
         else
           prepared_args
@@ -394,7 +394,7 @@ module GraphQL
           if superclass.respond_to?(:extensions)
             s_exts = superclass.extensions
             if own_exts
-              if s_exts.any?
+              if !s_exts.empty?
                 own_exts + s_exts
               else
                 own_exts

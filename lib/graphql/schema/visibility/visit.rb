@@ -35,7 +35,7 @@ module GraphQL
           @late_bound_types = []
           directives_to_visit = directives
 
-          while @unvisited_types.any? || @late_bound_types.any?
+          while !@unvisited_types.empty? || !@late_bound_types.empty?
             while (type = @unvisited_types.pop)
               if @visited_types.add?(type) && @visit_block.call(type)
                 directives_to_visit.concat(type.directives)
@@ -156,7 +156,7 @@ module GraphQL
                   pt << owner
                 end
                 int.interfaces.each do |indirect_int|
-                  if indirect_int.is_a?(LateBoundType) && (indirect_int_type = get_type(indirect_int.graphql_name)) # rubocop:disable ContextIsPassedCop
+                  if indirect_int.is_a?(LateBoundType) && (indirect_int_type = get_type(indirect_int.graphql_name)) # rubocop:disable Development/ContextIsPassedCop
                     update_type_owner(owner, indirect_int_type)
                   end
                 end

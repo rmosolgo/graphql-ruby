@@ -133,7 +133,7 @@ module GraphQL
         end
       end
 
-      if context_tracers.any? && !(schema.trace_class <= GraphQL::Tracing::CallLegacyTracers)
+      if !context_tracers.empty? && !(schema.trace_class <= GraphQL::Tracing::CallLegacyTracers)
         raise ArgumentError, "context[:tracers] are not supported without `trace_with(GraphQL::Tracing::CallLegacyTracers)` in the schema configuration, please add it."
       end
 
@@ -479,7 +479,7 @@ module GraphQL
       @mutation = false
       @subscription = false
       operation_name_error = nil
-      if @operations.any?
+      if !@operations.empty?
         @selected_operation = find_operation(@operations, @operation_name)
         if @selected_operation.nil?
           operation_name_error = GraphQL::Query::OperationNameMissingError.new(@operation_name)

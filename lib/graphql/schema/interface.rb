@@ -90,7 +90,7 @@ module GraphQL
         # @param types [Class, Module]
         # @return [Array<Module, Class>] Implementers of this interface, if they're registered
         def orphan_types(*types)
-          if types.any?
+          if !types.empty?
             @orphan_types ||= []
             @orphan_types.concat(types)
           else

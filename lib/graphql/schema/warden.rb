@@ -297,7 +297,7 @@ module GraphQL
       def arguments(argument_owner, ctx = nil)
         @visible_arguments ||= read_through { |o|
           args = o.arguments(@context)
-          if args.any?
+          if !args.empty?
             args = args.values
             args.select! { |a| visible_argument?(a, @context) }
             args
@@ -329,7 +329,7 @@ module GraphQL
       def interfaces(obj_type)
         @visible_interfaces ||= read_through { |t|
           ints = t.interfaces(@context)
-          if ints.any?
+          if !ints.empty?
             ints.select! { |i| visible_type?(i) }
           end
           ints
@@ -389,9 +389,9 @@ module GraphQL
           next true if root_type?(type_defn) || type_defn.introspection?
 
           if type_defn.kind.union?
-            possible_types(type_defn).any? && (referenced?(type_defn) || orphan_type?(type_defn))
+            !possible_types(type_defn).empty? && (referenced?(type_defn) || orphan_type?(type_defn))
           elsif type_defn.kind.interface?
-            if possible_types(type_defn).any?
+            if !possible_types(type_defn).empty?
               true
             else
               if @context.respond_to?(:logger) && (logger = @context.logger)

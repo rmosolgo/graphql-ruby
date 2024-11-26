@@ -21,7 +21,7 @@ module GraphQL
         end
         node_values = node_values.select { |value| value.is_a? GraphQL::Language::Nodes::VariableIdentifier }
 
-        if node_values.any?
+        if !node_values.empty?
           argument_owner = case parent
           when GraphQL::Language::Nodes::Field
             context.field_definition

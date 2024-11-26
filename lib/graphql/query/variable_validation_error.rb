@@ -10,7 +10,7 @@ module GraphQL
 
         msg ||= "Variable $#{variable_ast.name} of type #{type.to_type_signature} was provided invalid value"
 
-        if problem_fields.any?
+        if !problem_fields.empty?
           msg += " for #{problem_fields.join(", ")}"
         end
 
