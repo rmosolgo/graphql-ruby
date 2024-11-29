@@ -716,7 +716,7 @@ describe GraphQL::Schema::Subscription do
         type String
 
         def subscribe
-          "#{context[:written_events]&.size.inspect} / #{context[:write_subscription_count].inspect}"
+          "#{context[:written_events]&.size.inspect} / #{context[:write_subscription_count].inspect} / #{subscription_written?}"
         end
       end
 
@@ -740,14 +740,16 @@ describe GraphQL::Schema::Subscription do
 
     it "only calls write_subscription once" do
       res = DirectWriteSchema.execute("subscription { direct }")
-      assert_equal "1 / 1", res["data"]["direct"]
+      assert_equal "1 / 1 / true", res["data"]["direct"]
       assert_equal 1, res.context[:write_subscription_count]
       assert_equal [1], res.context[:written_events].map(&:size)
+      assert_equal true, res.context.namespace(:subscriptions)[:subscriptions].values.first.subscription_written?
 
       res = DirectWriteSchema.execute("subscription { implicit }")
-      assert_equal "nil / nil", res["data"]["implicit"]
+      assert_equal "nil / nil / false", res["data"]["implicit"]
       assert_equal 1, res.context[:write_subscription_count]
       assert_equal [1], res.context[:written_events].map(&:size)
+      assert_equal false, res.context.namespace(:subscriptions)[:subscriptions].values.first.subscription_written?
     end
   end
 end
