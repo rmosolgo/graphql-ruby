@@ -116,7 +116,7 @@ createRecord(data: {
     expected_message = if USING_C_PARSER
       "syntax error, unexpected invalid token (\"-\") at [1, 8]"
     else
-      "Argument 'b' on Field 'a' has an invalid value (-c). Expected type 'number'."
+      "Expected type 'number', but it was malformed: \"-c\"."
     end
     assert_equal expected_message, err.message
   end
@@ -125,28 +125,24 @@ createRecord(data: {
     err = assert_raises GraphQL::ParseError do
       GraphQL.parse("query($something: Int = -foo) { }")
     end
-    # TODO: this currently raises a NoMethodError:
-    #   graphql-ruby/lib/graphql/language/lexer.rb:121:in `invalid_byte_for_number_error_message'
-    #   graphql-ruby/lib/graphql/language/lexer.rb:75:in `advance'
-    #   graphql-ruby/lib/graphql/language/parser.rb:97:in `advance_token'
-    #   graphql-ruby/lib/graphql/language/parser.rb:166:in `definition'
-    #   graphql-ruby/lib/graphql/language/parser.rb:108:in `document'
-    #   graphql-ruby/lib/graphql/language/parser.rb:45:in `block in parse'
-    #   graphql-ruby/lib/graphql/tracing/trace.rb:24:in `parse'
-    #   graphql-ruby/lib/graphql/language/parser.rb:44:in `parse'
-    #   graphql-ruby/lib/graphql/language/parser.rb:16:in `parse'
-    #   graphql-ruby/lib/graphql.rb:39:in `parse'
-    #   graphql-ruby/spec/graphql/language/parser_spec.rb:126:in `block (3 levels) in <top (required)>'
-    assert_equal "TODO: add expected error messages here", err.message
+    expected_message = if USING_C_PARSER
+      "syntax error, unexpected invalid token (\"-\") at [1, 25]"
+    else
+      "Expected type 'number', but it was malformed: \"-foo\"."
+    end
+    assert_equal expected_message, err.message
   end
 
   it "handles invalid minus signs in deeply nested input objects" do
     err = assert_raises GraphQL::ParseError do
       GraphQL.parse("{ doSomething(a: { b: { c: { d: -foo } } }) }")
     end
-    # TODO: this currently removes `a:` from the error message:
-    # "Argument 'a' on Field 'doSomething' has an invalid value ({ b: { c: { d: -foo } } }). Expected type 'number'."
-    assert_equal "TODO: add expected error messages here", err.message
+    expected_message = if USING_C_PARSER
+      "syntax error, unexpected invalid token (\"-\") at [1, 33]"
+    else
+      "Expected type 'number', but it was malformed: \"-foo\"."
+    end
+    assert_equal expected_message, err.message
   end
 
   it "handles invalid minus signs in schema definitions" do
@@ -157,9 +153,12 @@ createRecord(data: {
       }
       ")
     end
-
-    # TODO: this currently raises the same NoMethodError as the other test
-    assert_equal "TODO: add expected error messages here", err.message
+    expected_message = if USING_C_PARSER
+      "syntax error, unexpected invalid token (\"-\") at [3, 28]"
+    else
+      "Expected type 'number', but it was malformed: \"-foo\"."
+    end
+    assert_equal expected_message, err.message
   end
 
   it "handles invalid minus signs in list literals" do
@@ -169,8 +168,12 @@ createRecord(data: {
         a2: a(b: [1, 2, -foo])
       }")
     end
-    # TODO: this currently raises the same NoMethodError as the other test
-    assert_equal "TODO: add expected error messages here", err.message
+    expected_message = if USING_C_PARSER
+      "syntax error, unexpected invalid token (\"-\") at [3, 25]"
+    else
+      "Expected type 'number', but it was malformed: \"-foo\"."
+    end
+    assert_equal expected_message, err.message
   end
 
   it "allows operation names to match operation types" do
@@ -244,7 +247,7 @@ createRecord(data: {
     expected_msg = if USING_C_PARSER
       "syntax error, unexpected invalid token (\"-\") at [1, 19]"
     else
-      "Argument 'argument' on Field 'field' has an invalid value (a-b). Expected type 'number'."
+      "Expected type 'number', but it was malformed: \"-b\"."
     end
 
     assert_equal expected_msg, err.message

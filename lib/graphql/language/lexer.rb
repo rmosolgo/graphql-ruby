@@ -72,6 +72,9 @@ module GraphQL
             # Check for a matched decimal:
             @scanner[1] ? :FLOAT : :INT
           else
+            # Attempt to find the part after the `-`
+            value = @scanner.scan(/-\s?[a-z0-9]*/i)
+            invalid_byte_for_number_error_message = "Expected type 'number', but it was malformed#{value.nil? ? "" : ": #{value.inspect}"}."
             raise_parse_error(invalid_byte_for_number_error_message)
           end
         when ByteFor::ELLIPSIS
@@ -114,15 +117,6 @@ module GraphQL
         else
           token_value
         end
-      end
-
-      def invalid_byte_for_number_error_message
-        match_data = @string.match(/\{\s*(\w+)\((\w+):\s*([^\)]+)\)\s*\}/)
-        field = match_data[1]
-        argument = match_data[2]
-        value = match_data[3]
-
-        "Argument '#{argument}' on Field '#{field}' has an invalid value (#{value}). Expected type 'number'."
       end
 
       ESCAPES = /\\["\\\/bfnrt]/
