@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 require "spec_helper"
-require "graphql/types/iso_8601_date_time"
+
 describe GraphQL::Types::ISO8601DateTime do
   module DateTimeTest
     class DateTimeObject < GraphQL::Schema::Object

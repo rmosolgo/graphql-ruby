@@ -4,6 +4,7 @@ module GraphQL
   class Railtie < Rails::Railtie
     config.graphql = ActiveSupport::OrderedOptions.new
     config.graphql.parser_cache = false
+    config.eager_load_namespaces << GraphQL
 
     initializer("graphql.cache") do |app|
       if config.graphql.parser_cache

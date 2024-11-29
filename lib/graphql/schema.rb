@@ -47,6 +47,8 @@ require "graphql/schema/relay_classic_mutation"
 require "graphql/schema/subscription"
 require "graphql/schema/visibility"
 
+GraphQL.ensure_eager_load!
+
 module GraphQL
   # A GraphQL schema which may be queried with {GraphQL::Query}.
   #
@@ -1802,3 +1804,7 @@ module GraphQL
     end
   end
 end
+
+require "graphql/schema/built_in_types"
+require "graphql/schema/loader"
+require "graphql/schema/printer"
