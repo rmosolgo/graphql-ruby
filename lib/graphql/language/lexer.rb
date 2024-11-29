@@ -72,7 +72,10 @@ module GraphQL
             # Check for a matched decimal:
             @scanner[1] ? :FLOAT : :INT
           else
-            raise_parse_error("Expected a number, but it was malformed (#{@string[@pos].inspect})")
+            # Attempt to find the part after the `-`
+            value = @scanner.scan(/-\s?[a-z0-9]*/i)
+            invalid_byte_for_number_error_message = "Expected type 'number', but it was malformed#{value.nil? ? "" : ": #{value.inspect}"}."
+            raise_parse_error(invalid_byte_for_number_error_message)
           end
         when ByteFor::ELLIPSIS
           if @string.getbyte(@pos + 1) != 46 || @string.getbyte(@pos + 2) != 46
