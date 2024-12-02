@@ -1,6 +1,12 @@
 # frozen_string_literal: true
 
 module GraphQL
+  # Support {GraphQL::Parser::Cache}
+  #
+  # @example Enable the parser cache with default directory
+  #
+  #   config.graphql.parser_cache = true
+  #
   class Railtie < Rails::Railtie
     config.graphql = ActiveSupport::OrderedOptions.new
     config.graphql.parser_cache = false
