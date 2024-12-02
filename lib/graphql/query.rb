@@ -1,18 +1,20 @@
 # frozen_string_literal: true
-require "graphql/query/context"
-require "graphql/query/fingerprint"
-require "graphql/query/null_context"
-require "graphql/query/result"
-require "graphql/query/variables"
-require "graphql/query/input_validation_result"
-require "graphql/query/variable_validation_error"
-require "graphql/query/validation_pipeline"
 
 module GraphQL
   # A combination of query string and {Schema} instance which can be reduced to a {#result}.
   class Query
+    extend Autoload
     include Tracing::Traceable
     extend Forwardable
+
+    autoload :Context, "graphql/query/context"
+    autoload :Fingerprint, "graphql/query/fingerprint"
+    autoload :NullContext, "graphql/query/null_context"
+    autoload :Result, "graphql/query/result"
+    autoload :Variables, "graphql/query/variables"
+    autoload :InputValidationResult, "graphql/query/input_validation_result"
+    autoload :VariableValidationError, "graphql/query/variable_validation_error"
+    autoload :ValidationPipeline, "graphql/query/validation_pipeline"
 
     class OperationNameMissingError < GraphQL::ExecutionError
       def initialize(name)

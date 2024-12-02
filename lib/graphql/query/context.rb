@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-require "graphql/query/context/scoped_context"
 
 module GraphQL
   class Query
@@ -289,3 +288,5 @@ module GraphQL
     end
   end
 end
+
+require "graphql/query/context/scoped_context"
