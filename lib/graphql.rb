@@ -87,10 +87,10 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     def ensure_eager_load!
       if production? && !eager_loading?
         warn <<~WARNING
-          GraphQL-Ruby thinks this is a production deployment but didn't eager load its constants. Address this by:
+          GraphQL-Ruby thinks this is a production deployment but didn't eager-load its constants. Address this by:
 
-          - Calling `GraphQL.eager_load!` in a production-only initializer or setup hook
-          - Assign `GraphQL.env = "..."` to something _other_ than `"production"` (for example, `GraphQL.env = "development"`)
+            - Calling `GraphQL.eager_load!` in a production-only initializer or setup hook
+            - Assign `GraphQL.env = "..."` to something _other_ than `"production"` (for example, `GraphQL.env = "development"`)
 
           More details: https://graphql-ruby.org/schema/definition#production-considerations
         WARNING
