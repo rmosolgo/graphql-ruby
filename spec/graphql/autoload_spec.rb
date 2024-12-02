@@ -13,6 +13,12 @@ describe GraphQL::Autoload do
     autoload(:EagerClass, "fixtures/eager_module/eager_class")
     autoload(:OtherEagerClass, "fixtures/eager_module/other_eager_class")
     autoload(:NestedEagerModule, "fixtures/eager_module/nested_eager_module")
+
+    def self.eager_load!
+      super
+
+      NestedEagerModule.eager_load!
+    end
   end
 
   describe "#autoload" do

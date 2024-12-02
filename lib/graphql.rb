@@ -10,6 +10,13 @@ require "graphql/autoload"
 module GraphQL
   extend Autoload
 
+  # Load all `autoload`-configured classes, and also eager-load dependents who have autoloads of their own.
+  def self.eager_load!
+    super
+    Query.eager_load!
+    Types.eager_load!
+  end
+
   class Error < StandardError
   end
 

@@ -19,12 +19,7 @@ module GraphQL
     def eager_load!
       @_eager_loading = true
       if @_eagerloaded_constants
-        @_eagerloaded_constants.each do |const_name|
-          loaded_const = const_get(const_name)
-          if loaded_const.respond_to?(:eager_load!)
-            loaded_const.eager_load!
-          end
-        end
+        @_eagerloaded_constants.each { |const_name| const_get(const_name) }
         @_eagerloaded_constants = nil
       end
       nil
