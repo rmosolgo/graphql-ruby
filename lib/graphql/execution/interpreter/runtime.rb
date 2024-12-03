@@ -69,8 +69,13 @@ module GraphQL
         # @return [void]
         def run_eager
           root_operation = query.selected_operation
-          root_op_type = root_operation.operation_type || "query"
-          root_type = schema.root_type_for_operation(root_op_type)
+          # TODO duck-type #root_type
+          root_type = if query.is_a?(GraphQL::Query::Partial)
+            query.root_type
+          else
+            root_op_type = root_operation.operation_type || "query"
+            schema.root_type_for_operation(root_op_type)
+          end
           runtime_object = root_type.wrap(query.root_value, context)
           runtime_object = schema.sync_lazy(runtime_object)
           is_eager = root_op_type == "mutation"

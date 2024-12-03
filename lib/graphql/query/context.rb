@@ -53,9 +53,6 @@ module GraphQL
         @storage = Hash.new { |h, k| h[k] = {} }
         @storage[nil] = @provided_values
         @errors = []
-        @path = []
-        @value = nil
-        @context = self # for SharedMethods TODO delete sharedmethods
         @scoped_context = ScopedContext.new(self)
       end
 

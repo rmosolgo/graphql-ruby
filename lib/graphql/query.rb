@@ -10,6 +10,7 @@ module GraphQL
     autoload :Context, "graphql/query/context"
     autoload :Fingerprint, "graphql/query/fingerprint"
     autoload :NullContext, "graphql/query/null_context"
+    autoload :Partial, "graphql/query/partial"
     autoload :Result, "graphql/query/result"
     autoload :Variables, "graphql/query/variables"
     autoload :InputValidationResult, "graphql/query/input_validation_result"
@@ -246,6 +247,18 @@ module GraphQL
 
     def operations
       with_prepared_ast { @operations }
+    end
+
+    # Run subtree partials of this query and return their results.
+    # Each partial is identified with a `path => object` pair
+    # where the path references a field in the AST and the object will be treated
+    # as the return value from that field. Subfields of the field named by `path`
+    # will be executed with `object` as the starting point
+    # @param partials_hash [Hash<Array<String> => Object>] `path => object` pairs
+    # @return [Array<GraphQL::Query::Result>]
+    def run_partials(partials_hash)
+      partials = partials_hash.map { |path, obj| Partial.new(path: path, object: obj, query: self) }
+      Execution::Interpreter.run_all(@schema, partials, context: @context)
     end
 
     # Get the result for this query, executing it once
