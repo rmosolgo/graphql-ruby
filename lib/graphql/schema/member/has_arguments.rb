@@ -359,7 +359,8 @@ module GraphQL
               if application_object.nil?
                 nil
               else
-                maybe_lazy_resolve_type = context.schema.resolve_type(argument.loads, application_object, context)
+                arg_loads_type = argument.loads
+                maybe_lazy_resolve_type = context.schema.resolve_type(arg_loads_type, application_object, context)
                 context.query.after_lazy(maybe_lazy_resolve_type) do |resolve_type_result|
                   if resolve_type_result.is_a?(Array) && resolve_type_result.size == 2
                     application_object_type, application_object = resolve_type_result
@@ -368,10 +369,17 @@ module GraphQL
                     # application_object is already assigned
                   end
 
-                  if !(
-                      context.types.possible_types(argument.loads).include?(application_object_type) ||
-                      context.types.loadable?(argument.loads, context)
-                    )
+                  passes_possible_types_check = if context.types.loadable?(arg_loads_type, context)
+                    if arg_loads_type.kind.union?
+                      # This union is used in `loads:` but not otherwise visible to this query
+                      context.types.loadable_possible_types(arg_loads_type, context).include?(application_object_type)
+                    else
+                      true
+                    end
+                  else
+                    context.types.possible_types(arg_loads_type).include?(application_object_type)
+                  end
+                  if !passes_possible_types_check
                     err = GraphQL::LoadApplicationObjectFailedError.new(context: context, argument: argument, id: id, object: application_object)
                     application_object = load_application_object_failed(err)
                   end

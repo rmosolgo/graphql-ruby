@@ -456,7 +456,8 @@ describe GraphQL::Schema::Union do
       assert_equal "Video", res["data"]["mediaItemType"]
 
       res = UnionLoadsSchema.execute(query_str, variables: { mediaId: "Post/Year in Review" })
-      assert_nil res["data"]
+      assert_nil res["data"]["mediaItemType"]
+      assert_equal ["No object found for `id: \"Post/Year in Review\"`"], res["errors"].map { |e| e["message"] }
     end
   end
 end
