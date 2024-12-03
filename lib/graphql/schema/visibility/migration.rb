@@ -112,6 +112,7 @@ module GraphQL
           :all_types_h,
           :fields,
           :loadable?,
+          :loadable_possible_types,
           :type,
           :arguments,
           :argument,

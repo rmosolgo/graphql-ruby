@@ -84,6 +84,8 @@ module GraphQL
           @cached_arguments = Hash.new do |h, owner|
             h[owner] = non_duplicate_items(owner.all_argument_definitions, @cached_visible_arguments)
           end.compare_by_identity
+
+          @loadable_possible_types = Hash.new { |h, union_type| h[union_type] = union_type.possible_types }.compare_by_identity
         end
 
         def field_on_visible_interface?(field, owner)
@@ -247,6 +249,10 @@ module GraphQL
         def loadable?(t, _ctx)
           load_all_types
           !@all_types[t.graphql_name] && @cached_visible[t]
+        end
+
+        def loadable_possible_types(t, _ctx)
+          @loadable_possible_types[t]
         end
 
         def loaded_types

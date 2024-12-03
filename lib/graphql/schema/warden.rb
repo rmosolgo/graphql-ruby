@@ -72,6 +72,7 @@ module GraphQL
           def interface_type_memberships(obj_t, ctx); obj_t.interface_type_memberships; end
           def arguments(owner, ctx); owner.arguments(ctx); end
           def loadable?(type, ctx); type.visible?(ctx); end
+          def loadable_possible_types(type, ctx); type.possible_types(ctx); end
           def visibility_profile
             @visibility_profile ||= Warden::VisibilityProfile.new(self)
           end
@@ -106,6 +107,7 @@ module GraphQL
         def get_field(parent_type, field_name); @schema.get_field(parent_type, field_name); end
         def reachable_type?(type_name); true; end
         def loadable?(type, _ctx); true; end
+        def loadable_possible_types(union_type, _ctx); union_type.possible_types; end
         def reachable_types; @schema.types.values; end # rubocop:disable Development/ContextIsPassedCop
         def possible_types(type_defn); @schema.possible_types(type_defn, Query::NullContext.instance, false); end
         def interfaces(obj_type); obj_type.interfaces; end
@@ -180,6 +182,10 @@ module GraphQL
           @warden.loadable?(t, ctx)
         end
 
+        def loadable_possible_types(t, ctx)
+          @warden.loadable_possible_types(t, ctx)
+        end
+
         def reachable_type?(type_name)
           !!@warden.reachable_type?(type_name)
         end
@@ -204,7 +210,7 @@ module GraphQL
           @visible_possible_types = @visible_fields = @visible_arguments = @visible_enum_arrays =
           @visible_enum_values = @visible_interfaces = @type_visibility = @type_memberships =
           @visible_and_reachable_type = @unions = @unfiltered_interfaces =
-          @reachable_type_set = @visibility_profile =
+          @reachable_type_set = @visibility_profile = @loadable_possible_types =
             nil
         @skip_warning = schema.plugins.any? { |(plugin, _opts)| plugin == GraphQL::Schema::Warden }
       end
@@ -227,6 +233,13 @@ module GraphQL
       # @return [Boolean] True if this type is used for `loads:` but not in the schema otherwise and not _explicitly_ hidden.
       def loadable?(type, _ctx)
         !reachable_type_set.include?(type) && visible_type?(type)
+      end
+
+      def loadable_possible_types(union_type, _ctx)
+        @loadable_possible_types ||= read_through do |t|
+          t.possible_types # unfiltered
+        end
+        @loadable_possible_types[union_type]
       end
 
       # @return [GraphQL::BaseType, nil] The type named `type_name`, if it exists (else `nil`)
