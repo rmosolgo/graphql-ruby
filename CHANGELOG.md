@@ -10,6 +10,14 @@
 
 ### Bug fixes
 
+# 2.4.6 (5 Dec 2024)
+
+### Bug fixes
+
+- Autoloading: fix referencing built-in types #5181
+- Autoloading: use Rails `config.before_eager_load` hook for better integration #5182
+- `loads:`: Check possible types for `loads:`-only unions #5180
+
 # 2.4.5 (2 Dec 2024)
 
 ### Breaking changes
