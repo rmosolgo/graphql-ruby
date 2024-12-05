@@ -15,6 +15,7 @@ module GraphQL
     super
     Query.eager_load!
     Types.eager_load!
+    Schema.eager_load!
   end
 
   class Error < StandardError
