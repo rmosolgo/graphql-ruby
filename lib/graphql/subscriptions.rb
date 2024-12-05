@@ -89,8 +89,6 @@ module GraphQL
         scope: scope,
         context: context,
       )
-      # TODO remove this debugging
-      puts "[trigger-event] topic: #{event.topic} / fingerprint: #{event.fingerprint}"
       execute_all(event, object)
     end
 

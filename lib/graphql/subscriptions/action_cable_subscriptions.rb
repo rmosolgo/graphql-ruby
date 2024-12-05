@@ -146,8 +146,6 @@ module GraphQL
         channel.stream_from(stream)
         @subscriptions[subscription_id] = query
         events.each do |event|
-          # TODO remove this debugging
-          puts "[write-subscription-event] topic: #{event.topic} / fingerprint: #{event.fingerprint}"
           # Setup a new listener to run all events with this topic in this process
           setup_stream(channel, event)
           # Add this event to the list of events to be updated
