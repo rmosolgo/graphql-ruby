@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 require "set"
+require "ostruct"
+
 module GraphQL
   class Subscriptions
     # Serialization helpers for passing subscription data around.
