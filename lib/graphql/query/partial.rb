@@ -12,9 +12,21 @@ module GraphQL
         @multiplex = nil
         @result_values = nil
         @result = nil
+        selection = @query.selected_operation
+        type = @query.schema.query # TODO could be other?
+        @path.each do |name_in_doc|
+          selection = selection.selections.find { |sel| sel.alias == name_in_doc || sel.name == name_in_doc }
+          if !selection
+            raise ArgumentError, "Path `#{@path.inspect}` is not present in this query. `#{name_in_doc.inspect}` was not found. Try a different path or rewrite the query to include it."
+          end
+          field_defn = type.get_field(selection.name, @query.context) || raise("Invariant: no field called #{selection.name.inspect} on #{type.graphql_name}")
+          type = field_defn.type.unwrap
+        end
+        @selected_operation = selection
+        @root_type = type
       end
 
-      attr_reader :context
+      attr_reader :context, :selected_operation, :root_type
 
       attr_accessor :multiplex, :result_values
 
@@ -41,14 +53,6 @@ module GraphQL
         false
       end
 
-      def selected_operation
-        selection = @query.selected_operation
-        @path.each do |name_in_doc|
-          selection = selection.selections.find { |sel| sel.alias == name_in_doc || sel.name == name_in_doc }
-        end
-        selection
-      end
-
       def schema
         @query.schema
       end
@@ -59,18 +63,6 @@ module GraphQL
 
       def root_value
         @object
-      end
-
-      def root_type
-        # Eventually do the traversal upstream of here, processing the group of partials together.
-        selection = @query.selected_operation
-        type = @query.schema.query # TODO could be other?
-        @path.each do |name_in_doc|
-          selection = selection.selections.find { |sel| sel.alias == name_in_doc || sel.name == name_in_doc }
-          field_defn = type.get_field(selection.name, @query.context) || raise("Invariant: no field called #{selection.name.inspect} on #{type.graphql_name}")
-          type = field_defn.type.unwrap
-        end
-        type
       end
 
       # TODO dry with query
@@ -84,6 +76,21 @@ module GraphQL
         else
           @schema.after_lazy(value, &block)
         end
+      end
+
+      # TODO dry with query
+      def arguments_for(ast_node, definition, parent_object: nil)
+        arguments_cache.fetch(ast_node, definition, parent_object)
+      end
+
+      # TODO dry with query
+      def arguments_cache
+        @arguments_cache ||= Execution::Interpreter::ArgumentsCache.new(self)
+      end
+
+      # TODO dry
+      def handle_or_reraise(err)
+        @query.schema.handle_or_reraise(context, err)
       end
     end
   end

@@ -250,14 +250,14 @@ module GraphQL
     end
 
     # Run subtree partials of this query and return their results.
-    # Each partial is identified with a `path => object` pair
+    # Each partial is identified with a `path:` and `object:`
     # where the path references a field in the AST and the object will be treated
     # as the return value from that field. Subfields of the field named by `path`
     # will be executed with `object` as the starting point
-    # @param partials_hash [Hash<Array<String> => Object>] `path => object` pairs
+    # @param partials_hashes [Array<Hash{Symbol => Object}>] Hashes with `path:` and `object:` keys
     # @return [Array<GraphQL::Query::Result>]
-    def run_partials(partials_hash)
-      partials = partials_hash.map { |path, obj| Partial.new(path: path, object: obj, query: self) }
+    def run_partials(partials_hashes)
+      partials = partials_hashes.map { |partial_options| Partial.new(query: self, **partial_options) }
       Execution::Interpreter.run_all(@schema, partials, context: @context)
     end
 
