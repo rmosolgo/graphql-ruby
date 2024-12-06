@@ -49,6 +49,7 @@ describe GraphQL::Autoload do
 
   describe "warning in production" do
     before do
+      GraphQL.remove_instance_variable(:@_eager_loaded) if GraphQL.instance_variable_defined?(:@_eager_loaded)
       @prev_env = ENV.to_hash
       ENV.update("HANAMI_ENV" => "production")
     end
@@ -83,6 +84,15 @@ More details: https://graphql-ruby.org/schema/definition#production-consideratio
       assert_equal "", stderr
     ensure
       GraphQL.env = prev_env
+    end
+
+    it "silences the warning when already eager-loaded" do
+      GraphQL.eager_load!
+      stdout, stderr = capture_io do
+        GraphQL.ensure_eager_load!
+      end
+      assert_equal "", stdout
+      assert_equal "", stderr
     end
   end
 end

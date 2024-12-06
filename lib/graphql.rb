@@ -16,6 +16,7 @@ module GraphQL
     Query.eager_load!
     Types.eager_load!
     Schema.eager_load!
+    @_eager_loaded = true
   end
 
   class Error < StandardError
@@ -86,7 +87,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     # If `production?` is detected but `eager_load!` wasn't called, emit a warning.
     # @return [void]
     def ensure_eager_load!
-      if production? && !eager_loading?
+      if production? && !eager_loaded?
         warn <<~WARNING
           GraphQL-Ruby thinks this is a production deployment but didn't eager-load its constants. Address this by:
 
@@ -110,6 +111,10 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
       else
         (detected_env = ENV["RACK_ENV"] || ENV["RAILS_ENV"] || ENV["HANAMI_ENV"] || ENV["APP_ENV"]) && detected_env.to_s.downcase == "production"
       end
+    end
+
+    def eager_loaded?
+      @_eager_loaded ||= false
     end
   end
 
