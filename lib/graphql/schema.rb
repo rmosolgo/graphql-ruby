@@ -75,6 +75,9 @@ module GraphQL
   class Schema
     extend GraphQL::Schema::Member::HasAstNode
     extend GraphQL::Schema::FindInheritedValue
+    extend Autoload
+
+    autoload :BUILT_IN_TYPES, "graphql/schema/built_in_types"
 
     class DuplicateNamesError < GraphQL::Error
       attr_reader :duplicated_name
@@ -1805,6 +1808,5 @@ module GraphQL
   end
 end
 
-require "graphql/schema/built_in_types"
 require "graphql/schema/loader"
 require "graphql/schema/printer"
