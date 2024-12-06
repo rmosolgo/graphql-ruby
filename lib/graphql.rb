@@ -87,6 +87,7 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
     # @return [void]
     def ensure_eager_load!
       if production? && !eager_loading?
+        puts caller
         warn <<~WARNING
           GraphQL-Ruby thinks this is a production deployment but didn't eager-load its constants. Address this by:
 
