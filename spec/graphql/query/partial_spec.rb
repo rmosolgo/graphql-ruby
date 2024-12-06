@@ -131,8 +131,21 @@ describe GraphQL::Query::Partial do
     assert_equal "Path `[\"farm1\", \"neighboringFarm\", \"blah\"]` is not present in this query. `\"blah\"` was not found. Try a different path or rewrite the query to include it.", err.message
   end
 
-  it "raises an error when given a duplicate path"
-  it "raises an error when given overlapping paths"
+  it "can run partials with the same path" do
+    str = "{
+      farm(id: \"1\") { name }
+    }"
+    query = GraphQL::Query.new(PartialSchema, str)
+    results = query.run_partials([
+      { path: ["farm"], object: PartialSchema::Database::FARMS["1"] },
+      { path: ["farm"], object: OpenStruct.new(name: "Injected Farm") }
+    ])
+
+    assert_equal [
+      { "data" => { "name" => "Bellair Farm" } },
+      { "data" => { "name" => "Injected Farm" } },
+    ], results
+  end
 
   it "runs multiple partials concurrently" do
     str = <<~GRAPHQL
@@ -153,5 +166,14 @@ describe GraphQL::Query::Partial do
 
   it "returns multiple errors concurrently"
 
-  it "returns useful metadata in the result"
+  it "runs arrays and returns useful metadata in the result" do
+    str = "{ farms { name } }"
+    query = GraphQL::Query.new(PartialSchema, str)
+    results = query.run_partials([{ path: ["farms"], object: [{ name: "Twenty Paces" }, { name: "Spring Creek Blooms" }]}])
+    result = results.first
+    assert_equal [{ "name" => "Twenty Paces" }, { "name" => "Spring Creek Blooms" }], result["data"]
+    assert_equal ["farms"], result.path
+    assert_instance_of GraphQL::Query::Context, result.context
+    refute_equal query.context, result.context
+  end
 end
