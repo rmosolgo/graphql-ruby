@@ -10,6 +10,13 @@
 
 ### Bug fixes
 
+# 2.4.7 (7 Dec 2024)
+
+### Bug fixes
+
+- Remove warning when code isn't eager-loaded #5187
+- Add missing `require "ostruct"` in ActionCableSubscriptions #5184
+
 # 2.4.6 (5 Dec 2024)
 
 ### Bug fixes
