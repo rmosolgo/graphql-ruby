@@ -53,7 +53,9 @@ module GraphQL
               results = []
               queries.each_with_index do |query, idx|
                 if query.subscription? && !query.subscription_update?
-                  query.context.namespace(:subscriptions)[:events] = []
+                  subs_namespace = query.context.namespace(:subscriptions)
+                  subs_namespace[:events] = []
+                  subs_namespace[:subscriptions] = {}
                 end
                 multiplex.dataloader.append_job {
                   operation = query.selected_operation

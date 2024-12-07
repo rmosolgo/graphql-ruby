@@ -23,9 +23,16 @@ module GraphQL
         super
         # Figure out whether this is an update or an initial subscription
         @mode = context.query.subscription_update? ? :update : :subscribe
+        @subscription_written = false
+        @original_arguments = nil
+        if (subs_ns = context.namespace(:subscriptions)) &&
+          (sub_insts = subs_ns[:subscriptions])
+          sub_insts[context.current_path] = self
+        end
       end
 
       def resolve_with_support(**args)
+        @original_arguments = args # before `loads:` have been run
         result = nil
         unsubscribed = true
         unsubscribed_result = catch :graphql_subscription_unsubscribed do
@@ -149,6 +156,34 @@ module GraphQL
       # @return [String] An identifier corresponding to a stream of updates
       def self.topic_for(arguments:, field:, scope:)
         Subscriptions::Serialize.dump_recursive([scope, field.graphql_name, arguments])
+      end
+
+      # Calls through to `schema.subscriptions` to register this subscription with the backend.
+      # This is automatically called by GraphQL-Ruby after a query finishes successfully,
+      # but if you need to commit the subscription during `#subscribe`, you can call it there.
+      # (This method also sets a flag showing that this subscription was already written.)
+      #
+      # If you call this method yourself, you may also need to {#unsubscribe}
+      # or call `subscriptions.delete_subscription` to clean up the database if the query crashes with an error
+      # later in execution.
+      # @return void
+      def write_subscription
+        @subscription_written = true
+        context.schema.subscriptions.write_subscription(context.query, [event])
+        nil
+      end
+
+      def subscription_written?
+        @subscription_written
+      end
+
+      def event
+        @event ||= Subscriptions::Event.new(
+          name: field.name,
+          arguments: @original_arguments,
+          context: context,
+          field: field,
+        )
       end
     end
   end
