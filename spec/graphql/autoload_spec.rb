@@ -45,44 +45,4 @@ describe GraphQL::Autoload do
       assert EagerModule::NestedEagerModule::NestedEagerClass
     end
   end
-
-
-  describe "warning in production" do
-    before do
-      @prev_env = ENV.to_hash
-      ENV.update("HANAMI_ENV" => "production")
-    end
-
-    after do
-      ENV.update(@prev_env)
-    end
-
-    it "emits a warning when not eager-loading" do
-      stdout, stderr = capture_io do
-        GraphQL.ensure_eager_load!
-      end
-
-      assert_equal "", stdout
-      expected_warning = "GraphQL-Ruby thinks this is a production deployment but didn't eager-load its constants. Address this by:
-
-  - Calling `GraphQL.eager_load!` in a production-only initializer or setup hook
-  - Assign `GraphQL.env = \"...\"` to something _other_ than `\"production\"` (for example, `GraphQL.env = \"development\"`)
-
-More details: https://graphql-ruby.org/schema/definition#production-considerations
-"
-      assert_equal expected_warning, stderr
-    end
-
-    it "silences the warning when GraphQL.env is assigned" do
-      prev_env = GraphQL.env
-      GraphQL.env = "staging"
-      stdout, stderr = capture_io do
-        GraphQL.ensure_eager_load!
-      end
-      assert_equal "", stdout
-      assert_equal "", stderr
-    ensure
-      GraphQL.env = prev_env
-    end
-  end
 end

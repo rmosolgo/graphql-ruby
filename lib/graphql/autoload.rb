@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module GraphQL
+  # @see GraphQL::Railtie for automatic Rails integration
   module Autoload
     # Register a constant named `const_name` to be loaded from `path`.
     # This is like `Kernel#autoload` but it tracks the constants so they can be eager-loaded with {#eager_load!}
