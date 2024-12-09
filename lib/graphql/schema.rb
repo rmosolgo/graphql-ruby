@@ -73,6 +73,9 @@ module GraphQL
   class Schema
     extend GraphQL::Schema::Member::HasAstNode
     extend GraphQL::Schema::FindInheritedValue
+    extend Autoload
+
+    autoload :BUILT_IN_TYPES, "graphql/schema/built_in_types"
 
     class DuplicateNamesError < GraphQL::Error
       attr_reader :duplicated_name
@@ -233,7 +236,7 @@ module GraphQL
           add_trace_options_for(mode, default_options)
 
           Class.new(base_class) do
-            mods.any? && include(*mods)
+            !mods.empty? && include(*mods)
           end
         end
       end
@@ -321,7 +324,7 @@ module GraphQL
       # @param plugin [#use] A Schema plugin
       # @return void
       def use(plugin, **kwargs)
-        if kwargs.any?
+        if !kwargs.empty?
           plugin.use(self, **kwargs)
         else
           plugin.use(self)
@@ -445,7 +448,17 @@ module GraphQL
             dup_defn = new_query_object || yield
             raise GraphQL::Error, "Second definition of `query(...)` (#{dup_defn.inspect}) is invalid, already configured with #{@query_object.inspect}"
           elsif use_visibility_profile?
-            @query_object = block_given? ? lazy_load_block : new_query_object
+            if block_given?
+              if visibility.preload?
+                @query_object = lazy_load_block.call
+                self.visibility.query_configured(@query_object)
+              else
+                @query_object = lazy_load_block
+              end
+            else
+              @query_object = new_query_object
+              self.visibility.query_configured(@query_object)
+            end
           else
             @query_object = new_query_object || lazy_load_block.call
             add_type_and_traverse(@query_object, root: true)
@@ -453,6 +466,8 @@ module GraphQL
           nil
         elsif @query_object.is_a?(Proc)
           @query_object = @query_object.call
+          self.visibility&.query_configured(@query_object)
+          @query_object
         else
           @query_object || find_inherited_value(:query)
         end
@@ -472,7 +487,17 @@ module GraphQL
             dup_defn = new_mutation_object || yield
             raise GraphQL::Error, "Second definition of `mutation(...)` (#{dup_defn.inspect}) is invalid, already configured with #{@mutation_object.inspect}"
           elsif use_visibility_profile?
-            @mutation_object = block_given? ? lazy_load_block : new_mutation_object
+            if block_given?
+              if visibility.preload?
+                @mutation_object = lazy_load_block.call
+                self.visibility.mutation_configured(@mutation_object)
+              else
+                @mutation_object = lazy_load_block
+              end
+            else
+              @mutation_object = new_mutation_object
+              self.visibility.mutation_configured(@mutation_object)
+            end
           else
             @mutation_object = new_mutation_object || lazy_load_block.call
             add_type_and_traverse(@mutation_object, root: true)
@@ -480,6 +505,8 @@ module GraphQL
           nil
         elsif @mutation_object.is_a?(Proc)
           @mutation_object = @mutation_object.call
+          self.visibility&.mutation_configured(@mutation_object)
+          @mutation_object
         else
           @mutation_object || find_inherited_value(:mutation)
         end
@@ -499,7 +526,17 @@ module GraphQL
             dup_defn = new_subscription_object || yield
             raise GraphQL::Error, "Second definition of `subscription(...)` (#{dup_defn.inspect}) is invalid, already configured with #{@subscription_object.inspect}"
           elsif use_visibility_profile?
-            @subscription_object = block_given? ? lazy_load_block : new_subscription_object
+            if block_given?
+              if visibility.preload?
+                @subscription_object = lazy_load_block.call
+                visibility.subscription_configured(@subscription_object)
+              else
+                @subscription_object = lazy_load_block
+              end
+            else
+              @subscription_object = new_subscription_object
+              self.visibility.subscription_configured(@subscription_object)
+            end
             add_subscription_extension_if_necessary
           else
             @subscription_object = new_subscription_object || lazy_load_block.call
@@ -510,6 +547,7 @@ module GraphQL
         elsif @subscription_object.is_a?(Proc)
           @subscription_object = @subscription_object.call
           add_subscription_extension_if_necessary
+          self.visibility.subscription_configured(@subscription_object)
           @subscription_object
         else
           @subscription_object || find_inherited_value(:subscription)
@@ -656,7 +694,7 @@ module GraphQL
           # and generally speaking, we won't inherit any values.
           # So optimize the most common case -- don't create a duplicate Hash.
           inherited_value = find_inherited_value(:references_to, EMPTY_HASH)
-          if inherited_value.any?
+          if !inherited_value.empty?
             inherited_value.merge(own_references_to)
           else
             own_references_to
@@ -695,20 +733,27 @@ module GraphQL
         type.fields(context)
       end
 
+      # Pass a custom introspection module here to use it for this schema.
+      # @param new_introspection_namespace [Module] If given, use this module for custom introspection on the schema
+      # @return [Module, nil] The configured namespace, if there is one
       def introspection(new_introspection_namespace = nil)
         if new_introspection_namespace
           @introspection = new_introspection_namespace
           # reset this cached value:
           @introspection_system = nil
+          introspection_system
+          @introspection
         else
           @introspection || find_inherited_value(:introspection)
         end
       end
 
+      # @return [Schema::IntrospectionSystem] Based on {introspection}
       def introspection_system
         if !@introspection_system
           @introspection_system = Schema::IntrospectionSystem.new(self)
           @introspection_system.resolve_late_bindings
+          self.visibility&.introspection_system_configured(@introspection_system)
         end
         @introspection_system
       end
@@ -935,7 +980,7 @@ module GraphQL
       # @param new_extra_types [Module] Type definitions to include in printing and introspection, even though they aren't referenced in the schema
       # @return [Array<Module>] Type definitions added to this schema
       def extra_types(*new_extra_types)
-        if new_extra_types.any?
+        if !new_extra_types.empty?
           new_extra_types = new_extra_types.flatten
           @own_extra_types ||= []
           @own_extra_types.concat(new_extra_types)
@@ -952,11 +997,18 @@ module GraphQL
         end
       end
 
+      # Tell the schema about these types so that they can be registered as implementations of interfaces in the schema.
+      #
+      # This method must be used when an object type is connected to the schema as an interface implementor but
+      # not as a return type of a field. In that case, if the object type isn't registered here, GraphQL-Ruby won't be able to find it.
+      #
+      # @param new_orphan_types [Array<Class<GraphQL::Schema::Object>>] Object types to register as implementations of interfaces in the schema.
+      # @return [Array<Class<GraphQL::Schema::Object>>] All previously-registered orphan types for this schema
       def orphan_types(*new_orphan_types)
-        if new_orphan_types.any?
+        if !new_orphan_types.empty?
           new_orphan_types = new_orphan_types.flatten
           non_object_types = new_orphan_types.reject { |ot| ot.is_a?(Class) && ot < GraphQL::Schema::Object }
-          if non_object_types.any?
+          if !non_object_types.empty?
             raise ArgumentError, <<~ERR
               Only object type classes should be added as `orphan_types(...)`.
 
@@ -968,11 +1020,12 @@ module GraphQL
           end
           add_type_and_traverse(new_orphan_types, root: false) unless use_visibility_profile?
           own_orphan_types.concat(new_orphan_types.flatten)
+          self.visibility&.orphan_types_configured(new_orphan_types)
         end
 
         inherited_ot = find_inherited_value(:orphan_types, nil)
         if inherited_ot
-          if own_orphan_types.any?
+          if !own_orphan_types.empty?
             inherited_ot + own_orphan_types
           else
             inherited_ot
@@ -1282,12 +1335,12 @@ module GraphQL
       # Add several directives at once
       # @param new_directives [Class]
       def directives(*new_directives)
-        if new_directives.any?
+        if !new_directives.empty?
           new_directives.flatten.each { |d| directive(d) }
         end
 
         inherited_dirs = find_inherited_value(:directives, default_directives)
-        if own_directives.any?
+        if !own_directives.empty?
           inherited_dirs.merge(own_directives)
         else
           inherited_dirs
@@ -1752,3 +1805,6 @@ module GraphQL
     end
   end
 end
+
+require "graphql/schema/loader"
+require "graphql/schema/printer"

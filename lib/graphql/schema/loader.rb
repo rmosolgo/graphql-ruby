@@ -187,7 +187,7 @@ module GraphQL
               camelize: false,
               connection_extension: nil,
             ) do
-              if field_hash["args"].any?
+              if !field_hash["args"].empty?
                 loader.build_arguments(self, field_hash["args"], type_resolver)
               end
             end

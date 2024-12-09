@@ -116,7 +116,62 @@ createRecord(data: {
     expected_message = if USING_C_PARSER
       "syntax error, unexpected invalid token (\"-\") at [1, 8]"
     else
-      "Expected a number, but it was malformed (\"-\")"
+      "Expected type 'number', but it was malformed: \"-c\"."
+    end
+    assert_equal expected_message, err.message
+  end
+
+  it "handles invalid minus signs in variable default values" do
+    err = assert_raises GraphQL::ParseError do
+      GraphQL.parse("query($something: Int = -foo) { }")
+    end
+    expected_message = if USING_C_PARSER
+      "syntax error, unexpected invalid token (\"-\") at [1, 25]"
+    else
+      "Expected type 'number', but it was malformed: \"-foo\"."
+    end
+    assert_equal expected_message, err.message
+  end
+
+  it "handles invalid minus signs in deeply nested input objects" do
+    err = assert_raises GraphQL::ParseError do
+      GraphQL.parse("{ doSomething(a: { b: { c: { d: -foo } } }) }")
+    end
+    expected_message = if USING_C_PARSER
+      "syntax error, unexpected invalid token (\"-\") at [1, 33]"
+    else
+      "Expected type 'number', but it was malformed: \"-foo\"."
+    end
+    assert_equal expected_message, err.message
+  end
+
+  it "handles invalid minus signs in schema definitions" do
+    err = assert_raises GraphQL::ParseError do
+      GraphQL.parse("
+      type Query {
+        someField(a: Int = -foo): Int
+      }
+      ")
+    end
+    expected_message = if USING_C_PARSER
+      "syntax error, unexpected invalid token (\"-\") at [3, 28]"
+    else
+      "Expected type 'number', but it was malformed: \"-foo\"."
+    end
+    assert_equal expected_message, err.message
+  end
+
+  it "handles invalid minus signs in list literals" do
+    err = assert_raises GraphQL::ParseError do
+      GraphQL.parse("{
+        a1: a(b: [1,2,3])
+        a2: a(b: [1, 2, -foo])
+      }")
+    end
+    expected_message = if USING_C_PARSER
+      "syntax error, unexpected invalid token (\"-\") at [3, 25]"
+    else
+      "Expected type 'number', but it was malformed: \"-foo\"."
     end
     assert_equal expected_message, err.message
   end
@@ -192,7 +247,7 @@ createRecord(data: {
     expected_msg = if USING_C_PARSER
       "syntax error, unexpected invalid token (\"-\") at [1, 19]"
     else
-      "Expected a number, but it was malformed (\"-\")"
+      "Expected type 'number', but it was malformed: \"-b\"."
     end
 
     assert_equal expected_msg, err.message

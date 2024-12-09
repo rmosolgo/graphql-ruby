@@ -8,9 +8,14 @@ describe GraphQL::Schema::Printer do
       field :id, ID, null: false
     end
 
+    class HiddenDirective < GraphQL::Schema::Directive
+      def self.visible?(ctx); false; end
+      locations(GraphQL::Schema::Directive::ENUM_VALUE)
+    end
+
     class Choice < GraphQL::Schema::Enum
       value "FOO", value: :foo
-      value "BAR", value: :bar
+      value "BAR", value: :bar, directives: { HiddenDirective => {} }
       value "BAZ", deprecation_reason: <<-REASON
 Use "BAR" instead.
 
@@ -73,10 +78,13 @@ REASON
       value :BOO_HISS
     end
 
+
     class NoFields < GraphQL::Schema::Object
+      has_no_fields(true)
     end
 
     class NoArguments < GraphQL::Schema::InputObject
+      has_no_arguments(true)
     end
 
     class Query < GraphQL::Schema::Object
@@ -117,6 +125,10 @@ REASON
     mutation(Mutation)
     subscription(Subscription)
     extra_types [MediaRating]
+
+    if !use_visibility_profile?
+      use GraphQL::Schema::Warden
+    end
   end
 
   let(:schema) { PrinterTestSchema }
@@ -686,7 +698,7 @@ SCHEMA
         case member
         when Module
           if !member.respond_to?(:kind)
-            true
+            super
           else
             case member.kind.name
             when "SCALAR"
@@ -709,7 +721,6 @@ SCHEMA
     context = { names: ["Query", "Post"] }
     assert_equal expected, custom_filter_schema.to_definition(context: context)
   end
-
 
   it "applies an `except` filter" do
     expected = <<SCHEMA
@@ -813,7 +824,7 @@ SCHEMA
     custom_filter_schema = Class.new(schema) do
       use GraphQL::Schema::Warden if ADD_WARDEN
       def self.visible?(member, ctx)
-        !(ctx[:names].include?(member.graphql_name) || (member.respond_to?(:deprecation_reason) && member.deprecation_reason))
+        super && (!(ctx[:names].include?(member.graphql_name) || (member.respond_to?(:deprecation_reason) && member.deprecation_reason)))
       end
     end
 

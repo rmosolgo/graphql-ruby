@@ -20,6 +20,7 @@ function createActionCableHandler(options: ActionCableHandlerOptions) {
     var channelId = Math.round(Date.now() + Math.random() * 100000).toString(16)
     var cable = options.cable
     var operations = options.operations
+    var subscribed = true
 
     // Register the subscription by subscribing to the channel
     const channel = cable.subscriptions.create({
@@ -56,7 +57,7 @@ function createActionCableHandler(options: ActionCableHandlerOptions) {
         } else if (result) {
           observer.onNext({data: result.data})
         }
-        if (!payload.more) {
+        if (!payload.more && subscribed) {
           // Subscription is finished
           observer.onCompleted()
         }
@@ -66,7 +67,10 @@ function createActionCableHandler(options: ActionCableHandlerOptions) {
     // Return an object for Relay to unsubscribe with
     return {
       dispose: function() {
-        channel.unsubscribe()
+        if (subscribed) {
+          subscribed = false
+          channel.unsubscribe()
+        }
       }
     }
   }

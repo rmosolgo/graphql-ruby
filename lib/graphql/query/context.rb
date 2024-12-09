@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-require "graphql/query/context/scoped_context"
 
 module GraphQL
   class Query
@@ -104,7 +103,7 @@ module GraphQL
           if key == :current_path
             current_path
           else
-            (current_runtime_state = Thread.current[:__graphql_runtime_info]) &&
+            (current_runtime_state = Fiber[:__graphql_runtime_info]) &&
               (query_runtime_state = current_runtime_state[@query]) &&
               (query_runtime_state.public_send(key))
           end
@@ -144,7 +143,7 @@ module GraphQL
       end
 
       def current_path
-        current_runtime_state = Thread.current[:__graphql_runtime_info]
+        current_runtime_state = Fiber[:__graphql_runtime_info]
         query_runtime_state = current_runtime_state && current_runtime_state[@query]
 
         path = query_runtime_state &&
@@ -169,7 +168,7 @@ module GraphQL
 
       def fetch(key, default = UNSPECIFIED_FETCH_DEFAULT)
         if RUNTIME_METADATA_KEYS.include?(key)
-          (runtime = Thread.current[:__graphql_runtime_info]) &&
+          (runtime = Fiber[:__graphql_runtime_info]) &&
             (query_runtime_state = runtime[@query]) &&
             (query_runtime_state.public_send(key))
         elsif @scoped_context.key?(key)
@@ -187,7 +186,7 @@ module GraphQL
 
       def dig(key, *other_keys)
         if RUNTIME_METADATA_KEYS.include?(key)
-          (current_runtime_state = Thread.current[:__graphql_runtime_info]) &&
+          (current_runtime_state = Fiber[:__graphql_runtime_info]) &&
             (query_runtime_state = current_runtime_state[@query]) &&
             (obj = query_runtime_state.public_send(key)) &&
             if other_keys.empty?
@@ -289,3 +288,5 @@ module GraphQL
     end
   end
 end
+
+require "graphql/query/context/scoped_context"

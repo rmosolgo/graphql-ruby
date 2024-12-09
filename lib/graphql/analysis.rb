@@ -55,10 +55,10 @@ module GraphQL
           .tap { _1.select!(&:analyze?) }
 
         analyzers_to_run = query_analyzers + multiplex_analyzers
-        if analyzers_to_run.any?
+        if !analyzers_to_run.empty?
 
           analyzers_to_run.select!(&:visit?)
-          if analyzers_to_run.any?
+          if !analyzers_to_run.empty?
             visitor = GraphQL::Analysis::Visitor.new(
               query: query,
               analyzers: analyzers_to_run
@@ -69,7 +69,7 @@ module GraphQL
               visitor.visit
             end
 
-            if visitor.rescued_errors.any?
+            if !visitor.rescued_errors.empty?
               return visitor.rescued_errors
             end
           end

@@ -60,7 +60,7 @@ module GraphQL
           each_present_path_ctx do |path_ctx|
             if path_ctx.key?(key)
               found_value = path_ctx[key]
-              if other_keys.any?
+              if !other_keys.empty?
                 return found_value.dig(*other_keys)
               else
                 return found_value

@@ -10,7 +10,67 @@
 
 ### Bug fixes
 
-# 2.4.0
+# 2.4.7 (7 Dec 2024)
+
+### Bug fixes
+
+- Remove warning when code isn't eager-loaded #5187
+- Add missing `require "ostruct"` in ActionCableSubscriptions #5184
+
+# 2.4.6 (5 Dec 2024)
+
+### Bug fixes
+
+- Autoloading: fix referencing built-in types #5181
+- Autoloading: use Rails `config.before_eager_load` hook for better integration #5182
+- `loads:`: Check possible types for `loads:`-only unions #5180
+
+# 2.4.5 (2 Dec 2024)
+
+### Breaking changes
+
+- In non-Rails production environments, GraphQL-Ruby will emit a warning about calling `.eager_load!` for better boot performance. #5178
+
+### New features
+
+- Loading: GraphQL-Ruby now uses Ruby's `autoload ...` for many constants. #5178
+- Input objects may be pattern matched (they implement `#deconstruct_keys`) #5170
+
+### Bug fixes
+
+- Visibility: hide definition directives in SDL #5175
+- Internals: use `Fiber[...]` for internal state instead of `Thread.current` #5176
+- Dataloader: properly handle arrays of all falsey values #5167 #5169
+- Visibility: hide directives when their uses are all hidden #5163
+- Require object types to have fields and require input objects to have arguments (to comply with the GraphQL spec) #5137
+- Improve error message when a misplaced `-` is encountered #5115
+
+# 2.4.4 (18 Nov 2024)
+
+- Visibility: improve performance with `sync` #5161
+
+# 2.4.3 (11 Nov 2024)
+
+### Bug fixes
+
+- Lookahead: return an empty hash for `.arguments` when they raised a `GraphQL::ExecutionError` #5155
+- Visibility: fix error when Mutation is lazy-loaded #5158
+- Visibility: improve performance of `Schema.types` #5157
+
+# 2.4.2 (7 Nov 2024)
+
+### Bug fixes
+
+- Validation: fix error message when selections are made on an enum #5144 #5145
+- Visibility: fix preloading when no profiles are named #5148
+
+# 2.4.1 (4 Nov 2024)
+
+### Bug fixes
+
+- Visibility: support dynamically-generated `#enum_values` #5141
+
+# 2.4.0 (31 Oct 2024)
 
 ### Deprecations
 

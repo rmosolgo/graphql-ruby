@@ -2,6 +2,9 @@
 require "application_system_test_case"
 
 class ActionCableSubscriptionsTest < ApplicationSystemTestCase
+  setup do
+    ActionCable.server.config.logger = Logger.new(STDOUT)
+  end
   # This test covers a lot of ground!
   test "it handles subscriptions" do
     # Load the page and let the subscriptions happen

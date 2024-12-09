@@ -92,7 +92,7 @@ module GraphQL
         print_string("@")
         print_string(directive.name)
 
-        if directive.arguments.any?
+        if !directive.arguments.empty?
           print_string("(")
           directive.arguments.each_with_index do |a, i|
             print_argument(a)
@@ -117,7 +117,7 @@ module GraphQL
           print_string(": ")
         end
         print_string(field.name)
-        if field.arguments.any?
+        if !field.arguments.empty?
           print_string("(")
           field.arguments.each_with_index do |a, i|
             print_argument(a)
@@ -182,7 +182,7 @@ module GraphQL
           print_string(operation_definition.name)
         end
 
-        if operation_definition.variables.any?
+        if !operation_definition.variables.empty?
           print_string("(")
           operation_definition.variables.each_with_index do |v, i|
             print_variable_definition(v)
@@ -230,7 +230,7 @@ module GraphQL
 
         extension ? print_string("extend schema") : print_string("schema")
 
-        if schema.directives.any?
+        if !schema.directives.empty?
           schema.directives.each do |dir|
             print_string("\n  ")
             print_node(dir)
@@ -332,7 +332,7 @@ module GraphQL
         extension ? print_string("extend ") : print_description_and_comment(interface_type)
         print_string("interface ")
         print_string(interface_type.name)
-        print_implements(interface_type) if interface_type.interfaces.any?
+        print_implements(interface_type) if !interface_type.interfaces.empty?
         print_directives(interface_type.directives)
         print_field_definitions(interface_type.fields)
       end
@@ -342,7 +342,7 @@ module GraphQL
         print_string("union ")
         print_string(union_type.name)
         print_directives(union_type.directives)
-        if union_type.types.any?
+        if !union_type.types.empty?
           print_string(" = ")
           i = 0
           union_type.types.each do |t|
@@ -360,7 +360,7 @@ module GraphQL
         print_string("enum ")
         print_string(enum_type.name)
         print_directives(enum_type.directives)
-        if enum_type.values.any?
+        if !enum_type.values.empty?
           print_string(" {\n")
           enum_type.values.each.with_index do |value, i|
             print_description(value, indent: "  ", first_in_block: i == 0)
@@ -401,7 +401,7 @@ module GraphQL
         print_string("directive @")
         print_string(directive.name)
 
-        if directive.arguments.any?
+        if !directive.arguments.empty?
           print_arguments(directive.arguments)
         end
 

@@ -231,6 +231,22 @@ describe GraphQL::Dataloader do
         recipe
       end
 
+      field :recipe_by_id_using_load, Recipe do
+        argument :id, ID, required: false
+      end
+
+      def recipe_by_id_using_load(id:)
+        dataloader.with(DataObject).load(id)
+      end
+
+      field :recipes_by_id_using_load_all, [Recipe] do
+        argument :ids, [ID, null: true]
+      end
+
+      def recipes_by_id_using_load_all(ids:)
+        dataloader.with(DataObject).load_all(ids)
+      end
+
       field :recipes_by_id, [Recipe] do
         argument :ids, [ID], loads: Recipe, as: :recipes
       end
@@ -901,6 +917,30 @@ describe GraphQL::Dataloader do
           assert_equal 1, context[:batched_calls_counter].count
         end
 
+        it "works when passing nil into source" do
+          query_str = <<-GRAPHQL
+          query($id: ID) {
+            recipe: recipeByIdUsingLoad(id: $id) {
+              name
+            }
+          }
+          GRAPHQL
+          res = schema.execute(query_str, variables: { id: nil })
+          expected_data = { "recipe" => nil }
+          assert_equal expected_data, res["data"]
+
+          query_str = <<-GRAPHQL
+          query($ids: [ID]!) {
+            recipes: recipesByIdUsingLoadAll(ids: $ids) {
+              name
+            }
+          }
+          GRAPHQL
+          res = schema.execute(query_str, variables: { ids: [nil] })
+          expected_data = { "recipes" => nil }
+          assert_equal expected_data, res["data"]
+        end
+
         it "Works with input objects using variables, load and request" do
           query_str = <<-GRAPHQL
           query($input: CommonIngredientsInput!) {
@@ -1086,13 +1126,13 @@ describe GraphQL::Dataloader do
         end
 
         describe "fiber_limit" do
-          def assert_last_max_fiber_count(expected_last_max_fiber_count)
-            if schema.dataloader_class == GraphQL::Dataloader::AsyncDataloader && FiberCounting.last_max_fiber_count == (expected_last_max_fiber_count + 1)
+          def assert_last_max_fiber_count(expected_last_max_fiber_count, message = nil)
+            if FiberCounting.last_max_fiber_count == (expected_last_max_fiber_count + 1)
               # TODO why does this happen sometimes?
               warn "AsyncDataloader had +1 last_max_fiber_count"
-              assert_equal (expected_last_max_fiber_count + 1), FiberCounting.last_max_fiber_count
+              assert_equal (expected_last_max_fiber_count + 1), FiberCounting.last_max_fiber_count, message
             else
-              assert_equal expected_last_max_fiber_count, FiberCounting.last_max_fiber_count
+              assert_equal expected_last_max_fiber_count, FiberCounting.last_max_fiber_count, message
             end
           end
 
@@ -1122,17 +1162,17 @@ describe GraphQL::Dataloader do
             res = schema.execute(query_str, context: { dataloader: fiber_counting_dataloader_class.new })
             assert_nil res.context.dataloader.fiber_limit
             assert_equal 12, FiberCounting.last_spawn_fiber_count
-            assert_last_max_fiber_count(9)
+            assert_last_max_fiber_count(9, "No limit works as expected")
 
             res = schema.execute(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 4) })
             assert_equal 4, res.context.dataloader.fiber_limit
             assert_equal 14, FiberCounting.last_spawn_fiber_count
-            assert_last_max_fiber_count(4)
+            assert_last_max_fiber_count(4, "Limit of 4 works as expected")
 
             res = schema.execute(query_str, context: { dataloader: fiber_counting_dataloader_class.new(fiber_limit: 6) })
             assert_equal 6, res.context.dataloader.fiber_limit
             assert_equal 10, FiberCounting.last_spawn_fiber_count
-            assert_last_max_fiber_count(6)
+            assert_last_max_fiber_count(6, "Limit of 6 works as expected")
           end
 
           it "accepts a default fiber_limit config" do

@@ -11,7 +11,7 @@ module GraphQL
         end
 
         def possible_types(*types, context: GraphQL::Query::NullContext.instance, **options)
-          if types.any?
+          if !types.empty?
             types.each do |t|
               assert_valid_union_member(t)
               type_memberships << type_membership_class.new(self, t, **options)

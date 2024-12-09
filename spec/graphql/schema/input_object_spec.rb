@@ -781,6 +781,63 @@ describe GraphQL::Schema::InputObject do
     end
   end
 
+  describe "pattern matching" do
+    module InputObjectPatternTest
+      class TestInput1 < GraphQL::Schema::InputObject
+        graphql_name "TestInput1"
+        argument :d, Int
+        argument :e, Int
+      end
+
+      class TestInput2 < GraphQL::Schema::InputObject
+        graphql_name "TestInput2"
+        argument :a, Int
+        argument :b, Int
+        argument :c, TestInput1, as: :inputObject
+      end
+    end
+    arg_values = {
+      a: 1,
+      b: 2,
+      inputObject: InputObjectPatternTest::TestInput1.new(nil, ruby_kwargs: { d: 3, e: 4 }, context: nil, defaults_used: Set.new)
+    }
+
+    input_object = InputObjectPatternTest::TestInput2.new(
+      nil,
+      ruby_kwargs: arg_values,
+      context: nil,
+      defaults_used: Set.new
+    )
+    it "matches the value at that key" do
+      assert case input_object
+      in { a: 1 }
+        true
+      else
+        false
+      end
+
+      assert input_object.dig(:inputObject).is_a?(GraphQL::Schema::InputObject)
+    end
+
+    it "matches nested input objects" do
+      assert case input_object
+      in { inputObject: { d: 3 } }
+        true
+      else
+        false
+      end
+    end
+
+    it "does not match missing keys" do
+      assert case input_object
+      in { z: }
+        false
+      else
+        true
+      end
+    end
+  end
+
   describe "introspection" do
     it "returns input fields" do
       res = Jazz::Schema.execute('
@@ -1416,6 +1473,60 @@ describe GraphQL::Schema::InputObject do
         Class.new(GraphQL::Schema::InputObject) do
           argument :object_id, GraphQL::Types::ID, required: false
         end
+      end
+    end
+  end
+
+  describe "when no arguments are defined" do
+    describe "when defined with no fields" do
+      class NoArgumentsSchema < GraphQL::Schema
+        class NoArgumentsInput < GraphQL::Schema::InputObject
+        end
+
+        class NoArgumentsCompatInput < GraphQL::Schema::InputObject
+          has_no_arguments(true)
+        end
+
+        class Query < GraphQL::Schema::Object
+          field :no_arguments, String, fallback_value: "NO_ARGS" do
+            argument :input, NoArgumentsInput
+          end
+
+          field :no_arguments_compat, String, fallback_value: "OK" do
+            argument :input, NoArgumentsCompatInput
+          end
+        end
+
+        query(Query)
+      end
+
+      it "raises an error at runtime and printing" do
+        refute NoArgumentsSchema::NoArgumentsInput.has_no_arguments?
+
+        expected_message = "Input Object types must have arguments, but NoArgumentsInput doesn't have any. Define an argument for this type, remove it from your schema, or add `has_no_arguments(true)` to its definition.
+
+This will raise an error in a future GraphQL-Ruby version.
+"
+        res = assert_warns(expected_message) do
+          NoArgumentsSchema.execute("{ noArguments(input: {}) }")
+        end
+        assert_equal "NO_ARGS", res["data"]["noArguments"]
+
+        assert_warns(expected_message) do
+          NoArgumentsSchema.to_definition
+        end
+
+        assert_warns(expected_message) do
+          NoArgumentsSchema.to_json
+        end
+      end
+
+      it "doesn't raise an error if has_no_arguments(true)" do
+        assert NoArgumentsSchema::NoArgumentsCompatInput.has_no_arguments?
+        res = assert_warns("") do
+          NoArgumentsSchema.execute("{ noArgumentsCompat(input: {}) }")
+        end
+        assert_equal "OK", res["data"]["noArgumentsCompat"]
       end
     end
   end

@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require "graphql"
+ADD_WARDEN = false
 require "jazz"
 require "benchmark/ips"
 require "stackprof"

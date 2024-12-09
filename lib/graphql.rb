@@ -5,8 +5,19 @@ require "set"
 require "singleton"
 require "forwardable"
 require "fiber/storage"
+require "graphql/autoload"
 
 module GraphQL
+  extend Autoload
+
+  # Load all `autoload`-configured classes, and also eager-load dependents who have autoloads of their own.
+  def self.eager_load!
+    super
+    Query.eager_load!
+    Types.eager_load!
+    Schema.eager_load!
+  end
+
   class Error < StandardError
   end
 
@@ -74,53 +85,47 @@ This is probably a bug in GraphQL-Ruby, please report this error on GitHub: http
   end
 
   self.reject_numbers_followed_by_names = false
+
+  autoload :ExecutionError, "graphql/execution_error"
+  autoload :RuntimeTypeError, "graphql/runtime_type_error"
+  autoload :UnresolvedTypeError, "graphql/unresolved_type_error"
+  autoload :InvalidNullError, "graphql/invalid_null_error"
+  autoload :AnalysisError, "graphql/analysis_error"
+  autoload :CoercionError, "graphql/coercion_error"
+  autoload :InvalidNameError, "graphql/invalid_name_error"
+  autoload :IntegerDecodingError, "graphql/integer_decoding_error"
+  autoload :IntegerEncodingError, "graphql/integer_encoding_error"
+  autoload :StringEncodingError, "graphql/string_encoding_error"
+  autoload :DateEncodingError, "graphql/date_encoding_error"
+  autoload :DurationEncodingError, "graphql/duration_encoding_error"
+  autoload :TypeKinds, "graphql/type_kinds"
+  autoload :NameValidator, "graphql/name_validator"
+  autoload :Language, "graphql/language"
+
+  autoload :Analysis, "graphql/analysis"
+  autoload :Tracing, "graphql/tracing"
+  autoload :Dig, "graphql/dig"
+  autoload :Execution, "graphql/execution"
+  autoload :Pagination, "graphql/pagination"
+  autoload :Schema, "graphql/schema"
+  autoload :Query, "graphql/query"
+  autoload :Dataloader, "graphql/dataloader"
+  autoload :Types, "graphql/types"
+  autoload :StaticValidation, "graphql/static_validation"
+  autoload :Execution, "graphql/execution"
+  autoload :Introspection, "graphql/introspection"
+  autoload :Relay, "graphql/relay"
+  autoload :Subscriptions, "graphql/subscriptions"
+  autoload :ParseError, "graphql/parse_error"
+  autoload :Backtrace, "graphql/backtrace"
+
+  autoload :UnauthorizedError, "graphql/unauthorized_error"
+  autoload :UnauthorizedEnumValueError, "graphql/unauthorized_enum_value_error"
+  autoload :UnauthorizedFieldError, "graphql/unauthorized_field_error"
+  autoload :LoadApplicationObjectFailedError, "graphql/load_application_object_failed_error"
+  autoload :Testing, "graphql/testing"
+  autoload :Current, "graphql/current"
 end
 
-# Order matters for these:
-
-require "graphql/execution_error"
-require "graphql/runtime_type_error"
-require "graphql/unresolved_type_error"
-require "graphql/invalid_null_error"
-require "graphql/analysis_error"
-require "graphql/coercion_error"
-require "graphql/invalid_name_error"
-require "graphql/integer_decoding_error"
-require "graphql/integer_encoding_error"
-require "graphql/string_encoding_error"
-require "graphql/date_encoding_error"
-require "graphql/duration_encoding_error"
-require "graphql/type_kinds"
-require "graphql/name_validator"
-require "graphql/language"
-
-require_relative "./graphql/railtie" if defined? Rails::Railtie
-
-require "graphql/analysis"
-require "graphql/tracing"
-require "graphql/dig"
-require "graphql/execution"
-require "graphql/pagination"
-require "graphql/schema"
-require "graphql/query"
-require "graphql/dataloader"
-require "graphql/types"
-require "graphql/static_validation"
-require "graphql/execution"
-require "graphql/schema/built_in_types"
-require "graphql/schema/loader"
-require "graphql/schema/printer"
-require "graphql/introspection"
-require "graphql/relay"
-
 require "graphql/version"
-require "graphql/subscriptions"
-require "graphql/parse_error"
-require "graphql/backtrace"
-
-require "graphql/unauthorized_error"
-require "graphql/unauthorized_enum_value_error"
-require "graphql/unauthorized_field_error"
-require "graphql/load_application_object_failed_error"
-require "graphql/testing"
-require "graphql/current"
+require "graphql/railtie" if defined? Rails::Railtie

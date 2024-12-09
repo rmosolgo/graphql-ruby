@@ -1,7 +1,7 @@
 ---
 ---
 
-@import "reset";
+@use "reset";
 
 $brand-color: #a5152a;
 $dark-theme-brand-color: #e5534b;
@@ -232,12 +232,18 @@ code {
 .dark-theme a {
   color: $dark-theme-brand-color;
   border-color: $dark-theme-brand-color;
+  code {
+    color: $dark-theme-brand-color;
+  }
 }
 
 a {
   color: $brand-color;
   border-color: $brand-color;
   text-decoration: none;
+  code {
+    color: $brand-color;
+  }
 }
 
 a:hover, a:hover code {

@@ -59,7 +59,7 @@ module GraphQL
                 end
                 multiplex.dataloader.append_job {
                   operation = query.selected_operation
-                  result = if operation.nil? || !query.valid? || query.context.errors.any?
+                  result = if operation.nil? || !query.valid? || !query.context.errors.empty?
                     NO_OPERATION
                   else
                     begin
@@ -102,12 +102,12 @@ module GraphQL
               # Then, find all errors and assign the result to the query object
               results.each_with_index do |data_result, idx|
                 query = queries[idx]
-                if (events = query.context.namespace(:subscriptions)[:events]) && events.any?
+                if (events = query.context.namespace(:subscriptions)[:events]) && !events.empty?
                   schema.subscriptions.write_subscription(query, events)
                 end
                 # Assign the result so that it can be accessed in instrumentation
                 query.result_values = if data_result.equal?(NO_OPERATION)
-                  if !query.valid? || query.context.errors.any?
+                  if !query.valid? || !query.context.errors.empty?
                     # A bit weird, but `Query#static_errors` _includes_ `query.context.errors`
                     { "errors" => query.static_errors.map(&:to_h) }
                   else
@@ -116,7 +116,7 @@ module GraphQL
                 else
                   result = {}
 
-                  if query.context.errors.any?
+                  if !query.context.errors.empty?
                     error_result = query.context.errors.map(&:to_h)
                     result["errors"] = error_result
                   end

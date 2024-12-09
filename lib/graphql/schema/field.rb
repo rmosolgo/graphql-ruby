@@ -42,8 +42,8 @@ module GraphQL
       end
 
       def directives
-        if @resolver_class && (r_dirs = @resolver_class.directives).any?
-          if (own_dirs = super).any?
+        if @resolver_class && !(r_dirs = @resolver_class.directives).empty?
+          if !(own_dirs = super).empty?
             own_dirs + r_dirs
           else
             r_dirs
@@ -81,7 +81,7 @@ module GraphQL
       end
 
       def inspect
-        "#<#{self.class} #{path}#{all_argument_definitions.any? ? "(...)" : ""}: #{type.to_type_signature}>"
+        "#<#{self.class} #{path}#{!all_argument_definitions.empty? ? "(...)" : ""}: #{type.to_type_signature}>"
       end
 
       alias :mutation :resolver
@@ -335,15 +335,15 @@ module GraphQL
         @call_after_define = false
         set_pagination_extensions(connection_extension: connection_extension)
         # Do this last so we have as much context as possible when initializing them:
-        if extensions.any?
+        if !extensions.empty?
           self.extensions(extensions)
         end
 
-        if resolver_class && resolver_class.extensions.any?
+        if resolver_class && !resolver_class.extensions.empty?
           self.extensions(resolver_class.extensions)
         end
 
-        if directives.any?
+        if !directives.empty?
           directives.each do |(dir_class, options)|
             self.directive(dir_class, **options)
           end
@@ -482,7 +482,7 @@ module GraphQL
         if new_extras.nil?
           # Read the value
           field_extras = @extras
-          if @resolver_class && @resolver_class.extras.any?
+          if @resolver_class && !@resolver_class.extras.empty?
             field_extras + @resolver_class.extras
           else
             field_extras
@@ -732,7 +732,7 @@ module GraphQL
                 method_to_call = resolver_method
                 method_receiver = obj
                 # Call the method with kwargs, if there are any
-                if ruby_kwargs.any?
+                if !ruby_kwargs.empty?
                   obj.public_send(resolver_method, **ruby_kwargs)
                 else
                   obj.public_send(resolver_method)
@@ -752,7 +752,7 @@ module GraphQL
               elsif inner_object.respond_to?(@method_sym)
                 method_to_call = @method_sym
                 method_receiver = obj.object
-                if ruby_kwargs.any?
+                if !ruby_kwargs.empty?
                   inner_object.public_send(@method_sym, **ruby_kwargs)
                 else
                   inner_object.public_send(@method_sym)
@@ -839,7 +839,7 @@ module GraphQL
           unsatisfied_ruby_kwargs.clear
         end
 
-        if unsatisfied_ruby_kwargs.any? || unsatisfied_method_params.any?
+        if !unsatisfied_ruby_kwargs.empty? || !unsatisfied_method_params.empty?
           raise FieldImplementationFailed.new, <<-ERR
 Failed to call `#{method_name.inspect}` on #{receiver.inspect} because the Ruby method params were incompatible with the GraphQL arguments:
 

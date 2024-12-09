@@ -10,6 +10,14 @@ module GraphQL
 
       include GraphQL::Dig
 
+      # Raised when an InputObject doesn't have any arguments defined and hasn't explicitly opted out of this requirement
+      class ArgumentsAreRequiredError < GraphQL::Error
+        def initialize(input_object_type)
+          message = "Input Object types must have arguments, but #{input_object_type.graphql_name} doesn't have any. Define an argument for this type, remove it from your schema, or add `has_no_arguments(true)` to its definition."
+          super(message)
+        end
+      end
+
       # @return [GraphQL::Query::Context] The context for this query
       attr_reader :context
       # @return [GraphQL::Execution::Interpereter::Arguments] The underlying arguments instance
@@ -45,6 +53,16 @@ module GraphQL
         to_h
       end
 
+      def deconstruct_keys(keys = nil)
+        if keys.nil?
+          @ruby_style_hash
+        else
+          new_h = {}
+          keys.each { |k| @ruby_style_hash.key?(k) && new_h[k] = @ruby_style_hash[k] }
+          new_h 
+        end
+      end
+
       def prepare
         if @context
           object = @context[:current_object]
@@ -54,33 +72,6 @@ module GraphQL
         else
           self
         end
-      end
-
-      def self.authorized?(obj, value, ctx)
-        # Authorize each argument (but this doesn't apply if `prepare` is implemented):
-        if value.respond_to?(:key?)
-          ctx.types.arguments(self).each do |input_obj_arg|
-            if value.key?(input_obj_arg.keyword) &&
-              !input_obj_arg.authorized?(obj, value[input_obj_arg.keyword], ctx)
-              return false
-            end
-          end
-        end
-        # It didn't early-return false:
-        true
-      end
-
-      def self.one_of
-        if !one_of?
-          if all_argument_definitions.any? { |arg| arg.type.non_null? }
-            raise ArgumentError, "`one_of` may not be used with required arguments -- add `required: false` to argument definitions to use `one_of`"
-          end
-          directive(GraphQL::Schema::Directive::OneOf)
-        end
-      end
-
-      def self.one_of?
-        false # Re-defined when `OneOf` is added
       end
 
       def unwrap_value(value)
@@ -121,6 +112,33 @@ module GraphQL
       end
 
       class << self
+        def authorized?(obj, value, ctx)
+          # Authorize each argument (but this doesn't apply if `prepare` is implemented):
+          if value.respond_to?(:key?)
+            ctx.types.arguments(self).each do |input_obj_arg|
+              if value.key?(input_obj_arg.keyword) &&
+                !input_obj_arg.authorized?(obj, value[input_obj_arg.keyword], ctx)
+                return false
+              end
+            end
+          end
+          # It didn't early-return false:
+          true
+        end
+
+        def one_of
+          if !one_of?
+            if all_argument_definitions.any? { |arg| arg.type.non_null? }
+              raise ArgumentError, "`one_of` may not be used with required arguments -- add `required: false` to argument definitions to use `one_of`"
+            end
+            directive(GraphQL::Schema::Directive::OneOf)
+          end
+        end
+
+        def one_of?
+          false # Re-defined when `OneOf` is added
+        end
+
         def argument(*args, **kwargs, &block)
           argument_defn = super(*args, **kwargs, &block)
           if one_of?
@@ -244,6 +262,25 @@ module GraphQL
           end
 
           result
+        end
+
+        # @param new_has_no_arguments [Boolean] Call with `true` to make this InputObject type ignore the requirement to have any defined arguments.
+        # @return [void]
+        def has_no_arguments(new_has_no_arguments)
+          @has_no_arguments = new_has_no_arguments
+          nil
+        end
+
+        # @return [Boolean] `true` if `has_no_arguments(true)` was configued
+        def has_no_arguments?
+          @has_no_arguments
+        end
+
+        def arguments(context = GraphQL::Query::NullContext.instance, require_defined_arguments = true)
+          if require_defined_arguments && !has_no_arguments? && !any_arguments?
+            warn(GraphQL::Schema::InputObject::ArgumentsAreRequiredError.new(self).message + "\n\nThis will raise an error in a future GraphQL-Ruby version.")
+          end
+          super(context, false)
         end
 
         private

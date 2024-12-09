@@ -406,4 +406,58 @@ describe GraphQL::Schema::Union do
       end
     end
   end
+
+  describe "use with loads:" do
+    class UnionLoadsSchema < GraphQL::Schema
+      class Image < GraphQL::Schema::Object
+        field :title, String
+      end
+
+      class Video < GraphQL::Schema::Object
+        field :title, String
+      end
+
+      class Post < GraphQL::Schema::Object
+        field :title, String
+      end
+
+      class MediaItem < GraphQL::Schema::Union
+        possible_types Image, Video
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :media_item_type, String do
+          argument :id, ID, loads: MediaItem, as: :media_item
+        end
+
+        def media_item_type(media_item:)
+          media_item[:type]
+        end
+      end
+
+      query(Query)
+
+      def self.object_from_id(id, ctx)
+        type, title = id.split("/")
+        { type: type, title: title }
+      end
+
+      def self.resolve_type(abs_type, obj, ctx)
+        UnionLoadsSchema.const_get(obj[:type])
+      end
+    end
+
+    it "restricts to members of the union" do
+      query_str = "query($mediaId: ID!) { mediaItemType(id: $mediaId) }"
+      res = UnionLoadsSchema.execute(query_str, variables: { mediaId: "Image/Family Photo" })
+      assert_equal "Image", res["data"]["mediaItemType"]
+
+      res = UnionLoadsSchema.execute(query_str, variables: { mediaId: "Video/Christmas Pageant" })
+      assert_equal "Video", res["data"]["mediaItemType"]
+
+      res = UnionLoadsSchema.execute(query_str, variables: { mediaId: "Post/Year in Review" })
+      assert_nil res["data"]["mediaItemType"]
+      assert_equal ["No object found for `id: \"Post/Year in Review\"`"], res["errors"].map { |e| e["message"] }
+    end
+  end
 end

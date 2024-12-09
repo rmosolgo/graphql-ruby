@@ -166,6 +166,10 @@ module MaskHelpers
     field :test, String
   end
 
+  class CheremeDirective < GraphQL::Schema::Directive
+    locations(GraphQL::Schema::Directive::OBJECT)
+  end
+
   class CheremeWithInterface < BaseObject
     implements PublicInterfaceType
 
@@ -175,6 +179,8 @@ module MaskHelpers
   class Chereme < BaseObject
     description "A basic unit of signed communication"
     implements LanguageMemberType
+    directive CheremeDirective
+
     field :name, String, null: false
 
     field :chereme_with_interface, CheremeWithInterface
@@ -285,7 +291,7 @@ module MaskHelpers
     if (except = kwargs.delete(:except))
       filters[:except] = except
     end
-    if filters.any?
+    if !filters.empty?
       context = kwargs[:context] ||= {}
       context[:filters] = filters
     end
@@ -398,6 +404,23 @@ describe GraphQL::Schema::Warden do
 
       res = MaskHelpers.query_with_mask(query_string, mask)
       assert_nil res["data"]["CheremeWithInterface"]
+    end
+
+    it "hides directives if no other fields are using it" do
+      query_string = %|
+        {
+          __schema { directives { name } }
+        }
+      |
+
+      res = MaskHelpers.query_with_mask(query_string, mask)
+      expected_directives = ["deprecated", "include", "oneOf", "skip", "specifiedBy"]
+      if !GraphQL::Schema.use_visibility_profile?
+        # Not supported by Warden
+        expected_directives.unshift("cheremeDirective")
+      end
+
+      assert_equal(expected_directives, res["data"]["__schema"]["directives"].map { |d| d["name"] })
     end
 
     it "causes validation errors" do
@@ -735,15 +758,15 @@ describe GraphQL::Schema::Warden do
     }
 
     it "hides types if no other fields or arguments are using it" do
-       query_string = %|
-         {
-           CheremeInput: __type(name: "CheremeInput") { fields { name } }
-         }
-       |
+      query_string = %|
+        {
+          CheremeInput: __type(name: "CheremeInput") { fields { name } }
+        }
+      |
 
-       res = MaskHelpers.query_with_mask(query_string, mask)
-       assert_nil res["data"]["CheremeInput"]
-     end
+      res = MaskHelpers.query_with_mask(query_string, mask)
+      assert_nil res["data"]["CheremeInput"]
+    end
 
     it "isn't present in introspection" do
       query_string = %|
@@ -1057,6 +1080,7 @@ describe GraphQL::Schema::Warden do
 
     visible_account = Class.new(hidden_account) do
       graphql_name "NewAccount"
+      has_no_fields(true)
       def self.visible?(_ctx); true; end
     end
 

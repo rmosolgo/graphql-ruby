@@ -40,9 +40,8 @@ For defining GraphQL types, see the guides for those types: {% internal_link "ob
 
 ## Types in the Schema
 
-{{ "Schema.query" | api_doc }}, {{ "Schema.mutation" | api_doc }}, and {{ "Schema.subscription" | api_doc}} declare the [entry-point types](https://graphql.org/learn/schema/#the-query-and-mutation-types) of the schema.
-
-{{ "Schema.orphan_types" | api_doc }} declares object types which implement {% internal_link "Interfaces", "/type_definitions/interfaces" %} but aren't used as field return types in the schema. For more about this specific scenario, see {% internal_link "Orphan Types", "/type_definitions/interfaces#orphan-types" %}
+- {{ "Schema.query" | api_doc }}, {{ "Schema.mutation" | api_doc }}, and {{ "Schema.subscription" | api_doc}} declare the [entry-point types](https://graphql.org/learn/schema/#the-query-and-mutation-types) of the schema.
+- {{ "Schema.orphan_types" | api_doc }} declares object types which implement {% internal_link "Interfaces", "/type_definitions/interfaces" %} but aren't used as field return types in the schema. For more about this specific scenario, see {% internal_link "Orphan Types", "/type_definitions/interfaces#orphan-types" %}
 
 ### Lazy-loading types
 
@@ -88,42 +87,45 @@ Additionally, {{ "Schema.resolve_type" | api_doc }} is called by GraphQL-Ruby to
 
 ## Error Handling
 
-{{ "Schema.type_error" | api_doc }} handles type errors at runtime, read more in the {% internal_link "Type errors guide", "/errors/type_errors" %}.
-
-{{ "Schema.rescue_from" | api_doc }} defines error handlers for application errors. See the {% internal_link "error handling guide", "/errors/error_handling" %} for more.
-
-{{ "Schema.parse_error" | api_doc }} and {{ "Schema.query_stack_error" | api_doc }} provide hooks for reporting errors to your bug tracker.
+- {{ "Schema.type_error" | api_doc }} handles type errors at runtime, read more in the {% internal_link "Type errors guide", "/errors/type_errors" %}.
+- {{ "Schema.rescue_from" | api_doc }} defines error handlers for application errors. See the {% internal_link "error handling guide", "/errors/error_handling" %} for more.
+- {{ "Schema.parse_error" | api_doc }} and {{ "Schema.query_stack_error" | api_doc }} provide hooks for reporting errors to your bug tracker.
 
 ## Default Limits
 
-{{ "Schema.max_depth" | api_doc }} and {{ "Schema.max_complexity" | api_doc }} apply some limits to incoming queries. See {% internal_link "Complexity and Depth", "/queries/complexity_and_depth" %} for more.
-
-{{ "Schema.default_max_page_size" | api_doc }} applies limits to {% internal_link "connection fields", "/pagination/overview" %}.
-
-{{ "Schema.validate_timeout" | api_doc }}, {{ "Schema.validate_max_errors" | api_doc }} and {{ "Schema.max_query_string_tokens" | api_doc }} all apply limits to query execution. See {% internal_link "Timeout", "/queries/timeout" %} for more.
+- {{ "Schema.max_depth" | api_doc }} and {{ "Schema.max_complexity" | api_doc }} apply some limits to incoming queries. See {% internal_link "Complexity and Depth", "/queries/complexity_and_depth" %} for more.
+- {{ "Schema.default_max_page_size" | api_doc }} applies limits to {% internal_link "connection fields", "/pagination/overview" %}.
+- {{ "Schema.validate_timeout" | api_doc }}, {{ "Schema.validate_max_errors" | api_doc }} and {{ "Schema.max_query_string_tokens" | api_doc }} all apply limits to query execution. See {% internal_link "Timeout", "/queries/timeout" %} for more.
 
 ## Introspection
 
-{{ "Schema.extra_types" | api_doc }} declares types which should be printed in the SDL and returned in introspection queries, but aren't otherwise used in the schema.
-
-{{ "Schema.introspection" | api_doc }} can attach a {% internal_link "custom introspection system", "/schema/introspection" %} to the schema.
+- {{ "Schema.extra_types" | api_doc }} declares types which should be printed in the SDL and returned in introspection queries, but aren't otherwise used in the schema.
+- {{ "Schema.introspection" | api_doc }} can attach a {% internal_link "custom introspection system", "/schema/introspection" %} to the schema.
 
 ## Authorization
 
-{{ "Schema.unauthorized_object" | api_doc }} and {{ "Schema.unauthorized_field" | api_doc }} are called when {% internal_link "authorization hooks", "/authorization/authorization" %} return `false` during query execution.
+- {{ "Schema.unauthorized_object" | api_doc }} and {{ "Schema.unauthorized_field" | api_doc }} are called when {% internal_link "authorization hooks", "/authorization/authorization" %} return `false` during query execution.
 
 ## Execution Configuration
 
-{{ "Schema.trace_with" | api_doc }} attaches tracer modules. See {% internal_link "Tracing", "/queries/tracing" %} for more.
-
-{{ "Schema.query_analyzer" | api_doc }} and {{ "Schema.multiplex_analyzer" }} accept processors for ahead-of-time query analysis, see {% internal_link "Analysis", "/queries/ast_analysis" %} for more.
-
-{{ "Schema.default_logger" | api_doc }} configures a logger for runtime. See {% internal_link "Logging", "/queries/logging" %}.
-
-{{ "Schema.context_class" | api_doc }} and {{ "Schema.query_class" | api_doc }} attach custom subclasses to your schema to use during execution.
-
-{{ "Schema.lazy_resolve" | api_doc }} registers classes with {% internal_link "lazy execution", "/schema/lazy_execution" %}.
+- {{ "Schema.trace_with" | api_doc }} attaches tracer modules. See {% internal_link "Tracing", "/queries/tracing" %} for more.
+- {{ "Schema.query_analyzer" | api_doc }} and {{ "Schema.multiplex_analyzer" }} accept processors for ahead-of-time query analysis, see {% internal_link "Analysis", "/queries/ast_analysis" %} for more.
+- {{ "Schema.default_logger" | api_doc }} configures a logger for runtime. See {% internal_link "Logging", "/queries/logging" %}.
+- {{ "Schema.context_class" | api_doc }} and {{ "Schema.query_class" | api_doc }} attach custom subclasses to your schema to use during execution.
+- {{ "Schema.lazy_resolve" | api_doc }} registers classes with {% internal_link "lazy execution", "/schema/lazy_execution" %}.
 
 ## Plugins
 
-{{ "Schema.use" | api_doc }} adds plugins to your schema. For example, {{ "GraphQL::Dataloader" | api_doc }} and {{ "GraphQL::Schema::Visibility" | api_doc }} are installed this way.
+- {{ "Schema.use" | api_doc }} adds plugins to your schema. For example, {{ "GraphQL::Dataloader" | api_doc }} and {{ "GraphQL::Schema::Visibility" | api_doc }} are installed this way.
+
+## Production Considerations
+
+- __Parser caching__: if your application parses GraphQL _files_ (queries or schema definition), it may benefit from enabling {{ "GraphQL::Parser::Cache" | api_doc }}.
+- __Eager loading the library__: by default, GraphQL-Ruby autoloads its constants as-needed. In production, they should be autoloaded instead, using `GraphQL.eager_load!`.
+
+  - Rails: enabled automatically. (ActiveSupport calls `.eager_load!`.)
+  - Sinatra: add `configure(:production) { GraphQL.eager_load! }` to your application file.
+  - Hanami: add `environment(:production) { GraphQL.eager_load! }` to your application file.
+  - Other frameworks: call `GraphQL.eager_load!` when your application is booting in production mode.
+
+  See {{"GraphQL::Autoload#eager_load!" | api_doc }} for more details.

@@ -142,7 +142,7 @@ module GraphQL
               end
             else
               # This is an InlineFragment or a FragmentSpread
-              if @runtime_directive_names.any? && node.directives.any? { |d| @runtime_directive_names.include?(d.name) }
+              if !@runtime_directive_names.empty? && node.directives.any? { |d| @runtime_directive_names.include?(d.name) }
                 next_selections = {}
                 next_selections[:graphql_directives] = node.directives
                 if selections_to_run
@@ -332,7 +332,7 @@ module GraphQL
                   extra_args[extra] = field_defn.fetch_extra(extra, context)
                 end
               end
-              if extra_args.any?
+              if !extra_args.empty?
                 resolved_arguments = resolved_arguments.merge_extras(extra_args)
               end
               resolved_arguments.keyword_arguments
@@ -361,7 +361,7 @@ module GraphQL
           end
 
           field_result = call_method_on_directives(:resolve, object, directives) do
-            if directives.any?
+            if !directives.empty?
               # This might be executed in a different context; reset this info
               runtime_state = get_current_runtime_state
               runtime_state.current_field = field_defn
@@ -525,7 +525,7 @@ module GraphQL
             end
           when Array
             # It's an array full of execution errors; add them all.
-            if value.any? && value.all?(GraphQL::ExecutionError)
+            if !value.empty? && value.all?(GraphQL::ExecutionError)
               list_type_at_all = (field && (field.type.list?))
               if selection_result.nil? || !selection_result.graphql_dead
                 value.each_with_index do |error, index|
@@ -736,7 +736,7 @@ module GraphQL
         end
 
         def get_current_runtime_state
-          current_state = Thread.current[:__graphql_runtime_info] ||= {}.compare_by_identity
+          current_state = Fiber[:__graphql_runtime_info] ||= {}.compare_by_identity
           current_state[@query] ||= CurrentState.new
         end
 
@@ -821,11 +821,11 @@ module GraphQL
         end
 
         def delete_all_interpreter_context
-          per_query_state = Thread.current[:__graphql_runtime_info]
+          per_query_state = Fiber[:__graphql_runtime_info]
           if per_query_state
             per_query_state.delete(@query)
             if per_query_state.size == 0
-              Thread.current[:__graphql_runtime_info] = nil
+              Fiber[:__graphql_runtime_info] = nil
             end
           end
           nil

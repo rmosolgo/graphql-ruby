@@ -79,6 +79,18 @@ module GraphQL
           end
         end
 
+        # @param new_has_no_fields [Boolean] Call with `true` to make this Object type ignore the requirement to have any defined fields.
+        # @return [void]
+        def has_no_fields(new_has_no_fields)
+          @has_no_fields = new_has_no_fields
+          nil
+        end
+
+        # @return [Boolean] `true` if `has_no_fields(true)` was configued
+        def has_no_fields?
+          @has_no_fields
+        end
+
         # @return [Hash<String => GraphQL::Schema::Field, Array<GraphQL::Schema::Field>>] Fields defined on this class _specifically_, not parent classes
         def own_fields
           @own_fields ||= {}
@@ -155,9 +167,11 @@ module GraphQL
             warden = Warden.from_context(context)
             # Local overrides take precedence over inherited fields
             visible_fields = {}
+            had_any_fields_at_all = false
             for ancestor in ancestors
               if ancestor.respond_to?(:own_fields) && visible_interface_implementation?(ancestor, context, warden)
                 ancestor.own_fields.each do |field_name, fields_entry|
+                  had_any_fields_at_all = true
                   # Choose the most local definition that passes `.visible?` --
                   # stop checking for fields by name once one has been found.
                   if !visible_fields.key?(field_name) && (f = Warden.visible_entry?(:visible_field?, fields_entry, context, warden))
@@ -165,6 +179,9 @@ module GraphQL
                   end
                 end
               end
+            end
+            if !had_any_fields_at_all && !has_no_fields?
+              warn(GraphQL::Schema::Object::FieldsAreRequiredError.new(self).message + "\n\nThis will raise an error in a future GraphQL-Ruby version.")
             end
             visible_fields
           end
@@ -188,6 +205,7 @@ module GraphQL
           subclass.class_eval do
             @own_fields ||= nil
             @field_class ||= nil
+            @has_no_fields ||= false
           end
         end
 
