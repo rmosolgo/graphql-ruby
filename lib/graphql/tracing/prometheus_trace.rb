@@ -1,8 +1,13 @@
 # frozen_string_literal: true
 
+require "graphql/tracing/platform_trace"
+
 module GraphQL
   module Tracing
     module PrometheusTrace
+      if defined?(PrometheusExporter::Server)
+        autoload :GraphQLCollector, "graphql/tracing/prometheus_trace/graphql_collector"
+      end
       include PlatformTrace
 
       def initialize(client: PrometheusExporter::Client.default, keys_whitelist: ["execute_field", "execute_field_lazy"], collector_type: "graphql", **rest)

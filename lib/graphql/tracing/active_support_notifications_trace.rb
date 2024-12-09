@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'graphql/tracing/notifications_trace'
+require "graphql/tracing/notifications_trace"
 
 module GraphQL
   module Tracing

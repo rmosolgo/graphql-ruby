@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "graphql/tracing/platform_tracing"
+
 module GraphQL
   module Tracing
     class PrometheusTracing < PlatformTracing
