@@ -18,17 +18,21 @@ module GraphQL
         @path.each do |name_in_doc|
           next_selections = []
           selections.each do |selection|
-            selection = selection.selections.find { |sel| sel.alias == name_in_doc || sel.name == name_in_doc }
-            if !selection
-              raise ArgumentError, "Path `#{@path.inspect}` is not present in this query. `#{name_in_doc.inspect}` was not found. Try a different path or rewrite the query to include it."
+            selection.selections.each do |sel|
+              if sel.alias == name_in_doc || sel.name == name_in_doc
+                next_selections << sel
+              end
             end
-            # TODO Don't repeat this for each of `selections`
-            field_defn = type.get_field(selection.name, @query.context) || raise("Invariant: no field called #{selection.name.inspect} on #{type.graphql_name}")
-            type = field_defn.type
-            if type.non_null?
-              type = type.of_type
-            end
-            next_selections << selection
+          end
+
+          if next_selections.empty?
+            raise ArgumentError, "Path `#{@path.inspect}` is not present in this query. `#{name_in_doc.inspect}` was not found. Try a different path or rewrite the query to include it."
+          end
+          field_name = next_selections.first.name
+          field_defn = type.get_field(field_name, @query.context) || raise("Invariant: no field called #{field_name} on #{type.graphql_name}")
+          type = field_defn.type
+          if type.non_null?
+            type = type.of_type
           end
           selections = next_selections
         end
