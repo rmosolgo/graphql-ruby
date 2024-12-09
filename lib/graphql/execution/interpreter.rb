@@ -176,7 +176,6 @@ module GraphQL
           partials.map do |partial|
             # Assign the result so that it can be accessed in instrumentation
             data_result = partial.context.namespace(:interpreter_runtime)[:runtime].final_result
-            data_result = data_result[partial.path.last]
             partial.result_values = if data_result.equal?(NO_OPERATION)
               if !partial.context.errors.empty?
                 { "errors" => partial.context.errors.map(&:to_h) }

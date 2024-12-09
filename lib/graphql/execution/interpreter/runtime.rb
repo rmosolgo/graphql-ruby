@@ -112,27 +112,47 @@ module GraphQL
           partial = query
           root_type = partial.root_type
           object = partial.object
-          ast_node = partial.ast_nodes.first
           selections = partial.ast_nodes.map(&:selections).inject(&:+)
-          field = partial.field_definition
-          @response = GraphQLResultHash.new(nil, root_type, object, nil, false, selections, false)
-          @dataloader.append_job {
-            continue_field(
-              object, # value
-              nil, # owner_type
-              field, # field
-              root_type, # current_type
-              ast_node, # ast_node
-              selections, # next_selections
-              false, # is_non_null,
-              nil, # owner_object,
-              nil, # arguments,
-              ast_node.alias || ast_node.name, # result_name,
-              @response, # selection_result
-              false, # was_scoped
-              get_current_runtime_state, # runtime_state
-            )
-          }
+          runtime_state = get_current_runtime_state
+          case root_type.kind.name
+          when "OBJECT"
+            object_proxy = root_type.wrap(object, context)
+            object_proxy = schema.sync_lazy(object_proxy)
+            @response = GraphQLResultHash.new(nil, root_type, object_proxy, nil, false, selections, false)
+            each_gathered_selections(@response) do |selections, is_selection_array|
+              if is_selection_array == true
+                raise "This isn't supported yet"
+              end
+
+              @dataloader.append_job {
+                evaluate_selections(
+                  selections,
+                  @response,
+                  nil,
+                  runtime_state,
+                )
+              }
+            end
+          when "LIST"
+            inner_type = root_type.unwrap
+            @response = GraphQLResultArray.new(nil, root_type, object_proxy, nil, false, selections, false)
+            idx = nil
+            object.each do |inner_value|
+              idx ||= 0
+              this_idx = idx
+              idx += 1
+              @dataloader.append_job do
+                runtime_state.current_result_name = this_idx
+                runtime_state.current_result = @response
+                continue_field(
+                  inner_value, root_type, nil, inner_type, nil, @response.graphql_selections, false, object_proxy,
+                  nil, this_idx, @response, false, runtime_state
+                  )
+              end
+            end
+          else
+            raise "Invariant: unsupported type kind for partial execution: #{root_type.kind.inspect} (#{root_type})"
+          end
           nil
         end
 
