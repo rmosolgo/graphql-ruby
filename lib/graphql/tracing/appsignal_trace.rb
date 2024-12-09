@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "graphql/tracing"
+
 module GraphQL
   module Tracing
     module AppsignalTrace

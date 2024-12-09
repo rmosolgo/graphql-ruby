@@ -1,4 +1,7 @@
 # frozen_string_literal: true
+
+require "graphql/tracing"
+
 module GraphQL
   module Tracing
     # This trace class calls legacy-style tracer with payload hashes.
