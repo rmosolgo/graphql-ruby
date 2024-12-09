@@ -26,7 +26,7 @@ module GraphQL
         @root_type = type
       end
 
-      attr_reader :context, :selected_operation, :root_type
+      attr_reader :context, :selected_operation, :root_type, :object
 
       attr_accessor :multiplex, :result_values
 
@@ -44,10 +44,6 @@ module GraphQL
 
       def types
         @query.types
-      end
-
-      def root_value
-        @object
       end
 
       # TODO dry with query

@@ -69,13 +69,8 @@ module GraphQL
         # @return [void]
         def run_eager
           root_operation = query.selected_operation
-          # TODO duck-type #root_type
-          root_type = if query.is_a?(GraphQL::Query::Partial)
-            query.root_type
-          else
-            root_op_type = root_operation.operation_type || "query"
-            schema.root_type_for_operation(root_op_type)
-          end
+          root_op_type = root_operation.operation_type || "query"
+          schema.root_type_for_operation(root_op_type)
           runtime_object = root_type.wrap(query.root_value, context)
           runtime_object = schema.sync_lazy(runtime_object)
           is_eager = root_op_type == "mutation"
@@ -108,6 +103,59 @@ module GraphQL
               end
             end
           end
+          nil
+        end
+
+        # @return [void]
+        def run_partial_eager
+          # `query` is actually a GraphQL::Query::Partial
+          continue_field(
+            query.object, # value
+            nil, # owner_type
+            query.selected_operation, # field
+            query.root_type, # current_type
+            ast_node,
+            next_selections,
+            is_non_null,
+            owner_object,
+            arguments,
+            result_name,
+            selection_result,
+            false, # was_scoped
+            get_current_runtime_state, # runtime_state
+          )
+          # runtime_object = root_type.wrap(query.root_value, context)
+          # runtime_object = schema.sync_lazy(runtime_object)
+          # is_eager = root_op_type == "mutation"
+          # @response = GraphQLResultHash.new(nil, root_type, runtime_object, nil, false, root_operation.selections, is_eager)
+          # st = get_current_runtime_state
+          # st.current_result = @response
+
+          # if runtime_object.nil?
+          #   # Root .authorized? returned false.
+          #   @response = nil
+          # else
+          #   call_method_on_directives(:resolve, runtime_object, root_operation.directives) do # execute query level directives
+          #     each_gathered_selections(@response) do |selections, is_selection_array|
+          #       if is_selection_array
+          #         selection_response = GraphQLResultHash.new(nil, root_type, runtime_object, nil, false, selections, is_eager)
+          #         final_response = @response
+          #       else
+          #         selection_response = @response
+          #         final_response = nil
+          #       end
+
+          #       @dataloader.append_job {
+          #         evaluate_selections(
+          #           selections,
+          #           selection_response,
+          #           final_response,
+          #           nil,
+          #         )
+          #       }
+          #     end
+          #   end
+          # end
           nil
         end
 
