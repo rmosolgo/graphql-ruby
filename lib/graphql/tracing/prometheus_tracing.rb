@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "graphql/tracing"
+require "graphql/tracing/platform_tracing"
 
 module GraphQL
   module Tracing

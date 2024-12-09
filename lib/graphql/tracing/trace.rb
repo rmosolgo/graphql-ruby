@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "graphql/tracing"
-
 module GraphQL
   module Tracing
     # This is the base class for a `trace` instance whose methods are called during query execution.
