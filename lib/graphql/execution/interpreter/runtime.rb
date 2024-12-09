@@ -70,7 +70,7 @@ module GraphQL
         def run_eager
           root_operation = query.selected_operation
           root_op_type = root_operation.operation_type || "query"
-          schema.root_type_for_operation(root_op_type)
+          root_type = schema.root_type_for_operation(root_op_type)
           runtime_object = root_type.wrap(query.root_value, context)
           runtime_object = schema.sync_lazy(runtime_object)
           is_eager = root_op_type == "mutation"
@@ -114,7 +114,6 @@ module GraphQL
           object = partial.object
           ast_node = partial.ast_nodes.first
           selections = partial.ast_nodes.map(&:selections).inject(&:+)
-          next_selections = selections.map(&:selections).inject(&:+)
           field = partial.field_definition
           @response = GraphQLResultHash.new(nil, root_type, object, nil, false, selections, false)
           @dataloader.append_job {
