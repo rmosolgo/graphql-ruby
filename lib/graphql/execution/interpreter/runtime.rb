@@ -109,53 +109,31 @@ module GraphQL
         # @return [void]
         def run_partial_eager
           # `query` is actually a GraphQL::Query::Partial
-          continue_field(
-            query.object, # value
-            nil, # owner_type
-            query.selected_operation, # field
-            query.root_type, # current_type
-            ast_node,
-            next_selections,
-            is_non_null,
-            owner_object,
-            arguments,
-            result_name,
-            selection_result,
-            false, # was_scoped
-            get_current_runtime_state, # runtime_state
-          )
-          # runtime_object = root_type.wrap(query.root_value, context)
-          # runtime_object = schema.sync_lazy(runtime_object)
-          # is_eager = root_op_type == "mutation"
-          # @response = GraphQLResultHash.new(nil, root_type, runtime_object, nil, false, root_operation.selections, is_eager)
-          # st = get_current_runtime_state
-          # st.current_result = @response
-
-          # if runtime_object.nil?
-          #   # Root .authorized? returned false.
-          #   @response = nil
-          # else
-          #   call_method_on_directives(:resolve, runtime_object, root_operation.directives) do # execute query level directives
-          #     each_gathered_selections(@response) do |selections, is_selection_array|
-          #       if is_selection_array
-          #         selection_response = GraphQLResultHash.new(nil, root_type, runtime_object, nil, false, selections, is_eager)
-          #         final_response = @response
-          #       else
-          #         selection_response = @response
-          #         final_response = nil
-          #       end
-
-          #       @dataloader.append_job {
-          #         evaluate_selections(
-          #           selections,
-          #           selection_response,
-          #           final_response,
-          #           nil,
-          #         )
-          #       }
-          #     end
-          #   end
-          # end
+          partial = query
+          root_type = partial.root_type
+          object = partial.object
+          ast_node = partial.ast_nodes.first
+          selections = partial.ast_nodes.map(&:selections).inject(&:+)
+          next_selections = selections.map(&:selections).inject(&:+)
+          field = partial.field_definition
+          @response = GraphQLResultHash.new(nil, root_type, object, nil, false, selections, false)
+          @dataloader.append_job {
+            continue_field(
+              object, # value
+              nil, # owner_type
+              field, # field
+              root_type, # current_type
+              ast_node, # ast_node
+              selections, # next_selections
+              false, # is_non_null,
+              nil, # owner_object,
+              nil, # arguments,
+              ast_node.alias || ast_node.name, # result_name,
+              @response, # selection_result
+              false, # was_scoped
+              get_current_runtime_state, # runtime_state
+            )
+          }
           nil
         end
 

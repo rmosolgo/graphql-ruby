@@ -90,14 +90,18 @@ describe GraphQL::Query::Partial do
     PartialSchema::Database.clear
   end
 
+  def run_partials(string, partial_configs)
+    query = GraphQL::Query.new(PartialSchema, string)
+    query.run_partials(partial_configs)
+  end
+
   it "returns results for the named parts" do
     str = "{
       farms { name, products }
       farm1: farm(id: \"1\") { name }
       farm2: farm(id: \"2\") { name }
     }"
-    query = GraphQL::Query.new(PartialSchema, str)
-    results = query.run_partials([
+    results = run_partials(str, [
       { path: ["farm1"], object: PartialSchema::Database::FARMS["1"] },
       { path: ["farm2"], object: OpenStruct.new(name: "Injected Farm") }
     ])
@@ -110,8 +114,7 @@ describe GraphQL::Query::Partial do
 
   it "returns errors if they occur" do
     str = "{ farm1: farm(id: \"1\") { error } }"
-    query = GraphQL::Query.new(PartialSchema, str)
-    results = query.run_partials([{ path: ["farm1"], object: PartialSchema::Database::FARMS["1"] }])
+    results = run_partials(str, [{ path: ["farm1"], object: PartialSchema::Database::FARMS["1"] }])
     assert_nil results.first.fetch("data").fetch("error")
     assert_equal [["This is a field error"]], results.map { |r| r["errors"].map { |err| err["message"] } }
     assert_equal [[["error"]]], results.map { |r| r["errors"].map { |err| err["path"] } }
@@ -135,8 +138,7 @@ describe GraphQL::Query::Partial do
     str = "{
       farm(id: \"1\") { name }
     }"
-    query = GraphQL::Query.new(PartialSchema, str)
-    results = query.run_partials([
+    results = run_partials(str, [
       { path: ["farm"], object: PartialSchema::Database::FARMS["1"] },
       { path: ["farm"], object: OpenStruct.new(name: "Injected Farm") }
     ])
@@ -155,9 +157,7 @@ describe GraphQL::Query::Partial do
       }
     GRAPHQL
 
-    query = GraphQL::Query.new(PartialSchema, str)
-    results = query.run_partials([{ path: ["query1"], object: true }, { path: ["query2"], object: true }])
-
+    results = run_partials(str, [{ path: ["query1"], object: true }, { path: ["query2"], object: true }])
     assert_equal "Henley's Orchard", results.first["data"]["farm"]["neighboringFarm"]["name"]
     assert_equal "Wenger Grapes", results.last["data"]["farm"]["neighboringFarm"]["name"]
 
@@ -168,12 +168,22 @@ describe GraphQL::Query::Partial do
 
   it "runs arrays and returns useful metadata in the result" do
     str = "{ farms { name } }"
-    query = GraphQL::Query.new(PartialSchema, str)
-    results = query.run_partials([{ path: ["farms"], object: [{ name: "Twenty Paces" }, { name: "Spring Creek Blooms" }]}])
+    results = run_partials(str, [{ path: ["farms"], object: [{ name: "Twenty Paces" }, { name: "Spring Creek Blooms" }]}])
     result = results.first
     assert_equal [{ "name" => "Twenty Paces" }, { "name" => "Spring Creek Blooms" }], result["data"]
     assert_equal ["farms"], result.path
     assert_instance_of GraphQL::Query::Context, result.context
-    refute_equal query.context, result.context
+    assert_instance_of GraphQL::Query::Partial, result.context.query
+  end
+
+  it "merges selections when path steps are duplicated" do
+    str = <<-GRAPHQL
+      {
+        f1: farm { neighboringFarm { name } }
+        f1: farm { neighboringFarm { name2: name } }
+      }
+    GRAPHQL
+    results = run_partials(str, [{ path: ["f1", "neighboringFarm"], object: OpenStruct.new(name: "Dawnbreak") }])
+    assert_equal({"name" => "Dawnbreak", "name2" => "Dawnbreak" }, results.first["data"])
   end
 end

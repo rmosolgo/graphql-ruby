@@ -12,26 +12,43 @@ module GraphQL
         @multiplex = nil
         @result_values = nil
         @result = nil
-        selection = @query.selected_operation
+        selections = [@query.selected_operation]
         type = @query.schema.query # TODO could be other?
+        field_defn = nil
         @path.each do |name_in_doc|
-          selection = selection.selections.find { |sel| sel.alias == name_in_doc || sel.name == name_in_doc }
-          if !selection
-            raise ArgumentError, "Path `#{@path.inspect}` is not present in this query. `#{name_in_doc.inspect}` was not found. Try a different path or rewrite the query to include it."
+          next_selections = []
+          selections.each do |selection|
+            selection = selection.selections.find { |sel| sel.alias == name_in_doc || sel.name == name_in_doc }
+            if !selection
+              raise ArgumentError, "Path `#{@path.inspect}` is not present in this query. `#{name_in_doc.inspect}` was not found. Try a different path or rewrite the query to include it."
+            end
+            # TODO Don't repeat this for each of `selections`
+            field_defn = type.get_field(selection.name, @query.context) || raise("Invariant: no field called #{selection.name.inspect} on #{type.graphql_name}")
+            type = field_defn.type
+            if type.non_null?
+              type = type.of_type
+            end
+            next_selections << selection
           end
-          field_defn = type.get_field(selection.name, @query.context) || raise("Invariant: no field called #{selection.name.inspect} on #{type.graphql_name}")
-          type = field_defn.type.unwrap
+          selections = next_selections
         end
-        @selected_operation = selection
+        @ast_nodes = selections
         @root_type = type
+        @field_definition = field_defn
       end
 
-      attr_reader :context, :selected_operation, :root_type, :object
+      attr_reader :context, :ast_nodes, :root_type, :object, :field_definition, :path
 
       attr_accessor :multiplex, :result_values
 
+      class Result < GraphQL::Query::Result
+        def path
+          @query.path
+        end
+      end
+
       def result
-        @result ||= GraphQL::Query::Result.new(query: self, values: result_values)
+        @result ||= Result.new(query: self, values: result_values)
       end
 
       def current_trace
