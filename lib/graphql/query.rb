@@ -258,7 +258,7 @@ module GraphQL
     # @return [Array<GraphQL::Query::Result>]
     def run_partials(partials_hashes)
       partials = partials_hashes.map { |partial_options| Partial.new(query: self, **partial_options) }
-      Execution::Interpreter.run_all(@schema, partials, context: @context)
+      Execution::Interpreter.run_partials(@schema, partials, context: @context)
     end
 
     # Get the result for this query, executing it once

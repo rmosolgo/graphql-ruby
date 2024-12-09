@@ -84,13 +84,11 @@ module GraphQL
               # Then, work through lazy results in a breadth-first way
               multiplex.dataloader.append_job {
                 query = multiplex.queries.length == 1 ? multiplex.queries[0] : nil
-                queries = multiplex ? multiplex.queries : [query]
-                final_values = queries.map do |query|
+                queries.each do |query|
                   runtime = query.context.namespace(:interpreter_runtime)[:runtime]
                   # it might not be present if the query has an error
                   runtime ? runtime.final_result : nil
                 end
-                final_values.compact!
                 multiplex.current_trace.execute_query_lazy(multiplex: multiplex, query: query) do
                   Interpreter::Resolve.resolve_each_depth(lazies_at_depth, multiplex.dataloader)
                 end
@@ -145,6 +143,62 @@ module GraphQL
                 end
               }
             end
+          end
+        end
+
+        def run_partials(schema, partials, context:)
+          multiplex = Execution::Multiplex.new(schema: schema, queries: partials, context: context, max_complexity: nil)
+          dataloader = multiplex.dataloader
+          lazies_at_depth = Hash.new { |h, k| h[k] = [] }
+
+          partials.each do |partial|
+            dataloader.append_job {
+              runtime = Runtime.new(query: partial, lazies_at_depth: lazies_at_depth)
+              partial.context.namespace(:interpreter_runtime)[:runtime] = runtime
+              # TODO tracing?
+              runtime.run_eager
+            }
+          end
+
+          dataloader.run
+
+          dataloader.append_job {
+            partials.each do |partial|
+              runtime = partial.context.namespace(:interpreter_runtime)[:runtime]
+              runtime.final_result
+            end
+            # TODO tracing?
+            Interpreter::Resolve.resolve_each_depth(lazies_at_depth, multiplex.dataloader)
+          }
+
+          dataloader.run
+
+          partials.map do |partial|
+            # Assign the result so that it can be accessed in instrumentation
+            data_result = partial.context.namespace(:interpreter_runtime)[:runtime].final_result
+            partial.result_values = if data_result.equal?(NO_OPERATION)
+              if !partial.context.errors.empty?
+                { "errors" => partial.context.errors.map(&:to_h) }
+              else
+                data_result
+              end
+            else
+              result = {}
+
+              if !partial.context.errors.empty?
+                error_result = partial.context.errors.map(&:to_h)
+                result["errors"] = error_result
+              end
+
+              result["data"] = data_result
+
+              result
+            end
+            if partial.context.namespace?(:__query_result_extensions__)
+              partial.result_values["extensions"] = partial.context.namespace(:__query_result_extensions__)
+            end
+            # Partial::Result
+            partial.result
           end
         end
       end

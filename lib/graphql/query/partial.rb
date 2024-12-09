@@ -34,23 +34,8 @@ module GraphQL
         @result ||= GraphQL::Query::Result.new(query: self, values: result_values)
       end
 
-      def valid?
-        true
-      end
-
-      def analyzers
-        EmptyObjects::EMPTY_ARRAY
-      end
-
       def current_trace
         @query.current_trace
-      end
-
-      def analysis_errors=(_errs)
-      end
-
-      def subscription?
-        false
       end
 
       def schema
