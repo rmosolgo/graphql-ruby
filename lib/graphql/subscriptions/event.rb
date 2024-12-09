@@ -62,7 +62,7 @@ module GraphQL
 
       class << self
         def arguments_without_field_extras(arguments:, field:)
-          if field.extras.any?
+          if !field.extras.empty?
             arguments = arguments.dup
             field.extras.each do |extra_key|
               arguments.delete(extra_key)

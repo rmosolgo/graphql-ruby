@@ -740,7 +740,6 @@ describe GraphQL::Schema::Subscription do
         field :direct, subscription: DirectWrite
         field :implicit, subscription: ImplicitWrite
         field :direct_twice, subscription: DirectWriteTwice
-        field :with_payload, subscription: DirectWriteWithPayload
       end
 
       use WriteCheckSubscriptions.new
