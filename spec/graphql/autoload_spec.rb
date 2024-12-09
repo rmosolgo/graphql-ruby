@@ -55,6 +55,8 @@ describe GraphQL::Autoload do
         require_path = file.sub("lib/", "").sub(".rb", "")
         stderr_and_stdout, _status = Open3.capture2e("ruby -Ilib -e 'require \"#{require_path}\"'")
         assert_equal "", stderr_and_stdout, "It loads #{require_path.inspect} in isolation"
+        stderr_and_stdout, _status = Open3.capture2e("ruby -Ilib -e 'require \"graphql\"; require \"#{require_path}\"'")
+        assert_equal "", stderr_and_stdout, "It loads #{require_path.inspect} in isolation after loading graphql"
       end
     end
   end
