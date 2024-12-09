@@ -173,8 +173,12 @@ module GraphQL
       # later in execution.
       # @return [void]
       def write_subscription
-        @subscription_written = true
-        context.schema.subscriptions.write_subscription(context.query, [event])
+        if subscription_written?
+          raise GraphQL::Error, "`write_subscription` was called but `#{self.class}#subscription_written?` is already true. Remove a call to `write subscription`."
+        else
+          @subscription_written = true
+          context.schema.subscriptions.write_subscription(context.query, [event])
+        end
         nil
       end
 

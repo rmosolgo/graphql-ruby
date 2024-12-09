@@ -722,7 +722,14 @@ describe GraphQL::Schema::Subscription do
 
       class DirectWrite < ImplicitWrite
         type String
+        def subscribe
+          write_subscription
+          super
+        end
+      end
 
+      class DirectWriteTwice < DirectWrite
+        type String
         def subscribe
           write_subscription
           super
@@ -732,6 +739,8 @@ describe GraphQL::Schema::Subscription do
       class Subscription < GraphQL::Schema::Object
         field :direct, subscription: DirectWrite
         field :implicit, subscription: ImplicitWrite
+        field :direct_twice, subscription: DirectWriteTwice
+        field :with_payload, subscription: DirectWriteWithPayload
       end
 
       use WriteCheckSubscriptions.new
@@ -750,6 +759,13 @@ describe GraphQL::Schema::Subscription do
       assert_equal 1, res.context[:write_subscription_count]
       assert_equal [1], res.context[:written_events].map(&:size)
       assert_equal false, res.context.namespace(:subscriptions)[:subscriptions].values.first.subscription_written?
+    end
+
+    it "raises if write_subscription is called twice" do
+      err = assert_raises GraphQL::Error do
+        DirectWriteSchema.execute("subscription { directTwice }")
+      end
+      assert_equal "`write_subscription` was called but `DirectWriteSchema::DirectWriteTwice#subscription_written?` is already true. Remove a call to `write subscription`.", err.message
     end
   end
 end
