@@ -19,6 +19,7 @@ module GraphQL
       # propagate null.
       null false
 
+      # @api private
       def initialize(object:, context:, field:)
         super
         # Figure out whether this is an update or an initial subscription
@@ -31,6 +32,7 @@ module GraphQL
         end
       end
 
+      # @api private
       def resolve_with_support(**args)
         @original_arguments = args # before `loads:` have been run
         result = nil
@@ -53,7 +55,9 @@ module GraphQL
         end
       end
 
-      # Implement the {Resolve} API
+      # Implement the {Resolve} API.
+      # You can implement this if you want code to run for _both_ the initial subscription
+      # and for later updates. Or, implement {#subscribe} and {#update}
       def resolve(**args)
         # Dispatch based on `@mode`, which will raise a `NoMethodError` if we ever
         # have an unexpected `@mode`
@@ -61,6 +65,7 @@ module GraphQL
       end
 
       # Wrap the user-defined `#subscribe` hook
+      # @api private
       def resolve_subscribe(**args)
         ret_val = !args.empty? ? subscribe(**args) : subscribe
         if ret_val == :no_response
@@ -78,6 +83,7 @@ module GraphQL
       end
 
       # Wrap the user-provided `#update` hook
+      # @api private
       def resolve_update(**args)
         ret_val = !args.empty? ? update(**args) : update
         if ret_val == NO_UPDATE
@@ -113,14 +119,13 @@ module GraphQL
         throw :graphql_subscription_unsubscribed, update_value
       end
 
-      READING_SCOPE = ::Object.new
       # Call this method to provide a new subscription_scope; OR
       # call it without an argument to get the subscription_scope
       # @param new_scope [Symbol]
       # @param optional [Boolean] If true, then don't require `scope:` to be provided to updates to this subscription.
       # @return [Symbol]
-      def self.subscription_scope(new_scope = READING_SCOPE, optional: false)
-        if new_scope != READING_SCOPE
+      def self.subscription_scope(new_scope = NOT_CONFIGURED, optional: false)
+        if new_scope != NOT_CONFIGURED
           @subscription_scope = new_scope
           @subscription_scope_optional = optional
         elsif defined?(@subscription_scope)
@@ -166,17 +171,19 @@ module GraphQL
       # If you call this method yourself, you may also need to {#unsubscribe}
       # or call `subscriptions.delete_subscription` to clean up the database if the query crashes with an error
       # later in execution.
-      # @return void
+      # @return [void]
       def write_subscription
         @subscription_written = true
         context.schema.subscriptions.write_subscription(context.query, [event])
         nil
       end
 
+      # @return [Boolean] `true` if {#write_subscription} was called already
       def subscription_written?
         @subscription_written
       end
 
+      # @return [Subscriptions::Event] This object is used as a representation of this subscription for the backend
       def event
         @event ||= Subscriptions::Event.new(
           name: field.name,
