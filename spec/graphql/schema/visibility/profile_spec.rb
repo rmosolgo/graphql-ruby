@@ -32,4 +32,29 @@ describe GraphQL::Schema::Visibility::Profile do
     loaded_type_names = query.types.loaded_types.map(&:graphql_name).reject { |n| n.start_with?("__") }.sort
     assert_equal ["Boolean", "Query", "String", "Thing"], loaded_type_names
   end
+
+
+  describe "when multiple field implementations are all hidden" do
+    class EnsureLoadedFixSchema < GraphQL::Schema
+      class BaseField < GraphQL::Schema::Field
+        def visible?(...)
+          false
+        end
+      end
+      class Query < GraphQL::Schema::Object
+        field_class(BaseField)
+
+        field :f1, String
+        field :f1, String
+      end
+
+      query(Query)
+      use GraphQL::Schema::Visibility
+    end
+
+    it "handles it without raising an error" do
+      result = EnsureLoadedFixSchema.execute("{ f1 }")
+      assert 1, result["errors"].size
+    end
+  end
 end
