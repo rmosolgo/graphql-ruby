@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.4.6/">API</a>
+            <a href="/api-doc/2.4.8/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -156,7 +156,7 @@
 <span class="kp">include</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Testing</span><span class="o">::</span><span class="no">Helpers</span><span class="p">.</span><span class="nf">for</span><span class="p">(</span><span class="no">MySchema</span><span class="p">)</span>
 </code></pre></div></div>
 
-<p>Then, you can run fields using <a href="/api-doc/2.4.6/GraphQL/Testing/Helpers#run_graphql_field-instance_method" target="_blank" title="API docs for GraphQL::Testing::Helpers#run_graphql_field"><code>Testing::Helpers#run_graphql_field</code></a>:</p>
+<p>Then, you can run fields using <a href="/api-doc/2.4.8/GraphQL/Testing/Helpers#run_graphql_field-instance_method" target="_blank" title="API docs for GraphQL::Testing::Helpers#run_graphql_field"><code>Testing::Helpers#run_graphql_field</code></a>:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="p">.</span><span class="nf">first</span>
 <span class="n">graphql_post_title</span> <span class="o">=</span> <span class="n">run_graphql_field</span><span class="p">(</span><span class="s2">"Post.title"</span><span class="p">,</span> <span class="n">post</span><span class="p">)</span>
@@ -182,17 +182,17 @@
 <ul>
   <li>Checks <code class="language-plaintext highlighter-rouge">.visible?</code> on the named Object Type, raising an error if it isn’t visible</li>
   <li>Wraps the given runtime object in the GraphQL Object Type</li>
-  <li>Checks <code class="language-plaintext highlighter-rouge">.authorized?</code> on the type, calling <a href="/api-doc/2.4.6/GraphQL/Schema#unauthorized_object-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_object"><code>Schema.unauthorized_object</code></a> if authorization fails</li>
+  <li>Checks <code class="language-plaintext highlighter-rouge">.authorized?</code> on the type, calling <a href="/api-doc/2.4.8/GraphQL/Schema#unauthorized_object-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_object"><code>Schema.unauthorized_object</code></a> if authorization fails</li>
   <li>Prepares arguments for field resolution</li>
   <li>Checks <code class="language-plaintext highlighter-rouge">#visible?</code> on the field, raising an error if the field isn’t visible</li>
-  <li>Checks <code class="language-plaintext highlighter-rouge">#authorized?</code> on the field, calling <a href="/api-doc/2.4.6/GraphQL/Schema#unauthorized_field-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_field"><code>Schema.unauthorized_field</code></a> if it fails</li>
+  <li>Checks <code class="language-plaintext highlighter-rouge">#authorized?</code> on the field, calling <a href="/api-doc/2.4.8/GraphQL/Schema#unauthorized_field-class_method" target="_blank" title="API docs for GraphQL::Schema.unauthorized_field"><code>Schema.unauthorized_field</code></a> if it fails</li>
   <li>Calls any <a href="/type_definitions/field_extensions">field extensions</a></li>
   <li>Runs <a href="/dataloader/overview">Dataloader</a> and/or GraphQL-Batch, as needed</li>
 </ul>
 
 <h2 id="resolving-fields-on-the-same-object">Resolving fields on the same object</h2>
 
-<p>You can use <a href="/api-doc/2.4.6/GraphQL/Testing/Helpers#with_resolution_context-instance_method" target="_blank" title="API docs for GraphQL::Testing::Helpers#with_resolution_context"><code>Testing::Helpers#with_resolution_context</code></a> to use the same type, runtime object, and GraphQL context for multiple field resolutions. For example:</p>
+<p>You can use <a href="/api-doc/2.4.8/GraphQL/Testing/Helpers#with_resolution_context-instance_method" target="_blank" title="API docs for GraphQL::Testing::Helpers#with_resolution_context"><code>Testing::Helpers#with_resolution_context</code></a> to use the same type, runtime object, and GraphQL context for multiple field resolutions. For example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Assuming `include GraphQL::Testing::Helpers.for(MySchema)`</span>
 <span class="c1"># was used above ...</span>
