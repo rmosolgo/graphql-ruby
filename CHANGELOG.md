@@ -10,6 +10,16 @@
 
 ### Bug fixes
 
+# 2.4.8 (10 Dec 2024)
+
+### New features
+
+- Subscriptions: support calling `write_subscription` within `resolve` #5142
+
+### Bug fixes
+
+- Autoloading: improve autoloading of `Tracing` classes #5190
+
 # 2.4.7 (7 Dec 2024)
 
 ### Bug fixes
