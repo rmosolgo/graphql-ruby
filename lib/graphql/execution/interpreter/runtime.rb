@@ -106,6 +106,56 @@ module GraphQL
           nil
         end
 
+        # @return [void]
+        def run_partial_eager
+          # `query` is actually a GraphQL::Query::Partial
+          partial = query
+          root_type = partial.root_type
+          object = partial.object
+          selections = partial.ast_nodes.map(&:selections).inject(&:+)
+          runtime_state = get_current_runtime_state
+          case root_type.kind.name
+          when "OBJECT"
+            object_proxy = root_type.wrap(object, context)
+            object_proxy = schema.sync_lazy(object_proxy)
+            @response = GraphQLResultHash.new(nil, root_type, object_proxy, nil, false, selections, false)
+            each_gathered_selections(@response) do |selections, is_selection_array|
+              if is_selection_array == true
+                raise "This isn't supported yet"
+              end
+
+              @dataloader.append_job {
+                evaluate_selections(
+                  selections,
+                  @response,
+                  nil,
+                  runtime_state,
+                )
+              }
+            end
+          when "LIST"
+            inner_type = root_type.unwrap
+            @response = GraphQLResultArray.new(nil, root_type, object_proxy, nil, false, selections, false)
+            idx = nil
+            object.each do |inner_value|
+              idx ||= 0
+              this_idx = idx
+              idx += 1
+              @dataloader.append_job do
+                runtime_state.current_result_name = this_idx
+                runtime_state.current_result = @response
+                continue_field(
+                  inner_value, root_type, nil, inner_type, nil, @response.graphql_selections, false, object_proxy,
+                  nil, this_idx, @response, false, runtime_state
+                  )
+              end
+            end
+          else
+            raise "Invariant: unsupported type kind for partial execution: #{root_type.kind.inspect} (#{root_type})"
+          end
+          nil
+        end
+
         def each_gathered_selections(response_hash)
           gathered_selections = gather_selections(response_hash.graphql_application_value, response_hash.graphql_result_type, response_hash.graphql_selections)
           if gathered_selections.is_a?(Array)
