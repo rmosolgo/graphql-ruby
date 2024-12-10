@@ -113,11 +113,24 @@ describe GraphQL::Query::Partial do
   end
 
   it "returns errors if they occur" do
-    str = "{ farm1: farm(id: \"1\") { error } }"
-    results = run_partials(str, [{ path: ["farm1"], object: PartialSchema::Database::FARMS["1"] }])
-    assert_nil results.first.fetch("data").fetch("error")
-    assert_equal [["This is a field error"]], results.map { |r| r["errors"].map { |err| err["message"] } }
-    assert_equal [[["error"]]], results.map { |r| r["errors"].map { |err| err["path"] } }
+    str = "{
+      farm1: farm(id: \"1\") { error }
+      farm2: farm(id: \"1\") { name  }
+      farm3: farm(id: \"1\") { name fieldError: error }
+    }"
+    results = run_partials(str, [
+      { path: ["farm1"], object: PartialSchema::Database::FARMS["1"] },
+      { path: ["farm2"], object: PartialSchema::Database::FARMS["2"] },
+      { path: ["farm3"], object: PartialSchema::Database::FARMS["3"] },
+    ])
+
+    assert_equal [{"message"=>"This is a field error", "locations"=>[{"line"=>2, "column"=>30}], "path"=>["error"]}], results[0]["errors"]
+    refute results[1].key?("errors")
+    assert_equal [{"message"=>"This is a field error", "locations"=>[{"line"=>4, "column"=>35}], "path"=>["fieldError"]}], results[2]["errors"]
+
+    assert_equal({ "error" => nil }, results[0]["data"])
+    assert_equal({ "name" => "Henley's Orchard" }, results[1]["data"])
+    assert_equal({ "name" => "Wenger Grapes", "fieldError" => nil }, results[2]["data"])
   end
 
   it "raises errors when given nonexistent paths" do
@@ -163,8 +176,6 @@ describe GraphQL::Query::Partial do
 
     assert_equal [[:mget, ["1", "2"]], [:mget, ["3"]]], PartialSchema::Database.log
   end
-
-  it "returns multiple errors concurrently"
 
   it "runs arrays and returns useful metadata in the result" do
     str = "{ farms { name } }"
