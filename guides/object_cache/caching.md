@@ -73,7 +73,11 @@ Under the hood, `ttl:` is implemented with Redis's `EXPIRE`.
 
 ## Caching lists and connections
 
-Lists and connections require a little extra consideration. In order to effectively bust the cache, items that belong to the list of "parent" object should __update the parent__ (eg, Rails `.touch`) whenever they're created, destroyed, or updated. For example, if there's a list of players on a team:
+Lists and connections require a little extra consideration. By default, each _item_ in a list is registered with the cache, but when new items are created, they are unknown to the cache and therefore don't invalidate the cached result. There are two main approaches to address this.
+
+### `has_many` lists
+
+In order to effectively bust the cache, items that belong to the list of "parent" object should __update the parent__ (eg, Rails `.touch`) whenever they're created, destroyed, or updated. For example, if there's a list of players on a team:
 
 ```graphql
 {
@@ -91,6 +95,71 @@ With Rails, you can accomplish this with:
   # update the team whenever a player is saved or destroyed:
   belongs_to :team, touch: true
 ```
+
+### Top-level lists
+
+For `ActiveRecord::Relation`s _without_ a "parent" object, you can use `GraphQL::Enterprise::ObjectCache::CacheableRelation` to make a synthetic cache entry for the _whole_ relation. To use this class, make a subclass and implement `def items`, for example:
+
+```ruby
+class AllTeams < GraphQL::Enterprise::ObjectCache::CacheableRelation
+  def items(division: nil)
+    teams = Team.all
+    if division
+      teams = teams.where(division: division)
+    end
+    teams
+  end
+end
+```
+
+Then, in your resolver, use your new class to retrieve the items:
+
+```ruby
+class Query < GraphQL::Schema::Object
+  field :teams, Team.connection_type do
+    argument :division, Division, required: false
+  end
+
+  def teams(division: nil)
+    AllTeams.items_for(self, division: division)
+  end
+end
+```
+
+Finally, you'll need to handle `CacheableRelation`s in your object identification methods, for example:
+
+```ruby
+class MySchema < GraphQL::Schema
+  # ...
+  def self.id_from_object(object, type, ctx)
+    if object.is_a?(GraphQL::Enterprise::ObjectCache::CacheableRelation)
+      object.id
+    else
+      # The rest of your id_from_object logic here...
+    end
+  end
+
+  def self.object_from_id(id, ctx)
+    if (cacheable_rel = GraphQL::Enterprise::ObjectCache::CacheableRelation.find?(id))
+      cacheable_rel
+    else
+      # The rest of your object_from_id logic here...
+    end
+  end
+end
+```
+
+In this example, `AllTeams` takes care of integrating with the cache:
+
+- It implements `#id` to create a cache-friendly, stable global ID
+- It implements `#to_param` to create a cache fingerprint (using Rails's `#cache_key` under the hood)
+- It implements `.find?` to retrieve the list based on its ID
+
+This way, if a `Team` is created, the cached result will be invalidated and a fresh result will be created.
+
+Alternatively (or additionally), you could use a `ttl:` to expire cached results after a certain duration, just to be sure that results are eventually expired.
+
+### Connections
 
 By default, connection-related objects (like `*Connection` and `*Edge` types) "inherit" cacheability from their node types. You can override this in your base classes as long as `GraphQL::Enterprise::ObjectCache::ObjectIntegration` is included in the inheritance chain somewhere.
 

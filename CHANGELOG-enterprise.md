@@ -8,6 +8,10 @@
 
 ### Bug Fix
 
+# 1.5.6 (13 Dec 2024)
+
+- ObjectCache: Add `CacheableRelation` helper for top-level ActiveRecord relations
+
 # 1.5.5 (10 Dec 2024)
 
 - Changesets: Add missing `ensure_loaded` call for class-based changesets
