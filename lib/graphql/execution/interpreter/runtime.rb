@@ -135,22 +135,43 @@ module GraphQL
             end
           when "LIST"
             inner_type = root_type.unwrap
-            @response = GraphQLResultArray.new(nil, root_type, object_proxy, nil, false, selections, false)
-            idx = nil
-            object.each do |inner_value|
-              idx ||= 0
-              this_idx = idx
-              idx += 1
-              @dataloader.append_job do
-                runtime_state.current_result_name = this_idx
-                runtime_state.current_result = @response
-                continue_field(
-                  inner_value, root_type, nil, inner_type, nil, @response.graphql_selections, false, object_proxy,
-                  nil, this_idx, @response, false, runtime_state
+            case inner_type.kind.name
+            when "SCALAR", "ENUM"
+              parent_object_proxy = partial.parent_type.wrap(object, context)
+              parent_object_proxy = schema.sync_lazy(parent_object_proxy)
+              field_node = partial.ast_nodes.first
+              result_name = field_node.alias || field_node.name
+              @response = GraphQLResultHash.new(nil, partial.parent_type, parent_object_proxy, nil, false, nil, false)
+              evaluate_selection(result_name, partial.ast_nodes, @response)
+            else
+              @response = GraphQLResultArray.new(nil, root_type, nil, nil, false, selections, false)
+              idx = nil
+              object.each do |inner_value|
+                idx ||= 0
+                this_idx = idx
+                idx += 1
+                @dataloader.append_job do
+                  runtime_state.current_result_name = this_idx
+                  runtime_state.current_result = @response
+                  continue_field(
+                    inner_value, root_type, nil, inner_type, nil, @response.graphql_selections, false, object_proxy,
+                    nil, this_idx, @response, false, runtime_state
                   )
+                end
               end
             end
+          when "SCALAR", "ENUM"
+            parent_type = partial.parent_type
+            parent_object_proxy = parent_type.wrap(object, context)
+            parent_object_proxy = schema.sync_lazy(parent_object_proxy)
+            @response = GraphQLResultHash.new(nil, parent_type, parent_object_proxy, nil, false, selections, false)
+            field_node = partial.ast_nodes.first
+            result_name = field_node.alias || field_node.name
+            @dataloader.append_job do
+              evaluate_selection(result_name, partial.ast_nodes, @response)
+            end
           else
+            # TODO union, interface
             raise "Invariant: unsupported type kind for partial execution: #{root_type.kind.inspect} (#{root_type})"
           end
           nil

@@ -117,20 +117,29 @@ describe GraphQL::Query::Partial do
       farm1: farm(id: \"1\") { error }
       farm2: farm(id: \"1\") { name  }
       farm3: farm(id: \"1\") { name fieldError: error }
+      farm4: farm(id: \"1\") {
+        neighboringFarm {
+          error
+        }
+      }
     }"
     results = run_partials(str, [
       { path: ["farm1"], object: PartialSchema::Database::FARMS["1"] },
       { path: ["farm2"], object: PartialSchema::Database::FARMS["2"] },
       { path: ["farm3"], object: PartialSchema::Database::FARMS["3"] },
+      { path: ["farm4"], object: PartialSchema::Database::FARMS["3"] },
     ])
+
 
     assert_equal [{"message"=>"This is a field error", "locations"=>[{"line"=>2, "column"=>30}], "path"=>["error"]}], results[0]["errors"]
     refute results[1].key?("errors")
     assert_equal [{"message"=>"This is a field error", "locations"=>[{"line"=>4, "column"=>35}], "path"=>["fieldError"]}], results[2]["errors"]
+    assert_equal [{"message"=>"This is a field error", "locations"=>[{"line"=>7, "column"=>11}], "path"=>["neighboringFarm", "error"]}], results[3]["errors"]
 
     assert_equal({ "error" => nil }, results[0]["data"])
     assert_equal({ "name" => "Henley's Orchard" }, results[1]["data"])
     assert_equal({ "name" => "Wenger Grapes", "fieldError" => nil }, results[2]["data"])
+    assert_equal({ "neighboringFarm" => { "error" => nil } }, results[3]["data"])
   end
 
   it "raises errors when given nonexistent paths" do
@@ -184,7 +193,9 @@ describe GraphQL::Query::Partial do
     assert_equal [{ "name" => "Twenty Paces" }, { "name" => "Spring Creek Blooms" }], result["data"]
     assert_equal ["farms"], result.path
     assert_instance_of GraphQL::Query::Context, result.context
+    assert_instance_of GraphQL::Query::Partial, result.partial
     assert_instance_of GraphQL::Query::Partial, result.context.query
+    refute result.partial.leaf?
   end
 
   it "merges selections when path steps are duplicated" do
@@ -196,5 +207,17 @@ describe GraphQL::Query::Partial do
     GRAPHQL
     results = run_partials(str, [{ path: ["f1", "neighboringFarm"], object: OpenStruct.new(name: "Dawnbreak") }])
     assert_equal({"name" => "Dawnbreak", "name2" => "Dawnbreak" }, results.first["data"])
+  end
+
+  it "runs partials on scalars" do
+    str = "{ farm { name products } }"
+    results = run_partials(str, [
+      { path: ["farm", "name"], object: { name: "Polyface" } },
+      { path: ["farm", "products"], object: { products: ["MEAT"] } },
+    ])
+    assert_equal [{"name" => "Polyface"}, { "products" => ["MEAT"] }], results.map { |r| r["data"] }
+
+    assert results[0].partial.leaf?
+    assert results[1].partial.leaf?
   end
 end

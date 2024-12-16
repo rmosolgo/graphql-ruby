@@ -14,6 +14,7 @@ module GraphQL
         @result = nil
         selections = [@query.selected_operation]
         type = @query.schema.query # TODO could be other?
+        parent_type = nil
         field_defn = nil
         @path.each do |name_in_doc|
           next_selections = []
@@ -30,24 +31,36 @@ module GraphQL
           end
           field_name = next_selections.first.name
           field_defn = type.get_field(field_name, @query.context) || raise("Invariant: no field called #{field_name} on #{type.graphql_name}")
+          parent_type = type
           type = field_defn.type
           if type.non_null?
             type = type.of_type
           end
           selections = next_selections
         end
+        @parent_type = parent_type
         @ast_nodes = selections
         @root_type = type
         @field_definition = field_defn
+        @leaf = @root_type.unwrap.kind.leaf?
       end
 
-      attr_reader :context, :ast_nodes, :root_type, :object, :field_definition, :path
+      def leaf?
+        @leaf
+      end
+
+      attr_reader :context, :ast_nodes, :root_type, :object, :field_definition, :path, :parent_type
 
       attr_accessor :multiplex, :result_values
 
       class Result < GraphQL::Query::Result
         def path
           @query.path
+        end
+
+        # @return [GraphQL::Query::Partial]
+        def partial
+          @query
         end
       end
 
@@ -93,6 +106,14 @@ module GraphQL
       # TODO dry
       def handle_or_reraise(err)
         @query.schema.handle_or_reraise(context, err)
+      end
+
+      def resolve_type(...)
+        @query.resolve_type(...)
+      end
+
+      def variables
+        @query.variables
       end
     end
   end
