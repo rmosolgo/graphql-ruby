@@ -162,9 +162,11 @@ module GraphQL
             end
           when "SCALAR", "ENUM"
             parent_type = partial.parent_type
-            parent_object_proxy = parent_type.wrap(object, context)
+            # TODO what if not object type? Maybe returns a lazy here.
+            parent_object_type, object = resolve_type(parent_type, object)
+            parent_object_proxy = parent_object_type.wrap(object, context)
             parent_object_proxy = schema.sync_lazy(parent_object_proxy)
-            @response = GraphQLResultHash.new(nil, parent_type, parent_object_proxy, nil, false, selections, false)
+            @response = GraphQLResultHash.new(nil, parent_object_type, parent_object_proxy, nil, false, selections, false)
             field_node = partial.ast_nodes.first
             result_name = field_node.alias || field_node.name
             @dataloader.append_job do
