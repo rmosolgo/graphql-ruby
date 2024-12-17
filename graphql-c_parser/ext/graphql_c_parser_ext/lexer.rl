@@ -394,8 +394,9 @@ void emit(TokenType tt, char *ts, char *te, Meta *meta) {
 VALUE tokenize(VALUE query_rbstr, int fstring_identifiers, int reject_numbers_followed_by_names, int max_tokens) {
   int cs = 0;
   int act = 0;
-  char *p = StringValueCStr(query_rbstr);
-  char *pe = p + strlen(p);
+  char *p = StringValuePtr(query_rbstr);
+  long query_len = RSTRING_LEN(query_rbstr);
+  char *pe = p + query_len;
   char *eof = pe;
   char *ts = 0;
   char *te = 0;
