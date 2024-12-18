@@ -79,6 +79,10 @@ createRecord(data: {
     end
   end
 
+  it "can parse strings with null bytes" do
+    assert GraphQL.parse("{ a(b: \"\\u0000\") }")
+  end
+
   describe "when there are no selections" do
     it 'raises a ParseError' do
       assert_raises(GraphQL::ParseError) {
