@@ -78,6 +78,19 @@ module GraphQL
             value
           end
 
+
+          # @api private
+          PLACEHOLDER = Object.new
+
+          def set_placeholder(key)
+            @graphql_result_data[key] = PLACEHOLDER
+            @graphql_metadata && @graphql_metadata[key] = PLACEHOLDER
+            if (t = @graphql_merged_into)
+              t.set_placeholder(key)
+            end
+            nil
+          end
+
           def delete(key)
             @graphql_metadata && @graphql_metadata.delete(key)
             @graphql_result_data.delete(key)
