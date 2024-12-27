@@ -54,6 +54,8 @@ describe GraphQL::Schema::Resolver do
     class Resolver4 < BaseResolver
       type Integer, null: false
 
+      description "Adds object.value to ast_node.name.size"
+
       extras [:ast_node]
       def resolve(ast_node:)
         object.value + ast_node.name.size
@@ -721,6 +723,14 @@ describe GraphQL::Schema::Resolver do
       res = exec_query " { resolver7 resolver8 } ", root_value: OpenStruct.new(value: 0)
       assert_equal 2, res["data"]["resolver7"]
       assert_equal 2, res["data"]["resolver8"]
+    end
+  end
+
+  describe "description" do
+    it "is inherited" do
+      expected_desc = "Adds object.value to ast_node.name.size"
+      assert_equal expected_desc, ResolverTest::Resolver4.description
+      assert_equal expected_desc, ResolverTest::Resolver5.description
     end
   end
 

@@ -22,6 +22,7 @@ module GraphQL
       include Schema::Member::GraphQLTypeNames
       # Really we only need description & comment from here, but:
       extend Schema::Member::BaseDSLMethods
+      extend Member::BaseDSLMethods::ConfigurationExtension
       extend GraphQL::Schema::Member::HasArguments
       extend GraphQL::Schema::Member::HasValidators
       include Schema::Member::HasPath
