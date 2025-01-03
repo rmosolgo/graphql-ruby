@@ -137,12 +137,13 @@ describe GraphQL::Backtrace do
       ]
       assert_equal expected_graphql_backtrace, err.graphql_backtrace
 
+      hash_inspect = { message: "Boom" }.inspect
       # The message includes the GraphQL context
       rendered_table = [
-        'Loc  | Field                         | Object     | Arguments          | Result',
-        '3:13 | Thing.raiseField as boomError | :something | {:message=>"Boom"} | #<RuntimeError: This is broken: Boom>',
-        '2:11 | Query.field1                  | "Root"     | {}                 | {}',
-        '1:9  | query                         | "Root"     | {"msg"=>"Boom"}    | {field1: {...}}',
+        'Loc  | Field                         | Object     | ' + "Arguments".ljust(hash_inspect.size) + ' | Result',
+        '3:13 | Thing.raiseField as boomError | :something | ' + hash_inspect + ' | #<RuntimeError: This is broken: Boom>',
+        '2:11 | Query.field1                  | "Root"     | ' + "{}".ljust(hash_inspect.size) + ' | {}',
+        '1:9  | query                         | "Root"     | ' + {"msg" => "Boom"}.inspect.ljust(hash_inspect.size) + ' | {field1: {...}}',
       ].join("\n")
 
       assert_includes err.message, "\n" + rendered_table
@@ -201,14 +202,18 @@ describe GraphQL::Backtrace do
         backtrace_schema.execute("query { nilInspect { raiseField(message: \"pop!\") } }")
       }
 
+      hash_inspect = {message: "pop!"}.inspect # `=>` on Ruby < 3.4
       rendered_table = [
-        'Loc  | Field            | Object | Arguments          | Result',
-        '1:22 | Thing.raiseField |        | {:message=>"pop!"} | #<RuntimeError: This is broken: pop!>',
-        '1:9  | Query.nilInspect | nil    | {}                 | {}',
-        '1:1  | query            | nil    | {}                 | {nilInspect: {...}}',
+        'Loc  | Field            | Object | ' + "Arguments".ljust(hash_inspect.size) + ' | Result',
+        '1:22 | Thing.raiseField |        | ' + hash_inspect + ' | #<RuntimeError: This is broken: pop!>',
+        '1:9  | Query.nilInspect | nil    | ' + "{}".ljust(hash_inspect.size) + ' | {}',
+        '1:1  | query            | nil    | ' + "{}".ljust(hash_inspect.size) + ' | {nilInspect: {...}}',
+        '',
+        ''
       ].join("\n")
 
-      assert_includes(err.message, rendered_table)
+      table = err.message.split("GraphQL Backtrace:\n").last
+      assert_equal rendered_table, table
     end
 
     it "raises original exception instead of a TracedError when error does not occur during resolving" do
@@ -225,7 +230,13 @@ describe GraphQL::Backtrace do
   # This will get brittle when execution code moves between files
   # but I'm not sure how to be sure that the backtrace contains the right stuff!
   def assert_backtrace_includes(backtrace, file:, method:)
-    includes_tag = backtrace.any? { |s| s.include?(file) && s.include?("`" + method) }
+    includes_tag = if RUBY_VERSION < "3.4"
+      backtrace.any? { |s| s.include?(file) && s.include?("`" + method) }
+    elsif method == "block"
+      backtrace.any? { |s| s.include?(file) && s.include?("'block") }
+    else
+      backtrace.any? { |s| s.include?(file) && s.include?("#{method}'") }
+    end
     assert includes_tag, "Backtrace should include #{file} inside method #{method}\n\n#{backtrace.join("\n")}"
   end
 

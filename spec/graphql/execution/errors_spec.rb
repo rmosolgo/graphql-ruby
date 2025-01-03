@@ -202,7 +202,7 @@ describe "GraphQL::Execution::Errors" do
       ctx = { errors: [] }
       res = ErrorsTestSchema.execute "{ f1(a1: 1) }", context: ctx, root_value: :abc
       assert_equal({ "data" => { "f1" => nil } }, res)
-      assert_equal ["f1 broke (ErrorsTestSchema::Query.f1, :abc, {:a1=>1})"], ctx[:errors]
+      assert_equal ["f1 broke (ErrorsTestSchema::Query.f1, :abc, #{{a1: 1}.inspect})"], ctx[:errors]
     end
 
     it "rescues errors from lazy code" do
