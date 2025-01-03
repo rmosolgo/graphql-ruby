@@ -509,7 +509,8 @@ describe GraphQL::Schema::InputObject do
     it "authorizes Hashes returned from prepare:" do
       query_str = "{ hashInput(input: { k1: 5, k2: 12 }) }"
       res = InputObjectPrepareObjectTest::Schema.execute(query_str)
-      assert_equal "Hash, {:k1=>5, :k2=>12}", res["data"]["hashInput"]
+      expected_str = { k1: 5, k2: 12 }.inspect
+      assert_equal "Hash, #{expected_str}", res["data"]["hashInput"]
 
       query_str = "{ hashInput(input: { k1: 500, k2: 12 }) }"
       res = InputObjectPrepareObjectTest::Schema.execute(query_str)
@@ -685,14 +686,16 @@ describe GraphQL::Schema::InputObject do
 
     it "handles camelized booleans" do
       res = Jazz::Schema.execute("query($input: CamelizedBooleanInput!){ inputObjectCamelization(input: $input) }", variables: { input: { camelizedBoolean: false } })
-      assert_equal "{:camelized_boolean=>false}", res["data"]["inputObjectCamelization"]
+      expected_res = { camelized_boolean: false }.inspect
+      assert_equal expected_res, res["data"]["inputObjectCamelization"]
     end
   end
 
   describe "when used with default_value" do
     it "comes as an instance" do
       res = Jazz::Schema.execute("{ defaultValueTest }")
-      assert_equal "Jazz::InspectableInput -> {:string_value=>\"S\"}", res["data"]["defaultValueTest"]
+      expected_res = { string_value: "S" }.inspect
+      assert_equal "Jazz::InspectableInput -> #{expected_res}", res["data"]["defaultValueTest"]
     end
 
     it "works with empty objects" do

@@ -174,7 +174,7 @@ describe GraphQL::Schema::Argument do
 
       res = SchemaArgumentTest::Schema.execute(query_str)
       # Make sure it's getting the renamed symbol:
-      assert_equal '{:renamed=>"x", :required_with_default_arg=>1}', res["data"]["field"]
+      assert_equal({renamed: "x", required_with_default_arg: 1}.inspect, res["data"]["field"])
     end
   end
 
@@ -186,7 +186,7 @@ describe GraphQL::Schema::Argument do
 
       res = SchemaArgumentTest::Schema.execute(query_str, context: {multiply_by: 3})
       # Make sure it's getting the renamed symbol:
-      assert_equal '{:prepared_arg=>15, :required_with_default_arg=>1}', res["data"]["field"]
+      assert_equal({ prepared_arg: 15, required_with_default_arg: 1}.inspect, res["data"]["field"])
     end
 
     it "calls the method on the provided Proc" do
@@ -196,7 +196,7 @@ describe GraphQL::Schema::Argument do
 
       res = SchemaArgumentTest::Schema.execute(query_str, context: {multiply_by: 3})
       # Make sure it's getting the renamed symbol:
-      assert_equal '{:prepared_by_proc_arg=>15, :required_with_default_arg=>1}', res["data"]["field"]
+      assert_equal({prepared_by_proc_arg: 15, required_with_default_arg: 1 }.inspect, res["data"]["field"])
     end
 
     it "calls the method on the provided callable object" do
@@ -206,7 +206,7 @@ describe GraphQL::Schema::Argument do
 
       res = SchemaArgumentTest::Schema.execute(query_str, context: {multiply_by: 3})
       # Make sure it's getting the renamed symbol:
-      assert_equal '{:prepared_by_callable_arg=>15, :required_with_default_arg=>1}', res["data"]["field"]
+      assert_equal({prepared_by_callable_arg: 15, required_with_default_arg: 1}.inspect, res["data"]["field"])
     end
 
     it "handles exceptions raised by prepare" do
@@ -215,7 +215,7 @@ describe GraphQL::Schema::Argument do
       GRAPHQL
 
       res = SchemaArgumentTest::Schema.execute(query_str, context: {multiply_by: 3})
-      assert_equal({ 'f1' => '{:arg=>"echo", :required_with_default_arg=>1}', 'f2' => nil }, res['data'])
+      assert_equal({ 'f1' => {arg: "echo", required_with_default_arg: 1}.inspect, 'f2' => nil }, res['data'])
       assert_equal(res['errors'][0]['message'], 'boom!')
       assert_equal(res['errors'][0]['path'], ['f2'])
     end
@@ -226,7 +226,7 @@ describe GraphQL::Schema::Argument do
       GRAPHQL
 
       res = SchemaArgumentTest::Schema.execute(query_str, context: {multiply_by: 3})
-      assert_equal({ 'f1' => '{:arg=>"echo", :required_with_default_arg=>1}', 'f2' => nil }, res['data'])
+      assert_equal({ 'f1' => {arg: "echo", required_with_default_arg: 1}.inspect, 'f2' => nil }, res['data'])
       assert_nil(res['errors'])
     end
   end
@@ -238,7 +238,7 @@ describe GraphQL::Schema::Argument do
       GRAPHQL
 
       res = SchemaArgumentTest::Schema.execute(query_str)
-      assert_equal '{:required_with_default_arg=>1}', res["data"]["field"]
+      assert_equal({required_with_default_arg: 1}.inspect, res["data"]["field"])
     end
 
     it 'uses provided input value' do
@@ -247,7 +247,7 @@ describe GraphQL::Schema::Argument do
       GRAPHQL
 
       res = SchemaArgumentTest::Schema.execute(query_str)
-      assert_equal '{:required_with_default_arg=>2}', res["data"]["field"]
+      assert_equal({ required_with_default_arg: 2 }.inspect, res["data"]["field"])
     end
 
     it 'respects non-null type' do
@@ -267,14 +267,14 @@ describe GraphQL::Schema::Argument do
       GRAPHQL
 
       res = SchemaArgumentTest::Schema.execute(query_str)
-      assert_equal "{:instrument=>#{Jazz::Models::Instrument.new("Drum Kit", "PERCUSSION").inspect}, :required_with_default_arg=>1}", res["data"]["field"]
+      assert_equal({instrument: Jazz::Models::Instrument.new("Drum Kit", "PERCUSSION"), required_with_default_arg: 1}.inspect, res["data"]["field"])
 
       query_str2 = <<-GRAPHQL
       query { field(instrumentIds: ["Instrument/Organ"]) }
       GRAPHQL
 
       res = SchemaArgumentTest::Schema.execute(query_str2)
-      assert_equal "{:instruments=>[#{Jazz::Models::Instrument.new("Organ", "KEYS").inspect}], :required_with_default_arg=>1}", res["data"]["field"]
+      assert_equal({instruments: [Jazz::Models::Instrument.new("Organ", "KEYS")], required_with_default_arg: 1}.inspect, res["data"]["field"])
     end
 
     it "returns nil when no ID is given and `required: false`" do
