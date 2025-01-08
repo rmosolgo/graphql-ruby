@@ -126,6 +126,15 @@ class Query < GraphQL::Schema::Object
 end
 ```
 
+If you're using {{ "GraphQL::Schema::Resolver" | api_doc }}, you'd call `.items_for` slightly differently:
+
+```ruby
+def resolve(division: nil)
+  # use `context[:current_object]` to get the GraphQL::Schema::Object instance whose field is being resolved
+  AllTeams.items_for(context[:current_object], division: division)
+end
+```
+
 Finally, you'll need to handle `CacheableRelation`s in your object identification methods, for example:
 
 ```ruby
@@ -149,11 +158,11 @@ class MySchema < GraphQL::Schema
 end
 ```
 
-In this example, `AllTeams` takes care of integrating with the cache:
+In this example, `AllTeams` implements several methods to support caching:
 
-- It implements `#id` to create a cache-friendly, stable global ID
-- It implements `#to_param` to create a cache fingerprint (using Rails's `#cache_key` under the hood)
-- It implements `.find?` to retrieve the list based on its ID
+- `#id` creates a cache-friendly, stable global ID
+- `#to_param` creates a cache fingerprint (using Rails's `#cache_key` under the hood)
+- `.find?` retrieves the list based on its ID
 
 This way, if a `Team` is created, the cached result will be invalidated and a fresh result will be created.
 
