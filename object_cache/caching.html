@@ -280,6 +280,14 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
+<p>If you’re using <a href="/api-doc/2.4.8/GraphQL/Schema/Resolver" target="_blank" title="API docs for GraphQL::Schema::Resolver"><code>GraphQL::Schema::Resolver</code></a>, you’d call <code class="language-plaintext highlighter-rouge">.items_for</code> slightly differently:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">resolve</span><span class="p">(</span><span class="ss">division: </span><span class="kp">nil</span><span class="p">)</span>
+  <span class="c1"># use `context[:current_object]` to get the GraphQL::Schema::Object instance whose field is being resolved</span>
+  <span class="no">AllTeams</span><span class="p">.</span><span class="nf">items_for</span><span class="p">(</span><span class="n">context</span><span class="p">[</span><span class="ss">:current_object</span><span class="p">],</span> <span class="ss">division: </span><span class="n">division</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
 <p>Finally, you’ll need to handle <code class="language-plaintext highlighter-rouge">CacheableRelation</code>s in your object identification methods, for example:</p>
 
 <div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">MySchema</span> <span class="o">&lt;</span> <span class="no">GraphQL</span><span class="o">::</span><span class="no">Schema</span>
@@ -302,12 +310,12 @@
 <span class="k">end</span>
 </code></pre></div></div>
 
-<p>In this example, <code class="language-plaintext highlighter-rouge">AllTeams</code> takes care of integrating with the cache:</p>
+<p>In this example, <code class="language-plaintext highlighter-rouge">AllTeams</code> implements several methods to support caching:</p>
 
 <ul>
-  <li>It implements <code class="language-plaintext highlighter-rouge">#id</code> to create a cache-friendly, stable global ID</li>
-  <li>It implements <code class="language-plaintext highlighter-rouge">#to_param</code> to create a cache fingerprint (using Rails’s <code class="language-plaintext highlighter-rouge">#cache_key</code> under the hood)</li>
-  <li>It implements <code class="language-plaintext highlighter-rouge">.find?</code> to retrieve the list based on its ID</li>
+  <li><code class="language-plaintext highlighter-rouge">#id</code> creates a cache-friendly, stable global ID</li>
+  <li><code class="language-plaintext highlighter-rouge">#to_param</code> creates a cache fingerprint (using Rails’s <code class="language-plaintext highlighter-rouge">#cache_key</code> under the hood)</li>
+  <li><code class="language-plaintext highlighter-rouge">.find?</code> retrieves the list based on its ID</li>
 </ul>
 
 <p>This way, if a <code class="language-plaintext highlighter-rouge">Team</code> is created, the cached result will be invalidated and a fresh result will be created.</p>
