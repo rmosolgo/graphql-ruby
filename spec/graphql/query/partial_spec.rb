@@ -209,6 +209,33 @@ describe GraphQL::Query::Partial do
     assert_equal({"name" => "Dawnbreak", "name2" => "Dawnbreak" }, results.first["data"])
   end
 
+  it "works when there are inline fragments in the path" do
+    str = <<-GRAPHQL
+      {
+        farm {
+          ... on Farm {
+            neighboringFarm {
+              name
+            }
+          }
+          neighboringFarm {
+            __typename
+          }
+          ...FarmFields
+        }
+      }
+
+      fragment FarmFields on Farm {
+        neighboringFarm {
+          n2: name
+        }
+      }
+    GRAPHQL
+
+    results = run_partials(str, [{ path: ["farm", "neighboringFarm"], object: OpenStruct.new(name: "Dawnbreak") }])
+    assert_equal({"name" => "Dawnbreak", "__typename" => "Farm", "n2" => "Dawnbreak"}, results.first["data"])
+  end
+
   it "runs partials on scalars" do
     str = "{ farm { name products } }"
     results = run_partials(str, [

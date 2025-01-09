@@ -19,9 +19,21 @@ module GraphQL
         @path.each do |name_in_doc|
           next_selections = []
           selections.each do |selection|
-            selection.selections.each do |sel|
-              if sel.alias == name_in_doc || sel.name == name_in_doc
-                next_selections << sel
+            selections_to_check = []
+            selections_to_check.concat(selection.selections)
+            while (sel = selections_to_check.shift)
+              case sel
+              when GraphQL::Language::Nodes::InlineFragment
+                selections_to_check.concat(sel.selections)
+              when GraphQL::Language::Nodes::FragmentSpread
+                fragment = @query.fragments[sel.name]
+                selections_to_check.concat(fragment.selections)
+              when GraphQL::Language::Nodes::Field
+                if sel.alias == name_in_doc || sel.name == name_in_doc
+                  next_selections << sel
+                end
+              else
+                raise "Unexpected selection in partial path: #{sel.class}, #{sel.inspect}"
               end
             end
           end
@@ -49,7 +61,7 @@ module GraphQL
         @leaf
       end
 
-      attr_reader :context, :ast_nodes, :root_type, :object, :field_definition, :path, :parent_type
+      attr_reader :context, :query, :ast_nodes, :root_type, :object, :field_definition, :path, :parent_type
 
       attr_accessor :multiplex, :result_values
 
@@ -114,6 +126,10 @@ module GraphQL
 
       def variables
         @query.variables
+      end
+
+      def fragments
+        @query.fragments
       end
     end
   end
