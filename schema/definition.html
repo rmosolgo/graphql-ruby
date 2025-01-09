@@ -299,7 +299,7 @@
 <ul>
   <li><strong>Parser caching</strong>: if your application parses GraphQL <em>files</em> (queries or schema definition), it may benefit from enabling <a href="/api-doc/2.4.8/GraphQL/Parser/Cache" target="_blank" title="API docs for GraphQL::Parser::Cache"><code>GraphQL::Parser::Cache</code></a>.</li>
   <li>
-    <p><strong>Eager loading the library</strong>: by default, GraphQL-Ruby autoloads its constants as-needed. In production, they should be autoloaded instead, using <code class="language-plaintext highlighter-rouge">GraphQL.eager_load!</code>.</p>
+    <p><strong>Eager loading the library</strong>: by default, GraphQL-Ruby autoloads its constants as-needed. In production, they should be eager loaded instead, using <code class="language-plaintext highlighter-rouge">GraphQL.eager_load!</code>.</p>
 
     <ul>
       <li>Rails: enabled automatically. (ActiveSupport calls <code class="language-plaintext highlighter-rouge">.eager_load!</code>.)</li>
