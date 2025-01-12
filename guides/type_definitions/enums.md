@@ -72,3 +72,9 @@ value "AUDIO", value: :audio
 Then, GraphQL inputs of `AUDIO` will be converted to `:audio` and Ruby values of `:audio` will be converted to `"AUDIO"` in GraphQL responses.
 
 Enum classes are never instantiated and their methods are never called.
+
+You can get the GraphQL name of the enum value using the method matching its downcased name:
+
+```ruby
+Types::MediaCategory.audio # => "Audio"
+```

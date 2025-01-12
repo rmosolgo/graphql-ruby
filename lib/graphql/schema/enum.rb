@@ -67,6 +67,7 @@ module GraphQL
         def value(*args, **kwargs, &block)
           kwargs[:owner] = self
           value = enum_value_class.new(*args, **kwargs, &block)
+          singleton_class.define_method(value.graphql_name.downcase) { value.graphql_name }
           key = value.graphql_name
           prev_value = own_values[key]
           case prev_value

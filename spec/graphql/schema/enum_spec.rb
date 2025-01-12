@@ -10,6 +10,18 @@ describe GraphQL::Schema::Enum do
     end
   end
 
+  describe "value methods" do
+    it "defines methods to fetch graphql names" do
+      assert_equal enum.string, "STRING"
+      assert_equal enum.woodwind, "WOODWIND"
+      assert_equal enum.brass, "BRASS"
+      assert_equal enum.percussion, "PERCUSSION"
+      assert_equal enum.didgeridoo, "DIDGERIDOO"
+      assert_equal enum.keys, "KEYS"
+      assert_equal enum.silence, "SILENCE"
+    end
+  end
+
   describe "type info" do
     it "tells about the definition" do
       assert_equal "Family", enum.graphql_name
