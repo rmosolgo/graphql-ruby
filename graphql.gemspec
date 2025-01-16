@@ -28,6 +28,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "base64"
   s.add_runtime_dependency "fiber-storage"
   s.add_runtime_dependency "logger"
+  s.add_runtime_dependency "ostruct"
 
   s.add_development_dependency "benchmark-ips"
   s.add_development_dependency "concurrent-ruby", "~>1.0"
