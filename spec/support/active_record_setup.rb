@@ -59,6 +59,12 @@ if testing_rails?
 
     create_table :bands, force: true do |t|
       t.string :name
+      t.integer :genre
+    end
+
+    create_table :albums, force: true do |t|
+      t.string :name
+      t.integer :band_id
     end
   end
 
@@ -66,7 +72,12 @@ if testing_rails?
     include GlobalID::Identification
   end
 
+  class Album < ActiveRecord::Base
+    belongs_to :band
+  end
   class Band < ActiveRecord::Base
+    has_many :albums
+    enum :genre, [:rock, :country]
   end
 
   class AlternativeBand < Band
@@ -74,7 +85,15 @@ if testing_rails?
     self.primary_key = :name
   end
 
-  Band.create!(id: 1, name: "Vulfpeck")
-  Band.create!(id: 2, name: "Tom's Story")
-  Band.create!(id: 3, name: "Chon")
+  v = Band.create!(id: 1, name: "Vulfpeck", genre: :rock)
+  t = Band.create!(id: 2, name: "Tom's Story", genre: :rock)
+  c = Band.create!(id: 3, name: "Chon", genre: :rock)
+  w = Band.create!(id: 4, name: "Wilco", genre: :country)
+
+  v.albums.create!(id: 1, name: "Mit Peck")
+  v.albums.create!(id: 2, name: "My First Car")
+  t.albums.create!(id: 3, name: "Tom's Story")
+  c.albums.create!(id: 4, name: "Homey")
+  c.albums.create!(id: 5, name: "Chon")
+  w.albums.create!(id: 6, name: "Summerteeth")
 end

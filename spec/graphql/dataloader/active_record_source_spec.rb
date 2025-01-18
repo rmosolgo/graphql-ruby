@@ -3,14 +3,6 @@ require "spec_helper"
 
 describe GraphQL::Dataloader::ActiveRecordSource do
   if testing_rails?
-    def self.it_dataloads(message, &block)
-      it(message) do
-        GraphQL::Dataloader.with_dataloading do |d|
-          self.instance_exec(d, &block)
-        end
-      end
-    end
-
     describe "finding by ID" do
       it_dataloads "loads once, then returns from a cache when available" do |d|
         log = with_active_record_log(colorize: false) do
@@ -91,6 +83,12 @@ describe GraphQL::Dataloader::ActiveRecordSource do
         assert_equal "", log
       end
       it "can infer class of passed-in objects"
+    end
+
+    describe "in queries" do
+      it "loads records with dataload_record"
+
+      it "accepts custom find-by with dataload_record"
     end
   end
 end
