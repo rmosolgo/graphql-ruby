@@ -56,9 +56,25 @@ if testing_rails?
       t.string :name
       t.integer :other_thing_id
     end
+
+    create_table :bands, force: true do |t|
+      t.string :name
+    end
   end
 
   class Food < ActiveRecord::Base
     include GlobalID::Identification
   end
+
+  class Band < ActiveRecord::Base
+  end
+
+  class AlternativeBand < Band
+    self.table_name = :bands
+    self.primary_key = :name
+  end
+
+  Band.create!(id: 1, name: "Vulfpeck")
+  Band.create!(id: 2, name: "Tom's Story")
+  Band.create!(id: 3, name: "Chon")
 end

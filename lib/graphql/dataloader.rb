@@ -4,6 +4,7 @@ require "graphql/dataloader/null_dataloader"
 require "graphql/dataloader/request"
 require "graphql/dataloader/request_all"
 require "graphql/dataloader/source"
+require "graphql/dataloader/active_record_source"
 
 module GraphQL
   # This plugin supports Fiber-based concurrency, along with {GraphQL::Dataloader::Source}.
