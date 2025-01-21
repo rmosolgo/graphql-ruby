@@ -63,7 +63,6 @@ module GraphQL
               when Array
                 if one_of_condition.all? { |k| value.key?(k) }
                   matched_conditions += 1
-                  break
                 end
               else
                 raise ArgumentError, "Unknown one_of condition: #{one_of_condition.inspect}"

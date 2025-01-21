@@ -31,6 +31,18 @@ describe GraphQL::Schema::Validator::RequiredValidator do
       ]
     },
     {
+      name: "Definition order independence",
+      config: { one_of: [[:a, :b], :c] },
+      cases: [
+        { query: "{ validated: multiValidated(c: 1) }", result: 1, error_messages: [] },
+        { query: "{ validated: multiValidated(a: 2, b: 3) }", result: 5, error_messages: [] },
+        { query: "{ validated: multiValidated }", result: nil, error_messages: ["multiValidated must include exactly one of the following arguments: (a and b), c."] },
+        { query: "{ validated: multiValidated(a: 1, b: 2, c: 3) }", result: nil, error_messages: ["multiValidated must include exactly one of the following arguments: (a and b), c."] },
+        { query: "{ validated: multiValidated(a: 3) }", result: nil, error_messages: ["multiValidated must include exactly one of the following arguments: (a and b), c."] },
+        { query: "{ validated: multiValidated(b: 2) }", result: nil, error_messages: ["multiValidated must include exactly one of the following arguments: (a and b), c."] },
+      ]
+    },
+    {
       name: "Input object validation",
       config: { one_of: [:a, [:b, :c]] },
       cases: [
