@@ -15,5 +15,8 @@ if RUBY_ENGINE == "ruby" # This doesn't work on truffle-ruby because there's no 
   gem "libev_scheduler"
 end
 gem "async"
+if RUBY_VERSION >= "3.4.1"
+  gem "csv"
+end
 
 gemspec path: "../"
