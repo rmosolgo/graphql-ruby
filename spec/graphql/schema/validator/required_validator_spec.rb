@@ -26,6 +26,8 @@ describe GraphQL::Schema::Validator::RequiredValidator do
         { query: "{ validated: multiValidated(b: 2, c: 3) }", result: 5, error_messages: [] },
         { query: "{ validated: multiValidated }", result: nil, error_messages: ["multiValidated must include exactly one of the following arguments: a, (b and c)."] },
         { query: "{ validated: multiValidated(a: 1, b: 2, c: 3) }", result: nil, error_messages: ["multiValidated must include exactly one of the following arguments: a, (b and c)."] },
+        { query: "{ validated: multiValidated(a: 1, b: 2) }", result: nil, error_messages: ["multiValidated must include exactly one of the following arguments: a, (b and c)."] },
+        { query: "{ validated: multiValidated(a: 1, c: 3) }", result: nil, error_messages: ["multiValidated must include exactly one of the following arguments: a, (b and c)."] },
         { query: "{ validated: multiValidated(c: 3) }", result: nil, error_messages: ["multiValidated must include exactly one of the following arguments: a, (b and c)."] },
         { query: "{ validated: multiValidated(b: 2) }", result: nil, error_messages: ["multiValidated must include exactly one of the following arguments: a, (b and c)."] },
       ]
@@ -38,6 +40,8 @@ describe GraphQL::Schema::Validator::RequiredValidator do
         { query: "{ validated: multiValidated(a: 2, b: 3) }", result: 5, error_messages: [] },
         { query: "{ validated: multiValidated }", result: nil, error_messages: ["multiValidated must include exactly one of the following arguments: (a and b), c."] },
         { query: "{ validated: multiValidated(a: 1, b: 2, c: 3) }", result: nil, error_messages: ["multiValidated must include exactly one of the following arguments: (a and b), c."] },
+        { query: "{ validated: multiValidated(a: 1, c: 3) }", result: nil, error_messages: ["multiValidated must include exactly one of the following arguments: (a and b), c."] },
+        { query: "{ validated: multiValidated(b: 2, c: 3) }", result: nil, error_messages: ["multiValidated must include exactly one of the following arguments: (a and b), c."] },
         { query: "{ validated: multiValidated(a: 3) }", result: nil, error_messages: ["multiValidated must include exactly one of the following arguments: (a and b), c."] },
         { query: "{ validated: multiValidated(b: 2) }", result: nil, error_messages: ["multiValidated must include exactly one of the following arguments: (a and b), c."] },
       ]
@@ -49,6 +53,8 @@ describe GraphQL::Schema::Validator::RequiredValidator do
         { query: "{ validated: validatedInput(input: { a: 1 }) }", result: 1, error_messages: [] },
         { query: "{ validated: validatedInput(input: { b: 2, c: 3 }) }", result: 5, error_messages: [] },
         { query: "{ validated: validatedInput(input: { a: 1, b: 2, c: 3 }) }", result: nil, error_messages: ["ValidatedInput must include exactly one of the following arguments: a, (b and c)."] },
+        { query: "{ validated: validatedInput(input: { a: 1, b: 2 }) }", result: nil, error_messages: ["ValidatedInput must include exactly one of the following arguments: a, (b and c)."] },
+        { query: "{ validated: validatedInput(input: { a: 1, c: 3 }) }", result: nil, error_messages: ["ValidatedInput must include exactly one of the following arguments: a, (b and c)."] },
         { query: "{ validated: validatedInput(input: { c: 3 }) }", result: nil, error_messages: ["ValidatedInput must include exactly one of the following arguments: a, (b and c)."] },
         { query: "{ validated: validatedInput(input: { b: 2 }) }", result: nil, error_messages: ["ValidatedInput must include exactly one of the following arguments: a, (b and c)."] },
       ]
@@ -60,6 +66,8 @@ describe GraphQL::Schema::Validator::RequiredValidator do
         { query: "{ validated: validatedResolver(a: 1) }", result: 1, error_messages: [] },
         { query: "{ validated: validatedResolver(b: 2, c: 3) }", result: 5, error_messages: [] },
         { query: "{ validated: validatedResolver(a: 1, b: 2, c: 3) }", result: nil, error_messages: ["validatedResolver must include exactly one of the following arguments: a, (b and c)."] },
+        { query: "{ validated: validatedResolver(a: 1, b: 2) }", result: nil, error_messages: ["validatedResolver must include exactly one of the following arguments: a, (b and c)."] },
+        { query: "{ validated: validatedResolver(a: 1, c: 3) }", result: nil, error_messages: ["validatedResolver must include exactly one of the following arguments: a, (b and c)."] },
         { query: "{ validated: validatedResolver(c: 3) }", result: nil, error_messages: ["validatedResolver must include exactly one of the following arguments: a, (b and c)."] },
         { query: "{ validated: validatedResolver(b: 2) }", result: nil, error_messages: ["validatedResolver must include exactly one of the following arguments: a, (b and c)."] },
         { query: "{ validated: validatedResolver }", result: nil, error_messages: ["validatedResolver must include exactly one of the following arguments: a, (b and c)."] },
