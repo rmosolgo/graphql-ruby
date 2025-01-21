@@ -17,6 +17,7 @@ end
 gem "async"
 if RUBY_VERSION >= "3.4.1"
   gem "csv"
+  gem "mutex_m"
 end
 
 gemspec path: "../"
