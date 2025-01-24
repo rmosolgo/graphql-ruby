@@ -7,8 +7,9 @@ module GraphQL
     class ActiveRecordAssociationSource < GraphQL::Dataloader::Source
       RECORD_SOURCE_CLASS = ActiveRecordSource
 
-      def initialize(association)
+      def initialize(association, scope: nil)
         @association = association
+        @scope = nil
       end
 
       def fetch(records)
@@ -29,7 +30,7 @@ module GraphQL
           available_records.concat(already_loaded_records)
         end
 
-        ::ActiveRecord::Associations::Preloader.new(records: records, associations: @association, available_records: available_records).call
+        ::ActiveRecord::Associations::Preloader.new(records: records, associations: @association, available_records: available_records, scope: @scope).call
 
         loaded_associated_records = records.map { |r| r.public_send(@association) }
         records_by_model = {}
@@ -40,8 +41,12 @@ module GraphQL
           end
         end
 
-        records_by_model.each do |model_class, updates|
-          dataloader.with(RECORD_SOURCE_CLASS, model_class).merge(updates)
+        if @scope.nil?
+          # Don't cache records loaded via scope because they might have reduced `SELECT`s
+          # Could check .select_values here?
+          records_by_model.each do |model_class, updates|
+            dataloader.with(RECORD_SOURCE_CLASS, model_class).merge(updates)
+          end
         end
 
         loaded_associated_records
