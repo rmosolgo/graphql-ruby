@@ -61,13 +61,16 @@ module GraphQL
         # @option kwargs [String] :description, the GraphQL description for this value, present in documentation
         # @option kwargs [String] :comment, the GraphQL comment for this value, present in documentation
         # @option kwargs [::Object] :value the translated Ruby value for this object (defaults to `graphql_name`)
+        # @option kwargs [::Object] :value_method, the method name to fetch `graphql_name` (defaults to `graphql_name.downcase`)
         # @option kwargs [String] :deprecation_reason if this object is deprecated, include a message here
         # @return [void]
         # @see {Schema::EnumValue} which handles these inputs by default
-        def value(*args, **kwargs, &block)
+        def value(*args, value_method: nil, **kwargs, &block)
           kwargs[:owner] = self
           value = enum_value_class.new(*args, **kwargs, &block)
-          instance_eval("def #{value.graphql_name.downcase}; #{value.graphql_name.inspect}; end;")
+
+          generate_value_method(value, value_method)
+
           key = value.graphql_name
           prev_value = own_values[key]
           case prev_value
@@ -223,6 +226,20 @@ module GraphQL
 
         def own_values
           @own_values ||= {}
+        end
+
+        def generate_value_method(value, configured_value_method)
+          return if configured_value_method == false
+
+          value_method_name = configured_value_method || value.graphql_name.downcase
+
+          if respond_to?(value_method_name.to_sym)
+            $stderr << "Failed to define value method for :#{value_method_name}, because " \
+              "#{value.owner.name} already responds to that method. Use `value_name:` to override the method name."
+            return
+          end
+
+          instance_eval("def #{value_method_name}; #{value.graphql_name.inspect}; end;")
         end
       end
 

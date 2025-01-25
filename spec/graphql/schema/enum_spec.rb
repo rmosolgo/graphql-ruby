@@ -11,14 +11,41 @@ describe GraphQL::Schema::Enum do
   end
 
   describe "value methods" do
-    it "defines methods to fetch graphql names" do
+    it "defines default methods to fetch graphql names" do
       assert_equal enum.string, "STRING"
       assert_equal enum.woodwind, "WOODWIND"
       assert_equal enum.brass, "BRASS"
-      assert_equal enum.percussion, "PERCUSSION"
       assert_equal enum.didgeridoo, "DIDGERIDOO"
       assert_equal enum.keys, "KEYS"
-      assert_equal enum.silence, "SILENCE"
+    end
+
+    describe "when value_method is configured" do
+      it "use custom method" do
+        assert_equal enum.respond_to?(:percussion), false
+        assert_equal enum.precussion_custom_value_method, "PERCUSSION"
+      end
+    end
+
+    describe "when value_method conflicts with existing method" do
+      it "does not define method and emits warning" do
+        expected_message = "Failed to define value method for :value, because " \
+          "ConflictEnum already responds to that method. Use `value_name:` to override the method name."
+
+        assert_warns(expected_message) do
+          conflict_enum = Class.new(GraphQL::Schema::Enum)
+          Object.const_set("ConflictEnum", conflict_enum)
+          already_defined_method = conflict_enum.method(:value)
+          conflict_enum.value "VALUE", "Makes conflict"
+          assert_equal conflict_enum.method(:value), already_defined_method
+        end
+      end
+
+    end
+
+    describe "when value_method = false" do
+      it "does not define method" do
+        assert_equal enum.respond_to?(:silence), false
+      end
     end
   end
 

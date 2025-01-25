@@ -78,3 +78,19 @@ You can get the GraphQL name of the enum value using the method matching its dow
 ```ruby
 Types::MediaCategory.audio # => "AUDIO"
 ```
+
+You can pass a `value_method:` to override the value of the generated method:
+
+```ruby
+value "AUDIO", value: :audio, value_method: :lo_fi_audio
+
+# ...
+
+Types::MediaCategory.lo_fi_audio # => "AUDIO"
+```
+
+Also, you can completely skip the method generation by setting `value_method` to `false`
+
+```ruby
+value "AUDIO", value: :audio, value_method: false
+```
