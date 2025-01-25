@@ -7,7 +7,7 @@ module GraphQL
                   "a __DirectiveLocation describes one such possible adjacencies."
 
       GraphQL::Schema::Directive::LOCATIONS.each do |location|
-        value(location.to_s, GraphQL::Schema::Directive::LOCATION_DESCRIPTIONS[location], value: location)
+        value(location.to_s, GraphQL::Schema::Directive::LOCATION_DESCRIPTIONS[location], value: location, value_method: false)
       end
       introspection true
     end
