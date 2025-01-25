@@ -76,5 +76,5 @@ Enum classes are never instantiated and their methods are never called.
 You can get the GraphQL name of the enum value using the method matching its downcased name:
 
 ```ruby
-Types::MediaCategory.audio # => "Audio"
+Types::MediaCategory.audio # => "AUDIO"
 ```
