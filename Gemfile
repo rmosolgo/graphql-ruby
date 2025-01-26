@@ -3,6 +3,7 @@ source "https://rubygems.org"
 
 gemspec
 
+gem 'google-protobuf'
 gem 'bootsnap' # required by the Rails apps generated in tests
 gem 'stackprof', platform: :ruby
 gem 'pry'

@@ -448,6 +448,7 @@ module GraphQL
       @warden ||= @schema.warden_class.new(schema: @schema, context: @context)
       parse_error = nil
       @document ||= begin
+        @context[:perfetto]&.begin_parse(query_string)
         if query_string
           GraphQL.parse(query_string, trace: self.current_trace, max_tokens: @schema.max_query_string_tokens)
         end
@@ -455,6 +456,8 @@ module GraphQL
         parse_error = err
         @schema.parse_error(err, @context)
         nil
+      ensure
+        @context[:perfetto]&.end_parse(query_string)
       end
 
       @fragments = {}

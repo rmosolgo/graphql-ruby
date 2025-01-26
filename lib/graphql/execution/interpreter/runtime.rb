@@ -42,6 +42,7 @@ module GraphQL
           @lazies_at_depth = lazies_at_depth
           @schema = query.schema
           @context = query.context
+          @fg = query.context[:perfetto]
           @response = nil
           # Identify runtime directives by checking which of this schema's directives have overridden `def self.resolve`
           @runtime_directive_names = []
@@ -218,8 +219,10 @@ module GraphQL
                     result_name, field_ast_nodes_or_ast_node, selections_result
                   )
                   finished_jobs += 1
-                  if target_result && finished_jobs == enqueued_jobs
-                    selections_result.merge_into(target_result)
+                  if finished_jobs == enqueued_jobs
+                    if target_result
+                      selections_result.merge_into(target_result)
+                    end
                   end
                   @dataloader.clear_cache
                 }
@@ -229,8 +232,10 @@ module GraphQL
                     result_name, field_ast_nodes_or_ast_node, selections_result
                   )
                   finished_jobs += 1
-                  if target_result && finished_jobs == enqueued_jobs
-                    selections_result.merge_into(target_result)
+                  if finished_jobs == enqueued_jobs
+                    if target_result
+                      selections_result.merge_into(target_result)
+                    end
                   end
                 }
               end
@@ -242,6 +247,7 @@ module GraphQL
         # @return [void]
         def evaluate_selection(result_name, field_ast_nodes_or_ast_node, selections_result) # rubocop:disable Metrics/ParameterLists
           return if selections_result.graphql_dead
+          @fg&.begin_selection(selections_result, result_name)
           # As a performance optimization, the hash key will be a `Node` if
           # there's only one selection of the field. But if there are multiple
           # selections of the field, it will be an Array of nodes
@@ -391,6 +397,9 @@ module GraphQL
                 was_scoped = runtime_state.was_authorized_by_scope_items
                 runtime_state.was_authorized_by_scope_items = nil
                 continue_field(continue_value, owner_type, field_defn, return_type, ast_node, next_selections, false, object, resolved_arguments, result_name, selection_result, was_scoped, runtime_state)
+              else
+                @fg&.end_selection(selection_result, result_name)
+                nil
               end
             end
           end
@@ -576,6 +585,7 @@ module GraphQL
             rescue StandardError => err
               schema.handle_or_reraise(context, err)
             end
+            @fg&.end_selection(selection_result, result_name)
             set_result(selection_result, result_name, r, false, is_non_null)
             r
           when "UNION", "INTERFACE"
@@ -594,6 +604,7 @@ module GraphQL
                 err_class = current_type::UnresolvedTypeError
                 type_error = err_class.new(resolved_value, field, parent_type, resolved_type, possible_types)
                 schema.type_error(type_error, context)
+                @fg&.end_selection(selection_result, result_name)
                 set_result(selection_result, result_name, nil, false, is_non_null)
                 nil
               else
@@ -610,6 +621,7 @@ module GraphQL
               continue_value = continue_value(inner_object, field, is_non_null, ast_node, result_name, selection_result)
               if HALT != continue_value
                 response_hash = GraphQLResultHash.new(result_name, current_type, continue_value, selection_result, is_non_null, next_selections, false)
+                @fg&.end_selection(selection_result, result_name)
                 set_result(selection_result, result_name, response_hash, true, is_non_null)
                 each_gathered_selections(response_hash) do |selections, is_selection_array|
                   if is_selection_array
@@ -639,6 +651,9 @@ module GraphQL
             idx = nil
             list_value = begin
               value.each do |inner_value|
+                if idx.nil?
+                  @fg&.end_selection(selection_result, result_name)
+                end
                 idx ||= 0
                 this_idx = idx
                 idx += 1
@@ -649,6 +664,10 @@ module GraphQL
                 else
                   resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, owner_type, was_scoped, runtime_state)
                 end
+              end
+
+              if idx.nil? # no entries
+                @fg&.end_selection(selection_result, result_name)
               end
 
               response_list
