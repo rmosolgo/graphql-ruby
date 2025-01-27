@@ -3,14 +3,14 @@ require "graphql/tracing/perfetto_trace/trace_pb"
 
 module GraphQL
   module Tracing
-    # TODO:
-    # - Support flows in nested source calls
-    # - Don't add flows to fields that don't pause
-    # - Add snapshot tests using JSON output from Protobuf
     module PerfettoTrace
-      def initialize(...)
+      def initialize(name_prefix: nil, **_rest)
+        super
         @pid = Process.pid
         @flow_ids = Hash.new { |h, source_inst| h[source_inst] = [] }.compare_by_identity
+        @clean_source_names = Hash.new do |h, source_class|
+          h[source_class] = name_prefix ? source_class.name.sub(name_prefix, "") : source_class.name
+        end.compare_by_identity
         @starting_objects = GC.stat(:total_allocated_objects)
         @objects_counter_id = :objects_counter.object_id
         @fibers_counter_id = :fibers_counter.object_id
@@ -97,7 +97,6 @@ module GraphQL
 
         if defined?(ActiveSupport::Notifications)
           @as_subscriber = ActiveSupport::Notifications.monotonic_subscribe do |name, start, finish, id, payload|
-            count_allocations
             metadata = payload.map { |k, v| payload_to_debug(k, v) }
             metadata.compact!
             categories = [name]
@@ -128,6 +127,8 @@ module GraphQL
                 type: TrackEvent::Type::TYPE_SLICE_END,
                 track_uuid: fid,
                 name: name,
+                extra_counter_track_uuids: [@objects_counter_id],
+                extra_counter_values: [count_allocations]
               ),
               trusted_packet_sequence_id: @pid,
             )
@@ -162,7 +163,7 @@ module GraphQL
       end
 
       def begin_execute_field(result, result_name)
-        @packets << Fiber[:graphql_last_selection] = TracePacket.new(
+        packet = TracePacket.new(
           timestamp: ts,
           track_event: TrackEvent.new(
             type: TrackEvent::Type::TYPE_SLICE_BEGIN,
@@ -173,11 +174,12 @@ module GraphQL
           ),
           trusted_packet_sequence_id: @pid,
         )
+        @packets << packet
+        fiber_flow_stack << packet
       end
 
       def end_execute_field(result, result_name)
-        flow_id = Fiber[:graphql_last_selection].track_event.flow_ids.first
-        track_event = if flow_id
+        track_event = if (start_field = fiber_flow_stack.pop) && (flow_id = start_field.track_event.flow_ids&.first)
           TrackEvent.new(
             type: TrackEvent::Type::TYPE_SLICE_END,
             track_uuid: fid,
@@ -301,19 +303,12 @@ module GraphQL
       end
 
       def dataloader_fiber_yield(source)
-        if (ls = Fiber[:graphql_last_selection])
+        if (ls = fiber_flow_stack.last)
           if (flow_id = ls.track_event.flow_ids.first)
             # got it
           else
             flow_id = rand(999_999)
-            ls.track_event = TrackEvent.new(
-              type: ls.track_event.type,
-              track_uuid: ls.track_event.track_uuid,
-              name: ls.track_event.name,
-              flow_ids: [flow_id],
-              extra_counter_track_uuids: ls.track_event.extra_counter_track_uuids.to_a,
-              extra_counter_values: ls.track_event.extra_counter_values.to_a,
-            )
+            ls.track_event = dup_with(ls.track_event, {flow_ids: [flow_id] })
           end
           @flow_ids[source] << flow_id
           @packets << TracePacket.new(
@@ -348,15 +343,10 @@ module GraphQL
           ),
           trusted_packet_sequence_id: @pid,
         )
-        if (ls = Fiber[:graphql_last_selection])
+        if (ls = fiber_flow_stack.last)
           @packets << TracePacket.new(
             timestamp: ts,
-            track_event: TrackEvent.new(
-              type: TrackEvent::Type::TYPE_SLICE_BEGIN,
-              track_uuid: fid,
-              name: ls.track_event.name,
-              flow_ids: ls.track_event.flow_ids.to_a,
-            ),
+            track_event: dup_with(ls.track_event, { type: TrackEvent::Type::TYPE_SLICE_BEGIN }),
             trusted_packet_sequence_id: @pid,
           )
         end
@@ -411,14 +401,16 @@ module GraphQL
 
       def begin_dataloader_source(source)
         fds = @flow_ids[source]
-        @packets << TracePacket.new(
+        fds_copy = fds.dup
+        fds.clear
+        packet = TracePacket.new(
           timestamp: ts,
           track_event: TrackEvent.new(
             type: TrackEvent::Type::TYPE_SLICE_BEGIN,
             track_uuid: fid,
-            name: source.class.name,
+            name: @clean_source_names[source.class],
             categories: ["dataloader"],
-            flow_ids: fds,
+            flow_ids: fds_copy,
             extra_counter_track_uuids: [@objects_counter_id],
             extra_counter_values: [count_allocations],
             debug_annotations: [
@@ -436,6 +428,8 @@ module GraphQL
           ),
           trusted_packet_sequence_id: @pid,
         )
+        @packets << packet
+        fiber_flow_stack << packet
       end
 
       def end_dataloader_source(source)
@@ -450,6 +444,7 @@ module GraphQL
           ),
           trusted_packet_sequence_id: @pid,
         )
+        fiber_flow_stack.pop
       end
 
       def write(file:, debug_json: false)
@@ -527,6 +522,16 @@ module GraphQL
 
       def count_fields
         @fields_count += 1
+      end
+
+      def dup_with(message, attrs)
+        new_attrs = message.to_h
+        new_attrs.merge!(attrs)
+        message.class.new(**new_attrs)
+      end
+
+      def fiber_flow_stack
+        Fiber[:graphql_flow_stack] ||= []
       end
     end
   end

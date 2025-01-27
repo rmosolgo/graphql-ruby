@@ -2,7 +2,7 @@
 module GraphQL
   class Dataloader
     class AsyncDataloader < Dataloader
-      def yield
+      def yield(_source)
         if (condition = Fiber[:graphql_dataloader_next_tick])
           condition.wait
         else
@@ -24,7 +24,7 @@ module GraphQL
             first_pass = false
             fiber_vars = get_fiber_variables
 
-            while (f = (job_fibers.shift || (((job_fibers.size + next_job_fibers.size + source_tasks.size) < jobs_fiber_limit) && spawn_job_fiber)))
+            while (f = (job_fibers.shift || (((job_fibers.size + next_job_fibers.size + source_tasks.size) < jobs_fiber_limit) && spawn_job_fiber(nil))))
               if f.alive?
                 finished = run_fiber(f)
                 if !finished

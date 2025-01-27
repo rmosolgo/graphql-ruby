@@ -85,7 +85,7 @@ describe GraphQL::Dataloader do
           sleep 0.5
           Database.mget(keys)
         }
-        dataloader.yield
+        dataloader.yield(self)
         t.value
       end
     end
@@ -359,7 +359,7 @@ describe GraphQL::Dataloader do
 
 
       def lookahead_ingredient(input:, lookahead:)
-        lookahead.arguments # forces a datalaoder.run_isolated call
+        lookahead.arguments # forces a dataloader.run_isolated call
         dataloader.with(CustomBatchKeySource, input[:batch_key]).load(input[:id])
       end
     end

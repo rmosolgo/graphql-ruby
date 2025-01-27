@@ -17,6 +17,15 @@ if testing_rails?
         end
       end
 
+      class OtherBook < GraphQL::Dataloader::Source
+        def fetch(books)
+          author_ids = books.map(&:author_id).uniq
+          book_ids = ::Book.select(:id).where(author_id: author_ids).where.not(id: books.map(&:id)).group(:author_id).maximum(:id)
+          other_books = dataloader.with(Record, ::Book).load_all(book_ids.values)
+          books.map { |b| other_books.find { |b2| b.author_id == b2.author_id } }
+        end
+      end
+
       class Record < GraphQL::Dataloader::Source
         def initialize(model)
           @model = model
@@ -45,7 +54,7 @@ if testing_rails?
         field :reviews, [Review]
         field :average_review, Float
         field :author, "PerfettoSchema::Author"
-
+        field :other_book, Book
         def reviews
           object.reviews.limit(2)
         end
@@ -56,6 +65,10 @@ if testing_rails?
 
         def author
           dataloader.with(Record, ::Author).load(object.author_id)
+        end
+
+        def other_book
+          dataloader.with(OtherBook).load(object)
         end
       end
 
@@ -77,7 +90,7 @@ if testing_rails?
 
       query(Query)
       use GraphQL::Dataloader, fiber_limit: 7
-      trace_with GraphQL::Tracing::PerfettoTrace
+      trace_with GraphQL::Tracing::PerfettoTrace, name_prefix: "PerfettoSchema::"
     end
 
     it "traces fields, dataloader, and activesupport notifications" do
@@ -97,6 +110,7 @@ if testing_rails?
             author {
               name
             }
+            otherBook { title }
           }
         }
       }
@@ -105,21 +119,24 @@ if testing_rails?
       PerfettoSchema.execute(query_str)
 
       res = PerfettoSchema.execute(query_str)
+      if ENV["DUMP_PERFETTO"]
+        res.context.query.current_trace.write(file: "perfetto.dump")
+      end
+
       json = res.context.query.current_trace.write(file: nil, debug_json: true)
       data = JSON.parse(json)
 
       check_snapshot(data, "example.json")
 
-      if ENV["DUMP_PERFETTO"]
-        res.context.query.current_trace.write(file: "perfetto.dump")
-      end
+
     end
 
     def check_snapshot(data, snapshot_name)
       snapshot_path = "spec/graphql/tracing/perfetto_trace/#{snapshot_name}"
       if ENV["UPDATE_PERFETTO"]
         puts "Updating PerfettoTrace snapshot"
-        File.write(snapshot_path, JSON.pretty_generate(data))
+        snapshot_json = convert_to_snapshot(data)
+        File.write(snapshot_path, JSON.pretty_generate(snapshot_json))
       else
         snapshot_data = JSON.parse(File.read(snapshot_path))
         deep_snap_match(snapshot_data, data, [])
@@ -132,15 +149,14 @@ if testing_rails?
         if snapshot_data.match(/\D/).nil? && data.match(/\D/).nil?
           # Ok
         else
-          assert_equal snapshot_data, data, "Match at #{path.join(".")}"
+          assert_equal snapshot_data.sub(" #1010", ""), data.sub(/ #\d+/, ""), "Match at #{path.join(".")}"
         end
       when Numeric
         assert_equal snapshot_data.class, data.class, "Match at #{path.join(".")}"
       when Hash
         assert_equal snapshot_data.class, data.class, "Match at #{path.join(".")}"
-        d_keys = data.keys
+        assert_equal snapshot_data.keys.sort, data.keys.sort, "Match at #{path.join(".")}"
         snapshot_data.each do |k, v|
-          assert_includes d_keys, k, "Key match at #{path.join(".")}"
           deep_snap_match(v, data[k], path + [k])
         end
       when Array
@@ -149,6 +165,31 @@ if testing_rails?
           data_i = data[idx]
           deep_snap_match(snapshot_i, data_i, path + [idx])
         end
+      end
+    end
+
+    def convert_to_snapshot(value)
+      case value
+      when String
+        if value.match(/\D/).nil?
+          "10101010101010"
+        else
+          value.sub(/ #\d+/, " #1010")
+        end
+      when Numeric
+        101010101010
+      when Array
+        value.map { |v| convert_to_snapshot(v) }
+      when Hash
+        h2 = {}
+        value.each do |k, v|
+          h2[k] = convert_to_snapshot(v)
+        end
+        h2
+      when true, false, nil
+        value
+      else
+        raise ArgumentError, "Unexpected JSON value: #{value}"
       end
     end
   end
