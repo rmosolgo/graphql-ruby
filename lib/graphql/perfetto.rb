@@ -1,11 +1,10 @@
 # frozen_string_literal: true
-require "protos/perfetto/trace/trace_pb"
-
 module GraphQL
   # TODO:
-  # - Pare down to minimal protobuf definition
   # - Move into Trace module
   # - Support nested source calls
+  # - Merge counters into other events
+  # - Use terminating_flow_ids
   class Perfetto
     def initialize
       @pid = Process.pid
@@ -15,54 +14,54 @@ module GraphQL
       @fibers_counter_id = :fibers_counter.object_id
       @fields_counter_id = :fields_counter.object_id
       @packets = []
-      @packets << ::Perfetto::Protos::TracePacket.new(
-        track_descriptor: ::Perfetto::Protos::TrackDescriptor.new(
+      @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
+        track_descriptor: GraphQL::Tracing::PerfettoTrace::TrackDescriptor.new(
           uuid: tid,
           name: "Main Thread",
-          child_ordering: ::Perfetto::Protos::TrackDescriptor::ChildTracksOrdering::CHRONOLOGICAL,
+          child_ordering: GraphQL::Tracing::PerfettoTrace::TrackDescriptor::ChildTracksOrdering::CHRONOLOGICAL,
         )
       )
       @main_fiber_id = fid
-      @packets << ::Perfetto::Protos::TracePacket.new(
-        track_descriptor: ::Perfetto::Protos::TrackDescriptor.new(
+      @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
+        track_descriptor: GraphQL::Tracing::PerfettoTrace::TrackDescriptor.new(
           parent_uuid: tid,
           uuid: fid,
           name: "Main Fiber",
-          child_ordering: ::Perfetto::Protos::TrackDescriptor::ChildTracksOrdering::CHRONOLOGICAL,
+          child_ordering: GraphQL::Tracing::PerfettoTrace::TrackDescriptor::ChildTracksOrdering::CHRONOLOGICAL,
         )
       )
-      @packets << ::Perfetto::Protos::TracePacket.new(
-        track_descriptor: ::Perfetto::Protos::TrackDescriptor.new(
+      @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
+        track_descriptor: GraphQL::Tracing::PerfettoTrace::TrackDescriptor.new(
           parent_uuid: tid,
           uuid: @objects_counter_id,
           name: "Allocations",
-          counter: ::Perfetto::Protos::CounterDescriptor.new(
-            unit: ::Perfetto::Protos::CounterDescriptor::Unit::UNIT_UNSPECIFIED,
+          counter: GraphQL::Tracing::PerfettoTrace::CounterDescriptor.new(
+            unit: GraphQL::Tracing::PerfettoTrace::CounterDescriptor::Unit::UNIT_UNSPECIFIED,
             unit_name: "Objects"
           )
         )
       )
       count_allocations
-      @packets << ::Perfetto::Protos::TracePacket.new(
-        track_descriptor: ::Perfetto::Protos::TrackDescriptor.new(
+      @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
+        track_descriptor: GraphQL::Tracing::PerfettoTrace::TrackDescriptor.new(
           parent_uuid: tid,
           uuid: @fibers_counter_id,
           name: "Fibers",
-          counter: ::Perfetto::Protos::CounterDescriptor.new(
-            unit: ::Perfetto::Protos::CounterDescriptor::Unit::UNIT_COUNT,
+          counter: GraphQL::Tracing::PerfettoTrace::CounterDescriptor.new(
+            unit: GraphQL::Tracing::PerfettoTrace::CounterDescriptor::Unit::UNIT_COUNT,
           )
         )
       )
       @fibers_count = 0
       count_fibers(0)
 
-      @packets << ::Perfetto::Protos::TracePacket.new(
-        track_descriptor: ::Perfetto::Protos::TrackDescriptor.new(
+      @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
+        track_descriptor: GraphQL::Tracing::PerfettoTrace::TrackDescriptor.new(
           parent_uuid: tid,
           uuid: @fields_counter_id,
           name: "Resolved Fields",
-          counter: ::Perfetto::Protos::CounterDescriptor.new(
-            unit: ::Perfetto::Protos::CounterDescriptor::Unit::UNIT_COUNT,
+          counter: GraphQL::Tracing::PerfettoTrace::CounterDescriptor.new(
+            unit: GraphQL::Tracing::PerfettoTrace::CounterDescriptor::Unit::UNIT_COUNT,
           )
         )
       )
@@ -76,30 +75,30 @@ module GraphQL
           metadata.compact!
           categories = [name]
           te = if metadata.empty?
-            ::Perfetto::Protos::TrackEvent.new(
-              type: ::Perfetto::Protos::TrackEvent::Type::TYPE_SLICE_BEGIN,
+            GraphQL::Tracing::PerfettoTrace::TrackEvent.new(
+              type: GraphQL::Tracing::PerfettoTrace::TrackEvent::Type::TYPE_SLICE_BEGIN,
               track_uuid: fid,
               categories: categories,
               name: name,
             )
           else
-            ::Perfetto::Protos::TrackEvent.new(
-              type: ::Perfetto::Protos::TrackEvent::Type::TYPE_SLICE_BEGIN,
+            GraphQL::Tracing::PerfettoTrace::TrackEvent.new(
+              type: GraphQL::Tracing::PerfettoTrace::TrackEvent::Type::TYPE_SLICE_BEGIN,
               track_uuid: fid,
               name: name,
               categories: categories,
               debug_annotations: metadata,
             )
           end
-          @packets << ::Perfetto::Protos::TracePacket.new(
+          @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
             timestamp: (start * 1_000_000_000).to_i,
             track_event: te,
             trusted_packet_sequence_id: @pid,
           )
-          @packets << ::Perfetto::Protos::TracePacket.new(
+          @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
             timestamp: (finish * 1_000_000_000).to_i,
-            track_event: ::Perfetto::Protos::TrackEvent.new(
-              type: ::Perfetto::Protos::TrackEvent::Type::TYPE_SLICE_END,
+            track_event: GraphQL::Tracing::PerfettoTrace::TrackEvent.new(
+              type: GraphQL::Tracing::PerfettoTrace::TrackEvent::Type::TYPE_SLICE_END,
               track_uuid: fid,
               name: name,
             ),
@@ -111,9 +110,9 @@ module GraphQL
 
     def debug_annotation(name, value_key, value)
       if name
-        ::Perfetto::Protos::DebugAnnotation.new(name: name, value_key => value)
+        GraphQL::Tracing::PerfettoTrace::DebugAnnotation.new(name: name, value_key => value)
       else
-        ::Perfetto::Protos::DebugAnnotation.new(value_key => value)
+        GraphQL::Tracing::PerfettoTrace::DebugAnnotation.new(value_key => value)
       end
     end
 
@@ -128,7 +127,7 @@ module GraphQL
       when true, false
         debug_annotation(k, :bool_value, v)
       when nil
-        ::Perfetto::Protos::DebugAnnotation.new(name: k)
+        GraphQL::Tracing::PerfettoTrace::DebugAnnotation.new(name: k)
       when Module
         debug_annotation(k, :string_value, "::#{v.name}>")
       when Symbol
@@ -142,10 +141,10 @@ module GraphQL
       end
     end
     def count_allocations
-      @packets << ::Perfetto::Protos::TracePacket.new(
+      @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
         timestamp: ts,
-        track_event: ::Perfetto::Protos::TrackEvent.new(
-          type: ::Perfetto::Protos::TrackEvent::Type::TYPE_COUNTER,
+        track_event: GraphQL::Tracing::PerfettoTrace::TrackEvent.new(
+          type: GraphQL::Tracing::PerfettoTrace::TrackEvent::Type::TYPE_COUNTER,
           track_uuid: @objects_counter_id,
           counter_value: GC.stat(:total_allocated_objects) - @starting_objects,
         ),
@@ -154,10 +153,10 @@ module GraphQL
     end
 
     def count_fibers(diff)
-      @packets << ::Perfetto::Protos::TracePacket.new(
+      @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
         timestamp: ts,
-        track_event: ::Perfetto::Protos::TrackEvent.new(
-          type: ::Perfetto::Protos::TrackEvent::Type::TYPE_COUNTER,
+        track_event: GraphQL::Tracing::PerfettoTrace::TrackEvent.new(
+          type: GraphQL::Tracing::PerfettoTrace::TrackEvent::Type::TYPE_COUNTER,
           track_uuid: @fibers_counter_id,
           counter_value: @fibers_count += diff,
         ),
@@ -166,10 +165,10 @@ module GraphQL
     end
 
     def count_fields
-      @packets << ::Perfetto::Protos::TracePacket.new(
+      @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
         timestamp: ts,
-        track_event: ::Perfetto::Protos::TrackEvent.new(
-          type: ::Perfetto::Protos::TrackEvent::Type::TYPE_COUNTER,
+        track_event: GraphQL::Tracing::PerfettoTrace::TrackEvent.new(
+          type: GraphQL::Tracing::PerfettoTrace::TrackEvent::Type::TYPE_COUNTER,
           track_uuid: @fields_counter_id,
           counter_value: @fields_count += 1,
         ),
@@ -178,10 +177,10 @@ module GraphQL
     end
 
     def begin_multiplex(m)
-      @packets << ::Perfetto::Protos::TracePacket.new(
+      @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
         timestamp: ts,
-        track_event: ::Perfetto::Protos::TrackEvent.new(
-          type: ::Perfetto::Protos::TrackEvent::Type::TYPE_SLICE_BEGIN,
+        track_event: GraphQL::Tracing::PerfettoTrace::TrackEvent.new(
+          type: GraphQL::Tracing::PerfettoTrace::TrackEvent::Type::TYPE_SLICE_BEGIN,
           track_uuid: fid,
           name: "Multiplex"
         ),
@@ -190,10 +189,10 @@ module GraphQL
     end
 
     def end_multiplex(m)
-      @packets << ::Perfetto::Protos::TracePacket.new(
+      @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
         timestamp: ts,
-        track_event: ::Perfetto::Protos::TrackEvent.new(
-          type: ::Perfetto::Protos::TrackEvent::Type::TYPE_SLICE_END,
+        track_event: GraphQL::Tracing::PerfettoTrace::TrackEvent.new(
+          type: GraphQL::Tracing::PerfettoTrace::TrackEvent::Type::TYPE_SLICE_END,
           track_uuid: fid,
         ),
         trusted_packet_sequence_id: @pid,
@@ -205,10 +204,10 @@ module GraphQL
 
     def begin_selection(result, result_name)
       count_allocations
-      @packets << Fiber[:graphql_last_selection] = ::Perfetto::Protos::TracePacket.new(
+      @packets << Fiber[:graphql_last_selection] = GraphQL::Tracing::PerfettoTrace::TracePacket.new(
         timestamp: ts,
-        track_event: ::Perfetto::Protos::TrackEvent.new(
-          type: ::Perfetto::Protos::TrackEvent::Type::TYPE_SLICE_BEGIN,
+        track_event: GraphQL::Tracing::PerfettoTrace::TrackEvent.new(
+          type: GraphQL::Tracing::PerfettoTrace::TrackEvent::Type::TYPE_SLICE_BEGIN,
           track_uuid: fid,
           name: "#{result.path.join(".")}.#{result_name}",
           flow_ids: [rand(999_999)]
@@ -219,10 +218,10 @@ module GraphQL
 
     def end_selection(result, result_name)
       count_allocations
-      @packets << ::Perfetto::Protos::TracePacket.new(
+      @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
         timestamp: ts,
-        track_event: ::Perfetto::Protos::TrackEvent.new(
-          type: ::Perfetto::Protos::TrackEvent::Type::TYPE_SLICE_END,
+        track_event: GraphQL::Tracing::PerfettoTrace::TrackEvent.new(
+          type: GraphQL::Tracing::PerfettoTrace::TrackEvent::Type::TYPE_SLICE_END,
           track_uuid: fid,
         ),
         trusted_packet_sequence_id: @pid,
@@ -232,10 +231,10 @@ module GraphQL
 
     def begin_analysis(m)
       count_allocations
-      @packets << ::Perfetto::Protos::TracePacket.new(
+      @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
         timestamp: ts,
-        track_event: ::Perfetto::Protos::TrackEvent.new(
-          type: ::Perfetto::Protos::TrackEvent::Type::TYPE_SLICE_BEGIN,
+        track_event: GraphQL::Tracing::PerfettoTrace::TrackEvent.new(
+          type: GraphQL::Tracing::PerfettoTrace::TrackEvent::Type::TYPE_SLICE_BEGIN,
           track_uuid: fid,
           name: "Analysis"
         ),
@@ -245,10 +244,10 @@ module GraphQL
 
     def end_analysis(m)
       count_allocations
-      @packets << ::Perfetto::Protos::TracePacket.new(
+      @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
         timestamp: ts,
-        track_event: ::Perfetto::Protos::TrackEvent.new(
-          type: ::Perfetto::Protos::TrackEvent::Type::TYPE_SLICE_END,
+        track_event: GraphQL::Tracing::PerfettoTrace::TrackEvent.new(
+          type: GraphQL::Tracing::PerfettoTrace::TrackEvent::Type::TYPE_SLICE_END,
           track_uuid: fid,
         ),
         trusted_packet_sequence_id: @pid,
@@ -257,10 +256,10 @@ module GraphQL
 
     def begin_parse(str)
       count_allocations
-      @packets << ::Perfetto::Protos::TracePacket.new(
+      @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
         timestamp: ts,
-        track_event: ::Perfetto::Protos::TrackEvent.new(
-          type: ::Perfetto::Protos::TrackEvent::Type::TYPE_SLICE_BEGIN,
+        track_event: GraphQL::Tracing::PerfettoTrace::TrackEvent.new(
+          type: GraphQL::Tracing::PerfettoTrace::TrackEvent::Type::TYPE_SLICE_BEGIN,
           track_uuid: fid,
           name: "Parse"
         ),
@@ -270,10 +269,10 @@ module GraphQL
 
     def end_parse(str)
       count_allocations
-      @packets << ::Perfetto::Protos::TracePacket.new(
+      @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
         timestamp: ts,
-        track_event: ::Perfetto::Protos::TrackEvent.new(
-          type: ::Perfetto::Protos::TrackEvent::Type::TYPE_SLICE_END,
+        track_event: GraphQL::Tracing::PerfettoTrace::TrackEvent.new(
+          type: GraphQL::Tracing::PerfettoTrace::TrackEvent::Type::TYPE_SLICE_END,
           track_uuid: fid,
         ),
         trusted_packet_sequence_id: @pid,
@@ -282,44 +281,44 @@ module GraphQL
 
     def spawn_job_fiber
       count_fibers(1)
-      @packets << ::Perfetto::Protos::TracePacket.new(
+      @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
         timestamp: ts,
-        track_event: ::Perfetto::Protos::TrackEvent.new(
-          type: ::Perfetto::Protos::TrackEvent::Type::TYPE_INSTANT,
+        track_event: GraphQL::Tracing::PerfettoTrace::TrackEvent.new(
+          type: GraphQL::Tracing::PerfettoTrace::TrackEvent::Type::TYPE_INSTANT,
           track_uuid: fid,
           name: "Create Job Fiber",
           categories: ["dataloader"],
         ),
         trusted_packet_sequence_id: @pid,
       )
-      @packets << ::Perfetto::Protos::TracePacket.new(
-        track_descriptor: ::Perfetto::Protos::TrackDescriptor.new(
+      @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
+        track_descriptor: GraphQL::Tracing::PerfettoTrace::TrackDescriptor.new(
           uuid: fid,
           name: "Job Fiber ##{fid}",
           parent_uuid: @did,
-          child_ordering: ::Perfetto::Protos::TrackDescriptor::ChildTracksOrdering::CHRONOLOGICAL,
+          child_ordering: GraphQL::Tracing::PerfettoTrace::TrackDescriptor::ChildTracksOrdering::CHRONOLOGICAL,
         )
       )
     end
 
     def spawn_source_fiber
       count_fibers(1)
-      @packets << ::Perfetto::Protos::TracePacket.new(
+      @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
         timestamp: ts,
-        track_event: ::Perfetto::Protos::TrackEvent.new(
-          type: ::Perfetto::Protos::TrackEvent::Type::TYPE_INSTANT,
+        track_event: GraphQL::Tracing::PerfettoTrace::TrackEvent.new(
+          type: GraphQL::Tracing::PerfettoTrace::TrackEvent::Type::TYPE_INSTANT,
           track_uuid: fid,
           name: "Create Source Fiber",
           categories: ["dataloader"],
         ),
         trusted_packet_sequence_id: @pid,
       )
-      @packets << ::Perfetto::Protos::TracePacket.new(
-        track_descriptor: ::Perfetto::Protos::TrackDescriptor.new(
+      @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
+        track_descriptor: GraphQL::Tracing::PerfettoTrace::TrackDescriptor.new(
           uuid: fid,
           name: "Source Fiber ##{fid}",
           parent_uuid: @did,
-          child_ordering: ::Perfetto::Protos::TrackDescriptor::ChildTracksOrdering::CHRONOLOGICAL,
+          child_ordering: GraphQL::Tracing::PerfettoTrace::TrackDescriptor::ChildTracksOrdering::CHRONOLOGICAL,
         )
       )
     end
@@ -327,19 +326,19 @@ module GraphQL
     def fiber_yield(source)
       if (ls = Fiber[:graphql_last_selection])
         @flow_ids[source] << ls.track_event.flow_ids.first
-        @packets << ::Perfetto::Protos::TracePacket.new(
+        @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
           timestamp: ts,
-          track_event: ::Perfetto::Protos::TrackEvent.new(
-            type: ::Perfetto::Protos::TrackEvent::Type::TYPE_SLICE_END,
+          track_event: GraphQL::Tracing::PerfettoTrace::TrackEvent.new(
+            type: GraphQL::Tracing::PerfettoTrace::TrackEvent::Type::TYPE_SLICE_END,
             track_uuid: fid,
           ),
           trusted_packet_sequence_id: @pid,
         )
       end
-      @packets << ::Perfetto::Protos::TracePacket.new(
+      @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
         timestamp: ts,
-        track_event: ::Perfetto::Protos::TrackEvent.new(
-          type: ::Perfetto::Protos::TrackEvent::Type::TYPE_INSTANT,
+        track_event: GraphQL::Tracing::PerfettoTrace::TrackEvent.new(
+          type: GraphQL::Tracing::PerfettoTrace::TrackEvent::Type::TYPE_INSTANT,
           track_uuid: fid,
           name: "Fiber Yield",
           categories: ["dataloader"],
@@ -349,10 +348,10 @@ module GraphQL
     end
 
     def fiber_resume
-      @packets << ::Perfetto::Protos::TracePacket.new(
+      @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
         timestamp: ts,
-        track_event: ::Perfetto::Protos::TrackEvent.new(
-          type: ::Perfetto::Protos::TrackEvent::Type::TYPE_INSTANT,
+        track_event: GraphQL::Tracing::PerfettoTrace::TrackEvent.new(
+          type: GraphQL::Tracing::PerfettoTrace::TrackEvent::Type::TYPE_INSTANT,
           track_uuid: fid,
           name: "Fiber Resume",
           categories: ["dataloader"],
@@ -360,10 +359,10 @@ module GraphQL
         trusted_packet_sequence_id: @pid,
       )
       if (ls = Fiber[:graphql_last_selection])
-        @packets << ::Perfetto::Protos::TracePacket.new(
+        @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
           timestamp: ts,
-          track_event: ::Perfetto::Protos::TrackEvent.new(
-            type: ::Perfetto::Protos::TrackEvent::Type::TYPE_SLICE_BEGIN,
+          track_event: GraphQL::Tracing::PerfettoTrace::TrackEvent.new(
+            type: GraphQL::Tracing::PerfettoTrace::TrackEvent::Type::TYPE_SLICE_BEGIN,
             track_uuid: fid,
             name: ls.track_event.name,
             flow_ids: ls.track_event.flow_ids.to_a,
@@ -375,10 +374,10 @@ module GraphQL
 
     def fiber_exit
       count_fibers(-1)
-      @packets << ::Perfetto::Protos::TracePacket.new(
+      @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
         timestamp: ts,
-        track_event: ::Perfetto::Protos::TrackEvent.new(
-          type: ::Perfetto::Protos::TrackEvent::Type::TYPE_INSTANT,
+        track_event: GraphQL::Tracing::PerfettoTrace::TrackEvent.new(
+          type: GraphQL::Tracing::PerfettoTrace::TrackEvent::Type::TYPE_INSTANT,
           track_uuid: fid,
           name: "Fiber Exit",
           categories: ["dataloader"],
@@ -389,10 +388,10 @@ module GraphQL
 
     def begin_dataloader
       count_fibers(1)
-      @packets << ::Perfetto::Protos::TracePacket.new(
+      @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
         timestamp: ts,
-        track_event: ::Perfetto::Protos::TrackEvent.new(
-          type: ::Perfetto::Protos::TrackEvent::Type::TYPE_SLICE_BEGIN,
+        track_event: GraphQL::Tracing::PerfettoTrace::TrackEvent.new(
+          type: GraphQL::Tracing::PerfettoTrace::TrackEvent::Type::TYPE_SLICE_BEGIN,
           track_uuid: fid,
           name: "Dataloader",
           categories: ["dataloader"],
@@ -400,8 +399,8 @@ module GraphQL
         trusted_packet_sequence_id: @pid,
       )
       @did = fid
-      @packets << ::Perfetto::Protos::TracePacket.new(
-        track_descriptor: ::Perfetto::Protos::TrackDescriptor.new(
+      @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
+        track_descriptor: GraphQL::Tracing::PerfettoTrace::TrackDescriptor.new(
           uuid: fid,
           name: "Dataloader Fiber ##{fid}",
           parent_uuid: @main_fiber_id,
@@ -411,10 +410,10 @@ module GraphQL
 
     def end_dataloader
       count_fibers(-1)
-      @packets << ::Perfetto::Protos::TracePacket.new(
+      @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
         timestamp: ts,
-        track_event: ::Perfetto::Protos::TrackEvent.new(
-          type: ::Perfetto::Protos::TrackEvent::Type::TYPE_SLICE_END,
+        track_event: GraphQL::Tracing::PerfettoTrace::TrackEvent.new(
+          type: GraphQL::Tracing::PerfettoTrace::TrackEvent::Type::TYPE_SLICE_END,
           track_uuid: fid,
           categories: ["dataloader"],
         ),
@@ -425,21 +424,21 @@ module GraphQL
     def begin_source(source)
       count_allocations
       fds = @flow_ids[source]
-      @packets << ::Perfetto::Protos::TracePacket.new(
+      @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
         timestamp: ts,
-        track_event: ::Perfetto::Protos::TrackEvent.new(
-          type: ::Perfetto::Protos::TrackEvent::Type::TYPE_SLICE_BEGIN,
+        track_event: GraphQL::Tracing::PerfettoTrace::TrackEvent.new(
+          type: GraphQL::Tracing::PerfettoTrace::TrackEvent::Type::TYPE_SLICE_BEGIN,
           track_uuid: fid,
           name: source.class.name,
           categories: ["dataloader"],
           flow_ids: fds,
           debug_annotations: [
-            ::Perfetto::Protos::DebugAnnotation.new(
+            GraphQL::Tracing::PerfettoTrace::DebugAnnotation.new(
               name: "fetch_keys",
               string_value: source.pending.values.inspect,
             ),
             *(source.instance_variables - [:@pending, :@fetching, :@results, :@dataloader]).map { |iv|
-              ::Perfetto::Protos::DebugAnnotation.new(
+              GraphQL::Tracing::PerfettoTrace::DebugAnnotation.new(
                 name: iv.to_s,
                 string_value: source.instance_variable_get(iv)&.inspect,
               )
@@ -452,10 +451,10 @@ module GraphQL
 
     def end_source(source)
       count_allocations
-      @packets << ::Perfetto::Protos::TracePacket.new(
+      @packets << GraphQL::Tracing::PerfettoTrace::TracePacket.new(
         timestamp: ts,
-        track_event: ::Perfetto::Protos::TrackEvent.new(
-          type: ::Perfetto::Protos::TrackEvent::Type::TYPE_SLICE_END,
+        track_event: GraphQL::Tracing::PerfettoTrace::TrackEvent.new(
+          type: GraphQL::Tracing::PerfettoTrace::TrackEvent::Type::TYPE_SLICE_END,
           track_uuid: fid,
           categories: ["dataloader"],
         ),
@@ -464,10 +463,10 @@ module GraphQL
     end
 
     def write
-      trace = ::Perfetto::Protos::Trace.new(
+      trace = GraphQL::Tracing::PerfettoTrace::Trace.new(
         packet: @packets,
       )
-      File.write("flamegraph.dump", ::Perfetto::Protos::Trace.encode(trace))
+      File.write("flamegraph.dump", GraphQL::Tracing::PerfettoTrace::Trace.encode(trace))
     end
 
     private
