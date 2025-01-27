@@ -57,11 +57,11 @@ jobs:
           - gemfile: gemfiles/rails_master.gemfile
             ruby: 3.3
             graphql_reject_numbers_followed_by_names: 1
+            coverage: 1
           - gemfile: gemfiles/rails_master.gemfile
             ruby: 3.4
             graphql_reject_numbers_followed_by_names: 1
             isolation_level_fiber: 1
-            coverage: 1
     runs-on: ubuntu-latest
     steps:
     - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > $GITHUB_ENV
