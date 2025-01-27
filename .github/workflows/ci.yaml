@@ -61,6 +61,7 @@ jobs:
             ruby: 3.4
             graphql_reject_numbers_followed_by_names: 1
             isolation_level_fiber: 1
+            coverage: 1
     runs-on: ubuntu-latest
     steps:
     - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > $GITHUB_ENV
@@ -76,6 +77,8 @@ jobs:
         bundler: ${{ matrix.bundler || 'default' }}
     - run: bundle exec rake compile
     - run: bundle exec rake test
+    - uses: k1LoW/octocov-action@v1
+      if: ${{ !!matrix.coverage }}
   javascript_test:
     runs-on: ubuntu-latest
     steps:
