@@ -70,6 +70,9 @@ jobs:
     - run: echo ISOLATION_LEVEL_FIBER=1 > $GITHUB_ENV
       if: ${{ !!matrix.isolation_level_fiber }}
     - uses: actions/checkout@v4
+    - run: git remote -v
+    - run: git branch
+    - run: git log origin/master -n 5
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby }}
