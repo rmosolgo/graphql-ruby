@@ -4,7 +4,7 @@ require "graphql/tracing/perfetto_trace/trace_pb"
 module GraphQL
   module Tracing
     # TODO:
-    # - Support nested source calls
+    # - Support flows in nested source calls
     # - Don't add flows to fields that don't pause
     # - Add snapshot tests using JSON output from Protobuf
     module PerfettoTrace
@@ -135,50 +135,6 @@ module GraphQL
         end
       end
 
-      def debug_annotation(name, value_key, value)
-        if name
-          DebugAnnotation.new(name: name, value_key => value)
-        else
-          DebugAnnotation.new(value_key => value)
-        end
-      end
-
-      def payload_to_debug(k, v)
-        case v
-        when String
-          debug_annotation(k, :string_value, v)
-        when Float
-          debug_annotation(k, :double_value, v)
-        when Integer
-          debug_annotation(k, :int_value, v)
-        when true, false
-          debug_annotation(k, :bool_value, v)
-        when nil
-          DebugAnnotation.new(name: k)
-        when Module
-          debug_annotation(k, :string_value, "::#{v.name}>")
-        when Symbol
-          debug_annotation(k, :string_value, v.inspect)
-        when Array
-          debug_annotation(k, :array_values, v.map { |v2| payload_to_debug(nil, v2) })
-        when Hash
-          debug_annotation(k, :dict_entries, v.map { |k2, v2| payload_to_debug(k2, v2) })
-        else
-          debug_annotation(k, :string_value, v.inspect)
-        end
-      end
-      def count_allocations
-        GC.stat(:total_allocated_objects) - @starting_objects
-      end
-
-      def count_fibers(diff)
-        @fibers_count += diff
-      end
-
-      def count_fields
-        @fields_count += 1
-      end
-
       def begin_multiplex(m)
         @packets << TracePacket.new(
           timestamp: ts,
@@ -205,7 +161,7 @@ module GraphQL
         end
       end
 
-      def begin_selection(result, result_name)
+      def begin_execute_field(result, result_name)
         @packets << Fiber[:graphql_last_selection] = TracePacket.new(
           timestamp: ts,
           track_event: TrackEvent.new(
@@ -220,7 +176,7 @@ module GraphQL
         )
       end
 
-      def end_selection(result, result_name)
+      def end_execute_field(result, result_name)
         @packets << TracePacket.new(
           timestamp: ts,
           track_event: TrackEvent.new(
@@ -234,7 +190,7 @@ module GraphQL
         )
       end
 
-      def begin_analysis(m)
+      def begin_analyze_multiplex(m)
         @packets << TracePacket.new(
           timestamp: ts,
           track_event: TrackEvent.new(
@@ -248,7 +204,7 @@ module GraphQL
         )
       end
 
-      def end_analysis(m)
+      def end_analyze_multiplex(m)
         @packets << TracePacket.new(
           timestamp: ts,
           track_event: TrackEvent.new(
@@ -288,13 +244,13 @@ module GraphQL
         )
       end
 
-      def spawn_job_fiber
+      def dataloader_spawn_execution_fiber(jobs)
         @packets << TracePacket.new(
           timestamp: ts,
           track_event: TrackEvent.new(
             type: TrackEvent::Type::TYPE_INSTANT,
             track_uuid: fid,
-            name: "Create Job Fiber",
+            name: "Create Execution Fiber",
             categories: ["dataloader"],
             extra_counter_track_uuids: [@fibers_counter_id, @objects_counter_id],
             extra_counter_values: [count_fibers(1), count_allocations]
@@ -304,14 +260,14 @@ module GraphQL
         @packets << TracePacket.new(
           track_descriptor: TrackDescriptor.new(
             uuid: fid,
-            name: "Job Fiber ##{fid}",
+            name: "Exec Fiber ##{fid}",
             parent_uuid: @did,
             child_ordering: TrackDescriptor::ChildTracksOrdering::CHRONOLOGICAL,
           )
         )
       end
 
-      def spawn_source_fiber
+      def dataloader_spawn_source_fiber(pending_sources)
         @packets << TracePacket.new(
           timestamp: ts,
           track_event: TrackEvent.new(
@@ -334,7 +290,7 @@ module GraphQL
         )
       end
 
-      def fiber_yield(source)
+      def dataloader_fiber_yield(source)
         if (ls = Fiber[:graphql_last_selection])
           @flow_ids[source] << ls.track_event.flow_ids.first
           @packets << TracePacket.new(
@@ -358,7 +314,7 @@ module GraphQL
         )
       end
 
-      def fiber_resume
+      def dataloader_fiber_resume(source)
         @packets << TracePacket.new(
           timestamp: ts,
           track_event: TrackEvent.new(
@@ -383,7 +339,7 @@ module GraphQL
         end
       end
 
-      def fiber_exit
+      def dataloader_fiber_exit
         @packets << TracePacket.new(
           timestamp: ts,
           track_event: TrackEvent.new(
@@ -430,7 +386,7 @@ module GraphQL
         )
       end
 
-      def begin_source(source)
+      def begin_dataloader_source(source)
         fds = @flow_ids[source]
         @packets << TracePacket.new(
           timestamp: ts,
@@ -459,7 +415,7 @@ module GraphQL
         )
       end
 
-      def end_source(source)
+      def end_dataloader_source(source)
         @packets << TracePacket.new(
           timestamp: ts,
           track_event: TrackEvent.new(
@@ -493,6 +449,50 @@ module GraphQL
 
       def fid
         Fiber.current.object_id
+      end
+
+      def debug_annotation(name, value_key, value)
+        if name
+          DebugAnnotation.new(name: name, value_key => value)
+        else
+          DebugAnnotation.new(value_key => value)
+        end
+      end
+
+      def payload_to_debug(k, v)
+        case v
+        when String
+          debug_annotation(k, :string_value, v)
+        when Float
+          debug_annotation(k, :double_value, v)
+        when Integer
+          debug_annotation(k, :int_value, v)
+        when true, false
+          debug_annotation(k, :bool_value, v)
+        when nil
+          DebugAnnotation.new(name: k)
+        when Module
+          debug_annotation(k, :string_value, "::#{v.name}>")
+        when Symbol
+          debug_annotation(k, :string_value, v.inspect)
+        when Array
+          debug_annotation(k, :array_values, v.map { |v2| payload_to_debug(nil, v2) })
+        when Hash
+          debug_annotation(k, :dict_entries, v.map { |k2, v2| payload_to_debug(k2, v2) })
+        else
+          debug_annotation(k, :string_value, v.inspect)
+        end
+      end
+      def count_allocations
+        GC.stat(:total_allocated_objects) - @starting_objects
+      end
+
+      def count_fibers(diff)
+        @fibers_count += diff
+      end
+
+      def count_fields
+        @fields_count += 1
       end
     end
   end

@@ -131,9 +131,9 @@ module GraphQL
     # @return [void]
     def yield(source)
       trace = Fiber[:__graphql_current_multiplex]&.current_trace
-      trace&.fiber_yield(source)
+      trace&.dataloader_fiber_yield(source)
       Fiber.yield
-      trace&.fiber_resume
+      trace&.dataloader_fiber_resume(source)
       nil
     end
 
@@ -277,11 +277,11 @@ module GraphQL
     def spawn_job_fiber(trace)
       if !@pending_jobs.empty?
         spawn_fiber do
-          trace&.spawn_job_fiber
+          trace&.dataloader_spawn_execution_fiber(@pending_jobs)
           while job = @pending_jobs.shift
             job.call
           end
-          trace&.fiber_exit
+          trace&.dataloader_fiber_exit
         end
       end
     end
@@ -299,14 +299,14 @@ module GraphQL
 
       if pending_sources
         spawn_fiber do
-          trace&.spawn_source_fiber
+          trace&.dataloader_spawn_source_fiber(pending_sources)
           pending_sources.each do |source|
             Fiber[:__graphql_current_dataloader_source] = source
-            trace&.begin_source(source)
+            trace&.begin_dataloader_source(source)
             source.run_pending_keys
-            trace&.end_source(source)
+            trace&.end_dataloader_source(source)
           end
-          trace&.fiber_exit
+          trace&.dataloader_fiber_exit
         end
       end
     end
