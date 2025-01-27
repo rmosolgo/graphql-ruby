@@ -168,7 +168,6 @@ module GraphQL
             type: TrackEvent::Type::TYPE_SLICE_BEGIN,
             track_uuid: fid,
             name: "#{result.path.join(".")}.#{result_name}",
-            flow_ids: [rand(999_999)],
             extra_counter_track_uuids: [@objects_counter_id],
             extra_counter_values: [count_allocations],
           ),
@@ -177,15 +176,26 @@ module GraphQL
       end
 
       def end_execute_field(result, result_name)
-        @packets << TracePacket.new(
-          timestamp: ts,
-          track_event: TrackEvent.new(
+        flow_id = Fiber[:graphql_last_selection].track_event.flow_ids.first
+        track_event = if flow_id
+          TrackEvent.new(
             type: TrackEvent::Type::TYPE_SLICE_END,
             track_uuid: fid,
             extra_counter_track_uuids: [@objects_counter_id, @fields_counter_id],
             extra_counter_values: [count_allocations, count_fields],
-            terminating_flow_ids: [Fiber[:graphql_last_selection].track_event.flow_ids.first]
-          ),
+            terminating_flow_ids: [flow_id]
+          )
+        else
+          TrackEvent.new(
+            type: TrackEvent::Type::TYPE_SLICE_END,
+            track_uuid: fid,
+            extra_counter_track_uuids: [@objects_counter_id, @fields_counter_id],
+            extra_counter_values: [count_allocations, count_fields],
+          )
+        end
+        @packets << TracePacket.new(
+          timestamp: ts,
+          track_event: track_event,
           trusted_packet_sequence_id: @pid,
         )
       end
@@ -292,7 +302,20 @@ module GraphQL
 
       def dataloader_fiber_yield(source)
         if (ls = Fiber[:graphql_last_selection])
-          @flow_ids[source] << ls.track_event.flow_ids.first
+          if (flow_id = ls.track_event.flow_ids.first)
+            # got it
+          else
+            flow_id = rand(999_999)
+            ls.track_event = TrackEvent.new(
+              type: ls.track_event.type,
+              track_uuid: ls.track_event.track_uuid,
+              name: ls.track_event.name,
+              flow_ids: [flow_id],
+              extra_counter_track_uuids: ls.track_event.extra_counter_track_uuids.to_a,
+              extra_counter_values: ls.track_event.extra_counter_values.to_a,
+            )
+          end
+          @flow_ids[source] << flow_id
           @packets << TracePacket.new(
             timestamp: ts,
             track_event: TrackEvent.new(
@@ -429,12 +452,22 @@ module GraphQL
         )
       end
 
-      def write(file:)
+      def write(file:, debug_json: false)
         trace = Trace.new(
           packet: @packets,
         )
-        data = Trace.encode(trace)
-        File.write(file, data)
+        data = if debug_json
+          small_json = Trace.encode_json(trace)
+          JSON.pretty_generate(JSON.parse(small_json))
+        else
+          Trace.encode(trace)
+        end
+
+        if file
+          File.write(file, data, mode: 'wb')
+        else
+          data
+        end
       end
 
       private
@@ -476,13 +509,14 @@ module GraphQL
         when Symbol
           debug_annotation(k, :string_value, v.inspect)
         when Array
-          debug_annotation(k, :array_values, v.map { |v2| payload_to_debug(nil, v2) })
+          debug_annotation(k, :array_values, v.map { |v2| payload_to_debug(nil, v2) }.compact)
         when Hash
-          debug_annotation(k, :dict_entries, v.map { |k2, v2| payload_to_debug(k2, v2) })
+          debug_annotation(k, :dict_entries, v.map { |k2, v2| payload_to_debug(k2, v2) }.compact)
         else
-          debug_annotation(k, :string_value, v.inspect)
+          nil
         end
       end
+
       def count_allocations
         GC.stat(:total_allocated_objects) - @starting_objects
       end

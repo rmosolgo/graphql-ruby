@@ -1,0 +1,5748 @@
+{
+  "packet": [
+    {
+      "trackDescriptor": {
+        "uuid": "1608",
+        "name": "Main Thread",
+        "childOrdering": "CHRONOLOGICAL"
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "7456",
+        "name": "Main Fiber",
+        "parentUuid": "1608",
+        "childOrdering": "CHRONOLOGICAL"
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "138432780",
+        "name": "Allocations",
+        "parentUuid": "1608",
+        "counter": {
+          "unit": "UNIT_UNSPECIFIED",
+          "unitName": "Objects"
+        }
+      }
+    },
+    {
+      "timestamp": "4105935147105000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_COUNTER",
+        "trackUuid": "138432780",
+        "counterValue": "22"
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "138436876",
+        "name": "Fibers",
+        "parentUuid": "1608",
+        "counter": {
+          "unit": "UNIT_COUNT"
+        }
+      }
+    },
+    {
+      "timestamp": "4105935147122000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_COUNTER",
+        "trackUuid": "138436876",
+        "counterValue": "0"
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "138440972",
+        "name": "Resolved Fields",
+        "parentUuid": "1608",
+        "counter": {
+          "unit": "UNIT_COUNT"
+        }
+      }
+    },
+    {
+      "timestamp": "4105935147138000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_COUNTER",
+        "trackUuid": "138440972",
+        "counterValue": "0"
+      }
+    },
+    {
+      "timestamp": "4105935147175000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7456",
+        "name": "Multiplex"
+      }
+    },
+    {
+      "timestamp": "4105935147190000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7456",
+        "extraCounterValues": [
+          "83"
+        ],
+        "name": "Analysis",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935147234000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7456",
+        "extraCounterValues": [
+          "102"
+        ],
+        "name": "Parse",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935147343000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7456",
+        "extraCounterValues": [
+          "161"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935147834000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7456",
+        "extraCounterValues": [
+          "420"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935147874000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_COUNTER",
+        "trackUuid": "138436876",
+        "counterValue": "1"
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "7664",
+        "name": "Dataloader Fiber #7664",
+        "parentUuid": "7456"
+      }
+    },
+    {
+      "timestamp": "4105935147902000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "2",
+          "477"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Create Execution Fiber",
+        "extraCounterTrackUuids": [
+          "138436876",
+          "138432780"
+        ]
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "7672",
+        "name": "Exec Fiber #7672",
+        "parentUuid": "7664",
+        "childOrdering": "CHRONOLOGICAL"
+      }
+    },
+    {
+      "timestamp": "4105935147979000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "523"
+        ],
+        "name": ".authors",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935148234000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "SELECT \"authors\".* FROM \"authors\"",
+            "name": "sql"
+          },
+          {
+            "stringValue": "Author Load",
+            "name": "name"
+          },
+          {
+            "name": "binds"
+          },
+          {
+            "name": "type_casted_binds"
+          },
+          {
+            "name": "statement_name"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "categories": [
+          "sql.active_record"
+        ],
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935148302000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935148388000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "intValue": "3",
+            "name": "record_count"
+          },
+          {
+            "stringValue": "Author",
+            "name": "class_name"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "categories": [
+          "instantiation.active_record"
+        ],
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935148432000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935148478000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "730",
+          "1"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935148512000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "748",
+          "2"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935148543000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "767",
+          "3"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935148567000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "785",
+          "4"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935148577000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "804"
+        ],
+        "name": "authors.0.name",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935148633000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "816",
+          "5"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935148638000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "827"
+        ],
+        "name": "authors.0.books",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935149100000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "SELECT \"books\".* FROM \"books\" WHERE \"books\".\"author_id\" = ? LIMIT ?",
+            "name": "sql"
+          },
+          {
+            "stringValue": "Book Load",
+            "name": "name"
+          },
+          {
+            "name": "binds"
+          },
+          {
+            "name": "type_casted_binds",
+            "arrayValues": [
+              {
+                "intValue": "1"
+              },
+              {
+                "intValue": "2"
+              }
+            ]
+          },
+          {
+            "name": "statement_name"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "categories": [
+          "sql.active_record"
+        ],
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935149142000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935149208000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "intValue": "2",
+            "name": "record_count"
+          },
+          {
+            "stringValue": "Book",
+            "name": "class_name"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "categories": [
+          "instantiation.active_record"
+        ],
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935149287000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935149335000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "1123",
+          "6"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935149343000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "1140"
+        ],
+        "name": "authors.1.name",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935149387000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "1151",
+          "7"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935149393000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "1162"
+        ],
+        "name": "authors.1.books",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935149695000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "SELECT \"books\".* FROM \"books\" WHERE \"books\".\"author_id\" = ? LIMIT ?",
+            "name": "sql"
+          },
+          {
+            "stringValue": "Book Load",
+            "name": "name"
+          },
+          {
+            "name": "binds"
+          },
+          {
+            "name": "type_casted_binds",
+            "arrayValues": [
+              {
+                "intValue": "2"
+              },
+              {
+                "intValue": "2"
+              }
+            ]
+          },
+          {
+            "name": "statement_name"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "categories": [
+          "sql.active_record"
+        ],
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935149732000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935149796000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "intValue": "2",
+            "name": "record_count"
+          },
+          {
+            "stringValue": "Book",
+            "name": "class_name"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "categories": [
+          "instantiation.active_record"
+        ],
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935149858000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935149896000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "1456",
+          "8"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935149904000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "1473"
+        ],
+        "name": "authors.2.name",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935149960000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "1484",
+          "9"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935149965000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "1495"
+        ],
+        "name": "authors.2.books",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935150263000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "SELECT \"books\".* FROM \"books\" WHERE \"books\".\"author_id\" = ? LIMIT ?",
+            "name": "sql"
+          },
+          {
+            "stringValue": "Book Load",
+            "name": "name"
+          },
+          {
+            "name": "binds"
+          },
+          {
+            "name": "type_casted_binds",
+            "arrayValues": [
+              {
+                "intValue": "3"
+              },
+              {
+                "intValue": "2"
+              }
+            ]
+          },
+          {
+            "name": "statement_name"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "categories": [
+          "sql.active_record"
+        ],
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935150302000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935150366000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "intValue": "2",
+            "name": "record_count"
+          },
+          {
+            "stringValue": "Book",
+            "name": "class_name"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "categories": [
+          "instantiation.active_record"
+        ],
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935150427000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935150478000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "1789",
+          "10"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935151049000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "1805",
+          "11"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935151084000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "1828",
+          "12"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935151109000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "1850",
+          "13"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935151134000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "1873",
+          "14"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935151156000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "1896",
+          "15"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935151181000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "1920",
+          "16"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935151192000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "1944"
+        ],
+        "name": "authors.0.books.0.title",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935151245000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "1956",
+          "17"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935151251000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "1968"
+        ],
+        "name": "authors.0.books.0.reviews",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935151586000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "SELECT \"reviews\".* FROM \"reviews\" WHERE \"reviews\".\"book_id\" = ? LIMIT ?",
+            "name": "sql"
+          },
+          {
+            "stringValue": "Review Load",
+            "name": "name"
+          },
+          {
+            "name": "binds"
+          },
+          {
+            "name": "type_casted_binds",
+            "arrayValues": [
+              {
+                "intValue": "1"
+              },
+              {
+                "intValue": "2"
+              }
+            ]
+          },
+          {
+            "name": "statement_name"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "categories": [
+          "sql.active_record"
+        ],
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935151624000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935151689000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "intValue": "2",
+            "name": "record_count"
+          },
+          {
+            "stringValue": "Review",
+            "name": "class_name"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "categories": [
+          "instantiation.active_record"
+        ],
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935151759000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935151800000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "2260",
+          "18"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935151808000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "2277"
+        ],
+        "name": "authors.0.books.0.averageReview",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ],
+        "flowIds": [
+          "353084"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935151878000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672"
+      }
+    },
+    {
+      "timestamp": "4105935151884000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7672",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Yield"
+      }
+    },
+    {
+      "timestamp": "4105935151905000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7680",
+        "extraCounterValues": [
+          "3",
+          "2336"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Create Execution Fiber",
+        "extraCounterTrackUuids": [
+          "138436876",
+          "138432780"
+        ]
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "7680",
+        "name": "Exec Fiber #7680",
+        "parentUuid": "7664",
+        "childOrdering": "CHRONOLOGICAL"
+      }
+    },
+    {
+      "timestamp": "4105935151921000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7680",
+        "extraCounterValues": [
+          "2356"
+        ],
+        "name": "authors.0.books.0.author",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ],
+        "flowIds": [
+          "801764"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935151969000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7680"
+      }
+    },
+    {
+      "timestamp": "4105935151974000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7680",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Yield"
+      }
+    },
+    {
+      "timestamp": "4105935151990000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7688",
+        "extraCounterValues": [
+          "4",
+          "2419"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Create Execution Fiber",
+        "extraCounterTrackUuids": [
+          "138436876",
+          "138432780"
+        ]
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "7688",
+        "name": "Exec Fiber #7688",
+        "parentUuid": "7664",
+        "childOrdering": "CHRONOLOGICAL"
+      }
+    },
+    {
+      "timestamp": "4105935152006000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7688",
+        "extraCounterValues": [
+          "2440"
+        ],
+        "name": "authors.0.books.1.title",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935152050000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7688",
+        "extraCounterValues": [
+          "2454",
+          "19"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935152056000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7688",
+        "extraCounterValues": [
+          "2466"
+        ],
+        "name": "authors.0.books.1.reviews",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935152371000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "SELECT \"reviews\".* FROM \"reviews\" WHERE \"reviews\".\"book_id\" = ? LIMIT ?",
+            "name": "sql"
+          },
+          {
+            "stringValue": "Review Load",
+            "name": "name"
+          },
+          {
+            "name": "binds"
+          },
+          {
+            "name": "type_casted_binds",
+            "arrayValues": [
+              {
+                "intValue": "2"
+              },
+              {
+                "intValue": "2"
+              }
+            ]
+          },
+          {
+            "name": "statement_name"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7688",
+        "categories": [
+          "sql.active_record"
+        ],
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935152408000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7688",
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935152473000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "intValue": "2",
+            "name": "record_count"
+          },
+          {
+            "stringValue": "Review",
+            "name": "class_name"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7688",
+        "categories": [
+          "instantiation.active_record"
+        ],
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935152536000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7688",
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935152575000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7688",
+        "extraCounterValues": [
+          "2760",
+          "20"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935152583000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7688",
+        "extraCounterValues": [
+          "2777"
+        ],
+        "name": "authors.0.books.1.averageReview",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ],
+        "flowIds": [
+          "598798"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935152635000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7688"
+      }
+    },
+    {
+      "timestamp": "4105935152641000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7688",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Yield"
+      }
+    },
+    {
+      "timestamp": "4105935152661000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7696",
+        "extraCounterValues": [
+          "5",
+          "2831"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Create Execution Fiber",
+        "extraCounterTrackUuids": [
+          "138436876",
+          "138432780"
+        ]
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "7696",
+        "name": "Exec Fiber #7696",
+        "parentUuid": "7664",
+        "childOrdering": "CHRONOLOGICAL"
+      }
+    },
+    {
+      "timestamp": "4105935152686000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7696",
+        "extraCounterValues": [
+          "2851"
+        ],
+        "name": "authors.0.books.1.author",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ],
+        "flowIds": [
+          "996824"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935152732000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7696"
+      }
+    },
+    {
+      "timestamp": "4105935152737000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7696",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Yield"
+      }
+    },
+    {
+      "timestamp": "4105935152766000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7704",
+        "extraCounterValues": [
+          "6",
+          "2918"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Create Source Fiber",
+        "extraCounterTrackUuids": [
+          "138436876",
+          "138432780"
+        ]
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "7704",
+        "name": "Source Fiber #7704",
+        "parentUuid": "7664",
+        "childOrdering": "CHRONOLOGICAL"
+      }
+    },
+    {
+      "timestamp": "4105935152782000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "[#<Book id: 1, title: \"A Midsummer Night's Dream\", author_id: 1>, #<Book id: 2, title: \"The Merry Wives of Windsor\", author_id: 1>]",
+            "name": "fetch_keys"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7704",
+        "extraCounterValues": [
+          "2935"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "PerfettoSchema::AverageReview",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ],
+        "flowIds": [
+          "353084",
+          "598798"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935153137000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "SELECT books.id, AVG(stars) as avg_review  FROM \"books\" INNER JOIN \"reviews\" ON \"reviews\".\"book_id\" = \"books\".\"id\" GROUP BY \"books\".\"id\"",
+            "name": "sql"
+          },
+          {
+            "stringValue": "Book Load",
+            "name": "name"
+          },
+          {
+            "name": "binds"
+          },
+          {
+            "name": "type_casted_binds"
+          },
+          {
+            "name": "statement_name"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7704",
+        "categories": [
+          "sql.active_record"
+        ],
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935153285000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7704",
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935153350000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "intValue": "25",
+            "name": "record_count"
+          },
+          {
+            "stringValue": "Book",
+            "name": "class_name"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7704",
+        "categories": [
+          "instantiation.active_record"
+        ],
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935153452000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7704",
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935153535000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7704",
+        "extraCounterValues": [
+          "3472"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935153546000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "[1]",
+            "name": "fetch_keys"
+          },
+          {
+            "stringValue": "Author(id: integer, name: string)",
+            "name": "@model"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7704",
+        "extraCounterValues": [
+          "3481"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "PerfettoSchema::Record",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ],
+        "flowIds": [
+          "801764",
+          "996824"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935153779000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "SELECT \"authors\".* FROM \"authors\" WHERE \"authors\".\"id\" = ?",
+            "name": "sql"
+          },
+          {
+            "stringValue": "Author Load",
+            "name": "name"
+          },
+          {
+            "name": "binds"
+          },
+          {
+            "name": "type_casted_binds",
+            "arrayValues": [
+              {
+                "intValue": "1"
+              }
+            ]
+          },
+          {
+            "name": "statement_name"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7704",
+        "categories": [
+          "sql.active_record"
+        ],
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935153814000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7704",
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935153881000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "intValue": "1",
+            "name": "record_count"
+          },
+          {
+            "stringValue": "Author",
+            "name": "class_name"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7704",
+        "categories": [
+          "instantiation.active_record"
+        ],
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935153900000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7704",
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935153938000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7704",
+        "extraCounterValues": [
+          "3715"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935153948000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7704",
+        "extraCounterValues": [
+          "5"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Exit",
+        "extraCounterTrackUuids": [
+          "138436876"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935153983000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7672",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Resume"
+      }
+    },
+    {
+      "timestamp": "4105935153992000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "name": "authors.0.books.0.averageReview",
+        "flowIds": [
+          "353084"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935154033000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "3758",
+          "21"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ],
+        "terminatingFlowIds": [
+          "353084"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935154039000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "3772"
+        ],
+        "name": "authors.1.books.0.title",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935154090000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "3784",
+          "22"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935154096000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "3796"
+        ],
+        "name": "authors.1.books.0.reviews",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935154418000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "SELECT \"reviews\".* FROM \"reviews\" WHERE \"reviews\".\"book_id\" = ? LIMIT ?",
+            "name": "sql"
+          },
+          {
+            "stringValue": "Review Load",
+            "name": "name"
+          },
+          {
+            "name": "binds"
+          },
+          {
+            "name": "type_casted_binds",
+            "arrayValues": [
+              {
+                "intValue": "10"
+              },
+              {
+                "intValue": "2"
+              }
+            ]
+          },
+          {
+            "name": "statement_name"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "categories": [
+          "sql.active_record"
+        ],
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935154456000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935154530000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "intValue": "2",
+            "name": "record_count"
+          },
+          {
+            "stringValue": "Review",
+            "name": "class_name"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "categories": [
+          "instantiation.active_record"
+        ],
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935154595000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935154640000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "4088",
+          "23"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935154649000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "4105"
+        ],
+        "name": "authors.1.books.0.averageReview",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ],
+        "flowIds": [
+          "7171"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935154701000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672"
+      }
+    },
+    {
+      "timestamp": "4105935154710000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7672",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Yield"
+      }
+    },
+    {
+      "timestamp": "4105935154718000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7680",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Resume"
+      }
+    },
+    {
+      "timestamp": "4105935154724000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7680",
+        "name": "authors.0.books.0.author",
+        "flowIds": [
+          "801764"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935154758000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7680",
+        "extraCounterValues": [
+          "4166",
+          "24"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ],
+        "terminatingFlowIds": [
+          "801764"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935154769000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7680",
+        "extraCounterValues": [
+          "4184"
+        ],
+        "name": "authors.1.books.0.author",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ],
+        "flowIds": [
+          "824667"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935154815000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7680"
+      }
+    },
+    {
+      "timestamp": "4105935154820000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7680",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Yield"
+      }
+    },
+    {
+      "timestamp": "4105935154827000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7688",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Resume"
+      }
+    },
+    {
+      "timestamp": "4105935154833000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7688",
+        "name": "authors.0.books.1.averageReview",
+        "flowIds": [
+          "598798"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935154903000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7688",
+        "extraCounterValues": [
+          "4242",
+          "25"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ],
+        "terminatingFlowIds": [
+          "598798"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935154909000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7688",
+        "extraCounterValues": [
+          "4256"
+        ],
+        "name": "authors.1.books.1.title",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935154954000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7688",
+        "extraCounterValues": [
+          "4268",
+          "26"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935154979000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7688",
+        "extraCounterValues": [
+          "4280"
+        ],
+        "name": "authors.1.books.1.reviews",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935155293000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "SELECT \"reviews\".* FROM \"reviews\" WHERE \"reviews\".\"book_id\" = ? LIMIT ?",
+            "name": "sql"
+          },
+          {
+            "stringValue": "Review Load",
+            "name": "name"
+          },
+          {
+            "name": "binds"
+          },
+          {
+            "name": "type_casted_binds",
+            "arrayValues": [
+              {
+                "intValue": "11"
+              },
+              {
+                "intValue": "2"
+              }
+            ]
+          },
+          {
+            "name": "statement_name"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7688",
+        "categories": [
+          "sql.active_record"
+        ],
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935155332000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7688",
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935155400000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "intValue": "2",
+            "name": "record_count"
+          },
+          {
+            "stringValue": "Review",
+            "name": "class_name"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7688",
+        "categories": [
+          "instantiation.active_record"
+        ],
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935155464000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7688",
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935155504000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7688",
+        "extraCounterValues": [
+          "4572",
+          "27"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935155517000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7688",
+        "extraCounterValues": [
+          "4589"
+        ],
+        "name": "authors.1.books.1.averageReview",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ],
+        "flowIds": [
+          "876276"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935155574000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7688"
+      }
+    },
+    {
+      "timestamp": "4105935155582000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7688",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Yield"
+      }
+    },
+    {
+      "timestamp": "4105935155590000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7696",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Resume"
+      }
+    },
+    {
+      "timestamp": "4105935155599000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7696",
+        "name": "authors.0.books.1.author",
+        "flowIds": [
+          "996824"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935155631000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7696",
+        "extraCounterValues": [
+          "4649",
+          "28"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ],
+        "terminatingFlowIds": [
+          "996824"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935155642000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7696",
+        "extraCounterValues": [
+          "4667"
+        ],
+        "name": "authors.1.books.1.author",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ],
+        "flowIds": [
+          "298471"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935155684000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7696"
+      }
+    },
+    {
+      "timestamp": "4105935155693000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7696",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Yield"
+      }
+    },
+    {
+      "timestamp": "4105935155720000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7712",
+        "extraCounterValues": [
+          "6",
+          "4729"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Create Source Fiber",
+        "extraCounterTrackUuids": [
+          "138436876",
+          "138432780"
+        ]
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "7712",
+        "name": "Source Fiber #7712",
+        "parentUuid": "7664",
+        "childOrdering": "CHRONOLOGICAL"
+      }
+    },
+    {
+      "timestamp": "4105935155737000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "[#<Book id: 10, title: \"The Tale of Peter Rabbit\", author_id: 2>, #<Book id: 11, title: \"The Tale of Squirrel Nutkin\", author_id: 2>]",
+            "name": "fetch_keys"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7712",
+        "extraCounterValues": [
+          "4746"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "PerfettoSchema::AverageReview",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ],
+        "flowIds": [
+          "353084",
+          "598798",
+          "7171",
+          "876276"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935156061000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "SELECT books.id, AVG(stars) as avg_review  FROM \"books\" INNER JOIN \"reviews\" ON \"reviews\".\"book_id\" = \"books\".\"id\" GROUP BY \"books\".\"id\"",
+            "name": "sql"
+          },
+          {
+            "stringValue": "Book Load",
+            "name": "name"
+          },
+          {
+            "name": "binds"
+          },
+          {
+            "name": "type_casted_binds"
+          },
+          {
+            "name": "statement_name"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7712",
+        "categories": [
+          "sql.active_record"
+        ],
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935156187000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7712",
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935156251000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "intValue": "25",
+            "name": "record_count"
+          },
+          {
+            "stringValue": "Book",
+            "name": "class_name"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7712",
+        "categories": [
+          "instantiation.active_record"
+        ],
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935156355000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7712",
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935156448000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7712",
+        "extraCounterValues": [
+          "5283"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935156458000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "[2]",
+            "name": "fetch_keys"
+          },
+          {
+            "stringValue": "Author(id: integer, name: string)",
+            "name": "@model"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7712",
+        "extraCounterValues": [
+          "5292"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "PerfettoSchema::Record",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ],
+        "flowIds": [
+          "801764",
+          "996824",
+          "824667",
+          "298471"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935157196000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "SELECT \"authors\".* FROM \"authors\" WHERE \"authors\".\"id\" = ?",
+            "name": "sql"
+          },
+          {
+            "stringValue": "Author Load",
+            "name": "name"
+          },
+          {
+            "name": "binds"
+          },
+          {
+            "name": "type_casted_binds",
+            "arrayValues": [
+              {
+                "intValue": "2"
+              }
+            ]
+          },
+          {
+            "name": "statement_name"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7712",
+        "categories": [
+          "sql.active_record"
+        ],
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935157231000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7712",
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935157297000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "intValue": "1",
+            "name": "record_count"
+          },
+          {
+            "stringValue": "Author",
+            "name": "class_name"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7712",
+        "categories": [
+          "instantiation.active_record"
+        ],
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935157315000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7712",
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935157352000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7712",
+        "extraCounterValues": [
+          "5526"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935157360000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7712",
+        "extraCounterValues": [
+          "5"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Exit",
+        "extraCounterTrackUuids": [
+          "138436876"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935157393000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7672",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Resume"
+      }
+    },
+    {
+      "timestamp": "4105935157401000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "name": "authors.1.books.0.averageReview",
+        "flowIds": [
+          "7171"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935157440000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "5569",
+          "29"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ],
+        "terminatingFlowIds": [
+          "7171"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935157446000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "5583"
+        ],
+        "name": "authors.2.books.0.title",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935157497000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "5595",
+          "30"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935157502000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "5607"
+        ],
+        "name": "authors.2.books.0.reviews",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935157820000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "SELECT \"reviews\".* FROM \"reviews\" WHERE \"reviews\".\"book_id\" = ? LIMIT ?",
+            "name": "sql"
+          },
+          {
+            "stringValue": "Review Load",
+            "name": "name"
+          },
+          {
+            "name": "binds"
+          },
+          {
+            "name": "type_casted_binds",
+            "arrayValues": [
+              {
+                "intValue": "19"
+              },
+              {
+                "intValue": "2"
+              }
+            ]
+          },
+          {
+            "name": "statement_name"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "categories": [
+          "sql.active_record"
+        ],
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935157860000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935157929000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "intValue": "2",
+            "name": "record_count"
+          },
+          {
+            "stringValue": "Review",
+            "name": "class_name"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "categories": [
+          "instantiation.active_record"
+        ],
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935157994000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935158044000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "5899",
+          "31"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935158053000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "5916"
+        ],
+        "name": "authors.2.books.0.averageReview",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ],
+        "flowIds": [
+          "857224"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935158104000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672"
+      }
+    },
+    {
+      "timestamp": "4105935158113000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7672",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Yield"
+      }
+    },
+    {
+      "timestamp": "4105935158121000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7680",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Resume"
+      }
+    },
+    {
+      "timestamp": "4105935158126000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7680",
+        "name": "authors.1.books.0.author",
+        "flowIds": [
+          "824667"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935158158000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7680",
+        "extraCounterValues": [
+          "5976",
+          "32"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ],
+        "terminatingFlowIds": [
+          "824667"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935158171000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7680",
+        "extraCounterValues": [
+          "5995"
+        ],
+        "name": "authors.2.books.0.author",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ],
+        "flowIds": [
+          "253352"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935158216000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7680"
+      }
+    },
+    {
+      "timestamp": "4105935158221000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7680",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Yield"
+      }
+    },
+    {
+      "timestamp": "4105935158228000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7688",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Resume"
+      }
+    },
+    {
+      "timestamp": "4105935158234000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7688",
+        "name": "authors.1.books.1.averageReview",
+        "flowIds": [
+          "876276"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935158269000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7688",
+        "extraCounterValues": [
+          "6052",
+          "33"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ],
+        "terminatingFlowIds": [
+          "876276"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935158274000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7688",
+        "extraCounterValues": [
+          "6066"
+        ],
+        "name": "authors.2.books.1.title",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935158314000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7688",
+        "extraCounterValues": [
+          "6077",
+          "34"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935158319000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7688",
+        "extraCounterValues": [
+          "6089"
+        ],
+        "name": "authors.2.books.1.reviews",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935158623000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "SELECT \"reviews\".* FROM \"reviews\" WHERE \"reviews\".\"book_id\" = ? LIMIT ?",
+            "name": "sql"
+          },
+          {
+            "stringValue": "Review Load",
+            "name": "name"
+          },
+          {
+            "name": "binds"
+          },
+          {
+            "name": "type_casted_binds",
+            "arrayValues": [
+              {
+                "intValue": "20"
+              },
+              {
+                "intValue": "2"
+              }
+            ]
+          },
+          {
+            "name": "statement_name"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7688",
+        "categories": [
+          "sql.active_record"
+        ],
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935158663000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7688",
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935158744000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "intValue": "2",
+            "name": "record_count"
+          },
+          {
+            "stringValue": "Review",
+            "name": "class_name"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7688",
+        "categories": [
+          "instantiation.active_record"
+        ],
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935158805000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7688",
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935158845000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7688",
+        "extraCounterValues": [
+          "6381",
+          "35"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935158856000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7688",
+        "extraCounterValues": [
+          "6398"
+        ],
+        "name": "authors.2.books.1.averageReview",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ],
+        "flowIds": [
+          "45655"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935158907000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7688"
+      }
+    },
+    {
+      "timestamp": "4105935158912000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7688",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Yield"
+      }
+    },
+    {
+      "timestamp": "4105935158920000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7696",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Resume"
+      }
+    },
+    {
+      "timestamp": "4105935158930000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7696",
+        "name": "authors.1.books.1.author",
+        "flowIds": [
+          "298471"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935158960000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7696",
+        "extraCounterValues": [
+          "6458",
+          "36"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ],
+        "terminatingFlowIds": [
+          "298471"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935158971000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7696",
+        "extraCounterValues": [
+          "6476"
+        ],
+        "name": "authors.2.books.1.author",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ],
+        "flowIds": [
+          "899308"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935159011000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7696"
+      }
+    },
+    {
+      "timestamp": "4105935159019000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7696",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Yield"
+      }
+    },
+    {
+      "timestamp": "4105935159045000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7720",
+        "extraCounterValues": [
+          "6",
+          "6538"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Create Source Fiber",
+        "extraCounterTrackUuids": [
+          "138436876",
+          "138432780"
+        ]
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "7720",
+        "name": "Source Fiber #7720",
+        "parentUuid": "7664",
+        "childOrdering": "CHRONOLOGICAL"
+      }
+    },
+    {
+      "timestamp": "4105935159067000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "[#<Book id: 19, title: \"The Pickwick Papers\", author_id: 3>, #<Book id: 20, title: \"Oliver Twist\", author_id: 3>]",
+            "name": "fetch_keys"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7720",
+        "extraCounterValues": [
+          "6555"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "PerfettoSchema::AverageReview",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ],
+        "flowIds": [
+          "353084",
+          "598798",
+          "7171",
+          "876276",
+          "857224",
+          "45655"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935159370000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "SELECT books.id, AVG(stars) as avg_review  FROM \"books\" INNER JOIN \"reviews\" ON \"reviews\".\"book_id\" = \"books\".\"id\" GROUP BY \"books\".\"id\"",
+            "name": "sql"
+          },
+          {
+            "stringValue": "Book Load",
+            "name": "name"
+          },
+          {
+            "name": "binds"
+          },
+          {
+            "name": "type_casted_binds"
+          },
+          {
+            "name": "statement_name"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7720",
+        "categories": [
+          "sql.active_record"
+        ],
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935159489000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7720",
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935159551000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "intValue": "25",
+            "name": "record_count"
+          },
+          {
+            "stringValue": "Book",
+            "name": "class_name"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7720",
+        "categories": [
+          "instantiation.active_record"
+        ],
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935159650000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7720",
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935159756000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7720",
+        "extraCounterValues": [
+          "7093"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935159768000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "[3]",
+            "name": "fetch_keys"
+          },
+          {
+            "stringValue": "Author(id: integer, name: string)",
+            "name": "@model"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7720",
+        "extraCounterValues": [
+          "7102"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "PerfettoSchema::Record",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ],
+        "flowIds": [
+          "801764",
+          "996824",
+          "824667",
+          "298471",
+          "253352",
+          "899308"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935159984000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "SELECT \"authors\".* FROM \"authors\" WHERE \"authors\".\"id\" = ?",
+            "name": "sql"
+          },
+          {
+            "stringValue": "Author Load",
+            "name": "name"
+          },
+          {
+            "name": "binds"
+          },
+          {
+            "name": "type_casted_binds",
+            "arrayValues": [
+              {
+                "intValue": "3"
+              }
+            ]
+          },
+          {
+            "name": "statement_name"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7720",
+        "categories": [
+          "sql.active_record"
+        ],
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935160017000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7720",
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935160081000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "intValue": "1",
+            "name": "record_count"
+          },
+          {
+            "stringValue": "Author",
+            "name": "class_name"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7720",
+        "categories": [
+          "instantiation.active_record"
+        ],
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935160098000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7720",
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935160136000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7720",
+        "extraCounterValues": [
+          "7336"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160145000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7720",
+        "extraCounterValues": [
+          "5"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Exit",
+        "extraCounterTrackUuids": [
+          "138436876"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160177000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7672",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Resume"
+      }
+    },
+    {
+      "timestamp": "4105935160185000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "name": "authors.2.books.0.averageReview",
+        "flowIds": [
+          "857224"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160219000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "7379",
+          "37"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ],
+        "terminatingFlowIds": [
+          "857224"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160246000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "7391",
+          "38"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ],
+        "terminatingFlowIds": [
+          "857224"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160281000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "7411",
+          "39"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ],
+        "terminatingFlowIds": [
+          "857224"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160305000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "7430",
+          "40"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ],
+        "terminatingFlowIds": [
+          "857224"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160327000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "7450",
+          "41"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ],
+        "terminatingFlowIds": [
+          "857224"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160351000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "7469",
+          "42"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ],
+        "terminatingFlowIds": [
+          "857224"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160373000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "7489",
+          "43"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ],
+        "terminatingFlowIds": [
+          "857224"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160381000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "7510"
+        ],
+        "name": "authors.0.books.0.author.name",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160427000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "7522",
+          "44"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160452000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "7533",
+          "45"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160476000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "7553",
+          "46"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160486000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "7573"
+        ],
+        "name": "authors.0.books.1.author.name",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160521000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "7582",
+          "47"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160540000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "7593",
+          "48"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160566000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "7612",
+          "49"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160576000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "7632"
+        ],
+        "name": "authors.1.books.0.author.name",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160612000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "7643",
+          "50"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160631000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "7654",
+          "51"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160655000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "7673",
+          "52"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160664000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "7693"
+        ],
+        "name": "authors.1.books.1.author.name",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160699000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "7702",
+          "53"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160704000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "7716"
+        ],
+        "name": "authors.0.books.0.reviews.0.stars",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160747000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "7726",
+          "54"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160752000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "7739"
+        ],
+        "name": "authors.0.books.0.reviews.0.user",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ],
+        "flowIds": [
+          "105362"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160804000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672"
+      }
+    },
+    {
+      "timestamp": "4105935160809000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7672",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Yield"
+      }
+    },
+    {
+      "timestamp": "4105935160817000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7680",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Resume"
+      }
+    },
+    {
+      "timestamp": "4105935160823000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7680",
+        "name": "authors.2.books.0.author",
+        "flowIds": [
+          "253352"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160856000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7680",
+        "extraCounterValues": [
+          "7804",
+          "55"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ],
+        "terminatingFlowIds": [
+          "253352"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160867000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7680",
+        "extraCounterValues": [
+          "7824"
+        ],
+        "name": "authors.0.books.0.reviews.1.stars",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160907000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7680",
+        "extraCounterValues": [
+          "7834",
+          "56"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160912000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7680",
+        "extraCounterValues": [
+          "7847"
+        ],
+        "name": "authors.0.books.0.reviews.1.user",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ],
+        "flowIds": [
+          "66458"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935160958000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7680"
+      }
+    },
+    {
+      "timestamp": "4105935160964000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7680",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Yield"
+      }
+    },
+    {
+      "timestamp": "4105935160971000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7688",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Resume"
+      }
+    },
+    {
+      "timestamp": "4105935160977000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7688",
+        "name": "authors.2.books.1.averageReview",
+        "flowIds": [
+          "45655"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935161010000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7688",
+        "extraCounterValues": [
+          "7904",
+          "57"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ],
+        "terminatingFlowIds": [
+          "45655"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935161016000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7688",
+        "extraCounterValues": [
+          "7919"
+        ],
+        "name": "authors.0.books.1.reviews.0.stars",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935161053000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7688",
+        "extraCounterValues": [
+          "7929",
+          "58"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935161058000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7688",
+        "extraCounterValues": [
+          "7942"
+        ],
+        "name": "authors.0.books.1.reviews.0.user",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ],
+        "flowIds": [
+          "806097"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935161102000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7688"
+      }
+    },
+    {
+      "timestamp": "4105935161107000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7688",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Yield"
+      }
+    },
+    {
+      "timestamp": "4105935161115000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7696",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Resume"
+      }
+    },
+    {
+      "timestamp": "4105935161120000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7696",
+        "name": "authors.2.books.1.author",
+        "flowIds": [
+          "899308"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935161156000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7696",
+        "extraCounterValues": [
+          "8002",
+          "59"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ],
+        "terminatingFlowIds": [
+          "899308"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935161168000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7696",
+        "extraCounterValues": [
+          "8022"
+        ],
+        "name": "authors.0.books.1.reviews.1.stars",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935161207000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7696",
+        "extraCounterValues": [
+          "8032",
+          "60"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935161212000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7696",
+        "extraCounterValues": [
+          "8045"
+        ],
+        "name": "authors.0.books.1.reviews.1.user",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ],
+        "flowIds": [
+          "737103"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935161256000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7696"
+      }
+    },
+    {
+      "timestamp": "4105935161262000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7696",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Yield"
+      }
+    },
+    {
+      "timestamp": "4105935161292000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7728",
+        "extraCounterValues": [
+          "6",
+          "8110"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Create Source Fiber",
+        "extraCounterTrackUuids": [
+          "138436876",
+          "138432780"
+        ]
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "7728",
+        "name": "Source Fiber #7728",
+        "parentUuid": "7664",
+        "childOrdering": "CHRONOLOGICAL"
+      }
+    },
+    {
+      "timestamp": "4105935161317000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "[1, 2]",
+            "name": "fetch_keys"
+          },
+          {
+            "stringValue": "User(id: integer, username: string)",
+            "name": "@model"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7728",
+        "extraCounterValues": [
+          "8127"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "PerfettoSchema::Record",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ],
+        "flowIds": [
+          "105362",
+          "66458",
+          "806097",
+          "737103"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935161561000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "SELECT \"users\".* FROM \"users\" WHERE \"users\".\"id\" IN (?, ?)",
+            "name": "sql"
+          },
+          {
+            "stringValue": "User Load",
+            "name": "name"
+          },
+          {
+            "name": "binds"
+          },
+          {
+            "name": "type_casted_binds",
+            "arrayValues": [
+              {
+                "intValue": "1"
+              },
+              {
+                "intValue": "2"
+              }
+            ]
+          },
+          {
+            "name": "statement_name"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7728",
+        "categories": [
+          "sql.active_record"
+        ],
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935161780000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7728",
+        "name": "sql.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935161860000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "intValue": "2",
+            "name": "record_count"
+          },
+          {
+            "stringValue": "User",
+            "name": "class_name"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7728",
+        "categories": [
+          "instantiation.active_record"
+        ],
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935161889000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7728",
+        "name": "instantiation.active_record"
+      }
+    },
+    {
+      "timestamp": "4105935161938000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7728",
+        "extraCounterValues": [
+          "8399"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935161947000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7728",
+        "extraCounterValues": [
+          "5"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Exit",
+        "extraCounterTrackUuids": [
+          "138436876"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162009000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7672",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Resume"
+      }
+    },
+    {
+      "timestamp": "4105935162018000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "name": "authors.0.books.0.reviews.0.user",
+        "flowIds": [
+          "105362"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162062000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8445",
+          "61"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ],
+        "terminatingFlowIds": [
+          "105362"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162076000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8467"
+        ],
+        "name": "authors.1.books.0.reviews.0.stars",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162128000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8477",
+          "62"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162134000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8490"
+        ],
+        "name": "authors.1.books.0.reviews.0.user",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162185000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8508",
+          "63"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162196000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8528"
+        ],
+        "name": "authors.1.books.0.reviews.1.stars",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162238000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8538",
+          "64"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162246000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8551"
+        ],
+        "name": "authors.1.books.0.reviews.1.user",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162290000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8569",
+          "65"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162301000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8589"
+        ],
+        "name": "authors.1.books.1.reviews.0.stars",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162338000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8599",
+          "66"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162343000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8612"
+        ],
+        "name": "authors.1.books.1.reviews.0.user",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162385000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8630",
+          "67"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162398000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8650"
+        ],
+        "name": "authors.1.books.1.reviews.1.stars",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162435000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8660",
+          "68"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162440000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8673"
+        ],
+        "name": "authors.1.books.1.reviews.1.user",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162482000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8691",
+          "69"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162492000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8711"
+        ],
+        "name": "authors.2.books.0.reviews.0.stars",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162529000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8721",
+          "70"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162534000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8734"
+        ],
+        "name": "authors.2.books.0.reviews.0.user",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162577000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8752",
+          "71"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162587000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8772"
+        ],
+        "name": "authors.2.books.0.reviews.1.stars",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162623000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8782",
+          "72"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162628000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8795"
+        ],
+        "name": "authors.2.books.0.reviews.1.user",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162672000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8813",
+          "73"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162682000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8833"
+        ],
+        "name": "authors.2.books.1.reviews.0.stars",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162719000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8843",
+          "74"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162724000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8856"
+        ],
+        "name": "authors.2.books.1.reviews.0.user",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162766000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8874",
+          "75"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162777000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8894"
+        ],
+        "name": "authors.2.books.1.reviews.1.stars",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162817000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8904",
+          "76"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162822000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8917"
+        ],
+        "name": "authors.2.books.1.reviews.1.user",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162863000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8935",
+          "77"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162874000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8954"
+        ],
+        "name": "authors.2.books.0.author.name",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162922000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8965",
+          "78"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162926000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8978"
+        ],
+        "name": "authors.2.books.1.author.name",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162958000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "8987",
+          "79"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935162966000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "9001"
+        ],
+        "name": "authors.0.books.0.reviews.0.user.username",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163004000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "9012",
+          "80"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163008000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "9026"
+        ],
+        "name": "authors.1.books.0.reviews.0.user.username",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163038000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "9035",
+          "81"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163043000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "9049"
+        ],
+        "name": "authors.1.books.0.reviews.1.user.username",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163079000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "9060",
+          "82"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163084000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "9074"
+        ],
+        "name": "authors.1.books.1.reviews.0.user.username",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163114000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "9083",
+          "83"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163119000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "9097"
+        ],
+        "name": "authors.1.books.1.reviews.1.user.username",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163151000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "9106",
+          "84"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163156000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "9120"
+        ],
+        "name": "authors.2.books.0.reviews.0.user.username",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163185000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "9129",
+          "85"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163189000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "9143"
+        ],
+        "name": "authors.2.books.0.reviews.1.user.username",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163221000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "9152",
+          "86"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163225000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "9166"
+        ],
+        "name": "authors.2.books.1.reviews.0.user.username",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163254000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "9175",
+          "87"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163259000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "9189"
+        ],
+        "name": "authors.2.books.1.reviews.1.user.username",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163291000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "9198",
+          "88"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163299000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7672",
+        "extraCounterValues": [
+          "4"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Exit",
+        "extraCounterTrackUuids": [
+          "138436876"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163328000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7680",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Resume"
+      }
+    },
+    {
+      "timestamp": "4105935163337000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7680",
+        "name": "authors.0.books.0.reviews.1.user",
+        "flowIds": [
+          "66458"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163660000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7680",
+        "extraCounterValues": [
+          "9235",
+          "89"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ],
+        "terminatingFlowIds": [
+          "66458"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163679000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7680",
+        "extraCounterValues": [
+          "9256"
+        ],
+        "name": "authors.0.books.0.reviews.1.user.username",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163721000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7680",
+        "extraCounterValues": [
+          "9265",
+          "90"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163730000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7680",
+        "extraCounterValues": [
+          "3"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Exit",
+        "extraCounterTrackUuids": [
+          "138436876"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163751000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7688",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Resume"
+      }
+    },
+    {
+      "timestamp": "4105935163762000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7688",
+        "name": "authors.0.books.1.reviews.0.user",
+        "flowIds": [
+          "806097"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163794000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7688",
+        "extraCounterValues": [
+          "9302",
+          "91"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ],
+        "terminatingFlowIds": [
+          "806097"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163805000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7688",
+        "extraCounterValues": [
+          "9323"
+        ],
+        "name": "authors.0.books.1.reviews.0.user.username",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163841000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7688",
+        "extraCounterValues": [
+          "9332",
+          "92"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163850000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7688",
+        "extraCounterValues": [
+          "2"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Exit",
+        "extraCounterTrackUuids": [
+          "138436876"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163870000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7696",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Resume"
+      }
+    },
+    {
+      "timestamp": "4105935163878000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7696",
+        "name": "authors.0.books.1.reviews.1.user",
+        "flowIds": [
+          "737103"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163908000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7696",
+        "extraCounterValues": [
+          "9369",
+          "93"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ],
+        "terminatingFlowIds": [
+          "737103"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163919000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "7696",
+        "extraCounterValues": [
+          "9390"
+        ],
+        "name": "authors.0.books.1.reviews.1.user.username",
+        "extraCounterTrackUuids": [
+          "138432780"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163960000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7696",
+        "extraCounterValues": [
+          "9399",
+          "94"
+        ],
+        "extraCounterTrackUuids": [
+          "138432780",
+          "138440972"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935163964000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7696",
+        "extraCounterValues": [
+          "1"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Exit",
+        "extraCounterTrackUuids": [
+          "138436876"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935164000000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_COUNTER",
+        "trackUuid": "138436876",
+        "counterValue": "0"
+      }
+    },
+    {
+      "timestamp": "4105935164043000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_COUNTER",
+        "trackUuid": "138436876",
+        "counterValue": "1"
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "7736",
+        "name": "Dataloader Fiber #7736",
+        "parentUuid": "7456"
+      }
+    },
+    {
+      "timestamp": "4105935164123000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7744",
+        "extraCounterValues": [
+          "2",
+          "9485"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Create Execution Fiber",
+        "extraCounterTrackUuids": [
+          "138436876",
+          "138432780"
+        ]
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "7744",
+        "name": "Exec Fiber #7744",
+        "parentUuid": "7736",
+        "childOrdering": "CHRONOLOGICAL"
+      }
+    },
+    {
+      "timestamp": "4105935164146000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "7744",
+        "extraCounterValues": [
+          "1"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Exit",
+        "extraCounterTrackUuids": [
+          "138436876"
+        ]
+      }
+    },
+    {
+      "timestamp": "4105935164177000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_COUNTER",
+        "trackUuid": "138436876",
+        "counterValue": "0"
+      }
+    },
+    {
+      "timestamp": "4105935164205000",
+      "trustedPacketSequenceId": 17911,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "7456"
+      }
+    }
+  ]
+}
