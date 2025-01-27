@@ -13,6 +13,7 @@ gemfiles/*.lock
 .bundle/
 vendor/
 .idea/
+coverage/
 
 _site
 .sass-cache

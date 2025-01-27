@@ -1,7 +1,16 @@
 # frozen_string_literal: true
-
 require 'rubygems'
 require 'bundler'
+require 'simplecov'
+SimpleCov.start do
+  enable_coverage :branch
+  add_filter "spec/"
+  add_group "Generators", "lib/generators"
+  add_group "Execution", [/analysis/, /language/, /execution/, /static_validation/, /pagination/, /subscriptions/, /query/, /introspection/, /dataloader/, /backtrace/]
+  add_group "Helpers", [/rake_task/, /testing/, /rubocop/]
+  add_group "Definition", [/types/, /relay/, /schema/]
+end
+
 Bundler.require
 
 # Print full backtrace for failures:
