@@ -2,14 +2,23 @@
 require 'rubygems'
 require 'bundler'
 require 'simplecov'
+require 'simplecov-lcov'
+SimpleCov::Formatter::LcovFormatter.config.report_with_single_file = true
+SimpleCov.formatters = [
+  SimpleCov::Formatter::HTMLFormatter,
+  SimpleCov::Formatter::LcovFormatter
+]
 SimpleCov.start do
   enable_coverage :branch
   add_filter "spec/"
   add_group "Generators", "lib/generators"
-  add_group "Execution", [/analysis/, /language/, /execution/, /static_validation/, /pagination/, /subscriptions/, /query/, /introspection/, /dataloader/, /backtrace/]
+  add_group "Execution", [/analysis/, /language/, /execution/, /static_validation/, /pagination/, /subscriptions/, /query/, /tracing/, /introspection/, /dataloader/, /backtrace/]
   add_group "Helpers", [/rake_task/, /testing/, /rubocop/]
   add_group "Definition", [/types/, /relay/, /schema/]
+
 end
+
+require "undercover"
 
 Bundler.require
 

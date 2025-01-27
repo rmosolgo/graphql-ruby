@@ -77,8 +77,11 @@ jobs:
         bundler: ${{ matrix.bundler || 'default' }}
     - run: bundle exec rake compile
     - run: bundle exec rake test
-    - uses: k1LoW/octocov-action@v1
+    - run: bundle exec pronto run -f github_status github_pr -c origin/${{ github.base_ref }}
       if: ${{ !!matrix.coverage }}
+      env:
+        PRONTO_PULL_REQUEST_ID: ${{ github.event.pull_request.number }}
+        PRONTO_GITHUB_ACCESS_TOKEN: "${{ github.token }}"
   javascript_test:
     runs-on: ubuntu-latest
     steps:
