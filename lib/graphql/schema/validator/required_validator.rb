@@ -62,8 +62,18 @@ module GraphQL
                   fully_matched_conditions += 1
                 end
               when Array
-                full_match = one_of_condition.all? { |k| value.key?(k) }
-                partial_match = !full_match && one_of_condition.any? { |k| value.key?(k) }
+                any_match = false
+                full_match = true
+
+                one_of_condition.each do |k|
+                  if value.key?(k)
+                    any_match = true
+                  else
+                    full_match = false
+                  end
+                end
+
+                partial_match = !full_match && any_match
 
                 if full_match
                   fully_matched_conditions += 1
