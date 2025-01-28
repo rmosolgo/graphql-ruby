@@ -36,7 +36,75 @@ module GraphQL
       private
 
       def rows
-        @rows ||= build_rows(@context, rows: [HEADERS], top: true)
+        @rows ||= begin
+          query = @context.query
+          query_ctx = query.context
+          runtime_inst = query_ctx.namespace(:interpreter_runtime)[:runtime]
+          result = runtime_inst.instance_variable_get(:@response)
+          rows = []
+          result_path = []
+          last_part = nil
+          path = @context.path
+          path.each do |path_part|
+            value = value_at(runtime_inst, result_path)
+
+            if result_path.empty?
+              name = query.selected_operation.operation_type || "query"
+              if (n = query.selected_operation_name)
+                name += " #{n}"
+              end
+              args = query.variables
+            else
+              name = result.graphql_field.path
+              args = result.graphql_arguments
+            end
+
+            object = result.graphql_parent ? result.graphql_parent.graphql_application_value : result.graphql_application_value
+            object = object.object.inspect
+
+            rows << [
+              result.ast_node.position.join(":"),
+              name,
+              "#{object}",
+              args.to_h.inspect,
+              Backtrace::InspectResult.inspect_result(value),
+            ]
+
+            result_path << path_part
+            if path_part == path.last
+              last_part = path_part
+            else
+              result = result[path_part]
+            end
+          end
+
+          if last_part
+            object = result.graphql_application_value.object.inspect
+            ast_node = result.graphql_selections.find { |s| s.alias == last_part || s.name == last_part }
+            field_defn = query.get_field(result.graphql_result_type, ast_node.name)
+            if field_defn
+              args = query.arguments_for(ast_node, field_defn).to_h
+              field_path = field_defn.path
+              if ast_node.alias
+                field_path += " as #{ast_node.alias}"
+              end
+            else
+              args = {}
+              field_path = "#{result.graphql_result_type.graphql_name}.#{last_part}"
+            end
+
+            rows << [
+              ast_node.position.join(":"),
+              field_path,
+              "#{object}",
+              args.inspect,
+              Backtrace::InspectResult.inspect_result(@override_value)
+            ]
+          end
+          rows << HEADERS
+          rows.reverse!
+          rows
+        end
       end
 
       # @return [String]
