@@ -40,11 +40,17 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rake"
   s.add_development_dependency 'rake-compiler'
   s.add_development_dependency "rubocop"
+  s.add_development_dependency "simplecov"
+  s.add_development_dependency "simplecov-lcov"
+  s.add_development_dependency "undercover"
+  s.add_development_dependency "pronto"
+  s.add_development_dependency "pronto-undercover"
   # website stuff
   s.add_development_dependency "jekyll"
   s.add_development_dependency "yard"
   s.add_development_dependency "jekyll-algolia"
   s.add_development_dependency "jekyll-redirect-from"
   s.add_development_dependency "m", "~> 1.5.0"
+  s.add_development_dependency "mutex_m"
   s.add_development_dependency "webrick"
 end
