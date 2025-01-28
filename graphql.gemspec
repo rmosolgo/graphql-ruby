@@ -51,5 +51,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency "jekyll-algolia"
   s.add_development_dependency "jekyll-redirect-from"
   s.add_development_dependency "m", "~> 1.5.0"
+  s.add_development_dependency "mutex_m"
   s.add_development_dependency "webrick"
 end
