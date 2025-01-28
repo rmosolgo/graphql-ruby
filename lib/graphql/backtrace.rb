@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-require "graphql/backtrace/inspect_result"
 require "graphql/backtrace/table"
 require "graphql/backtrace/traced_error"
 module GraphQL
@@ -23,7 +22,6 @@ module GraphQL
 
     def self.use(schema_defn)
       schema_defn.using_backtrace = true
-      # schema_defn.trace_with(self::Trace)
     end
 
     def initialize(context, value: nil)
@@ -38,21 +36,6 @@ module GraphQL
 
     def to_a
       @table.to_backtrace
-    end
-
-    # Used for internal bookkeeping
-    # @api private
-    class Frame
-      attr_reader :path, :query, :ast_node, :object, :field, :arguments, :parent_frame
-      def initialize(path:, query:, ast_node:, object:, field:, arguments:, parent_frame:)
-        @path = path
-        @query = query
-        @ast_node = ast_node
-        @field = field
-        @object = object
-        @arguments = arguments
-        @parent_frame = parent_frame
-      end
     end
   end
 end

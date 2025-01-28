@@ -67,7 +67,7 @@ module GraphQL
               name,
               "#{object}",
               args.to_h.inspect,
-              Backtrace::InspectResult.inspect_result(value),
+              inspect_result(value),
             ]
 
             result_path << path_part
@@ -98,7 +98,7 @@ module GraphQL
               field_path,
               "#{object}",
               args.inspect,
-              Backtrace::InspectResult.inspect_result(@override_value)
+              inspect_result(@override_value)
             ]
           end
           rows << HEADERS
@@ -143,55 +143,6 @@ module GraphQL
         table
       end
 
-      # @return [Array] 5 items for a backtrace table (not `key`)
-      def build_rows(context_entry, rows:, top: false)
-        case context_entry
-        when Backtrace::Frame
-          field_alias = context_entry.ast_node.respond_to?(:alias) && context_entry.ast_node.alias
-          value = if top && @override_value
-            @override_value
-          else
-            value_at(@context.query.context.namespace(:interpreter_runtime)[:runtime], context_entry.path)
-          end
-          rows << [
-            "#{context_entry.ast_node ? context_entry.ast_node.position.join(":") : ""}",
-            "#{context_entry.field.path}#{field_alias ? " as #{field_alias}" : ""}",
-            "#{context_entry.object.object.inspect}",
-            context_entry.arguments.to_h.inspect, # rubocop:disable Development/ContextIsPassedCop -- unrelated method
-            Backtrace::InspectResult.inspect_result(value),
-          ]
-          if (parent = context_entry.parent_frame)
-            build_rows(parent, rows: rows)
-          else
-            rows
-          end
-        when GraphQL::Query::Context
-          query = context_entry.query
-          op = query.selected_operation
-          if op
-            op_type = op.operation_type
-            position = "#{op.line}:#{op.col}"
-          else
-            op_type = "query"
-            position = "?:?"
-          end
-          op_name = query.selected_operation_name
-          object = query.root_value
-          if object.is_a?(GraphQL::Schema::Object)
-            object = object.object
-          end
-          value = value_at(context_entry.namespace(:interpreter_runtime)[:runtime], [])
-          rows << [
-            "#{position}",
-            "#{op_type}#{op_name ? " #{op_name}" : ""}",
-            "#{object.inspect}",
-            query.variables.to_h.inspect,
-            Backtrace::InspectResult.inspect_result(value),
-          ]
-        else
-          raise "Unexpected get_rows subject #{context_entry.class} (#{context_entry.inspect})"
-        end
-      end
 
       def value_at(runtime, path)
         response = runtime.final_result
@@ -203,6 +154,36 @@ module GraphQL
           end
         end
         response
+      end
+
+      def inspect_result(obj)
+        case obj
+        when Hash
+          "{" +
+            obj.map do |key, val|
+              "#{key}: #{inspect_truncated(val)}"
+            end.join(", ") +
+            "}"
+        when Array
+          "[" +
+            obj.map { |v| inspect_truncated(v) }.join(", ") +
+            "]"
+        else
+          inspect_truncated(obj)
+        end
+      end
+
+      def inspect_truncated(obj)
+        case obj
+        when Hash
+          "{...}"
+        when Array
+          "[...]"
+        when GraphQL::Execution::Lazy
+          "(unresolved)"
+        else
+          "#{obj.inspect}"
+        end
       end
     end
   end
