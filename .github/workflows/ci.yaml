@@ -78,7 +78,7 @@ jobs:
     - run: bundle exec rake compile
     - run: bundle exec rake test
     - run: git fetch --no-tags --prune --depth=10 origin +refs/heads/*:refs/remotes/origin/*
-    - run: bundle exec pronto run -f github_status github_pr -c origin/${{ github.base_ref }}
+    - run: bundle exec pronto run -f github_pr -c origin/${{ github.base_ref }}
       if: ${{ !!matrix.coverage }}
       env:
         PRONTO_PULL_REQUEST_ID: ${{ github.event.pull_request.number }}

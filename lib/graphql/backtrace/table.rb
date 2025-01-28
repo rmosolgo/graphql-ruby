@@ -78,29 +78,24 @@ module GraphQL
             end
           end
 
-          if last_part
-            object = result.graphql_application_value.object.inspect
-            ast_node = result.graphql_selections.find { |s| s.alias == last_part || s.name == last_part }
-            field_defn = query.get_field(result.graphql_result_type, ast_node.name)
-            if field_defn
-              args = query.arguments_for(ast_node, field_defn).to_h
-              field_path = field_defn.path
-              if ast_node.alias
-                field_path += " as #{ast_node.alias}"
-              end
-            else
-              args = {}
-              field_path = "#{result.graphql_result_type.graphql_name}.#{last_part}"
-            end
 
-            rows << [
-              ast_node.position.join(":"),
-              field_path,
-              "#{object}",
-              args.inspect,
-              inspect_result(@override_value)
-            ]
+          object = result.graphql_application_value.object.inspect
+          ast_node = result.graphql_selections.find { |s| s.alias == last_part || s.name == last_part }
+          field_defn = query.get_field(result.graphql_result_type, ast_node.name)
+          args = query.arguments_for(ast_node, field_defn).to_h
+          field_path = field_defn.path
+          if ast_node.alias
+            field_path += " as #{ast_node.alias}"
           end
+
+          rows << [
+            ast_node.position.join(":"),
+            field_path,
+            "#{object}",
+            args.inspect,
+            inspect_result(@override_value)
+          ]
+
           rows << HEADERS
           rows.reverse!
           rows
@@ -147,11 +142,7 @@ module GraphQL
       def value_at(runtime, path)
         response = runtime.final_result
         path.each do |key|
-          if response && (response = response[key])
-            next
-          else
-            break
-          end
+          response && (response = response[key])
         end
         response
       end
