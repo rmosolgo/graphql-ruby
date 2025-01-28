@@ -234,7 +234,7 @@ module GraphQL
           value_method_name = configured_value_method || value.graphql_name.downcase
 
           if respond_to?(value_method_name.to_sym)
-            $stderr << "Failed to define value method for :#{value_method_name}, because " \
+            warn "Failed to define value method for :#{value_method_name}, because " \
               "#{value.owner.name} already responds to that method. Use `value_name:` to override the method name."
             return
           end
