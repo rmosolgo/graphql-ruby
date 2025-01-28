@@ -24,7 +24,8 @@ module GraphQL
     def_delegators :to_a, :each, :[]
 
     def self.use(schema_defn)
-      schema_defn.trace_with(self::Trace)
+      schema_defn.using_backtrace = true
+      # schema_defn.trace_with(self::Trace)
     end
 
     def initialize(context, value: nil)

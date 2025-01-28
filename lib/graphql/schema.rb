@@ -1119,7 +1119,13 @@ module GraphQL
       end
 
       # @api private
+      attr_accessor :using_backtrace
+
+      # @api private
       def handle_or_reraise(context, err)
+        if context[:backtrace] || using_backtrace
+          err = GraphQL::Backtrace::TracedError.new(err, context)
+        end
         handler = Execution::Errors.find_handler_for(self, err.class)
         if handler
           obj = context[:current_object]

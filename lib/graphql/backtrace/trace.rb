@@ -45,16 +45,16 @@ module GraphQL
 
       def execute_multiplex(multiplex:)
         super
-      rescue StandardError => err
-        # This is an unhandled error from execution,
-        # Re-raise it with a GraphQL trace.
-        potential_context = @__backtrace_last_context
-        if potential_context.is_a?(GraphQL::Query::Context) ||
-            potential_context.is_a?(Backtrace::Frame)
-          raise TracedError.new(err, potential_context)
-        else
-          raise
-        end
+      # rescue StandardError => err
+      #   # This is an unhandled error from execution,
+      #   # Re-raise it with a GraphQL trace.
+      #   potential_context = @__backtrace_last_context
+      #   if potential_context.is_a?(GraphQL::Query::Context) ||
+      #       potential_context.is_a?(Backtrace::Frame)
+      #     raise TracedError.new(err, potential_context)
+      #   else
+      #     raise
+      #   end
       end
 
       private

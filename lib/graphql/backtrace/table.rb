@@ -38,13 +38,13 @@ module GraphQL
       def rows
         @rows ||= begin
           query = @context.query
-          query_ctx = query.context
+          query_ctx = @context
           runtime_inst = query_ctx.namespace(:interpreter_runtime)[:runtime]
           result = runtime_inst.instance_variable_get(:@response)
           rows = []
           result_path = []
           last_part = nil
-          path = @context.path
+          path = @context.current_path
           path.each do |path_part|
             value = value_at(runtime_inst, result_path)
 
