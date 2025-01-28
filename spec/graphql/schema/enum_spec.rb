@@ -29,7 +29,7 @@ describe GraphQL::Schema::Enum do
     describe "when value_method conflicts with existing method" do
       it "does not define method and emits warning" do
         expected_message = "Failed to define value method for :value, because " \
-          "ConflictEnum already responds to that method. Use `value_name:` to override the method name."
+          "ConflictEnum already responds to that method. Use `value_name:` to override the method name.\n"
 
         assert_warns(expected_message) do
           conflict_enum = Class.new(GraphQL::Schema::Enum)
