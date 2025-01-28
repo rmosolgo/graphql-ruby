@@ -57,6 +57,7 @@ jobs:
           - gemfile: gemfiles/rails_master.gemfile
             ruby: 3.3
             graphql_reject_numbers_followed_by_names: 1
+            coverage: 1
           - gemfile: gemfiles/rails_master.gemfile
             ruby: 3.4
             graphql_reject_numbers_followed_by_names: 1
@@ -76,6 +77,12 @@ jobs:
         bundler: ${{ matrix.bundler || 'default' }}
     - run: bundle exec rake compile
     - run: bundle exec rake test
+    - run: git fetch --no-tags --prune --depth=10 origin +refs/heads/*:refs/remotes/origin/*
+    - run: bundle exec pronto run -f github_status github_pr -c origin/${{ github.base_ref }}
+      if: ${{ !!matrix.coverage }}
+      env:
+        PRONTO_PULL_REQUEST_ID: ${{ github.event.pull_request.number }}
+        PRONTO_GITHUB_ACCESS_TOKEN: "${{ github.token }}"
   javascript_test:
     runs-on: ubuntu-latest
     steps:
