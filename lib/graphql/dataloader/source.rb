@@ -17,12 +17,6 @@ module GraphQL
 
       attr_reader :dataloader
 
-      def test_untested_method
-        this_is_never_called
-      end
-
-      true ? 1 + 1 : never_called
-
       # @return [Dataloader::Request] a pending request for a value from `key`. Call `.load` on that object to wait for the result.
       def request(value)
         res_key = result_key_for(value)
