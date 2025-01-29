@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Class: GraphQL::Schema::Warden::PassThruWarden
+  
+    &mdash; GraphQL Ruby API Documentation
+  
+</title>
+
+  <link rel="stylesheet" href="../../../css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="../../../css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "GraphQL::Schema::Warden::PassThruWarden";
+  relpath = '../../../';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../../../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="../../../class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="../../../_index.html">Index (P)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../../../GraphQL.html" title="GraphQL (module)">GraphQL</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../../Schema.html" title="GraphQL::Schema (class)">Schema</a></span></span> &raquo; <span class='title'><span class='object_link'><a href="../Warden.html" title="GraphQL::Schema::Warden (class)">Warden</a></span></span>
+     &raquo; 
+    <span class="title">PassThruWarden</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../../../class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Class: GraphQL::Schema::Warden::PassThruWarden
+  
+  
+  <span class="private note title">Private</span>
+</h1>
+<div class="box_info">
+  
+  <dl>
+    <dt>Inherits:</dt>
+    <dd>
+      <span class="inheritName">Object</span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next">GraphQL::Schema::Warden::PassThruWarden</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+    </dd>
+  </dl>
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>lib/graphql/schema/warden.rb</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This class is part of a private API.</strong>
+  You should avoid using this class if possible, as it may be removed or be changed in the future.
+</p>
+<p>This is used when a caller provides a Hash for context.
+We want to call the schema’s hooks, but we don’t have a full-blown warden.
+The <code>context</code> arguments to these methods exist purely to simplify the code that
+calls methods on this object, so it will have everything it needs.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+
+
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#arguments-class_method" title="arguments (class method)">.<strong>arguments</strong>(owner, ctx)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#interface_type_memberships-class_method" title="interface_type_memberships (class method)">.<strong>interface_type_memberships</strong>(obj_t, ctx)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#loadable%3F-class_method" title="loadable? (class method)">.<strong>loadable?</strong>(type, ctx)  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#loadable_possible_types-class_method" title="loadable_possible_types (class method)">.<strong>loadable_possible_types</strong>(type, ctx)  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#visibility_profile-class_method" title="visibility_profile (class method)">.<strong>visibility_profile</strong>  &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#visible_argument%3F-class_method" title="visible_argument? (class method)">.<strong>visible_argument?</strong>(arg, ctx)  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#visible_enum_value%3F-class_method" title="visible_enum_value? (class method)">.<strong>visible_enum_value?</strong>(ev, ctx)  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#visible_field%3F-class_method" title="visible_field? (class method)">.<strong>visible_field?</strong>(field, ctx)  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#visible_type%3F-class_method" title="visible_type? (class method)">.<strong>visible_type?</strong>(type, ctx)  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#visible_type_membership%3F-class_method" title="visible_type_membership? (class method)">.<strong>visible_type_membership?</strong>(tm, ctx)  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  <span class="private note title">private</span>
+
+  
+    <span class="summary_desc"><div class='inline'>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="arguments-class_method">
+  
+    .<strong>arguments</strong>(owner, ctx)  &#x21d2; <tt><span class='object_link'><a href="../Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+73</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 73</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_arguments'>arguments</span><span class='lparen'>(</span><span class='id identifier rubyid_owner'>owner</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='id identifier rubyid_owner'>owner</span><span class='period'>.</span><span class='id identifier rubyid_arguments'>arguments</span><span class='lparen'>(</span><span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="interface_type_memberships-class_method">
+  
+    .<strong>interface_type_memberships</strong>(obj_t, ctx)  &#x21d2; <tt><span class='object_link'><a href="../Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+72</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 72</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_interface_type_memberships'>interface_type_memberships</span><span class='lparen'>(</span><span class='id identifier rubyid_obj_t'>obj_t</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='id identifier rubyid_obj_t'>obj_t</span><span class='period'>.</span><span class='id identifier rubyid_interface_type_memberships'>interface_type_memberships</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="loadable?-class_method">
+  
+    .<strong>loadable?</strong>(type, ctx)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+74</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 74</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_loadable?'>loadable?</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_visible?'>visible?</span><span class='lparen'>(</span><span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="loadable_possible_types-class_method">
+  
+    .<strong>loadable_possible_types</strong>(type, ctx)  &#x21d2; <tt><span class='object_link'><a href="../Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+75</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 75</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_loadable_possible_types'>loadable_possible_types</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_possible_types'>possible_types</span><span class='lparen'>(</span><span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="visibility_profile-class_method">
+  
+    .<strong>visibility_profile</strong>  &#x21d2; <tt><span class='object_link'><a href="../Object.html" title="GraphQL::Schema::Object (class)">Object</a></span></tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+76
+77
+78</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 76</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_visibility_profile'>visibility_profile</span>
+  <span class='ivar'>@visibility_profile</span> <span class='op'>||=</span> <span class='const'><span class='object_link'><a href="../Warden.html" title="GraphQL::Schema::Warden (class)">Warden</a></span></span><span class='op'>::</span><span class='const'><span class='object_link'><a href="VisibilityProfile.html" title="GraphQL::Schema::Warden::VisibilityProfile (class)">VisibilityProfile</a></span></span><span class='period'>.</span><span class='id identifier rubyid_new'><span class='object_link'><a href="VisibilityProfile.html#initialize-instance_method" title="GraphQL::Schema::Warden::VisibilityProfile#initialize (method)">new</a></span></span><span class='lparen'>(</span><span class='kw'>self</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="visible_argument?-class_method">
+  
+    .<strong>visible_argument?</strong>(arg, ctx)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+68</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 68</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_visible_argument?'>visible_argument?</span><span class='lparen'>(</span><span class='id identifier rubyid_arg'>arg</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='id identifier rubyid_arg'>arg</span><span class='period'>.</span><span class='id identifier rubyid_visible?'>visible?</span><span class='lparen'>(</span><span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="visible_enum_value?-class_method">
+  
+    .<strong>visible_enum_value?</strong>(ev, ctx)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+70</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 70</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_visible_enum_value?'>visible_enum_value?</span><span class='lparen'>(</span><span class='id identifier rubyid_ev'>ev</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='id identifier rubyid_ev'>ev</span><span class='period'>.</span><span class='id identifier rubyid_visible?'>visible?</span><span class='lparen'>(</span><span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="visible_field?-class_method">
+  
+    .<strong>visible_field?</strong>(field, ctx)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+67</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 67</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_visible_field?'>visible_field?</span><span class='lparen'>(</span><span class='id identifier rubyid_field'>field</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='id identifier rubyid_field'>field</span><span class='period'>.</span><span class='id identifier rubyid_visible?'>visible?</span><span class='lparen'>(</span><span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="visible_type?-class_method">
+  
+    .<strong>visible_type?</strong>(type, ctx)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+69</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 69</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_visible_type?'>visible_type?</span><span class='lparen'>(</span><span class='id identifier rubyid_type'>type</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='id identifier rubyid_type'>type</span><span class='period'>.</span><span class='id identifier rubyid_visible?'>visible?</span><span class='lparen'>(</span><span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="visible_type_membership?-class_method">
+  
+    .<strong>visible_type_membership?</strong>(tm, ctx)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note private">
+  <strong>This method is part of a private API.</strong>
+  You should avoid using this method if possible, as it may be removed or be changed in the future.
+</p>
+
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+71</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/graphql/schema/warden.rb', line 71</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_visible_type_membership?'>visible_type_membership?</span><span class='lparen'>(</span><span class='id identifier rubyid_tm'>tm</span><span class='comma'>,</span> <span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='id identifier rubyid_tm'>tm</span><span class='period'>.</span><span class='id identifier rubyid_visible?'>visible?</span><span class='lparen'>(</span><span class='id identifier rubyid_ctx'>ctx</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Wed Jan 29 17:21:10 2025 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.37 (ruby-3.2.6).
+</div>
+
+    </div>
+  </body>
+</html>
