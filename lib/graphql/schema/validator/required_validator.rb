@@ -51,19 +51,36 @@ module GraphQL
         end
 
         def validate(_object, context, value)
-          matched_conditions = 0
+          fully_matched_conditions = 0
+          partially_matched_conditions = 0
 
           if !value.nil?
             @one_of.each do |one_of_condition|
               case one_of_condition
               when Symbol
                 if value.key?(one_of_condition)
-                  matched_conditions += 1
+                  fully_matched_conditions += 1
                 end
               when Array
-                if one_of_condition.all? { |k| value.key?(k) }
-                  matched_conditions += 1
-                  break
+                any_match = false
+                full_match = true
+
+                one_of_condition.each do |k|
+                  if value.key?(k)
+                    any_match = true
+                  else
+                    full_match = false
+                  end
+                end
+
+                partial_match = !full_match && any_match
+
+                if full_match
+                  fully_matched_conditions += 1
+                end
+
+                if partial_match
+                  partially_matched_conditions += 1
                 end
               else
                 raise ArgumentError, "Unknown one_of condition: #{one_of_condition.inspect}"
@@ -71,7 +88,7 @@ module GraphQL
             end
           end
 
-          if matched_conditions == 1
+          if fully_matched_conditions == 1 && partially_matched_conditions == 0
             nil # OK
           else
             @message || build_message(context)
