@@ -18,8 +18,6 @@ SimpleCov.start do
 
 end
 
-require "undercover"
-
 Bundler.require
 
 # Print full backtrace for failures:

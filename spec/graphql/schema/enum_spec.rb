@@ -28,9 +28,7 @@ describe GraphQL::Schema::Enum do
 
     describe "when value_method conflicts with existing method" do
       it "does not define method and emits warning" do
-        expected_message = "Failed to define value method for :value, because " \
-          "ConflictEnum already responds to that method. Use `value_name:` to override the method name.\n"
-
+        expected_message = "Failed to define value method for :value, because ConflictEnum already responds to that method. Use `value_method:` to override the method name or `value_method: false` to disable Enum value method generation.\n"
         assert_warns(expected_message) do
           conflict_enum = Class.new(GraphQL::Schema::Enum)
           Object.const_set("ConflictEnum", conflict_enum)
@@ -148,7 +146,7 @@ describe GraphQL::Schema::Enum do
     class MultipleNameTestEnum < GraphQL::Schema::Enum
       value "A"
       value "B", value: :a
-      value "B", value: :b
+      value "B", value: :b, value_method: false
     end
 
     it "doesn't allow it from enum_values" do

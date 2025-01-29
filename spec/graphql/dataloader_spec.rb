@@ -370,9 +370,9 @@ describe GraphQL::Dataloader do
       argument :argument_1, String, prepare: ->(val, ctx) {
         raise FieldTestError
       }
-
+      field :value, String
       def resolve(argument_1:)
-        argument_1
+        { value: argument_1 }
       end
     end
 
@@ -380,9 +380,9 @@ describe GraphQL::Dataloader do
       argument :argument_2, String, prepare: ->(val, ctx) {
         raise FieldTestError
       }
-
+      field :value, String
       def resolve(argument_2:)
-        argument_2
+        { value: argument_2 }
       end
     end
 
@@ -1389,7 +1389,7 @@ describe GraphQL::Dataloader do
 
   it "has proper context[:current_field]" do
     res = FiberSchema.execute("mutation { mutation1(argument1: \"abc\") { __typename } mutation2(argument2: \"def\") { __typename } }")
-    assert_equal({"mutation1"=>nil, "mutation2"=>nil}, res["data"])
+    assert_equal({"mutation1"=>{ "__typename" => "Mutation1Payload" }, "mutation2"=>{ "__typename" => "Mutation2Payload"} }, res["data"])
     expected_errors = [
       "FieldTestError @ [\"mutation1\"], Mutation.mutation1 / Mutation.mutation1",
       "FieldTestError @ [\"mutation2\"], Mutation.mutation2 / Mutation.mutation2",
