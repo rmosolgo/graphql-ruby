@@ -74,7 +74,7 @@ module GraphQL
           runtime_object = root_type.wrap(query.root_value, context)
           runtime_object = schema.sync_lazy(runtime_object)
           is_eager = root_op_type == "mutation"
-          @response = GraphQLResultHash.new(nil, root_type, runtime_object, nil, false, root_operation.selections, is_eager)
+          @response = GraphQLResultHash.new(nil, root_type, runtime_object, nil, false, root_operation.selections, is_eager, root_operation, nil, nil)
           st = get_current_runtime_state
           st.current_result = @response
 
@@ -85,7 +85,7 @@ module GraphQL
             call_method_on_directives(:resolve, runtime_object, root_operation.directives) do # execute query level directives
               each_gathered_selections(@response) do |selections, is_selection_array|
                 if is_selection_array
-                  selection_response = GraphQLResultHash.new(nil, root_type, runtime_object, nil, false, selections, is_eager)
+                  selection_response = GraphQLResultHash.new(nil, root_type, runtime_object, nil, false, selections, is_eager, root_operation, nil, nil)
                   final_response = @response
                 else
                   selection_response = @response
@@ -574,7 +574,7 @@ module GraphQL
             r = begin
               current_type.coerce_result(value, context)
             rescue StandardError => err
-              schema.handle_or_reraise(context, err)
+              query.handle_or_reraise(err)
             end
             set_result(selection_result, result_name, r, false, is_non_null)
             r
@@ -609,11 +609,11 @@ module GraphQL
             after_lazy(object_proxy, ast_node: ast_node, field: field, owner_object: owner_object, arguments: arguments, trace: false, result_name: result_name, result: selection_result, runtime_state: runtime_state) do |inner_object, runtime_state|
               continue_value = continue_value(inner_object, field, is_non_null, ast_node, result_name, selection_result)
               if HALT != continue_value
-                response_hash = GraphQLResultHash.new(result_name, current_type, continue_value, selection_result, is_non_null, next_selections, false)
+                response_hash = GraphQLResultHash.new(result_name, current_type, continue_value, selection_result, is_non_null, next_selections, false, ast_node, arguments, field)
                 set_result(selection_result, result_name, response_hash, true, is_non_null)
                 each_gathered_selections(response_hash) do |selections, is_selection_array|
                   if is_selection_array
-                    this_result = GraphQLResultHash.new(result_name, current_type, continue_value, selection_result, is_non_null, selections, false)
+                    this_result = GraphQLResultHash.new(result_name, current_type, continue_value, selection_result, is_non_null, selections, false, ast_node, arguments, field)
                     final_result = response_hash
                   else
                     this_result = response_hash
@@ -634,35 +634,43 @@ module GraphQL
             # This is true for objects, unions, and interfaces
             use_dataloader_job = !inner_type.unwrap.kind.input?
             inner_type_non_null = inner_type.non_null?
-            response_list = GraphQLResultArray.new(result_name, current_type, owner_object, selection_result, is_non_null, next_selections, false)
+            response_list = GraphQLResultArray.new(result_name, current_type, owner_object, selection_result, is_non_null, next_selections, false, ast_node, arguments, field)
             set_result(selection_result, result_name, response_list, true, is_non_null)
             idx = nil
             list_value = begin
-              value.each do |inner_value|
-                idx ||= 0
-                this_idx = idx
-                idx += 1
-                if use_dataloader_job
-                  @dataloader.append_job do
+              begin
+                value.each do |inner_value|
+                  idx ||= 0
+                  this_idx = idx
+                  idx += 1
+                  if use_dataloader_job
+                    @dataloader.append_job do
+                      resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, owner_type, was_scoped, runtime_state)
+                    end
+                  else
                     resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, owner_type, was_scoped, runtime_state)
                   end
+                end
+
+                response_list
+              rescue NoMethodError => err
+                # Ruby 2.2 doesn't have NoMethodError#receiver, can't check that one in this case. (It's been EOL since 2017.)
+                if err.name == :each && (err.respond_to?(:receiver) ? err.receiver == value : true)
+                  # This happens when the GraphQL schema doesn't match the implementation. Help the dev debug.
+                  raise ListResultFailedError.new(value: value, field: field, path: current_path)
                 else
-                  resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, owner_type, was_scoped, runtime_state)
+                  # This was some other NoMethodError -- let it bubble to reveal the real error.
+                  raise
+                end
+              rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => ex_err
+                ex_err
+              rescue StandardError => err
+                begin
+                  query.handle_or_reraise(err)
+                rescue GraphQL::ExecutionError => ex_err
+                  ex_err
                 end
               end
-
-              response_list
-            rescue NoMethodError => err
-              # Ruby 2.2 doesn't have NoMethodError#receiver, can't check that one in this case. (It's been EOL since 2017.)
-              if err.name == :each && (err.respond_to?(:receiver) ? err.receiver == value : true)
-                # This happens when the GraphQL schema doesn't match the implementation. Help the dev debug.
-                raise ListResultFailedError.new(value: value, field: field, path: current_path)
-              else
-                # This was some other NoMethodError -- let it bubble to reveal the real error.
-                raise
-              end
-            rescue GraphQL::ExecutionError, GraphQL::UnauthorizedError => ex_err
-              ex_err
             rescue StandardError => err
               begin
                 query.handle_or_reraise(err)

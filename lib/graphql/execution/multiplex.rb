@@ -35,10 +35,6 @@ module GraphQL
         @current_trace = @context[:trace] || schema.new_trace(multiplex: self)
         @dataloader = @context[:dataloader] ||= @schema.dataloader_class.new
         @tracers = schema.tracers + (context[:tracers] || [])
-        # Support `context: {backtrace: true}`
-        if context[:backtrace] && !@tracers.include?(GraphQL::Backtrace::Tracer)
-          @tracers << GraphQL::Backtrace::Tracer
-        end
         @max_complexity = max_complexity
       end
     end

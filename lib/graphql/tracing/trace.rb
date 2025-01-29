@@ -8,7 +8,7 @@ module GraphQL
     # "Trace modes" are subclasses of this with custom tracing modules mixed in.
     #
     # A trace module may implement any of the methods on `Trace`, being sure to call `super`
-    # to continue any tracing hooks and call the actual runtime behavior. See {GraphQL::Backtrace::Trace} for example.
+    # to continue any tracing hooks and call the actual runtime behavior.
     #
     class Trace
       # @param multiplex [GraphQL::Execution::Multiplex, nil]

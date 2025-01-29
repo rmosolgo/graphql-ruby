@@ -364,8 +364,6 @@ describe "GraphQL::Authorization" do
           raise GraphQL::ExecutionError, "Unauthorized #{err.type.graphql_name}: #{err.object.inspect}"
         end
       end
-
-      # use GraphQL::Backtrace
     end
 
     class SchemaWithFieldHook < GraphQL::Schema
