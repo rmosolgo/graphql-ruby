@@ -649,6 +649,7 @@ module GraphQL
             set_result(selection_result, result_name, response_list, true, is_non_null)
             idx = nil
             list_value = begin
+              begin
                 value.each do |inner_value|
                   if idx.nil?
                     @current_trace.end_execute_field(selection_result, result_name)
@@ -687,6 +688,7 @@ module GraphQL
                 rescue GraphQL::ExecutionError => ex_err
                   ex_err
                 end
+              end
             rescue StandardError => err
               begin
                 query.handle_or_reraise(err)
