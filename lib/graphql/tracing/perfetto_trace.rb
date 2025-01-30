@@ -1,9 +1,24 @@
 # frozen_string_literal: true
-require "graphql/tracing/perfetto_trace/trace_pb"
-
 module GraphQL
   module Tracing
     module PerfettoTrace
+      PROTOBUF_AVAILABLE = begin
+        require "google/protobuf"
+        true
+      rescue LoadError
+        false
+      end
+
+      if PROTOBUF_AVAILABLE
+        require "graphql/tracing/perfetto_trace/trace_pb"
+      end
+
+      def self.included(trace_class)
+        if !PROTOBUF_AVAILABLE
+          raise "#{self} can't be used because the `google-protobuf` gem wasn't available. Add it to your project, then try again."
+        end
+      end
+
       def initialize(name_prefix: nil, **_rest)
         super
         @pid = Process.pid

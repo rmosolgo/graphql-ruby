@@ -31,6 +31,7 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency "benchmark-ips"
   s.add_development_dependency "concurrent-ruby", "~>1.0"
+  s.add_development_dependency "google-protobuf"
   s.add_development_dependency "graphql-batch"
   s.add_development_dependency "memory_profiler"
 

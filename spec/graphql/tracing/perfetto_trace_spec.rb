@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require "spec_helper"
+require "open3"
 
 if testing_rails?
   describe GraphQL::Tracing::PerfettoTrace do
@@ -126,17 +127,24 @@ if testing_rails?
       json = res.context.query.current_trace.write(file: nil, debug_json: true)
       data = JSON.parse(json)
 
-      check_snapshot(data, "example.json")
 
+      check_snapshot(data, "example-rails-#{Rails::VERSION::MAJOR}-#{Rails::VERSION::MINOR}.json")
+    end
 
+    it "provides an error when google-protobuf isn't available" do
+      stderr_and_stdout, _status = Open3.capture2e(%|ruby -e 'require "bundler/inline"; gemfile(true) { source("https://rubygems.org"); gem("graphql", path: "./") }; class MySchema < GraphQL::Schema; trace_with(GraphQL::Tracing::PerfettoTrace); end;'|)
+      assert_includes stderr_and_stdout, "GraphQL::Tracing::PerfettoTrace can't be used because the `google-protobuf` gem wasn't available. Add it to your project, then try again."
     end
 
     def check_snapshot(data, snapshot_name)
       snapshot_path = "spec/graphql/tracing/perfetto_trace/#{snapshot_name}"
+
       if ENV["UPDATE_PERFETTO"]
-        puts "Updating PerfettoTrace snapshot"
+        puts "Updating PerfettoTrace snapshot: #{snapshot_path.inspect}"
         snapshot_json = convert_to_snapshot(data)
         File.write(snapshot_path, JSON.pretty_generate(snapshot_json))
+      elsif !File.exist?(snapshot_path)
+        raise "Snapshot file not found: #{snapshot_path.inspect}"
       else
         snapshot_data = JSON.parse(File.read(snapshot_path))
         deep_snap_match(snapshot_data, data, [])
