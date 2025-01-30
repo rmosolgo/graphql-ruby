@@ -146,6 +146,7 @@ module GraphQL
           ),
           trusted_packet_sequence_id: @pid,
         )
+        super
       end
 
       def end_multiplex(m)
@@ -160,6 +161,7 @@ module GraphQL
         if defined?(@as_subscriber)
           ActiveSupport::Notifications.unsubscribe(@as_subscriber)
         end
+        super
       end
 
       def begin_execute_field(result, result_name)
@@ -176,6 +178,7 @@ module GraphQL
         )
         @packets << packet
         fiber_flow_stack << packet
+        super
       end
 
       def end_execute_field(result, result_name)
@@ -200,6 +203,7 @@ module GraphQL
           track_event: track_event,
           trusted_packet_sequence_id: @pid,
         )
+        super
       end
 
       def begin_analyze_multiplex(m)
@@ -214,6 +218,7 @@ module GraphQL
           ),
           trusted_packet_sequence_id: @pid,
         )
+        super
       end
 
       def end_analyze_multiplex(m)
@@ -227,6 +232,7 @@ module GraphQL
           ),
           trusted_packet_sequence_id: @pid,
         )
+        super
       end
 
       def begin_parse(str)
@@ -241,6 +247,7 @@ module GraphQL
           ),
           trusted_packet_sequence_id: @pid,
         )
+        super
       end
 
       def end_parse(str)
@@ -254,6 +261,7 @@ module GraphQL
           ),
           trusted_packet_sequence_id: @pid,
         )
+        super
       end
 
       def dataloader_spawn_execution_fiber(jobs)
@@ -277,6 +285,7 @@ module GraphQL
             child_ordering: TrackDescriptor::ChildTracksOrdering::CHRONOLOGICAL,
           )
         )
+        super
       end
 
       def dataloader_spawn_source_fiber(pending_sources)
@@ -300,6 +309,7 @@ module GraphQL
             child_ordering: TrackDescriptor::ChildTracksOrdering::CHRONOLOGICAL,
           )
         )
+        super
       end
 
       def dataloader_fiber_yield(source)
@@ -330,6 +340,7 @@ module GraphQL
           ),
           trusted_packet_sequence_id: @pid,
         )
+        super
       end
 
       def dataloader_fiber_resume(source)
@@ -350,6 +361,7 @@ module GraphQL
             trusted_packet_sequence_id: @pid,
           )
         end
+        super
       end
 
       def dataloader_fiber_exit
@@ -365,6 +377,7 @@ module GraphQL
           ),
           trusted_packet_sequence_id: @pid,
         )
+        super
       end
 
       def begin_dataloader
@@ -385,6 +398,7 @@ module GraphQL
             parent_uuid: @main_fiber_id,
           )
         )
+        super
       end
 
       def end_dataloader
@@ -397,6 +411,7 @@ module GraphQL
           ),
           trusted_packet_sequence_id: @pid,
         )
+        super
       end
 
       def begin_dataloader_source(source)
@@ -430,6 +445,7 @@ module GraphQL
         )
         @packets << packet
         fiber_flow_stack << packet
+        super
       end
 
       def end_dataloader_source(source)
@@ -445,6 +461,7 @@ module GraphQL
           trusted_packet_sequence_id: @pid,
         )
         fiber_flow_stack.pop
+        super
       end
 
       def write(file:, debug_json: false)

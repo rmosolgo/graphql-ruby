@@ -4,6 +4,7 @@ require:
   - ./lib/graphql/rubocop/graphql/default_null_true
   - ./lib/graphql/rubocop/graphql/default_required_true
   - ./cop/development/context_is_passed_cop
+  - ./cop/development/trace_calls_super_cop.rb
 
 AllCops:
   DisabledByDefault: true
@@ -22,20 +23,9 @@ Development/ContextIsPassedCop:
   Exclude:
     - 'spec/**/*'
     - 'cop/**/*'
-    # Legacy-related:
-    - 'lib/graphql/*_type.rb'
-    - 'lib/graphql/define/**/*.rb'
-    - 'lib/graphql/relay/**/*'
-    - 'lib/graphql/function.rb'
-    - 'lib/graphql/directive.rb'
-    - 'lib/graphql/field.rb'
-    - 'lib/graphql/schema/traversal.rb'
-    - 'lib/graphql/schema/possible_types.rb'
     - 'lib/graphql/schema/validation.rb'
-    - 'lib/graphql/compatibility/**/*'
     - 'lib/graphql/static_validation/literal_validator.rb'
     - 'lib/graphql/static_validation/rules/**/*.rb'
-    - 'lib/graphql/internal_representation/**/*.rb'
     # AST-related:
     - 'lib/graphql/schema/build_from_definition.rb'
     - 'lib/graphql/language/printer.rb'
@@ -54,6 +44,10 @@ Development/NoneWithoutBlockCop:
 Development/NoFocusCop:
   Include:
     - "spec/**/*"
+
+Development/TraceCallsSuperCop:
+  Include:
+    - "lib/graphql/tracing/*_trace.rb"
 
 # def ...
 # end
