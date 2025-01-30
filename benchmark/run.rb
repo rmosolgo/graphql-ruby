@@ -6,6 +6,7 @@ require "benchmark/ips"
 require "stackprof"
 require "memory_profiler"
 require "graphql/batch"
+require "securerandom"
 
 module GraphQLBenchmark
   QUERY_STRING = GraphQL::Introspection::INTROSPECTION_QUERY

@@ -72,3 +72,25 @@ value "AUDIO", value: :audio
 Then, GraphQL inputs of `AUDIO` will be converted to `:audio` and Ruby values of `:audio` will be converted to `"AUDIO"` in GraphQL responses.
 
 Enum classes are never instantiated and their methods are never called.
+
+You can get the GraphQL name of the enum value using the method matching its downcased name:
+
+```ruby
+Types::MediaCategory.audio # => "AUDIO"
+```
+
+You can pass a `value_method:` to override the value of the generated method:
+
+```ruby
+value "AUDIO", value: :audio, value_method: :lo_fi_audio
+
+# ...
+
+Types::MediaCategory.lo_fi_audio # => "AUDIO"
+```
+
+Also, you can completely skip the method generation by setting `value_method` to `false`
+
+```ruby
+value "AUDIO", value: :audio, value_method: false
+```

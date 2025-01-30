@@ -7,7 +7,6 @@ require "graphql/schema/find_inherited_value"
 require "graphql/schema/finder"
 require "graphql/schema/introspection_system"
 require "graphql/schema/late_bound_type"
-require "graphql/schema/null_mask"
 require "graphql/schema/timeout"
 require "graphql/schema/type_expression"
 require "graphql/schema/unique_within_type"
@@ -167,9 +166,6 @@ module GraphQL
           mods.each { |mod| new_class.include(mod) }
           new_class.include(DefaultTraceClass)
           trace_mode(:default, new_class)
-          backtrace_class = Class.new(new_class)
-          backtrace_class.include(GraphQL::Backtrace::Trace)
-          trace_mode(:default_backtrace, backtrace_class)
         end
         trace_class_for(:default, build: true)
       end
@@ -215,11 +211,6 @@ module GraphQL
           base_class = (superclass.respond_to?(:trace_class_for) && superclass.trace_class_for(mode, build: true)) || GraphQL::Tracing::Trace
           const_set(:DefaultTrace, Class.new(base_class) do
             include DefaultTraceClass
-          end)
-        when :default_backtrace
-          schema_base_class = trace_class_for(:default, build: true)
-          const_set(:DefaultTraceBacktrace, Class.new(schema_base_class) do
-            include(GraphQL::Backtrace::Trace)
           end)
         else
           # First, see if the superclass has a custom-defined class for this.
@@ -1119,7 +1110,13 @@ module GraphQL
       end
 
       # @api private
+      attr_accessor :using_backtrace
+
+      # @api private
       def handle_or_reraise(context, err)
+        if context[:backtrace] || using_backtrace
+          err = GraphQL::Backtrace::TracedError.new(err, context)
+        end
         handler = Execution::Errors.find_handler_for(self, err.class)
         if handler
           obj = context[:current_object]
@@ -1449,22 +1446,8 @@ module GraphQL
         target = options[:query] || options[:multiplex]
         mode ||= target && target.context[:trace_mode]
 
-        trace_mode = if mode
-          mode
-        elsif target && target.context[:backtrace]
-          if default_trace_mode != :default
-            raise ArgumentError, "Can't use `context[:backtrace]` with a custom default trace mode (`#{dm.inspect}`)"
-          else
-            own_trace_modes[:default_backtrace] ||= build_trace_mode(:default_backtrace)
-            options_trace_mode = :default
-            :default_backtrace
-          end
-        else
-          default_trace_mode
-        end
-
-        options_trace_mode ||= trace_mode
-        base_trace_options = trace_options_for(options_trace_mode)
+        trace_mode = mode || default_trace_mode
+        base_trace_options = trace_options_for(trace_mode)
         trace_options = base_trace_options.merge(options)
         trace_class_for_mode = trace_class_for(trace_mode, build: true)
         trace_class_for_mode.new(**trace_options)

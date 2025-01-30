@@ -127,14 +127,6 @@ module GraphQL
       context_tracers = (context ? context.fetch(:tracers, []) : [])
       @tracers = schema.tracers + context_tracers
 
-      # Support `ctx[:backtrace] = true` for wrapping backtraces
-      if context && context[:backtrace] && !@tracers.include?(GraphQL::Backtrace::Tracer)
-        if schema.trace_class <= GraphQL::Tracing::CallLegacyTracers
-          context_tracers += [GraphQL::Backtrace::Tracer]
-          @tracers << GraphQL::Backtrace::Tracer
-        end
-      end
-
       if !context_tracers.empty? && !(schema.trace_class <= GraphQL::Tracing::CallLegacyTracers)
         raise ArgumentError, "context[:tracers] are not supported without `trace_with(GraphQL::Tracing::CallLegacyTracers)` in the schema configuration, please add it."
       end

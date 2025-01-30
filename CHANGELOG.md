@@ -10,6 +10,20 @@
 
 ### Bug fixes
 
+# 2.4.9 (29 Jan 2025)
+
+### New features
+
+- Enum: Enum types now have methods to access GraphQL-ready values directly #5206 #5218
+
+### Bug fixes
+
+- Validation: fix order dependency and mutual exclusion bug in `required: { one_of: [ ... ] }`
+- Backtrace: simplify trace setup and rendering code
+- Fix dependencies for Ruby 3.4 #5199
+- Resolver: inherit description from superclass #5195
+- Visibility: fix for when multiple implementations are all hidden #5191
+
 # 2.4.8 (10 Dec 2024)
 
 ### New features
