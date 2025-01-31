@@ -1,6 +1,32 @@
 # frozen_string_literal: true
 module GraphQL
   module Tracing
+    # This produces a trace file for inspecting in the [Perfetto Trace Viewer](https://ui.perfetto.dev).
+    #
+    # To get the file, call {#write} on the trace.
+    #
+    # Use "trace modes" to configure this to run on command or on a sample of traffic.
+    #
+    # @example Writing trace output
+    #
+    #   result = MySchema.execute(...)
+    #   result.query.trace.write(file: "tmp/trace.dump")
+    #
+    # @example Running this instrumenter when `trace: true` is present in the request
+    #
+    #   class MySchema < GraphQL::Schema
+    #     # Only run this tracer when `context[:trace_mode]` is `:trace`
+    #     trace_with GraphQL::Tracing::Perfetto, mode: :trace
+    #   end
+    #
+    #   # In graphql_controller.rb:
+    #
+    #   context[:trace_mode] = params[:trace] ? :trace : nil
+    #   result = MySchema.execute(query_str, context: context, variables: variables, ...)
+    #   if context[:trace_mode] == :trace
+    #     result.trace.write(file: ...)
+    #   end
+    #
     module PerfettoTrace
       PROTOBUF_AVAILABLE = begin
         require "google/protobuf"
@@ -19,6 +45,8 @@ module GraphQL
         end
       end
 
+      # @param name_prefix [String, nil] A prefix to remove from Source class names for readability
+      # @param active_support_notifications_pattern [String, RegExp, false] A filter for `ActiveSupport::Notifications`, if it's present. Or `false` to skip subscribing.
       def initialize(name_prefix: nil, active_support_notifications_pattern: nil, **_rest)
         super
         @pid = Process.pid
@@ -110,7 +138,7 @@ module GraphQL
           trusted_packet_sequence_id: @pid,
         )
 
-        if defined?(ActiveSupport::Notifications)
+        if defined?(ActiveSupport::Notifications) && active_support_notifications_pattern != false
           subscribe_to_active_support_notifications(active_support_notifications_pattern)
         end
       end
@@ -441,6 +469,10 @@ module GraphQL
         super
       end
 
+      # Dump protobuf output in the specified file.
+      # @param file [String] path to a file in a directory that already exists
+      # @param debug_json [Boolean] True to print JSON instead of binary
+      # @return [nil, String, Hash] If `file` was given, `nil`. If `file` was `nil`, a Hash if `debug_json: true`, else binary data.
       def write(file:, debug_json: false)
         trace = Trace.new(
           packet: @packets,
@@ -454,6 +486,7 @@ module GraphQL
 
         if file
           File.write(file, data, mode: 'wb')
+          nil
         else
           data
         end
