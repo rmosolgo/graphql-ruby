@@ -322,7 +322,6 @@ if RUBY_VERSION >= "3.1.1"
       include AsyncDataloaderAssertions
       include PerfettoSnapshot
 
-      focus
       it "produces a trace" do
         query_str = <<-GRAPHQL
         {

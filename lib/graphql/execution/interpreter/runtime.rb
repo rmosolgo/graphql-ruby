@@ -246,7 +246,6 @@ module GraphQL
         # @return [void]
         def evaluate_selection(result_name, field_ast_nodes_or_ast_node, selections_result) # rubocop:disable Metrics/ParameterLists
           return if selections_result.graphql_dead
-          @current_trace.begin_execute_field(selections_result, result_name)
           # As a performance optimization, the hash key will be a `Node` if
           # there's only one selection of the field. But if there are multiple
           # selections of the field, it will be an Array of nodes
@@ -376,6 +375,7 @@ module GraphQL
             end
             # Actually call the field resolver and capture the result
             app_result = begin
+              @current_trace.begin_execute_field(selection_result, result_name)
               @current_trace.execute_field(field: field_defn, ast_node: ast_node, query: query, object: object, arguments: kwarg_arguments) do
                 field_defn.resolve(object, kwarg_arguments, context)
               end
