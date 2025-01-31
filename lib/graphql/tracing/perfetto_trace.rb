@@ -19,7 +19,7 @@ module GraphQL
         end
       end
 
-      def initialize(name_prefix: nil, **_rest)
+      def initialize(name_prefix: nil, active_support_notifications_pattern: nil, **_rest)
         super
         @pid = Process.pid
         @flow_ids = Hash.new { |h, source_inst| h[source_inst] = [] }.compare_by_identity
@@ -111,43 +111,7 @@ module GraphQL
         )
 
         if defined?(ActiveSupport::Notifications)
-          @as_subscriber = ActiveSupport::Notifications.monotonic_subscribe do |name, start, finish, id, payload|
-            metadata = payload.map { |k, v| payload_to_debug(k, v) }
-            metadata.compact!
-            categories = [name]
-            te = if metadata.empty?
-              TrackEvent.new(
-                type: TrackEvent::Type::TYPE_SLICE_BEGIN,
-                track_uuid: fid,
-                categories: categories,
-                name: name,
-              )
-            else
-              TrackEvent.new(
-                type: TrackEvent::Type::TYPE_SLICE_BEGIN,
-                track_uuid: fid,
-                name: name,
-                categories: categories,
-                debug_annotations: metadata,
-              )
-            end
-            @packets << TracePacket.new(
-              timestamp: (start * 1_000_000_000).to_i,
-              track_event: te,
-              trusted_packet_sequence_id: @pid,
-            )
-            @packets << TracePacket.new(
-              timestamp: (finish * 1_000_000_000).to_i,
-              track_event: TrackEvent.new(
-                type: TrackEvent::Type::TYPE_SLICE_END,
-                track_uuid: fid,
-                name: name,
-                extra_counter_track_uuids: [@objects_counter_id],
-                extra_counter_values: [count_allocations]
-              ),
-              trusted_packet_sequence_id: @pid,
-            )
-          end
+          subscribe_to_active_support_notifications(active_support_notifications_pattern)
         end
       end
 
@@ -173,9 +137,7 @@ module GraphQL
           ),
           trusted_packet_sequence_id: @pid,
         )
-        if defined?(@as_subscriber)
-          ActiveSupport::Notifications.unsubscribe(@as_subscriber)
-        end
+        unsubscribe_from_active_support_notifications
         super
       end
 
@@ -564,6 +526,52 @@ module GraphQL
 
       def fiber_flow_stack
         Fiber[:graphql_flow_stack] ||= []
+      end
+
+      def unsubscribe_from_active_support_notifications
+        if defined?(@as_subscriber)
+          ActiveSupport::Notifications.unsubscribe(@as_subscriber)
+        end
+      end
+
+      def subscribe_to_active_support_notifications(pattern)
+        @as_subscriber = ActiveSupport::Notifications.monotonic_subscribe(pattern) do |name, start, finish, id, payload|
+          metadata = payload.map { |k, v| payload_to_debug(k, v) }
+          metadata.compact!
+          categories = [name]
+          te = if metadata.empty?
+            TrackEvent.new(
+              type: TrackEvent::Type::TYPE_SLICE_BEGIN,
+              track_uuid: fid,
+              categories: categories,
+              name: name,
+            )
+          else
+            TrackEvent.new(
+              type: TrackEvent::Type::TYPE_SLICE_BEGIN,
+              track_uuid: fid,
+              name: name,
+              categories: categories,
+              debug_annotations: metadata,
+            )
+          end
+          @packets << TracePacket.new(
+            timestamp: (start * 1_000_000_000).to_i,
+            track_event: te,
+            trusted_packet_sequence_id: @pid,
+          )
+          @packets << TracePacket.new(
+            timestamp: (finish * 1_000_000_000).to_i,
+            track_event: TrackEvent.new(
+              type: TrackEvent::Type::TYPE_SLICE_END,
+              track_uuid: fid,
+              name: name,
+              extra_counter_track_uuids: [@objects_counter_id],
+              extra_counter_values: [count_allocations]
+            ),
+            trusted_packet_sequence_id: @pid,
+          )
+        end
       end
     end
   end
