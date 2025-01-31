@@ -332,7 +332,7 @@ module GraphQL
           if (flow_id = ls.track_event.flow_ids.first)
             # got it
           else
-            flow_id = rand(999_999)
+            flow_id = ls.track_event.name.object_id
             ls.track_event = dup_with(ls.track_event, {flow_ids: [flow_id] })
           end
           @flow_ids[source] << flow_id
@@ -395,7 +395,7 @@ module GraphQL
         super
       end
 
-      def begin_dataloader
+      def begin_dataloader(dl)
         @packets << TracePacket.new(
           timestamp: ts,
           track_event: TrackEvent.new(
@@ -408,15 +408,15 @@ module GraphQL
         @did = fid
         @packets << TracePacket.new(
           track_descriptor: TrackDescriptor.new(
-            uuid: fid,
-            name: "Dataloader Fiber ##{fid}",
+            uuid: @did,
+            name: "Dataloader Fiber ##{@did}",
             parent_uuid: @main_fiber_id,
           )
         )
         super
       end
 
-      def end_dataloader
+      def end_dataloader(dl)
         @packets << TracePacket.new(
           timestamp: ts,
           track_event: TrackEvent.new(

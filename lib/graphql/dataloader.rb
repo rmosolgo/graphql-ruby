@@ -129,7 +129,7 @@ module GraphQL
     # Dataloader will resume the fiber after the requested data has been loaded (by another Fiber).
     #
     # @return [void]
-    def yield(source)
+    def yield(source = Fiber[:__graphql_current_dataloader_source])
       trace = Fiber[:__graphql_current_multiplex]&.current_trace
       trace&.dataloader_fiber_yield(source)
       Fiber.yield
@@ -195,7 +195,7 @@ module GraphQL
       next_source_fibers = []
       first_pass = true
       manager = spawn_fiber do
-        trace&.begin_dataloader
+        trace&.begin_dataloader(self)
         while first_pass || !job_fibers.empty?
           first_pass = false
 
@@ -222,7 +222,7 @@ module GraphQL
           end
         end
 
-        trace&.end_dataloader
+        trace&.end_dataloader(self)
       end
 
       run_fiber(manager)

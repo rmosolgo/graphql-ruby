@@ -148,10 +148,6 @@ if RUBY_VERSION >= "3.1.1"
     module AsyncDataloaderAssertions
       def self.included(child_class)
         child_class.class_eval do
-          before do
-            AsyncSchema::KeyWaitForSource.reset
-          end
-
           it "works with sources" do
             dataloader = GraphQL::Dataloader::AsyncDataloader.new
             r1 = dataloader.with(AsyncSchema::SleepSource, :s1).request(0.1)
@@ -181,7 +177,7 @@ if RUBY_VERSION >= "3.1.1"
 
           it "works with GraphQL" do
             started_at = Time.now
-            res = AsyncSchema.execute("{ s1: sleep(duration: 0.1) s2: sleep(duration: 0.2) s3: sleep(duration: 0.3) }")
+            res = @schema.execute("{ s1: sleep(duration: 0.1) s2: sleep(duration: 0.2) s3: sleep(duration: 0.3) }")
             ended_at = Time.now
             assert_equal({"s1"=>0.1, "s2"=>0.2, "s3"=>0.3}, res["data"])
             assert_in_delta 0.3, ended_at - started_at, 0.05, "IO ran in parallel"
@@ -208,7 +204,7 @@ if RUBY_VERSION >= "3.1.1"
             }
             GRAPHQL
             started_at = Time.now
-            res = AsyncSchema.execute(query_str)
+            res = @schema.execute(query_str)
             ended_at = Time.now
 
             expected_data = {
@@ -251,7 +247,7 @@ if RUBY_VERSION >= "3.1.1"
             }
             GRAPHQL
             started_at = Time.now
-            res = AsyncSchema.execute(query_str)
+            res = @schema.execute(query_str)
             ended_at = Time.now
 
             expected_data = {
@@ -279,7 +275,7 @@ if RUBY_VERSION >= "3.1.1"
             GRAPHQL
 
             t1 = Time.now
-            result = AsyncSchema.execute(query_str)
+            result = @schema.execute(query_str)
             t2 = Time.now
             assert_equal ["a", "b", "c"], result["data"]["listWaiters"].map { |lw| lw["waiter"]["tag"]}
             # The field itself waits 0.1
@@ -297,7 +293,7 @@ if RUBY_VERSION >= "3.1.1"
               }
             GRAPHQL
 
-            result = AsyncSchema.execute(query_str)
+            result = @schema.execute(query_str)
             assert_equal value, result['data']['fiberLocalContext']
           end
         end
@@ -305,7 +301,59 @@ if RUBY_VERSION >= "3.1.1"
     end
 
     describe "with async" do
+      before do
+        @schema = AsyncSchema
+        AsyncSchema::KeyWaitForSource.reset
+      end
       include AsyncDataloaderAssertions
+    end
+
+    describe "with perfetto trace turned on" do
+      class TraceAsyncSchema < AsyncSchema
+        trace_with GraphQL::Tracing::PerfettoTrace
+        use GraphQL::Dataloader::AsyncDataloader
+      end
+
+      before do
+        @schema = TraceAsyncSchema
+        AsyncSchema::KeyWaitForSource.reset
+      end
+
+      include AsyncDataloaderAssertions
+      include PerfettoSnapshot
+
+      focus
+      it "produces a trace" do
+        query_str = <<-GRAPHQL
+        {
+          s1: sleeper(duration: 0.1) {
+            sleeper(duration: 0.1) {
+              sleeper(duration: 0.1) {
+                duration
+              }
+            }
+          }
+          s2: sleeper(duration: 0.2) {
+            sleeper(duration: 0.1) {
+              duration
+            }
+          }
+          s3: sleeper(duration: 0.3) {
+            duration
+          }
+        }
+        GRAPHQL
+        res = @schema.execute(query_str)
+        if ENV["DUMP_PERFETTO"]
+          res.context.query.current_trace.write(file: "perfetto.dump")
+        end
+
+        json = res.context.query.current_trace.write(file: nil, debug_json: true)
+        data = JSON.parse(json)
+
+
+        check_snapshot(data, "example.json")
+      end
     end
   end
 end

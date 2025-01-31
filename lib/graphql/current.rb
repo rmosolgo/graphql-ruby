@@ -48,5 +48,10 @@ module GraphQL
     def self.dataloader_source_class
       Fiber[:__graphql_current_dataloader_source]&.class
     end
+
+    # @return [GraphQL::Dataloader::Source, nil] The currently-running source, if there is one
+    def self.dataloader_source
+      Fiber[:__graphql_current_dataloader_source]
+    end
   end
 end

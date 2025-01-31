@@ -115,11 +115,13 @@ module GraphQL
       end
 
       # A dataloader run is starting
+      # @param dataloader [GraphQL::Dataloader]
       # @return [void]
-      def begin_dataloader; end
+      def begin_dataloader(dataloader); end
       # A dataloader run has ended
+      # @param dataloder [GraphQL::Dataloader]
       # @return [void]
-      def end_dataloader; end
+      def end_dataloader(dataloader); end
 
       # A source with pending keys is about to fetch
       # @param source [GraphQL::Dataloader::Source]

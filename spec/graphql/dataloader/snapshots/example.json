@@ -1,0 +1,1675 @@
+{
+  "packet": [
+    {
+      "trackDescriptor": {
+        "uuid": "10101010101010",
+        "name": "Main Thread",
+        "childOrdering": "CHRONOLOGICAL"
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "10101010101010",
+        "name": "Main Fiber",
+        "parentUuid": "10101010101010",
+        "childOrdering": "CHRONOLOGICAL"
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "10101010101010",
+        "name": "Allocations",
+        "parentUuid": "10101010101010",
+        "counter": {
+          "unit": "UNIT_UNSPECIFIED",
+          "unitName": "Objects"
+        }
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_COUNTER",
+        "trackUuid": "10101010101010",
+        "counterValue": "10101010101010"
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "10101010101010",
+        "name": "Fibers",
+        "parentUuid": "10101010101010",
+        "counter": {
+          "unit": "UNIT_COUNT"
+        }
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_COUNTER",
+        "trackUuid": "10101010101010",
+        "counterValue": "10101010101010"
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "10101010101010",
+        "name": "Resolved Fields",
+        "parentUuid": "10101010101010",
+        "counter": {
+          "unit": "UNIT_COUNT"
+        }
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_COUNTER",
+        "trackUuid": "10101010101010",
+        "counterValue": "10101010101010"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "Multiplex"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "Analysis",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "Parse",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_COUNTER",
+        "trackUuid": "10101010101010",
+        "counterValue": "10101010101010"
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "10101010101010",
+        "name": "Dataloader Fiber #1010",
+        "parentUuid": "10101010101010"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Create Execution Fiber",
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "10101010101010",
+        "name": "Exec Fiber #1010",
+        "parentUuid": "10101010101010",
+        "childOrdering": "CHRONOLOGICAL"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": ".s1",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": ".s2",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": ".s3",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "flowIds": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Yield"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Create Execution Fiber",
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "10101010101010",
+        "name": "Exec Fiber #1010",
+        "parentUuid": "10101010101010",
+        "childOrdering": "CHRONOLOGICAL"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Yield"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Create Execution Fiber",
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "10101010101010",
+        "name": "Exec Fiber #1010",
+        "parentUuid": "10101010101010",
+        "childOrdering": "CHRONOLOGICAL"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Yield"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Create Source Fiber",
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "10101010101010",
+        "name": "Source Fiber #1010",
+        "parentUuid": "10101010101010",
+        "childOrdering": "CHRONOLOGICAL"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "[0.1]",
+            "name": "fetch_keys"
+          },
+          {
+            "stringValue": "10101010101010",
+            "name": "@tag"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "AsyncSchema::SleepSource",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "flowIds": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Create Source Fiber",
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "10101010101010",
+        "name": "Source Fiber #1010",
+        "parentUuid": "10101010101010",
+        "childOrdering": "CHRONOLOGICAL"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "[0.2]",
+            "name": "fetch_keys"
+          },
+          {
+            "stringValue": "10101010101010",
+            "name": "@tag"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "AsyncSchema::SleepSource",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Create Source Fiber",
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "10101010101010",
+        "name": "Source Fiber #1010",
+        "parentUuid": "10101010101010",
+        "childOrdering": "CHRONOLOGICAL"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "[0.3]",
+            "name": "fetch_keys"
+          },
+          {
+            "stringValue": "10101010101010",
+            "name": "@tag"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "AsyncSchema::SleepSource",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "[]",
+            "name": "fetch_keys"
+          },
+          {
+            "stringValue": "10101010101010",
+            "name": "@tag"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "AsyncSchema::SleepSource",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "[]",
+            "name": "fetch_keys"
+          },
+          {
+            "stringValue": "10101010101010",
+            "name": "@tag"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "AsyncSchema::SleepSource",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Exit",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "[]",
+            "name": "fetch_keys"
+          },
+          {
+            "stringValue": "10101010101010",
+            "name": "@tag"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "AsyncSchema::SleepSource",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Exit",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Exit",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Resume"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": ".s3",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "flowIds": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "terminatingFlowIds": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "s1.sleeper",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "flowIds": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Yield"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Resume"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "s2.sleeper",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "flowIds": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Yield"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Resume"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "s3.duration",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Exit",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Create Source Fiber",
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "10101010101010",
+        "name": "Source Fiber #1010",
+        "parentUuid": "10101010101010",
+        "childOrdering": "CHRONOLOGICAL"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "[0.1]",
+            "name": "fetch_keys"
+          },
+          {
+            "stringValue": "10101010101010",
+            "name": "@tag"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "AsyncSchema::SleepSource",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "flowIds": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Create Source Fiber",
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "10101010101010",
+        "name": "Source Fiber #1010",
+        "parentUuid": "10101010101010",
+        "childOrdering": "CHRONOLOGICAL"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "[0.1]",
+            "name": "fetch_keys"
+          },
+          {
+            "stringValue": "10101010101010",
+            "name": "@tag"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "AsyncSchema::SleepSource",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "flowIds": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "[]",
+            "name": "fetch_keys"
+          },
+          {
+            "stringValue": "10101010101010",
+            "name": "@tag"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "AsyncSchema::SleepSource",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Exit",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Exit",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Resume"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "s1.sleeper",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "flowIds": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "terminatingFlowIds": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "s1.sleeper.sleeper",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "flowIds": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Yield"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Resume"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "s2.sleeper",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "flowIds": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "terminatingFlowIds": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "s2.sleeper.duration",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Exit",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Create Source Fiber",
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "10101010101010",
+        "name": "Source Fiber #1010",
+        "parentUuid": "10101010101010",
+        "childOrdering": "CHRONOLOGICAL"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "[0.1]",
+            "name": "fetch_keys"
+          },
+          {
+            "stringValue": "10101010101010",
+            "name": "@tag"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "AsyncSchema::SleepSource",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "flowIds": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Exit",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Resume"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "s1.sleeper.sleeper",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "flowIds": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "terminatingFlowIds": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "s1.sleeper.sleeper.duration",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Exit",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_COUNTER",
+        "trackUuid": "10101010101010",
+        "counterValue": "10101010101010"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_COUNTER",
+        "trackUuid": "10101010101010",
+        "counterValue": "10101010101010"
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "10101010101010",
+        "name": "Dataloader Fiber #1010",
+        "parentUuid": "10101010101010"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Create Execution Fiber",
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "trackDescriptor": {
+        "uuid": "10101010101010",
+        "name": "Exec Fiber #1010",
+        "parentUuid": "10101010101010",
+        "childOrdering": "CHRONOLOGICAL"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "categories": [
+          "dataloader"
+        ],
+        "name": "Fiber Exit",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_COUNTER",
+        "trackUuid": "10101010101010",
+        "counterValue": "10101010101010"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010"
+      }
+    }
+  ]
+}

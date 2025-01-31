@@ -85,7 +85,7 @@ describe GraphQL::Dataloader do
           sleep 0.5
           Database.mget(keys)
         }
-        dataloader.yield(self)
+        dataloader.yield
         t.value
       end
     end
