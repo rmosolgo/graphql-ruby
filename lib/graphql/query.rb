@@ -127,14 +127,6 @@ module GraphQL
       context_tracers = (context ? context.fetch(:tracers, []) : [])
       @tracers = schema.tracers + context_tracers
 
-      # Support `ctx[:backtrace] = true` for wrapping backtraces
-      if context && context[:backtrace] && !@tracers.include?(GraphQL::Backtrace::Tracer)
-        if schema.trace_class <= GraphQL::Tracing::CallLegacyTracers
-          context_tracers += [GraphQL::Backtrace::Tracer]
-          @tracers << GraphQL::Backtrace::Tracer
-        end
-      end
-
       if !context_tracers.empty? && !(schema.trace_class <= GraphQL::Tracing::CallLegacyTracers)
         raise ArgumentError, "context[:tracers] are not supported without `trace_with(GraphQL::Tracing::CallLegacyTracers)` in the schema configuration, please add it."
       end
@@ -448,6 +440,7 @@ module GraphQL
       @warden ||= @schema.warden_class.new(schema: @schema, context: @context)
       parse_error = nil
       @document ||= begin
+        current_trace.begin_parse(query_string)
         if query_string
           GraphQL.parse(query_string, trace: self.current_trace, max_tokens: @schema.max_query_string_tokens)
         end
@@ -455,6 +448,8 @@ module GraphQL
         parse_error = err
         @schema.parse_error(err, @context)
         nil
+      ensure
+        current_trace.end_parse(query_string)
       end
 
       @fragments = {}

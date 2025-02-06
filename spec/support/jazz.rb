@@ -240,12 +240,13 @@ module Jazz
     value "STRING", "Makes a sound by vibrating strings", value: :str, custom_setting: 1
     value :WOODWIND, "Makes a sound by vibrating air in a pipe"
     value :BRASS, "Makes a sound by amplifying the sound of buzzing lips"
-    value "PERCUSSION", "Makes a sound by hitting something that vibrates"
+    value "PERCUSSION", "Makes a sound by hitting something that vibrates",
+      value_method: :precussion_custom_value_method
     value "DIDGERIDOO", "Makes a sound by amplifying the sound of buzzing lips", deprecation_reason: "Merged into BRASS"
     value "KEYS" do
       description "Neither here nor there, really"
     end
-    value "SILENCE", "Makes no sound", value: false
+    value "SILENCE", "Makes no sound", value: false, value_method: false
   end
 
   class InstrumentType < BaseObject

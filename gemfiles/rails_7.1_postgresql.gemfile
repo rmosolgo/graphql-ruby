@@ -12,5 +12,6 @@ gem "sequel"
 gem "evt"
 gem "async"
 gem "libev_scheduler"
+gem "google-protobuf"
 
 gemspec path: "../"

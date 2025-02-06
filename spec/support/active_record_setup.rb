@@ -66,12 +66,47 @@ if testing_rails?
       t.string :name
       t.integer :band_id
     end
+
+    create_table :books do |t|
+      t.string :title
+      t.integer :author_id
+    end
+
+    create_table :reviews do |t|
+      t.integer :stars
+      t.integer :user_id
+      t.integer :book_id
+    end
+
+    create_table :authors do |t|
+      t.string :name
+    end
+
+    create_table :users do |t|
+      t.string :username
+    end
+
+    create_table :input_test_users, force: true do |t|
+      t.datetime :created_at
+      t.date :birthday
+      t.integer :points
+      t.decimal :rating
+      t.references :friend, foreign_key: { to_table: :input_test_users}
+    end
+
+    create_table :test_users, force: true do |t|
+      t.datetime :created_at
+      t.date :birthday
+      t.integer :points, null: false
+      t.decimal :rating, null: false
+    end
   end
 
   class Food < ActiveRecord::Base
     include GlobalID::Identification
   end
 
+<<<<<<< HEAD
   class Album < ActiveRecord::Base
     belongs_to :band
   end
@@ -96,4 +131,82 @@ if testing_rails?
   c.albums.create!(id: 4, name: "Homey")
   c.albums.create!(id: 5, name: "Chon")
   w.albums.create!(id: 6, name: "Summerteeth")
+=======
+  class Author < ActiveRecord::Base
+    has_many :books
+  end
+
+  class User < ActiveRecord::Base
+    has_many :reviews
+  end
+
+  class Book < ActiveRecord::Base
+    has_many :reviews
+    belongs_to :author
+  end
+
+  class Review < ActiveRecord::Base
+    belongs_to :user
+    belongs_to :book
+  end
+
+  data = [
+    {
+      author: "William Shakespeare",
+      titles: [
+        "A Midsummer Night's Dream",
+        "The Merry Wives of Windsor",
+        "Much Ado about Nothing",
+        "Julius Caesar",
+        "Hamlet",
+        "King Lear",
+        "Macbeth",
+        "Romeo and Juliet",
+        "Othello"
+      ]
+    },
+    {
+      author: "Beatrix Potter",
+      titles: [
+        "The Tale of Peter Rabbit",
+        "The Tale of Squirrel Nutkin",
+        "The Tailor of Gloucester",
+        "The Tale of Benjamin Bunny",
+        "The Tale of Two Bad Mice",
+        "The Tale of Mrs. Tiggy-Winkle",
+        "The Tale of The Pie and the Patty-Pan",
+        "The Tale of Mr. Jeremy Fisher",
+        "The Story of a Fierce Bad Rabbit",
+      ]
+    },
+    {
+      author: "Charles Dickens",
+      titles: [
+        "The Pickwick Papers",
+        "Oliver Twist",
+        "A Christmas Carol",
+        "David Copperfield",
+        "Little Dorrit 	",
+        "A Tale of Two Cities",
+        "Great Expectations",
+      ]
+    }
+  ]
+
+  data.each do |info|
+    author = Author.create!(name: info[:author])
+    info[:titles].each do |title|
+      Book.create!(author: author, title: title)
+    end
+  end
+
+  users = ["matz", "tenderlove", "dhh", "_why"].map { |un| User.create!(username: un) }
+
+  possible_stars = [1,2,3,4,5]
+  Book.all.each do |book|
+    users.each do |user|
+      Review.create!(book: book, user: user, stars: possible_stars.sample)
+    end
+  end
+>>>>>>> master
 end

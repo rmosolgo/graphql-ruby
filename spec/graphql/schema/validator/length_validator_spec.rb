@@ -30,6 +30,7 @@ describe GraphQL::Schema::Validator::LengthValidator do
 
     # This string doesn't respond to blank:
     non_blank_string = ValidatorHelpers::NonBlankString.new("")
+    refute non_blank_string.respond_to?(:blank?), "NonBlankString doesn't have a blank? method"
     result = schema.execute("query($str: String!) { validated(value: $str) }", variables: { str: non_blank_string })
     assert_nil result["data"].fetch("validated")
     assert_equal ["value is too short (minimum is 5)"], result["errors"].map { |e| e["message"] }
