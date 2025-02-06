@@ -209,6 +209,10 @@
             "name": "affected_rows"
           },
           {
+            "boolValue": true,
+            "name": "allow_retry"
+          },
+          {
             "boolValue": false,
             "name": "async"
           },
@@ -414,6 +418,10 @@
             "name": "affected_rows"
           },
           {
+            "boolValue": true,
+            "name": "allow_retry"
+          },
+          {
             "boolValue": false,
             "name": "async"
           },
@@ -579,6 +587,10 @@
             "name": "affected_rows"
           },
           {
+            "boolValue": true,
+            "name": "allow_retry"
+          },
+          {
             "boolValue": false,
             "name": "async"
           },
@@ -742,6 +754,10 @@
           {
             "intValue": "10101010101010",
             "name": "affected_rows"
+          },
+          {
+            "boolValue": true,
+            "name": "allow_retry"
           },
           {
             "boolValue": false,
@@ -1003,6 +1019,10 @@
           {
             "intValue": "10101010101010",
             "name": "affected_rows"
+          },
+          {
+            "boolValue": true,
+            "name": "allow_retry"
           },
           {
             "boolValue": false,
@@ -1368,6 +1388,10 @@
             "name": "affected_rows"
           },
           {
+            "boolValue": true,
+            "name": "allow_retry"
+          },
+          {
             "boolValue": false,
             "name": "async"
           },
@@ -1582,6 +1606,10 @@
           },
           {
             "boolValue": false,
+            "name": "allow_retry"
+          },
+          {
+            "boolValue": false,
             "name": "async"
           },
           {
@@ -1722,6 +1750,10 @@
           {
             "intValue": "10101010101010",
             "name": "affected_rows"
+          },
+          {
+            "boolValue": true,
+            "name": "allow_retry"
           },
           {
             "boolValue": false,
@@ -1868,6 +1900,10 @@
             "name": "affected_rows"
           },
           {
+            "boolValue": true,
+            "name": "allow_retry"
+          },
+          {
             "boolValue": false,
             "name": "async"
           },
@@ -2011,6 +2047,10 @@
           {
             "intValue": "10101010101010",
             "name": "affected_rows"
+          },
+          {
+            "boolValue": true,
+            "name": "allow_retry"
           },
           {
             "boolValue": false,
@@ -2435,6 +2475,10 @@
             "name": "affected_rows"
           },
           {
+            "boolValue": true,
+            "name": "allow_retry"
+          },
+          {
             "boolValue": false,
             "name": "async"
           },
@@ -2822,6 +2866,10 @@
           },
           {
             "boolValue": false,
+            "name": "allow_retry"
+          },
+          {
+            "boolValue": false,
             "name": "async"
           },
           {
@@ -2962,6 +3010,10 @@
           {
             "intValue": "10101010101010",
             "name": "affected_rows"
+          },
+          {
+            "boolValue": true,
+            "name": "allow_retry"
           },
           {
             "boolValue": false,
@@ -3107,6 +3159,10 @@
           {
             "intValue": "10101010101010",
             "name": "affected_rows"
+          },
+          {
+            "boolValue": true,
+            "name": "allow_retry"
           },
           {
             "boolValue": false,
@@ -3258,6 +3314,10 @@
           {
             "intValue": "10101010101010",
             "name": "affected_rows"
+          },
+          {
+            "boolValue": true,
+            "name": "allow_retry"
           },
           {
             "boolValue": false,
@@ -3563,6 +3623,10 @@
           {
             "intValue": "10101010101010",
             "name": "affected_rows"
+          },
+          {
+            "boolValue": true,
+            "name": "allow_retry"
           },
           {
             "boolValue": false,
@@ -3935,6 +3999,10 @@
             "name": "affected_rows"
           },
           {
+            "boolValue": true,
+            "name": "allow_retry"
+          },
+          {
             "boolValue": false,
             "name": "async"
           },
@@ -4236,6 +4304,10 @@
           },
           {
             "boolValue": false,
+            "name": "allow_retry"
+          },
+          {
+            "boolValue": false,
             "name": "async"
           },
           {
@@ -4376,6 +4448,10 @@
           {
             "intValue": "10101010101010",
             "name": "affected_rows"
+          },
+          {
+            "boolValue": true,
+            "name": "allow_retry"
           },
           {
             "boolValue": false,
@@ -4520,6 +4596,10 @@
           {
             "intValue": "10101010101010",
             "name": "affected_rows"
+          },
+          {
+            "boolValue": true,
+            "name": "allow_retry"
           },
           {
             "boolValue": false,
@@ -4803,6 +4883,10 @@
           {
             "intValue": "10101010101010",
             "name": "affected_rows"
+          },
+          {
+            "boolValue": true,
+            "name": "allow_retry"
           },
           {
             "boolValue": false,
@@ -5756,6 +5840,10 @@
           },
           {
             "boolValue": false,
+            "name": "allow_retry"
+          },
+          {
+            "boolValue": false,
             "name": "async"
           },
           {
@@ -5896,6 +5984,10 @@
           {
             "intValue": "10101010101010",
             "name": "affected_rows"
+          },
+          {
+            "boolValue": true,
+            "name": "allow_retry"
           },
           {
             "boolValue": false,
@@ -6041,6 +6133,10 @@
           {
             "intValue": "10101010101010",
             "name": "affected_rows"
+          },
+          {
+            "boolValue": true,
+            "name": "allow_retry"
           },
           {
             "boolValue": false,
@@ -6189,6 +6285,10 @@
           {
             "intValue": "10101010101010",
             "name": "affected_rows"
+          },
+          {
+            "boolValue": true,
+            "name": "allow_retry"
           },
           {
             "boolValue": false,
@@ -7119,6 +7219,10 @@
           {
             "intValue": "10101010101010",
             "name": "affected_rows"
+          },
+          {
+            "boolValue": true,
+            "name": "allow_retry"
           },
           {
             "boolValue": false,
