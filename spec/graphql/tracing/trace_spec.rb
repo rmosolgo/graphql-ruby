@@ -3,8 +3,9 @@ require "spec_helper"
 
 describe GraphQL::Tracing::Trace do
   it "has all its methods in the development cop" do
-    require_relative "../../../cop/development/trace_calls_super_cop"
-    superable_methods = GraphQL::Tracing::Trace.instance_methods(false)
-    assert_equal superable_methods.sort, Cop::Development::TraceCallsSuperCop::TRACE_HOOKS
+    trace_source = File.read("cop/development/trace_calls_super_cop.rb")
+    superable_methods = GraphQL::Tracing::Trace.instance_methods(false).sort
+    superable_methods_source = superable_methods.map { |m| "        #{m.inspect},\n" }.join
+    assert_includes trace_source, superable_methods_source
   end
 end

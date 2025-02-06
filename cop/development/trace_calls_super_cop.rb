@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 require 'rubocop'
-require 'pry'
 
 module Cop
   module Development
@@ -38,7 +37,7 @@ module Cop
         :parse,
         :resolve_type,
         :resolve_type_lazy,
-        :validate
+        :validate,
       ]
 
       MSG = "Trace methods should call `super` to pass control to other traces"
