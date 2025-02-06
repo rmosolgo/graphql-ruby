@@ -12,11 +12,11 @@ module ValidatorHelpers
   end
 
   class NonBlankString < String
-    def initialize
+    def initialize(...)
       # Gems loaded during test execution can define this method on String
       # eg Rails, Rubocop
       if respond_to?(:blank?)
-        s.class.undef_method(:blank?)
+        self.class.undef_method(:blank?)
       end
       super
     end
