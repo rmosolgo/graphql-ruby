@@ -495,7 +495,7 @@ module GraphQL
       private
 
       def ts
-        Process.clock_gettime(:CLOCK_MONOTONIC, :nanosecond)
+        Process.clock_gettime(:CLOCK_MONOTONIC) * 1_000_000_000
       end
 
       def tid
