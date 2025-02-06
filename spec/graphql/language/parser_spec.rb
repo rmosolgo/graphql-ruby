@@ -185,6 +185,19 @@ createRecord(data: {
     assert_equal "subscription", doc.definitions.first.name
   end
 
+  it "raises an error for bad variables definition" do
+    err = assert_raises(GraphQL::ParseError) do
+      GraphQL.parse("query someQuery($someVariable: ,) { account { id } }")
+    end
+    expected_msg = if USING_C_PARSER
+      "syntax error, unexpected RPAREN (\")\") at [1, 33]"
+    else
+      "Missing type definition for variable: $someVariable at [1, 33]"
+    end
+
+    assert_equal expected_msg, err.message
+  end
+
   it "raises an error when unicode is used as names" do
     err = assert_raises(GraphQL::ParseError) {
       GraphQL.parse('query 😘 { a b }')

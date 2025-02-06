@@ -161,7 +161,7 @@ module GraphQL
               expect_token(:VAR_SIGN)
               var_name = parse_name
               expect_token(:COLON)
-              var_type = self.type
+              var_type = self.type || raise_parse_error("Missing type definition for variable: $#{var_name}")
               default_value = if at?(:EQUALS)
                 advance_token
                 value
