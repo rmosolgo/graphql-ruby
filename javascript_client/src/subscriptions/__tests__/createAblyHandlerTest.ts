@@ -307,7 +307,7 @@ describe("createAblyHandler", () => {
         const variables = {}
         const cacheConfig = {}
         const onError = (error: any) => {
-          expect(error.message).toMatch(/Invalid key in request/)
+          expect(error.message).toEqual("unable to handle request; no application id found in request")
           resolve()
         }
         const onNext = () => console.log("onNext")

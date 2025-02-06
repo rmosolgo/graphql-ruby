@@ -5,17 +5,6 @@ require "generators/graphql/input_generator"
 class GraphQLGeneratorsInputGeneratorTest < BaseGeneratorTest
   tests Graphql::Generators::InputGenerator
 
-  ActiveRecord::Schema.define do
-    self.verbose = !!ENV["GITHUB_ACTIONS"]
-    create_table :input_test_users, force: true do |t|
-      t.datetime :created_at
-      t.date :birthday
-      t.integer :points
-      t.decimal :rating
-      t.references :friend, foreign_key: { to_table: :input_test_users}
-    end
-  end
-
   # rubocop:disable Style/ClassAndModuleChildren
   class ::InputTestUser < ActiveRecord::Base
   end

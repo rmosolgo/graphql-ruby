@@ -218,8 +218,10 @@ module GraphQL
                     result_name, field_ast_nodes_or_ast_node, selections_result
                   )
                   finished_jobs += 1
-                  if target_result && finished_jobs == enqueued_jobs
-                    selections_result.merge_into(target_result)
+                  if finished_jobs == enqueued_jobs
+                    if target_result
+                      selections_result.merge_into(target_result)
+                    end
                   end
                   @dataloader.clear_cache
                 }
@@ -229,8 +231,10 @@ module GraphQL
                     result_name, field_ast_nodes_or_ast_node, selections_result
                   )
                   finished_jobs += 1
-                  if target_result && finished_jobs == enqueued_jobs
-                    selections_result.merge_into(target_result)
+                  if finished_jobs == enqueued_jobs
+                    if target_result
+                      selections_result.merge_into(target_result)
+                    end
                   end
                 }
               end
@@ -371,6 +375,7 @@ module GraphQL
             end
             # Actually call the field resolver and capture the result
             app_result = begin
+              @current_trace.begin_execute_field(selection_result, result_name)
               @current_trace.execute_field(field: field_defn, ast_node: ast_node, query: query, object: object, arguments: kwarg_arguments) do
                 field_defn.resolve(object, kwarg_arguments, context)
               end
@@ -391,6 +396,9 @@ module GraphQL
                 was_scoped = runtime_state.was_authorized_by_scope_items
                 runtime_state.was_authorized_by_scope_items = nil
                 continue_field(continue_value, owner_type, field_defn, return_type, ast_node, next_selections, false, object, resolved_arguments, result_name, selection_result, was_scoped, runtime_state)
+              else
+                @current_trace.end_execute_field(selection_result, result_name)
+                nil
               end
             end
           end
@@ -576,6 +584,7 @@ module GraphQL
             rescue StandardError => err
               query.handle_or_reraise(err)
             end
+            @current_trace.end_execute_field(selection_result, result_name)
             set_result(selection_result, result_name, r, false, is_non_null)
             r
           when "UNION", "INTERFACE"
@@ -594,6 +603,7 @@ module GraphQL
                 err_class = current_type::UnresolvedTypeError
                 type_error = err_class.new(resolved_value, field, parent_type, resolved_type, possible_types)
                 schema.type_error(type_error, context)
+                @current_trace.end_execute_field(selection_result, result_name)
                 set_result(selection_result, result_name, nil, false, is_non_null)
                 nil
               else
@@ -610,6 +620,7 @@ module GraphQL
               continue_value = continue_value(inner_object, field, is_non_null, ast_node, result_name, selection_result)
               if HALT != continue_value
                 response_hash = GraphQLResultHash.new(result_name, current_type, continue_value, selection_result, is_non_null, next_selections, false, ast_node, arguments, field)
+                @current_trace.end_execute_field(selection_result, result_name)
                 set_result(selection_result, result_name, response_hash, true, is_non_null)
                 each_gathered_selections(response_hash) do |selections, is_selection_array|
                   if is_selection_array
@@ -640,6 +651,9 @@ module GraphQL
             list_value = begin
               begin
                 value.each do |inner_value|
+                  if idx.nil?
+                    @current_trace.end_execute_field(selection_result, result_name)
+                  end
                   idx ||= 0
                   this_idx = idx
                   idx += 1
@@ -650,6 +664,10 @@ module GraphQL
                   else
                     resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, owner_type, was_scoped, runtime_state)
                   end
+                end
+
+                if idx.nil? # no entries
+                  @current_trace.end_execute_field(selection_result, result_name)
                 end
 
                 response_list

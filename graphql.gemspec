@@ -31,6 +31,7 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency "benchmark-ips"
   s.add_development_dependency "concurrent-ruby", "~>1.0"
+  s.add_development_dependency "google-protobuf"
   s.add_development_dependency "graphql-batch"
   s.add_development_dependency "memory_profiler"
 
@@ -47,6 +48,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "pronto-undercover"
   # website stuff
   s.add_development_dependency "jekyll"
+  s.add_development_dependency "jekyll-sass-converter", "~>2.2"
   s.add_development_dependency "yard"
   s.add_development_dependency "jekyll-algolia"
   s.add_development_dependency "jekyll-redirect-from"

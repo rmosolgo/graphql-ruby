@@ -33,9 +33,12 @@ module GraphQL
             end
           end
 
+
           multiplex = Execution::Multiplex.new(schema: schema, queries: queries, context: context, max_complexity: max_complexity)
           Fiber[:__graphql_current_multiplex] = multiplex
-          multiplex.current_trace.execute_multiplex(multiplex: multiplex) do
+          trace = multiplex.current_trace
+          trace.begin_multiplex(multiplex)
+          trace.execute_multiplex(multiplex: multiplex) do
             schema = multiplex.schema
             queries = multiplex.queries
             lazies_at_depth = Hash.new { |h, k| h[k] = [] }
@@ -44,7 +47,10 @@ module GraphQL
               multiplex_analyzers += [GraphQL::Analysis::MaxQueryComplexity]
             end
 
+            trace.begin_analyze_multiplex(multiplex)
             schema.analysis_engine.analyze_multiplex(multiplex, multiplex_analyzers)
+            trace.end_analyze_multiplex(multiplex)
+
             begin
               # Since this is basically the batching context,
               # share it for a whole multiplex
@@ -148,6 +154,8 @@ module GraphQL
               }
             end
           end
+        ensure
+          trace&.end_multiplex(multiplex)
         end
       end
 

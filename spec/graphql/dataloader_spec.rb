@@ -359,7 +359,7 @@ describe GraphQL::Dataloader do
 
 
       def lookahead_ingredient(input:, lookahead:)
-        lookahead.arguments # forces a datalaoder.run_isolated call
+        lookahead.arguments # forces a dataloader.run_isolated call
         dataloader.with(CustomBatchKeySource, input[:batch_key]).load(input[:id])
       end
     end
@@ -558,7 +558,7 @@ describe GraphQL::Dataloader do
         result
       end
 
-      def spawn_source_task(parent_task, condition)
+      def spawn_source_task(parent_task, condition, trace)
         result = super
         if result
           update_fiber_counts

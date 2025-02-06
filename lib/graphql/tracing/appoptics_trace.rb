@@ -83,7 +83,7 @@ module GraphQL
         end
       end
 
-      def execute_field_lazy(query:, field:, ast_node:, arguments:, object:)
+      def execute_field_lazy(query:, field:, ast_node:, arguments:, object:)  # rubocop:disable Development/TraceCallsSuperCop
         execute_field(query: query, field: field, ast_node: ast_node, arguments: arguments, object: object)
       end
 

@@ -129,8 +129,11 @@ module GraphQL
     # Dataloader will resume the fiber after the requested data has been loaded (by another Fiber).
     #
     # @return [void]
-    def yield
+    def yield(source = Fiber[:__graphql_current_dataloader_source])
+      trace = Fiber[:__graphql_current_multiplex]&.current_trace
+      trace&.dataloader_fiber_yield(source)
       Fiber.yield
+      trace&.dataloader_fiber_resume(source)
       nil
     end
 
@@ -184,6 +187,7 @@ module GraphQL
     end
 
     def run
+      trace = Fiber[:__graphql_current_multiplex]&.current_trace
       jobs_fiber_limit, total_fiber_limit = calculate_fiber_limit
       job_fibers = []
       next_job_fibers = []
@@ -191,10 +195,11 @@ module GraphQL
       next_source_fibers = []
       first_pass = true
       manager = spawn_fiber do
+        trace&.begin_dataloader(self)
         while first_pass || !job_fibers.empty?
           first_pass = false
 
-          while (f = (job_fibers.shift || (((next_job_fibers.size + job_fibers.size) < jobs_fiber_limit) && spawn_job_fiber)))
+          while (f = (job_fibers.shift || (((next_job_fibers.size + job_fibers.size) < jobs_fiber_limit) && spawn_job_fiber(trace))))
             if f.alive?
               finished = run_fiber(f)
               if !finished
@@ -205,7 +210,7 @@ module GraphQL
           join_queues(job_fibers, next_job_fibers)
 
           while (!source_fibers.empty? || @source_cache.each_value.any? { |group_sources| group_sources.each_value.any?(&:pending?) })
-            while (f = source_fibers.shift || (((job_fibers.size + source_fibers.size + next_source_fibers.size + next_job_fibers.size) < total_fiber_limit) && spawn_source_fiber))
+            while (f = source_fibers.shift || (((job_fibers.size + source_fibers.size + next_source_fibers.size + next_job_fibers.size) < total_fiber_limit) && spawn_source_fiber(trace)))
               if f.alive?
                 finished = run_fiber(f)
                 if !finished
@@ -216,6 +221,8 @@ module GraphQL
             join_queues(source_fibers, next_source_fibers)
           end
         end
+
+        trace&.end_dataloader(self)
       end
 
       run_fiber(manager)
@@ -230,6 +237,7 @@ module GraphQL
       if !source_fibers.empty?
         raise "Invariant: source fibers should have exited but #{source_fibers.size} remained"
       end
+
     rescue UncaughtThrowError => e
       throw e.tag, e.value
     end
@@ -266,17 +274,19 @@ module GraphQL
       new_queue.clear
     end
 
-    def spawn_job_fiber
+    def spawn_job_fiber(trace)
       if !@pending_jobs.empty?
         spawn_fiber do
+          trace&.dataloader_spawn_execution_fiber(@pending_jobs)
           while job = @pending_jobs.shift
             job.call
           end
+          trace&.dataloader_fiber_exit
         end
       end
     end
 
-    def spawn_source_fiber
+    def spawn_source_fiber(trace)
       pending_sources = nil
       @source_cache.each_value do |source_by_batch_params|
         source_by_batch_params.each_value do |source|
@@ -289,10 +299,14 @@ module GraphQL
 
       if pending_sources
         spawn_fiber do
+          trace&.dataloader_spawn_source_fiber(pending_sources)
           pending_sources.each do |source|
             Fiber[:__graphql_current_dataloader_source] = source
+            trace&.begin_dataloader_source(source)
             source.run_pending_keys
+            trace&.end_dataloader_source(source)
           end
+          trace&.dataloader_fiber_exit
         end
       end
     end

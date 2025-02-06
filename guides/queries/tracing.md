@@ -48,6 +48,14 @@ Then, to opt into that trace, use `context: { trace_mode: :detailed_metrics, ...
 
 Any custom trace modes _also_ include the default `trace_with ...` modules (that is, those added _without_ any particular `mode: ...` configuration).
 
+## Perfetto Traces
+
+For detailed profiles of complex queries, try {{ "Tracing::PerfettoTrace" | api_doc }}. Its trace can be viewed in Google's [Perfetto Trace Viewer](https://ui.perfetto.dev). They include a per-Fiber breakdown with links between fields and Dataloader sources.
+
+<div class="monitoring-img-group">
+  {{ "/queries/perfetto_example.png" | link_to_img:"GraphQL-Ruby Dataloader Perfetto Trace" }}
+</div>
+
 ## ActiveSupport::Notifications
 
 You can emit events to `ActiveSupport::Notifications` with an experimental tracer, `ActiveSupportNotificationsTrace`.
