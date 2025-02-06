@@ -34,6 +34,10 @@ module PerfettoSnapshot
       extra_keys += data.keys - snapshot_data.keys
       assert_equal snapshot_data.keys.sort, data.keys.sort, "Match at #{path.join(".")} (#{extra_keys.map { |k| "#{k.inspect} => #{data[k].inspect}, snapshot: #{snapshot_data[k].inspect}"}.join(", ")})"
       snapshot_data.each do |k, v|
+        next_data = data[k]
+        if k == "debugAnnotations"
+          next_data.sort_by! { |d| d["name"] }
+        end
         deep_snap_match(v, data[k], path + [k])
       end
     when Array
@@ -60,6 +64,9 @@ module PerfettoSnapshot
     when Hash
       h2 = {}
       value.each do |k, v|
+        if k == "debugAnnotations"
+          v = v.sort_by { |d| d["name"] }
+        end
         h2[k] = convert_to_snapshot(v)
       end
       h2

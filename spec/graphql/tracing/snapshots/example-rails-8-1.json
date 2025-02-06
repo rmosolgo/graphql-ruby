@@ -205,33 +205,33 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "SELECT \"authors\".* FROM \"authors\"",
-            "name": "sql"
-          },
-          {
-            "stringValue": "Author Load",
-            "name": "name"
-          },
-          {
-            "name": "binds"
-          },
-          {
-            "name": "type_casted_binds"
+            "intValue": "10101010101010",
+            "name": "affected_rows"
           },
           {
             "boolValue": false,
             "name": "async"
           },
           {
-            "name": "transaction"
+            "name": "binds"
           },
           {
-            "intValue": "10101010101010",
-            "name": "affected_rows"
+            "stringValue": "Author Load",
+            "name": "name"
           },
           {
             "intValue": "10101010101010",
             "name": "row_count"
+          },
+          {
+            "stringValue": "SELECT \"authors\".* FROM \"authors\"",
+            "name": "sql"
+          },
+          {
+            "name": "transaction"
+          },
+          {
+            "name": "type_casted_binds"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -263,12 +263,12 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "intValue": "10101010101010",
-            "name": "record_count"
-          },
-          {
             "stringValue": "Author",
             "name": "class_name"
+          },
+          {
+            "intValue": "10101010101010",
+            "name": "record_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -410,15 +410,30 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "SELECT \"books\".* FROM \"books\" WHERE \"books\".\"author_id\" = ? LIMIT ?",
-            "name": "sql"
+            "intValue": "10101010101010",
+            "name": "affected_rows"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "name": "binds"
           },
           {
             "stringValue": "Book Load",
             "name": "name"
           },
           {
-            "name": "binds"
+            "intValue": "10101010101010",
+            "name": "row_count"
+          },
+          {
+            "stringValue": "SELECT \"books\".* FROM \"books\" WHERE \"books\".\"author_id\" = ? LIMIT ?",
+            "name": "sql"
+          },
+          {
+            "name": "transaction"
           },
           {
             "name": "type_casted_binds",
@@ -430,21 +445,6 @@
                 "intValue": "10101010101010"
               }
             ]
-          },
-          {
-            "boolValue": false,
-            "name": "async"
-          },
-          {
-            "name": "transaction"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "affected_rows"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "row_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -476,12 +476,12 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "intValue": "10101010101010",
-            "name": "record_count"
-          },
-          {
             "stringValue": "Book",
             "name": "class_name"
+          },
+          {
+            "intValue": "10101010101010",
+            "name": "record_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -575,15 +575,30 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "SELECT \"books\".* FROM \"books\" WHERE \"books\".\"author_id\" = ? LIMIT ?",
-            "name": "sql"
+            "intValue": "10101010101010",
+            "name": "affected_rows"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "name": "binds"
           },
           {
             "stringValue": "Book Load",
             "name": "name"
           },
           {
-            "name": "binds"
+            "intValue": "10101010101010",
+            "name": "row_count"
+          },
+          {
+            "stringValue": "SELECT \"books\".* FROM \"books\" WHERE \"books\".\"author_id\" = ? LIMIT ?",
+            "name": "sql"
+          },
+          {
+            "name": "transaction"
           },
           {
             "name": "type_casted_binds",
@@ -595,21 +610,6 @@
                 "intValue": "10101010101010"
               }
             ]
-          },
-          {
-            "boolValue": false,
-            "name": "async"
-          },
-          {
-            "name": "transaction"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "affected_rows"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "row_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -641,12 +641,12 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "intValue": "10101010101010",
-            "name": "record_count"
-          },
-          {
             "stringValue": "Book",
             "name": "class_name"
+          },
+          {
+            "intValue": "10101010101010",
+            "name": "record_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -740,15 +740,30 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "SELECT \"books\".* FROM \"books\" WHERE \"books\".\"author_id\" = ? LIMIT ?",
-            "name": "sql"
+            "intValue": "10101010101010",
+            "name": "affected_rows"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "name": "binds"
           },
           {
             "stringValue": "Book Load",
             "name": "name"
           },
           {
-            "name": "binds"
+            "intValue": "10101010101010",
+            "name": "row_count"
+          },
+          {
+            "stringValue": "SELECT \"books\".* FROM \"books\" WHERE \"books\".\"author_id\" = ? LIMIT ?",
+            "name": "sql"
+          },
+          {
+            "name": "transaction"
           },
           {
             "name": "type_casted_binds",
@@ -760,21 +775,6 @@
                 "intValue": "10101010101010"
               }
             ]
-          },
-          {
-            "boolValue": false,
-            "name": "async"
-          },
-          {
-            "name": "transaction"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "affected_rows"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "row_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -806,12 +806,12 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "intValue": "10101010101010",
-            "name": "record_count"
-          },
-          {
             "stringValue": "Book",
             "name": "class_name"
+          },
+          {
+            "intValue": "10101010101010",
+            "name": "record_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1001,15 +1001,30 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "SELECT \"reviews\".* FROM \"reviews\" WHERE \"reviews\".\"book_id\" = ? LIMIT ?",
-            "name": "sql"
+            "intValue": "10101010101010",
+            "name": "affected_rows"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "name": "binds"
           },
           {
             "stringValue": "Review Load",
             "name": "name"
           },
           {
-            "name": "binds"
+            "intValue": "10101010101010",
+            "name": "row_count"
+          },
+          {
+            "stringValue": "SELECT \"reviews\".* FROM \"reviews\" WHERE \"reviews\".\"book_id\" = ? LIMIT ?",
+            "name": "sql"
+          },
+          {
+            "name": "transaction"
           },
           {
             "name": "type_casted_binds",
@@ -1021,21 +1036,6 @@
                 "intValue": "10101010101010"
               }
             ]
-          },
-          {
-            "boolValue": false,
-            "name": "async"
-          },
-          {
-            "name": "transaction"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "affected_rows"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "row_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1067,12 +1067,12 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "intValue": "10101010101010",
-            "name": "record_count"
-          },
-          {
             "stringValue": "Review",
             "name": "class_name"
+          },
+          {
+            "intValue": "10101010101010",
+            "name": "record_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1364,15 +1364,30 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "SELECT \"reviews\".* FROM \"reviews\" WHERE \"reviews\".\"book_id\" = ? LIMIT ?",
-            "name": "sql"
+            "intValue": "10101010101010",
+            "name": "affected_rows"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "name": "binds"
           },
           {
             "stringValue": "Review Load",
             "name": "name"
           },
           {
-            "name": "binds"
+            "intValue": "10101010101010",
+            "name": "row_count"
+          },
+          {
+            "stringValue": "SELECT \"reviews\".* FROM \"reviews\" WHERE \"reviews\".\"book_id\" = ? LIMIT ?",
+            "name": "sql"
+          },
+          {
+            "name": "transaction"
           },
           {
             "name": "type_casted_binds",
@@ -1384,21 +1399,6 @@
                 "intValue": "10101010101010"
               }
             ]
-          },
-          {
-            "boolValue": false,
-            "name": "async"
-          },
-          {
-            "name": "transaction"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "affected_rows"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "row_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1430,12 +1430,12 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "intValue": "10101010101010",
-            "name": "record_count"
-          },
-          {
             "stringValue": "Review",
             "name": "class_name"
+          },
+          {
+            "intValue": "10101010101010",
+            "name": "record_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1577,33 +1577,33 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "SELECT books.id, AVG(stars) as avg_review  FROM \"books\" INNER JOIN \"reviews\" ON \"reviews\".\"book_id\" = \"books\".\"id\" GROUP BY \"books\".\"id\"",
-            "name": "sql"
-          },
-          {
-            "stringValue": "Book Load",
-            "name": "name"
-          },
-          {
-            "name": "binds"
-          },
-          {
-            "name": "type_casted_binds"
+            "intValue": "10101010101010",
+            "name": "affected_rows"
           },
           {
             "boolValue": false,
             "name": "async"
           },
           {
-            "name": "transaction"
+            "name": "binds"
           },
           {
-            "intValue": "10101010101010",
-            "name": "affected_rows"
+            "stringValue": "Book Load",
+            "name": "name"
           },
           {
             "intValue": "10101010101010",
             "name": "row_count"
+          },
+          {
+            "stringValue": "SELECT books.id, AVG(stars) as avg_review  FROM \"books\" INNER JOIN \"reviews\" ON \"reviews\".\"book_id\" = \"books\".\"id\" GROUP BY \"books\".\"id\"",
+            "name": "sql"
+          },
+          {
+            "name": "transaction"
+          },
+          {
+            "name": "type_casted_binds"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1635,12 +1635,12 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "intValue": "10101010101010",
-            "name": "record_count"
-          },
-          {
             "stringValue": "Book",
             "name": "class_name"
+          },
+          {
+            "intValue": "10101010101010",
+            "name": "record_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1689,12 +1689,12 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "[1]",
-            "name": "fetch_keys"
-          },
-          {
             "stringValue": "Author(id: integer, name: string)",
             "name": "@model"
+          },
+          {
+            "stringValue": "[1]",
+            "name": "fetch_keys"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1720,15 +1720,30 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "SELECT \"authors\".* FROM \"authors\" WHERE \"authors\".\"id\" = ?",
-            "name": "sql"
+            "intValue": "10101010101010",
+            "name": "affected_rows"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "name": "binds"
           },
           {
             "stringValue": "Author Load",
             "name": "name"
           },
           {
-            "name": "binds"
+            "intValue": "10101010101010",
+            "name": "row_count"
+          },
+          {
+            "stringValue": "SELECT \"authors\".* FROM \"authors\" WHERE \"authors\".\"id\" = ?",
+            "name": "sql"
+          },
+          {
+            "name": "transaction"
           },
           {
             "name": "type_casted_binds",
@@ -1737,21 +1752,6 @@
                 "intValue": "10101010101010"
               }
             ]
-          },
-          {
-            "boolValue": false,
-            "name": "async"
-          },
-          {
-            "name": "transaction"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "affected_rows"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "row_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1783,12 +1783,12 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "intValue": "10101010101010",
-            "name": "record_count"
-          },
-          {
             "stringValue": "Author",
             "name": "class_name"
+          },
+          {
+            "intValue": "10101010101010",
+            "name": "record_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1864,15 +1864,30 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "SELECT MAX(\"books\".\"id\") AS \"maximum_id\", \"books\".\"author_id\" AS \"books_author_id\" FROM \"books\" WHERE \"books\".\"author_id\" = ? AND \"books\".\"id\" != ? GROUP BY \"books\".\"author_id\"",
-            "name": "sql"
+            "intValue": "10101010101010",
+            "name": "affected_rows"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "name": "binds"
           },
           {
             "stringValue": "Book Maximum",
             "name": "name"
           },
           {
-            "name": "binds"
+            "intValue": "10101010101010",
+            "name": "row_count"
+          },
+          {
+            "stringValue": "SELECT MAX(\"books\".\"id\") AS \"maximum_id\", \"books\".\"author_id\" AS \"books_author_id\" FROM \"books\" WHERE \"books\".\"author_id\" = ? AND \"books\".\"id\" != ? GROUP BY \"books\".\"author_id\"",
+            "name": "sql"
+          },
+          {
+            "name": "transaction"
           },
           {
             "name": "type_casted_binds",
@@ -1884,21 +1899,6 @@
                 "intValue": "10101010101010"
               }
             ]
-          },
-          {
-            "boolValue": false,
-            "name": "async"
-          },
-          {
-            "name": "transaction"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "affected_rows"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "row_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1978,12 +1978,12 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "[9]",
-            "name": "fetch_keys"
-          },
-          {
             "stringValue": "Book(id: integer, title: string, author_id: integer)",
             "name": "@model"
+          },
+          {
+            "stringValue": "[9]",
+            "name": "fetch_keys"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -2009,15 +2009,30 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "SELECT \"books\".* FROM \"books\" WHERE \"books\".\"id\" = ?",
-            "name": "sql"
+            "intValue": "10101010101010",
+            "name": "affected_rows"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "name": "binds"
           },
           {
             "stringValue": "Book Load",
             "name": "name"
           },
           {
-            "name": "binds"
+            "intValue": "10101010101010",
+            "name": "row_count"
+          },
+          {
+            "stringValue": "SELECT \"books\".* FROM \"books\" WHERE \"books\".\"id\" = ?",
+            "name": "sql"
+          },
+          {
+            "name": "transaction"
           },
           {
             "name": "type_casted_binds",
@@ -2026,21 +2041,6 @@
                 "intValue": "10101010101010"
               }
             ]
-          },
-          {
-            "boolValue": false,
-            "name": "async"
-          },
-          {
-            "name": "transaction"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "affected_rows"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "row_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -2072,12 +2072,12 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "intValue": "10101010101010",
-            "name": "record_count"
-          },
-          {
             "stringValue": "Book",
             "name": "class_name"
+          },
+          {
+            "intValue": "10101010101010",
+            "name": "record_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -2431,15 +2431,30 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "SELECT \"reviews\".* FROM \"reviews\" WHERE \"reviews\".\"book_id\" = ? LIMIT ?",
-            "name": "sql"
+            "intValue": "10101010101010",
+            "name": "affected_rows"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "name": "binds"
           },
           {
             "stringValue": "Review Load",
             "name": "name"
           },
           {
-            "name": "binds"
+            "intValue": "10101010101010",
+            "name": "row_count"
+          },
+          {
+            "stringValue": "SELECT \"reviews\".* FROM \"reviews\" WHERE \"reviews\".\"book_id\" = ? LIMIT ?",
+            "name": "sql"
+          },
+          {
+            "name": "transaction"
           },
           {
             "name": "type_casted_binds",
@@ -2451,21 +2466,6 @@
                 "intValue": "10101010101010"
               }
             ]
-          },
-          {
-            "boolValue": false,
-            "name": "async"
-          },
-          {
-            "name": "transaction"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "affected_rows"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "row_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -2497,12 +2497,12 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "intValue": "10101010101010",
-            "name": "record_count"
-          },
-          {
             "stringValue": "Review",
             "name": "class_name"
+          },
+          {
+            "intValue": "10101010101010",
+            "name": "record_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -2817,33 +2817,33 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "SELECT books.id, AVG(stars) as avg_review  FROM \"books\" INNER JOIN \"reviews\" ON \"reviews\".\"book_id\" = \"books\".\"id\" GROUP BY \"books\".\"id\"",
-            "name": "sql"
-          },
-          {
-            "stringValue": "Book Load",
-            "name": "name"
-          },
-          {
-            "name": "binds"
-          },
-          {
-            "name": "type_casted_binds"
+            "intValue": "10101010101010",
+            "name": "affected_rows"
           },
           {
             "boolValue": false,
             "name": "async"
           },
           {
-            "name": "transaction"
+            "name": "binds"
           },
           {
-            "intValue": "10101010101010",
-            "name": "affected_rows"
+            "stringValue": "Book Load",
+            "name": "name"
           },
           {
             "intValue": "10101010101010",
             "name": "row_count"
+          },
+          {
+            "stringValue": "SELECT books.id, AVG(stars) as avg_review  FROM \"books\" INNER JOIN \"reviews\" ON \"reviews\".\"book_id\" = \"books\".\"id\" GROUP BY \"books\".\"id\"",
+            "name": "sql"
+          },
+          {
+            "name": "transaction"
+          },
+          {
+            "name": "type_casted_binds"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -2875,12 +2875,12 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "intValue": "10101010101010",
-            "name": "record_count"
-          },
-          {
             "stringValue": "Book",
             "name": "class_name"
+          },
+          {
+            "intValue": "10101010101010",
+            "name": "record_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -2929,12 +2929,12 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "[2]",
-            "name": "fetch_keys"
-          },
-          {
             "stringValue": "Author(id: integer, name: string)",
             "name": "@model"
+          },
+          {
+            "stringValue": "[2]",
+            "name": "fetch_keys"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -2960,15 +2960,30 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "SELECT \"authors\".* FROM \"authors\" WHERE \"authors\".\"id\" = ?",
-            "name": "sql"
+            "intValue": "10101010101010",
+            "name": "affected_rows"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "name": "binds"
           },
           {
             "stringValue": "Author Load",
             "name": "name"
           },
           {
-            "name": "binds"
+            "intValue": "10101010101010",
+            "name": "row_count"
+          },
+          {
+            "stringValue": "SELECT \"authors\".* FROM \"authors\" WHERE \"authors\".\"id\" = ?",
+            "name": "sql"
+          },
+          {
+            "name": "transaction"
           },
           {
             "name": "type_casted_binds",
@@ -2977,21 +2992,6 @@
                 "intValue": "10101010101010"
               }
             ]
-          },
-          {
-            "boolValue": false,
-            "name": "async"
-          },
-          {
-            "name": "transaction"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "affected_rows"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "row_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -3023,12 +3023,12 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "intValue": "10101010101010",
-            "name": "record_count"
-          },
-          {
             "stringValue": "Author",
             "name": "class_name"
+          },
+          {
+            "intValue": "10101010101010",
+            "name": "record_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -3105,15 +3105,30 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "SELECT MAX(\"books\".\"id\") AS \"maximum_id\", \"books\".\"author_id\" AS \"books_author_id\" FROM \"books\" WHERE \"books\".\"author_id\" IN (?, ?) AND \"books\".\"id\" NOT IN (?, ?) GROUP BY \"books\".\"author_id\"",
-            "name": "sql"
+            "intValue": "10101010101010",
+            "name": "affected_rows"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "name": "binds"
           },
           {
             "stringValue": "Book Maximum",
             "name": "name"
           },
           {
-            "name": "binds"
+            "intValue": "10101010101010",
+            "name": "row_count"
+          },
+          {
+            "stringValue": "SELECT MAX(\"books\".\"id\") AS \"maximum_id\", \"books\".\"author_id\" AS \"books_author_id\" FROM \"books\" WHERE \"books\".\"author_id\" IN (?, ?) AND \"books\".\"id\" NOT IN (?, ?) GROUP BY \"books\".\"author_id\"",
+            "name": "sql"
+          },
+          {
+            "name": "transaction"
           },
           {
             "name": "type_casted_binds",
@@ -3131,21 +3146,6 @@
                 "intValue": "10101010101010"
               }
             ]
-          },
-          {
-            "boolValue": false,
-            "name": "async"
-          },
-          {
-            "name": "transaction"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "affected_rows"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "row_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -3225,12 +3225,12 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "[18]",
-            "name": "fetch_keys"
-          },
-          {
             "stringValue": "Book(id: integer, title: string, author_id: integer)",
             "name": "@model"
+          },
+          {
+            "stringValue": "[18]",
+            "name": "fetch_keys"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -3256,15 +3256,30 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "SELECT \"books\".* FROM \"books\" WHERE \"books\".\"id\" = ?",
-            "name": "sql"
+            "intValue": "10101010101010",
+            "name": "affected_rows"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "name": "binds"
           },
           {
             "stringValue": "Book Load",
             "name": "name"
           },
           {
-            "name": "binds"
+            "intValue": "10101010101010",
+            "name": "row_count"
+          },
+          {
+            "stringValue": "SELECT \"books\".* FROM \"books\" WHERE \"books\".\"id\" = ?",
+            "name": "sql"
+          },
+          {
+            "name": "transaction"
           },
           {
             "name": "type_casted_binds",
@@ -3273,21 +3288,6 @@
                 "intValue": "10101010101010"
               }
             ]
-          },
-          {
-            "boolValue": false,
-            "name": "async"
-          },
-          {
-            "name": "transaction"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "affected_rows"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "row_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -3319,12 +3319,12 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "intValue": "10101010101010",
-            "name": "record_count"
-          },
-          {
             "stringValue": "Book",
             "name": "class_name"
+          },
+          {
+            "intValue": "10101010101010",
+            "name": "record_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -3561,15 +3561,30 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "SELECT \"reviews\".* FROM \"reviews\" WHERE \"reviews\".\"book_id\" = ? LIMIT ?",
-            "name": "sql"
+            "intValue": "10101010101010",
+            "name": "affected_rows"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "name": "binds"
           },
           {
             "stringValue": "Review Load",
             "name": "name"
           },
           {
-            "name": "binds"
+            "intValue": "10101010101010",
+            "name": "row_count"
+          },
+          {
+            "stringValue": "SELECT \"reviews\".* FROM \"reviews\" WHERE \"reviews\".\"book_id\" = ? LIMIT ?",
+            "name": "sql"
+          },
+          {
+            "name": "transaction"
           },
           {
             "name": "type_casted_binds",
@@ -3581,21 +3596,6 @@
                 "intValue": "10101010101010"
               }
             ]
-          },
-          {
-            "boolValue": false,
-            "name": "async"
-          },
-          {
-            "name": "transaction"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "affected_rows"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "row_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -3627,12 +3627,12 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "intValue": "10101010101010",
-            "name": "record_count"
-          },
-          {
             "stringValue": "Review",
             "name": "class_name"
+          },
+          {
+            "intValue": "10101010101010",
+            "name": "record_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -3931,15 +3931,30 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "SELECT \"reviews\".* FROM \"reviews\" WHERE \"reviews\".\"book_id\" = ? LIMIT ?",
-            "name": "sql"
+            "intValue": "10101010101010",
+            "name": "affected_rows"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "name": "binds"
           },
           {
             "stringValue": "Review Load",
             "name": "name"
           },
           {
-            "name": "binds"
+            "intValue": "10101010101010",
+            "name": "row_count"
+          },
+          {
+            "stringValue": "SELECT \"reviews\".* FROM \"reviews\" WHERE \"reviews\".\"book_id\" = ? LIMIT ?",
+            "name": "sql"
+          },
+          {
+            "name": "transaction"
           },
           {
             "name": "type_casted_binds",
@@ -3951,21 +3966,6 @@
                 "intValue": "10101010101010"
               }
             ]
-          },
-          {
-            "boolValue": false,
-            "name": "async"
-          },
-          {
-            "name": "transaction"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "affected_rows"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "row_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -3997,12 +3997,12 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "intValue": "10101010101010",
-            "name": "record_count"
-          },
-          {
             "stringValue": "Review",
             "name": "class_name"
+          },
+          {
+            "intValue": "10101010101010",
+            "name": "record_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -4231,33 +4231,33 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "SELECT books.id, AVG(stars) as avg_review  FROM \"books\" INNER JOIN \"reviews\" ON \"reviews\".\"book_id\" = \"books\".\"id\" GROUP BY \"books\".\"id\"",
-            "name": "sql"
-          },
-          {
-            "stringValue": "Book Load",
-            "name": "name"
-          },
-          {
-            "name": "binds"
-          },
-          {
-            "name": "type_casted_binds"
+            "intValue": "10101010101010",
+            "name": "affected_rows"
           },
           {
             "boolValue": false,
             "name": "async"
           },
           {
-            "name": "transaction"
+            "name": "binds"
           },
           {
-            "intValue": "10101010101010",
-            "name": "affected_rows"
+            "stringValue": "Book Load",
+            "name": "name"
           },
           {
             "intValue": "10101010101010",
             "name": "row_count"
+          },
+          {
+            "stringValue": "SELECT books.id, AVG(stars) as avg_review  FROM \"books\" INNER JOIN \"reviews\" ON \"reviews\".\"book_id\" = \"books\".\"id\" GROUP BY \"books\".\"id\"",
+            "name": "sql"
+          },
+          {
+            "name": "transaction"
+          },
+          {
+            "name": "type_casted_binds"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -4289,12 +4289,12 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "intValue": "10101010101010",
-            "name": "record_count"
-          },
-          {
             "stringValue": "Book",
             "name": "class_name"
+          },
+          {
+            "intValue": "10101010101010",
+            "name": "record_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -4343,12 +4343,12 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "[3]",
-            "name": "fetch_keys"
-          },
-          {
             "stringValue": "Author(id: integer, name: string)",
             "name": "@model"
+          },
+          {
+            "stringValue": "[3]",
+            "name": "fetch_keys"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -4374,15 +4374,30 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "SELECT \"authors\".* FROM \"authors\" WHERE \"authors\".\"id\" = ?",
-            "name": "sql"
+            "intValue": "10101010101010",
+            "name": "affected_rows"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "name": "binds"
           },
           {
             "stringValue": "Author Load",
             "name": "name"
           },
           {
-            "name": "binds"
+            "intValue": "10101010101010",
+            "name": "row_count"
+          },
+          {
+            "stringValue": "SELECT \"authors\".* FROM \"authors\" WHERE \"authors\".\"id\" = ?",
+            "name": "sql"
+          },
+          {
+            "name": "transaction"
           },
           {
             "name": "type_casted_binds",
@@ -4391,21 +4406,6 @@
                 "intValue": "10101010101010"
               }
             ]
-          },
-          {
-            "boolValue": false,
-            "name": "async"
-          },
-          {
-            "name": "transaction"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "affected_rows"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "row_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -4437,12 +4437,12 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "intValue": "10101010101010",
-            "name": "record_count"
-          },
-          {
             "stringValue": "Author",
             "name": "class_name"
+          },
+          {
+            "intValue": "10101010101010",
+            "name": "record_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -4518,15 +4518,30 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "SELECT MAX(\"books\".\"id\") AS \"maximum_id\", \"books\".\"author_id\" AS \"books_author_id\" FROM \"books\" WHERE \"books\".\"author_id\" = ? AND \"books\".\"id\" != ? GROUP BY \"books\".\"author_id\"",
-            "name": "sql"
+            "intValue": "10101010101010",
+            "name": "affected_rows"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "name": "binds"
           },
           {
             "stringValue": "Book Maximum",
             "name": "name"
           },
           {
-            "name": "binds"
+            "intValue": "10101010101010",
+            "name": "row_count"
+          },
+          {
+            "stringValue": "SELECT MAX(\"books\".\"id\") AS \"maximum_id\", \"books\".\"author_id\" AS \"books_author_id\" FROM \"books\" WHERE \"books\".\"author_id\" = ? AND \"books\".\"id\" != ? GROUP BY \"books\".\"author_id\"",
+            "name": "sql"
+          },
+          {
+            "name": "transaction"
           },
           {
             "name": "type_casted_binds",
@@ -4538,21 +4553,6 @@
                 "intValue": "10101010101010"
               }
             ]
-          },
-          {
-            "boolValue": false,
-            "name": "async"
-          },
-          {
-            "name": "transaction"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "affected_rows"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "row_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -4801,15 +4801,30 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "SELECT \"reviews\".* FROM \"reviews\" WHERE \"reviews\".\"book_id\" = ? LIMIT ?",
-            "name": "sql"
+            "intValue": "10101010101010",
+            "name": "affected_rows"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "name": "binds"
           },
           {
             "stringValue": "Review Load",
             "name": "name"
           },
           {
-            "name": "binds"
+            "intValue": "10101010101010",
+            "name": "row_count"
+          },
+          {
+            "stringValue": "SELECT \"reviews\".* FROM \"reviews\" WHERE \"reviews\".\"book_id\" = ? LIMIT ?",
+            "name": "sql"
+          },
+          {
+            "name": "transaction"
           },
           {
             "name": "type_casted_binds",
@@ -4821,21 +4836,6 @@
                 "intValue": "10101010101010"
               }
             ]
-          },
-          {
-            "boolValue": false,
-            "name": "async"
-          },
-          {
-            "name": "transaction"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "affected_rows"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "row_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -4867,12 +4867,12 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "intValue": "10101010101010",
-            "name": "record_count"
-          },
-          {
             "stringValue": "Review",
             "name": "class_name"
+          },
+          {
+            "intValue": "10101010101010",
+            "name": "record_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -5751,33 +5751,33 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "SELECT books.id, AVG(stars) as avg_review  FROM \"books\" INNER JOIN \"reviews\" ON \"reviews\".\"book_id\" = \"books\".\"id\" GROUP BY \"books\".\"id\"",
-            "name": "sql"
-          },
-          {
-            "stringValue": "Book Load",
-            "name": "name"
-          },
-          {
-            "name": "binds"
-          },
-          {
-            "name": "type_casted_binds"
+            "intValue": "10101010101010",
+            "name": "affected_rows"
           },
           {
             "boolValue": false,
             "name": "async"
           },
           {
-            "name": "transaction"
+            "name": "binds"
           },
           {
-            "intValue": "10101010101010",
-            "name": "affected_rows"
+            "stringValue": "Book Load",
+            "name": "name"
           },
           {
             "intValue": "10101010101010",
             "name": "row_count"
+          },
+          {
+            "stringValue": "SELECT books.id, AVG(stars) as avg_review  FROM \"books\" INNER JOIN \"reviews\" ON \"reviews\".\"book_id\" = \"books\".\"id\" GROUP BY \"books\".\"id\"",
+            "name": "sql"
+          },
+          {
+            "name": "transaction"
+          },
+          {
+            "name": "type_casted_binds"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -5809,12 +5809,12 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "intValue": "10101010101010",
-            "name": "record_count"
-          },
-          {
             "stringValue": "Book",
             "name": "class_name"
+          },
+          {
+            "intValue": "10101010101010",
+            "name": "record_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -5863,12 +5863,12 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "[1]",
-            "name": "fetch_keys"
-          },
-          {
             "stringValue": "User(id: integer, username: string)",
             "name": "@model"
+          },
+          {
+            "stringValue": "[1]",
+            "name": "fetch_keys"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -5894,15 +5894,30 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "SELECT \"users\".* FROM \"users\" WHERE \"users\".\"id\" = ?",
-            "name": "sql"
+            "intValue": "10101010101010",
+            "name": "affected_rows"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "name": "binds"
           },
           {
             "stringValue": "User Load",
             "name": "name"
           },
           {
-            "name": "binds"
+            "intValue": "10101010101010",
+            "name": "row_count"
+          },
+          {
+            "stringValue": "SELECT \"users\".* FROM \"users\" WHERE \"users\".\"id\" = ?",
+            "name": "sql"
+          },
+          {
+            "name": "transaction"
           },
           {
             "name": "type_casted_binds",
@@ -5911,21 +5926,6 @@
                 "intValue": "10101010101010"
               }
             ]
-          },
-          {
-            "boolValue": false,
-            "name": "async"
-          },
-          {
-            "name": "transaction"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "affected_rows"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "row_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -5957,12 +5957,12 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "intValue": "10101010101010",
-            "name": "record_count"
-          },
-          {
             "stringValue": "User",
             "name": "class_name"
+          },
+          {
+            "intValue": "10101010101010",
+            "name": "record_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -6039,15 +6039,30 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "SELECT MAX(\"books\".\"id\") AS \"maximum_id\", \"books\".\"author_id\" AS \"books_author_id\" FROM \"books\" WHERE \"books\".\"author_id\" = ? AND \"books\".\"id\" NOT IN (?, ?) GROUP BY \"books\".\"author_id\"",
-            "name": "sql"
+            "intValue": "10101010101010",
+            "name": "affected_rows"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "name": "binds"
           },
           {
             "stringValue": "Book Maximum",
             "name": "name"
           },
           {
-            "name": "binds"
+            "intValue": "10101010101010",
+            "name": "row_count"
+          },
+          {
+            "stringValue": "SELECT MAX(\"books\".\"id\") AS \"maximum_id\", \"books\".\"author_id\" AS \"books_author_id\" FROM \"books\" WHERE \"books\".\"author_id\" = ? AND \"books\".\"id\" NOT IN (?, ?) GROUP BY \"books\".\"author_id\"",
+            "name": "sql"
+          },
+          {
+            "name": "transaction"
           },
           {
             "name": "type_casted_binds",
@@ -6062,21 +6077,6 @@
                 "intValue": "10101010101010"
               }
             ]
-          },
-          {
-            "boolValue": false,
-            "name": "async"
-          },
-          {
-            "name": "transaction"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "affected_rows"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "row_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -6156,12 +6156,12 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "[25]",
-            "name": "fetch_keys"
-          },
-          {
             "stringValue": "Book(id: integer, title: string, author_id: integer)",
             "name": "@model"
+          },
+          {
+            "stringValue": "[25]",
+            "name": "fetch_keys"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -6187,15 +6187,30 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "SELECT \"books\".* FROM \"books\" WHERE \"books\".\"id\" = ?",
-            "name": "sql"
+            "intValue": "10101010101010",
+            "name": "affected_rows"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "name": "binds"
           },
           {
             "stringValue": "Book Load",
             "name": "name"
           },
           {
-            "name": "binds"
+            "intValue": "10101010101010",
+            "name": "row_count"
+          },
+          {
+            "stringValue": "SELECT \"books\".* FROM \"books\" WHERE \"books\".\"id\" = ?",
+            "name": "sql"
+          },
+          {
+            "name": "transaction"
           },
           {
             "name": "type_casted_binds",
@@ -6204,21 +6219,6 @@
                 "intValue": "10101010101010"
               }
             ]
-          },
-          {
-            "boolValue": false,
-            "name": "async"
-          },
-          {
-            "name": "transaction"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "affected_rows"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "row_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -6250,12 +6250,12 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "intValue": "10101010101010",
-            "name": "record_count"
-          },
-          {
             "stringValue": "Book",
             "name": "class_name"
+          },
+          {
+            "intValue": "10101010101010",
+            "name": "record_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -7083,12 +7083,12 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "[2]",
-            "name": "fetch_keys"
-          },
-          {
             "stringValue": "User(id: integer, username: string)",
             "name": "@model"
+          },
+          {
+            "stringValue": "[2]",
+            "name": "fetch_keys"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -7117,15 +7117,30 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "stringValue": "SELECT \"users\".* FROM \"users\" WHERE \"users\".\"id\" = ?",
-            "name": "sql"
+            "intValue": "10101010101010",
+            "name": "affected_rows"
+          },
+          {
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "name": "binds"
           },
           {
             "stringValue": "User Load",
             "name": "name"
           },
           {
-            "name": "binds"
+            "intValue": "10101010101010",
+            "name": "row_count"
+          },
+          {
+            "stringValue": "SELECT \"users\".* FROM \"users\" WHERE \"users\".\"id\" = ?",
+            "name": "sql"
+          },
+          {
+            "name": "transaction"
           },
           {
             "name": "type_casted_binds",
@@ -7134,21 +7149,6 @@
                 "intValue": "10101010101010"
               }
             ]
-          },
-          {
-            "boolValue": false,
-            "name": "async"
-          },
-          {
-            "name": "transaction"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "affected_rows"
-          },
-          {
-            "intValue": "10101010101010",
-            "name": "row_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -7180,12 +7180,12 @@
       "trackEvent": {
         "debugAnnotations": [
           {
-            "intValue": "10101010101010",
-            "name": "record_count"
-          },
-          {
             "stringValue": "User",
             "name": "class_name"
+          },
+          {
+            "intValue": "10101010101010",
+            "name": "record_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
