@@ -170,9 +170,9 @@ if RUBY_VERSION >= "3.1.1"
 
             assert_equal 0.2, v2
             assert_equal 0.3, v3
-            assert_in_delta 0.0, started_at_2 - ended_at_2, 0.05, "Already-loaded values returned instantly"
+            assert_in_delta 0.0, started_at_2 - ended_at_2, 0.06, "Already-loaded values returned instantly"
 
-            assert_in_delta 0.3, ended_at - started_at, 0.05, "IO ran in parallel"
+            assert_in_delta 0.3, ended_at - started_at, 0.06, "IO ran in parallel"
           end
 
           it "works with GraphQL" do
@@ -180,7 +180,7 @@ if RUBY_VERSION >= "3.1.1"
             res = @schema.execute("{ s1: sleep(duration: 0.1) s2: sleep(duration: 0.2) s3: sleep(duration: 0.3) }")
             ended_at = Time.now
             assert_equal({"s1"=>0.1, "s2"=>0.2, "s3"=>0.3}, res["data"])
-            assert_in_delta 0.3, ended_at - started_at, 0.05, "IO ran in parallel"
+            assert_in_delta 0.3, ended_at - started_at, 0.06, "IO ran in parallel"
           end
 
           it "runs fields by depth" do

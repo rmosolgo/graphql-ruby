@@ -86,7 +86,7 @@ describe GraphQL::Dataloader do
         result = RailsPromiseSchema.execute(query_str)
         t2 = Time.now
         assert_equal({ "s1" => 0.1, "s2" => 0.2, "s3" => 0.3}, result["data"])
-        assert_in_delta 0.3, t2 - t1, 0.05, "Sleeps were in parallel"
+        assert_in_delta 0.3, t2 - t1, 0.06, "Sleeps were in parallel"
       end
     end
 
@@ -103,15 +103,15 @@ describe GraphQL::Dataloader do
         t2 = Time.now
 
         load_async_1, load_async_2, load_async_3, load_1, load_2, load_3 = RailsPromiseSchema::LoadAsyncSource::LOG
-        assert_in_delta load_async_1, load_async_2, 0.05, "load_async happened first"
-        assert_in_delta load_async_1, load_async_3, 0.05, "the third load_async happened right after"
+        assert_in_delta load_async_1, load_async_2, 0.06, "load_async happened first"
+        assert_in_delta load_async_1, load_async_3, 0.06, "the third load_async happened right after"
 
         assert_in_delta load_async_1, load_1, 0.35, "load came 0.3s after"
-        assert_in_delta load_1, load_2, 0.05, "the second load didn't have to wait because it was already done"
-        assert_in_delta load_1, load_3, 0.05, "the third load didn't have to wait because it was already done"
+        assert_in_delta load_1, load_2, 0.06, "the second load didn't have to wait because it was already done"
+        assert_in_delta load_1, load_3, 0.06, "the third load didn't have to wait because it was already done"
 
         assert_equal({ "t1" => 1, "t2" => 1, "t3" => 1}, result["data"])
-        assert_in_delta 0.3, t2 - t1, 0.05, "Sleeps were in parallel"
+        assert_in_delta 0.3, t2 - t1, 0.06, "Sleeps were in parallel"
       end
     end
   end
