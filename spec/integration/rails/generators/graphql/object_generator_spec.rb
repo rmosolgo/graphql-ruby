@@ -5,16 +5,6 @@ require "generators/graphql/object_generator"
 class GraphQLGeneratorsObjectGeneratorTest < BaseGeneratorTest
   tests Graphql::Generators::ObjectGenerator
 
-  ActiveRecord::Schema.define do
-    self.verbose = !!ENV["GITHUB_ACTIONS"]
-    create_table :test_users, force: true do |t|
-      t.datetime :created_at
-      t.date :birthday
-      t.integer :points, null: false
-      t.decimal :rating, null: false
-    end
-  end
-
   # rubocop:disable Style/ClassAndModuleChildren
   class ::TestUser < ActiveRecord::Base
   end

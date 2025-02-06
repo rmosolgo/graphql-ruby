@@ -75,6 +75,21 @@ if testing_rails?
     create_table :users do |t|
       t.string :username
     end
+
+    create_table :input_test_users, force: true do |t|
+      t.datetime :created_at
+      t.date :birthday
+      t.integer :points
+      t.decimal :rating
+      t.references :friend, foreign_key: { to_table: :input_test_users}
+    end
+
+    create_table :test_users, force: true do |t|
+      t.datetime :created_at
+      t.date :birthday
+      t.integer :points, null: false
+      t.decimal :rating, null: false
+    end
   end
 
   class Food < ActiveRecord::Base
