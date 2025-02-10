@@ -28,6 +28,12 @@ module GraphQL
     #   end
     #
     module PerfettoTrace
+      # TODOs:
+      # - Report object and arguments with field segments
+      # - Make debug annotations visible on both parts when dataloader is involved
+      # - Reconsider `begin_execute_field` and `end_execute_field` signatures
+      # - Include resolved-to type in resolve_type debug annotations
+
       PROTOBUF_AVAILABLE = begin
         require "google/protobuf"
         true
@@ -92,14 +98,10 @@ module GraphQL
             )
           )
         )
-        @packets << TracePacket.new(
-          timestamp: ts,
-          track_event: TrackEvent.new(
-            type: TrackEvent::Type::TYPE_COUNTER,
-            track_uuid: @objects_counter_id,
-            counter_value: count_allocations,
-          ),
-          trusted_packet_sequence_id: @pid,
+        @packets << trace_packet(
+          type: TrackEvent::Type::TYPE_COUNTER,
+          track_uuid: @objects_counter_id,
+          counter_value: count_allocations,
         )
         @packets << TracePacket.new(
           track_descriptor: TrackDescriptor.new(
@@ -112,14 +114,10 @@ module GraphQL
           )
         )
         @fibers_count = 0
-        @packets << TracePacket.new(
-          timestamp: ts,
-          track_event: TrackEvent.new(
-            type: TrackEvent::Type::TYPE_COUNTER,
-            track_uuid: @fibers_counter_id,
-            counter_value: count_fibers(0),
-          ),
-          trusted_packet_sequence_id: @pid,
+        @packets << trace_packet(
+          type: TrackEvent::Type::TYPE_COUNTER,
+          track_uuid: @fibers_counter_id,
+          counter_value: count_fibers(0),
         )
 
         @packets << TracePacket.new(
@@ -134,14 +132,10 @@ module GraphQL
         )
 
         @fields_count = -1
-        @packets << TracePacket.new(
-          timestamp: ts,
-          track_event: TrackEvent.new(
-            type: TrackEvent::Type::TYPE_COUNTER,
-            track_uuid: @fields_counter_id,
-            counter_value: count_fields,
-          ),
-          trusted_packet_sequence_id: @pid,
+        @packets << trace_packet(
+          type: TrackEvent::Type::TYPE_COUNTER,
+          track_uuid: @fields_counter_id,
+          counter_value: count_fields,
         )
 
         if defined?(ActiveSupport::Notifications) && active_support_notifications_pattern != false
@@ -150,149 +144,102 @@ module GraphQL
       end
 
       def begin_multiplex(m)
-        @packets << TracePacket.new(
-          timestamp: ts,
-          track_event: TrackEvent.new(
-            type: TrackEvent::Type::TYPE_SLICE_BEGIN,
-            track_uuid: fid,
-            name: "Multiplex",
-            debug_annotations: [
-              DebugAnnotation.new(
-                name: "query_string",
-                string_value: m.queries.map(&:sanitized_query_string).join("\n\n"),
-              ),
-            ]
-          ),
-          trusted_packet_sequence_id: @pid,
+        @packets << trace_packet(
+          type: TrackEvent::Type::TYPE_SLICE_BEGIN,
+          track_uuid: fid,
+          name: "Multiplex",
+          debug_annotations: [
+            payload_to_debug("query_string", m.queries.map(&:sanitized_query_string).join("\n\n"))
+          ]
         )
         super
       end
 
       def end_multiplex(m)
-        @packets << TracePacket.new(
-          timestamp: ts,
-          track_event: TrackEvent.new(
-            type: TrackEvent::Type::TYPE_SLICE_END,
-            track_uuid: fid,
-          ),
-          trusted_packet_sequence_id: @pid,
+        @packets << trace_packet(
+          type: TrackEvent::Type::TYPE_SLICE_END,
+          track_uuid: fid,
         )
         unsubscribe_from_active_support_notifications
         super
       end
 
       def begin_execute_field(result, result_name)
-        packet = TracePacket.new(
-          timestamp: ts,
-          track_event: TrackEvent.new(
-            type: TrackEvent::Type::TYPE_SLICE_BEGIN,
-            track_uuid: fid,
-            name: "#{result.path.join(".")}.#{result_name}",
-            extra_counter_track_uuids: [@objects_counter_id],
-            extra_counter_values: [count_allocations],
-          ),
-          trusted_packet_sequence_id: @pid,
+        packet = trace_packet(
+          type: TrackEvent::Type::TYPE_SLICE_BEGIN,
+          track_uuid: fid,
+          name: "#{result.path.join(".")}.#{result_name}",
+          extra_counter_track_uuids: [@objects_counter_id],
+          extra_counter_values: [count_allocations],
         )
         @packets << packet
         fiber_flow_stack << packet
         super
       end
 
-      def end_execute_field(result, result_name)
-        track_event = if (start_field = fiber_flow_stack.pop) && (flow_id = start_field.track_event.flow_ids&.first)
-          TrackEvent.new(
-            type: TrackEvent::Type::TYPE_SLICE_END,
-            track_uuid: fid,
-            extra_counter_track_uuids: [@objects_counter_id, @fields_counter_id],
-            extra_counter_values: [count_allocations, count_fields],
-            terminating_flow_ids: [flow_id]
-          )
-        else
-          TrackEvent.new(
-            type: TrackEvent::Type::TYPE_SLICE_END,
-            track_uuid: fid,
-            extra_counter_track_uuids: [@objects_counter_id, @fields_counter_id],
-            extra_counter_values: [count_allocations, count_fields],
-          )
-        end
-        @packets << TracePacket.new(
-          timestamp: ts,
-          track_event: track_event,
-          trusted_packet_sequence_id: @pid,
+      def end_execute_field(result, result_name, app_result)
+        start_field = fiber_flow_stack.pop
+        start_field.track_event = dup_with(start_field.track_event, { debug_annotations: [payload_to_debug("result", app_result.inspect)] })
+
+        @packets << trace_packet(
+          type: TrackEvent::Type::TYPE_SLICE_END,
+          track_uuid: fid,
+          extra_counter_track_uuids: [@objects_counter_id, @fields_counter_id],
+          extra_counter_values: [count_allocations, count_fields],
         )
         super
       end
 
       def begin_analyze_multiplex(m)
-        @packets << TracePacket.new(
-          timestamp: ts,
-          track_event: TrackEvent.new(
-            type: TrackEvent::Type::TYPE_SLICE_BEGIN,
-            track_uuid: fid,
-            extra_counter_track_uuids: [@objects_counter_id],
-            extra_counter_values: [count_allocations],
-            name: "Analysis"
-          ),
-          trusted_packet_sequence_id: @pid,
+        @packets << trace_packet(
+          type: TrackEvent::Type::TYPE_SLICE_BEGIN,
+          track_uuid: fid,
+          extra_counter_track_uuids: [@objects_counter_id],
+          extra_counter_values: [count_allocations],
+          name: "Analysis"
         )
         super
       end
 
       def end_analyze_multiplex(m)
-        @packets << TracePacket.new(
-          timestamp: ts,
-          track_event: TrackEvent.new(
-            type: TrackEvent::Type::TYPE_SLICE_END,
-            track_uuid: fid,
-            extra_counter_track_uuids: [@objects_counter_id],
-            extra_counter_values: [count_allocations],
-          ),
-          trusted_packet_sequence_id: @pid,
+        @packets << trace_packet(
+          type: TrackEvent::Type::TYPE_SLICE_END,
+          track_uuid: fid,
+          extra_counter_track_uuids: [@objects_counter_id],
+          extra_counter_values: [count_allocations],
         )
         super
       end
 
       def begin_parse(str)
-        @packets << TracePacket.new(
-          timestamp: ts,
-          track_event: TrackEvent.new(
-            type: TrackEvent::Type::TYPE_SLICE_BEGIN,
-            track_uuid: fid,
-            extra_counter_track_uuids: [@objects_counter_id],
-            extra_counter_values: [count_allocations],
-            name: "Parse"
-          ),
-          trusted_packet_sequence_id: @pid,
+        @packets << trace_packet(
+          type: TrackEvent::Type::TYPE_SLICE_BEGIN,
+          track_uuid: fid,
+          extra_counter_track_uuids: [@objects_counter_id],
+          extra_counter_values: [count_allocations],
+          name: "Parse"
         )
         super
       end
 
       def end_parse(str)
-        @packets << TracePacket.new(
-          timestamp: ts,
-          track_event: TrackEvent.new(
-            type: TrackEvent::Type::TYPE_SLICE_END,
-            track_uuid: fid,
-            extra_counter_track_uuids: [@objects_counter_id],
-            extra_counter_values: [count_allocations],
-          ),
-          trusted_packet_sequence_id: @pid,
+        @packets << trace_packet(
+          type: TrackEvent::Type::TYPE_SLICE_END,
+          track_uuid: fid,
+          extra_counter_track_uuids: [@objects_counter_id],
+          extra_counter_values: [count_allocations],
         )
         super
       end
 
       def dataloader_spawn_execution_fiber(jobs)
-        @packets << TracePacket.new(
-          timestamp: ts,
-          track_event: TrackEvent.new(
-            type: TrackEvent::Type::TYPE_INSTANT,
-            track_uuid: fid,
-            name: "Create Execution Fiber",
-            categories: ["dataloader"],
-            extra_counter_track_uuids: [@fibers_counter_id, @objects_counter_id],
-            extra_counter_values: [count_fibers(1), count_allocations]
-          ),
-          trusted_packet_sequence_id: @pid,
+        @packets << trace_packet(
+          type: TrackEvent::Type::TYPE_INSTANT,
+          track_uuid: fid,
+          name: "Create Execution Fiber",
+          categories: ["dataloader"],
+          extra_counter_track_uuids: [@fibers_counter_id, @objects_counter_id],
+          extra_counter_values: [count_fibers(1), count_allocations]
         )
         @packets << TracePacket.new(
           track_descriptor: TrackDescriptor.new(
@@ -306,17 +253,13 @@ module GraphQL
       end
 
       def dataloader_spawn_source_fiber(pending_sources)
-        @packets << TracePacket.new(
-          timestamp: ts,
-          track_event: TrackEvent.new(
-            type: TrackEvent::Type::TYPE_INSTANT,
-            track_uuid: fid,
-            name: "Create Source Fiber",
-            categories: ["dataloader"],
-            extra_counter_track_uuids: [@fibers_counter_id, @objects_counter_id],
-            extra_counter_values: [count_fibers(1), count_allocations]
-          ),
-          trusted_packet_sequence_id: @pid,
+        @packets << trace_packet(
+          type: TrackEvent::Type::TYPE_INSTANT,
+          track_uuid: fid,
+          name: "Create Source Fiber",
+          categories: ["dataloader"],
+          extra_counter_track_uuids: [@fibers_counter_id, @objects_counter_id],
+          extra_counter_values: [count_fibers(1), count_allocations]
         )
         @packets << TracePacket.new(
           track_descriptor: TrackDescriptor.new(
@@ -335,77 +278,58 @@ module GraphQL
             # got it
           else
             flow_id = ls.track_event.name.object_id
-            ls.track_event = dup_with(ls.track_event, {flow_ids: [flow_id] })
+            ls.track_event = dup_with(ls.track_event, {flow_ids: [flow_id] }, delete_counters: true)
           end
           @flow_ids[source] << flow_id
-          @packets << TracePacket.new(
-            timestamp: ts,
-            track_event: TrackEvent.new(
-              type: TrackEvent::Type::TYPE_SLICE_END,
-              track_uuid: fid,
-            ),
-            trusted_packet_sequence_id: @pid,
+          @packets << trace_packet(
+            type: TrackEvent::Type::TYPE_SLICE_END,
+            track_uuid: fid,
           )
         end
-        @packets << TracePacket.new(
-          timestamp: ts,
-          track_event: TrackEvent.new(
-            type: TrackEvent::Type::TYPE_INSTANT,
-            track_uuid: fid,
-            name: "Fiber Yield",
-            categories: ["dataloader"],
-          ),
-          trusted_packet_sequence_id: @pid,
+        @packets << trace_packet(
+          type: TrackEvent::Type::TYPE_INSTANT,
+          track_uuid: fid,
+          name: "Fiber Yield",
+          categories: ["dataloader"],
         )
         super
       end
 
       def dataloader_fiber_resume(source)
-        @packets << TracePacket.new(
-          timestamp: ts,
-          track_event: TrackEvent.new(
-            type: TrackEvent::Type::TYPE_INSTANT,
-            track_uuid: fid,
-            name: "Fiber Resume",
-            categories: ["dataloader"],
-          ),
-          trusted_packet_sequence_id: @pid,
+        @packets << trace_packet(
+          type: TrackEvent::Type::TYPE_INSTANT,
+          track_uuid: fid,
+          name: "Fiber Resume",
+          categories: ["dataloader"],
         )
-        if (ls = fiber_flow_stack.last)
-          @packets << TracePacket.new(
+        if (ls = fiber_flow_stack.pop)
+          @packets << packet = TracePacket.new(
             timestamp: ts,
             track_event: dup_with(ls.track_event, { type: TrackEvent::Type::TYPE_SLICE_BEGIN }),
             trusted_packet_sequence_id: @pid,
           )
+          fiber_flow_stack << packet
         end
         super
       end
 
       def dataloader_fiber_exit
-        @packets << TracePacket.new(
-          timestamp: ts,
-          track_event: TrackEvent.new(
-            type: TrackEvent::Type::TYPE_INSTANT,
-            track_uuid: fid,
-            name: "Fiber Exit",
-            categories: ["dataloader"],
-            extra_counter_track_uuids: [@fibers_counter_id],
-            extra_counter_values: [count_fibers(-1)],
-          ),
-          trusted_packet_sequence_id: @pid,
+        @packets << trace_packet(
+          type: TrackEvent::Type::TYPE_INSTANT,
+          track_uuid: fid,
+          name: "Fiber Exit",
+          categories: ["dataloader"],
+          extra_counter_track_uuids: [@fibers_counter_id],
+          extra_counter_values: [count_fibers(-1)],
         )
         super
       end
 
       def begin_dataloader(dl)
-        @packets << TracePacket.new(
-          timestamp: ts,
-          track_event: TrackEvent.new(
-            type: TrackEvent::Type::TYPE_COUNTER,
-            track_uuid: @fibers_counter_id,
-            counter_value: count_fibers(1),
-          ),
-          trusted_packet_sequence_id: @pid,
+        @packets << trace_packet(
+          type: TrackEvent::Type::TYPE_COUNTER,
+          track_uuid: @fibers_counter_id,
+          counter_value: count_fibers(1),
         )
         @did = fid
         @packets << TracePacket.new(
@@ -419,14 +343,10 @@ module GraphQL
       end
 
       def end_dataloader(dl)
-        @packets << TracePacket.new(
-          timestamp: ts,
-          track_event: TrackEvent.new(
-            type: TrackEvent::Type::TYPE_COUNTER,
-            track_uuid: @fibers_counter_id,
-            counter_value: count_fibers(-1),
-          ),
-          trusted_packet_sequence_id: @pid,
+        @packets << trace_packet(
+          type: TrackEvent::Type::TYPE_COUNTER,
+          track_uuid: @fibers_counter_id,
+          counter_value: count_fibers(-1),
         )
         super
       end
@@ -435,30 +355,20 @@ module GraphQL
         fds = @flow_ids[source]
         fds_copy = fds.dup
         fds.clear
-        packet = TracePacket.new(
-          timestamp: ts,
-          track_event: TrackEvent.new(
-            type: TrackEvent::Type::TYPE_SLICE_BEGIN,
-            track_uuid: fid,
-            name: @clean_source_names[source.class],
-            categories: ["dataloader"],
-            flow_ids: fds_copy,
-            extra_counter_track_uuids: [@objects_counter_id],
-            extra_counter_values: [count_allocations],
-            debug_annotations: [
-              DebugAnnotation.new(
-                name: "fetch_keys",
-                string_value: source.pending.values.inspect,
-              ),
-              *(source.instance_variables - [:@pending, :@fetching, :@results, :@dataloader]).map { |iv|
-                DebugAnnotation.new(
-                  name: iv.to_s,
-                  string_value: source.instance_variable_get(iv)&.inspect,
-                )
-              }
-            ]
-          ),
-          trusted_packet_sequence_id: @pid,
+        packet = trace_packet(
+          type: TrackEvent::Type::TYPE_SLICE_BEGIN,
+          track_uuid: fid,
+          name: @clean_source_names[source.class],
+          categories: ["dataloader"],
+          flow_ids: fds_copy,
+          extra_counter_track_uuids: [@objects_counter_id],
+          extra_counter_values: [count_allocations],
+          debug_annotations: [
+            payload_to_debug("fetch keys", source.pending.values),
+            *(source.instance_variables - [:@pending, :@fetching, :@results, :@dataloader]).map { |iv|
+              payload_to_debug(iv.to_s, source.instance_variable_get(iv))
+            }
+          ]
         )
         @packets << packet
         fiber_flow_stack << packet
@@ -466,32 +376,24 @@ module GraphQL
       end
 
       def end_dataloader_source(source)
-        @packets << TracePacket.new(
-          timestamp: ts,
-          track_event: TrackEvent.new(
-            type: TrackEvent::Type::TYPE_SLICE_END,
-            track_uuid: fid,
-            categories: ["dataloader"],
-            extra_counter_track_uuids: [@objects_counter_id],
-            extra_counter_values: [count_allocations],
-          ),
-          trusted_packet_sequence_id: @pid,
+        @packets << trace_packet(
+          type: TrackEvent::Type::TYPE_SLICE_END,
+          track_uuid: fid,
+          categories: ["dataloader"],
+          extra_counter_track_uuids: [@objects_counter_id],
+          extra_counter_values: [count_allocations],
         )
         fiber_flow_stack.pop
         super
       end
 
       def begin_authorized(type, obj, ctx)
-        packet = TracePacket.new(
-          timestamp: ts,
-          track_event: TrackEvent.new(
-            type: TrackEvent::Type::TYPE_SLICE_BEGIN,
-            track_uuid: fid,
-            extra_counter_track_uuids: [@objects_counter_id],
-            extra_counter_values: [count_allocations],
-            name: @auth_packet_names[type]
-          ),
-          trusted_packet_sequence_id: @pid,
+        packet = trace_packet(
+          type: TrackEvent::Type::TYPE_SLICE_BEGIN,
+          track_uuid: fid,
+          extra_counter_track_uuids: [@objects_counter_id],
+          extra_counter_values: [count_allocations],
+          name: @auth_packet_names[type]
         )
         @packets << packet
         fiber_flow_stack << packet
@@ -499,30 +401,22 @@ module GraphQL
       end
 
       def end_authorized(type, obj, ctx)
-        @packets << TracePacket.new(
-          timestamp: ts,
-          track_event: TrackEvent.new(
-            type: TrackEvent::Type::TYPE_SLICE_END,
-            track_uuid: fid,
-            extra_counter_track_uuids: [@objects_counter_id],
-            extra_counter_values: [count_allocations],
-          ),
-          trusted_packet_sequence_id: @pid,
+        @packets << trace_packet(
+          type: TrackEvent::Type::TYPE_SLICE_END,
+          track_uuid: fid,
+          extra_counter_track_uuids: [@objects_counter_id],
+          extra_counter_values: [count_allocations],
         )
         fiber_flow_stack.pop
       end
 
       def begin_resolve_type(type, value, context)
-        packet = TracePacket.new(
-          timestamp: ts,
-          track_event: TrackEvent.new(
-            type: TrackEvent::Type::TYPE_SLICE_BEGIN,
-            track_uuid: fid,
-            extra_counter_track_uuids: [@objects_counter_id],
-            extra_counter_values: [count_allocations],
-            name: @resolve_type_packet_names[type]
-          ),
-          trusted_packet_sequence_id: @pid,
+        packet = trace_packet(
+          type: TrackEvent::Type::TYPE_SLICE_BEGIN,
+          track_uuid: fid,
+          extra_counter_track_uuids: [@objects_counter_id],
+          extra_counter_values: [count_allocations],
+          name: @resolve_type_packet_names[type],
         )
         @packets << packet
         fiber_flow_stack << packet
@@ -530,15 +424,11 @@ module GraphQL
       end
 
       def end_resolve_type(type, value, context)
-        @packets << TracePacket.new(
-          timestamp: ts,
-          track_event: TrackEvent.new(
-            type: TrackEvent::Type::TYPE_SLICE_END,
-            track_uuid: fid,
-            extra_counter_track_uuids: [@objects_counter_id],
-            extra_counter_values: [count_allocations],
-          ),
-          trusted_packet_sequence_id: @pid,
+        @packets << trace_packet(
+          type: TrackEvent::Type::TYPE_SLICE_END,
+          track_uuid: fid,
+          extra_counter_track_uuids: [@objects_counter_id],
+          extra_counter_values: [count_allocations],
         )
         fiber_flow_stack.pop
       end
@@ -609,7 +499,7 @@ module GraphQL
         when Hash
           debug_annotation(k, :dict_entries, v.map { |k2, v2| payload_to_debug(k2, v2) }.compact)
         else
-          nil
+          debug_annotation(k, :string_value, v.inspect)
         end
       end
 
@@ -625,14 +515,26 @@ module GraphQL
         @fields_count += 1
       end
 
-      def dup_with(message, attrs)
+      def dup_with(message, attrs, delete_counters: false)
         new_attrs = message.to_h
+        if delete_counters
+          new_attrs.delete(:extra_counter_track_uuids)
+          new_attrs.delete(:extra_counter_values)
+        end
         new_attrs.merge!(attrs)
         message.class.new(**new_attrs)
       end
 
       def fiber_flow_stack
         Fiber[:graphql_flow_stack] ||= []
+      end
+
+      def trace_packet(event_attrs)
+        TracePacket.new(
+          timestamp: ts,
+          track_event: TrackEvent.new(event_attrs),
+          trusted_packet_sequence_id: @pid,
+        )
       end
 
       def unsubscribe_from_active_support_notifications

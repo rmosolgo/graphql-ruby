@@ -387,9 +387,8 @@ module GraphQL
               rescue GraphQL::ExecutionError => ex_err
                 ex_err
               end
-            ensure
-              @current_trace.end_execute_field(selection_result, result_name)
             end
+            @current_trace.end_execute_field(selection_result, result_name, app_result)
             after_lazy(app_result, field: field_defn, ast_node: ast_node, owner_object: object, arguments: resolved_arguments, result_name: result_name, result: selection_result, runtime_state: runtime_state) do |inner_result, runtime_state|
               owner_type = selection_result.graphql_result_type
               return_type = field_defn.type

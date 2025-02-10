@@ -88,7 +88,7 @@ module GraphQL
       # GraphQL just finished resolving `result_name`
       # @param result [GraphQL::Execution::Interpreter::Runtime::GraphQL::Result]
       # @param result_name [String]
-      def end_execute_field(result, result_name); end
+      def end_execute_field(result, result_name, app_result); end
 
       def execute_field(field:, query:, ast_node:, arguments:, object:)
         yield
