@@ -102,6 +102,21 @@ module GraphQL
         yield
       end
 
+      # A call to `.authorized?` is starting
+      # @param type [Class<GraphQL::Schema::Object>]
+      # @param object [Object]
+      # @param context [GraphQL::Query::Context]
+      # @return [void]
+      def begin_authorized(type, object, context)
+      end
+      # A call to `.authorized?` just finished
+      # @param type [Class<GraphQL::Schema::Object>]
+      # @param object [Object]
+      # @param context [GraphQL::Query::Context]
+      # @return [void]
+      def end_authorized(type, object, context)
+      end
+
       def authorized_lazy(query:, type:, object:)
         yield
       end
@@ -112,6 +127,22 @@ module GraphQL
 
       def resolve_type_lazy(query:, type:, object:)
         yield
+      end
+
+      # A call to `.resolve_type` is starting
+      # @param type [Class<GraphQL::Schema::Union>, Module<GraphQL::Schema::Interface>]
+      # @param value [Object]
+      # @param context [GraphQL::Query::Context]
+      # @return [void]
+      def begin_resolve_type(type, value, context)
+      end
+
+      # A call to `.resolve_type` just ended
+      # @param type [Class<GraphQL::Schema::Union>, Module<GraphQL::Schema::Interface>]
+      # @param value [Object]
+      # @param context [GraphQL::Query::Context]
+      # @return [void]
+      def end_resolve_type(type, value, context)
       end
 
       # A dataloader run is starting

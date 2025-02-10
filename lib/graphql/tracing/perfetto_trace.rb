@@ -54,6 +54,12 @@ module GraphQL
         @clean_source_names = Hash.new do |h, source_class|
           h[source_class] = name_prefix ? source_class.name.sub(name_prefix, "") : source_class.name
         end.compare_by_identity
+        @auth_packet_names = Hash.new do |h, graphql_type|
+          h[graphql_type] = "Authorize #{graphql_type.graphql_name}"
+        end.compare_by_identity
+        @resolve_type_packet_names = Hash.new do |h, graphql_type|
+          h[graphql_type] = "Resolve Type: #{graphql_type.graphql_name}"
+        end.compare_by_identity
         @starting_objects = GC.stat(:total_allocated_objects)
         @objects_counter_id = :objects_counter.object_id
         @fibers_counter_id = :fibers_counter.object_id
@@ -149,7 +155,13 @@ module GraphQL
           track_event: TrackEvent.new(
             type: TrackEvent::Type::TYPE_SLICE_BEGIN,
             track_uuid: fid,
-            name: "Multiplex"
+            name: "Multiplex",
+            debug_annotations: [
+              DebugAnnotation.new(
+                name: "query_string",
+                string_value: m.queries.map(&:sanitized_query_string).join("\n\n"),
+              ),
+            ]
           ),
           trusted_packet_sequence_id: @pid,
         )
@@ -467,6 +479,68 @@ module GraphQL
         )
         fiber_flow_stack.pop
         super
+      end
+
+      def begin_authorized(type, obj, ctx)
+        packet = TracePacket.new(
+          timestamp: ts,
+          track_event: TrackEvent.new(
+            type: TrackEvent::Type::TYPE_SLICE_BEGIN,
+            track_uuid: fid,
+            extra_counter_track_uuids: [@objects_counter_id],
+            extra_counter_values: [count_allocations],
+            name: @auth_packet_names[type]
+          ),
+          trusted_packet_sequence_id: @pid,
+        )
+        @packets << packet
+        fiber_flow_stack << packet
+        super
+      end
+
+      def end_authorized(type, obj, ctx)
+        @packets << TracePacket.new(
+          timestamp: ts,
+          track_event: TrackEvent.new(
+            type: TrackEvent::Type::TYPE_SLICE_END,
+            track_uuid: fid,
+            extra_counter_track_uuids: [@objects_counter_id],
+            extra_counter_values: [count_allocations],
+          ),
+          trusted_packet_sequence_id: @pid,
+        )
+        fiber_flow_stack.pop
+      end
+
+      def begin_resolve_type(type, value, context)
+        packet = TracePacket.new(
+          timestamp: ts,
+          track_event: TrackEvent.new(
+            type: TrackEvent::Type::TYPE_SLICE_BEGIN,
+            track_uuid: fid,
+            extra_counter_track_uuids: [@objects_counter_id],
+            extra_counter_values: [count_allocations],
+            name: @resolve_type_packet_names[type]
+          ),
+          trusted_packet_sequence_id: @pid,
+        )
+        @packets << packet
+        fiber_flow_stack << packet
+        super
+      end
+
+      def end_resolve_type(type, value, context)
+        @packets << TracePacket.new(
+          timestamp: ts,
+          track_event: TrackEvent.new(
+            type: TrackEvent::Type::TYPE_SLICE_END,
+            track_uuid: fid,
+            extra_counter_track_uuids: [@objects_counter_id],
+            extra_counter_values: [count_allocations],
+          ),
+          trusted_packet_sequence_id: @pid,
+        )
+        fiber_flow_stack.pop
       end
 
       # Dump protobuf output in the specified file.
