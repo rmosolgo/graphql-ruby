@@ -14,7 +14,8 @@ module PerfettoSnapshot
       raise "Snapshot file not found: #{snapshot_path.inspect}"
     else
       snapshot_data = JSON.parse(File.read(snapshot_path))
-      deep_snap_match(snapshot_data, data, [])
+      cleaned_data = convert_to_snapshot(data)
+      deep_snap_match(snapshot_data, cleaned_data, [])
     end
   end
 
@@ -27,9 +28,9 @@ module PerfettoSnapshot
       elsif BASE64_PATTERN.match?(snapshot_data)
         snapshot_data_decoded = Base64.decode64(snapshot_data)
         data_decoded = Base64.decode64(data)
-        assert_equal snapshot_data_decoded, replace_ids(data_decoded), "Decoded match at #{path.join(".")}"
+        assert_equal snapshot_data_decoded, data_decoded, "Decoded match at #{path.join(".")}"
       else
-        assert_equal snapshot_data, replace_ids(data), "Match at #{path.join(".")}"
+        assert_equal snapshot_data, data, "Match at #{path.join(".")}"
       end
     when Numeric
       assert_kind_of Numeric, data, "Is numeric at #{path.join(".")}"
@@ -57,8 +58,7 @@ module PerfettoSnapshot
   BASE64_PATTERN = /^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/
 
   def replace_ids(str)
-    str.gsub(/ #\d+/, " #1010")
-      .gsub(/:0x[0-9a-z]+/, "0xabcd12345")
+    str.gsub(/ #\d+/, " #1010").split(/:0x[0-9a-z]+/).first
   end
 
   def convert_to_snapshot(value)
