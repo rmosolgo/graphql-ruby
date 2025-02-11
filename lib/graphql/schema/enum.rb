@@ -241,7 +241,7 @@ module GraphQL
             return
           end
 
-          instance_eval("def #{value_method_name}; #{value.graphql_name.inspect}; end;")
+          instance_eval("def #{value_method_name}; #{value.graphql_name.inspect}; end;", __FILE__, __LINE__)
         end
       end
 
