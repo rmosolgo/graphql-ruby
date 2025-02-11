@@ -462,6 +462,7 @@ module GraphQL
         )
         beg_auth = fiber_flow_stack.pop
         beg_auth.track_event = dup_with(beg_auth.track_event, { debug_annotations: [payload_to_debug("authorized?", is_authorized)] })
+        super
       end
 
       def begin_resolve_type(type, value, context)
@@ -487,6 +488,7 @@ module GraphQL
         )
         rt_begin = fiber_flow_stack.pop
         rt_begin.track_event = dup_with(rt_begin.track_event, { debug_annotations: [payload_to_debug("resolved_type", resolved_type, intern_value: true)] })
+        super
       end
 
       # Dump protobuf output in the specified file.

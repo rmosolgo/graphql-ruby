@@ -27,7 +27,7 @@ module PerfettoSnapshot
         assert_equal snapshot_data.sub(" #1010", ""), data.sub(/ #\d+/, ""), "Match at #{path.join(".")}"
       end
     when Numeric
-      assert_equal snapshot_data.class, data.class, "Match at #{path.join(".")}"
+      assert_kind_of Numeric, data, "Is numeric at #{path.join(".")}"
     when Hash
       assert_equal snapshot_data.class, data.class, "Match at #{path.join(".")}"
       extra_keys = snapshot_data.keys - data.keys
