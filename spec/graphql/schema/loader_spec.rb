@@ -20,6 +20,7 @@ describe GraphQL::Schema::Loader do
       value "FOO", value: :foo
       value "BAR", deprecation_reason: "Don't use BAR"
       value "NAME", value_method: false
+      value "foo", value_method: false
     end
 
     sub_input_type = Class.new(GraphQL::Schema::InputObject) do
@@ -235,8 +236,10 @@ describe GraphQL::Schema::Loader do
 
     let(:loaded_schema) { GraphQL::Schema.from_introspection(schema_json) }
 
-    it "returns the schema" do
-      assert_deep_equal(schema, loaded_schema)
+    it "returns the schema without warnings" do
+      assert_warns("") do
+        assert_deep_equal(schema, loaded_schema)
+      end
     end
 
     it "can export the loaded schema" do
