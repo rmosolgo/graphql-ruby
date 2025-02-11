@@ -21,10 +21,15 @@ module PerfettoSnapshot
   def deep_snap_match(snapshot_data, data, path)
     case snapshot_data
     when String
+      assert_kind_of String, data, "Is String at #{path.join(".")}"
       if snapshot_data.match(/\D/).nil? && data.match(/\D/).nil?
         # Ok
+      elsif BASE64_PATTERN.match?(snapshot_data)
+        snapshot_data_decoded = Base64.decode64(snapshot_data)
+        data_decoded = Base64.decode64(data)
+        assert_equal snapshot_data_decoded, replace_ids(data_decoded), "Decoded match at #{path.join(".")}"
       else
-        assert_equal snapshot_data.sub(" #1010", ""), data.sub(/ #\d+/, ""), "Match at #{path.join(".")}"
+        assert_equal snapshot_data, replace_ids(data), "Match at #{path.join(".")}"
       end
     when Numeric
       assert_kind_of Numeric, data, "Is numeric at #{path.join(".")}"
@@ -49,13 +54,24 @@ module PerfettoSnapshot
     end
   end
 
+  BASE64_PATTERN = /^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$/
+
+  def replace_ids(str)
+    str.gsub(/ #\d+/, " #1010")
+      .gsub(/:0x[0-9a-z]+/, "0xabcd12345")
+  end
+
   def convert_to_snapshot(value)
     case value
     when String
       if value.match(/\D/).nil?
         "10101010101010"
+      elsif BASE64_PATTERN.match?(value)
+        decoded_value = Base64.decode64(value)
+        decoded_value = replace_ids(decoded_value)
+        Base64.encode64(decoded_value)
       else
-        value.sub(/ #\d+/, " #1010")
+        replace_ids(value)
       end
     when Numeric
       101010101010

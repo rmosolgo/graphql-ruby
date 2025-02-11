@@ -57,7 +57,7 @@
         "debugAnnotationStringValues": [
           {
             "iid": "10101010101010",
-            "str": "KG5pbCk="
+            "str": "KG5pbCk=\n"
           }
         ]
       },
@@ -183,7 +183,7 @@
         "extraCounterValues": [
           "10101010101010"
         ],
-        "name": "Validate",
+        "name": "Validate\n",
         "extraCounterTrackUuids": [
           "10101010101010"
         ]
@@ -259,7 +259,7 @@
         "extraCounterValues": [
           "10101010101010"
         ],
-        "name": "Analysis",
+        "name": "Analysis\n",
         "extraCounterTrackUuids": [
           "10101010101010"
         ]
@@ -1094,7 +1094,7 @@
         "debugAnnotationNames": [
           {
             "iid": "10101010101010",
-            "name": "duration"
+            "name": "duration\n"
           }
         ]
       },
