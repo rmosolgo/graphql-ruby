@@ -375,7 +375,7 @@ module GraphQL
             end
             # Actually call the field resolver and capture the result
             app_result = begin
-              @current_trace.begin_execute_field(selection_result, result_name)
+              @current_trace.begin_execute_field(field_defn, object, kwarg_arguments, query)
               @current_trace.execute_field(field: field_defn, ast_node: ast_node, query: query, object: object, arguments: kwarg_arguments) do
                 field_defn.resolve(object, kwarg_arguments, context)
               end
@@ -388,7 +388,7 @@ module GraphQL
                 ex_err
               end
             end
-            @current_trace.end_execute_field(selection_result, result_name, app_result)
+            @current_trace.end_execute_field(field_defn, object, kwarg_arguments, query, app_result)
             after_lazy(app_result, field: field_defn, ast_node: ast_node, owner_object: object, arguments: resolved_arguments, result_name: result_name, result: selection_result, runtime_state: runtime_state) do |inner_result, runtime_state|
               owner_type = selection_result.graphql_result_type
               return_type = field_defn.type

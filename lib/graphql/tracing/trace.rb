@@ -89,14 +89,19 @@ module GraphQL
         yield
       end
 
-      # GraphQL is about to resolve `result_name`
-      # @param result [GraphQL::Execution::Interpreter::Runtime::GraphQL::Result]
-      # @param result_name [String]
-      def begin_execute_field(result, result_name); end
-      # GraphQL just finished resolving `result_name`
-      # @param result [GraphQL::Execution::Interpreter::Runtime::GraphQL::Result]
-      # @param result_name [String]
-      def end_execute_field(result, result_name, app_result); end
+      # GraphQL is about to resolve this field
+      # @param field [GraphQL::Schema::Field]
+      # @param object [GraphQL::Schema::Object]
+      # @param arguments [Hash]
+      # @param query [GraphQL::Query]
+      def begin_execute_field(field, object, arguments, query); end
+      # GraphQL just finished resolving this field
+      # @param field [GraphQL::Schema::Field]
+      # @param object [GraphQL::Schema::Object]
+      # @param arguments [Hash]
+      # @param query [GraphQL::Query]
+      # @param result [Object]
+      def end_execute_field(field, object, arguments, query, result); end
 
       def execute_field(field:, query:, ast_node:, arguments:, object:)
         yield

@@ -32,7 +32,6 @@ module GraphQL
       # - Report object and arguments with field segments
       # - Make debug annotations visible on both parts when dataloader is involved
       # - Reconsider `begin_execute_field` and `end_execute_field` signatures
-      # - Include resolved-to type in resolve_type debug annotations
 
       PROTOBUF_AVAILABLE = begin
         require "google/protobuf"
@@ -165,11 +164,11 @@ module GraphQL
         super
       end
 
-      def begin_execute_field(result, result_name)
+      def begin_execute_field(field, object, arguments, query)
         packet = trace_packet(
           type: TrackEvent::Type::TYPE_SLICE_BEGIN,
           track_uuid: fid,
-          name: "#{result.path.join(".")}.#{result_name}",
+          name: query.context.current_path.join("."),
           extra_counter_track_uuids: [@objects_counter_id],
           extra_counter_values: [count_allocations],
         )
@@ -178,9 +177,15 @@ module GraphQL
         super
       end
 
-      def end_execute_field(result, result_name, app_result)
+      def end_execute_field(field, object, arguments, query, app_result)
         start_field = fiber_flow_stack.pop
-        start_field.track_event = dup_with(start_field.track_event, { debug_annotations: [payload_to_debug("result", app_result)] })
+        start_field.track_event = dup_with(start_field.track_event, {
+          debug_annotations: [
+            payload_to_debug("object", object.object),
+            payload_to_debug("arguments", arguments),
+            payload_to_debug("result", app_result)
+          ]
+        })
 
         @packets << trace_packet(
           type: TrackEvent::Type::TYPE_SLICE_END,
@@ -529,7 +534,7 @@ module GraphQL
         when true, false
           debug_annotation(k, :bool_value, v)
         when nil
-          DebugAnnotation.new(name: k)
+          DebugAnnotation.new(name: k, string_value: "(nil)")
         when Module
           debug_annotation(k, :string_value, "::#{v.name}")
         when Symbol

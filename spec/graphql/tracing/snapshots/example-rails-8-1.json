@@ -106,6 +106,35 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "Validate",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
         "debugAnnotations": [
           {
             "stringValue": "query GetStuff {\n  authors {\n    name\n    books {\n      title\n      reviews {\n        stars\n        user {\n          username\n        }\n      }\n      averageReview\n      author {\n        name\n      }\n      otherBook {\n        title\n      }\n    }\n  }\n  t5: thing(id: \"Book-1\") {\n    ... on Book {\n      title\n    }\n    ... on Author {\n      name\n    }\n  }\n}",
@@ -223,6 +252,12 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "debugAnnotations": [
+          {
+            "stringValue": "#<ActiveRecord::Relation [#<Author id: 1, name: \"William Shakespeare\">, #<Author id: 2, name: \"Beatrix Potter\">, #<Author id: 3, name: \"Charles Dickens\">]>",
+            "name": "result"
+          }
+        ],
         "type": "TYPE_SLICE_BEGIN",
         "trackUuid": "10101010101010",
         "extraCounterValues": [
