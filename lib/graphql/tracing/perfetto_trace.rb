@@ -45,7 +45,7 @@ module GraphQL
         require "graphql/tracing/perfetto_trace/trace_pb"
       end
 
-      def self.included(trace_class)
+      def self.included(_trace_class)
         if !PROTOBUF_AVAILABLE
           raise "#{self} can't be used because the `google-protobuf` gem wasn't available. Add it to your project, then try again."
         end
@@ -70,6 +70,7 @@ module GraphQL
         @objects_counter_id = :objects_counter.object_id
         @fibers_counter_id = :fibers_counter.object_id
         @fields_counter_id = :fields_counter.object_id
+        @begin_validate = nil
         @packets = []
         @packets << TracePacket.new(
           track_descriptor: TrackDescriptor.new(
@@ -179,7 +180,7 @@ module GraphQL
 
       def end_execute_field(result, result_name, app_result)
         start_field = fiber_flow_stack.pop
-        start_field.track_event = dup_with(start_field.track_event, { debug_annotations: [payload_to_debug("result", app_result.inspect)] })
+        start_field.track_event = dup_with(start_field.track_event, { debug_annotations: [payload_to_debug("result", app_result)] })
 
         @packets << trace_packet(
           type: TrackEvent::Type::TYPE_SLICE_END,
@@ -190,18 +191,22 @@ module GraphQL
         super
       end
 
-      def begin_analyze_multiplex(m)
+      def begin_analyze_multiplex(m, analyzers)
         @packets << trace_packet(
           type: TrackEvent::Type::TYPE_SLICE_BEGIN,
           track_uuid: fid,
           extra_counter_track_uuids: [@objects_counter_id],
           extra_counter_values: [count_allocations],
-          name: "Analysis"
+          name: "Analysis",
+          debug_annotations: [
+            payload_to_debug("analyzers_count", analyzers.size),
+            payload_to_debug("analyzers", analyzers),
+          ]
         )
         super
       end
 
-      def end_analyze_multiplex(m)
+      def end_analyze_multiplex(m, analyzers)
         @packets << trace_packet(
           type: TrackEvent::Type::TYPE_SLICE_END,
           track_uuid: fid,
@@ -228,6 +233,39 @@ module GraphQL
           track_uuid: fid,
           extra_counter_track_uuids: [@objects_counter_id],
           extra_counter_values: [count_allocations],
+        )
+        super
+      end
+
+      def begin_validate(query, validate)
+        @packets << @begin_validate = trace_packet(
+          type: TrackEvent::Type::TYPE_SLICE_BEGIN,
+          track_uuid: fid,
+          extra_counter_track_uuids: [@objects_counter_id],
+          extra_counter_values: [count_allocations],
+          name: "Validate",
+          debug_annotations: [
+            payload_to_debug("validate?", validate),
+          ]
+        )
+        super
+      end
+
+      def end_validate(query, validate, is_valid)
+        @packets << trace_packet(
+          type: TrackEvent::Type::TYPE_SLICE_END,
+          track_uuid: fid,
+          extra_counter_track_uuids: [@objects_counter_id],
+          extra_counter_values: [count_allocations],
+        )
+        @begin_validate.track_event = dup_with(
+          @begin_validate.track_event,
+          {
+            debug_annotations: [
+              @begin_validate.track_event.debug_annotations.first,
+              payload_to_debug("valid?", is_valid)
+            ]
+          }
         )
         super
       end
@@ -400,14 +438,15 @@ module GraphQL
         super
       end
 
-      def end_authorized(type, obj, ctx)
+      def end_authorized(type, obj, ctx, is_authorized)
         @packets << trace_packet(
           type: TrackEvent::Type::TYPE_SLICE_END,
           track_uuid: fid,
           extra_counter_track_uuids: [@objects_counter_id],
           extra_counter_values: [count_allocations],
         )
-        fiber_flow_stack.pop
+        beg_auth = fiber_flow_stack.pop
+        beg_auth.track_event = dup_with(beg_auth.track_event, { debug_annotations: [payload_to_debug("authorized?", is_authorized)] })
       end
 
       def begin_resolve_type(type, value, context)
@@ -423,14 +462,15 @@ module GraphQL
         super
       end
 
-      def end_resolve_type(type, value, context)
+      def end_resolve_type(type, value, context, resolved_type)
         @packets << trace_packet(
           type: TrackEvent::Type::TYPE_SLICE_END,
           track_uuid: fid,
           extra_counter_track_uuids: [@objects_counter_id],
           extra_counter_values: [count_allocations],
         )
-        fiber_flow_stack.pop
+        rt_begin = fiber_flow_stack.pop
+        rt_begin.track_event = dup_with(rt_begin.track_event, { debug_annotations: [payload_to_debug("resolved_type", resolved_type)] })
       end
 
       # Dump protobuf output in the specified file.
@@ -491,7 +531,7 @@ module GraphQL
         when nil
           DebugAnnotation.new(name: k)
         when Module
-          debug_annotation(k, :string_value, "::#{v.name}>")
+          debug_annotation(k, :string_value, "::#{v.name}")
         when Symbol
           debug_annotation(k, :string_value, v.inspect)
         when Array
@@ -499,7 +539,12 @@ module GraphQL
         when Hash
           debug_annotation(k, :dict_entries, v.map { |k2, v2| payload_to_debug(k2, v2) }.compact)
         else
-          debug_annotation(k, :string_value, v.inspect)
+          debug_str = if defined?(ActiveRecord::Relation) && v.is_a?(ActiveRecord::Relation)
+            "#{v.class}, .to_sql=#{v.to_sql.inspect}"
+          else
+            v.inspect
+          end
+          debug_annotation(k, :string_value, debug_str)
         end
       end
 

@@ -39,12 +39,20 @@ module GraphQL
         yield
       end
 
+      def begin_validate(query, validate)
+      end
+
+      def end_validate(query, validate, is_valid)
+      end
+
       # @param multiplex [GraphQL::Execution::Multiplex]
+      # @param analyzers [Array<Class>]
       # @return [void]
-      def begin_analyze_multiplex(multiplex); end
+      def begin_analyze_multiplex(multiplex, analyzers); end
       # @param multiplex [GraphQL::Execution::Multiplex]
+      # @param analyzers [Array<Class>]
       # @return [void]
-      def end_analyze_multiplex(multiplex); end
+      def end_analyze_multiplex(multiplex, analyzers); end
       # @param multiplex [GraphQL::Execution::Multiplex]
       # @return [void]
       def analyze_multiplex(multiplex:)
@@ -113,8 +121,9 @@ module GraphQL
       # @param type [Class<GraphQL::Schema::Object>]
       # @param object [Object]
       # @param context [GraphQL::Query::Context]
+      # @param authorized_result [Boolean]
       # @return [void]
-      def end_authorized(type, object, context)
+      def end_authorized(type, object, context, authorized_result)
       end
 
       def authorized_lazy(query:, type:, object:)
@@ -141,8 +150,9 @@ module GraphQL
       # @param type [Class<GraphQL::Schema::Union>, Module<GraphQL::Schema::Interface>]
       # @param value [Object]
       # @param context [GraphQL::Query::Context]
+      # @param resolved_type [Class<GraphQL::Schema::Object>]
       # @return [void]
-      def end_resolve_type(type, value, context)
+      def end_resolve_type(type, value, context, resolved_type)
       end
 
       # A dataloader run is starting

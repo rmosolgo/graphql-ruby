@@ -856,14 +856,15 @@ module GraphQL
           if lazy?(resolved_type)
             GraphQL::Execution::Lazy.new do
               @current_trace.resolve_type_lazy(query: query, type: type, object: value) do
-                schema.sync_lazy(resolved_type)
+                rt = schema.sync_lazy(resolved_type)
+                @current_trace.end_resolve_type(type, value, context, rt)
+                rt
               end
             end
           else
+            @current_trace.end_resolve_type(type, value, context, resolved_type)
             [resolved_type, resolved_value]
           end
-        ensure
-          @current_trace.end_resolve_type(type, value, context)
         end
 
         def lazy?(object)

@@ -73,8 +73,6 @@ module GraphQL
               context.schema.unauthorized_object(err)
             rescue StandardError => err
               context.query.handle_or_reraise(err)
-            ensure
-              context.query.current_trace.end_authorized(self, object, context)
             end
           end
 
@@ -89,6 +87,7 @@ module GraphQL
           end
 
           context.query.after_lazy(auth_val) do |is_authorized|
+            context.query.current_trace.end_authorized(self, object, context, is_authorized)
             if is_authorized
               self.new(object, context)
             else
