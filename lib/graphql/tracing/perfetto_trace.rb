@@ -29,9 +29,7 @@ module GraphQL
     #
     module PerfettoTrace
       # TODOs:
-      # - Report object and arguments with field segments
       # - Make debug annotations visible on both parts when dataloader is involved
-      # - Reconsider `begin_execute_field` and `end_execute_field` signatures
 
       PROTOBUF_AVAILABLE = begin
         require "google/protobuf"
@@ -50,21 +48,62 @@ module GraphQL
         end
       end
 
-      # @param name_prefix [String, nil] A prefix to remove from Source class names for readability
+      DATALOADER_CATEGORY_IIDS = [5]
+      FIELD_EXECUTE_CATEGORY_IIDS = [6]
+      ACTIVE_SUPPORT_NOTIFICATIONS_CATEGORY_IIDS = [7]
+      AUTHORIZED_CATEGORY_IIDS = [8]
+      RESOLVE_TYPE_CATEGORY_IIDS = [9]
+
+      DA_OBJECT_IID = 10
+      DA_RESULT_IID = 11
+      DA_ARGUMENTS_IID = 12
+      DA_FETCH_KEYS_IID = 13
+      DA_STR_VAL_NIL_IID = 14
+
       # @param active_support_notifications_pattern [String, RegExp, false] A filter for `ActiveSupport::Notifications`, if it's present. Or `false` to skip subscribing.
-      def initialize(name_prefix: nil, active_support_notifications_pattern: nil, **_rest)
+      def initialize(active_support_notifications_pattern: nil, **_rest)
         super
+        @sequence_id = object_id
         @pid = Process.pid
         @flow_ids = Hash.new { |h, source_inst| h[source_inst] = [] }.compare_by_identity
-        @clean_source_names = Hash.new do |h, source_class|
-          h[source_class] = name_prefix ? source_class.name.sub(name_prefix, "") : source_class.name
+        # TODO intern these too:
+        @new_interned_event_names = {}
+        @interned_event_name_iids = Hash.new { |h, k|
+          new_id = 100 + h.size
+          @new_interned_event_names[k] = new_id
+          h[k] = new_id
+        }
+
+        @source_name_iids = Hash.new do |h, source_class|
+          h[source_class] = @interned_event_name_iids[source_class.name]
         end.compare_by_identity
-        @auth_packet_names = Hash.new do |h, graphql_type|
-          h[graphql_type] = "Authorize #{graphql_type.graphql_name}"
+
+        @auth_name_iids = Hash.new do |h, graphql_type|
+          h[graphql_type] = @interned_event_name_iids["Authorize: #{graphql_type.graphql_name}"]
         end.compare_by_identity
-        @resolve_type_packet_names = Hash.new do |h, graphql_type|
-          h[graphql_type] = "Resolve Type: #{graphql_type.graphql_name}"
+
+        @resolve_type_name_iids = Hash.new do |h, graphql_type|
+          h[graphql_type] = @interned_event_name_iids["Resolve Type: #{graphql_type.graphql_name}"]
         end.compare_by_identity
+
+        @new_interned_da_names = {}
+        @interned_da_name_ids = Hash.new { |h, k|
+          next_id = 100 + h.size
+          @new_interned_da_names[k] = next_id
+          h[k] = next_id
+        }
+
+        @new_interned_da_string_values = {}
+        @interned_da_string_values = Hash.new do |h, k|
+          new_id = 100 + h.size
+          @new_interned_da_string_values[k] = new_id
+          h[k] = new_id
+        end
+
+        @class_name_iids = Hash.new do |h, k|
+          h[k] = @interned_da_string_values[k.name]
+        end.compare_by_identity
+
         @starting_objects = GC.stat(:total_allocated_objects)
         @objects_counter_id = :objects_counter.object_id
         @fibers_counter_id = :fibers_counter.object_id
@@ -76,43 +115,43 @@ module GraphQL
             uuid: tid,
             name: "Main Thread",
             child_ordering: TrackDescriptor::ChildTracksOrdering::CHRONOLOGICAL,
-          )
+          ),
+          first_packet_on_sequence: true,
+          previous_packet_dropped: true,
+          trusted_packet_sequence_id: @sequence_id,
+          sequence_flags: 3,
+        )
+        @packets << TracePacket.new(
+          interned_data: InternedData.new(
+            event_categories: [
+              EventCategory.new(name: "Dataloader", iid: DATALOADER_CATEGORY_IIDS.first),
+              EventCategory.new(name: "Field Execution", iid: FIELD_EXECUTE_CATEGORY_IIDS.first),
+              EventCategory.new(name: "ActiveSupport::Notifications", iid: ACTIVE_SUPPORT_NOTIFICATIONS_CATEGORY_IIDS.first),
+              EventCategory.new(name: "Authorized", iid: AUTHORIZED_CATEGORY_IIDS.first),
+              EventCategory.new(name: "Resolve Type", iid: RESOLVE_TYPE_CATEGORY_IIDS.first),
+            ],
+            debug_annotation_names: [
+              DebugAnnotationName.new(name: "object", iid: DA_OBJECT_IID),
+              DebugAnnotationName.new(name: "arguments", iid: DA_ARGUMENTS_IID),
+              DebugAnnotationName.new(name: "result", iid: DA_RESULT_IID),
+              DebugAnnotationName.new(name: "fetch keys", iid: DA_FETCH_KEYS_IID),
+            ],
+            debug_annotation_string_values: [
+              InternedString.new(str: "(nil)", iid: DA_STR_VAL_NIL_IID),
+            ],
+          ),
+          trusted_packet_sequence_id: @sequence_id,
+          sequence_flags: 2,
         )
         @main_fiber_id = fid
-        @packets << TracePacket.new(
-          track_descriptor: TrackDescriptor.new(
-            parent_uuid: tid,
-            uuid: fid,
-            name: "Main Fiber",
-            child_ordering: TrackDescriptor::ChildTracksOrdering::CHRONOLOGICAL,
-          )
-        )
-        @packets << TracePacket.new(
-          track_descriptor: TrackDescriptor.new(
-            parent_uuid: tid,
-            uuid: @objects_counter_id,
-            name: "Allocations",
-            counter: CounterDescriptor.new(
-              unit: CounterDescriptor::Unit::UNIT_UNSPECIFIED,
-              unit_name: "Objects"
-            )
-          )
-        )
+        @packets << track_descriptor_packet(tid, fid, "Main Fiber")
+        @packets << track_descriptor_packet(tid, @objects_counter_id, "Allocated Objects", counter: {})
         @packets << trace_packet(
           type: TrackEvent::Type::TYPE_COUNTER,
           track_uuid: @objects_counter_id,
           counter_value: count_allocations,
         )
-        @packets << TracePacket.new(
-          track_descriptor: TrackDescriptor.new(
-            parent_uuid: tid,
-            uuid: @fibers_counter_id,
-            name: "Fibers",
-            counter: CounterDescriptor.new(
-              unit: CounterDescriptor::Unit::UNIT_COUNT,
-            )
-          )
-        )
+        @packets << track_descriptor_packet(tid, @fibers_counter_id, "Active Fibers", counter: {})
         @fibers_count = 0
         @packets << trace_packet(
           type: TrackEvent::Type::TYPE_COUNTER,
@@ -120,17 +159,7 @@ module GraphQL
           counter_value: count_fibers(0),
         )
 
-        @packets << TracePacket.new(
-          track_descriptor: TrackDescriptor.new(
-            parent_uuid: tid,
-            uuid: @fields_counter_id,
-            name: "Resolved Fields",
-            counter: CounterDescriptor.new(
-              unit: CounterDescriptor::Unit::UNIT_COUNT,
-            )
-          )
-        )
-
+        @packets << track_descriptor_packet(tid, @fields_counter_id, "Resolved Fields", counter: {})
         @fields_count = -1
         @packets << trace_packet(
           type: TrackEvent::Type::TYPE_COUNTER,
@@ -169,6 +198,7 @@ module GraphQL
           type: TrackEvent::Type::TYPE_SLICE_BEGIN,
           track_uuid: fid,
           name: query.context.current_path.join("."),
+          category_iids: FIELD_EXECUTE_CATEGORY_IIDS,
           extra_counter_track_uuids: [@objects_counter_id],
           extra_counter_values: [count_allocations],
         )
@@ -181,9 +211,9 @@ module GraphQL
         start_field = fiber_flow_stack.pop
         start_field.track_event = dup_with(start_field.track_event, {
           debug_annotations: [
-            payload_to_debug("object", object.object),
-            payload_to_debug("arguments", arguments),
-            payload_to_debug("result", app_result)
+            payload_to_debug(nil, object.object, iid: DA_OBJECT_IID, intern_value: true),
+            payload_to_debug(nil, arguments, iid: DA_ARGUMENTS_IID),
+            payload_to_debug(nil, app_result, iid: DA_RESULT_IID, intern_value: true)
           ]
         })
 
@@ -280,18 +310,11 @@ module GraphQL
           type: TrackEvent::Type::TYPE_INSTANT,
           track_uuid: fid,
           name: "Create Execution Fiber",
-          categories: ["dataloader"],
+          category_iids: DATALOADER_CATEGORY_IIDS,
           extra_counter_track_uuids: [@fibers_counter_id, @objects_counter_id],
           extra_counter_values: [count_fibers(1), count_allocations]
         )
-        @packets << TracePacket.new(
-          track_descriptor: TrackDescriptor.new(
-            uuid: fid,
-            name: "Exec Fiber ##{fid}",
-            parent_uuid: @did,
-            child_ordering: TrackDescriptor::ChildTracksOrdering::CHRONOLOGICAL,
-          )
-        )
+        @packets << track_descriptor_packet(@did, fid, "Exec Fiber ##{fid}")
         super
       end
 
@@ -300,18 +323,11 @@ module GraphQL
           type: TrackEvent::Type::TYPE_INSTANT,
           track_uuid: fid,
           name: "Create Source Fiber",
-          categories: ["dataloader"],
+          category_iids: DATALOADER_CATEGORY_IIDS,
           extra_counter_track_uuids: [@fibers_counter_id, @objects_counter_id],
           extra_counter_values: [count_fibers(1), count_allocations]
         )
-        @packets << TracePacket.new(
-          track_descriptor: TrackDescriptor.new(
-            uuid: fid,
-            name: "Source Fiber ##{fid}",
-            parent_uuid: @did,
-            child_ordering: TrackDescriptor::ChildTracksOrdering::CHRONOLOGICAL,
-          )
-        )
+        @packets << track_descriptor_packet(@did, fid, "Source Fiber ##{fid}")
         super
       end
 
@@ -333,7 +349,7 @@ module GraphQL
           type: TrackEvent::Type::TYPE_INSTANT,
           track_uuid: fid,
           name: "Fiber Yield",
-          categories: ["dataloader"],
+          category_iids: DATALOADER_CATEGORY_IIDS,
         )
         super
       end
@@ -343,13 +359,13 @@ module GraphQL
           type: TrackEvent::Type::TYPE_INSTANT,
           track_uuid: fid,
           name: "Fiber Resume",
-          categories: ["dataloader"],
+          category_iids: DATALOADER_CATEGORY_IIDS,
         )
         if (ls = fiber_flow_stack.pop)
           @packets << packet = TracePacket.new(
             timestamp: ts,
             track_event: dup_with(ls.track_event, { type: TrackEvent::Type::TYPE_SLICE_BEGIN }),
-            trusted_packet_sequence_id: @pid,
+            trusted_packet_sequence_id: @sequence_id,
           )
           fiber_flow_stack << packet
         end
@@ -361,7 +377,7 @@ module GraphQL
           type: TrackEvent::Type::TYPE_INSTANT,
           track_uuid: fid,
           name: "Fiber Exit",
-          categories: ["dataloader"],
+          category_iids: DATALOADER_CATEGORY_IIDS,
           extra_counter_track_uuids: [@fibers_counter_id],
           extra_counter_values: [count_fibers(-1)],
         )
@@ -375,13 +391,7 @@ module GraphQL
           counter_value: count_fibers(1),
         )
         @did = fid
-        @packets << TracePacket.new(
-          track_descriptor: TrackDescriptor.new(
-            uuid: @did,
-            name: "Dataloader Fiber ##{@did}",
-            parent_uuid: @main_fiber_id,
-          )
-        )
+        @packets << track_descriptor_packet(@main_fiber_id, @did, "Dataloader Fiber ##{@did}")
         super
       end
 
@@ -401,15 +411,15 @@ module GraphQL
         packet = trace_packet(
           type: TrackEvent::Type::TYPE_SLICE_BEGIN,
           track_uuid: fid,
-          name: @clean_source_names[source.class],
-          categories: ["dataloader"],
+          name_iid: @source_name_iids[source.class],
+          category_iids: DATALOADER_CATEGORY_IIDS,
           flow_ids: fds_copy,
           extra_counter_track_uuids: [@objects_counter_id],
           extra_counter_values: [count_allocations],
           debug_annotations: [
-            payload_to_debug("fetch keys", source.pending.values),
+            payload_to_debug(nil, source.pending.values, iid: DA_FETCH_KEYS_IID, intern_value: true),
             *(source.instance_variables - [:@pending, :@fetching, :@results, :@dataloader]).map { |iv|
-              payload_to_debug(iv.to_s, source.instance_variable_get(iv))
+              payload_to_debug(iv.to_s, source.instance_variable_get(iv), intern_value: true)
             }
           ]
         )
@@ -422,7 +432,6 @@ module GraphQL
         @packets << trace_packet(
           type: TrackEvent::Type::TYPE_SLICE_END,
           track_uuid: fid,
-          categories: ["dataloader"],
           extra_counter_track_uuids: [@objects_counter_id],
           extra_counter_values: [count_allocations],
         )
@@ -434,9 +443,10 @@ module GraphQL
         packet = trace_packet(
           type: TrackEvent::Type::TYPE_SLICE_BEGIN,
           track_uuid: fid,
+          category_iids: AUTHORIZED_CATEGORY_IIDS,
           extra_counter_track_uuids: [@objects_counter_id],
           extra_counter_values: [count_allocations],
-          name: @auth_packet_names[type]
+          name_iid: @auth_name_iids[type],
         )
         @packets << packet
         fiber_flow_stack << packet
@@ -458,9 +468,10 @@ module GraphQL
         packet = trace_packet(
           type: TrackEvent::Type::TYPE_SLICE_BEGIN,
           track_uuid: fid,
+          category_iids: RESOLVE_TYPE_CATEGORY_IIDS,
           extra_counter_track_uuids: [@objects_counter_id],
           extra_counter_values: [count_allocations],
-          name: @resolve_type_packet_names[type],
+          name_iid: @resolve_type_name_iids[type],
         )
         @packets << packet
         fiber_flow_stack << packet
@@ -475,7 +486,7 @@ module GraphQL
           extra_counter_values: [count_allocations],
         )
         rt_begin = fiber_flow_stack.pop
-        rt_begin.track_event = dup_with(rt_begin.track_event, { debug_annotations: [payload_to_debug("resolved_type", resolved_type)] })
+        rt_begin.track_event = dup_with(rt_begin.track_event, { debug_annotations: [payload_to_debug("resolved_type", resolved_type, intern_value: true)] })
       end
 
       # Dump protobuf output in the specified file.
@@ -515,41 +526,66 @@ module GraphQL
         Fiber.current.object_id
       end
 
-      def debug_annotation(name, value_key, value)
-        if name
+      def debug_annotation(name, value_key, value, iid)
+        if iid
+          DebugAnnotation.new(name_iid: iid, value_key => value)
+        elsif name
           DebugAnnotation.new(name: name, value_key => value)
         else
           DebugAnnotation.new(value_key => value)
         end
       end
 
-      def payload_to_debug(k, v)
+      def payload_to_debug(k, v, iid: nil, intern: true, intern_value: false)
+        if iid.nil? && intern
+          iid = @interned_da_name_ids[k]
+          k = nil
+        end
         case v
         when String
-          debug_annotation(k, :string_value, v)
+          if intern_value
+            v = @interned_da_string_values[v]
+            debug_annotation(k, :string_value_iid, v, iid)
+          else
+            debug_annotation(k, :string_value, v, iid)
+          end
         when Float
-          debug_annotation(k, :double_value, v)
+          debug_annotation(k, :double_value, v, iid)
         when Integer
-          debug_annotation(k, :int_value, v)
+          debug_annotation(k, :int_value, v, iid)
         when true, false
-          debug_annotation(k, :bool_value, v)
+          debug_annotation(k, :bool_value, v, iid)
         when nil
-          DebugAnnotation.new(name: k, string_value: "(nil)")
+          if iid
+            DebugAnnotation.new(name_iid: iid, string_value_iid: DA_STR_VAL_NIL_IID)
+          else
+            DebugAnnotation.new(name: k, string_value_iid: DA_STR_VAL_NIL_IID)
+          end
         when Module
-          debug_annotation(k, :string_value, "::#{v.name}")
+          if intern_value
+            val_iid = @class_name_iids[v]
+            debug_annotation(k, :string_value_iid, val_iid, iid)
+          else
+            debug_annotation(k, :string_value, v.name, iid)
+          end
         when Symbol
-          debug_annotation(k, :string_value, v.inspect)
+          debug_annotation(k, :string_value, v.inspect, iid)
         when Array
-          debug_annotation(k, :array_values, v.map { |v2| payload_to_debug(nil, v2) }.compact)
+          debug_annotation(k, :array_values, v.map { |v2| payload_to_debug(nil, v2, intern_value: intern_value) }.compact, iid)
         when Hash
-          debug_annotation(k, :dict_entries, v.map { |k2, v2| payload_to_debug(k2, v2) }.compact)
+          debug_annotation(k, :dict_entries, v.map { |k2, v2| payload_to_debug(k2, v2, intern_value: intern_value) }.compact, iid)
         else
           debug_str = if defined?(ActiveRecord::Relation) && v.is_a?(ActiveRecord::Relation)
             "#{v.class}, .to_sql=#{v.to_sql.inspect}"
           else
             v.inspect
           end
-          debug_annotation(k, :string_value, debug_str)
+          if intern_value
+            str_iid = @interned_da_string_values[debug_str]
+            debug_annotation(k, :string_value_iid, str_iid, iid)
+          else
+            debug_annotation(k, :string_value, debug_str, iid)
+          end
         end
       end
 
@@ -583,7 +619,59 @@ module GraphQL
         TracePacket.new(
           timestamp: ts,
           track_event: TrackEvent.new(event_attrs),
-          trusted_packet_sequence_id: @pid,
+          trusted_packet_sequence_id: @sequence_id,
+          sequence_flags: 2,
+          interned_data: new_interned_data
+        )
+      end
+
+      def new_interned_data
+        if !@new_interned_da_names.empty?
+          da_names = @new_interned_da_names.map { |(name, iid)| DebugAnnotationName.new(iid: iid, name: name) }
+          @new_interned_da_names.clear
+        end
+
+        if !@new_interned_event_names.empty?
+          ev_names = @new_interned_event_names.map { |(name, iid)| EventName.new(iid: iid, name: name) }
+          @new_interned_event_names.clear
+        end
+
+        if !@new_interned_da_string_values.empty?
+          str_vals = @new_interned_da_string_values.map { |name, iid| InternedString.new(iid: iid, str: name) }
+          @new_interned_da_string_values.clear
+        end
+
+        if ev_names || da_names || str_vals
+          InternedData.new(
+            event_names: ev_names,
+            debug_annotation_names: da_names,
+            debug_annotation_string_values: str_vals,
+          )
+        else
+          nil
+        end
+      end
+
+      def track_descriptor_packet(parent_uuid, uuid, name, counter: nil)
+        td = if counter
+          TrackDescriptor.new(
+            parent_uuid: parent_uuid,
+            uuid: uuid,
+            name: name,
+            counter: counter
+          )
+        else
+          TrackDescriptor.new(
+            parent_uuid: parent_uuid,
+            uuid: uuid,
+            name: name,
+            child_ordering: TrackDescriptor::ChildTracksOrdering::CHRONOLOGICAL,
+          )
+        end
+        TracePacket.new(
+          track_descriptor: td,
+          trusted_packet_sequence_id: @sequence_id,
+          sequence_flags: 2,
         )
       end
 
@@ -595,14 +683,13 @@ module GraphQL
 
       def subscribe_to_active_support_notifications(pattern)
         @as_subscriber = ActiveSupport::Notifications.monotonic_subscribe(pattern) do |name, start, finish, id, payload|
-          metadata = payload.map { |k, v| payload_to_debug(k, v) }
+          metadata = payload.map { |k, v| payload_to_debug(k, v, intern_value: true) }
           metadata.compact!
-          categories = [name]
           te = if metadata.empty?
             TrackEvent.new(
               type: TrackEvent::Type::TYPE_SLICE_BEGIN,
               track_uuid: fid,
-              categories: categories,
+              category_iids: ACTIVE_SUPPORT_NOTIFICATIONS_CATEGORY_IIDS,
               name: name,
             )
           else
@@ -610,14 +697,16 @@ module GraphQL
               type: TrackEvent::Type::TYPE_SLICE_BEGIN,
               track_uuid: fid,
               name: name,
-              categories: categories,
+              category_iids: ACTIVE_SUPPORT_NOTIFICATIONS_CATEGORY_IIDS,
               debug_annotations: metadata,
             )
           end
           @packets << TracePacket.new(
             timestamp: (start * 1_000_000_000).to_i,
             track_event: te,
-            trusted_packet_sequence_id: @pid,
+            trusted_packet_sequence_id: @sequence_id,
+            sequence_flags: 2,
+            interned_data: new_interned_data
           )
           @packets << TracePacket.new(
             timestamp: (finish * 1_000_000_000).to_i,
@@ -628,7 +717,8 @@ module GraphQL
               extra_counter_track_uuids: [@objects_counter_id],
               extra_counter_values: [count_allocations]
             ),
-            trusted_packet_sequence_id: @pid,
+            trusted_packet_sequence_id: @sequence_id,
+            sequence_flags: 2,
           )
         end
       end
