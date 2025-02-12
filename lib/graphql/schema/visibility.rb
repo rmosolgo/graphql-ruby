@@ -164,17 +164,6 @@ module GraphQL
             raise ArgumentError, "`#{visibility_profile.inspect}` isn't allowed for `visibility_profile:` (must be one of #{@profiles.keys.map(&:inspect).join(", ")}). Or, add `#{visibility_profile.inspect}` to the list of profiles in the schema definition."
           else
             profile_ctx = @profiles[visibility_profile]
-            if profile_ctx.nil?
-              raise ArgumentError, <<~ERR
-              Received visibility_profile `#{visibility_profile.inspect}` but this profile doesn't have a predefined context.
-              Add one in your `profiles:` configuration, for example:
-
-                  use GraphQL::Schema::Visibility, profiles: {
-                    # ...
-                    #{visibility_profile}: { some: :context, ... },
-                  }
-              ERR
-            end
             @cached_profiles[visibility_profile] ||= @schema.visibility_profile_class.new(name: visibility_profile, context: profile_ctx, schema: @schema)
           end
         elsif context.is_a?(Query::NullContext)
