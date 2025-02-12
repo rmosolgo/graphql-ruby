@@ -1125,7 +1125,7 @@ module GraphQL
           end
           handler[:handler].call(err, obj, args, context, field)
         else
-          if context[:backtrace] || using_backtrace
+          if (context[:backtrace] || using_backtrace) && !err.is_a?(GraphQL::ExecutionError)
             err = GraphQL::Backtrace::TracedError.new(err, context)
           end
 
