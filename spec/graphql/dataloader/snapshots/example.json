@@ -171,11 +171,13 @@
         "debugAnnotations": [
           {
             "nameIid": "10101010101010",
-            "boolValue": true
+            "boolValue": true,
+            "name": "valid?"
           },
           {
             "nameIid": "10101010101010",
-            "boolValue": true
+            "boolValue": true,
+            "name": "validate?"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -220,7 +222,8 @@
         "debugAnnotations": [
           {
             "nameIid": "10101010101010",
-            "stringValue": "query {\n  s1: sleeper(duration: 0.1) {\n    sleeper(duration: 0.1) {\n      sleeper(duration: 0.1) {\n        duration\n      }\n    }\n  }\n  s2: sleeper(duration: 0.2) {\n    sleeper(duration: 0.1) {\n      duration\n    }\n  }\n  s3: sleeper(duration: 0.3) {\n    duration\n  }\n}"
+            "stringValue": "query {\n  s1: sleeper(duration: 0.1) {\n    sleeper(duration: 0.1) {\n      sleeper(duration: 0.1) {\n        duration\n      }\n    }\n  }\n  s2: sleeper(duration: 0.2) {\n    sleeper(duration: 0.1) {\n      duration\n    }\n  }\n  s3: sleeper(duration: 0.3) {\n    duration\n  }\n}",
+            "name": "query_string"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -248,10 +251,12 @@
         "debugAnnotations": [
           {
             "nameIid": "10101010101010",
-            "intValue": "10101010101010"
+            "name": "analyzers"
           },
           {
-            "nameIid": "10101010101010"
+            "nameIid": "10101010101010",
+            "intValue": "10101010101010",
+            "name": "analyzers_count"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -317,6 +322,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -348,13 +356,17 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
         "debugAnnotations": [
           {
             "nameIid": "10101010101010",
-            "boolValue": true
+            "boolValue": true,
+            "name": "authorized?"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -365,7 +377,8 @@
         ],
         "extraCounterTrackUuids": [
           "10101010101010"
-        ]
+        ],
+        "name": "Authorize: Query"
       },
       "internedData": {
         "eventNames": [
@@ -396,6 +409,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -429,6 +445,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -442,6 +461,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -473,6 +495,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -498,6 +523,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -511,6 +539,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -542,6 +573,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -567,6 +601,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -580,6 +617,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -611,10 +651,18 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
         "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "intValue": "10101010101010",
+            "name": "@tag"
+          },
           {
             "nameIid": "10101010101010",
             "arrayValues": [
@@ -622,11 +670,8 @@
                 "nameIid": "10101010101010",
                 "doubleValue": 101010101010
               }
-            ]
-          },
-          {
-            "nameIid": "10101010101010",
-            "intValue": "10101010101010"
+            ],
+            "name": "fetch keys"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -640,7 +685,8 @@
         ],
         "flowIds": [
           "10101010101010"
-        ]
+        ],
+        "name": "AsyncSchema::SleepSource"
       },
       "internedData": {
         "eventNames": [
@@ -665,6 +711,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -696,10 +745,18 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
         "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "intValue": "10101010101010",
+            "name": "@tag"
+          },
           {
             "nameIid": "10101010101010",
             "arrayValues": [
@@ -707,11 +764,8 @@
                 "nameIid": "10101010101010",
                 "doubleValue": 101010101010
               }
-            ]
-          },
-          {
-            "nameIid": "10101010101010",
-            "intValue": "10101010101010"
+            ],
+            "name": "fetch keys"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -725,7 +779,8 @@
         ],
         "flowIds": [
           "10101010101010"
-        ]
+        ],
+        "name": "AsyncSchema::SleepSource"
       },
       "sequenceFlags": 101010101010
     },
@@ -733,6 +788,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -764,10 +822,18 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
         "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "intValue": "10101010101010",
+            "name": "@tag"
+          },
           {
             "nameIid": "10101010101010",
             "arrayValues": [
@@ -775,11 +841,8 @@
                 "nameIid": "10101010101010",
                 "doubleValue": 101010101010
               }
-            ]
-          },
-          {
-            "nameIid": "10101010101010",
-            "intValue": "10101010101010"
+            ],
+            "name": "fetch keys"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -793,7 +856,8 @@
         ],
         "flowIds": [
           "10101010101010"
-        ]
+        ],
+        "name": "AsyncSchema::SleepSource"
       },
       "sequenceFlags": 101010101010
     },
@@ -816,16 +880,21 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
         "debugAnnotations": [
           {
-            "nameIid": "10101010101010"
+            "nameIid": "10101010101010",
+            "intValue": "10101010101010",
+            "name": "@tag"
           },
           {
             "nameIid": "10101010101010",
-            "intValue": "10101010101010"
+            "name": "fetch keys"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -836,7 +905,8 @@
         ],
         "extraCounterTrackUuids": [
           "10101010101010"
-        ]
+        ],
+        "name": "AsyncSchema::SleepSource"
       },
       "sequenceFlags": 101010101010
     },
@@ -859,16 +929,21 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
         "debugAnnotations": [
           {
-            "nameIid": "10101010101010"
+            "nameIid": "10101010101010",
+            "intValue": "10101010101010",
+            "name": "@tag"
           },
           {
             "nameIid": "10101010101010",
-            "intValue": "10101010101010"
+            "name": "fetch keys"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -879,7 +954,8 @@
         ],
         "extraCounterTrackUuids": [
           "10101010101010"
-        ]
+        ],
+        "name": "AsyncSchema::SleepSource"
       },
       "sequenceFlags": 101010101010
     },
@@ -902,6 +978,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -936,16 +1015,21 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
         "debugAnnotations": [
           {
-            "nameIid": "10101010101010"
+            "nameIid": "10101010101010",
+            "intValue": "10101010101010",
+            "name": "@tag"
           },
           {
             "nameIid": "10101010101010",
-            "intValue": "10101010101010"
+            "name": "fetch keys"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -956,7 +1040,8 @@
         ],
         "extraCounterTrackUuids": [
           "10101010101010"
-        ]
+        ],
+        "name": "AsyncSchema::SleepSource"
       },
       "sequenceFlags": 101010101010
     },
@@ -979,6 +1064,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -1013,6 +1101,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -1032,6 +1123,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -1045,14 +1139,13 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
         "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010"
-          },
           {
             "nameIid": "10101010101010",
             "dictEntries": [
@@ -1060,11 +1153,19 @@
                 "nameIid": "10101010101010",
                 "doubleValue": 101010101010
               }
-            ]
+            ],
+            "name": "arguments"
           },
           {
             "nameIid": "10101010101010",
-            "doubleValue": 101010101010
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "doubleValue": 101010101010,
+            "name": "result"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1104,13 +1205,17 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
         "debugAnnotations": [
           {
             "nameIid": "10101010101010",
-            "boolValue": true
+            "boolValue": true,
+            "name": "authorized?"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1121,7 +1226,8 @@
         ],
         "extraCounterTrackUuids": [
           "10101010101010"
-        ]
+        ],
+        "name": "Authorize: Sleeper"
       },
       "internedData": {
         "eventNames": [
@@ -1152,6 +1258,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -1177,6 +1286,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -1190,6 +1302,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -1203,14 +1318,13 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
         "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010"
-          },
           {
             "nameIid": "10101010101010",
             "dictEntries": [
@@ -1218,11 +1332,19 @@
                 "nameIid": "10101010101010",
                 "doubleValue": 101010101010
               }
-            ]
+            ],
+            "name": "arguments"
           },
           {
             "nameIid": "10101010101010",
-            "doubleValue": 101010101010
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "doubleValue": 101010101010,
+            "name": "result"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1254,13 +1376,17 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
         "debugAnnotations": [
           {
             "nameIid": "10101010101010",
-            "boolValue": true
+            "boolValue": true,
+            "name": "authorized?"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1271,7 +1397,8 @@
         ],
         "extraCounterTrackUuids": [
           "10101010101010"
-        ]
+        ],
+        "name": "Authorize: Sleeper"
       },
       "sequenceFlags": 101010101010
     },
@@ -1294,6 +1421,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -1319,6 +1449,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -1332,6 +1465,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -1345,14 +1481,13 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
         "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010"
-          },
           {
             "nameIid": "10101010101010",
             "dictEntries": [
@@ -1360,11 +1495,19 @@
                 "nameIid": "10101010101010",
                 "doubleValue": 101010101010
               }
-            ]
+            ],
+            "name": "arguments"
           },
           {
             "nameIid": "10101010101010",
-            "doubleValue": 101010101010
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "doubleValue": 101010101010,
+            "name": "result"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1396,13 +1539,17 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
         "debugAnnotations": [
           {
             "nameIid": "10101010101010",
-            "boolValue": true
+            "boolValue": true,
+            "name": "authorized?"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1413,7 +1560,8 @@
         ],
         "extraCounterTrackUuids": [
           "10101010101010"
-        ]
+        ],
+        "name": "Authorize: Sleeper"
       },
       "sequenceFlags": 101010101010
     },
@@ -1436,20 +1584,26 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
         "debugAnnotations": [
           {
             "nameIid": "10101010101010",
-            "doubleValue": 101010101010
-          },
-          {
-            "nameIid": "10101010101010"
+            "name": "arguments"
           },
           {
             "nameIid": "10101010101010",
-            "doubleValue": 101010101010
+            "doubleValue": 101010101010,
+            "name": "object"
+          },
+          {
+            "nameIid": "10101010101010",
+            "doubleValue": 101010101010,
+            "name": "result"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1485,6 +1639,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -1504,6 +1661,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -1535,10 +1695,18 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
         "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "intValue": "10101010101010",
+            "name": "@tag"
+          },
           {
             "nameIid": "10101010101010",
             "arrayValues": [
@@ -1546,11 +1714,8 @@
                 "nameIid": "10101010101010",
                 "doubleValue": 101010101010
               }
-            ]
-          },
-          {
-            "nameIid": "10101010101010",
-            "intValue": "10101010101010"
+            ],
+            "name": "fetch keys"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1564,7 +1729,8 @@
         ],
         "flowIds": [
           "10101010101010"
-        ]
+        ],
+        "name": "AsyncSchema::SleepSource"
       },
       "sequenceFlags": 101010101010
     },
@@ -1572,6 +1738,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -1603,10 +1772,18 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
         "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "intValue": "10101010101010",
+            "name": "@tag"
+          },
           {
             "nameIid": "10101010101010",
             "arrayValues": [
@@ -1614,11 +1791,8 @@
                 "nameIid": "10101010101010",
                 "doubleValue": 101010101010
               }
-            ]
-          },
-          {
-            "nameIid": "10101010101010",
-            "intValue": "10101010101010"
+            ],
+            "name": "fetch keys"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1632,7 +1806,8 @@
         ],
         "flowIds": [
           "10101010101010"
-        ]
+        ],
+        "name": "AsyncSchema::SleepSource"
       },
       "sequenceFlags": 101010101010
     },
@@ -1655,16 +1830,21 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
         "debugAnnotations": [
           {
-            "nameIid": "10101010101010"
+            "nameIid": "10101010101010",
+            "intValue": "10101010101010",
+            "name": "@tag"
           },
           {
             "nameIid": "10101010101010",
-            "intValue": "10101010101010"
+            "name": "fetch keys"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1675,7 +1855,8 @@
         ],
         "extraCounterTrackUuids": [
           "10101010101010"
-        ]
+        ],
+        "name": "AsyncSchema::SleepSource"
       },
       "sequenceFlags": 101010101010
     },
@@ -1698,6 +1879,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -1732,6 +1916,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -1751,6 +1938,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -1764,14 +1954,13 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
         "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "doubleValue": 101010101010
-          },
           {
             "nameIid": "10101010101010",
             "dictEntries": [
@@ -1779,11 +1968,18 @@
                 "nameIid": "10101010101010",
                 "doubleValue": 101010101010
               }
-            ]
+            ],
+            "name": "arguments"
           },
           {
             "nameIid": "10101010101010",
-            "doubleValue": 101010101010
+            "doubleValue": 101010101010,
+            "name": "object"
+          },
+          {
+            "nameIid": "10101010101010",
+            "doubleValue": 101010101010,
+            "name": "result"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1815,13 +2011,17 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
         "debugAnnotations": [
           {
             "nameIid": "10101010101010",
-            "boolValue": true
+            "boolValue": true,
+            "name": "authorized?"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1832,7 +2032,8 @@
         ],
         "extraCounterTrackUuids": [
           "10101010101010"
-        ]
+        ],
+        "name": "Authorize: Sleeper"
       },
       "sequenceFlags": 101010101010
     },
@@ -1855,6 +2056,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -1880,6 +2084,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -1893,6 +2100,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -1906,14 +2116,13 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
         "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "doubleValue": 101010101010
-          },
           {
             "nameIid": "10101010101010",
             "dictEntries": [
@@ -1921,11 +2130,18 @@
                 "nameIid": "10101010101010",
                 "doubleValue": 101010101010
               }
-            ]
+            ],
+            "name": "arguments"
           },
           {
             "nameIid": "10101010101010",
-            "doubleValue": 101010101010
+            "doubleValue": 101010101010,
+            "name": "object"
+          },
+          {
+            "nameIid": "10101010101010",
+            "doubleValue": 101010101010,
+            "name": "result"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1957,13 +2173,17 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
         "debugAnnotations": [
           {
             "nameIid": "10101010101010",
-            "boolValue": true
+            "boolValue": true,
+            "name": "authorized?"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1974,7 +2194,8 @@
         ],
         "extraCounterTrackUuids": [
           "10101010101010"
-        ]
+        ],
+        "name": "Authorize: Sleeper"
       },
       "sequenceFlags": 101010101010
     },
@@ -1997,20 +2218,26 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
         "debugAnnotations": [
           {
             "nameIid": "10101010101010",
-            "doubleValue": 101010101010
-          },
-          {
-            "nameIid": "10101010101010"
+            "name": "arguments"
           },
           {
             "nameIid": "10101010101010",
-            "doubleValue": 101010101010
+            "doubleValue": 101010101010,
+            "name": "object"
+          },
+          {
+            "nameIid": "10101010101010",
+            "doubleValue": 101010101010,
+            "name": "result"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -2046,6 +2273,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -2065,6 +2295,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -2096,10 +2329,18 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
         "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "intValue": "10101010101010",
+            "name": "@tag"
+          },
           {
             "nameIid": "10101010101010",
             "arrayValues": [
@@ -2107,11 +2348,8 @@
                 "nameIid": "10101010101010",
                 "doubleValue": 101010101010
               }
-            ]
-          },
-          {
-            "nameIid": "10101010101010",
-            "intValue": "10101010101010"
+            ],
+            "name": "fetch keys"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -2125,7 +2363,8 @@
         ],
         "flowIds": [
           "10101010101010"
-        ]
+        ],
+        "name": "AsyncSchema::SleepSource"
       },
       "sequenceFlags": 101010101010
     },
@@ -2148,6 +2387,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -2167,6 +2409,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -2180,14 +2425,13 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
         "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "doubleValue": 101010101010
-          },
           {
             "nameIid": "10101010101010",
             "dictEntries": [
@@ -2195,11 +2439,18 @@
                 "nameIid": "10101010101010",
                 "doubleValue": 101010101010
               }
-            ]
+            ],
+            "name": "arguments"
           },
           {
             "nameIid": "10101010101010",
-            "doubleValue": 101010101010
+            "doubleValue": 101010101010,
+            "name": "object"
+          },
+          {
+            "nameIid": "10101010101010",
+            "doubleValue": 101010101010,
+            "name": "result"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -2231,13 +2482,17 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
         "debugAnnotations": [
           {
             "nameIid": "10101010101010",
-            "boolValue": true
+            "boolValue": true,
+            "name": "authorized?"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -2248,7 +2503,8 @@
         ],
         "extraCounterTrackUuids": [
           "10101010101010"
-        ]
+        ],
+        "name": "Authorize: Sleeper"
       },
       "sequenceFlags": 101010101010
     },
@@ -2271,20 +2527,26 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
         "debugAnnotations": [
           {
             "nameIid": "10101010101010",
-            "doubleValue": 101010101010
-          },
-          {
-            "nameIid": "10101010101010"
+            "name": "arguments"
           },
           {
             "nameIid": "10101010101010",
-            "doubleValue": 101010101010
+            "doubleValue": 101010101010,
+            "name": "object"
+          },
+          {
+            "nameIid": "10101010101010",
+            "doubleValue": 101010101010,
+            "name": "result"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -2320,6 +2582,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -2369,6 +2634,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
@@ -2400,6 +2668,9 @@
       "timestamp": "10101010101010",
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
         "categoryIids": [
           "10101010101010"
         ],
