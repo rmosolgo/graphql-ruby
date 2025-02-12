@@ -47,6 +47,7 @@ describe GraphQL::Backtrace do
         "name" => Proc.new { |obj| obj[:name] == :boom ? raise("Boom!") : obj[:name] },
         "listField" => Proc.new { :not_a_list },
         "raiseField" => Proc.new { |o, a| raise("This is broken: #{a[:message]}") },
+        "executionError" => Proc.new { raise GraphQL::ExecutionError, "Client-facing error" }
       },
       "ThingWrapper" => {
         "thing" => Proc.new { |obj| obj[:thing] },
@@ -69,6 +70,7 @@ describe GraphQL::Backtrace do
       name: String
       listField: [OtherThing]
       raiseField(message: String!): Int
+      executionError: Int
     }
 
     type ThingWrapper {
@@ -108,6 +110,10 @@ describe GraphQL::Backtrace do
       assert_raises(GraphQL::Backtrace::TracedError) do
         backtrace_schema.execute("{ nestedList { thing { name } } }")
       end
+    end
+
+    it "doesn't wrap GraphQL::ExecutionError" do
+      assert_equal ["Client-facing error"], backtrace_schema.execute("{ field1 { executionError } }")["errors"].map { |e| e["message"] }
     end
 
     it "annotates crashes from user code" do
@@ -294,5 +300,27 @@ describe GraphQL::Backtrace do
     end
     query = GraphQL::Query.new(schema, "{ __typename }", context: { backtrace: true })
     assert_includes query.current_trace.class.ancestors, custom_trace
+  end
+
+  describe "When validators are used" do
+    class ValidatorBacktraceSchema < GraphQL::Schema
+      class Query < GraphQL::Schema::Object
+        field :greeting, String do
+          argument :name, String, validates: { length: { minimum: 5 }}
+        end
+
+        def greeting(name:)
+          "Hello, #{name}!"
+        end
+      end
+
+      query(Query)
+      use GraphQL::Backtrace
+    end
+
+    it "works properly" do
+      assert_equal "Hello, Albert!", ValidatorBacktraceSchema.execute("{ greeting(name: \"Albert\") }")["data"]["greeting"]
+      assert_equal ["name is too short (minimum is 5)"], ValidatorBacktraceSchema.execute("{ greeting(name: \"Tim\") }")["errors"].map { |e| e["message"] }
+    end
   end
 end
