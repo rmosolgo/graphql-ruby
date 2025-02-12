@@ -52,7 +52,9 @@ use GraphQL::Schema::Visibility, profiles: {
 }
 ```
 
-Then, you can run queries with `context[:visibility_profile]` equal to one of the pre-defined profiles. When you do, GraphQL-Ruby will use a precomputed set of types and fields for that query.
+Then, you can run queries with `context[:visibility_profile]` equal to one of the pre-defined profiles. When you do, GraphQL-Ruby will create a cached set of types for named profile. `.visible?` will only be called with the context hash passed to `profiles: ...`.
+
+The profile contexts passed to `profiles` will have `visibility_profile: ...` added to them, then they're frozen by GraphQL-Ruby.
 
 ### Preloading profiles
 
