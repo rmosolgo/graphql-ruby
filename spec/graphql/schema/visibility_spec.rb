@@ -235,4 +235,40 @@ describe GraphQL::Schema::Visibility do
       assert_equal [], LazyLoadingSchema::OrphanType.all_field_definitions.first.extensions.map(&:class)
     end
   end
+
+  describe "interfaces thru superclass" do
+    class InterfaceSuperclassSchema < GraphQL::Schema
+      module Node
+        include GraphQL::Schema::Interface
+        field :id, ID
+      end
+
+      class NodeObject < GraphQL::Schema::Object
+        implements Node
+      end
+
+      class Thing < NodeObject
+        field :name, String
+      end
+
+      class Query < GraphQL::Schema::Object
+        field :node, Node
+
+        def node
+          { id: "101", name: "Hat" }
+        end
+
+        field :thing, Thing
+      end
+
+      query(Query)
+      def self.resolve_type(...); Thing; end
+      use GraphQL::Schema::Visibility
+    end
+  end
+
+  it "Can use interface relationship properly" do
+    res = InterfaceSuperclassSchema.execute("{ node { id ... on Thing { name } } }")
+    assert_equal "Hat", res["data"]["node"]["name"]
+  end
 end
