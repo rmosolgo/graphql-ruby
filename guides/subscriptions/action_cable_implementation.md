@@ -17,3 +17,5 @@ See client usage for:
 - {% internal_link "Apollo Client", "/javascript_client/apollo_subscriptions" %}
 - {% internal_link "Relay Modern", "/javascript_client/relay_subscriptions" %}.
 - {% internal_link "GraphiQL", "/javascript_client/graphiql_subscriptions" %}
+
+**GraphQL Ruby is currently not compatible with AnyCable.**
