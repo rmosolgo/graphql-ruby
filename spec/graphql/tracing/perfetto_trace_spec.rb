@@ -39,12 +39,22 @@ if testing_rails?
         end
       end
 
+      class Authorized < GraphQL::Dataloader::Source
+        def fetch(objs)
+          objs.map { true }
+        end
+      end
+
       class User < BaseObject
         field :username, String
       end
       class Review < BaseObject
         field :stars, Int
         field :user, User
+
+        def self.authorized?(obj, ctx)
+          ctx.dataloader.with(Authorized).load(obj)
+        end
 
         def user
           dataloader.with(Record, ::User).load(object.user_id)
@@ -82,22 +92,39 @@ if testing_rails?
           object.books.limit(2)
         end
       end
+
+      class Thing < GraphQL::Schema::Union
+        possible_types(Author, Book)
+      end
       class Query < BaseObject
         field :authors, [Author]
 
         def authors
           ::Author.all
         end
+
+        field :thing, Thing do
+          argument :id, ID
+        end
+
+        def thing(id:)
+          model_name, db_id = id.split("-")
+          dataloader.with(Record, Object.const_get(model_name)).load(db_id.to_i)
+        end
       end
 
       query(Query)
       use GraphQL::Dataloader, fiber_limit: 7
       trace_with GraphQL::Tracing::PerfettoTrace, name_prefix: "PerfettoSchema::"
+
+      def self.resolve_type(type, obj, ctx)
+        self.const_get(obj.class.name)
+      end
     end
 
     it "traces fields, dataloader, and activesupport notifications" do
       query_str = <<-GRAPHQL
-      {
+      query GetStuff($thingId: ID!) {
         authors {
           name
           books {
@@ -115,12 +142,14 @@ if testing_rails?
             otherBook { title }
           }
         }
+
+        t5: thing(id: $thingId) { ... on Book { title } ... on Author { name }}
       }
       GRAPHQL
       # warm up:
-      PerfettoSchema.execute(query_str)
+      PerfettoSchema.execute(query_str, variables: { thingId: "Book-#{::Book.first.id}" })
 
-      res = PerfettoSchema.execute(query_str)
+      res = PerfettoSchema.execute(query_str, variables: { thingId: "Book-#{::Book.first.id}" })
       if ENV["DUMP_PERFETTO"]
         res.context.query.current_trace.write(file: "perfetto.dump")
       end

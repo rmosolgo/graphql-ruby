@@ -375,7 +375,7 @@ module GraphQL
             end
             # Actually call the field resolver and capture the result
             app_result = begin
-              @current_trace.begin_execute_field(selection_result, result_name)
+              @current_trace.begin_execute_field(field_defn, object, kwarg_arguments, query)
               @current_trace.execute_field(field: field_defn, ast_node: ast_node, query: query, object: object, arguments: kwarg_arguments) do
                 field_defn.resolve(object, kwarg_arguments, context)
               end
@@ -388,6 +388,7 @@ module GraphQL
                 ex_err
               end
             end
+            @current_trace.end_execute_field(field_defn, object, kwarg_arguments, query, app_result)
             after_lazy(app_result, field: field_defn, ast_node: ast_node, owner_object: object, arguments: resolved_arguments, result_name: result_name, result: selection_result, runtime_state: runtime_state) do |inner_result, runtime_state|
               owner_type = selection_result.graphql_result_type
               return_type = field_defn.type
@@ -397,7 +398,6 @@ module GraphQL
                 runtime_state.was_authorized_by_scope_items = nil
                 continue_field(continue_value, owner_type, field_defn, return_type, ast_node, next_selections, false, object, resolved_arguments, result_name, selection_result, was_scoped, runtime_state)
               else
-                @current_trace.end_execute_field(selection_result, result_name)
                 nil
               end
             end
@@ -584,7 +584,6 @@ module GraphQL
             rescue StandardError => err
               query.handle_or_reraise(err)
             end
-            @current_trace.end_execute_field(selection_result, result_name)
             set_result(selection_result, result_name, r, false, is_non_null)
             r
           when "UNION", "INTERFACE"
@@ -603,7 +602,6 @@ module GraphQL
                 err_class = current_type::UnresolvedTypeError
                 type_error = err_class.new(resolved_value, field, parent_type, resolved_type, possible_types)
                 schema.type_error(type_error, context)
-                @current_trace.end_execute_field(selection_result, result_name)
                 set_result(selection_result, result_name, nil, false, is_non_null)
                 nil
               else
@@ -620,7 +618,6 @@ module GraphQL
               continue_value = continue_value(inner_object, field, is_non_null, ast_node, result_name, selection_result)
               if HALT != continue_value
                 response_hash = GraphQLResultHash.new(result_name, current_type, continue_value, selection_result, is_non_null, next_selections, false, ast_node, arguments, field)
-                @current_trace.end_execute_field(selection_result, result_name)
                 set_result(selection_result, result_name, response_hash, true, is_non_null)
                 each_gathered_selections(response_hash) do |selections, is_selection_array|
                   if is_selection_array
@@ -651,9 +648,6 @@ module GraphQL
             list_value = begin
               begin
                 value.each do |inner_value|
-                  if idx.nil?
-                    @current_trace.end_execute_field(selection_result, result_name)
-                  end
                   idx ||= 0
                   this_idx = idx
                   idx += 1
@@ -664,10 +658,6 @@ module GraphQL
                   else
                     resolve_list_item(inner_value, inner_type, inner_type_non_null, ast_node, field, owner_object, arguments, this_idx, response_list, owner_type, was_scoped, runtime_state)
                   end
-                end
-
-                if idx.nil? # no entries
-                  @current_trace.end_execute_field(selection_result, result_name)
                 end
 
                 response_list
@@ -858,6 +848,7 @@ module GraphQL
         end
 
         def resolve_type(type, value)
+          @current_trace.begin_resolve_type(type, value, context)
           resolved_type, resolved_value = @current_trace.resolve_type(query: query, type: type, object: value) do
             query.resolve_type(type, value)
           end
@@ -865,10 +856,13 @@ module GraphQL
           if lazy?(resolved_type)
             GraphQL::Execution::Lazy.new do
               @current_trace.resolve_type_lazy(query: query, type: type, object: value) do
-                schema.sync_lazy(resolved_type)
+                rt = schema.sync_lazy(resolved_type)
+                @current_trace.end_resolve_type(type, value, context, rt)
+                rt
               end
             end
           else
+            @current_trace.end_resolve_type(type, value, context, resolved_type)
             [resolved_type, resolved_value]
           end
         end

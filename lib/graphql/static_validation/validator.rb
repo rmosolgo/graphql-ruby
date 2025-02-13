@@ -27,6 +27,8 @@ module GraphQL
       # @param max_errors [Integer] Maximum number of errors before aborting validation. Any positive number will limit the number of errors. Defaults to nil for no limit.
       # @return [Array<Hash>]
       def validate(query, validate: true, timeout: nil, max_errors: nil)
+        query.current_trace.begin_validate(query, validate)
+        is_valid = false
         query.current_trace.validate(validate: validate, query: query) do
           begin_t = Time.now
           errors = if validate == false
@@ -51,6 +53,7 @@ module GraphQL
 
             context.errors
           end
+          is_valid = errors.size == 0
 
           {
             remaining_timeout: timeout ? (timeout - (Time.now - begin_t)) : nil,
@@ -58,10 +61,13 @@ module GraphQL
           }
         end
       rescue GraphQL::ExecutionError => e
+        is_valid = false
         {
           remaining_timeout: nil,
           errors: [e],
         }
+      ensure
+        query.current_trace.end_validate(query, validate, is_valid)
       end
 
       # Invoked when static validation times out.
