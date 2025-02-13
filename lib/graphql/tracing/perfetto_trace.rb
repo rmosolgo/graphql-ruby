@@ -332,19 +332,18 @@ module GraphQL
       end
 
       def dataloader_fiber_yield(source)
-        if (ls = fiber_flow_stack.last)
-          if (flow_id = ls.track_event.flow_ids.first)
-            # got it
-          else
-            flow_id = ls.track_event.name.object_id
-            ls.track_event = dup_with(ls.track_event, {flow_ids: [flow_id] }, delete_counters: true)
-          end
-          @flow_ids[source] << flow_id
-          @packets << trace_packet(
-            type: TrackEvent::Type::TYPE_SLICE_END,
-            track_uuid: fid,
-          )
+        ls = fiber_flow_stack.last
+        if (flow_id = ls.track_event.flow_ids.first)
+          # got it
+        else
+          flow_id = ls.track_event.name.object_id
+          ls.track_event = dup_with(ls.track_event, {flow_ids: [flow_id] }, delete_counters: true)
         end
+        @flow_ids[source] << flow_id
+        @packets << trace_packet(
+          type: TrackEvent::Type::TYPE_SLICE_END,
+          track_uuid: fid,
+        )
         @packets << trace_packet(
           type: TrackEvent::Type::TYPE_INSTANT,
           track_uuid: fid,
@@ -361,14 +360,15 @@ module GraphQL
           name: "Fiber Resume",
           category_iids: DATALOADER_CATEGORY_IIDS,
         )
-        if (ls = fiber_flow_stack.pop)
-          @packets << packet = TracePacket.new(
-            timestamp: ts,
-            track_event: dup_with(ls.track_event, { type: TrackEvent::Type::TYPE_SLICE_BEGIN }),
-            trusted_packet_sequence_id: @sequence_id,
-          )
-          fiber_flow_stack << packet
-        end
+
+        ls = fiber_flow_stack.pop
+        @packets << packet = TracePacket.new(
+          timestamp: ts,
+          track_event: dup_with(ls.track_event, { type: TrackEvent::Type::TYPE_SLICE_BEGIN }),
+          trusted_packet_sequence_id: @sequence_id,
+        )
+        fiber_flow_stack << packet
+
         super
       end
 
@@ -528,18 +528,16 @@ module GraphQL
         Fiber.current.object_id
       end
 
-      def debug_annotation(name, value_key, value, iid)
+      def debug_annotation(iid, value_key, value)
         if iid
           DebugAnnotation.new(name_iid: iid, value_key => value)
-        elsif name
-          DebugAnnotation.new(name: name, value_key => value)
         else
           DebugAnnotation.new(value_key => value)
         end
       end
 
-      def payload_to_debug(k, v, iid: nil, intern: true, intern_value: false)
-        if iid.nil? && intern
+      def payload_to_debug(k, v, iid: nil, intern_value: false)
+        if iid.nil?
           iid = @interned_da_name_ids[k]
           k = nil
         end
@@ -547,16 +545,16 @@ module GraphQL
         when String
           if intern_value
             v = @interned_da_string_values[v]
-            debug_annotation(k, :string_value_iid, v, iid)
+            debug_annotation(iid, :string_value_iid, v)
           else
-            debug_annotation(k, :string_value, v, iid)
+            debug_annotation(iid, :string_value, v)
           end
         when Float
-          debug_annotation(k, :double_value, v, iid)
+          debug_annotation(iid, :double_value, v)
         when Integer
-          debug_annotation(k, :int_value, v, iid)
+          debug_annotation(iid, :int_value, v)
         when true, false
-          debug_annotation(k, :bool_value, v, iid)
+          debug_annotation(iid, :bool_value, v)
         when nil
           if iid
             DebugAnnotation.new(name_iid: iid, string_value_iid: DA_STR_VAL_NIL_IID)
@@ -566,16 +564,16 @@ module GraphQL
         when Module
           if intern_value
             val_iid = @class_name_iids[v]
-            debug_annotation(k, :string_value_iid, val_iid, iid)
+            debug_annotation(iid, :string_value_iid, val_iid)
           else
-            debug_annotation(k, :string_value, v.name, iid)
+            debug_annotation(iid, :string_value, v.name)
           end
         when Symbol
-          debug_annotation(k, :string_value, v.inspect, iid)
+          debug_annotation(iid, :string_value, v.inspect)
         when Array
-          debug_annotation(k, :array_values, v.map { |v2| payload_to_debug(nil, v2, intern_value: intern_value) }.compact, iid)
+          debug_annotation(iid, :array_values, v.map { |v2| payload_to_debug(nil, v2, intern_value: intern_value) }.compact)
         when Hash
-          debug_annotation(k, :dict_entries, v.map { |k2, v2| payload_to_debug(k2, v2, intern_value: intern_value) }.compact, iid)
+          debug_annotation(iid, :dict_entries, v.map { |k2, v2| payload_to_debug(k2, v2, intern_value: intern_value) }.compact)
         else
           debug_str = if defined?(ActiveRecord::Relation) && v.is_a?(ActiveRecord::Relation)
             "#{v.class}, .to_sql=#{v.to_sql.inspect}"
@@ -584,9 +582,9 @@ module GraphQL
           end
           if intern_value
             str_iid = @interned_da_string_values[debug_str]
-            debug_annotation(k, :string_value_iid, str_iid, iid)
+            debug_annotation(iid, :string_value_iid, str_iid)
           else
-            debug_annotation(k, :string_value, debug_str, iid)
+            debug_annotation(iid, :string_value, debug_str)
           end
         end
       end
