@@ -13,6 +13,10 @@ module GraphQL
       # @param preload [Boolean] if `true`, load the default schema profile and all named profiles immediately (defaults to `true` for `Rails.env.production?`)
       # @param migration_errors [Boolean] if `true`, raise an error when `Visibility` and `Warden` return different results
       def self.use(schema, dynamic: false, profiles: EmptyObjects::EMPTY_HASH, preload: (defined?(Rails) ? Rails.env.production? : nil), migration_errors: false)
+        profiles&.each { |name, ctx|
+          ctx[:visibility_profile] = name
+          ctx.freeze
+        }
         schema.visibility = self.new(schema, dynamic: dynamic, preload: preload, profiles: profiles, migration_errors: migration_errors)
         if preload
           schema.visibility.preload
@@ -81,8 +85,7 @@ module GraphQL
         types_to_visit.compact!
         ensure_all_loaded(types_to_visit)
         @profiles.each do |profile_name, example_ctx|
-          example_ctx[:visibility_profile] = profile_name
-          prof = profile_for(example_ctx, profile_name)
+          prof = profile_for(example_ctx)
           prof.all_types # force loading
         end
       end
@@ -145,7 +148,7 @@ module GraphQL
 
       attr_reader :cached_profiles
 
-      def profile_for(context, visibility_profile)
+      def profile_for(context, visibility_profile = context[:visibility_profile])
         if !@profiles.empty?
           if visibility_profile.nil?
             if @dynamic
@@ -160,7 +163,8 @@ module GraphQL
           elsif !@profiles.include?(visibility_profile)
             raise ArgumentError, "`#{visibility_profile.inspect}` isn't allowed for `visibility_profile:` (must be one of #{@profiles.keys.map(&:inspect).join(", ")}). Or, add `#{visibility_profile.inspect}` to the list of profiles in the schema definition."
           else
-            @cached_profiles[visibility_profile] ||= @schema.visibility_profile_class.new(name: visibility_profile, context: context, schema: @schema)
+            profile_ctx = @profiles[visibility_profile]
+            @cached_profiles[visibility_profile] ||= @schema.visibility_profile_class.new(name: visibility_profile, context: profile_ctx, schema: @schema)
           end
         elsif context.is_a?(Query::NullContext)
           top_level_profile
