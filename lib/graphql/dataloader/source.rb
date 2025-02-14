@@ -133,7 +133,7 @@ module GraphQL
         fetch_h = @pending
         @pending = {}
         @fetching.merge!(fetch_h)
-        results = fetch(fetch_h.keys)
+        results = fetch(fetch_h.values)
         fetch_h.each_with_index do |(key, _value), idx|
           @results[key] = results[idx]
         end

@@ -10,8 +10,9 @@ module GraphQL
         @type_for_column = @model_class.type_for_attribute(@find_by)
       end
 
-      def result_key_for(requested_key)
-        @type_for_column.cast(requested_key)
+      def load(requested_key)
+        casted_key = @type_for_column.cast(requested_key)
+        super(casted_key)
       end
 
       def fetch(record_ids)
