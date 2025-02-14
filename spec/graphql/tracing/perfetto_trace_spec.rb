@@ -23,19 +23,8 @@ if testing_rails?
         def fetch(books)
           author_ids = books.map(&:author_id).uniq
           book_ids = ::Book.select(:id).where(author_id: author_ids).where.not(id: books.map(&:id)).group(:author_id).maximum(:id)
-          other_books = dataloader.with(Record, ::Book).load_all(book_ids.values)
+          other_books = dataloader.with(GraphQL::Dataloader::ActiveRecordSource, ::Book).load_all(book_ids.values)
           books.map { |b| other_books.find { |b2| b.author_id == b2.author_id } }
-        end
-      end
-
-      class Record < GraphQL::Dataloader::Source
-        def initialize(model)
-          @model = model
-        end
-
-        def fetch(ids)
-          records = @model.where(id: ids)
-          ids.map { |id| records.find { |r| r.id == id }}
         end
       end
 
@@ -47,7 +36,7 @@ if testing_rails?
         field :user, User
 
         def user
-          dataloader.with(Record, ::User).load(object.user_id)
+          dataload_record(::User, object.user_id)
         end
       end
 
@@ -62,15 +51,15 @@ if testing_rails?
         end
 
         def average_review
-          dataloader.with(AverageReview).load(object)
+          dataload(AverageReview, object)
         end
 
         def author
-          dataloader.with(Record, ::Author).load(object.author_id)
+          dataload_association(:author)
         end
 
         def other_book
-          dataloader.with(OtherBook).load(object)
+          dataload(OtherBook, object)
         end
       end
 

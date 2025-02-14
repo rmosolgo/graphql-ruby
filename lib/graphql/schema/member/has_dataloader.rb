@@ -9,6 +9,15 @@ module GraphQL
           context.dataloader
         end
 
+        # A shortcut method for loading a key from a source.
+        # Identical to `dataloader.with(source_class, *source_args).load(load_key)`
+        # @param source_class [Class<GraphQL::Dataloader::Source>]
+        # @param source_args [Array<Object>] Any extra parameters defined in `source_class`'s `initialize` method
+        # @param load_key [Object] The key to look up using `def fetch`
+        def dataload(source_class, *source_args, load_key)
+          dataloader.with(source_class, *source_args).load(load_key)
+        end
+
         # Find an object with ActiveRecord via {Dataloader::ActiveRecordSource}.
         # @param model [Class<ActiveRecord::Base>]
         # @param find_by_value [Object] Usually an `id`, might be another value if `find_by:` is also provided
