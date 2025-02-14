@@ -106,7 +106,6 @@ if testing_rails?
     include GlobalID::Identification
   end
 
-<<<<<<< HEAD
   class Album < ActiveRecord::Base
     belongs_to :band
   end
@@ -131,7 +130,6 @@ if testing_rails?
   c.albums.create!(id: 4, name: "Homey")
   c.albums.create!(id: 5, name: "Chon")
   w.albums.create!(id: 6, name: "Summerteeth")
-=======
   class Author < ActiveRecord::Base
     has_many :books
   end
@@ -208,5 +206,4 @@ if testing_rails?
       Review.create!(book: book, user: user, stars: possible_stars.sample)
     end
   end
->>>>>>> master
 end
