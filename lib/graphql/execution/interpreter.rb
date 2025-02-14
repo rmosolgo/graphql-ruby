@@ -47,9 +47,9 @@ module GraphQL
               multiplex_analyzers += [GraphQL::Analysis::MaxQueryComplexity]
             end
 
-            trace.begin_analyze_multiplex(multiplex)
+            trace.begin_analyze_multiplex(multiplex, multiplex_analyzers)
             schema.analysis_engine.analyze_multiplex(multiplex, multiplex_analyzers)
-            trace.end_analyze_multiplex(multiplex)
+            trace.end_analyze_multiplex(multiplex, multiplex_analyzers)
 
             begin
               # Since this is basically the batching context,

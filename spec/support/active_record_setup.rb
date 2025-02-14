@@ -202,8 +202,8 @@ if testing_rails?
 
   possible_stars = [1,2,3,4,5]
   Book.all.each do |book|
-    users.each do |user|
-      Review.create!(book: book, user: user, stars: possible_stars.sample)
+    users.each_with_index do |user, idx|
+      Review.create!(book: book, user: user, stars: possible_stars[idx])
     end
   end
 end

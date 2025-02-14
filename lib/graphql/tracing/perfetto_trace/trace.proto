@@ -21,6 +21,10 @@ message TracePacket {
   oneof optional_trusted_packet_sequence_id {
     uint32 trusted_packet_sequence_id = 10;
   }
+  optional InternedData interned_data = 12;
+  optional bool first_packet_on_sequence = 87;
+  optional bool previous_packet_dropped = 42;
+  optional uint32 sequence_flags = 13;
 }
 
 message TrackEvent {
@@ -67,6 +71,7 @@ message DebugAnnotation {
   }
   repeated DebugAnnotation dict_entries = 11;
   repeated DebugAnnotation array_values = 12;
+  uint64 string_value_iid = 17;
 }
 
 message TrackDescriptor {
@@ -106,4 +111,31 @@ message CounterDescriptor {
   optional string unit_name = 6;
   optional int64 unit_multiplier = 4;
   optional bool is_incremental = 5;
+}
+
+message InternedData {
+  repeated EventCategory event_categories = 1;
+  repeated EventName event_names = 2;
+  repeated DebugAnnotationName debug_annotation_names = 3;
+  repeated InternedString debug_annotation_string_values = 29;
+}
+
+message InternedString {
+  optional uint64 iid = 1;
+  optional bytes str = 2;
+}
+
+message EventCategory {
+  optional uint64 iid = 1;
+  optional string name = 2;
+}
+
+message EventName {
+  optional uint64 iid = 1;
+  optional string name = 2;
+}
+
+message DebugAnnotationName {
+  optional uint64 iid = 1;
+  optional string name = 2;
 }

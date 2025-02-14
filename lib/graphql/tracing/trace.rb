@@ -39,12 +39,20 @@ module GraphQL
         yield
       end
 
+      def begin_validate(query, validate)
+      end
+
+      def end_validate(query, validate, is_valid)
+      end
+
       # @param multiplex [GraphQL::Execution::Multiplex]
+      # @param analyzers [Array<Class>]
       # @return [void]
-      def begin_analyze_multiplex(multiplex); end
+      def begin_analyze_multiplex(multiplex, analyzers); end
       # @param multiplex [GraphQL::Execution::Multiplex]
+      # @param analyzers [Array<Class>]
       # @return [void]
-      def end_analyze_multiplex(multiplex); end
+      def end_analyze_multiplex(multiplex, analyzers); end
       # @param multiplex [GraphQL::Execution::Multiplex]
       # @return [void]
       def analyze_multiplex(multiplex:)
@@ -81,14 +89,19 @@ module GraphQL
         yield
       end
 
-      # GraphQL is about to resolve `result_name`
-      # @param result [GraphQL::Execution::Interpreter::Runtime::GraphQL::Result]
-      # @param result_name [String]
-      def begin_execute_field(result, result_name); end
-      # GraphQL just finished resolving `result_name`
-      # @param result [GraphQL::Execution::Interpreter::Runtime::GraphQL::Result]
-      # @param result_name [String]
-      def end_execute_field(result, result_name); end
+      # GraphQL is about to resolve this field
+      # @param field [GraphQL::Schema::Field]
+      # @param object [GraphQL::Schema::Object]
+      # @param arguments [Hash]
+      # @param query [GraphQL::Query]
+      def begin_execute_field(field, object, arguments, query); end
+      # GraphQL just finished resolving this field
+      # @param field [GraphQL::Schema::Field]
+      # @param object [GraphQL::Schema::Object]
+      # @param arguments [Hash]
+      # @param query [GraphQL::Query]
+      # @param result [Object]
+      def end_execute_field(field, object, arguments, query, result); end
 
       def execute_field(field:, query:, ast_node:, arguments:, object:)
         yield
@@ -102,6 +115,22 @@ module GraphQL
         yield
       end
 
+      # A call to `.authorized?` is starting
+      # @param type [Class<GraphQL::Schema::Object>]
+      # @param object [Object]
+      # @param context [GraphQL::Query::Context]
+      # @return [void]
+      def begin_authorized(type, object, context)
+      end
+      # A call to `.authorized?` just finished
+      # @param type [Class<GraphQL::Schema::Object>]
+      # @param object [Object]
+      # @param context [GraphQL::Query::Context]
+      # @param authorized_result [Boolean]
+      # @return [void]
+      def end_authorized(type, object, context, authorized_result)
+      end
+
       def authorized_lazy(query:, type:, object:)
         yield
       end
@@ -112,6 +141,23 @@ module GraphQL
 
       def resolve_type_lazy(query:, type:, object:)
         yield
+      end
+
+      # A call to `.resolve_type` is starting
+      # @param type [Class<GraphQL::Schema::Union>, Module<GraphQL::Schema::Interface>]
+      # @param value [Object]
+      # @param context [GraphQL::Query::Context]
+      # @return [void]
+      def begin_resolve_type(type, value, context)
+      end
+
+      # A call to `.resolve_type` just ended
+      # @param type [Class<GraphQL::Schema::Union>, Module<GraphQL::Schema::Interface>]
+      # @param value [Object]
+      # @param context [GraphQL::Query::Context]
+      # @param resolved_type [Class<GraphQL::Schema::Object>]
+      # @return [void]
+      def end_resolve_type(type, value, context, resolved_type)
       end
 
       # A dataloader run is starting
