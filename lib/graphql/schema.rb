@@ -1114,9 +1114,6 @@ module GraphQL
 
       # @api private
       def handle_or_reraise(context, err)
-        if context[:backtrace] || using_backtrace
-          err = GraphQL::Backtrace::TracedError.new(err, context)
-        end
         handler = Execution::Errors.find_handler_for(self, err.class)
         if handler
           obj = context[:current_object]
@@ -1128,6 +1125,10 @@ module GraphQL
           end
           handler[:handler].call(err, obj, args, context, field)
         else
+          if (context[:backtrace] || using_backtrace) && !err.is_a?(GraphQL::ExecutionError)
+            err = GraphQL::Backtrace::TracedError.new(err, context)
+          end
+
           raise err
         end
       end

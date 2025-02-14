@@ -37,7 +37,6 @@ describe GraphQL::Schema::Enum do
           assert_equal conflict_enum.method(:value), already_defined_method
         end
       end
-
     end
 
     describe "when value_method = false" do

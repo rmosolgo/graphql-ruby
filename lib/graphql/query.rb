@@ -97,21 +97,22 @@ module GraphQL
     # @param root_value [Object] the object used to resolve fields on the root type
     # @param max_depth [Numeric] the maximum number of nested selections allowed for this query (falls back to schema-level value)
     # @param max_complexity [Numeric] the maximum field complexity for this query (falls back to schema-level value)
-    # @param visibility_profile [Symbol]
+    # @param visibility_profile [Symbol] Another way to assign `context[:visibility_profile]`
     def initialize(schema, query_string = nil, query: nil, document: nil, context: nil, variables: nil, validate: true, static_validator: nil, visibility_profile: nil, subscription_topic: nil, operation_name: nil, root_value: nil, max_depth: schema.max_depth, max_complexity: schema.max_complexity, warden: nil, use_visibility_profile: nil)
       # Even if `variables: nil` is passed, use an empty hash for simpler logic
       variables ||= {}
       @schema = schema
       @context = schema.context_class.new(query: self, values: context)
+      if visibility_profile
+        @context[:visibility_profile] ||= visibility_profile
+      end
 
       if use_visibility_profile.nil?
         use_visibility_profile = warden ? false : schema.use_visibility_profile?
       end
 
-      @visibility_profile = visibility_profile
-
       if use_visibility_profile
-        @visibility_profile = @schema.visibility.profile_for(@context, visibility_profile)
+        @visibility_profile = @schema.visibility.profile_for(@context)
         @warden = Schema::Warden::NullWarden.new(context: @context, schema: @schema)
       else
         @visibility_profile = nil

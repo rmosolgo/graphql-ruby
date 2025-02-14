@@ -18,7 +18,7 @@ module GraphQL
           if ctx.respond_to?(:types) && (types = ctx.types).is_a?(self)
             types
           else
-            schema.visibility.profile_for(ctx, nil)
+            schema.visibility.profile_for(ctx)
           end
         end
 
