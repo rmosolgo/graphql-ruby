@@ -54,7 +54,11 @@ describe GraphQL::Dataloader::ActiveRecordSource do
         log = with_active_record_log(colorize: false) do
           r1 = d.with(GraphQL::Dataloader::ActiveRecordSource, AlternativeBand).load("Vulfpeck")
           assert_equal "Vulfpeck", r1.name
-          assert_equal 1, r1["id"]
+          if Rails::VERSION::STRING > "8"
+            assert_equal 1, r1["id"]
+          else
+            assert_equal 1, r1._read_attribute("id")
+          end
         end
 
         assert_includes log, 'SELECT "bands".* FROM "bands" WHERE "bands"."name" = ?  [["name", "Vulfpeck"]]'
