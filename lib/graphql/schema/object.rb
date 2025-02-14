@@ -7,6 +7,7 @@ module GraphQL
     class Object < GraphQL::Schema::Member
       extend GraphQL::Schema::Member::HasFields
       extend GraphQL::Schema::Member::HasInterfaces
+      include Member::HasDataloader
 
       # Raised when an Object doesn't have any field defined and hasn't explicitly opted out of this requirement
       class FieldsAreRequiredError < GraphQL::Error

@@ -4,6 +4,8 @@ require "graphql/dataloader/null_dataloader"
 require "graphql/dataloader/request"
 require "graphql/dataloader/request_all"
 require "graphql/dataloader/source"
+require "graphql/dataloader/active_record_association_source"
+require "graphql/dataloader/active_record_source"
 
 module GraphQL
   # This plugin supports Fiber-based concurrency, along with {GraphQL::Dataloader::Source}.
@@ -253,6 +255,22 @@ module GraphQL
         yield
         cleanup_fiber
       }
+    end
+
+    # Pre-warm the Dataloader cache with ActiveRecord objects which were loaded elsewhere.
+    # These will be used by {Dataloader::ActiveRecordSource}, {Dataloader::ActiveRecordAssociationSource} and their helper
+    # methods, `dataload_record` and `dataload_association`.
+    # @param records [Array<ActiveRecord::Base>] Already-loaded records to warm the cache with
+    # @param index_by [Symbol] The attribute to use as the cache key. (Should match `find_by:` when using {ActiveRecordSource})
+    # @return [void]
+    def merge_records(records, index_by: :id)
+      records_by_class = Hash.new { |h, k| h[k] = {} }
+      records.each do |r|
+        records_by_class[r.class][r.public_send(index_by)] = r
+      end
+      records_by_class.each do |r_class, records|
+        with(ActiveRecordSource, r_class).merge(records)
+      end
     end
 
     private

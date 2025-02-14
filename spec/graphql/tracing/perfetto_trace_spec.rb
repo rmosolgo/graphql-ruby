@@ -23,22 +23,10 @@ if testing_rails?
         def fetch(books)
           author_ids = books.map(&:author_id).uniq
           book_ids = ::Book.select(:id).where(author_id: author_ids).where.not(id: books.map(&:id)).group(:author_id).maximum(:id)
-          other_books = dataloader.with(Record, ::Book).load_all(book_ids.values)
+          other_books = dataloader.with(GraphQL::Dataloader::ActiveRecordSource, ::Book).load_all(book_ids.values)
           books.map { |b| other_books.find { |b2| b.author_id == b2.author_id } }
         end
       end
-
-      class Record < GraphQL::Dataloader::Source
-        def initialize(model)
-          @model = model
-        end
-
-        def fetch(ids)
-          records = @model.where(id: ids)
-          ids.map { |id| records.find { |r| r.id == id }}
-        end
-      end
-
       class Authorized < GraphQL::Dataloader::Source
         def fetch(objs)
           objs.map { true }
@@ -57,7 +45,7 @@ if testing_rails?
         end
 
         def user
-          dataloader.with(Record, ::User).load(object.user_id)
+          dataload_record(::User, object.user_id)
         end
       end
 
@@ -72,15 +60,15 @@ if testing_rails?
         end
 
         def average_review
-          dataloader.with(AverageReview).load(object)
+          dataload(AverageReview, object)
         end
 
         def author
-          dataloader.with(Record, ::Author).load(object.author_id)
+          dataload_association(:author)
         end
 
         def other_book
-          dataloader.with(OtherBook).load(object)
+          dataload(OtherBook, object)
         end
       end
 
@@ -109,13 +97,13 @@ if testing_rails?
 
         def thing(id:)
           model_name, db_id = id.split("-")
-          dataloader.with(Record, Object.const_get(model_name)).load(db_id.to_i)
+          dataload_record(Object.const_get(model_name), db_id)
         end
       end
 
       query(Query)
       use GraphQL::Dataloader, fiber_limit: 7
-      trace_with GraphQL::Tracing::PerfettoTrace, name_prefix: "PerfettoSchema::"
+      trace_with GraphQL::Tracing::PerfettoTrace
 
       def self.resolve_type(type, obj, ctx)
         self.const_get(obj.class.name)

@@ -13,6 +13,7 @@ module GraphQL
         include GraphQL::Schema::Member::Scoped
         include GraphQL::Schema::Member::HasAstNode
         include GraphQL::Schema::Member::HasUnresolvedTypeError
+        include GraphQL::Schema::Member::HasDataloader
         include GraphQL::Schema::Member::HasDirectives
         include GraphQL::Schema::Member::HasInterfaces
 

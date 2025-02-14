@@ -1280,7 +1280,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "result",
-            "stringValue": "@model"
+            "stringValue": "@model_class"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1487,13 +1487,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "object",
-            "stringValue": null
+            "stringValue": "id"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "result",
-            "stringValue": null
+            "stringValue": "resolved_type"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -1556,7 +1556,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "object",
-            "stringValue": null
+            "stringValue": "id"
           },
           {
             "nameIid": "10101010101010",
@@ -2414,9 +2414,111 @@
         "categoryIids": [
           "10101010101010"
         ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": "authorized?"
+          }
+        ],
         "type": "TYPE_SLICE_BEGIN",
         "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
         "name": "authors.0.books.0.author",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": true,
+            "name": "authorized?"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "name": "Authorize: Author"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "authors.0.books.0.otherBook",
         "flowIds": [
           "10101010101010"
         ]
@@ -2492,9 +2594,291 @@
         "categoryIids": [
           "10101010101010"
         ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
+          }
+        ],
         "type": "TYPE_SLICE_BEGIN",
         "trackUuid": "10101010101010",
-        "name": "authors.0.books.0.otherBook",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "authors.0.books.1.title",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "internedData": {
+        "debugAnnotationStringValues": [
+          {
+            "iid": "10101010101010",
+            "str": "IzxCb29rIGlkOiAyLCB0aXRsZTogIlRoZSBNZXJyeSBXaXZlcyBvZiBXaW5k\nc29yIiwgYXV0aG9yX2lkOiAxPg==\n"
+          },
+          {
+            "iid": "10101010101010",
+            "str": "VGhlIE1lcnJ5IFdpdmVzIG9mIFdpbmRzb3I=\n"
+          }
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "authors.0.books.1.reviews",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "internedData": {
+        "debugAnnotationStringValues": [
+          {
+            "iid": "10101010101010",
+            "str": "UmV2aWV3OjpBY3RpdmVSZWNvcmRfQXNzb2NpYXRpb25SZWxhdGlvbiwgLnRv\nX3NxbD0iU0VMRUNUIFwicmV2aWV3c1wiLiogRlJPTSBcInJldmlld3NcIiBX\nSEVSRSBcInJldmlld3NcIi5cImJvb2tfaWRcIiA9IDIgTElNSVQgMiI=\n"
+          }
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "ActiveSupport::Notifications"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "nameIid": "10101010101010",
+            "arrayValues": [
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              }
+            ],
+            "name": "binds"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "connection",
+            "stringValue": "connection"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "name\n",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "arrayValues": [
+              {
+                "nameIid": "10101010101010",
+                "intValue": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "intValue": "10101010101010"
+              }
+            ],
+            "name": "type_casted_binds"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "sql.active_record"
+      },
+      "internedData": {
+        "debugAnnotationStringValues": [
+          {
+            "iid": "10101010101010",
+            "str": "IzxBY3RpdmVSZWNvcmQ6OlJlbGF0aW9uOjpRdWVyeUF0dHJpYnV0ZQ==\n"
+          },
+          {
+            "iid": "10101010101010",
+            "str": "IzxBY3RpdmVNb2RlbDo6QXR0cmlidXRlOjpXaXRoQ2FzdFZhbHVl\n"
+          }
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "sql.active_record",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "ActiveSupport::Notifications"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "class_name",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "intValue": "10101010101010",
+            "name": "record_count"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "instantiation.active_record"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "instantiation.active_record",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "authors.0.books.1.averageReview",
         "flowIds": [
           "10101010101010"
         ]
@@ -2574,8 +2958,20 @@
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
-            "name": "@model",
+            "name": "@find_by",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "@model_class",
             "stringValue": "record_count"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "@type_for_column",
+            "stringValue": null
           },
           {
             "nameIid": "10101010101010",
@@ -2600,19 +2996,37 @@
         "flowIds": [
           "10101010101010"
         ],
-        "name": "PerfettoSchema::Record"
+        "name": "GraphQL::Dataloader::ActiveRecordSource"
       },
       "internedData": {
         "eventNames": [
           {
             "iid": "10101010101010",
-            "name": "PerfettoSchema::Record"
+            "name": "GraphQL::Dataloader::ActiveRecordSource"
           }
         ],
         "debugAnnotationNames": [
           {
             "iid": "10101010101010",
-            "name": "@model"
+            "name": "@model_class"
+          },
+          {
+            "iid": "10101010101010",
+            "name": "@find_by"
+          },
+          {
+            "iid": "10101010101010",
+            "name": "@type_for_column"
+          }
+        ],
+        "debugAnnotationStringValues": [
+          {
+            "iid": "10101010101010",
+            "str": "aWQ=\n"
+          },
+          {
+            "iid": "10101010101010",
+            "str": "IzxBY3RpdmVSZWNvcmQ6OkNvbm5lY3Rpb25BZGFwdGVyczo6U1FMaXRlM0Fk\nYXB0ZXI6OlNRTGl0ZTNJbnRlZ2Vy\n"
           }
         ]
       },
@@ -2786,206 +3200,11 @@
         "debugAnnotations": [
           {
             "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "@model",
-            "stringValue": "analyzers"
-          },
-          {
-            "nameIid": "10101010101010",
-            "arrayValues": [
-              {
-                "nameIid": "10101010101010",
-                "intValue": "10101010101010"
-              }
-            ],
-            "name": "fetch keys"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "nameIid": "10101010101010",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ],
-        "flowIds": [
-          "10101010101010"
-        ],
-        "name": "PerfettoSchema::Record"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "ActiveSupport::Notifications"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "boolValue": false,
-            "name": "async"
-          },
-          {
-            "nameIid": "10101010101010",
             "arrayValues": [
               {
                 "nameIid": "10101010101010",
                 "stringValueIid": "10101010101010"
-              }
-            ],
-            "name": "binds"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "connection",
-            "stringValue": "connection"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "name\n",
-            "stringValue": "query_string"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "sql",
-            "stringValue": null
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "statement_name",
-            "stringValue": null
-          },
-          {
-            "nameIid": "10101010101010",
-            "arrayValues": [
-              {
-                "nameIid": "10101010101010",
-                "intValue": "10101010101010"
-              }
-            ],
-            "name": "type_casted_binds"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "trackUuid": "10101010101010",
-        "name": "sql.active_record"
-      },
-      "internedData": {
-        "debugAnnotationStringValues": [
-          {
-            "iid": "10101010101010",
-            "str": "U0VMRUNUICJhdXRob3JzIi4qIEZST00gImF1dGhvcnMiIFdIRVJFICJhdXRo\nb3JzIi4iaWQiID0gPw==\n"
-          },
-          {
-            "iid": "10101010101010",
-            "str": "IzxBY3RpdmVSZWNvcmQ6OlJlbGF0aW9uOjpRdWVyeUF0dHJpYnV0ZQ==\n"
-          }
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "name": "sql.active_record",
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "ActiveSupport::Notifications"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "class_name",
-            "stringValue": "analyzers"
-          },
-          {
-            "nameIid": "10101010101010",
-            "intValue": "10101010101010",
-            "name": "record_count"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "trackUuid": "10101010101010",
-        "name": "instantiation.active_record"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "name": "instantiation.active_record",
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Dataloader"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "arrayValues": [
+              },
               {
                 "nameIid": "10101010101010",
                 "stringValueIid": "10101010101010"
@@ -3004,6 +3223,7 @@
           "10101010101010"
         ],
         "flowIds": [
+          "10101010101010",
           "10101010101010"
         ],
         "name": "PerfettoSchema::AverageReview"
@@ -3387,8 +3607,20 @@
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
-            "name": "@model",
+            "name": "@find_by",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "@model_class",
             "stringValue": "record_count"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "@type_for_column",
+            "stringValue": null
           },
           {
             "nameIid": "10101010101010",
@@ -3413,7 +3645,7 @@
         "flowIds": [
           "10101010101010"
         ],
-        "name": "PerfettoSchema::Record"
+        "name": "GraphQL::Dataloader::ActiveRecordSource"
       },
       "sequenceFlags": 101010101010
     },
@@ -3901,400 +4133,6 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "result",
-            "stringValue": null
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "name": "authors.0.books.1.title",
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010",
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
-          "10101010101010",
-          "10101010101010"
-        ]
-      },
-      "internedData": {
-        "debugAnnotationStringValues": [
-          {
-            "iid": "10101010101010",
-            "str": "IzxCb29rIGlkOiAyLCB0aXRsZTogIlRoZSBNZXJyeSBXaXZlcyBvZiBXaW5k\nc29yIiwgYXV0aG9yX2lkOiAxPg==\n"
-          },
-          {
-            "iid": "10101010101010",
-            "str": "VGhlIE1lcnJ5IFdpdmVzIG9mIFdpbmRzb3I=\n"
-          }
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Field Execution"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "name": "arguments"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "object",
-            "stringValue": null
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "result",
-            "stringValue": null
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "name": "authors.0.books.1.reviews",
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010",
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
-          "10101010101010",
-          "10101010101010"
-        ]
-      },
-      "internedData": {
-        "debugAnnotationStringValues": [
-          {
-            "iid": "10101010101010",
-            "str": "UmV2aWV3OjpBY3RpdmVSZWNvcmRfQXNzb2NpYXRpb25SZWxhdGlvbiwgLnRv\nX3NxbD0iU0VMRUNUIFwicmV2aWV3c1wiLiogRlJPTSBcInJldmlld3NcIiBX\nSEVSRSBcInJldmlld3NcIi5cImJvb2tfaWRcIiA9IDIgTElNSVQgMiI=\n"
-          }
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "ActiveSupport::Notifications"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "boolValue": false,
-            "name": "async"
-          },
-          {
-            "nameIid": "10101010101010",
-            "arrayValues": [
-              {
-                "nameIid": "10101010101010",
-                "stringValueIid": "10101010101010"
-              },
-              {
-                "nameIid": "10101010101010",
-                "stringValueIid": "10101010101010"
-              }
-            ],
-            "name": "binds"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "connection",
-            "stringValue": "connection"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "name\n",
-            "stringValue": null
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "sql",
-            "stringValue": null
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "statement_name",
-            "stringValue": null
-          },
-          {
-            "nameIid": "10101010101010",
-            "arrayValues": [
-              {
-                "nameIid": "10101010101010",
-                "intValue": "10101010101010"
-              },
-              {
-                "nameIid": "10101010101010",
-                "intValue": "10101010101010"
-              }
-            ],
-            "name": "type_casted_binds"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "trackUuid": "10101010101010",
-        "name": "sql.active_record"
-      },
-      "internedData": {
-        "debugAnnotationStringValues": [
-          {
-            "iid": "10101010101010",
-            "str": "IzxBY3RpdmVSZWNvcmQ6OlJlbGF0aW9uOjpRdWVyeUF0dHJpYnV0ZQ==\n"
-          },
-          {
-            "iid": "10101010101010",
-            "str": "IzxBY3RpdmVNb2RlbDo6QXR0cmlidXRlOjpXaXRoQ2FzdFZhbHVl\n"
-          }
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "name": "sql.active_record",
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "ActiveSupport::Notifications"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "class_name",
-            "stringValue": null
-          },
-          {
-            "nameIid": "10101010101010",
-            "intValue": "10101010101010",
-            "name": "record_count"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "trackUuid": "10101010101010",
-        "name": "instantiation.active_record"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "name": "instantiation.active_record",
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Field Execution"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "trackUuid": "10101010101010",
-        "name": "authors.0.books.1.averageReview",
-        "flowIds": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Dataloader"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "type": "TYPE_INSTANT",
-        "trackUuid": "10101010101010",
-        "name": "Fiber Yield"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Dataloader"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "type": "TYPE_INSTANT",
-        "trackUuid": "10101010101010",
-        "name": "Fiber Resume"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Field Execution"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "name": "arguments"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "object",
-            "stringValue": null
-          },
-          {
-            "nameIid": "10101010101010",
-            "doubleValue": 101010101010,
-            "name": "result"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "trackUuid": "10101010101010",
-        "name": "authors.0.books.0.averageReview",
-        "flowIds": [
-          "10101010101010"
-        ]
-      }
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010",
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
-          "10101010101010",
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Field Execution"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "name": "arguments"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "object",
-            "stringValue": null
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "result",
             "stringValue": "authorized?"
           }
         ],
@@ -4455,14 +4293,13 @@
           },
           {
             "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "result",
-            "stringValue": "authorized?"
+            "doubleValue": 101010101010,
+            "name": "result"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
         "trackUuid": "10101010101010",
-        "name": "authors.0.books.0.author",
+        "name": "authors.0.books.0.averageReview",
         "flowIds": [
           "10101010101010"
         ]
@@ -4480,51 +4317,6 @@
         ],
         "extraCounterTrackUuids": [
           "10101010101010",
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Authorized"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "boolValue": true,
-            "name": "authorized?"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "nameIid": "10101010101010",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ],
-        "name": "Authorize: Author"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
           "10101010101010"
         ]
       },
@@ -4988,647 +4780,6 @@
         "categoryIids": [
           "10101010101010"
         ],
-        "type": "TYPE_SLICE_BEGIN",
-        "trackUuid": "10101010101010",
-        "name": "authors.1.books.0.author",
-        "flowIds": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Dataloader"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "type": "TYPE_INSTANT",
-        "trackUuid": "10101010101010",
-        "name": "Fiber Yield"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Dataloader"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "type": "TYPE_INSTANT",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010",
-          "10101010101010"
-        ],
-        "name": "Create Source Fiber",
-        "extraCounterTrackUuids": [
-          "10101010101010",
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "trustedPacketSequenceId": 101010101010,
-      "sequenceFlags": 101010101010,
-      "trackDescriptor": {
-        "uuid": "10101010101010",
-        "name": "Source Fiber #1010",
-        "parentUuid": "10101010101010",
-        "childOrdering": "CHRONOLOGICAL"
-      }
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Dataloader"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "@model",
-            "stringValue": "analyzers"
-          },
-          {
-            "nameIid": "10101010101010",
-            "arrayValues": [
-              {
-                "nameIid": "10101010101010",
-                "intValue": "10101010101010"
-              }
-            ],
-            "name": "fetch keys"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "nameIid": "10101010101010",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ],
-        "flowIds": [
-          "10101010101010"
-        ],
-        "name": "PerfettoSchema::Record"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "ActiveSupport::Notifications"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "boolValue": false,
-            "name": "async"
-          },
-          {
-            "nameIid": "10101010101010",
-            "arrayValues": [
-              {
-                "nameIid": "10101010101010",
-                "stringValueIid": "10101010101010"
-              }
-            ],
-            "name": "binds"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "connection",
-            "stringValue": "connection"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "name\n",
-            "stringValue": "query_string"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "sql",
-            "stringValue": null
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "statement_name",
-            "stringValue": null
-          },
-          {
-            "nameIid": "10101010101010",
-            "arrayValues": [
-              {
-                "nameIid": "10101010101010",
-                "intValue": "10101010101010"
-              }
-            ],
-            "name": "type_casted_binds"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "trackUuid": "10101010101010",
-        "name": "sql.active_record"
-      },
-      "internedData": {
-        "debugAnnotationStringValues": [
-          {
-            "iid": "10101010101010",
-            "str": "IzxBY3RpdmVSZWNvcmQ6OlJlbGF0aW9uOjpRdWVyeUF0dHJpYnV0ZQ==\n"
-          }
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "name": "sql.active_record",
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "ActiveSupport::Notifications"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "class_name",
-            "stringValue": "analyzers"
-          },
-          {
-            "nameIid": "10101010101010",
-            "intValue": "10101010101010",
-            "name": "record_count"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "trackUuid": "10101010101010",
-        "name": "instantiation.active_record"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "name": "instantiation.active_record",
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Dataloader"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "arrayValues": [
-              {
-                "nameIid": "10101010101010",
-                "stringValueIid": "10101010101010"
-              },
-              {
-                "nameIid": "10101010101010",
-                "stringValueIid": "10101010101010"
-              }
-            ],
-            "name": "fetch keys"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "nameIid": "10101010101010",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ],
-        "flowIds": [
-          "10101010101010",
-          "10101010101010"
-        ],
-        "name": "PerfettoSchema::AverageReview"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "ActiveSupport::Notifications"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "boolValue": false,
-            "name": "async"
-          },
-          {
-            "nameIid": "10101010101010",
-            "name": "binds"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "connection",
-            "stringValue": "connection"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "name\n",
-            "stringValue": "type_casted_binds"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "sql",
-            "stringValue": null
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "statement_name",
-            "stringValue": null
-          },
-          {
-            "nameIid": "10101010101010",
-            "name": "type_casted_binds"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "trackUuid": "10101010101010",
-        "name": "sql.active_record"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "name": "sql.active_record",
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "ActiveSupport::Notifications"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "class_name",
-            "stringValue": "record_count"
-          },
-          {
-            "nameIid": "10101010101010",
-            "intValue": "10101010101010",
-            "name": "record_count"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "trackUuid": "10101010101010",
-        "name": "instantiation.active_record"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "name": "instantiation.active_record",
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Dataloader"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "arrayValues": [
-              {
-                "nameIid": "10101010101010",
-                "stringValueIid": "10101010101010"
-              }
-            ],
-            "name": "fetch keys"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "nameIid": "10101010101010",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ],
-        "flowIds": [
-          "10101010101010"
-        ],
-        "name": "PerfettoSchema::OtherBook"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "ActiveSupport::Notifications"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "boolValue": false,
-            "name": "async"
-          },
-          {
-            "nameIid": "10101010101010",
-            "arrayValues": [
-              {
-                "nameIid": "10101010101010",
-                "stringValueIid": "10101010101010"
-              },
-              {
-                "nameIid": "10101010101010",
-                "stringValueIid": "10101010101010"
-              }
-            ],
-            "name": "binds"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "connection",
-            "stringValue": "connection"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "name\n",
-            "stringValue": null
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "sql",
-            "stringValue": null
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "statement_name",
-            "stringValue": null
-          },
-          {
-            "nameIid": "10101010101010",
-            "arrayValues": [
-              {
-                "nameIid": "10101010101010",
-                "intValue": "10101010101010"
-              },
-              {
-                "nameIid": "10101010101010",
-                "intValue": "10101010101010"
-              }
-            ],
-            "name": "type_casted_binds"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "trackUuid": "10101010101010",
-        "name": "sql.active_record"
-      },
-      "internedData": {
-        "debugAnnotationStringValues": [
-          {
-            "iid": "10101010101010",
-            "str": "IzxBY3RpdmVSZWNvcmQ6OlJlbGF0aW9uOjpRdWVyeUF0dHJpYnV0ZQ==\n"
-          },
-          {
-            "iid": "10101010101010",
-            "str": "IzxBY3RpdmVSZWNvcmQ6OlJlbGF0aW9uOjpRdWVyeUF0dHJpYnV0ZQ==\n"
-          }
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "name": "sql.active_record",
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Dataloader"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "type": "TYPE_INSTANT",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "name": "Fiber Exit",
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Dataloader"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "type": "TYPE_INSTANT",
-        "trackUuid": "10101010101010",
-        "name": "Fiber Resume"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Field Execution"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
         "debugAnnotations": [
           {
             "nameIid": "10101010101010",
@@ -5642,17 +4793,22 @@
           },
           {
             "nameIid": "10101010101010",
-            "doubleValue": 101010101010,
-            "name": "result"
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": "class_name"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
         "trackUuid": "10101010101010",
-        "name": "authors.0.books.1.averageReview",
-        "flowIds": [
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "authors.1.books.0.author",
+        "extraCounterTrackUuids": [
           "10101010101010"
         ]
-      }
+      },
+      "sequenceFlags": 101010101010
     },
     {
       "timestamp": "10101010101010",
@@ -5666,6 +4822,51 @@
         ],
         "extraCounterTrackUuids": [
           "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": true,
+            "name": "authorized?"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "name": "Authorize: Author"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
           "10101010101010"
         ]
       },
@@ -5754,14 +4955,13 @@
           },
           {
             "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "result",
-            "stringValue": null
+            "doubleValue": 101010101010,
+            "name": "result"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
         "trackUuid": "10101010101010",
-        "name": "authors.0.books.1.otherBook",
+        "name": "authors.0.books.1.averageReview",
         "flowIds": [
           "10101010101010"
         ]
@@ -5779,51 +4979,6 @@
         ],
         "extraCounterTrackUuids": [
           "10101010101010",
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Authorized"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "boolValue": true,
-            "name": "authorized?"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "nameIid": "10101010101010",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ],
-        "name": "Authorize: Book"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
           "10101010101010"
         ]
       },
@@ -6167,6 +5322,771 @@
         ],
         "type": "TYPE_INSTANT",
         "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "name": "Create Source Fiber",
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "trustedPacketSequenceId": 101010101010,
+      "sequenceFlags": 101010101010,
+      "trackDescriptor": {
+        "uuid": "10101010101010",
+        "name": "Source Fiber #1010",
+        "parentUuid": "10101010101010",
+        "childOrdering": "CHRONOLOGICAL"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "arrayValues": [
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              }
+            ],
+            "name": "fetch keys"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "flowIds": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "name": "PerfettoSchema::AverageReview"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "ActiveSupport::Notifications"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "nameIid": "10101010101010",
+            "name": "binds"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "connection",
+            "stringValue": "connection"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "name\n",
+            "stringValue": "type_casted_binds"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "name": "type_casted_binds"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "sql.active_record"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "sql.active_record",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "ActiveSupport::Notifications"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "class_name",
+            "stringValue": "record_count"
+          },
+          {
+            "nameIid": "10101010101010",
+            "intValue": "10101010101010",
+            "name": "record_count"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "instantiation.active_record"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "instantiation.active_record",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "arrayValues": [
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              }
+            ],
+            "name": "fetch keys"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "flowIds": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "name": "PerfettoSchema::OtherBook"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "ActiveSupport::Notifications"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "nameIid": "10101010101010",
+            "arrayValues": [
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              }
+            ],
+            "name": "binds"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "connection",
+            "stringValue": "connection"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "name\n",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "arrayValues": [
+              {
+                "nameIid": "10101010101010",
+                "intValue": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "intValue": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "intValue": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "intValue": "10101010101010"
+              }
+            ],
+            "name": "type_casted_binds"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "sql.active_record"
+      },
+      "internedData": {
+        "debugAnnotationStringValues": [
+          {
+            "iid": "10101010101010",
+            "str": "U0VMRUNUIE1BWCgiYm9va3MiLiJpZCIpIEFTICJtYXhpbXVtX2lkIiwgImJv\nb2tzIi4iYXV0aG9yX2lkIiBBUyAiYm9va3NfYXV0aG9yX2lkIiBGUk9NICJi\nb29rcyIgV0hFUkUgImJvb2tzIi4iYXV0aG9yX2lkIiBJTiAoPywgPykgQU5E\nICJib29rcyIuImlkIiBOT1QgSU4gKD8sID8pIEdST1VQIEJZICJib29rcyIu\nImF1dGhvcl9pZCI=\n"
+          },
+          {
+            "iid": "10101010101010",
+            "str": "IzxBY3RpdmVNb2RlbDo6QXR0cmlidXRlOjpXaXRoQ2FzdFZhbHVl\n"
+          },
+          {
+            "iid": "10101010101010",
+            "str": "IzxBY3RpdmVNb2RlbDo6QXR0cmlidXRlOjpXaXRoQ2FzdFZhbHVl\n"
+          },
+          {
+            "iid": "10101010101010",
+            "str": "IzxBY3RpdmVNb2RlbDo6QXR0cmlidXRlOjpXaXRoQ2FzdFZhbHVl\n"
+          },
+          {
+            "iid": "10101010101010",
+            "str": "IzxBY3RpdmVNb2RlbDo6QXR0cmlidXRlOjpXaXRoQ2FzdFZhbHVl\n"
+          }
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "sql.active_record",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "name": "Fiber Yield"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "name": "Create Source Fiber",
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "trustedPacketSequenceId": 101010101010,
+      "sequenceFlags": 101010101010,
+      "trackDescriptor": {
+        "uuid": "10101010101010",
+        "name": "Source Fiber #1010",
+        "parentUuid": "10101010101010",
+        "childOrdering": "CHRONOLOGICAL"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "@find_by",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "@model_class",
+            "stringValue": "record_count"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "@type_for_column",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "arrayValues": [
+              {
+                "nameIid": "10101010101010",
+                "intValue": "10101010101010"
+              }
+            ],
+            "name": "fetch keys"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "flowIds": [
+          "10101010101010"
+        ],
+        "name": "GraphQL::Dataloader::ActiveRecordSource"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "ActiveSupport::Notifications"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": false,
+            "name": "async"
+          },
+          {
+            "nameIid": "10101010101010",
+            "arrayValues": [
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              }
+            ],
+            "name": "binds"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "connection",
+            "stringValue": "connection"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "name\n",
+            "stringValue": "type_casted_binds"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "sql",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "statement_name",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "arrayValues": [
+              {
+                "nameIid": "10101010101010",
+                "intValue": "10101010101010"
+              }
+            ],
+            "name": "type_casted_binds"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "sql.active_record"
+      },
+      "internedData": {
+        "debugAnnotationStringValues": [
+          {
+            "iid": "10101010101010",
+            "str": "IzxBY3RpdmVSZWNvcmQ6OlJlbGF0aW9uOjpRdWVyeUF0dHJpYnV0ZQ==\n"
+          }
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "sql.active_record",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "ActiveSupport::Notifications"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "class_name",
+            "stringValue": "record_count"
+          },
+          {
+            "nameIid": "10101010101010",
+            "intValue": "10101010101010",
+            "name": "record_count"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "instantiation.active_record"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "instantiation.active_record",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "Fiber Exit",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "name": "Fiber Resume"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "arrayValues": [
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              }
+            ],
+            "name": "fetch keys"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "flowIds": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "name": "PerfettoSchema::OtherBook"
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "Fiber Exit",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
         "name": "Fiber Resume"
       },
       "sequenceFlags": 101010101010
@@ -6194,13 +6114,14 @@
           },
           {
             "nameIid": "10101010101010",
-            "doubleValue": 101010101010,
-            "name": "result"
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": null
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
         "trackUuid": "10101010101010",
-        "name": "authors.1.books.0.averageReview",
+        "name": "authors.0.books.1.otherBook",
         "flowIds": [
           "10101010101010"
         ]
@@ -6218,6 +6139,51 @@
         ],
         "extraCounterTrackUuids": [
           "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": true,
+            "name": "authorized?"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "name": "Authorize: Book"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
           "10101010101010"
         ]
       },
@@ -6408,14 +6374,13 @@
           },
           {
             "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "result",
-            "stringValue": "class_name"
+            "doubleValue": 101010101010,
+            "name": "result"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
         "trackUuid": "10101010101010",
-        "name": "authors.1.books.0.author",
+        "name": "authors.1.books.0.averageReview",
         "flowIds": [
           "10101010101010"
         ]
@@ -6433,51 +6398,6 @@
         ],
         "extraCounterTrackUuids": [
           "10101010101010",
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Authorized"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "boolValue": true,
-            "name": "authorized?"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "nameIid": "10101010101010",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ],
-        "name": "Authorize: Author"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
           "10101010101010"
         ]
       },
@@ -6821,747 +6741,6 @@
         ],
         "type": "TYPE_INSTANT",
         "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010",
-          "10101010101010"
-        ],
-        "name": "Create Source Fiber",
-        "extraCounterTrackUuids": [
-          "10101010101010",
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "trustedPacketSequenceId": 101010101010,
-      "sequenceFlags": 101010101010,
-      "trackDescriptor": {
-        "uuid": "10101010101010",
-        "name": "Source Fiber #1010",
-        "parentUuid": "10101010101010",
-        "childOrdering": "CHRONOLOGICAL"
-      }
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Dataloader"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "arrayValues": [
-              {
-                "nameIid": "10101010101010",
-                "stringValueIid": "10101010101010"
-              },
-              {
-                "nameIid": "10101010101010",
-                "stringValueIid": "10101010101010"
-              }
-            ],
-            "name": "fetch keys"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "nameIid": "10101010101010",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ],
-        "flowIds": [
-          "10101010101010",
-          "10101010101010"
-        ],
-        "name": "PerfettoSchema::AverageReview"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "ActiveSupport::Notifications"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "boolValue": false,
-            "name": "async"
-          },
-          {
-            "nameIid": "10101010101010",
-            "name": "binds"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "connection",
-            "stringValue": "connection"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "name\n",
-            "stringValue": "type_casted_binds"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "sql",
-            "stringValue": null
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "statement_name",
-            "stringValue": null
-          },
-          {
-            "nameIid": "10101010101010",
-            "name": "type_casted_binds"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "trackUuid": "10101010101010",
-        "name": "sql.active_record"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "name": "sql.active_record",
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "ActiveSupport::Notifications"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "class_name",
-            "stringValue": "record_count"
-          },
-          {
-            "nameIid": "10101010101010",
-            "intValue": "10101010101010",
-            "name": "record_count"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "trackUuid": "10101010101010",
-        "name": "instantiation.active_record"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "name": "instantiation.active_record",
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Dataloader"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "arrayValues": [
-              {
-                "nameIid": "10101010101010",
-                "stringValueIid": "10101010101010"
-              },
-              {
-                "nameIid": "10101010101010",
-                "stringValueIid": "10101010101010"
-              }
-            ],
-            "name": "fetch keys"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "nameIid": "10101010101010",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ],
-        "flowIds": [
-          "10101010101010",
-          "10101010101010"
-        ],
-        "name": "PerfettoSchema::OtherBook"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "ActiveSupport::Notifications"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "boolValue": false,
-            "name": "async"
-          },
-          {
-            "nameIid": "10101010101010",
-            "arrayValues": [
-              {
-                "nameIid": "10101010101010",
-                "stringValueIid": "10101010101010"
-              },
-              {
-                "nameIid": "10101010101010",
-                "stringValueIid": "10101010101010"
-              },
-              {
-                "nameIid": "10101010101010",
-                "stringValueIid": "10101010101010"
-              }
-            ],
-            "name": "binds"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "connection",
-            "stringValue": "connection"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "name\n",
-            "stringValue": null
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "sql",
-            "stringValue": null
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "statement_name",
-            "stringValue": null
-          },
-          {
-            "nameIid": "10101010101010",
-            "arrayValues": [
-              {
-                "nameIid": "10101010101010",
-                "intValue": "10101010101010"
-              },
-              {
-                "nameIid": "10101010101010",
-                "intValue": "10101010101010"
-              },
-              {
-                "nameIid": "10101010101010",
-                "intValue": "10101010101010"
-              }
-            ],
-            "name": "type_casted_binds"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "trackUuid": "10101010101010",
-        "name": "sql.active_record"
-      },
-      "internedData": {
-        "debugAnnotationStringValues": [
-          {
-            "iid": "10101010101010",
-            "str": "U0VMRUNUIE1BWCgiYm9va3MiLiJpZCIpIEFTICJtYXhpbXVtX2lkIiwgImJv\nb2tzIi4iYXV0aG9yX2lkIiBBUyAiYm9va3NfYXV0aG9yX2lkIiBGUk9NICJi\nb29rcyIgV0hFUkUgImJvb2tzIi4iYXV0aG9yX2lkIiA9ID8gQU5EICJib29r\ncyIuImlkIiBOT1QgSU4gKD8sID8pIEdST1VQIEJZICJib29rcyIuImF1dGhv\ncl9pZCI=\n"
-          },
-          {
-            "iid": "10101010101010",
-            "str": "IzxBY3RpdmVSZWNvcmQ6OlJlbGF0aW9uOjpRdWVyeUF0dHJpYnV0ZQ==\n"
-          },
-          {
-            "iid": "10101010101010",
-            "str": "IzxBY3RpdmVNb2RlbDo6QXR0cmlidXRlOjpXaXRoQ2FzdFZhbHVl\n"
-          },
-          {
-            "iid": "10101010101010",
-            "str": "IzxBY3RpdmVNb2RlbDo6QXR0cmlidXRlOjpXaXRoQ2FzdFZhbHVl\n"
-          }
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "name": "sql.active_record",
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Dataloader"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "type": "TYPE_INSTANT",
-        "trackUuid": "10101010101010",
-        "name": "Fiber Yield"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Dataloader"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "type": "TYPE_INSTANT",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010",
-          "10101010101010"
-        ],
-        "name": "Create Source Fiber",
-        "extraCounterTrackUuids": [
-          "10101010101010",
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "trustedPacketSequenceId": 101010101010,
-      "sequenceFlags": 101010101010,
-      "trackDescriptor": {
-        "uuid": "10101010101010",
-        "name": "Source Fiber #1010",
-        "parentUuid": "10101010101010",
-        "childOrdering": "CHRONOLOGICAL"
-      }
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Dataloader"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "@model",
-            "stringValue": "record_count"
-          },
-          {
-            "nameIid": "10101010101010",
-            "arrayValues": [
-              {
-                "nameIid": "10101010101010",
-                "intValue": "10101010101010"
-              }
-            ],
-            "name": "fetch keys"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "nameIid": "10101010101010",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ],
-        "flowIds": [
-          "10101010101010"
-        ],
-        "name": "PerfettoSchema::Record"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "ActiveSupport::Notifications"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "boolValue": false,
-            "name": "async"
-          },
-          {
-            "nameIid": "10101010101010",
-            "arrayValues": [
-              {
-                "nameIid": "10101010101010",
-                "stringValueIid": "10101010101010"
-              }
-            ],
-            "name": "binds"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "connection",
-            "stringValue": "connection"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "name\n",
-            "stringValue": "type_casted_binds"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "sql",
-            "stringValue": null
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "statement_name",
-            "stringValue": null
-          },
-          {
-            "nameIid": "10101010101010",
-            "arrayValues": [
-              {
-                "nameIid": "10101010101010",
-                "intValue": "10101010101010"
-              }
-            ],
-            "name": "type_casted_binds"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "trackUuid": "10101010101010",
-        "name": "sql.active_record"
-      },
-      "internedData": {
-        "debugAnnotationStringValues": [
-          {
-            "iid": "10101010101010",
-            "str": "IzxBY3RpdmVSZWNvcmQ6OlJlbGF0aW9uOjpRdWVyeUF0dHJpYnV0ZQ==\n"
-          }
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "name": "sql.active_record",
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "ActiveSupport::Notifications"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "class_name",
-            "stringValue": "record_count"
-          },
-          {
-            "nameIid": "10101010101010",
-            "intValue": "10101010101010",
-            "name": "record_count"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "trackUuid": "10101010101010",
-        "name": "instantiation.active_record"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "name": "instantiation.active_record",
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Dataloader"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "type": "TYPE_INSTANT",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "name": "Fiber Exit",
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Dataloader"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "type": "TYPE_INSTANT",
-        "trackUuid": "10101010101010",
-        "name": "Fiber Resume"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Dataloader"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "arrayValues": [
-              {
-                "nameIid": "10101010101010",
-                "stringValueIid": "10101010101010"
-              },
-              {
-                "nameIid": "10101010101010",
-                "stringValueIid": "10101010101010"
-              }
-            ],
-            "name": "fetch keys"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "nameIid": "10101010101010",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ],
-        "flowIds": [
-          "10101010101010",
-          "10101010101010"
-        ],
-        "name": "PerfettoSchema::OtherBook"
-      }
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Dataloader"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "type": "TYPE_INSTANT",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "name": "Fiber Exit",
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Dataloader"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "type": "TYPE_INSTANT",
-        "trackUuid": "10101010101010",
         "name": "Fiber Resume"
       },
       "sequenceFlags": 101010101010
@@ -7682,9 +6861,111 @@
         "categoryIids": [
           "10101010101010"
         ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": "id"
+          }
+        ],
         "type": "TYPE_SLICE_BEGIN",
         "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
         "name": "authors.2.books.0.author",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": true,
+            "name": "authorized?"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "name": "Authorize: Author"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "authors.2.books.0.otherBook",
         "flowIds": [
           "10101010101010"
         ]
@@ -7779,164 +7060,6 @@
         ],
         "extraCounterTrackUuids": [
           "10101010101010",
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Field Execution"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "trackUuid": "10101010101010",
-        "name": "authors.2.books.0.otherBook",
-        "flowIds": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Dataloader"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "type": "TYPE_INSTANT",
-        "trackUuid": "10101010101010",
-        "name": "Fiber Yield"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Dataloader"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "type": "TYPE_INSTANT",
-        "trackUuid": "10101010101010",
-        "name": "Fiber Resume"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Field Execution"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "name": "arguments"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "object",
-            "stringValue": null
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "result",
-            "stringValue": null
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "trackUuid": "10101010101010",
-        "name": "authors.1.books.1.otherBook",
-        "flowIds": [
-          "10101010101010"
-        ]
-      }
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010",
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
-          "10101010101010",
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Authorized"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "boolValue": true,
-            "name": "authorized?"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "nameIid": "10101010101010",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ],
-        "name": "Authorize: Book"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
           "10101010101010"
         ]
       },
@@ -8280,118 +7403,6 @@
         ],
         "type": "TYPE_INSTANT",
         "trackUuid": "10101010101010",
-        "name": "Fiber Resume"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Field Execution"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "name": "arguments"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "object",
-            "stringValue": null
-          },
-          {
-            "nameIid": "10101010101010",
-            "doubleValue": 101010101010,
-            "name": "result"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "trackUuid": "10101010101010",
-        "name": "authors.2.books.0.averageReview",
-        "flowIds": [
-          "10101010101010"
-        ]
-      }
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010",
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
-          "10101010101010",
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Field Execution"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "trackUuid": "10101010101010",
-        "name": "authors.2.books.1.author",
-        "flowIds": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Dataloader"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "type": "TYPE_INSTANT",
-        "trackUuid": "10101010101010",
-        "name": "Fiber Yield"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Dataloader"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "type": "TYPE_INSTANT",
-        "trackUuid": "10101010101010",
         "extraCounterValues": [
           "10101010101010",
           "10101010101010"
@@ -8427,16 +7438,14 @@
         "debugAnnotations": [
           {
             "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "@model",
-            "stringValue": "analyzers"
-          },
-          {
-            "nameIid": "10101010101010",
             "arrayValues": [
               {
                 "nameIid": "10101010101010",
-                "intValue": "10101010101010"
+                "stringValueIid": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
               }
             ],
             "name": "fetch keys"
@@ -8453,195 +7462,6 @@
         ],
         "flowIds": [
           "10101010101010",
-          "10101010101010"
-        ],
-        "name": "PerfettoSchema::Record"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "ActiveSupport::Notifications"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "boolValue": false,
-            "name": "async"
-          },
-          {
-            "nameIid": "10101010101010",
-            "arrayValues": [
-              {
-                "nameIid": "10101010101010",
-                "stringValueIid": "10101010101010"
-              }
-            ],
-            "name": "binds"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "connection",
-            "stringValue": "connection"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "name\n",
-            "stringValue": "query_string"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "sql",
-            "stringValue": null
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "statement_name",
-            "stringValue": null
-          },
-          {
-            "nameIid": "10101010101010",
-            "arrayValues": [
-              {
-                "nameIid": "10101010101010",
-                "intValue": "10101010101010"
-              }
-            ],
-            "name": "type_casted_binds"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "trackUuid": "10101010101010",
-        "name": "sql.active_record"
-      },
-      "internedData": {
-        "debugAnnotationStringValues": [
-          {
-            "iid": "10101010101010",
-            "str": "IzxBY3RpdmVSZWNvcmQ6OlJlbGF0aW9uOjpRdWVyeUF0dHJpYnV0ZQ==\n"
-          }
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "name": "sql.active_record",
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "ActiveSupport::Notifications"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "class_name",
-            "stringValue": "analyzers"
-          },
-          {
-            "nameIid": "10101010101010",
-            "intValue": "10101010101010",
-            "name": "record_count"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "trackUuid": "10101010101010",
-        "name": "instantiation.active_record"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "name": "instantiation.active_record",
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Dataloader"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "arrayValues": [
-              {
-                "nameIid": "10101010101010",
-                "stringValueIid": "10101010101010"
-              }
-            ],
-            "name": "fetch keys"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "nameIid": "10101010101010",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ],
-        "flowIds": [
           "10101010101010"
         ],
         "name": "PerfettoSchema::AverageReview"
@@ -8796,6 +7616,10 @@
               {
                 "nameIid": "10101010101010",
                 "stringValueIid": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
               }
             ],
             "name": "fetch keys"
@@ -8811,6 +7635,7 @@
           "10101010101010"
         ],
         "flowIds": [
+          "10101010101010",
           "10101010101010"
         ],
         "name": "PerfettoSchema::OtherBook"
@@ -8836,6 +7661,14 @@
           {
             "nameIid": "10101010101010",
             "arrayValues": [
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
+              },
               {
                 "nameIid": "10101010101010",
                 "stringValueIid": "10101010101010"
@@ -8881,6 +7714,14 @@
               {
                 "nameIid": "10101010101010",
                 "intValue": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "intValue": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "intValue": "10101010101010"
               }
             ],
             "name": "type_casted_binds"
@@ -8894,11 +7735,19 @@
         "debugAnnotationStringValues": [
           {
             "iid": "10101010101010",
-            "str": "IzxBY3RpdmVSZWNvcmQ6OlJlbGF0aW9uOjpRdWVyeUF0dHJpYnV0ZQ==\n"
+            "str": "IzxBY3RpdmVNb2RlbDo6QXR0cmlidXRlOjpXaXRoQ2FzdFZhbHVl\n"
           },
           {
             "iid": "10101010101010",
-            "str": "IzxBY3RpdmVSZWNvcmQ6OlJlbGF0aW9uOjpRdWVyeUF0dHJpYnV0ZQ==\n"
+            "str": "IzxBY3RpdmVNb2RlbDo6QXR0cmlidXRlOjpXaXRoQ2FzdFZhbHVl\n"
+          },
+          {
+            "iid": "10101010101010",
+            "str": "IzxBY3RpdmVNb2RlbDo6QXR0cmlidXRlOjpXaXRoQ2FzdFZhbHVl\n"
+          },
+          {
+            "iid": "10101010101010",
+            "str": "IzxBY3RpdmVNb2RlbDo6QXR0cmlidXRlOjpXaXRoQ2FzdFZhbHVl\n"
           }
         ]
       },
@@ -8993,8 +7842,20 @@
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
-            "name": "@model",
+            "name": "@find_by",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "@model_class",
             "stringValue": "record_count"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "@type_for_column",
+            "stringValue": null
           },
           {
             "nameIid": "10101010101010",
@@ -9019,7 +7880,7 @@
         "flowIds": [
           "10101010101010"
         ],
-        "name": "PerfettoSchema::Record"
+        "name": "GraphQL::Dataloader::ActiveRecordSource"
       },
       "sequenceFlags": 101010101010
     },
@@ -9229,6 +8090,10 @@
               {
                 "nameIid": "10101010101010",
                 "stringValueIid": "10101010101010"
+              },
+              {
+                "nameIid": "10101010101010",
+                "stringValueIid": "10101010101010"
               }
             ],
             "name": "fetch keys"
@@ -9244,6 +8109,7 @@
           "10101010101010"
         ],
         "flowIds": [
+          "10101010101010",
           "10101010101010"
         ],
         "name": "PerfettoSchema::OtherBook"
@@ -9332,11 +8198,113 @@
         ],
         "type": "TYPE_SLICE_BEGIN",
         "trackUuid": "10101010101010",
-        "name": "authors.2.books.0.author",
+        "name": "authors.1.books.1.otherBook",
         "flowIds": [
           "10101010101010"
         ]
       }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "boolValue": true,
+            "name": "authorized?"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ],
+        "name": "Authorize: Book"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": "id"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "authors.2.books.1.author",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
     },
     {
       "timestamp": "10101010101010",
@@ -9415,6 +8383,127 @@
         "name": "authors.2.books.1.otherBook",
         "flowIds": [
           "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "name": "Fiber Yield"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Dataloader"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_INSTANT",
+        "trackUuid": "10101010101010",
+        "name": "Fiber Resume"
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "doubleValue": 101010101010,
+            "name": "result"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "name": "authors.2.books.0.averageReview",
+        "flowIds": [
+          "10101010101010"
+        ]
+      }
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Authorized"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "nameIid": "10101010101010",
+        "trackUuid": "10101010101010",
+        "flowIds": [
+          "10101010101010"
+        ],
+        "name": "Authorize: Review"
+      },
+      "internedData": {
+        "eventNames": [
+          {
+            "iid": "10101010101010",
+            "name": "Authorize: Review"
+          }
         ]
       },
       "sequenceFlags": 101010101010
@@ -9584,14 +8673,6 @@
         ],
         "name": "Authorize: Review"
       },
-      "internedData": {
-        "eventNames": [
-          {
-            "iid": "10101010101010",
-            "name": "Authorize: Review"
-          }
-        ]
-      },
       "sequenceFlags": 101010101010
     },
     {
@@ -9692,67 +8773,6 @@
       "trustedPacketSequenceId": 101010101010,
       "trackEvent": {
         "categories": [
-          "Authorized"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "nameIid": "10101010101010",
-        "trackUuid": "10101010101010",
-        "flowIds": [
-          "10101010101010"
-        ],
-        "name": "Authorize: Review"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Dataloader"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "type": "TYPE_INSTANT",
-        "trackUuid": "10101010101010",
-        "name": "Fiber Yield"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Dataloader"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "type": "TYPE_INSTANT",
-        "trackUuid": "10101010101010",
-        "name": "Fiber Resume"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
           "Field Execution"
         ],
         "categoryIids": [
@@ -9767,111 +8787,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "object",
-            "stringValue": null
+            "stringValue": "authorized?"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "result",
-            "stringValue": null
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "trackUuid": "10101010101010",
-        "name": "authors.2.books.1.author",
-        "flowIds": [
-          "10101010101010"
-        ]
-      }
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010",
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
-          "10101010101010",
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Authorized"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "boolValue": true,
-            "name": "authorized?"
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "nameIid": "10101010101010",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ],
-        "name": "Authorize: Author"
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Field Execution"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "name": "arguments"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "object",
-            "stringValue": null
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "result",
-            "stringValue": null
+            "stringValue": "sql"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -9879,7 +8801,7 @@
         "extraCounterValues": [
           "10101010101010"
         ],
-        "name": "t5.title",
+        "name": "authors.0.books.0.author.name",
         "extraCounterTrackUuids": [
           "10101010101010"
         ]
@@ -10480,13 +9402,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "object",
-            "stringValue": "authorized?"
+            "stringValue": null
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "result",
-            "stringValue": "sql"
+            "stringValue": null
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -10494,7 +9416,7 @@
         "extraCounterValues": [
           "10101010101010"
         ],
-        "name": "authors.0.books.1.author.name",
+        "name": "t5.title",
         "extraCounterTrackUuids": [
           "10101010101010"
         ]
@@ -10551,7 +9473,7 @@
         "extraCounterValues": [
           "10101010101010"
         ],
-        "name": "authors.0.books.0.author.name",
+        "name": "authors.0.books.1.author.name",
         "extraCounterTrackUuids": [
           "10101010101010"
         ]
@@ -10863,7 +9785,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "object",
-            "stringValue": null
+            "stringValue": "class_name"
           },
           {
             "nameIid": "10101010101010",
@@ -10877,7 +9799,7 @@
         "extraCounterValues": [
           "10101010101010"
         ],
-        "name": "authors.0.books.1.otherBook.title",
+        "name": "authors.1.books.0.author.name",
         "extraCounterTrackUuids": [
           "10101010101010"
         ]
@@ -11268,7 +10190,7 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "object",
-            "stringValue": "class_name"
+            "stringValue": null
           },
           {
             "nameIid": "10101010101010",
@@ -11282,7 +10204,7 @@
         "extraCounterValues": [
           "10101010101010"
         ],
-        "name": "authors.1.books.1.author.name",
+        "name": "authors.0.books.1.otherBook.title",
         "extraCounterTrackUuids": [
           "10101010101010"
         ]
@@ -11339,7 +10261,7 @@
         "extraCounterValues": [
           "10101010101010"
         ],
-        "name": "authors.1.books.0.author.name",
+        "name": "authors.1.books.1.author.name",
         "extraCounterTrackUuids": [
           "10101010101010"
         ]
@@ -11651,13 +10573,13 @@
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "object",
-            "stringValue": null
+            "stringValue": "id"
           },
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
             "name": "result",
-            "stringValue": null
+            "stringValue": "resolved_type"
           }
         ],
         "type": "TYPE_SLICE_BEGIN",
@@ -11665,7 +10587,7 @@
         "extraCounterValues": [
           "10101010101010"
         ],
-        "name": "authors.1.books.1.otherBook.title",
+        "name": "authors.2.books.0.author.name",
         "extraCounterTrackUuids": [
           "10101010101010"
         ]
@@ -12070,7 +10992,64 @@
         "extraCounterValues": [
           "10101010101010"
         ],
-        "name": "authors.2.books.0.author.name",
+        "name": "authors.1.books.1.otherBook.title",
+        "extraCounterTrackUuids": [
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "type": "TYPE_SLICE_END",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010",
+          "10101010101010"
+        ],
+        "extraCounterTrackUuids": [
+          "10101010101010",
+          "10101010101010"
+        ]
+      },
+      "sequenceFlags": 101010101010
+    },
+    {
+      "timestamp": "10101010101010",
+      "trustedPacketSequenceId": 101010101010,
+      "trackEvent": {
+        "categories": [
+          "Field Execution"
+        ],
+        "categoryIids": [
+          "10101010101010"
+        ],
+        "debugAnnotations": [
+          {
+            "nameIid": "10101010101010",
+            "name": "arguments"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "object",
+            "stringValue": "id"
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "result",
+            "stringValue": "resolved_type"
+          }
+        ],
+        "type": "TYPE_SLICE_BEGIN",
+        "trackUuid": "10101010101010",
+        "extraCounterValues": [
+          "10101010101010"
+        ],
+        "name": "authors.2.books.1.author.name",
         "extraCounterTrackUuids": [
           "10101010101010"
         ]
@@ -12155,63 +11134,6 @@
             "iid": "10101010101010",
             "str": "R3JlYXQgRXhwZWN0YXRpb25z\n"
           }
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "categories": [
-          "Field Execution"
-        ],
-        "categoryIids": [
-          "10101010101010"
-        ],
-        "debugAnnotations": [
-          {
-            "nameIid": "10101010101010",
-            "name": "arguments"
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "object",
-            "stringValue": null
-          },
-          {
-            "nameIid": "10101010101010",
-            "stringValueIid": "10101010101010",
-            "name": "result",
-            "stringValue": null
-          }
-        ],
-        "type": "TYPE_SLICE_BEGIN",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010"
-        ],
-        "name": "authors.2.books.1.author.name",
-        "extraCounterTrackUuids": [
-          "10101010101010"
-        ]
-      },
-      "sequenceFlags": 101010101010
-    },
-    {
-      "timestamp": "10101010101010",
-      "trustedPacketSequenceId": 101010101010,
-      "trackEvent": {
-        "type": "TYPE_SLICE_END",
-        "trackUuid": "10101010101010",
-        "extraCounterValues": [
-          "10101010101010",
-          "10101010101010"
-        ],
-        "extraCounterTrackUuids": [
-          "10101010101010",
-          "10101010101010"
         ]
       },
       "sequenceFlags": 101010101010
@@ -12735,7 +11657,19 @@
           {
             "nameIid": "10101010101010",
             "stringValueIid": "10101010101010",
-            "name": "@model",
+            "name": "@find_by",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "@model_class",
+            "stringValue": null
+          },
+          {
+            "nameIid": "10101010101010",
+            "stringValueIid": "10101010101010",
+            "name": "@type_for_column",
             "stringValue": null
           },
           {
@@ -12767,7 +11701,7 @@
           "10101010101010",
           "10101010101010"
         ],
-        "name": "PerfettoSchema::Record"
+        "name": "GraphQL::Dataloader::ActiveRecordSource"
       },
       "internedData": {
         "debugAnnotationStringValues": [

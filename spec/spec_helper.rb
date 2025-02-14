@@ -12,10 +12,10 @@ SimpleCov.start do
   enable_coverage :branch
   add_filter "spec/"
   add_group "Generators", "lib/generators"
-  add_group "Execution", [/analysis/, /language/, /execution/, /static_validation/, /pagination/, /subscriptions/, /query/, /tracing/, /introspection/, /dataloader/, /backtrace/]
+  add_group "Execution", [/analysis/, /language/, /execution/, /static_validation/, /pagination/, /subscriptions/, /query/, /tracing/, /introspection/, /backtrace/]
   add_group "Helpers", [/rake_task/, /testing/, /rubocop/]
   add_group "Definition", [/types/, /relay/, /schema/]
-
+  add_group "Dataloader", [/dataloader/]
 end
 
 Bundler.require
@@ -193,4 +193,16 @@ def assert_warns(warning, printing = "")
   assert_equal warning, stderr, "It produced the expected stderr"
   assert_equal stdout, printing, "It produced the expected stdout"
   return_val
+end
+
+module Minitest
+  class Test
+    def self.it_dataloads(message, &block)
+      it(message) do
+        GraphQL::Dataloader.with_dataloading do |d|
+          self.instance_exec(d, &block)
+        end
+      end
+    end
+  end
 end
