@@ -60,6 +60,8 @@ if testing_rails?
     create_table :bands, force: true do |t|
       t.string :name
       t.integer :genre
+      t.integer :thing_id
+      t.string :thing_type
     end
 
     create_table :albums, force: true do |t|
@@ -111,7 +113,8 @@ if testing_rails?
   end
   class Band < ActiveRecord::Base
     has_many :albums
-    enum :genre, [:rock, :country]
+    enum :genre, [:rock, :country, :jazz]
+    belongs_to :thing, polymorphic: true
   end
 
   class AlternativeBand < Band
@@ -120,9 +123,9 @@ if testing_rails?
   end
 
   v = Band.create!(id: 1, name: "Vulfpeck", genre: :rock)
-  t = Band.create!(id: 2, name: "Tom's Story", genre: :rock)
-  c = Band.create!(id: 3, name: "Chon", genre: :rock)
-  w = Band.create!(id: 4, name: "Wilco", genre: :country)
+  t = Band.create!(id: 2, name: "Tom's Story", genre: :rock, thing: v)
+  c = Band.create!(id: 3, name: "Chon", genre: :rock, thing: v)
+  w = Band.create!(id: 4, name: "Wilco", genre: :country, thing: v)
 
   v.albums.create!(id: 1, name: "Mit Peck")
   v.albums.create!(id: 2, name: "My First Car")

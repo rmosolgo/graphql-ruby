@@ -42,9 +42,9 @@ module GraphQL
         #    dataload_association(:parent) # Equivalent to `object.parent`, but dataloaded
         # @example Looking up an associated record on some other object
         #    dataload_association(:post, comment) # Equivalent to `comment.post`, but dataloaded
-        def dataload_association(association_name, record = object, scope: nil)
+        def dataload_association(record = object, association_name, scope: nil)
           source = if scope
-            dataloader.with(Dataloader::ActiveRecordAssociationSource, association_name, scope: scope)
+            dataloader.with(Dataloader::ActiveRecordAssociationSource, association_name, scope)
           else
             dataloader.with(Dataloader::ActiveRecordAssociationSource, association_name)
           end

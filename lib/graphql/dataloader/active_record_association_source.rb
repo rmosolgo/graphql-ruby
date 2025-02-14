@@ -7,13 +7,13 @@ module GraphQL
     class ActiveRecordAssociationSource < GraphQL::Dataloader::Source
       RECORD_SOURCE_CLASS = ActiveRecordSource
 
-      def initialize(association, scope: nil)
+      def initialize(association, scope = nil)
         @association = association
-        @scope = nil
+        @scope = scope
       end
 
       def load(record)
-        if (assoc = record.association(@association))&.loaded?
+        if (assoc = record.association(@association)).loaded?
           assoc.target
         else
           super

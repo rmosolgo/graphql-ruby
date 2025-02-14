@@ -103,7 +103,7 @@ if testing_rails?
 
       query(Query)
       use GraphQL::Dataloader, fiber_limit: 7
-      trace_with GraphQL::Tracing::PerfettoTrace, name_prefix: "PerfettoSchema::"
+      trace_with GraphQL::Tracing::PerfettoTrace
 
       def self.resolve_type(type, obj, ctx)
         self.const_get(obj.class.name)

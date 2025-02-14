@@ -12,10 +12,10 @@ SimpleCov.start do
   enable_coverage :branch
   add_filter "spec/"
   add_group "Generators", "lib/generators"
-  add_group "Execution", [/analysis/, /language/, /execution/, /static_validation/, /pagination/, /subscriptions/, /query/, /tracing/, /introspection/, /dataloader/, /backtrace/]
+  add_group "Execution", [/analysis/, /language/, /execution/, /static_validation/, /pagination/, /subscriptions/, /query/, /tracing/, /introspection/, /backtrace/]
   add_group "Helpers", [/rake_task/, /testing/, /rubocop/]
   add_group "Definition", [/types/, /relay/, /schema/]
-
+  add_group "Dataloader", [/dataloader/]
 end
 
 Bundler.require

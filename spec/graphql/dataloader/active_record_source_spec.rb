@@ -86,7 +86,18 @@ describe GraphQL::Dataloader::ActiveRecordSource do
 
         assert_equal "", log
       end
-      it "can infer class of passed-in objects"
+
+      it_dataloads "can infer class of passed-in objects" do |d|
+        d.merge_records([Band.find(3), Album.find(4)])
+        log = with_active_record_log(colorize: false) do
+          band3 = d.with(GraphQL::Dataloader::ActiveRecordSource, Band).load(3)
+          assert_equal "Chon", band3.name
+
+          album4 = d.with(GraphQL::Dataloader::ActiveRecordSource, Album).load(4)
+          assert_equal "Homey", album4.name
+        end
+        assert_equal "", log
+      end
     end
 
     describe "in queries" do
