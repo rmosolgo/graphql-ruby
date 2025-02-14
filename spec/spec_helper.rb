@@ -195,11 +195,13 @@ def assert_warns(warning, printing = "")
   return_val
 end
 
-class Minitest::Test
-  def self.it_dataloads(message, &block)
-    it(message) do
-      GraphQL::Dataloader.with_dataloading do |d|
-        self.instance_exec(d, &block)
+module Minitest
+  class Test
+    def self.it_dataloads(message, &block)
+      it(message) do
+        GraphQL::Dataloader.with_dataloading do |d|
+          self.instance_exec(d, &block)
+        end
       end
     end
   end
