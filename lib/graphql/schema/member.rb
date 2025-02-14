@@ -11,6 +11,7 @@ require 'graphql/schema/member/has_unresolved_type_error'
 require 'graphql/schema/member/has_validators'
 require 'graphql/schema/member/relay_shortcuts'
 require 'graphql/schema/member/scoped'
+require 'graphql/schema/member/strict_loading'
 require 'graphql/schema/member/type_system_helpers'
 require 'graphql/schema/member/validates_input'
 

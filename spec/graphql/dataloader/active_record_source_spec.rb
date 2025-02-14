@@ -99,11 +99,5 @@ describe GraphQL::Dataloader::ActiveRecordSource do
         assert_equal "", log
       end
     end
-
-    describe "in queries" do
-      it "loads records with dataload_record"
-
-      it "accepts custom find-by with dataload_record"
-    end
   end
 end
