@@ -12,6 +12,14 @@ module GraphQL
         @scope = nil
       end
 
+      def load(record)
+        if (assoc = record.association(@association))&.loaded?
+          assoc.target
+        else
+          super
+        end
+      end
+
       def fetch(records)
         record_classes = Set.new.compare_by_identity
         associated_classes = Set.new.compare_by_identity

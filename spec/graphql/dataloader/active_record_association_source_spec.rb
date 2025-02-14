@@ -54,5 +54,21 @@ describe GraphQL::Dataloader::ActiveRecordAssociationSource do
 
       assert_equal "", log
     end
+
+    it_dataloads "doesn't pause when the association is already loaded" do |d|
+      source = d.with(GraphQL::Dataloader::ActiveRecordAssociationSource, :band)
+      assert_equal 0, source.results.size
+      assert_equal 0, source.pending.size
+
+      my_first_car = ::Album.find(2)
+      vulfpeck = my_first_car.band
+
+      vulfpeck2 = source.load(my_first_car)
+
+      assert_equal vulfpeck, vulfpeck2
+
+      assert_equal 0, source.results.size
+      assert_equal 0, source.pending.size
+    end
   end
 end
