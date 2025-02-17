@@ -66,7 +66,6 @@ module GraphQL
         @sequence_id = object_id
         @pid = Process.pid
         @flow_ids = Hash.new { |h, source_inst| h[source_inst] = [] }.compare_by_identity
-        # TODO intern these too:
         @new_interned_event_names = {}
         @interned_event_name_iids = Hash.new { |h, k|
           new_id = 100 + h.size
@@ -172,7 +171,7 @@ module GraphQL
         end
       end
 
-      def begin_multiplex(m)
+      def begin_execute_multiplex(m)
         @packets << trace_packet(
           type: TrackEvent::Type::TYPE_SLICE_BEGIN,
           track_uuid: fid,
@@ -184,7 +183,7 @@ module GraphQL
         super
       end
 
-      def end_multiplex(m)
+      def end_execute_multiplex(m)
         @packets << trace_packet(
           type: TrackEvent::Type::TYPE_SLICE_END,
           track_uuid: fid,
@@ -286,7 +285,7 @@ module GraphQL
         super
       end
 
-      def end_validate(query, validate, is_valid)
+      def end_validate(query, validate, validation_errors)
         @packets << trace_packet(
           type: TrackEvent::Type::TYPE_SLICE_END,
           track_uuid: fid,
@@ -298,7 +297,7 @@ module GraphQL
           {
             debug_annotations: [
               @begin_validate.track_event.debug_annotations.first,
-              payload_to_debug("valid?", is_valid)
+              payload_to_debug("valid?", !validation_errors.empty?)
             ]
           }
         )

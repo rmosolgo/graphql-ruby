@@ -61,13 +61,13 @@ module GraphQL
           }
         end
       rescue GraphQL::ExecutionError => e
-        is_valid = false
+        errors = [e]
         {
           remaining_timeout: nil,
-          errors: [e],
+          errors: errors,
         }
       ensure
-        query.current_trace.end_validate(query, validate, is_valid)
+        query.current_trace.end_validate(query, validate, errors)
       end
 
       # Invoked when static validation times out.

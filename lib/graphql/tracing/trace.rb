@@ -42,7 +42,7 @@ module GraphQL
       def begin_validate(query, validate)
       end
 
-      def end_validate(query, validate, is_valid)
+      def end_validate(query, validate, errors)
       end
 
       # @param multiplex [GraphQL::Execution::Multiplex]
@@ -67,12 +67,12 @@ module GraphQL
       # Every Query is technically run _inside_ a {GraphQL::Multiplex}.
       # @param multiplex [GraphQL::Execution::Multiplex]
       # @return [void]
-      def begin_multiplex(multiplex); end;
+      def begin_execute_multiplex(multiplex); end;
 
       # This is the last event of the tracing lifecycle.
       # @param multiplex [GraphQL::Execution::Multiplex]
       # @return [void]
-      def end_multiplex(multiplex); end;
+      def end_execute_multiplex(multiplex); end;
 
       # This wraps an entire `.execute` call.
       # @param multiplex [GraphQL::Execution::Multiplex]

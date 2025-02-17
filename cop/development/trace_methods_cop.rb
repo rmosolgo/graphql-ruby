@@ -3,7 +3,7 @@ require 'rubocop'
 
 module Cop
   module Development
-    class TraceCallsSuperCop < RuboCop::Cop::Base
+    class TraceMethodsCop < RuboCop::Cop::Base
       extend RuboCop::Cop::AutoCorrector
 
       TRACE_HOOKS = [
@@ -16,7 +16,7 @@ module Cop
         :begin_dataloader,
         :begin_dataloader_source,
         :begin_execute_field,
-        :begin_multiplex,
+        :begin_execute_multiplex,
         :begin_parse,
         :begin_resolve_type,
         :begin_validate,
@@ -30,7 +30,7 @@ module Cop
         :end_dataloader,
         :end_dataloader_source,
         :end_execute_field,
-        :end_multiplex,
+        :end_execute_multiplex,
         :end_parse,
         :end_resolve_type,
         :end_validate,
@@ -51,8 +51,35 @@ module Cop
       def on_def(node)
         if TRACE_HOOKS.include?(node.method_name) && !node.each_descendant(:super, :zsuper).any?
           add_offense(node) do |corrector|
-            offset = node.loc.column + 2
-            corrector.insert_after(node.body.loc.expression, "\n#{' ' * offset}super")
+            if node.body
+              offset = node.loc.column + 2
+              corrector.insert_after(node.body.loc.expression, "\n#{' ' * offset}super")
+            end
+          end
+        end
+      end
+
+      def on_module(node)
+        if node.defined_module_name.to_s.end_with?("Trace")
+          all_defs = []
+          node.body.each_child_node do |body_node|
+            if body_node.def_type?
+              all_defs << body_node.method_name
+            end
+          end
+
+          missing_defs = TRACE_HOOKS - all_defs
+          redundant_defs = [:lex, :analyze_query, :execute_query, :execute_query_lazy]
+          missing_defs.each do |missing_def|
+            if all_defs.include?(:"begin_#{missing_def}") && all_defs.include?(:"end_#{missing_def}")
+              redundant_defs << missing_def
+              redundant_defs << :"#{missing_def}_lazy"
+            end
+          end
+
+          missing_defs -= redundant_defs
+          if missing_defs.any?
+            add_offense(node, message: "Missing some trace hook methods:\n\n- #{missing_defs.join("\n- ")}")
           end
         end
       end
