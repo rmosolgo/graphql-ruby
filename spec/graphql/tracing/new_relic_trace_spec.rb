@@ -3,10 +3,18 @@ require "spec_helper"
 
 describe GraphQL::Tracing::NewRelicTrace do
   module NewRelicTraceTest
+    class OtherSource < GraphQL::Dataloader::Source
+      def fetch(keys)
+        keys
+      end
+    end
     class Thing < GraphQL::Schema::Object
       implements GraphQL::Types::Relay::Node
     end
 
+    class Other < GraphQL::Schema::Object
+      field :name, String, fallback_value: "other"
+    end
     class Query < GraphQL::Schema::Object
       include GraphQL::Types::Relay::HasNodeField
 
@@ -14,6 +22,12 @@ describe GraphQL::Tracing::NewRelicTrace do
 
       def int
         1
+      end
+
+      field :other, Other
+
+      def other
+        dataloader.with(OtherSource).load(:other)
       end
     end
 
@@ -34,6 +48,7 @@ describe GraphQL::Tracing::NewRelicTrace do
     class SchemaWithTransactionName < GraphQL::Schema
       query(Query)
       trace_with(GraphQL::Tracing::NewRelicTrace, set_transaction_name: true)
+      use GraphQL::Dataloader
     end
 
     class SchemaWithScalarTrace < GraphQL::Schema
@@ -91,5 +106,36 @@ describe GraphQL::Tracing::NewRelicTrace do
   it "traces scalars when trace_scalars is true" do
     NewRelicTraceTest::SchemaWithScalarTrace.execute "query X { int }"
     assert_includes NewRelic::EXECUTION_SCOPES, "GraphQL/Query/int"
+  end
+
+  it "handles fiber pauses" do
+    NewRelicTraceTest::SchemaWithTransactionName.execute("{ other { name } }")
+    expected_steps = [
+      "GraphQL/parse",
+      "FINISH GraphQL/parse",
+      "GraphQL/execute",
+
+        "GraphQL/analyze",
+          "GraphQL/validate",
+          "FINISH GraphQL/validate",
+        "FINISH GraphQL/analyze",
+
+        "GraphQL/Authorized/Query",
+        "FINISH GraphQL/Authorized/Query",
+        "GraphQL/Query/other",
+        "FINISH GraphQL/Query/other",
+        # Here's the source run:
+        "GraphQL/Source/NewRelicTraceTest::OtherSource",
+        "FINISH GraphQL/Source/NewRelicTraceTest::OtherSource",
+        # And back to the field:
+        "GraphQL/Query/other",
+        "FINISH GraphQL/Query/other",
+        "GraphQL/Authorized/Other",
+        "FINISH GraphQL/Authorized/Other",
+        "GraphQL/Other/name",
+        "FINISH GraphQL/Other/name",
+      "FINISH GraphQL/execute"
+    ]
+    assert_equal expected_steps, NewRelic::EXECUTION_SCOPES
   end
 end

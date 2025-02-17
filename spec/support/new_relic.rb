@@ -26,11 +26,15 @@ module NewRelic
 
       class Finisher
         def initialize(name)
-          @name = name
+          @partial_name = name
+        end
+
+        def name
+          "Controller/#{@partial_name}"
         end
 
         def finish
-          EXECUTION_SCOPES << "FINISH #{@name}"
+          EXECUTION_SCOPES << "FINISH #{@partial_name}"
           nil
         end
       end
