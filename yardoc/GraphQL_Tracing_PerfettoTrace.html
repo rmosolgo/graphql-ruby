@@ -1,0 +1,48 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="refresh" content="1;url=/api-doc/2.4.10/GraphQL/Tracing/PerfettoTrace" />
+  </head>
+  <body>
+    <p>Module: GraphQL::Tracing::PerfettoTrace
+This produces a trace file for inspecting in the <a href="https://ui.perfetto.dev">Perfetto Trace
+Viewer</a>. 
+To get the file, call #write on the trace. 
+Use “trace modes” to configure this to run on command or on a sample
+of traffic. 
+Examples:</p>
+<h1 id="writing-trace-output">Writing trace output</h1>
+<p>result = MySchema.execute(…)
+result.query.trace.write(file: “tmp/trace.dump”)</p>
+<h1 id="running-this-instrumenter-when-trace-true-is-present-in-the-request">Running this instrumenter when <code class="language-plaintext highlighter-rouge">trace: true</code> is present in the request</h1>
+<p>class MySchema &lt; GraphQL::Schema</p>
+<h1 id="only-run-this-tracer-when-contexttrace_mode-is-trace">Only run this tracer when <code class="language-plaintext highlighter-rouge">context[:trace_mode]</code> is <code class="language-plaintext highlighter-rouge">:trace</code></h1>
+<p>trace_with GraphQL::Tracing::Perfetto, mode: :trace
+end</p>
+<h1 id="in-graphql_controllerrb">In graphql_controller.rb:</h1>
+<p>context[:trace_mode] = params[:trace] ? :trace : nil
+result = MySchema.execute(query_str, context: context, variables: variables, …)
+if context[:trace_mode] == :trace
+result.trace.write(file: …)
+end
+Class methods:
+included
+Instance methods:
+begin_analyze_multiplex, begin_authorized, begin_dataloader,
+begin_dataloader_source, begin_execute_field,
+begin_execute_multiplex, begin_parse, begin_resolve_type,
+begin_validate, count_allocations, count_fibers, count_fields,
+dataloader_fiber_exit, dataloader_fiber_resume,
+dataloader_fiber_yield, dataloader_spawn_execution_fiber,
+dataloader_spawn_source_fiber, debug_annotation, dup_with,
+end_analyze_multiplex, end_authorized, end_dataloader,
+end_dataloader_source, end_execute_field, end_execute_multiplex,
+end_parse, end_resolve_type, end_validate, fiber_flow_stack, fid,
+initialize, new_interned_data, payload_to_debug,
+subscribe_to_active_support_notifications, tid, trace_packet,
+track_descriptor_packet, ts,
+unsubscribe_from_active_support_notifications, write</p>
+
+
+  </body>
+</html>

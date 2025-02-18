@@ -54,7 +54,7 @@
           <div class="nav-links">
             <a href="/getting_started">Get Started</a>
             <a href="/guides">Guides</a>
-            <a href="/api-doc/2.4.9/">API</a>
+            <a href="/api-doc/2.4.10/">API</a>
             <a href="https://buttondown.email/graphql-ruby">Newsletter</a>
             <a href="https://github.com/rmosolgo/graphql-ruby">Source Code</a>
             <a href="https://graphql.pro">Upgrade to Pro</a>
@@ -185,7 +185,7 @@
 
 <h2 id="how">How</h2>
 
-<p>Before running a query, <code class="language-plaintext highlighter-rouge">ObjectCache</code> creates a fingerprint for the query using <a href="/api-doc/2.4.9/GraphQL/Query#fingerprint-instance_method" target="_blank" title="API docs for GraphQL::Query#fingerprint"><code>GraphQL::Query#fingerprint</code></a> and <a href="/object_cache/schema_setup#context-fingerprint"><code class="language-plaintext highlighter-rouge">Schema.context_fingerprint_for(ctx)</code></a>. Then, it checks the backend for a cached response which matches the fingerprint.</p>
+<p>Before running a query, <code class="language-plaintext highlighter-rouge">ObjectCache</code> creates a fingerprint for the query using <a href="/api-doc/2.4.10/GraphQL/Query#fingerprint-instance_method" target="_blank" title="API docs for GraphQL::Query#fingerprint"><code>GraphQL::Query#fingerprint</code></a> and <a href="/object_cache/schema_setup#context-fingerprint"><code class="language-plaintext highlighter-rouge">Schema.context_fingerprint_for(ctx)</code></a>. Then, it checks the backend for a cached response which matches the fingerprint.</p>
 
 <p>If a match is found, the <code class="language-plaintext highlighter-rouge">ObjectCache</code> fetches the objects previously visited by this query. Then, it compares the current fingerprint of each object ot the one in the cache and checks <code class="language-plaintext highlighter-rouge">.authorized?</code> for that object. If the fingerprints all match and all objects pass authorization checks, then the cached response returned. (Authorization checks can be <a href="/object_cache/schema_setup#disabling-reauthorization">disabled</a>.)</p>
 
