@@ -8,8 +8,12 @@ module GraphQL
       # @param set_transaction_name [Boolean] If true, the GraphQL operation name will be used as the transaction name.
       #   This is not advised if you run more than one query per HTTP request, for example, with `graphql-client` or multiplexing.
       #   It can also be specified per-query with `context[:set_new_relic_transaction_name]`.
-      def initialize(set_transaction_name: false, **_rest)
+      # @param trace_authorized [Boolean] If `false`, skip tracing `authorized?` calls
+      # @param trace_resolve_type [Boolean] If `false`, skip tracing `resolve_type?` calls
+      def initialize(set_transaction_name: false, trace_authorized: true, trace_resolve_type: true, **_rest)
         @set_transaction_name = set_transaction_name
+        @trace_authorized = trace_authorized
+        @trace_resolve_type = trace_resolve_type
         @nr_field_names = Hash.new do |h, field|
           h[field] = "GraphQL/#{field.owner.graphql_name}/#{field.graphql_name}"
         end.compare_by_identity
@@ -86,32 +90,38 @@ module GraphQL
       end
 
       def begin_authorized(type, obj, ctx)
-        nr_segment_stack << NewRelic::Agent::Tracer.start_transaction_or_segment(partial_name: @nr_authorized_names[type], category: :web)
+        if @trace_authorized
+          nr_segment_stack << NewRelic::Agent::Tracer.start_transaction_or_segment(partial_name: @nr_authorized_names[type], category: :web)
+        end
         super
       end
 
       def end_authorized(type, obj, ctx, is_authed)
-        nr_segment_stack.pop.finish
+        if @trace_authorized
+          nr_segment_stack.pop.finish
+        end
         super
       end
 
       def begin_resolve_type(type, value, context)
-        nr_segment_stack << NewRelic::Agent::Tracer.start_transaction_or_segment(partial_name: @nr_resolve_type_names[type], category: :web)
+        if @trace_resolve_type
+          nr_segment_stack << NewRelic::Agent::Tracer.start_transaction_or_segment(partial_name: @nr_resolve_type_names[type], category: :web)
+        end
         super
       end
 
       def end_resolve_type(type, value, context, resolved_type)
-        nr_segment_stack.pop.finish
+        if @trace_resolve_type
+          nr_segment_stack.pop.finish
+        end
         super
       end
 
       def begin_dataloader(dl)
-        # nr_segment_stack << NewRelic::Agent::Tracer.start_transaction_or_segment(partial_name: "GraphQL/dataloader", category: :web)
         super
       end
 
       def end_dataloader(dl)
-        # nr_segment_stack.pop.finish
         super
       end
 

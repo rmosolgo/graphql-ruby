@@ -18,9 +18,19 @@ describe GraphQL::Tracing::NewRelicTrace do
       implements GraphQL::Types::Relay::Node
     end
 
+    module Nameable
+      include GraphQL::Schema::Interface
+      field :name, String
+
+      def self.resolve_type(abs_type, ctx)
+        Other
+      end
+    end
     class Other < GraphQL::Schema::Object
+      implements Nameable
       field :name, String, fallback_value: "other"
     end
+
     class Query < GraphQL::Schema::Object
       include GraphQL::Types::Relay::HasNodeField
 
@@ -35,6 +45,8 @@ describe GraphQL::Tracing::NewRelicTrace do
       def other
         dataloader.with(OtherSource).load(:other)
       end
+
+      field :nameable, Nameable, fallback_value: :nameable
     end
 
     class SchemaWithoutTransactionName < GraphQL::Schema
@@ -60,6 +72,11 @@ describe GraphQL::Tracing::NewRelicTrace do
     class SchemaWithScalarTrace < GraphQL::Schema
       query(Query)
       trace_with(GraphQL::Tracing::NewRelicTrace, trace_scalars: true)
+    end
+
+    class SchemaWithoutAuthorizedOrResolveType < GraphQL::Schema
+      query(Query)
+      trace_with(GraphQL::Tracing::NewRelicTrace, set_transaction_name: true, trace_authorized: false, trace_resolve_type: false)
     end
   end
 
@@ -145,6 +162,31 @@ describe GraphQL::Tracing::NewRelicTrace do
         "FINISH GraphQL/Authorized/Other",
         "GraphQL/Other/name",
         "FINISH GraphQL/Other/name",
+      "FINISH GraphQL/execute"
+    ]
+    assert_equal expected_steps, NewRelic::EXECUTION_SCOPES
+  end
+
+  it "can skip authorized and resolve type" do
+    NewRelicTraceTest::SchemaWithoutAuthorizedOrResolveType.execute("{ nameable { name } }")
+    expected_steps = [
+      "GraphQL/parse",
+      "FINISH GraphQL/parse",
+      "GraphQL/execute",
+      "GraphQL/analyze",
+      "GraphQL/validate",
+      "FINISH GraphQL/validate",
+      "FINISH GraphQL/analyze",
+      # "GraphQL/Authorized/Query",
+      # "FINISH GraphQL/Authorized/Query",
+      "GraphQL/Query/nameable",
+      "FINISH GraphQL/Query/nameable",
+      # "GraphQL/ResolveType/Nameable",
+      # "FINISH GraphQL/ResolveType/Nameable",
+      # "GraphQL/Authorized/Other",
+      # "FINISH GraphQL/Authorized/Other",
+      "GraphQL/Other/name",
+      "FINISH GraphQL/Other/name",
       "FINISH GraphQL/execute"
     ]
     assert_equal expected_steps, NewRelic::EXECUTION_SCOPES
