@@ -4,7 +4,7 @@ require:
   - ./lib/graphql/rubocop/graphql/default_null_true
   - ./lib/graphql/rubocop/graphql/default_required_true
   - ./cop/development/context_is_passed_cop
-  - ./cop/development/trace_calls_super_cop.rb
+  - ./cop/development/trace_methods_cop.rb
 
 AllCops:
   DisabledByDefault: true
@@ -45,9 +45,10 @@ Development/NoFocusCop:
   Include:
     - "spec/**/*"
 
-Development/TraceCallsSuperCop:
+Development/TraceMethodsCop:
   Include:
-    - "lib/graphql/tracing/*_trace.rb"
+    - "lib/graphql/tracing/perfetto_trace.rb"
+    - "lib/graphql/tracing/new_relic_trace.rb"
 
 # def ...
 # end

@@ -66,21 +66,28 @@ module GraphQL
         # @return [GraphQL::Schema::Object, GraphQL::Execution::Lazy]
         # @raise [GraphQL::UnauthorizedError] if the user-provided hook returns `false`
         def authorized_new(object, context)
-          maybe_lazy_auth_val = context.query.current_trace.authorized(query: context.query, type: self, object: object) do
-            begin
-              context.query.current_trace.begin_authorized(self, object, context)
-              authorized?(object, context)
-            rescue GraphQL::UnauthorizedError => err
-              context.schema.unauthorized_object(err)
-            rescue StandardError => err
-              context.query.handle_or_reraise(err)
+          context.query.current_trace.begin_authorized(self, object, context)
+          begin
+            maybe_lazy_auth_val = context.query.current_trace.authorized(query: context.query, type: self, object: object) do
+              begin
+                authorized?(object, context)
+              rescue GraphQL::UnauthorizedError => err
+                context.schema.unauthorized_object(err)
+              rescue StandardError => err
+                context.query.handle_or_reraise(err)
+              end
             end
+          ensure
+            context.query.current_trace.end_authorized(self, object, context, maybe_lazy_auth_val)
           end
 
           auth_val = if context.schema.lazy?(maybe_lazy_auth_val)
             GraphQL::Execution::Lazy.new do
+              context.query.current_trace.begin_authorized(self, object, context)
               context.query.current_trace.authorized_lazy(query: context.query, type: self, object: object) do
-                context.schema.sync_lazy(maybe_lazy_auth_val)
+                res = context.schema.sync_lazy(maybe_lazy_auth_val)
+                context.query.current_trace.end_authorized(self, object, context, res)
+                res
               end
             end
           else
@@ -88,7 +95,6 @@ module GraphQL
           end
 
           context.query.after_lazy(auth_val) do |is_authorized|
-            context.query.current_trace.end_authorized(self, object, context, is_authorized)
             if is_authorized
               self.new(object, context)
             else

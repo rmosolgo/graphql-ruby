@@ -789,8 +789,10 @@ module GraphQL
               runtime_state.was_authorized_by_scope_items = was_authorized_by_scope_items
               # Wrap the execution of _this_ method with tracing,
               # but don't wrap the continuation below
+              result = nil
               inner_obj = begin
-                if trace
+                result = if trace
+                  @current_trace.begin_execute_field(field, owner_object, arguments, query)
                   @current_trace.execute_field_lazy(field: field, query: query, object: owner_object, arguments: arguments, ast_node: ast_node) do
                     schema.sync_lazy(lazy_obj)
                   end
@@ -804,6 +806,10 @@ module GraphQL
                   query.handle_or_reraise(err)
                 rescue GraphQL::ExecutionError => ex_err
                   ex_err
+                end
+              ensure
+                if trace
+                  @current_trace.end_execute_field(field, owner_object, arguments, query, result)
                 end
               end
               yield(inner_obj, runtime_state)
@@ -852,9 +858,11 @@ module GraphQL
           resolved_type, resolved_value = @current_trace.resolve_type(query: query, type: type, object: value) do
             query.resolve_type(type, value)
           end
+          @current_trace.end_resolve_type(type, value, context, resolved_type)
 
           if lazy?(resolved_type)
             GraphQL::Execution::Lazy.new do
+              @current_trace.begin_resolve_type(type, value, context)
               @current_trace.resolve_type_lazy(query: query, type: type, object: value) do
                 rt = schema.sync_lazy(resolved_type)
                 @current_trace.end_resolve_type(type, value, context, rt)
@@ -862,7 +870,6 @@ module GraphQL
               end
             end
           else
-            @current_trace.end_resolve_type(type, value, context, resolved_type)
             [resolved_type, resolved_value]
           end
         end
