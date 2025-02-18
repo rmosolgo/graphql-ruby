@@ -23,11 +23,14 @@ describe GraphQL::Tracing::NewRelicTrace do
       field :name, String
 
       def self.resolve_type(abs_type, ctx)
-        Other
+        ctx[:lazy] ? -> { Other } : Other
       end
     end
     class Other < GraphQL::Schema::Object
       implements Nameable
+      def self.authorized?(obj, ctx)
+        ctx[:lazy] ? -> { true } : true
+      end
       field :name, String, fallback_value: "other"
     end
 
@@ -47,6 +50,8 @@ describe GraphQL::Tracing::NewRelicTrace do
       end
 
       field :nameable, Nameable, fallback_value: :nameable
+
+      field :lazy_nameable, Nameable, fallback_value: -> { :nameable }
     end
 
     class SchemaWithoutTransactionName < GraphQL::Schema
@@ -58,7 +63,7 @@ describe GraphQL::Tracing::NewRelicTrace do
         :thing
       end
 
-      def self.resolve_type(_type, _obj, _ctx)
+      def self.resolve_type(_type, _obj, ctx)
         Thing
       end
     end
@@ -67,6 +72,7 @@ describe GraphQL::Tracing::NewRelicTrace do
       query(Query)
       trace_with(GraphQL::Tracing::NewRelicTrace, set_transaction_name: true)
       use GraphQL::Dataloader
+      lazy_resolve(Proc, :call)
     end
 
     class SchemaWithScalarTrace < GraphQL::Schema
@@ -196,5 +202,43 @@ describe GraphQL::Tracing::NewRelicTrace do
     res = NewRelicTraceTest::SchemaWithTransactionName.execute("query Q1 { other { name } } query Q2 { other { name } }")
     assert_equal ["An operation name is required"], res["errors"].map { |e| e["message"] }
     assert_equal ["GraphQL/query.anonymous"], NewRelic::TRANSACTION_NAMES
+  end
+
+  it "handles lazies" do
+    NewRelicTraceTest::SchemaWithTransactionName.execute("{ lazyNameable { name } }", context: { lazy: true })
+    expected_steps = [
+      "GraphQL/parse",
+      "FINISH GraphQL/parse",
+      "GraphQL/execute",
+      "GraphQL/analyze",
+      "GraphQL/validate",
+      "FINISH GraphQL/validate",
+      "FINISH GraphQL/analyze",
+      "GraphQL/Authorized/Query",
+      "FINISH GraphQL/Authorized/Query",
+      # Eager:
+      "GraphQL/Query/lazyNameable",
+      "FINISH GraphQL/Query/lazyNameable",
+      # Lazy:
+      "GraphQL/Query/lazyNameable",
+      "FINISH GraphQL/Query/lazyNameable",
+
+      # Eager/lazy:
+      "GraphQL/ResolveType/Nameable",
+      "FINISH GraphQL/ResolveType/Nameable",
+      "GraphQL/ResolveType/Nameable",
+      "FINISH GraphQL/ResolveType/Nameable",
+
+      # Eager/lazy:
+      "GraphQL/Authorized/Other",
+      "FINISH GraphQL/Authorized/Other",
+      "GraphQL/Authorized/Other",
+      "FINISH GraphQL/Authorized/Other",
+
+      "GraphQL/Other/name",
+      "FINISH GraphQL/Other/name",
+      "FINISH GraphQL/execute",
+    ]
+    assert_equal expected_steps, NewRelic::EXECUTION_SCOPES
   end
 end
