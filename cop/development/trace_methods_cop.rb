@@ -69,7 +69,12 @@ module Cop
           end
 
           missing_defs = TRACE_HOOKS - all_defs
-          redundant_defs = [:lex, :analyze_query, :execute_query, :execute_query_lazy]
+          redundant_defs = [
+            # Not really necessary for making a good trace:
+            :lex, :analyze_query, :execute_query, :execute_query_lazy,
+            # Only useful for isolated event tracking:
+            :dataloader_fiber_exit, :dataloader_spawn_execution_fiber, :dataloader_spawn_source_fiber
+          ]
           missing_defs.each do |missing_def|
             if all_defs.include?(:"begin_#{missing_def}") && all_defs.include?(:"end_#{missing_def}")
               redundant_defs << missing_def

@@ -3,9 +3,15 @@ require "spec_helper"
 
 describe GraphQL::Tracing::NewRelicTrace do
   module NewRelicTraceTest
-    class OtherSource < GraphQL::Dataloader::Source
+    class NestedSource < GraphQL::Dataloader::Source
       def fetch(keys)
         keys
+      end
+    end
+
+    class OtherSource < GraphQL::Dataloader::Source
+      def fetch(keys)
+        dataloader.with(NestedSource).load_all(keys)
       end
     end
     class Thing < GraphQL::Schema::Object
@@ -125,6 +131,11 @@ describe GraphQL::Tracing::NewRelicTrace do
         "GraphQL/Query/other",
         "FINISH GraphQL/Query/other",
         # Here's the source run:
+        "GraphQL/Source/NewRelicTraceTest::OtherSource",
+        "FINISH GraphQL/Source/NewRelicTraceTest::OtherSource",
+          # Nested source:
+          "GraphQL/Source/NewRelicTraceTest::NestedSource",
+          "FINISH GraphQL/Source/NewRelicTraceTest::NestedSource",
         "GraphQL/Source/NewRelicTraceTest::OtherSource",
         "FINISH GraphQL/Source/NewRelicTraceTest::OtherSource",
         # And back to the field:
