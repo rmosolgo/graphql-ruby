@@ -10,6 +10,21 @@
 
 ### Bug fixes
 
+# 2.4.10 (18 Feb 2025)
+
+### New features
+
+- Dataloader: improve built-in Rails integration #5213
+
+### Bug fixes
+
+- `NewRelicTrace`: don't double-count time waiting on Dataloader fibers
+- Fix possible type memberships inherited from superclass #5236
+- `Visibility`: properly use configured contexts for visibility profiles #5235
+- `Enum`: reduce needless `value_method` warnings #5230 #5220
+- `Backtrace`: fix error handling with `rescue_from` #5227
+- Parser: return a proper error when variable type is missing #5225
+
 # 2.4.9 (29 Jan 2025)
 
 ### New features
