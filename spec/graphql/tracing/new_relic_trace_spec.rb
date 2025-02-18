@@ -191,4 +191,10 @@ describe GraphQL::Tracing::NewRelicTrace do
     ]
     assert_equal expected_steps, NewRelic::EXECUTION_SCOPES
   end
+
+  it "can generate a transaction name without a selected operation" do
+    res = NewRelicTraceTest::SchemaWithTransactionName.execute("query Q1 { other { name } } query Q2 { other { name } }")
+    assert_equal ["An operation name is required"], res["errors"].map { |e| e["message"] }
+    assert_equal ["GraphQL/query.anonymous"], NewRelic::TRANSACTION_NAMES
+  end
 end
