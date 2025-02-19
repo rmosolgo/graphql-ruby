@@ -1,0 +1,88 @@
+<% content_for(:title, "Traces") %>
+<div class="row">
+  <div class="col">
+    <h1>Perfetto Traces</h1>
+  </div>
+</div>
+<% if !@perfetto_sampler %>
+  <div class="row">
+    <div class="col-md col-lg-6 mx-auto">
+      <div class="card mt-4">
+        <div class="card-body">
+          <div class="card-title">
+            <h3>
+              Traces aren't installed yet
+            </h3>
+          </div>
+          <p class="card-text">
+            GraphQL-Ruby can instrument production traffic and save tracing artifacts here for later review.
+          </p>
+          <p class="card-text">
+            Read more in <%= link_to "the tracing docs", "#" %>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+<% else %>
+  <div class="row">
+    <div class="col">
+      <% perfetto_traces = @perfetto_sampler.traces %>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Operation</th>
+            <th>Duration</th>
+            <th>Timestamp</th>
+            <th>Open in Perfetto UI</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if perfetto_traces.empty? %>
+            <tr>
+              <td colspan="4" class="text-center">
+                <em>No traces saved yet. Read about saving traces <%= link_to "in the docs", "#" %>.</em>
+              </td>
+            </tr>
+          <% end %>
+          <% perfetto_traces.each do |trace| %>
+            <tr>
+              <td><%= trace.operation_name %></td>
+              <td><%= trace.duration_ms %></td>
+              <td><%= trace.timestamp %></td>
+              <td><%= link_to "Perfetto ↗", "#", onclick: "openOnPerfetto('#{trace.operation_name}', '#{graphql_dashboard.traces_path}/#{trace.id}')"  %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+
+      <script>
+        var perfettoUrl = "https://ui.perfetto.dev"
+        async function openOnPerfetto(operationName, tracePath) {
+          var resp = await fetch(tracePath);
+          var blob = await resp.blob();
+          var nextPerfettoData = await blob.arrayBuffer();
+          nextPerfettoWindow = window.open(perfettoUrl)
+
+          var messageHandler = function(event) {
+            if (event.origin == perfettoUrl && event.data == "PONG") {
+              clearInterval(perfettoWaiting)
+              window.removeEventListener("message", messageHandler)
+              nextPerfettoWindow.postMessage({
+                'perfetto': {
+                  buffer: nextPerfettoData,
+                  title: "GraphQL: " + operationName,
+                }
+              }, perfettoUrl)
+            }
+          }
+
+          window.addEventListener("message", messageHandler, false)
+          perfettoWaiting = setInterval(function() {
+            nextPerfettoWindow.postMessage("PING", perfettoUrl)
+          }, 100)
+        }
+      </script>
+    </div>
+  </div>
+<% end %>

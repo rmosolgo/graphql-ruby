@@ -1366,6 +1366,8 @@ module GraphQL
         }.freeze
       end
 
+      attr_accessor :perfetto_sampler
+
       def tracer(new_tracer, silence_deprecation_warning: false)
         if !silence_deprecation_warning
           warn("`Schema.tracer(#{new_tracer.inspect})` is deprecated; use module-based `trace_with` instead. See: https://graphql-ruby.org/queries/tracing.html")
