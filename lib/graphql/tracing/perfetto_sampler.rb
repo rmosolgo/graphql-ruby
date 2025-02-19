@@ -39,6 +39,10 @@ module GraphQL
         @storage.delete_trace(id)
       end
 
+      def delete_all_traces
+        @storage.delete_all_traces
+      end
+
       class StoredTrace
         def initialize(id:, operation_name:, duration_ms:, timestamp:, trace_data:)
           @id = id
