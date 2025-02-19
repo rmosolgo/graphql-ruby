@@ -11,6 +11,10 @@ describe GraphQL::Tracing::PerfettoSampler do
     use GraphQL::Tracing::PerfettoSampler, memory: true
   end
 
+  before do
+    SamplerSchema.perfetto_sampler.delete_all_traces
+  end
+
   it "runs when the configured trace mode is set" do
     assert_equal 0, SamplerSchema.perfetto_sampler.traces.size
     res = SamplerSchema.execute("{ truthy }")

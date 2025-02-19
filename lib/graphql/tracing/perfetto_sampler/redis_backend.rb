@@ -36,7 +36,9 @@ module GraphQL
 
         def find_trace(id)
           redis_h = @redis.hgetall("#{KEY_PREFIX}#{id}")
-          if redis_h
+          if redis_h.empty?
+            nil
+          else
             StoredTrace.new(
               id: id,
               operation_name: redis_h["operation_name"],
@@ -44,8 +46,6 @@ module GraphQL
               timestamp: Time.at(redis_h["timestamp"].to_i),
               trace_data: redis_h["trace_data"],
             )
-          else
-            nil
           end
         end
 
