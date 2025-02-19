@@ -7,11 +7,11 @@ module GraphQL
       # It won't work for multi-process deployments and everything is erased when the app is restarted.
       class MemoryBackend
         def initialize
-          @traces = []
+          @traces = {}
         end
 
         def traces
-          @traces.compact
+          @traces.values
         end
 
         def find_trace(id)
@@ -23,15 +23,21 @@ module GraphQL
           nil
         end
 
+        def delete_all_traces
+          @traces.clear
+          nil
+        end
+
         def save_trace(operation_name, duration, timestamp, trace_data)
-          @traces << PerfettoSampler::StoredTrace.new(
-            id: @traces.size,
+          id = @traces.size
+          @traces[id] = PerfettoSampler::StoredTrace.new(
+            id: id,
             operation_name: operation_name,
             duration_ms: duration,
             timestamp: timestamp,
             trace_data: trace_data
           )
-          nil
+          id
         end
       end
     end

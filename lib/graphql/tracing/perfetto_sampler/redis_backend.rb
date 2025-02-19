@@ -10,7 +10,8 @@ module GraphQL
         end
 
         def traces
-          keys = @redis.scan_each(match: "#{KEY_PREFIX}*")
+          keys = @redis.scan_each(match: "#{KEY_PREFIX}*").to_a
+          keys.sort!
           keys.map do |k|
             h = @redis.hgetall(k)
             StoredTrace.new(
@@ -26,6 +27,11 @@ module GraphQL
         def delete_trace(id)
           @redis.del("#{KEY_PREFIX}#{id}")
           nil
+        end
+
+        def delete_all_traces
+          keys = @redis.scan_each(match: "#{KEY_PREFIX}*")
+          @redis.del(*keys)
         end
 
         def find_trace(id)
@@ -51,7 +57,7 @@ module GraphQL
             "timestamp", timestamp.to_i,
             "trace_data", trace_data,
           )
-          nil
+          id
         end
       end
     end
