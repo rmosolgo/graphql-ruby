@@ -41,6 +41,10 @@ module GraphQLTracingPerfettoSamplerBackendAssertions
           @backend.delete_all_traces
           assert_equal [], @backend.traces
         end
+
+        it "returns nil for nonexistent IDs" do
+          assert_nil @backend.find_trace(999_999_999)
+        end
       end
     end
   end
