@@ -50,10 +50,16 @@ module Graphql
     end
 
     class StaticsController < ApplicationController
-      STATICS = {
-        "icon.png" => File.expand_path("../dashboard/statics/icon.png", __FILE__),
-        "header-icon.png" => File.expand_path("../dashboard/statics/header-icon.png", __FILE__),
-      }
+      # Use an explicit list of files to avoid any chance of reading other files from disk
+      STATICS = {}
+
+      [
+        "icon.png",
+        "header-icon.png"
+      ].each do |static_file|
+        STATICS[static_file] = File.expand_path("../dashboard/statics/#{static_file}", __FILE__)
+      end
+
       def show
         expires_in 1.year, public: true
         if (filepath = STATICS[params[:id]])
