@@ -32,7 +32,7 @@
         <thead>
           <tr>
             <th>Operation</th>
-            <th>Duration</th>
+            <th>Duration (ms) </th>
             <th>Timestamp</th>
             <th>Open in Perfetto UI</th>
           </tr>
@@ -48,9 +48,10 @@
           <% perfetto_traces.each do |trace| %>
             <tr>
               <td><%= trace.operation_name %></td>
-              <td><%= trace.duration_ms %></td>
+              <td><%= trace.duration_ms.round(2) %></td>
               <td><%= trace.timestamp %></td>
-              <td><%= link_to "Perfetto ↗", "#", onclick: "openOnPerfetto('#{trace.operation_name}', '#{graphql_dashboard.traces_path}/#{trace.id}')"  %></td>
+              <td><%= link_to "View ↗", "#", onclick: "openOnPerfetto('#{trace.operation_name}', '#{graphql_dashboard.traces_path}/#{trace.id}')"  %></td>
+              <td><%= link_to "Delete", "#", onclick: "deleteTrace('#{graphql_dashboard.traces_path}/#{trace.id}', event)", class: "text-danger" %></td>
             </tr>
           <% end %>
         </tbody>
@@ -81,6 +82,20 @@
           perfettoWaiting = setInterval(function() {
             nextPerfettoWindow.postMessage("PING", perfettoUrl)
           }, 100)
+        }
+
+        async function deleteTrace(tracePath, event) {
+          if (confirm("Are you sure you want to permanently delete this trace?")) {
+            var response = await fetch(tracePath, { method: "DELETE", headers: {
+              "X-CSRF-Token": document.querySelector("meta[name='csrf-token']").content
+            } })
+            if (response.ok) {
+              var row = event.target.closest("tr")
+              row.remove()
+            } else {
+              console.error("Delete request failed for", tracePath, response)
+            }
+          }
         }
       </script>
     </div>

@@ -62,6 +62,7 @@ jobs:
             ruby: 3.4
             graphql_reject_numbers_followed_by_names: 1
             isolation_level_fiber: 1
+            redis: 1
     runs-on: ubuntu-latest
     steps:
     - run: echo BUNDLE_GEMFILE=${{ matrix.gemfile }} > $GITHUB_ENV
@@ -69,6 +70,12 @@ jobs:
       if: ${{ !!matrix.graphql_reject_numbers_followed_by_names }}
     - run: echo ISOLATION_LEVEL_FIBER=1 > $GITHUB_ENV
       if: ${{ !!matrix.isolation_level_fiber }}
+    - uses: shogo82148/actions-setup-redis@v1
+      with:
+        redis-version: "7.x"
+      if: ${{ !!matrix.redis }}
+    - run: redis-cli ping
+      if: ${{ !!matrix.redis }}
     - uses: actions/checkout@v4
     - uses: ruby/setup-ruby@v1
       with:

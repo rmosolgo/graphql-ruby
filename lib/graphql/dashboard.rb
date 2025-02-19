@@ -7,7 +7,7 @@ module Graphql
     isolate_namespace(Graphql::Dashboard)
     routes.draw do
       root "landings#show"
-      resources :traces, only: [:index, :show]
+      resources :traces, only: [:index, :show, :destroy]
     end
 
     class ApplicationController < ActionController::Base
@@ -32,6 +32,11 @@ module Graphql
       def show
         trace = schema_class.perfetto_sampler.find_trace(params[:id].to_i)
         send_data(trace.trace_data)
+      end
+
+      def destroy
+        schema_class.perfetto_sampler.delete_trace(params[:id])
+        head :no_content
       end
     end
   end
