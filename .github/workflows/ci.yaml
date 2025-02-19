@@ -48,8 +48,6 @@ jobs:
             ruby: 2.7 # lowest supported version
           - gemfile: gemfiles/rails_7.0.gemfile
             ruby: 3.1
-          - gemfile: gemfiles/rails_master.gemfile
-            ruby: 3.2
           - gemfile: gemfiles/rails_7.0.gemfile
             ruby: 3.2
           - gemfile: gemfiles/rails_7.1.gemfile
@@ -58,6 +56,7 @@ jobs:
             ruby: 3.3
             graphql_reject_numbers_followed_by_names: 1
             coverage: 1
+            redis: 1
           - gemfile: gemfiles/rails_master.gemfile
             ruby: 3.4
             graphql_reject_numbers_followed_by_names: 1

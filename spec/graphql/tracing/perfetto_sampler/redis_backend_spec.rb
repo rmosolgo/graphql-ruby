@@ -2,7 +2,7 @@
 require "spec_helper"
 require_relative "./backend_assertions"
 
-if defined?(::Redis)
+if testing_redis?
   describe GraphQL::Tracing::PerfettoSampler::RedisBackend do
     include GraphQLTracingPerfettoSamplerBackendAssertions
 
