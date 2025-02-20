@@ -18,4 +18,9 @@ gem "async"
 gem "google-protobuf"
 gem "redis"
 
+gem 'puma'
+gem 'sprockets-rails'
+gem 'capybara'
+gem 'selenium-webdriver'
+
 gemspec path: "../"
