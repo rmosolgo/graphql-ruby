@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 if testing_rails?
   # Remove the old sqlite database
-  puts "Removing _test_.db"
-  `rm -f ./_test_.db`
+  sqlite_path = File.expand_path(File.join(__FILE__, "../../../_test_.db"))
+  puts "Removing #{sqlite_path}"
+  `rm -f #{sqlite_path}`
 
   if ActiveRecord.respond_to?(:async_query_executor=) # Rails 7.1+
     ActiveRecord.async_query_executor ||= :global_thread_pool
@@ -33,10 +34,10 @@ if testing_rails?
     SequelDB = Sequel.connect("postgres://postgres:#{ENV["PGPASSWORD"]}@localhost:5432/graphql_ruby_test")
   else
     ActiveRecord::Base.configurations = {
-      starwars: { adapter: "sqlite3", database: "./_test_.db" },
-      starwars_replica: { adapter: "sqlite3", database: "./_test_.db" },
+      starwars: { adapter: "sqlite3", database: sqlite_path },
+      starwars_replica: { adapter: "sqlite3", database: sqlite_path },
     }
-    SequelDB = Sequel.sqlite("./_test_.db")
+    SequelDB = Sequel.sqlite(sqlite_path)
   end
 
   ActiveRecord::Base.establish_connection(:starwars)
