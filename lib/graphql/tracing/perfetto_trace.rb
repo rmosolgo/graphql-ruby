@@ -297,7 +297,7 @@ module GraphQL
           {
             debug_annotations: [
               @begin_validate.track_event.debug_annotations.first,
-              payload_to_debug("valid?", !validation_errors.empty?)
+              payload_to_debug("valid?", validation_errors.empty?)
             ]
           }
         )
