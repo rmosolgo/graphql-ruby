@@ -15,14 +15,17 @@ jobs:
   system_tests:
     runs-on: ubuntu-latest
     steps:
-    - run: echo BUNDLE_GEMFILE=gemfiles/rails_master.gemfile > $GITHUB_ENV
     - uses: actions/checkout@v4
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: 3.4
         bundler-cache: true
+      env:
+        BUNDLE_GEMFILE: gemfiles/rails_master.gemfile
     - run: bin/rails test:all
       working-directory: ./spec/dummy
+      env:
+        BUNDLE_GEMFILE: ../../gemfiles/rails_master.gemfile
   # Some coverage goals of these tests:
   # - Test once without Rails at all
   # - Test postgres, to make sure that the ActiveRecord
