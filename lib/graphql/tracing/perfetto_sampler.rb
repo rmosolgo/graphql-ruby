@@ -1,17 +1,12 @@
 # frozen_string_literal: true
 require "graphql/tracing/perfetto_sampler/memory_backend"
-require "graphql/tracing/perfetto_sampler/redis_backend"
 
 module GraphQL
   module Tracing
     class PerfettoSampler
-      def self.use(schema, trace_mode: :perfetto_sample, memory: false, redis: nil, active_record: true)
-        storage = if redis
-          RedisBackend.new(redis: redis)
-        elsif memory
+      def self.use(schema, trace_mode: :perfetto_sample, memory: false, active_record: true)
+        storage = if memory
           MemoryBackend.new
-        elsif active_record != false
-          ActiveRecordBackend.new
         else
           raise ArgumentError, "A storage option must be chosen"
         end
