@@ -64,6 +64,7 @@ module GraphQL
       def initialize(active_support_notifications_pattern: nil, save_trace_mode: nil, **_rest)
         super
         @save_trace_mode = save_trace_mode
+        Fiber[:graphql_flow_stack] = nil
         @sequence_id = object_id
         @pid = Process.pid
         @flow_ids = Hash.new { |h, source_inst| h[source_inst] = [] }.compare_by_identity
