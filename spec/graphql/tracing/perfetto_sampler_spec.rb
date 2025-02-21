@@ -22,7 +22,7 @@ describe GraphQL::Tracing::PerfettoSampler do
     assert_equal true, res["data"]["truthy"]
     assert_equal 0, SamplerSchema.perfetto_sampler.traces.size
 
-    # SamplerSchema.execute("{ truthy }", context: { trace_mode: :perfetto_sample })
+    SamplerSchema.execute("{ truthy }", context: { trace_mode: :perfetto_sample })
     # assert_equal 1, SamplerSchema.perfetto_sampler.traces.size
   end
 
