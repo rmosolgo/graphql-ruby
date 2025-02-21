@@ -18,9 +18,9 @@ describe GraphQL::Tracing::PerfettoSampler do
   it "runs when the configured trace mode is set" do
     # skip("Skipping")
     assert_equal 0, SamplerSchema.perfetto_sampler.traces.size
-    # res = SamplerSchema.execute("{ truthy }")
-    # assert_equal true, res["data"]["truthy"]
-    # assert_equal 0, SamplerSchema.perfetto_sampler.traces.size
+    res = SamplerSchema.execute("{ truthy }")
+    assert_equal true, res["data"]["truthy"]
+    assert_equal 0, SamplerSchema.perfetto_sampler.traces.size
 
     # SamplerSchema.execute("{ truthy }", context: { trace_mode: :perfetto_sample })
     # assert_equal 1, SamplerSchema.perfetto_sampler.traces.size
