@@ -80,6 +80,7 @@ jobs:
     - run: bundle exec rake compile
     - run: bundle exec rake test
     - run: git fetch --no-tags --prune --unshallow origin +refs/heads/*:refs/remotes/origin/*
+      if: ${{ !!matrix.coverage }}
     - run: bundle exec pronto run -f github_pr -c origin/${{ github.base_ref }}
       if: ${{ !!matrix.coverage }}
       env:
