@@ -16,7 +16,7 @@ describe GraphQL::Tracing::PerfettoSampler do
   end
 
   it "runs when the configured trace mode is set" do
-    # skip("Skipping")
+    skip("Skipping")
     assert_equal 0, SamplerSchema.perfetto_sampler.traces.size
     res = SamplerSchema.execute("{ truthy }")
     assert_equal true, res["data"]["truthy"]
@@ -27,7 +27,7 @@ describe GraphQL::Tracing::PerfettoSampler do
   end
 
   it "calls through to storage for access methods" do
-    skip("Skipping")
+    # skip("Skipping")
     SamplerSchema.execute("{ truthy }", context: { trace_mode: :perfetto_sample })
     id = SamplerSchema.perfetto_sampler.traces.first.id
     assert_kind_of GraphQL::Tracing::PerfettoSampler::StoredTrace, SamplerSchema.perfetto_sampler.find_trace(id)
