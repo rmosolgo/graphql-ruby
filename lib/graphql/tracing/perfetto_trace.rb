@@ -193,13 +193,12 @@ module GraphQL
           track_uuid: fid,
         )
         unsubscribe_from_active_support_notifications
-        # if @save_trace_mode && m.context[:trace_mode] == @save_trace_mode
-        #   puts "Saving trace (#{@save_trace_mode.inspect} / #{m.context[:trace_mode]})"
-        #   duration_ms = (Time.now.to_f - @begin_time.to_f) * 1000
-        #   # data = Trace.encode(Trace.new(packet: @packets))
-        #   data = SecureRandom.bytes(100)
-        #   m.schema.perfetto_sampler.save_trace(@operation_name, duration_ms, @begin_time, data)
-        # end
+        if @save_trace_mode && m.context[:trace_mode] == @save_trace_mode
+          puts "Saving trace (#{@save_trace_mode.inspect} / #{m.context[:trace_mode]})"
+          duration_ms = (Time.now.to_f - @begin_time.to_f) * 1000
+          data = Trace.encode(Trace.new(packet: @packets))
+          m.schema.perfetto_sampler.save_trace(@operation_name, duration_ms, @begin_time, data)
+        end
         super
       end
 
