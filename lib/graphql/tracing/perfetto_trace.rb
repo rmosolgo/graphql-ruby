@@ -65,6 +65,8 @@ module GraphQL
         super
         @save_trace_mode = save_trace_mode
         @sequence_id = object_id
+        puts "Starting perfetto trace on Fiber #{Fiber.current.object_id}"
+        Fiber[:graphql_flow_stack] = nil
         @pid = Process.pid
         @flow_ids = Hash.new { |h, source_inst| h[source_inst] = [] }.compare_by_identity
         @new_interned_event_names = {}
@@ -194,11 +196,9 @@ module GraphQL
         )
         unsubscribe_from_active_support_notifications
         if @save_trace_mode && m.context[:trace_mode] == @save_trace_mode
-          puts "Saving trace (#{@save_trace_mode.inspect} / #{m.context[:trace_mode]})"
-          _duration_ms = (Time.now.to_f - @begin_time.to_f) * 1000
-          _data = SecureRandom.bytes(100)
-          # data = Trace.encode(Trace.new(packet: @packets))
-          # m.schema.perfetto_sampler.save_trace(@operation_name, duration_ms, @begin_time, data)
+          duration_ms = (Time.now.to_f - @begin_time.to_f) * 1000
+          data = Trace.encode(Trace.new(packet: @packets))
+          m.schema.perfetto_sampler.save_trace(@operation_name, duration_ms, @begin_time, data)
         end
         super
       end
@@ -622,7 +622,10 @@ module GraphQL
       end
 
       def fiber_flow_stack
-        Fiber[:graphql_flow_stack] ||= []
+        Fiber[:graphql_flow_stack] ||= begin
+          puts "Creating new stack for Fiber ##{Fiber.current.object_id}"
+          []
+        end
       end
 
       def trace_packet(event_attrs)

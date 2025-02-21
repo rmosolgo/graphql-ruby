@@ -138,15 +138,7 @@ if testing_rails?
       PerfettoSchema.execute(query_str, variables: { thingId: "Book-#{::Book.first.id}" })
 
       res = PerfettoSchema.execute(query_str, variables: { thingId: "Book-#{::Book.first.id}" })
-      if ENV["DUMP_PERFETTO"]
-        res.context.query.current_trace.write(file: "perfetto.dump")
-      end
-
-      json = res.context.query.current_trace.write(file: nil, debug_json: true)
-      data = JSON.parse(json)
-
-
-      check_snapshot(data, "example-rails-#{Rails::VERSION::MAJOR}-#{Rails::VERSION::MINOR}.json")
+      check_snapshot(res, "example-rails-#{Rails::VERSION::MAJOR}-#{Rails::VERSION::MINOR}.json")
     end
 
     it "provides an error when google-protobuf isn't available" do

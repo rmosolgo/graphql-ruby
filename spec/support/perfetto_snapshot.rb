@@ -1,9 +1,17 @@
 # frozen_string_literal: true
 module PerfettoSnapshot
-  def check_snapshot(data, snapshot_name)
+  def check_snapshot(result, snapshot_name)
     prev_file = caller(1, 1).first.sub(/\/[a-z_]*\.rb:.*/, "")
     snapshot_dir = prev_file + "/snapshots"
     snapshot_path = "#{snapshot_dir}/#{snapshot_name}"
+
+    if ENV["DUMP_PERFETTO"]
+      dump_path = snapshot_path.sub(".json", ".dump")
+      result.context.query.current_trace.write(file: dump_path)
+    end
+
+    json = result.context.query.current_trace.write(file: nil, debug_json: true)
+    data = JSON.parse(json)
 
     iid_table = { "debugAnnotationNames" => {}, "eventNames" => {}, "eventCategories" => {}, "debugAnnotationStringValues" => {} }
     build_intern_map(data, iid_table)

@@ -343,15 +343,7 @@ if RUBY_VERSION >= "3.1.1"
         }
         GRAPHQL
         res = @schema.execute(query_str)
-        if ENV["DUMP_PERFETTO"]
-          res.context.query.current_trace.write(file: "perfetto.dump")
-        end
-
-        json = res.context.query.current_trace.write(file: nil, debug_json: true)
-        data = JSON.parse(json)
-
-
-        check_snapshot(data, "example.json")
+        check_snapshot(res, "example.json")
       end
     end
   end
